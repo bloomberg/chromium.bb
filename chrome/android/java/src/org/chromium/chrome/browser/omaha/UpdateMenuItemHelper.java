@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -434,13 +435,13 @@ public class UpdateMenuItemHelper {
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static long getSizeUpdatedApi(StatFs statFs) {
-        return statFs.getAvailableBytes() / (1024 * 1024);
+        return ConversionUtils.bytesToMegabytes(statFs.getAvailableBytes());
     }
 
     @SuppressWarnings("deprecation")
     private static long getSize(StatFs statFs) {
         int blockSize = statFs.getBlockSize();
         int availableBlocks = statFs.getAvailableBlocks();
-        return (blockSize * availableBlocks) / (1024 * 1024);
+        return ConversionUtils.bytesToMegabytes(blockSize * availableBlocks);
     }
 }

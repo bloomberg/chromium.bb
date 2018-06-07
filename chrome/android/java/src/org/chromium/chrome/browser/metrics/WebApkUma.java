@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.preferences.website.Website;
 import org.chromium.chrome.browser.preferences.website.WebsitePermissionsFetcher;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
@@ -318,7 +319,7 @@ public class WebApkUma {
     }
 
     private static int roundByteToMb(long bytes) {
-        int mbs = (int) (bytes / 1024L / 1024L / 10L * 10L);
+        int mbs = (int) (bytes / (long) ConversionUtils.BYTES_PER_MEGABYTE / 10L * 10L);
         return Math.min(1000, Math.max(-1000, mbs));
     }
 
@@ -367,7 +368,7 @@ public class WebApkUma {
             webApkExtraSpaceBytes = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                                             ChromeFeatureList.ADJUST_WEBAPK_INSTALLATION_SPACE,
                                             ADJUST_WEBAPK_INSTALLATION_SPACE_PARAM, 0)
-                    * 1024L * 1024L;
+                    * (long) ConversionUtils.BYTES_PER_MEGABYTE;
         }
 
         return partitionAvailableBytes - minimumFreeBytes + webApkExtraSpaceBytes;
@@ -387,7 +388,7 @@ public class WebApkUma {
         // Copied from android/os/storage/StorageManager.java
         final int defaultThresholdPercentage = 10;
         // Copied from android/os/storage/StorageManager.java
-        final long defaultThresholdMaxBytes = 500 * 1024 * 1024;
+        final long defaultThresholdMaxBytes = 500 * ConversionUtils.BYTES_PER_MEGABYTE;
         // Copied from android/provider/Settings.java
         final String sysStorageThresholdPercentage = "sys_storage_threshold_percentage";
         // Copied from android/provider/Settings.java

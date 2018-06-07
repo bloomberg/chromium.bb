@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.BitmapCache;
+import org.chromium.chrome.browser.util.ConversionUtils;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -28,7 +29,7 @@ import java.util.Locale;
  */
 public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorageDelegate {
     /** 5 MB of thumbnails should be enough for everyone. */
-    private static final int MAX_CACHE_BYTES = 5 * 1024 * 1024;
+    private static final int MAX_CACHE_BYTES = 5 * ConversionUtils.BYTES_PER_MEGABYTE;
 
     private BitmapCache mBitmapCache;
 

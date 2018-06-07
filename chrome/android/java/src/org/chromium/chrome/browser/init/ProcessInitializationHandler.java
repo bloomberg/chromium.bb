@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.sync.SyncController;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -679,7 +680,7 @@ public class ProcessInitializationHandler {
                 if (!cacheFile.exists()) {
                     return null;
                 }
-                long cacheFileSizeKb = cacheFile.length() / 1024;
+                long cacheFileSizeKb = ConversionUtils.bytesToKilobytes(cacheFile.length());
                 // Clamp size to [minFileSizeKb, maxFileSizeKb). This also guarantees that the
                 // int-cast below is safe.
                 if (cacheFileSizeKb < MIN_CACHE_FILE_SIZE_KB) {
