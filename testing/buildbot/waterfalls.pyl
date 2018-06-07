@@ -98,6 +98,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -114,6 +115,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -128,6 +130,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -180,6 +183,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -198,6 +202,7 @@
             {
               'device_os': 'MMB29Q',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
         },
@@ -213,6 +218,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -227,6 +233,7 @@
             {
               'device_os': 'KTU84Z',
               'device_type': 'flo',
+              'os': 'Android',
             },
           ],
           'expiration': 10800,
@@ -242,6 +249,7 @@
             {
               'device_os': 'LMY48I',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
           'expiration': 10800,
@@ -258,6 +266,7 @@
             {
               'device_os': 'LMY49B',
               'device_type': 'flo',
+              'os': 'Android',
             },
           ],
           'expiration': 10800,
@@ -275,6 +284,7 @@
             {
               'device_os': 'MMB29Q',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
           'hard_timeout': 960,
@@ -290,6 +300,7 @@
             {
               'device_os': 'MRA58Z',
               'device_type': 'flo',
+              'os': 'Android',
             },
           ],
           'expiration': 10800,
@@ -306,6 +317,7 @@
               'android_devices': '1',
               'device_os': 'NMF26U',
               'device_type': 'marlin',
+              'os': 'Android',
             },
           ],
           'hard_timeout': 1800,
@@ -327,6 +339,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -349,6 +362,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -360,6 +374,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
           'expiration': 36000,
@@ -377,6 +392,7 @@
             {
               'device_os': 'NRD91N',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
           'expiration': 10800,
@@ -393,6 +409,7 @@
             {
               'device_os': 'OPR3.170623.008',
               'device_type': 'marlin',
+              'os': 'Android',
             },
           ],
         },
@@ -424,6 +441,7 @@
           'dimension_sets': [
             {
               'device_type': 'coho',
+              'os': 'Android',
             },
           ],
         },
@@ -439,6 +457,7 @@
           'dimension_sets': [
             {
               'device_type': 'gce_x86',
+              'os': 'Android',
             },
           ],
         },
@@ -581,6 +600,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
         },
@@ -591,6 +611,7 @@
           'dimension_sets': [
             {
               'device_type': 'coho',
+              'os': 'Android',
             },
           ],
         },
@@ -616,6 +637,7 @@
             {
               'device_os': 'MMB29Q',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
         },
@@ -2293,6 +2315,7 @@
             {
               'device_os': 'MMB29Q',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
           'hard_timeout': 3600,
@@ -2331,6 +2354,7 @@
           'dimension_sets': [
             {
               'device_type': 'coho',
+              'os': 'Android',
             },
           ],
         },
@@ -2364,6 +2388,7 @@
             {
               'device_os': 'MMB29Q',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
           'hard_timeout': 960,
@@ -2790,6 +2815,7 @@
             {
               'device_os': 'MMB29Q',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
         },
@@ -2856,6 +2882,7 @@
             {
               'device_os': 'KTU84P',
               'device_type': 'hammerhead',
+              'os': 'Android',
             },
           ],
           'expiration': 10800,
@@ -2871,6 +2898,7 @@
             {
               'device_os': 'MMB29Q',
               'device_type': 'bullhead',
+              'os': 'Android',
             },
           ],
           'expiration': 10800,
