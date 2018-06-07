@@ -1237,6 +1237,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 
   NavigationObserver submit_observer(WebContents());
   // Submit the form via a tap on the submit button.
+  content::SimulateTapDownAt(WebContents(), gfx::Point(left + 1, top + 1));
   content::SimulateTapAt(WebContents(), gfx::Point(left + 1, top + 1));
   submit_observer.Wait();
   std::string query = WebContents()->GetURL().query();

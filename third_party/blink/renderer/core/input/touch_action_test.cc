@@ -336,36 +336,32 @@ void TouchActionTest::RunTestOnTree(
       SendTouchEvent(web_view, WebInputEvent::kPointerDown, window_point);
 
       AtomicString expected_action = element->getAttribute("expected-action");
-      if (expected_action == "auto") {
-        // Auto is the default - no action set.
-        EXPECT_EQ(0, client.TouchActionSetCount()) << failure_context_pos;
-        EXPECT_EQ(TouchAction::kTouchActionAuto, client.LastTouchAction())
-            << failure_context_pos;
-      } else {
-        // Should have received exactly one touch action.
-        EXPECT_EQ(1, client.TouchActionSetCount()) << failure_context_pos;
-        if (client.TouchActionSetCount()) {
-          if (expected_action == "none") {
-            EXPECT_EQ(TouchAction::kTouchActionNone, client.LastTouchAction())
-                << failure_context_pos;
-          } else if (expected_action == "pan-x") {
-            EXPECT_EQ(TouchAction::kTouchActionPanX, client.LastTouchAction())
-                << failure_context_pos;
-          } else if (expected_action == "pan-y") {
-            EXPECT_EQ(TouchAction::kTouchActionPanY, client.LastTouchAction())
-                << failure_context_pos;
-          } else if (expected_action == "pan-x-y") {
-            EXPECT_EQ((TouchAction::kTouchActionPan), client.LastTouchAction())
-                << failure_context_pos;
-          } else if (expected_action == "manipulation") {
-            EXPECT_EQ((TouchAction::kTouchActionManipulation),
-                      client.LastTouchAction())
-                << failure_context_pos;
-          } else {
-            FAIL() << "Unrecognized expected-action \""
-                   << expected_action.Ascii().data() << "\" "
-                   << failure_context_pos;
-          }
+      // Should have received exactly one touch action, even for auto.
+      EXPECT_EQ(1, client.TouchActionSetCount()) << failure_context_pos;
+      if (client.TouchActionSetCount()) {
+        if (expected_action == "auto") {
+          EXPECT_EQ(TouchAction::kTouchActionAuto, client.LastTouchAction())
+              << failure_context_pos;
+        } else if (expected_action == "none") {
+          EXPECT_EQ(TouchAction::kTouchActionNone, client.LastTouchAction())
+              << failure_context_pos;
+        } else if (expected_action == "pan-x") {
+          EXPECT_EQ(TouchAction::kTouchActionPanX, client.LastTouchAction())
+              << failure_context_pos;
+        } else if (expected_action == "pan-y") {
+          EXPECT_EQ(TouchAction::kTouchActionPanY, client.LastTouchAction())
+              << failure_context_pos;
+        } else if (expected_action == "pan-x-y") {
+          EXPECT_EQ((TouchAction::kTouchActionPan), client.LastTouchAction())
+              << failure_context_pos;
+        } else if (expected_action == "manipulation") {
+          EXPECT_EQ((TouchAction::kTouchActionManipulation),
+                    client.LastTouchAction())
+              << failure_context_pos;
+        } else {
+          FAIL() << "Unrecognized expected-action \""
+                 << expected_action.Ascii().data() << "\" "
+                 << failure_context_pos;
         }
       }
 

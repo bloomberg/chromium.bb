@@ -57,15 +57,23 @@ class CONTENT_EXPORT TouchActionFilter {
   // renderer for a touch start event that is currently in flight.
   void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action);
 
-  cc::TouchAction allowed_touch_action() const { return allowed_touch_action_; }
+  base::Optional<cc::TouchAction> allowed_touch_action() const {
+    return allowed_touch_action_;
+  }
 
   void SetForceEnableZoom(bool enabled) { force_enable_zoom_ = enabled; }
+
+  void OnHasTouchEventHandlers(bool has_handlers);
+  // TODO(https://crbug.com/850337): remove this testing specific function.
+  base::Optional<cc::TouchAction> ScrollingTouchActionForTesting() const;
 
  private:
   friend class MockRenderWidgetHost;
 
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
   bool FilterManipulationEventAndResetState();
+  void ReportTouchAction();
+  void SetTouchAction(cc::TouchAction touch_action);
 
   // Whether scroll and pinch gestures should be discarded due to touch-action.
   bool suppress_manipulation_events_;
@@ -83,12 +91,23 @@ class CONTENT_EXPORT TouchActionFilter {
   // Force enable zoom for Accessibility.
   bool force_enable_zoom_;
 
+  // Indicates whether this page has touch event handler or not. Set by
+  // InputRouterImpl::OnHasTouchEventHandler.
+  // TODO(https://crbug.com/850238): default to true or make it Optional.
+  bool has_touch_event_handler_ = false;
+
   // True if an active touch scroll gesture is in progress. i.e. after GSB and
   // before GSE.
   bool touchscreen_scroll_in_progress_ = false;
 
   // What touch actions are currently permitted.
-  cc::TouchAction allowed_touch_action_;
+  base::Optional<cc::TouchAction> allowed_touch_action_;
+
+  // The touch action that is used for the current scrolling gesture sequence.
+  // At the touch sequence end, the |allowed_touch_action| is reset while this
+  // remains set as the effective touch action, for the still in progress scroll
+  // sequence due to fling.
+  base::Optional<cc::TouchAction> scrolling_touch_action_;
 
   // Whitelisted touch action received from the compositor.
   base::Optional<cc::TouchAction> white_listed_touch_action_;

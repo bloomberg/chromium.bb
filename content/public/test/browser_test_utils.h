@@ -201,8 +201,14 @@ void SimulateGestureEvent(WebContents* web_contents,
                           const blink::WebGestureEvent& gesture_event,
                           const ui::LatencyInfo& latency);
 
-// Taps the screen at |point|.
+// Taps the screen at |point|, using gesture Tap or TapDown.
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point);
+void SimulateTapDownAt(WebContents* web_contents, const gfx::Point& point);
+
+// A helper function for SimulateTap(Down)At.
+void SimulateTouchGestureAt(WebContents* web_contents,
+                            const gfx::Point& point,
+                            blink::WebInputEvent::Type type);
 
 #if defined(USE_AURA)
 // Generates a TouchStart at |point|.
