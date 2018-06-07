@@ -535,8 +535,7 @@ static int main_loop(int argc, const char **argv_) {
   memset(&webm_ctx, 0, sizeof(webm_ctx));
   input.webm_ctx = &webm_ctx;
 #endif
-  struct ObuDecInputContext obu_ctx = { NULL, NULL, 0,
-                                        0,    0,    IGNORE_ENHANCEMENT_LAYERS };
+  struct ObuDecInputContext obu_ctx = { NULL, NULL, 0, 0, 0 };
 
   obu_ctx.avx_ctx = &aom_input_ctx;
   input.obu_ctx = &obu_ctx;
@@ -624,7 +623,6 @@ static int main_loop(int argc, const char **argv_) {
     } else if (arg_match(&arg, &oppointarg, argi)) {
       operating_point = arg_parse_int(&arg);
     } else if (arg_match(&arg, &outallarg, argi)) {
-      input.obu_ctx->last_layer_id = 0;
       output_all_layers = 1;
     } else {
       argj++;
