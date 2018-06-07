@@ -1,44 +1,36 @@
 <!DOCTYPE html>
-
-<style>
-    #before:before {
-        /* must be an inline-block */
-        display: inline-block;
-        content: 'before';
-    }
-    #start:after {
-        /* must be an inline-block */
-        display: inline-block;
-        content: 'after';
-    }
-</style>
-
-
-<p>Passes if it doesn't crash.</p>
-
-<div id="test">
-    <span id="before"><!-- no content can be here --></span>
-    <span>text</span>
-    <span id="start"><!-- no content can be here --></span>
-</div>
-
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../editing/assert_selection.js"></script>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsText();
+const kStyle = [
+  '<style>',
+    '#before::before {',
+    '  display: inline-block;',
+    '  content: "before";',
+    '}',
+    '#start::after {',
+    '  display: inline-block;',
+    '  content: "after";',
+    '}',
+  '</style>',
+].join('');
 
-var before = document.getElementById('before');
-var start = document.getElementById('start');
-var test = document.getElementById('test');
-
-// Select from the #start backwards to the start of the line.
-window.getSelection().collapse(document.getElementById('start'));
-window.getSelection().modify('extend', 'backward', 'lineBoundary')
-
-// Replace the selection with a break. This replaces #before, text,
-// #start with two <br>'s.
-document.designMode = 'on';
-document.execCommand('InsertLineBreak');
-
-// Crash during tear down.
-test.innerHTML = "Both pseudos have been removed: " + (before.offsetHeight == 0 && start.offsetHeight == 0);
+selection_test(
+  // Note: newline characters are significant. When we omit them, the result
+  // HTML has both #before and #start.
+  [
+    kStyle,
+    '<div contenteditable>\n',
+      '<span id="before"></span>|',
+      '<span>text</span>',
+     '^<span id="start"></span>\n',
+    '</div>',
+  ].join(''),
+  'insertLineBreak',
+  [
+    kStyle,
+    '<div contenteditable><br>|<br></div>',
+  ].join(''),
+  'Replace selection with BR');
 </script>
