@@ -42,6 +42,8 @@ namespace blink {
 
 class SimpleFontData;
 
+// This struct should be TriviallyCopyable so that std::copy() is equivalent to
+// memcpy.
 struct HarfBuzzRunGlyphData {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -109,40 +111,67 @@ struct ShapeResult::RunInfo {
     return sizeof(this) + glyph_data_.size() * sizeof(HarfBuzzRunGlyphData);
   }
 
+  // Represents a range of HarfBuzzRunGlyphData. |begin| and |end| follow the
+  // iterator pattern; i.e., |begin| is lower or equal to |end| in the address
+  // space regardless of LTR/RTL. |begin| is inclusive, |end| is exclusive.
+  struct GlyphDataRange {
+    HarfBuzzRunGlyphData* begin;
+    HarfBuzzRunGlyphData* end;
+  };
+
+  // Find the range of HarfBuzzRunGlyphData for the specified character index
+  // range. This function uses binary search twice, hence O(2 log n).
+  GlyphDataRange FindGlyphDataRange(unsigned start_character_index,
+                                    unsigned end_character_index) {
+    const auto comparer = [](const HarfBuzzRunGlyphData& glyph_data,
+                             unsigned index) {
+      return glyph_data.character_index < index;
+    };
+    if (!Rtl()) {
+      HarfBuzzRunGlyphData* start_glyph =
+          std::lower_bound(glyph_data_.begin(), glyph_data_.end(),
+                           start_character_index, comparer);
+      if (UNLIKELY(start_glyph == glyph_data_.end()))
+        return {nullptr, nullptr};
+      HarfBuzzRunGlyphData* end_glyph = std::lower_bound(
+          start_glyph, glyph_data_.end(), end_character_index, comparer);
+      return {start_glyph, end_glyph};
+    }
+
+    // RTL needs to use reverse iterators because there maybe multiple glyphs
+    // for a character, and we want to find the first one in the logical order.
+    auto start_glyph =
+        std::lower_bound(glyph_data_.rbegin(), glyph_data_.rend(),
+                         start_character_index, comparer);
+    if (UNLIKELY(start_glyph == glyph_data_.rend()))
+      return {nullptr, nullptr};
+    auto end_glyph = std::lower_bound(start_glyph, glyph_data_.rend(),
+                                      end_character_index, comparer);
+    // Convert reverse iterators to pointers. Then increment to make |begin|
+    // inclusive and |end| exclusive.
+    return {&*end_glyph + 1, &*start_glyph + 1};
+  }
+
   // Creates a new RunInfo instance representing a subset of the current run.
   std::unique_ptr<RunInfo> CreateSubRun(unsigned start, unsigned end) {
     DCHECK(end > start);
     unsigned number_of_characters = std::min(end - start, num_characters_);
+    auto glyphs = FindGlyphDataRange(start, end);
+    unsigned number_of_glyphs = std::distance(glyphs.begin, glyphs.end);
 
-    // This is incorrect but is a resonable guess for the initial size of the
-    // glyph_data_ vector. It'll be resized once we've determined the number of
-    // glyphs in the sub run.
-    unsigned number_of_glyphs = number_of_characters;
     auto run = std::make_unique<RunInfo>(
         font_data_.get(), direction_, canvas_rotation_, script_,
         start_index_ + start, number_of_glyphs, number_of_characters);
 
-    number_of_glyphs = 0;
-    float total_advance = 0;
-    ForEachGlyphInRange(
-        0, start_index_ + start, start_index_ + end, 0,
-        [&](const HarfBuzzRunGlyphData& glyph_data, float, uint16_t) -> bool {
-          if (UNLIKELY(run->glyph_data_.size() == number_of_glyphs))
-            run->glyph_data_.resize(run->glyph_data_.size() * 2);
-          auto& sub_glyph = run->glyph_data_[number_of_glyphs++];
-          sub_glyph.glyph = glyph_data.glyph;
-          sub_glyph.character_index = glyph_data.character_index - start;
-          sub_glyph.safe_to_break_before = glyph_data.safe_to_break_before;
-          sub_glyph.advance = glyph_data.advance;
-          sub_glyph.offset = glyph_data.offset;
-          total_advance += glyph_data.advance;
-          return true;
-        });
+    static_assert(base::is_trivially_copyable<HarfBuzzRunGlyphData>::value,
+                  "HarfBuzzRunGlyphData should be trivially copyable");
+    std::copy(glyphs.begin, glyphs.end, run->glyph_data_.begin());
 
-    // Shrink glyph_data_ as the number of glyphs in the sub run is likely
-    // smaller than in the original.
-    DCHECK(run->glyph_data_.size() >= number_of_glyphs);
-    run->glyph_data_.resize(number_of_glyphs);
+    float total_advance = 0;
+    for (HarfBuzzRunGlyphData& glyph_data : run->glyph_data_) {
+      glyph_data.character_index -= start;
+      total_advance += glyph_data.advance;
+    }
 
     run->width_ = total_advance;
     run->num_characters_ = number_of_characters;

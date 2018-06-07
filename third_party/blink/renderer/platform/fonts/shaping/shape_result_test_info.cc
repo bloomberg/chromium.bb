@@ -13,6 +13,11 @@ unsigned ShapeResultTestInfo::NumberOfRunsForTesting() const {
   return runs_.size();
 }
 
+ShapeResult::RunInfo& ShapeResultTestInfo::RunInfoForTesting(
+    unsigned run_index) const {
+  return *runs_[run_index];
+}
+
 bool ShapeResultTestInfo::RunInfoForTesting(unsigned run_index,
                                             unsigned& start_index,
                                             unsigned& num_characters,
