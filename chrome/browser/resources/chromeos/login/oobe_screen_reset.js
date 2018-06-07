@@ -105,18 +105,16 @@ login.createScreen('ResetScreen', 'reset', function() {
       this.context.addObserver(
           CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, function(is_confirmational) {
             if (is_confirmational) {
-              console.log(self.context.get(CONTEXT_KEY_SCREEN_STATE, 0));
               if (self.context.get(CONTEXT_KEY_SCREEN_STATE, 0) !=
-                  self.RESET_SCREEN_STATE.POWERWASH_PROPOSAL)
+                  self.RESET_SCREEN_STATE.POWERWASH_PROPOSAL) {
                 return;
-              console.log(self);
+              }
               reset.ConfirmResetOverlay.getInstance().initializePage();
               if (!$('reset-confirm-overlay-md').hidden)
-                $('reset-confirm-overlay-md').showModal();
+                $('reset-confirm-overlay-md').open();
             } else {
               $('overlay-reset').setAttribute('hidden', true);
-              if ($('reset-confirm-overlay-md').open)
-                $('reset-confirm-overlay-md').close();
+              $('reset-confirm-overlay-md').close();
             }
           });
 

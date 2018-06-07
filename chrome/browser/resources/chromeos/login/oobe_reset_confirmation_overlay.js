@@ -14,12 +14,14 @@ Polymer({
     isPowerwashView_: Boolean,
   },
 
-  showModal: function() {
-    this.$.dialog.showModal();
+  open: function() {
+    if (!this.$.dialog.open)
+      this.$.dialog.showModal();
   },
 
   close: function() {
-    this.$.dialog.close();
+    if (this.$.dialog.open)
+      this.$.dialog.close();
   },
 
   /**
