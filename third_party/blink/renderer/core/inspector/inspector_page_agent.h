@@ -154,6 +154,8 @@ class CORE_EXPORT InspectorPageAgent final
                                          int* execution_context_id) override;
   protocol::Response setFontFamilies(
       std::unique_ptr<protocol::Page::FontFamilies>) override;
+  protocol::Response setFontSizes(
+      std::unique_ptr<protocol::Page::FontSizes>) override;
 
   // InspectorInstrumentation API
   void DidClearDocumentOfWindowObject(LocalFrame*);
