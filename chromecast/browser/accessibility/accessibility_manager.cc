@@ -66,5 +66,10 @@ void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
   // TODO(rdaum): Implement
 }
 
+aura::WindowTreeHost* AccessibilityManager::window_tree_host() const {
+  DCHECK(window_tree_host_);
+  return window_tree_host_;
+}
+
 }  // namespace shell
 }  // namespace chromecast

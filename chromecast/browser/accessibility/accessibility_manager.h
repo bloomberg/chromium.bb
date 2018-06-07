@@ -56,10 +56,14 @@ class AccessibilityManager {
   // touch events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
 
+  // Get the window tree host this AccessibilityManager was created with.
+  aura::WindowTreeHost* window_tree_host() const;
+
  private:
   std::unique_ptr<FocusRingController> focus_ring_controller_;
   std::unique_ptr<AccessibilityFocusRingController>
       accessibility_focus_ring_controller_;
+  aura::WindowTreeHost* window_tree_host_;
 };
 
 }  // namespace shell
