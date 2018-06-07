@@ -17,10 +17,8 @@ enum class NavigationActionInitiationType {
   // there is no way to detect if the navigationAction initiator by examining
   // the WKNavigationAction fields.
   kUnknownInitiator = 0,
-  // The navigation action is initiated by the user.
+  // The navigation action is a link click initiated by the user.
   kUserInitiated,
-  // The navigation action is initiated by by page script.
-  kScriptInitiated,
 };
 
 // Returns the WKNavigationAction initiation type.

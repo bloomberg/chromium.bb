@@ -28,6 +28,7 @@ NavigationActionInitiationType GetNavigationActionInitiationType(
 // Example description where the syntheticClickType is set:
 // "<classname: 0x123124; navigationType = 2; syntheticClickType = 1;
 //  position x = 90.20 y = 10.29 request = null; ..>"
+// SyntheticClickType still can be 0 for user-initiated actions.
 NavigationActionInitiationType
 GetNavigationActionInitiationTypeWithVoiceOverOff(
     NSString* action_description) {
@@ -49,7 +50,7 @@ GetNavigationActionInitiationTypeWithVoiceOverOff(
   // TwoFingerTap}.
   int click_type = [action_description substringWithRange:match_range].intValue;
   return click_type ? NavigationActionInitiationType::kUserInitiated
-                    : NavigationActionInitiationType::kScriptInitiated;
+                    : NavigationActionInitiationType::kUnknownInitiator;
 }
 
 // Returns the NavigationAction initiation type based on the string description
@@ -60,6 +61,7 @@ GetNavigationActionInitiationTypeWithVoiceOverOff(
 // Example description where only position is set:
 // "<classname: 0x121124; navigationType = 1; syntheticClickType = 0;
 //  position x = 90.20 y = 10.29 request = null; ..>"
+// Both coordinates still can be 0 for user-initiated actions.
 NavigationActionInitiationType GetNavigationActionInitiationTypeWithVoiceOverOn(
     NSString* action_description) {
   NSRegularExpression* position_regex = [NSRegularExpression
@@ -86,7 +88,7 @@ NavigationActionInitiationType GetNavigationActionInitiationTypeWithVoiceOverOn(
           .floatValue;
   return (position_y || position_x)
              ? NavigationActionInitiationType::kUserInitiated
-             : NavigationActionInitiationType::kScriptInitiated;
+             : NavigationActionInitiationType::kUnknownInitiator;
 }
 
 }  // namespace web

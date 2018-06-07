@@ -4089,21 +4089,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
   GURL openerURL =
       referrer.length ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
 
-  bool initiatedByUser = web::GetNavigationActionInitiationType(action) ==
-                         web::NavigationActionInitiationType::kUserInitiated;
-  if (action.navigationType == WKNavigationTypeLinkActivated) {
-    // Link with target="_blank" navigation. |initiatedByUser| reliably
-    // indicates the presence of the user gesture.
-  } else {
-    DCHECK(action.navigationType == WKNavigationTypeOther ||
-           action.navigationType == WKNavigationTypeFormSubmitted)
-        << "unexpected navigation type: " << action.navigationType;
-    // Form submission with target="_blank" or window.open() navigation (with or
-    // without user gesture). There is no reliable way to tell if there was a
-    // user gesture, so this code checks if user has recently tapped on web
-    // view. TODO(crbug.com/809706): Remove the usage of -userIsInteracting when
-    // rdar://19989909 is fixed.
-    initiatedByUser = initiatedByUser || [self userIsInteracting];
+  // There is no reliable way to tell if there was a user gesture, so this code
+  // checks if user has recently tapped on web view. TODO(crbug.com/809706):
+  // Remove the usage of -userIsInteracting when rdar://19989909 is fixed.
+  bool initiatedByUser = [self userIsInteracting];
+
+  if (UIAccessibilityIsVoiceOverRunning()) {
+    // -userIsInteracting returns NO if VoiceOver is On. Inspect action's
+    // description, which may contain the information about user gesture for
+    // certain link clicks.
+    initiatedByUser = initiatedByUser ||
+                      web::GetNavigationActionInitiationTypeWithVoiceOverOn(
+                          action.description) ==
+                          web::NavigationActionInitiationType::kUserInitiated;
   }
 
   WebState* childWebState =

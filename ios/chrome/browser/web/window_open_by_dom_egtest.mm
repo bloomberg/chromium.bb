@@ -28,6 +28,7 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::ExecuteJavaScript;
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
@@ -86,8 +87,6 @@ id<GREYMatcher> PopupBlocker() {
 // Tests that sessionStorage content is available for windows opened by DOM via
 // target="_blank" links.
 - (void)testLinkWithBlankTargetSessionStorage {
-  using chrome_test_util::ExecuteJavaScript;
-
   NSError* error = nil;
   ExecuteJavaScript(@"sessionStorage.setItem('key', 'value');", &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
@@ -113,8 +112,12 @@ id<GREYMatcher> PopupBlocker() {
 
 // Tests executing script that clicks a link with target="_blank".
 - (void)testLinkWithBlankTargetWithoutUserGesture {
-  GREYAssert(TapWebViewElementWithId("webScenarioWindowOpenRegularLink"),
-             @"Failed to tap \"webScenarioWindowOpenRegularLink\"");
+  chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_BLOCK);
+  NSError* error = nil;
+  ExecuteJavaScript(
+      @"document.getElementById('webScenarioWindowOpenRegularLink').click()",
+      &error);
+  GREYAssert(!error, @"Failed to tap 'webScenarioWindowOpenRegularLink'");
   [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:PopupBlocker()];
   [ChromeEarlGrey waitForMainTabCount:1];
 }
