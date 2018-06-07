@@ -43,6 +43,8 @@ struct NGLineHeightMetrics {
   // Unite a metrics for an inline box to a metrics for a line box.
   void Unite(const NGLineHeightMetrics&);
 
+  void operator+=(const NGLineHeightMetrics&);
+
   // Ascent and descent of glyphs, or synthesized for replaced elements.
   // Then united to compute 'text-top' and 'text-bottom' of line boxes.
   LayoutUnit ascent;

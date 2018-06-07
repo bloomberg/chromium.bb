@@ -15,12 +15,41 @@
 
 namespace blink {
 
+namespace {
+
+NGLineHeightMetrics ComputeEmphasisMarkOutsets(const ComputedStyle& style) {
+  if (style.GetTextEmphasisMark() == TextEmphasisMark::kNone)
+    return NGLineHeightMetrics();
+
+  const Font& font = style.GetFont();
+  LayoutUnit emphasis_mark_height =
+      LayoutUnit(font.EmphasisMarkHeight(style.TextEmphasisMarkString()));
+  DCHECK_GT(emphasis_mark_height, LayoutUnit());
+  return style.GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver
+             ? NGLineHeightMetrics(emphasis_mark_height, LayoutUnit())
+             : NGLineHeightMetrics(LayoutUnit(), emphasis_mark_height);
+}
+
+}  // namespace
+
 void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& style,
                                           FontBaseline baseline_type) {
   text_metrics = NGLineHeightMetrics(style, baseline_type);
   text_top = -text_metrics.ascent;
   text_height = text_metrics.LineHeight();
-  text_metrics.AddLeading(style.ComputedLineHeightAsFixed());
+
+  NGLineHeightMetrics emphasis_marks_outsets =
+      ComputeEmphasisMarkOutsets(style);
+  if (emphasis_marks_outsets.IsEmpty()) {
+    text_metrics.AddLeading(style.ComputedLineHeightAsFixed());
+  } else {
+    NGLineHeightMetrics emphasis_marks_metrics = text_metrics;
+    emphasis_marks_metrics += emphasis_marks_outsets;
+    text_metrics.AddLeading(style.ComputedLineHeightAsFixed());
+    text_metrics.Unite(emphasis_marks_metrics);
+    // TODO: Is this correct to include into text_metrics? How do we use
+    // text_metrics after this point?
+  }
 
   metrics.Unite(text_metrics);
 
