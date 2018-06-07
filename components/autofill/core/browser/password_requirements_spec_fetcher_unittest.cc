@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/password_requirements_spec_fetcher.h"
+#include "components/autofill/core/browser/password_requirements_spec_fetcher_impl.h"
 
 #include "base/logging.h"
 #include "base/test/bind_test_util.h"
@@ -22,7 +22,7 @@ namespace {
   "https://www.gstatic.com/chrome/autofill/password_generation_specs/"
 
 TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
-  using ResultCode = PasswordRequirementsSpecFetcher::ResultCode;
+  using ResultCode = PasswordRequirementsSpecFetcherImpl::ResultCode;
 
   // An empty spec is returned for all error cases (time outs, server responding
   // with anything but HTTP_OK).
@@ -217,8 +217,8 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
     PasswordRequirementsSpec returned_spec;
 
     // Trigger the network request and record data of the callback.
-    PasswordRequirementsSpecFetcher fetcher(test.generation, test.prefix_length,
-                                            test.timeout);
+    PasswordRequirementsSpecFetcherImpl fetcher(
+        test.generation, test.prefix_length, test.timeout);
     auto callback =
         base::BindLambdaForTesting([&](const PasswordRequirementsSpec& spec) {
           callback_called = true;
