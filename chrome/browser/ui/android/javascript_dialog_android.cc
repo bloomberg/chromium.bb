@@ -21,11 +21,6 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
-// JavaScriptDialog:
-JavaScriptDialog::JavaScriptDialog(content::WebContents* parent_web_contents) {
-  parent_web_contents->GetDelegate()->ActivateContents(parent_web_contents);
-}
-
 JavaScriptDialog::~JavaScriptDialog() = default;
 
 base::WeakPtr<JavaScriptDialog> JavaScriptDialog::Create(
@@ -106,9 +101,7 @@ JavaScriptDialogAndroid::JavaScriptDialogAndroid(
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     content::JavaScriptDialogManager::DialogClosedCallback dialog_callback)
-    : JavaScriptDialog(parent_web_contents),
-      dialog_callback_(std::move(dialog_callback)),
-      weak_factory_(this) {
+    : dialog_callback_(std::move(dialog_callback)), weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   JNIEnv* env = AttachCurrentThread();

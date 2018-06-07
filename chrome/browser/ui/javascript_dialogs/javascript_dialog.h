@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
-#if !defined(OS_ANDROID)
-class PopunderPreventer;
-#endif  // !defined(OS_ANDROID)
-
 class JavaScriptDialog {
  public:
   virtual ~JavaScriptDialog();
@@ -36,14 +32,6 @@ class JavaScriptDialog {
 
   // Returns the current value of the user input for a prompt dialog.
   virtual base::string16 GetUserInput() = 0;
-
- protected:
-  explicit JavaScriptDialog(content::WebContents* parent_web_contents);
-
- private:
-#if !defined(OS_ANDROID)
-  std::unique_ptr<PopunderPreventer> popunder_preventer_;
-#endif  // !defined(OS_ANDROID)
 };
 
 #endif  // CHROME_BROWSER_UI_JAVASCRIPT_DIALOGS_JAVASCRIPT_DIALOG_H_
