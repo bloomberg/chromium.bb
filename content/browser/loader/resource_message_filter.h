@@ -81,6 +81,7 @@ class CONTENT_EXPORT ResourceMessageFilter
                             network::mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
+  // |request| could be queued when the channel has not been connected yet.
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
   int child_id() const;
@@ -116,6 +117,7 @@ class CONTENT_EXPORT ResourceMessageFilter
   scoped_refptr<ResourceRequesterInfo> requester_info_;
 
   std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory_;
+  std::vector<network::mojom::URLLoaderFactoryRequest> queued_clone_requests_;
 
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
 

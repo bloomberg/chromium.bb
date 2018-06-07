@@ -146,6 +146,10 @@ void ResourceMessageFilter::CreateLoaderAndStart(
 
 void ResourceMessageFilter::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
+  if (!url_loader_factory_) {
+    queued_clone_requests_.emplace_back(std::move(request));
+    return;
+  }
   url_loader_factory_->Clone(std::move(request));
 }
 
@@ -184,6 +188,12 @@ void ResourceMessageFilter::InitializeOnIOThread() {
                             base::Unretained(ResourceDispatcherHostImpl::Get()),
                             requester_info_->child_id()));
   }
+
+  std::vector<network::mojom::URLLoaderFactoryRequest> requests =
+      std::move(queued_clone_requests_);
+  for (auto& request : requests)
+    Clone(std::move(request));
+  queued_clone_requests_.clear();
 }
 
 }  // namespace content
