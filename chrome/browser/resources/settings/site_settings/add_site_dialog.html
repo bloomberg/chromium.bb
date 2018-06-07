@@ -14,12 +14,7 @@
   <template>
     <style include="settings-shared">
       #incognito {
-        margin-bottom: 2px;
-        margin-top: 15px;
-      }
-
-      [invisible] {
-        visibility: hidden;
+        padding-bottom: 10px;
       }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}">
@@ -31,7 +26,8 @@
             error-message="$i18n{notValidWebAddress}" spellcheck="false"
             autofocus></paper-input>
         <cr-checkbox id="incognito"
-            invisible$="[[!showIncognitoSessionOnly_]]">
+            hidden$="[[!showIncognitoSessionOnly_(hasIncognito,
+                contentSetting)]]">
           $i18n{incognitoSiteOnly}
         </cr-checkbox>
       </div>
