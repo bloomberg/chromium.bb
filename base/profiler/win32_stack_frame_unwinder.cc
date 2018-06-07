@@ -67,7 +67,7 @@ PRUNTIME_FUNCTION Win32UnwindFunctions::LookupFunctionEntry(
     DWORD64 program_counter,
     PDWORD64 image_base) {
 #ifdef _WIN64
-  return RtlLookupFunctionEntry(program_counter, image_base, nullptr);
+  return ::RtlLookupFunctionEntry(program_counter, image_base, nullptr);
 #else
   NOTREACHED();
   return nullptr;
@@ -82,9 +82,9 @@ void Win32UnwindFunctions::VirtualUnwind(DWORD64 image_base,
   void* handler_data;
   ULONG64 establisher_frame;
   KNONVOLATILE_CONTEXT_POINTERS nvcontext = {};
-  RtlVirtualUnwind(UNW_FLAG_NHANDLER, image_base, program_counter,
-                   runtime_function, context, &handler_data,
-                   &establisher_frame, &nvcontext);
+  ::RtlVirtualUnwind(UNW_FLAG_NHANDLER, image_base, program_counter,
+                     runtime_function, context, &handler_data,
+                     &establisher_frame, &nvcontext);
 #else
   NOTREACHED();
 #endif
