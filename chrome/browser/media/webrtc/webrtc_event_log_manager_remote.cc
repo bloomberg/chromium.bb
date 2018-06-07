@@ -35,9 +35,6 @@ namespace {
 const base::TimeDelta kDefaultProactivePruningDelta =
     base::TimeDelta::FromMinutes(5);
 
-const base::FilePath::CharType kRemoteBoundLogSubDirectory[] =
-    FILE_PATH_LITERAL("webrtc_event_logs");
-
 // Purge from local disk a log file which could not be properly started
 // (e.g. error encountered when attempting to write the log header).
 void DiscardLogFile(base::File* file, const base::FilePath& file_path) {
@@ -123,8 +120,7 @@ WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
               ::switches::kWebRtcRemoteEventLogUploadNoSuppression)),
       proactive_prune_scheduling_delta_(GetProactivePruningDelta()),
       proactive_prune_scheduling_started_(false),
-      observer_(observer),
-      uploader_factory_(new WebRtcEventLogUploaderImpl::Factory) {
+      observer_(observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DETACH_FROM_SEQUENCE(io_task_sequence_checker_);
   // Proactive pruning would not do anything at the moment; it will be started
@@ -139,14 +135,23 @@ WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
   // the same file.
 }
 
+void WebRtcRemoteEventLogManager::SetUrlRequestContextGetter(
+    net::URLRequestContextGetter* context_getter) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(!uploader_factory_);
+  uploader_factory_ =
+      std::make_unique<WebRtcEventLogUploaderImpl::Factory>(context_getter);
+}
+
 void WebRtcRemoteEventLogManager::EnableForBrowserContext(
     BrowserContextId browser_context_id,
     const base::FilePath& browser_context_dir) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(uploader_factory_) << "SetUrlRequestContextGetter() not called.";
   DCHECK(!BrowserContextEnabled(browser_context_id)) << "Already enabled.";
 
   const base::FilePath remote_bound_logs_dir =
-      GetLogsDirectoryPath(browser_context_dir);
+      GetRemoteBoundWebRtcEventLogsDir(browser_context_dir);
   if (!MaybeCreateLogsDirectory(remote_bound_logs_dir)) {
     LOG(WARNING)
         << "WebRtcRemoteEventLogManager couldn't create logs directory.";
@@ -296,7 +301,8 @@ void WebRtcRemoteEventLogManager::ClearCacheForBrowserContext(
     const base::Time& delete_begin,
     const base::Time& delete_end) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-  RemovePendingLogs(delete_begin, delete_end, browser_context_id);
+  MaybeRemovePendingLogs(delete_begin, delete_end, browser_context_id);
+  MaybeCancelUpload(delete_begin, delete_end, browser_context_id);
 }
 
 void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
@@ -354,20 +360,7 @@ void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
 void WebRtcRemoteEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
     std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-
   uploader_factory_ = std::move(uploader_factory);
-
-  // Unit tests would initially set a null uploader factory, so that files would
-  // be kept around. Some tests would later change to a different factory
-  // (e.g. one that always simulates upload failure); in that case, we should
-  // get rid of the null uploader, since it never terminates.
-  uploader_.reset();
-  MaybeStartUploading();
-}
-
-base::FilePath WebRtcRemoteEventLogManager::GetLogsDirectoryPath(
-    const base::FilePath& browser_context_dir) {
-  return browser_context_dir.Append(kRemoteBoundLogSubDirectory);
 }
 
 bool WebRtcRemoteEventLogManager::BrowserContextEnabled(
@@ -458,7 +451,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   // TODO(crbug.com/775415): Add a unit test for above comment.
   const std::string unique_filename =
       "event_log_" + std::to_string(base::RandUint64());
-  const base::FilePath base_path = GetLogsDirectoryPath(browser_context_dir);
+  const base::FilePath base_path =
+      GetRemoteBoundWebRtcEventLogsDir(browser_context_dir);
   const base::FilePath file_path = base_path.AppendASCII(unique_filename)
                                        .AddExtension(kRemoteBoundLogExtension);
 
@@ -544,7 +538,7 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
 
 void WebRtcRemoteEventLogManager::PrunePendingLogs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-  RemovePendingLogs(
+  MaybeRemovePendingLogs(
       base::Time::Min(),
       base::Time::Now() - kRemoteBoundWebRtcEventLogsMaxRetention);
 }
@@ -564,17 +558,15 @@ void WebRtcRemoteEventLogManager::RecurringPendingLogsPrune() {
       *proactive_prune_scheduling_delta_);
 }
 
-void WebRtcRemoteEventLogManager::RemovePendingLogs(
+void WebRtcRemoteEventLogManager::MaybeRemovePendingLogs(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     base::Optional<BrowserContextId> browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
-    const bool relevant_browser_content =
-        !browser_context_id || it->browser_context_id == browser_context_id;
-    if (relevant_browser_content &&
-        (delete_begin.is_null() || delete_begin <= it->last_modified) &&
-        (delete_end.is_null() || it->last_modified < delete_end)) {
+    if (LogFileMatchesFilter(*it, delete_begin, delete_end,
+                             browser_context_id)) {
       DVLOG(1) << "Removing " << it->path << ".";
       if (!base::DeleteFile(it->path, /*recursive=*/false)) {
         LOG(ERROR) << "Failed to delete " << it->path << ".";
@@ -585,6 +577,39 @@ void WebRtcRemoteEventLogManager::RemovePendingLogs(
       ++it;
     }
   }
+}
+
+void WebRtcRemoteEventLogManager::MaybeCancelUpload(
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    base::Optional<BrowserContextId> browser_context_id) {
+  if (uploader_) {
+    const WebRtcLogFileInfo& info = uploader_->GetWebRtcLogFileInfo();
+    if (LogFileMatchesFilter(info, delete_begin, delete_end,
+                             browser_context_id)) {
+      // Cancel the upload. (If the upload has asynchronously completed by now,
+      // the uploader must have posted a task back to our queue to delete it
+      // and move on to the next file; cancellation is reported as unsucessful
+      // in that case.)
+      const bool cancelled = uploader_->Cancel();
+      if (cancelled) {
+        uploader_.reset();
+        MaybeStartUploading();
+      }
+    }
+  }
+}
+
+bool WebRtcRemoteEventLogManager::LogFileMatchesFilter(
+    const WebRtcLogFileInfo& log,
+    const base::Time& range_begin,
+    const base::Time& range_end,
+    base::Optional<BrowserContextId> browser_context_id) const {
+  if (browser_context_id && *browser_context_id != log.browser_context_id) {
+    return false;
+  }
+  return (range_begin.is_null() || range_begin <= log.last_modified) &&
+         (range_end.is_null() || log.last_modified < range_end);
 }
 
 bool WebRtcRemoteEventLogManager::AdditionalActiveLogAllowed(
@@ -642,7 +667,7 @@ void WebRtcRemoteEventLogManager::MaybeStartUploading() {
   // TODO(crbug.com/814362): Delay the upload's start.
   // TODO(crbug.com/775415): Rename the file before uploading, so that we would
   // not retry the upload after restarting Chrome, if the upload is interrupted.
-  uploader_ = uploader_factory_->Create(pending_logs_.begin()->path, this);
+  uploader_ = uploader_factory_->Create(*pending_logs_.begin(), this);
   pending_logs_.erase(pending_logs_.begin());
 }
 

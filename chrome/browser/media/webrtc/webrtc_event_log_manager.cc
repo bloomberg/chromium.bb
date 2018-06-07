@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,9 +20,6 @@ using BrowserThread = content::BrowserThread;
 using RenderProcessHost = content::RenderProcessHost;
 
 using BrowserContextId = WebRtcEventLogManager::BrowserContextId;
-
-const BrowserContextId kNullBrowserContextId =
-    reinterpret_cast<BrowserContextId>(nullptr);
 
 class PeerConnectionTrackerProxyImpl
     : public WebRtcEventLogManager::PeerConnectionTrackerProxy {
@@ -63,19 +61,6 @@ const size_t kWebRtcEventLogManagerUnlimitedFileSize = 0;
 WebRtcEventLogManager* WebRtcEventLogManager::g_webrtc_event_log_manager =
     nullptr;
 
-BrowserContextId WebRtcEventLogManager::GetBrowserContextId(
-    const BrowserContext* browser_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return reinterpret_cast<BrowserContextId>(browser_context);
-}
-
-BrowserContextId WebRtcEventLogManager::GetBrowserContextId(
-    int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const BrowserContext* browser_context = GetBrowserContext(render_process_id);
-  return GetBrowserContextId(browser_context);
-}
-
 std::unique_ptr<WebRtcEventLogManager>
 WebRtcEventLogManager::CreateSingletonInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -94,6 +79,7 @@ WebRtcEventLogManager::WebRtcEventLogManager()
       remote_logs_observer_(nullptr),
       local_logs_manager_(this),
       pc_tracker_proxy_(new PeerConnectionTrackerProxyImpl),
+      url_request_context_getter_was_set_(false),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
@@ -125,14 +111,30 @@ void WebRtcEventLogManager::EnableForBrowserContext(
   DCHECK(browser_context);
   CHECK(!browser_context->IsOffTheRecord());
 
+  // system_request_context() not available during instantiation; we get it
+  // when the first profile is loaded, which is also the earliest time when
+  // it could be needed.
+  net::URLRequestContextGetter* url_request_context_getter;
+  if (remote_logs_manager_ && !url_request_context_getter_was_set_) {
+    url_request_context_getter = g_browser_process->system_request_context();
+    DCHECK(url_request_context_getter);
+    url_request_context_getter_was_set_ = true;
+  } else {
+    url_request_context_getter = nullptr;
+  }
+
   // The object is destroyed by ~BrowserProcessImpl(), so base::Unretained(this)
   // will not be dereferenced after destruction.
+  // |url_request_context_getter| is owned by IOThread. The internal task runner
+  // that uses it (|task_runner_|) stops before IOThread dies, so we can trust
+  // that |url_request_context_getter| will not be used after destruction.
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&WebRtcEventLogManager::EnableForBrowserContextInternal,
-                     base::Unretained(this),
-                     GetBrowserContextId(browser_context),
-                     browser_context->GetPath(), std::move(reply)));
+      base::BindOnce(
+          &WebRtcEventLogManager::EnableForBrowserContextInternal,
+          base::Unretained(this), GetBrowserContextId(browser_context),
+          browser_context->GetPath(),
+          base::Unretained(url_request_context_getter), std::move(reply)));
 }
 
 void WebRtcEventLogManager::DisableForBrowserContext(
@@ -503,11 +505,15 @@ void WebRtcEventLogManager::OnLoggingTargetStopped(LoggingTarget target,
 void WebRtcEventLogManager::EnableForBrowserContextInternal(
     BrowserContextId browser_context_id,
     const base::FilePath& browser_context_dir,
+    net::URLRequestContextGetter* context_getter,
     base::OnceClosure reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_NE(browser_context_id, kNullBrowserContextId);
 
   if (remote_logs_manager_) {
+    if (context_getter) {
+      remote_logs_manager_->SetUrlRequestContextGetter(context_getter);
+    }
     remote_logs_manager_->EnableForBrowserContext(browser_context_id,
                                                   browser_context_dir);
   }
