@@ -40,6 +40,14 @@ Status StubWebView::Reload(const Timeout* timeout) {
   return Status(kOk);
 }
 
+Status StubWebView::Freeze(const Timeout* timeout) {
+  return Status(kOk);
+}
+
+Status StubWebView::Resume(const Timeout* timeout) {
+  return Status(kOk);
+}
+
 Status StubWebView::SendCommand(const std::string& cmd,
                                 const base::DictionaryValue& params) {
   return Status(kOk);

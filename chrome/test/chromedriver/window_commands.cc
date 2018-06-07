@@ -558,6 +558,28 @@ Status ExecuteRefresh(Session* session,
   return Status(kOk);
 }
 
+Status ExecuteFreeze(Session* session,
+                     WebView* web_view,
+                     const base::DictionaryValue& params,
+                     std::unique_ptr<base::Value>* value,
+                     Timeout* timeout) {
+  timeout->SetDuration(session->page_load_timeout);
+  Status status = web_view->Freeze(timeout);
+  return status;
+}
+
+Status ExecuteResume(Session* session,
+                     WebView* web_view,
+                     const base::DictionaryValue& params,
+                     std::unique_ptr<base::Value>* value,
+                     Timeout* timeout) {
+  timeout->SetDuration(session->page_load_timeout);
+  Status status = web_view->Resume(timeout);
+  if (status.IsError())
+    return status;
+  return Status(kOk);
+}
+
 Status ExecuteMouseMoveTo(Session* session,
                           WebView* web_view,
                           const base::DictionaryValue& params,

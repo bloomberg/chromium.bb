@@ -113,6 +113,10 @@ HttpHandler::HttpHandler(
 
       CommandMapping(kPost, "session/:sessionId/refresh",
                      WrapToCommand("Refresh", base::Bind(&ExecuteRefresh))),
+      CommandMapping(kPost, "session/:sessionId/goog/page/freeze",
+                     WrapToCommand("Freeze", base::Bind(&ExecuteFreeze))),
+      CommandMapping(kPost, "session/:sessionId/goog/page/resume",
+                     WrapToCommand("Resume", base::Bind(&ExecuteResume))),
       CommandMapping(kGet, "session/:sessionId/title",
                      WrapToCommand("GetTitle", base::Bind(&ExecuteGetTitle))),
       CommandMapping(kGet, "session/:sessionId/window",
