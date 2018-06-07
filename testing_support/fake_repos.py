@@ -736,6 +736,19 @@ deps = {
             ],
             'dep_type': 'cipd',
           },
+          'src/another_cipd_dep': {
+            'packages': [
+              {
+                'package': 'package1',
+                'version': '1.1-cr0',
+              },
+              {
+                'package': 'package2',
+                'version': '1.13',
+              },
+            ],
+            'dep_type': 'cipd',
+          },
         }"""),
       'origin': 'git/repo_14@2\n'
     })

@@ -1349,6 +1349,21 @@ class GClientSmokeGIT(GClientSmokeBase):
         '    "url": "' + self.git_base + 'repo_14",',
         '  },',
         '',
+        '  # src -> src/another_cipd_dep:package1',
+        '  "src/another_cipd_dep": {',
+        '    "packages": [',
+        '      {',
+        '        "package": "package1",',
+        '        "version": "1.1-cr0",',
+        '      },',
+        '      {',
+        '        "package": "package2",',
+        '        "version": "1.13",',
+        '      },',
+        '    ],',
+        '    "dep_type": "cipd",',
+        '  },',
+        '',
         '  # src -> src/cipd_dep:package0',
         '  "src/cipd_dep": {',
         '    "packages": [',
@@ -1709,6 +1724,31 @@ class BlinkDEPSTransitionSmokeTest(GClientSmokeBase):
     self.CheckStatusPreMergePoint()
     subprocess2.check_call(
         ['git', 'show-ref', '-q', '--verify', 'refs/heads/foo'], cwd=self.blink)
+
+
+class GClientSmokeCipd(GClientSmokeBase):
+  def setUp(self):
+    super(GClientSmokeCipd, self).setUp()
+    self.enabled = self.FAKE_REPOS.set_up_git()
+    self.env['PATH'] = (os.path.join(ROOT_DIR, 'testing_support')
+                        + os.pathsep + self.env['PATH'])
+
+  def testSyncCipd(self):
+    self.gclient(['config', self.git_base + 'repo_14', '--name', 'src'])
+    self.gclient(['sync'])
+
+    with open(os.path.join(self.root_dir, '.cipd', 'ensure')) as f:
+      contents = f.read()
+
+    self.assertEqual([
+        '@Subdir src/another_cipd_dep',
+        'package1 1.1-cr0',
+        'package2 1.13',
+        '',
+        '@Subdir src/cipd_dep',
+        'package0 0.1',
+        '',
+    ], contents.splitlines())
 
 
 if __name__ == '__main__':
