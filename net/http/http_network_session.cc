@@ -455,6 +455,7 @@ void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
     server_config->channel_id_enabled = false;
   } else {
     server_config->channel_id_enabled = params_.enable_channel_id;
+    proxy_config->channel_id_enabled = params_.enable_channel_id;
     if (params_.enable_token_binding && context_.channel_id_service) {
       server_config->token_binding_params.push_back(TB_PARAM_ECDSAP256);
     }
