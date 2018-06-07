@@ -41,6 +41,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -1278,25 +1279,30 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   return 100;
 #endif
 
-  // On other platforms, we calculate the maximum number of renderer process
-  // hosts according to the amount of installed memory as reported by the OS.
-  // The calculation assumes that you want the renderers to use half of the
-  // installed RAM and assuming that each WebContents uses ~40MB.  If you modify
-  // this assumption, you need to adjust the ThirtyFourTabs test to match the
-  // expected number of processes.
+  // On other platforms, calculate the maximum number of renderer process hosts
+  // according to the amount of installed memory as reported by the OS, along
+  // with some hard-coded limits. The calculation assumes that the renderers
+  // will use up to half of the installed RAM and assumes that each WebContents
+  // uses |kEstimatedWebContentsMemoryUsage| MB. If this assumption changes, the
+  // ThirtyFourTabs test needs to be adjusted to match the expected number of
+  // processes.
   //
-  // With the given amounts of installed memory below on a 32-bit CPU, the
-  // maximum renderer count will roughly be as follows:
+  // Using the above assumptions, with the given amounts of installed memory
+  // below on a 64-bit CPU, the maximum renderer count based on available RAM
+  // alone will be as follows:
   //
-  //   128 MB -> 3
-  //   512 MB -> 6
-  //  1024 MB -> 12
-  //  4096 MB -> 51
-  // 16384 MB -> 82 (kMaxRendererProcessCount)
+  //   128 MB -> 1
+  //   512 MB -> 4
+  //  1024 MB -> 8
+  //  4096 MB -> 34
+  // 16384 MB -> 136
+  //
+  // Then the calculated value will be clamped by |kMinRendererProcessCount| and
+  // |kMaxRendererProcessCount|.
 
   static size_t max_count = 0;
   if (!max_count) {
-    const size_t kEstimatedWebContentsMemoryUsage =
+    static constexpr size_t kEstimatedWebContentsMemoryUsage =
 #if defined(ARCH_CPU_64_BITS)
         60;  // In MB
 #else
@@ -1305,9 +1311,9 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
     max_count = base::SysInfo::AmountOfPhysicalMemoryMB() / 2;
     max_count /= kEstimatedWebContentsMemoryUsage;
 
-    const size_t kMinRendererProcessCount = 3;
-    max_count = std::max(max_count, kMinRendererProcessCount);
-    max_count = std::min(max_count, kMaxRendererProcessCount);
+    static constexpr size_t kMinRendererProcessCount = 3;
+    max_count = base::ClampToRange(max_count, kMinRendererProcessCount,
+                                   kMaxRendererProcessCount);
   }
   return max_count;
 }
