@@ -2655,7 +2655,7 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
     RenderWidgetHostImpl* rwh =
         weak_popup->GetMainFrame()->GetRenderWidgetHost();
     DCHECK_EQ(main_frame_widget_route_id, rwh->GetRoutingID());
-    rwh->Send(new ViewMsg_Move_ACK(rwh->GetRoutingID()));
+    rwh->Send(new ViewMsg_SetBounds_ACK(rwh->GetRoutingID()));
   }
 }
 
@@ -5247,9 +5247,9 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
     delegate_->CloseContents(this);
 }
 
-void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
-  if (delegate_ && delegate_->IsPopupOrPanel(this))
-    delegate_->MoveContents(this, new_bounds);
+void WebContentsImpl::RequestSetBounds(const gfx::Rect& new_bounds) {
+  if (delegate_)
+    delegate_->SetContentsBounds(this, new_bounds);
 }
 
 void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,

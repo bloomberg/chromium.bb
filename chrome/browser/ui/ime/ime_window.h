@@ -111,9 +111,8 @@ class ImeWindow : public content::NotificationObserver,
                     const content::DropData& data,
                     blink::WebDragOperationsMask operations_allowed) override;
   void CloseContents(content::WebContents* source) override;
-  void MoveContents(content::WebContents* source,
-                    const gfx::Rect& pos) override;
-  bool IsPopupOrPanel(const content::WebContents* source) const override;
+  void SetContentsBounds(content::WebContents* source,
+                         const gfx::Rect& bounds) override;
 
   // Creates the native window.
   ImeNativeWindow* CreateNativeWindow(ImeWindow* ime_window,

@@ -89,8 +89,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
   void CloseContents(content::WebContents* source) override;
-  void MoveContents(content::WebContents* source,
-                    const gfx::Rect& pos) override;
+  void SetContentsBounds(content::WebContents* source,
+                         const gfx::Rect& bounds) override;
   bool DidAddMessageToConsole(content::WebContents* source,
                               int32_t level,
                               const base::string16& message,

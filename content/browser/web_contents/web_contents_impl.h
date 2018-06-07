@@ -600,7 +600,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void UpdateTargetURL(RenderViewHost* render_view_host,
                        const GURL& url) override;
   void Close(RenderViewHost* render_view_host) override;
-  void RequestMove(const gfx::Rect& new_bounds) override;
+  void RequestSetBounds(const gfx::Rect& new_bounds) override;
   void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) override;
   void RouteCloseEvent(RenderViewHost* rvh) override;
   bool DidAddMessageToConsole(int32_t level,

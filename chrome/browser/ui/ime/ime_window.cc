@@ -179,26 +179,22 @@ void ImeWindow::CloseContents(content::WebContents* source) {
   Close();
 }
 
-void ImeWindow::MoveContents(content::WebContents* source,
-                                 const gfx::Rect& pos) {
+void ImeWindow::SetContentsBounds(content::WebContents* source,
+                                  const gfx::Rect& bounds) {
   if (!native_window_)
     return;
 
   if (mode_ == NORMAL) {
-    native_window_->SetBounds(pos);
+    native_window_->SetBounds(bounds);
     return;
   }
 
   // Follow-cursor window needs to remain the x/y and only allow JS to
   // change the size.
-  gfx::Rect bounds = native_window_->GetBounds();
-  bounds.set_width(pos.width());
-  bounds.set_height(pos.height());
-  native_window_->SetBounds(bounds);
-}
-
-bool ImeWindow::IsPopupOrPanel(const content::WebContents* source) const {
-  return true;
+  gfx::Rect native_bounds = native_window_->GetBounds();
+  native_bounds.set_width(bounds.width());
+  native_bounds.set_height(bounds.height());
+  native_window_->SetBounds(native_bounds);
 }
 
 }  // namespace ui

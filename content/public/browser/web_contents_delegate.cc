@@ -34,10 +34,6 @@ bool WebContentsDelegate::ShouldTransferNavigation(
   return true;
 }
 
-bool WebContentsDelegate::IsPopupOrPanel(const WebContents* source) const {
-  return false;
-}
-
 bool WebContentsDelegate::CanOverscrollContent() const { return false; }
 
 bool WebContentsDelegate::ShouldSuppressDialogs(WebContents* source) {

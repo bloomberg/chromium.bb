@@ -768,7 +768,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnShowFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestSetBounds, OnRequestSetBounds)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
@@ -818,12 +818,12 @@ void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t route_id,
 void RenderViewHostImpl::OnShowWidget(int route_id,
                                       const gfx::Rect& initial_rect) {
   delegate_->ShowCreatedWidget(GetProcess()->GetID(), route_id, initial_rect);
-  Send(new ViewMsg_Move_ACK(route_id));
+  Send(new ViewMsg_SetBounds_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
   delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(), route_id);
-  Send(new ViewMsg_Move_ACK(route_id));
+  Send(new ViewMsg_SetBounds_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
@@ -847,10 +847,10 @@ void RenderViewHostImpl::OnClose() {
   ClosePageIgnoringUnloadEvents();
 }
 
-void RenderViewHostImpl::OnRequestMove(const gfx::Rect& pos) {
+void RenderViewHostImpl::OnRequestSetBounds(const gfx::Rect& bounds) {
   if (is_active_)
-    delegate_->RequestMove(pos);
-  Send(new ViewMsg_Move_ACK(GetRoutingID()));
+    delegate_->RequestSetBounds(bounds);
+  Send(new ViewMsg_SetBounds_ACK(GetRoutingID()));
 }
 
 void RenderViewHostImpl::OnDocumentAvailableInMainFrame(

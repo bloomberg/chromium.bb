@@ -159,7 +159,6 @@ class WebUILoginView : public views::View,
   void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
-  bool IsPopupOrPanel(const content::WebContents* source) const override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,

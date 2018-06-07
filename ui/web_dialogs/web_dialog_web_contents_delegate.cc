@@ -53,13 +53,6 @@ void WebDialogWebContentsDelegate::AddNewContents(
                            disposition, initial_rect, user_gesture);
 }
 
-bool WebDialogWebContentsDelegate::IsPopupOrPanel(
-    const WebContents* source) const {
-  // This needs to return true so that we are allowed to be resized by our
-  // contents.
-  return true;
-}
-
 bool WebDialogWebContentsDelegate::PreHandleGestureEvent(
     WebContents* source,
     const blink::WebGestureEvent& event) {

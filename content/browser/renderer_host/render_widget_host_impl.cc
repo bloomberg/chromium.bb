@@ -631,7 +631,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestSetBounds, OnRequestSetBounds)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AutoscrollStart, OnAutoscrollStart)
@@ -2151,10 +2151,10 @@ void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {
   SendScreenRects();
 }
 
-void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
+void RenderWidgetHostImpl::OnRequestSetBounds(const gfx::Rect& bounds) {
   if (view_) {
-    view_->SetBounds(pos);
-    Send(new ViewMsg_Move_ACK(routing_id_));
+    view_->SetBounds(bounds);
+    Send(new ViewMsg_SetBounds_ACK(routing_id_));
   }
 }
 

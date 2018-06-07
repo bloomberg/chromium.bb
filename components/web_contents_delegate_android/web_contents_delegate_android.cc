@@ -245,8 +245,8 @@ void WebContentsDelegateAndroid::CloseContents(WebContents* source) {
   Java_WebContentsDelegateAndroid_closeContents(env, obj);
 }
 
-void WebContentsDelegateAndroid::MoveContents(WebContents* source,
-                                              const gfx::Rect& pos) {
+void WebContentsDelegateAndroid::SetContentsBounds(WebContents* source,
+                                                   const gfx::Rect& bounds) {
   // Do nothing.
 }
 

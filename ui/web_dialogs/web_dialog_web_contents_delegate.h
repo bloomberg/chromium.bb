@@ -68,7 +68,6 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
-  bool IsPopupOrPanel(const content::WebContents* source) const override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
 

@@ -1567,16 +1567,11 @@ void Browser::CloseContents(WebContents* source) {
     chrome::CloseWebContents(this, source, true);
 }
 
-void Browser::MoveContents(WebContents* source, const gfx::Rect& pos) {
-  if (!IsPopupOrPanel(source)) {
-    NOTREACHED() << "moving invalid browser type";
+void Browser::SetContentsBounds(WebContents* source, const gfx::Rect& bounds) {
+  if (!is_type_popup())
     return;
-  }
-  window_->SetBounds(pos);
-}
 
-bool Browser::IsPopupOrPanel(const WebContents* source) const {
-  return is_type_popup();
+  window_->SetBounds(bounds);
 }
 
 void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {

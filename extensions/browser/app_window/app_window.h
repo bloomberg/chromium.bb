@@ -402,9 +402,8 @@ class AppWindow : public content::WebContentsDelegate,
       override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       const content::FileChooserParams& params) override;
-  bool IsPopupOrPanel(const content::WebContents* source) const override;
-  void MoveContents(content::WebContents* source,
-                    const gfx::Rect& pos) override;
+  void SetContentsBounds(content::WebContents* source,
+                         const gfx::Rect& bounds) override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
   void EnterFullscreenModeForTab(
