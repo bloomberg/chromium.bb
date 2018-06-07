@@ -191,7 +191,7 @@ ThreadState::~ThreadState() {
   DCHECK(CheckThread());
   if (IsMainThread())
     DCHECK_EQ(Heap().HeapStats().AllocatedSpace(), 0u);
-  CHECK(GcState() == ThreadState::kNoGCScheduled);
+  CHECK(GetGCState() == ThreadState::kNoGCScheduled);
 
   **thread_specific_ = nullptr;
 }
@@ -263,7 +263,7 @@ void ThreadState::RunTerminationGC() {
 
   // All of pre-finalizers should be consumed.
   DCHECK(ordered_pre_finalizers_.IsEmpty());
-  CHECK_EQ(GcState(), kNoGCScheduled);
+  CHECK_EQ(GetGCState(), kNoGCScheduled);
 
   Heap().RemoveAllPages();
 }
@@ -456,7 +456,7 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
 }
 
 bool ThreadState::ShouldScheduleIdleGC() {
-  if (GcState() != kNoGCScheduled)
+  if (GetGCState() != kNoGCScheduled)
     return false;
   return JudgeGCThreshold(kDefaultAllocatedObjectSizeThreshold, 1024 * 1024,
                           1.5);
@@ -613,7 +613,7 @@ void ThreadState::ScheduleGCIfNeeded() {
   }
 
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-  if (GcState() == kNoGCScheduled &&
+  if (GetGCState() == kNoGCScheduled &&
       RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleGCIfNeeded: Scheduled incremental marking for testing";
@@ -635,7 +635,7 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
   DCHECK(CheckThread());
   DCHECK(Platform::Current()->CurrentThread()->Scheduler());
 
-  if (GcState() != kIdleGCScheduled)
+  if (GetGCState() != kIdleGCScheduled)
     return;
 
   if (IsGCForbidden()) {
@@ -730,7 +730,7 @@ void ThreadState::ScheduleIncrementalMarkingFinalize() {
 }
 
 void ThreadState::ScheduleIdleGC() {
-  if (GcState() != kNoGCScheduled)
+  if (GetGCState() != kNoGCScheduled)
     return;
   SetGCState(kIdleGCScheduled);
   if (IsSweepingInProgress())
@@ -869,7 +869,7 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
   if (IsGCForbidden())
     return;
 
-  switch (GcState()) {
+  switch (GetGCState()) {
     case kFullGCScheduled:
       CollectAllGarbage();
       break;
@@ -1102,7 +1102,7 @@ void ThreadState::PostSweep() {
   ThreadHeap::ReportMemoryUsageForTracing();
 
   SetGCPhase(GCPhase::kNone);
-  if (GcState() == kIdleGCScheduled)
+  if (GetGCState() == kIdleGCScheduled)
     ScheduleIdleGC();
 
   gc_age_++;
@@ -1335,13 +1335,13 @@ void ThreadState::DisableWrapperTracingBarrier() {
 }
 
 void ThreadState::RunIncrementalMarkingStepTask() {
-  if (GcState() != kIncrementalMarkingStepScheduled)
+  if (GetGCState() != kIncrementalMarkingStepScheduled)
     return;
   IncrementalMarkingStep();
 }
 
 void ThreadState::RunIncrementalMarkingFinalizeTask() {
-  if (GcState() != kIncrementalMarkingFinalizeScheduled)
+  if (GetGCState() != kIncrementalMarkingFinalizeScheduled)
     return;
   IncrementalMarkingFinalize();
 }
@@ -1496,7 +1496,7 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
   if (marking_type == BlinkGC::kTakeSnapshot) {
     FinishSnapshot();
     CHECK(!IsSweepingInProgress());
-    CHECK_EQ(GcState(), kNoGCScheduled);
+    CHECK_EQ(GetGCState(), kNoGCScheduled);
     return;
   }
   DCHECK(IsSweepingInProgress());

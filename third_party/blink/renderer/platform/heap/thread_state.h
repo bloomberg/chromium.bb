@@ -278,7 +278,7 @@ class PLATFORM_EXPORT ThreadState {
   void PostIdleGCTask();
   void WillStartV8GC(BlinkGC::V8GCType);
   void SetGCState(GCState);
-  GCState GcState() const { return gc_state_; }
+  GCState GetGCState() const { return gc_state_; }
   void SetGCPhase(GCPhase);
   bool IsMarkingInProgress() const { return gc_phase_ == GCPhase::kMarking; }
   bool IsSweepingInProgress() const { return gc_phase_ == GCPhase::kSweeping; }
