@@ -51,7 +51,6 @@ class CORE_EXPORT EventQueueImpl final : public EventQueue,
   void Trace(blink::Visitor*) override;
   bool EnqueueEvent(const base::Location&, Event*) override;
   void CancelAllEvents() override;
-  void Close() override;
 
  private:
   EventQueueImpl(ExecutionContext*, TaskType);
@@ -60,7 +59,7 @@ class CORE_EXPORT EventQueueImpl final : public EventQueue,
   void DispatchEvent(Event*);
 
   void ContextDestroyed(ExecutionContext*) override;
-  void DoClose(ExecutionContext*);
+  void Close(ExecutionContext*);
   void DoCancelAllEvents(ExecutionContext*);
 
   const TaskType task_type_;

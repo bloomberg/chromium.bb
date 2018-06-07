@@ -1002,7 +1002,6 @@ void MediaKeySession::ContextDestroyed(ExecutionContext*) {
   is_closed_ = true;
   action_timer_.Stop();
   pending_actions_.clear();
-  async_event_queue_->Close();
 }
 
 void MediaKeySession::Trace(blink::Visitor* visitor) {

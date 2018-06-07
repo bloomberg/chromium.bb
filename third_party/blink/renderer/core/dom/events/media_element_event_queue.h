@@ -49,7 +49,6 @@ class CORE_EXPORT MediaElementEventQueue final
 
   void Trace(blink::Visitor*) override;
   bool EnqueueEvent(const base::Location&, Event*);
-  void Close();
 
   void CancelAllEvents();
   bool HasPendingEvents() const;
@@ -60,7 +59,7 @@ class CORE_EXPORT MediaElementEventQueue final
   void DispatchEvent(Event* event);
 
   void ContextDestroyed(ExecutionContext*) override;
-  void DoClose(ExecutionContext*);
+  void Close(ExecutionContext*);
   void DoCancelAllEvents(ExecutionContext*);
 
   Member<EventTarget> owner_;
