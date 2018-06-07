@@ -701,10 +701,10 @@ static void setup_ref_mv_list(
 
       for (int idx = 0; idx < 2; ++idx) {
         int comp_idx = 0;
-        for (int list_idx = 0; list_idx < ref_id_count[idx] && comp_idx < 3;
+        for (int list_idx = 0; list_idx < ref_id_count[idx] && comp_idx < 2;
              ++list_idx, ++comp_idx)
           comp_list[comp_idx][idx] = ref_id[idx][list_idx];
-        for (int list_idx = 0; list_idx < ref_diff_count[idx] && comp_idx < 3;
+        for (int list_idx = 0; list_idx < ref_diff_count[idx] && comp_idx < 2;
              ++list_idx, ++comp_idx)
           comp_list[comp_idx][idx] = ref_diff[idx][list_idx];
         for (; comp_idx < 3; ++comp_idx)
