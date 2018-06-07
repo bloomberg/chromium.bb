@@ -118,8 +118,8 @@ void DiceAccountsMenu::GetHorizontalIconMargins(int command_id,
                                                 int* left_margin,
                                                 int* right_margin) const {
   const views::MenuConfig& config = views::MenuConfig::instance();
-  *left_margin = kHorizontalIconSpacing - config.item_left_margin;
-  *right_margin = kHorizontalIconSpacing - config.icon_to_label_padding;
+  *left_margin = kHorizontalIconSpacing - config.item_horizontal_padding;
+  *right_margin = kHorizontalIconSpacing - config.item_horizontal_padding;
 }
 
 const gfx::FontList* DiceAccountsMenu::GetLabelFontList(int id) const {

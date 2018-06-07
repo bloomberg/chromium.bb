@@ -33,6 +33,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace {
 
@@ -352,6 +353,11 @@ class AppContextMenuTest : public AppListTestBase,
   std::unique_ptr<FakeAppContextMenuDelegate> menu_delegate_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  // The layout provider is meant to be a singleton, but it is not initialized
+  // for unit tests. Constructing one here makes it globally available, which
+  // is later used by the menu item during initialization.
+  views::LayoutProvider layout_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(AppContextMenuTest);
 };
