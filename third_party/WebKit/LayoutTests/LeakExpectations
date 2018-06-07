@@ -71,7 +71,6 @@ crbug.com/821547 [ Linux ] virtual/threaded/animations/interpolation/filter-inte
 # -----------------------------------------------------------------
 # Sheriff 2018-04-23
 # -----------------------------------------------------------------
-crbug.com/835802 [ Linux ] fast/loader/scroll-position-restored-on-back-at-load-event.html [ Pass Leak ]
 crbug.com/836278 [ Linux ] external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Leak ]
 crbug.com/836278 [ Linux ] virtual/threaded/external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Leak ]
 
