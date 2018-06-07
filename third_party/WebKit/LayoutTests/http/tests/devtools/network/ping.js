@@ -18,8 +18,10 @@
       }
   `);
 
+  const snifferPromise = TestRunner.addSnifferPromise(SDK.NetworkDispatcher.prototype, 'requestWillBeSent');
   TestRunner.evaluateInPage('navigateLink()');
-  await TestRunner.addSnifferPromise(SDK.NetworkDispatcher.prototype, 'requestWillBeSent');
+  await snifferPromise;
+
   var request = NetworkTestRunner.networkRequests().peekLast();
   if (request.url().endsWith('/')) {
     await TestRunner.addSnifferPromise(SDK.NetworkDispatcher.prototype, 'requestWillBeSent');
