@@ -86,5 +86,9 @@ std::vector<uint8_t> CreateSHA256Hash(base::StringPiece data) {
   return hashed_data;
 }
 
+base::StringPiece ConvertToStringPiece(base::span<const uint8_t> data) {
+  return {reinterpret_cast<const char*>(data.data()), data.size()};
+}
+
 }  // namespace fido_parsing_utils
 }  // namespace device

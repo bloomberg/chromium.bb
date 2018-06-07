@@ -26,11 +26,6 @@ namespace {
 // counter larger than |kMaxCounter| FidoCableDevice should error out.
 constexpr size_t kMaxCounter = (1 << 24) - 1;
 
-base::StringPiece ConvertToStringPiece(const std::vector<uint8_t>& data) {
-  return base::StringPiece(reinterpret_cast<const char*>(data.data()),
-                           data.size());
-}
-
 // static
 bool IsEncryptionEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -64,7 +59,8 @@ bool EncryptOutgoingMessage(
   DCHECK_EQ(nonce->size(), encryption_data.aes_key.NonceLength());
   std::string ciphertext;
   bool encryption_success = encryption_data.aes_key.Seal(
-      ConvertToStringPiece(*message_to_encrypt), ConvertToStringPiece(*nonce),
+      fido_parsing_utils::ConvertToStringPiece(*message_to_encrypt),
+      fido_parsing_utils::ConvertToStringPiece(*nonce),
       nullptr /* additional_data */, &ciphertext);
   if (!encryption_success)
     return false;
@@ -86,8 +82,9 @@ bool DecryptIncomingMessage(
   std::string ciphertext;
 
   bool decryption_success = encryption_data.aes_key.Open(
-      ConvertToStringPiece(incoming_frame->data()),
-      ConvertToStringPiece(*nonce), nullptr /* additional_data */, &ciphertext);
+      fido_parsing_utils::ConvertToStringPiece(incoming_frame->data()),
+      fido_parsing_utils::ConvertToStringPiece(*nonce),
+      nullptr /* additional_data */, &ciphertext);
   if (!decryption_success)
     return false;
 
