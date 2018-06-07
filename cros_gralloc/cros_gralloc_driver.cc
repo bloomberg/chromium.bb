@@ -106,8 +106,8 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	 */
 	if (resolved_format == DRM_FORMAT_NV12)
 		use_flags |= BO_USE_LINEAR;
-	bo = drv_bo_create(drv_, descriptor->width, descriptor->height, resolved_format,
-			   use_flags);
+
+	bo = drv_bo_create(drv_, descriptor->width, descriptor->height, resolved_format, use_flags);
 	if (!bo) {
 		drv_log("Failed to create bo.\n");
 		return -ENOMEM;

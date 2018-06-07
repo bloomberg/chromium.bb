@@ -183,8 +183,7 @@ uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 	const struct planar_layout *layout = layout_from_format(format);
 	assert(plane < layout->num_planes);
 
-	uint32_t plane_width =
-		DIV_ROUND_UP(width, layout->horizontal_subsampling[plane]);
+	uint32_t plane_width = DIV_ROUND_UP(width, layout->horizontal_subsampling[plane]);
 	uint32_t stride = plane_width * layout->bytes_per_pixel[plane];
 
 	/*
