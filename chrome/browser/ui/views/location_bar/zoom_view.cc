@@ -45,7 +45,7 @@ void ZoomView::UpdateWithController(zoom::ZoomController* zoom_controller) {
               ? &kZoomMinusIcon
               : &kZoomPlusIcon;
   if (GetNativeTheme())
-    UpdateIcon();
+    UpdateIconImage();
 
   SetVisible(true);
 }
