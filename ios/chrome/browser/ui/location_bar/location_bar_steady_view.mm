@@ -32,6 +32,39 @@ const CGFloat kButtonTrailingSpacing = 10;
 
 @end
 
+#pragma mark - LocationBarSteadyViewColorScheme
+
+@implementation LocationBarSteadyViewColorScheme
+@synthesize fontColor = _fontColor;
+@synthesize placeholderColor = _placeholderColor;
+@synthesize trailingButtonColor = _trailingButtonColor;
+
++ (instancetype)standardScheme {
+  LocationBarSteadyViewColorScheme* scheme =
+      [[LocationBarSteadyViewColorScheme alloc] init];
+
+  scheme.fontColor = [UIColor colorWithWhite:0 alpha:0.7];
+  scheme.placeholderColor = [UIColor colorWithWhite:0 alpha:0.5];
+  scheme.trailingButtonColor = [UIColor colorWithWhite:0 alpha:0.3];
+
+  return scheme;
+}
+
++ (instancetype)incognitoScheme {
+  LocationBarSteadyViewColorScheme* scheme =
+      [[LocationBarSteadyViewColorScheme alloc] init];
+
+  scheme.fontColor = [UIColor whiteColor];
+  scheme.placeholderColor = [UIColor colorWithWhite:0 alpha:0.5];
+  scheme.trailingButtonColor = [UIColor colorWithWhite:1 alpha:0.5];
+
+  return scheme;
+}
+
+@end
+
+#pragma mark - LocationBarSteadyView
+
 @implementation LocationBarSteadyView
 @synthesize locationLabel = _locationLabel;
 @synthesize locationIconImageView = _locationIconImageView;
@@ -51,7 +84,8 @@ const CGFloat kButtonTrailingSpacing = 10;
                                             UILayoutConstraintAxisHorizontal];
 
     // Setup trailing button.
-    _trailingButton = [[ExtendedTouchTargetButton alloc] init];
+    _trailingButton =
+        [ExtendedTouchTargetButton buttonWithType:UIButtonTypeSystem];
     _trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
 
     // Setup label.
@@ -60,6 +94,7 @@ const CGFloat kButtonTrailingSpacing = 10;
     [_locationLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:UILayoutConstraintAxisVertical];
+    _locationLabel.font = [UIFont systemFontOfSize:19.0];
 
     // Container for location label and icon.
     UIView* container = [[UIView alloc] init];
@@ -72,7 +107,7 @@ const CGFloat kButtonTrailingSpacing = 10;
     [self addSubview:container];
 
     ApplyVisualConstraints(
-        @[ @"|[icon][label]|", @"V:|[label]|", @"V:|[container]|" ], @{
+        @[ @"|[icon]-(2)-[label]|", @"V:|[label]|", @"V:|[container]|" ], @{
           @"icon" : _locationIconImageView,
           @"label" : _locationLabel,
           @"button" : _trailingButton,
@@ -118,6 +153,12 @@ const CGFloat kButtonTrailingSpacing = 10;
     [NSLayoutConstraint activateConstraints:_showButtonConstraints];
   }
   return self;
+}
+
+- (void)setColorScheme:(LocationBarSteadyViewColorScheme*)colorScheme {
+  self.trailingButton.tintColor = colorScheme.trailingButtonColor;
+  self.locationLabel.textColor = colorScheme.fontColor;
+  self.locationIconImageView.tintColor = colorScheme.fontColor;
 }
 
 - (void)hideButton:(BOOL)hidden {

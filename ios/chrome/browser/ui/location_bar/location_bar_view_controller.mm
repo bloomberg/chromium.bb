@@ -78,6 +78,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 - (void)setIncognito:(BOOL)incognito {
   _incognito = incognito;
+  [self.locationBarSteadyView
+      setColorScheme:incognito
+                         ? [LocationBarSteadyViewColorScheme incognitoScheme]
+                         : [LocationBarSteadyViewColorScheme standardScheme]];
 }
 
 - (void)setDispatcher:
@@ -175,9 +179,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)updateLocationIcon:(UIImage*)icon {
-  self.locationBarSteadyView.locationIconImageView.image = icon;
-  self.locationBarSteadyView.locationIconImageView.tintColor =
-      self.incognito ? [UIColor whiteColor] : [UIColor blackColor];
+  self.locationBarSteadyView.locationIconImageView.image =
+      [icon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 
 #pragma mark - private
@@ -220,7 +223,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
           forControlEvents:UIControlEventTouchUpInside];
 
       [self.locationBarSteadyView.trailingButton
-          setImage:[UIImage imageNamed:@"location_bar_share"]
+          setImage:
+              [[UIImage imageNamed:@"location_bar_share"]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
           forState:UIControlStateNormal];
       break;
     };
@@ -234,7 +239,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
                     action:@selector(startVoiceSearch)
           forControlEvents:UIControlEventTouchUpInside];
       [self.locationBarSteadyView.trailingButton
-          setImage:[UIImage imageNamed:@"location_bar_voice"]
+          setImage:
+              [[UIImage imageNamed:@"location_bar_voice"]
+                  imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
           forState:UIControlStateNormal];
     }
   }
