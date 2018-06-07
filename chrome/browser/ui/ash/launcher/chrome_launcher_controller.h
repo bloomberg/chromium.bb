@@ -67,14 +67,6 @@ class ChromeLauncherController
       private app_list::AppListSyncableService::Observer,
       private sync_preferences::PrefServiceSyncableObserver {
  public:
-  // Used to update the state of non plaform apps, as web contents change.
-  enum AppState {
-    APP_STATE_ACTIVE,
-    APP_STATE_WINDOW_ACTIVE,
-    APP_STATE_INACTIVE,
-    APP_STATE_REMOVED
-  };
-
   // Returns the single ChromeLauncherController instance.
   static ChromeLauncherController* instance() { return instance_; }
 
@@ -151,9 +143,10 @@ class ChromeLauncherController
   // Updates the image for a specific shelf item from the app's icon loader.
   void UpdateLauncherItemImage(const std::string& app_id);
 
-  // Notify the controller that the state of an non platform app's tabs
-  // have changed,
-  void UpdateAppState(content::WebContents* contents, AppState app_state);
+  // Notifies the controller that |contents| changed so it can update the state
+  // of v1 (non-packaged) apps in the shelf. If |remove| is true then it removes
+  // the association of |contents| with an app.
+  void UpdateAppState(content::WebContents* contents, bool remove);
 
   // Returns ShelfID for |contents|. If |contents| is not an app or is not
   // pinned, returns the id of browser shrotcut.
@@ -414,6 +407,7 @@ class ChromeLauncherController
   std::vector<std::unique_ptr<AppIconLoader>> app_icon_loaders_;
 
   // Direct access to app_id for a web contents.
+  // NOTE: This tracks all WebContents, not just those associated with an app.
   WebContentsToAppIDMap web_contents_to_app_id_;
 
   // Used to track app windows.

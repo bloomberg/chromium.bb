@@ -451,7 +451,7 @@ void ChromeLauncherController::UpdateLauncherItemImage(
 }
 
 void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
-                                              AppState app_state) {
+                                              bool remove) {
   ash::ShelfID shelf_id(launcher_controller_helper_->GetAppID(contents));
 
   // Check if the gMail app is loaded and it matches the given content.
@@ -470,7 +470,7 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
     }
   }
 
-  if (app_state == APP_STATE_REMOVED)
+  if (remove)
     web_contents_to_app_id_.erase(contents);
   else
     web_contents_to_app_id_[contents] = shelf_id.app_id;
