@@ -136,6 +136,16 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
                                 // request. Can Play()/Pause()/Stop().
   };
 
+  // This enum is used for UMA, so the only allowed operation on this definition
+  // is to add new states to the bottom, update kMaxValue, and update the
+  // histogram "Media.Audio.Render.StreamCallbackError2".
+  enum Error {
+    kNoError = 0,
+    kErrorDuringCreation = 1,
+    kErrorDuringRendering = 2,
+    kMaxValue = kErrorDuringRendering
+  };
+
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that need to
   // be executed on that thread.  They use AudioOutputIPC to send IPC messages
@@ -173,7 +183,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   StartupState state_;
 
   // For UMA stats. May only be accessed on the IO thread.
-  bool had_callback_error_ = false;
+  Error had_error_ = kNoError;
 
   // Last set volume.
   double volume_ = 1.0;
