@@ -155,12 +155,19 @@ FloatRect LayoutSVGShape::HitTestStrokeBoundingBox() const {
 }
 
 bool LayoutSVGShape::ShapeDependentStrokeContains(const FloatPoint& point) {
-  DCHECK(path_);
+  // In case the subclass didn't create path during UpdateShapeFromElement()
+  // for optimization but still calls this method.
+  if (!HasPath())
+    CreatePath();
+
   StrokeData stroke_data;
   SVGLayoutSupport::ApplyStrokeStyleToStrokeData(stroke_data, StyleRef(), *this,
                                                  DashScaleFactor());
 
   if (HasNonScalingStroke()) {
+    // The reason is similar to the above code about HasPath().
+    if (!rare_data_)
+      UpdateNonScalingStrokeData();
     return NonScalingStrokePath().StrokeContains(
         NonScalingStrokeTransform().MapPoint(point), stroke_data);
   }
