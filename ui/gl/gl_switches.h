@@ -68,10 +68,6 @@ GL_EXPORT extern const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches;
 
 namespace features {
 
-#if defined(OS_WIN)
-GL_EXPORT extern const base::Feature kD3DVsync;
-#endif  // defined(OS_WIN)
-
 GL_EXPORT extern const base::Feature kDirectCompositionUnderlays;
 GL_EXPORT extern const base::Feature kDirectCompositionComplexOverlays;
 GL_EXPORT extern const base::Feature kDirectCompositionNonrootOverlays;

@@ -3189,12 +3189,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseNewAcceptLanguageHeaderDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUseNewAcceptLanguageHeader)},
 
-#if defined(OS_WIN)
-    {"enable-d3d-vsync", flag_descriptions::kEnableD3DVsync,
-     flag_descriptions::kEnableD3DVsyncDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kD3DVsync)},
-#endif  // defined(OS_WIN)
-
 #if !defined(OS_ANDROID)
     {"use-google-local-ntp", flag_descriptions::kUseGoogleLocalNtpName,
      flag_descriptions::kUseGoogleLocalNtpDescription, kOsDesktop,

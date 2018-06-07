@@ -43,14 +43,6 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() =
     default;
 
-void GpuBrowserCompositorOutputSurface::SetNeedsVSync(bool needs_vsync) {
-#if defined(OS_WIN)
-  GetCommandBufferProxy()->SetNeedsVSync(needs_vsync);
-#else
-  NOTREACHED();
-#endif  // defined(OS_WIN)
-}
-
 void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     std::vector<ui::LatencyInfo> latency_info,
     const gpu::SwapBuffersCompleteParams& params) {

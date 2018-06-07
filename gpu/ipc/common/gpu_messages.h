@@ -187,11 +187,6 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_Destroyed,
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SwapBuffersCompleted,
                     gpu::SwapBuffersCompleteParams /* params */)
 
-// Tells the browser about updated parameters for vsync alignment.
-IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,
-                    base::TimeTicks /* timebase */,
-                    base::TimeDelta /* interval */)
-
 // Tells the browser a buffer has been presented on screen.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_BufferPresented,
                     uint64_t, /* swap_id */
@@ -232,9 +227,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
                            uint32_t, /* client_texture_id */
                            int32_t,  /* stream_id */
                            bool /* succeeded */)
-
-// Start or stop VSync sygnal production on GPU side (Windows only).
-IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetNeedsVSync, bool /* needs_vsync */)
 
 // Send a GPU fence handle and store it for the specified gpu fence ID.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_CreateGpuFenceFromHandle,
