@@ -48,7 +48,10 @@ config("skia_config") {
     "//third_party/skia/include/utils",
   ]
   if (enable_vulkan) {
-    include_dirs += [ "$vulkan_sdk_path/include" ]
+    include_dirs += [
+      "$vulkan_sdk_path/include",
+      "//third_party/skia/third_party/vulkanmemoryallocator",
+    ]
     configs = [ "//third_party/vulkan:vulkan_config" ]
   }
 
@@ -371,6 +374,10 @@ component("skia") {
     sources += skia_sksl_sources
     if (enable_vulkan) {
       sources += skia_vk_sources
+      sources += [
+        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.cpp",
+        "//third_party/skia/third_party/vulkanmemoryallocator/GrVulkanMemoryAllocator.h",
+      ]
     }
     deps += [ "//gpu/config:workaround_list" ]
   }
