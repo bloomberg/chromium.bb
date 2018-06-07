@@ -39,6 +39,9 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlayCast
   OverlayProcessor::StrategyType GetUMAEnum() const override;
 
  private:
+  // Keep track if an overlay is being used on the previous frame.
+  bool is_using_overlay_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyUnderlayCast);
 };
 

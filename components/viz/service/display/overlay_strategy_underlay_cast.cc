@@ -62,6 +62,11 @@ bool OverlayStrategyUnderlayCast::Attempt(
     }
   }
 
+  if (is_using_overlay_ != found_underlay) {
+    is_using_overlay_ = found_underlay;
+    VLOG(1) << (found_underlay ? "Overlay activated" : "Overlay deactivated");
+  }
+
   if (found_underlay) {
     // If the primary plane shows up in the candidates list make sure it isn't
     // opaque otherwise the video underlay won't be visible.
