@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import argparse
-import base64
 import collections
 import contextlib
 import glob
@@ -22,7 +21,6 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -86,9 +84,7 @@ class SDKFetcher(object):
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
   QEMU_BIN_KEY = 'qemu'
-  QEMU_BIN_PATH = 'app-emulation/qemu-2.6.0-r4.tbz2'
-  PREBUILT_CONF_PATH = ('chromiumos/overlays/board-overlays.git/+/'
-                        'master/overlay-amd64-host/prebuilt.conf')
+  QEMU_BIN_PATH = 'app-emulation/qemu'
 
   CANARIES_PER_DAY = 3
   DAYS_TO_CONSIDER = 14
@@ -197,16 +193,39 @@ class SDKFetcher(object):
     logging.debug('Read LKGM version from %s: %s', lkgm_file, version)
     return version
 
-  @staticmethod
-  def _GetQemuBinPath():
-    """Get prebuilt QEMU binary path from google storage."""
-    contents_b64 = gob_util.FetchUrl(
-        constants.EXTERNAL_GOB_HOST,
-        '%s?format=TEXT' % SDKFetcher.PREBUILT_CONF_PATH)
-    binhost, path = base64.b64decode(contents_b64.read()).strip().split('=')
-    if binhost != 'FULL_BINHOST' or not path:
-      return None
-    return os.path.join(path.strip('"'), SDKFetcher.QEMU_BIN_PATH)
+  @cros_build_lib.Memoize
+  def _GetSDKVersion(self, version):
+    """Get SDK version from metadata.
+
+    sdk_version looks like 2018.06.04.200410
+    """
+    return self._GetMetadata(version)['sdk-version']
+
+  def _GetQemuVersion(self, version):
+    """Get QEMU version from the cache, or from the build manifest."""
+    with self.misc_cache.Lookup(('qemu-version', self.board, version)) as ref:
+      if ref.Exists(lock=True):
+        return osutils.ReadFile(ref.path).strip()
+      else:
+        manifest_path = gs.GetGsURL(
+            bucket=constants.SDK_GS_BUCKET,
+            suburl='cros-sdk-%s.tar.xz.Manifest' % self._GetSDKVersion(version),
+            for_gsutil=True)
+        manifest = json.loads(self.gs_ctx.Cat(manifest_path))
+
+        qemu_version = manifest['packages'][self.QEMU_BIN_PATH][0][0]
+        ref.AssignText(qemu_version)
+        logging.debug('QEMU version: %s', qemu_version)
+        return qemu_version
+
+  def _GetQemuBinGSPath(self, version):
+    """Get google storage path of prebuilt QEMU binary."""
+    return gs.GetGsURL(
+        bucket='chromeos-prebuilt',
+        suburl='board/amd64-host/chroot-%s/packages/%s-%s.tbz2' %
+        (self._GetSDKVersion(version), self.QEMU_BIN_PATH,
+         self._GetQemuVersion(version)),
+        for_gsutil=True)
 
   def _GetFullVersionFromStorage(self, version_file):
     """Cat |version_file| in google storage.
@@ -420,7 +439,7 @@ class SDKFetcher(object):
 
     # Also fetch QEMU binary if VM_IMAGE_TAR is specified.
     if constants.VM_IMAGE_TAR in components:
-      qemu_bin_path = self._GetQemuBinPath()
+      qemu_bin_path = self._GetQemuBinGSPath(version)
       if qemu_bin_path:
         fetch_urls[self.QEMU_BIN_KEY] = qemu_bin_path
       else:
