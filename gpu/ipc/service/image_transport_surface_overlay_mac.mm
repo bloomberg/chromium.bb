@@ -131,7 +131,8 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
     // If we have gotten more than one frame ahead of GL, wait for the previous
     // frame to complete.
     if (previous_frame_fence_) {
-      TRACE_EVENT0("gpu", "ClientWait");
+      TRACE_EVENT1("gpu", "ClientWait", "context switch",
+                   fence_context_obj_.get() != CGLGetCurrentContext());
 
       // Ensure we are using the context with which the fence was created.
       gl::ScopedCGLSetCurrentContext scoped_set_current(fence_context_obj_);
@@ -144,12 +145,16 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
       // Note that on some platforms (10.9), fences appear to sometimes get
       // lost and will never pass. Add a 32ms timout to prevent these
       // situations from causing a GPU process hang. crbug.com/618075
-      int timeout_msec = 32;
-      while (!previous_frame_fence_->HasCompleted() && timeout_msec > 0) {
-        --timeout_msec;
-        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+      {
+        TRACE_EVENT0("gpu", "Fence poll");
+        int timeout_msec = 32;
+        while (!previous_frame_fence_->HasCompleted() && timeout_msec > 0) {
+          --timeout_msec;
+          base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+        }
       }
       if (!previous_frame_fence_->HasCompleted()) {
+        TRACE_EVENT0("gpu", "Finish");
         // We timed out waiting for the above fence, just issue a glFinish.
         glFinish();
       }
@@ -158,9 +163,12 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
     *before_flush_time = base::TimeTicks::Now();
 
     // Create a fence for the current frame's work and save the context.
-    previous_frame_fence_.reset(gl::GLFence::Create());
-    fence_context_obj_.reset(CGLGetCurrentContext(),
-                             base::scoped_policy::RETAIN);
+    {
+      TRACE_EVENT0("gpu", "Create GLFence");
+      previous_frame_fence_.reset(gl::GLFence::Create());
+      fence_context_obj_.reset(CGLGetCurrentContext(),
+                               base::scoped_policy::RETAIN);
+    }
 
     // A glFlush is necessary to ensure correct content appears.
     {
