@@ -59,6 +59,13 @@ void DidFindServiceWorkerRegistration(
   std::move(quit_closure).Run();
 }
 
+// Callback for UnregisterServiceWorker.
+void DidUnregisterServiceWorker(base::Closure quit_closure,
+                                ServiceWorkerStatusCode status) {
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  std::move(quit_closure).Run();
+}
+
 }  // namespace
 
 BackgroundFetchTestBase::BackgroundFetchTestBase()
@@ -86,7 +93,6 @@ void BackgroundFetchTestBase::TearDown() {
 
 int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
   GURL script_url(kTestScriptUrl);
-
   int64_t service_worker_registration_id =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
 
@@ -133,6 +139,14 @@ int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
       std::move(service_worker_registration));
 
   return service_worker_registration_id;
+}
+
+void BackgroundFetchTestBase::UnregisterServiceWorker() {
+  base::RunLoop run_loop;
+  embedded_worker_test_helper_.context()->UnregisterServiceWorker(
+      origin_.GetURL(),
+      base::BindOnce(&DidUnregisterServiceWorker, run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 ServiceWorkerFetchRequest

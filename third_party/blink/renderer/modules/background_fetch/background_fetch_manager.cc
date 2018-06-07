@@ -304,6 +304,11 @@ void BackgroundFetchManager::DidFetch(
           DOMExceptionCode::kAbortError,
           "Failed to store registration due to I/O error."));
       return;
+    case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kInvalidStateError,
+          "There is no service worker available to service the fetch."));
+      return;
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_ID:
       // Not applicable for this callback.
@@ -407,6 +412,11 @@ void BackgroundFetchManager::DidGetRegistration(
           DOMException::Create(DOMExceptionCode::kAbortError,
                                "Failed to get registration due to I/O error."));
       return;
+    case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kInvalidStateError,
+          "There's no service worker available to service the fetch."));
+      return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
       // Not applicable for this callback.
@@ -452,6 +462,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_ID:
+    case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
       // Not applicable for this callback.
       break;
   }

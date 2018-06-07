@@ -51,7 +51,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       const SkBitmap& icon,
-      const BackgroundFetchRegistration& registration,
+      uint64_t bytes_downloaded,
       BackgroundFetchRequestManager* request_manager,
       ProgressCallback progress_callback,
       BackgroundFetchScheduler::FinishedCallback finished_callback);

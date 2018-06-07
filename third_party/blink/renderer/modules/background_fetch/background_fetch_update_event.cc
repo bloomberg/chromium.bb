@@ -74,6 +74,7 @@ void BackgroundFetchUpdateEvent::DidUpdateUI(
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
+    case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
       // Not applicable for this callback.
       break;
   }

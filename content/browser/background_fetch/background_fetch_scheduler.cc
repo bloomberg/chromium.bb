@@ -33,6 +33,17 @@ BackgroundFetchScheduler::BackgroundFetchScheduler(
 
 BackgroundFetchScheduler::~BackgroundFetchScheduler() = default;
 
+void BackgroundFetchScheduler::RemoveJobController(
+    const BackgroundFetchRegistrationId& registration_id) {
+  for (auto iter = controller_queue_.begin(); iter != controller_queue_.end();
+       /* no increment */) {
+    if ((**iter).registration_id() == registration_id)
+      iter = controller_queue_.erase(iter);
+    else
+      iter++;
+  }
+}
+
 void BackgroundFetchScheduler::AddJobController(
     BackgroundFetchScheduler::Controller* controller) {
   controller_queue_.push_back(controller);
@@ -61,6 +72,7 @@ void BackgroundFetchScheduler::ScheduleDownload() {
 void BackgroundFetchScheduler::DidPopNextRequest(
     BackgroundFetchScheduler::Controller* controller,
     scoped_refptr<BackgroundFetchRequestInfo> request_info) {
+  DCHECK(controller);
   if (!request_info)
     return;  // Storage error, fetch might have been aborted.
   download_controller_map_[request_info->download_guid()] = controller;

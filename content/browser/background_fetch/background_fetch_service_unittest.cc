@@ -124,6 +124,32 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
                                          out_registration->unique_id);
   }
 
+  // Calls BackgroundFetchServiceImpl::Fetch() and unregisters the service
+  // worker before Fetch has completed but after the controller has been
+  // initialized.
+  void FetchAndUnregisterServiceWorker(
+      int64_t service_worker_registration_id,
+      const std::string& developer_id,
+      const std::vector<ServiceWorkerFetchRequest>& requests,
+      const BackgroundFetchOptions& options,
+      const SkBitmap& icon,
+      blink::mojom::BackgroundFetchError* out_error,
+      BackgroundFetchRegistration* out_registration) {
+    DCHECK(out_error);
+    DCHECK(out_registration);
+
+    base::AutoReset<bool> hang_registration_creation_for_testing(
+        &context_->hang_registration_creation_for_testing_, true);
+    base::RunLoop run_loop;
+    service_->Fetch(
+        service_worker_registration_id, developer_id, requests, options, icon,
+        base::BindOnce(&BackgroundFetchServiceTest::DidGetRegistration,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error, out_registration));
+    UnregisterServiceWorker();
+    run_loop.Run();
+  }
+
   // Synchronous wrapper for BackgroundFetchServiceImpl::UpdateUI().
   void UpdateUI(int64_t service_worker_registration_id,
                 const std::string& developer_id,
@@ -215,8 +241,9 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     context_->SetDataManagerForTesting(
         std::make_unique<BackgroundFetchTestDataManager>(
             browser_context(), storage_partition(),
-            embedded_worker_test_helper()->context_wrapper()));
+            nullptr /* cache_storage_context */));
 
+    context_->InitializeOnIOThread();
     service_ = std::make_unique<BackgroundFetchServiceImpl>(context_, origin());
   }
 
@@ -973,6 +1000,35 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
 
     ASSERT_EQ(developer_ids.size(), 0u);
   }
+}
+
+TEST_F(BackgroundFetchServiceTest, UnregisterServiceWorker) {
+  // This test registers a service worker, and calls fetch, but unregisters the
+  // service worker before fetch has finished. We then verify that the
+  // appropriate error is returned from Fetch().
+
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  std::vector<ServiceWorkerFetchRequest> requests;
+  requests.emplace_back();  // empty, but valid
+
+  BackgroundFetchOptions options;
+  options.icons.push_back(CreateIcon("funny_cat.png", "256x256", "image/png"));
+  options.icons.push_back(CreateIcon("silly_cat.gif", "512x512", "image/gif"));
+  options.title = "My Background Fetch!";
+  options.download_total = 9001;
+
+  blink::mojom::BackgroundFetchError error;
+  BackgroundFetchRegistration registration;
+
+  FetchAndUnregisterServiceWorker(service_worker_registration_id,
+                                  kExampleDeveloperId, requests, options,
+                                  SkBitmap(), &error, &registration);
+  ASSERT_EQ(error,
+            blink::mojom::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE);
+  EXPECT_TRUE(registration.developer_id.empty());
 }
 
 }  // namespace content
