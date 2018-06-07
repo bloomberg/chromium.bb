@@ -4,10 +4,16 @@
 
 package org.chromium.chrome.browser.download.ui;
 
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.LayoutRes;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,8 +72,8 @@ class FilterAdapter
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        TextView labelView = (TextView) getViewFromResource(
-                convertView, R.layout.download_manager_spinner_drop_down);
+        TextView labelView =
+                getTextViewFromResource(convertView, R.layout.download_manager_spinner_drop_down);
         labelView.setText(DownloadFilter.getStringIdForFilter(position));
         int iconId = DownloadFilter.getDrawableForFilter(position);
         VectorDrawableCompat iconDrawable =
@@ -82,39 +88,58 @@ class FilterAdapter
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View labelView = getViewFromResource(convertView, R.layout.download_manager_spinner);
+        TextView labelView =
+                getTextViewFromResource(convertView, R.layout.download_manager_spinner);
 
+        SpannableStringBuilder titleBuilder = new SpannableStringBuilder();
         CharSequence title = mManagerUi.getActivity().getResources().getText(position == 0
                         ? R.string.menu_downloads
                         : DownloadFilter.getStringIdForFilter(position));
-
-        TextView titleView = labelView.findViewById(R.id.download_home_title);
-        titleView.setText(title);
+        titleBuilder.append(title);
 
         // Set the storage summary for download location change feature.
-        TextView summaryView = labelView.findViewById(R.id.download_storage_summary);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
                 && mDirectoryOption != null) {
+            titleBuilder.append("\n");
             String storageSummary =
                     mManagerUi.getActivity().getString(R.string.download_manager_ui_space_using,
                             DownloadUtils.getStringForBytes(
                                     mManagerUi.getActivity(), mDirectoryOption.availableSpace),
                             DownloadUtils.getStringForBytes(
                                     mManagerUi.getActivity(), mDirectoryOption.totalSpace));
-            summaryView.setText(storageSummary);
-        } else {
-            summaryView.setVisibility(View.GONE);
+            titleBuilder.append(storageSummary);
+            @SuppressWarnings("deprecation")
+            int color = mManagerUi.getActivity().getResources().getColor(R.color.black_alpha_38);
+
+            int start = title.length() + 1;
+            int end = title.length() + storageSummary.length() + 1;
+
+            titleBuilder.setSpan(
+                    new ForegroundColorSpan(color), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            titleBuilder.setSpan(
+                    new RelativeSizeSpan(0.65f), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            titleBuilder.setSpan(
+                    new StyleSpan(Typeface.NORMAL), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
+        labelView.setText(titleBuilder);
+
         if (!FeatureUtilities.isChromeModernDesignEnabled()) {
-            ApiCompatibilityUtils.setTextAppearance(titleView, R.style.BlackHeadline2);
+            ApiCompatibilityUtils.setTextAppearance(labelView, R.style.BlackHeadline2);
         }
         return labelView;
     }
 
-    private View getViewFromResource(View convertView, @LayoutRes int resId) {
-        if (convertView != null) return convertView;
-        return LayoutInflater.from(mManagerUi.getActivity()).inflate(resId, null);
+    private TextView getTextViewFromResource(View convertView, @LayoutRes int resId) {
+        TextView labelView = null;
+        if (convertView instanceof TextView) {
+            labelView = (TextView) convertView;
+        } else {
+            labelView =
+                    (TextView) LayoutInflater.from(mManagerUi.getActivity()).inflate(resId, null);
+        }
+
+        return labelView;
     }
 
     @Override
