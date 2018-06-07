@@ -2802,6 +2802,9 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-ui/cursor-pointer-links-001-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-ui/cursor-pointer-links-002-manual.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-ui/cursor-pointer-links-003-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/prompt-and-unload-script-closeable.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-animations/CSSAnimation-effect.tentative.html [ Timeout ]
