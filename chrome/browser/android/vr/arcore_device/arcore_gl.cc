@@ -251,10 +251,12 @@ void ARCoreGl::ProcessFrame(
   // obvious how the timing between the results and the frame should go.
   for (auto& request : hit_test_requests_) {
     std::vector<mojom::XRHitResultPtr> results;
-    if (!arcore_->RequestHitTest(request->ray, frame_size, &results)) {
+    if (arcore_->RequestHitTest(request->ray, frame_size, &results)) {
+      std::move(request->callback).Run(std::move(results));
+    } else {
+      // Hit test failed, i.e. unprojected location was offscreen.
       std::move(request->callback).Run(base::nullopt);
     }
-    std::move(request->callback).Run(std::move(results));
   }
   hit_test_requests_.clear();
 
