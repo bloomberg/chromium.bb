@@ -53,16 +53,6 @@ class SymbolsIteratorTest : public testing::Test {
   }
 };
 
-// Some of our compilers cannot initialize a vector from an array yet.
-#define DECLARE_FALLBACK_RUNSVECTOR(...)                   \
-  static const FallbackTestRun kRunsArray[] = __VA_ARGS__; \
-  Vector<FallbackTestRun> runs;                            \
-  runs.Append(kRunsArray, sizeof(kRunsArray) / sizeof(*kRunsArray));
-
-#define CHECK_RUNS(...)                     \
-  DECLARE_FALLBACK_RUNSVECTOR(__VA_ARGS__); \
-  CheckRuns(runs);
-
 TEST_F(SymbolsIteratorTest, Empty) {
   String empty(g_empty_string16_bit);
   SymbolsIterator symbols_iterator(empty.Characters16(), empty.length());
@@ -74,92 +64,92 @@ TEST_F(SymbolsIteratorTest, Empty) {
 }
 
 TEST_F(SymbolsIteratorTest, Space) {
-  CHECK_RUNS({{" ", FontFallbackPriority::kText}});
+  CheckRuns({{" ", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, Latin) {
-  CHECK_RUNS({{"Aa", FontFallbackPriority::kText}});
+  CheckRuns({{"Aa", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, LatinColorEmojiTextEmoji) {
-  CHECK_RUNS({{"a", FontFallbackPriority::kText},
-              {"⌚", FontFallbackPriority::kEmojiEmoji},
-              {"☎", FontFallbackPriority::kEmojiText}});
+  CheckRuns({{"a", FontFallbackPriority::kText},
+             {"⌚", FontFallbackPriority::kEmojiEmoji},
+             {"☎", FontFallbackPriority::kEmojiText}});
 }
 
 TEST_F(SymbolsIteratorTest, IgnoreVSInMath) {
-  CHECK_RUNS({{"⊆⊇⊈\xEF\xB8\x8E⊙⊚⊚", FontFallbackPriority::kText}});
+  CheckRuns({{u8"⊆⊇⊈\U0000FE0E⊙⊚⊚", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, IgnoreVS15InText) {
-  CHECK_RUNS({{"abcdef\xEF\xB8\x8Eghji", FontFallbackPriority::kText}});
+  CheckRuns({{u8"abcdef\U0000FE0Eghji", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, IgnoreVS16InText) {
-  CHECK_RUNS({{"abcdef\xEF\xB8\x8Fghji", FontFallbackPriority::kText}});
+  CheckRuns({{u8"abcdef\U0000FE0Fghji", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, AllHexValuesText) {
   // Helps with detecting incorrect emoji pattern definitions which are
   // missing a \U000... prefix for example.
-  CHECK_RUNS({{"abcdef0123456789ABCDEF", FontFallbackPriority::kText}});
+  CheckRuns({{"abcdef0123456789ABCDEF", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, NumbersAndHashNormalAndEmoji) {
-  CHECK_RUNS({{"0123456789#*", FontFallbackPriority::kText},
-              {"0⃣1⃣2⃣3⃣4⃣5⃣6⃣7⃣8⃣9⃣*⃣", FontFallbackPriority::kEmojiEmoji},
-              {"0123456789#*", FontFallbackPriority::kText}});
+  CheckRuns({{"0123456789#*", FontFallbackPriority::kText},
+             {"0⃣1⃣2⃣3⃣4⃣5⃣6⃣7⃣8⃣9⃣*⃣", FontFallbackPriority::kEmojiEmoji},
+             {"0123456789#*", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, VS16onDigits) {
-  CHECK_RUNS({{"#", FontFallbackPriority::kText},
-              {"#\uFE0F#\uFE0F\u20E3", FontFallbackPriority::kEmojiEmoji},
-              {"#", FontFallbackPriority::kText}});
+  CheckRuns({{"#", FontFallbackPriority::kText},
+             {"#\uFE0F#\uFE0F\u20E3", FontFallbackPriority::kEmojiEmoji},
+             {"#", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, SingleFlag) {
-  CHECK_RUNS({{"🇺", FontFallbackPriority::kText}});
+  CheckRuns({{"🇺", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, CombiningCircle) {
-  CHECK_RUNS({{"◌́◌̀◌̈◌̂◌̄◌̊", FontFallbackPriority::kText}});
+  CheckRuns({{"◌́◌̀◌̈◌̂◌̄◌̊", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, CombiningEnclosingCircleBackslash) {
-  CHECK_RUNS({{"A⃠B⃠C⃠", FontFallbackPriority::kText},
-              {"🚷🚯🚱🔞📵🚭🚫", FontFallbackPriority::kEmojiEmoji},
-              {"🎙⃠", FontFallbackPriority::kEmojiText},
-              {"📸⃠🔫⃠", FontFallbackPriority::kEmojiEmoji},
-              {"a⃠b⃠c⃠", FontFallbackPriority::kText}});
+  CheckRuns({{"A⃠B⃠C⃠", FontFallbackPriority::kText},
+             {"🚷🚯🚱🔞📵🚭🚫", FontFallbackPriority::kEmojiEmoji},
+             {"🎙⃠", FontFallbackPriority::kEmojiText},
+             {"📸⃠🔫⃠", FontFallbackPriority::kEmojiEmoji},
+             {"a⃠b⃠c⃠", FontFallbackPriority::kText}});
 }
 
 // TODO: Perhaps check for invalid country indicator combinations?
 
 TEST_F(SymbolsIteratorTest, FlagsVsNonFlags) {
-  CHECK_RUNS({{"🇺🇸🇸", FontFallbackPriority::kEmojiEmoji},  // "US"
-              {"abc", FontFallbackPriority::kText},
-              {"🇺🇸", FontFallbackPriority::kEmojiEmoji},
-              {"a🇿", FontFallbackPriority::kText}});
+  CheckRuns({{"🇺🇸🇸", FontFallbackPriority::kEmojiEmoji},  // "US"
+             {"abc", FontFallbackPriority::kText},
+             {"🇺🇸", FontFallbackPriority::kEmojiEmoji},
+             {"a🇿", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, EmojiVS15) {
   // A VS15 after the anchor must trigger text display.
-  CHECK_RUNS({{"⚓\xEF\xB8\x8E", FontFallbackPriority::kEmojiText},
-              {"⛵", FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{"⚓\U0000FE0E", FontFallbackPriority::kEmojiText},
+             {"⛵", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, EmojiZWSSequences) {
-  CHECK_RUNS({{"👩‍👩‍👧‍👦👩‍❤️‍💋‍👨",
-               FontFallbackPriority::kEmojiEmoji},
-              {"abcd", FontFallbackPriority::kText},
-              {"👩‍👩‍", FontFallbackPriority::kEmojiEmoji},
-              {"efgh", FontFallbackPriority::kText}});
+  CheckRuns({{"👩‍👩‍👧‍👦👩‍❤️‍💋‍👨",
+              FontFallbackPriority::kEmojiEmoji},
+             {"abcd", FontFallbackPriority::kText},
+             {"👩‍👩‍", FontFallbackPriority::kEmojiEmoji},
+             {"efgh", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, AllEmojiZWSSequences) {
   // clang-format gets confused by Emojis, http://llvm.org/PR30530
   // clang-format off
-  CHECK_RUNS(
+  CheckRuns(
       {{"💏👩‍❤️‍💋‍👨👨‍❤️‍💋‍👨👩‍❤️‍💋‍👩💑👩‍❤️‍👨👨‍❤"
         "️"
         "‍👨👩‍❤️"
@@ -176,51 +166,50 @@ TEST_F(SymbolsIteratorTest, AllEmojiZWSSequences) {
 }
 
 TEST_F(SymbolsIteratorTest, ModifierPlusGender) {
-  CHECK_RUNS({{"⛹🏻‍♂", FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{"⛹🏻‍♂", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, TextMemberZwjSequence) {
-  CHECK_RUNS({{"👨‍⚕", FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{"👨‍⚕", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, FacepalmCartwheelShrugModifierFemale) {
-  CHECK_RUNS({{"🤦‍♀🤸‍♀🤷‍♀🤷🏾‍♀",
-               FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{"🤦‍♀🤸‍♀🤷‍♀🤷🏾‍♀",
+              FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, AesculapiusMaleFemalEmoji) {
   // Emoji Data 4 has upgraded those three characters to Emoji.
-  CHECK_RUNS({{"a", FontFallbackPriority::kText},
-              {"⚕♀♂", FontFallbackPriority::kEmojiText}});
+  CheckRuns({{"a", FontFallbackPriority::kText},
+             {"⚕♀♂", FontFallbackPriority::kEmojiText}});
 }
 
 TEST_F(SymbolsIteratorTest, EyeSpeechBubble) {
-  CHECK_RUNS({{"👁‍🗨", FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{"👁‍🗨", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, Modifier) {
-  CHECK_RUNS({{"👶🏿", FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{"👶🏿", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, DingbatsMiscSymbolsModifier) {
-  CHECK_RUNS({{"⛹🏻✍🏻✊🏼", FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{"⛹🏻✍🏻✊🏼", FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, ExtraZWJPrefix) {
-  CHECK_RUNS({{"\xE2\x80\x8D", FontFallbackPriority::kText},
-              {"\xF0\x9F\x91\xA9\xE2\x80\x8D\xE2"
-               "\x9D\xA4\xEF\xB8\x8F\xE2\x80\x8D"
-               "\xF0\x9F\x92\x8B\xE2\x80\x8D\xF0\x9F\x91\xA8",
-               FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{u8"\U0000200D", FontFallbackPriority::kText},
+             {u8"\U0001F469\U0000200D\U00002764\U0000FE0F\U0000200D\U0001F48B"
+              u8"\U0000200D\U0001F468",
+              FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, Arrows) {
-  CHECK_RUNS({{"x→←x←↑↓→", FontFallbackPriority::kText}});
+  CheckRuns({{"x→←x←↑↓→", FontFallbackPriority::kText}});
 }
 
 TEST_F(SymbolsIteratorTest, JudgePilot) {
-  CHECK_RUNS({{"👨‍⚖️👩‍⚖️👨🏼‍⚖️👩🏼‍⚖️",
-               FontFallbackPriority::kEmojiEmoji}});
+  CheckRuns({{"👨‍⚖️👩‍⚖️👨🏼‍⚖️👩🏼‍⚖️",
+              FontFallbackPriority::kEmojiEmoji}});
 }
 
 // Extracted from http://unicode.org/emoji/charts/emoji-released.html for Emoji
@@ -230,146 +219,119 @@ TEST_F(SymbolsIteratorTest, JudgePilot) {
 // cannot form the right glyph from the emoji font. Running this as one run in
 // one test ensures that the new emoji form an unbroken emoji-type sequence.
 TEST_F(SymbolsIteratorTest, Emoji5AdditionsExceptFlags) {
-  CHECK_RUNS(
-      {{"\xF0\x9F\xA7\x94\xF0\x9F\x8F\xBB\xF0\x9F\xA7\x94\xF0\x9F\x8F\xBC\xF0"
-        "\x9F\xA7\x94\xF0\x9F\x8F\xBD\xF0\x9F\xA7\x94\xF0\x9F\x8F\xBE\xF0\x9F"
-        "\xA7\x94\xF0\x9F\x8F\xBF\xF0\x9F\xA4\xB1\xF0\x9F\xA4\xB1\xF0\x9F\x8F"
-        "\xBB\xF0\x9F\xA4\xB1\xF0\x9F\x8F\xBC\xF0\x9F\xA4\xB1\xF0\x9F\x8F\xBD"
-        "\xF0\x9F\xA4\xB1\xF0\x9F\x8F\xBE\xF0\x9F\xA4\xB1\xF0\x9F\x8F\xBF\xF0"
-        "\x9F\xA7\x99\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBB\xF0\x9F\xA7\x99\xF0\x9F"
-        "\x8F\xBC\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBD\xF0\x9F\xA7\x99\xF0\x9F\x8F"
-        "\xBE\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBF\xF0\x9F\xA7\x99\xE2\x80\x8D\xE2"
-        "\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBB\xE2\x80\x8D\xE2"
-        "\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBC\xE2\x80\x8D\xE2"
-        "\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBD\xE2\x80\x8D\xE2"
-        "\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBE\xE2\x80\x8D\xE2"
-        "\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBF\xE2\x80\x8D\xE2"
-        "\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x99\xE2\x80\x8D\xE2\x99\x82\xEF\xB8"
-        "\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBB\xE2\x80\x8D\xE2\x99\x82\xEF\xB8"
-        "\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBC\xE2\x80\x8D\xE2\x99\x82\xEF\xB8"
-        "\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBD\xE2\x80\x8D\xE2\x99\x82\xEF\xB8"
-        "\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBE\xE2\x80\x8D\xE2\x99\x82\xEF\xB8"
-        "\x8F\xF0\x9F\xA7\x99\xF0\x9F\x8F\xBF\xE2\x80\x8D\xE2\x99\x82\xEF\xB8"
-        "\x8F\xF0\x9F\xA7\x9A\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBB\xF0\x9F\xA7\x9A"
-        "\xF0\x9F\x8F\xBC\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBD\xF0\x9F\xA7\x9A\xF0"
-        "\x9F\x8F\xBE\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBF\xF0\x9F\xA7\x9A\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBB\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBC\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBD\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBE\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBF\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBB\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBC\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBD\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBE\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x9A\xF0\x9F\x8F\xBF\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBB\xF0\x9F"
-        "\xA7\x9B\xF0\x9F\x8F\xBC\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBD\xF0\x9F\xA7"
-        "\x9B\xF0\x9F\x8F\xBE\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBF\xF0\x9F\xA7\x9B"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBB"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBC"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBD"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBE"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBF"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBB\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBC\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBD\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBE\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9B\xF0\x9F\x8F\xBF\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBB"
-        "\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBC\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBD\xF0"
-        "\x9F\xA7\x9C\xF0\x9F\x8F\xBE\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBF\xF0\x9F"
-        "\xA7\x9C\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F"
-        "\x8F\xBB\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F"
-        "\x8F\xBC\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F"
-        "\x8F\xBD\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F"
-        "\x8F\xBE\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F"
-        "\x8F\xBF\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBB\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBC\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBD\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBE\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9C\xF0\x9F\x8F\xBF\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9D\xF0\x9F\xA7\x9D\xF0\x9F"
-        "\x8F\xBB\xF0\x9F\xA7\x9D\xF0\x9F\x8F\xBC\xF0\x9F\xA7\x9D\xF0\x9F\x8F"
-        "\xBD\xF0\x9F\xA7\x9D\xF0\x9F\x8F\xBE\xF0\x9F\xA7\x9D\xF0\x9F\x8F\xBF"
-        "\xF0\x9F\xA7\x9D\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9D"
-        "\xF0\x9F\x8F\xBB\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9D"
-        "\xF0\x9F\x8F\xBC\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9D"
-        "\xF0\x9F\x8F\xBD\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9D"
-        "\xF0\x9F\x8F\xBE\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9D"
-        "\xF0\x9F\x8F\xBF\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9D"
-        "\xE2\x80\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9D\xF0\x9F\x8F\xBB"
-        "\xE2\x80\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9D\xF0\x9F\x8F\xBC"
-        "\xE2\x80\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9D\xF0\x9F\x8F\xBD"
-        "\xE2\x80\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9D\xF0\x9F\x8F\xBE"
-        "\xE2\x80\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9D\xF0\x9F\x8F\xBF"
-        "\xE2\x80\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9E\xF0\x9F\xA7\x9E"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9E\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x9F\xF0\x9F\xA7\x9F\xE2\x80\x8D\xE2"
-        "\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x9F\xE2\x80\x8D\xE2\x99\x82\xEF\xB8"
-        "\x8F\xF0\x9F\xA7\x96\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBB\xF0\x9F\xA7\x96"
-        "\xF0\x9F\x8F\xBC\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBD\xF0\x9F\xA7\x96\xF0"
-        "\x9F\x8F\xBE\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBF\xF0\x9F\xA7\x96\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBB\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBC\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBD\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBE\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBF\xE2\x80"
-        "\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x96\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBB\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBC\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBD\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBE\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x96\xF0\x9F\x8F\xBF\xE2\x80\x8D\xE2\x99\x82"
-        "\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBB\xF0\x9F"
-        "\xA7\x97\xF0\x9F\x8F\xBC\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBD\xF0\x9F\xA7"
-        "\x97\xF0\x9F\x8F\xBE\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBF\xF0\x9F\xA7\x97"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBB"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBC"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBD"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBE"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBF"
-        "\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x97\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBB\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBC\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBD\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBE\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x97\xF0\x9F\x8F\xBF\xE2\x80\x8D\xE2"
-        "\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBB"
-        "\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBC\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBD\xF0"
-        "\x9F\xA7\x98\xF0\x9F\x8F\xBE\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBF\xF0\x9F"
-        "\xA7\x98\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F"
-        "\x8F\xBB\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F"
-        "\x8F\xBC\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F"
-        "\x8F\xBD\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F"
-        "\x8F\xBE\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F"
-        "\x8F\xBF\xE2\x80\x8D\xE2\x99\x80\xEF\xB8\x8F\xF0\x9F\xA7\x98\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBB\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBC\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBD\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBE\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA7\x98\xF0\x9F\x8F\xBF\xE2\x80"
-        "\x8D\xE2\x99\x82\xEF\xB8\x8F\xF0\x9F\xA4\x9F\xF0\x9F\xA4\x9F\xF0\x9F"
-        "\x8F\xBB\xF0\x9F\xA4\x9F\xF0\x9F\x8F\xBC\xF0\x9F\xA4\x9F\xF0\x9F\x8F"
-        "\xBD\xF0\x9F\xA4\x9F\xF0\x9F\x8F\xBE\xF0\x9F\xA4\x9F\xF0\x9F\x8F\xBF"
-        "\xF0\x9F\xA4\xB2\xF0\x9F\xA4\xB2\xF0\x9F\x8F\xBB\xF0\x9F\xA4\xB2\xF0"
-        "\x9F\x8F\xBC\xF0\x9F\xA4\xB2\xF0\x9F\x8F\xBD\xF0\x9F\xA4\xB2\xF0\x9F"
-        "\x8F\xBE\xF0\x9F\xA4\xB2\xF0\x9F\x8F\xBF\xF0\x9F\xA7\xA0\xF0\x9F\xA7"
-        "\xA1\xF0\x9F\xA7\xA3\xF0\x9F\xA7\xA4\xF0\x9F\xA7\xA5\xF0\x9F\xA7\xA6"
-        "\xF0\x9F\xA7\xA2\xF0\x9F\xA6\x93\xF0\x9F\xA6\x92\xF0\x9F\xA6\x94\xF0"
-        "\x9F\xA6\x95\xF0\x9F\xA6\x96\xF0\x9F\xA6\x97\xF0\x9F\xA5\xA5\xF0\x9F"
-        "\xA5\xA6\xF0\x9F\xA5\xA8\xF0\x9F\xA5\xA9\xF0\x9F\xA5\xAA\xF0\x9F\xA5"
-        "\xA3\xF0\x9F\xA5\xAB\xF0\x9F\xA5\x9F\xF0\x9F\xA5\xA0\xF0\x9F\xA5\xA1"
-        "\xF0\x9F\xA5\xA7\xF0\x9F\xA5\xA4\xF0\x9F\xA5\xA2\xF0\x9F\x9B\xB8\xF0"
-        "\x9F\x9B\xB7\xF0\x9F\xA5\x8C",
+  CheckRuns(
+      {{u8"\U0001F9D4\U0001F3FB\U0001F9D4\U0001F3FC\U0001F9D4\U0001F3FD"
+        u8"\U0001F9D4\U0001F3FE\U0001F9D4\U0001F3FF\U0001F931\U0001F931"
+        u8"\U0001F3FB\U0001F931\U0001F3FC\U0001F931\U0001F3FD\U0001F931"
+        u8"\U0001F3FE\U0001F931\U0001F3FF\U0001F9D9\U0001F9D9\U0001F3FB"
+        u8"\U0001F9D9\U0001F3FC\U0001F9D9\U0001F3FD\U0001F9D9\U0001F3FE"
+        u8"\U0001F9D9\U0001F3FF\U0001F9D9\U0000200D\U00002640\U0000FE0F"
+        u8"\U0001F9D9\U0001F3FB\U0000200D\U00002640\U0000FE0F\U0001F9D9"
+        u8"\U0001F3FC\U0000200D\U00002640\U0000FE0F\U0001F9D9\U0001F3FD"
+        u8"\U0000200D\U00002640\U0000FE0F\U0001F9D9\U0001F3FE\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9D9\U0001F3FF\U0000200D\U00002640"
+        u8"\U0000FE0F\U0001F9D9\U0000200D\U00002642\U0000FE0F\U0001F9D9"
+        u8"\U0001F3FB\U0000200D\U00002642\U0000FE0F\U0001F9D9\U0001F3FC"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F9D9\U0001F3FD\U0000200D"
+        u8"\U00002642\U0000FE0F\U0001F9D9\U0001F3FE\U0000200D\U00002642"
+        u8"\U0000FE0F\U0001F9D9\U0001F3FF\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9DA\U0001F9DA\U0001F3FB\U0001F9DA\U0001F3FC\U0001F9DA"
+        u8"\U0001F3FD\U0001F9DA\U0001F3FE\U0001F9DA\U0001F3FF\U0001F9DA"
+        u8"\U0000200D\U00002640\U0000FE0F\U0001F9DA\U0001F3FB\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9DA\U0001F3FC\U0000200D\U00002640"
+        u8"\U0000FE0F\U0001F9DA\U0001F3FD\U0000200D\U00002640\U0000FE0F"
+        u8"\U0001F9DA\U0001F3FE\U0000200D\U00002640\U0000FE0F\U0001F9DA"
+        u8"\U0001F3FF\U0000200D\U00002640\U0000FE0F\U0001F9DA\U0000200D"
+        u8"\U00002642\U0000FE0F\U0001F9DA\U0001F3FB\U0000200D\U00002642"
+        u8"\U0000FE0F\U0001F9DA\U0001F3FC\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9DA\U0001F3FD\U0000200D\U00002642\U0000FE0F\U0001F9DA"
+        u8"\U0001F3FE\U0000200D\U00002642\U0000FE0F\U0001F9DA\U0001F3FF"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F9DB\U0001F9DB\U0001F3FB"
+        u8"\U0001F9DB\U0001F3FC\U0001F9DB\U0001F3FD\U0001F9DB\U0001F3FE"
+        u8"\U0001F9DB\U0001F3FF\U0001F9DB\U0000200D\U00002640\U0000FE0F"
+        u8"\U0001F9DB\U0001F3FB\U0000200D\U00002640\U0000FE0F\U0001F9DB"
+        u8"\U0001F3FC\U0000200D\U00002640\U0000FE0F\U0001F9DB\U0001F3FD"
+        u8"\U0000200D\U00002640\U0000FE0F\U0001F9DB\U0001F3FE\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9DB\U0001F3FF\U0000200D\U00002640"
+        u8"\U0000FE0F\U0001F9DB\U0000200D\U00002642\U0000FE0F\U0001F9DB"
+        u8"\U0001F3FB\U0000200D\U00002642\U0000FE0F\U0001F9DB\U0001F3FC"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F9DB\U0001F3FD\U0000200D"
+        u8"\U00002642\U0000FE0F\U0001F9DB\U0001F3FE\U0000200D\U00002642"
+        u8"\U0000FE0F\U0001F9DB\U0001F3FF\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9DC\U0001F9DC\U0001F3FB\U0001F9DC\U0001F3FC\U0001F9DC"
+        u8"\U0001F3FD\U0001F9DC\U0001F3FE\U0001F9DC\U0001F3FF\U0001F9DC"
+        u8"\U0000200D\U00002640\U0000FE0F\U0001F9DC\U0001F3FB\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9DC\U0001F3FC\U0000200D\U00002640"
+        u8"\U0000FE0F\U0001F9DC\U0001F3FD\U0000200D\U00002640\U0000FE0F"
+        u8"\U0001F9DC\U0001F3FE\U0000200D\U00002640\U0000FE0F\U0001F9DC"
+        u8"\U0001F3FF\U0000200D\U00002640\U0000FE0F\U0001F9DC\U0000200D"
+        u8"\U00002642\U0000FE0F\U0001F9DC\U0001F3FB\U0000200D\U00002642"
+        u8"\U0000FE0F\U0001F9DC\U0001F3FC\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9DC\U0001F3FD\U0000200D\U00002642\U0000FE0F\U0001F9DC"
+        u8"\U0001F3FE\U0000200D\U00002642\U0000FE0F\U0001F9DC\U0001F3FF"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F9DD\U0001F9DD\U0001F3FB"
+        u8"\U0001F9DD\U0001F3FC\U0001F9DD\U0001F3FD\U0001F9DD\U0001F3FE"
+        u8"\U0001F9DD\U0001F3FF\U0001F9DD\U0000200D\U00002640\U0000FE0F"
+        u8"\U0001F9DD\U0001F3FB\U0000200D\U00002640\U0000FE0F\U0001F9DD"
+        u8"\U0001F3FC\U0000200D\U00002640\U0000FE0F\U0001F9DD\U0001F3FD"
+        u8"\U0000200D\U00002640\U0000FE0F\U0001F9DD\U0001F3FE\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9DD\U0001F3FF\U0000200D\U00002640"
+        u8"\U0000FE0F\U0001F9DD\U0000200D\U00002642\U0000FE0F\U0001F9DD"
+        u8"\U0001F3FB\U0000200D\U00002642\U0000FE0F\U0001F9DD\U0001F3FC"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F9DD\U0001F3FD\U0000200D"
+        u8"\U00002642\U0000FE0F\U0001F9DD\U0001F3FE\U0000200D\U00002642"
+        u8"\U0000FE0F\U0001F9DD\U0001F3FF\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9DE\U0001F9DE\U0000200D\U00002640\U0000FE0F\U0001F9DE"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F9DF\U0001F9DF\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9DF\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9D6\U0001F9D6\U0001F3FB\U0001F9D6\U0001F3FC\U0001F9D6"
+        u8"\U0001F3FD\U0001F9D6\U0001F3FE\U0001F9D6\U0001F3FF\U0001F9D6"
+        u8"\U0000200D\U00002640\U0000FE0F\U0001F9D6\U0001F3FB\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9D6\U0001F3FC\U0000200D\U00002640"
+        u8"\U0000FE0F\U0001F9D6\U0001F3FD\U0000200D\U00002640\U0000FE0F"
+        u8"\U0001F9D6\U0001F3FE\U0000200D\U00002640\U0000FE0F\U0001F9D6"
+        u8"\U0001F3FF\U0000200D\U00002640\U0000FE0F\U0001F9D6\U0000200D"
+        u8"\U00002642\U0000FE0F\U0001F9D6\U0001F3FB\U0000200D\U00002642"
+        u8"\U0000FE0F\U0001F9D6\U0001F3FC\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9D6\U0001F3FD\U0000200D\U00002642\U0000FE0F\U0001F9D6"
+        u8"\U0001F3FE\U0000200D\U00002642\U0000FE0F\U0001F9D6\U0001F3FF"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F9D7\U0001F9D7\U0001F3FB"
+        u8"\U0001F9D7\U0001F3FC\U0001F9D7\U0001F3FD\U0001F9D7\U0001F3FE"
+        u8"\U0001F9D7\U0001F3FF\U0001F9D7\U0000200D\U00002640\U0000FE0F"
+        u8"\U0001F9D7\U0001F3FB\U0000200D\U00002640\U0000FE0F\U0001F9D7"
+        u8"\U0001F3FC\U0000200D\U00002640\U0000FE0F\U0001F9D7\U0001F3FD"
+        u8"\U0000200D\U00002640\U0000FE0F\U0001F9D7\U0001F3FE\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9D7\U0001F3FF\U0000200D\U00002640"
+        u8"\U0000FE0F\U0001F9D7\U0000200D\U00002642\U0000FE0F\U0001F9D7"
+        u8"\U0001F3FB\U0000200D\U00002642\U0000FE0F\U0001F9D7\U0001F3FC"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F9D7\U0001F3FD\U0000200D"
+        u8"\U00002642\U0000FE0F\U0001F9D7\U0001F3FE\U0000200D\U00002642"
+        u8"\U0000FE0F\U0001F9D7\U0001F3FF\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9D8\U0001F9D8\U0001F3FB\U0001F9D8\U0001F3FC\U0001F9D8"
+        u8"\U0001F3FD\U0001F9D8\U0001F3FE\U0001F9D8\U0001F3FF\U0001F9D8"
+        u8"\U0000200D\U00002640\U0000FE0F\U0001F9D8\U0001F3FB\U0000200D"
+        u8"\U00002640\U0000FE0F\U0001F9D8\U0001F3FC\U0000200D\U00002640"
+        u8"\U0000FE0F\U0001F9D8\U0001F3FD\U0000200D\U00002640\U0000FE0F"
+        u8"\U0001F9D8\U0001F3FE\U0000200D\U00002640\U0000FE0F\U0001F9D8"
+        u8"\U0001F3FF\U0000200D\U00002640\U0000FE0F\U0001F9D8\U0000200D"
+        u8"\U00002642\U0000FE0F\U0001F9D8\U0001F3FB\U0000200D\U00002642"
+        u8"\U0000FE0F\U0001F9D8\U0001F3FC\U0000200D\U00002642\U0000FE0F"
+        u8"\U0001F9D8\U0001F3FD\U0000200D\U00002642\U0000FE0F\U0001F9D8"
+        u8"\U0001F3FE\U0000200D\U00002642\U0000FE0F\U0001F9D8\U0001F3FF"
+        u8"\U0000200D\U00002642\U0000FE0F\U0001F91F\U0001F91F\U0001F3FB"
+        u8"\U0001F91F\U0001F3FC\U0001F91F\U0001F3FD\U0001F91F\U0001F3FE"
+        u8"\U0001F91F\U0001F3FF\U0001F932\U0001F932\U0001F3FB\U0001F932"
+        u8"\U0001F3FC\U0001F932\U0001F3FD\U0001F932\U0001F3FE\U0001F932"
+        u8"\U0001F3FF\U0001F9E0\U0001F9E1\U0001F9E3\U0001F9E4\U0001F9E5"
+        u8"\U0001F9E6\U0001F9E2\U0001F993\U0001F992\U0001F994\U0001F995"
+        u8"\U0001F996\U0001F997\U0001F965\U0001F966\U0001F968\U0001F969"
+        u8"\U0001F96A\U0001F963\U0001F96B\U0001F95F\U0001F960\U0001F961"
+        u8"\U0001F967\U0001F964\U0001F962\U0001F6F8\U0001F6F7\U0001F94C",
         FontFallbackPriority::kEmojiEmoji}});
 }
 
 TEST_F(SymbolsIteratorTest, EmojiSubdivisionFlags) {
-  CHECK_RUNS(
+  CheckRuns(
       {{"🏴󠁧󠁢󠁷󠁬󠁳󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿🏴󠁧󠁢",
         FontFallbackPriority::kEmojiEmoji}});
 }
