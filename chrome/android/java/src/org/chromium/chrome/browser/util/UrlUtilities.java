@@ -65,6 +65,7 @@ public class UrlUtilities {
      *         guaranteed.
      */
     public static String getTelNumber(String uri) {
+        if (uri == null || !uri.contains(":")) return "";
         return uri.split(":")[1];
     }
 
