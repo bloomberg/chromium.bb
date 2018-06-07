@@ -205,8 +205,8 @@ def FilteredQuery(opts, query, helper=None):
     # Strip off common leading names since the result is still
     # unique over the whole tree.
     if not opts.verbose:
-      for pfx in ('chromeos', 'chromiumos', 'external', 'overlays', 'platform',
-                  'third_party'):
+      for pfx in ('aosp', 'chromeos', 'chromiumos', 'external', 'overlays',
+                  'platform', 'third_party'):
         if cl['project'].startswith('%s/' % pfx):
           cl['project'] = cl['project'][len(pfx) + 1:]
 
