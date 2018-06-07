@@ -2046,7 +2046,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       } else if (item->actual_menu_position() ==
                  MenuItemView::POSITION_BEST_FIT) {
         MenuItemView::MenuPosition orientation =
-            MenuItemView::POSITION_BELOW_BOUNDS;
+            MenuItemView::POSITION_BEST_FIT;
         if (state_.monitor_bounds.height() < pref.height()) {
           // Handle very tall menus.
           pref.set_height(state_.monitor_bounds.height());
@@ -2061,7 +2061,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
           // best fit and to avoid showing scroll elements.
           y = state_.monitor_bounds.bottom() - pref.height();
         }
-        if (orientation == MenuItemView::POSITION_BELOW_BOUNDS) {
+        if (orientation == MenuItemView::POSITION_BEST_FIT) {
           // The menu should never overlap the owning button. So move it.
           // We use the anchor view style to determine the preferred position
           // relative to the owning button.
