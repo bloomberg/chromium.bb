@@ -118,6 +118,42 @@ NGLogicalOffset LogicalFromBfcOffsets(const NGFragment& fragment,
           child_bfc_offset.block_offset - parent_bfc_offset.block_offset};
 }
 
+// Create a child constraint space with only extrinsic block sizing data. This
+// will and can not be used for final layout, but is needed in an intermediate
+// measure pass that calculates the min/max size contribution from a child that
+// establishes an orthogonal flow root.
+//
+// Note that it's the child's *block* size that will be propagated as min/max
+// inline size to the container. Therefore it's crucial to provide the child
+// with an available inline size (which can be derived from the block size of
+// the container if definite). We'll provide any extrinsic available block size
+// that we have. This includes fixed and resolvable percentage sizes, for
+// instance, while auto will not resolve. If no extrinsic size can be
+// determined, we will resort to using a fallback later on, such as the initial
+// containing block size. Spec:
+// https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
+scoped_refptr<NGConstraintSpace> CreateExtrinsicConstraintSpace(
+    const NGConstraintSpace& container_space,
+    NGBlockNode container,
+    NGBlockNode child) {
+  LayoutUnit extrinsic_block_size = ComputeBlockSizeForFragment(
+      container_space, container.Style(), NGSizeIndefinite);
+  if (extrinsic_block_size != NGSizeIndefinite) {
+    extrinsic_block_size -=
+        CalculateBorderScrollbarPadding(container_space, container).BlockSum();
+    extrinsic_block_size = std::max(extrinsic_block_size, LayoutUnit());
+  }
+  NGLogicalSize extrinsic_size(NGSizeIndefinite, extrinsic_block_size);
+
+  return NGConstraintSpaceBuilder(container_space)
+      .SetAvailableSize(extrinsic_size)
+      .SetPercentageResolutionSize(extrinsic_size)
+      .SetIsIntermediateLayout(true)
+      .SetIsNewFormattingContext(child.CreatesNewFormattingContext())
+      .SetFloatsBfcOffset(NGBfcOffset())
+      .ToConstraintSpace(child.Style().GetWritingMode());
+}
+
 }  // namespace
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
@@ -186,8 +222,19 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       child_sizes =
           child.ComputeMinMaxSize(Style().GetWritingMode(), child_input);
     } else {
+      // We'll need extrinsic sizing data when computing min/max for orthogonal
+      // flow roots.
+      scoped_refptr<NGConstraintSpace> extrinsic_constraint_space;
+      const NGConstraintSpace* optional_constraint_space = nullptr;
+      if (!IsParallelWritingMode(Style().GetWritingMode(),
+                                 child.Style().GetWritingMode())) {
+        extrinsic_constraint_space = CreateExtrinsicConstraintSpace(
+            ConstraintSpace(), Node(), ToNGBlockNode(child));
+        optional_constraint_space = extrinsic_constraint_space.get();
+      }
       child_sizes = ComputeMinAndMaxContentContribution(
-          Style().GetWritingMode(), child, child_input);
+          Style().GetWritingMode(), child, child_input,
+          optional_constraint_space);
     }
 
     // Determine the max inline contribution of the child.

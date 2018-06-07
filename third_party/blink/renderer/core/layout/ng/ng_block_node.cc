@@ -269,11 +269,18 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
       CreateConstraintSpaceBuilderForMinMax(*this).ToConstraintSpace(
           Style().GetWritingMode());
 
-  if (!constraint_space)
-    constraint_space = zero_constraint_space.get();
+  bool is_orthogonal_flow_root =
+      !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
 
-  if (!IsParallelWritingMode(container_writing_mode,
-                             Style().GetWritingMode())) {
+  if (!constraint_space) {
+    // Using the zero-sized constraint space when measuring for an orthogonal
+    // flow root isn't going to give the right result.
+    DCHECK(!is_orthogonal_flow_root);
+
+    constraint_space = zero_constraint_space.get();
+  }
+
+  if (is_orthogonal_flow_root) {
     scoped_refptr<NGLayoutResult> layout_result = Layout(*constraint_space);
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
     NGBoxFragment fragment(
