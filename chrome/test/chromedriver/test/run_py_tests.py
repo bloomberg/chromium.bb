@@ -204,6 +204,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testCloseWindowUsingJavascript',
         # Android doesn't support headless mode
         'HeadlessInvalidCertificateTest.*',
+        # Android doesn't support user-data-dir switch
+        'ExistingUserDataDirTest.*',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
