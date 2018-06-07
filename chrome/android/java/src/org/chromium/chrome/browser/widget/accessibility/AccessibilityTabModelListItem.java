@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -60,6 +59,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     private final int mDefaultLevel;
     private final int mIncognitoLevel;
     private final ColorStateList mDarkIconColor;
+    private final ColorStateList mLightIconColor;
     private final ColorStateList mDarkCloseIconColor;
     private final ColorStateList mLightCloseIconColor;
 
@@ -73,7 +73,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     private LinearLayout mTabContents;
     private TextView mTitleView;
     private TextView mDescriptionView;
-    private ImageView mFaviconView;
+    private TintedImageView mFaviconView;
     private TintedImageButton mCloseButton;
 
     // The children on the undo view.
@@ -217,6 +217,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
         mDarkIconColor =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+        mLightIconColor =
+                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_mode_tint);
         mDarkCloseIconColor =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.black_alpha_38);
         mLightCloseIconColor =
@@ -242,7 +244,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         } else {
             mTabContents = (LinearLayout) findViewById(R.id.tab_contents);
             mTitleView = (TextView) findViewById(R.id.tab_title);
-            mFaviconView = (ImageView) findViewById(R.id.tab_favicon);
+            mFaviconView = findViewById(R.id.tab_favicon);
             mCloseButton = (TintedImageButton) findViewById(R.id.close_btn);
         }
         mTabContents.setVisibility(View.VISIBLE);
@@ -350,13 +352,13 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
             Bitmap bitmap = mTab.getFavicon();
             if (bitmap != null) {
                 // Don't tint favicon bitmaps.
-                ((TintedImageView) mFaviconView).setTint(null);
+                mFaviconView.setTint(null);
                 mFaviconView.setImageBitmap(bitmap);
             } else {
                 mFaviconView.setImageResource(R.drawable.ic_globe_24dp);
-                if (FeatureUtilities.isChromeModernDesignEnabled()) {
-                    ((TintedImageView) mFaviconView).setTint(mDarkIconColor);
-                }
+                mFaviconView.setTint(FeatureUtilities.isChromeModernDesignEnabled()
+                                ? mDarkIconColor
+                                : mLightIconColor);
             }
         }
     }
