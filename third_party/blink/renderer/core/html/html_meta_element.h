@@ -105,9 +105,8 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
                                        const String& key,
                                        const String& value);
 
-  static ViewportDescription::ViewportFit ParseViewportFitValueAsEnum(
-      bool& unknown_value,
-      const String& value);
+  static mojom::ViewportFit ParseViewportFitValueAsEnum(bool& unknown_value,
+                                                        const String& value);
 
   static void ReportViewportWarning(Document*,
                                     ViewportErrorCode,
