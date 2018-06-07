@@ -906,6 +906,7 @@ extern const char kWebDriverOverridesIncompatiblePolicies[];
 #if !defined(OS_ANDROID)
 extern const char kAutoplayAllowed[];
 extern const char kAutoplayWhitelist[];
+extern const char kNTPCustomBackgroundURL[];
 #endif
 
 }  // namespace prefs

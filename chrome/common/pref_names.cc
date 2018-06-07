@@ -2564,6 +2564,9 @@ const char kAutoplayAllowed[] = "media.autoplay_allowed";
 
 // Holds URL patterns that specify URLs that will be allowed to autoplay.
 const char kAutoplayWhitelist[] = "media.autoplay_whitelist";
+
+// Holds URL for New Tab Page custom background
+const char kNTPCustomBackgroundURL[] = "new_tab_page.custom_background_url";
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace prefs

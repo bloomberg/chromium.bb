@@ -37,9 +37,12 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -206,8 +209,10 @@ std::string GetConfigData(bool is_google, const GURL& google_base_url) {
 
   config_data.SetBoolean("isMDIconsEnabled", features::IsMDIconsEnabled());
 
-  config_data.SetBoolean("isCustomBackgroundsEnabled",
-                         features::IsCustomBackgroundsEnabled());
+  if (is_google) {
+    config_data.SetBoolean("isCustomBackgroundsEnabled",
+                           features::IsCustomBackgroundsEnabled());
+  }
 
   // Serialize the dictionary.
   std::string js_text;

@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_observer.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/url_data_source.h"
 
 #if defined(OS_ANDROID)

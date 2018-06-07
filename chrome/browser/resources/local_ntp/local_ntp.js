@@ -301,6 +301,9 @@ function renderTheme() {
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
 
+  $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden =
+      !(info.imageUrl && info.imageUrl.length > 0);
+
   if (configData.isGooglePage) {
     $('edit-bg').hidden =
         !configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme;
@@ -318,7 +321,7 @@ function renderTheme() {
       document.body.appendChild(collScript);
     };
     if (configData.isCustomBackgroundsEnabled && info.usingDefaultTheme)
-      customBackgrounds.initBackgroundOptionDialog();
+      customBackgrounds.initCustomBackgrounds();
   }
 }
 

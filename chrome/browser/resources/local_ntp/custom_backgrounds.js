@@ -161,6 +161,7 @@ customBackgrounds.showCollectionSelectionDialog = function() {
 customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   var backButton = $(customBackgrounds.IDS.BACK);
   var dailyRefresh = $(customBackgrounds.IDS.REFRESH_TOGGLE);
+  var doneButton = $(customBackgrounds.IDS.DONE);
   var overlay = $(customBackgrounds.IDS.OVERLAY);
   var selectedTile = null;
   var tileContainer = $(customBackgrounds.IDS.TILES);
@@ -176,6 +177,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
     tile.style.backgroundImage = 'url(' + coll_img[i].imageUrl + ')';
     tile.id = 'img_tile_' + i;
+    tile.dataset.url = coll_img[i].imageUrl;
 
     tile.onclick = function(event) {
       var tile = event.target;
@@ -199,9 +201,20 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     if (selectedTile) {
       selectedTile.classList.remove(
           customBackgrounds.CLASSES.COLLECTION_SELECTED);
+      selectedTile = null;
     }
     $(customBackgrounds.IDS.DONE)
         .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
+  };
+
+  doneButton.onclick = function(event) {
+    if (!selectedTile)
+      return;
+
+    overlay.classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+    window.chrome.embeddedSearch.newTabPage.setBackgroundURL(
+        selectedTile.dataset.url);
+    customBackgrounds.resetSelectionDialog();
   };
 
   backButton.onclick = function(event) {
@@ -213,7 +226,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
 /**
  * Display dialog with various options for custom background source.
  */
-customBackgrounds.initBackgroundOptionDialog = function() {
+customBackgrounds.initCustomBackgrounds = function() {
   var editDialogOverlay = $(customBackgrounds.IDS.EDIT_BG_OVERLAY);
 
   $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS_TEXT).textContent =
@@ -233,7 +246,6 @@ customBackgrounds.initBackgroundOptionDialog = function() {
     $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).hidden = true;
     $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = false;
     $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = true;
-    $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden = true;
 
     $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onclick = function() {
       $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
@@ -242,6 +254,12 @@ customBackgrounds.initBackgroundOptionDialog = function() {
         customBackgrounds.showCollectionSelectionDialog(
             configData.translatedStrings.selectChromeWallpaper);
       }
+    };
+
+    $(customBackgrounds.IDS.RESTORE_DEFAULT).onclick = function() {
+      $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
+          .classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+      window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
     };
 
     editDialogOverlay.classList.add(customBackgrounds.CLASSES.SHOW_OVERLAY);

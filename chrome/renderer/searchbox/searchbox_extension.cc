@@ -73,6 +73,7 @@ const char kCSSBackgroundColorFormat[] = "rgba(%d,%d,%d,%s)";
 const char kCSSBackgroundPositionCenter[] = "center";
 const char kCSSBackgroundPositionLeft[] = "left";
 const char kCSSBackgroundPositionTop[] = "top";
+const char kCSSBackgroundPositionTopCover[] = "top/cover";
 const char kCSSBackgroundPositionRight[] = "right";
 const char kCSSBackgroundPositionBottom[] = "bottom";
 
@@ -330,6 +331,17 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     }
   }
 
+  if (theme_info.using_default_theme &&
+      !theme_info.custom_background_url.is_empty()) {
+    builder.Set("imageUrl",
+                "url('" + theme_info.custom_background_url.spec() + "')");
+    builder.Set("imageTiling", std::string(kCSSBackgroundRepeatNo));
+    builder.Set("imageHorizontalAlignment",
+                std::string(kCSSBackgroundPositionLeft));
+    builder.Set("imageVerticalAlignment",
+                std::string(kCSSBackgroundPositionTopCover));
+  }
+
   return builder.Build();
 }
 
@@ -576,6 +588,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
       int tile_source,
       int tile_type,
       v8::Local<v8::Value> data_generation_time);
+  static void SetCustomBackgroundURL(const std::string& background_url);
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
 };
@@ -611,7 +624,9 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("logMostVisitedImpression",
                  &NewTabPageBindings::LogMostVisitedImpression)
       .SetMethod("logMostVisitedNavigation",
-                 &NewTabPageBindings::LogMostVisitedNavigation);
+                 &NewTabPageBindings::LogMostVisitedNavigation)
+      .SetMethod("setBackgroundURL",
+                 &NewTabPageBindings::SetCustomBackgroundURL);
 }
 
 // static
@@ -806,6 +821,14 @@ void NewTabPageBindings::LogMostVisitedNavigation(
         /*url_for_rappor=*/GURL());
     search_box->LogMostVisitedNavigation(impression);
   }
+}
+
+// static
+void NewTabPageBindings::SetCustomBackgroundURL(
+    const std::string& background_url) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  GURL url(background_url);
+  search_box->SetCustomBackgroundURL(url);
 }
 
 }  // namespace

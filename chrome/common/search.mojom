@@ -70,6 +70,9 @@ interface EmbeddedSearch {
   // The Instant page asks for Chrome identity check against |identity|.
   ChromeIdentityCheck(int32 page_seq_no, mojo_base.mojom.String16 identity)
       => (bool identity_match);
+
+  // Updates the NTP custom background preferences.
+  SetCustomBackgroundURL(url.mojom.Url url);
 };
 
 [Native]

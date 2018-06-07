@@ -287,6 +287,10 @@
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/search/instant_service.h"
+#endif
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #endif
@@ -610,6 +614,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if !defined(OS_ANDROID)
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
   first_run::RegisterProfilePrefs(registry);
+  InstantService::RegisterProfilePrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   gcm::RegisterProfilePrefs(registry);
   StartupBrowserCreator::RegisterProfilePrefs(registry);

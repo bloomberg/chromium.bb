@@ -69,6 +69,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(PasteIntoOmnibox, void(const base::string16&));
   MOCK_METHOD1(ChromeIdentityCheck, bool(const base::string16& identity));
   MOCK_METHOD0(HistorySyncCheck, bool());
+  MOCK_METHOD1(OnSetCustomBackgroundURL, void(const GURL& url));
 };
 
 class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
@@ -83,6 +84,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
   MOCK_METHOD0(ShouldProcessChromeIdentityCheck, bool());
   MOCK_METHOD0(ShouldProcessHistorySyncCheck, bool());
+  MOCK_METHOD0(ShouldProcessSetCustomBackgroundURL, bool());
   MOCK_METHOD1(ShouldSendSetInputInProgress, bool(bool));
   MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
   MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
@@ -583,4 +585,30 @@ TEST_F(SearchIPCRouterTest, DoNotSendThemeBackgroundInfoMsg) {
 
   EXPECT_CALL(*mock_embedded_search_client(), ThemeChanged(_)).Times(0);
   GetSearchIPCRouter().SendThemeBackgroundInfo(ThemeBackgroundInfo());
+}
+
+TEST_F(SearchIPCRouterTest, ProcessSetCustomBackgroundURLMsg) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  GURL bg_url("www.foo.com");
+  EXPECT_CALL(*mock_delegate(), OnSetCustomBackgroundURL(bg_url)).Times(1);
+  EXPECT_CALL(*policy, ShouldProcessSetCustomBackgroundURL())
+      .Times(1)
+      .WillOnce(Return(true));
+
+  GetSearchIPCRouter().SetCustomBackgroundURL(bg_url);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreSetCustomBackgroundURLMsg) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  GURL bg_url("www.foo.com");
+  EXPECT_CALL(*mock_delegate(), OnSetCustomBackgroundURL(bg_url)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessSetCustomBackgroundURL())
+      .Times(1)
+      .WillOnce(Return(false));
+
+  GetSearchIPCRouter().SetCustomBackgroundURL(bg_url);
 }

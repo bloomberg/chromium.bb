@@ -71,3 +71,7 @@ bool SearchIPCRouterPolicyImpl::ShouldSendMostVisitedItems() {
 bool SearchIPCRouterPolicyImpl::ShouldSendThemeBackgroundInfo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessSetCustomBackgroundURL() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
