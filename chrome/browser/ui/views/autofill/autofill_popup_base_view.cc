@@ -11,6 +11,8 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
@@ -261,6 +263,12 @@ void AutofillPopupBaseView::OnGestureEvent(ui::GestureEvent* event) {
       return;
   }
   event->SetHandled();
+}
+
+void AutofillPopupBaseView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kMenu;
+  node_data->SetName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
 void AutofillPopupBaseView::SetSelection(const gfx::Point& point) {

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_native_views.h"
 #include "chrome/browser/ui/views_mode_controller.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -269,12 +268,6 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
                   entry_rect.height()),
         text_align);
   }
-}
-
-void AutofillPopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kMenu;
-  node_data->SetName(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
 void AutofillPopupViewViews::CreateChildViews() {
