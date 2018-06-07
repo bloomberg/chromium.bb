@@ -1411,16 +1411,18 @@ bool GpuProcessHost::LaunchGpuProcess() {
   process_->Launch(std::move(delegate), std::move(cmd_line), true);
   process_launched_ = true;
 
-  auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
-  if (gpu_data_manager->HardwareAccelerationEnabled()) {
-    UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsHardwareAccelerated,
-                              LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
-  } else if (gpu_data_manager->SwiftShaderAllowed()) {
-    UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsSwiftShader, LAUNCHED,
-                              GPU_PROCESS_LIFETIME_EVENT_MAX);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsDisplayCompositor, LAUNCHED,
-                              GPU_PROCESS_LIFETIME_EVENT_MAX);
+  if (kind_ == GPU_PROCESS_KIND_SANDBOXED) {
+    auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+    if (gpu_data_manager->HardwareAccelerationEnabled()) {
+      UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsHardwareAccelerated,
+                                LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
+    } else if (gpu_data_manager->SwiftShaderAllowed()) {
+      UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsSwiftShader, LAUNCHED,
+                                GPU_PROCESS_LIFETIME_EVENT_MAX);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsDisplayCompositor,
+                                LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
+    }
   }
 
   return true;
