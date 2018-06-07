@@ -217,17 +217,17 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
   base::span<const uint8_t> cbor_header = base::as_bytes(
       base::make_span(data.substr(prologue_->signature_header_field_length(),
                                   prologue_->cbor_header_length())));
-  header_ = SignedExchangeEnvelope::Parse(signature_header_field, cbor_header,
-                                          devtools_proxy_.get());
+  envelope_ = SignedExchangeEnvelope::Parse(signature_header_field, cbor_header,
+                                            devtools_proxy_.get());
   header_read_buf_ = nullptr;
   header_buf_ = nullptr;
-  if (!header_) {
+  if (!envelope_) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(), "Failed to parse SignedExchange header.");
     return false;
   }
 
-  const GURL cert_url = header_->signature().cert_url;
+  const GURL cert_url = envelope_->signature().cert_url;
   // TODO(https://crbug.com/819467): When we will support ed25519Key, |cert_url|
   // may be empty.
   DCHECK(cert_url.is_valid());
@@ -252,7 +252,7 @@ void SignedExchangeHandler::RunErrorCallback(net::Error error) {
   DCHECK_NE(state_, State::kHeadersCallbackCalled);
   if (devtools_proxy_) {
     devtools_proxy_->OnSignedExchangeReceived(
-        header_,
+        envelope_,
         unverified_cert_chain_ ? unverified_cert_chain_->cert()
                                : scoped_refptr<net::X509Certificate>(),
         nullptr);
@@ -281,7 +281,7 @@ void SignedExchangeHandler::OnCertReceived(
 
   const SignedExchangeSignatureVerifier::Result verify_result =
       SignedExchangeSignatureVerifier::Verify(
-          *header_, unverified_cert_chain_->cert(), GetVerificationTime(),
+          *envelope_, unverified_cert_chain_->cert(), GetVerificationTime(),
           devtools_proxy_.get());
   if (verify_result != SignedExchangeSignatureVerifier::Result::kSuccess) {
     base::Optional<SignedExchangeError::Field> error_field =
@@ -311,7 +311,7 @@ void SignedExchangeHandler::OnCertReceived(
                                          : request_context->cert_verifier();
   int result = cert_verifier->Verify(
       net::CertVerifier::RequestParams(
-          unverified_cert_chain_->cert(), header_->request_url().host(),
+          unverified_cert_chain_->cert(), envelope_->request_url().host(),
           config.GetCertVerifyFlags(), unverified_cert_chain_->ocsp(),
           net::CertificateList()),
       net::SSLConfigService::GetCRLSet().get(), &cert_verify_result_,
@@ -370,7 +370,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   }
 
   network::ResourceResponseHead response_head;
-  response_head.headers = header_->BuildHttpResponseHeaders();
+  response_head.headers = envelope_->BuildHttpResponseHeaders();
   response_head.headers->GetMimeTypeAndCharset(&response_head.mime_type,
                                                &response_head.charset);
 
@@ -408,13 +408,13 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
 
   if (devtools_proxy_) {
     devtools_proxy_->OnSignedExchangeReceived(
-        header_, unverified_cert_chain_->cert(), &ssl_info);
+        envelope_, unverified_cert_chain_->cert(), &ssl_info);
   }
 
   response_head.ssl_info = std::move(ssl_info);
   // TODO(https://crbug.com/815025): Verify the Certificate Transparency status.
   std::move(headers_callback_)
-      .Run(net::OK, header_->request_url(), header_->request_method(),
+      .Run(net::OK, envelope_->request_url(), envelope_->request_method(),
            response_head, std::move(mi_stream));
   state_ = State::kHeadersCallbackCalled;
 }

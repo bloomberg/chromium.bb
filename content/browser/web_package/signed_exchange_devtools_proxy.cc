@@ -74,7 +74,7 @@ void OnSignedExchangeReceivedOnUI(
     const GURL& outer_request_url,
     scoped_refptr<network::ResourceResponse> outer_response,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
-    base::Optional<SignedExchangeEnvelope> header,
+    base::Optional<SignedExchangeEnvelope> envelope,
     scoped_refptr<net::X509Certificate> certificate,
     base::Optional<net::SSLInfo> ssl_info,
     std::vector<SignedExchangeError> errors) {
@@ -84,7 +84,7 @@ void OnSignedExchangeReceivedOnUI(
     return;
   RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
       frame_tree_node, devtools_navigation_token, outer_request_url,
-      outer_response->head, header, certificate, ssl_info, errors);
+      outer_response->head, envelope, certificate, ssl_info, errors);
 }
 
 }  // namespace
@@ -164,7 +164,7 @@ void SignedExchangeDevToolsProxy::CertificateRequestCompleted(
 }
 
 void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
-    const base::Optional<SignedExchangeEnvelope>& header,
+    const base::Optional<SignedExchangeEnvelope>& envelope,
     const scoped_refptr<net::X509Certificate>& certificate,
     const net::SSLInfo* ssl_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -182,7 +182,7 @@ void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&OnSignedExchangeReceivedOnUI, frame_tree_node_id_getter_,
                      outer_request_url_, resource_response->DeepCopy(),
-                     devtools_navigation_token_, header, certificate,
+                     devtools_navigation_token_, envelope, certificate,
                      std::move(ssl_info_opt), std::move(errors_)));
 }
 

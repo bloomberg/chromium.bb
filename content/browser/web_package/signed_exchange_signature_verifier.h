@@ -47,13 +47,13 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     kErrInvalidTimestamp
   };
 
-  static Result Verify(const SignedExchangeEnvelope& header,
+  static Result Verify(const SignedExchangeEnvelope& envelope,
                        scoped_refptr<net::X509Certificate> certificate,
                        const base::Time& verification_time,
                        SignedExchangeDevToolsProxy* devtools_proxy);
 
   static base::Optional<std::vector<uint8_t>> EncodeCanonicalExchangeHeaders(
-      const SignedExchangeEnvelope& header);
+      const SignedExchangeEnvelope& envelope);
 };
 
 }  // namespace content

@@ -1692,7 +1692,7 @@ void NetworkHandler::OnSignedExchangeReceived(
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
     const GURL& outer_request_url,
     const network::ResourceResponseHead& outer_response,
-    const base::Optional<SignedExchangeEnvelope>& header,
+    const base::Optional<SignedExchangeEnvelope>& envelope,
     const scoped_refptr<net::X509Certificate>& certificate,
     const base::Optional<net::SSLInfo>& ssl_info,
     const std::vector<SignedExchangeError>& errors) {
@@ -1703,13 +1703,13 @@ void NetworkHandler::OnSignedExchangeReceived(
           .SetOuterResponse(BuildResponse(outer_request_url, outer_response))
           .Build();
 
-  if (header) {
+  if (envelope) {
     std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
-    for (const auto it : header->response_headers())
+    for (const auto it : envelope->response_headers())
       headers_dict->setString(it.first, it.second);
 
     const SignedExchangeSignatureHeaderField::Signature& sig =
-        header->signature();
+        envelope->signature();
     std::unique_ptr<Array<Network::SignedExchangeSignature>> signatures =
         Array<Network::SignedExchangeSignature>::create();
     std::unique_ptr<Network::SignedExchangeSignature> signature =
@@ -1745,9 +1745,9 @@ void NetworkHandler::OnSignedExchangeReceived(
 
     signed_exchange_info->SetHeader(
         Network::SignedExchangeHeader::Create()
-            .SetRequestUrl(header->request_url().spec())
-            .SetRequestMethod(header->request_method())
-            .SetResponseCode(header->response_code())
+            .SetRequestUrl(envelope->request_url().spec())
+            .SetRequestMethod(envelope->request_method())
+            .SetResponseCode(envelope->response_code())
             .SetResponseHeaders(Object::fromValue(headers_dict.get(), nullptr))
             .SetSignatures(std::move(signatures))
             .Build());

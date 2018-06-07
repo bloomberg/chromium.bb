@@ -15,15 +15,15 @@ namespace content {
 namespace {
 
 TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
-  SignedExchangeEnvelope header;
-  header.set_request_method("GET");
-  header.set_request_url(GURL("https://example.com/index.html"));
-  header.set_response_code(net::HTTP_OK);
-  header.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  header.AddResponseHeader("content-encoding", "mi-sha256");
+  SignedExchangeEnvelope envelope;
+  envelope.set_request_method("GET");
+  envelope.set_request_url(GURL("https://example.com/index.html"));
+  envelope.set_response_code(net::HTTP_OK);
+  envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256");
 
   base::Optional<std::vector<uint8_t>> encoded =
-      SignedExchangeSignatureVerifier::EncodeCanonicalExchangeHeaders(header);
+      SignedExchangeSignatureVerifier::EncodeCanonicalExchangeHeaders(envelope);
   ASSERT_TRUE(encoded.has_value());
 
   static const uint8_t kExpected[] = {
@@ -190,16 +190,16 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
   }
 
   void TestVerifierGivenValidInput(
-      const SignedExchangeEnvelope& header,
+      const SignedExchangeEnvelope& envelope,
       scoped_refptr<net::X509Certificate> certificate) {
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
               SignedExchangeSignatureVerifier::Verify(
-                  header, certificate, VerificationTime(),
+                  envelope, certificate, VerificationTime(),
                   nullptr /* devtools_proxy */));
 
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
               SignedExchangeSignatureVerifier::Verify(
-                  header, certificate,
+                  envelope, certificate,
                   base::Time::UnixEpoch() +
                       base::TimeDelta::FromSeconds(kSignatureHeaderDate - 1),
                   nullptr /* devtools_proxy */
@@ -207,7 +207,7 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
 
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kSuccess,
               SignedExchangeSignatureVerifier::Verify(
-                  header, certificate,
+                  envelope, certificate,
                   base::Time::UnixEpoch() +
                       base::TimeDelta::FromSeconds(kSignatureHeaderExpires),
                   nullptr /* devtools_proxy */
@@ -215,54 +215,54 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
 
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
               SignedExchangeSignatureVerifier::Verify(
-                  header, certificate,
+                  envelope, certificate,
                   base::Time::UnixEpoch() +
                       base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1),
                   nullptr /* devtools_proxy */
                   ));
 
-    SignedExchangeEnvelope invalid_expires_header(header);
+    SignedExchangeEnvelope invalid_expires_envelope(envelope);
     auto invalid_expires_signature =
         SignedExchangeSignatureHeaderField::ParseSignature(
             kSignatureHeaderInvalidExpires, nullptr /* devtools_proxy */);
     ASSERT_TRUE(invalid_expires_signature.has_value());
     ASSERT_EQ(1u, invalid_expires_signature->size());
-    invalid_expires_header.SetSignatureForTesting(
+    invalid_expires_envelope.SetSignatureForTesting(
         (*invalid_expires_signature)[0]);
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp,
               SignedExchangeSignatureVerifier::Verify(
-                  invalid_expires_header, certificate, VerificationTime(),
+                  invalid_expires_envelope, certificate, VerificationTime(),
                   nullptr /* devtools_proxy */
                   ));
 
-    SignedExchangeEnvelope corrupted_header(header);
-    corrupted_header.set_request_url(GURL("https://example.com/bad.html"));
+    SignedExchangeEnvelope corrupted_envelope(envelope);
+    corrupted_envelope.set_request_url(GURL("https://example.com/bad.html"));
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
                   kErrSignatureVerificationFailed,
               SignedExchangeSignatureVerifier::Verify(
-                  corrupted_header, certificate, VerificationTime(),
+                  corrupted_envelope, certificate, VerificationTime(),
                   nullptr /* devtools_proxy */
                   ));
 
-    SignedExchangeEnvelope badsig_header(header);
-    SignedExchangeSignatureHeaderField::Signature badsig = header.signature();
+    SignedExchangeEnvelope badsig_envelope(envelope);
+    SignedExchangeSignatureHeaderField::Signature badsig = envelope.signature();
     badsig.sig[0]++;
-    badsig_header.SetSignatureForTesting(badsig);
+    badsig_envelope.SetSignatureForTesting(badsig);
     EXPECT_EQ(SignedExchangeSignatureVerifier::Result::
                   kErrSignatureVerificationFailed,
               SignedExchangeSignatureVerifier::Verify(
-                  badsig_header, certificate, VerificationTime(),
+                  badsig_envelope, certificate, VerificationTime(),
                   nullptr /* devtools_proxy */
                   ));
 
-    SignedExchangeEnvelope badsigsha256_header(header);
+    SignedExchangeEnvelope badsigsha256_envelope(envelope);
     SignedExchangeSignatureHeaderField::Signature badsigsha256 =
-        header.signature();
+        envelope.signature();
     badsigsha256.cert_sha256->data[0]++;
-    badsigsha256_header.SetSignatureForTesting(badsigsha256);
+    badsigsha256_envelope.SetSignatureForTesting(badsigsha256);
     EXPECT_EQ(
         SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch,
-        SignedExchangeSignatureVerifier::Verify(badsigsha256_header,
+        SignedExchangeSignatureVerifier::Verify(badsigsha256_envelope,
                                                 certificate, VerificationTime(),
                                                 nullptr /* devtools_proxy */
                                                 ));
@@ -281,17 +281,17 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
           net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, certlist.size());
 
-  SignedExchangeEnvelope header;
-  header.set_request_method("GET");
-  header.set_request_url(GURL("https://test.example.org/test/"));
-  header.set_response_code(net::HTTP_OK);
-  header.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  header.AddResponseHeader("content-encoding", "mi-sha256");
-  header.AddResponseHeader(
+  SignedExchangeEnvelope envelope;
+  envelope.set_request_method("GET");
+  envelope.set_request_url(GURL("https://test.example.org/test/"));
+  envelope.set_response_code(net::HTTP_OK);
+  envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256");
+  envelope.AddResponseHeader(
       "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
-  header.SetSignatureForTesting((*signature)[0]);
+  envelope.SetSignatureForTesting((*signature)[0]);
 
-  TestVerifierGivenValidInput(header, certlist[0]);
+  TestVerifierGivenValidInput(envelope, certlist[0]);
 }
 
 TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
@@ -306,18 +306,18 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
           net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, certlist.size());
 
-  SignedExchangeEnvelope header;
-  header.set_request_method("GET");
-  header.set_request_url(GURL("https://test.example.org/test/"));
-  header.set_response_code(net::HTTP_OK);
-  header.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  header.AddResponseHeader("content-encoding", "mi-sha256");
-  header.AddResponseHeader(
+  SignedExchangeEnvelope envelope;
+  envelope.set_request_method("GET");
+  envelope.set_request_url(GURL("https://test.example.org/test/"));
+  envelope.set_response_code(net::HTTP_OK);
+  envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256");
+  envelope.AddResponseHeader(
       "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
 
-  header.SetSignatureForTesting((*signature)[0]);
+  envelope.SetSignatureForTesting((*signature)[0]);
 
-  TestVerifierGivenValidInput(header, certlist[0]);
+  TestVerifierGivenValidInput(envelope, certlist[0]);
 }
 
 TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
@@ -332,20 +332,20 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
           net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, certlist.size());
 
-  SignedExchangeEnvelope header;
-  header.set_request_method("GET");
-  header.set_request_url(GURL("https://test.example.org/test/"));
-  header.set_response_code(net::HTTP_OK);
-  header.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  header.AddResponseHeader("content-encoding", "mi-sha256");
-  header.AddResponseHeader(
+  SignedExchangeEnvelope envelope;
+  envelope.set_request_method("GET");
+  envelope.set_request_url(GURL("https://test.example.org/test/"));
+  envelope.set_response_code(net::HTTP_OK);
+  envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256");
+  envelope.AddResponseHeader(
       "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RIG");
 
-  header.SetSignatureForTesting((*signature)[0]);
+  envelope.SetSignatureForTesting((*signature)[0]);
 
   EXPECT_EQ(
       SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
-      SignedExchangeSignatureVerifier::Verify(header, certlist[0],
+      SignedExchangeSignatureVerifier::Verify(envelope, certlist[0],
                                               VerificationTime(),
                                               nullptr /* devtools_proxy */));
 }
