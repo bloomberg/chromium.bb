@@ -98,6 +98,8 @@ class JpegClient : public JpegDecodeAccelerator::Client {
                    JpegDecodeAccelerator::Error error) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(JpegClientTest, GetMeanAbsoluteDifference);
+
   void SetState(ClientState new_state);
 
   // Save a video frame that contains a decoded JPEG. The output is a PNG file.
@@ -107,7 +109,7 @@ class JpegClient : public JpegDecodeAccelerator::Client {
 
   // Calculate mean absolute difference of hardware and software decode results
   // to check the similarity.
-  double GetMeanAbsoluteDifference(int32_t bitstream_buffer_id);
+  double GetMeanAbsoluteDifference();
 
   // JpegClient doesn't own |test_image_files_|.
   const std::vector<TestImageFile*>& test_image_files_;
@@ -130,6 +132,8 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   scoped_refptr<VideoFrame> hw_out_frame_;
   // Mapped memory of output buffer from software decoder.
   std::unique_ptr<base::SharedMemory> sw_out_shm_;
+  // Video frame corresponding to the output of the software decoder.
+  scoped_refptr<VideoFrame> sw_out_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(JpegClient);
 };
@@ -192,7 +196,7 @@ void JpegClient::VideoFrameReady(int32_t bitstream_buffer_id) {
     SaveToFile(bitstream_buffer_id, hw_out_frame_);
   }
 
-  double difference = GetMeanAbsoluteDifference(bitstream_buffer_id);
+  double difference = GetMeanAbsoluteDifference();
   if (difference <= kDecodeSimilarityThreshold) {
     SetState(CS_DECODE_PASS);
   } else {
@@ -286,15 +290,33 @@ void JpegClient::SaveToFile(int32_t bitstream_buffer_id,
   LOG_ASSERT(file_written_bytes == size);
 }
 
-double JpegClient::GetMeanAbsoluteDifference(int32_t bitstream_buffer_id) {
-  TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
-
-  double total_difference = 0;
-  uint8_t* hw_ptr = static_cast<uint8_t*>(hw_out_shm_->memory());
-  uint8_t* sw_ptr = static_cast<uint8_t*>(sw_out_shm_->memory());
-  for (size_t i = 0; i < image_file->output_size; i++)
-    total_difference += std::abs(hw_ptr[i] - sw_ptr[i]);
-  return total_difference / image_file->output_size;
+double JpegClient::GetMeanAbsoluteDifference() {
+  double mean_abs_difference = 0;
+  size_t num_samples = 0;
+  const size_t planes[] = {VideoFrame::kYPlane, VideoFrame::kUPlane,
+                           VideoFrame::kVPlane};
+  for (size_t plane : planes) {
+    const uint8_t* hw_data = hw_out_frame_->data(plane);
+    const uint8_t* sw_data = sw_out_frame_->data(plane);
+    LOG_ASSERT(hw_out_frame_->visible_rect() == sw_out_frame_->visible_rect());
+    const size_t rows = VideoFrame::Rows(
+        plane, PIXEL_FORMAT_I420, hw_out_frame_->visible_rect().height());
+    const size_t columns = VideoFrame::Columns(
+        plane, PIXEL_FORMAT_I420, hw_out_frame_->visible_rect().width());
+    LOG_ASSERT(hw_out_frame_->stride(plane) == sw_out_frame_->stride(plane));
+    const int stride = hw_out_frame_->stride(plane);
+    for (size_t row = 0; row < rows; ++row) {
+      for (size_t col = 0; col < columns; ++col) {
+        mean_abs_difference += std::abs(hw_data[col] - sw_data[col]);
+      }
+      hw_data += stride;
+      sw_data += stride;
+    }
+    num_samples += rows * columns;
+  }
+  LOG_ASSERT(num_samples > 0);
+  mean_abs_difference /= num_samples;
+  return mean_abs_difference;
 }
 
 void JpegClient::StartDecode(int32_t bitstream_buffer_id,
@@ -320,38 +342,27 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
 }
 
 bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
-  VideoPixelFormat format = PIXEL_FORMAT_I420;
   TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
+  sw_out_frame_ = VideoFrame::WrapExternalSharedMemory(
+      PIXEL_FORMAT_I420, image_file->visible_size,
+      gfx::Rect(image_file->visible_size), image_file->visible_size,
+      static_cast<uint8_t*>(sw_out_shm_->memory()), image_file->output_size,
+      sw_out_shm_->handle(), 0, base::TimeDelta());
+  LOG_ASSERT(sw_out_shm_.get());
 
-  uint8_t* yplane = static_cast<uint8_t*>(sw_out_shm_->memory());
-  uint8_t* uplane = yplane +
-                    VideoFrame::PlaneSize(format, VideoFrame::kYPlane,
-                                          image_file->visible_size)
-                        .GetArea();
-  uint8_t* vplane = uplane +
-                    VideoFrame::PlaneSize(format, VideoFrame::kUPlane,
-                                          image_file->visible_size)
-                        .GetArea();
-  int yplane_stride = image_file->visible_size.width();
-  int uv_plane_stride = yplane_stride / 2;
-
-  if (libyuv::ConvertToI420(
-          static_cast<uint8_t*>(in_shm_->memory()),
-          image_file->data_str.size(),
-          yplane,
-          yplane_stride,
-          uplane,
-          uv_plane_stride,
-          vplane,
-          uv_plane_stride,
-          0,
-          0,
-          image_file->visible_size.width(),
-          image_file->visible_size.height(),
-          image_file->visible_size.width(),
-          image_file->visible_size.height(),
-          libyuv::kRotate0,
-          libyuv::FOURCC_MJPG) != 0) {
+  if (libyuv::ConvertToI420(static_cast<uint8_t*>(in_shm_->memory()),
+                            image_file->data_str.size(),
+                            sw_out_frame_->data(VideoFrame::kYPlane),
+                            sw_out_frame_->stride(VideoFrame::kYPlane),
+                            sw_out_frame_->data(VideoFrame::kUPlane),
+                            sw_out_frame_->stride(VideoFrame::kUPlane),
+                            sw_out_frame_->data(VideoFrame::kVPlane),
+                            sw_out_frame_->stride(VideoFrame::kVPlane), 0, 0,
+                            sw_out_frame_->visible_rect().width(),
+                            sw_out_frame_->visible_rect().height(),
+                            sw_out_frame_->visible_rect().width(),
+                            sw_out_frame_->visible_rect().height(),
+                            libyuv::kRotate0, libyuv::FOURCC_MJPG) != 0) {
     LOG(ERROR) << "Software decode " << image_file->filename << " failed.";
     return false;
   }
@@ -609,6 +620,69 @@ void JpegDecodeAcceleratorTest::PerfDecodeBySW(int decode_times) {
   for (int index = 0; index < decode_times; index++) {
     client->GetSoftwareDecodeResult(bitstream_buffer_id);
   }
+}
+
+// Return a VideoFrame that contains YUV data using 4:2:0 subsampling. The
+// visible size is 3x3, and the coded size is 4x4 which is 3x3 rounded up to the
+// next even dimensions.
+scoped_refptr<VideoFrame> GetTestDecodedData() {
+  scoped_refptr<VideoFrame> frame = VideoFrame::CreateZeroInitializedFrame(
+      PIXEL_FORMAT_I420, gfx::Size(4, 4) /* coded_size */,
+      gfx::Rect(3, 3) /* visible_rect */, gfx::Size(3, 3) /* natural_size */,
+      base::TimeDelta());
+  LOG_ASSERT(frame.get());
+  uint8_t* y_data = frame->data(VideoFrame::kYPlane);
+  int y_stride = frame->stride(VideoFrame::kYPlane);
+  uint8_t* u_data = frame->data(VideoFrame::kUPlane);
+  int u_stride = frame->stride(VideoFrame::kUPlane);
+  uint8_t* v_data = frame->data(VideoFrame::kVPlane);
+  int v_stride = frame->stride(VideoFrame::kVPlane);
+
+  // Data for the Y plane.
+  memcpy(&y_data[0 * y_stride], "\x01\x02\x03", 3);
+  memcpy(&y_data[1 * y_stride], "\x04\x05\x06", 3);
+  memcpy(&y_data[2 * y_stride], "\x07\x08\x09", 3);
+
+  // Data for the U plane.
+  memcpy(&u_data[0 * u_stride], "\x0A\x0B", 2);
+  memcpy(&u_data[1 * u_stride], "\x0C\x0D", 2);
+
+  // Data for the V plane.
+  memcpy(&v_data[0 * v_stride], "\x0E\x0F", 2);
+  memcpy(&v_data[1 * v_stride], "\x10\x11", 2);
+
+  return frame;
+}
+
+TEST(JpegClientTest, GetMeanAbsoluteDifference) {
+  JpegClient client(std::vector<TestImageFile*>(), nullptr, false);
+  client.hw_out_frame_ = GetTestDecodedData();
+  client.sw_out_frame_ = GetTestDecodedData();
+
+  uint8_t* y_data = client.sw_out_frame_->data(VideoFrame::kYPlane);
+  const int y_stride = client.sw_out_frame_->stride(VideoFrame::kYPlane);
+  uint8_t* u_data = client.sw_out_frame_->data(VideoFrame::kUPlane);
+  const int u_stride = client.sw_out_frame_->stride(VideoFrame::kUPlane);
+  uint8_t* v_data = client.sw_out_frame_->data(VideoFrame::kVPlane);
+  const int v_stride = client.sw_out_frame_->stride(VideoFrame::kVPlane);
+
+  // Change some visible data in the software decoding result.
+  double expected_abs_mean_diff = 0;
+  y_data[0] = 0xF0;  // Previously 0x01.
+  expected_abs_mean_diff += 0xF0 - 0x01;
+  y_data[y_stride + 1] = 0x8A;  // Previously 0x05.
+  expected_abs_mean_diff += 0x8A - 0x05;
+  u_data[u_stride] = 0x02;  // Previously 0x0C.
+  expected_abs_mean_diff += 0x0C - 0x02;
+  v_data[v_stride + 1] = 0x54;  // Previously 0x11.
+  expected_abs_mean_diff += 0x54 - 0x11;
+  expected_abs_mean_diff /= 3 * 3 + 2 * 2 * 2;
+  EXPECT_NEAR(expected_abs_mean_diff, client.GetMeanAbsoluteDifference(), 1e-7);
+
+  // Change some non-visible data in the software decoding result, i.e., part of
+  // the stride padding. This should not affect the absolute mean difference.
+  y_data[3] = 0xAB;
+  EXPECT_NEAR(expected_abs_mean_diff, client.GetMeanAbsoluteDifference(), 1e-7);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, SimpleDecode) {
