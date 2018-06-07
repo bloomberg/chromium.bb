@@ -2363,7 +2363,7 @@ void MenuController::IncrementSelection(
       for (int i = 0; i < parent_count; ++i) {
         if (parent->GetSubmenu()->GetMenuItemAt(i) == item) {
           MenuItemView* to_select =
-              FindNextSelectableMenuItem(parent, i, direction);
+              FindNextSelectableMenuItem(parent, i, direction, false);
           SetInitialHotTrackedView(to_select, direction);
           break;
         }
@@ -2376,13 +2376,14 @@ MenuItemView* MenuController::FindInitialSelectableMenuItem(
     MenuItemView* parent,
     SelectionIncrementDirectionType direction) {
   return FindNextSelectableMenuItem(
-      parent, direction == INCREMENT_SELECTION_DOWN ? -1 : 0, direction);
+      parent, direction == INCREMENT_SELECTION_DOWN ? -1 : 0, direction, true);
 }
 
 MenuItemView* MenuController::FindNextSelectableMenuItem(
     MenuItemView* parent,
     int index,
-    SelectionIncrementDirectionType direction) {
+    SelectionIncrementDirectionType direction,
+    bool is_initial) {
   int parent_count = parent->GetSubmenu()->GetMenuItemCount();
   int stop_index = (index + parent_count) % parent_count;
   bool include_all_items =
@@ -2392,7 +2393,7 @@ MenuItemView* MenuController::FindNextSelectableMenuItem(
   // Loop through the menu items skipping any invisible menus. The loop stops
   // when we wrap or find a visible and enabled child.
   do {
-    if (!MenuConfig::instance().arrow_key_selection_wraps) {
+    if (!MenuConfig::instance().arrow_key_selection_wraps && !is_initial) {
       if (index == 0 && direction == INCREMENT_SELECTION_UP)
         return nullptr;
       if (index == parent_count - 1 && direction == INCREMENT_SELECTION_DOWN)

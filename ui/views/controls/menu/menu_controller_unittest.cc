@@ -405,15 +405,14 @@ class MenuControllerTest : public ViewsTestBase {
 
   MenuItemView* FindNextSelectableMenuItem(MenuItemView* parent,
                                            int index) {
-
     return menu_controller_->FindNextSelectableMenuItem(
-        parent, index, MenuController::INCREMENT_SELECTION_DOWN);
+        parent, index, MenuController::INCREMENT_SELECTION_DOWN, false);
   }
 
   MenuItemView* FindPreviousSelectableMenuItem(MenuItemView* parent,
                                                int index) {
     return menu_controller_->FindNextSelectableMenuItem(
-        parent, index, MenuController::INCREMENT_SELECTION_UP);
+        parent, index, MenuController::INCREMENT_SELECTION_UP, false);
   }
 
   internal::MenuControllerDelegate* GetCurrentDelegate() {
@@ -655,12 +654,8 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   // The last selectable item should be item "Four".
   MenuItemView* last_selectable =
       FindInitialSelectableMenuItemUp(menu_item());
-  if (SelectionWraps()) {
-    ASSERT_NE(nullptr, last_selectable);
-    EXPECT_EQ(4, last_selectable->GetCommand());
-  } else {
-    ASSERT_EQ(nullptr, last_selectable);
-  }
+  ASSERT_NE(nullptr, last_selectable);
+  EXPECT_EQ(4, last_selectable->GetCommand());
 
   // Leave items "One" and "Two" enabled.
   menu_item()->GetSubmenu()->GetMenuItemAt(0)->SetEnabled(true);
@@ -673,12 +668,8 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   EXPECT_EQ(1, first_selectable->GetCommand());
   // The last selectable item should be item "Two".
   last_selectable = FindInitialSelectableMenuItemUp(menu_item());
-  if (SelectionWraps()) {
-    ASSERT_NE(nullptr, last_selectable);
-    EXPECT_EQ(2, last_selectable->GetCommand());
-  } else {
-    ASSERT_EQ(nullptr, last_selectable);
-  }
+  ASSERT_NE(nullptr, last_selectable);
+  EXPECT_EQ(2, last_selectable->GetCommand());
 
   // Leave only a single item "One" enabled.
   menu_item()->GetSubmenu()->GetMenuItemAt(0)->SetEnabled(true);
@@ -691,12 +682,8 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   EXPECT_EQ(1, first_selectable->GetCommand());
   // The last selectable item should be item "One".
   last_selectable = FindInitialSelectableMenuItemUp(menu_item());
-  if (SelectionWraps()) {
-    ASSERT_NE(nullptr, last_selectable);
-    EXPECT_EQ(1, last_selectable->GetCommand());
-  } else {
-    ASSERT_EQ(nullptr, last_selectable);
-  }
+  ASSERT_NE(nullptr, last_selectable);
+  EXPECT_EQ(1, last_selectable->GetCommand());
 
   // Leave only a single item "Three" enabled.
   menu_item()->GetSubmenu()->GetMenuItemAt(0)->SetEnabled(false);
@@ -709,12 +696,8 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   EXPECT_EQ(3, first_selectable->GetCommand());
   // The last selectable item should be item "Three".
   last_selectable = FindInitialSelectableMenuItemUp(menu_item());
-  if (SelectionWraps()) {
-    ASSERT_NE(nullptr, last_selectable);
-    EXPECT_EQ(3, last_selectable->GetCommand());
-  } else {
-    ASSERT_EQ(nullptr, last_selectable);
-  }
+  ASSERT_NE(nullptr, last_selectable);
+  EXPECT_EQ(3, last_selectable->GetCommand());
 
   // Leave only a single item ("Two") selected. It should be the first and the
   // last selectable item.
@@ -726,12 +709,8 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   ASSERT_NE(nullptr, first_selectable);
   EXPECT_EQ(2, first_selectable->GetCommand());
   last_selectable = FindInitialSelectableMenuItemUp(menu_item());
-  if (SelectionWraps()) {
-    ASSERT_NE(nullptr, last_selectable);
-    EXPECT_EQ(2, last_selectable->GetCommand());
-  } else {
-    ASSERT_EQ(nullptr, last_selectable);
-  }
+  ASSERT_NE(nullptr, last_selectable);
+  EXPECT_EQ(2, last_selectable->GetCommand());
 
   // There should be no next or previous selectable item since there is only a
   // single enabled item in the menu.
@@ -799,10 +778,7 @@ TEST_F(MenuControllerTest, PreviousSelectedItem) {
 
   // Move up and select a previous (in our case the last enabled) item.
   DecrementSelection();
-  if (SelectionWraps())
-    EXPECT_EQ(3, pending_state_item()->GetCommand());
-  else
-    EXPECT_EQ(0, pending_state_item()->GetCommand());
+  EXPECT_EQ(3, pending_state_item()->GetCommand());
 
   // Clear references in menu controller to the menu item that is going away.
   ResetSelection();
