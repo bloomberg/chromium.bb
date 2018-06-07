@@ -35,6 +35,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
@@ -134,10 +135,10 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     v8::Local<v8::Script> script;
 
     v8::ScriptCompiler::CompileOptions compile_options;
-    V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+    V8CodeCache::ProduceCacheOptions produce_cache_options;
     v8::ScriptCompiler::NoCacheReason no_cache_reason;
     std::tie(compile_options, produce_cache_options, no_cache_reason) =
-        V8ScriptRunner::GetCompileOptions(v8_cache_options, source);
+        V8CodeCache::GetCompileOptions(v8_cache_options, source);
     if (!V8ScriptRunner::CompileScript(ScriptState::From(context), source,
                                        access_control_status, compile_options,
                                        no_cache_reason, referrer_info)
@@ -147,8 +148,8 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     v8::MaybeLocal<v8::Value> maybe_result;
     maybe_result = V8ScriptRunner::RunCompiledScript(GetIsolate(), script,
                                                      GetFrame()->GetDocument());
-    V8ScriptRunner::ProduceCache(GetIsolate(), script, source,
-                                 produce_cache_options, compile_options);
+    V8CodeCache::ProduceCache(GetIsolate(), script, source,
+                              produce_cache_options, compile_options);
 
     if (!maybe_result.ToLocal(&result)) {
       return result;
