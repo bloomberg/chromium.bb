@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -15,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::FormData;
+using autofill::FormStructure;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
@@ -155,6 +157,25 @@ TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
   EXPECT_FALSE(
       form_manager.SetSubmittedFormIfIsManaged(observed_form_, nullptr));
   EXPECT_FALSE(form_manager.is_submitted());
+}
+
+TEST_F(NewPasswordFormManagerTest, ProcessServerPredictions) {
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  // Expects 2 fills: one when results from |fetcher| received and another when
+  // server predictions received.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({&saved_match_}, 0u);
+
+  FormStructure form_structure(observed_form_);
+  form_structure.field(2)->set_server_type(autofill::PASSWORD);
+  std::vector<FormStructure*> predictions{&form_structure};
+
+  form_manager.ProcessServerPredictions(predictions);
+  // TODO(https://crbug.com/831123): Extend testing when form parsing based on
+  // server predictions is implemented.
 }
 
 }  // namespace  password_manager

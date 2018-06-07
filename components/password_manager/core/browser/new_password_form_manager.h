@@ -5,12 +5,21 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_NEW_PASSWORD_FORM_MANAGER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_NEW_PASSWORD_FORM_MANAGER_H_
 
+#include <map>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+
+namespace autofill {
+class FormStructure;
+}
 
 namespace password_manager {
 
@@ -50,6 +59,12 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   bool is_submitted() { return is_submitted_; }
   void set_not_submitted() { is_submitted_ = false; }
 
+  // Selects from |predictions| predictions that corresponds to
+  // |observed_form_|, initiates filling and stores predictions in
+  // |predictions_|.
+  void ProcessServerPredictions(
+      const std::vector<autofill::FormStructure*>& predictions);
+
   // PasswordFormManagerForUI:
   FormFetcher* GetFormFetcher() override;
   const GURL& GetOrigin() const override;
@@ -82,12 +97,26 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
       size_t filtered_count) override;
 
  private:
+  // Sends fill data to the renderer.
+  void Fill();
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
   base::WeakPtr<PasswordManagerDriver> driver_;
 
   const autofill::FormData observed_form_;
+
+  // Set of nonblacklisted PasswordForms from the DB that best match the form
+  // being managed by |this|, indexed by username. The PasswordForms are owned
+  // by |form_fetcher_|.
+  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
+
+  // Convenience pointer to entry in best_matches_ that is marked
+  // as preferred. This is only allowed to be null if there are no best matches
+  // at all, since there will always be one preferred login when there are
+  // multiple matches (when first saved, a login is marked preferred).
+  const autofill::PasswordForm* preferred_match_;
 
   // Takes care of recording metrics and events for |*this|.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
@@ -102,6 +131,8 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   // and then |submitted_form_| contains the submitted form.
   bool is_submitted_ = false;
   autofill::FormData submitted_form_;
+
+  base::Optional<FormPredictions> predictions_;
 
   DISALLOW_COPY_AND_ASSIGN(NewPasswordFormManager);
 };

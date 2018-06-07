@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "components/autofill/core/common/password_form_field_prediction_map.h"
+#include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
 namespace autofill {
 struct FormData;
@@ -27,7 +27,7 @@ enum class FormParsingMode { FILLING, SAVING };
 // predictions about field types. Return nullptr when parsing is unsuccessful.
 std::unique_ptr<autofill::PasswordForm> ParseFormData(
     const autofill::FormData& form_data,
-    const autofill::FormsPredictionsMap* form_predictions,
+    const FormPredictions* form_predictions,
     FormParsingMode mode);
 
 }  // namespace password_manager
