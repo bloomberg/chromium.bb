@@ -52,28 +52,28 @@ class MockDiskEntry : public disk_cache::Entry,
                int offset,
                IOBuffer* buf,
                int buf_len,
-               const CompletionCallback& callback) override;
+               CompletionOnceCallback callback) override;
   int WriteData(int index,
                 int offset,
                 IOBuffer* buf,
                 int buf_len,
-                const CompletionCallback& callback,
+                CompletionOnceCallback callback,
                 bool truncate) override;
   int ReadSparseData(int64_t offset,
                      IOBuffer* buf,
                      int buf_len,
-                     const CompletionCallback& callback) override;
+                     CompletionOnceCallback callback) override;
   int WriteSparseData(int64_t offset,
                       IOBuffer* buf,
                       int buf_len,
-                      const CompletionCallback& callback) override;
+                      CompletionOnceCallback callback) override;
   int GetAvailableRange(int64_t offset,
                         int len,
                         int64_t* start,
-                        const CompletionCallback& callback) override;
+                        CompletionOnceCallback callback) override;
   bool CouldBeSparse() const override;
   void CancelSparseIO() override;
-  int ReadyForSparseIO(const CompletionCallback& completion_callback) override;
+  int ReadyForSparseIO(CompletionOnceCallback completion_callback) override;
   void SetLastUsedTimeForTest(base::Time time) override;
 
   uint8_t in_memory_data() const { return in_memory_data_; }
@@ -106,15 +106,15 @@ class MockDiskEntry : public disk_cache::Entry,
   // Unlike the callbacks for MockHttpTransaction, we want this one to run even
   // if the consumer called Close on the MockDiskEntry.  We achieve that by
   // leveraging the fact that this class is reference counted.
-  void CallbackLater(const CompletionCallback& callback, int result);
+  void CallbackLater(CompletionOnceCallback callback, int result);
 
-  void RunCallback(const CompletionCallback& callback, int result);
+  void RunCallback(CompletionOnceCallback callback, int result);
 
   // When |store| is true, stores the callback to be delivered later; otherwise
   // delivers any callback previously stored.
   static void StoreAndDeliverCallbacks(bool store,
                                        MockDiskEntry* entry,
-                                       const CompletionCallback& callback,
+                                       CompletionOnceCallback callback,
                                        int result);
 
   static const int kNumCacheEntryDataIndices = 3;
@@ -133,7 +133,7 @@ class MockDiskEntry : public disk_cache::Entry,
 
   // Used for pause and restart.
   DeferOp defer_op_;
-  CompletionCallback resume_callback_;
+  CompletionOnceCallback resume_callback_;
   int resume_return_code_;
 
   static bool ignore_callbacks_;
@@ -149,21 +149,21 @@ class MockDiskCache : public disk_cache::Backend {
   int OpenEntry(const std::string& key,
                 net::RequestPriority request_priority,
                 disk_cache::Entry** entry,
-                const CompletionCallback& callback) override;
+                CompletionOnceCallback callback) override;
   int CreateEntry(const std::string& key,
                   net::RequestPriority request_priority,
                   disk_cache::Entry** entry,
-                  const CompletionCallback& callback) override;
+                  CompletionOnceCallback callback) override;
   int DoomEntry(const std::string& key,
                 net::RequestPriority request_priority,
-                const CompletionCallback& callback) override;
-  int DoomAllEntries(const CompletionCallback& callback) override;
+                CompletionOnceCallback callback) override;
+  int DoomAllEntries(CompletionOnceCallback callback) override;
   int DoomEntriesBetween(base::Time initial_time,
                          base::Time end_time,
-                         const CompletionCallback& callback) override;
+                         CompletionOnceCallback callback) override;
   int DoomEntriesSince(base::Time initial_time,
-                       const CompletionCallback& callback) override;
-  int CalculateSizeOfAllEntries(const CompletionCallback& callback) override;
+                       CompletionOnceCallback callback) override;
+  int CalculateSizeOfAllEntries(CompletionOnceCallback callback) override;
   std::unique_ptr<Iterator> CreateIterator() override;
   void GetStats(base::StringPairs* stats) override;
   void OnExternalCacheHit(const std::string& key) override;
@@ -220,7 +220,7 @@ class MockDiskCache : public disk_cache::Backend {
   using EntryMap = std::map<std::string, MockDiskEntry*>;
   class NotImplementedIterator;
 
-  void CallbackLater(const CompletionCallback& callback, int result);
+  void CallbackLater(CompletionOnceCallback callback, int result);
 
   EntryMap entries_;
   int open_count_;
@@ -234,7 +234,7 @@ class MockDiskCache : public disk_cache::Backend {
 
   // Used for pause and restart.
   MockDiskEntry::DeferOp defer_op_;
-  CompletionCallback resume_callback_;
+  CompletionOnceCallback resume_callback_;
   int resume_return_code_;
 };
 
@@ -319,7 +319,7 @@ class MockDiskCacheNoCB : public MockDiskCache {
   int CreateEntry(const std::string& key,
                   net::RequestPriority request_priority,
                   disk_cache::Entry** entry,
-                  const CompletionCallback& callback) override;
+                  CompletionOnceCallback callback) override;
 };
 
 class MockBackendNoCbFactory : public HttpCache::BackendFactory {

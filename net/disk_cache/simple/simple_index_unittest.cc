@@ -140,7 +140,7 @@ class SimpleIndexTest : public net::TestWithScopedTaskEnvironment,
 
   // From SimpleIndexDelegate:
   void DoomEntries(std::vector<uint64_t>* entry_hashes,
-                   const net::CompletionCallback& callback) override {
+                   net::CompletionOnceCallback callback) override {
     for (const uint64_t& entry_hash : *entry_hashes)
       index_->Remove(entry_hash);
     last_doom_entry_hashes_ = *entry_hashes;

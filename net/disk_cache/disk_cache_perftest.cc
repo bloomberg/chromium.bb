@@ -586,7 +586,7 @@ TEST(SimpleIndexPerfTest, EvictionPerformance) {
 
   class NoOpDelegate : public disk_cache::SimpleIndexDelegate {
     void DoomEntries(std::vector<uint64_t>* entry_hashes,
-                     const net::CompletionCallback& callback) override {}
+                     net::CompletionOnceCallback callback) override {}
   };
 
   NoOpDelegate delegate;
