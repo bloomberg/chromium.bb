@@ -28,6 +28,7 @@ class TryjobTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.cmd_mock = None
+    self.maxDiff = None
 
   def SetupCommandMock(self, cmd_args):
     """Sets up the `cros tryjob` command mock."""
@@ -545,6 +546,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     self.assertEqual(args_out, [
         '--no-buildbot-tags', '--debug',
         '--buildroot', mock.ANY,
+        '--git-cache-dir', mock.ANY,
         '-b', 'master',
         '-g', '123',
     ])
@@ -604,6 +606,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     self.assertEqual(args_out, [
         '--no-buildbot-tags', '--debug',
         '--buildroot', '/buildroot',
+        '--git-cache-dir', '/buildroot/.git_cache',
         '-b', 'source_branch',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
@@ -639,6 +642,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--buildbot', '--nobootstrap', '--noreexec',
         '--no-buildbot-tags', '--debug',
         '--buildroot', '/buildroot',
+        '--git-cache-dir', '/buildroot/.git_cache',
         '-b', 'source_branch',
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
@@ -672,6 +676,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     self.assertEqual(args_out, [
         '--no-buildbot-tags', '--buildbot',
         '--buildroot', mock.ANY,
+        '--git-cache-dir', mock.ANY,
         '-b', 'master',
     ])
 

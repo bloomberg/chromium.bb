@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2017 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -118,7 +119,9 @@ def CbuildbotArgs(options):
     raise Exception('Unknown options.where: %s', options.where)
 
   if options.buildroot:
-    args.extend(('--buildroot', options.buildroot))
+    git_cache_dir = os.path.join(options.buildroot, '.git_cache')
+    args.extend(('--buildroot', options.buildroot,
+                 '--git-cache-dir', git_cache_dir))
 
   if options.branch:
     args.extend(('-b', options.branch))
