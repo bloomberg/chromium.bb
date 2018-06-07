@@ -15,6 +15,52 @@ namespace {
 
 const int kMaxStackLimit = 1000;
 
+using Error = JSONParseErrorType;
+
+String FormatErrorMessage(Error error, int line, int column) {
+  String text;
+  switch (error) {
+    case Error::kNoError:
+      NOTREACHED();
+      return "";
+    case Error::kUnexpectedToken:
+      text = "Unexpected token.";
+      break;
+    case Error::kSyntaxError:
+      text = "Syntax error.";
+      break;
+    case Error::kInvalidEscape:
+      text = "Invalid escape sequence.";
+      break;
+    case Error::kTooMuchNesting:
+      text = "Too much nesting.";
+      break;
+    case Error::kUnexpectedDataAfterRoot:
+      text = "Unexpected data after root element.";
+      break;
+    case Error::kUnsupportedEncoding:
+      text =
+          "Unsupported encoding. JSON and all string literals must contain "
+          "valid Unicode characters.";
+      break;
+  }
+  return "Line: " + String::Number(line) +
+         ", column: " + String::Number(column) + ", " + text;
+}
+
+// Note: all parsing functions take a |cursor| parameter which is
+// where they start parsing from.
+// If the parsing succeeds, |cursor| will point to the position
+// right after the parsed value, "consuming" some portion of the input.
+// If the parsing fails, |cursor| will point to the error position.
+
+template <typename CharType>
+struct Cursor {
+  int line;
+  const CharType* line_start;
+  const CharType* pos;
+};
+
 enum Token {
   kObjectBegin,
   kObjectEnd,
@@ -27,131 +73,134 @@ enum Token {
   kNullToken,
   kListSeparator,
   kObjectPairSeparator,
-  kInvalidToken,
 };
 
 template <typename CharType>
-bool ParseConstToken(const CharType* start,
-                     const CharType* end,
-                     const CharType** token_end,
-                     const char* token) {
-  while (start < end && *token != '\0' && *start++ == *token++) {
+Error ParseConstToken(Cursor<CharType>* cursor,
+                      const CharType* end,
+                      const char* token) {
+  const CharType* token_start = cursor->pos;
+  while (cursor->pos < end && *token != '\0' && *(cursor->pos++) == *token++) {
   }
-  if (*token != '\0')
-    return false;
-  *token_end = start;
-  return true;
+  if (*token != '\0') {
+    cursor->pos = token_start;
+    return Error::kSyntaxError;
+  }
+  return Error::kNoError;
 }
 
 template <typename CharType>
-bool ReadInt(const CharType* start,
-             const CharType* end,
-             const CharType** token_end,
-             bool can_have_leading_zeros) {
-  if (start == end)
-    return false;
-  bool have_leading_zero = '0' == *start;
+Error ReadInt(Cursor<CharType>* cursor,
+              const CharType* end,
+              bool can_have_leading_zeros) {
+  if (cursor->pos == end)
+    return Error::kSyntaxError;
+  const CharType* start_ptr = cursor->pos;
+  bool have_leading_zero = '0' == *(cursor->pos);
   int length = 0;
-  while (start < end && '0' <= *start && *start <= '9') {
-    ++start;
+  while (cursor->pos < end && '0' <= *(cursor->pos) && *(cursor->pos) <= '9') {
+    ++(cursor->pos);
     ++length;
   }
   if (!length)
-    return false;
-  if (!can_have_leading_zeros && length > 1 && have_leading_zero)
-    return false;
-  *token_end = start;
-  return true;
+    return Error::kSyntaxError;
+  if (!can_have_leading_zeros && length > 1 && have_leading_zero) {
+    cursor->pos = start_ptr + 1;
+    return Error::kSyntaxError;
+  }
+  return Error::kNoError;
 }
 
 template <typename CharType>
-bool ParseNumberToken(const CharType* start,
-                      const CharType* end,
-                      const CharType** token_end) {
+Error ParseNumberToken(Cursor<CharType>* cursor, const CharType* end) {
   // We just grab the number here. We validate the size in DecodeNumber.
   // According to RFC4627, a valid number is: [minus] int [frac] [exp]
-  if (start == end)
-    return false;
-  CharType c = *start;
-  if ('-' == c)
-    ++start;
+  if (cursor->pos == end)
+    return Error::kSyntaxError;
+  if (*(cursor->pos) == '-')
+    ++(cursor->pos);
 
-  if (!ReadInt(start, end, &start, false))
-    return false;
-  if (start == end) {
-    *token_end = start;
-    return true;
-  }
+  Error error = ReadInt(cursor, end, false);
+  if (error != Error::kNoError)
+    return error;
+
+  if (cursor->pos == end)
+    return Error::kNoError;
 
   // Optional fraction part
-  c = *start;
+  CharType c = *(cursor->pos);
   if ('.' == c) {
-    ++start;
-    if (!ReadInt(start, end, &start, true))
-      return false;
-    if (start == end) {
-      *token_end = start;
-      return true;
-    }
-    c = *start;
+    ++(cursor->pos);
+    error = ReadInt(cursor, end, true);
+    if (error != Error::kNoError)
+      return error;
+    if (cursor->pos == end)
+      return Error::kNoError;
+    c = *(cursor->pos);
   }
 
   // Optional exponent part
   if ('e' == c || 'E' == c) {
-    ++start;
-    if (start == end)
-      return false;
-    c = *start;
+    ++(cursor->pos);
+    if (cursor->pos == end)
+      return Error::kSyntaxError;
+    c = *(cursor->pos);
     if ('-' == c || '+' == c) {
-      ++start;
-      if (start == end)
-        return false;
+      ++(cursor->pos);
+      if (cursor->pos == end)
+        return Error::kSyntaxError;
     }
-    if (!ReadInt(start, end, &start, true))
-      return false;
+    error = ReadInt(cursor, end, true);
+    if (error != Error::kNoError)
+      return error;
   }
 
-  *token_end = start;
-  return true;
+  return Error::kNoError;
 }
 
 template <typename CharType>
-bool ReadHexDigits(const CharType* start,
-                   const CharType* end,
-                   const CharType** token_end,
-                   int digits) {
-  if (end - start < digits)
-    return false;
+Error ReadHexDigits(Cursor<CharType>* cursor, const CharType* end, int digits) {
+  const CharType* token_start = cursor->pos;
+  if (end - cursor->pos < digits)
+    return Error::kInvalidEscape;
   for (int i = 0; i < digits; ++i) {
-    CharType c = *start++;
+    CharType c = *(cursor->pos)++;
     if (!(('0' <= c && c <= '9') || ('a' <= c && c <= 'f') ||
-          ('A' <= c && c <= 'F')))
-      return false;
+          ('A' <= c && c <= 'F'))) {
+      cursor->pos = token_start;
+      return Error::kInvalidEscape;
+    }
   }
-  *token_end = start;
-  return true;
+  return Error::kNoError;
 }
 
 template <typename CharType>
-bool ParseStringToken(const CharType* start,
-                      const CharType* end,
-                      const CharType** token_end) {
-  while (start < end) {
-    CharType c = *start++;
+Error ParseStringToken(Cursor<CharType>* cursor, const CharType* end) {
+  if (cursor->pos == end)
+    return Error::kSyntaxError;
+  if (*(cursor->pos) != '"')
+    return Error::kSyntaxError;
+  ++(cursor->pos);
+  while (cursor->pos < end) {
+    CharType c = *(cursor->pos)++;
     if ('\\' == c) {
-      if (start == end)
-        return false;
-      c = *start++;
+      if (cursor->pos == end)
+        return Error::kInvalidEscape;
+      c = *(cursor->pos)++;
       // Make sure the escaped char is valid.
       switch (c) {
-        case 'x':
-          if (!ReadHexDigits(start, end, &start, 2))
-            return false;
+        case 'x': {
+          Error error = ReadHexDigits(cursor, end, 2);
+          if (error != Error::kNoError)
+            return error;
           break;
-        case 'u':
-          if (!ReadHexDigits(start, end, &start, 4))
-            return false;
+        }
+        case 'u': {
+          Error error = ReadHexDigits(cursor, end, 4);
+          if (error != Error::kNoError)
+            return error;
           break;
+        }
         case '\\':
         case '/':
         case 'b':
@@ -163,117 +212,131 @@ bool ParseStringToken(const CharType* start,
         case '"':
           break;
         default:
-          return false;
+          return Error::kInvalidEscape;
       }
+    } else if (c == '\n') {
+      cursor->line++;
+      cursor->line_start = cursor->pos;
     } else if ('"' == c) {
-      *token_end = start;
-      return true;
+      return Error::kNoError;
     }
   }
-  return false;
+  return Error::kSyntaxError;
 }
 
 template <typename CharType>
-bool SkipComment(const CharType* start,
-                 const CharType* end,
-                 const CharType** comment_end) {
-  if (start == end)
-    return false;
+Error SkipComment(Cursor<CharType>* cursor, const CharType* end) {
+  const CharType* pos = cursor->pos;
+  if (pos == end)
+    return Error::kSyntaxError;
 
-  if (*start != '/' || start + 1 >= end)
-    return false;
-  ++start;
+  if (*pos != '/' || pos + 1 >= end)
+    return Error::kSyntaxError;
+  ++pos;
 
-  if (*start == '/') {
+  if (*pos == '/') {
     // Single line comment, read to newline.
-    for (++start; start < end; ++start) {
-      if (*start == '\n' || *start == '\r') {
-        *comment_end = start + 1;
-        return true;
+    for (++pos; pos < end; ++pos) {
+      if (*pos == '\n') {
+        cursor->line++;
+        cursor->pos = pos + 1;
+        cursor->line_start = cursor->pos;
+        return Error::kNoError;
       }
     }
-    *comment_end = end;
+    cursor->pos = end;
     // Comment reaches end-of-input, which is fine.
-    return true;
+    return Error::kNoError;
   }
 
-  if (*start == '*') {
+  if (*pos == '*') {
     CharType previous = '\0';
     // Block comment, read until end marker.
-    for (++start; start < end; previous = *start++) {
-      if (previous == '*' && *start == '/') {
-        *comment_end = start + 1;
-        return true;
+    for (++pos; pos < end; previous = *pos++) {
+      if (*pos == '\n') {
+        cursor->line++;
+        cursor->line_start = pos + 1;
+      }
+      if (previous == '*' && *pos == '/') {
+        cursor->pos = pos + 1;
+        return Error::kNoError;
       }
     }
     // Block comment must close before end-of-input.
-    return false;
+    return Error::kSyntaxError;
   }
 
-  return false;
+  return Error::kSyntaxError;
 }
 
 template <typename CharType>
-void SkipWhitespaceAndComments(const CharType* start,
-                               const CharType* end,
-                               const CharType** whitespace_end) {
-  while (start < end) {
-    if (IsSpaceOrNewline(*start)) {
-      ++start;
-    } else if (*start == '/') {
-      const CharType* comment_end;
-      if (!SkipComment(start, end, &comment_end))
-        break;
-      start = comment_end;
+Error SkipWhitespaceAndComments(Cursor<CharType>* cursor, const CharType* end) {
+  while (cursor->pos < end) {
+    CharType c = *(cursor->pos);
+    if (c == '\n') {
+      cursor->line++;
+      ++(cursor->pos);
+      cursor->line_start = cursor->pos;
+    } else if (IsSpaceOrNewline(c)) {
+      ++(cursor->pos);
+    } else if (c == '/') {
+      Error error = SkipComment(cursor, end);
+      if (error != Error::kNoError)
+        return error;
     } else {
       break;
     }
   }
-  *whitespace_end = start;
+  return Error::kNoError;
 }
 
 template <typename CharType>
-Token ParseToken(const CharType* start,
+Error ParseToken(Cursor<CharType>* cursor,
                  const CharType* end,
-                 const CharType** token_start,
-                 const CharType** token_end) {
-  SkipWhitespaceAndComments(start, end, token_start);
-  start = *token_start;
+                 Token* token,
+                 Cursor<CharType>* token_start) {
+  Error error = SkipWhitespaceAndComments(cursor, end);
+  if (error != Error::kNoError)
+    return error;
+  *token_start = *cursor;
 
-  if (start == end)
-    return kInvalidToken;
+  if (cursor->pos == end)
+    return Error::kSyntaxError;
 
-  switch (*start) {
+  switch (*(cursor->pos)) {
     case 'n':
-      if (ParseConstToken(start, end, token_end, kJSONNullString))
-        return kNullToken;
-      break;
+      *token = kNullToken;
+      return ParseConstToken(cursor, end, kJSONNullString);
     case 't':
-      if (ParseConstToken(start, end, token_end, kJSONTrueString))
-        return kBoolTrue;
-      break;
+      *token = kBoolTrue;
+      return ParseConstToken(cursor, end, kJSONTrueString);
     case 'f':
-      if (ParseConstToken(start, end, token_end, kJSONFalseString))
-        return kBoolFalse;
-      break;
+      *token = kBoolFalse;
+      return ParseConstToken(cursor, end, kJSONFalseString);
     case '[':
-      *token_end = start + 1;
-      return kArrayBegin;
+      ++(cursor->pos);
+      *token = kArrayBegin;
+      return Error::kNoError;
     case ']':
-      *token_end = start + 1;
-      return kArrayEnd;
+      ++(cursor->pos);
+      *token = kArrayEnd;
+      return Error::kNoError;
     case ',':
-      *token_end = start + 1;
-      return kListSeparator;
+      ++(cursor->pos);
+      *token = kListSeparator;
+      return Error::kNoError;
     case '{':
-      *token_end = start + 1;
-      return kObjectBegin;
+      ++(cursor->pos);
+      *token = kObjectBegin;
+      return Error::kNoError;
     case '}':
-      *token_end = start + 1;
-      return kObjectEnd;
+      ++(cursor->pos);
+      *token = kObjectEnd;
+      return Error::kNoError;
     case ':':
-      *token_end = start + 1;
-      return kObjectPairSeparator;
+      ++(cursor->pos);
+      *token = kObjectPairSeparator;
+      return Error::kNoError;
     case '0':
     case '1':
     case '2':
@@ -285,15 +348,14 @@ Token ParseToken(const CharType* start,
     case '8':
     case '9':
     case '-':
-      if (ParseNumberToken(start, end, token_end))
-        return kNumber;
-      break;
+      *token = kNumber;
+      return ParseNumberToken(cursor, end);
     case '"':
-      if (ParseStringToken(start + 1, end, token_end))
-        return kStringLiteral;
-      break;
+      *token = kStringLiteral;
+      return ParseStringToken(cursor, end);
   }
-  return kInvalidToken;
+
+  return Error::kSyntaxError;
 }
 
 template <typename CharType>
@@ -309,22 +371,38 @@ inline int HexToInt(CharType c) {
 }
 
 template <typename CharType>
-bool DecodeString(const CharType* start,
-                  const CharType* end,
-                  StringBuilder* output) {
-  while (start < end) {
-    UChar c = *start++;
+Error DecodeString(Cursor<CharType>* cursor,
+                   const CharType* end,
+                   String* output) {
+  if (cursor->pos + 1 > end - 1)
+    return Error::kSyntaxError;
+  if (cursor->pos + 1 == end - 1) {
+    *output = "";
+    return Error::kNoError;
+  }
+
+  const CharType* string_start = cursor->pos;
+  StringBuilder buffer;
+  buffer.ReserveCapacity(end - cursor->pos - 2);
+
+  cursor->pos++;
+  while (cursor->pos < end - 1) {
+    UChar c = *(cursor->pos)++;
+    if (c == '\n') {
+      cursor->line++;
+      cursor->line_start = cursor->pos;
+    }
     if ('\\' != c) {
-      output->Append(c);
+      buffer.Append(c);
       continue;
     }
-    if (start == end)
-      return false;
-    c = *start++;
+    if (cursor->pos == end - 1)
+      return Error::kInvalidEscape;
+    c = *(cursor->pos)++;
 
     if (c == 'x') {
       // \x is not supported.
-      return false;
+      return Error::kInvalidEscape;
     }
 
     switch (c) {
@@ -351,194 +429,243 @@ bool DecodeString(const CharType* start,
         c = '\v';
         break;
       case 'u':
-        c = (HexToInt(*start) << 12) + (HexToInt(*(start + 1)) << 8) +
-            (HexToInt(*(start + 2)) << 4) + HexToInt(*(start + 3));
-        start += 4;
+        c = (HexToInt(*(cursor->pos)) << 12) +
+            (HexToInt(*(cursor->pos + 1)) << 8) +
+            (HexToInt(*(cursor->pos + 2)) << 4) + HexToInt(*(cursor->pos + 3));
+        cursor->pos += 4;
         break;
       default:
-        return false;
+        return Error::kInvalidEscape;
     }
-    output->Append(c);
+    buffer.Append(c);
   }
-  return true;
-}
-
-template <typename CharType>
-bool DecodeString(const CharType* start, const CharType* end, String* output) {
-  if (start == end) {
-    *output = "";
-    return true;
-  }
-  if (start > end)
-    return false;
-  StringBuilder buffer;
-  buffer.ReserveCapacity(end - start);
-  if (!DecodeString(start, end, &buffer))
-    return false;
   *output = buffer.ToString();
+
   // Validate constructed utf16 string.
-  if (output->Utf8(kStrictUTF8Conversion).IsNull())
-    return false;
-  return true;
+  if (output->Utf8(kStrictUTF8Conversion).IsNull()) {
+    cursor->pos = string_start;
+    return Error::kUnsupportedEncoding;
+  }
+  return Error::kNoError;
 }
 
 template <typename CharType>
-std::unique_ptr<JSONValue> BuildValue(const CharType* start,
-                                      const CharType* end,
-                                      const CharType** value_token_end,
-                                      int max_depth) {
+Error BuildValue(Cursor<CharType>* cursor,
+                 const CharType* end,
+                 int max_depth,
+                 std::unique_ptr<JSONValue>* result) {
   if (max_depth == 0)
-    return nullptr;
+    return Error::kTooMuchNesting;
 
-  std::unique_ptr<JSONValue> result;
-  const CharType* token_start;
-  const CharType* token_end;
-  Token token = ParseToken(start, end, &token_start, &token_end);
+  Cursor<CharType> token_start;
+  Token token;
+  Error error = ParseToken(cursor, end, &token, &token_start);
+  if (error != Error::kNoError)
+    return error;
+
   switch (token) {
-    case kInvalidToken:
-      return nullptr;
     case kNullToken:
-      result = JSONValue::Null();
+      *result = JSONValue::Null();
       break;
     case kBoolTrue:
-      result = JSONBasicValue::Create(true);
+      *result = JSONBasicValue::Create(true);
       break;
     case kBoolFalse:
-      result = JSONBasicValue::Create(false);
+      *result = JSONBasicValue::Create(false);
       break;
     case kNumber: {
       bool ok;
-      double value =
-          CharactersToDouble(token_start, token_end - token_start, &ok);
+      double value = CharactersToDouble(token_start.pos,
+                                        cursor->pos - token_start.pos, &ok);
       if (Decimal::FromDouble(value).IsInfinity())
         ok = false;
-      if (!ok)
-        return nullptr;
+      if (!ok) {
+        *cursor = token_start;
+        return Error::kSyntaxError;
+      }
       int number = static_cast<int>(value);
       if (number == value)
-        result = JSONBasicValue::Create(number);
+        *result = JSONBasicValue::Create(number);
       else
-        result = JSONBasicValue::Create(value);
+        *result = JSONBasicValue::Create(value);
       break;
     }
     case kStringLiteral: {
       String value;
-      bool ok = DecodeString(token_start + 1, token_end - 1, &value);
-      if (!ok)
-        return nullptr;
-      result = JSONString::Create(value);
+      error = DecodeString(&token_start, cursor->pos, &value);
+      if (error != Error::kNoError) {
+        *cursor = token_start;
+        return error;
+      }
+      *result = JSONString::Create(value);
       break;
     }
     case kArrayBegin: {
       std::unique_ptr<JSONArray> array = JSONArray::Create();
-      start = token_end;
-      token = ParseToken(start, end, &token_start, &token_end);
+      Cursor<CharType> before_token = *cursor;
+      error = ParseToken(cursor, end, &token, &token_start);
+      if (error != Error::kNoError)
+        return error;
       while (token != kArrayEnd) {
-        std::unique_ptr<JSONValue> array_node =
-            BuildValue(start, end, &token_end, max_depth - 1);
-        if (!array_node)
-          return nullptr;
+        *cursor = before_token;
+        std::unique_ptr<JSONValue> array_node;
+        error = BuildValue(cursor, end, max_depth - 1, &array_node);
+        if (error != Error::kNoError)
+          return error;
         array->PushValue(std::move(array_node));
 
         // After a list value, we expect a comma or the end of the list.
-        start = token_end;
-        token = ParseToken(start, end, &token_start, &token_end);
+        error = ParseToken(cursor, end, &token, &token_start);
+        if (error != Error::kNoError)
+          return error;
         if (token == kListSeparator) {
-          start = token_end;
-          token = ParseToken(start, end, &token_start, &token_end);
-          if (token == kArrayEnd)
-            return nullptr;
+          before_token = *cursor;
+          error = ParseToken(cursor, end, &token, &token_start);
+          if (error != Error::kNoError)
+            return error;
+          if (token == kArrayEnd) {
+            *cursor = token_start;
+            return Error::kUnexpectedToken;
+          }
         } else if (token != kArrayEnd) {
           // Unexpected value after list value. Bail out.
-          return nullptr;
+          *cursor = token_start;
+          return Error::kUnexpectedToken;
         }
       }
-      if (token != kArrayEnd)
-        return nullptr;
-      result = std::move(array);
+      if (token != kArrayEnd) {
+        *cursor = token_start;
+        return Error::kUnexpectedToken;
+      }
+      *result = std::move(array);
       break;
     }
     case kObjectBegin: {
       std::unique_ptr<JSONObject> object = JSONObject::Create();
-      start = token_end;
-      token = ParseToken(start, end, &token_start, &token_end);
+      error = ParseToken(cursor, end, &token, &token_start);
+      if (error != Error::kNoError)
+        return error;
       while (token != kObjectEnd) {
-        if (token != kStringLiteral)
-          return nullptr;
+        if (token != kStringLiteral) {
+          *cursor = token_start;
+          return Error::kUnexpectedToken;
+        }
         String key;
-        if (!DecodeString(token_start + 1, token_end - 1, &key))
-          return nullptr;
-        start = token_end;
+        error = DecodeString(&token_start, cursor->pos, &key);
+        if (error != Error::kNoError) {
+          *cursor = token_start;
+          return error;
+        }
 
-        token = ParseToken(start, end, &token_start, &token_end);
-        if (token != kObjectPairSeparator)
-          return nullptr;
-        start = token_end;
+        error = ParseToken(cursor, end, &token, &token_start);
+        if (token != kObjectPairSeparator) {
+          *cursor = token_start;
+          return Error::kUnexpectedToken;
+        }
 
-        std::unique_ptr<JSONValue> value =
-            BuildValue(start, end, &token_end, max_depth - 1);
-        if (!value)
-          return nullptr;
+        std::unique_ptr<JSONValue> value;
+        error = BuildValue(cursor, end, max_depth - 1, &value);
+        if (error != Error::kNoError)
+          return error;
         object->SetValue(key, std::move(value));
-        start = token_end;
 
         // After a key/value pair, we expect a comma or the end of the
         // object.
-        token = ParseToken(start, end, &token_start, &token_end);
+        error = ParseToken(cursor, end, &token, &token_start);
+        if (error != Error::kNoError)
+          return error;
         if (token == kListSeparator) {
-          start = token_end;
-          token = ParseToken(start, end, &token_start, &token_end);
-          if (token == kObjectEnd)
-            return nullptr;
+          error = ParseToken(cursor, end, &token, &token_start);
+          if (error != Error::kNoError)
+            return error;
+          if (token == kObjectEnd) {
+            *cursor = token_start;
+            return Error::kUnexpectedToken;
+          }
         } else if (token != kObjectEnd) {
           // Unexpected value after last object value. Bail out.
-          return nullptr;
+          *cursor = token_start;
+          return Error::kUnexpectedToken;
         }
       }
-      if (token != kObjectEnd)
-        return nullptr;
-      result = std::move(object);
+      if (token != kObjectEnd) {
+        *cursor = token_start;
+        return Error::kUnexpectedToken;
+      }
+      *result = std::move(object);
       break;
     }
 
     default:
       // We got a token that's not a value.
-      return nullptr;
+      *cursor = token_start;
+      return Error::kUnexpectedToken;
   }
 
-  SkipWhitespaceAndComments(token_end, end, value_token_end);
-  return result;
+  return SkipWhitespaceAndComments(cursor, end);
 }
 
 template <typename CharType>
-std::unique_ptr<JSONValue> ParseJSONInternal(const CharType* start,
-                                             unsigned length,
-                                             int max_depth) {
-  const CharType* end = start + length;
-  const CharType* token_end;
-  std::unique_ptr<JSONValue> value =
-      BuildValue(start, end, &token_end, max_depth);
-  if (!value || token_end != end)
-    return nullptr;
-  return value;
+JSONParseError ParseJSONInternal(const CharType* start_ptr,
+                                 unsigned length,
+                                 int max_depth,
+                                 std::unique_ptr<JSONValue>* result) {
+  Cursor<CharType> cursor;
+  cursor.pos = start_ptr;
+  cursor.line = 0;
+  cursor.line_start = start_ptr;
+  const CharType* end = start_ptr + length;
+  JSONParseError error;
+  error.type = BuildValue(&cursor, end, max_depth, result);
+  error.line = cursor.line;
+  error.column = cursor.pos - cursor.line_start;
+  if (error.type != Error::kNoError) {
+    *result = nullptr;
+  } else if (cursor.pos != end) {
+    error.type = Error::kUnexpectedDataAfterRoot;
+    *result = nullptr;
+  }
+  return error;
 }
 
 }  // anonymous namespace
 
-std::unique_ptr<JSONValue> ParseJSON(const String& json) {
-  return ParseJSON(json, kMaxStackLimit);
+std::unique_ptr<JSONValue> ParseJSON(const String& json,
+                                     JSONParseError* opt_error) {
+  return ParseJSON(json, kMaxStackLimit, opt_error);
 }
 
-std::unique_ptr<JSONValue> ParseJSON(const String& json, int max_depth) {
-  if (json.IsEmpty())
-    return nullptr;
+std::unique_ptr<JSONValue> ParseJSON(const String& json,
+                                     int max_depth,
+                                     JSONParseError* opt_error) {
   if (max_depth < 0)
     max_depth = 0;
   if (max_depth > kMaxStackLimit)
     max_depth = kMaxStackLimit;
-  if (json.Is8Bit())
-    return ParseJSONInternal(json.Characters8(), json.length(), max_depth);
-  return ParseJSONInternal(json.Characters16(), json.length(), max_depth);
+
+  std::unique_ptr<JSONValue> result;
+  JSONParseError error;
+
+  if (json.IsEmpty()) {
+    error.type = Error::kSyntaxError;
+    error.line = 0;
+    error.column = 0;
+  } else if (json.Is8Bit()) {
+    error = ParseJSONInternal(json.Characters8(), json.length(), max_depth,
+                              &result);
+  } else {
+    error = ParseJSONInternal(json.Characters16(), json.length(), max_depth,
+                              &result);
+  }
+
+  if (opt_error) {
+    error.line++;
+    error.column++;
+    if (error.type != Error::kNoError)
+      error.message = FormatErrorMessage(error.type, error.line, error.column);
+    *opt_error = error;
+  }
+  return result;
 }
 
 }  // namespace blink
