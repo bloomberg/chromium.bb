@@ -130,12 +130,12 @@ void HTMLTextAreaElement::CollectStyleForPresentationAttribute(
     if (ShouldWrapText()) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
                                               CSSValuePreWrap);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
                                               CSSValueBreakWord);
     } else {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
                                               CSSValuePre);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
                                               CSSValueNormal);
     }
   } else {

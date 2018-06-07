@@ -4017,16 +4017,6 @@
       typedom_types: ["normal"],
       typedom_types: ["Keyword", "Length"]
     },
-    // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap'
-    // property. So using the same handlers.
-    {
-      name: "word-wrap",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
-      inherited: true,
-      name_for_methods: "OverflowWrap",
-      keywords: ["normal", "break-word"],
-      typedom_types: ["Keyword"]
-    },
     {
       name: "z-index",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
@@ -5108,6 +5098,10 @@
     {
       name: "-webkit-user-select",
       alias_for: "user-select",
+    },
+    {
+      name: "word-wrap",
+      alias_for: "overflow-wrap",
     },
   ],
 }

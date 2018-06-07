@@ -641,7 +641,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueVisible || value_id == CSSValueNone ||
              value_id == CSSValueAuto;
     case CSSPropertyOverflowWrap:
-    case CSSPropertyWordWrap:
       return value_id == CSSValueNormal || value_id == CSSValueBreakWord;
     case CSSPropertyOverflowX:
       return value_id == CSSValueVisible || value_id == CSSValueHidden ||
@@ -999,7 +998,6 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyWebkitWritingMode:
     case CSSPropertyWhiteSpace:
     case CSSPropertyWordBreak:
-    case CSSPropertyWordWrap:
     case CSSPropertyWritingMode:
     case CSSPropertyScrollSnapStop:
       return true;

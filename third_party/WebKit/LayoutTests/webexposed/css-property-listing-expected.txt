@@ -363,7 +363,6 @@ All changes to this list should go through Blink's feature review process: http:
     will-change
     word-break
     word-spacing
-    word-wrap
     writing-mode
     x
     y
@@ -794,4 +793,6 @@ All changes to this list should go through Blink's feature review process: http:
         transition-timing-function
     -webkit-user-select
         user-select
+    word-wrap
+        overflow-wrap
 

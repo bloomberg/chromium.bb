@@ -256,7 +256,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     if (value.IsEmpty() || DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadWrite);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
                                               CSSValueBreakWord);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
                                               CSSValueAfterWhiteSpace);
@@ -268,7 +268,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     } else if (DeprecatedEqualIgnoringCase(value, "plaintext-only")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyWebkitUserModify, CSSValueReadWritePlaintextOnly);
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyWordWrap,
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyOverflowWrap,
                                               CSSValueBreakWord);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLineBreak,
                                               CSSValueAfterWhiteSpace);

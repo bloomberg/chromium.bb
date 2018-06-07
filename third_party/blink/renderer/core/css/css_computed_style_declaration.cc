@@ -112,7 +112,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyUnicodeBidi, CSSPropertyVerticalAlign, CSSPropertyVisibility,
     CSSPropertyWhiteSpace, CSSPropertyWidows, CSSPropertyWidth,
     CSSPropertyWillChange, CSSPropertyWordBreak, CSSPropertyWordSpacing,
-    CSSPropertyWordWrap, CSSPropertyZIndex, CSSPropertyZoom,
+    CSSPropertyZIndex, CSSPropertyZoom,
 
     CSSPropertyWebkitAppearance, CSSPropertyBackfaceVisibility,
     CSSPropertyWebkitBorderHorizontalSpacing, CSSPropertyWebkitBorderImage,
