@@ -114,6 +114,19 @@ class Executive(object):
         # According to http://docs.python.org/library/os.html
         # os.kill isn't available on Windows.
         if sys.platform == 'win32':
+            # Workaround for race condition that occurs when the browser is
+            # killed as it's launching a process. This sometimes leaves a child
+            # process that is in a suspended state.
+            # Follow the Win32 API naming style. pylint: disable=invalid-name
+            OpenProcess = ctypes.windll.kernel32.OpenProcess
+            CloseHandle = ctypes.windll.kernel32.CloseHandle
+            NtSuspendProcess = ctypes.windll.ntdll.NtSuspendProcess
+            PROCESS_ALL_ACCESS = 0x1F0FFF
+            process_handle = OpenProcess(PROCESS_ALL_ACCESS, False, pid)
+            if process_handle != 0:
+                NtSuspendProcess(process_handle)
+                CloseHandle(process_handle)
+
             command = ['taskkill.exe', '/f', '/t', '/pid', pid]
             # taskkill will exit 128 if the process is not found. We should log.
             self.run_command(command, error_handler=self.ignore_error)
