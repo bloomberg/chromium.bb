@@ -490,7 +490,7 @@ class LegacyLinker extends Linker {
                 }
             }
 
-            String sharedRelRoName = libFilePath;
+            final String sharedRelRoName = libFilePath;
             if (zipFilePath != null) {
                 if (!nativeLoadLibraryInZipFile(zipFilePath, libFilePath, loadAddress, libInfo)) {
                     String errorMessage = "Unable to load library: " + libFilePath
@@ -498,7 +498,6 @@ class LegacyLinker extends Linker {
                     Log.e(TAG, errorMessage);
                     throw new UnsatisfiedLinkError(errorMessage);
                 }
-                sharedRelRoName = zipFilePath;
             } else {
                 if (!nativeLoadLibrary(libFilePath, loadAddress, libInfo)) {
                     String errorMessage = "Unable to load library: " + libFilePath;

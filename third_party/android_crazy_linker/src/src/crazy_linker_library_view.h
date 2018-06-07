@@ -33,10 +33,6 @@ class LibraryView {
   LibraryView(void* system_handle, const char* lib_name)
       : type_(TYPE_SYSTEM), system_(system_handle), name_(lib_name) {}
 
-  // Constructor for wrapping a crazy::SharedLibrary instance.
-  LibraryView(SharedLibrary* crazy_lib, const char* lib_name)
-      : type_(TYPE_CRAZY), crazy_(crazy_lib), name_(lib_name) {}
-
   // Constructor for warpping a crazy::SharedLibrary instance.
   // This version takes the library name from the its soname() value.
   LibraryView(SharedLibrary* crazy_lib);

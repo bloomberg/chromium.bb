@@ -96,8 +96,7 @@ void* WrapDlopen(const char* path, int mode) {
   if (path) {
     Error error;
     LibraryView* wrap = globals->libraries()->LoadLibrary(
-        path, mode, 0U /* load_address */, 0U /* file_offset */,
-        globals->search_path_list(), false, &error);
+        path, 0U /* load_address */, globals->search_path_list(), &error);
     if (wrap) {
       globals->valid_handles()->Add(wrap);
       return wrap;
