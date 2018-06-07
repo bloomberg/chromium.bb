@@ -125,8 +125,8 @@ class PageActionIconView : public views::InkDropHostView {
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
-  // Updates the icon after some state has changed.
-  void UpdateIcon();
+  // Updates the icon image after some state has changed.
+  void UpdateIconImage();
 
   // Sets the active state of the icon. An active icon will be displayed in a
   // "call to action" color.

@@ -45,7 +45,7 @@ void StarView::ShowPromo() {
           bookmark_promo_bubble->GetWidget())) {
     bookmark_promo_observer_.Add(bookmark_promo_bubble->GetWidget());
     SetActiveInternal(false);
-    UpdateIcon();
+    UpdateIconImage();
   }
 }
 
@@ -100,6 +100,6 @@ void StarView::OnWidgetDestroying(views::Widget* widget) {
   if (bookmark_promo_observer_.IsObserving(widget)) {
     bookmark_promo_observer_.Remove(widget);
     SetActiveInternal(false);
-    UpdateIcon();
+    UpdateIconImage();
   }
 }

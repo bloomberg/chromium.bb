@@ -178,15 +178,15 @@ void PageActionIconView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this && GetNativeTheme())
-    UpdateIcon();
+    UpdateIconImage();
 }
 
 void PageActionIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  UpdateIcon();
+  UpdateIconImage();
 }
 
 void PageActionIconView::OnThemeChanged() {
-  UpdateIcon();
+  UpdateIconImage();
 }
 
 void PageActionIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
@@ -266,7 +266,7 @@ void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   InkDropHostView::OnBoundsChanged(previous_bounds);
 }
 
-void PageActionIconView::UpdateIcon() {
+void PageActionIconView::UpdateIconImage() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor icon_color =
       active_ ? theme->GetSystemColor(
@@ -282,7 +282,7 @@ void PageActionIconView::SetActiveInternal(bool active) {
   if (active_ == active)
     return;
   active_ = active;
-  UpdateIcon();
+  UpdateIconImage();
 }
 
 content::WebContents* PageActionIconView::GetWebContents() const {
