@@ -40809,6 +40809,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="307" label="SHTM"/>
   <int value="308" label="SHT"/>
   <int value="309" label="SLK"/>
+  <int value="310" label="APPLESCRIPT"/>
+  <int value="311" label="SCPT"/>
+  <int value="312" label="SCPTD"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">

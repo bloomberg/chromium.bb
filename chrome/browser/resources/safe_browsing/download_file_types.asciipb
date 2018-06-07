@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 17
+version_id: 18
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -2641,6 +2641,36 @@ file_types {
   platform_settings {
     platform: PLATFORM_MAC
     danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  extension: "applescript"
+  uma_value: 310
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: DANGEROUS
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  extension: "scpt"
+  uma_value: 311
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: DANGEROUS
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  extension: "scptd"
+  uma_value: 312
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: DANGEROUS
     auto_open_hint: DISALLOW_AUTO_OPEN
   }
 }

@@ -235,7 +235,10 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".dhtml"),       FILE_PATH_LITERAL(".dhtm"),       // 304
     FILE_PATH_LITERAL(".dht"),         FILE_PATH_LITERAL(".shtml"),      // 306
     FILE_PATH_LITERAL(".shtm"),        FILE_PATH_LITERAL(".sht"),        // 308
-    FILE_PATH_LITERAL(".slk"),  // 309
+    FILE_PATH_LITERAL(".slk"),                                           // 309
+    FILE_PATH_LITERAL(".applescript"),                                   // 310
+    FILE_PATH_LITERAL(".scpt"),                                          // 311
+    FILE_PATH_LITERAL(".scptd"),                                         // 312
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match
