@@ -7,10 +7,8 @@
 #include <memory>
 
 #include "base/win/windows_version.h"
-#include "components/viz/common/features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/direct_composition_surface_win.h"
-#include "gpu/ipc/service/gpu_vsync_provider_win.h"
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_bindings.h"
@@ -22,22 +20,6 @@
 
 namespace gpu {
 
-namespace {
-bool IsGpuVSyncSignalSupported() {
-  // TODO(crbug.com/787814): D3DVsync needs to be rewritten to work with
-  // OOP-D. It's no longer requires any IPC, just an ExternalBeginFrameSource,
-  // so it should be much simpler.
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
-    return false;
-
-  // TODO(stanisc): http://crbug.com/467617 Limit to Windows 8.1+ for now
-  // because of locking issue caused by waiting for VSync on Win7 and Win 8.0.
-  return base::win::GetVersion() >= base::win::VERSION_WIN8_1 &&
-         base::FeatureList::IsEnabled(features::kD3DVsync);
-}
-
-}  // namespace
-
 // static
 scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
@@ -48,13 +30,8 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   scoped_refptr<gl::GLSurface> surface;
   bool override_vsync_for_multi_window_swap = false;
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
-    std::unique_ptr<gfx::VSyncProvider> vsync_provider;
-
-    if (IsGpuVSyncSignalSupported())
-      vsync_provider.reset(new GpuVSyncProviderWin(delegate, surface_handle));
-    else
-      vsync_provider.reset(new gl::VSyncProviderWin(surface_handle));
-
+    auto vsync_provider =
+        std::make_unique<gl::VSyncProviderWin>(surface_handle);
     if (gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
       scoped_refptr<DirectCompositionSurfaceWin> egl_surface =
           base::MakeRefCounted<DirectCompositionSurfaceWin>(

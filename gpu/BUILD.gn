@@ -423,7 +423,6 @@ test("gpu_unittests") {
     sources += [
       "ipc/common/gpu_memory_buffer_impl_dxgi_unittest.cc",
       "ipc/service/gpu_memory_buffer_factory_dxgi_unittest.cc",
-      "ipc/service/gpu_vsync_provider_unittest_win.cc",
     ]
   }
 

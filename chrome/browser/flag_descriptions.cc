@@ -2577,11 +2577,6 @@ const char kEnableAppcontainerDescription[] =
     "Enables the use of an AppContainer on sandboxed processes to improve "
     "security.";
 
-const char kEnableD3DVsync[] = "D3D v-sync";
-const char kEnableD3DVsyncDescription[] =
-    "Produces v-sync signal by having D3D wait for vertical blanking interval "
-    "to occur.";
-
 const char kEnableDesktopIosPromotionsName[] = "Desktop to iOS promotions.";
 const char kEnableDesktopIosPromotionsDescription[] =
     "Enable Desktop to iOS promotions, and allow users to see them if they are "
