@@ -1099,6 +1099,7 @@ class SuggestionView extends ViewGroup {
 
         @Override
         protected void onDetachedFromWindow() {
+            removeCallbacks(mRelayoutRunnable);
             if (mNavigationButton != null) mNavigationButton.removeOnLayoutChangeListener(this);
             if (mUrlBar != null) mUrlBar.removeOnLayoutChangeListener(this);
             if (mLocationBar != null) {
