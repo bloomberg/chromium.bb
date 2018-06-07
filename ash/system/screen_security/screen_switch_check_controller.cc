@@ -8,6 +8,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -36,6 +37,14 @@ class CancelCastingDialog : public views::DialogDelegateView {
     return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
   }
 
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
+    if (button == ui::DIALOG_BUTTON_OK)
+      return l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_CONTINUE);
+    if (button == ui::DIALOG_BUTTON_CANCEL)
+      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+    return base::string16();
+  }
+
   bool Cancel() override {
     std::move(callback_).Run(false);
     return true;
@@ -51,6 +60,8 @@ class CancelCastingDialog : public views::DialogDelegateView {
     std::move(callback_).Run(true);
     return true;
   }
+
+  bool ShouldShowCloseButton() const override { return false; }
 
  private:
   base::OnceCallback<void(bool)> callback_;

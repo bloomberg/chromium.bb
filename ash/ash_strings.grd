@@ -700,6 +700,9 @@ This file contains the strings for ash.
       <message name="IDS_DESKTOP_CASTING_ACTIVE_MESSAGE" desc="The message for the dialog which tells the user that desktop casting is in progress, asking if the casting should be stopped before switching - or - the switch should be aborted.">
         Screen sharing will stop when you switch to another user. Do you want to continue?
       </message>
+      <message name="IDS_DESKTOP_CASTING_ACTIVE_CONTINUE" desc="Label for the Continue (OK) button.">
+        Continue
+      </message>
 
       <!-- Status tray screen capture strings. -->
       <message name="IDS_ASH_STATUS_TRAY_SCREEN_CAPTURE_STOP" desc="label used for screen capture stop button">
