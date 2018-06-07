@@ -209,6 +209,18 @@ std::vector<display::GammaRampRGBEntry> GetDefaultDeGammaLut() {
   return table;
 }
 
+bool HasColorCorrectionMatrix(display::DisplayConfigurator* configurator,
+                              int64_t display_id) {
+  for (const auto* display_snapshot : configurator->cached_displays()) {
+    if (display_snapshot->display_id() != display_id)
+      continue;
+
+    return display_snapshot->has_color_correction_matrix();
+  }
+
+  return false;
+}
+
 }  // namespace
 
 DisplayColorManager::DisplayColorManager(
@@ -305,17 +317,20 @@ void DisplayColorManager::OnDisplayRemoved(
 void DisplayColorManager::ApplyDisplayColorCalibration(
     int64_t display_id,
     const ColorCalibrationData& calibration_data) {
-  const auto color_matrix_iter = displays_color_matrix_map_.find(display_id);
-  const std::vector<float>* final_matrix = &calibration_data.correction_matrix;
-  if (color_matrix_iter != displays_color_matrix_map_.end()) {
-    SkMatrix44 combined_matrix = color_matrix_iter->second;
-    combined_matrix.preConcat(SkMatrix44FromColorMatrixVector(*final_matrix));
-    ColorMatrixVectorFromSkMatrix44(combined_matrix, &matrix_buffer_);
-    final_matrix = &matrix_buffer_;
-  }
+  if (HasColorCorrectionMatrix(configurator_, display_id)) {
+    const auto color_matrix_iter = displays_color_matrix_map_.find(display_id);
+    const std::vector<float>* final_matrix =
+        &calibration_data.correction_matrix;
+    if (color_matrix_iter != displays_color_matrix_map_.end()) {
+      SkMatrix44 combined_matrix = color_matrix_iter->second;
+      combined_matrix.preConcat(SkMatrix44FromColorMatrixVector(*final_matrix));
+      ColorMatrixVectorFromSkMatrix44(combined_matrix, &matrix_buffer_);
+      final_matrix = &matrix_buffer_;
+    }
 
-  if (!configurator_->SetColorMatrix(display_id, *final_matrix))
-    LOG(WARNING) << "Error applying the color matrix.";
+    if (!configurator_->SetColorMatrix(display_id, *final_matrix))
+      LOG(WARNING) << "Error applying the color matrix.";
+  }
 
   // When applying gamma correction, we either use the gamma/degamma tables from
   // the calibration data if available, or we apply default ones. This makes
