@@ -12,10 +12,6 @@
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
-namespace base {
-class NullableString16;
-}
-
 namespace content {
 
 // Responsible for tracking active notifications and allowed origins for the
@@ -26,7 +22,9 @@ class LayoutTestNotificationManager : public MockPlatformNotificationService {
   ~LayoutTestNotificationManager() override;
 
  private:
-  blink::mojom::PermissionStatus CheckPermission(const GURL& origin) override;
+  blink::mojom::PermissionStatus CheckPermissionForOrigin(
+      const GURL& origin) override;
+
   DISALLOW_COPY_AND_ASSIGN(LayoutTestNotificationManager);
 };
 

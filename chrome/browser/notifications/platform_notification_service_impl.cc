@@ -26,7 +26,6 @@
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -151,8 +150,7 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     base::OnceClosure completed_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   blink::mojom::PermissionStatus permission_status =
-      CheckPermissionOnUIThread(browser_context, origin,
-                                kInvalidRenderProcessId);
+      CheckPermission(browser_context, origin, kInvalidRenderProcessId);
 
   NotificationMetricsLogger* metrics_logger = GetMetricsLogger(browser_context);
 
@@ -218,8 +216,7 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
               base::Unretained(this), std::move(completed_closure)));
 }
 
-blink::mojom::PermissionStatus
-PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
+blink::mojom::PermissionStatus PlatformNotificationServiceImpl::CheckPermission(
     BrowserContext* browser_context,
     const GURL& origin,
     int render_process_id) {
@@ -268,64 +265,6 @@ PlatformNotificationServiceImpl::CheckPermissionOnUIThread(
     return blink::mojom::PermissionStatus::ASK;
   DCHECK_EQ(CONTENT_SETTING_BLOCK, setting);
   return blink::mojom::PermissionStatus::DENIED;
-}
-
-blink::mojom::PermissionStatus
-PlatformNotificationServiceImpl::CheckPermissionOnIOThread(
-    content::ResourceContext* resource_context,
-    const GURL& origin,
-    int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Extensions support an API permission named "notification". This will grant
-  // not only grant permission for using the Chrome App extension API, but also
-  // for the Web Notification API.
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    extensions::InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
-    const extensions::ProcessMap& process_map =
-        extension_info_map->process_map();
-
-    const extensions::Extension* extension =
-        extension_info_map->extensions().GetByID(origin.host());
-
-    if (extension &&
-        extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kNotifications) &&
-        process_map.Contains(extension->id(), render_process_id)) {
-      if (!extension_info_map->AreNotificationsDisabled(extension->id()))
-        return blink::mojom::PermissionStatus::GRANTED;
-    }
-  }
-#endif
-
-  // No enabled extensions exist, so check the normal host content settings.
-  HostContentSettingsMap* host_content_settings_map =
-      io_data->GetHostContentSettingsMap();
-  ContentSetting setting = host_content_settings_map->GetContentSetting(
-      origin,
-      origin,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier());
-
-  if (setting == CONTENT_SETTING_ALLOW)
-    return blink::mojom::PermissionStatus::GRANTED;
-  if (setting == CONTENT_SETTING_BLOCK)
-    return blink::mojom::PermissionStatus::DENIED;
-
-  // Check whether the permission has been embargoed (automatically blocked).
-  // TODO(crbug.com/658020): make PermissionManager::GetPermissionStatus thread
-  // safe so it isn't necessary to do this HostContentSettingsMap and embargo
-  // check outside of the permissions code.
-  PermissionResult result = PermissionDecisionAutoBlocker::GetEmbargoResult(
-      host_content_settings_map, origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      base::Time::Now());
-  DCHECK(result.content_setting == CONTENT_SETTING_ASK ||
-         result.content_setting == CONTENT_SETTING_BLOCK);
-  return result.content_setting == CONTENT_SETTING_ASK
-             ? blink::mojom::PermissionStatus::ASK
-             : blink::mojom::PermissionStatus::DENIED;
 }
 
 // TODO(awdf): Rename to DisplayNonPersistentNotification (Similar for Close)

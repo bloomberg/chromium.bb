@@ -70,12 +70,8 @@ class PlatformNotificationServiceImpl
                                      base::OnceClosure completed_closure);
 
   // content::PlatformNotificationService implementation.
-  blink::mojom::PermissionStatus CheckPermissionOnUIThread(
+  blink::mojom::PermissionStatus CheckPermission(
       content::BrowserContext* browser_context,
-      const GURL& origin,
-      int render_process_id) override;
-  blink::mojom::PermissionStatus CheckPermissionOnIOThread(
-      content::ResourceContext* resource_context,
       const GURL& origin,
       int render_process_id) override;
   void DisplayNotification(

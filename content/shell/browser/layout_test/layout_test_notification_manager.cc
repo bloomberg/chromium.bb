@@ -11,18 +11,15 @@
 
 namespace content {
 
-LayoutTestNotificationManager::LayoutTestNotificationManager() {}
-LayoutTestNotificationManager::~LayoutTestNotificationManager() {}
-
+LayoutTestNotificationManager::LayoutTestNotificationManager() = default;
+LayoutTestNotificationManager::~LayoutTestNotificationManager() = default;
 
 blink::mojom::PermissionStatus
-LayoutTestNotificationManager::CheckPermission(const GURL& origin) {
+LayoutTestNotificationManager::CheckPermissionForOrigin(const GURL& origin) {
   return LayoutTestContentBrowserClient::Get()
       ->GetLayoutTestBrowserContext()
       ->GetLayoutTestPermissionManager()
-      ->GetPermissionStatus(PermissionType::NOTIFICATIONS,
-                            origin,
-                            origin);
+      ->GetPermissionStatus(PermissionType::NOTIFICATIONS, origin, origin);
 }
 
 }  // namespace content

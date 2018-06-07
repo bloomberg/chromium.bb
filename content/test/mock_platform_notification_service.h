@@ -45,12 +45,8 @@ class MockPlatformNotificationService : public PlatformNotificationService {
   void SetPermission(blink::mojom::PermissionStatus permission_status);
 
   // PlatformNotificationService implementation.
-  blink::mojom::PermissionStatus CheckPermissionOnUIThread(
+  blink::mojom::PermissionStatus CheckPermission(
       BrowserContext* browser_context,
-      const GURL& origin,
-      int render_process_id) override;
-  blink::mojom::PermissionStatus CheckPermissionOnIOThread(
-      ResourceContext* resource_context,
       const GURL& origin,
       int render_process_id) override;
   void DisplayNotification(
@@ -75,9 +71,10 @@ class MockPlatformNotificationService : public PlatformNotificationService {
       const DisplayedNotificationsCallback& callback) override;
 
  protected:
-  // Checks if |origin| has permission to display notifications. May be called
-  // on both the IO and the UI threads.
-  virtual blink::mojom::PermissionStatus CheckPermission(const GURL& origin);
+  // Checks if |origin| has permission to display notifications. Will only
+  // be called on the UI thread.
+  virtual blink::mojom::PermissionStatus CheckPermissionForOrigin(
+      const GURL& origin);
 
  private:
   // Structure to represent the information of a persistent notification.

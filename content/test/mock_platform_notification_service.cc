@@ -158,33 +158,24 @@ void MockPlatformNotificationService::SetPermission(
   permission_status_ = permission_status;
 }
 
-blink::mojom::PermissionStatus
-MockPlatformNotificationService::CheckPermissionOnUIThread(
+blink::mojom::PermissionStatus MockPlatformNotificationService::CheckPermission(
     BrowserContext* browser_context,
     const GURL& origin,
     int render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return CheckPermission(origin);
+  return CheckPermissionForOrigin(origin);
 }
 
 blink::mojom::PermissionStatus
-MockPlatformNotificationService::CheckPermissionOnIOThread(
-    ResourceContext* resource_context,
-    const GURL& origin,
-    int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return CheckPermission(origin);
+MockPlatformNotificationService::CheckPermissionForOrigin(const GURL& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return permission_status_;
 }
 
 void MockPlatformNotificationService::ReplaceNotificationIfNeeded(
     const std::string& notification_id) {
   persistent_notifications_.erase(notification_id);
   non_persistent_notifications_.erase(notification_id);
-}
-
-blink::mojom::PermissionStatus MockPlatformNotificationService::CheckPermission(
-    const GURL& origin) {
-  return permission_status_;
 }
 
 }  // namespace content
