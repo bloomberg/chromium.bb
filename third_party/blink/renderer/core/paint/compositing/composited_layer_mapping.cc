@@ -1619,6 +1619,7 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
     child_clipping_mask_layer_->SetSize(scrolling_layer_->Size());
     child_clipping_mask_layer_->SetOffsetFromLayoutObject(
         ToIntSize(overflow_clip_rect.Location()));
+    child_clipping_mask_layer_->SetNeedsDisplay();
   }
 
   bool overflow_clip_rect_offset_changed =
@@ -1687,6 +1688,7 @@ void CompositedLayerMapping::UpdateChildClippingMaskLayerGeometry() {
   child_clipping_mask_layer_->SetSize(graphics_layer_->Size());
   child_clipping_mask_layer_->SetOffsetFromLayoutObject(
       ToIntSize(padding_box.Location()));
+  child_clipping_mask_layer_->SetNeedsDisplay();
 
   // NOTE: also some stuff happening in updateChildContainmentLayerGeometry().
 }
