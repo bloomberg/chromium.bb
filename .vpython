@@ -25,6 +25,7 @@
 python_version: "2.7"
 
 # Used by:
+#   build/chromeos/run_vm_test.py
 #   third_party/catapult
 #
 # This version must be compatible with the version range specified by
