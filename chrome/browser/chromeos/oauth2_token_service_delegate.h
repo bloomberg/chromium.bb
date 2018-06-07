@@ -53,6 +53,7 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
 
   // |AccountManager::Observer| overrides
   void OnTokenUpserted(const AccountManager::AccountKey& account_key) override;
+  void OnAccountRemoved(const AccountManager::AccountKey& account_key) override;
 
  private:
   // Callback handler for |AccountManager::GetAccounts|.

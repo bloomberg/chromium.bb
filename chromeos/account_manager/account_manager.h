@@ -73,6 +73,12 @@ class CHROMEOS_EXPORT AccountManager {
     // notification-on-registration.
     virtual void OnTokenUpserted(const AccountKey& account_key) = 0;
 
+    // Called when an account has been removed from AccountManager.
+    // Observers that may have cached access tokens (fetched via
+    // |AccountManager::CreateAccessTokenFetcher|), must clear their cache entry
+    // for this |account_key| on receiving this callback.
+    virtual void OnAccountRemoved(const AccountKey& account_key) = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
@@ -90,6 +96,8 @@ class CHROMEOS_EXPORT AccountManager {
 
   // Removes an account. Does not do anything if |account_key| is not known by
   // |AccountManager|.
+  // Observers are notified about an account removal through
+  // |Observer::OnAccountRemoved|.
   void RemoveAccount(const AccountKey& account_key);
 
   // Updates or inserts a token, for the account corresponding to the given
@@ -163,6 +171,9 @@ class CHROMEOS_EXPORT AccountManager {
 
   // Notify |Observer|s about a token update.
   void NotifyTokenObservers(const AccountKey& account_key);
+
+  // Notify |Observer|s about an account removal.
+  void NotifyAccountRemovalObservers(const AccountKey& account_key);
 
   // Status of this object's initialization.
   InitializationState init_state_ = InitializationState::kNotStarted;

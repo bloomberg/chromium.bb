@@ -52,6 +52,14 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
     batch_change_records_.rbegin()->emplace_back(account_id);
   }
 
+  void OnRefreshTokenRevoked(const std::string& account_id) override {
+    EXPECT_TRUE(is_inside_batch_);
+    account_ids_.erase(account_id);
+
+    // Record the |account_id| in the last batch.
+    batch_change_records_.rbegin()->emplace_back(account_id);
+  }
+
   void OnAuthErrorChanged(const std::string& account_id,
                           const GoogleServiceAuthError& auth_error) override {
     last_err_account_id_ = account_id;
@@ -310,6 +318,23 @@ TEST_F(CrOSOAuthDelegateTest, UpdateCredentialsSucceeds) {
   std::vector<std::string> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ(account_info_.account_id, accounts[0]);
+}
+
+TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAccountRemoval) {
+  delegate_->UpdateCredentials(account_info_.account_id, "token");
+
+  TokenServiceObserver observer;
+  delegate_->AddObserver(&observer);
+  const AccountManager::AccountKey account_key{account_info_.gaia,
+                                               ACCOUNT_TYPE_GAIA};
+  account_manager_.RemoveAccount(account_key);
+
+  EXPECT_EQ(1UL, observer.batch_change_records_.size());
+  EXPECT_EQ(1UL, observer.batch_change_records_[0].size());
+  EXPECT_EQ(account_info_.account_id, observer.batch_change_records_[0][0]);
+  EXPECT_TRUE(observer.account_ids_.empty());
+
+  delegate_->RemoveObserver(&observer);
 }
 
 }  // namespace chromeos

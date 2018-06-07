@@ -68,11 +68,18 @@ class AccountManagerObserver : public AccountManager::Observer {
   ~AccountManagerObserver() override = default;
 
   void OnTokenUpserted(const AccountManager::AccountKey& account_key) override {
-    is_callback_called_ = true;
+    is_token_upserted_callback_called_ = true;
     accounts_.insert(account_key);
   }
 
-  bool is_callback_called_ = false;
+  void OnAccountRemoved(
+      const AccountManager::AccountKey& account_key) override {
+    is_account_removed_callback_called_ = true;
+    accounts_.erase(account_key);
+  }
+
+  bool is_token_upserted_callback_called_ = false;
+  bool is_account_removed_callback_called_ = false;
   std::set<AccountManager::AccountKey> accounts_;
 
  private:
@@ -130,13 +137,13 @@ TEST_F(AccountManagerTest, TestPersistence) {
 
 TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenInsertion) {
   auto observer = std::make_unique<AccountManagerObserver>();
-  EXPECT_FALSE(observer->is_callback_called_);
+  EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
   account_manager_->AddObserver(observer.get());
 
   account_manager_->UpsertToken(kAccountKey_, "123");
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_TRUE(observer->is_callback_called_);
+  EXPECT_TRUE(observer->is_token_upserted_callback_called_);
   EXPECT_EQ(1UL, observer->accounts_.size());
   EXPECT_EQ(kAccountKey_, *observer->accounts_.begin());
 
@@ -145,17 +152,17 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenInsertion) {
 
 TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenUpdate) {
   auto observer = std::make_unique<AccountManagerObserver>();
-  EXPECT_FALSE(observer->is_callback_called_);
+  EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
   account_manager_->AddObserver(observer.get());
   account_manager_->UpsertToken(kAccountKey_, "123");
   scoped_task_environment_.RunUntilIdle();
 
   // Observers should be called when token is updated.
-  observer->is_callback_called_ = false;
+  observer->is_token_upserted_callback_called_ = false;
   account_manager_->UpsertToken(kAccountKey_, "456");
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_TRUE(observer->is_callback_called_);
+  EXPECT_TRUE(observer->is_token_upserted_callback_called_);
   EXPECT_EQ(1UL, observer->accounts_.size());
   EXPECT_EQ(kAccountKey_, *observer->accounts_.begin());
 
@@ -165,17 +172,17 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenUpdate) {
 TEST_F(AccountManagerTest, ObserversAreNotNotifiedIfTokenIsNotUpdated) {
   auto observer = std::make_unique<AccountManagerObserver>();
   const std::string& kToken = "123";
-  EXPECT_FALSE(observer->is_callback_called_);
+  EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
   account_manager_->AddObserver(observer.get());
   account_manager_->UpsertToken(kAccountKey_, kToken);
   scoped_task_environment_.RunUntilIdle();
 
   // Observers should not be called when token is not updated.
-  observer->is_callback_called_ = false;
+  observer->is_token_upserted_callback_called_ = false;
   account_manager_->UpsertToken(kAccountKey_, kToken);
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_FALSE(observer->is_callback_called_);
+  EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
   account_manager_->RemoveObserver(observer.get());
 }
@@ -201,6 +208,20 @@ TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
   std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
 
   EXPECT_TRUE(accounts.empty());
+}
+
+TEST_F(AccountManagerTest, ObserversAreNotifiedOnAccountRemoval) {
+  auto observer = std::make_unique<AccountManagerObserver>();
+  account_manager_->AddObserver(observer.get());
+  account_manager_->UpsertToken(kAccountKey_, "123");
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(observer->is_account_removed_callback_called_);
+  account_manager_->RemoveAccount(kAccountKey_);
+  EXPECT_TRUE(observer->is_account_removed_callback_called_);
+  EXPECT_TRUE(observer->accounts_.empty());
+
+  account_manager_->RemoveObserver(observer.get());
 }
 
 }  // namespace chromeos
