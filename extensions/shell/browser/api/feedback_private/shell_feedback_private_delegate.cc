@@ -40,6 +40,14 @@ ShellFeedbackPrivateDelegate::CreateSingleLogSource(
   NOTIMPLEMENTED();
   return nullptr;
 }
+
+void ShellFeedbackPrivateDelegate::FetchAndMergeIwlwifiDumpLogsIfPresent(
+    std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
+    content::BrowserContext* context,
+    system_logs::SysLogsFetcherCallback callback) const {
+  NOTIMPLEMENTED();
+  std::move(callback).Run(std::move(original_sys_logs));
+}
 #endif
 
 std::string ShellFeedbackPrivateDelegate::GetSignedInUserEmail(

@@ -269,11 +269,11 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   const FeedbackInfo& feedback_info = params->feedback;
 
   // Populate feedback data.
+  FeedbackPrivateDelegate* delegate =
+      ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
   scoped_refptr<FeedbackData> feedback_data =
       base::MakeRefCounted<FeedbackData>(
-          ExtensionsAPIClient::Get()
-              ->GetFeedbackPrivateDelegate()
-              ->GetFeedbackUploaderForContext(browser_context()));
+          delegate->GetFeedbackUploaderForContext(browser_context()));
   feedback_data->set_context(browser_context());
   feedback_data->set_description(feedback_info.description);
 
@@ -309,6 +309,23 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
       sys_logs->emplace(info.key, info.value);
   }
 
+#if defined(OS_CHROMEOS)
+  delegate->FetchAndMergeIwlwifiDumpLogsIfPresent(
+      std::move(sys_logs), browser_context(),
+      base::Bind(&FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched, this,
+                 feedback_data, feedback_info.send_histograms));
+#else
+  OnAllLogsFetched(feedback_data, feedback_info.send_histograms,
+                   std::move(sys_logs));
+#endif  // defined(OS_CHROMEOS)
+
+  return RespondLater();
+}
+
+void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
+    scoped_refptr<FeedbackData> feedback_data,
+    bool send_histograms,
+    std::unique_ptr<system_logs::SystemLogsResponse> sys_logs) {
   feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
 
   FeedbackService* service = FeedbackPrivateAPI::GetFactoryInstance()
@@ -316,7 +333,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
                                  ->GetService();
   DCHECK(service);
 
-  if (feedback_info.send_histograms) {
+  if (send_histograms) {
     auto histograms = std::make_unique<std::string>();
     *histograms =
         base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL);
@@ -328,8 +345,6 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
       feedback_data,
       base::Bind(&FeedbackPrivateSendFeedbackFunction::OnCompleted, this,
                  GetLandingPageType(feedback_data->user_email())));
-
-  return RespondLater();
 }
 
 void FeedbackPrivateSendFeedbackFunction::OnCompleted(
