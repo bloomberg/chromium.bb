@@ -64,6 +64,8 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -79,6 +81,7 @@
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_origin_trials.h"
 #include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -2729,5 +2732,93 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
 }
 
 #endif
+
+// Origin Trial Policy which vends the test public key so that the token
+// can be validated.
+class TestOriginTrialPolicy : public blink::OriginTrialPolicy {
+  bool IsOriginTrialsSupported() const override { return true; }
+  base::StringPiece GetPublicKey() const override {
+    // This is the public key which the test below will use to enable origin
+    // trial features. Trial tokens for use in tests can be created with the
+    // tool in /tools/origin_trials/generate_token.py, using the private key
+    // contained in /tools/origin_trials/eftest.key.
+    static const uint8_t kOriginTrialPublicKey[] = {
+        0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
+        0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
+        0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
+    };
+    return base::StringPiece(
+        reinterpret_cast<const char*>(kOriginTrialPublicKey),
+        base::size(kOriginTrialPublicKey));
+  }
+  bool IsOriginSecure(const GURL& url) const override { return true; }
+};
+
+TEST_F(RenderViewImplTest, OriginTrialDisabled) {
+  // HTML Document with no origin trial.
+  const char kHTMLWithNoOriginTrial[] =
+      "<!DOCTYPE html>"
+      "<html>"
+      "<head>"
+      "<title>Origin Trial Test</title>"
+      "</head>"
+      "</html>";
+
+  // Override the origin trial policy to use the test keys.
+  TestOriginTrialPolicy policy;
+  blink::TrialTokenValidator::SetOriginTrialPolicyGetter(base::BindRepeating(
+      [](TestOriginTrialPolicy* policy_ptr) -> blink::OriginTrialPolicy* {
+        return policy_ptr;
+      },
+      base::Unretained(&policy)));
+
+  // Set the document URL.
+  LoadHTMLWithUrlOverride(kHTMLWithNoOriginTrial, "https://example.test/");
+  blink::WebFrame* web_frame = frame()->GetWebFrame();
+  ASSERT_TRUE(web_frame);
+  ASSERT_TRUE(web_frame->IsWebLocalFrame());
+  blink::WebDocument web_doc = web_frame->ToWebLocalFrame()->GetDocument();
+  EXPECT_FALSE(blink::WebOriginTrials::isTrialEnabled(&web_doc, "Frobulate"));
+  // Reset the origin trial policy.
+  blink::TrialTokenValidator::ResetOriginTrialPolicyGetter();
+}
+
+TEST_F(RenderViewImplTest, OriginTrialEnabled) {
+  // HTML Document with an origin trial.
+  // Note: The token below will expire in 2033. It was generated with the
+  // command:
+  // generate_token.py https://example.test Frobulate \
+  //     -expire-timestamp=2000000000
+  const char kHTMLWithOriginTrial[] =
+      "<!DOCTYPE html>"
+      "<html>"
+      "<head>"
+      "<title>Origin Trial Test</title>"
+      "<meta http-equiv=\"origin-trial\" "
+      "content=\"AlrgXVXDH5RSr6sDZiO6/8Hejv3BIhODCSS/0zD8VmDDLNPn463JzEq/Cv/"
+      "wqt8cRHacGD3cUhKkibGIGQbaXAMAAABUeyJvcmlnaW4iOiAiaHR0cHM6Ly9leGFtcGxlLnR"
+      "lc3Q6NDQzIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB"
+      "9\">"
+      "</head>"
+      "</html>";
+
+  // Override the origin trial policy to use the test keys.
+  TestOriginTrialPolicy policy;
+  blink::TrialTokenValidator::SetOriginTrialPolicyGetter(base::BindRepeating(
+      [](TestOriginTrialPolicy* policy_ptr) -> blink::OriginTrialPolicy* {
+        return policy_ptr;
+      },
+      base::Unretained(&policy)));
+
+  // Set the document URL so the origin is correct for the trial.
+  LoadHTMLWithUrlOverride(kHTMLWithOriginTrial, "https://example.test/");
+  blink::WebFrame* web_frame = frame()->GetWebFrame();
+  ASSERT_TRUE(web_frame);
+  ASSERT_TRUE(web_frame->IsWebLocalFrame());
+  blink::WebDocument web_doc = web_frame->ToWebLocalFrame()->GetDocument();
+  EXPECT_TRUE(blink::WebOriginTrials::isTrialEnabled(&web_doc, "Frobulate"));
+  // Reset the origin trial policy.
+  blink::TrialTokenValidator::ResetOriginTrialPolicyGetter();
+}
 
 }  // namespace content

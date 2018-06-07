@@ -1465,6 +1465,30 @@ action("make_core_generated_origin_trials") {
     ]
   }
 }
+action("make_core_generated_web_origin_trials") {
+  script = "../build/scripts/make_web_origin_trials.py"
+
+  inputs = scripts_for_json5_files + [
+             "../build/scripts/make_web_origin_trials.py",
+             "../platform/runtime_enabled_features.json5",
+             "../build/scripts/templates/web_origin_trials.cc.tmpl",
+           ]
+  outputs = [
+    "$blink_core_output_dir/exported/web_origin_trials.cc",
+  ]
+
+  args = [
+    rebase_path("../platform/runtime_enabled_features.json5", root_build_dir),
+    "--output_dir",
+    "$rel_blink_core_gen_dir/exported",
+  ]
+  if (is_mac && !use_system_xcode) {
+    args += [
+      "--developer_dir",
+      hermetic_xcode_path,
+    ]
+  }
+}
 
 action_foreach("make_core_generated_bison") {
   script = "../build/scripts/rule_bison.py"
@@ -1519,6 +1543,7 @@ targets_generating_sources = [
   ":make_core_generated_origin_trials",
   ":make_core_generated_style_property_shorthand",
   ":make_core_generated_svg_names",
+  ":make_core_generated_web_origin_trials",
   ":make_core_generated_xlink_names",
   ":make_core_generated_xml_names",
   ":make_core_generated_xml_ns_names",
