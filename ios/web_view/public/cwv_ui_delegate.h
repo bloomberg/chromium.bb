@@ -12,6 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class CWVFavicon;
 @class CWVHTMLElement;
 @class CWVPreviewElementInfo;
 @class CWVWebView;
@@ -83,6 +84,10 @@ CWV_EXPORT
 // in response to the user's pop action on the preview on force touch.
 - (void)webView:(CWVWebView*)webView
     commitPreviewingViewController:(UIViewController*)previewingViewController;
+
+// Called when favicons become available in the current page.
+- (void)webView:(CWVWebView*)webView
+    didLoadFavicons:(NSArray<CWVFavicon*>*)favIcons;
 
 @end
 
