@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1972 tests; 1952 PASS, 20 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1974 tests; 1953 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Event interface: existence and properties of interface object
 PASS Event interface object length
@@ -1972,5 +1972,7 @@ PASS DOMTokenList interface: calling replace(DOMString, DOMString) on document.b
 PASS DOMTokenList interface: document.body.classList must inherit property "supports(DOMString)" with the proper type
 PASS DOMTokenList interface: calling supports(DOMString) on document.body.classList with too few arguments must throw TypeError
 PASS DOMTokenList interface: document.body.classList must inherit property "value" with the proper type
+FAIL Window interface: attribute event assert_true: property should be enumerable expected true got false
+PASS Unscopable handled correctly for event property on Window
 Harness: the test ran to completion.
 
