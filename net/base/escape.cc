@@ -544,4 +544,24 @@ base::string16 UnescapeForHTML(base::StringPiece16 input) {
   return text;
 }
 
+bool ContainsEncodedBytes(base::StringPiece escaped_text,
+                          const std::set<unsigned char>& bytes) {
+  for (size_t i = 0, max = escaped_text.size(); i < max;) {
+    unsigned char byte;
+    // UnescapeUnsignedByteAtIndex does bounds checking, so this is always safe
+    // to call.
+    if (UnescapeUnsignedByteAtIndex(escaped_text, i, &byte)) {
+      if (bytes.find(byte) != bytes.end())
+        return true;
+
+      i += 3;
+      continue;
+    }
+
+    ++i;
+  }
+
+  return false;
+}
+
 }  // namespace net

@@ -19,7 +19,7 @@ namespace net {
 namespace {
 
 struct FileCase {
-  const wchar_t* file;
+  const wchar_t* file;  // nullptr indicates expected to fail.
   const char* url;
 };
 
@@ -187,11 +187,18 @@ TEST(FilenameUtilTest, FileURLConversion) {
      "%E9%A1%B5.doc"},
     {L"D:\\plane1\\\xD835\xDC00\xD835\xDC01.txt",  // Math alphabet "AB"
      "file:///D:/plane1/%F0%9D%90%80%F0%9D%90%81.txt"},
+    // Other percent-encoded characters that are left alone when displaying a
+    // URL are decoded in a file path (https://crbug.com/585422).
+    {L"C:\\foo\\\U0001F512.txt",
+     "file:///C:/foo/%F0%9F%94%92.txt"},                       // Blacklisted.
+    {L"C:\\foo\\\u2001.txt", "file:///C:/foo/%E2%80%81.txt"},  // Blacklisted.
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     {L"/foo/bar.txt", "file:///foo/bar.txt"},
     {L"/foo/BAR.txt", "file:///foo/BAR.txt"},
     {L"/C:/foo/bar.txt", "file:///C:/foo/bar.txt"},
     {L"/foo/bar?.txt", "file:///foo/bar%3F.txt"},
+    // %5C ('\\') is not special on POSIX, and is therefore decoded as normal.
+    {L"/foo/..\\bar", "file:///foo/..%5Cbar"},
     {L"/some computer/foo/bar.txt", "file:///some%20computer/foo/bar.txt"},
     {L"/Name;with%some symbols*#", "file:///Name%3Bwith%25some%20symbols*%23"},
     {L"/latin1/caf\x00E9\x00DD.txt", "file:///latin1/caf%C3%A9%C3%9D.txt"},
@@ -202,6 +209,10 @@ TEST(FilenameUtilTest, FileURLConversion) {
      "%91%E9%A1%B5.doc"},
     {L"/plane1/\x1D400\x1D401.txt",  // Math alphabet "AB"
      "file:///plane1/%F0%9D%90%80%F0%9D%90%81.txt"},
+    // Other percent-encoded characters that are left alone when displaying a
+    // URL are decoded in a file path (https://crbug.com/585422).
+    {L"/foo/\U0001F512.txt", "file:///foo/%F0%9F%94%92.txt"},  // Blacklisted.
+    {L"/foo/\u2001.txt", "file:///foo/%E2%80%81.txt"},         // Blacklisted.
 #endif
   };
 
@@ -228,17 +239,18 @@ TEST(FilenameUtilTest, FileURLConversion) {
     {L"\\\\foo\\bar.txt", "file:/foo/bar.txt"},
     {L"\\\\foo\\bar.txt", "file://foo\\bar.txt"},
     {L"C:\\foo\\bar.txt", "file:\\\\\\c:/foo/bar.txt"},
-    // %2f ('/') and %5c ('\\') are left alone by both GURL and
-    // FileURLToFilePath.
-    {L"C:\\foo%2f..%5cbar", "file:///C:\\foo%2f..%5cbar"},
+    // %2F ('/') should fail, because it might otherwise be interpreted as a
+    // path separator on Windows.
+    {nullptr, "file:///C:\\foo%2f..\\bar"},
+    // %5C ('\\') should fail, because it can't be represented in a Windows
+    // filename (and should not be considered a path separator).
+    {nullptr, "file:///foo\\..%5cbar"},
+    // %00 should fail, because it represents a null byte in a filename.
+    {nullptr, "file:///foo/%00bar.txt"},
     // Other percent-encoded characters that are left alone when displaying a
-    // URL are also left alone in a file path.
-    // TODO(mgiuca): Keeping these escaped makes no sense in a file path. Fix
-    // this (https://crbug.com/585422).
-    {L"C:\\foo\\%F0%9F%94%92.txt",
-     "file:/c:/foo/%F0%9F%94%92.txt"},                          // Blacklisted.
-    {L"C:\\foo\\%E2%80%81.txt", "file:/c:/foo/%E2%80%81.txt"},  // Blacklisted.
-    {L"C:\\foo\\%0A.txt", "file:/c:/foo/%0A.txt"},              // Control char.
+    // URL are decoded in a file path (https://crbug.com/585422).
+    {L"C:\\foo\\\n.txt", "file:///c:/foo/%0A.txt"},         // Control char.
+    {L"C:\\foo\\a=$b.txt", "file:///c:/foo/a%3D%24b.txt"},  // Reserved.
     // Make sure that '+' isn't converted into ' '.
     {L"C:\\foo\\romeo+juliet.txt", "file:/c:/foo/romeo+juliet.txt"},
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -255,16 +267,15 @@ TEST(FilenameUtilTest, FileURLConversion) {
     {L"/foo/bar.txt", "file:////foo////bar.txt"},
     {L"/c:/foo/bar.txt", "file:\\\\\\c:/foo/bar.txt"},
     {L"/c:/foo/bar.txt", "file:c:/foo/bar.txt"},
-    // %2f ('/') and %5c ('\\') are left alone by both GURL and
-    // FileURLToFilePath.
-    {L"/foo%2f..%5cbar", "file:///foo%2f..%5cbar"},
+    // %2F ('/') should fail, because it can't be represented in a POSIX
+    // filename (and should not be considered a path separator).
+    {nullptr, "file:///foo%2f../bar"},
+    // %00 should fail, because it represents a null byte in a filename.
+    {nullptr, "file:///foo/%00bar.txt"},
     // Other percent-encoded characters that are left alone when displaying a
-    // URL are also left alone in a file path.
-    // TODO(mgiuca): Keeping these escaped makes no sense in a file path. Fix
-    // this (https://crbug.com/585422).
-    {L"/foo/%F0%9F%94%92.txt", "file:///foo/%F0%9F%94%92.txt"},  // Blacklisted.
-    {L"/foo/%E2%80%81.txt", "file:///foo/%E2%80%81.txt"},        // Blacklisted.
-    {L"/foo/%0A.txt", "file:///foo/%0A.txt"},  // Control char.
+    // URL are decoded in a file path (https://crbug.com/585422).
+    {L"/foo/\n.txt", "file:///foo/%0A.txt"},         // Control char.
+    {L"/foo/a=$b.txt", "file:///foo/a%3D%24b.txt"},  // Reserved.
     // Make sure that '+' isn't converted into ' '.
     {L"/foo/romeo+juliet.txt", "file:///foo/romeo+juliet.txt"},
     // Backslashes in a file URL are normalized as forward slashes.
@@ -274,8 +285,13 @@ TEST(FilenameUtilTest, FileURLConversion) {
 #endif
   };
   for (const auto& test_case : url_cases) {
-    FileURLToFilePath(GURL(test_case.url), &output);
-    EXPECT_EQ(test_case.file, FilePathAsWString(output));
+    EXPECT_EQ(test_case.file != nullptr,
+              FileURLToFilePath(GURL(test_case.url), &output));
+    if (test_case.file) {
+      EXPECT_EQ(test_case.file, FilePathAsWString(output));
+    } else {
+      EXPECT_EQ(L"", FilePathAsWString(output));
+    }
   }
 
   // Invalid UTF-8 tests can't be tested above because FilePathAsWString assumes
