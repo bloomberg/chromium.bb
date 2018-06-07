@@ -8,6 +8,9 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
+import android.app.Activity;
+import android.app.Instrumentation;
+import android.app.Instrumentation.ActivityMonitor;
 import android.graphics.Canvas;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -35,11 +38,14 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.bookmarks.BookmarkActivity;
+import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
@@ -78,6 +84,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -112,6 +119,7 @@ public class NewTabPageTest {
     private ChromeModernDesign.Processor mChromeModernProcessor =
             new ChromeModernDesign.Processor();
 
+    /** Parameter provider for enabling/disabling Chrome Modern. */
     public static class ModernParams implements ParameterProvider {
         @Override
         public Iterable<ParameterSet> getParameters() {
@@ -218,6 +226,42 @@ public class NewTabPageTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         RenderTestRule.sanitize(mNtp.getView());
         mRenderTestRule.render(mNtp.getView().getRootView(), "simplified_new_tab_page");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testSimplifiedNtp_BookmarksShortcuts() {
+        ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
+                BookmarkActivity.class.getName(),
+                new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            View button = mNtp.getView().findViewById(R.id.bookmarks_button);
+            button.performClick();
+        });
+
+        Assert.assertEquals(1, activityMonitor.getHits());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testSimplifiedNtp_DownloadsShortcuts() {
+        ActivityMonitor activityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
+                DownloadActivity.class.getName(),
+                new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            View button = mNtp.getView().findViewById(R.id.downloads_button);
+            button.performClick();
+        });
+
+        Assert.assertEquals(1, activityMonitor.getHits());
     }
 
     @Test
