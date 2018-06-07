@@ -8,6 +8,8 @@
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "chromecast/browser/accessibility/accessibility_manager.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chromecast/common/extensions_api/automation_api_constants.h"
 #include "chromecast/common/extensions_api/cast_extension_messages.h"
@@ -50,6 +52,17 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
 
   SendEvent(context, current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
+
+  aura::Window* active_window =
+      chromecast::shell::CastBrowserProcess::GetInstance()
+          ->accessibility_manager()
+          ->window_tree_host()
+          ->window();
+  if (active_window) {
+    views::AXAuraObjWrapper* focus =
+        views::AXAuraObjCache::GetInstance()->GetOrCreate(active_window);
+    SendEvent(context, focus, ax::mojom::Event::kChildrenChanged);
+  }
 }
 
 void AutomationManagerAura::Disable() {
@@ -63,9 +76,9 @@ void AutomationManagerAura::HandleEvent(BrowserContext* context,
   if (!enabled_)
     return;
 
-  views::AXAuraObjWrapper* aura_obj = view ?
-      views::AXAuraObjCache::GetInstance()->GetOrCreate(view) :
-      current_tree_->GetRoot();
+  views::AXAuraObjWrapper* aura_obj =
+      view ? views::AXAuraObjCache::GetInstance()->GetOrCreate(view)
+           : current_tree_->GetRoot();
   SendEvent(nullptr, aura_obj, event_type);
 }
 
@@ -107,8 +120,7 @@ AutomationManagerAura::AutomationManagerAura()
       enabled_(false),
       processing_events_(false) {}
 
-AutomationManagerAura::~AutomationManagerAura() {
-}
+AutomationManagerAura::~AutomationManagerAura() {}
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
   if (!current_tree_)
@@ -126,11 +138,6 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
 
   if (!context)
     context = GetDefaultEventContext();
-
-  //if (!context) {
-  //  LOG(WARNING) << "Accessibility notification but no browser context";
-  //  return;
-  //}
 
   if (processing_events_) {
     pending_events_.push_back(std::make_pair(aura_obj, event_type));
@@ -170,8 +177,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   auto pending_events_copy = pending_events_;
   pending_events_.clear();
   for (size_t i = 0; i < pending_events_copy.size(); ++i) {
-    SendEvent(context,
-              pending_events_copy[i].first,
+    SendEvent(context, pending_events_copy[i].first,
               pending_events_copy[i].second);
   }
 }

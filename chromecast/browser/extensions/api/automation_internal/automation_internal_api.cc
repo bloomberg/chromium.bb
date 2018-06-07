@@ -41,6 +41,7 @@
 #include "ui/accessibility/ax_tree_id_registry.h"
 
 #if defined(USE_AURA)
+#include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "ui/aura/env.h"
 #endif
 
@@ -103,8 +104,8 @@ class QuerySelectorHandler : public content::WebContentsObserver {
       return false;
 
     IPC_BEGIN_MESSAGE_MAP(QuerySelectorHandler, message)
-      IPC_MESSAGE_HANDLER(ExtensionHostMsg_AutomationQuerySelector_Result,
-                          OnQueryResponse)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AutomationQuerySelector_Result,
+                        OnQueryResponse)
     IPC_END_MESSAGE_MAP()
     return true;
   }
@@ -192,8 +193,7 @@ class AutomationWebContentsObserver
       content::RenderFrameHost* render_frame_host) override {
     int tree_id = render_frame_host->GetAXTreeID();
     AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
-        tree_id,
-        browser_context_);
+        tree_id, browser_context_);
   }
 
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
@@ -244,37 +244,7 @@ class AutomationWebContentsObserver
 };
 
 ExtensionFunction::ResponseAction AutomationInternalEnableTabFunction::Run() {
-  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
-  EXTENSION_FUNCTION_VALIDATE(automation_info);
-
-  using api::automation_internal::EnableTab::Params;
-  std::unique_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-  content::WebContents* contents = NULL;
-
-  // Stub implementation does not find web contents yet.
-  contents = nullptr;
-
-  content::RenderFrameHost* rfh = contents->GetMainFrame();
-  if (!rfh)
-    return RespondNow(Error("Could not enable accessibility for active tab"));
-
-  if (!CanRequestAutomation(extension(), automation_info, contents)) {
-    return RespondNow(
-        Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
-  }
-
-  AutomationWebContentsObserver::CreateForWebContents(contents);
-  contents->EnableWebContentsOnlyAccessibilityMode();
-
-  int ax_tree_id = rfh->GetAXTreeID();
-
-  // This gets removed when the extension process dies.
-  AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
-      extension_id(), source_process_id(), ax_tree_id);
-
-  return RespondNow(ArgumentList(
-      api::automation_internal::EnableTab::Results::Create(ax_tree_id)));
+  return RespondNow(Error("enableTab is unsupported by this platform"));
 }
 
 ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
@@ -511,8 +481,16 @@ AutomationInternalPerformActionFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AutomationInternalEnableDesktopFunction::Run() {
-  // Not applicable to cast.
-  return RespondNow(Error("getDesktop is unsupported by this platform"));
+  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
+  if (!automation_info || !automation_info->desktop)
+    return RespondNow(Error("desktop permission must be requested"));
+
+  // This gets removed when the extension process dies.
+  AutomationEventRouter::GetInstance()->RegisterListenerWithDesktopPermission(
+      extension_id(), source_process_id());
+
+  AutomationManagerAura::GetInstance()->Enable(browser_context());
+  return RespondNow(NoArguments());
 }
 
 // static
