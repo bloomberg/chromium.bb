@@ -32,6 +32,24 @@ class AccountManagerTest : public testing::Test {
                                  base::SequencedTaskRunnerHandle::Get());
   }
 
+  // Gets the list of accounts stored in |account_manager_|.
+  std::vector<AccountManager::AccountKey> GetAccountsBlocking() {
+    std::vector<AccountManager::AccountKey> accounts;
+
+    base::RunLoop run_loop;
+    account_manager_->GetAccounts(base::BindOnce(
+        [](std::vector<AccountManager::AccountKey>* accounts,
+           base::OnceClosure quit_closure,
+           std::vector<AccountManager::AccountKey> stored_accounts) -> void {
+          *accounts = std::move(stored_accounts);
+          std::move(quit_closure).Run();
+        },
+        base::Unretained(&accounts), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    return accounts;
+  }
+
   // Check base/test/scoped_task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -90,17 +108,7 @@ TEST_F(AccountManagerTest, TestInitialization) {
 TEST_F(AccountManagerTest, TestUpsert) {
   account_manager_->UpsertToken(kAccountKey_, "123");
 
-  std::vector<AccountManager::AccountKey> accounts;
-  base::RunLoop run_loop;
-  account_manager_->GetAccounts(base::BindOnce(
-      [](std::vector<AccountManager::AccountKey>* accounts,
-         base::OnceClosure quit_closure,
-         std::vector<AccountManager::AccountKey> stored_accounts) -> void {
-        *accounts = stored_accounts;
-        std::move(quit_closure).Run();
-      },
-      base::Unretained(&accounts), run_loop.QuitClosure()));
-  run_loop.Run();
+  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
 
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ(kAccountKey_, accounts[0]);
@@ -114,17 +122,7 @@ TEST_F(AccountManagerTest, TestPersistence) {
   account_manager_->Initialize(tmp_dir_.GetPath(),
                                base::SequencedTaskRunnerHandle::Get());
 
-  std::vector<AccountManager::AccountKey> accounts;
-  base::RunLoop run_loop;
-  account_manager_->GetAccounts(base::BindOnce(
-      [](std::vector<AccountManager::AccountKey>* accounts,
-         base::OnceClosure quit_closure,
-         std::vector<AccountManager::AccountKey> stored_accounts) -> void {
-        *accounts = stored_accounts;
-        std::move(quit_closure).Run();
-      },
-      base::Unretained(&accounts), run_loop.QuitClosure()));
-  run_loop.Run();
+  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
 
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ(kAccountKey_, accounts[0]);
@@ -180,6 +178,29 @@ TEST_F(AccountManagerTest, ObserversAreNotNotifiedIfTokenIsNotUpdated) {
   EXPECT_FALSE(observer->is_callback_called_);
 
   account_manager_->RemoveObserver(observer.get());
+}
+
+TEST_F(AccountManagerTest, RemovedAccountsAreImmediatelyUnavailable) {
+  account_manager_->UpsertToken(kAccountKey_, "123");
+
+  account_manager_->RemoveAccount(kAccountKey_);
+  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
+
+  EXPECT_TRUE(accounts.empty());
+}
+
+TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
+  account_manager_->UpsertToken(kAccountKey_, "123");
+  account_manager_->RemoveAccount(kAccountKey_);
+  scoped_task_environment_.RunUntilIdle();
+
+  account_manager_ = std::make_unique<AccountManager>();
+  account_manager_->Initialize(tmp_dir_.GetPath(),
+                               base::SequencedTaskRunnerHandle::Get());
+
+  std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
+
+  EXPECT_TRUE(accounts.empty());
 }
 
 }  // namespace chromeos
