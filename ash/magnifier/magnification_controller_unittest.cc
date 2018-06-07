@@ -1021,9 +1021,8 @@ TEST_F(MagnificationControllerTest, TextfieldFocusedWithKeyboard) {
 
   // Set up and show the keyboard.
   keyboard::SetAccessibilityKeyboardEnabled(true);
-  ash::Shell::Get()->CreateKeyboard();
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
+  ash::Shell::Get()->EnableKeyboard();
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(true);
 
   gfx::Rect keyboard_bounds = gfx::Rect(0, 300, 800, 300);

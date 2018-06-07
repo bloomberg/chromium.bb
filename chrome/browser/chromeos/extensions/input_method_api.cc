@@ -243,9 +243,8 @@ InputMethodPrivateShowInputViewFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller) {
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->enabled()) {
     keyboard_controller->ShowKeyboard(false);
     return RespondNow(NoArguments());
   }
@@ -256,9 +255,8 @@ InputMethodPrivateShowInputViewFunction::Run() {
   // Forcibly enables the a11y onscreen keyboard if there is on keyboard enabled
   // for now. And re-disables it after showing once.
   keyboard::SetAccessibilityKeyboardEnabled(true);
-  ash::Shell::Get()->CreateKeyboard();
-  keyboard_controller = keyboard::KeyboardController::GetInstance();
-  if (!keyboard_controller) {
+  keyboard_controller = keyboard::KeyboardController::Get();
+  if (!keyboard_controller->enabled()) {
     keyboard::SetAccessibilityKeyboardEnabled(false);
     return RespondNow(Error(kErrorFailToShowInputView));
   }

@@ -40,8 +40,7 @@ class ControllerStateChangeWaiter
     : public keyboard::KeyboardControllerObserver {
  public:
   explicit ControllerStateChangeWaiter(keyboard::KeyboardControllerState state)
-      : controller_(keyboard::KeyboardController::GetInstance()),
-        state_(state) {
+      : controller_(keyboard::KeyboardController::Get()), state_(state) {
     controller_->AddObserver(this);
   }
   ~ControllerStateChangeWaiter() override { controller_->RemoveObserver(this); }
@@ -64,7 +63,7 @@ class ControllerStateChangeWaiter
 
 bool WaitVisibilityChangesTo(bool visibility) {
   aura::Window* keyboard_window =
-      keyboard::KeyboardController::GetInstance()->GetContainerWindow();
+      keyboard::KeyboardController::Get()->GetContainerWindow();
   WindowVisibilityChangeWaiter waiter(keyboard_window, visibility);
   waiter.Wait();
   return true;

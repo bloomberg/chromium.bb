@@ -32,6 +32,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -107,12 +108,16 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
   if (IsMenuShowing())
     return;
 
-#if defined(USE_AURA)
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller && keyboard_controller->keyboard_visible()) {
-    keyboard_controller->HideKeyboard(
-        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+#if defined(OS_CHROMEOS)
+  // On platforms other than ChromeOS or when running under MASH, there is no
+  // KeyboardController in the browser process.
+  if (!features::IsMashEnabled()) {
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    if (keyboard_controller->enabled() &&
+        keyboard_controller->keyboard_visible()) {
+      keyboard_controller->HideKeyboard(
+          keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+    }
   }
 #endif
 

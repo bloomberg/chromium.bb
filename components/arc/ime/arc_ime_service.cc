@@ -20,10 +20,12 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/range/range.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 namespace arc {
 
@@ -138,7 +140,6 @@ ArcImeService::ArcImeService(content::BrowserContext* context,
       arc_window_delegate_(new ArcWindowDelegateImpl(this)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
-      keyboard_controller_(nullptr),
       is_focus_observer_installed_(false) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
@@ -157,11 +158,13 @@ ArcImeService::~ArcImeService() {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->RemoveObserver(this);
-  // Removing |this| from KeyboardController.
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller && keyboard_controller_ == keyboard_controller) {
-    keyboard_controller_->RemoveObserver(this);
+
+  // KeyboardController is destroyed before ArcImeService (except in tests),
+  // so check whether there is a KeyboardController first before removing |this|
+  // from KeyboardController observers.
+  if (keyboard::KeyboardController::HasInstance()) {
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    keyboard_controller->RemoveObserver(this);
   }
 }
 
@@ -206,12 +209,16 @@ void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
       is_focus_observer_installed_ = true;
     }
   }
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller && keyboard_controller_ != keyboard_controller) {
-    // Registering |this| as an observer only once per KeyboardController.
-    keyboard_controller_ = keyboard_controller;
-    keyboard_controller_->AddObserver(this);
+
+  // TODO(mash): Support virtual keyboard under MASH. There is no
+  // KeyboardController in the browser process under MASH.
+  if (!features::IsMashEnabled() &&
+      keyboard::KeyboardController::HasInstance()) {
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    if (keyboard_controller->enabled() &&
+        !keyboard_controller->HasObserver(this)) {
+      keyboard_controller->AddObserver(this);
+    }
   }
 }
 
@@ -315,8 +322,14 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
 }
 
 void ArcImeService::RequestHideIme() {
-  if (keyboard_controller_)
-    keyboard_controller_->MaybeHideKeyboard();
+  // TODO(mash): Support virtual keyboard under MASH. There is no
+  // KeyboardController in the browser process under MASH.
+  if (!features::IsMashEnabled() &&
+      keyboard::KeyboardController::HasInstance()) {
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    if (keyboard_controller->enabled())
+      keyboard_controller->MaybeHideKeyboard();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

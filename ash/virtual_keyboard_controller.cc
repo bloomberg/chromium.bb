@@ -52,15 +52,15 @@ void MoveKeyboardToDisplayInternal(const display::Display& display) {
   TRACE_EVENT0("vk", "MoveKeyboardToDisplayInternal");
   Shell::Get()->keyboard_ui()->Hide();
   RootWindowController::ForWindow(
-      keyboard::KeyboardController::GetInstance()->GetContainerWindow())
-      ->DeactivateKeyboard(keyboard::KeyboardController::GetInstance());
+      keyboard::KeyboardController::Get()->GetContainerWindow())
+      ->DeactivateKeyboard(keyboard::KeyboardController::Get());
 
   for (RootWindowController* controller :
        Shell::Get()->GetAllRootWindowControllers()) {
     if (display::Screen::GetScreen()
             ->GetDisplayNearestWindow(controller->GetRootWindow())
             .id() == display.id()) {
-      controller->ActivateKeyboard(keyboard::KeyboardController::GetInstance());
+      controller->ActivateKeyboard(keyboard::KeyboardController::Get());
       break;
     }
   }
@@ -141,13 +141,13 @@ void VirtualKeyboardController::ToggleIgnoreExternalKeyboard() {
 
 void VirtualKeyboardController::MoveKeyboardToDisplay(
     const display::Display& display) {
-  DCHECK(keyboard::KeyboardController::GetInstance());
+  DCHECK(keyboard::KeyboardController::Get()->enabled());
   DCHECK(display.is_valid());
 
   TRACE_EVENT0("vk", "MoveKeyboardToDisplay");
 
   aura::Window* container =
-      keyboard::KeyboardController::GetInstance()->GetContainerWindow();
+      keyboard::KeyboardController::Get()->GetContainerWindow();
   DCHECK(container);
   const display::Screen* screen = display::Screen::GetScreen();
   const display::Display current_display =
@@ -158,12 +158,12 @@ void VirtualKeyboardController::MoveKeyboardToDisplay(
 }
 
 void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
-  DCHECK(keyboard::KeyboardController::GetInstance() != nullptr);
+  DCHECK(keyboard::KeyboardController::Get()->enabled());
 
   TRACE_EVENT0("vk", "MoveKeyboardToTouchableDisplay");
 
   aura::Window* container =
-      keyboard::KeyboardController::GetInstance()->GetContainerWindow();
+      keyboard::KeyboardController::Get()->GetContainerWindow();
   DCHECK(container != nullptr);
 
   const display::Screen* screen = display::Screen::GetScreen();
@@ -242,17 +242,16 @@ void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
   if (is_enabled == was_enabled)
     return;
   if (is_enabled) {
-    Shell::Get()->CreateKeyboard();
+    Shell::Get()->EnableKeyboard();
   } else {
-    Shell::Get()->DestroyKeyboard();
+    Shell::Get()->DisableKeyboard();
   }
 }
 
 void VirtualKeyboardController::ForceShowKeyboard() {
   // If the virtual keyboard is enabled, show the keyboard directly.
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller) {
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->enabled()) {
     // Observe the keyboard closing in order to reset any keysets.
     if (!keyboard_controller->HasObserver(this))
       keyboard_controller->AddObserver(this);
@@ -278,8 +277,8 @@ void VirtualKeyboardController::ForceShowKeyboard() {
   // keyboard for one time.
   accessibility_controller->SetVirtualKeyboardEnabled(true);
   keyboard_enabled_using_accessibility_prefs_ = true;
-  keyboard_controller = keyboard::KeyboardController::GetInstance();
-  DCHECK(keyboard_controller);
+  keyboard_controller = keyboard::KeyboardController::Get();
+  DCHECK(keyboard_controller->enabled());
 
   // Observe the keyboard closing in order to disable the accessibility
   // keyboard again and reset any keysets.
@@ -296,10 +295,9 @@ void VirtualKeyboardController::OnKeyboardHidden() {
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
       chromeos::input_method::mojom::ImeKeyset::kNone);
 
-  if (keyboard::KeyboardController* keyboard_controller =
-          keyboard::KeyboardController::GetInstance()) {
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->enabled())
     keyboard_controller->RemoveObserver(this);
-  }
 
   if (keyboard_enabled_using_accessibility_prefs_) {
     keyboard_enabled_using_accessibility_prefs_ = false;

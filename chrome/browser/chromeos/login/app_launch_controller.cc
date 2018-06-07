@@ -318,7 +318,7 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   // Reset virtual keyboard to use IME engines in app profile early.
   if (!ash_util::IsRunningInMash()) {
     if (keyboard::IsKeyboardEnabled())
-      ash::Shell::Get()->CreateKeyboard();
+      ash::Shell::Get()->EnableKeyboard();
   } else {
     // TODO(xiyuan): Update with mash VK work http://crbug.com/648733
     NOTIMPLEMENTED();

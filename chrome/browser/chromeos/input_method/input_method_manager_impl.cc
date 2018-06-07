@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/devicemode.h"
@@ -1090,10 +1091,14 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     // If no engine to enable, cancel the virtual keyboard url override so that
     // it can use the fallback system virtual keyboard UI.
     state_->DisableInputView();
-    keyboard::KeyboardController* keyboard_controller =
-        keyboard::KeyboardController::GetInstance();
-    if (keyboard_controller)
-      keyboard_controller->Reload();
+
+    // TODO(mash): Support virtual keyboard under MASH. There is no
+    // KeyboardController in the browser process under MASH.
+    if (!ash_util::IsRunningInMash()) {
+      auto* keyboard_controller = keyboard::KeyboardController::Get();
+      if (keyboard_controller->enabled())
+        keyboard_controller->Reload();
+    }
   }
 
   // Change the keyboard layout to a preferred layout for the input method.
@@ -1293,9 +1298,8 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(mojom::ImeKeyset keyset) {
     // Resets the url as the input method default url and notify the hash
     // changed to VK.
     state_->input_view_url = state_->current_input_method.input_view_url();
-    keyboard::KeyboardController* keyboard_controller =
-        keyboard::KeyboardController::GetInstance();
-    if (keyboard_controller)
+    auto* keyboard_controller = keyboard::KeyboardController::Get();
+    if (keyboard_controller->enabled())
       keyboard_controller->Reload();
     return;
   }
@@ -1316,9 +1320,8 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(mojom::ImeKeyset keyset) {
   replacements.SetRefStr(overridden_ref);
   state_->input_view_url = url.ReplaceComponents(replacements);
 
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller)
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->enabled())
     keyboard_controller->Reload();
 }
 
@@ -1356,7 +1359,11 @@ void InputMethodManagerImpl::NotifyObserversImeExtraInputStateChange() {
 
 ui::InputMethodKeyboardController*
 InputMethodManagerImpl::GetInputMethodKeyboardController() {
-  return keyboard::KeyboardController::GetInstance();
+  // Callers expect a nullptr when the keyboard is disabled. See
+  // https://crbug.com/850020.
+  return keyboard::KeyboardController::Get()->enabled()
+             ? keyboard::KeyboardController::Get()
+             : nullptr;
 }
 
 }  // namespace input_method

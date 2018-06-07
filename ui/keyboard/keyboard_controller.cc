@@ -275,10 +275,14 @@ void KeyboardController::DisableKeyboard() {
 }
 
 // static
-KeyboardController* KeyboardController::GetInstance() {
-  return g_keyboard_controller && g_keyboard_controller->enabled()
-             ? g_keyboard_controller
-             : nullptr;
+KeyboardController* KeyboardController::Get() {
+  DCHECK(g_keyboard_controller);
+  return g_keyboard_controller;
+}
+
+// static
+bool KeyboardController::HasInstance() {
+  return g_keyboard_controller;
 }
 
 bool KeyboardController::keyboard_visible() const {

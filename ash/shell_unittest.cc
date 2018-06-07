@@ -548,7 +548,7 @@ TEST_F(ShellTest, EnvPreTargetHandler) {
   aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-// Verifies keyboard is re-created on proper timing.
+// Verifies keyboard is re-enabled on proper timing.
 TEST_F(ShellTest, KeyboardCreation) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       keyboard::switches::kEnableVirtualKeyboard);
@@ -556,11 +556,12 @@ TEST_F(ShellTest, KeyboardCreation) {
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 
   SessionObserver* shell = Shell::Get();
-  EXPECT_FALSE(keyboard::KeyboardController::GetInstance());
+  EXPECT_FALSE(keyboard::KeyboardController::Get()->enabled());
+
   shell->OnSessionStateChanged(
       session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
 
-  EXPECT_TRUE(keyboard::KeyboardController::GetInstance());
+  EXPECT_TRUE(keyboard::KeyboardController::Get()->enabled());
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after

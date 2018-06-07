@@ -451,8 +451,8 @@ void AppListControllerImpl::FlushForTesting() {
 void AppListControllerImpl::OnVirtualKeyboardStateChanged(
     bool activated,
     aura::Window* root_window) {
-  auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
-  if (!keyboard_controller)
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (!keyboard_controller->enabled())
     return;
   if (activated && !keyboard_observer_.IsObserving(keyboard_controller))
     keyboard_observer_.Add(keyboard_controller);

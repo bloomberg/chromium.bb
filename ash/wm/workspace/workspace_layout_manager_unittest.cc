@@ -124,15 +124,15 @@ class ScopedStickyKeyboardEnabler {
       : accessibility_controller_(Shell::Get()->accessibility_controller()),
         enabled_(accessibility_controller_->IsVirtualKeyboardEnabled()) {
     accessibility_controller_->SetVirtualKeyboardEnabled(true);
-    keyboard::KeyboardController::GetInstance()->EnableKeyboard(
+    keyboard::KeyboardController::Get()->EnableKeyboard(
         std::make_unique<keyboard::TestKeyboardUI>(
             Shell::Get()->window_tree_host_manager()->input_method()),
         nullptr);
-    keyboard::KeyboardController::GetInstance()->set_keyboard_locked(true);
+    keyboard::KeyboardController::Get()->set_keyboard_locked(true);
   }
 
   ~ScopedStickyKeyboardEnabler() {
-    keyboard::KeyboardController::GetInstance()->set_keyboard_locked(false);
+    keyboard::KeyboardController::Get()->set_keyboard_locked(false);
     accessibility_controller_->SetVirtualKeyboardEnabled(enabled_);
   }
 
@@ -1793,9 +1793,8 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
        IgnoreWorkAreaChangeinNonStickyMode) {
   keyboard::SetAccessibilityKeyboardEnabled(true);
   InitKeyboardBounds();
-  Shell::Get()->CreateKeyboard();
-  keyboard::KeyboardController* kb_controller =
-      keyboard::KeyboardController::GetInstance();
+  Shell::Get()->EnableKeyboard();
+  auto* kb_controller = keyboard::KeyboardController::Get();
 
   gfx::Rect work_area(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area());

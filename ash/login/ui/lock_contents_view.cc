@@ -173,9 +173,8 @@ views::Label* CreateInfoLabel() {
 
 keyboard::KeyboardController* GetKeyboardControllerForWidget(
     const views::Widget* widget) {
-  keyboard::KeyboardController* keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (!keyboard_controller)
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  if (!keyboard_controller->enabled())
     return nullptr;
 
   aura::Window* keyboard_window =
