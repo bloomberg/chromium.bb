@@ -98,6 +98,9 @@ Polymer({
   onDisplayedIdsChanged_: function(newValue, oldValue) {
     const updatedList = newValue.map(id => ({id: id}));
     this.updateList('displayedList_', item => item.id, updatedList);
+    // Trigger a layout of the iron list. Otherwise some elements may render
+    // as blank entries. See https://crbug.com/848683
+    this.$.list.fire('iron-resize');
     cr.sendWithPromise(
           'getPluralString', 'listChanged', this.displayedList_.length)
         .then(label => this.fire('iron-announce', {text: label}));
