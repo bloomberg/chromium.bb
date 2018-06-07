@@ -40,6 +40,10 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   ~SynchronousCompositorProxy() override;
 
   void Init();
+  void BindChannel(
+      mojom::SynchronousCompositorControlHostPtr control_host,
+      mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+      mojom::SynchronousCompositorAssociatedRequest compositor_request);
 
   // ui::SynchronousInputHandler overrides.
   void SetNeedsSynchronousAnimateInput() final;
@@ -85,16 +89,16 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   void SetBeginFrameSourcePaused(bool paused) final;
 
  protected:
-  virtual void SendSetNeedsBeginFrames(bool needs_begin_frames) = 0;
-  virtual void SendAsyncRendererStateIfNeeded() = 0;
-  virtual void LayerTreeFrameSinkCreated() = 0;
-  virtual void SendBeginFrameResponse(
-      const content::SyncCompositorCommonRendererParams&) = 0;
-  virtual void SendDemandDrawHwAsyncReply(
+  void SendSetNeedsBeginFrames(bool needs_begin_frames);
+  void SendAsyncRendererStateIfNeeded();
+  void LayerTreeFrameSinkCreated();
+  void SendBeginFrameResponse(
+      const content::SyncCompositorCommonRendererParams&);
+  void SendDemandDrawHwAsyncReply(
       const content::SyncCompositorCommonRendererParams&,
       uint32_t layer_tree_frame_sink_id,
       uint32_t metadata_version,
-      base::Optional<viz::CompositorFrame>) = 0;
+      base::Optional<viz::CompositorFrame>);
 
   DemandDrawHwCallback hardware_draw_reply_;
   DemandDrawSwCallback software_draw_reply_;
@@ -109,10 +113,14 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   struct SharedMemoryWithSize;
 
   ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
+  mojom::SynchronousCompositorControlHostPtr control_host_;
+  mojom::SynchronousCompositorHostAssociatedPtr host_;
+  mojo::AssociatedBinding<mojom::SynchronousCompositor> binding_;
   const bool use_in_process_zero_copy_software_draw_;
 
   bool compute_scroll_called_via_ipc_ = false;
   bool browser_needs_begin_frame_state_ = false;
+  bool needs_begin_frame_ = false;
   bool needs_begin_frame_for_frame_sink_ = false;
   bool needs_begin_frame_for_animate_input_ = false;
 
