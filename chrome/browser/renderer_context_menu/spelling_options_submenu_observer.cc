@@ -156,9 +156,6 @@ bool SpellingOptionsSubMenuObserver::IsCommandIdEnabled(int command_id) {
 
   switch (command_id) {
     case IDC_CHECK_SPELLING_WHILE_TYPING:
-      return !pref->FindPreference(spellcheck::prefs::kSpellCheckEnable)
-                  ->IsManaged();
-
     case IDC_SPELLCHECK_MENU:
       return true;
   }
