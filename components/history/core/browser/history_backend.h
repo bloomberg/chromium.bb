@@ -61,6 +61,10 @@ class URLDatabase;
 // the thumbnail database.
 static const size_t kMaxFaviconBitmapsPerIconURL = 8;
 
+// Returns a formatted version of |url| with the HTTP/HTTPS scheme, port,
+// username/password, and any trivial subdomains (e.g., "www.", "m.") removed.
+base::string16 FormatUrlForRedirectComparison(const GURL& url);
+
 // Keeps track of a queued HistoryDBTask. This class lives solely on the
 // DB thread.
 class QueuedHistoryDBTask {
@@ -630,7 +634,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                          VisitID referring_visit,
                                          ui::PageTransition transition,
                                          bool hidden,
-                                         VisitSource visit_source);
+                                         VisitSource visit_source,
+                                         bool should_increment_typed_count);
 
   // Returns a redirect chain in |redirects| for the VisitID
   // |cur_visit|. |cur_visit| is assumed to be valid. Assumes that
