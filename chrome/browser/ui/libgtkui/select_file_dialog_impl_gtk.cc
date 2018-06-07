@@ -149,7 +149,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
     case SELECT_SAVEAS_FILE:
       dialog = CreateSaveAsDialog(title_string, default_path, owning_window);
       break;
-    default:
+    case SELECT_NONE:
       NOTREACHED();
       return;
   }

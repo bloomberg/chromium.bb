@@ -37,6 +37,7 @@ std::string GetDialogTypeAsString(
       break;
 
     case ui::SelectFileDialog::SELECT_FOLDER:
+    case ui::SelectFileDialog::SELECT_EXISTING_FOLDER:
       type_str = "folder";
       break;
 
@@ -55,9 +56,6 @@ std::string GetDialogTypeAsString(
     case ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE:
       type_str = "open-multi-file";
       break;
-
-    default:
-      NOTREACHED();
   }
 
   return type_str;
