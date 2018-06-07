@@ -349,7 +349,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 162;
     case CSSPropertyWordSpacing:
       return 163;
-    case CSSPropertyWordWrap:
+    case CSSPropertyAliasWordWrap:
       return 164;
     case CSSPropertyZIndex:
       return 165;

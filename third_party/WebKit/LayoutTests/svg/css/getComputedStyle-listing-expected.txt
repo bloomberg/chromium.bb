@@ -292,7 +292,6 @@ width: 100px
 will-change: auto
 word-break: normal
 word-spacing: 0px
-word-wrap: normal
 writing-mode: horizontal-tb
 x: 0px
 y: 0px

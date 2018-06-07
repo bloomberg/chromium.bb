@@ -746,7 +746,6 @@ blink_core_sources("css") {
     "properties/longhands/will_change_custom.cc",
     "properties/longhands/word_break_custom.cc",
     "properties/longhands/word_spacing_custom.cc",
-    "properties/longhands/word_wrap_custom.cc",
     "properties/longhands/writing_mode_custom.cc",
     "properties/longhands/x_custom.cc",
     "properties/longhands/y_custom.cc",
