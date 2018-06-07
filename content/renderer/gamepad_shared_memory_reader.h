@@ -12,13 +12,11 @@
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace content {
-
-typedef device::SharedMemorySeqLockBuffer<device::Gamepads>
-    GamepadHardwareBuffer;
 
 class GamepadSharedMemoryReader : public RendererGamepadProvider,
                                   public device::mojom::GamepadObserver {
@@ -42,7 +40,7 @@ class GamepadSharedMemoryReader : public RendererGamepadProvider,
 
   mojo::ScopedSharedBufferHandle renderer_shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping renderer_shared_buffer_mapping_;
-  GamepadHardwareBuffer* gamepad_hardware_buffer_;
+  device::GamepadHardwareBuffer* gamepad_hardware_buffer_;
 
   bool ever_interacted_with_;
 

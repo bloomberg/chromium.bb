@@ -6,9 +6,9 @@
 #define DEVICE_GAMEPAD_SHARED_BUFFER_H_
 
 #include "base/memory/shared_memory.h"
-#include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/public/cpp/gamepads.h"
+#include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 
 namespace device {
 
@@ -24,8 +24,6 @@ namespace device {
  contention is detected by using the associated SeqLock.
 
 */
-
-typedef SharedMemorySeqLockBuffer<Gamepads> GamepadHardwareBuffer;
 
 class DEVICE_GAMEPAD_EXPORT GamepadSharedBuffer {
  public:
