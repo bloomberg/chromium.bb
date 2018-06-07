@@ -34,7 +34,7 @@ class CaptionBarDelegate {
 
 class CaptionBar : public views::View, views::ButtonListener {
  public:
-  explicit CaptionBar(CaptionBarDelegate* delegate);
+  CaptionBar();
   ~CaptionBar() override;
 
   // views::View:
@@ -44,10 +44,12 @@ class CaptionBar : public views::View, views::ButtonListener {
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  void set_delegate(CaptionBarDelegate* delegate) { delegate_ = delegate; }
+
  private:
   void InitLayout();
 
-  CaptionBarDelegate* const delegate_;
+  CaptionBarDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CaptionBar);
 };

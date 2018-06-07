@@ -106,16 +106,16 @@ void DialogPlate::OnActionPressed() {
   const base::StringPiece16& trimmed_text =
       base::TrimWhitespace(textfield_->text(), base::TrimPositions::TRIM_ALL);
 
-  assistant_controller_->OnDialogPlateActionPressed(
-      base::UTF16ToUTF8(trimmed_text));
+  if (delegate_)
+    delegate_->OnDialogPlateActionPressed(base::UTF16ToUTF8(trimmed_text));
 
   textfield_->SetText(base::string16());
 }
 
 void DialogPlate::ContentsChanged(views::Textfield* textfield,
                                   const base::string16& new_contents) {
-  assistant_controller_->OnDialogPlateContentsChanged(
-      base::UTF16ToUTF8(new_contents));
+  if (delegate_)
+    delegate_->OnDialogPlateContentsChanged(base::UTF16ToUTF8(new_contents));
 }
 
 bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
@@ -138,8 +138,8 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
   const base::StringPiece16& trimmed_text =
       base::TrimWhitespace(text, base::TrimPositions::TRIM_ALL);
 
-  assistant_controller_->OnDialogPlateContentsCommitted(
-      base::UTF16ToUTF8(trimmed_text));
+  if (delegate_)
+    delegate_->OnDialogPlateContentsCommitted(base::UTF16ToUTF8(trimmed_text));
 
   textfield_->SetText(base::string16());
 

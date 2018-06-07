@@ -5,6 +5,8 @@
 #ifndef ASH_ASSISTANT_UI_DIALOG_PLATE_DIALOG_PLATE_H_
 #define ASH_ASSISTANT_UI_DIALOG_PLATE_DIALOG_PLATE_H_
 
+#include <string>
+
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/action_view.h"
 #include "base/macros.h"
@@ -14,6 +16,25 @@
 namespace ash {
 
 class AssistantController;
+
+// DialogPlateDelegate ---------------------------------------------------------
+
+class DialogPlateDelegate {
+ public:
+  // Invoked on dialog plate action pressed event.
+  virtual void OnDialogPlateActionPressed(const std::string& text) {}
+
+  // Invoked on dialog plate contents changed event.
+  virtual void OnDialogPlateContentsChanged(const std::string& text) {}
+
+  // Invoked on dialog plate contents committed event.
+  virtual void OnDialogPlateContentsCommitted(const std::string& text) {}
+
+ protected:
+  virtual ~DialogPlateDelegate() = default;
+};
+
+// DialogPlate -----------------------------------------------------------------
 
 // DialogPlate is the child of AssistantMainView concerned with providing the
 // means by which a user converses with Assistant. To this end, DialogPlate
@@ -45,6 +66,8 @@ class DialogPlate : public views::View,
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;
 
+  void set_delegate(DialogPlateDelegate* delegate) { delegate_ = delegate; }
+
  private:
   void InitLayout();
   void UpdateIcon();
@@ -52,6 +75,8 @@ class DialogPlate : public views::View,
   AssistantController* const assistant_controller_;  // Owned by Shell.
   views::Textfield* textfield_;                      // Owned by view hierarchy.
   ActionView* action_view_;                          // Owned by view hierarchy.
+
+  DialogPlateDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
 };

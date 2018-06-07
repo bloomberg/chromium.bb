@@ -48,7 +48,7 @@ class CaptionButton : public views::ImageButton {
 
 // CaptionBar ------------------------------------------------------------------
 
-CaptionBar::CaptionBar(CaptionBarDelegate* delegate) : delegate_(delegate) {
+CaptionBar::CaptionBar() {
   InitLayout();
 }
 
