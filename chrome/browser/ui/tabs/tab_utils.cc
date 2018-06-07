@@ -181,8 +181,14 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
   if (contents->HasPictureInPictureVideo())
     return TabAlertState::PIP_PLAYING;
 
+  // Only tabs have a RecentlyAudibleHelper, but this function is abused for
+  // some non-tab WebContents. In that case fall back to using the realtime
+  // notion of audibility.
+  bool audible = contents->IsCurrentlyAudible();
   auto* audible_helper = RecentlyAudibleHelper::FromWebContents(contents);
-  if (audible_helper->WasRecentlyAudible()) {
+  if (audible_helper)
+    audible = audible_helper->WasRecentlyAudible();
+  if (audible) {
     if (contents->IsAudioMuted())
       return TabAlertState::AUDIO_MUTING;
     return TabAlertState::AUDIO_PLAYING;
