@@ -46,6 +46,15 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
                           const CdmConfig&)> succeeded_cb,
       base::Closure not_supported_cb);
 
+  using IsSupportedMediaTypeCB =
+      base::RepeatingCallback<bool(const std::string& container_mime_type,
+                                   const std::string& codecs,
+                                   bool use_aes_decryptor)>;
+
+  void SetIsSupportedMediaTypeCBForTesting(IsSupportedMediaTypeCB cb) {
+    is_supported_media_type_cb_ = std::move(cb);
+  }
+
  private:
   struct SelectionRequest;
   class ConfigState;
@@ -84,6 +93,11 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
 
   const KeySystems* key_systems_;
   MediaPermission* media_permission_;
+
+  // A callback used to check whether a media type is supported. Only set in
+  // tests. If null the implementation will check the support using MimeUtil.
+  IsSupportedMediaTypeCB is_supported_media_type_cb_;
+
   base::WeakPtrFactory<KeySystemConfigSelector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KeySystemConfigSelector);
