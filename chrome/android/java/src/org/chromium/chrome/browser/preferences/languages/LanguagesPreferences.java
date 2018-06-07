@@ -71,7 +71,7 @@ public class LanguagesPreferences
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_ADD_LANGUAGES && resultCode == getActivity().RESULT_OK) {
-            String code = data.getStringExtra(AddLanguageFragment.INTENT_NEW_ACCEPT_LANGAUGE);
+            String code = data.getStringExtra(AddLanguageFragment.INTENT_NEW_ACCEPT_LANGUAGE);
             LanguagesManager.getInstance().addToAcceptLanguages(code);
             LanguagesManager.recordAction(LanguagesManager.ACTION_LANGUAGE_ADDED);
         }
