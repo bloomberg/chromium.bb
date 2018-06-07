@@ -517,13 +517,6 @@ ExistingUserController::~ExistingUserController() {
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, LoginDisplay::Delegate implementation:
 //
-
-void ExistingUserController::CancelPasswordChangedFlow() {
-  login_performer_.reset(nullptr);
-  ClearActiveDirectoryState();
-  PerformLoginFinishedActions(true /* start auto login timer */);
-}
-
 void ExistingUserController::CompleteLogin(const UserContext& user_context) {
   if (!host_) {
     // Complete login event was generated already from UI. Ignore notification.
@@ -677,14 +670,6 @@ void ExistingUserController::RestartLogin(const UserContext& user_context) {
   login_display_->ShowSigninUI(user_context.GetAccountId().GetUserEmail());
 }
 
-void ExistingUserController::MigrateUserData(const std::string& old_password) {
-  // LoginPerformer instance has state of the user so it should exist.
-  if (login_performer_.get()) {
-    VLOG(1) << "Migrate the existing cryptohome to new password.";
-    login_performer_->RecoverEncryptedData(old_password);
-  }
-}
-
 void ExistingUserController::OnSigninScreenReady() {
   auto_launch_ready_ = true;
   StartAutoLoginTimer();
@@ -720,14 +705,6 @@ void ExistingUserController::OnStartKioskEnableScreen() {
 
 void ExistingUserController::OnStartKioskAutolaunchScreen() {
   ShowKioskAutolaunchScreen();
-}
-
-void ExistingUserController::ResyncUserData() {
-  // LoginPerformer instance has state of the user so it should exist.
-  if (login_performer_.get()) {
-    VLOG(1) << "Create a new cryptohome and resync user data.";
-    login_performer_->ResyncEncryptedData();
-  }
 }
 
 void ExistingUserController::SetDisplayEmail(const std::string& email) {
@@ -1444,6 +1421,28 @@ void ExistingUserController::OnArcKioskAutoLoginTimerFire() {
 void ExistingUserController::StopAutoLoginTimer() {
   if (auto_login_timer_)
     auto_login_timer_->Stop();
+}
+
+void ExistingUserController::CancelPasswordChangedFlow() {
+  login_performer_.reset(nullptr);
+  ClearActiveDirectoryState();
+  PerformLoginFinishedActions(true /* start auto login timer */);
+}
+
+void ExistingUserController::MigrateUserData(const std::string& old_password) {
+  // LoginPerformer instance has state of the user so it should exist.
+  if (login_performer_.get()) {
+    VLOG(1) << "Migrate the existing cryptohome to new password.";
+    login_performer_->RecoverEncryptedData(old_password);
+  }
+}
+
+void ExistingUserController::ResyncUserData() {
+  // LoginPerformer instance has state of the user so it should exist.
+  if (login_performer_.get()) {
+    VLOG(1) << "Create a new cryptohome and resync user data.";
+    login_performer_->ResyncEncryptedData();
+  }
 }
 
 void ExistingUserController::StartAutoLoginTimer() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/ui/gaia_dialog_delegate.h"
+#include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
@@ -28,17 +28,17 @@ constexpr int kGaiaDialogWidth = 768;
 
 }  // namespace
 
-GaiaDialogDelegate::GaiaDialogDelegate(
+OobeUIDialogDelegate::OobeUIDialogDelegate(
     base::WeakPtr<LoginDisplayHostMojo> controller)
     : controller_(controller),
       size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)) {}
 
-GaiaDialogDelegate::~GaiaDialogDelegate() {
+OobeUIDialogDelegate::~OobeUIDialogDelegate() {
   if (controller_)
     controller_->OnDialogDestroyed(this);
 }
 
-void GaiaDialogDelegate::Init() {
+void OobeUIDialogDelegate::Init() {
   DCHECK(!dialog_view_ && !dialog_widget_);
   // Life cycle of |dialog_view_| is managed by the widget:
   // Widget owns a root view which has |dialog_view_| as its child view.
@@ -59,22 +59,22 @@ void GaiaDialogDelegate::Init() {
       dialog_view_->web_contents());
 }
 
-void GaiaDialogDelegate::Show(bool closable_by_esc) {
+void OobeUIDialogDelegate::Show(bool closable_by_esc) {
   closable_by_esc_ = closable_by_esc;
   dialog_widget_->Show();
 }
 
-void GaiaDialogDelegate::Hide() {
+void OobeUIDialogDelegate::Hide() {
   if (dialog_widget_)
     dialog_widget_->Hide();
 }
 
-void GaiaDialogDelegate::Close() {
+void OobeUIDialogDelegate::Close() {
   if (dialog_widget_)
     dialog_widget_->Close();
 }
 
-void GaiaDialogDelegate::SetSize(int width, int height) {
+void OobeUIDialogDelegate::SetSize(int width, int height) {
   if (size_ == gfx::Size(width, height))
     return;
 
@@ -94,7 +94,7 @@ void GaiaDialogDelegate::SetSize(int width, int height) {
   dialog_widget_->SetBounds(bounds);
 }
 
-OobeUI* GaiaDialogDelegate::GetOobeUI() const {
+OobeUI* OobeUIDialogDelegate::GetOobeUI() const {
   if (dialog_view_) {
     content::WebUI* webui = dialog_view_->web_contents()->GetWebUI();
     if (webui)
@@ -103,57 +103,61 @@ OobeUI* GaiaDialogDelegate::GetOobeUI() const {
   return nullptr;
 }
 
-ui::ModalType GaiaDialogDelegate::GetDialogModalType() const {
+gfx::NativeWindow OobeUIDialogDelegate::GetNativeWindow() const {
+  return dialog_widget_ ? dialog_widget_->GetNativeWindow() : nullptr;
+}
+
+ui::ModalType OobeUIDialogDelegate::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-base::string16 GaiaDialogDelegate::GetDialogTitle() const {
+base::string16 OobeUIDialogDelegate::GetDialogTitle() const {
   return base::string16();
 }
 
-GURL GaiaDialogDelegate::GetDialogContentURL() const {
+GURL OobeUIDialogDelegate::GetDialogContentURL() const {
   return GURL(kGaiaURL);
 }
 
-void GaiaDialogDelegate::GetWebUIMessageHandlers(
+void OobeUIDialogDelegate::GetWebUIMessageHandlers(
     std::vector<content::WebUIMessageHandler*>* handlers) const {}
 
-void GaiaDialogDelegate::GetDialogSize(gfx::Size* size) const {
+void OobeUIDialogDelegate::GetDialogSize(gfx::Size* size) const {
   *size = size_;
 }
 
-bool GaiaDialogDelegate::CanResizeDialog() const {
+bool OobeUIDialogDelegate::CanResizeDialog() const {
   return false;
 }
 
-std::string GaiaDialogDelegate::GetDialogArgs() const {
+std::string OobeUIDialogDelegate::GetDialogArgs() const {
   return std::string();
 }
 
-void GaiaDialogDelegate::OnDialogClosed(const std::string& json_retval) {
+void OobeUIDialogDelegate::OnDialogClosed(const std::string& json_retval) {
   delete this;
 }
 
-void GaiaDialogDelegate::OnCloseContents(content::WebContents* source,
-                                         bool* out_close_dialog) {
+void OobeUIDialogDelegate::OnCloseContents(content::WebContents* source,
+                                           bool* out_close_dialog) {
   *out_close_dialog = true;
 }
 
-bool GaiaDialogDelegate::ShouldShowDialogTitle() const {
+bool OobeUIDialogDelegate::ShouldShowDialogTitle() const {
   return false;
 }
 
-bool GaiaDialogDelegate::HandleContextMenu(
+bool OobeUIDialogDelegate::HandleContextMenu(
     const content::ContextMenuParams& params) {
   return true;
 }
 
-std::vector<ui::Accelerator> GaiaDialogDelegate::GetAccelerators() {
+std::vector<ui::Accelerator> OobeUIDialogDelegate::GetAccelerators() {
   // TODO(crbug.com/809648): Adding necessory accelerators.
   return std::vector<ui::Accelerator>();
 }
 
-bool GaiaDialogDelegate::AcceleratorPressed(
+bool OobeUIDialogDelegate::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (ui::VKEY_ESCAPE == accelerator.key_code()) {
     // The widget should not be closed until the login is done.

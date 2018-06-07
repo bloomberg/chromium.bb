@@ -286,11 +286,6 @@ content::WebContents* WebUIScreenLocker::GetWebContents() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebUIScreenLocker, LoginDisplay::Delegate:
-
-void WebUIScreenLocker::CancelPasswordChangedFlow() {
-  NOTREACHED();
-}
-
 base::string16 WebUIScreenLocker::GetConnectedNetworkName() {
   return network_state_helper_->GetCurrentNetworkName();
 }
@@ -305,10 +300,6 @@ void WebUIScreenLocker::Login(const UserContext& user_context,
                               const SigninSpecifics& specifics) {
   chromeos::ScreenLocker::default_screen_locker()->Authenticate(
       user_context, ScreenLocker::AuthenticateCallback());
-}
-
-void WebUIScreenLocker::MigrateUserData(const std::string& old_password) {
-  NOTREACHED();
 }
 
 void WebUIScreenLocker::OnSigninScreenReady() {
@@ -340,10 +331,6 @@ void WebUIScreenLocker::ShowUpdateRequiredScreen() {
 }
 
 void WebUIScreenLocker::ResetAutoLoginTimer() {}
-
-void WebUIScreenLocker::ResyncUserData() {
-  NOTREACHED();
-}
 
 void WebUIScreenLocker::Signout() {
   chromeos::ScreenLocker::default_screen_locker()->Signout();

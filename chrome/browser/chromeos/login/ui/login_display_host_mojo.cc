@@ -11,9 +11,9 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
-#include "chrome/browser/chromeos/login/ui/gaia_dialog_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
+#include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
@@ -44,7 +44,8 @@ LoginDisplayHostMojo::~LoginDisplayHostMojo() {
     dialog_->Close();
 }
 
-void LoginDisplayHostMojo::OnDialogDestroyed(const GaiaDialogDelegate* dialog) {
+void LoginDisplayHostMojo::OnDialogDestroyed(
+    const OobeUIDialogDelegate* dialog) {
   if (dialog == dialog_) {
     dialog_ = nullptr;
     wizard_controller_.reset();
@@ -57,6 +58,26 @@ void LoginDisplayHostMojo::SetUsers(const user_manager::UserList& users) {
     GetOobeUI()->SetLoginUserCount(users_.size());
 }
 
+void LoginDisplayHostMojo::ShowPasswordChangedDialog(bool show_password_error,
+                                                     const std::string& email) {
+  DCHECK(GetOobeUI());
+  GetOobeUI()->signin_screen_handler()->ShowPasswordChangedDialog(
+      show_password_error, email);
+  dialog_->Show(false /*closable_by_esc*/);
+}
+
+void LoginDisplayHostMojo::ShowWhitelistCheckFailedError() {
+  DCHECK(GetOobeUI());
+  GetOobeUI()->signin_screen_handler()->ShowWhitelistCheckFailedError();
+  dialog_->Show(true /*closable_by_esc*/);
+}
+
+void LoginDisplayHostMojo::ShowUnrecoverableCrypthomeErrorDialog() {
+  DCHECK(GetOobeUI());
+  GetOobeUI()->signin_screen_handler()->ShowUnrecoverableCrypthomeErrorDialog();
+  dialog_->Show(false /*closable_by_esc*/);
+}
+
 LoginDisplay* LoginDisplayHostMojo::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate) {
   user_selection_screen_->SetLoginDisplayDelegate(delegate);
@@ -64,8 +85,11 @@ LoginDisplay* LoginDisplayHostMojo::CreateLoginDisplay(
 }
 
 gfx::NativeWindow LoginDisplayHostMojo::GetNativeWindow() const {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // We can't access the login widget because it's in ash, return the native
+  // window of the dialog widget if it exists.
+  if (!dialog_)
+    return nullptr;
+  return dialog_->GetNativeWindow();
 }
 
 OobeUI* LoginDisplayHostMojo::GetOobeUI() const {
@@ -104,8 +128,7 @@ void LoginDisplayHostMojo::StartWizard(OobeScreen first_screen) {
 }
 
 WizardController* LoginDisplayHostMojo::GetWizardController() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return wizard_controller_.get();
 }
 
 void LoginDisplayHostMojo::OnStartUserAdding() {
@@ -206,6 +229,12 @@ const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
   return users_;
 }
 
+void LoginDisplayHostMojo::CancelPasswordChangedFlow() {
+  // Close the Oobe UI dialog.
+  UpdateGaiaDialogVisibility(false /*visible*/, base::nullopt /*account*/);
+  LoginDisplayHostCommon::CancelPasswordChangedFlow();
+}
+
 void LoginDisplayHostMojo::HandleAuthenticateUser(
     const AccountId& account_id,
     const std::string& password,
@@ -294,7 +323,7 @@ void LoginDisplayHostMojo::InitWidgetAndView() {
   if (dialog_)
     return;
 
-  dialog_ = new GaiaDialogDelegate(weak_factory_.GetWeakPtr());
+  dialog_ = new OobeUIDialogDelegate(weak_factory_.GetWeakPtr());
   dialog_->Init();
 }
 

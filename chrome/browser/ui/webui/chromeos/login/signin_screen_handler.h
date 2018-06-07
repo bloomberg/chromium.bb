@@ -132,18 +132,6 @@ class LoginDisplayWebUIHandler {
 // An interface for SigninScreenHandler to call WebUILoginDisplay.
 class SigninScreenHandlerDelegate {
  public:
-  // --------------- Password change flow methods.
-  // Cancels current password changed flow.
-  virtual void CancelPasswordChangedFlow() = 0;
-
-  // Decrypt cryptohome using user provided |old_password|
-  // and migrate to new password.
-  virtual void MigrateUserData(const std::string& old_password) = 0;
-
-  // Ignore password change, remove existing cryptohome and
-  // force full sync of user data.
-  virtual void ResyncUserData() = 0;
-
   // --------------- Sign in/out methods.
   // Sign in using username and password specified as a part of |user_context|.
   // Used for both known and new users.
@@ -305,6 +293,7 @@ class SigninScreenHandler
   friend class GaiaScreenHandler;
   friend class ReportDnsCacheClearedOnUIThread;
   friend class SupervisedUserCreationScreenHandler;
+  friend class LoginDisplayHostMojo;
 
   void ShowImpl();
 

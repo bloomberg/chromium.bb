@@ -126,4 +126,10 @@ const user_manager::UserList FakeLoginDisplayHost::GetUsers() {
   return user_manager::UserList();
 }
 
+void FakeLoginDisplayHost::CancelPasswordChangedFlow() {}
+
+void FakeLoginDisplayHost::MigrateUserData(const std::string& old_password) {}
+
+void FakeLoginDisplayHost::ResyncUserData() {}
+
 }  // namespace chromeos

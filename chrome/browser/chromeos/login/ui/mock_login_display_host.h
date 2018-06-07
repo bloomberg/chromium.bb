@@ -64,6 +64,9 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(LoadWallpaper, void(const AccountId&));
   MOCK_METHOD0(LoadSigninWallpaper, void());
   MOCK_METHOD1(IsUserWhitelisted, bool(const AccountId&));
+  MOCK_METHOD0(CancelPasswordChangedFlow, void());
+  MOCK_METHOD1(MigrateUserData, void(const std::string&));
+  MOCK_METHOD0(ResyncUserData, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

@@ -81,7 +81,7 @@ void LoginDisplayMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
 
 void LoginDisplayMojo::ShowPasswordChangedDialog(bool show_password_error,
                                                  const std::string& email) {
-  NOTIMPLEMENTED();
+  host_->ShowPasswordChangedDialog(show_password_error, email);
 }
 
 void LoginDisplayMojo::ShowSigninUI(const std::string& email) {
@@ -89,11 +89,11 @@ void LoginDisplayMojo::ShowSigninUI(const std::string& email) {
 }
 
 void LoginDisplayMojo::ShowWhitelistCheckFailedError() {
-  NOTIMPLEMENTED();
+  host_->ShowWhitelistCheckFailedError();
 }
 
 void LoginDisplayMojo::ShowUnrecoverableCrypthomeErrorDialog() {
-  NOTIMPLEMENTED();
+  host_->ShowUnrecoverableCrypthomeErrorDialog();
 }
 
 void LoginDisplayMojo::OnUserImageChanged(const user_manager::User& user) {

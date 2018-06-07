@@ -53,6 +53,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void LoadWallpaper(const AccountId& account_id) final;
   void LoadSigninWallpaper() final;
   bool IsUserWhitelisted(const AccountId& account_id) final;
+  void CancelPasswordChangedFlow() override;
+  void MigrateUserData(const std::string& old_password) final;
+  void ResyncUserData() final;
 
   // content::NotificationObserver:
   void Observe(int type,
