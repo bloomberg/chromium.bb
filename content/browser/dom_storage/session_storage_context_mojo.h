@@ -21,7 +21,6 @@
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/common/content_export.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "services/file/public/mojom/file_system.mojom.h"

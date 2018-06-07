@@ -136,17 +136,16 @@ TEST_F(SessionStorageLevelDBWrapperTest, BasicUsage) {
           leveldb_database_.get()),
       GetRegisterNewAreaMapCallback());
 
-  mojom::LevelDBWrapperAssociatedPtr ss_leveldb;
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb;
   ss_leveldb_impl->Bind(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb));
 
-  std::vector<mojom::KeyValuePtr> data;
-  DatabaseError status = test::GetAllSync(ss_leveldb.get(), &data);
-  EXPECT_EQ(DatabaseError::OK, status);
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
   ASSERT_EQ(1ul, data.size());
   EXPECT_TRUE(base::ContainsValue(
-      data, mojom::KeyValue::New(StdStringToUint8Vector("key1"),
-                                 StdStringToUint8Vector("data1"))));
+      data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
+                                        StdStringToUint8Vector("data1"))));
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
       .Times(1);
@@ -176,10 +175,10 @@ TEST_F(SessionStorageLevelDBWrapperTest, Cloning) {
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
-  mojom::LevelDBWrapperAssociatedPtr ss_leveldb1;
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
   ss_leveldb_impl1->Bind(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
-  mojom::LevelDBWrapperAssociatedPtr ss_leveldb2;
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb2;
   ss_leveldb_impl2->Bind(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
 
@@ -200,25 +199,23 @@ TEST_F(SessionStorageLevelDBWrapperTest, Cloning) {
   EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
 
   // Check map 1 data.
-  std::vector<mojom::KeyValuePtr> data;
-  DatabaseError status = test::GetAllSync(ss_leveldb1.get(), &data);
-  EXPECT_EQ(DatabaseError::OK, status);
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(ss_leveldb1.get(), &data));
   ASSERT_EQ(1ul, data.size());
   EXPECT_TRUE(base::ContainsValue(
-      data, mojom::KeyValue::New(StdStringToUint8Vector("key1"),
-                                 StdStringToUint8Vector("data1"))));
+      data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
+                                        StdStringToUint8Vector("data1"))));
 
   // Check map 2 data.
   data.clear();
-  status = test::GetAllSync(ss_leveldb2.get(), &data);
-  EXPECT_EQ(DatabaseError::OK, status);
+  EXPECT_TRUE(test::GetAllSync(ss_leveldb2.get(), &data));
   ASSERT_EQ(2ul, data.size());
   EXPECT_TRUE(base::ContainsValue(
-      data, mojom::KeyValue::New(StdStringToUint8Vector("key1"),
-                                 StdStringToUint8Vector("data1"))));
+      data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
+                                        StdStringToUint8Vector("data1"))));
   EXPECT_TRUE(base::ContainsValue(
-      data, mojom::KeyValue::New(StdStringToUint8Vector("key2"),
-                                 StdStringToUint8Vector("data2"))));
+      data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key2"),
+                                        StdStringToUint8Vector("data2"))));
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
       .Times(1);
@@ -244,15 +241,15 @@ TEST_F(SessionStorageLevelDBWrapperTest, ObserverTransfer) {
       GetRegisterNewAreaMapCallback());
 
   // Create the mojo binding.
-  mojom::LevelDBWrapperAssociatedPtr ss_leveldb1;
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
   ss_leveldb_impl1->Bind(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
 
   // Create the observer, and attach it to the mojo bound implementation.
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedBinding<mojom::LevelDBObserver> observer_binding(
+  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
       &mock_observer);
-  mojom::LevelDBObserverAssociatedPtrInfo observer_ptr_info;
+  blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
   observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
   ss_leveldb1->AddObserver(std::move(observer_ptr_info));
 
@@ -265,7 +262,7 @@ TEST_F(SessionStorageLevelDBWrapperTest, ObserverTransfer) {
   leveldb_database_->Write(std::move(save_operations), base::DoNothing());
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
-  mojom::LevelDBWrapperAssociatedPtr ss_leveldb2;
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb2;
   ss_leveldb_impl2->Bind(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
 
@@ -332,10 +329,10 @@ TEST_F(SessionStorageLevelDBWrapperTest, DeleteAllOnShared) {
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
-  mojom::LevelDBWrapperAssociatedPtr ss_leveldb1;
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
   ss_leveldb_impl1->Bind(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
-  mojom::LevelDBWrapperAssociatedPtr ss_leveldb2;
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb2;
   ss_leveldb_impl2->Bind(
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
 
@@ -344,9 +341,9 @@ TEST_F(SessionStorageLevelDBWrapperTest, DeleteAllOnShared) {
 
   // Create the observer, attach to the first namespace.
   testing::StrictMock<test::MockLevelDBObserver> mock_observer;
-  mojo::AssociatedBinding<mojom::LevelDBObserver> observer_binding(
+  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding(
       &mock_observer);
-  mojom::LevelDBObserverAssociatedPtrInfo observer_ptr_info;
+  blink::mojom::StorageAreaObserverAssociatedPtrInfo observer_ptr_info;
   observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
   ss_leveldb1->AddObserver(std::move(observer_ptr_info));
 

@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/storage_partition_service.mojom.h"
@@ -78,7 +79,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   // See mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
-                        mojom::LevelDBWrapperRequest request);
+                        blink::mojom::StorageAreaRequest request);
   void OpenSessionStorage(int process_id,
                           const std::string& namespace_id,
                           mojom::SessionStorageNamespaceRequest request);

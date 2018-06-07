@@ -26,7 +26,7 @@ base::OnceCallback<void(bool)> MakeSuccessCallback(base::OnceClosure callback,
   return base::BindOnce(&SuccessCallback, std::move(callback), success_out);
 }
 
-bool PutSync(mojom::LevelDBWrapper* wrapper,
+bool PutSync(blink::mojom::StorageArea* wrapper,
              const std::vector<uint8_t>& key,
              const std::vector<uint8_t>& value,
              const base::Optional<std::vector<uint8_t>>& old_value,
@@ -42,7 +42,7 @@ bool PutSync(mojom::LevelDBWrapper* wrapper,
   return success;
 }
 
-bool GetSync(mojom::LevelDBWrapper* wrapper,
+bool GetSync(blink::mojom::StorageArea* wrapper,
              const std::vector<uint8_t>& key,
              std::vector<uint8_t>* data_out) {
   bool success = false;
@@ -58,48 +58,45 @@ bool GetSync(mojom::LevelDBWrapper* wrapper,
   return success;
 }
 
-leveldb::mojom::DatabaseError GetAllSync(
-    mojom::LevelDBWrapper* wrapper,
-    std::vector<mojom::KeyValuePtr>* data_out) {
+bool GetAllSync(blink::mojom::StorageArea* wrapper,
+                std::vector<blink::mojom::KeyValuePtr>* data_out) {
   DCHECK(data_out);
   base::RunLoop loop;
   bool complete = false;
-  leveldb::mojom::DatabaseError status =
-      leveldb::mojom::DatabaseError::INVALID_ARGUMENT;
+  bool success = false;
   wrapper->GetAll(
       GetAllCallback::CreateAndBind(&complete, loop.QuitClosure()),
-      base::BindLambdaForTesting([&](leveldb::mojom::DatabaseError status_in,
-                                     std::vector<mojom::KeyValuePtr> data_in) {
-        status = status_in;
-        *data_out = std::move(data_in);
-      }));
+      base::BindLambdaForTesting(
+          [&](bool success_in, std::vector<blink::mojom::KeyValuePtr> data_in) {
+            success = success_in;
+            *data_out = std::move(data_in);
+          }));
   loop.Run();
   DCHECK(complete);
-  return status;
+  return success;
 }
 
-leveldb::mojom::DatabaseError GetAllSyncOnDedicatedPipe(
-    mojom::LevelDBWrapper* wrapper,
-    std::vector<mojom::KeyValuePtr>* data_out) {
+bool GetAllSyncOnDedicatedPipe(
+    blink::mojom::StorageArea* wrapper,
+    std::vector<blink::mojom::KeyValuePtr>* data_out) {
   DCHECK(data_out);
   base::RunLoop loop;
   bool complete = false;
-  leveldb::mojom::DatabaseError status =
-      leveldb::mojom::DatabaseError::INVALID_ARGUMENT;
+  bool success = false;
   wrapper->GetAll(
       GetAllCallback::CreateAndBindOnDedicatedPipe(&complete,
                                                    loop.QuitClosure()),
-      base::BindLambdaForTesting([&](leveldb::mojom::DatabaseError status_in,
-                                     std::vector<mojom::KeyValuePtr> data_in) {
-        status = status_in;
-        *data_out = std::move(data_in);
-      }));
+      base::BindLambdaForTesting(
+          [&](bool success_in, std::vector<blink::mojom::KeyValuePtr> data_in) {
+            success = success_in;
+            *data_out = std::move(data_in);
+          }));
   loop.Run();
   DCHECK(complete);
-  return status;
+  return success;
 }
 
-bool DeleteSync(mojom::LevelDBWrapper* wrapper,
+bool DeleteSync(blink::mojom::StorageArea* wrapper,
                 const std::vector<uint8_t>& key,
                 const base::Optional<std::vector<uint8_t>>& client_old_value,
                 const std::string& source) {
@@ -114,7 +111,8 @@ bool DeleteSync(mojom::LevelDBWrapper* wrapper,
   return success;
 }
 
-bool DeleteAllSync(mojom::LevelDBWrapper* wrapper, const std::string& source) {
+bool DeleteAllSync(blink::mojom::StorageArea* wrapper,
+                   const std::string& source) {
   bool success = false;
   base::RunLoop loop;
   wrapper->DeleteAll(source, base::BindLambdaForTesting([&](bool success_in) {
@@ -125,24 +123,23 @@ bool DeleteAllSync(mojom::LevelDBWrapper* wrapper, const std::string& source) {
   return success;
 }
 
-base::OnceCallback<void(leveldb::mojom::DatabaseError,
-                        std::vector<mojom::KeyValuePtr>)>
-MakeGetAllCallback(leveldb::mojom::DatabaseError* status_out,
-                   std::vector<mojom::KeyValuePtr>* data_out) {
-  DCHECK(status_out);
+base::OnceCallback<void(bool, std::vector<blink::mojom::KeyValuePtr>)>
+MakeGetAllCallback(bool* success_out,
+                   std::vector<blink::mojom::KeyValuePtr>* data_out) {
+  DCHECK(success_out);
   DCHECK(data_out);
   return base::BindLambdaForTesting(
-      [status_out, data_out](leveldb::mojom::DatabaseError status_in,
-                             std::vector<mojom::KeyValuePtr> data_in) {
-        *status_out = status_in;
+      [success_out, data_out](bool success_in,
+                              std::vector<blink::mojom::KeyValuePtr> data_in) {
+        *success_out = success_in;
         *data_out = std::move(data_in);
       });
 }
 
 // static
-mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo
+blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
 GetAllCallback::CreateAndBind(bool* result, base::OnceClosure callback) {
-  mojom::LevelDBWrapperGetAllCallbackAssociatedPtr ptr;
+  blink::mojom::StorageAreaGetAllCallbackAssociatedPtr ptr;
   auto request = mojo::MakeRequest(&ptr);
   mojo::MakeStrongAssociatedBinding(
       base::WrapUnique(new GetAllCallback(result, std::move(callback))),
@@ -151,10 +148,10 @@ GetAllCallback::CreateAndBind(bool* result, base::OnceClosure callback) {
 }
 
 // static
-mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo
+blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
 GetAllCallback::CreateAndBindOnDedicatedPipe(bool* result,
                                              base::OnceClosure callback) {
-  mojom::LevelDBWrapperGetAllCallbackAssociatedPtr ptr;
+  blink::mojom::StorageAreaGetAllCallbackAssociatedPtr ptr;
   auto request = mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr);
   mojo::MakeStrongAssociatedBinding(
       base::WrapUnique(new GetAllCallback(result, std::move(callback))),
@@ -176,8 +173,8 @@ void GetAllCallback::Complete(bool success) {
 MockLevelDBObserver::MockLevelDBObserver() : binding_(this) {}
 MockLevelDBObserver::~MockLevelDBObserver() = default;
 
-mojom::LevelDBObserverAssociatedPtrInfo MockLevelDBObserver::Bind() {
-  mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
+blink::mojom::StorageAreaObserverAssociatedPtrInfo MockLevelDBObserver::Bind() {
+  blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info));
   return ptr_info;
 }

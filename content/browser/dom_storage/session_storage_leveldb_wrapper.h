@@ -13,7 +13,6 @@
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/leveldb_wrapper_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "url/origin.h"
@@ -34,7 +33,7 @@ class SessionStorageDataMap;
 // observers from the SessionStorageDataMap's LevelDBWrapper to the new forked
 // SessionStorageDataMap's LevelDBWrapper.
 class CONTENT_EXPORT SessionStorageLevelDBWrapper
-    : public mojom::LevelDBWrapper {
+    : public blink::mojom::StorageArea {
  public:
   using RegisterNewAreaMap =
       base::RepeatingCallback<scoped_refptr<SessionStorageMetadata::MapData>(
@@ -42,7 +41,7 @@ class CONTENT_EXPORT SessionStorageLevelDBWrapper
           const url::Origin& origin)>;
 
   // Creates a wrapper for the given |namespace_entry|-|origin| data area. All
-  // LevelDBWrapper calls are delegated to the |data_map|. The
+  // StorageArea calls are delegated to the |data_map|. The
   // |register_new_map_callback| is called when a shared |data_map| needs to be
   // forked for the copy-on-write behavior and a new map needs to be registered.
   SessionStorageLevelDBWrapper(
@@ -58,14 +57,15 @@ class CONTENT_EXPORT SessionStorageLevelDBWrapper
   std::unique_ptr<SessionStorageLevelDBWrapper> Clone(
       SessionStorageMetadata::NamespaceEntry namespace_entry);
 
-  void Bind(mojom::LevelDBWrapperAssociatedRequest request);
+  void Bind(blink::mojom::StorageAreaAssociatedRequest request);
 
   bool IsBound() const { return binding_.is_bound(); }
 
   SessionStorageDataMap* data_map() { return shared_data_map_.get(); }
 
-  // LevelDBWrapper:
-  void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
+  // blink::mojom::StorageArea:
+  void AddObserver(
+      blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const base::Optional<std::vector<uint8_t>>& client_old_value,
@@ -78,9 +78,9 @@ class CONTENT_EXPORT SessionStorageLevelDBWrapper
   void DeleteAll(const std::string& source,
                  DeleteAllCallback callback) override;
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
-  void GetAll(
-      mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
-      GetAllCallback callback) override;
+  void GetAll(blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
+                  complete_callback,
+              GetAllCallback callback) override;
 
  private:
   void OnConnectionError();
@@ -96,7 +96,7 @@ class CONTENT_EXPORT SessionStorageLevelDBWrapper
   RegisterNewAreaMap register_new_map_callback_;
 
   std::vector<mojo::InterfacePtrSetElementId> observer_ptrs_;
-  mojo::AssociatedBinding<mojom::LevelDBWrapper> binding_;
+  mojo::AssociatedBinding<blink::mojom::StorageArea> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageLevelDBWrapper);
 };

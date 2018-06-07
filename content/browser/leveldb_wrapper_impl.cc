@@ -96,7 +96,7 @@ LevelDBWrapperImpl::~LevelDBWrapperImpl() {
     CommitChanges();
 }
 
-void LevelDBWrapperImpl::Bind(mojom::LevelDBWrapperRequest request) {
+void LevelDBWrapperImpl::Bind(blink::mojom::StorageAreaRequest request) {
   bindings_.AddBinding(this, std::move(request));
   // If the number of bindings is more than 1, then the |client_old_value| sent
   // by the clients need not be valid due to races on updates from multiple
@@ -214,7 +214,7 @@ void LevelDBWrapperImpl::SetCacheModeForTesting(CacheMode cache_mode) {
 }
 
 mojo::InterfacePtrSetElementId LevelDBWrapperImpl::AddObserver(
-    mojom::LevelDBObserverAssociatedPtr observer) {
+    blink::mojom::StorageAreaObserverAssociatedPtr observer) {
   if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
     observer->ShouldSendOldValueOnMutations(false);
   return observers_.AddPtr(std::move(observer));
@@ -224,14 +224,15 @@ bool LevelDBWrapperImpl::HasObserver(mojo::InterfacePtrSetElementId id) {
   return observers_.HasPtr(id);
 }
 
-mojom::LevelDBObserverAssociatedPtr LevelDBWrapperImpl::RemoveObserver(
-    mojo::InterfacePtrSetElementId id) {
+blink::mojom::StorageAreaObserverAssociatedPtr
+LevelDBWrapperImpl::RemoveObserver(mojo::InterfacePtrSetElementId id) {
   return observers_.RemovePtr(id);
 }
 
 void LevelDBWrapperImpl::AddObserver(
-    mojom::LevelDBObserverAssociatedPtrInfo observer) {
-  AddObserver(mojom::LevelDBObserverAssociatedPtr(std::move(observer)));
+    blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) {
+  AddObserver(
+      blink::mojom::StorageAreaObserverAssociatedPtr(std::move(observer)));
 }
 
 void LevelDBWrapperImpl::Put(
@@ -335,15 +336,15 @@ void LevelDBWrapperImpl::Put(
   if (!old_value) {
     // We added a new key/value pair.
     observers_.ForAllPtrs(
-        [&key, &value, &source](mojom::LevelDBObserver* observer) {
+        [&key, &value, &source](blink::mojom::StorageAreaObserver* observer) {
           observer->KeyAdded(key, value, source);
         });
   } else {
     // We changed the value for an existing key.
-    observers_.ForAllPtrs(
-        [&key, &value, &source, &old_value](mojom::LevelDBObserver* observer) {
-          observer->KeyChanged(key, value, old_value.value(), source);
-        });
+    observers_.ForAllPtrs([&key, &value, &source, &old_value](
+                              blink::mojom::StorageAreaObserver* observer) {
+      observer->KeyChanged(key, value, old_value.value(), source);
+    });
   }
   std::move(callback).Run(true);
 }
@@ -413,7 +414,7 @@ void LevelDBWrapperImpl::Delete(
   }
 
   observers_.ForAllPtrs(
-      [&key, &source, &old_value](mojom::LevelDBObserver* observer) {
+      [&key, &source, &old_value](blink::mojom::StorageAreaObserver* observer) {
         observer->KeyDeleted(key, old_value, source);
       });
   std::move(callback).Run(true);
@@ -455,10 +456,9 @@ void LevelDBWrapperImpl::DeleteAll(const std::string& source,
 
   storage_used_ = 0;
   memory_used_ = 0;
-  observers_.ForAllPtrs(
-      [&source](mojom::LevelDBObserver* observer) {
-        observer->AllDeleted(source);
-      });
+  observers_.ForAllPtrs([&source](blink::mojom::StorageAreaObserver* observer) {
+    observer->AllDeleted(source);
+  });
   std::move(callback).Run(true);
 }
 
@@ -485,7 +485,7 @@ void LevelDBWrapperImpl::Get(const std::vector<uint8_t>& key,
 }
 
 void LevelDBWrapperImpl::GetAll(
-    mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
+    blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
     GetAllCallback callback) {
   // The map must always be loaded for the KEYS_ONLY_WHEN_POSSIBLE mode.
   if (map_state_ != MapState::LOADED_KEYS_AND_VALUES) {
@@ -494,16 +494,16 @@ void LevelDBWrapperImpl::GetAll(
     return;
   }
 
-  std::vector<mojom::KeyValuePtr> all;
+  std::vector<blink::mojom::KeyValuePtr> all;
   for (const auto& it : keys_values_map_) {
-    mojom::KeyValuePtr kv = mojom::KeyValue::New();
+    auto kv = blink::mojom::KeyValue::New();
     kv->key = it.first;
     kv->value = it.second;
     all.push_back(std::move(kv));
   }
-  std::move(callback).Run(DatabaseError::OK, std::move(all));
+  std::move(callback).Run(true, std::move(all));
   if (complete_callback.is_valid()) {
-    mojom::LevelDBWrapperGetAllCallbackAssociatedPtr complete_ptr;
+    blink::mojom::StorageAreaGetAllCallbackAssociatedPtr complete_ptr;
     complete_ptr.Bind(std::move(complete_callback));
     complete_ptr->Complete(true);
   }
@@ -516,9 +516,10 @@ void LevelDBWrapperImpl::SetCacheMode(CacheMode cache_mode) {
   }
   cache_mode_ = cache_mode;
   bool should_send_values = cache_mode == CacheMode::KEYS_ONLY_WHEN_POSSIBLE;
-  observers_.ForAllPtrs([should_send_values](mojom::LevelDBObserver* observer) {
-    observer->ShouldSendOldValueOnMutations(should_send_values);
-  });
+  observers_.ForAllPtrs(
+      [should_send_values](blink::mojom::StorageAreaObserver* observer) {
+        observer->ShouldSendOldValueOnMutations(should_send_values);
+      });
 
   // If the |keys_only_map_| is loaded and desired state needs values, no point
   // keeping around the map since the next change would require reload. On the

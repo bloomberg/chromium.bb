@@ -32,11 +32,11 @@ namespace {
 // are serialized on disk.
 enum class StorageFormat : uint8_t { UTF16 = 0, Latin1 = 1 };
 
-class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
+class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
  public:
-  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind(
+  static blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo CreateAndBind(
       base::OnceCallback<void(bool)> callback) {
-    mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo ptr_info;
+    blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo ptr_info;
     auto request = mojo::MakeRequest(&ptr_info);
     mojo::MakeStrongAssociatedBinding(
         base::WrapUnique(new GetAllCallback(std::move(callback))),
@@ -85,11 +85,11 @@ LocalStorageCachedArea::LocalStorageCachedArea(
       weak_factory_(this) {
   DCHECK(!namespace_id_.empty());
 
-  mojom::LevelDBWrapperAssociatedPtrInfo wrapper_ptr_info;
+  blink::mojom::StorageAreaAssociatedPtrInfo wrapper_ptr_info;
   session_namespace->OpenArea(origin_, mojo::MakeRequest(&wrapper_ptr_info));
   leveldb_.Bind(std::move(wrapper_ptr_info),
                 main_thread_scheduler->IPCTaskRunner());
-  mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
+  blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info),
                 main_thread_scheduler->IPCTaskRunner());
 }
@@ -105,12 +105,12 @@ LocalStorageCachedArea::LocalStorageCachedArea(
       main_thread_scheduler_(main_thread_scheduler),
       weak_factory_(this) {
   DCHECK(namespace_id_.empty());
-  mojom::LevelDBWrapperPtrInfo wrapper_ptr_info;
+  blink::mojom::StorageAreaPtrInfo wrapper_ptr_info;
   storage_partition_service->OpenLocalStorage(
       origin_, mojo::MakeRequest(&wrapper_ptr_info));
   leveldb_.Bind(std::move(wrapper_ptr_info),
                 main_thread_scheduler->IPCTaskRunner());
-  mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
+  blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info),
                 main_thread_scheduler->IPCTaskRunner());
   leveldb_->AddObserver(std::move(ptr_info));
@@ -513,12 +513,12 @@ void LocalStorageCachedArea::EnsureLoaded() {
 
   base::TimeTicks before = base::TimeTicks::Now();
   ignore_all_mutations_ = true;
-  leveldb::mojom::DatabaseError status = leveldb::mojom::DatabaseError::OK;
-  std::vector<content::mojom::KeyValuePtr> data;
+  bool success = false;
+  std::vector<blink::mojom::KeyValuePtr> data;
   leveldb_->GetAll(GetAllCallback::CreateAndBind(
                        base::BindOnce(&LocalStorageCachedArea::OnGetAllComplete,
                                       weak_factory_.GetWeakPtr())),
-                   &status, &data);
+                   &success, &data);
 
   DOMStorageValuesMap values;
   bool is_session_storage = IsSessionStorage();

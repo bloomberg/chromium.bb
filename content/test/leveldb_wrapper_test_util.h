@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 // Utility functions and classes for testing LevelDBWrapper implementations.
 
@@ -26,55 +26,54 @@ base::OnceCallback<void(bool)> MakeSuccessCallback(base::OnceClosure callback,
 
 // Does a |Put| call on the given |wrapper| and waits until the response is
 // received. Returns if the call was successful.
-bool PutSync(mojom::LevelDBWrapper* wrapper,
+bool PutSync(blink::mojom::StorageArea* wrapper,
              const std::vector<uint8_t>& key,
              const std::vector<uint8_t>& value,
              const base::Optional<std::vector<uint8_t>>& old_value,
              const std::string& source);
 
-bool GetSync(mojom::LevelDBWrapper* wrapper,
+bool GetSync(blink::mojom::StorageArea* wrapper,
              const std::vector<uint8_t>& key,
              std::vector<uint8_t>* data_out);
 
-leveldb::mojom::DatabaseError GetAllSync(
-    mojom::LevelDBWrapper* wrapper,
-    std::vector<mojom::KeyValuePtr>* data_out);
+bool GetAllSync(blink::mojom::StorageArea* wrapper,
+                std::vector<blink::mojom::KeyValuePtr>* data_out);
 
 // Unlike GetAllSync above, this method uses
 // mojo::MakeRequestAssociatedWithDedicatedPipe for the GetAllCallback object's
 // binding to the wrapper. This can be necessary if the wrapper is an
 // implementation and not a binding with it's own pipe already.
-leveldb::mojom::DatabaseError GetAllSyncOnDedicatedPipe(
-    mojom::LevelDBWrapper* wrapper,
-    std::vector<mojom::KeyValuePtr>* data_out);
+bool GetAllSyncOnDedicatedPipe(
+    blink::mojom::StorageArea* wrapper,
+    std::vector<blink::mojom::KeyValuePtr>* data_out);
 
 // Does a |Delete| call on the wrapper and waits until the response is
 // received. Returns if the call was successful.
-bool DeleteSync(mojom::LevelDBWrapper* wrapper,
+bool DeleteSync(blink::mojom::StorageArea* wrapper,
                 const std::vector<uint8_t>& key,
                 const base::Optional<std::vector<uint8_t>>& client_old_value,
                 const std::string& source);
 
 // Does a |DeleteAll| call on the wrapper and waits until the response is
 // received. Returns if the call was successful.
-bool DeleteAllSync(mojom::LevelDBWrapper* wrapper, const std::string& source);
+bool DeleteAllSync(blink::mojom::StorageArea* wrapper,
+                   const std::string& source);
 
 // Creates a callback that simply sets the  |*_out| variables to the arguments.
-base::OnceCallback<void(leveldb::mojom::DatabaseError,
-                        std::vector<mojom::KeyValuePtr>)>
-MakeGetAllCallback(leveldb::mojom::DatabaseError* status_out,
-                   std::vector<mojom::KeyValuePtr>* data_out);
+base::OnceCallback<void(bool, std::vector<blink::mojom::KeyValuePtr>)>
+MakeGetAllCallback(bool* success_out,
+                   std::vector<blink::mojom::KeyValuePtr>* data_out);
 
 // Utility class to help using the LevelDBWrapper::GetAll method. Use
 // |CreateAndBind| to create the PtrInfo to send to the |GetAll| method.
 // When the call is complete, the |callback| will be called.
-class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
+class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
  public:
-  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind(
+  static blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo CreateAndBind(
       bool* result,
       base::OnceClosure callback);
 
-  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo
+  static blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
   CreateAndBindOnDedicatedPipe(bool* result, base::OnceClosure callback);
 
   ~GetAllCallback() override;
@@ -88,8 +87,8 @@ class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
   base::OnceClosure callback_;
 };
 
-// Mock observer implementation for use with LevelDBWrapper.
-class MockLevelDBObserver : public content::mojom::LevelDBObserver {
+// Mock observer implementation for use with StorageArea.
+class MockLevelDBObserver : public blink::mojom::StorageAreaObserver {
  public:
   MockLevelDBObserver();
   ~MockLevelDBObserver() override;
@@ -110,10 +109,10 @@ class MockLevelDBObserver : public content::mojom::LevelDBObserver {
   MOCK_METHOD1(AllDeleted, void(const std::string& source));
   MOCK_METHOD1(ShouldSendOldValueOnMutations, void(bool value));
 
-  mojom::LevelDBObserverAssociatedPtrInfo Bind();
+  blink::mojom::StorageAreaObserverAssociatedPtrInfo Bind();
 
  private:
-  mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
+  mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> binding_;
 };
 
 }  // namespace test

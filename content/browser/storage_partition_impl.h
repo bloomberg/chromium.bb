@@ -147,7 +147,7 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
-                        mojom::LevelDBWrapperRequest request) override;
+                        blink::mojom::StorageAreaRequest request) override;
   void OpenSessionStorage(
       const std::string& namespace_id,
       mojom::SessionStorageNamespaceRequest request) override;

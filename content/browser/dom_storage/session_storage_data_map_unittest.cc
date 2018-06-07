@@ -33,27 +33,27 @@ class MockListener : public SessionStorageDataMap::Listener {
   MOCK_METHOD1(OnCommitResult, void(leveldb::mojom::DatabaseError error));
 };
 
-void GetAllDataCallback(leveldb::mojom::DatabaseError* status_out,
-                        std::vector<mojom::KeyValuePtr>* data_out,
-                        leveldb::mojom::DatabaseError status,
-                        std::vector<mojom::KeyValuePtr> data) {
-  *status_out = status;
+void GetAllDataCallback(bool* success_out,
+                        std::vector<blink::mojom::KeyValuePtr>* data_out,
+                        bool success,
+                        std::vector<blink::mojom::KeyValuePtr> data) {
+  *success_out = success;
   *data_out = std::move(data);
 }
 
-base::OnceCallback<void(leveldb::mojom::DatabaseError status,
-                        std::vector<mojom::KeyValuePtr> data)>
-MakeGetAllCallback(leveldb::mojom::DatabaseError* status_out,
-                   std::vector<mojom::KeyValuePtr>* data_out) {
-  return base::BindOnce(&GetAllDataCallback, status_out, data_out);
+base::OnceCallback<void(bool success,
+                        std::vector<blink::mojom::KeyValuePtr> data)>
+MakeGetAllCallback(bool* sucess_out,
+                   std::vector<blink::mojom::KeyValuePtr>* data_out) {
+  return base::BindOnce(&GetAllDataCallback, sucess_out, data_out);
 }
 
-class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
+class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
  public:
-  static mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo CreateAndBind(
+  static blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo CreateAndBind(
       bool* result,
       base::OnceClosure callback) {
-    mojom::LevelDBWrapperGetAllCallbackAssociatedPtr ptr;
+    blink::mojom::StorageAreaGetAllCallbackAssociatedPtr ptr;
     auto request = mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr);
     mojo::MakeStrongAssociatedBinding(
         base::WrapUnique(new GetAllCallback(result, std::move(callback))),
@@ -108,13 +108,13 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
       base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
       &database_);
 
-  leveldb::mojom::DatabaseError status;
-  std::vector<mojom::KeyValuePtr> data;
+  bool success;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool done = false;
   base::RunLoop loop;
   map->level_db_wrapper()->GetAll(
       GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
-      MakeGetAllCallback(&status, &data));
+      MakeGetAllCallback(&success, &data));
   loop.Run();
 
   EXPECT_TRUE(done);
@@ -154,13 +154,13 @@ TEST_F(SessionStorageDataMapTest, Clone) {
                                                                 test_origin_),
           map1->level_db_wrapper());
 
-  leveldb::mojom::DatabaseError status;
-  std::vector<mojom::KeyValuePtr> data;
+  bool success;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool done = false;
   base::RunLoop loop;
   map2->level_db_wrapper()->GetAll(
       GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
-      MakeGetAllCallback(&status, &data));
+      MakeGetAllCallback(&success, &data));
   loop.Run();
 
   EXPECT_TRUE(done);

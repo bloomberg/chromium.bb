@@ -15,10 +15,11 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/common/content_export.h"
-#include "content/common/leveldb_wrapper.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 namespace base {
 namespace trace_event {
@@ -40,7 +41,7 @@ namespace content {
 // 4) Throttles requests to avoid overwhelming the disk.
 //
 // The wrapper supports two different caching modes.
-class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
+class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
  public:
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
   using ValueMapCallback = base::OnceCallback<void(std::unique_ptr<ValueMap>)>;
@@ -100,7 +101,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   ~LevelDBWrapperImpl() override;
 
-  void Bind(mojom::LevelDBWrapperRequest request);
+  void Bind(blink::mojom::StorageAreaRequest request);
 
   // Forks, or copies, all data in this prefix to another prefix.
   // Note: this object (the parent) must stay alive until the forked wrapper
@@ -169,13 +170,14 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   // Returns a pointer ID for use with HasObserver and RemoveObserver.
   mojo::InterfacePtrSetElementId AddObserver(
-      mojom::LevelDBObserverAssociatedPtr observer);
+      blink::mojom::StorageAreaObserverAssociatedPtr observer);
   bool HasObserver(mojo::InterfacePtrSetElementId id);
-  mojom::LevelDBObserverAssociatedPtr RemoveObserver(
+  blink::mojom::StorageAreaObserverAssociatedPtr RemoveObserver(
       mojo::InterfacePtrSetElementId id);
 
-  // LevelDBWrapper:
-  void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
+  // blink::mojom::StorageArea:
+  void AddObserver(
+      blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const base::Optional<std::vector<uint8_t>>& client_old_value,
@@ -188,9 +190,9 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   void DeleteAll(const std::string& source,
                  DeleteAllCallback callback) override;
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
-  void GetAll(
-      mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
-      GetAllCallback callback) override;
+  void GetAll(blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo
+                  complete_callback,
+              GetAllCallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, GetAllAfterSetCacheMode);
@@ -309,8 +311,8 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
                          const KeysOnlyMap& key_only_map);
 
   std::vector<uint8_t> prefix_;
-  mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
-  mojo::AssociatedInterfacePtrSet<mojom::LevelDBObserver> observers_;
+  mojo::BindingSet<blink::mojom::StorageArea> bindings_;
+  mojo::AssociatedInterfacePtrSet<blink::mojom::StorageAreaObserver> observers_;
   Delegate* delegate_;
   leveldb::mojom::LevelDBDatabase* database_;
 
