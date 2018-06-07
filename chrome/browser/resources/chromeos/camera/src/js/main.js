@@ -19,6 +19,7 @@ camera.Camera = function() {
    * @private
    */
   this.context_ = new camera.Camera.Context(
+      this.onAspectRatio_.bind(this),
       this.onError_.bind(this),
       this.onErrorRecovered_.bind(this));
 
@@ -61,6 +62,12 @@ camera.Camera = function() {
   this.dialogView_ = new camera.views.Dialog(this.context_, this.router_);
 
   /**
+   * @type {?number}
+   * @private
+   */
+  this.resizeCompleteTimer_ = null;
+
+  /**
    * @type {camera.util.TooltipManager}
    * @private
    */
@@ -88,19 +95,26 @@ camera.Camera = function() {
 /**
  * Creates context for the views.
  *
+ * @param {function(number)} onAspectRatio Callback to be called, when setting a
+ *     new aspect ratio. The argument is the aspect ratio.
  * @param {function(string, string, opt_string)} onError Callback to be called,
  *     when an error occurs. Arguments: identifier, first line, second line.
  * @param {function(string)} onErrorRecovered Callback to be called,
  *     when the error goes away. The argument is the error id.
  * @constructor
  */
-camera.Camera.Context = function(onError, onErrorRecovered) {
+camera.Camera.Context = function(onAspectRatio, onError, onErrorRecovered) {
   camera.View.Context.call(this);
 
   /**
    * @type {boolean}
    */
   this.hasError = false;
+
+  /**
+   * @type {function(number)}
+   */
+  this.onAspectRatio = onAspectRatio;
 
   /**
    * @type {function(string, string, string)}
@@ -139,6 +153,9 @@ camera.Camera.ViewsStack = function() {
 camera.Camera.ViewsStack.prototype = {
   get current() {
     return this.stack_.length ? this.stack_[this.stack_.length - 1].view : null;
+  },
+  get all() {
+    return this.stack_.map(entry => entry.view);
   }
 };
 
@@ -185,20 +202,8 @@ camera.Camera.ViewsStack.prototype.pop = function(opt_result) {
 };
 
 camera.Camera.prototype = {
-  get currentView() {
-    return this.viewsStack_.current;
-  },
   get cameraView() {
     return this.cameraView_;
-  },
-  get albumView() {
-    return this.albumView_;
-  },
-  get browserView() {
-    return this.browserView_;
-  },
-  get dialogView() {
-    return this.dialogView_;
   }
 };
 
@@ -287,12 +292,49 @@ camera.Camera.prototype.navigateById_ = function(
 };
 
 /**
+ * Sets the window size to match the last known aspect ratio.
+ * @private
+ */
+camera.Camera.prototype.updateWindowSize_ = function() {
+  var appWindow = chrome.app.window.current();
+  if (appWindow.isMaximized() || appWindow.isFullscreen()) {
+    return;
+  }
+
+  // Keep the width fixed and calculate the height by the aspect ratio.
+  var inner = appWindow.innerBounds;
+  var innerW = inner.minWidth;
+  var innerH = Math.round(innerW / appWindow.aspectRatio);
+
+  // Limit window resizing capability by setting min-height. Don't limit
+  // max-height here as it may disable maximize/fullscreen capabilities.
+  // TODO(yuli): Revise if there is an alternative fix.
+  inner.minHeight = innerH;
+
+  inner.width = innerW;
+  inner.height = innerH;
+};
+
+/**
  * Handles resizing of the window.
  * @private
  */
 camera.Camera.prototype.onWindowResize_ = function() {
-  if (this.currentView)
-    this.currentView.onResize();
+  if (this.resizeCompleteTimer_) {
+    clearTimeout(this.resizeCompleteTimer_);
+    this.resizeCompleteTimer_ = null;
+  }
+  this.resizeCompleteTimer_ = setTimeout(function() {
+    this.resizeCompleteTimer_ = null;
+    this.updateWindowSize_();
+  }.bind(this), 500);
+
+  // Resize all stacked views rather than just the current-view to avoid
+  // camera-preview not being resized if a dialog or settings' menu is shown on
+  // top of the camera-view.
+  this.viewsStack_.all.forEach(function(view) {
+    view.onResize();
+  }.bind(this));
 };
 
 /**
@@ -316,13 +358,23 @@ camera.Camera.prototype.onKeyPressed_ = function(event) {
   if (this.context_.hasError)
     return;
 
-  if (this.currentView)
-    this.currentView.onKeyPressed(event);
+  var currentView = this.viewsStack_.current;
+  if (currentView)
+    currentView.onKeyPressed(event);
+};
+
+/**
+ * Updates the window apsect ratio.
+ * @param {number} aspectRatio Aspect ratio of window's inner-bounds.
+ * @private
+ */
+camera.Camera.prototype.onAspectRatio_ = function(aspectRatio) {
+  chrome.app.window.current().aspectRatio = aspectRatio;
+  this.updateWindowSize_();
 };
 
 /**
  * Shows an error message.
- *
  * @param {string} identifier Identifier of the error.
  * @param {string} message Message for the error.
  * @param {string=} opt_hint Optional hint for the error message.

@@ -127,7 +127,6 @@ camera.views.Browser.prototype.onEnter = function(opt_arguments) {
 
   this.onResize();
   this.scrollTracker_.start();
-  document.body.classList.add('browser');
 };
 
 /**
@@ -135,7 +134,6 @@ camera.views.Browser.prototype.onEnter = function(opt_arguments) {
  */
 camera.views.Browser.prototype.onActivate = function() {
   camera.views.GalleryBase.prototype.onActivate.apply(this, arguments);
-
   if (!this.scroller_.animating)
     this.synchronizeFocus();
 };

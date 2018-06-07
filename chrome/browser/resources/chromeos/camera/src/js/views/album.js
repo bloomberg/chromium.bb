@@ -101,7 +101,6 @@ camera.views.Album.prototype.initialize = function(callback) {
  */
 camera.views.Album.prototype.onEnter = function() {
   this.onResize();
-  this.updateButtons_();
   this.scrollTracker_.start();
 };
 
@@ -118,6 +117,7 @@ camera.views.Album.prototype.onLeave = function() {
  */
 camera.views.Album.prototype.onActivate = function() {
   camera.views.GalleryBase.prototype.onActivate.apply(this, arguments);
+  this.updateButtons_();
   if (!this.selectedIndexes.length && this.pictures.length)
     this.setSelectedIndex(this.pictures.length - 1);
 
