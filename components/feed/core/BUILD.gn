@@ -20,6 +20,8 @@ source_set("feed_core") {
     "feed_scheduler_host.h",
     "feed_storage_database.cc",
     "feed_storage_database.h",
+    "pref_names.cc",
+    "pref_names.h",
     "time_serialization.cc",
     "time_serialization.h",
   ]
