@@ -495,7 +495,6 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   VLOG(2) << "[state:" << this << "] ScheduleV8FollowupGCIfNeeded: v8_gc_type="
           << ((gc_type == BlinkGC::kV8MajorGC) ? "MajorGC" : "MinorGC");
   DCHECK(CheckThread());
-  DCHECK_EQ(BlinkGC::kV8MajorGC, gc_type);
   ThreadHeap::ReportMemoryUsageForTracing();
 
   if (IsGCForbidden())
@@ -503,17 +502,21 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
 
   // This completeSweep() will do nothing in common cases since we've
   // called completeSweep() before V8 starts minor/major GCs.
-  CompleteSweep();
-  DCHECK(!IsSweepingInProgress());
-  DCHECK(!SweepForbidden());
+  if (gc_type == BlinkGC::kV8MajorGC) {
+    // TODO(ulan): Try removing this for Major V8 GC too.
+    CompleteSweep();
+    DCHECK(!IsSweepingInProgress());
+    DCHECK(!SweepForbidden());
+  }
 
-  if (ShouldForceMemoryPressureGC() || ShouldScheduleV8FollowupGC()) {
+  if ((gc_type == BlinkGC::kV8MajorGC && ShouldForceMemoryPressureGC()) ||
+      ShouldScheduleV8FollowupGC()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleV8FollowupGCIfNeeded: Scheduled precise GC";
     SchedulePreciseGC();
     return;
   }
-  if (ShouldScheduleIdleGC()) {
+  if (gc_type == BlinkGC::kV8MajorGC && ShouldScheduleIdleGC()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleV8FollowupGCIfNeeded: Scheduled idle GC";
     ScheduleIdleGC();
