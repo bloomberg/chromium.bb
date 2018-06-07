@@ -138,6 +138,7 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'ChromeDriverTest.testSendCommand*',
     # LaunchApp is an obsolete API.
     'ChromeExtensionsCapabilityTest.testCanLaunchApp',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2278
     # The following test uses the obsolete LaunchApp API, and is thus excluded.
     # TODO(johnchen@chromium.org): Investigate feasibility of re-writing the
     # test case without using LaunchApp.
@@ -147,14 +148,10 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'PerfTest.*',
     # HeadlessInvalidCertificateTest is sometimes flaky.
     'HeadlessInvalidCertificateTest.*',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2277
     # RemoteBrowserTest requires extra setup. TODO(johnchen@chromium.org):
     # Modify the test so it runs correctly as isolated test.
     'RemoteBrowserTest.*',
-    # SessionHandlingTest tests an internal ChromeDriver feature, not needed
-    # for integration test. It is also slightly flaky.
-    'SessionHandlingTest.*',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2431
-    'ChromeDriverTest.testCloseWindow*',
 ]
 
 
