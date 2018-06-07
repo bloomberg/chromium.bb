@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-library fuchsia.web;
+library chromium.web;
 
 interface Frame {
   // Creates and registers a view with the view manager and returns its
@@ -21,4 +21,3 @@ interface Frame {
   // NavigationController.
   2: GetNavigationController(request<NavigationController> controller);
 };
-

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-library fuchsia.web;
+library chromium.web;
 
 // The top-level service interface which allows for the creation of
 // Context resources.
@@ -22,4 +22,3 @@ struct CreateContextParams {
   // stateless, with all of its data discarded upon Context destruction.
   handle<channel>? dataDirectory;
 };
-
