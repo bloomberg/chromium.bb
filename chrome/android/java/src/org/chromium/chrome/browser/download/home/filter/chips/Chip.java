@@ -12,6 +12,9 @@ import android.support.annotation.StringRes;
  * and enable states are not.
  */
 public class Chip {
+    /** An id to use for {@link #icon} when there is no icon on the chip. */
+    public static final int INVALID_ICON_ID = -1;
+
     /** An id used to identify this chip. */
     public final int id;
 

@@ -568,6 +568,8 @@
     <item type="dimen" name="dialog_fixed_height_minor">100%</item>
 
     <!-- Chip list dimensions -->
+    <dimen name="chip_no_icon_padding">16dp</dimen>
+    <dimen name="chip_icon_padding">4dp</dimen>
     <dimen name="chip_list_padding">2.5dp</dimen>
 
     <!-- Download manager dimensions -->

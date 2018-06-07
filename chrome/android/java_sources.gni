@@ -446,7 +446,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/home/filter/chips/ChipsCoordinator.java",
   "java/src/org/chromium/chrome/browser/download/home/filter/chips/ChipsProvider.java",
   "java/src/org/chromium/chrome/browser/download/home/filter/chips/ChipsViewBinder.java",
-  "java/src/org/chromium/chrome/browser/download/home/filter/chips/ChipView.java",
   "java/src/org/chromium/chrome/browser/download/home/glue/DownloadGlue.java",
   "java/src/org/chromium/chrome/browser/download/home/glue/OfflineContentProviderGlue.java",
   "java/src/org/chromium/chrome/browser/download/home/glue/ThumbnailRequestGlue.java",
