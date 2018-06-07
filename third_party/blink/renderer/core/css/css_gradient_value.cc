@@ -995,31 +995,19 @@ void CSSLinearGradientValue::TraceAfterDispatch(blink::Visitor* visitor) {
 void CSSGradientValue::AppendCSSTextForColorStops(
     StringBuilder& result,
     bool requires_separator) const {
-  const CSSValue* prev_color = nullptr;
-
   for (const auto& stop : stops_) {
-    bool is_color_repeat = false;
-    if (RuntimeEnabledFeatures::MultipleColorStopPositionsEnabled()) {
-      is_color_repeat = stop.color_ && stop.offset_ &&
-                        DataEquivalent(stop.color_.Get(), prev_color);
-    }
-
     if (requires_separator) {
-      if (!is_color_repeat)
-        result.Append(", ");
+      result.Append(", ");
     } else {
       requires_separator = true;
     }
 
-    if (stop.color_ && !is_color_repeat)
+    if (stop.color_)
       result.Append(stop.color_->CssText());
     if (stop.color_ && stop.offset_)
       result.Append(' ');
     if (stop.offset_)
       result.Append(stop.offset_->CssText());
-
-    // Reset prevColor if we've emitted a color repeat.
-    prev_color = is_color_repeat ? nullptr : stop.color_.Get();
   }
 }
 
