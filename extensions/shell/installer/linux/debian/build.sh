@@ -62,7 +62,7 @@ stage_install_debian() {
 
 # Actually generate the package file.
 do_package() {
-  echo "Packaging ${ARCHITECTURE}..."
+  log_cmd echo "Packaging ${ARCHITECTURE}..."
   PREDEPENDS="$COMMON_PREDEPS"
   DEPENDS="${COMMON_DEPS}"
   RECOMMENDS="${COMMON_RECOMMENDS}"
@@ -78,7 +78,7 @@ do_package() {
   else
     local COMPRESSION_OPTS="-Znone"
   fi
-  fakeroot dpkg-deb ${COMPRESSION_OPTS} -b "${STAGEDIR}" .
+  log_cmd fakeroot dpkg-deb ${COMPRESSION_OPTS} -b "${STAGEDIR}" .
 }
 
 verify_package() {
@@ -99,7 +99,7 @@ verify_package() {
 
 # Remove temporary files and unwanted packaging output.
 cleanup() {
-  echo "Cleaning..."
+  log_cmd echo "Cleaning..."
   rm -rf "${STAGEDIR}"
   rm -rf "${TMPFILEDIR}"
 }
@@ -255,7 +255,7 @@ else
 fi
 SHLIB_ARGS="${SHLIB_ARGS} -l${SYSROOT}/usr/lib"
 DPKG_SHLIB_DEPS=$(cd ${SYSROOT} && dpkg-shlibdeps ${SHLIB_ARGS:-} -O \
-                  -e"$BUILDDIR/app_shell" | sed 's/^shlibs:Depends=//')
+  -e"$BUILDDIR/app_shell" 2>/dev/null | sed 's/^shlibs:Depends=//')
 if [ -n "$SAVE_LDLP" ]; then
   LD_LIBRARY_PATH=$SAVE_LDLP
 fi
