@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_CAST_CAST_FEATURE_POD_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/cast_config_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "base/macros.h"
 
@@ -14,7 +15,9 @@ namespace ash {
 class UnifiedSystemTrayController;
 
 // Controller of cast feature pod button.
-class ASH_EXPORT CastFeaturePodController : public FeaturePodControllerBase {
+class ASH_EXPORT CastFeaturePodController
+    : public FeaturePodControllerBase,
+      public CastConfigControllerObserver {
  public:
   CastFeaturePodController(UnifiedSystemTrayController* tray_controller);
   ~CastFeaturePodController() override;
@@ -23,7 +26,12 @@ class ASH_EXPORT CastFeaturePodController : public FeaturePodControllerBase {
   FeaturePodButton* CreateButton() override;
   void OnIconPressed() override;
 
+  // CastConfigControllerObserver:
+  void OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) override;
+
  private:
+  void Update();
+
   // Unowned.
   UnifiedSystemTrayController* const tray_controller_;
   FeaturePodButton* button_ = nullptr;

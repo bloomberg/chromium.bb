@@ -16,6 +16,11 @@ enum ViewID {
 
   VIEW_ID_ACCESSIBILITY_TRAY_ITEM,
   VIEW_ID_BLUETOOTH_DEFAULT_VIEW,
+  // System tray casting row elements.
+  VIEW_ID_CAST_CAST_VIEW,
+  VIEW_ID_CAST_CAST_VIEW_LABEL,
+  VIEW_ID_CAST_MAIN_VIEW,
+  VIEW_ID_CAST_SELECT_VIEW,
   // System tray network submenu item for extension-controlled networks.
   VIEW_ID_EXTENSION_CONTROLLED_WIFI,
   VIEW_ID_MEDIA_TRAY_VIEW,

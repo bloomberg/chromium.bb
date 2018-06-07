@@ -64,15 +64,10 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
   ~TrayCast() override;
 
  private:
-  // Helper/utility methods for testing.
-  friend class TrayCastTestAPI;
-  void StartCastForTest(const std::string& sink_id);
-  void StopCastForTest();
   // Returns the id of the item we are currently displaying in the cast view.
   // This assumes that the cast view is active.
   const std::string& GetDisplayedCastId();
   const views::View* GetDefaultView() const;
-  enum ChildViewId { TRAY_VIEW = 1, SELECT_VIEW, CAST_VIEW };
 
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(LoginStatus status) override;

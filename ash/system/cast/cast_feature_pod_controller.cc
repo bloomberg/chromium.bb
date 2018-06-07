@@ -4,7 +4,7 @@
 
 #include "ash/system/cast/cast_feature_pod_controller.h"
 
-#include "ash/cast_config_controller.h"
+#include "ash/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -16,24 +16,38 @@ namespace ash {
 
 CastFeaturePodController::CastFeaturePodController(
     UnifiedSystemTrayController* tray_controller)
-    : tray_controller_(tray_controller) {}
+    : tray_controller_(tray_controller) {
+  Shell::Get()->cast_config()->AddObserver(this);
+}
 
-CastFeaturePodController::~CastFeaturePodController() = default;
+CastFeaturePodController::~CastFeaturePodController() {
+  Shell::Get()->cast_config()->RemoveObserver(this);
+}
 
 FeaturePodButton* CastFeaturePodController::CreateButton() {
   button_ = new FeaturePodButton(this);
   button_->SetVectorIcon(kSystemMenuCastIcon);
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_DESKTOP));
-  CastConfigController* cast_config = Shell::Get()->cast_config();
-  button_->SetVisible(cast_config->Connected() &&
-                      cast_config->HasSinksAndRoutes() &&
-                      !cast_config->HasActiveRoute());
+  button_->set_id(VIEW_ID_CAST_MAIN_VIEW);
+  Update();
   return button_;
 }
 
 void CastFeaturePodController::OnIconPressed() {
   tray_controller_->ShowCastDetailedView();
+}
+
+void CastFeaturePodController::OnDevicesUpdated(
+    std::vector<mojom::SinkAndRoutePtr> devices) {
+  Update();
+}
+
+void CastFeaturePodController::Update() {
+  CastConfigController* cast_config = Shell::Get()->cast_config();
+  button_->SetVisible(cast_config->Connected() &&
+                      cast_config->HasSinksAndRoutes() &&
+                      !cast_config->HasActiveRoute());
 }
 
 }  // namespace ash
