@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
@@ -333,6 +334,11 @@ class TrayAccessibilityTest
 };
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
+  // TODO(tetsui): Restore after AccessibilityManager is moved to ash.
+  // https://crbug.com/850014
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // Confirms that the icon is invisible just after login.
   EXPECT_FALSE(IsTrayIconVisible());
 
@@ -465,6 +471,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
+  // TODO(tetsui): Restore after AccessibilityManager is moved to ash.
+  // https://crbug.com/850014
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SetShowAccessibilityOptionsInSystemTrayMenu(false);
 
   // Confirms that the menu is hidden.
@@ -594,6 +605,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
+  // TODO(tetsui): Restore after AccessibilityManager is moved to ash.
+  // https://crbug.com/850014
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SetShowAccessibilityOptionsInSystemTrayMenu(true);
 
   // Confirms that the menu is visible.
@@ -728,6 +744,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
+  // TODO(tetsui): Restore after AccessibilityManager is moved to ash.
+  // https://crbug.com/850014
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SetLoginStatus(ash::LoginStatus::NOT_LOGGED_IN);
 
   // Confirms that the menu is visible.
@@ -848,6 +869,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
 
 // TODO: Move to ash_unittests.
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
+  // TODO(tetsui): Restore after AccessibilityManager is moved to ash.
+  // https://crbug.com/850014
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   // Enables high contrast mode.
   EnableHighContrast(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -864,6 +890,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ClickDetailMenu) {
+  // TODO(tetsui): Restore after AccessibilityManager is moved to ash.
+  // https://crbug.com/850014
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SetLoginStatus(ash::LoginStatus::USER);
 
   // Confirms that the check item toggles the spoken feedback.
@@ -1002,6 +1033,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ClickDetailMenu) {
 
 // TODO: Move to ash_unittests.
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
+  // TODO(tetsui): Restore after AccessibilityManager is moved to ash.
+  // https://crbug.com/850014
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   SetLoginStatus(ash::LoginStatus::NOT_LOGGED_IN);
 
   // At first, all of the check is unchecked.
@@ -1452,6 +1488,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
 // is selected or deselected.
 // TODO: Move to ash_unittests.
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DetailMenuRemainsOpen) {
+  // TODO(tetsui): Restore after AccessibilityManager is moved to ash.
+  // https://crbug.com/850014
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   EXPECT_TRUE(CreateDetailedMenu());
 
   ClickAutoclickOnDetailMenu();
