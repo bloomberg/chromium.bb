@@ -33,6 +33,7 @@ public interface MotionEventSynthesizer {
      * @param action Type of the action to inject.
      * @param pointerCount The number of points associated with the event.
      * @param timeInMs Timestamp for the event.
+     * @param source Source of the event.
      */
-    void inject(int action, int pointerCount, long timeInMs);
+    void inject(int action, int pointerCount, long timeInMs, int source);
 }

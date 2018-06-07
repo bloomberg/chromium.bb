@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -27,7 +28,8 @@ public class AndroidUiGestureTarget {
 
     @CalledByNative
     private void inject(int action, long timeInMs) {
-        mMotionEventSynthesizer.inject(action, 1 /* pointerCount */, timeInMs);
+        mMotionEventSynthesizer.inject(
+                action, 1 /* pointerCount */, timeInMs, InputDevice.SOURCE_CLASS_POINTER);
     }
 
     @CalledByNative

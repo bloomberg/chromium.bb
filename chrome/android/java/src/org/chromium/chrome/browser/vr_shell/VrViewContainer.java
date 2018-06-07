@@ -55,6 +55,12 @@ public class VrViewContainer extends FrameLayout {
         return false;
     }
 
+    // We also avoid propagation of hover events from the android root view to the java views.
+    @Override
+    public boolean dispatchHoverEvent(MotionEvent event) {
+        return false;
+    }
+
     @SuppressLint("MissingSuperCall")
     @Override
     public void draw(Canvas canvas) {

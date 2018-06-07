@@ -2029,6 +2029,7 @@ void VrShellGl::OnPause() {
   paused_ = true;
   vsync_helper_.CancelVSyncRequest();
   controller_->OnPause();
+  ui_->input_manager()->OnPause();
   gvr_api_->PauseTracking();
   webvr_frame_timeout_.Cancel();
   webvr_spinner_timeout_.Cancel();

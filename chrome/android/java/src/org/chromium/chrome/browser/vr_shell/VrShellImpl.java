@@ -592,13 +592,19 @@ public class VrShellImpl
     @Override
     public void onWindowFocusChanged(boolean focused) {
         // This handles the case where we open 2D popups in 2D-in-VR. We lose window focus, but stay
-        // resumed, so we have to listen for focus gain to know when the popup was closed.
-        // This also handles the case where we're launched via intent and turn VR mode on with
-        // a popup open. We'll lose window focus when the popup 'gets shown' and know to turn VR
-        // mode off.
+        // resumed, so we have to listen for focus gain to know when the popup was closed. However,
+        // we pause VrShellImpl so that we don't react to input from the controller nor do any
+        // rendering. This also handles the case where we're launched via intent and turn VR mode on
+        // with a popup open. We'll lose window focus when the popup 'gets shown' and know to turn
+        // VR mode off.
         // TODO(asimjour): Focus is a bad signal. We should listen for windows being created and
         // destroyed if possible.
         if (VrShellDelegate.getVrClassesWrapper().bootsToVr()) {
+            if (focused) {
+                resume();
+            } else {
+                pause();
+            }
             VrShellDelegate.setVrModeEnabled(mActivity, focused);
             setVisibility(focused ? View.VISIBLE : View.INVISIBLE);
         }
