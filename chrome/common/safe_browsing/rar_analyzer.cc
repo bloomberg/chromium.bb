@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
@@ -19,21 +20,24 @@ void AnalyzeRarFile(base::File rar_file,
                     ArchiveAnalyzerResults* results) {
   auto archive = std::make_unique<third_party_unrar::Archive>();
   archive->SetFileHandle(rar_file.GetPlatformFile());
-  if (!archive->Open(L"dummy.rar")) {
+
+  bool open_success = archive->Open(L"dummy.rar");
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarOpenSuccess", open_success);
+  if (!open_success) {
     results->success = false;
-    // TODO(vakh): Log UMA here.
     DLOG(ERROR) << __FUNCTION__
                 << ": Unable to open rar_file: " << rar_file.GetPlatformFile();
     return;
   }
-  if (!archive->IsArchive(/*EnableBroken=*/true)) {
-    // TODO(vakh): Log UMA here.
+
+  bool is_valid_archive = archive->IsArchive(/*EnableBroken=*/true);
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarValidArchive", is_valid_archive);
+  if (!is_valid_archive) {
     results->success = false;
     DLOG(ERROR) << __FUNCTION__
                 << ": !IsArchive: rar_file: " << rar_file.GetPlatformFile();
     return;
   }
-  // TODO(vakh): Log UMA here.
 
   results->success = true;
   std::set<base::FilePath> archived_archive_filenames;
