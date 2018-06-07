@@ -77,6 +77,7 @@ void ContextState::Initialize() {
   front_face = GL_CCW;
   hint_generate_mipmap = GL_DONT_CARE;
   hint_fragment_shader_derivative = GL_DONT_CARE;
+  hint_texture_filtering = GL_NICEST;
   line_width = 1.0f;
   modelview_matrix[0] = 1.0f;
   modelview_matrix[1] = 0.0f;
@@ -305,6 +306,12 @@ void ContextState::InitState(const ContextState* prev_state) const {
                         hint_fragment_shader_derivative);
       }
     }
+    if (feature_info_->feature_flags().chromium_texture_filtering_hint) {
+      if (prev_state->hint_texture_filtering != hint_texture_filtering) {
+        api()->glHintFn(GL_TEXTURE_FILTERING_HINT_CHROMIUM,
+                        hint_texture_filtering);
+      }
+    }
     if ((line_width != prev_state->line_width))
       DoLineWidth(line_width);
     if (feature_info_->feature_flags().chromium_path_rendering) {
@@ -402,6 +409,10 @@ void ContextState::InitState(const ContextState* prev_state) const {
     if (feature_info_->feature_flags().oes_standard_derivatives) {
       api()->glHintFn(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES,
                       hint_fragment_shader_derivative);
+    }
+    if (feature_info_->feature_flags().chromium_texture_filtering_hint) {
+      api()->glHintFn(GL_TEXTURE_FILTERING_HINT_CHROMIUM,
+                      hint_texture_filtering);
     }
     DoLineWidth(line_width);
     if (feature_info_->feature_flags().chromium_path_rendering) {
@@ -597,6 +608,12 @@ bool ContextState::GetStateAsGLint(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLint>(hint_fragment_shader_derivative);
+      }
+      return true;
+    case GL_TEXTURE_FILTERING_HINT_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(hint_texture_filtering);
       }
       return true;
     case GL_LINE_WIDTH:
@@ -1053,6 +1070,12 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLfloat>(hint_fragment_shader_derivative);
+      }
+      return true;
+    case GL_TEXTURE_FILTERING_HINT_CHROMIUM:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(hint_texture_filtering);
       }
       return true;
     case GL_LINE_WIDTH:
