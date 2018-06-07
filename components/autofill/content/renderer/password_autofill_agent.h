@@ -279,11 +279,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // This function attempts to fill |username_element| and |password_element|
   // with values from |fill_data|. The |username_element| and |password_element|
-  // will only have the suggestedValue set, and will be registered for copying
-  // that to the real value through |registration_callback|. If a match is
-  // found, return true and |field_value_and_properties_map| will be modified
-  // with the autofilled credentials and |FieldPropertiesFlags::AUTOFILLED|
-  // flag.
+  // will only have the suggestedValue set. If a match is found, return true and
+  // |field_value_and_properties_map| will be modified with the autofilled
+  // credentials and |FieldPropertiesFlags::AUTOFILLED| flag.
   bool FillUserNameAndPassword(
       blink::WebInputElement* username_element,
       blink::WebInputElement* password_element,
@@ -291,7 +289,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
       bool exact_username_match,
       bool set_selection,
       FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-      base::Callback<void(blink::WebInputElement*)> registration_callback,
       RendererSavePasswordProgressLogger* logger);
 
   // Attempts to fill |username_element| and |password_element| with the
@@ -299,15 +296,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // unless the |username_element| already has a value set. In that case,
   // attempts to fill the password matching the already filled username, if
   // such a password exists. The |password_element| will have the
-  // |suggestedValue| set, and |suggestedValue| will be registered for copying
-  // to the real value through |registration_callback|. Returns true if the
-  // password is filled.
+  // |suggestedValue| set. Returns true if the password is filled.
   bool FillFormOnPasswordReceived(
       const PasswordFormFillData& fill_data,
       blink::WebInputElement username_element,
       blink::WebInputElement password_element,
       FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-      base::Callback<void(blink::WebInputElement*)> registration_callback,
       RendererSavePasswordProgressLogger* logger);
 
   // Helper function called when form submission is successful.

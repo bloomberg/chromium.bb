@@ -1392,8 +1392,6 @@ void PasswordAutofillAgent::FillPasswordForm(
     FillFormOnPasswordReceived(
         form_data, username_element, password_element,
         &field_value_and_properties_map_,
-        base::Bind(&PasswordValueGatekeeper::RegisterElement,
-                   base::Unretained(&gatekeeper_)),
         logger.get());
   }
 }
@@ -1705,7 +1703,6 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     bool exact_username_match,
     bool set_selection,
     FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-    base::Callback<void(blink::WebInputElement*)> registration_callback,
     RendererSavePasswordProgressLogger* logger) {
   if (logger)
     logger->LogMessage(Logger::STRING_FILL_USERNAME_AND_PASSWORD_METHOD);
@@ -1758,7 +1755,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
          PossiblePrefilledUsernameValue(username_element->Value().Utf8()))) {
       username_element->SetSuggestedValue(
           blink::WebString::FromUTF16(username));
-      registration_callback.Run(username_element);
+      gatekeeper_.RegisterElement(username_element);
     }
     UpdateFieldValueAndPropertiesMaskMap(*username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
@@ -1782,7 +1779,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
                                        field_value_and_properties_map);
   ProvisionallySavePassword(password_element->Form(), *password_element,
                             RESTRICTION_NONE);
-  registration_callback.Run(password_element);
+  gatekeeper_.RegisterElement(password_element);
   password_element->SetAutofillState(WebAutofillState::kAutofilled);
 
   if (logger)
@@ -1795,7 +1792,6 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
     blink::WebInputElement username_element,
     blink::WebInputElement password_element,
     FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-    base::Callback<void(blink::WebInputElement*)> registration_callback,
     RendererSavePasswordProgressLogger* logger) {
   // Do not fill if the password field is in a chain of iframes not having
   // identical origin.
@@ -1823,8 +1819,7 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
   // match for read-only username fields.
   return FillUserNameAndPassword(
       &username_element, &password_element, fill_data, exact_username_match,
-      false /* set_selection */, field_value_and_properties_map,
-      registration_callback, logger);
+      false /* set_selection */, field_value_and_properties_map, logger);
 }
 
 void PasswordAutofillAgent::OnProvisionallySaveForm(
