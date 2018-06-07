@@ -30,7 +30,8 @@
 // smaller ones in the view hierarchy but are masked out by the slider view, so
 // they are only seen when the slider is over them.
 //
-// This control is built out of several views. From the bottom up, they are:
+// This control is built out of several views. From the (z-axis) bottom up, they
+// are:
 //
 //  * The background view, a grey roundrect with vertical transparent bars.
 //  * The background image views.
@@ -97,6 +98,8 @@ const NSTimeInterval kSliderMoveDuration = 0.2;
 const int kSliderColor = 0xF8F9FA;
 // Color for the background view.
 const int kBackgroundColor = 0x5F6368;
+// Alpha for the background view.
+const CGFloat kBackgroundAlpha = 1.0;
 
 // Returns the point that's at the center of |rect|.
 CGPoint RectCenter(CGRect rect) {
@@ -180,7 +183,6 @@ NSString* StringForItemCount(long count) {
   CGRect frame = CGRectMake(0, 0, kOverallWidth, kOverallHeight);
   if (self = [super initWithFrame:frame]) {
     // Default to the regular tab page as the selected page.
-
     _selectedPage = TabGridPageRegularTabs;
   }
   return self;
@@ -535,8 +537,12 @@ NSString* StringForItemCount(long count) {
 @implementation TabGridPageControlBackground
 
 - (instancetype)init {
-  return
+  self =
       [super initWithFrame:CGRectMake(0, 0, kBackgroundWidth, kSegmentHeight)];
+  if (self) {
+    self.backgroundColor = UIColor.clearColor;
+  }
+  return self;
 }
 
 - (CGSize)intrinsicContentsSize {
@@ -545,7 +551,7 @@ NSString* StringForItemCount(long count) {
 
 - (void)drawRect:(CGRect)rect {
   CGContextRef drawing = UIGraphicsGetCurrentContext();
-  UIColor* backgroundColor = UIColorFromRGB(kBackgroundColor);
+  UIColor* backgroundColor = UIColorFromRGB(kBackgroundColor, kBackgroundAlpha);
   CGContextSetFillColorWithColor(drawing, backgroundColor.CGColor);
   CGRect fillRect = CGRectMake(0, 0, kSegmentWidth, kSegmentHeight);
   CGContextFillRect(drawing, fillRect);
