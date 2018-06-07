@@ -28,6 +28,9 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
   friend class GeolocationChromeOsWifiDataProviderTest;
   ~WifiDataProviderChromeOs() override;
 
+  // Returns ownership.
+  std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy();
+
   // NetworkHandler thread
   void DoWifiScanTaskOnNetworkHandlerThread();
 
@@ -47,17 +50,14 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
   // Get access point data from chromeos.
   bool GetAccessPointData(WifiData::AccessPointDataSet* data);
 
-  // Controls the polling update interval. (client thread)
-  std::unique_ptr<WifiPollingPolicy> polling_policy_;
-
   // The latest wifi data. (client thread)
   WifiData wifi_data_;
 
-  // Whether we have strated the data provider. (client thread)
-  bool started_;
+  // Whether we have started the data provider. (client thread)
+  bool started_ = false;
 
   // Whether we've successfully completed a scan for WiFi data. (client thread)
-  bool is_first_scan_complete_;
+  bool is_first_scan_complete_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderChromeOs);
 };
