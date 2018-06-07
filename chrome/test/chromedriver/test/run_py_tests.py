@@ -701,7 +701,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'var input = document.getElementById("id_file").value;'
         'return input;')
     self.assertEquals('C:\\fakepath\\anchor_download_test.png', text);
-    self.assertRaises(chromedriver.InvalidArgument,
+    if not _ANDROID_PACKAGE_KEY:
+      self.assertRaises(chromedriver.InvalidArgument,
                                   elem.SendKeys, "/blah/blah/blah")
 
   def testGetElementAttribute(self):
