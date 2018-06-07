@@ -54,7 +54,6 @@
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -784,8 +783,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       [NotifyUserAutoSigninViewController alloc]
       initWithUsername:base::SysUTF16ToNSString(formSignedIn->username_value)
                iconURL:formSignedIn->icon_url
-      URLLoaderFactory:webState_->GetBrowserState()
-                           ->GetSharedURLLoaderFactory()];
+         contextGetter:webState_->GetBrowserState()->GetRequestContext()];
   TabIdTabHelper* tabIdHelper = TabIdTabHelper::FromWebState(webState_);
   if (![_delegate displaySignInNotification:self.notifyAutoSigninViewController
                                   fromTabId:tabIdHelper->tab_id()]) {
