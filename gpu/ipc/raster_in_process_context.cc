@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/test/test_simple_task_runner.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/raster_cmd_helper.h"
 #include "gpu/command_buffer/client/raster_implementation.h"
@@ -20,19 +21,18 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
 
 RasterInProcessContext::RasterInProcessContext() = default;
 
 RasterInProcessContext::~RasterInProcessContext() {
-  // First flush the contexts to ensure that any pending frees of resources
-  // are completed. Otherwise, if this context is part of a share group,
-  // those resources might leak. Also, any remaining side effects of commands
-  // issued on this context might not be visible to other contexts in the
-  // share group.
+  // Trigger any pending lost contexts. First do a full sync between client
+  // and service threads. Then execute any pending tasks.
   if (raster_implementation_) {
-    raster_implementation_->Flush();
+    raster_implementation_->Finish();
+    client_task_runner_->RunUntilIdle();
     raster_implementation_.reset();
   }
   transfer_buffer_.reset();
@@ -46,8 +46,7 @@ ContextResult RasterInProcessContext::Initialize(
     const SharedMemoryLimits& memory_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory,
-    GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    GpuChannelManagerDelegate* gpu_channel_manager_delegate) {
   DCHECK(attribs.enable_raster_interface);
   if (!attribs.enable_raster_interface) {
     return ContextResult::kFatalFailure;
@@ -57,11 +56,12 @@ ContextResult RasterInProcessContext::Initialize(
     return ContextResult::kFatalFailure;
   }
 
+  client_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
   command_buffer_ = std::make_unique<InProcessCommandBuffer>(service);
   auto result = command_buffer_->Initialize(
       nullptr /* surface */, true /* is_offscreen */, kNullSurfaceHandle,
       attribs, nullptr /* share_command_buffer */, gpu_memory_buffer_manager,
-      image_factory, gpu_channel_manager_delegate, std::move(task_runner));
+      image_factory, gpu_channel_manager_delegate, client_task_runner_);
   if (result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;
@@ -86,11 +86,12 @@ ContextResult RasterInProcessContext::Initialize(
   }
   transfer_buffer_ = std::make_unique<TransferBuffer>(raster_helper.get());
 
-  auto raster_implementation = std::make_unique<raster::RasterImplementation>(
+  raster_implementation_ = std::make_unique<raster::RasterImplementation>(
       raster_helper.get(), transfer_buffer_.get(), bind_generates_resource,
       attribs.lose_context_when_out_of_memory, command_buffer_.get());
-  result = raster_implementation->Initialize(memory_limits);
-  raster_implementation_ = std::move(raster_implementation);
+  result = raster_implementation_->Initialize(memory_limits);
+  raster_implementation_->SetLostContextCallback(base::BindOnce(
+      []() { EXPECT_TRUE(false) << "Unexpected lost context."; }));
   helper_ = std::move(raster_helper);
   return result;
 }

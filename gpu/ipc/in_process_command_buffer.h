@@ -341,7 +341,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
-  base::Closure context_lost_callback_;
   // Used to throttle PerformDelayedWorkOnGpuThread.
   bool delayed_work_pending_ = false;
   ImageFactory* image_factory_ = nullptr;
