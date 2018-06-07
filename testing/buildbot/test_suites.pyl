@@ -2559,19 +2559,6 @@
     'win_specific_chromium_gtests',
   ],
 
-  'chromium_win_clang_gtests': [
-    'aura_gtests',
-    'chromium_gtests',
-    'chromium_gtests_for_devices_with_graphical_output',
-    'non_android_chromium_gtests',
-    'non_android_and_cast_and_chromeos_chromium_gtests',
-    'non_linux_chromium_gtests',
-    'non_mac_chromium_gtests',
-    'viz_gtests',
-    'vr_platform_specific_chromium_gtests',
-    'win_specific_chromium_gtests',
-  ],
-
   'chromium_win_fyi_gtests': [
     'aura_gtests',
     'chrome_cleaner_gtests',
