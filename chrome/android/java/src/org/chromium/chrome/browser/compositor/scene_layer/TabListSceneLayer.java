@@ -14,7 +14,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -72,10 +71,6 @@ public class TabListSceneLayer extends SceneLayer {
             assert t.isVisible() : "LayoutTab in that list should be visible";
             final float decoration = t.getDecorationAlpha();
 
-            boolean isPortrait =
-                    !ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                    && layout.getOrientation() == Orientation.PORTRAIT;
-
             boolean useModernDesign = FeatureUtilities.isChromeModernDesignEnabled();
 
             float shadowAlpha = decoration;
@@ -104,7 +99,7 @@ public class TabListSceneLayer extends SceneLayer {
                     R.drawable.tabswitcher_border_frame_inner_shadow, t.canUseLiveTexture(),
                     FeatureUtilities.isChromeModernDesignEnabled(), t.getBackgroundColor(),
                     ApiCompatibilityUtils.getColor(res, borderColorResource), t.isIncognito(),
-                    isPortrait, t.getRenderX() * dpToPx, t.getRenderY() * dpToPx,
+                    t.isCloseButtonOnRight(), t.getRenderX() * dpToPx, t.getRenderY() * dpToPx,
                     t.getScaledContentWidth() * dpToPx, t.getScaledContentHeight() * dpToPx,
                     t.getOriginalContentWidth() * dpToPx, t.getOriginalContentHeight() * dpToPx,
                     contentViewport.height(), t.getClippedX() * dpToPx, t.getClippedY() * dpToPx,

@@ -96,6 +96,7 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
     private boolean mInsetBorderVertical;
     private float mToolbarYOffset;
     private float mSideBorderScale;
+    private boolean mCloseButtonIsOnRight;
 
     private final RectF mBounds = new RectF(); // Pre-allocated to avoid in-frame allocations.
     private final RectF mClosePlacement = new RectF();
@@ -699,28 +700,27 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
     /**
      * Tests if a point is inside the closing button of the tab.
      *
-     * @param x     The horizontal coordinate of the hit testing point.
-     * @param y     The vertical coordinate of the hit testing point.
-     * @param isRTL Whether or not this is an RTL layout.
-     * @return      Whether the hit testing point is inside the tab.
+     * @param x The horizontal coordinate of the hit testing point.
+     * @param y The vertical coordinate of the hit testing point.
+     * @return  Whether the hit testing point is inside the tab.
      */
-    public boolean checkCloseHitTest(float x, float y, boolean isRTL) {
-        RectF closeRectangle = getCloseBounds(isRTL);
+    public boolean checkCloseHitTest(float x, float y) {
+        RectF closeRectangle = getCloseBounds();
         return closeRectangle != null ? closeRectangle.contains(x, y) : false;
     }
 
     /**
-     * @param isRTL Whether or not this is an RTL layout.
-     * @return      The bounds of the active area of the close button. {@code null} if the close
-     *              button is not clickable.
+     * @return The bounds of the active area of the close button. {@code null} if the close button
+     *         is not clickable.
      */
-    public RectF getCloseBounds(boolean isRTL) {
+    public RectF getCloseBounds() {
         if (!mIsTitleNeeded || !mVisible || mBorderCloseButtonAlpha < 0.5f || mBorderAlpha < 0.5f
                 || mBorderScale != 1.0f || Math.abs(mTiltX) > 1.0f || Math.abs(mTiltY) > 1.0f) {
             return null;
         }
         mClosePlacement.set(0, 0, CLOSE_BUTTON_WIDTH_DP, CLOSE_BUTTON_WIDTH_DP);
-        if (!isRTL) mClosePlacement.offset(getFinalContentWidth() - mClosePlacement.width(), 0.f);
+        if (mCloseButtonIsOnRight)
+            mClosePlacement.offset(getFinalContentWidth() - mClosePlacement.width(), 0.f);
 
         if (mClosePlacement.bottom > getFinalContentHeight()
                 || mClosePlacement.right > getFinalContentWidth()) {
@@ -876,6 +876,14 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      */
     public boolean insetBorderVertical() {
         return mInsetBorderVertical;
+    }
+
+    public void setCloseButtonIsOnRight(boolean closeButtonIsOnRight) {
+        mCloseButtonIsOnRight = closeButtonIsOnRight;
+    }
+
+    public boolean isCloseButtonOnRight() {
+        return mCloseButtonIsOnRight;
     }
 
     /**

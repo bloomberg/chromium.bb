@@ -340,6 +340,18 @@ public abstract class Stack {
     }
 
     /**
+     * @return True if we should put the close button on the right side of the tab, or false if we
+     * should put it on the left. This method already accounts for RTL flipping.
+     */
+    private boolean isCloseButtonOnRight() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+            return !LocalizationUtils.isLayoutRtl();
+        }
+
+        return mCurrentMode == Orientation.PORTRAIT ^ LocalizationUtils.isLayoutRtl();
+    }
+
+    /**
      * Animates all the tabs closing at once.
      *
      * @param time The current time of the app in ms.
@@ -363,13 +375,12 @@ public abstract class Stack {
             mSpacing = computeSpacing(0);
 
             if (mStackTabs != null) {
-                boolean isRtl =
-                        !((mCurrentMode == Orientation.PORTRAIT) ^ LocalizationUtils.isLayoutRtl());
                 for (int i = 0; i < mStackTabs.length; i++) {
                     StackTab tab = mStackTabs[i];
                     tab.setDiscardOriginY(0.f);
-                    tab.setDiscardOriginX(
-                            isRtl ? 0.f : tab.getLayoutTab().getOriginalContentWidth());
+                    tab.setDiscardOriginX(isCloseButtonOnRight()
+                                    ? tab.getLayoutTab().getOriginalContentWidth()
+                                    : 0.f);
                     tab.setDiscardFromClick(true);
                 }
             }
@@ -1083,9 +1094,7 @@ public abstract class Stack {
         if (clicked >= 0) {
             // Check if the click was within the boundaries of the close button defined by its
             // visible coordinates.
-            boolean isRtl =
-                    !((mCurrentMode == Orientation.PORTRAIT) ^ LocalizationUtils.isLayoutRtl());
-            if (mStackTabs[clicked].getLayoutTab().checkCloseHitTest(x, y, isRtl)) {
+            if (mStackTabs[clicked].getLayoutTab().checkCloseHitTest(x, y)) {
                 // Tell the model to close the tab because the close button was pressed.  The model
                 // will then trigger a notification which will start the actual close process here
                 // if necessary.
@@ -1095,7 +1104,8 @@ public abstract class Stack {
                 final float contentWidth = tab.getLayoutTab().getOriginalContentWidth();
 
                 tab.setDiscardOriginY(halfCloseBtnHeight);
-                tab.setDiscardOriginX(isRtl ? halfCloseBtnWidth : contentWidth - halfCloseBtnWidth);
+                tab.setDiscardOriginX(isCloseButtonOnRight() ? contentWidth - halfCloseBtnWidth
+                                                             : halfCloseBtnWidth);
                 tab.setDiscardFromClick(true);
                 mLayout.uiRequestingCloseTab(time, tab.getId());
                 RecordUserAction.record("MobileStackViewCloseTab");
@@ -1146,6 +1156,14 @@ public abstract class Stack {
      */
     public void notifySizeChanged(float width, float height, int orientation) {
         updateCurrentMode(orientation);
+
+        // Changing the orientation can change which side of the tab we want to show the close
+        // button on (if the horizontal tab switcher experiment is not enabled).
+        if (mStackTabs == null) return;
+        boolean closeButtonIsOnRight = isCloseButtonOnRight();
+        for (int i = 0; i < mStackTabs.length; i++) {
+            mStackTabs[i].getLayoutTab().setCloseButtonIsOnRight(closeButtonIsOnRight);
+        }
     }
 
     protected float getScrollDimensionSize() {
@@ -1741,6 +1759,7 @@ public abstract class Stack {
                 layoutTab.setShowToolbar(true);
                 layoutTab.setToolbarAlpha(0.f);
                 layoutTab.setAnonymizeToolbar(!mIsStackForCurrentTabList || mTabList.index() != i);
+                layoutTab.setCloseButtonIsOnRight(isCloseButtonOnRight());
 
                 if (mStackTabs[i] == null) {
                     mStackTabs[i] = new StackTab(layoutTab);
