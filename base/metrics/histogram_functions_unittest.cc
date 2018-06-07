@@ -5,7 +5,7 @@
 #include "base/metrics/histogram_functions.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

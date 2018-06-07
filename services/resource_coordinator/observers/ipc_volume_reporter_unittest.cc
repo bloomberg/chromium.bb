@@ -4,7 +4,7 @@
 
 #include "services/resource_coordinator/observers/ipc_volume_reporter.h"
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"

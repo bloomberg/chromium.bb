@@ -309,7 +309,7 @@ the values emitted to are correct.  Finally, for count histograms, make sure
 that buckets capture enough precision for your needs over the range.
 
 In addition to testing interactively, you can have unit tests examine the
-values emitted to histograms.  See [histogram_tester.h](https://cs.chromium.org/chromium/src/base/test/histogram_tester.h)
+values emitted to histograms.  See [histogram_tester.h](https://cs.chromium.org/chromium/src/base/test/metrics/histogram_tester.h)
 for details.
 
 ## Interpreting the Resulting Data

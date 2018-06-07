@@ -10,7 +10,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_scheduler_impl.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

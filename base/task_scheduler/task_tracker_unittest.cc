@@ -30,7 +30,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/task_scheduler/test_utils.h"
 #include "base/test/gtest_util.h"
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"

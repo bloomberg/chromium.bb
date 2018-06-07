@@ -4,7 +4,7 @@
 
 #include "services/resource_coordinator/observers/metrics_collector.h"
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
