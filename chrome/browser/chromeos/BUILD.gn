@@ -1655,6 +1655,8 @@ source_set("chromeos") {
     "system_logs/debug_log_writer.h",
     "system_logs/device_event_log_source.cc",
     "system_logs/device_event_log_source.h",
+    "system_logs/iwlwifi_dump_log_source.cc",
+    "system_logs/iwlwifi_dump_log_source.h",
     "system_logs/lsb_release_log_source.cc",
     "system_logs/lsb_release_log_source.h",
     "system_logs/single_debug_daemon_log_source.cc",

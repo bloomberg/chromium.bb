@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/system_logs/dbus_log_source.h"
 #include "chrome/browser/chromeos/system_logs/debug_daemon_log_source.h"
 #include "chrome/browser/chromeos/system_logs/device_event_log_source.h"
+#include "chrome/browser/chromeos/system_logs/iwlwifi_dump_log_source.h"
 #include "chrome/browser/chromeos/system_logs/lsb_release_log_source.h"
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 #endif
@@ -33,6 +34,7 @@ SystemLogsFetcher* BuildChromeSystemLogsFetcher() {
   fetcher->AddSource(std::make_unique<CommandLineLogSource>());
   fetcher->AddSource(std::make_unique<DBusLogSource>());
   fetcher->AddSource(std::make_unique<DeviceEventLogSource>());
+  fetcher->AddSource(std::make_unique<IwlwifiDumpChecker>());
   fetcher->AddSource(std::make_unique<LsbReleaseLogSource>());
   fetcher->AddSource(std::make_unique<TouchLogSource>());
 

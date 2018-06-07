@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_CHROME_FEEDBACK_PRIVATE_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_CHROME_FEEDBACK_PRIVATE_DELEGATE_H_
 
+#include "components/feedback/feedback_common.h"
 #include "extensions/browser/api/feedback_private/feedback_private_delegate.h"
 
 #include "base/macros.h"
@@ -25,6 +26,10 @@ class ChromeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<system_logs::SystemLogsSource> CreateSingleLogSource(
       api::feedback_private::LogSource source_type) const override;
+  void FetchAndMergeIwlwifiDumpLogsIfPresent(
+      std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
+      content::BrowserContext* context,
+      system_logs::SysLogsFetcherCallback callback) const override;
 #endif  // defined(OS_CHROMEOS)
   std::string GetSignedInUserEmail(
       content::BrowserContext* context) const override;

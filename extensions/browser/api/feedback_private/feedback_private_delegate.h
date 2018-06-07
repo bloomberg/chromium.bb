@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_DELEGATE_H_
 #define EXTENSIONS_BROWSER_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_DELEGATE_H_
 
+#include "components/feedback/feedback_common.h"
+#include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "extensions/common/api/feedback_private.h"
 
 #include <memory>
@@ -50,6 +52,13 @@ class FeedbackPrivateDelegate {
   // Creates a SystemLogsSource for the given type of log file.
   virtual std::unique_ptr<system_logs::SystemLogsSource> CreateSingleLogSource(
       api::feedback_private::LogSource source_type) const = 0;
+
+  // Takes ownership of |original_sys_logs|, merges Intel Wi-Fi debug logs if
+  // they exist, and passes the log map back via |callback|.
+  virtual void FetchAndMergeIwlwifiDumpLogsIfPresent(
+      std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
+      content::BrowserContext* context,
+      system_logs::SysLogsFetcherCallback callback) const = 0;
 #endif
 
   // Returns the normalized email address of the signed-in user associated with
