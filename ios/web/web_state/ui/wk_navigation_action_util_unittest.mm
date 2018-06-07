@@ -40,13 +40,13 @@ TEST_F(WKNavigationActionUtilTest, InitiationTypeFromDescriptionWithVoiceOver) {
       NavigationActionInitiationType::kUnknownInitiator;
   initiation_type = GetNavigationActionInitiationTypeWithVoiceOverOn(
       MakeDescriptionString(0, 0, 0, 0));
-  EXPECT_EQ(NavigationActionInitiationType::kScriptInitiated, initiation_type);
+  EXPECT_EQ(NavigationActionInitiationType::kUnknownInitiator, initiation_type);
   initiation_type = GetNavigationActionInitiationTypeWithVoiceOverOn(
       MakeDescriptionString(0, 0, 100.0, 25.0));
   EXPECT_EQ(NavigationActionInitiationType::kUserInitiated, initiation_type);
   initiation_type = GetNavigationActionInitiationTypeWithVoiceOverOn(
       MakeDescriptionString(0, 1, 0, 0));
-  EXPECT_EQ(NavigationActionInitiationType::kScriptInitiated, initiation_type);
+  EXPECT_EQ(NavigationActionInitiationType::kUnknownInitiator, initiation_type);
   initiation_type = GetNavigationActionInitiationTypeWithVoiceOverOn(
       MakeDescriptionString(2, 2, 20.0, 30.4));
   EXPECT_EQ(NavigationActionInitiationType::kUserInitiated, initiation_type);
@@ -63,10 +63,10 @@ TEST_F(WKNavigationActionUtilTest, InitiationTypeFromDescriptionNoVoiceOver) {
       NavigationActionInitiationType::kUnknownInitiator;
   initiation_type = GetNavigationActionInitiationTypeWithVoiceOverOff(
       MakeDescriptionString(0, 0, 0, 0));
-  EXPECT_EQ(NavigationActionInitiationType::kScriptInitiated, initiation_type);
+  EXPECT_EQ(NavigationActionInitiationType::kUnknownInitiator, initiation_type);
   initiation_type = GetNavigationActionInitiationTypeWithVoiceOverOff(
       MakeDescriptionString(0, 0, 100.0, 25.0));
-  EXPECT_EQ(NavigationActionInitiationType::kScriptInitiated, initiation_type);
+  EXPECT_EQ(NavigationActionInitiationType::kUnknownInitiator, initiation_type);
   initiation_type = GetNavigationActionInitiationTypeWithVoiceOverOff(
       MakeDescriptionString(2, 1, 0, 0));
   EXPECT_EQ(NavigationActionInitiationType::kUserInitiated, initiation_type);
