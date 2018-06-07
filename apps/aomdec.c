@@ -834,170 +834,173 @@ static int main_loop(int argc, const char **argv_) {
       }
     }
 
-    got_data = 0;
-    if ((img = aom_codec_get_frame(&decoder, &iter))) {
-      ++frame_out;
-      got_data = 1;
-    }
-
     aom_usec_timer_mark(&timer);
     dx_time += aom_usec_timer_elapsed(&timer);
 
-    if (aom_codec_control(&decoder, AOMD_GET_FRAME_CORRUPTED, &corrupted)) {
-      warn("Failed AOM_GET_FRAME_CORRUPTED: %s", aom_codec_error(&decoder));
-      if (!keep_going) goto fail;
-    }
-    frames_corrupted += corrupted;
+    got_data = 0;
+    while ((img = aom_codec_get_frame(&decoder, &iter))) {
+      ++frame_out;
+      got_data = 1;
 
-    if (progress) show_progress(frame_in, frame_out, dx_time);
-
-    if (!noblit && img) {
-      const int PLANES_YUV[] = { AOM_PLANE_Y, AOM_PLANE_U, AOM_PLANE_V };
-      const int PLANES_YVU[] = { AOM_PLANE_Y, AOM_PLANE_V, AOM_PLANE_U };
-      const int *planes = flipuv ? PLANES_YVU : PLANES_YUV;
-
-      if (do_scale) {
-        if (frame_out == 1) {
-          // If the output frames are to be scaled to a fixed display size then
-          // use the width and height specified in the container. If either of
-          // these is set to 0, use the display size set in the first frame
-          // header. If that is unavailable, use the raw decoded size of the
-          // first decoded frame.
-          int render_width = aom_input_ctx.width;
-          int render_height = aom_input_ctx.height;
-          if (!render_width || !render_height) {
-            int render_size[2];
-            if (aom_codec_control(&decoder, AV1D_GET_DISPLAY_SIZE,
-                                  render_size)) {
-              // As last resort use size of first frame as display size.
-              render_width = img->d_w;
-              render_height = img->d_h;
-            } else {
-              render_width = render_size[0];
-              render_height = render_size[1];
-            }
-          }
-          scaled_img =
-              aom_img_alloc(NULL, img->fmt, render_width, render_height, 16);
-          scaled_img->bit_depth = img->bit_depth;
-        }
-
-        if (img->d_w != scaled_img->d_w || img->d_h != scaled_img->d_h) {
-#if CONFIG_LIBYUV
-          libyuv_scale(img, scaled_img, kFilterBox);
-          img = scaled_img;
-#else
-          fprintf(stderr,
-                  "Failed to scale output frame: %s.\n"
-                  "libyuv is required for scaling but is currently disabled.\n"
-                  "Be sure to specify -DCONFIG_LIBYUV=1 when running cmake.\n",
-                  aom_codec_error(&decoder));
-          goto fail;
-#endif
-        }
+      if (aom_codec_control(&decoder, AOMD_GET_FRAME_CORRUPTED, &corrupted)) {
+        warn("Failed AOM_GET_FRAME_CORRUPTED: %s", aom_codec_error(&decoder));
+        if (!keep_going) goto fail;
       }
-      // Default to codec bit depth if output bit depth not set
-      if (!output_bit_depth && single_file && !do_md5) {
-        output_bit_depth = img->bit_depth;
-      }
-      // Shift up or down if necessary
-      if (output_bit_depth != 0) {
-        const aom_img_fmt_t shifted_fmt =
-            output_bit_depth == 8
-                ? img->fmt ^ (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH)
-                : img->fmt | AOM_IMG_FMT_HIGHBITDEPTH;
+      frames_corrupted += corrupted;
 
-        if (shifted_fmt != img->fmt || output_bit_depth != img->bit_depth) {
-          if (img_shifted &&
-              img_shifted_realloc_required(img, img_shifted, shifted_fmt)) {
-            aom_img_free(img_shifted);
-            img_shifted = NULL;
-          }
-          if (!img_shifted) {
-            img_shifted =
-                aom_img_alloc(NULL, shifted_fmt, img->d_w, img->d_h, 16);
-            img_shifted->bit_depth = output_bit_depth;
-            img_shifted->monochrome = img->monochrome;
-          }
-          if (output_bit_depth > img->bit_depth) {
-            aom_img_upshift(img_shifted, img,
-                            output_bit_depth - img->bit_depth);
-          } else {
-            aom_img_downshift(img_shifted, img,
-                              img->bit_depth - output_bit_depth);
-          }
-          img = img_shifted;
-        }
-      }
+      if (progress) show_progress(frame_in, frame_out, dx_time);
 
-      aom_input_ctx.width = img->d_w;
-      aom_input_ctx.height = img->d_h;
+      if (!noblit) {
+        const int PLANES_YUV[] = { AOM_PLANE_Y, AOM_PLANE_U, AOM_PLANE_V };
+        const int PLANES_YVU[] = { AOM_PLANE_Y, AOM_PLANE_V, AOM_PLANE_U };
+        const int *planes = flipuv ? PLANES_YVU : PLANES_YUV;
 
-      int num_planes = (!use_y4m && opt_raw && img->monochrome) ? 1 : 3;
-
-      if (single_file) {
-        if (use_y4m) {
-          char y4m_buf[Y4M_BUFFER_SIZE] = { 0 };
-          size_t len = 0;
+        if (do_scale) {
           if (frame_out == 1) {
-            // Y4M file header
-            len = y4m_write_file_header(
-                y4m_buf, sizeof(y4m_buf), aom_input_ctx.width,
-                aom_input_ctx.height, &aom_input_ctx.framerate, img->fmt,
-                img->bit_depth);
+            // If the output frames are to be scaled to a fixed display size
+            // then use the width and height specified in the container. If
+            // either of these is set to 0, use the display size set in the
+            // first frame header. If that is unavailable, use the raw decoded
+            // size of the first decoded frame.
+            int render_width = aom_input_ctx.width;
+            int render_height = aom_input_ctx.height;
+            if (!render_width || !render_height) {
+              int render_size[2];
+              if (aom_codec_control(&decoder, AV1D_GET_DISPLAY_SIZE,
+                                    render_size)) {
+                // As last resort use size of first frame as display size.
+                render_width = img->d_w;
+                render_height = img->d_h;
+              } else {
+                render_width = render_size[0];
+                render_height = render_size[1];
+              }
+            }
+            scaled_img =
+                aom_img_alloc(NULL, img->fmt, render_width, render_height, 16);
+            scaled_img->bit_depth = img->bit_depth;
+          }
+
+          if (img->d_w != scaled_img->d_w || img->d_h != scaled_img->d_h) {
+#if CONFIG_LIBYUV
+            libyuv_scale(img, scaled_img, kFilterBox);
+            img = scaled_img;
+#else
+            fprintf(
+                stderr,
+                "Failed to scale output frame: %s.\n"
+                "libyuv is required for scaling but is currently disabled.\n"
+                "Be sure to specify -DCONFIG_LIBYUV=1 when running cmake.\n",
+                aom_codec_error(&decoder));
+            goto fail;
+#endif
+          }
+        }
+        // Default to codec bit depth if output bit depth not set
+        if (!output_bit_depth && single_file && !do_md5) {
+          output_bit_depth = img->bit_depth;
+        }
+        // Shift up or down if necessary
+        if (output_bit_depth != 0) {
+          const aom_img_fmt_t shifted_fmt =
+              output_bit_depth == 8
+                  ? img->fmt ^ (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH)
+                  : img->fmt | AOM_IMG_FMT_HIGHBITDEPTH;
+
+          if (shifted_fmt != img->fmt || output_bit_depth != img->bit_depth) {
+            if (img_shifted &&
+                img_shifted_realloc_required(img, img_shifted, shifted_fmt)) {
+              aom_img_free(img_shifted);
+              img_shifted = NULL;
+            }
+            if (!img_shifted) {
+              img_shifted =
+                  aom_img_alloc(NULL, shifted_fmt, img->d_w, img->d_h, 16);
+              img_shifted->bit_depth = output_bit_depth;
+              img_shifted->monochrome = img->monochrome;
+            }
+            if (output_bit_depth > img->bit_depth) {
+              aom_img_upshift(img_shifted, img,
+                              output_bit_depth - img->bit_depth);
+            } else {
+              aom_img_downshift(img_shifted, img,
+                                img->bit_depth - output_bit_depth);
+            }
+            img = img_shifted;
+          }
+        }
+
+        aom_input_ctx.width = img->d_w;
+        aom_input_ctx.height = img->d_h;
+
+        int num_planes = (!use_y4m && opt_raw && img->monochrome) ? 1 : 3;
+
+        if (single_file) {
+          if (use_y4m) {
+            char y4m_buf[Y4M_BUFFER_SIZE] = { 0 };
+            size_t len = 0;
+            if (frame_out == 1) {
+              // Y4M file header
+              len = y4m_write_file_header(
+                  y4m_buf, sizeof(y4m_buf), aom_input_ctx.width,
+                  aom_input_ctx.height, &aom_input_ctx.framerate, img->fmt,
+                  img->bit_depth);
+              if (do_md5) {
+                MD5Update(&md5_ctx, (md5byte *)y4m_buf, (unsigned int)len);
+              } else {
+                fputs(y4m_buf, outfile);
+              }
+            }
+
+            // Y4M frame header
+            len = y4m_write_frame_header(y4m_buf, sizeof(y4m_buf));
             if (do_md5) {
               MD5Update(&md5_ctx, (md5byte *)y4m_buf, (unsigned int)len);
             } else {
               fputs(y4m_buf, outfile);
             }
-          }
-
-          // Y4M frame header
-          len = y4m_write_frame_header(y4m_buf, sizeof(y4m_buf));
-          if (do_md5) {
-            MD5Update(&md5_ctx, (md5byte *)y4m_buf, (unsigned int)len);
           } else {
-            fputs(y4m_buf, outfile);
-          }
-        } else {
-          if (frame_out == 1) {
-            // Check if --yv12 or --i420 options are consistent with the
-            // bit-stream decoded
-            if (opt_i420) {
-              if (img->fmt != AOM_IMG_FMT_I420 &&
-                  img->fmt != AOM_IMG_FMT_I42016) {
-                fprintf(stderr, "Cannot produce i420 output for bit-stream.\n");
-                goto fail;
+            if (frame_out == 1) {
+              // Check if --yv12 or --i420 options are consistent with the
+              // bit-stream decoded
+              if (opt_i420) {
+                if (img->fmt != AOM_IMG_FMT_I420 &&
+                    img->fmt != AOM_IMG_FMT_I42016) {
+                  fprintf(stderr,
+                          "Cannot produce i420 output for bit-stream.\n");
+                  goto fail;
+                }
+              }
+              if (opt_yv12) {
+                if ((img->fmt != AOM_IMG_FMT_I420 &&
+                     img->fmt != AOM_IMG_FMT_YV12) ||
+                    img->bit_depth != 8) {
+                  fprintf(stderr,
+                          "Cannot produce yv12 output for bit-stream.\n");
+                  goto fail;
+                }
               }
             }
-            if (opt_yv12) {
-              if ((img->fmt != AOM_IMG_FMT_I420 &&
-                   img->fmt != AOM_IMG_FMT_YV12) ||
-                  img->bit_depth != 8) {
-                fprintf(stderr, "Cannot produce yv12 output for bit-stream.\n");
-                goto fail;
-              }
-            }
           }
-        }
 
-        if (do_md5) {
-          update_image_md5(img, planes, &md5_ctx);
+          if (do_md5) {
+            update_image_md5(img, planes, &md5_ctx);
+          } else {
+            write_image_file(img, planes, num_planes, outfile);
+          }
         } else {
-          write_image_file(img, planes, num_planes, outfile);
-        }
-      } else {
-        generate_filename(outfile_pattern, outfile_name, PATH_MAX, img->d_w,
-                          img->d_h, frame_in);
-        if (do_md5) {
-          MD5Init(&md5_ctx);
-          update_image_md5(img, planes, &md5_ctx);
-          MD5Final(md5_digest, &md5_ctx);
-          print_md5(md5_digest, outfile_name);
-        } else {
-          outfile = open_outfile(outfile_name);
-          write_image_file(img, planes, num_planes, outfile);
-          fclose(outfile);
+          generate_filename(outfile_pattern, outfile_name, PATH_MAX, img->d_w,
+                            img->d_h, frame_in);
+          if (do_md5) {
+            MD5Init(&md5_ctx);
+            update_image_md5(img, planes, &md5_ctx);
+            MD5Final(md5_digest, &md5_ctx);
+            print_md5(md5_digest, outfile_name);
+          } else {
+            outfile = open_outfile(outfile_name);
+            write_image_file(img, planes, num_planes, outfile);
+            fclose(outfile);
+          }
         }
       }
     }

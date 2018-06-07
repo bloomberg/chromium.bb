@@ -158,8 +158,10 @@ int main(int argc, char **argv) {
       die_codec(&codec, "Failed to decode the tile list.");
 
     aom_codec_iter_t iter = NULL;
-    aom_image_t *img = aom_codec_get_frame(&codec, &iter);
-    aom_img_write(img, outfile);
+    aom_image_t *img;
+    while ((img = aom_codec_get_frame(&codec, &iter))) {
+      aom_img_write(img, outfile);
+    }
   }
 
   for (i = 0; i < num_references; i++) aom_img_free(&reference_images[i]);

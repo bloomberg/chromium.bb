@@ -629,11 +629,14 @@ int read_frame() {
       AOM_CODEC_OK) {
     die_codec(&codec, "Failed to decode frame.");
   }
-  img = aom_codec_get_frame(&codec, &iter);
-  if (img == NULL) {
+  int got_any_frames = 0;
+  while ((img = aom_codec_get_frame(&codec, &iter))) {
+    ++frame_count;
+    got_any_frames = 1;
+  }
+  if (!got_any_frames) {
     return EXIT_FAILURE;
   }
-  ++frame_count;
   return EXIT_SUCCESS;
 }
 
