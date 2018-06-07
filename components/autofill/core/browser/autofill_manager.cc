@@ -545,81 +545,23 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
     const gfx::RectF& transformed_box) {
   external_delegate_->OnQuery(query_id, form, field, transformed_box);
 
-  // Need to refresh models before using the form_event_loggers.
-  bool is_autofill_possible = RefreshDataModels();
-
-  FormStructure* form_structure = nullptr;
-  AutofillField* autofill_field = nullptr;
-  bool got_autofillable_form =
-      GetCachedFormAndField(form, field, &form_structure, &autofill_field) &&
-      // Don't send suggestions or track forms that should not be parsed.
-      form_structure->ShouldBeParsed();
-
-  bool is_filling_credit_card = false;
-
-  // Flag to indicate whether all suggestions come from Google Payments.
-  bool is_all_server_suggestions = false;
-
-  // Log interactions of forms that are autofillable.
-  if (got_autofillable_form) {
-    if (autofill_field->Type().group() == CREDIT_CARD) {
-      is_filling_credit_card = true;
-      driver()->DidInteractWithCreditCardForm();
-      credit_card_form_event_logger_->OnDidInteractWithAutofillableForm(
-          form_structure->form_signature());
-    } else {
-      address_form_event_logger_->OnDidInteractWithAutofillableForm(
-          form_structure->form_signature());
-    }
-  }
-
   std::vector<Suggestion> suggestions;
-  const bool is_context_secure =
-      !IsFormNonSecure(form) ||
-      !base::FeatureList::IsEnabled(
-          features::kAutofillRequireSecureCreditCardContext);
+  SuggestionsContext context;
+  GetAvailableSuggestions(query_id, form, field, &suggestions, &context);
 
-  // TODO(rogerm): Early exit here on !driver()->RendererIsAvailable()?
-  // We skip populating autofill data, but might generate warnings and or
-  // signin promo to show over the unavailable renderer. That seems a mistake.
-
-  if (is_autofill_possible && driver()->RendererIsAvailable() &&
-      got_autofillable_form) {
-    // On desktop, don't return non credit card related suggestions for forms or
-    // fields that have the "autocomplete" attribute set to off, only if the
-    // feature to always fill addresses is off.
-    if (!base::FeatureList::IsEnabled(kAutofillAlwaysFillAddresses) &&
-        IsDesktopPlatform() && !is_filling_credit_card &&
-        !field.should_autocomplete) {
+  if (context.is_autofill_available) {
+    if (context.suggestions_suppressed)
       return;
-    }
-
-    if (is_filling_credit_card) {
-      suggestions = GetCreditCardSuggestions(field, autofill_field->Type(),
-                                             &is_all_server_suggestions);
-    } else {
-      suggestions =
-          GetProfileSuggestions(*form_structure, field, *autofill_field);
-    }
-
-    // Logic for disabling/ablating credit card autofill.
-    if (base::FeatureList::IsEnabled(kAutofillCreditCardAblationExperiment) &&
-        is_filling_credit_card && !suggestions.empty()) {
-      suggestions.clear();
-      autocomplete_history_manager_->CancelPendingQuery();
-      external_delegate_->OnSuggestionsReturned(query_id, suggestions);
-      enable_ablation_logging_ = true;
-      return;
-    }
 
     if (!suggestions.empty()) {
-      if (is_filling_credit_card)
-        AutofillMetrics::LogIsQueriedCreditCardFormSecure(is_context_secure);
+      if (context.is_filling_credit_card)
+        AutofillMetrics::LogIsQueriedCreditCardFormSecure(
+            context.is_context_secure);
 
       // Don't provide credit card suggestions for non-secure pages, but do
       // provide them for secure pages with passive mixed content (see impl. of
       // IsContextSecure).
-      if (is_filling_credit_card && !is_context_secure) {
+      if (context.is_filling_credit_card && !context.is_context_secure) {
         // Replace the suggestion content with a warning message explaining why
         // Autofill is disabled for a website. The string is different if the
         // credit card autofill HTTP warning experiment is enabled.
@@ -630,7 +572,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
         suggestions.assign(1, warning_suggestion);
       } else {
         bool section_has_autofilled_field = SectionHasAutofilledField(
-            *form_structure, form, autofill_field->section);
+            *context.form_structure, form, context.focused_field->section);
         if (section_has_autofilled_field) {
           // If the relevant section has auto-filled  fields and the renderer is
           // querying for suggestions, then for some fields, the user is editing
@@ -670,11 +612,13 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
   // credit card expiration, cvc or number.
   if (suggestions.empty() && !ShouldShowCreditCardSigninPromo(form, field) &&
       field.should_autocomplete &&
-      !(autofill_field &&
-        (IsCreditCardExpirationType(autofill_field->Type().GetStorableType()) ||
-         autofill_field->Type().html_type() == HTML_TYPE_UNRECOGNIZED ||
-         autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER ||
-         autofill_field->Type().GetStorableType() ==
+      !(context.focused_field &&
+        (IsCreditCardExpirationType(
+             context.focused_field->Type().GetStorableType()) ||
+         context.focused_field->Type().html_type() == HTML_TYPE_UNRECOGNIZED ||
+         context.focused_field->Type().GetStorableType() ==
+             CREDIT_CARD_NUMBER ||
+         context.focused_field->Type().GetStorableType() ==
              CREDIT_CARD_VERIFICATION_CODE))) {
     // Suggestions come back asynchronously, so the Autocomplete manager will
     // handle sending the results back to the renderer.
@@ -686,7 +630,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
   // Send Autofill suggestions (could be an empty list).
   autocomplete_history_manager_->CancelPendingQuery();
   external_delegate_->OnSuggestionsReturned(query_id, suggestions,
-                                            is_all_server_suggestions);
+                                            context.is_all_server_suggestions);
 }
 
 bool AutofillManager::WillFillCreditCardNumber(const FormData& form,
@@ -2120,6 +2064,82 @@ void AutofillManager::TriggerRefill(const FormData& form,
       /*query_id=*/-1, form, field, filling_context->temp_data_model,
       /*is_credit_card=*/false, cvc, form_structure, autofill_field,
       /*is_refill=*/true);
+}
+
+void AutofillManager::GetAvailableSuggestions(
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field,
+    std::vector<Suggestion>* suggestions,
+    SuggestionsContext* context) {
+  DCHECK(suggestions);
+  DCHECK(context);
+
+  // Need to refresh models before using the form_event_loggers.
+  bool is_autofill_possible = RefreshDataModels();
+
+  bool got_autofillable_form =
+      GetCachedFormAndField(form, field, &context->form_structure,
+                            &context->focused_field) &&
+      // Don't send suggestions or track forms that should not be parsed.
+      context->form_structure->ShouldBeParsed();
+
+  // Log interactions of forms that are autofillable.
+  if (got_autofillable_form) {
+    if (context->focused_field->Type().group() == CREDIT_CARD) {
+      context->is_filling_credit_card = true;
+      driver()->DidInteractWithCreditCardForm();
+      credit_card_form_event_logger_->OnDidInteractWithAutofillableForm(
+          context->form_structure->form_signature());
+    } else {
+      address_form_event_logger_->OnDidInteractWithAutofillableForm(
+          context->form_structure->form_signature());
+    }
+  }
+
+  context->is_context_secure =
+      !IsFormNonSecure(form) ||
+      !base::FeatureList::IsEnabled(
+          features::kAutofillRequireSecureCreditCardContext);
+
+  // TODO(rogerm): Early exit here on !driver()->RendererIsAvailable()?
+  // We skip populating autofill data, but might generate warnings and or
+  // signin promo to show over the unavailable renderer. That seems a mistake.
+
+  if (!is_autofill_possible || !driver()->RendererIsAvailable() ||
+      !got_autofillable_form)
+    return;
+
+  context->is_autofill_available = true;
+
+  // On desktop, don't return non credit card related suggestions for forms or
+  // fields that have the "autocomplete" attribute set to off, only if the
+  // feature to always fill addresses is off.
+  if (!base::FeatureList::IsEnabled(kAutofillAlwaysFillAddresses) &&
+      IsDesktopPlatform() && !context->is_filling_credit_card &&
+      !field.should_autocomplete) {
+    context->suggestions_suppressed = true;
+    return;
+  }
+
+  if (context->is_filling_credit_card) {
+    *suggestions =
+        GetCreditCardSuggestions(field, context->focused_field->Type(),
+                                 &context->is_all_server_suggestions);
+  } else {
+    *suggestions = GetProfileSuggestions(*context->form_structure, field,
+                                         *context->focused_field);
+  }
+
+  // Logic for disabling/ablating credit card autofill.
+  if (base::FeatureList::IsEnabled(kAutofillCreditCardAblationExperiment) &&
+      context->is_filling_credit_card && !suggestions->empty()) {
+    context->suggestions_suppressed = true;
+    suggestions->clear();
+    autocomplete_history_manager_->CancelPendingQuery();
+    external_delegate_->OnSuggestionsReturned(query_id, *suggestions);
+    enable_ablation_logging_ = true;
+  }
 }
 
 AutofillMetrics::CardNumberStatus AutofillManager::GetCardNumberStatus(

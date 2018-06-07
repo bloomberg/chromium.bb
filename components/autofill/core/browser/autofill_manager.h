@@ -313,6 +313,19 @@ class AutofillManager : public AutofillHandler,
     std::set<FieldTypeGroup> type_groups_originally_filled;
   };
 
+  // The context for the list of suggestions available for a given field to be
+  // returned by GetAvailableSuggestions().
+  struct SuggestionsContext {
+    FormStructure* form_structure = nullptr;
+    AutofillField* focused_field = nullptr;
+    bool is_autofill_available = false;
+    bool is_context_secure = false;
+    bool is_filling_credit_card = false;
+    // Flag to indicate whether all suggestions come from Google Payments.
+    bool is_all_server_suggestions = false;
+    bool suggestions_suppressed = false;
+  };
+
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(
       std::string response,
@@ -506,6 +519,16 @@ class AutofillManager : public AutofillHandler,
   // Attempts to refill the form that was changed dynamically. Should only be
   // called if ShouldTriggerRefill returns true.
   void TriggerRefill(const FormData& form, FormStructure* form_structure);
+
+  // Replaces the contents of |suggestions| with available suggestions for
+  // |field|. |context| will contain additional information about the
+  // suggestions, such as if they correspond to credit card suggestions and
+  // if the context is secure.
+  void GetAvailableSuggestions(int query_id,
+                               const FormData& form,
+                               const FormFieldData& field,
+                               std::vector<Suggestion>* suggestions,
+                               SuggestionsContext* context);
 
   AutofillClient* const client_;
 
