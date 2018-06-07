@@ -52,8 +52,7 @@ PRIVATE_BASE_HTTPS_URL = 'https://storage.cloud.google.com/'
 # Private path for directories.
 # TODO(akeshet): this is a workaround for b/27653354. If that is ultimately
 # fixed, revisit this workaround.
-PRIVATE_BASE_HTTPS_DOWNLOAD_URL = (
-    'https://pantheon.corp.google.com/storage/browser/')
+PRIVATE_BASE_HTTPS_DOWNLOAD_URL = 'https://stainless.corp.google.com/browse/'
 BASE_GS_URL = 'gs://'
 
 # Format used by "gsutil ls -l" when reporting modified time.
@@ -99,6 +98,7 @@ def CanonicalizeURL(url, strict=False):
   for prefix in (PUBLIC_BASE_HTTPS_URL,
                  PRIVATE_BASE_HTTPS_URL,
                  PRIVATE_BASE_HTTPS_DOWNLOAD_URL,
+                 'https://pantheon.corp.google.com/storage/browser/',
                  'https://commondatastorage.googleapis.com/'):
     if url.startswith(prefix):
       return url.replace(prefix, BASE_GS_URL, 1)
