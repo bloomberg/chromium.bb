@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
-#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -45,13 +45,14 @@
 
 namespace content {
 
+// Closure to run if set, and the last Shell instance is deleted.
+base::NoDestructor<base::OnceClosure> g_quit_closure;
+
 const int kDefaultTestWindowWidthDip = 800;
 const int kDefaultTestWindowHeightDip = 600;
 
 std::vector<Shell*> Shell::windows_;
 base::Callback<void(Shell*)> Shell::shell_created_callback_;
-
-bool Shell::quit_message_loop_ = true;
 
 class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
  public:
@@ -115,15 +116,15 @@ Shell::~Shell() {
     }
   }
 
-  if (windows_.empty() && quit_message_loop_) {
+  if (windows_.empty()) {
     if (headless_)
       PlatformExit();
     for (auto it = RenderProcessHost::AllHostsIterator(); !it.IsAtEnd();
          it.Advance()) {
       it.GetCurrentValue()->DisableKeepAliveRefCount();
     }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    if (*g_quit_closure)
+      std::move(*g_quit_closure).Run();
   }
 
   web_contents_->SetDelegate(nullptr);
@@ -158,12 +159,16 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
 }
 
 void Shell::CloseAllWindows() {
-  base::AutoReset<bool> auto_reset(&quit_message_loop_, false);
   DevToolsAgentHost::DetachAllClients();
   std::vector<Shell*> open_windows(windows_);
-  for (size_t i = 0; i < open_windows.size(); ++i)
-    open_windows[i]->Close();
-  base::RunLoop().RunUntilIdle();
+  if (!open_windows.empty()) {
+    base::RunLoop run_loop;
+    *g_quit_closure = run_loop.QuitWhenIdleClosure();
+    for (size_t i = 0; i < open_windows.size(); ++i)
+      open_windows[i]->Close();
+    // Run the message loop until all Shell windows are closed.
+    run_loop.Run();
+  }
   PlatformExit();
 }
 

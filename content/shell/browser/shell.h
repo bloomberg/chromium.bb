@@ -291,10 +291,6 @@ class Shell : public WebContentsDelegate,
   static std::vector<Shell*> windows_;
 
   static base::Callback<void(Shell*)> shell_created_callback_;
-
-  // True if the destructur of Shell should post a quit closure on the current
-  // message loop if the destructed Shell object was the last one.
-  static bool quit_message_loop_;
 };
 
 }  // namespace content

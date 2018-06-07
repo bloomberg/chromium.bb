@@ -567,8 +567,11 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   ~ServiceWorkerVersionBrowserTest() override {}
 
   void TearDownOnIOThread() override {
+    // Ensure that these resources are released while the IO thread still
+    // exists.
     registration_ = nullptr;
     version_ = nullptr;
+    blob_context_ = nullptr;
     remote_endpoints_.clear();
   }
 
