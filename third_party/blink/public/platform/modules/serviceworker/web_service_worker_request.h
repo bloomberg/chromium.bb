@@ -105,6 +105,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   void SetIsReload(bool);
   bool IsReload() const;
 
+  void SetIsHistoryNavigation(bool);
+  bool IsHistoryNavigation() const;
+
 #if INSIDE_BLINK
   const HTTPHeaderMap& Headers() const;
   void SetBlobDataHandle(scoped_refptr<BlobDataHandle>);

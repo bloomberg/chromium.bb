@@ -306,6 +306,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   out->SetKeepalive(data.keepalive());
   out->SetClientId(clientId);
   out->SetIsReload(data.is_reload());
+  out->SetIsHistoryNavigation(data.is_history_navigation());
   return true;
 }
 

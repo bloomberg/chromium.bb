@@ -86,6 +86,11 @@ struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
     return request.IsReload();
   }
 
+  static bool is_history_navigation(
+      const ::blink::WebServiceWorkerRequest& request) {
+    return request.IsHistoryNavigation();
+  }
+
   static bool Read(::blink::mojom::FetchAPIRequestDataView,
                    ::blink::WebServiceWorkerRequest* output);
 };

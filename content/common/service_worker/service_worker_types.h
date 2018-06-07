@@ -118,6 +118,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   bool keepalive = false;
   std::string client_id;
   bool is_reload = false;
+  bool is_history_navigation = false;
 };
 
 // Roughly corresponds to the Fetch API's Response type. This struct has several

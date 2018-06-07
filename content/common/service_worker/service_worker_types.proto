@@ -38,4 +38,6 @@ message ServiceWorkerFetchRequest {
   optional string integrity = 12;
   optional bool keepalive = 13;
   optional string client_id = 14;
+  reserved 15;  // for is_reload_navigation
+  optional bool is_history_navigation = 16;
 }

@@ -39,6 +39,7 @@ class WebServiceWorkerRequestPrivate
   bool keepalive_ = false;
   WebString client_id_;
   bool is_reload_ = false;
+  bool is_history_navigation_ = false;
 };
 
 WebServiceWorkerRequest::WebServiceWorkerRequest()
@@ -248,6 +249,14 @@ void WebServiceWorkerRequest::SetIsReload(bool is_reload) {
 
 bool WebServiceWorkerRequest::IsReload() const {
   return private_->is_reload_;
+}
+
+void WebServiceWorkerRequest::SetIsHistoryNavigation(bool b) {
+  private_->is_history_navigation_ = b;
+}
+
+bool WebServiceWorkerRequest::IsHistoryNavigation() const {
+  return private_->is_history_navigation_;
 }
 
 }  // namespace blink

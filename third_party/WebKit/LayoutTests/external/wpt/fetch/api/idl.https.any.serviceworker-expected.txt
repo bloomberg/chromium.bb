@@ -75,7 +75,7 @@ PASS Request interface: attribute keepalive
 PASS Unscopable handled correctly for keepalive property on Request
 FAIL Request interface: attribute isReloadNavigation assert_true: The prototype object must have a property "isReloadNavigation" expected true got false
 PASS Unscopable handled correctly for isReloadNavigation property on Request
-FAIL Request interface: attribute isHistoryNavigation assert_true: The prototype object must have a property "isHistoryNavigation" expected true got false
+PASS Request interface: attribute isHistoryNavigation
 PASS Unscopable handled correctly for isHistoryNavigation property on Request
 PASS Request interface: attribute signal
 PASS Unscopable handled correctly for signal property on Request
@@ -110,7 +110,7 @@ PASS Request interface: new Request('about:blank') must inherit property "redire
 PASS Request interface: new Request('about:blank') must inherit property "integrity" with the proper type
 PASS Request interface: new Request('about:blank') must inherit property "keepalive" with the proper type
 FAIL Request interface: new Request('about:blank') must inherit property "isReloadNavigation" with the proper type assert_inherits: property "isReloadNavigation" not found in prototype chain
-FAIL Request interface: new Request('about:blank') must inherit property "isHistoryNavigation" with the proper type assert_inherits: property "isHistoryNavigation" not found in prototype chain
+PASS Request interface: new Request('about:blank') must inherit property "isHistoryNavigation" with the proper type
 PASS Request interface: new Request('about:blank') must inherit property "signal" with the proper type
 PASS Request interface: new Request('about:blank') must inherit property "clone()" with the proper type
 FAIL Request interface: new Request('about:blank') must inherit property "body" with the proper type assert_inherits: property "body" not found in prototype chain

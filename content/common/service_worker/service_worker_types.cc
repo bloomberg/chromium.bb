@@ -73,6 +73,7 @@ std::string ServiceWorkerFetchRequest::Serialize() const {
   request_proto.set_redirect_mode(static_cast<int>(redirect_mode));
   request_proto.set_integrity(integrity);
   request_proto.set_keepalive(keepalive);
+  request_proto.set_is_history_navigation(is_history_navigation);
   request_proto.set_client_id(client_id);
 
   return request_proto.SerializeAsString();
@@ -120,6 +121,7 @@ ServiceWorkerFetchRequest ServiceWorkerFetchRequest::ParseFromString(
       request_proto.redirect_mode());
   request.integrity = request_proto.integrity();
   request.keepalive = request_proto.keepalive();
+  request.is_history_navigation = request_proto.is_history_navigation();
   request.client_id = request_proto.client_id();
 
   return request;

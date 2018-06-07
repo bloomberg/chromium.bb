@@ -94,6 +94,8 @@ class FetchRequestData final
   void SetIntegrity(const String& integrity) { integrity_ = integrity; }
   bool Keepalive() const { return keepalive_; }
   void SetKeepalive(bool b) { keepalive_ = b; }
+  bool IsHistoryNavigation() const { return is_history_navigation_; }
+  void SetIsHistoryNavigation(bool b) { is_history_navigation_ = b; }
 
   network::mojom::blink::URLLoaderFactory* URLLoaderFactory() const {
     return url_loader_factory_.get();
@@ -144,6 +146,7 @@ class FetchRequestData final
   String mime_type_;
   String integrity_;
   bool keepalive_;
+  bool is_history_navigation_ = false;
   // A specific factory that should be used for this request instead of whatever
   // the system would otherwise decide to use to load this request.
   // Currently used for blob: URLs, to ensure they can still be loaded even if

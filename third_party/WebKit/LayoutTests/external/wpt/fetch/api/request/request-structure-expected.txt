@@ -17,7 +17,7 @@ PASS Check cache attribute
 PASS Check redirect attribute
 PASS Check integrity attribute
 FAIL Check isReloadNavigation attribute assert_true: request has isReloadNavigation attribute expected true got false
-FAIL Check isHistoryNavigation attribute assert_true: request has isHistoryNavigation attribute expected true got false
+PASS Check isHistoryNavigation attribute
 PASS Check bodyUsed attribute
 Harness: the test ran to completion.
 

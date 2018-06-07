@@ -71,6 +71,7 @@ class CORE_EXPORT Request final : public Body {
   String integrity() const;
   String importance() const;
   bool keepalive() const;
+  bool isHistoryNavigation() const;
   AbortSignal* signal() const { return signal_; }
 
   // From Request.idl:

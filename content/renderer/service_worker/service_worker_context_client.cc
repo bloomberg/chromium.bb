@@ -242,6 +242,8 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
   web_request->SetIntegrity(
       blink::WebString::FromUTF8(request.fetch_integrity));
   web_request->SetKeepalive(request.keepalive);
+  web_request->SetIsHistoryNavigation(request.transition_type &
+                                      ui::PAGE_TRANSITION_FORWARD_BACK);
 }
 
 // Converts the |request| to its equivalent type in the Blink API.
@@ -271,6 +273,7 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
   web_request->SetIsReload(request.is_reload);
   web_request->SetIntegrity(blink::WebString::FromUTF8(request.integrity));
   web_request->SetKeepalive(request.keepalive);
+  web_request->SetIsHistoryNavigation(request.is_history_navigation);
 }
 
 // Converts |response| to its equivalent type in the Blink API.

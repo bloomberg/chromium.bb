@@ -112,4 +112,5 @@ struct FetchAPIRequest {
   bool keepalive;
   string? client_id;
   bool is_reload;
+  bool is_history_navigation;
 };
