@@ -8,7 +8,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 

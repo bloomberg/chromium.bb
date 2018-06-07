@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
@@ -140,7 +139,7 @@ TEST(DOMWebSocketTest, connectToBadURL) {
                                     scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ("The URL 'xxx' is invalid.", scope.GetExceptionState().Message());
   EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
 }
@@ -152,7 +151,7 @@ TEST(DOMWebSocketTest, connectToNonWsURL) {
                                     scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ(
       "The URL's scheme must be either 'ws' or 'wss'. 'http' is not allowed.",
       scope.GetExceptionState().Message());
@@ -167,7 +166,7 @@ TEST(DOMWebSocketTest, connectToURLHavingFragmentIdentifier) {
                                     scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ(
       "The URL contains a fragment identifier ('fragment'). Fragment "
       "identifiers are not allowed in WebSocket URLs.",
@@ -182,7 +181,7 @@ TEST(DOMWebSocketTest, invalidPort) {
                                     scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kSecurityError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSecurityError, scope.GetExceptionState().Code());
   EXPECT_EQ("The port 7 is not allowed.", scope.GetExceptionState().Message());
   EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
 }
@@ -199,7 +198,7 @@ TEST(DOMWebSocketTest, invalidSubprotocols) {
                                     scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ(
       "The subprotocol '@subprotocol-|'\"x\\u0001\\u0002\\u0003x' is invalid.",
       scope.GetExceptionState().Message());
@@ -288,7 +287,7 @@ TEST(DOMWebSocketTest, channelConnectFail) {
                                     scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kSecurityError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSecurityError, scope.GetExceptionState().Code());
   EXPECT_EQ(
       "An insecure WebSocket connection may not be initiated from a page "
       "loaded over HTTPS.",
@@ -417,7 +416,7 @@ TEST(DOMWebSocketTest, reasonSizeExceeding) {
                                   scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kSyntaxError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ("The message must not be greater than 123 bytes.",
             scope.GetExceptionState().Message());
   EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
@@ -598,7 +597,8 @@ TEST(DOMWebSocketTest, sendStringWhenConnecting) {
   web_socket_scope.Socket().send("hello", scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kInvalidStateError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().Code());
   EXPECT_EQ("Still in CONNECTING state.", scope.GetExceptionState().Message());
   EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
 }
@@ -719,7 +719,8 @@ TEST(DOMWebSocketTest, sendArrayBufferWhenConnecting) {
   web_socket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kInvalidStateError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().Code());
   EXPECT_EQ("Still in CONNECTING state.", scope.GetExceptionState().Message());
   EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
 }
@@ -873,7 +874,8 @@ TEST_P(DOMWebSocketInvalidClosingCodeTest, test) {
   web_socket_scope.Socket().close(GetParam(), "bye", scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(kInvalidAccessError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kInvalidAccessError,
+            scope.GetExceptionState().Code());
   EXPECT_EQ(String::Format("The code must be either 1000, or between 3000 and "
                            "4999. %d is neither.",
                            GetParam()),

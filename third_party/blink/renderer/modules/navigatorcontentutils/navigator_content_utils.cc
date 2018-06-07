@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -56,7 +55,7 @@ static bool VerifyCustomHandlerURL(const Document& document,
   int index = url.Find(kToken);
   if (-1 == index) {
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The url provided ('" + url + "') does not contain '%s'.");
     return false;
   }
@@ -69,7 +68,7 @@ static bool VerifyCustomHandlerURL(const Document& document,
 
   if (kurl.IsEmpty() || !kurl.IsValid()) {
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The custom handler URL created by removing '%s' and prepending '" +
             document.BaseURL().GetString() + "' is invalid.");
     return false;

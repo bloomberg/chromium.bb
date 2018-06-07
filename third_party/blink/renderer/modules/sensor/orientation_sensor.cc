@@ -87,7 +87,7 @@ void OrientationSensor::PopulateMatrixInternal(
     return;
   }
   if (!hasReading()) {
-    exception_state.ThrowDOMException(kNotReadableError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotReadableError,
                                       "Sensor data is not available.");
     return;
   }

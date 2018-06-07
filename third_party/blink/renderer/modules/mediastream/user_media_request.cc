@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
@@ -565,31 +564,31 @@ void UserMediaRequest::Fail(WebUserMediaRequest::Error name,
   if (!GetExecutionContext())
     return;
 
-  ExceptionCode ec = kNotSupportedError;
+  ExceptionCode ec = DOMExceptionCode::kNotSupportedError;
   switch (name) {
     case WebUserMediaRequest::Error::kPermissionDenied:
     case WebUserMediaRequest::Error::kPermissionDismissed:
     case WebUserMediaRequest::Error::kInvalidState:
     case WebUserMediaRequest::Error::kFailedDueToShutdown:
     case WebUserMediaRequest::Error::kKillSwitchOn:
-      ec = kNotAllowedError;
+      ec = DOMExceptionCode::kNotAllowedError;
       break;
     case WebUserMediaRequest::Error::kDevicesNotFound:
-      ec = kNotFoundError;
+      ec = DOMExceptionCode::kNotFoundError;
       break;
     case WebUserMediaRequest::Error::kTabCapture:
     case WebUserMediaRequest::Error::kScreenCapture:
     case WebUserMediaRequest::Error::kCapture:
-      ec = kAbortError;
+      ec = DOMExceptionCode::kAbortError;
       break;
     case WebUserMediaRequest::Error::kTrackStart:
-      ec = kNotReadableError;
+      ec = DOMExceptionCode::kNotReadableError;
       break;
     case WebUserMediaRequest::Error::kNotSupported:
-      ec = kNotSupportedError;
+      ec = DOMExceptionCode::kNotSupportedError;
       break;
     case WebUserMediaRequest::Error::kSecurityError:
-      ec = kSecurityError;
+      ec = DOMExceptionCode::kSecurityError;
       break;
     default:
       NOTREACHED();

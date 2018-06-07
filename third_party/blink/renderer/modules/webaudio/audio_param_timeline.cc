@@ -32,7 +32,6 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
@@ -493,7 +492,7 @@ void AudioParamTimeline::SetValueCurveAtTime(const Vector<float>& curve,
 
   if (curve.size() < 2) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         ExceptionMessages::IndexExceedsMinimumBound(
             "curve length", curve.size(), static_cast<size_t>(2)));
     return;
@@ -555,7 +554,7 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
             test_type == ParamEvent::kCancelValues) &&
           events_[i]->Time() > event->Time() && events_[i]->Time() < end_time) {
         exception_state.ThrowDOMException(
-            kNotSupportedError,
+            DOMExceptionCode::kNotSupportedError,
             EventToString(*event) + " overlaps " + EventToString(*events_[i]));
         return;
       }
@@ -567,8 +566,9 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
         if (event->GetType() != ParamEvent::kSetValueCurveEnd &&
             event->Time() >= events_[i]->Time() && event->Time() < end_time) {
           exception_state.ThrowDOMException(
-              kNotSupportedError, EventToString(*event) + " overlaps " +
-                                      EventToString(*events_[i]));
+              DOMExceptionCode::kNotSupportedError,
+              EventToString(*event) + " overlaps " +
+                  EventToString(*events_[i]));
           return;
         }
       }

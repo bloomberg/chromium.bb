@@ -164,7 +164,8 @@ ScriptPromise XRSession::requestFrameOfReference(
     const XRFrameOfReferenceOptions& options) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError, kSessionEnded));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kSessionEnded));
   }
 
   XRFrameOfReference* frameOfRef = nullptr;
@@ -182,15 +183,16 @@ ScriptPromise XRSession::requestFrameOfReference(
       frameOfRef = new XRFrameOfReference(this, XRFrameOfReference::kTypeStage);
     } else {
       return ScriptPromise::RejectWithDOMException(
-          script_state, DOMException::Create(kNotSupportedError,
-                                             kNonEmulatedStageNotSupported));
+          script_state,
+          DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                               kNonEmulatedStageNotSupported));
     }
   }
 
   if (!frameOfRef) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kNotSupportedError, kUnknownFrameOfReference));
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           kUnknownFrameOfReference));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -254,7 +256,8 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
                                         XRCoordinateSystem* coordinate_system) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError, kSessionEnded));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kSessionEnded));
   }
 
   if (!coordinate_system) {
@@ -266,7 +269,8 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 
   if (origin.View()->length() != 3 || direction.View()->length() != 3) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kNotSupportedError, "Invalid ray!"));
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           "Invalid ray!"));
   }
 
   // TODO(https://crbug.com/846411): use coordinate_system.
@@ -325,7 +329,8 @@ ScriptPromise XRSession::end(ScriptState* script_state) {
   // Don't allow a session to end twice.
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError, kSessionEnded));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kSessionEnded));
   }
 
   ForceEnd();

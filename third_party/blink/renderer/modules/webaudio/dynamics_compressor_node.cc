@@ -154,10 +154,11 @@ void DynamicsCompressorHandler::SetChannelCount(
     }
   } else {
     exception_state.ThrowDOMException(
-        kNotSupportedError, ExceptionMessages::IndexOutsideRange<unsigned long>(
-                                "channelCount", channel_count, 1,
-                                ExceptionMessages::kInclusiveBound, 2,
-                                ExceptionMessages::kInclusiveBound));
+        DOMExceptionCode::kNotSupportedError,
+        ExceptionMessages::IndexOutsideRange<unsigned long>(
+            "channelCount", channel_count, 1,
+            ExceptionMessages::kInclusiveBound, 2,
+            ExceptionMessages::kInclusiveBound));
   }
 }
 
@@ -176,7 +177,7 @@ void DynamicsCompressorHandler::SetChannelCountMode(
   } else if (mode == "max") {
     // This is not supported for a DynamicsCompressorNode, which can
     // only handle 1 or 2 channels.
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "The provided value 'max' is not an "
                                       "allowed value for ChannelCountMode");
     new_channel_count_mode_ = old_mode;

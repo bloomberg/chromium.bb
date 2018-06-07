@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_adopted_callback_reaction.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_attribute_changed_callback_reaction.h"
@@ -95,8 +94,10 @@ void CustomElementDefinition::CheckConstructorResult(
   // 6.1.4. through 6.1.9.
   const String message =
       ErrorMessageForConstructorResult(element, document, tag_name);
-  if (!message.IsEmpty())
-    exception_state.ThrowDOMException(kNotSupportedError, message);
+  if (!message.IsEmpty()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      message);
+  }
 }
 
 HTMLElement* CustomElementDefinition::CreateElementForConstructor(

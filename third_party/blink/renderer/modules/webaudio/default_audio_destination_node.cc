@@ -27,7 +27,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
@@ -150,7 +149,7 @@ void DefaultAudioDestinationHandler::SetChannelCount(
 
   if (!MaxChannelCount() || channel_count > MaxChannelCount()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange<unsigned>(
             "channel count", channel_count, 1,
             ExceptionMessages::kInclusiveBound, MaxChannelCount(),

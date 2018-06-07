@@ -79,7 +79,7 @@ SensorProxy* SensorProviderProxy::GetSensorProxy(
 void SensorProviderProxy::OnSensorProviderConnectionError() {
   sensor_provider_.reset();
   for (SensorProxy* sensor : sensor_proxies_) {
-    sensor->ReportError(kNotReadableError,
+    sensor->ReportError(DOMExceptionCode::kNotReadableError,
                         SensorProxy::kDefaultErrorDescription);
   }
 }

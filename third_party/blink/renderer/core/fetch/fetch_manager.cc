@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
@@ -707,7 +706,7 @@ void FetchManager::Loader::Dispose() {
 
 void FetchManager::Loader::Abort() {
   if (resolver_) {
-    resolver_->Reject(DOMException::Create(kAbortError));
+    resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
     resolver_.Clear();
   }
   if (threadable_loader_) {
@@ -927,7 +926,7 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
 
   DCHECK(signal);
   if (signal->aborted()) {
-    resolver->Reject(DOMException::Create(kAbortError));
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
     return promise;
   }
 

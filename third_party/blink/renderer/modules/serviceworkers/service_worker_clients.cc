@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_location.h"
@@ -180,7 +179,7 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
   }
 
   if (!context->IsWindowInteractionAllowed()) {
-    resolver->Reject(DOMException::Create(kInvalidAccessError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidAccessError,
                                           "Not allowed to open a window."));
     return promise;
   }

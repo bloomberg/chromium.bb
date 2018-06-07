@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation_options.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
@@ -163,7 +162,7 @@ void AnimationWorkletGlobalScope::registerAnimator(
   DCHECK(IsContextThread());
   if (animator_definitions_.Contains(name)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "A class with name:'" + name + "' is already registered.");
     return;
   }

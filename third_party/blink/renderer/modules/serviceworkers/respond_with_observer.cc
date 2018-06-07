@@ -51,7 +51,8 @@ void RespondWithObserver::RespondWith(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   if (state_ != kInitial) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "The event has already been responded to.");
+        DOMExceptionCode::kInvalidStateError,
+        "The event has already been responded to.");
     return;
   }
 

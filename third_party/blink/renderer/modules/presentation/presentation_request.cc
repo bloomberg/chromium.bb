@@ -61,7 +61,7 @@ PresentationRequest* PresentationRequest::Create(
   }
 
   if (urls.IsEmpty()) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Do not support empty sequence of URLs.");
     return nullptr;
   }
@@ -72,7 +72,8 @@ PresentationRequest* PresentationRequest::Create(
 
     if (!parsed_url.IsValid()) {
       exception_state.ThrowDOMException(
-          kSyntaxError, "'" + urls[i] + "' can't be resolved to a valid URL.");
+          DOMExceptionCode::kSyntaxError,
+          "'" + urls[i] + "' can't be resolved to a valid URL.");
       return nullptr;
     }
 
@@ -150,7 +151,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kInvalidAccessError,
+            DOMExceptionCode::kInvalidAccessError,
             "PresentationRequest::start() requires user gesture."));
 
   PresentationController* controller =
@@ -159,7 +160,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kInvalidStateError,
+            DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
   RecordStartOriginTypeAccess(*execution_context);
@@ -181,7 +182,7 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kInvalidStateError,
+            DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -211,7 +212,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* script_state) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kInvalidStateError,
+            DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
   if (!availability_property_) {

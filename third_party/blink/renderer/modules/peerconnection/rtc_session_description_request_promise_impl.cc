@@ -7,7 +7,6 @@
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description.h"

@@ -85,8 +85,8 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
                                                   const MIDIOptions& options) {
   if (!script_state->ContextIsValid()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kAbortError, "The frame is not working."));
+        script_state, DOMException::Create(DOMExceptionCode::kAbortError,
+                                           "The frame is not working."));
   }
 
   Document& document = *ToDocument(ExecutionContext::From(script_state));
@@ -110,8 +110,8 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
           ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
                                  kFeaturePolicyConsoleWarning));
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(kSecurityError, kFeaturePolicyErrorMessage));
+          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                             kFeaturePolicyErrorMessage));
     }
   } else {
     Deprecation::CountDeprecationFeaturePolicy(

@@ -257,7 +257,7 @@ base::Optional<ExceptionCode> AutoplayPolicy::RequestPlay() {
     if (IsGestureNeededForPlayback()) {
       autoplay_uma_helper_->RecordCrossOriginAutoplayResult(
           CrossOriginAutoplayResult::kAutoplayBlocked);
-      return kNotAllowedError;
+      return DOMExceptionCode::kNotAllowedError;
     }
 
     if (IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()) {

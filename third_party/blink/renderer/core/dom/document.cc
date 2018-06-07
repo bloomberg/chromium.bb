@@ -95,7 +95,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -903,7 +902,7 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
                                            ExceptionState& exception_state) {
   if (!IsValidElementName(this, name)) {
     exception_state.ThrowDOMException(
-        kInvalidCharacterError,
+        DOMExceptionCode::kInvalidCharacterError,
         "The tag name provided ('" + name + "') is not a valid name.");
     return nullptr;
   }
@@ -968,7 +967,7 @@ Element* Document::CreateElementForBinding(
   // 1. If localName does not match Name production, throw InvalidCharacterError
   if (!IsValidElementName(this, local_name)) {
     exception_state.ThrowDOMException(
-        kInvalidCharacterError,
+        DOMExceptionCode::kInvalidCharacterError,
         "The tag name provided ('" + local_name + "') is not a valid name.");
     return nullptr;
   }
@@ -1017,7 +1016,7 @@ static inline QualifiedName CreateQualifiedName(
   QualifiedName q_name(prefix, local_name, namespace_uri);
   if (!Document::HasValidNamespaceForElements(q_name)) {
     exception_state.ThrowDOMException(
-        kNamespaceError,
+        DOMExceptionCode::kNamespaceError,
         "The namespace URI provided ('" + namespace_uri +
             "') is not valid for the qualified name provided ('" +
             qualified_name + "').");
@@ -1066,9 +1065,10 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
       AtomicString(GetTypeExtension(this, string_or_options, exception_state));
 
   if (!IsValidElementName(this, qualified_name)) {
-    exception_state.ThrowDOMException(
-        kInvalidCharacterError, "The tag name provided ('" + qualified_name +
-                                    "') is not a valid name.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidCharacterError,
+                                      "The tag name provided ('" +
+                                          qualified_name +
+                                          "') is not a valid name.");
     return nullptr;
   }
 
@@ -1118,7 +1118,8 @@ ScriptValue Document::registerElement(ScriptState* script_state,
 
   if (!RegistrationContext()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "No element registration context is available.");
+        DOMExceptionCode::kNotSupportedError,
+        "No element registration context is available.");
     return ScriptValue();
   }
 
@@ -1213,12 +1214,12 @@ CDATASection* Document::createCDATASection(const String& data,
                                            ExceptionState& exception_state) {
   if (IsHTMLDocument()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "This operation is not supported for HTML documents.");
     return nullptr;
   }
   if (data.Contains("]]>")) {
-    exception_state.ThrowDOMException(kInvalidCharacterError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidCharacterError,
                                       "String cannot contain ']]>' since that "
                                       "is the end delimiter of a CData "
                                       "section.");
@@ -1233,13 +1234,13 @@ ProcessingInstruction* Document::createProcessingInstruction(
     ExceptionState& exception_state) {
   if (!IsValidName(target)) {
     exception_state.ThrowDOMException(
-        kInvalidCharacterError,
+        DOMExceptionCode::kInvalidCharacterError,
         "The target provided ('" + target + "') is not a valid name.");
     return nullptr;
   }
   if (data.Contains("?>")) {
     exception_state.ThrowDOMException(
-        kInvalidCharacterError,
+        DOMExceptionCode::kInvalidCharacterError,
         "The data provided ('" + data + "') contains '?>'.");
     return nullptr;
   }
@@ -1263,7 +1264,7 @@ Node* Document::importNode(Node* imported_node,
   // DOMException.
   if (imported_node->IsDocumentNode()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The node provided is a document, which may not be imported.");
     return nullptr;
   }
@@ -1271,7 +1272,7 @@ Node* Document::importNode(Node* imported_node,
     // ShadowRoot nodes should not be explicitly importable.  Either they are
     // imported along with their host node, or created implicitly.
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The node provided is a shadow root, which may not be imported.");
     return nullptr;
   }
@@ -1287,7 +1288,7 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
 
   switch (source->getNodeType()) {
     case kDocumentNode:
-      exception_state.ThrowDOMException(kNotSupportedError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                         "The node provided is of type '" +
                                             source->nodeName() +
                                             "', which may not be adopted.");
@@ -1302,7 +1303,7 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
       if (source->IsShadowRoot()) {
         // ShadowRoot cannot disconnect itself from the host node.
         exception_state.ThrowDOMException(
-            kHierarchyRequestError,
+            DOMExceptionCode::kHierarchyRequestError,
             "The node provided is a shadow root, which may not be adopted.");
         return nullptr;
       }
@@ -1313,7 +1314,7 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
         if (GetFrame() && GetFrame()->Tree().IsDescendantOf(
                               frame_owner_element->ContentFrame())) {
           exception_state.ThrowDOMException(
-              kHierarchyRequestError,
+              DOMExceptionCode::kHierarchyRequestError,
               "The node provided is a frame which contains this document.");
           return nullptr;
         }
@@ -1432,7 +1433,7 @@ void Document::setXMLVersion(const String& version,
                              ExceptionState& exception_state) {
   if (!XMLDocumentParser::SupportsXMLVersion(version)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "This document does not support the XML version '" + version + "'.");
     return;
   }
@@ -2949,19 +2950,20 @@ void Document::open(Document* entered_document,
                     ExceptionState& exception_state) {
   if (ImportLoader()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "Imported document doesn't support open().");
+        DOMExceptionCode::kInvalidStateError,
+        "Imported document doesn't support open().");
     return;
   }
 
   if (!IsHTMLDocument()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Only HTML documents support open().");
     return;
   }
 
   if (throw_on_dynamic_markup_insertion_count_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Custom Element constructor should not use open().");
     return;
   }
@@ -3116,19 +3118,19 @@ void Document::setBody(HTMLElement* prp_new_body,
 
   if (!new_body) {
     exception_state.ThrowDOMException(
-        kHierarchyRequestError,
+        DOMExceptionCode::kHierarchyRequestError,
         ExceptionMessages::ArgumentNullOrIncorrectType(1, "HTMLElement"));
     return;
   }
   if (!documentElement()) {
-    exception_state.ThrowDOMException(kHierarchyRequestError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kHierarchyRequestError,
                                       "No document element exists.");
     return;
   }
 
   if (!IsHTMLBodyElement(*new_body) && !IsHTMLFrameSetElement(*new_body)) {
     exception_state.ThrowDOMException(
-        kHierarchyRequestError,
+        DOMExceptionCode::kHierarchyRequestError,
         "The new body element is of type '" + new_body->tagName() +
             "'. It must be either a 'BODY' or 'FRAMESET' element.");
     return;
@@ -3206,7 +3208,7 @@ DOMWindow* Document::open(LocalDOMWindow* current_window,
                           const AtomicString& features,
                           ExceptionState& exception_state) {
   if (!domWindow()) {
-    exception_state.ThrowDOMException(kInvalidAccessError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "The document has no window associated.");
     return nullptr;
   }
@@ -3221,19 +3223,20 @@ void Document::close(ExceptionState& exception_state) {
 
   if (ImportLoader()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "Imported document doesn't support close().");
+        DOMExceptionCode::kInvalidStateError,
+        "Imported document doesn't support close().");
     return;
   }
 
   if (!IsHTMLDocument()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Only HTML documents support close().");
     return;
   }
 
   if (throw_on_dynamic_markup_insertion_count_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Custom Element constructor should not use close().");
     return;
   }
@@ -3655,19 +3658,20 @@ void Document::write(const String& text,
                      ExceptionState& exception_state) {
   if (ImportLoader()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "Imported document doesn't support write().");
+        DOMExceptionCode::kInvalidStateError,
+        "Imported document doesn't support write().");
     return;
   }
 
   if (!IsHTMLDocument()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Only HTML documents support write().");
     return;
   }
 
   if (throw_on_dynamic_markup_insertion_count_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Custom Element constructor should not use write().");
     return;
   }
@@ -4292,7 +4296,7 @@ bool Document::CanAcceptChild(const Node& new_child,
         case kDocumentNode:
         case kTextNode:
           exception_state.ThrowDOMException(
-              kHierarchyRequestError,
+              DOMExceptionCode::kHierarchyRequestError,
               "Nodes of type '" + new_child.nodeName() +
                   "' may not be inserted inside nodes of type '#document'.");
           return false;
@@ -4306,7 +4310,7 @@ bool Document::CanAcceptChild(const Node& new_child,
           num_elements++;
           if (has_doctype_after_reference_node) {
             exception_state.ThrowDOMException(
-                kHierarchyRequestError,
+                DOMExceptionCode::kHierarchyRequestError,
                 "Can't insert an element before a doctype.");
             return false;
           }
@@ -4321,7 +4325,7 @@ bool Document::CanAcceptChild(const Node& new_child,
       case kDocumentNode:
       case kTextNode:
         exception_state.ThrowDOMException(
-            kHierarchyRequestError,
+            DOMExceptionCode::kHierarchyRequestError,
             "Nodes of type '" + new_child.nodeName() +
                 "' may not be inserted inside nodes of type '#document'.");
         return false;
@@ -4332,7 +4336,7 @@ bool Document::CanAcceptChild(const Node& new_child,
         num_doctypes++;
         if (num_elements > 0 && !has_element_after_reference_node) {
           exception_state.ThrowDOMException(
-              kHierarchyRequestError,
+              DOMExceptionCode::kHierarchyRequestError,
               "Can't insert a doctype before the root element.");
           return false;
         }
@@ -4341,7 +4345,7 @@ bool Document::CanAcceptChild(const Node& new_child,
         num_elements++;
         if (has_doctype_after_reference_node) {
           exception_state.ThrowDOMException(
-              kHierarchyRequestError,
+              DOMExceptionCode::kHierarchyRequestError,
               "Can't insert an element before a doctype.");
           return false;
         }
@@ -4351,7 +4355,7 @@ bool Document::CanAcceptChild(const Node& new_child,
 
   if (num_elements > 1 || num_doctypes > 1) {
     exception_state.ThrowDOMException(
-        kHierarchyRequestError,
+        DOMExceptionCode::kHierarchyRequestError,
         String::Format("Only one %s on document allowed.",
                        num_elements > 1 ? "element" : "doctype"));
     return false;
@@ -5024,7 +5028,7 @@ Event* Document::createEvent(ScriptState* script_state,
     }
   }
   exception_state.ThrowDOMException(
-      kNotSupportedError,
+      DOMExceptionCode::kNotSupportedError,
       "The provided event type ('" + event_type + "') is invalid.");
   return nullptr;
 }
@@ -5503,7 +5507,7 @@ bool Document::ParseQualifiedName(const AtomicString& qualified_name,
   unsigned length = qualified_name.length();
 
   if (!length) {
-    exception_state.ThrowDOMException(kInvalidCharacterError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidCharacterError,
                                       "The qualified name provided is empty.");
     return false;
   }
@@ -5542,7 +5546,8 @@ bool Document::ParseQualifiedName(const AtomicString& qualified_name,
     message.Append("has an empty local name.");
   }
 
-  exception_state.ThrowDOMException(kInvalidCharacterError, message.ToString());
+  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidCharacterError,
+                                    message.ToString());
   return false;
 }
 
@@ -5752,7 +5757,7 @@ Attr* Document::createAttributeNS(const AtomicString& namespace_uri,
   if (!should_ignore_namespace_checks &&
       !HasValidNamespaceForAttributes(q_name)) {
     exception_state.ThrowDOMException(
-        kNamespaceError,
+        DOMExceptionCode::kNamespaceError,
         "The namespace URI provided ('" + namespace_uri +
             "') is not valid for the qualified name provided ('" +
             qualified_name + "').");
@@ -6080,7 +6085,7 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
   // origin as there are security risks involved. We should perhaps unload the
   // whole frame instead of throwing.
   exception_state.ThrowDOMException(
-      kNotAllowedError,
+      DOMExceptionCode::kNotAllowedError,
       String::Format(
           "The use of method '%s' has been blocked by feature policy. The "
           "feature "

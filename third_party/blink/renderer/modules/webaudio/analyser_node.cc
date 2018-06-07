@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/analyser_node.h"
 #include "third_party/blink/renderer/modules/webaudio/analyser_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
@@ -81,7 +80,7 @@ void AnalyserHandler::SetFftSize(unsigned size,
                                  ExceptionState& exception_state) {
   if (!analyser_.SetFftSize(size)) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         (size < RealtimeAnalyser::kMinFFTSize ||
          size > RealtimeAnalyser::kMaxFFTSize)
             ? ExceptionMessages::IndexOutsideRange(
@@ -100,8 +99,9 @@ void AnalyserHandler::SetMinDecibels(double k,
     analyser_.SetMinDecibels(k);
   } else {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "minDecibels", k, MaxDecibels()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("minDecibels", k,
+                                                    MaxDecibels()));
   }
 }
 
@@ -111,8 +111,9 @@ void AnalyserHandler::SetMaxDecibels(double k,
     analyser_.SetMaxDecibels(k);
   } else {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMinimumBound(
-                             "maxDecibels", k, MinDecibels()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMinimumBound("maxDecibels", k,
+                                                    MinDecibels()));
   }
 }
 
@@ -121,9 +122,10 @@ void AnalyserHandler::SetMinMaxDecibels(double min_decibels,
                                         ExceptionState& exception_state) {
   if (min_decibels >= max_decibels) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "maxDecibels (" + String::Number(max_decibels) +
-                             ") must be greater than or equal to minDecibels " +
-                             "( " + String::Number(min_decibels) + ").");
+        DOMExceptionCode::kIndexSizeError,
+        "maxDecibels (" + String::Number(max_decibels) +
+            ") must be greater than or equal to minDecibels " + "( " +
+            String::Number(min_decibels) + ").");
     return;
   }
   analyser_.SetMinDecibels(min_decibels);
@@ -137,7 +139,7 @@ void AnalyserHandler::SetSmoothingTimeConstant(
     analyser_.SetSmoothingTimeConstant(k);
   } else {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange(
             "smoothing value", k, 0.0, ExceptionMessages::kInclusiveBound, 1.0,
             ExceptionMessages::kInclusiveBound));

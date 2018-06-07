@@ -36,7 +36,8 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     DOMFileSystem* fs = wrappable->ToImpl<DOMFileSystem>();
     if (!fs->Clonable()) {
       exception_state.ThrowDOMException(
-          kDataCloneError, "A FileSystem object could not be cloned.");
+          DOMExceptionCode::kDataCloneError,
+          "A FileSystem object could not be cloned.");
       return false;
     }
     WriteTag(kDOMFileSystemTag);
@@ -212,7 +213,8 @@ bool V8ScriptValueSerializerForModules::WriteCryptoKey(
   if (!Platform::Current()->Crypto()->SerializeKeyForClone(key, key_data) ||
       key_data.size() > std::numeric_limits<uint32_t>::max()) {
     exception_state.ThrowDOMException(
-        kDataCloneError, "A CryptoKey object could not be cloned.");
+        DOMExceptionCode::kDataCloneError,
+        "A CryptoKey object could not be cloned.");
     return false;
   }
   WriteUint32(key_data.size());

@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_options.h"
 #include "third_party/blink/renderer/modules/payments/payment_test_helper.h"

@@ -139,8 +139,8 @@ void IDBRequestLoader::ReportError() {
   DCHECK(started_);
   DCHECK(!canceled_);
 #endif  // DCHECK_IS_ON()
-  queue_item_->OnResultLoadComplete(
-      DOMException::Create(kDataError, "Failed to read large IndexedDB value"));
+  queue_item_->OnResultLoadComplete(DOMException::Create(
+      DOMExceptionCode::kDataError, "Failed to read large IndexedDB value"));
 }
 
 }  // namespace blink

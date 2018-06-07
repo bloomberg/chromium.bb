@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -173,7 +172,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kSecurityError,
+            DOMExceptionCode::kSecurityError,
             "Must be handling a user gesture to show a permission request."));
   }
 
@@ -186,7 +185,8 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
 
   if (!service_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kNotSupportedError));
+        script_state,
+        DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
 
   // In order to convert the arguments from service names and aliases to just

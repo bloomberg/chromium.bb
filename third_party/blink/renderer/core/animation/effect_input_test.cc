@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "v8/include/v8.h"
 

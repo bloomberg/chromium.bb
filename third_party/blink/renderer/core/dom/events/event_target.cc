@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target_impl.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
@@ -526,12 +525,12 @@ EventListener* EventTarget::GetAttributeEventListener(
 bool EventTarget::dispatchEventForBindings(Event* event,
                                            ExceptionState& exception_state) {
   if (!event->WasInitialized()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The event provided is uninitialized.");
     return false;
   }
   if (event->IsBeingDispatched()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The event is already being dispatched.");
     return false;
   }

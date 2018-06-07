@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_response.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
@@ -195,7 +194,7 @@ class Cache::BarrierCallbackForPut final
       return;
     completed_ = true;
     ScriptState::Scope scope(resolver_->GetScriptState());
-    resolver_->Reject(DOMException::Create(kAbortError));
+    resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
   }
 
   virtual void Trace(blink::Visitor* visitor) {

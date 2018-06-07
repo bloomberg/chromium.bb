@@ -68,7 +68,7 @@ void LayoutWorkletGlobalScope::registerLayout(
 
   if (layout_definitions_.Contains(name)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "A class with name:'" + name + "' is already registered.");
     return;
   }
@@ -132,7 +132,7 @@ void LayoutWorkletGlobalScope::registerLayout(
     if (!existing_document_definition->RegisterAdditionalLayoutDefinition(
             *definition)) {
       document_definition_map->Set(name, kInvalidDocumentLayoutDefinition);
-      exception_state.ThrowDOMException(kNotSupportedError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                         "A class with name:'" + name +
                                             "' was registered with a "
                                             "different definition.");

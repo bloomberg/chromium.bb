@@ -30,7 +30,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
@@ -336,10 +335,11 @@ void ScriptProcessorHandler::SetChannelCount(unsigned long channel_count,
   BaseAudioContext::GraphAutoLocker locker(Context());
 
   if (channel_count != channel_count_) {
-    exception_state.ThrowDOMException(
-        kNotSupportedError, "channelCount cannot be changed from " +
-                                String::Number(channel_count_) + " to " +
-                                String::Number(channel_count));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "channelCount cannot be changed from " +
+                                          String::Number(channel_count_) +
+                                          " to " +
+                                          String::Number(channel_count));
   }
 }
 
@@ -351,7 +351,7 @@ void ScriptProcessorHandler::SetChannelCountMode(
 
   if ((mode == "max") || (mode == "clamped-max")) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "channelCountMode cannot be changed from 'explicit' to '" + mode + "'");
   }
 }
@@ -432,14 +432,14 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
 
   if (number_of_input_channels == 0 && number_of_output_channels == 0) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         "number of input channels and output channels cannot both be zero.");
     return nullptr;
   }
 
   if (number_of_input_channels > BaseAudioContext::MaxNumberOfChannels()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         "number of input channels (" +
             String::Number(number_of_input_channels) + ") exceeds maximum (" +
             String::Number(BaseAudioContext::MaxNumberOfChannels()) + ").");
@@ -448,7 +448,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
 
   if (number_of_output_channels > BaseAudioContext::MaxNumberOfChannels()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         "number of output channels (" +
             String::Number(number_of_output_channels) + ") exceeds maximum (" +
             String::Number(BaseAudioContext::MaxNumberOfChannels()) + ").");
@@ -477,7 +477,7 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
       break;
     default:
       exception_state.ThrowDOMException(
-          kIndexSizeError,
+          DOMExceptionCode::kIndexSizeError,
           "buffer size (" + String::Number(buffer_size) +
               ") must be 0 or a power of two between 256 and 16384.");
       return nullptr;

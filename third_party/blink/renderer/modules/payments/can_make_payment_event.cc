@@ -59,7 +59,7 @@ void CanMakePaymentEvent::respondWith(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   if (!isTrusted()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot respond with data when the event is not trusted");
     return;
   }

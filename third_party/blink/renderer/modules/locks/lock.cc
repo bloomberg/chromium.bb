@@ -144,7 +144,8 @@ void Lock::ReleaseIfHeld() {
 
 void Lock::OnConnectionError() {
   resolver_->Reject(DOMException::Create(
-      kAbortError, "Lock broken by another request with the 'steal' option."));
+      DOMExceptionCode::kAbortError,
+      "Lock broken by another request with the 'steal' option."));
 }
 
 }  // namespace blink

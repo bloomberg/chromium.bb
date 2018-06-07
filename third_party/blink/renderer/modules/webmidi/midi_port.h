@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"

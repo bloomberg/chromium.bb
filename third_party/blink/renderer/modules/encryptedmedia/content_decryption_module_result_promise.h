@@ -7,7 +7,6 @@
 
 #include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/content_decryption_module_result.h"
 
 namespace blink {

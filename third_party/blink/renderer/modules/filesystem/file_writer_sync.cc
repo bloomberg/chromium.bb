@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_file_writer.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 
 namespace blink {
@@ -66,7 +65,7 @@ void FileWriterSync::truncate(long long offset,
   DCHECK(Writer());
   DCHECK(complete_);
   if (offset < 0) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       FileError::kInvalidStateErrorMessage);
     return;
   }

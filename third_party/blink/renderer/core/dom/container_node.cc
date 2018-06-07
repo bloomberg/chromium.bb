@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/dom/child_list_mutation_scope.h"
 #include "third_party/blink/renderer/core/dom/class_collection.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/name_node_list.h"
 #include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -113,7 +112,7 @@ inline bool CheckReferenceChildParent(const Node& parent,
                                       const Node* old_child,
                                       ExceptionState& exception_state) {
   if (next && next->parentNode() != &parent) {
-    exception_state.ThrowDOMException(kNotFoundError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "The node before which the new node is "
                                       "to be inserted is not a child of this "
                                       "node.");
@@ -121,7 +120,8 @@ inline bool CheckReferenceChildParent(const Node& parent,
   }
   if (old_child && old_child->parentNode() != &parent) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "The node to be replaced is not a child of this node.");
+        DOMExceptionCode::kNotFoundError,
+        "The node to be replaced is not a child of this node.");
     return false;
   }
   return true;
@@ -198,7 +198,8 @@ bool ContainerNode::IsHostIncludingInclusiveAncestorOfThis(
   }
   if (child_contains_parent) {
     exception_state.ThrowDOMException(
-        kHierarchyRequestError, "The new child element contains the parent.");
+        DOMExceptionCode::kHierarchyRequestError,
+        "The new child element contains the parent.");
   }
   return child_contains_parent;
 }
@@ -232,7 +233,8 @@ bool ContainerNode::EnsurePreInsertionValidity(
   DCHECK(!new_child.IsPseudoElement());
   if (new_child.IsPseudoElement()) {
     exception_state.ThrowDOMException(
-        kHierarchyRequestError, "The new child element is a pseudo-element.");
+        DOMExceptionCode::kHierarchyRequestError,
+        "The new child element is a pseudo-element.");
     return false;
   }
 
@@ -262,7 +264,7 @@ bool ContainerNode::EnsurePreInsertionValidity(
   // doctype and parent is not a document, throw a HierarchyRequestError.
   if (!IsChildTypeAllowed(new_child)) {
     exception_state.ThrowDOMException(
-        kHierarchyRequestError,
+        DOMExceptionCode::kHierarchyRequestError,
         "Nodes of type '" + new_child.nodeName() +
             "' may not be inserted inside nodes of type '" + nodeName() + "'.");
     return false;
@@ -517,7 +519,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
   // https://dom.spec.whatwg.org/#concept-node-replace
 
   if (!old_child) {
-    exception_state.ThrowDOMException(kNotFoundError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "The node to be replaced is null.");
     return nullptr;
   }
@@ -661,7 +663,8 @@ Node* ContainerNode::RemoveChild(Node* old_child,
   if (!old_child || old_child->parentNode() != this ||
       old_child->IsPseudoElement()) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "The node to be removed is not a child of this node.");
+        DOMExceptionCode::kNotFoundError,
+        "The node to be removed is not a child of this node.");
     return nullptr;
   }
 
@@ -673,7 +676,7 @@ Node* ContainerNode::RemoveChild(Node* old_child,
   // child into a different parent.
   if (child->parentNode() != this) {
     exception_state.ThrowDOMException(
-        kNotFoundError,
+        DOMExceptionCode::kNotFoundError,
         "The node to be removed is no longer a "
         "child of this node. Perhaps it was moved "
         "in a 'blur' event handler?");
@@ -685,7 +688,7 @@ Node* ContainerNode::RemoveChild(Node* old_child,
   // Mutation events might have moved this child into a different parent.
   if (child->parentNode() != this) {
     exception_state.ThrowDOMException(
-        kNotFoundError,
+        DOMExceptionCode::kNotFoundError,
         "The node to be removed is no longer a "
         "child of this node. Perhaps it was moved "
         "in response to a mutation?");

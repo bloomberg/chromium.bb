@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/budget/budget_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -31,10 +30,10 @@ DOMException* ErrorTypeToException(mojom::blink::BudgetServiceErrorType error) {
     case mojom::blink::BudgetServiceErrorType::NONE:
       return nullptr;
     case mojom::blink::BudgetServiceErrorType::DATABASE_ERROR:
-      return DOMException::Create(kDataError,
+      return DOMException::Create(DOMExceptionCode::kDataError,
                                   "Error reading the budget database.");
     case mojom::blink::BudgetServiceErrorType::NOT_SUPPORTED:
-      return DOMException::Create(kNotSupportedError,
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                   "Requested opration was not supported");
   }
   NOTREACHED();

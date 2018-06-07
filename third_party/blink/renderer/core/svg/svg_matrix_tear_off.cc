@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_tear_off.h"
 
@@ -144,7 +143,7 @@ SVGMatrixTearOff* SVGMatrixTearOff::multiply(SVGMatrixTearOff* other) {
 
 SVGMatrixTearOff* SVGMatrixTearOff::inverse(ExceptionState& exception_state) {
   if (!Value().IsInvertible()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The matrix is not invertible.");
     return nullptr;
   }
@@ -156,7 +155,7 @@ SVGMatrixTearOff* SVGMatrixTearOff::rotateFromVector(
     double y,
     ExceptionState& exception_state) {
   if (!x || !y) {
-    exception_state.ThrowDOMException(kInvalidAccessError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "Arguments cannot be zero.");
     return nullptr;
   }

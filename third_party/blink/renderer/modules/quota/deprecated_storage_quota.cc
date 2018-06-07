@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_quota_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_usage_callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/quota/dom_error.h"
 #include "third_party/blink/renderer/modules/quota/quota_utils.h"
@@ -137,7 +136,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
       storage_type != StorageType::kPersistent) {
     // Unknown storage type is requested.
     EnqueueStorageErrorCallback(script_state, error_callback,
-                                kNotSupportedError);
+                                DOMExceptionCode::kNotSupportedError);
     return;
   }
 
@@ -145,7 +144,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
       execution_context->GetSecurityOrigin();
   if (security_origin->IsOpaque()) {
     EnqueueStorageErrorCallback(script_state, error_callback,
-                                kNotSupportedError);
+                                DOMExceptionCode::kNotSupportedError);
     return;
   }
 
@@ -175,7 +174,7 @@ void DeprecatedStorageQuota::requestQuota(
       storage_type != StorageType::kPersistent) {
     // Unknown storage type is requested.
     EnqueueStorageErrorCallback(script_state, error_callback,
-                                kNotSupportedError);
+                                DOMExceptionCode::kNotSupportedError);
     return;
   }
 

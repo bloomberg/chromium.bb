@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -49,8 +48,9 @@ ScriptValue SQLResultSetRowList::item(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   if (index >= length()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound<unsigned>(
-                             "index", index, length()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound<unsigned>("index", index,
+                                                              length()));
     return ScriptValue();
   }
 

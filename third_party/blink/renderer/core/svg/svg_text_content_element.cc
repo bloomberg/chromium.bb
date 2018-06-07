@@ -113,8 +113,9 @@ float SVGTextContentElement::getSubStringLength(
   unsigned number_of_chars = getNumberOfChars();
   if (charnum >= number_of_chars) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "charnum", charnum, getNumberOfChars()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("charnum", charnum,
+                                                    getNumberOfChars()));
     return 0.0f;
   }
 
@@ -131,8 +132,9 @@ SVGPointTearOff* SVGTextContentElement::getStartPositionOfChar(
 
   if (charnum >= getNumberOfChars()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "charnum", charnum, getNumberOfChars()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("charnum", charnum,
+                                                    getNumberOfChars()));
     return nullptr;
   }
 
@@ -148,8 +150,9 @@ SVGPointTearOff* SVGTextContentElement::getEndPositionOfChar(
 
   if (charnum >= getNumberOfChars()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "charnum", charnum, getNumberOfChars()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("charnum", charnum,
+                                                    getNumberOfChars()));
     return nullptr;
   }
 
@@ -165,8 +168,9 @@ SVGRectTearOff* SVGTextContentElement::getExtentOfChar(
 
   if (charnum >= getNumberOfChars()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "charnum", charnum, getNumberOfChars()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("charnum", charnum,
+                                                    getNumberOfChars()));
     return nullptr;
   }
 
@@ -181,8 +185,9 @@ float SVGTextContentElement::getRotationOfChar(
 
   if (charnum >= getNumberOfChars()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "charnum", charnum, getNumberOfChars()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("charnum", charnum,
+                                                    getNumberOfChars()));
     return 0.0f;
   }
 
@@ -203,8 +208,9 @@ void SVGTextContentElement::selectSubString(unsigned charnum,
   unsigned number_of_chars = getNumberOfChars();
   if (charnum >= number_of_chars) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "charnum", charnum, getNumberOfChars()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("charnum", charnum,
+                                                    getNumberOfChars()));
     return;
   }
 

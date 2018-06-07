@@ -295,7 +295,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
   if (ShouldThrottleStateObjectChanges()) {
     // TODO(769592): Get an API spec change so that we can throw an exception:
     //
-    //  exception_state.ThrowDOMException(kQuotaExceededError,
+    //  exception_state.ThrowDOMException(DOMExceptionCode::kQuotaExceededError,
     //                                    "Throttling history state changes to "
     //                                    "prevent the browser from hanging.");
     //

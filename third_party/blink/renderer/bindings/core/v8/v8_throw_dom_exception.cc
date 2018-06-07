@@ -48,7 +48,8 @@ v8::Local<v8::Value> V8ThrowDOMException::CreateDOMException(
     const String& sanitized_message,
     const String& unsanitized_message) {
   DCHECK_GT(exception_code, 0);
-  DCHECK(exception_code == kSecurityError || unsanitized_message.IsNull());
+  DCHECK(exception_code == DOMExceptionCode::kSecurityError ||
+         unsanitized_message.IsNull());
 
   if (isolate->IsExecutionTerminating())
     return v8::Local<v8::Value>();

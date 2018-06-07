@@ -22,7 +22,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -138,8 +137,9 @@ bool SVGStringList::CheckIndexBound(size_t index,
                                     ExceptionState& exception_state) {
   if (index >= values_.size()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexExceedsMaximumBound(
-                             "index", index, values_.size()));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexExceedsMaximumBound("index", index,
+                                                    values_.size()));
     return false;
   }
 

@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_invert.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -34,7 +33,8 @@ CSSNumericSumValue::UnitMap MultiplyUnitMaps(
 CSSMathProduct* CSSMathProduct::Create(const HeapVector<CSSNumberish>& args,
                                        ExceptionState& exception_state) {
   if (args.IsEmpty()) {
-    exception_state.ThrowDOMException(kSyntaxError, "Arguments can't be empty");
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Arguments can't be empty");
     return nullptr;
   }
 

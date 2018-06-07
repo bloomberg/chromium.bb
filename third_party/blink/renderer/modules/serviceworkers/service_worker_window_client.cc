@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/page/page_visibility_state.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -50,7 +49,7 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (!ExecutionContext::From(script_state)->IsWindowInteractionAllowed()) {
-    resolver->Reject(DOMException::Create(kInvalidAccessError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidAccessError,
                                           "Not allowed to focus a window."));
     return promise;
   }

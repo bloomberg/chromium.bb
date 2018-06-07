@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"

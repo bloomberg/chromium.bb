@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -41,7 +40,7 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
 
   ScrollDirection orientation;
   if (!StringToScrollDirection(options.orientation(), orientation)) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Invalid orientation");
     return nullptr;
   }
@@ -49,7 +48,8 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
   // TODO(smcgruer): Support 'auto' value.
   if (options.timeRange().IsScrollTimelineAutoKeyword()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "'auto' value for timeRange not yet supported");
+        DOMExceptionCode::kNotSupportedError,
+        "'auto' value for timeRange not yet supported");
     return nullptr;
   }
 

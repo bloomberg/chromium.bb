@@ -25,7 +25,6 @@
 
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -100,7 +99,7 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
 
   if (buffer->sampleRate() != Context()->sampleRate()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The buffer sample rate of " + String::Number(buffer->sampleRate()) +
             " does not match the context rate of " +
             String::Number(Context()->sampleRate()) + " Hz.");
@@ -119,8 +118,9 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
 
   if (!is_channel_count_good) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "The buffer must have 1, 2, or 4 channels, not " +
-                                String::Number(number_of_channels));
+        DOMExceptionCode::kNotSupportedError,
+        "The buffer must have 1, 2, or 4 channels, not " +
+            String::Number(number_of_channels));
     return;
   }
 
@@ -207,7 +207,7 @@ void ConvolverHandler::SetChannelCount(unsigned long channel_count,
   // channelCount must be 2.
   if (channel_count != 2) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "ConvolverNode: channelCount cannot be changed from 2");
   }
 }
@@ -220,7 +220,7 @@ void ConvolverHandler::SetChannelCountMode(const String& mode,
   // channcelCountMode must be 'clamped-max'.
   if (mode != "clamped-max") {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "ConvolverNode: channelCountMode cannot be changed from 'clamped-max'");
   }
 }

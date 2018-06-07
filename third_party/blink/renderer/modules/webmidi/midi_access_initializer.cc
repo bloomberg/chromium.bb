@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -100,13 +99,14 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
           std::move(accessor_), options_.hasSysex() && options_.sysex(),
           port_descriptors_, GetExecutionContext()));
     case Result::NOT_SUPPORTED:
-      return Reject(DOMException::Create(kNotSupportedError));
+      return Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError));
     case Result::INITIALIZATION_ERROR:
-      return Reject(DOMException::Create(
-          kInvalidStateError, "Platform dependent initialization failed."));
+      return Reject(
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               "Platform dependent initialization failed."));
   }
   NOTREACHED();
-  Reject(DOMException::Create(kInvalidStateError,
+  Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
                               "Unknown internal error occurred."));
 }
 
@@ -119,7 +119,7 @@ void MIDIAccessInitializer::OnPermissionsUpdated(PermissionStatus status) {
   if (status == PermissionStatus::GRANTED)
     accessor_->StartSession();
   else
-    Reject(DOMException::Create(kSecurityError));
+    Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
 }
 
 void MIDIAccessInitializer::OnPermissionUpdated(PermissionStatus status) {
@@ -127,7 +127,7 @@ void MIDIAccessInitializer::OnPermissionUpdated(PermissionStatus status) {
   if (status == PermissionStatus::GRANTED)
     accessor_->StartSession();
   else
-    Reject(DOMException::Create(kSecurityError));
+    Reject(DOMException::Create(DOMExceptionCode::kSecurityError));
 }
 
 }  // namespace blink

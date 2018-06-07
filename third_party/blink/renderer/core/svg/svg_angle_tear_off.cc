@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/svg/svg_angle_tear_off.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
@@ -77,8 +76,9 @@ void SVGAngleTearOff::newValueSpecifiedUnits(unsigned short unit_type,
   if (unit_type == SVGAngle::kSvgAngletypeUnknown ||
       unit_type > SVGAngle::kSvgAngletypeGrad) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "Cannot set value with unknown or invalid units (" +
-                                String::Number(unit_type) + ").");
+        DOMExceptionCode::kNotSupportedError,
+        "Cannot set value with unknown or invalid units (" +
+            String::Number(unit_type) + ").");
     return;
   }
   Target()->NewValueSpecifiedUnits(
@@ -95,13 +95,15 @@ void SVGAngleTearOff::convertToSpecifiedUnits(unsigned short unit_type,
   if (unit_type == SVGAngle::kSvgAngletypeUnknown ||
       unit_type > SVGAngle::kSvgAngletypeGrad) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "Cannot convert to unknown or invalid units (" +
-                                String::Number(unit_type) + ").");
+        DOMExceptionCode::kNotSupportedError,
+        "Cannot convert to unknown or invalid units (" +
+            String::Number(unit_type) + ").");
     return;
   }
   if (Target()->UnitType() == SVGAngle::kSvgAngletypeUnknown) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "Cannot convert from unknown or invalid units.");
+        DOMExceptionCode::kNotSupportedError,
+        "Cannot convert from unknown or invalid units.");
     return;
   }
   Target()->ConvertToSpecifiedUnits(
@@ -123,7 +125,8 @@ void SVGAngleTearOff::setValueAsString(const String& value,
   }
   if (status != SVGParseStatus::kNoError) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "The value provided ('" + value + "') is invalid.");
+        DOMExceptionCode::kSyntaxError,
+        "The value provided ('" + value + "') is invalid.");
     return;
   }
   CommitChange();

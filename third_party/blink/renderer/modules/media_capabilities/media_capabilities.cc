@@ -288,7 +288,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
               ->GetTaskRunner(TaskType::kInternalMediaRealTime));
   if (!handler) {
     resolver->Reject(DOMException::Create(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Platform error: could not create MediaRecorderHandler."));
     return promise;
   }

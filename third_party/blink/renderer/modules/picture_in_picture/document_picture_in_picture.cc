@@ -37,8 +37,8 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
 
   if (!picture_in_picture_element) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kNoPictureInPictureElement));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kNoPictureInPictureElement));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);

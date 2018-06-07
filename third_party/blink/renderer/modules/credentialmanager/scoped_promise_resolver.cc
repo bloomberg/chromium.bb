@@ -24,7 +24,7 @@ void ScopedPromiseResolver::OnConnectionError() {
   // The only anticipated reason for a connection error is that the embedder
   // does not implement mojom::AuthenticatorImpl.
   resolver_->Reject(DOMException::Create(
-      kNotSupportedError,
+      DOMExceptionCode::kNotSupportedError,
       "The user agent does not support public key credentials."));
 }
 

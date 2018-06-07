@@ -28,7 +28,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/xml/xpath_evaluator.h"
 #include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
 
@@ -188,7 +187,7 @@ Node* XPathResult::iterateNext(ExceptionState& exception_state) {
 
   if (invalidIteratorState()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "The document has mutated since the result was returned.");
     return nullptr;
   }

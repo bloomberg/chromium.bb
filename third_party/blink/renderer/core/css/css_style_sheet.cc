@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
@@ -354,9 +353,10 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
 
   if (index > length()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "The index provided (" + String::Number(index) +
-                             ") is larger than the maximum index (" +
-                             String::Number(length()) + ").");
+        DOMExceptionCode::kIndexSizeError,
+        "The index provided (" + String::Number(index) +
+            ") is larger than the maximum index (" + String::Number(length()) +
+            ").");
     return 0;
   }
   const CSSParserContext* context =
@@ -366,18 +366,20 @@ unsigned CSSStyleSheet::insertRule(const String& rule_string,
 
   if (!rule) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "Failed to parse the rule '" + rule_string + "'.");
+        DOMExceptionCode::kSyntaxError,
+        "Failed to parse the rule '" + rule_string + "'.");
     return 0;
   }
   RuleMutationScope mutation_scope(this);
   bool success = contents_->WrapperInsertRule(rule, index);
   if (!success) {
     if (rule->IsNamespaceRule())
-      exception_state.ThrowDOMException(kInvalidStateError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                         "Failed to insert the rule");
     else
-      exception_state.ThrowDOMException(kHierarchyRequestError,
-                                        "Failed to insert the rule.");
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kHierarchyRequestError,
+          "Failed to insert the rule.");
     return 0;
   }
   if (!child_rule_cssom_wrappers_.IsEmpty())
@@ -399,16 +401,17 @@ void CSSStyleSheet::deleteRule(unsigned index,
 
   if (index >= length()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "The index provided (" + String::Number(index) +
-                             ") is larger than the maximum index (" +
-                             String::Number(length() - 1) + ").");
+        DOMExceptionCode::kIndexSizeError,
+        "The index provided (" + String::Number(index) +
+            ") is larger than the maximum index (" +
+            String::Number(length() - 1) + ").");
     return;
   }
   RuleMutationScope mutation_scope(this);
 
   bool success = contents_->WrapperDeleteRule(index);
   if (!success) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Failed to delete rule");
     return;
   }

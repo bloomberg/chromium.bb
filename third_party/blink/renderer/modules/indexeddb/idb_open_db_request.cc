@@ -29,7 +29,6 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
@@ -194,8 +193,8 @@ DispatchEventResult IDBOpenDBRequest::DispatchEventInternal(Event* event) {
       ResultAsAny()->GetType() == IDBAny::kIDBDatabaseType &&
       ResultAsAny()->IdbDatabase()->IsClosePending()) {
     SetResult(nullptr);
-    HandleResponse(
-        DOMException::Create(kAbortError, "The connection was closed."));
+    HandleResponse(DOMException::Create(DOMExceptionCode::kAbortError,
+                                        "The connection was closed."));
     return DispatchEventResult::kCanceledBeforeDispatch;
   }
 

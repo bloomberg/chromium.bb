@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio_tear_off.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
@@ -44,7 +43,7 @@ void SVGPreserveAspectRatioTearOff::setAlign(unsigned short align,
   }
   if (align == kSvgPreserveaspectratioUnknown ||
       align > kSvgPreserveaspectratioXmaxymax) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "The alignment provided is invalid.");
     return;
   }
@@ -62,7 +61,7 @@ void SVGPreserveAspectRatioTearOff::setMeetOrSlice(
   }
   if (meet_or_slice == kSvgMeetorsliceUnknown ||
       meet_or_slice > kSvgMeetorsliceSlice) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "The meetOrSlice provided is invalid.");
     return;
   }

@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/app_banner/before_install_prompt_event_init.h"
@@ -65,7 +64,7 @@ ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* script_state) {
     return user_choice_->Promise(script_state->World());
   return ScriptPromise::RejectWithDOMException(
       script_state,
-      DOMException::Create(kInvalidStateError,
+      DOMException::Create(DOMExceptionCode::kInvalidStateError,
                            "userChoice cannot be accessed on this event."));
 }
 
@@ -75,7 +74,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
   if (prompt_called_ || !banner_service_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kInvalidStateError,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "The prompt() method may only be called once."));
   }
 

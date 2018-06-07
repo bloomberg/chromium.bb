@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -151,14 +150,14 @@ void HTMLDialogElement::show() {
 
 void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   if (FastHasAttribute(openAttr)) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The element already has an 'open' "
                                       "attribute, and therefore cannot be "
                                       "opened modally.");
     return;
   }
   if (!isConnected()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The element is not in a Document.");
     return;
   }

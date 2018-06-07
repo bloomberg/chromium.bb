@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_script_promise_resolver_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 

@@ -41,19 +41,19 @@ bool rejectError(ScriptPromiseResolver* resolver,
     case payments::mojom::blink::PaymentHandlerStatus::SUCCESS:
       return false;
     case payments::mojom::blink::PaymentHandlerStatus::NOT_IMPLEMENTED:
-      resolver->Reject(
-          DOMException::Create(kNotSupportedError, "Not implemented yet"));
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kNotSupportedError, "Not implemented yet"));
       return true;
     case payments::mojom::blink::PaymentHandlerStatus::NOT_FOUND:
       resolver->Resolve();
       return true;
     case payments::mojom::blink::PaymentHandlerStatus::NO_ACTIVE_WORKER:
-      resolver->Reject(
-          DOMException::Create(kInvalidStateError, "No active service worker"));
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kInvalidStateError, "No active service worker"));
       return true;
     case payments::mojom::blink::PaymentHandlerStatus::STORAGE_OPERATION_FAILED:
-      resolver->Reject(DOMException::Create(kInvalidStateError,
-                                            "Storage operation is failed"));
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kInvalidStateError, "Storage operation is failed"));
       return true;
     case payments::mojom::blink::PaymentHandlerStatus::
         FETCH_INSTRUMENT_ICON_FAILED: {
@@ -87,7 +87,7 @@ bool AllowedToUsePaymentFeatures(ScriptState* script_state) {
 ScriptPromise RejectNotAllowedToUsePaymentFeatures(ScriptState* script_state) {
   return ScriptPromise::RejectWithDOMException(
       script_state, DOMException::Create(
-                        kSecurityError,
+                        DOMExceptionCode::kSecurityError,
                         "Must be in a top-level browsing context or an iframe "
                         "needs to specify allow=\"payment\" explicitly"));
 }
@@ -106,8 +106,8 @@ ScriptPromise PaymentInstruments::deleteInstrument(
 
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kPaymentManagerUnavailable));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -127,8 +127,8 @@ ScriptPromise PaymentInstruments::get(ScriptState* script_state,
 
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kPaymentManagerUnavailable));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -147,8 +147,8 @@ ScriptPromise PaymentInstruments::keys(ScriptState* script_state) {
 
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kPaymentManagerUnavailable));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -167,8 +167,8 @@ ScriptPromise PaymentInstruments::has(ScriptState* script_state,
 
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kPaymentManagerUnavailable));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -190,8 +190,8 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
 
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kPaymentManagerUnavailable));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -217,8 +217,8 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
 
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kPaymentManagerUnavailable));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kPaymentManagerUnavailable));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -252,8 +252,9 @@ void PaymentInstruments::OnRequestPermission(
   ScriptState::Scope scope(resolver->GetScriptState());
 
   if (status != mojom::blink::PermissionStatus::GRANTED) {
-    resolver->Reject(DOMException::Create(
-        kNotAllowedError, "Not allowed to install this payment handler"));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kNotAllowedError,
+                             "Not allowed to install this payment handler"));
     return;
   }
 

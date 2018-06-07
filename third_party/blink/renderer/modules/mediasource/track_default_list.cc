@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/mediasource/track_default_list.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -38,9 +37,9 @@ TrackDefaultList* TrackDefaultList::Create(
     if (!type_and_id_to_track_default_map.insert(key, track_default)
              .is_new_entry) {
       exception_state.ThrowDOMException(
-          kInvalidAccessError, "Duplicate TrackDefault type (" + key.first +
-                                   ") and byteStreamTrackID (" + key.second +
-                                   ")");
+          DOMExceptionCode::kInvalidAccessError,
+          "Duplicate TrackDefault type (" + key.first +
+              ") and byteStreamTrackID (" + key.second + ")");
       return nullptr;
     }
   }

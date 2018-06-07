@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -53,7 +52,7 @@ void NavigatorMediaStream::getUserMedia(
       UserMediaController::From(navigator.GetFrame());
   if (!user_media) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "No user media controller available; is this a detached window?");
     return;
   }

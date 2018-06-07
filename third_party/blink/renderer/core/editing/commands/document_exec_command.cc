@@ -63,7 +63,8 @@ bool Document::execCommand(const String& command_name,
                            ExceptionState& exception_state) {
   if (!IsHTMLDocument() && !IsXHTMLDocument()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "execCommand is only supported on HTML documents.");
+        DOMExceptionCode::kInvalidStateError,
+        "execCommand is only supported on HTML documents.");
     return false;
   }
   if (FocusedElement() && IsTextControl(*FocusedElement()))
@@ -100,7 +101,7 @@ bool Document::queryCommandEnabled(const String& command_name,
                                    ExceptionState& exception_state) {
   if (!IsHTMLDocument() && !IsXHTMLDocument()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "queryCommandEnabled is only supported on HTML documents.");
     return false;
   }
@@ -112,7 +113,7 @@ bool Document::queryCommandIndeterm(const String& command_name,
                                     ExceptionState& exception_state) {
   if (!IsHTMLDocument() && !IsXHTMLDocument()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "queryCommandIndeterm is only supported on HTML documents.");
     return false;
   }
@@ -124,7 +125,7 @@ bool Document::queryCommandState(const String& command_name,
                                  ExceptionState& exception_state) {
   if (!IsHTMLDocument() && !IsXHTMLDocument()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "queryCommandState is only supported on HTML documents.");
     return false;
   }
@@ -136,7 +137,7 @@ bool Document::queryCommandSupported(const String& command_name,
                                      ExceptionState& exception_state) {
   if (!IsHTMLDocument() && !IsXHTMLDocument()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "queryCommandSupported is only supported on HTML documents.");
     return false;
   }
@@ -148,7 +149,7 @@ String Document::queryCommandValue(const String& command_name,
                                    ExceptionState& exception_state) {
   if (!IsHTMLDocument() && !IsXHTMLDocument()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "queryCommandValue is only supported on HTML documents.");
     return "";
   }

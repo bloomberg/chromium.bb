@@ -1019,7 +1019,7 @@ CSSStyleRule* InspectorStyleSheet::SetRuleSelector(
     String* old_text,
     ExceptionState& exception_state) {
   if (!VerifySelectorText(page_style_sheet_->OwnerDocument(), text)) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Selector or media text is not valid.");
     return nullptr;
   }
@@ -1027,7 +1027,8 @@ CSSStyleRule* InspectorStyleSheet::SetRuleSelector(
   CSSRuleSourceData* source_data = FindRuleByHeaderRange(range);
   if (!source_data || !source_data->HasProperties()) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "Source range didn't match existing source range");
+        DOMExceptionCode::kNotFoundError,
+        "Source range didn't match existing source range");
     return nullptr;
   }
 
@@ -1035,7 +1036,7 @@ CSSStyleRule* InspectorStyleSheet::SetRuleSelector(
   if (!rule || !rule->parentStyleSheet() ||
       rule->type() != CSSRule::kStyleRule) {
     exception_state.ThrowDOMException(
-        kNotFoundError,
+        DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
     return nullptr;
   }
@@ -1056,7 +1057,7 @@ CSSKeyframeRule* InspectorStyleSheet::SetKeyframeKey(
     String* old_text,
     ExceptionState& exception_state) {
   if (!VerifyKeyframeKeyText(page_style_sheet_->OwnerDocument(), text)) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Keyframe key text is not valid.");
     return nullptr;
   }
@@ -1064,7 +1065,8 @@ CSSKeyframeRule* InspectorStyleSheet::SetKeyframeKey(
   CSSRuleSourceData* source_data = FindRuleByHeaderRange(range);
   if (!source_data || !source_data->HasProperties()) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "Source range didn't match existing source range");
+        DOMExceptionCode::kNotFoundError,
+        "Source range didn't match existing source range");
     return nullptr;
   }
 
@@ -1072,7 +1074,7 @@ CSSKeyframeRule* InspectorStyleSheet::SetKeyframeKey(
   if (!rule || !rule->parentStyleSheet() ||
       rule->type() != CSSRule::kKeyframeRule) {
     exception_state.ThrowDOMException(
-        kNotFoundError,
+        DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
     return nullptr;
   }
@@ -1092,14 +1094,15 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
                                            String* old_text,
                                            ExceptionState& exception_state) {
   if (!VerifyStyleText(page_style_sheet_->OwnerDocument(), text)) {
-    exception_state.ThrowDOMException(kSyntaxError, "Style text is not valid.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Style text is not valid.");
     return nullptr;
   }
 
   CSSRuleSourceData* source_data = FindRuleByBodyRange(range);
   if (!source_data || !source_data->HasProperties()) {
     exception_state.ThrowDOMException(
-        kNotFoundError,
+        DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
     return nullptr;
   }
@@ -1109,7 +1112,7 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
       (rule->type() != CSSRule::kStyleRule &&
        rule->type() != CSSRule::kKeyframeRule)) {
     exception_state.ThrowDOMException(
-        kNotFoundError,
+        DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
     return nullptr;
   }
@@ -1134,7 +1137,7 @@ CSSMediaRule* InspectorStyleSheet::SetMediaRuleText(
     String* old_text,
     ExceptionState& exception_state) {
   if (!VerifyMediaText(page_style_sheet_->OwnerDocument(), text)) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Selector or media text is not valid.");
     return nullptr;
   }
@@ -1142,7 +1145,8 @@ CSSMediaRule* InspectorStyleSheet::SetMediaRuleText(
   CSSRuleSourceData* source_data = FindRuleByHeaderRange(range);
   if (!source_data || !source_data->HasMedia()) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "Source range didn't match existing source range");
+        DOMExceptionCode::kNotFoundError,
+        "Source range didn't match existing source range");
     return nullptr;
   }
 
@@ -1150,7 +1154,7 @@ CSSMediaRule* InspectorStyleSheet::SetMediaRuleText(
   if (!rule || !rule->parentStyleSheet() ||
       rule->type() != CSSRule::kMediaRule) {
     exception_state.ThrowDOMException(
-        kNotFoundError,
+        DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
     return nullptr;
   }
@@ -1193,7 +1197,7 @@ CSSStyleRule* InspectorStyleSheet::InsertCSSOMRuleInStyleSheet(
   if (!style_rule) {
     page_style_sheet_->deleteRule(index, ASSERT_NO_EXCEPTION);
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The rule '" + rule_text + "' could not be added in style sheet.");
     return nullptr;
   }
@@ -1219,7 +1223,7 @@ CSSStyleRule* InspectorStyleSheet::InsertCSSOMRuleInMediaRule(
   if (!style_rule) {
     media_rule->deleteRule(index, ASSERT_NO_EXCEPTION);
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The rule '" + rule_text + "' could not be added in media rule.");
     return nullptr;
   }
@@ -1238,7 +1242,8 @@ CSSStyleRule* InspectorStyleSheet::InsertCSSOMRuleBySourceRange(
     if (rule_source_data->rule_header_range.start < source_range.start &&
         source_range.start < rule_source_data->rule_body_range.start) {
       exception_state.ThrowDOMException(
-          kNotFoundError, "Cannot insert rule inside rule selector.");
+          DOMExceptionCode::kNotFoundError,
+          "Cannot insert rule inside rule selector.");
       return nullptr;
     }
     if (source_range.start < rule_source_data->rule_body_range.start ||
@@ -1260,7 +1265,7 @@ CSSStyleRule* InspectorStyleSheet::InsertCSSOMRuleBySourceRange(
 
   CSSRule* rule = RuleForSourceData(containing_rule_source_data);
   if (!rule || rule->type() != CSSRule::kMediaRule) {
-    exception_state.ThrowDOMException(kNotFoundError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "Cannot insert rule in non-media rule.");
     return nullptr;
   }
@@ -1274,18 +1279,20 @@ CSSStyleRule* InspectorStyleSheet::AddRule(const String& rule_text,
                                            SourceRange* added_range,
                                            ExceptionState& exception_state) {
   if (location.start != location.end) {
-    exception_state.ThrowDOMException(kNotFoundError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "Source range must be collapsed.");
     return nullptr;
   }
 
   if (!VerifyRuleText(page_style_sheet_->OwnerDocument(), rule_text)) {
-    exception_state.ThrowDOMException(kSyntaxError, "Rule text is not valid.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Rule text is not valid.");
     return nullptr;
   }
 
   if (!source_data_) {
-    exception_state.ThrowDOMException(kNotFoundError, "Style is read-only.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
+                                      "Style is read-only.");
     return nullptr;
   }
 
@@ -1302,7 +1309,8 @@ CSSStyleRule* InspectorStyleSheet::AddRule(const String& rule_text,
 bool InspectorStyleSheet::DeleteRule(const SourceRange& range,
                                      ExceptionState& exception_state) {
   if (!source_data_) {
-    exception_state.ThrowDOMException(kNotFoundError, "Style is read-only.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
+                                      "Style is read-only.");
     return false;
   }
 
@@ -1327,12 +1335,13 @@ bool InspectorStyleSheet::DeleteRule(const SourceRange& range,
   CSSRule* rule = RuleForSourceData(found_data);
   if (!rule) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "No style rule could be found in given range.");
+        DOMExceptionCode::kNotFoundError,
+        "No style rule could be found in given range.");
     return false;
   }
   CSSStyleSheet* style_sheet = rule->parentStyleSheet();
   if (!style_sheet) {
-    exception_state.ThrowDOMException(kNotFoundError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "No parent stylesheet could be found.");
     return false;
   }
@@ -1340,7 +1349,8 @@ bool InspectorStyleSheet::DeleteRule(const SourceRange& range,
   if (parent_rule) {
     if (parent_rule->type() != CSSRule::kMediaRule) {
       exception_state.ThrowDOMException(
-          kNotFoundError, "Cannot remove rule from non-media rule.");
+          DOMExceptionCode::kNotFoundError,
+          "Cannot remove rule from non-media rule.");
       return false;
     }
     CSSMediaRule* parent_media_rule = ToCSSMediaRule(parent_rule);
@@ -1896,7 +1906,8 @@ bool InspectorStyleSheetForInlineStyle::SetText(
     const String& text,
     ExceptionState& exception_state) {
   if (!VerifyStyleText(&element_->GetDocument(), text)) {
-    exception_state.ThrowDOMException(kSyntaxError, "Style text is not valid.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Style text is not valid.");
     return false;
   }
 

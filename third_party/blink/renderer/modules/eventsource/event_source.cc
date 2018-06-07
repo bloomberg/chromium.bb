@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -87,14 +86,15 @@ EventSource* EventSource::Create(ExecutionContext* context,
 
   if (url.IsEmpty()) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "Cannot open an EventSource to an empty URL.");
+        DOMExceptionCode::kSyntaxError,
+        "Cannot open an EventSource to an empty URL.");
     return nullptr;
   }
 
   KURL full_url = context->CompleteURL(url);
   if (!full_url.IsValid()) {
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "Cannot open an EventSource to '" + url + "'. The URL is invalid.");
     return nullptr;
   }

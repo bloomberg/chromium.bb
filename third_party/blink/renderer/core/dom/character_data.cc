@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_interest_group.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
@@ -55,9 +54,10 @@ String CharacterData::substringData(unsigned offset,
                                     ExceptionState& exception_state) {
   if (offset > length()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "The offset " + String::Number(offset) +
-                             " is greater than the node's length (" +
-                             String::Number(length()) + ").");
+        DOMExceptionCode::kIndexSizeError,
+        "The offset " + String::Number(offset) +
+            " is greater than the node's length (" + String::Number(length()) +
+            ").");
     return String();
   }
 
@@ -85,9 +85,10 @@ void CharacterData::insertData(unsigned offset,
                                ExceptionState& exception_state) {
   if (offset > length()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "The offset " + String::Number(offset) +
-                             " is greater than the node's length (" +
-                             String::Number(length()) + ").");
+        DOMExceptionCode::kIndexSizeError,
+        "The offset " + String::Number(offset) +
+            " is greater than the node's length (" + String::Number(length()) +
+            ").");
     return;
   }
 
@@ -106,9 +107,10 @@ static bool ValidateOffsetCount(unsigned offset,
                                 ExceptionState& exception_state) {
   if (offset > length) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "The offset " + String::Number(offset) +
-                             " is greater than the node's length (" +
-                             String::Number(length) + ").");
+        DOMExceptionCode::kIndexSizeError,
+        "The offset " + String::Number(offset) +
+            " is greater than the node's length (" + String::Number(length) +
+            ").");
     return false;
   }
 

@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -66,7 +65,7 @@ static bool ThrowExceptionIfClosed(bool is_open,
                                    ExceptionState& exception_state) {
   if (!is_open) {
     MediaSource::LogAndThrowDOMException(
-        exception_state, kInvalidStateError,
+        exception_state, DOMExceptionCode::kInvalidStateError,
         "The MediaSource's readyState is not 'open'.");
     return true;
   }
@@ -81,7 +80,8 @@ static bool ThrowExceptionIfClosedOrUpdating(bool is_open,
     return true;
 
   if (is_updating) {
-    MediaSource::LogAndThrowDOMException(exception_state, kInvalidStateError,
+    MediaSource::LogAndThrowDOMException(exception_state,
+                                         DOMExceptionCode::kInvalidStateError,
                                          "The 'updating' attribute is true on "
                                          "one or more of this MediaSource's "
                                          "SourceBuffers.");
@@ -161,7 +161,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
   // NotSupportedError exception and abort these steps.
   if (!isTypeSupported(type)) {
     LogAndThrowDOMException(
-        exception_state, kNotSupportedError,
+        exception_state, DOMExceptionCode::kNotSupportedError,
         "The type provided ('" + type + "') is unsupported.");
     return nullptr;
   }
@@ -169,7 +169,8 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
   // 4. If the readyState attribute is not in the "open" state then throw an
   // InvalidStateError exception and abort these steps.
   if (!IsOpen()) {
-    LogAndThrowDOMException(exception_state, kInvalidStateError,
+    LogAndThrowDOMException(exception_state,
+                            DOMExceptionCode::kInvalidStateError,
                             "The MediaSource's readyState is not 'open'.");
     return nullptr;
   }
@@ -181,8 +182,8 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
       CreateWebSourceBuffer(content_type.GetType(), codecs, exception_state);
 
   if (!web_source_buffer) {
-    DCHECK(exception_state.Code() == kNotSupportedError ||
-           exception_state.Code() == kQuotaExceededError);
+    DCHECK(exception_state.Code() == DOMExceptionCode::kNotSupportedError ||
+           exception_state.Code() == DOMExceptionCode::kQuotaExceededError);
     // 2. If type contains a MIME type that is not supported ..., then throw a
     //    NotSupportedError exception and abort these steps.
     // 3. If the user agent can't handle any more SourceBuffer objects then
@@ -227,7 +228,7 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer,
   //    throw a NotFoundError exception and abort these steps.
   if (!source_buffers_->length() || !source_buffers_->Contains(buffer)) {
     LogAndThrowDOMException(
-        exception_state, kNotFoundError,
+        exception_state, DOMExceptionCode::kNotFoundError,
         "The SourceBuffer provided is not contained in this MediaSource.");
     return;
   }
@@ -550,7 +551,7 @@ void MediaSource::DurationChangeAlgorithm(double new_duration,
   if (new_duration < highest_buffered_presentation_timestamp) {
     if (RuntimeEnabledFeatures::MediaSourceNewAbortAndDurationEnabled()) {
       LogAndThrowDOMException(
-          exception_state, kInvalidStateError,
+          exception_state, DOMExceptionCode::kInvalidStateError,
           "Setting duration below highest presentation timestamp of any "
           "buffered coded frames is disallowed. Instead, first do asynchronous "
           "remove(newDuration, oldDuration) on all sourceBuffers, where "
@@ -820,7 +821,7 @@ std::unique_ptr<WebSourceBuffer> MediaSource::CreateWebSourceBuffer(
       // types specified for the other SourceBuffer objects in sourceBuffers,
       // then throw a NotSupportedError exception and abort these steps.
       LogAndThrowDOMException(
-          exception_state, kNotSupportedError,
+          exception_state, DOMExceptionCode::kNotSupportedError,
           "The type provided ('" + type + "') is not supported.");
       return nullptr;
     case WebMediaSource::kAddStatusReachedIdLimit:
@@ -829,7 +830,8 @@ std::unique_ptr<WebSourceBuffer> MediaSource::CreateWebSourceBuffer(
       // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
       // Step 3: If the user agent can't handle any more SourceBuffer objects
       // then throw a QuotaExceededError exception and abort these steps.
-      LogAndThrowDOMException(exception_state, kQuotaExceededError,
+      LogAndThrowDOMException(exception_state,
+                              DOMExceptionCode::kQuotaExceededError,
                               "This MediaSource has reached the limit of "
                               "SourceBuffer objects it can handle. No "
                               "additional SourceBuffer objects may be added.");

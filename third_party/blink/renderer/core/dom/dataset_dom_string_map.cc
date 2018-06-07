@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -181,7 +180,8 @@ void DatasetDOMStringMap::SetItem(const String& name,
                                   ExceptionState& exception_state) {
   if (!IsValidPropertyName(name)) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "'" + name + "' is not a valid property name.");
+        DOMExceptionCode::kSyntaxError,
+        "'" + name + "' is not a valid property name.");
     return;
   }
 

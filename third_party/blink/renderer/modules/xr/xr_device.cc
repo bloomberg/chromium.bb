@@ -104,7 +104,8 @@ ScriptPromise XRDevice::supportsSession(
   const char* reject_reason = checkSessionSupport(options);
   if (reject_reason) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kNotSupportedError, reject_reason));
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           reject_reason));
   }
 
   // If the above checks pass, resolve without a value. Future API iterations
@@ -129,9 +130,10 @@ void XRDevice::OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
   // kExclusiveNotSupported is currently the only reason that SupportsSession
   // rejects on the browser side. That or there are no devices, but that should
   // technically not be possible.
-  supports_session ? resolver->Resolve()
-                   : resolver->Reject(DOMException::Create(
-                         kNotSupportedError, kExclusiveNotSupported));
+  supports_session
+      ? resolver->Resolve()
+      : resolver->Reject(DOMException::Create(
+            DOMExceptionCode::kNotSupportedError, kExclusiveNotSupported));
 }
 
 int64_t XRDevice::GetSourceId() const {
@@ -155,7 +157,8 @@ ScriptPromise XRDevice::requestSession(
   const char* reject_reason = checkSessionSupport(options);
   if (reject_reason) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kNotSupportedError, reject_reason));
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           reject_reason));
   }
 
   // Check if the current page state prevents the requested session from being
@@ -164,13 +167,14 @@ ScriptPromise XRDevice::requestSession(
     if (frameProvider()->exclusive_session()) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
-          DOMException::Create(kInvalidStateError, kActiveExclusiveSession));
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               kActiveExclusiveSession));
     }
 
     if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(kSecurityError, kRequestRequiresUserActivation));
+          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                             kRequestRequiresUserActivation));
     }
   }
 
@@ -179,8 +183,8 @@ ScriptPromise XRDevice::requestSession(
   if (RuntimeEnabledFeatures::WebXRHitTestEnabled()) {
     if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
       return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(kSecurityError, kRequestRequiresUserActivation));
+          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                             kRequestRequiresUserActivation));
     }
   }
 
@@ -203,8 +207,8 @@ void XRDevice::OnRequestSessionReturned(ScriptPromiseResolver* resolver,
                                         const XRSessionCreationOptions& options,
                                         bool success) {
   if (!success) {
-    DOMException* exception =
-        DOMException::Create(kNotSupportedError, kSessionNotSupported);
+    DOMException* exception = DOMException::Create(
+        DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
     resolver->Reject(exception);
     return;
   }

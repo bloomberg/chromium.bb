@@ -32,7 +32,6 @@
 
 #include "base/location.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/quota/deprecated_storage_quota.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -52,7 +51,7 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
   if (!storage_quota) {
     // Unknown storage type is requested.
     DeprecatedStorageQuota::EnqueueStorageErrorCallback(
-        script_state, error_callback, kNotSupportedError);
+        script_state, error_callback, DOMExceptionCode::kNotSupportedError);
     return;
   }
   storage_quota->queryUsageAndQuota(script_state, success_callback,
@@ -71,7 +70,7 @@ void DeprecatedStorageInfo::requestQuota(
   if (!storage_quota) {
     // Unknown storage type is requested.
     DeprecatedStorageQuota::EnqueueStorageErrorCallback(
-        script_state, error_callback, kNotSupportedError);
+        script_state, error_callback, DOMExceptionCode::kNotSupportedError);
     return;
   }
   storage_quota->requestQuota(script_state, new_quota_in_bytes,

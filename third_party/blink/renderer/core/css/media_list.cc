@@ -184,7 +184,7 @@ void MediaList::deleteMedium(const String& medium,
 
   bool success = media_queries_->Remove(medium);
   if (!success) {
-    exception_state.ThrowDOMException(kNotFoundError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "Failed to delete '" + medium + "'.");
     return;
   }

@@ -7,7 +7,6 @@
 #include <memory>
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 
@@ -61,12 +60,13 @@ void ScrollState::consumeDelta(double x,
   if ((data_->delta_x > 0 && 0 > x) || (data_->delta_x < 0 && 0 < x) ||
       (data_->delta_y > 0 && 0 > y) || (data_->delta_y < 0 && 0 < y)) {
     exception_state.ThrowDOMException(
-        kInvalidModificationError, "Can't increase delta using consumeDelta");
+        DOMExceptionCode::kInvalidModificationError,
+        "Can't increase delta using consumeDelta");
     return;
   }
   if (fabs(x) > fabs(data_->delta_x) || fabs(y) > fabs(data_->delta_y)) {
     exception_state.ThrowDOMException(
-        kInvalidModificationError,
+        DOMExceptionCode::kInvalidModificationError,
         "Can't change direction of delta using consumeDelta");
     return;
   }

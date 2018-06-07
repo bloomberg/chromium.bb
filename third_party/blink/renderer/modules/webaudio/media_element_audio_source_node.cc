@@ -235,7 +235,7 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
 
   // First check if this media element already has a source node.
   if (media_element.AudioSourceNode()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "HTMLMediaElement already connected "
                                       "previously to a different "
                                       "MediaElementSourceNode.");

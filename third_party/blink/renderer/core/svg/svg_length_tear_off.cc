@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/svg/svg_length_tear_off.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
@@ -119,7 +118,7 @@ SVGLengthMode SVGLengthTearOff::UnitMode() {
 
 float SVGLengthTearOff::value(ExceptionState& exception_state) {
   if (Target()->IsRelative() && !CanResolveRelativeUnits(contextElement())) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Could not resolve relative length.");
     return 0;
   }
@@ -133,7 +132,7 @@ void SVGLengthTearOff::setValue(float value, ExceptionState& exception_state) {
     return;
   }
   if (Target()->IsRelative() && !CanResolveRelativeUnits(contextElement())) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Could not resolve relative length.");
     return;
   }
@@ -186,7 +185,8 @@ void SVGLengthTearOff::setValueAsString(const String& str,
   }
   if (status != SVGParseStatus::kNoError) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "The value provided ('" + str + "') is invalid.");
+        DOMExceptionCode::kSyntaxError,
+        "The value provided ('" + str + "') is invalid.");
     return;
   }
   CommitChange();
@@ -201,8 +201,9 @@ void SVGLengthTearOff::newValueSpecifiedUnits(unsigned short unit_type,
   }
   if (!IsValidLengthUnit(unit_type)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "Cannot set value with unknown or invalid units (" +
-                                String::Number(unit_type) + ").");
+        DOMExceptionCode::kNotSupportedError,
+        "Cannot set value with unknown or invalid units (" +
+            String::Number(unit_type) + ").");
     return;
   }
   Target()->NewValueSpecifiedUnits(ToCSSUnitType(unit_type),
@@ -219,14 +220,15 @@ void SVGLengthTearOff::convertToSpecifiedUnits(
   }
   if (!IsValidLengthUnit(unit_type)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "Cannot convert to unknown or invalid units (" +
-                                String::Number(unit_type) + ").");
+        DOMExceptionCode::kNotSupportedError,
+        "Cannot convert to unknown or invalid units (" +
+            String::Number(unit_type) + ").");
     return;
   }
   if ((Target()->IsRelative() ||
        CSSPrimitiveValue::IsRelativeUnit(ToCSSUnitType(unit_type))) &&
       !CanResolveRelativeUnits(contextElement())) {
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Could not resolve relative length.");
     return;
   }

@@ -108,8 +108,8 @@ class Sensor : public EventTargetWithInlineData,
 
   void RequestAddConfiguration();
 
-  void HandleError(ExceptionCode = kUnknownError,
-                   const String& sanitized_message = String(),
+  void HandleError(ExceptionCode,
+                   const String& sanitized_message,
                    const String& unsanitized_message = String());
 
   void NotifyReading();

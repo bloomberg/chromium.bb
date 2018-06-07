@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/xml/xpath_expression.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
 #include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
 #include "third_party/blink/renderer/core/xml/xpath_parser.h"
@@ -67,9 +66,9 @@ XPathResult* XPathExpression::evaluate(Node* context_node,
                                        ExceptionState& exception_state) {
   if (!IsValidContextNode(context_node)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "The node provided is '" +
-                                context_node->nodeName() +
-                                "', which is not a valid context node type.");
+        DOMExceptionCode::kNotSupportedError,
+        "The node provided is '" + context_node->nodeName() +
+            "', which is not a valid context node type.");
     return nullptr;
   }
 
@@ -81,7 +80,7 @@ XPathResult* XPathExpression::evaluate(Node* context_node,
     // It is not specified what to do if type conversion fails while evaluating
     // an expression.
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "Type conversion failed while evaluating the expression.");
     return nullptr;
   }

@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_observer_callback.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_event_dispatcher.h"
@@ -271,26 +270,28 @@ IDBObjectStore* IDBDatabase::createObjectStore(
 
   if (!version_change_transaction_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         IDBDatabase::kNotVersionChangeTransactionErrorMessage);
     return nullptr;
   }
   if (!version_change_transaction_->IsActive()) {
     exception_state.ThrowDOMException(
-        kTransactionInactiveError,
+        DOMExceptionCode::kTransactionInactiveError,
         version_change_transaction_->InactiveErrorMessage());
     return nullptr;
   }
 
   if (!key_path.IsNull() && !key_path.IsValid()) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "The keyPath option is not a valid key path.");
+        DOMExceptionCode::kSyntaxError,
+        "The keyPath option is not a valid key path.");
     return nullptr;
   }
 
   if (ContainsObjectStore(name)) {
     exception_state.ThrowDOMException(
-        kConstraintError, IDBDatabase::kObjectStoreNameTakenErrorMessage);
+        DOMExceptionCode::kConstraintError,
+        IDBDatabase::kObjectStoreNameTakenErrorMessage);
     return nullptr;
   }
 
@@ -298,14 +299,14 @@ IDBObjectStore* IDBDatabase::createObjectStore(
                           key_path.GetString().IsEmpty()) ||
                          key_path.GetType() == IDBKeyPath::kArrayType)) {
     exception_state.ThrowDOMException(
-        kInvalidAccessError,
+        DOMExceptionCode::kInvalidAccessError,
         "The autoIncrement option was set but the "
         "keyPath option was empty or an array.");
     return nullptr;
   }
 
   if (!backend_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       IDBDatabase::kDatabaseClosedErrorMessage);
     return nullptr;
   }
@@ -334,13 +335,13 @@ void IDBDatabase::deleteObjectStore(const String& name,
   RecordApiCallsHistogram(kIDBDeleteObjectStoreCall);
   if (!version_change_transaction_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         IDBDatabase::kNotVersionChangeTransactionErrorMessage);
     return;
   }
   if (!version_change_transaction_->IsActive()) {
     exception_state.ThrowDOMException(
-        kTransactionInactiveError,
+        DOMExceptionCode::kTransactionInactiveError,
         version_change_transaction_->InactiveErrorMessage());
     return;
   }
@@ -348,12 +349,13 @@ void IDBDatabase::deleteObjectStore(const String& name,
   int64_t object_store_id = FindObjectStoreId(name);
   if (object_store_id == IDBObjectStoreMetadata::kInvalidId) {
     exception_state.ThrowDOMException(
-        kNotFoundError, "The specified object store was not found.");
+        DOMExceptionCode::kNotFoundError,
+        "The specified object store was not found.");
     return;
   }
 
   if (!backend_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       IDBDatabase::kDatabaseClosedErrorMessage);
     return;
   }
@@ -384,24 +386,25 @@ IDBTransaction* IDBDatabase::transaction(
 
   if (version_change_transaction_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "A version change transaction is running.");
+        DOMExceptionCode::kInvalidStateError,
+        "A version change transaction is running.");
     return nullptr;
   }
 
   if (close_pending_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "The database connection is closing.");
     return nullptr;
   }
 
   if (!backend_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       IDBDatabase::kDatabaseClosedErrorMessage);
     return nullptr;
   }
 
   if (scope.IsEmpty()) {
-    exception_state.ThrowDOMException(kInvalidAccessError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "The storeNames parameter was empty.");
     return nullptr;
   }
@@ -411,7 +414,8 @@ IDBTransaction* IDBDatabase::transaction(
     int64_t object_store_id = FindObjectStoreId(name);
     if (object_store_id == IDBObjectStoreMetadata::kInvalidId) {
       exception_state.ThrowDOMException(
-          kNotFoundError, "One of the specified object stores was not found.");
+          DOMExceptionCode::kNotFoundError,
+          "One of the specified object stores was not found.");
       return nullptr;
     }
     object_store_ids.push_back(object_store_id);
@@ -602,12 +606,19 @@ void IDBDatabase::RecordApiCallsHistogram(IndexedDatabaseMethods method) {
   api_calls_histogram.Count(method);
 }
 
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionUnknownError, kUnknownError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionConstraintError, kConstraintError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionDataError, kDataError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionVersionError, kVersionError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionAbortError, kAbortError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionQuotaError, kQuotaExceededError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionTimeoutError, kTimeoutError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionUnknownError,
+                   DOMExceptionCode::kUnknownError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionConstraintError,
+                   DOMExceptionCode::kConstraintError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionDataError,
+                   DOMExceptionCode::kDataError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionVersionError,
+                   DOMExceptionCode::kVersionError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionAbortError,
+                   DOMExceptionCode::kAbortError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionQuotaError,
+                   DOMExceptionCode::kQuotaExceededError);
+STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionTimeoutError,
+                   DOMExceptionCode::kTimeoutError);
 
 }  // namespace blink

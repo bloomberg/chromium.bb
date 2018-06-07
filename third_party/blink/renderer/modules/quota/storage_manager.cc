@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_estimate.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -155,11 +154,12 @@ mojom::blink::QuotaDispatcherHost& StorageManager::GetQuotaHost(
 }
 
 STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorNotSupported,
-                   kNotSupportedError);
+                   DOMExceptionCode::kNotSupportedError);
 STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorInvalidModification,
-                   kInvalidModificationError);
+                   DOMExceptionCode::kInvalidModificationError);
 STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorInvalidAccess,
-                   kInvalidAccessError);
-STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorAbort, kAbortError);
+                   DOMExceptionCode::kInvalidAccessError);
+STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorAbort,
+                   DOMExceptionCode::kAbortError);
 
 }  // namespace blink

@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -210,7 +209,8 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
   auto range = stream.ConsumeUntilPeekedTypeIs<>();
   stream.ConsumeWhitespace();
   if (!stream.AtEnd()) {
-    exception_state.ThrowDOMException(kSyntaxError, "Invalid math expression");
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Invalid math expression");
     return nullptr;
   }
 
@@ -238,7 +238,8 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
       break;
   }
 
-  exception_state.ThrowDOMException(kSyntaxError, "Invalid math expression");
+  exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                    "Invalid math expression");
   return nullptr;
 }
 
@@ -261,7 +262,7 @@ CSSUnitValue* CSSNumericValue::to(const String& unit_string,
                                   ExceptionState& exception_state) {
   CSSPrimitiveValue::UnitType target_unit = UnitFromName(unit_string);
   if (!IsValidUnit(target_unit)) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Invalid unit for conversion");
     return nullptr;
   }
@@ -290,7 +291,7 @@ CSSMathSum* CSSNumericValue::toSum(const Vector<String>& unit_strings,
                                    ExceptionState& exception_state) {
   for (const auto& unit_string : unit_strings) {
     if (!IsValidUnit(UnitFromName(unit_string))) {
-      exception_state.ThrowDOMException(kSyntaxError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                         "Invalid unit for conversion");
       return nullptr;
     }

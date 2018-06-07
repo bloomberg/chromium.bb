@@ -100,15 +100,16 @@ ScriptPromise RemotePlayback::watchAvailability(
   ScriptPromise promise = resolver->Promise();
 
   if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError, "disableRemotePlayback attribute is present."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "disableRemotePlayback attribute is present."));
     return promise;
   }
 
   int id = WatchAvailabilityInternal(new AvailabilityCallbackWrapper(callback));
   if (id == kWatchAvailabilityNotSupported) {
     resolver->Reject(DOMException::Create(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "Availability monitoring is not supported on this device."));
     return promise;
   }
@@ -129,14 +130,16 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError, "disableRemotePlayback attribute is present."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "disableRemotePlayback attribute is present."));
     return promise;
   }
 
   if (!CancelWatchAvailabilityInternal(id)) {
-    resolver->Reject(DOMException::Create(
-        kNotFoundError, "A callback with the given id is not found."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kNotFoundError,
+                             "A callback with the given id is not found."));
     return promise;
   }
 
@@ -150,8 +153,9 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
   ScriptPromise promise = resolver->Promise();
 
   if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError, "disableRemotePlayback attribute is present."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "disableRemotePlayback attribute is present."));
     return promise;
   }
 
@@ -167,41 +171,42 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   if (media_element_->FastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError, "disableRemotePlayback attribute is present."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "disableRemotePlayback attribute is present."));
     return promise;
   }
 
   if (prompt_promise_resolver_) {
     resolver->Reject(DOMException::Create(
-        kOperationError,
+        DOMExceptionCode::kOperationError,
         "A prompt is already being shown for this media element."));
     return promise;
   }
 
   if (!Frame::HasTransientUserActivation(media_element_->GetFrame())) {
     resolver->Reject(DOMException::Create(
-        kInvalidAccessError,
+        DOMExceptionCode::kInvalidAccessError,
         "RemotePlayback::prompt() requires user gesture."));
     return promise;
   }
 
   if (!RuntimeEnabledFeatures::RemotePlaybackBackendEnabled()) {
     resolver->Reject(DOMException::Create(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The RemotePlayback API is disabled on this platform."));
     return promise;
   }
 
   if (availability_ == WebRemotePlaybackAvailability::kDeviceNotAvailable) {
-    resolver->Reject(DOMException::Create(kNotFoundError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
                                           "No remote playback devices found."));
     return promise;
   }
 
   if (availability_ == WebRemotePlaybackAvailability::kSourceNotCompatible) {
     resolver->Reject(DOMException::Create(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "The currentSrc is not compatible with remote playback"));
     return promise;
   }
@@ -324,8 +329,9 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
     // prompt() succeeded.
     if (state_ != WebRemotePlaybackState::kConnected &&
         state == WebRemotePlaybackState::kDisconnected) {
-      prompt_promise_resolver_->Reject(DOMException::Create(
-          kAbortError, "Failed to connect to the remote device."));
+      prompt_promise_resolver_->Reject(
+          DOMException::Create(DOMExceptionCode::kAbortError,
+                               "Failed to connect to the remote device."));
     } else {
       DCHECK((state_ == WebRemotePlaybackState::kDisconnected &&
               state == WebRemotePlaybackState::kConnecting) ||
@@ -388,8 +394,8 @@ void RemotePlayback::PromptCancelled() {
   if (!prompt_promise_resolver_)
     return;
 
-  prompt_promise_resolver_->Reject(
-      DOMException::Create(kNotAllowedError, "The prompt was dismissed."));
+  prompt_promise_resolver_->Reject(DOMException::Create(
+      DOMExceptionCode::kNotAllowedError, "The prompt was dismissed."));
   prompt_promise_resolver_ = nullptr;
 }
 
@@ -434,8 +440,9 @@ bool RemotePlayback::RemotePlaybackAvailable() const {
 
 void RemotePlayback::RemotePlaybackDisabled() {
   if (prompt_promise_resolver_) {
-    prompt_promise_resolver_->Reject(DOMException::Create(
-        kInvalidStateError, "disableRemotePlayback attribute is present."));
+    prompt_promise_resolver_->Reject(
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "disableRemotePlayback attribute is present."));
     prompt_promise_resolver_ = nullptr;
   }
 

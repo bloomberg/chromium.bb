@@ -68,7 +68,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -128,7 +127,7 @@ bool ThrowExceptionIfSignalingStateClosed(
     RTCPeerConnection::SignalingState state,
     ExceptionState& exception_state) {
   if (state == RTCPeerConnection::kSignalingStateClosed) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSignalingStateClosedMessage);
     return true;
   }
@@ -150,11 +149,12 @@ bool CallErrorCallbackIfSignalingStateClosed(
     RTCPeerConnection::SignalingState state,
     V8RTCPeerConnectionErrorCallback* error_callback) {
   if (state == RTCPeerConnection::kSignalingStateClosed) {
-    if (error_callback)
+    if (error_callback) {
       AsyncCallErrorCallback(
-          error_callback, DOMException::Create(kInvalidStateError,
-                                               kSignalingStateClosedMessage));
-
+          error_callback,
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               kSignalingStateClosedMessage));
+    }
     return true;
   }
 
@@ -329,23 +329,26 @@ WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
         KURL url(NullURL(), url_string);
         if (!url.IsValid()) {
           exception_state.ThrowDOMException(
-              kSyntaxError, "'" + url_string + "' is not a valid URL.");
+              DOMExceptionCode::kSyntaxError,
+              "'" + url_string + "' is not a valid URL.");
           return WebRTCConfiguration();
         }
         if (!(url.ProtocolIs("turn") || url.ProtocolIs("turns") ||
               url.ProtocolIs("stun"))) {
           exception_state.ThrowDOMException(
-              kSyntaxError, "'" + url.Protocol() +
-                                "' is not one of the supported URL schemes "
-                                "'stun', 'turn' or 'turns'.");
+              DOMExceptionCode::kSyntaxError,
+              "'" + url.Protocol() +
+                  "' is not one of the supported URL schemes "
+                  "'stun', 'turn' or 'turns'.");
           return WebRTCConfiguration();
         }
         if ((url.ProtocolIs("turn") || url.ProtocolIs("turns")) &&
             (username.IsNull() || credential.IsNull())) {
-          exception_state.ThrowDOMException(kInvalidAccessError,
-                                            "Both username and credential are "
-                                            "required when the URL scheme is "
-                                            "\"turn\" or \"turns\".");
+          exception_state.ThrowDOMException(
+              DOMExceptionCode::kInvalidAccessError,
+              "Both username and credential are "
+              "required when the URL scheme is "
+              "\"turn\" or \"turns\".");
         }
         ice_servers.push_back(WebRTCIceServer{url, username, credential});
       }
@@ -497,7 +500,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
          configuration.certificates) {
       DOMTimeStamp expires = certificate->Expires();
       if (expires <= now) {
-        exception_state.ThrowDOMException(kInvalidAccessError,
+        exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                           "Expired certificate(s).");
         return nullptr;
       }
@@ -551,7 +554,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
           InstanceCounters::kRTCPeerConnectionCounter) > kMaxPeerConnections) {
     closed_ = true;
     stopped_ = true;
-    exception_state.ThrowDOMException(kUnknownError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
                                       "Cannot create so many PeerConnections");
     return;
   }
@@ -559,7 +562,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
     closed_ = true;
     stopped_ = true;
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "PeerConnections may not be created in detached documents.");
     return;
   }
@@ -569,7 +572,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
   if (!peer_handler_) {
     closed_ = true;
     stopped_ = true;
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "No PeerConnection handler can be "
                                       "created, perhaps WebRTC is disabled?");
     return;
@@ -582,7 +585,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
     closed_ = true;
     stopped_ = true;
     exception_state.ThrowDOMException(
-        kNotSupportedError, "Failed to initialize native PeerConnection.");
+        DOMExceptionCode::kNotSupportedError,
+        "Failed to initialize native PeerConnection.");
     return;
   }
 
@@ -609,10 +613,11 @@ void RTCPeerConnection::Dispose() {
 
 ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
                                              const RTCOfferOptions& options) {
-  if (signaling_state_ == kSignalingStateClosed)
+  if (signaling_state_ == kSignalingStateClosed) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kSignalingStateClosedMessage));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kSignalingStateClosedMessage));
+  }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -670,8 +675,9 @@ ScriptPromise RTCPeerConnection::createOffer(
     // WebIDL.
     if (media_error_state.CanGenerateException()) {
       String error_msg = media_error_state.GetErrorMessage();
-      AsyncCallErrorCallback(error_callback,
-                             DOMException::Create(kOperationError, error_msg));
+      AsyncCallErrorCallback(
+          error_callback,
+          DOMException::Create(DOMExceptionCode::kOperationError, error_msg));
       return ScriptPromise::CastUndefined(script_state);
     }
 
@@ -691,10 +697,11 @@ ScriptPromise RTCPeerConnection::createOffer(
 
 ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
                                               const RTCAnswerOptions& options) {
-  if (signaling_state_ == kSignalingStateClosed)
+  if (signaling_state_ == kSignalingStateClosed) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kSignalingStateClosedMessage));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kSignalingStateClosedMessage));
+  }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -733,8 +740,9 @@ ScriptPromise RTCPeerConnection::createAnswer(
   // WebIDL.
   if (media_error_state.CanGenerateException()) {
     String error_msg = media_error_state.GetErrorMessage();
-    AsyncCallErrorCallback(error_callback,
-                           DOMException::Create(kOperationError, error_msg));
+    AsyncCallErrorCallback(
+        error_callback,
+        DOMException::Create(DOMExceptionCode::kOperationError, error_msg));
     return ScriptPromise::CastUndefined(script_state);
   }
 
@@ -750,7 +758,7 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
     const RTCSessionDescriptionInit& session_description_init,
     String* sdp) {
   if (signaling_state_ == kSignalingStateClosed) {
-    return DOMException::Create(kInvalidStateError,
+    return DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                 kSignalingStateClosedMessage);
   }
 
@@ -760,7 +768,7 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
       *sdp = last_offer_;
     } else if (session_description_init.sdp() != last_offer_) {
       if (FingerprintMismatch(last_offer_, *sdp)) {
-        return DOMException::Create(kInvalidModificationError,
+        return DOMException::Create(DOMExceptionCode::kInvalidModificationError,
                                     kModifiedSdpMessage);
       } else {
         UseCounter::Count(context, WebFeature::kRTCLocalSdpModification);
@@ -774,7 +782,7 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
       *sdp = last_answer_;
     } else if (session_description_init.sdp() != last_answer_) {
       if (FingerprintMismatch(last_answer_, *sdp)) {
-        return DOMException::Create(kInvalidModificationError,
+        return DOMException::Create(DOMExceptionCode::kInvalidModificationError,
                                     kModifiedSdpMessage);
       } else {
         UseCounter::Count(context, WebFeature::kRTCLocalSdpModification);
@@ -855,10 +863,11 @@ RTCSessionDescription* RTCPeerConnection::localDescription() {
 ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init) {
-  if (signaling_state_ == kSignalingStateClosed)
+  if (signaling_state_ == kSignalingStateClosed) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kSignalingStateClosedMessage));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kSignalingStateClosedMessage));
+  }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -936,12 +945,12 @@ void RTCPeerConnection::setConfiguration(
     // All errors besides InvalidModification should have been detected above.
     if (error == webrtc::RTCErrorType::INVALID_MODIFICATION) {
       exception_state.ThrowDOMException(
-          kInvalidModificationError,
+          DOMExceptionCode::kInvalidModificationError,
           "Attempted to modify the PeerConnection's "
           "configuration in an unsupported way.");
     } else {
       exception_state.ThrowDOMException(
-          kOperationError,
+          DOMExceptionCode::kOperationError,
           "Could not update the PeerConnection with the given configuration.");
     }
   }
@@ -1011,8 +1020,9 @@ ScriptPromise RTCPeerConnection::generateCertificate(
             WebRTCKeyParams::CreateRSA(modulus_length, public_exponent);
       } else {
         return ScriptPromise::RejectWithDOMException(
-            script_state, DOMException::Create(kNotSupportedError,
-                                               unsupported_params_string));
+            script_state,
+            DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                 unsupported_params_string));
       }
       break;
     case kWebCryptoAlgorithmIdEcdsa:
@@ -1023,16 +1033,18 @@ ScriptPromise RTCPeerConnection::generateCertificate(
         key_params = WebRTCKeyParams::CreateECDSA(kWebRTCECCurveNistP256);
       } else {
         return ScriptPromise::RejectWithDOMException(
-            script_state, DOMException::Create(kNotSupportedError,
-                                               unsupported_params_string));
+            script_state,
+            DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                 unsupported_params_string));
       }
       break;
     default:
       return ScriptPromise::RejectWithDOMException(
-          script_state, DOMException::Create(kNotSupportedError,
-                                             "The 1st argument provided is an "
-                                             "AlgorithmIdentifier, but the "
-                                             "algorithm is not supported."));
+          script_state,
+          DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                               "The 1st argument provided is an "
+                               "AlgorithmIdentifier, but the "
+                               "algorithm is not supported."));
       break;
   }
   DCHECK(key_params.has_value());
@@ -1044,8 +1056,8 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   // generator support these parameters?
   if (!certificate_generator->IsSupportedKeyParams(key_params.value())) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kNotSupportedError, unsupported_params_string));
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           unsupported_params_string));
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -1076,10 +1088,11 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     ScriptState* script_state,
     const RTCIceCandidateInitOrRTCIceCandidate& candidate,
     ExceptionState& exception_state) {
-  if (signaling_state_ == kSignalingStateClosed)
+  if (signaling_state_ == kSignalingStateClosed) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(kInvalidStateError, kSignalingStateClosedMessage));
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kSignalingStateClosedMessage));
+  }
 
   if (IsIceCandidateMissingSdp(candidate)) {
     exception_state.ThrowTypeError(
@@ -1094,9 +1107,11 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
       ExecutionContext::From(script_state), candidate);
   bool implemented =
       peer_handler_->AddICECandidate(request, std::move(web_candidate));
-  if (!implemented)
-    resolver->Reject(DOMException::Create(
-        kOperationError, "This operation could not be completed."));
+  if (!implemented) {
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kOperationError,
+                             "This operation could not be completed."));
+  }
 
   return promise;
 }
@@ -1128,7 +1143,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   if (!implemented)
     AsyncCallErrorCallback(
         error_callback,
-        DOMException::Create(kOperationError,
+        DOMException::Create(DOMExceptionCode::kOperationError,
                              "This operation could not be completed."));
 
   return ScriptPromise::CastUndefined(script_state);
@@ -1387,14 +1402,14 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
   if (track_uses == 0u) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kInvalidAccessError,
+        DOMException::Create(DOMExceptionCode::kInvalidAccessError,
                              "There is no sender or receiver for the track."));
   }
   if (track_uses > 1u) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kInvalidAccessError,
+            DOMExceptionCode::kInvalidAccessError,
             "There are more than one sender or receiver for the track."));
   }
   // There is just one use of the track, a sender or receiver.
@@ -1430,14 +1445,15 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
     // TODO(hbos): Update peer_handler_ to call the AddTrack() that returns the
     // appropriate errors, and let the lower layers handle it.
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "Adding a track to multiple streams is not supported.");
     return nullptr;
   }
   for (const auto& sender : rtp_senders_) {
     if (sender->track() == track) {
       exception_state.ThrowDOMException(
-          kInvalidAccessError, "A sender already exists for the track.");
+          DOMExceptionCode::kInvalidAccessError,
+          "A sender already exists for the track.");
       return nullptr;
     }
   }
@@ -1450,7 +1466,8 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
       peer_handler_->AddTrack(track->Component(), web_streams);
   if (!web_rtp_sender) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "A sender could not be created for this track.");
+        DOMExceptionCode::kNotSupportedError,
+        "A sender could not be created for this track.");
     return nullptr;
   }
 
@@ -1470,7 +1487,7 @@ void RTCPeerConnection::removeTrack(RTCRtpSender* sender,
   auto* it = FindSender(*sender->web_sender());
   if (it == rtp_senders_.end()) {
     exception_state.ThrowDOMException(
-        kInvalidAccessError,
+        DOMExceptionCode::kInvalidAccessError,
         "The sender was not created by this peer connection.");
     return;
   }
@@ -1573,7 +1590,7 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
   if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
     return nullptr;
   if (track->kind() != "audio") {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "track.kind is not 'audio'.");
     return nullptr;
   }
@@ -1586,12 +1603,13 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
   }
   if (!found_rtp_sender) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "No RTCRtpSender is available for the track provided.");
+        DOMExceptionCode::kSyntaxError,
+        "No RTCRtpSender is available for the track provided.");
     return nullptr;
   }
   RTCDTMFSender* dtmf_sender = found_rtp_sender->dtmf();
   if (!dtmf_sender) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Unable to create DTMF sender for track");
     return nullptr;
   }

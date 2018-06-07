@@ -101,15 +101,15 @@ void CryptoResultImpl::ResultCancel::Cancel() {
 ExceptionCode WebCryptoErrorToExceptionCode(WebCryptoErrorType error_type) {
   switch (error_type) {
     case kWebCryptoErrorTypeNotSupported:
-      return kNotSupportedError;
+      return DOMExceptionCode::kNotSupportedError;
     case kWebCryptoErrorTypeSyntax:
-      return kSyntaxError;
+      return DOMExceptionCode::kSyntaxError;
     case kWebCryptoErrorTypeInvalidAccess:
-      return kInvalidAccessError;
+      return DOMExceptionCode::kInvalidAccessError;
     case kWebCryptoErrorTypeData:
-      return kDataError;
+      return DOMExceptionCode::kDataError;
     case kWebCryptoErrorTypeOperation:
-      return kOperationError;
+      return DOMExceptionCode::kOperationError;
     case kWebCryptoErrorTypeType:
       return ESErrorType::kTypeError;
   }

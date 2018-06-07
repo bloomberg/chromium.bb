@@ -9,7 +9,6 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
@@ -152,7 +151,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   if (HTMLMediaElementEncryptedMedia::mediaKeys(element)) {
     // This exception is not defined in the spec, see
     // https://github.com/w3c/mediacapture-fromelement/issues/20.
-    exception_state.ThrowDOMException(kNotSupportedError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Stream capture not supported with EME");
     return nullptr;
   }

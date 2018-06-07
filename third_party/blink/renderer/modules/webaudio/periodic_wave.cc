@@ -30,7 +30,6 @@
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/oscillator_node.h"
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave.h"
@@ -66,10 +65,10 @@ PeriodicWave* PeriodicWave::Create(BaseAudioContext& context,
 
   if (real.size() != imag.size()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "length of real array (" +
-                             String::Number(real.size()) +
-                             ") and length of imaginary array (" +
-                             String::Number(imag.size()) + ") must match.");
+        DOMExceptionCode::kIndexSizeError,
+        "length of real array (" + String::Number(real.size()) +
+            ") and length of imaginary array (" + String::Number(imag.size()) +
+            ") must match.");
     return nullptr;
   }
 

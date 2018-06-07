@@ -124,8 +124,9 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
   // InvalidModificationError and abort.
   if (value.ByteLength() > 512) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidModificationError,
-                                           "Value can't exceed 512 bytes."));
+        script_state,
+        DOMException::Create(DOMExceptionCode::kInvalidModificationError,
+                             "Value can't exceed 512 bytes."));
   }
 
   // Let valueVector be a copy of the bytes held by value.

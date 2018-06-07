@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
@@ -283,7 +282,7 @@ void DOMSelection::collapseToEnd(ExceptionState& exception_state) {
   // The method must throw InvalidStateError exception if the context object is
   // empty.
   if (rangeCount() == 0) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "there is no selection.");
     return;
   }
@@ -316,7 +315,7 @@ void DOMSelection::collapseToStart(ExceptionState& exception_state) {
   // The method must throw InvalidStateError ([DOM4]) exception if the context
   // object is empty.
   if (rangeCount() == 0) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "there is no selection.");
     return;
   }
@@ -478,7 +477,8 @@ void DOMSelection::extend(Node* node,
   // abort these steps.
   if (rangeCount() == 0) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "This Selection object doesn't have any Ranges.");
+        DOMExceptionCode::kInvalidStateError,
+        "This Selection object doesn't have any Ranges.");
     return;
   }
 
@@ -537,7 +537,8 @@ Range* DOMSelection::getRangeAt(unsigned index,
 
   if (index >= rangeCount()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, String::Number(index) + " is not a valid index.");
+        DOMExceptionCode::kIndexSizeError,
+        String::Number(index) + " is not a valid index.");
     return nullptr;
   }
 

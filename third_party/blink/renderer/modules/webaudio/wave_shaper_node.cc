@@ -29,7 +29,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/wave_shaper_options.h"
 
@@ -94,7 +93,7 @@ void WaveShaperNode::SetCurveImpl(const float* curve_data,
 
   if (curve_data && curve_length < 2) {
     exception_state.ThrowDOMException(
-        kInvalidAccessError,
+        DOMExceptionCode::kInvalidAccessError,
         ExceptionMessages::IndexExceedsMinimumBound<unsigned>("curve length",
                                                               curve_length, 2));
     return;

@@ -30,7 +30,6 @@
 #include <memory>
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -95,7 +94,7 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
   FileSystemType file_system_type = static_cast<FileSystemType>(type);
   if (!DOMFileSystemBase::IsValidType(file_system_type)) {
     exception_state.ThrowDOMException(
-        kInvalidModificationError,
+        DOMExceptionCode::kInvalidModificationError,
         "the type must be kTemporary or kPersistent.");
     return nullptr;
   }
@@ -160,7 +159,7 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
   }
 
   if (!completed_url.IsValid()) {
-    exception_state.ThrowDOMException(kEncodingError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kEncodingError,
                                       "the URL '" + url + "' is invalid.");
     return nullptr;
   }

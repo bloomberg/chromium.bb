@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_push_permission_descriptor.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -82,7 +81,7 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
     // Only "userVisibleOnly" push is supported for now.
     if (!push_permission.userVisibleOnly()) {
       exception_state.ThrowDOMException(
-          kNotSupportedError,
+          DOMExceptionCode::kNotSupportedError,
           "Push Permission without userVisibleOnly:true isn't supported yet.");
       return nullptr;
     }

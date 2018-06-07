@@ -140,8 +140,9 @@ void XRFrameProvider::OnPresentComplete(
     exclusive_session_can_send_frames_ = false;
 
     if (pending_exclusive_session_resolver_) {
-      DOMException* exception = DOMException::Create(
-          kNotAllowedError, "Request for exclusive XRSession was denied.");
+      DOMException* exception =
+          DOMException::Create(DOMExceptionCode::kNotAllowedError,
+                               "Request for exclusive XRSession was denied.");
       pending_exclusive_session_resolver_->Reject(exception);
     }
   }
@@ -167,7 +168,7 @@ void XRFrameProvider::OnFocusChanged() {
 void XRFrameProvider::OnPresentationProviderConnectionError() {
   if (pending_exclusive_session_resolver_) {
     DOMException* exception = DOMException::Create(
-        kNotAllowedError,
+        DOMExceptionCode::kNotAllowedError,
         "Error occured while requesting exclusive XRSession.");
     pending_exclusive_session_resolver_->Reject(exception);
     pending_exclusive_session_resolver_ = nullptr;

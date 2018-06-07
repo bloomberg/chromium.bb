@@ -28,7 +28,6 @@
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -42,90 +41,95 @@ const struct DOMExceptionEntry {
   const char* message;
 } kDOMExceptionEntryTable[] = {
     // DOMException defined with legacy error code in Web IDL.
-    {kIndexSizeError, "IndexSizeError",
+    {DOMExceptionCode::kIndexSizeError, "IndexSizeError",
      "Index or size was negative, or greater than the allowed value."},
-    {kHierarchyRequestError, "HierarchyRequestError",
+    {DOMExceptionCode::kHierarchyRequestError, "HierarchyRequestError",
      "A Node was inserted somewhere it doesn't belong."},
-    {kWrongDocumentError, "WrongDocumentError",
+    {DOMExceptionCode::kWrongDocumentError, "WrongDocumentError",
      "A Node was used in a different document than the one that created it "
      "(that doesn't support it)."},
-    {kInvalidCharacterError, "InvalidCharacterError",
+    {DOMExceptionCode::kInvalidCharacterError, "InvalidCharacterError",
      "The string contains invalid characters."},
-    {kNoModificationAllowedError, "NoModificationAllowedError",
+    {DOMExceptionCode::kNoModificationAllowedError,
+     "NoModificationAllowedError",
      "An attempt was made to modify an object where modifications are not "
      "allowed."},
-    {kNotFoundError, "NotFoundError",
+    {DOMExceptionCode::kNotFoundError, "NotFoundError",
      "An attempt was made to reference a Node in a context where it does not "
      "exist."},
-    {kNotSupportedError, "NotSupportedError",
+    {DOMExceptionCode::kNotSupportedError, "NotSupportedError",
      "The implementation did not support the requested type of object or "
      "operation."},
-    {kInUseAttributeError, "InUseAttributeError",
+    {DOMExceptionCode::kInUseAttributeError, "InUseAttributeError",
      "An attempt was made to add an attribute that is already in use "
      "elsewhere."},
-    {kInvalidStateError, "InvalidStateError",
+    {DOMExceptionCode::kInvalidStateError, "InvalidStateError",
      "An attempt was made to use an object that is not, or is no longer, "
      "usable."},
-    {kSyntaxError, "SyntaxError",
+    {DOMExceptionCode::kSyntaxError, "SyntaxError",
      "An invalid or illegal string was specified."},
-    {kInvalidModificationError, "InvalidModificationError",
+    {DOMExceptionCode::kInvalidModificationError, "InvalidModificationError",
      "The object can not be modified in this way."},
-    {kNamespaceError, "NamespaceError",
+    {DOMExceptionCode::kNamespaceError, "NamespaceError",
      "An attempt was made to create or change an object in a way which is "
      "incorrect with regard to namespaces."},
-    {kInvalidAccessError, "InvalidAccessError",
+    {DOMExceptionCode::kInvalidAccessError, "InvalidAccessError",
      "A parameter or an operation was not supported by the underlying object."},
-    {kTypeMismatchError, "TypeMismatchError",
+    {DOMExceptionCode::kTypeMismatchError, "TypeMismatchError",
      "The type of an object was incompatible with the expected type of the "
      "parameter associated to the object."},
-    {kSecurityError, "SecurityError",
+    {DOMExceptionCode::kSecurityError, "SecurityError",
      "An attempt was made to break through the security policy of the user "
      "agent."},
-    {kNetworkError, "NetworkError", "A network error occurred."},
-    {kAbortError, "AbortError", "The user aborted a request."},
-    {kURLMismatchError, "URLMismatchError",
+    {DOMExceptionCode::kNetworkError, "NetworkError",
+     "A network error occurred."},
+    {DOMExceptionCode::kAbortError, "AbortError",
+     "The user aborted a request."},
+    {DOMExceptionCode::kURLMismatchError, "URLMismatchError",
      "A worker global scope represented an absolute URL that is not equal to "
      "the resulting absolute URL."},
-    {kQuotaExceededError, "QuotaExceededError",
+    {DOMExceptionCode::kQuotaExceededError, "QuotaExceededError",
      "An attempt was made to add something to storage that exceeded the "
      "quota."},
-    {kTimeoutError, "TimeoutError", "A timeout occurred."},
-    {kInvalidNodeTypeError, "InvalidNodeTypeError",
+    {DOMExceptionCode::kTimeoutError, "TimeoutError", "A timeout occurred."},
+    {DOMExceptionCode::kInvalidNodeTypeError, "InvalidNodeTypeError",
      "The supplied node is invalid or has an invalid ancestor for this "
      "operation."},
-    {kDataCloneError, "DataCloneError", "An object could not be cloned."},
+    {DOMExceptionCode::kDataCloneError, "DataCloneError",
+     "An object could not be cloned."},
 
     // DOMException defined without legacy error code in Web IDL.
-    {kEncodingError, "EncodingError",
+    {DOMExceptionCode::kEncodingError, "EncodingError",
      "A URI supplied to the API was malformed, or the resulting Data URL has "
      "exceeded the URL length limitations for Data URLs."},
-    {kNotReadableError, "NotReadableError",
+    {DOMExceptionCode::kNotReadableError, "NotReadableError",
      "The requested file could not be read, typically due to permission "
      "problems that have occurred after a reference to a file was acquired."},
-    {kUnknownError, "UnknownError",
+    {DOMExceptionCode::kUnknownError, "UnknownError",
      "The operation failed for an unknown transient reason "
      "(e.g. out of memory)."},
-    {kConstraintError, "ConstraintError",
+    {DOMExceptionCode::kConstraintError, "ConstraintError",
      "A mutation operation in the transaction failed because a constraint was "
      "not satisfied."},
-    {kDataError, "DataError", "The data provided does not meet requirements."},
-    {kTransactionInactiveError, "TransactionInactiveError",
+    {DOMExceptionCode::kDataError, "DataError",
+     "The data provided does not meet requirements."},
+    {DOMExceptionCode::kTransactionInactiveError, "TransactionInactiveError",
      "A request was placed against a transaction which is either currently not "
      "active, or which is finished."},
-    {kReadOnlyError, "ReadOnlyError",
+    {DOMExceptionCode::kReadOnlyError, "ReadOnlyError",
      "A write operation was attempted in a read-only transaction."},
-    {kVersionError, "VersionError",
+    {DOMExceptionCode::kVersionError, "VersionError",
      "An attempt was made to open a database using a lower version than the "
      "existing version."},
-    {kOperationError, "OperationError",
+    {DOMExceptionCode::kOperationError, "OperationError",
      "The operation failed for an operation-specific reason"},
-    {kNotAllowedError, "NotAllowedError",
+    {DOMExceptionCode::kNotAllowedError, "NotAllowedError",
      "The request is not allowed by the user agent or the platform in the "
      "current context."},
 
     // DOMError (obsolete, not DOMException) defined in File system (obsolete).
     // https://www.w3.org/TR/2012/WD-file-system-api-20120417/
-    {kPathExistsError, "PathExistsError",
+    {DOMExceptionCode::kPathExistsError, "PathExistsError",
      "An attempt was made to create a file or directory where an element "
      "already exists."},
 
@@ -134,18 +138,19 @@ const struct DOMExceptionEntry {
     // PermissionDeniedError (obsolete) was replaced with NotAllowedError in the
     // standard.
     // https://github.com/WICG/BackgroundSync/issues/124
-    {kPermissionDeniedError, "PermissionDeniedError",
+    {DOMExceptionCode::kPermissionDeniedError, "PermissionDeniedError",
      "User or security policy denied the request."},
 
     // Pointer Events
     // https://w3c.github.io/pointerevents/
     // Pointer Events introduced a new DOMException outside Web IDL.
-    {kInvalidPointerId, "InvalidPointerId", "PointerId was invalid."},
+    {DOMExceptionCode::kInvalidPointerId, "InvalidPointerId",
+     "PointerId was invalid."},
 };
 
 unsigned short ToLegacyErrorCode(ExceptionCode exception_code) {
-  if (kDOMExceptionLegacyCodeMin <= exception_code &&
-      exception_code <= kDOMExceptionLegacyCodeMax) {
+  if (DOMExceptionCode::kLegacyErrorCodeMin <= exception_code &&
+      exception_code <= DOMExceptionCode::kLegacyErrorCodeMax) {
     return exception_code;
   }
   return 0;

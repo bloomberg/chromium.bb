@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -80,7 +79,8 @@ void ParseRootMargin(String root_margin_parameter,
          !exception_state.HadException()) {
     if (root_margin.size() == 4) {
       exception_state.ThrowDOMException(
-          kSyntaxError, "Extra text found at the end of rootMargin.");
+          DOMExceptionCode::kSyntaxError,
+          "Extra text found at the end of rootMargin.");
       break;
     }
     const CSSParserToken& token = token_range.ConsumeIncludingWhitespace();
@@ -99,13 +99,14 @@ void ParseRootMargin(String root_margin_parameter,
             break;
           default:
             exception_state.ThrowDOMException(
-                kSyntaxError,
+                DOMExceptionCode::kSyntaxError,
                 "rootMargin must be specified in pixels or percent.");
         }
         break;
       default:
         exception_state.ThrowDOMException(
-            kSyntaxError, "rootMargin must be specified in pixels or percent.");
+            DOMExceptionCode::kSyntaxError,
+            "rootMargin must be specified in pixels or percent.");
     }
   }
 }

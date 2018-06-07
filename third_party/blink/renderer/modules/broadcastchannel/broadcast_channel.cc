@@ -8,7 +8,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -42,7 +41,7 @@ BroadcastChannel* BroadcastChannel::Create(ExecutionContext* execution_context,
     // TODO(mek): Decide what to do here depending on
     // https://github.com/whatwg/html/issues/1319
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "Can't create BroadcastChannel in an opaque origin");
     return nullptr;
   }
@@ -58,7 +57,8 @@ void BroadcastChannel::Dispose() {
 void BroadcastChannel::postMessage(const ScriptValue& message,
                                    ExceptionState& exception_state) {
   if (!binding_.is_bound()) {
-    exception_state.ThrowDOMException(kInvalidStateError, "Channel is closed");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Channel is closed");
     return;
   }
   scoped_refptr<SerializedScriptValue> value = SerializedScriptValue::Serialize(

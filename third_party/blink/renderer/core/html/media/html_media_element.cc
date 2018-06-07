@@ -916,7 +916,7 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
       // 4.6.2 - Take pending play promises and reject pending play promises
       // with the result and an "AbortError" DOMException.
       RecordPlayPromiseRejected(PlayPromiseRejectReason::kInterruptedByLoad);
-      RejectPlayPromises(kAbortError,
+      RejectPlayPromises(DOMExceptionCode::kAbortError,
                          "The play() request was interrupted by a new load "
                          "request. https://goo.gl/LdLk22");
     }
@@ -1571,7 +1571,7 @@ void HTMLMediaElement::NoneSupported(const String& input_message) {
   ScheduleEvent(EventTypeNames::error);
 
   // 6 - Reject pending play promises with NotSupportedError.
-  ScheduleRejectPlayPromises(kNotSupportedError);
+  ScheduleRejectPlayPromises(DOMExceptionCode::kNotSupportedError);
 
   CloseMediaSource();
 
@@ -2258,9 +2258,9 @@ void HTMLMediaElement::setPlaybackRate(double rate,
     // When the proposed playbackRate is unsupported, throw a NotSupportedError
     // DOMException and don't update the value.
     exception_state.ThrowDOMException(
-        kNotSupportedError, "The provided playback rate (" +
-                                String::Number(rate) + ") is not in the " +
-                                "supported playback range.");
+        DOMExceptionCode::kNotSupportedError,
+        "The provided playback rate (" + String::Number(rate) +
+            ") is not in the " + "supported playback range.");
 
     // Do not update |playback_rate_|.
     return;
@@ -2392,12 +2392,12 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
 
     String message;
     switch (code.value()) {
-      case kNotAllowedError:
+      case DOMExceptionCode::kNotAllowedError:
         message = autoplay_policy_->GetPlayErrorMessage();
         RecordPlayPromiseRejected(
             PlayPromiseRejectReason::kFailedAutoplayPolicy);
         break;
-      case kNotSupportedError:
+      case DOMExceptionCode::kNotSupportedError:
         message = "The element has no supported sources.";
         RecordPlayPromiseRejected(PlayPromiseRejectReason::kNoSupportedSources);
         break;
@@ -2417,7 +2417,7 @@ base::Optional<ExceptionCode> HTMLMediaElement::Play() {
   base::Optional<ExceptionCode> exception_code =
       autoplay_policy_->RequestPlay();
 
-  if (exception_code == kNotAllowedError) {
+  if (exception_code == DOMExceptionCode::kNotAllowedError) {
     // If we're already playing, then this play would do nothing anyway.
     // Call playInternal to handle scheduling the promise resolution.
     if (!paused_) {
@@ -2430,7 +2430,7 @@ base::Optional<ExceptionCode> HTMLMediaElement::Play() {
   autoplay_policy_->StopAutoplayMutedWhenVisible();
 
   if (error_ && error_->code() == MediaError::kMediaErrSrcNotSupported)
-    return kNotSupportedError;
+    return DOMExceptionCode::kNotSupportedError;
 
   DCHECK(!exception_code.has_value());
 
@@ -2496,7 +2496,7 @@ void HTMLMediaElement::PauseInternal() {
     // time to accurately reflect movie time at the moment we paused.
     SetOfficialPlaybackPosition(CurrentPlaybackPosition());
 
-    ScheduleRejectPlayPromises(kAbortError);
+    ScheduleRejectPlayPromises(DOMExceptionCode::kAbortError);
   }
 
   UpdatePlayState();
@@ -2597,7 +2597,7 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exception_state) {
 
   if (vol < 0.0f || vol > 1.0f) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange(
             "volume", vol, 0.0, ExceptionMessages::kInclusiveBound, 1.0,
             ExceptionMessages::kInclusiveBound));
@@ -3246,7 +3246,7 @@ void HTMLMediaElement::TimeChanged() {
         // media element.
         paused_ = true;
         ScheduleEvent(EventTypeNames::pause);
-        ScheduleRejectPlayPromises(kAbortError);
+        ScheduleRejectPlayPromises(DOMExceptionCode::kAbortError);
       }
       // Queue a task to fire a simple event named ended at the media element.
       ScheduleEvent(EventTypeNames::ended);
@@ -4109,17 +4109,17 @@ void HTMLMediaElement::RejectScheduledPlayPromises() {
   // TODO(mlamouri): the message is generated based on the code because
   // arguments can't be passed to a cancellable task. In order to save space
   // used by the object, the string isn't saved.
-  DCHECK(play_promise_error_code_ == kAbortError ||
-         play_promise_error_code_ == kNotSupportedError);
-  if (play_promise_error_code_ == kAbortError) {
+  DCHECK(play_promise_error_code_ == DOMExceptionCode::kAbortError ||
+         play_promise_error_code_ == DOMExceptionCode::kNotSupportedError);
+  if (play_promise_error_code_ == DOMExceptionCode::kAbortError) {
     RecordPlayPromiseRejected(PlayPromiseRejectReason::kInterruptedByPause);
-    RejectPlayPromisesInternal(kAbortError,
+    RejectPlayPromisesInternal(DOMExceptionCode::kAbortError,
                                "The play() request was interrupted by a call "
                                "to pause(). https://goo.gl/LdLk22");
   } else {
     RecordPlayPromiseRejected(PlayPromiseRejectReason::kNoSupportedSources);
     RejectPlayPromisesInternal(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "Failed to load because no supported source was found.");
   }
 }
@@ -4133,7 +4133,8 @@ void HTMLMediaElement::RejectPlayPromises(ExceptionCode code,
 
 void HTMLMediaElement::RejectPlayPromisesInternal(ExceptionCode code,
                                                   const String& message) {
-  DCHECK(code == kAbortError || code == kNotSupportedError);
+  DCHECK(code == DOMExceptionCode::kAbortError ||
+         code == DOMExceptionCode::kNotSupportedError);
 
   for (auto& resolver : play_promise_reject_list_)
     resolver->Reject(DOMException::Create(code, message));

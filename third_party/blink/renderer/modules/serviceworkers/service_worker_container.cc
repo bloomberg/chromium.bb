@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -289,7 +288,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   ScriptPromise promise = resolver->Promise();
 
   if (!provider_) {
-    resolver->Reject(DOMException::Create(kInvalidStateError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                           "Failed to register a ServiceWorker: "
                                           "The document is in an invalid "
                                           "state."));
@@ -329,7 +328,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   ScriptPromise promise = resolver->Promise();
 
   if (!provider_) {
-    resolver->Reject(DOMException::Create(kInvalidStateError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                           "Failed to get a "
                                           "ServiceWorkerRegistration: The "
                                           "document is in an invalid state."));
@@ -345,7 +344,8 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
       execution_context->GetSecurityOrigin();
   String error_message;
   if (!execution_context->IsSecureContext(error_message)) {
-    resolver->Reject(DOMException::Create(kSecurityError, error_message));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kSecurityError, error_message));
     return promise;
   }
 
@@ -353,7 +353,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
     resolver->Reject(DOMException::Create(
-        kSecurityError,
+        DOMExceptionCode::kSecurityError,
         "Failed to get a ServiceWorkerRegistration: The URL protocol of the "
         "current origin ('" +
             document_origin->ToString() + "') is not supported."));
@@ -366,7 +366,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
     scoped_refptr<const SecurityOrigin> document_url_origin =
         SecurityOrigin::Create(completed_url);
     resolver->Reject(
-        DOMException::Create(kSecurityError,
+        DOMException::Create(DOMExceptionCode::kSecurityError,
                              "Failed to get a ServiceWorkerRegistration: The "
                              "origin of the provided documentURL ('" +
                                  document_url_origin->ToString() +
@@ -387,7 +387,7 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
 
   if (!provider_) {
     resolver->Reject(
-        DOMException::Create(kInvalidStateError,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Failed to get ServiceWorkerRegistration objects: "
                              "The document is in an invalid state."));
     return promise;
@@ -398,7 +398,8 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
       execution_context->GetSecurityOrigin();
   String error_message;
   if (!execution_context->IsSecureContext(error_message)) {
-    resolver->Reject(DOMException::Create(kSecurityError, error_message));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kSecurityError, error_message));
     return promise;
   }
 
@@ -406,7 +407,7 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
     resolver->Reject(DOMException::Create(
-        kSecurityError,
+        DOMExceptionCode::kSecurityError,
         "Failed to get ServiceWorkerRegistration objects: The URL protocol of "
         "the current origin ('" +
             document_origin->ToString() + "') is not supported."));
@@ -434,7 +435,7 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
     // ScriptPromiseProperty can vend Promises in isolated worlds.
     return ScriptPromise::RejectWithDOMException(
         caller_state,
-        DOMException::Create(kNotSupportedError,
+        DOMException::Create(DOMExceptionCode::kNotSupportedError,
                              "'ready' is only supported in pages."));
   }
 

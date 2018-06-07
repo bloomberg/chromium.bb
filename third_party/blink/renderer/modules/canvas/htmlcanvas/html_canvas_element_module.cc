@@ -21,7 +21,7 @@ void HTMLCanvasElementModule::getContext(
   if (canvas.SurfaceLayerBridge()) {
     // The existence of canvas surfaceLayerBridge indicates that
     // HTMLCanvasElement.transferControlToOffscreen() has been called.
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot get context from a canvas that "
                                       "has transferred its control to "
                                       "offscreen.");
@@ -40,7 +40,7 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
     ExceptionState& exception_state) {
   if (canvas.SurfaceLayerBridge()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot transfer control from a canvas for more than one time.");
     return nullptr;
   }
@@ -55,7 +55,7 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
     ExceptionState& exception_state) {
   if (canvas.RenderingContext()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot transfer control from a canvas that has a rendering context.");
     return nullptr;
   }

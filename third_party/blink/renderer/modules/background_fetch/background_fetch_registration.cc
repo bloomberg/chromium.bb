@@ -116,7 +116,8 @@ void BackgroundFetchRegistration::DidAbort(
       return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       resolver->Reject(DOMException::Create(
-          kAbortError, "Failed to abort registration due to I/O error."));
+          DOMExceptionCode::kAbortError,
+          "Failed to abort registration due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:

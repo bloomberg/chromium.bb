@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
@@ -53,7 +52,7 @@ bool ScriptCustomElementDefinitionBuilder::CheckConstructorNotRegistered() {
 
   // Constructor is already registered.
   exception_state_.ThrowDOMException(
-      kNotSupportedError,
+      DOMExceptionCode::kNotSupportedError,
       "this constructor has already been used with this registry");
   return false;
 }

@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
@@ -63,28 +62,30 @@ AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
   if (!number_of_channels ||
       number_of_channels > BaseAudioContext::MaxNumberOfChannels()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, ExceptionMessages::IndexOutsideRange(
-                                "number of channels", number_of_channels, 1u,
-                                ExceptionMessages::kInclusiveBound,
-                                BaseAudioContext::MaxNumberOfChannels(),
-                                ExceptionMessages::kInclusiveBound));
+        DOMExceptionCode::kNotSupportedError,
+        ExceptionMessages::IndexOutsideRange(
+            "number of channels", number_of_channels, 1u,
+            ExceptionMessages::kInclusiveBound,
+            BaseAudioContext::MaxNumberOfChannels(),
+            ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 
   if (!AudioUtilities::IsValidAudioBufferSampleRate(sample_rate)) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, ExceptionMessages::IndexOutsideRange(
-                                "sample rate", sample_rate,
-                                AudioUtilities::MinAudioBufferSampleRate(),
-                                ExceptionMessages::kInclusiveBound,
-                                AudioUtilities::MaxAudioBufferSampleRate(),
-                                ExceptionMessages::kInclusiveBound));
+        DOMExceptionCode::kNotSupportedError,
+        ExceptionMessages::IndexOutsideRange(
+            "sample rate", sample_rate,
+            AudioUtilities::MinAudioBufferSampleRate(),
+            ExceptionMessages::kInclusiveBound,
+            AudioUtilities::MaxAudioBufferSampleRate(),
+            ExceptionMessages::kInclusiveBound));
     return nullptr;
   }
 
   if (!number_of_frames) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         ExceptionMessages::IndexExceedsMinimumBound(
             "number of frames", number_of_frames, static_cast<size_t>(0)));
     return nullptr;
@@ -95,10 +96,10 @@ AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
 
   if (!audio_buffer) {
     exception_state.ThrowDOMException(
-        kNotSupportedError, "createBuffer(" +
-                                String::Number(number_of_channels) + ", " +
-                                String::Number(number_of_frames) + ", " +
-                                String::Number(sample_rate) + ") failed.");
+        DOMExceptionCode::kNotSupportedError,
+        "createBuffer(" + String::Number(number_of_channels) + ", " +
+            String::Number(number_of_frames) + ", " +
+            String::Number(sample_rate) + ") failed.");
   }
 
   return audio_buffer;
@@ -224,9 +225,10 @@ NotShared<DOMFloat32Array> AudioBuffer::getChannelData(
     ExceptionState& exception_state) {
   if (channel_index >= channels_.size()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, "channel index (" + String::Number(channel_index) +
-                             ") exceeds number of channels (" +
-                             String::Number(channels_.size()) + ")");
+        DOMExceptionCode::kIndexSizeError,
+        "channel index (" + String::Number(channel_index) +
+            ") exceeds number of channels (" +
+            String::Number(channels_.size()) + ")");
     return NotShared<DOMFloat32Array>(nullptr);
   }
 
@@ -253,11 +255,12 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
   if (channel_number < 0 ||
       channel_number >= static_cast<long>(channels_.size())) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexOutsideRange(
-                             "channelNumber", channel_number, 0L,
-                             ExceptionMessages::kInclusiveBound,
-                             static_cast<long>(channels_.size() - 1),
-                             ExceptionMessages::kInclusiveBound));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexOutsideRange(
+            "channelNumber", channel_number, 0L,
+            ExceptionMessages::kInclusiveBound,
+            static_cast<long>(channels_.size() - 1),
+            ExceptionMessages::kInclusiveBound));
 
     return;
   }
@@ -266,11 +269,12 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
 
   if (start_in_channel >= channel_data->length()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexOutsideRange(
-                             "startInChannel", start_in_channel, 0UL,
-                             ExceptionMessages::kInclusiveBound,
-                             static_cast<unsigned long>(channel_data->length()),
-                             ExceptionMessages::kExclusiveBound));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexOutsideRange(
+            "startInChannel", start_in_channel, 0UL,
+            ExceptionMessages::kInclusiveBound,
+            static_cast<unsigned long>(channel_data->length()),
+            ExceptionMessages::kExclusiveBound));
 
     return;
   }
@@ -300,11 +304,12 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
   if (channel_number < 0 ||
       channel_number >= static_cast<long>(channels_.size())) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexOutsideRange(
-                             "channelNumber", channel_number, 0L,
-                             ExceptionMessages::kInclusiveBound,
-                             static_cast<long>(channels_.size() - 1),
-                             ExceptionMessages::kInclusiveBound));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexOutsideRange(
+            "channelNumber", channel_number, 0L,
+            ExceptionMessages::kInclusiveBound,
+            static_cast<long>(channels_.size() - 1),
+            ExceptionMessages::kInclusiveBound));
     return;
   }
 
@@ -312,11 +317,12 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
 
   if (start_in_channel >= channel_data->length()) {
     exception_state.ThrowDOMException(
-        kIndexSizeError, ExceptionMessages::IndexOutsideRange(
-                             "startInChannel", start_in_channel, 0UL,
-                             ExceptionMessages::kInclusiveBound,
-                             static_cast<unsigned long>(channel_data->length()),
-                             ExceptionMessages::kExclusiveBound));
+        DOMExceptionCode::kIndexSizeError,
+        ExceptionMessages::IndexOutsideRange(
+            "startInChannel", start_in_channel, 0UL,
+            ExceptionMessages::kInclusiveBound,
+            static_cast<unsigned long>(channel_data->length()),
+            ExceptionMessages::kExclusiveBound));
 
     return;
   }

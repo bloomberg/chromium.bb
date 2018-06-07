@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -68,7 +67,8 @@ void ApplicationCache::update(ExceptionState& exception_state) {
   ApplicationCacheHost* cache_host = GetApplicationCacheHost();
   if (!cache_host || !cache_host->Update()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "there is no application cache to update.");
+        DOMExceptionCode::kInvalidStateError,
+        "there is no application cache to update.");
   }
 }
 
@@ -77,7 +77,8 @@ void ApplicationCache::swapCache(ExceptionState& exception_state) {
   ApplicationCacheHost* cache_host = GetApplicationCacheHost();
   if (!cache_host || !cache_host->SwapCache()) {
     exception_state.ThrowDOMException(
-        kInvalidStateError, "there is no newer application cache to swap to.");
+        DOMExceptionCode::kInvalidStateError,
+        "there is no newer application cache to swap to.");
   }
 }
 

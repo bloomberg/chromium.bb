@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
@@ -108,12 +107,12 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
     ExceptionState& exception_state) {
   if (is_neutered_) {
     exception_state.ThrowDOMException(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "Cannot transfer an ImageBitmap from a detached OffscreenCanvas");
     return nullptr;
   }
   if (!context_) {
-    exception_state.ThrowDOMException(kInvalidStateError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot transfer an ImageBitmap from an "
                                       "OffscreenCanvas with no context");
     return nullptr;

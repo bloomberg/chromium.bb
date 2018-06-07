@@ -226,7 +226,7 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   if (pc_->IsClosed()) {
-    resolver->Reject(DOMException::Create(kInvalidStateError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                           "The peer connection is closed."));
     return promise;
   }
@@ -300,7 +300,7 @@ ScriptPromise RTCRtpSender::setParameters(ScriptState* script_state,
 
   if (!last_returned_parameters_) {
     resolver->Reject(DOMException::Create(
-        kInvalidStateError,
+        DOMExceptionCode::kInvalidStateError,
         "getParameters() needs to be called before setParameters()."));
     return promise;
   }
@@ -311,7 +311,7 @@ ScriptPromise RTCRtpSender::setParameters(ScriptState* script_state,
   // level instead.
   if (HasInvalidModification(last_returned_parameters_.value(), parameters)) {
     resolver->Reject(
-        DOMException::Create(kInvalidModificationError,
+        DOMException::Create(DOMExceptionCode::kInvalidModificationError,
                              "Read-only field modified in setParameters()."));
     return promise;
   }

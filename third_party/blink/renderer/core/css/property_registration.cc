@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 
@@ -89,7 +88,8 @@ void PropertyRegistration::registerProperty(
   String name = descriptor.name();
   if (!CSSVariableParser::IsValidVariableName(name)) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "Custom property names must start with '--'.");
+        DOMExceptionCode::kSyntaxError,
+        "Custom property names must start with '--'.");
     return;
   }
   AtomicString atomic_name(name);
@@ -97,7 +97,7 @@ void PropertyRegistration::registerProperty(
   PropertyRegistry& registry = *document->GetPropertyRegistry();
   if (registry.Registration(atomic_name)) {
     exception_state.ThrowDOMException(
-        kInvalidModificationError,
+        DOMExceptionCode::kInvalidModificationError,
         "The name provided has already been registered.");
     return;
   }
@@ -105,7 +105,7 @@ void PropertyRegistration::registerProperty(
   CSSSyntaxDescriptor syntax_descriptor(descriptor.syntax());
   if (!syntax_descriptor.IsValid()) {
     exception_state.ThrowDOMException(
-        kSyntaxError,
+        DOMExceptionCode::kSyntaxError,
         "The syntax provided is not a valid custom property syntax.");
     return;
   }
@@ -122,13 +122,13 @@ void PropertyRegistration::registerProperty(
         is_animation_tainted);
     if (!initial) {
       exception_state.ThrowDOMException(
-          kSyntaxError,
+          DOMExceptionCode::kSyntaxError,
           "The initial value provided does not parse for the given syntax.");
       return;
     }
     if (!ComputationallyIndependent(*initial)) {
       exception_state.ThrowDOMException(
-          kSyntaxError,
+          DOMExceptionCode::kSyntaxError,
           "The initial value provided is not computationally independent.");
       return;
     }
@@ -139,7 +139,7 @@ void PropertyRegistration::registerProperty(
   } else {
     if (!syntax_descriptor.IsTokenStream()) {
       exception_state.ThrowDOMException(
-          kSyntaxError,
+          DOMExceptionCode::kSyntaxError,
           "An initial value must be provided if the syntax is not '*'");
       return;
     }

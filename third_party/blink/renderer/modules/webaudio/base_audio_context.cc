@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -218,7 +217,7 @@ AudioDestinationNode* BaseAudioContext::destination() const {
 
 void BaseAudioContext::ThrowExceptionForClosedState(
     ExceptionState& exception_state) {
-  exception_state.ThrowDOMException(kInvalidStateError,
+  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                     "AudioContext has been closed.");
 }
 
@@ -325,8 +324,9 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   } else {
     // If audioData is already detached (neutered) we need to reject the
     // promise with an error.
-    DOMException* error = DOMException::Create(
-        kDataCloneError, "Cannot decode detached ArrayBuffer");
+    DOMException* error =
+        DOMException::Create(DOMExceptionCode::kDataCloneError,
+                             "Cannot decode detached ArrayBuffer");
     resolver->Reject(error);
     if (error_callback) {
       error_callback->InvokeAndReportException(this, error);
@@ -350,8 +350,8 @@ void BaseAudioContext::HandleDecodeAudioData(
       success_callback->InvokeAndReportException(this, audio_buffer);
   } else {
     // Reject the promise and run the error callback
-    DOMException* error =
-        DOMException::Create(kEncodingError, "Unable to decode audio data");
+    DOMException* error = DOMException::Create(DOMExceptionCode::kEncodingError,
+                                               "Unable to decode audio data");
     resolver->Reject(error);
     if (error_callback)
       error_callback->InvokeAndReportException(this, error);
@@ -792,7 +792,7 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
     for (auto& resolver : resume_resolvers_) {
       if (context_state_ == kClosed) {
         resolver->Reject(DOMException::Create(
-            kInvalidStateError,
+            DOMExceptionCode::kInvalidStateError,
             "Cannot resume a context that has been closed"));
       } else {
         SetContextState(kRunning);
@@ -882,7 +882,7 @@ void BaseAudioContext::ResolvePromisesForUnpause() {
 void BaseAudioContext::RejectPendingDecodeAudioDataResolvers() {
   // Now reject any pending decodeAudioData resolvers
   for (auto& resolver : decode_audio_resolvers_)
-    resolver->Reject(DOMException::Create(kInvalidStateError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                           "Audio context is going away"));
   decode_audio_resolvers_.clear();
 }
@@ -942,7 +942,7 @@ void BaseAudioContext::RejectPendingResolvers() {
   // pending.
 
   for (auto& resolver : resume_resolvers_) {
-    resolver->Reject(DOMException::Create(kInvalidStateError,
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                           "Audio context is going away"));
   }
   resume_resolvers_.clear();

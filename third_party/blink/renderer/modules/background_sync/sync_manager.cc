@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -31,7 +30,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
   if (!registration_->active())
     return ScriptPromise::RejectWithDOMException(
         script_state,
-        DOMException::Create(kAbortError,
+        DOMException::Create(DOMExceptionCode::kAbortError,
                              "Registration failed - no active Service Worker"));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -90,22 +89,22 @@ void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
       NOTREACHED();
       break;
     case mojom::blink::BackgroundSyncError::STORAGE:
-      resolver->Reject(
-          DOMException::Create(kUnknownError, "Background Sync is disabled."));
+      resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
+                                            "Background Sync is disabled."));
       break;
     case mojom::blink::BackgroundSyncError::NOT_ALLOWED:
       resolver->Reject(
-          DOMException::Create(kInvalidAccessError,
+          DOMException::Create(DOMExceptionCode::kInvalidAccessError,
                                "Attempted to register a sync event without a "
                                "window or registration tag too long."));
       break;
     case mojom::blink::BackgroundSyncError::PERMISSION_DENIED:
-      resolver->Reject(
-          DOMException::Create(kPermissionDeniedError, "Permission denied."));
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kPermissionDeniedError, "Permission denied."));
       break;
     case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
-      resolver->Reject(
-          DOMException::Create(kUnknownError, "No service worker is active."));
+      resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
+                                            "No service worker is active."));
       break;
   }
 }
@@ -133,12 +132,12 @@ void SyncManager::GetRegistrationsCallback(
       NOTREACHED();
       break;
     case mojom::blink::BackgroundSyncError::STORAGE:
-      resolver->Reject(
-          DOMException::Create(kUnknownError, "Background Sync is disabled."));
+      resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
+                                            "Background Sync is disabled."));
       break;
     case mojom::blink::BackgroundSyncError::NO_SERVICE_WORKER:
-      resolver->Reject(
-          DOMException::Create(kUnknownError, "No service worker is active."));
+      resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
+                                            "No service worker is active."));
       break;
   }
 }

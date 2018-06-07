@@ -19,7 +19,8 @@ DOMException* CreateAvailabilityNotSupportedError() {
       "getAvailability() isn't supported at the moment. It can be due to "
       "a permanent or temporary system limitation. It is recommended to "
       "try to blindly start a presentation in that case.");
-  return DOMException::Create(kNotSupportedError, not_supported_error);
+  return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                              not_supported_error);
 }
 
 }  // namespace

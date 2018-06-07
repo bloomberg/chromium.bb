@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -523,7 +522,7 @@ SelectorQuery* SelectorQueryCache::Add(const AtomicString& selectors,
                                        const Document& document,
                                        ExceptionState& exception_state) {
   if (selectors.IsEmpty()) {
-    exception_state.ThrowDOMException(kSyntaxError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "The provided selector is empty.");
     return nullptr;
   }
@@ -541,7 +540,8 @@ SelectorQuery* SelectorQueryCache::Add(const AtomicString& selectors,
 
   if (!selector_list.First()) {
     exception_state.ThrowDOMException(
-        kSyntaxError, "'" + selectors + "' is not a valid selector.");
+        DOMExceptionCode::kSyntaxError,
+        "'" + selectors + "' is not a valid selector.");
     return nullptr;
   }
 

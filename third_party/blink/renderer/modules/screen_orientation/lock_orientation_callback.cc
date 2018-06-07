@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 
 namespace blink {
@@ -27,17 +26,17 @@ void LockOrientationCallback::OnError(WebLockOrientationError error) {
 
   switch (error) {
     case kWebLockOrientationErrorNotAvailable:
-      code = kNotSupportedError;
+      code = DOMExceptionCode::kNotSupportedError;
       msg = "screen.orientation.lock() is not available on this device.";
       break;
     case kWebLockOrientationErrorFullscreenRequired:
-      code = kSecurityError;
+      code = DOMExceptionCode::kSecurityError;
       msg =
           "The page needs to be fullscreen in order to call "
           "screen.orientation.lock().";
       break;
     case kWebLockOrientationErrorCanceled:
-      code = kAbortError;
+      code = DOMExceptionCode::kAbortError;
       msg =
           "A call to screen.orientation.lock() or screen.orientation.unlock() "
           "canceled this call.";

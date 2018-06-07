@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 
@@ -51,7 +50,7 @@ IDBKeyRange* IDBKeyRange::FromScriptValue(ExecutionContext* context,
   if (exception_state.HadException())
     return nullptr;
   if (!key || !key->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
@@ -90,7 +89,7 @@ ScriptValue IDBKeyRange::UpperValue(ScriptState* script_state) const {
 IDBKeyRange* IDBKeyRange::only(std::unique_ptr<IDBKey> key,
                                ExceptionState& exception_state) {
   if (!key || !key->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
@@ -109,7 +108,7 @@ IDBKeyRange* IDBKeyRange::only(ScriptState* script_state,
   if (exception_state.HadException())
     return nullptr;
   if (!key || !key->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
@@ -129,7 +128,7 @@ IDBKeyRange* IDBKeyRange::lowerBound(ScriptState* script_state,
   if (exception_state.HadException())
     return nullptr;
   if (!bound || !bound->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
@@ -149,7 +148,7 @@ IDBKeyRange* IDBKeyRange::upperBound(ScriptState* script_state,
   if (exception_state.HadException())
     return nullptr;
   if (!bound || !bound->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
@@ -170,7 +169,7 @@ IDBKeyRange* IDBKeyRange::bound(ScriptState* script_state,
   if (exception_state.HadException())
     return nullptr;
   if (!lower || !lower->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
@@ -182,19 +181,20 @@ IDBKeyRange* IDBKeyRange::bound(ScriptState* script_state,
   if (exception_state.HadException())
     return nullptr;
   if (!upper || !upper->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return nullptr;
   }
 
   if (upper->IsLessThan(lower.get())) {
     exception_state.ThrowDOMException(
-        kDataError, "The lower key is greater than the upper key.");
+        DOMExceptionCode::kDataError,
+        "The lower key is greater than the upper key.");
     return nullptr;
   }
   if (upper->IsEqual(lower.get()) && (lower_open || upper_open)) {
     exception_state.ThrowDOMException(
-        kDataError,
+        DOMExceptionCode::kDataError,
         "The lower key and upper key are equal and one of the bounds is open.");
     return nullptr;
   }
@@ -216,7 +216,7 @@ bool IDBKeyRange::includes(ScriptState* script_state,
   if (exception_state.HadException())
     return false;
   if (!key || !key->IsValid()) {
-    exception_state.ThrowDOMException(kDataError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       IDBDatabase::kNotValidKeyErrorMessage);
     return false;
   }

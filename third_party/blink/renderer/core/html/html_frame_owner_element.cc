@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"

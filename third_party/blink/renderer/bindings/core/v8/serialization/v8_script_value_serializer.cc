@@ -125,7 +125,8 @@ void V8ScriptValueSerializer::PrepareTransfer(ExceptionState& exception_state) {
           i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));
     } else {
       exception_state.ThrowDOMException(
-          kDataCloneError, "SharedArrayBuffer can not be in transfer list.");
+          DOMExceptionCode::kDataCloneError,
+          "SharedArrayBuffer can not be in transfer list.");
       return;
     }
   }
@@ -215,7 +216,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     ImageBitmap* image_bitmap = wrappable->ToImpl<ImageBitmap>();
     if (image_bitmap->IsNeutered()) {
       exception_state.ThrowDOMException(
-          kDataCloneError,
+          DOMExceptionCode::kDataCloneError,
           "An ImageBitmap is detached and could not be cloned.");
       return false;
     }
@@ -386,7 +387,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
       index = transferables_->message_ports.Find(message_port);
     if (index == kNotFound) {
       exception_state.ThrowDOMException(
-          kDataCloneError,
+          DOMExceptionCode::kDataCloneError,
           "A MessagePort could not be cloned because it was not transferred.");
       return false;
     }
@@ -402,20 +403,20 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
       index = transferables_->offscreen_canvases.Find(canvas);
     if (index == kNotFound) {
       exception_state.ThrowDOMException(
-          kDataCloneError,
+          DOMExceptionCode::kDataCloneError,
           "An OffscreenCanvas could not be cloned "
           "because it was not transferred.");
       return false;
     }
     if (canvas->IsNeutered()) {
       exception_state.ThrowDOMException(
-          kDataCloneError,
+          DOMExceptionCode::kDataCloneError,
           "An OffscreenCanvas could not be cloned because it was detached.");
       return false;
     }
     if (canvas->RenderingContext()) {
       exception_state.ThrowDOMException(
-          kDataCloneError,
+          DOMExceptionCode::kDataCloneError,
           "An OffscreenCanvas could not be cloned "
           "because it had a rendering context.");
       return false;
@@ -476,8 +477,8 @@ void V8ScriptValueSerializer::ThrowDataCloneError(
   DCHECK(exception_state_);
   String message = exception_state_->AddExceptionContext(
       ToBlinkString<String>(v8_message, kDoNotExternalize));
-  V8ThrowDOMException::ThrowDOMException(script_state_->GetIsolate(),
-                                         kDataCloneError, message);
+  V8ThrowDOMException::ThrowDOMException(
+      script_state_->GetIsolate(), DOMExceptionCode::kDataCloneError, message);
 }
 
 v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(
@@ -490,7 +491,7 @@ v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(
                                  exception_state_->PropertyName());
 
   if (!V8DOMWrapper::IsWrapper(isolate, object)) {
-    exception_state.ThrowDOMException(kDataCloneError,
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                       "An object could not be cloned.");
     return v8::Nothing<bool>();
   }
@@ -503,7 +504,8 @@ v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(
   if (!exception_state.HadException()) {
     StringView interface = wrappable->GetWrapperTypeInfo()->interface_name;
     exception_state.ThrowDOMException(
-        kDataCloneError, interface + " object could not be cloned.");
+        DOMExceptionCode::kDataCloneError,
+        interface + " object could not be cloned.");
   }
   return v8::Nothing<bool>();
 }
@@ -518,7 +520,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetSharedArrayBufferId(
                                    exception_state_->InterfaceName(),
                                    exception_state_->PropertyName());
     exception_state.ThrowDOMException(
-        kDataCloneError,
+        DOMExceptionCode::kDataCloneError,
         "A SharedArrayBuffer can not be serialized for storage.");
     return v8::Nothing<uint32_t>();
   }
@@ -550,7 +552,7 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
       ExceptionState exception_state(isolate, exception_state_->Context(),
                                      exception_state_->InterfaceName(),
                                      exception_state_->PropertyName());
-      exception_state.ThrowDOMException(kDataCloneError,
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                         "Serializing WebAssembly modules in "
                                         "non-secure contexts is not allowed.");
       return v8::Nothing<uint32_t>();

@@ -40,7 +40,7 @@ class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
   }
 
   void Abort() override {
-    resolver_->Reject(DOMException::Create(kAbortError));
+    resolver_->Reject(DOMException::Create(DOMExceptionCode::kAbortError));
   }
 
   void Trace(blink::Visitor* visitor) override {

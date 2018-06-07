@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -214,7 +213,8 @@ void MediaKeySystemAccessInitializer::RequestNotSupported(
   if (!IsExecutionContextValid())
     return;
 
-  resolver_->Reject(DOMException::Create(kNotSupportedError, error_message));
+  resolver_->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                         error_message));
   resolver_.Clear();
 }
 
@@ -290,7 +290,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(
-              kSecurityError,
+              DOMExceptionCode::kSecurityError,
               "requestMediaKeySystemAccess is disabled by feature policy."));
     }
   } else {
@@ -324,7 +324,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
-            kInvalidStateError,
+            DOMExceptionCode::kInvalidStateError,
             "The context provided is not associated with a page."));
   }
 

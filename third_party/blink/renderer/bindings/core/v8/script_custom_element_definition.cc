@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
-#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
@@ -225,7 +224,8 @@ bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
         "custom element constructors must call super() first and must "
         "not return a different object";
     v8::Local<v8::Value> exception = V8ThrowDOMException::CreateDOMException(
-        script_state_->GetIsolate(), kInvalidStateError, message);
+        script_state_->GetIsolate(), DOMExceptionCode::kInvalidStateError,
+        message);
     V8ScriptRunner::ReportException(isolate, exception);
     return false;
   }

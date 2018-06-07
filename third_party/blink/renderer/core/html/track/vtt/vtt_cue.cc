@@ -120,7 +120,7 @@ static bool IsInvalidPercentage(double value) {
 static bool IsInvalidPercentage(double value, ExceptionState& exception_state) {
   if (IsInvalidPercentage(value)) {
     exception_state.ThrowDOMException(
-        kIndexSizeError,
+        DOMExceptionCode::kIndexSizeError,
         ExceptionMessages::IndexOutsideRange<double>(
             "value", value, 0, ExceptionMessages::kInclusiveBound, 100,
             ExceptionMessages::kInclusiveBound));

@@ -50,8 +50,9 @@ ScriptPromise FaceDetector::DoDetect(ScriptPromiseResolver* resolver,
                                      SkBitmap bitmap) {
   ScriptPromise promise = resolver->Promise();
   if (!face_service_) {
-    resolver->Reject(DOMException::Create(
-        kNotSupportedError, "Face detection service unavailable."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                             "Face detection service unavailable."));
     return promise;
   }
   face_service_requests_.insert(resolver);
@@ -98,7 +99,7 @@ void FaceDetector::OnDetectFaces(
 
 void FaceDetector::OnFaceServiceConnectionError() {
   for (const auto& request : face_service_requests_) {
-    request->Reject(DOMException::Create(kNotSupportedError,
+    request->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                          "Face Detection not implemented."));
   }
   face_service_requests_.clear();

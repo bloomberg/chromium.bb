@@ -170,7 +170,7 @@ void KeyframeEffect::setKeyframes(ScriptState* script_state,
   // Animation into a 'normal' one with multiple properties.
   if (!Model()->IsStringKeyframeEffectModel()) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
+        DOMExceptionCode::kNotSupportedError,
         "Calling setKeyframes on CSS Transitions is not yet supported");
     return;
   }
