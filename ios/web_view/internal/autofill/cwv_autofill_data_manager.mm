@@ -135,10 +135,12 @@ class WebViewPersonalDataManagerObserverBridge
 }
 
 - (void)updateCreditCard:(CWVCreditCard*)creditCard {
+  DCHECK(!creditCard.fromGooglePay);
   _personalDataManager->UpdateCreditCard(*creditCard.internalCard);
 }
 
 - (void)deleteCreditCard:(CWVCreditCard*)creditCard {
+  DCHECK(!creditCard.fromGooglePay);
   _personalDataManager->RemoveByGUID(creditCard.internalCard->guid());
 }
 

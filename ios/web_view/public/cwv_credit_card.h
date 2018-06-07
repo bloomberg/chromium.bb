@@ -30,9 +30,9 @@ CWV_EXPORT
 @property(nonatomic, copy, nullable) NSString* expirationYear;
 // The issuing bank of this card. "Chase", "Bank of America".
 @property(nonatomic, copy, nullable, readonly) NSString* bankName;
-// Storage type for this card. |YES| if this card is purely local, or a local
-// copy of a remote card.
-@property(nonatomic, readonly, getter=isSavedLocally) BOOL savedLocally;
+// If a card comes from Google Payments, it can only be edited or deleted by
+// visiting https://payments.google.com.
+@property(nonatomic, readonly, getter=isFromGooglePay) BOOL fromGooglePay;
 
 - (instancetype)init NS_UNAVAILABLE;
 
