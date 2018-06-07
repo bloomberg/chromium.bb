@@ -180,11 +180,15 @@ void ScrollableAreaPainter::PaintOverflowControls(
     const auto& box = *GetScrollableArea().GetLayoutBox();
     if (const auto* fragment = paint_info.FragmentToPaint(box)) {
       const auto* properties = fragment->PaintProperties();
+      // TODO(crbug.com/849278): Remove either the DCHECK or the if condition
+      // when we figure out in what cases that the box doesn't have properties.
       DCHECK(properties);
-      if (const auto* clip = properties->OverflowControlsClip()) {
-        scoped_paint_chunk_properties.emplace(
-            context.GetPaintController(), clip, box,
-            DisplayItem::kClipLayerOverflowControls);
+      if (properties) {
+        if (const auto* clip = properties->OverflowControlsClip()) {
+          scoped_paint_chunk_properties.emplace(
+              context.GetPaintController(), clip, box,
+              DisplayItem::kClipLayerOverflowControls);
+        }
       }
     }
   } else {
