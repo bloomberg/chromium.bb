@@ -178,8 +178,7 @@ JavaScriptDialogCocoa::JavaScriptDialogCocoa(
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     content::JavaScriptDialogManager::DialogClosedCallback dialog_callback)
-    : JavaScriptDialog(parent_web_contents),
-      impl_(std::make_unique<JavaScriptDialogCocoaImpl>(
+    : impl_(std::make_unique<JavaScriptDialogCocoaImpl>(
           this,
           parent_web_contents,
           alerting_web_contents,

@@ -4,17 +4,9 @@
 
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 
-#include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_cocoa.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
-
-JavaScriptDialog::JavaScriptDialog(content::WebContents* parent_web_contents) {
-  popunder_preventer_.reset(new PopunderPreventer(parent_web_contents));
-  parent_web_contents->GetDelegate()->ActivateContents(parent_web_contents);
-}
 
 JavaScriptDialog::~JavaScriptDialog() = default;
 
