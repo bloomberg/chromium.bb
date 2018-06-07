@@ -59,6 +59,16 @@ class RenderingStorySet(story.StorySet):
             name_suffix='_sync_scroll',
             extra_browser_args=['--disable-threaded-scrolling']))
 
+      if (platform == platforms.MOBILE and
+          story_class.TAGS and
+          story_tags.IMAGE_DECODING in story_class.TAGS):
+        self.AddStory(story_class(
+            page_set=self,
+            shared_page_state_class=shared_page_state_class,
+            name_suffix='_gpu_rasterization_and_decoding',
+            extra_browser_args=['--force-gpu-rasterization',
+                                '--enable-accelerated-jpeg-decoding']))
+
 
 class DesktopRenderingStorySet(RenderingStorySet):
   """Desktop stories related to rendering.

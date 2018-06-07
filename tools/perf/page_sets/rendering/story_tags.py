@@ -21,6 +21,8 @@ REQUIRED_WEBGL = Tag(
     'required_webgl', 'Stories that are skipped if no webgl support')
 PINCH_ZOOM = Tag(
     'pinch_zoom', 'Stories that only run on Mac for desktop cases')
+IMAGE_DECODING = Tag(
+    'image_decoding', 'Stories with accelerated jpeg decoding')
 
 
 def _ExtractAllTags():
