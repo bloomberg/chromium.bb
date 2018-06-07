@@ -4,8 +4,8 @@
 
 assert(is_fuchsia)
 
+import("//build/config/fuchsia/fidl_library.gni")
 import("//build/config/fuchsia/rules.gni")
-import("//third_party/fuchsia-sdk/fidl_library.gni")
 import("//tools/grit/repack.gni")
 
 executable("webrunner") {
