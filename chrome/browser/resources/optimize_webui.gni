@@ -106,7 +106,7 @@ template("unpak") {
     script = "//chrome/browser/resources/unpack_pak.py"
 
     inputs = [
-      "//chrome/browser/resources/unpack_pak.py",
+      "$target_gen_dir/${invoker.pak_file}",
     ]
 
     outputs = [
