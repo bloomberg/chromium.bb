@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
@@ -167,10 +168,10 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScript) {
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
   v8::ScriptCompiler::CompileOptions compile_options;
-  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
-      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+      V8CodeCache::GetCompileOptions(kV8CacheOptionsDefault, source_code);
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code, kSharableCrossOrigin,
                   compile_options, no_cache_reason, ReferrerScriptInfo())
@@ -212,10 +213,10 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError) {
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
   v8::ScriptCompiler::CompileOptions compile_options;
-  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
-      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+      V8CodeCache::GetCompileOptions(kV8CacheOptionsDefault, source_code);
   EXPECT_FALSE(V8ScriptRunner::CompileScript(
                    scope.GetScriptState(), source_code, kSharableCrossOrigin,
                    compile_options, no_cache_reason, ReferrerScriptInfo())
@@ -266,9 +267,9 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming) {
 
   SingleCachedMetadataHandler* cache_handler = GetResource()->CacheHandler();
   EXPECT_TRUE(cache_handler);
-  cache_handler->SetCachedMetadata(
-      V8ScriptRunner::TagForCodeCache(cache_handler), "X", 1,
-      CachedMetadataHandler::kCacheLocally);
+  cache_handler->SetCachedMetadata(V8CodeCache::TagForCodeCache(cache_handler),
+                                   "X", 1,
+                                   CachedMetadataHandler::kCacheLocally);
 
   AppendPadding();
   Finish();
@@ -369,10 +370,10 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk) {
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
   v8::ScriptCompiler::CompileOptions compile_options;
-  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
-      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+      V8CodeCache::GetCompileOptions(kV8CacheOptionsDefault, source_code);
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code, kSharableCrossOrigin,
                   compile_options, no_cache_reason, ReferrerScriptInfo())
@@ -411,10 +412,10 @@ TEST_F(ScriptStreamingTest, EncodingChanges) {
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
   v8::ScriptCompiler::CompileOptions compile_options;
-  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
-      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+      V8CodeCache::GetCompileOptions(kV8CacheOptionsDefault, source_code);
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code, kSharableCrossOrigin,
                   compile_options, no_cache_reason, ReferrerScriptInfo())
@@ -454,10 +455,10 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
   v8::ScriptCompiler::CompileOptions compile_options;
-  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
-      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+      V8CodeCache::GetCompileOptions(kV8CacheOptionsDefault, source_code);
   EXPECT_TRUE(V8ScriptRunner::CompileScript(
                   scope.GetScriptState(), source_code, kSharableCrossOrigin,
                   compile_options, no_cache_reason, ReferrerScriptInfo())

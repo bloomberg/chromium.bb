@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -258,7 +258,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     SingleCachedMetadataHandler* cache_handler = resource->CacheHandler();
     scoped_refptr<CachedMetadata> code_cache(
         cache_handler ? cache_handler->GetCachedMetadata(
-                            V8ScriptRunner::TagForCodeCache(cache_handler))
+                            V8CodeCache::TagForCodeCache(cache_handler))
                       : nullptr);
     if (code_cache.get()) {
       // The resource has a code cache, so it's unnecessary to stream and

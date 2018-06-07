@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_response.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -337,15 +337,15 @@ class Cache::CodeCacheHandleCallbackForPut final
             TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
 
     scoped_refptr<CachedMetadata> cached_metadata =
-        V8ScriptRunner::GenerateFullCodeCache(
+        V8CodeCache::GenerateFullCodeCache(
             script_state_.get(),
             text_decoder->Decode(static_cast<const char*>(array_buffer->Data()),
                                  array_buffer->ByteLength()),
             web_request_.Url().GetString(), text_decoder->Encoding(),
             batch_operation->response->response_type ==
                     network::mojom::FetchResponseType::kOpaque
-                ? V8ScriptRunner::OpaqueMode::kOpaque
-                : V8ScriptRunner::OpaqueMode::kNotOpaque);
+                ? V8CodeCache::OpaqueMode::kOpaque
+                : V8CodeCache::OpaqueMode::kNotOpaque);
     if (!cached_metadata) {
       barrier_callback_->OnSuccess(index_, std::move(batch_operation));
       return;

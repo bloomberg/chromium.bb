@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
@@ -43,13 +44,13 @@ class V8ScriptRunnerTest : public testing::Test {
     return KURL(WTF::String::Format("http://bla.com/bla%d", counter_));
   }
   unsigned TagForCodeCache(SingleCachedMetadataHandler* cache_handler) const {
-    return V8ScriptRunner::TagForCodeCache(cache_handler);
+    return V8CodeCache::TagForCodeCache(cache_handler);
   }
   unsigned TagForTimeStamp(SingleCachedMetadataHandler* cache_handler) const {
-    return V8ScriptRunner::TagForTimeStamp(cache_handler);
+    return V8CodeCache::TagForTimeStamp(cache_handler);
   }
   void SetCacheTimeStamp(SingleCachedMetadataHandler* cache_handler) {
-    V8ScriptRunner::SetCacheTimeStamp(cache_handler);
+    V8CodeCache::SetCacheTimeStamp(cache_handler);
   }
 
   bool CompileScript(v8::Isolate* isolate,
@@ -57,38 +58,37 @@ class V8ScriptRunnerTest : public testing::Test {
                      const ScriptSourceCode& source_code,
                      V8CacheOptions cache_options) {
     v8::ScriptCompiler::CompileOptions compile_options;
-    V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+    V8CodeCache::ProduceCacheOptions produce_cache_options;
     v8::ScriptCompiler::NoCacheReason no_cache_reason;
     std::tie(compile_options, produce_cache_options, no_cache_reason) =
-        V8ScriptRunner::GetCompileOptions(cache_options, source_code);
+        V8CodeCache::GetCompileOptions(cache_options, source_code);
     v8::MaybeLocal<v8::Script> compiled_script = V8ScriptRunner::CompileScript(
         script_state, source_code, kNotSharableCrossOrigin, compile_options,
         no_cache_reason, ReferrerScriptInfo());
     if (compiled_script.IsEmpty()) {
       return false;
     }
-    V8ScriptRunner::ProduceCache(isolate, compiled_script.ToLocalChecked(),
-                                 source_code, produce_cache_options,
-                                 compile_options);
+    V8CodeCache::ProduceCache(isolate, compiled_script.ToLocalChecked(),
+                              source_code, produce_cache_options,
+                              compile_options);
     return true;
   }
 
-  bool CompileScript(
-      v8::Isolate* isolate,
-      ScriptState* script_state,
-      const ScriptSourceCode& source_code,
-      v8::ScriptCompiler::CompileOptions compile_options,
-      v8::ScriptCompiler::NoCacheReason no_cache_reason,
-      V8ScriptRunner::ProduceCacheOptions produce_cache_options) {
+  bool CompileScript(v8::Isolate* isolate,
+                     ScriptState* script_state,
+                     const ScriptSourceCode& source_code,
+                     v8::ScriptCompiler::CompileOptions compile_options,
+                     v8::ScriptCompiler::NoCacheReason no_cache_reason,
+                     V8CodeCache::ProduceCacheOptions produce_cache_options) {
     v8::MaybeLocal<v8::Script> compiled_script = V8ScriptRunner::CompileScript(
         script_state, source_code, kNotSharableCrossOrigin, compile_options,
         no_cache_reason, ReferrerScriptInfo());
     if (compiled_script.IsEmpty()) {
       return false;
     }
-    V8ScriptRunner::ProduceCache(isolate, compiled_script.ToLocalChecked(),
-                                 source_code, produce_cache_options,
-                                 compile_options);
+    V8CodeCache::ProduceCache(isolate, compiled_script.ToLocalChecked(),
+                              source_code, produce_cache_options,
+                              compile_options);
     return true;
   }
 
@@ -161,12 +161,12 @@ TEST_F(V8ScriptRunnerTest, consumeCodeOption) {
 
   // Hot run - should consume code cache.
   v8::ScriptCompiler::CompileOptions compile_options;
-  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
-      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+      V8CodeCache::GetCompileOptions(kV8CacheOptionsDefault, source_code);
   EXPECT_EQ(produce_cache_options,
-            V8ScriptRunner::ProduceCacheOptions::kNoProduceCache);
+            V8CodeCache::ProduceCacheOptions::kNoProduceCache);
   EXPECT_EQ(compile_options,
             v8::ScriptCompiler::CompileOptions::kConsumeCodeCache);
   EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),
@@ -194,12 +194,12 @@ TEST_F(V8ScriptRunnerTest, produceAndConsumeCodeOption) {
 
   // Hot run - should consume code cache
   v8::ScriptCompiler::CompileOptions compile_options;
-  V8ScriptRunner::ProduceCacheOptions produce_cache_options;
+  V8CodeCache::ProduceCacheOptions produce_cache_options;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
   std::tie(compile_options, produce_cache_options, no_cache_reason) =
-      V8ScriptRunner::GetCompileOptions(kV8CacheOptionsDefault, source_code);
+      V8CodeCache::GetCompileOptions(kV8CacheOptionsDefault, source_code);
   EXPECT_EQ(produce_cache_options,
-            V8ScriptRunner::ProduceCacheOptions::kNoProduceCache);
+            V8CodeCache::ProduceCacheOptions::kNoProduceCache);
   EXPECT_EQ(compile_options,
             v8::ScriptCompiler::CompileOptions::kConsumeCodeCache);
   EXPECT_TRUE(CompileScript(scope.GetIsolate(), scope.GetScriptState(),

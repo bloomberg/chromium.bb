@@ -26,12 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_SCRIPT_RUNNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_SCRIPT_RUNNER_H_
 
-#include <stdint.h>
-
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
@@ -41,14 +36,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
-namespace WTF {
-class TextEncoding;
-}  // namespace WTF
-
 namespace blink {
 
-class CachedMetadata;
-class SingleCachedMetadataHandler;
 class ExecutionContext;
 class ScriptSourceCode;
 
@@ -56,20 +45,8 @@ class CORE_EXPORT V8ScriptRunner final {
   STATIC_ONLY(V8ScriptRunner);
 
  public:
-  enum class OpaqueMode {
-    kOpaque,
-    kNotOpaque,
-  };
-
-  enum class ProduceCacheOptions {
-    kNoProduceCache,
-    kSetTimeStamp,
-    kProduceCodeCache,
-  };
-
   // For the following methods, the caller sites have to hold
   // a HandleScope and a ContextScope.
-  // SingleCachedMetadataHandler is set when metadata caching is supported.
   static v8::MaybeLocal<v8::Script> CompileScript(
       ScriptState*,
       const ScriptSourceCode&,
@@ -112,27 +89,11 @@ class CORE_EXPORT V8ScriptRunner final {
                                                   v8::Local<v8::Module>,
                                                   v8::Local<v8::Context>);
 
-  static std::tuple<v8::ScriptCompiler::CompileOptions,
-                    ProduceCacheOptions,
-                    v8::ScriptCompiler::NoCacheReason>
-  GetCompileOptions(V8CacheOptions, const ScriptSourceCode&);
-
-  static void ProduceCache(v8::Isolate*,
-                           v8::Local<v8::Script>,
-                           const ScriptSourceCode&,
-                           ProduceCacheOptions,
-                           v8::ScriptCompiler::CompileOptions);
-
   // Only to be used from ScriptModule::ReportException().
   static void ReportExceptionForModule(v8::Isolate*,
                                        v8::Local<v8::Value> exception,
                                        const String& file_name,
                                        const TextPosition&);
-
-  static uint32_t TagForParserCache(SingleCachedMetadataHandler*);
-  static uint32_t TagForCodeCache(SingleCachedMetadataHandler*);
-  static uint32_t TagForTimeStamp(SingleCachedMetadataHandler*);
-  static void SetCacheTimeStamp(SingleCachedMetadataHandler*);
 
   // Utilities for calling functions added to the V8 extras binding object.
 
@@ -157,13 +118,6 @@ class CORE_EXPORT V8ScriptRunner final {
   // TODO(adamk): This should live on V8ThrowException, but it depends on
   // V8Initializer and so can't trivially move to platform/bindings.
   static void ReportException(v8::Isolate*, v8::Local<v8::Value> exception);
-
-  static scoped_refptr<CachedMetadata> GenerateFullCodeCache(
-      ScriptState*,
-      const String& script_string,
-      const String& file_name,
-      const WTF::TextEncoding&,
-      OpaqueMode);
 
  private:
   static v8::MaybeLocal<v8::Value> CallExtraHelper(ScriptState*,
