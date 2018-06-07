@@ -241,8 +241,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 #define MAYBE_ScrollEndGeneratedForFilteredFling \
   DISABLED_ScrollEndGeneratedForFilteredFling
 #else
+// Flaky, see https://crbug.com/850455
 #define MAYBE_ScrollEndGeneratedForFilteredFling \
-  ScrollEndGeneratedForFilteredFling
+  DISABLED_ScrollEndGeneratedForFilteredFling
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
                        MAYBE_ScrollEndGeneratedForFilteredFling) {
