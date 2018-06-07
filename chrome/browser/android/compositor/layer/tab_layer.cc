@@ -103,7 +103,7 @@ void TabLayer::SetProperties(int id,
                              int border_inner_shadow_resource_id,
                              int default_background_color,
                              int back_logo_color,
-                             bool is_portrait,
+                             bool close_button_on_right,
                              float x,
                              float y,
                              float width,
@@ -190,10 +190,6 @@ void TabLayer::SetProperties(int id,
   const gfx::RectF shadow_padding(shadow_resource->padding());
   const gfx::RectF contour_padding(contour_resource->padding());
 
-  // If we're in portrait and we're RTL, the close button is on the left.
-  // Similarly if we're in landscape and we're in LTR, the close button is on
-  // the left.
-  const bool close_button_on_left = is_portrait == l10n_util::IsLayoutRtl();
   const bool back_visible = cos(rotation_x * SK_MScalarPI / 180.0f) < 0 ||
                             cos(rotation_y * SK_MScalarPI / 180.0f) < 0;
 
@@ -329,7 +325,7 @@ void TabLayer::SetProperties(int id,
 
   close_button_position.set_y(-border_padding.y());
   title_position.set_y(-border_padding.y());
-  if (!close_button_on_left)
+  if (close_button_on_right)
     close_button_position.set_x(width - close_button_size.width());
   else
     title_position.set_x(close_btn_effective_width);
