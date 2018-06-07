@@ -85,7 +85,8 @@ class SDKFetcher(object):
   MISC_CACHE = 'misc'
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
-  QEMU_BIN_KEY = 'app-emulation/qemu-2.6.0-r4.tbz2'
+  QEMU_BIN_KEY = 'qemu'
+  QEMU_BIN_PATH = 'app-emulation/qemu-2.6.0-r4.tbz2'
   PREBUILT_CONF_PATH = ('chromiumos/overlays/board-overlays.git/+/'
                         'master/overlay-amd64-host/prebuilt.conf')
 
@@ -205,7 +206,7 @@ class SDKFetcher(object):
     binhost, path = base64.b64decode(contents_b64.read()).strip().split('=')
     if binhost != 'FULL_BINHOST' or not path:
       return None
-    return path.strip('"')
+    return os.path.join(path.strip('"'), SDKFetcher.QEMU_BIN_PATH)
 
   def _GetFullVersionFromStorage(self, version_file):
     """Cat |version_file| in google storage.
@@ -421,8 +422,7 @@ class SDKFetcher(object):
     if constants.VM_IMAGE_TAR in components:
       qemu_bin_path = self._GetQemuBinPath()
       if qemu_bin_path:
-        fetch_urls[self.QEMU_BIN_KEY] = os.path.join(
-            qemu_bin_path, self.QEMU_BIN_KEY)
+        fetch_urls[self.QEMU_BIN_KEY] = qemu_bin_path
       else:
         logging.warning('Failed to find a QEMU binary to download.')
 
