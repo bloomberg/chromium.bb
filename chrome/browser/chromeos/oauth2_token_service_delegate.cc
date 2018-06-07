@@ -214,20 +214,45 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
   account_keys_.insert(account_key);
 
   std::string account_id = MapAccountKeyToAccountId(account_key);
-  if (!account_id.empty()) {
-    ScopedBatchChange batch(this);
-    FireRefreshTokenAvailable(account_id);
-
-    // We cannot directly use |UpdateAuthError| because it does not invoke
-    // |FireAuthErrorChanged| if |account_id|'s error state was already
-    // |GoogleServiceAuthError::State::NONE|, but |FireAuthErrorChanged| must be
-    // invoked here, regardless. See the comment below.
-    errors_.erase(account_id);
-    // See |OAuth2TokenService::Observer::OnAuthErrorChanged|.
-    // |OnAuthErrorChanged| must be always called after
-    // |OnRefreshTokenAvailable|, when refresh token is updated.
-    FireAuthErrorChanged(account_id, GoogleServiceAuthError::AuthErrorNone());
+  if (account_id.empty()) {
+    return;
   }
+
+  ScopedBatchChange batch(this);
+  FireRefreshTokenAvailable(account_id);
+
+  // We cannot directly use |UpdateAuthError| because it does not invoke
+  // |FireAuthErrorChanged| if |account_id|'s error state was already
+  // |GoogleServiceAuthError::State::NONE|, but |FireAuthErrorChanged| must be
+  // invoked here, regardless. See the comment below.
+  errors_.erase(account_id);
+  // See |OAuth2TokenService::Observer::OnAuthErrorChanged|.
+  // |OnAuthErrorChanged| must be always called after
+  // |OnRefreshTokenAvailable|, when refresh token is updated.
+  FireAuthErrorChanged(account_id, GoogleServiceAuthError::AuthErrorNone());
+}
+
+void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
+    const AccountManager::AccountKey& account_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+
+  auto it = account_keys_.find(account_key);
+  if (it == account_keys_.end()) {
+    return;
+  }
+
+  account_keys_.erase(it);
+  std::string account_id = MapAccountKeyToAccountId(account_key);
+  if (account_id.empty()) {
+    return;
+  }
+
+  ScopedBatchChange batch(this);
+
+  // ProfileOAuth2TokenService will clear its cache for |account_id| when this
+  // is called. See |ProfileOAuth2TokenService::OnRefreshTokenRevoked|.
+  FireRefreshTokenRevoked(account_id);
 }
 
 void ChromeOSOAuth2TokenServiceDelegate::RevokeCredentials(

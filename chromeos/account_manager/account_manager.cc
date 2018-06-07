@@ -213,6 +213,7 @@ void AccountManager::RemoveAccountInternal(const AccountKey& account_key) {
 
   tokens_.erase(it);
   PersistTokensAsync();
+  NotifyAccountRemovalObservers(account_key);
 }
 
 void AccountManager::UpsertToken(const AccountKey& account_key,
@@ -251,6 +252,15 @@ void AccountManager::NotifyTokenObservers(const AccountKey& account_key) {
 
   for (auto& observer : observers_) {
     observer.OnTokenUpserted(account_key);
+  }
+}
+
+void AccountManager::NotifyAccountRemovalObservers(
+    const AccountKey& account_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto& observer : observers_) {
+    observer.OnAccountRemoved(account_key);
   }
 }
 
