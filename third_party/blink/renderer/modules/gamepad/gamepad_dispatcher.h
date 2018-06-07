@@ -46,7 +46,7 @@ class GamepadDispatcher final
   void DidDisconnectGamepad(unsigned index, const device::Gamepad&) override;
 
   // PlatformEventDispatcher
-  void StartListening() override;
+  void StartListening(LocalFrame* frame) override;
   void StopListening() override;
 
   void DispatchDidConnectOrDisconnectGamepad(unsigned index,

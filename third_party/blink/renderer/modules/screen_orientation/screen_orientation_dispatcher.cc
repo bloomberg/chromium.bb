@@ -27,7 +27,7 @@ void ScreenOrientationDispatcher::Trace(blink::Visitor* visitor) {
   PlatformEventDispatcher::Trace(visitor);
 }
 
-void ScreenOrientationDispatcher::StartListening() {
+void ScreenOrientationDispatcher::StartListening(LocalFrame* frame) {
   DCHECK(!listener_);
 
   Platform::Current()->GetConnector()->BindInterface(

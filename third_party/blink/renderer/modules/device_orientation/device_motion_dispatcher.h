@@ -68,7 +68,7 @@ class DeviceMotionDispatcher final
   DeviceMotionDispatcher();
 
   // Inherited from PlatformEventDispatcher.
-  void StartListening() override;
+  void StartListening(LocalFrame*) override;
   void StopListening() override;
 
   Member<DeviceMotionData> last_device_motion_data_;

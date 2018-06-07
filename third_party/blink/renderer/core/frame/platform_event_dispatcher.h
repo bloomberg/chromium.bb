@@ -10,6 +10,7 @@
 
 namespace blink {
 class PlatformEventController;
+class LocalFrame;
 
 class CORE_EXPORT PlatformEventDispatcher : public GarbageCollectedMixin {
  public:
@@ -23,7 +24,7 @@ class CORE_EXPORT PlatformEventDispatcher : public GarbageCollectedMixin {
 
   void NotifyControllers();
 
-  virtual void StartListening() = 0;
+  virtual void StartListening(LocalFrame* frame) = 0;
   virtual void StopListening() = 0;
 
  private:

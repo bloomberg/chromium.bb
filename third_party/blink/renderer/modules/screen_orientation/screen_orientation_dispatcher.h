@@ -36,7 +36,7 @@ class ScreenOrientationDispatcher final
   ScreenOrientationDispatcher();
 
   // Inherited from PlatformEventDispatcher.
-  void StartListening() override;
+  void StartListening(LocalFrame*) override;
   void StopListening() override;
 
   device::mojom::blink::ScreenOrientationListenerPtr listener_;
