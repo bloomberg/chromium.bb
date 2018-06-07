@@ -263,49 +263,78 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.hit_testable_without_draws_content;
   }
 
+  // Set or gets if this layer is a container for fixed position layers in its
+  // subtree. Such layers will be positioned and transformed relative to this
+  // layer instead of their direct parent.
+  //
   // A layer that is a container for fixed position layers cannot be both
   // scrollable and have a non-identity transform.
   void SetIsContainerForFixedPositionLayers(bool container);
   bool IsContainerForFixedPositionLayers() const;
 
-  void SetIsResizedByBrowserControls(bool resized);
-  bool IsResizedByBrowserControls() const;
-
+  // Set or get constraints applied to the layer's position, where it may be
+  // in a fixed position relative to the nearest ancestor that returns true for
+  // IsContainerForFixedPositionLayers(). This may also specify which edges
+  // of the layer are fixed to the same edges of the container ancestor. When
+  // fixed position, this layer's transform will be appended to the container
+  // ancestor's transform instead of to this layer's direct parent's.
   void SetPositionConstraint(const LayerPositionConstraint& constraint);
   const LayerPositionConstraint& position_constraint() const {
     return inputs_.position_constraint;
   }
 
+  // Set or get constraints applied to the layer's position, where it may act
+  // like a normal layer until, during scroll, its position triggers it to
+  // become fixed position relative to its scroller. See CSS position: sticky
+  // for more details.
   void SetStickyPositionConstraint(
       const LayerStickyPositionConstraint& constraint);
   const LayerStickyPositionConstraint& sticky_position_constraint() const {
     return inputs_.sticky_position_constraint;
   }
 
-  TransformNode* GetTransformNode() const;
+  // On some platforms (Android renderer) the viewport may resize during scroll
+  // on the compositor thread. During this resize and until the main thread
+  // matches, position fixed layers may need to have their position adjusted on
+  // the compositor thread to keep them fixed in place.  If
+  // IsContainerForFixedPositionLayers() is true for this layer, these set and
+  // get whether fixed position descendants of this layer should have this
+  // adjustment to their position applied during such a viewport resize.
+  void SetIsResizedByBrowserControls(bool resized);
+  bool IsResizedByBrowserControls() const;
 
+  // Set or get the transform to be used when compositing this layer into its
+  // target. The transform is inherited by this layers children.
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return inputs_.transform; }
 
+  // Gets the transform, including transform origin and position, of this layer
+  // and its ancestors, device scale and page scale factors, into the device
+  // viewport.
+  gfx::Transform ScreenSpaceTransform() const;
+
+  // Set or get the origin to be used when applying the transform. The value is
+  // a position in layer space, relative to the top left corner of this layer.
+  // For instance, if set to the center of the layer, with a transform to rotate
+  // 180deg around the X axis, it would flip the layer vertically around the
+  // center of the layer, leaving it occupying the same space. Whereas set to
+  // the top left of the layer, the rotation wouldoccur around the top of the
+  // layer, moving it vertically while flipping it.
   void SetTransformOrigin(const gfx::Point3F&);
   const gfx::Point3F& transform_origin() const {
     return inputs_.transform_origin;
   }
 
   void SetScrollParent(Layer* parent);
-
   Layer* scroll_parent() { return inputs_.scroll_parent; }
 
   void SetClipParent(Layer* ancestor);
-
   Layer* clip_parent() { return inputs_.clip_parent; }
 
   std::set<Layer*>* clip_children() { return clip_children_.get(); }
   const std::set<Layer*>* clip_children() const {
     return clip_children_.get();
   }
-
-  gfx::Transform ScreenSpaceTransform() const;
 
   void set_num_unclipped_descendants(size_t descendants) {
     num_unclipped_descendants_ = descendants;
@@ -547,6 +576,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   bool has_transform_node() { return has_transform_node_; }
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
+  TransformNode* GetTransformNode() const;
 
   // Internal to property tree construction. Whether this layer may animate its
   // opacity on the compositor thread. Layer subclasses may override this to
