@@ -4,7 +4,7 @@
 
 #import "components/autofill/ios/browser/fake_js_autofill_manager.h"
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,7 +17,7 @@
 
 - (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
                         completionHandler:(ProceduralBlock)completionHandler {
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
+  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
                              _lastClearedFormName = [formName copy];
                              completionHandler();
                            }));
