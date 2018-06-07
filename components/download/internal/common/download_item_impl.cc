@@ -31,6 +31,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -182,12 +183,15 @@ class DownloadItemActivatedData
     out->append(base::StringPrintf(
         "\"type\":\"%s\",", GetDownloadTypeNames(download_type_).c_str()));
     out->append(base::StringPrintf("\"id\":\"%d\",", download_id_));
-    out->append(
-        base::StringPrintf("\"original_url\":\"%s\",", original_url_.c_str()));
-    out->append(
-        base::StringPrintf("\"final_url\":\"%s\",", final_url_.c_str()));
-    out->append(
-        base::StringPrintf("\"file_name\":\"%s\",", file_name_.c_str()));
+    out->append("\"original_url\":");
+    base::EscapeJSONString(original_url_, true, out);
+    out->append(",");
+    out->append("\"final_url\":");
+    base::EscapeJSONString(final_url_, true, out);
+    out->append(",");
+    out->append("\"file_name\":");
+    base::EscapeJSONString(file_name_, true, out);
+    out->append(",");
     out->append(
         base::StringPrintf("\"danger_type\":\"%s\",",
                            GetDownloadDangerNames(danger_type_).c_str()));
