@@ -136,6 +136,16 @@ class ListContainer {
     return result;
   }
 
+  // Insert |count| new elements of |DerivedElementType| after |at|. If |at| is
+  // end() elements will be inserted to the empty list. This will invalidate all
+  // outstanding pointers and iterators. Return a valid iterator for the
+  // beginning of the newly inserted segment.
+  template <typename DerivedElementType>
+  Iterator InsertAfterAndInvalidateAllPointers(Iterator at, size_t count) {
+    return InsertBeforeAndInvalidateAllPointers<DerivedElementType>(
+        at != end() ? ++at : at, count);
+  }
+
   ListContainer& operator=(ListContainer&& other) {
     helper_.data_.swap(other.helper_.data_);
     return *this;
