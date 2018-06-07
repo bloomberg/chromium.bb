@@ -6,13 +6,6 @@
 
 namespace crazy {
 
-// Result type for the BinarySearch function below.
-// The packing generates smaller and faster machine code on ARM and x86.
-struct SearchResult {
-  bool found : 1;
-  size_t pos : sizeof(size_t) * CHAR_BIT - 1;
-};
-
 static SearchResult BinarySearch(const Vector<void*>& items, void* key) {
   auto key_val = reinterpret_cast<uintptr_t>(key);
   size_t min = 0, max = items.GetCount();

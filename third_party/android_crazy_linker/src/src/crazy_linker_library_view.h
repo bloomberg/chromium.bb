@@ -53,11 +53,11 @@ class LibraryView {
 
   // Returns the soname of the current library (or its base name if not
   // available).
-  const char* GetName() { return name_.c_str(); }
+  const char* GetName() const { return name_.c_str(); }
 
-  SharedLibrary* GetCrazy() { return IsCrazy() ? crazy_ : NULL; }
+  SharedLibrary* GetCrazy() const { return IsCrazy() ? crazy_ : NULL; }
 
-  void* GetSystem() { return IsSystem() ? system_ : NULL; }
+  void* GetSystem() const { return IsSystem() ? system_ : NULL; }
 
   // Increment reference count for this LibraryView.
   void AddRef() { ref_count_++; }
@@ -69,6 +69,7 @@ class LibraryView {
   // Lookup a symbol from this library.
   // If this is a crazy library, perform a breadth-first search,
   // for system libraries, use dlsym() instead.
+  // TODO(digit): Make this const.
   void* LookupSymbol(const char* symbol_name);
 
   // Retrieve library information.
@@ -76,7 +77,7 @@ class LibraryView {
                size_t* load_size,
                size_t* relro_start,
                size_t* relro_size,
-               Error* error);
+               Error* error) const;
 
   // Only used for debugging.
   int ref_count() const { return ref_count_; }
