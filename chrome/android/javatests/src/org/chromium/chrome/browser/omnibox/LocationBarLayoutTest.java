@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -23,7 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceTestUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -128,24 +127,6 @@ public class LocationBarLayoutTest {
         } catch (ExecutionException ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    // Partially lifted from TemplateUrlServiceTest.
-    private void setSearchEngine(String keyword)
-            throws ExecutionException, InterruptedException, TimeoutException {
-        CallbackHelper callback = new CallbackHelper();
-        Callable<Void> setSearchEngineCallable = new Callable<Void>() {
-            @Override
-            public Void call() {
-                TemplateUrlService.getInstance().runWhenLoaded(() -> {
-                    TemplateUrlService.getInstance().setSearchEngine(keyword);
-                    callback.notifyCalled();
-                });
-                return null;
-            }
-        };
-        ThreadUtils.runOnUiThreadBlocking(setSearchEngineCallable);
-        callback.waitForCallback("Failed to set search engine", 0);
     }
 
     private UrlBar getUrlBar() {
@@ -257,7 +238,7 @@ public class LocationBarLayoutTest {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
-        setSearchEngine("bing.com");
+        TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
         mTestToolbarModel.setCurrentUrl(BING_SRP_URL);
         mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
@@ -274,7 +255,7 @@ public class LocationBarLayoutTest {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
-        setSearchEngine("bing.com");
+        TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
         mTestToolbarModel.setCurrentUrl(GOOGLE_SRP_URL);
         mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
