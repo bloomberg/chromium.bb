@@ -17,6 +17,8 @@ source_set("browser") {
     "crash_dump_manager_android.h",
     "crash_dump_observer_android.cc",
     "crash_dump_observer_android.h",
+    "crash_metrics_reporter_android.cc",
+    "crash_metrics_reporter_android.h",
   ]
 
   deps = [
@@ -57,6 +59,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "crash_dump_manager_android_unittest.cc",
+    "crash_metrics_reporter_android_unittest.cc",
   ]
   deps = [
     ":browser",

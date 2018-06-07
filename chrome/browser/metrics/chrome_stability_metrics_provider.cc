@@ -20,6 +20,10 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 
+#if defined(OS_ANDROID)
+#include "components/crash/content/browser/crash_metrics_reporter_android.h"
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_map.h"
 #endif
@@ -47,7 +51,7 @@ ChromeStabilityMetricsProvider::ChromeStabilityMetricsProvider(
                  content::NotificationService::AllSources());
 
 #if defined(OS_ANDROID)
-  auto* crash_manager = breakpad::CrashDumpManager::GetInstance();
+  auto* crash_manager = crash_reporter::CrashMetricsReporter::GetInstance();
   DCHECK(crash_manager);
   scoped_observer_.Add(crash_manager);
 #endif  // defined(OS_ANDROID)
@@ -141,18 +145,17 @@ void ChromeStabilityMetricsProvider::BrowserChildProcessCrashed(
 
 #if defined(OS_ANDROID)
 void ChromeStabilityMetricsProvider::OnCrashDumpProcessed(
-    const breakpad::CrashDumpManager::CrashDumpDetails& details) {
-  // There is a delay for OOM flag to be removed when app goes to background, so
-  // we can't just check for OOM_PROTECTED flag.
-  if (details.status ==
-          breakpad::CrashDumpManager::CrashDumpStatus::kValidDump &&
-      details.process_type == content::PROCESS_TYPE_RENDERER &&
-      details.was_oom_protected_status &&
-      (details.app_state ==
-           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
-       details.app_state ==
-           base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES)) {
+    int rph_id,
+    const crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet&
+        reported_counts) {
+  if (reported_counts.count(
+          crash_reporter::CrashMetricsReporter::ProcessedCrashCounts::
+              kRendererForegroundVisibleCrash) ||
+      reported_counts.count(
+          crash_reporter::CrashMetricsReporter::ProcessedCrashCounts::
+              kRendererForegroundVisibleSubframeCrash)) {
     helper_.IncreaseRendererCrashCount();
   }
 }
+
 #endif  // defined(OS_ANDROID)

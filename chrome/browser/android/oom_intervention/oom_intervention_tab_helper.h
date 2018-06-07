@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/oom_intervention/near_oom_monitor.h"
 #include "chrome/browser/ui/interventions/intervention_delegate.h"
-#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/crash_metrics_reporter_android.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -29,7 +29,7 @@ class OomInterventionDecider;
 class OomInterventionTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<OomInterventionTabHelper>,
-      public breakpad::CrashDumpManager::Observer,
+      public crash_reporter::CrashMetricsReporter::Observer,
       public blink::mojom::OomInterventionHost,
       public InterventionDelegate {
  public:
@@ -60,7 +60,9 @@ class OomInterventionTabHelper
 
   // CrashDumpManager::Observer:
   void OnCrashDumpProcessed(
-      const breakpad::CrashDumpManager::CrashDumpDetails& details) override;
+      int rph_id,
+      const crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet&
+          reported_counts) override;
 
   // Starts observing near-OOM situation if it's not started.
   void StartMonitoringIfNeeded();
@@ -111,8 +113,8 @@ class OomInterventionTabHelper
   base::UnsafeSharedMemoryRegion shared_metrics_buffer_;
   base::WritableSharedMemoryMapping metrics_mapping_;
 
-  ScopedObserver<breakpad::CrashDumpManager,
-                 breakpad::CrashDumpManager::Observer>
+  ScopedObserver<crash_reporter::CrashMetricsReporter,
+                 crash_reporter::CrashMetricsReporter::Observer>
       scoped_observer_;
 
   base::WeakPtrFactory<OomInterventionTabHelper> weak_ptr_factory_;

@@ -14,7 +14,6 @@
 #include "base/files/platform_file.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "content/public/common/child_process_host.h"
@@ -34,53 +33,19 @@ namespace breakpad {
 // terminates.
 class CrashDumpManager {
  public:
-  // This enum is used to back a UMA histogram, and must be treated as
-  // append-only.
-  enum ExitStatus {
-    EMPTY_MINIDUMP_WHILE_RUNNING,
-    EMPTY_MINIDUMP_WHILE_PAUSED,
-    EMPTY_MINIDUMP_WHILE_BACKGROUND,
-    VALID_MINIDUMP_WHILE_RUNNING,
-    VALID_MINIDUMP_WHILE_PAUSED,
-    VALID_MINIDUMP_WHILE_BACKGROUND,
-    MINIDUMP_STATUS_COUNT
-  };
-
   enum class CrashDumpStatus {
     // The dump for this process did not have a path set. This can happen if the
     // dump was already processed or if crash dump generation is not turned on.
-    kNoDump,
+    kMissingDump,
 
     // The crash dump was empty.
     kEmptyDump,
 
+    // Minidump file was found, but could not be copied to crash dir.
+    kDumpProcessingFailed,
+
     // The crash dump is valid.
     kValidDump,
-  };
-  struct CrashDumpDetails {
-    CrashDumpDetails(int process_host_id,
-                     content::ProcessType process_type,
-                     bool was_oom_protected_status,
-                     base::android::ApplicationState app_state);
-    CrashDumpDetails();
-    ~CrashDumpDetails();
-    CrashDumpDetails(const CrashDumpDetails& other);
-
-    int process_host_id = content::ChildProcessHost::kInvalidUniqueID;
-
-    content::ProcessType process_type = content::PROCESS_TYPE_UNKNOWN;
-    bool was_oom_protected_status = false;
-    base::android::ApplicationState app_state;
-    CrashDumpStatus status = CrashDumpStatus::kNoDump;
-  };
-
-  // Careful note: the CrashDumpManager observers are asynchronous, and are
-  // notified via PostTask. This could be problematic with a large number of
-  // observers. Consider using a middle-layer observer to fan out synchronously
-  // to leaf observers if you need many objects listening to these messages.
-  class Observer {
-   public:
-    virtual void OnCrashDumpProcessed(const CrashDumpDetails& details) {}
   };
 
   // Class which aids in uploading a crash dump.
@@ -94,13 +59,6 @@ class CrashDumpManager {
   };
 
   static CrashDumpManager* GetInstance();
-
-  // True when |details| is a foreground out of memory crash.
-  static bool IsForegroundOom(const CrashDumpDetails& details);
-
-  // Can be called on any thread.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   void ProcessMinidumpFileFromChild(
       base::FilePath crash_dump_dir,
@@ -121,16 +79,15 @@ class CrashDumpManager {
   CrashDumpManager();
   ~CrashDumpManager();
 
-  void NotifyObservers(const CrashDumpDetails& details);
+  CrashDumpStatus ProcessMinidumpFileFromChildInternal(
+      base::FilePath crash_dump_dir,
+      const CrashDumpObserver::TerminationInfo& info);
 
   typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
 
   void SetMinidumpPath(int process_host_id,
                        const base::FilePath& minidump_path);
   bool GetMinidumpPath(int process_host_id, base::FilePath* minidump_path);
-
-  scoped_refptr<base::ObserverListThreadSafe<CrashDumpManager::Observer>>
-      async_observers_;
 
   // Should never be nullptr.
   std::unique_ptr<Uploader> uploader_;

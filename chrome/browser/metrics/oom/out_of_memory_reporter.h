@@ -20,20 +20,20 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/crash_metrics_reporter_android.h"
 #endif
 
 class OutOfMemoryReporterTest;
 
 // This class listens for OOM notifications from WebContentsObserver and
-// breakpad::CrashDumpManager::Observer methods. It forwards foreground OOM
-// notifications to observers.
+// crash_reporter::CrashMetricsReporter::Observer methods. It forwards
+// foreground OOM notifications to observers.
 class OutOfMemoryReporter
     : public content::WebContentsObserver,
       public content::WebContentsUserData<OutOfMemoryReporter>
 #if defined(OS_ANDROID)
     ,
-      public breakpad::CrashDumpManager::Observer
+      public crash_reporter::CrashMetricsReporter::Observer
 #endif
 {
  public:
@@ -62,9 +62,11 @@ class OutOfMemoryReporter
   void RenderProcessGone(base::TerminationStatus termination_status) override;
 
 #if defined(OS_ANDROID)
-  // breakpad::CrashDumpManager::Observer:
+  // crash_reporter::CrashMetricsReporter::Observer:
   void OnCrashDumpProcessed(
-      const breakpad::CrashDumpManager::CrashDumpDetails& details) override;
+      int rph_id,
+      const crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet&
+          reported_counts) override;
 #endif  // defined(OS_ANDROID)
 
   base::ObserverList<Observer> observers_;
@@ -75,8 +77,8 @@ class OutOfMemoryReporter
   int crashed_render_process_id_ = content::ChildProcessHost::kInvalidUniqueID;
 
 #if defined(OS_ANDROID)
-  ScopedObserver<breakpad::CrashDumpManager,
-                 breakpad::CrashDumpManager::Observer>
+  ScopedObserver<crash_reporter::CrashMetricsReporter,
+                 crash_reporter::CrashMetricsReporter::Observer>
       scoped_observer_;
 #endif
   DISALLOW_COPY_AND_ASSIGN(OutOfMemoryReporter);

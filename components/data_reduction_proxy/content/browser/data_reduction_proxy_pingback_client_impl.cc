@@ -203,7 +203,7 @@ DataReductionProxyPingbackClientImpl::DataReductionProxyPingbackClientImpl(
 #if defined(OS_ANDROID)
       scoped_observer_(this),
       weak_factory_(this) {
-  auto* crash_manager = breakpad::CrashDumpManager::GetInstance();
+  auto* crash_manager = crash_reporter::CrashMetricsReporter::GetInstance();
   DCHECK(crash_manager);
   scoped_observer_.Add(crash_manager);
 #else
@@ -273,9 +273,11 @@ void DataReductionProxyPingbackClientImpl::SendPingback(
 
 #if defined(OS_ANDROID)
 void DataReductionProxyPingbackClientImpl::OnCrashDumpProcessed(
-    const breakpad::CrashDumpManager::CrashDumpDetails& details) {
+    int rph_id,
+    const crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet&
+        reported_counts) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto iter = crash_map_.find(details.process_host_id);
+  auto iter = crash_map_.find(rph_id);
   if (iter == crash_map_.end())
     return;
   const CrashPageLoadInformation& crash_page_load_information = iter->second;
@@ -283,8 +285,10 @@ void DataReductionProxyPingbackClientImpl::OnCrashDumpProcessed(
   UMA_HISTOGRAM_ENUMERATION(kHistogramCrash, CrashAction::kAnalsisSucceeded,
                             CrashAction::kLast);
 
-  bool renderer_foreground_oom =
-      breakpad::CrashDumpManager::IsForegroundOom(details);
+  // Record only main frame OOMs.
+  bool renderer_foreground_oom = reported_counts.count(
+      crash_reporter::CrashMetricsReporter::ProcessedCrashCounts::
+          kRendererForegroundVisibleOom);
   CreateReport(std::get<0>(crash_page_load_information),
                std::get<1>(crash_page_load_information),
                renderer_foreground_oom
@@ -298,9 +302,9 @@ void DataReductionProxyPingbackClientImpl::AddRequestToCrashMap(
     const DataReductionProxyPageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // It is guaranteed that |AddRequestToCrashMap| is called before
-  // |OnCrashDumpProcessed| due to the nature of both events being triggered
-  // from the channel closing, and SendPingback being called on the same stack,
-  // while OnCrashDumpProcessed is called from a PostTask.
+  // |OnCrashDumpProcessed| due to the nature of both events being
+  // triggered from the channel closing, and SendPingback being called on the
+  // same stack, while OnCrashDumpProcessed is called from a PostTask.
   crash_map_.insert(
       std::make_pair(timing.host_id, std::make_tuple(request_data, timing)));
   // If the crash hasn't been processed in 5 seconds, send the report without it

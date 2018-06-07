@@ -22,6 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/browser/crash_metrics_reporter_android.h"
 #include "jni/CrashDumpManager_jni.h"
 
 namespace breakpad {
@@ -30,82 +31,6 @@ namespace {
 
 base::LazyInstance<CrashDumpManager>::Leaky g_instance =
     LAZY_INSTANCE_INITIALIZER;
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class ProcessedCrashCounts {
-  kGpuForegroundOom = 0,
-  kRendererForegroundVisibleOom = 1,
-  kRendererForegroundIntentionalKill = 2,
-  kRendererForegroundVisibleSubframeOom = 3,
-  kRendererForegroundVisibleSubframeIntentionalKill = 4,
-  kRendererForegroundVisibleCrash = 5,
-  kRendererForegroundVisibleSubframeCrash = 6,
-  kGpuCrashAll = 7,
-  kRendererCrashAll = 8,
-  kRendererForegroundVisibleMainFrameIntentionalKill = 9,
-  kRendererForegroundVisibleNormalTermNoMinidump = 10,
-  kMaxValue = kRendererForegroundVisibleNormalTermNoMinidump
-};
-
-void LogCount(ProcessedCrashCounts type) {
-  UMA_HISTOGRAM_ENUMERATION("Stability.Android.ProcessedCrashCounts", type);
-}
-
-void LogProcessedMetrics(const CrashDumpObserver::TerminationInfo& info,
-                         bool has_crash_dump) {
-  const bool app_foreground =
-      info.app_state ==
-          base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
-      info.app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
-  const bool intentional_kill = info.was_killed_intentionally_by_browser;
-  const bool android_oom_kill = !info.was_killed_intentionally_by_browser &&
-                                !has_crash_dump && !info.normal_termination;
-  const bool renderer_visible = info.renderer_has_visible_clients;
-  const bool renderer_sub_frame = info.renderer_was_subframe;
-
-  if (info.process_type == content::PROCESS_TYPE_GPU) {
-    if (app_foreground && android_oom_kill) {
-      LogCount(ProcessedCrashCounts::kGpuForegroundOom);
-    }
-    if (has_crash_dump) {
-      LogCount(ProcessedCrashCounts::kGpuCrashAll);
-    }
-  }
-
-  if (info.process_type == content::PROCESS_TYPE_RENDERER) {
-    if (app_foreground && renderer_visible) {
-      if (has_crash_dump) {
-        LogCount(
-            renderer_sub_frame
-                ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeCrash
-                : ProcessedCrashCounts::kRendererForegroundVisibleCrash);
-      } else if (intentional_kill) {
-        LogCount(renderer_sub_frame
-                     ? ProcessedCrashCounts::
-                           kRendererForegroundVisibleSubframeIntentionalKill
-                     : ProcessedCrashCounts::
-                           kRendererForegroundVisibleMainFrameIntentionalKill);
-      } else if (info.normal_termination) {
-        LogCount(ProcessedCrashCounts::
-                     kRendererForegroundVisibleNormalTermNoMinidump);
-      } else {
-        DCHECK(android_oom_kill);
-        LogCount(
-            renderer_sub_frame
-                ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeOom
-                : ProcessedCrashCounts::kRendererForegroundVisibleOom);
-      }
-    }
-
-    if (app_foreground && intentional_kill) {
-      LogCount(ProcessedCrashCounts::kRendererForegroundIntentionalKill);
-    }
-    if (has_crash_dump) {
-      LogCount(ProcessedCrashCounts::kRendererCrashAll);
-    }
-  }
-}
 
 class DefaultUploader : public CrashDumpManager::Uploader {
  public:
@@ -126,56 +51,13 @@ class DefaultUploader : public CrashDumpManager::Uploader {
 
 }  // namespace
 
-CrashDumpManager::CrashDumpDetails::CrashDumpDetails(
-    int process_host_id,
-    content::ProcessType process_type,
-    bool was_oom_protected_status,
-    base::android::ApplicationState app_state)
-    : process_host_id(process_host_id),
-      process_type(process_type),
-      was_oom_protected_status(was_oom_protected_status),
-      app_state(app_state) {}
-
-CrashDumpManager::CrashDumpDetails::CrashDumpDetails() {}
-CrashDumpManager::CrashDumpDetails::~CrashDumpDetails() {}
-
-CrashDumpManager::CrashDumpDetails::CrashDumpDetails(
-    const CrashDumpManager::CrashDumpDetails& other)
-    : CrashDumpDetails(other.process_host_id,
-                       other.process_type,
-                       other.was_oom_protected_status,
-                       other.app_state) {
-  status = other.status;
-}
-
 // static
 CrashDumpManager* CrashDumpManager::GetInstance() {
   return g_instance.Pointer();
 }
 
-// static
-bool CrashDumpManager::IsForegroundOom(const CrashDumpDetails& details) {
-  // If the crash is size 0, it is an OOM.
-  return details.process_type == content::PROCESS_TYPE_RENDERER &&
-         details.was_oom_protected_status &&
-         details.status == CrashDumpStatus::kEmptyDump &&
-         details.app_state ==
-             base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
-}
-
-void CrashDumpManager::AddObserver(Observer* observer) {
-  async_observers_->AddObserver(observer);
-}
-
-void CrashDumpManager::RemoveObserver(Observer* observer) {
-  async_observers_->RemoveObserver(observer);
-}
-
 CrashDumpManager::CrashDumpManager()
-    : async_observers_(
-          base::MakeRefCounted<
-              base::ObserverListThreadSafe<CrashDumpManager::Observer>>()),
-      uploader_(std::make_unique<DefaultUploader>()) {}
+    : uploader_(std::make_unique<DefaultUploader>()) {}
 
 CrashDumpManager::~CrashDumpManager() {}
 
@@ -205,87 +87,47 @@ base::ScopedFD CrashDumpManager::CreateMinidumpFileForChild(
 void CrashDumpManager::ProcessMinidumpFileFromChild(
     base::FilePath crash_dump_dir,
     const CrashDumpObserver::TerminationInfo& info) {
+  CrashDumpManager::CrashDumpStatus status =
+      ProcessMinidumpFileFromChildInternal(crash_dump_dir, info);
+  crash_reporter::CrashMetricsReporter::GetInstance()->CrashDumpProcessed(
+      info, status);
+}
+
+CrashDumpManager::CrashDumpStatus
+CrashDumpManager::ProcessMinidumpFileFromChildInternal(
+    base::FilePath crash_dump_dir,
+    const CrashDumpObserver::TerminationInfo& info) {
   base::AssertBlockingAllowed();
-  CrashDumpDetails details(info.process_host_id, info.process_type,
-                           info.was_oom_protected_status, info.app_state);
   base::FilePath minidump_path;
   // If the minidump for a given child process has already been
   // processed, then there is no more work to do.
   if (!GetMinidumpPath(info.process_host_id, &minidump_path)) {
-    NotifyObservers(details);
-    return;
+    return CrashDumpStatus::kMissingDump;
   }
 
   int64_t file_size = 0;
 
   if (!base::PathExists(minidump_path)) {
     LOG(ERROR) << "minidump does not exist " << minidump_path.value();
-    return;
+    return CrashDumpStatus::kMissingDump;
   }
 
   int r = base::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump " << minidump_path.value();
-
-  // TODO(wnwen): If these numbers match up to TabWebContentsObserver's
-  //     TabRendererCrashStatus histogram, then remove that one as this is more
-  //     accurate with more detail.
-  if ((info.process_type == content::PROCESS_TYPE_RENDERER ||
-       info.process_type == content::PROCESS_TYPE_GPU) &&
-      info.app_state != base::android::APPLICATION_STATE_UNKNOWN) {
-    ExitStatus exit_status;
-    bool is_running = (info.app_state ==
-                       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
-    bool is_paused = (info.app_state ==
-                      base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
-    if (file_size == 0) {
-      if (is_running) {
-        exit_status = EMPTY_MINIDUMP_WHILE_RUNNING;
-      } else if (is_paused) {
-        exit_status = EMPTY_MINIDUMP_WHILE_PAUSED;
-      } else {
-        exit_status = EMPTY_MINIDUMP_WHILE_BACKGROUND;
-      }
-    } else {
-      if (is_running) {
-        exit_status = VALID_MINIDUMP_WHILE_RUNNING;
-      } else if (is_paused) {
-        exit_status = VALID_MINIDUMP_WHILE_PAUSED;
-      } else {
-        exit_status = VALID_MINIDUMP_WHILE_BACKGROUND;
-      }
-    }
-    if (info.process_type == content::PROCESS_TYPE_RENDERER) {
-      if (info.was_oom_protected_status) {
-        UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatus", exit_status,
-                                  ExitStatus::MINIDUMP_STATUS_COUNT);
-      } else {
-        UMA_HISTOGRAM_ENUMERATION("Tab.RendererDetailedExitStatusUnbound",
-                                  exit_status,
-                                  ExitStatus::MINIDUMP_STATUS_COUNT);
-      }
-    } else if (info.process_type == content::PROCESS_TYPE_GPU) {
-      UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessDetailedExitStatus", exit_status,
-                                ExitStatus::MINIDUMP_STATUS_COUNT);
-    }
-  }
-
-  LogProcessedMetrics(info, file_size != 0);
 
   if (file_size == 0) {
     // Empty minidump, this process did not crash. Just remove the file.
     r = base::DeleteFile(minidump_path, false);
     DCHECK(r) << "Failed to delete temporary minidump file "
               << minidump_path.value();
-    details.status = CrashDumpStatus::kEmptyDump;
-    NotifyObservers(details);
-    return;
+    return CrashDumpStatus::kEmptyDump;
   }
 
   // We are dealing with a valid minidump. Copy it to the crash report
   // directory from where Java code will upload it later on.
   if (crash_dump_dir.empty()) {
     NOTREACHED() << "Failed to retrieve the crash dump directory.";
-    return;
+    return CrashDumpStatus::kDumpProcessingFailed;
   }
   const uint64_t rand = base::RandUint64();
   const std::string filename =
@@ -297,18 +139,12 @@ void CrashDumpManager::ProcessMinidumpFileFromChild(
     LOG(ERROR) << "Failed to move crash dump from " << minidump_path.value()
                << " to " << dest_path.value();
     base::DeleteFile(minidump_path, false);
-    return;
+    return CrashDumpStatus::kDumpProcessingFailed;
   }
   VLOG(1) << "Crash minidump successfully generated: " << dest_path.value();
 
-  details.status = CrashDumpStatus::kValidDump;
   uploader_->TryToUploadCrashDump(dest_path);
-  NotifyObservers(details);
-}
-
-void CrashDumpManager::NotifyObservers(const CrashDumpDetails& details) {
-  async_observers_->Notify(
-      FROM_HERE, &CrashDumpManager::Observer::OnCrashDumpProcessed, details);
+  return CrashDumpStatus::kValidDump;
 }
 
 void CrashDumpManager::SetMinidumpPath(int process_host_id,

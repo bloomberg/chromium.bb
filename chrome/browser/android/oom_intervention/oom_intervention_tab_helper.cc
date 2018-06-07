@@ -72,7 +72,7 @@ OomInterventionTabHelper::OomInterventionTabHelper(
       binding_(this),
       scoped_observer_(this),
       weak_ptr_factory_(this) {
-  scoped_observer_.Add(breakpad::CrashDumpManager::GetInstance());
+  scoped_observer_.Add(crash_reporter::CrashMetricsReporter::GetInstance());
   shared_metrics_buffer_ = base::UnsafeSharedMemoryRegion::Create(
       sizeof(blink::OomInterventionMetrics));
   metrics_mapping_ = shared_metrics_buffer_.Map();
@@ -198,12 +198,16 @@ void OomInterventionTabHelper::OnVisibilityChanged(
 }
 
 void OomInterventionTabHelper::OnCrashDumpProcessed(
-    const breakpad::CrashDumpManager::CrashDumpDetails& details) {
-  if (details.process_host_id !=
-      web_contents()->GetMainFrame()->GetProcess()->GetID())
+    int rph_id,
+    const crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet&
+        reported_counts) {
+  if (rph_id != web_contents()->GetMainFrame()->GetProcess()->GetID())
     return;
-  if (!breakpad::CrashDumpManager::IsForegroundOom(details))
+  if (reported_counts.count(
+          crash_reporter::CrashMetricsReporter::ProcessedCrashCounts::
+              kRendererForegroundVisibleOom)) {
     return;
+  }
 
   DCHECK(IsLastVisibleWebContents(web_contents()));
   if (near_oom_detected_time_) {

@@ -21,7 +21,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/crash_metrics_reporter_android.h"
 #endif
 
 namespace base {
@@ -44,7 +44,7 @@ class DataReductionProxyPingbackClientImpl
       public net::URLFetcherDelegate
 #if defined(OS_ANDROID)
     ,
-      public breakpad::CrashDumpManager::Observer
+      public crash_reporter::CrashMetricsReporter::Observer
 #endif
 {
  public:
@@ -77,7 +77,9 @@ class DataReductionProxyPingbackClientImpl
 #if defined(OS_ANDROID)
   // CrashDumpManager::Observer:
   void OnCrashDumpProcessed(
-      const breakpad::CrashDumpManager::CrashDumpDetails& details) override;
+      int rph_id,
+      const crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet&
+          reported_counts) override;
 
   // Creates a pending pingback report that waits for the crash dump to be
   // processed. If the dump is not processed in 5 seconds, the report is sent
@@ -129,13 +131,13 @@ class DataReductionProxyPingbackClientImpl
       CrashPageLoadInformation;
 
   // Maps host process ID to information for the pingback. Items are added to
-  // the crash map when the renderer process crashes. If OnCrashDumpProcessed is
-  // not called within 5 seconds, the report is sent without the cause of the
-  // crash.
+  // the crash map when the renderer process crashes. If
+  // OnCrashDumpProcessed is not called within 5 seconds, the report is
+  // sent without the cause of the crash.
   std::map<int, CrashPageLoadInformation> crash_map_;
 
-  ScopedObserver<breakpad::CrashDumpManager,
-                 breakpad::CrashDumpManager::Observer>
+  ScopedObserver<crash_reporter::CrashMetricsReporter,
+                 crash_reporter::CrashMetricsReporter::Observer>
       scoped_observer_;
 #endif
 

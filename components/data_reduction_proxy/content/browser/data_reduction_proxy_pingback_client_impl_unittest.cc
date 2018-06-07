@@ -167,17 +167,18 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
     page_id_++;
   }
 
-  // Send a fake crash report from breakpad.
+  // Send a fake crash report from crash_reporter.
   void ReportCrash(bool oom) {
 #if defined(OS_ANDROID)
-    breakpad::CrashDumpManager::CrashDumpDetails details = {
-        kCrashProcessId, content::PROCESS_TYPE_RENDERER, oom,
-        base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES};
-    details.status =
-        oom ? breakpad::CrashDumpManager::CrashDumpStatus::kEmptyDump
-            : breakpad::CrashDumpManager::CrashDumpStatus::kValidDump;
-    static_cast<breakpad::CrashDumpManager::Observer*>(pingback_client_.get())
-        ->OnCrashDumpProcessed(details);
+    breakpad::CrashDumpObserver::TerminationInfo info;
+    crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet types(
+        {oom ? crash_reporter::CrashMetricsReporter::ProcessedCrashCounts::
+                   kRendererForegroundVisibleOom
+             : crash_reporter::CrashMetricsReporter::ProcessedCrashCounts::
+                   kRendererForegroundVisibleCrash});
+    static_cast<crash_reporter::CrashMetricsReporter::Observer*>(
+        pingback_client_.get())
+        ->OnCrashDumpProcessed(kCrashProcessId, types);
 #endif
   }
 

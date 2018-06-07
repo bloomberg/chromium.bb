@@ -25,11 +25,33 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/crash/content/browser/crash_metrics_reporter_android.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace breakpad {
 
 class CrashDumpManagerTest;
+
+class CrashMetricsReporterObserver
+    : public crash_reporter::CrashMetricsReporter::Observer {
+ public:
+  CrashMetricsReporterObserver() {}
+  ~CrashMetricsReporterObserver() {}
+
+  // crash_reporter::CrashMetricsReporter::Observer:
+  void OnCrashDumpProcessed(
+      int rph_id,
+      const crash_reporter::CrashMetricsReporter::ReportedCrashTypeSet&
+          reported_counts) override {
+    wait_run_loop_.QuitClosure().Run();
+  }
+
+  void WaitForProcessed() { wait_run_loop_.Run(); }
+
+ private:
+  base::RunLoop wait_run_loop_;
+  DISALLOW_COPY_AND_ASSIGN(CrashMetricsReporterObserver);
+};
 
 class NoOpUploader : public CrashDumpManager::Uploader {
  public:
@@ -107,80 +129,12 @@ void NoOpUploader::TryToUploadCrashDump(const base::FilePath& crash_dump_path) {
                                 base::Unretained(test_harness_)));
 }
 
-class CrashDumpManagerObserver : public CrashDumpManager::Observer {
- public:
-  CrashDumpManagerObserver() {}
-  ~CrashDumpManagerObserver() {}
-
-  // CrashDumpManager::Observer:
-  void OnCrashDumpProcessed(
-      const CrashDumpManager::CrashDumpDetails& details) override {
-    last_details_ = details;
-    if (!wait_closure_.is_null())
-      std::move(wait_closure_).Run();
-  }
-
-  const CrashDumpManager::CrashDumpDetails& last_details() const {
-    return last_details_.value();
-  }
-
-  void WaitForProcessed() {
-    base::RunLoop run_loop;
-    wait_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
- private:
-  base::OnceClosure wait_closure_;
-  base::Optional<CrashDumpManager::CrashDumpDetails> last_details_;
-  DISALLOW_COPY_AND_ASSIGN(CrashDumpManagerObserver);
-};
-
-TEST_F(CrashDumpManagerTest, SimpleOOM) {
-  base::HistogramTester histogram_tester;
-  CrashDumpManager* manager = CrashDumpManager::GetInstance();
-
-  CrashDumpManagerObserver crash_dump_observer;
-  manager->AddObserver(&crash_dump_observer);
-
-  CrashDumpObserver::TerminationInfo termination_info;
-  termination_info.process_host_id = 1;
-  termination_info.pid = base::kNullProcessHandle;
-  termination_info.process_type = content::PROCESS_TYPE_RENDERER;
-  termination_info.app_state =
-      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
-  termination_info.normal_termination = false;
-  termination_info.has_oom_protection_bindings = true;
-  termination_info.was_killed_intentionally_by_browser = false;
-  termination_info.was_oom_protected_status = true;
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindOnce(&CrashDumpManagerTest::CreateAndProcessCrashDump,
-                     termination_info, ""));
-  crash_dump_observer.WaitForProcessed();
-
-  const CrashDumpManager::CrashDumpDetails& details =
-      crash_dump_observer.last_details();
-  EXPECT_EQ(termination_info.process_host_id, details.process_host_id);
-  EXPECT_EQ(content::PROCESS_TYPE_RENDERER, details.process_type);
-  EXPECT_TRUE(details.was_oom_protected_status);
-  EXPECT_EQ(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
-            details.app_state);
-  EXPECT_EQ(CrashDumpManager::CrashDumpStatus::kEmptyDump, details.status);
-  EXPECT_TRUE(CrashDumpManager::IsForegroundOom(details));
-
-  histogram_tester.ExpectUniqueSample(
-      "Tab.RendererDetailedExitStatus",
-      CrashDumpManager::EMPTY_MINIDUMP_WHILE_RUNNING, 1);
-  EXPECT_EQ(0, dumps_uploaded_);
-}
-
 TEST_F(CrashDumpManagerTest, NoDumpCreated) {
   base::HistogramTester histogram_tester;
   CrashDumpManager* manager = CrashDumpManager::GetInstance();
 
-  CrashDumpManagerObserver crash_dump_observer;
-  manager->AddObserver(&crash_dump_observer);
+  CrashMetricsReporterObserver observer;
+  crash_reporter::CrashMetricsReporter::GetInstance()->AddObserver(&observer);
 
   CrashDumpObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
@@ -197,17 +151,7 @@ TEST_F(CrashDumpManagerTest, NoDumpCreated) {
       base::BindOnce(&CrashDumpManager::ProcessMinidumpFileFromChild,
                      base::Unretained(manager), base::FilePath(),
                      termination_info));
-  crash_dump_observer.WaitForProcessed();
-
-  const CrashDumpManager::CrashDumpDetails& details =
-      crash_dump_observer.last_details();
-  EXPECT_EQ(termination_info.process_host_id, details.process_host_id);
-  EXPECT_EQ(content::PROCESS_TYPE_RENDERER, details.process_type);
-  EXPECT_TRUE(details.was_oom_protected_status);
-  EXPECT_EQ(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
-            details.app_state);
-  EXPECT_EQ(CrashDumpManager::CrashDumpStatus::kNoDump, details.status);
-  EXPECT_FALSE(CrashDumpManager::IsForegroundOom(details));
+  observer.WaitForProcessed();
 
   histogram_tester.ExpectTotalCount("Tab.RendererDetailedExitStatus", 0);
   EXPECT_EQ(0, dumps_uploaded_);
@@ -215,10 +159,9 @@ TEST_F(CrashDumpManagerTest, NoDumpCreated) {
 
 TEST_F(CrashDumpManagerTest, NonOomCrash) {
   base::HistogramTester histogram_tester;
-  CrashDumpManager* manager = CrashDumpManager::GetInstance();
 
-  CrashDumpManagerObserver crash_dump_observer;
-  manager->AddObserver(&crash_dump_observer);
+  CrashMetricsReporterObserver observer;
+  crash_reporter::CrashMetricsReporter::GetInstance()->AddObserver(&observer);
 
   CrashDumpObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
@@ -234,21 +177,11 @@ TEST_F(CrashDumpManagerTest, NonOomCrash) {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(&CrashDumpManagerTest::CreateAndProcessCrashDump,
                      termination_info, "Some non-empty crash data"));
-  crash_dump_observer.WaitForProcessed();
-
-  const CrashDumpManager::CrashDumpDetails& details =
-      crash_dump_observer.last_details();
-  EXPECT_EQ(termination_info.process_host_id, details.process_host_id);
-  EXPECT_EQ(content::PROCESS_TYPE_RENDERER, details.process_type);
-  EXPECT_TRUE(details.was_oom_protected_status);
-  EXPECT_EQ(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES,
-            details.app_state);
-  EXPECT_EQ(CrashDumpManager::CrashDumpStatus::kValidDump, details.status);
-  EXPECT_FALSE(CrashDumpManager::IsForegroundOom(details));
+  observer.WaitForProcessed();
 
   histogram_tester.ExpectUniqueSample(
       "Tab.RendererDetailedExitStatus",
-      CrashDumpManager::VALID_MINIDUMP_WHILE_RUNNING, 1);
+      crash_reporter::CrashMetricsReporter::VALID_MINIDUMP_WHILE_RUNNING, 1);
   WaitForCrashDumpsUploaded(1);
 }
 
