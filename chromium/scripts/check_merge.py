@@ -29,11 +29,23 @@ EXISTING_COMMIT = "origin/master"
 # TODO(liberato): consider making these a dictionary, with the value as some
 # descriptive text (e.g., the bug number) about why it's not allowed.
 INSERTION_TRIPWIRES = [
+    # In Chromium, all codecs should use the safe bitstream reader. Roller must
+    # undo any new usage of the unchecked reader.
     "^.define.*UNCHECKED_BITSTREAM_READER.*1",
-    "^.define.*SPIDF_DEMUXER.*1",
-    "^.define.*CONFIG_W64_DEMUXER.*1",
+
+    # In Chromium, explicitly skipping some matroskadec code blocks for
+    # the following CONFIG variables (which should remain defined as 0) is
+    # necessary to remove code that may be a security risk. Discuss with cevans@
+    # before removing these explicit skips or enabling these variables.
     "^.define.*CONFIG_LZO.*1",
     "^.define.*CONFIG_SIPR_DECODER.*1",
+    "^.define.*CONFIG_RA_288_DECODER.*1",
+    "^.define.*CONFIG_COOK_DECODER.*1",
+    "^.define.*CONFIG_ATRAC3_DECODER.*1",
+
+    # Miscellaneous tripwires.
+    "^.define.*CONFIG_SPDIF_DEMUXER.*1",
+    "^.define.*CONFIG_W64_DEMUXER.*1",
     "^.define.*[Vv]4[Ll]2.*1",
     "^.define.*CONFIG_PRORES_.*1",
 ]
@@ -45,7 +57,7 @@ EXCLUDED_FILENAMES = [
     r"^chromium/patches/",
 ]
 
-def match_regexps(text, regexps):
+def search_regexps(text, regexps):
   return [r for r in regexps if re.search(r, text)]
 
 def main(argv):
@@ -71,12 +83,13 @@ def main(argv):
         filename = line.split("/",1)[1]
         skip = False
         files_encountered += 1
-        if match_regexps(filename, EXCLUDED_FILENAMES):
+        if search_regexps(filename, EXCLUDED_FILENAMES):
           skip = True
           files_skipped += 1
       elif line.startswith("+") and not skip:
         # |line| is an insertion into |new_commit|.
-        tripwire = match_regexps(line, INSERTION_TRIPWIRES)
+        # Drop the leading "+" from the string being searched.
+        tripwire = search_regexps(line[1:], INSERTION_TRIPWIRES)
         if tripwire:
           failures.add("Tripwire '%s' found in %s" % (tripwire, filename))
 
