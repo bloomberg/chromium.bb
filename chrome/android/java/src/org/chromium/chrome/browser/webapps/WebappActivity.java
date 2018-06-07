@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
@@ -114,6 +115,7 @@ public class WebappActivity extends SingleTabActivity {
     private WebappSplashScreenController mSplashController;
 
     private boolean mIsInitialized;
+    private long mOnResumeTimestampMs;
     private Integer mBrandColor;
 
     private Bitmap mLargestFavicon;
@@ -192,6 +194,7 @@ public class WebappActivity extends SingleTabActivity {
                 return;
             }
 
+            BrowserServicesMetrics.recordTwaOpened();
             // Occasionally verification occurs in the background while there is no active Tab.
             if (areTabModelsInitialized() && getActivityTab() != null) {
                 mUkmRecorder.recordTwaOpened(getActivityTab().getWebContents());
@@ -487,6 +490,8 @@ public class WebappActivity extends SingleTabActivity {
             updateTaskDescription();
         }
         super.onResume();
+
+        mOnResumeTimestampMs = SystemClock.elapsedRealtime();
     }
 
     @Override
@@ -499,6 +504,11 @@ public class WebappActivity extends SingleTabActivity {
     public void onPauseWithNative() {
         mNotificationManager.cancelNotification();
         super.onPauseWithNative();
+
+        if (getBrowserSession() != null && !didVerificationFail()) {
+            BrowserServicesMetrics.recordTwaOpenTime(
+                    SystemClock.elapsedRealtime() - mOnResumeTimestampMs, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override

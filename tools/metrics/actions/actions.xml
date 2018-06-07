@@ -3500,6 +3500,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BrowserServices.TwaOpened">
+  <owner>peconn@chromium.org</owner>
+  <description>Recorded when a user opens a TWA.</description>
+</action>
+
 <action name="Cancel">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
