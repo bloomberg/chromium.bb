@@ -2974,11 +2974,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
 
     if (error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
+      // This method should not be called if the navigation was cancelled by
+      // embedder.
+      DCHECK(_pendingNavigationInfo && ![_pendingNavigationInfo cancelled]);
+
       // Handle Frame Load Interrupted errors from WebView. This block is
       // executed when web controller rejected the load inside
-      // decidePolicyForNavigationAction: or decidePolicyForNavigationResponse:.
-      // Load rejection may happen if embedder denied the load via
-      // WebStatePolicyDecider or the navigation was a download navigation.
+      // decidePolicyForNavigationResponse: to handle download or WKWebView
+      // opened a Universal Link.
       NSString* errorURLSpec =
           error.userInfo[NSURLErrorFailingURLStringErrorKey];
       NSURL* errorURL = [NSURL URLWithString:errorURLSpec];
@@ -3003,13 +3006,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
         }
       }
 
-      // The load was rejected, because embedder launched an external
-      // application.
-      if ([_openedApplicationURL containsObject:errorURL])
+      if ([_openedApplicationURL containsObject:errorURL]) {
+        // The load was rejected, because embedder launched an external
+        // application.
         return;
+      }
 
-      // This navigation was a download navigation and embedder now has a chance
-      // to start the download task.
+      if (!navigationContext->IsDownload()) {
+        // Non-download navigation was cancelled because WKWebView has opened a
+        // Universal Link and called webView:didFailProvisionalNavigation:.
+        self.navigationManagerImpl->DiscardNonCommittedItems();
+      }
+
       _webStateImpl->SetIsLoading(false);
       return;
     }
