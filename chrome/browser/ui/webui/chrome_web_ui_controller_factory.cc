@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
@@ -681,18 +682,19 @@ bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
   return UseWebUIForURL(browser_context, url);
 }
 
-WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
+std::unique_ptr<WebUIController>
+ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
     WebUI* web_ui,
     const GURL& url) const {
   Profile* profile = Profile::FromWebUI(web_ui);
   WebUIFactoryFunction function = GetWebUIFactoryFunction(web_ui, profile, url);
   if (!function)
-    return NULL;
+    return nullptr;
 
-  if (web_ui->GetWebContents()->GetMainFrame() != nullptr)
+  if (web_ui->GetWebContents()->GetMainFrame())
     webui::LogWebUIUrl(url);
 
-  return (*function)(web_ui, url);
+  return base::WrapUnique((*function)(web_ui, url));
 }
 
 void ChromeWebUIControllerFactory::GetFaviconForURL(

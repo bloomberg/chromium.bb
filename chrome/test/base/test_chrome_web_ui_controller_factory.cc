@@ -4,8 +4,10 @@
 
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller.h"
 
 using content::WebContents;
 using content::WebUI;
@@ -40,12 +42,15 @@ WebUI::TypeID TestChromeWebUIControllerFactory::GetWebUIType(
       ChromeWebUIControllerFactory::GetWebUIType(profile, url);
 }
 
-WebUIController* TestChromeWebUIControllerFactory::CreateWebUIControllerForURL(
-    content::WebUI* web_ui, const GURL& url) const {
+std::unique_ptr<WebUIController>
+TestChromeWebUIControllerFactory::CreateWebUIControllerForURL(
+    content::WebUI* web_ui,
+    const GURL& url) const {
   Profile* profile = Profile::FromWebUI(web_ui);
   WebUIProvider* provider = GetWebUIProvider(profile, url);
-  return provider ? provider->NewWebUI(web_ui, url) :
-      ChromeWebUIControllerFactory::CreateWebUIControllerForURL(web_ui, url);
+  return provider ? base::WrapUnique(provider->NewWebUI(web_ui, url))
+                  : ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
+                        web_ui, url);
 }
 
 TestChromeWebUIControllerFactory::WebUIProvider*
@@ -53,5 +58,5 @@ TestChromeWebUIControllerFactory::WebUIProvider*
         Profile* profile, const GURL& url) const {
   FactoryOverridesMap::const_iterator found =
       factory_overrides_.find(url.host());
-  return (found == factory_overrides_.end()) ? NULL : found->second;
+  return found != factory_overrides_.end() ? found->second : nullptr;
 }

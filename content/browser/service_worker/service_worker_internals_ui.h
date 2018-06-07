@@ -31,12 +31,12 @@ class ServiceWorkerInternalsUI
   using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
 
   explicit ServiceWorkerInternalsUI(WebUI* web_ui);
+  ~ServiceWorkerInternalsUI() override;
 
  private:
   class OperationProxy;
   class PartitionObserver;
 
-  ~ServiceWorkerInternalsUI() override;
   void AddContextFromStoragePartition(StoragePartition* partition);
 
   void RemoveObserverFromStoragePartition(StoragePartition* partition);

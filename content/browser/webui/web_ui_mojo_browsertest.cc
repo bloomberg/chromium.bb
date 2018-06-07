@@ -160,19 +160,22 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
 
   void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
 
-  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
-                                               const GURL& url) const override {
+  std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
+      WebUI* web_ui,
+      const GURL& url) const override {
     if (url.query() == "ping")
-      return new PingTestWebUIController(web_ui, run_loop_);
-    if (url.query() == "webui_bindings")
-      return new TestWebUIController(web_ui, run_loop_, BINDINGS_POLICY_WEB_UI);
+      return std::make_unique<PingTestWebUIController>(web_ui, run_loop_);
+    if (url.query() == "webui_bindings") {
+      return std::make_unique<TestWebUIController>(web_ui, run_loop_,
+                                                   BINDINGS_POLICY_WEB_UI);
+    }
     if (url.query() == "hybrid") {
-      return new TestWebUIController(
+      return std::make_unique<TestWebUIController>(
           web_ui, run_loop_,
           BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO_WEB_UI);
     }
 
-    return new TestWebUIController(web_ui, run_loop_);
+    return std::make_unique<TestWebUIController>(web_ui, run_loop_);
   }
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override {

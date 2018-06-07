@@ -56,12 +56,14 @@ class RenderProcessKilledObserver : public WebContentsObserver {
 
 class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
  public:
-  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
-                                               const GURL& url) const override {
+  std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
+      WebUI* web_ui,
+      const GURL& url) const override {
     std::string foo(url.path());
     if (url.path() == "/nobinding/")
       web_ui->SetBindings(0);
-    return HasWebUIScheme(url) ? new WebUIController(web_ui) : nullptr;
+    return HasWebUIScheme(url) ? std::make_unique<WebUIController>(web_ui)
+                               : nullptr;
   }
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override {

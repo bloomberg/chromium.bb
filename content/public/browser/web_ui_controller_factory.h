@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_UI_CONTROLLER_FACTORY_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_CONTROLLER_FACTORY_H_
 
+#include <memory>
+
 #include "content/common/content_export.h"
 #include "content/public/browser/web_ui.h"
 
@@ -28,8 +30,9 @@ class CONTENT_EXPORT WebUIControllerFactory {
 
   // Returns a WebUIController instance for the given URL, or nullptr if the URL
   // doesn't correspond to a WebUI.
-  virtual WebUIController* CreateWebUIControllerForURL(
-      WebUI* web_ui, const GURL& url) const = 0;
+  virtual std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
+      WebUI* web_ui,
+      const GURL& url) const = 0;
 
   // Gets the WebUI type for the given URL. This will return kNoWebUI if the
   // corresponding call to CreateWebUIForURL would fail, or something
