@@ -24,15 +24,19 @@ WebRtcReceiverState& WebRtcReceiverState::operator=(
 
 WebRtcReceiverState::~WebRtcReceiverState() {}
 
-WebRtcSetRemoteDescriptionObserver::States::States() {}
+WebRtcSetRemoteDescriptionObserver::States::States()
+    : signaling_state(
+          webrtc::PeerConnectionInterface::SignalingState::kClosed) {}
 
 WebRtcSetRemoteDescriptionObserver::States::States(States&& other)
-    : receiver_states(std::move(other.receiver_states)) {}
+    : signaling_state(other.signaling_state),
+      receiver_states(std::move(other.receiver_states)) {}
 
 WebRtcSetRemoteDescriptionObserver::States::~States() {}
 
 WebRtcSetRemoteDescriptionObserver::States&
 WebRtcSetRemoteDescriptionObserver::States::operator=(States&& other) {
+  signaling_state = other.signaling_state;
   receiver_states = std::move(other.receiver_states);
   return *this;
 }
@@ -86,6 +90,7 @@ void WebRtcSetRemoteDescriptionObserverHandler::OnSetRemoteDescriptionComplete(
       states_or_error;
   if (error.ok()) {
     WebRtcSetRemoteDescriptionObserver::States states;
+    states.signaling_state = pc_->signaling_state();
     for (const auto& webrtc_receiver : pc_->GetReceivers()) {
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref =
           track_adapter_map()->GetOrCreateRemoteTrackAdapter(

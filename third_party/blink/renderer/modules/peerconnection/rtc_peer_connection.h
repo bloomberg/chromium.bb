@@ -215,7 +215,8 @@ class MODULES_EXPORT RTCPeerConnection final
   // WebRTCPeerConnectionHandlerClient
   void NegotiationNeeded() override;
   void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) override;
-  void DidChangeSignalingState(SignalingState) override;
+  void DidChangeSignalingState(
+      webrtc::PeerConnectionInterface::SignalingState) override;
   void DidChangeICEGatheringState(ICEGatheringState) override;
   void DidChangeICEConnectionState(ICEConnectionState) override;
   void DidAddRemoteTrack(std::unique_ptr<WebRTCRtpReceiver>) override;
@@ -287,7 +288,16 @@ class MODULES_EXPORT RTCPeerConnection final
   HeapVector<Member<RTCRtpReceiver>>::iterator FindReceiver(
       const WebRTCRtpReceiver& web_receiver);
 
-  // The "Change" methods set the state asynchronously and fire the
+  // Sets the signaling state synchronously, and dispatches a
+  // signalingstatechange event synchronously or asynchronously depending on
+  // |dispatch_event_immediately|.
+  // TODO(hbos): The ability to not fire the event asynchronously is there
+  // because CloseInternal() has historically fired asynchronously along with
+  // other asynchronously fired events. If close() does not fire any events,
+  // |dispatch_event_immediately| can be removed. https://crbug.com/849247
+  void ChangeSignalingState(webrtc::PeerConnectionInterface::SignalingState,
+                            bool dispatch_event_immediately);
+  // The remaining "Change" methods set the state asynchronously and fire the
   // corresponding event immediately after changing the state (if it was really
   // changed).
   //
@@ -300,15 +310,6 @@ class MODULES_EXPORT RTCPeerConnection final
   // possible to, for example, end up with two "icegatheringstatechange" events
   // that are delayed somehow and cause the application to read a "complete"
   // gathering state twice, missing the "gathering" state in the middle.
-  //
-  // TODO(deadbeef): This wasn't done for the signaling state because it
-  // resulted in a change to the order of the signaling state being updated
-  // relative to the SetLocalDescription or SetRemoteDescription promise being
-  // resolved. Some additional refactoring would be necessary to fix this; for
-  // example, passing the new signaling state along with the SRD/SLD callbacks
-  // as opposed to relying on a separate event.
-  void ChangeSignalingState(WebRTCPeerConnectionHandlerClient::SignalingState);
-
   void ChangeIceGatheringState(
       WebRTCPeerConnectionHandlerClient::ICEGatheringState);
   bool SetIceGatheringState(
@@ -327,7 +328,7 @@ class MODULES_EXPORT RTCPeerConnection final
                                        const RTCSessionDescriptionInit&,
                                        String* sdp);
 
-  SignalingState signaling_state_;
+  webrtc::PeerConnectionInterface::SignalingState signaling_state_;
   ICEGatheringState ice_gathering_state_;
   ICEConnectionState ice_connection_state_;
 

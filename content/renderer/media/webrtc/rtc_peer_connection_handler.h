@@ -45,6 +45,7 @@ namespace content {
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RtcDataChannelHandler;
+class SetLocalDescriptionRequest;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
 class CONTENT_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
@@ -187,6 +188,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   friend class Observer;
   class WebRtcSetRemoteDescriptionObserverImpl;
   friend class WebRtcSetRemoteDescriptionObserverImpl;
+  class SetLocalDescriptionRequest;
+  friend class SetLocalDescriptionRequest;
 
   void OnSignalingChange(
       webrtc::PeerConnectionInterface::SignalingState new_state);

@@ -215,15 +215,21 @@ static std::string SerializeConfiguration(
 // strings on chrome://webrtc-internals.
 
 static const char* GetSignalingStateString(
-    WebRTCPeerConnectionHandlerClient::SignalingState state) {
+    webrtc::PeerConnectionInterface::SignalingState state) {
   const char* result = "";
   switch (state) {
-    GET_STRING_OF_STATE(SignalingStateStable)
-    GET_STRING_OF_STATE(SignalingStateHaveLocalOffer)
-    GET_STRING_OF_STATE(SignalingStateHaveRemoteOffer)
-    GET_STRING_OF_STATE(SignalingStateHaveLocalPrAnswer)
-    GET_STRING_OF_STATE(SignalingStateHaveRemotePrAnswer)
-    GET_STRING_OF_STATE(SignalingStateClosed)
+    case webrtc::PeerConnectionInterface::SignalingState::kStable:
+      return "SignalingStateStable";
+    case webrtc::PeerConnectionInterface::SignalingState::kHaveLocalOffer:
+      return "SignalingStateHaveLocalOffer";
+    case webrtc::PeerConnectionInterface::SignalingState::kHaveRemoteOffer:
+      return "SignalingStateHaveRemoteOffer";
+    case webrtc::PeerConnectionInterface::SignalingState::kHaveLocalPrAnswer:
+      return "SignalingStateHaveLocalPrAnswer";
+    case webrtc::PeerConnectionInterface::SignalingState::kHaveRemotePrAnswer:
+      return "SignalingStateHaveRemotePrAnswer";
+    case webrtc::PeerConnectionInterface::SignalingState::kClosed:
+      return "SignalingStateClosed";
     default:
       NOTREACHED();
       break;
@@ -663,8 +669,8 @@ void PeerConnectionTracker::TrackStop(RTCPeerConnectionHandler* pc_handler) {
 }
 
 void PeerConnectionTracker::TrackSignalingStateChange(
-      RTCPeerConnectionHandler* pc_handler,
-      WebRTCPeerConnectionHandlerClient::SignalingState state) {
+    RTCPeerConnectionHandler* pc_handler,
+    webrtc::PeerConnectionInterface::SignalingState state) {
   DCHECK(main_thread_.CalledOnValidThread());
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)

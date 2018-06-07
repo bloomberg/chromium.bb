@@ -137,7 +137,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Sends an update when the signaling state of a PeerConnection has changed.
   virtual void TrackSignalingStateChange(
       RTCPeerConnectionHandler* pc_handler,
-      blink::WebRTCPeerConnectionHandlerClient::SignalingState state);
+      webrtc::PeerConnectionInterface::SignalingState state);
 
   // Sends an update when the Ice connection state
   // of a PeerConnection has changed.

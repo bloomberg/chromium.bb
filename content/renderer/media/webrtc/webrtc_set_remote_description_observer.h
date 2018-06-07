@@ -16,6 +16,7 @@
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtcerror.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
 #include "third_party/webrtc/api/setremotedescriptionobserverinterface.h"
@@ -70,6 +71,7 @@ class CONTENT_EXPORT WebRtcSetRemoteDescriptionObserver
 
     States& operator=(States&& other);
 
+    webrtc::PeerConnectionInterface::SignalingState signaling_state;
     // The receivers at the time of the event.
     std::vector<WebRtcReceiverState> receiver_states;
     // Check that the invariants for this structure hold.
