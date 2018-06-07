@@ -19,6 +19,8 @@
 #include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_result.mojom.h"
 #include "google_apis/google_api_keys.h"
+#include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -27,8 +29,9 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
-
-using net::URLFetcher;
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 
 namespace content {
 namespace {
@@ -43,6 +46,9 @@ const char* web_service_base_url_for_tests = nullptr;
 
 // This matches the maximum maxAlternatives value supported by the server.
 const uint32_t kMaxMaxAlternatives = 30;
+
+// Maximum amount of data written per Mojo write.
+const uint32_t kMaxUploadWrite = 128 * 1024;
 
 // TODO(hans): Remove this and other logging when we don't need it anymore.
 void DumpResponse(const std::string& response) {
@@ -80,6 +86,197 @@ const uint32_t kDefaultMaxHypotheses = 1;
 
 }  // namespace
 
+// Streams sound data up to the server.
+class SpeechRecognitionEngine::UpstreamLoader
+    : public network::mojom::ChunkedDataPipeGetter {
+ public:
+  UpstreamLoader(std::unique_ptr<network::ResourceRequest> resource_request,
+                 net::NetworkTrafficAnnotationTag upstream_traffic_annotation,
+                 network::mojom::URLLoaderFactory* url_loader_factory,
+                 SpeechRecognitionEngine* speech_recognition_engine)
+      : speech_recognition_engine_(speech_recognition_engine) {
+    // Attach a chunked upload body.
+    network::mojom::ChunkedDataPipeGetterPtr data_pipe;
+    binding_set_.AddBinding(this, mojo::MakeRequest(&data_pipe));
+    resource_request->request_body = new network::ResourceRequestBody();
+    resource_request->request_body->SetToChunkedDataPipe(std::move(data_pipe));
+    simple_url_loader_ = network::SimpleURLLoader::Create(
+        std::move(resource_request), upstream_traffic_annotation);
+    simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        url_loader_factory,
+        base::BindOnce(&UpstreamLoader::OnComplete, base::Unretained(this)));
+  }
+
+  ~UpstreamLoader() override = default;
+
+  void OnComplete(std::unique_ptr<std::string> response_body) {
+    int response_code = -1;
+    if (simple_url_loader_->ResponseInfo() &&
+        simple_url_loader_->ResponseInfo()->headers) {
+      response_code =
+          simple_url_loader_->ResponseInfo()->headers->response_code();
+    }
+    speech_recognition_engine_->OnUpstreamDataComplete(response_body != nullptr,
+                                                       response_code);
+  }
+
+  void AppendChunkToUpload(const std::string& data, bool is_last_chunk) {
+    DCHECK(!has_last_chunk_);
+
+    upload_body_ += data;
+    if (is_last_chunk) {
+      // Send size before the rest of the body. While it doesn't matter much, if
+      // the other side receives the size before the last chunk, which Mojo does
+      // not gaurantee, some protocols can merge the data and the last chunk
+      // itself into a single frame.
+      has_last_chunk_ = is_last_chunk;
+      if (get_size_callback_)
+        std::move(get_size_callback_).Run(net::OK, upload_body_.size());
+    }
+
+    SendData();
+  }
+
+ private:
+  void OnUploadPipeWriteable(MojoResult unused) { SendData(); }
+
+  // Attempts to send more of the upload body, if more data is available, and
+  // |upload_pipe_| is valid.
+  void SendData() {
+    DCHECK_LE(upload_position_, upload_body_.size());
+
+    if (!upload_pipe_.is_valid())
+      return;
+
+    // Nothing more to write yet, or done writing everything.
+    if (upload_position_ == upload_body_.size())
+      return;
+
+    // Since kMaxUploadWrite is a uint32_t, no overflow occurs in this downcast.
+    uint32_t write_bytes = std::min(upload_body_.length() - upload_position_,
+                                    static_cast<size_t>(kMaxUploadWrite));
+    MojoResult result =
+        upload_pipe_->WriteData(upload_body_.data() + upload_position_,
+                                &write_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+
+    // Wait for the pipe to have more capacity available, if needed.
+    if (result == MOJO_RESULT_SHOULD_WAIT) {
+      upload_pipe_watcher_->ArmOrNotify();
+      return;
+    }
+
+    // Do nothing on pipe closure - depend on the SimpleURLLoader to notice the
+    // other pipes being closed on error. Can reach this point if there's a
+    // retry, for instance, so cannot draw any conclusions here.
+    if (result != MOJO_RESULT_OK)
+      return;
+
+    upload_position_ += write_bytes;
+    // If more data is available, arm the watcher again. Don't write again in a
+    // loop, even if WriteData would allow it, to avoid blocking the current
+    // thread.
+    if (upload_position_ < upload_body_.size())
+      upload_pipe_watcher_->ArmOrNotify();
+  }
+
+  // mojom::ChunkedDataPipeGetter implementation:
+
+  void GetSize(GetSizeCallback get_size_callback) override {
+    if (has_last_chunk_) {
+      std::move(get_size_callback).Run(net::OK, upload_body_.size());
+    } else {
+      get_size_callback_ = std::move(get_size_callback);
+    }
+  }
+
+  void StartReading(mojo::ScopedDataPipeProducerHandle pipe) override {
+    // Delete any existing pipe, if any.
+    upload_pipe_watcher_.reset();
+    upload_pipe_ = std::move(pipe);
+    upload_pipe_watcher_ = std::make_unique<mojo::SimpleWatcher>(
+        FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL);
+    upload_pipe_watcher_->Watch(
+        upload_pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+        base::BindRepeating(&UpstreamLoader::OnUploadPipeWriteable,
+                            base::Unretained(this)));
+    upload_position_ = 0;
+
+    // Will attempt to start sending the request body, if any data is available.
+    SendData();
+  }
+
+  // Partial upload body. Have to cache the entire thing in memory, in case have
+  // to replay it.
+  std::string upload_body_;
+  // Current position in |upload_body_|.  All bytes before this point have been
+  // written to |upload_pipe_|.
+  size_t upload_position_ = 0;
+  // Whether |upload_body_| is complete.
+  bool has_last_chunk_ = false;
+
+  // Current pipe being used to send the |upload_body_| to the URLLoader.
+  mojo::ScopedDataPipeProducerHandle upload_pipe_;
+  // Watches |upload_pipe_| for writeability.
+  std::unique_ptr<mojo::SimpleWatcher> upload_pipe_watcher_;
+
+  // If non-null, invoked once the size of the upload is known.
+  network::mojom::ChunkedDataPipeGetter::GetSizeCallback get_size_callback_;
+
+  SpeechRecognitionEngine* const speech_recognition_engine_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
+  mojo::BindingSet<network::mojom::ChunkedDataPipeGetter> binding_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpstreamLoader);
+};
+
+// Streams response data from the server to the SpeechRecognitionEngine.
+class SpeechRecognitionEngine::DownstreamLoader
+    : public network::SimpleURLLoaderStreamConsumer {
+ public:
+  DownstreamLoader(std::unique_ptr<network::ResourceRequest> resource_request,
+                   net::NetworkTrafficAnnotationTag upstream_traffic_annotation,
+                   network::mojom::URLLoaderFactory* url_loader_factory,
+                   SpeechRecognitionEngine* speech_recognition_engine)
+      : speech_recognition_engine_(speech_recognition_engine) {
+    simple_url_loader_ = network::SimpleURLLoader::Create(
+        std::move(resource_request), upstream_traffic_annotation);
+    simple_url_loader_->DownloadAsStream(url_loader_factory, this);
+  }
+
+  ~DownstreamLoader() override = default;
+
+  // SimpleURLLoaderStreamConsumer implementation:
+
+  void OnDataReceived(base::StringPiece string_piece,
+                      base::OnceClosure resume) override {
+    speech_recognition_engine_->OnDownstreamDataReceived(string_piece);
+    std::move(resume).Run();
+  }
+
+  void OnComplete(bool success) override {
+    int response_code = -1;
+    if (simple_url_loader_->ResponseInfo() &&
+        simple_url_loader_->ResponseInfo()->headers) {
+      response_code =
+          simple_url_loader_->ResponseInfo()->headers->response_code();
+    }
+
+    speech_recognition_engine_->OnDownstreamDataComplete(success,
+                                                         response_code);
+  }
+
+  void OnRetry(base::OnceClosure start_retry) override {
+    // Retries are not enabled for these requests.
+    NOTREACHED();
+  }
+
+ private:
+  SpeechRecognitionEngine* const speech_recognition_engine_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownstreamLoader);
+};
+
 SpeechRecognitionEngine::Config::Config()
     : filter_profanities(false),
       continuous(true),
@@ -91,15 +288,16 @@ SpeechRecognitionEngine::Config::Config()
 SpeechRecognitionEngine::Config::~Config() {}
 
 const int SpeechRecognitionEngine::kAudioPacketIntervalMs = 100;
-const int SpeechRecognitionEngine::kUpstreamUrlFetcherIdForTesting = 0;
-const int SpeechRecognitionEngine::kDownstreamUrlFetcherIdForTesting = 1;
 const int SpeechRecognitionEngine::kWebserviceStatusNoError = 0;
 const int SpeechRecognitionEngine::kWebserviceStatusErrorNoMatch = 5;
 
 SpeechRecognitionEngine::SpeechRecognitionEngine(
-    net::URLRequestContextGetter* context)
-    : url_context_(context),
-      previous_response_length_(0),
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+    scoped_refptr<net::URLRequestContextGetter>
+        deprecated_url_request_context_getter)
+    : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
+      deprecated_url_request_context_getter_(
+          std::move(deprecated_url_request_context_getter)),
       got_last_definitive_result_(false),
       is_dispatching_event_(false),
       use_framed_post_data_(false),
@@ -139,64 +337,27 @@ void SpeechRecognitionEngine::AudioChunksEnded() {
   DispatchEvent(event_args);
 }
 
-void SpeechRecognitionEngine::OnURLFetchComplete(const URLFetcher* source) {
-  const bool kResponseComplete = true;
-  DispatchHTTPResponse(source, kResponseComplete);
-}
-
-void SpeechRecognitionEngine::OnURLFetchDownloadProgress(
-    const URLFetcher* source,
-    int64_t current,
-    int64_t total,
-    int64_t current_network_bytes) {
-  const bool kPartialResponse = false;
-  DispatchHTTPResponse(source, kPartialResponse);
-}
-
-void SpeechRecognitionEngine::DispatchHTTPResponse(const URLFetcher* source,
-                                                   bool end_of_response) {
+void SpeechRecognitionEngine::OnUpstreamDataComplete(bool success,
+                                                     int response_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(source);
-  const bool response_is_good = source->GetStatus().is_success() &&
-                                source->GetResponseCode() == 200;
-  std::string response;
-  if (response_is_good)
-    source->GetResponseAsString(&response);
-  const size_t current_response_length = response.size();
 
-  DVLOG(1) << (source == downstream_fetcher_.get() ? "Downstream" : "Upstream")
-           << "HTTP, code: " << source->GetResponseCode()
-           << "      length: " << current_response_length
-           << "      eor: " << end_of_response;
+  DVLOG(1) << "Upstream complete success: " << success
+           << " response_code: " << response_code;
 
-  // URLFetcher provides always the entire response buffer, but we are only
-  // interested in the fresh data introduced by the last chunk. Therefore, we
-  // drop the previous content we have already processed.
-  if (current_response_length != 0) {
-    DCHECK_GE(current_response_length, previous_response_length_);
-    response.erase(0, previous_response_length_);
-    previous_response_length_ = current_response_length;
-  }
-
-  if (!response_is_good && source == downstream_fetcher_.get()) {
-    DVLOG(1) << "Downstream error " << source->GetResponseCode();
-    FSMEventArgs event_args(EVENT_DOWNSTREAM_ERROR);
-    DispatchEvent(event_args);
-    return;
-  }
-  if (!response_is_good && source == upstream_fetcher_.get()) {
-    DVLOG(1) << "Upstream error " << source->GetResponseCode()
-             << " EOR " << end_of_response;
+  if (!success) {
     FSMEventArgs event_args(EVENT_UPSTREAM_ERROR);
     DispatchEvent(event_args);
     return;
   }
 
-  // Ignore incoming data on the upstream connection.
-  if (source == upstream_fetcher_.get())
-    return;
+  // Do nothing on clean completion of upstream request.
+}
 
-  DCHECK(response_is_good && source == downstream_fetcher_.get());
+void SpeechRecognitionEngine::OnDownstreamDataReceived(
+    base::StringPiece new_response_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DVLOG(1) << "Downstream length: " << new_response_data.size();
 
   // The downstream response is organized in chunks, whose size is determined
   // by a 4 bytes prefix, transparently handled by the ChunkedByteBuffer class.
@@ -206,7 +367,7 @@ void SpeechRecognitionEngine::DispatchHTTPResponse(const URLFetcher* source,
   // url fetcher. However there isn't any particular matching beween our
   // protocol chunks and HTTP chunks, in the sense that a single HTTP chunk can
   // contain a portion of one chunk or even more chunks together.
-  chunked_byte_buffer_.Append(response);
+  chunked_byte_buffer_.Append(new_response_data);
 
   // A single HTTP chunk can contain more than one data chunk, thus the while.
   while (chunked_byte_buffer_.HasChunks()) {
@@ -217,10 +378,23 @@ void SpeechRecognitionEngine::DispatchHTTPResponse(const URLFetcher* source,
                              event_args.response->end()));
     DispatchEvent(event_args);
   }
-  if (end_of_response) {
-    FSMEventArgs event_args(EVENT_DOWNSTREAM_CLOSED);
+}
+
+void SpeechRecognitionEngine::OnDownstreamDataComplete(bool success,
+                                                       int response_code) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DVLOG(1) << "Downstream complete success: " << success
+           << " response_code: " << response_code;
+
+  if (!success) {
+    FSMEventArgs event_args(EVENT_DOWNSTREAM_ERROR);
     DispatchEvent(event_args);
+    return;
   }
+
+  FSMEventArgs event_args(EVENT_DOWNSTREAM_CLOSED);
+  DispatchEvent(event_args);
 }
 
 bool SpeechRecognitionEngine::IsRecognitionPending() const {
@@ -319,8 +493,8 @@ SpeechRecognitionEngine::ExecuteTransitionAndGetNextState(
 
 SpeechRecognitionEngine::FSMState
 SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
-  DCHECK(!upstream_fetcher_.get());
-  DCHECK(!downstream_fetcher_.get());
+  DCHECK(!upstream_loader_.get());
+  DCHECK(!downstream_loader_.get());
 
   encoder_.reset(new AudioEncoder(config_.audio_sample_rate,
                                   config_.audio_num_bits_per_sample));
@@ -391,14 +565,14 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
             }
           }
         })");
-  downstream_fetcher_ =
-      URLFetcher::Create(kDownstreamUrlFetcherIdForTesting, downstream_url,
-                         URLFetcher::GET, this, downstream_traffic_annotation);
-  downstream_fetcher_->SetRequestContext(url_context_.get());
-  downstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                                    net::LOAD_DO_NOT_SEND_COOKIES |
-                                    net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  downstream_fetcher_->Start();
+  auto downstream_request = std::make_unique<network::ResourceRequest>();
+  downstream_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
+                                   net::LOAD_DO_NOT_SEND_COOKIES |
+                                   net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  downstream_request->url = downstream_url;
+  downstream_loader_ = std::make_unique<DownstreamLoader>(
+      std::move(downstream_request), downstream_traffic_annotation,
+      shared_url_loader_factory_.get(), this);
 
   // Setup upstream fetcher.
   // TODO(hans): Support for user-selected grammars.
@@ -486,20 +660,25 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
             }
           }
         })");
-  upstream_fetcher_ =
-      URLFetcher::Create(kUpstreamUrlFetcherIdForTesting, upstream_url,
-                         URLFetcher::POST, this, upstream_traffic_annotation);
-  if (use_framed_post_data_)
-    upstream_fetcher_->SetChunkedUpload("application/octet-stream");
-  else
-    upstream_fetcher_->SetChunkedUpload(encoder_->GetMimeType());
-  upstream_fetcher_->SetRequestContext(url_context_.get());
-  upstream_fetcher_->SetReferrer(config_.origin_url);
-  upstream_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  upstream_fetcher_->Start();
-  previous_response_length_ = 0;
+
+  auto upstream_request = std::make_unique<network::ResourceRequest>();
+  upstream_request->url = upstream_url;
+  upstream_request->method = "POST";
+  upstream_request->referrer = GURL(config_.origin_url);
+  upstream_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  if (use_framed_post_data_) {
+    upstream_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                        "application/octet-stream");
+  } else {
+    upstream_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                        encoder_->GetMimeType());
+  }
+
+  upstream_loader_ = std::make_unique<UpstreamLoader>(
+      std::move(upstream_request), upstream_traffic_annotation,
+      shared_url_loader_factory_.get(), this);
 
   if (preamble_encoder_) {
     // Encode and send preamble right away.
@@ -518,7 +697,7 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
 SpeechRecognitionEngine::FSMState
 SpeechRecognitionEngine::TransmitAudioUpstream(
     const FSMEventArgs& event_args) {
-  DCHECK(upstream_fetcher_.get());
+  DCHECK(upstream_loader_.get());
   DCHECK(event_args.audio_data.get());
   const AudioChunk& audio = *(event_args.audio_data.get());
 
@@ -616,7 +795,7 @@ SpeechRecognitionEngine::RaiseNoMatchErrorIfGotNoResults(
 SpeechRecognitionEngine::FSMState
 SpeechRecognitionEngine::CloseUpstreamAndWaitForResults(
     const FSMEventArgs&) {
-  DCHECK(upstream_fetcher_.get());
+  DCHECK(upstream_loader_.get());
   DCHECK(encoder_.get());
 
   DVLOG(1) <<  "Closing upstream.";
@@ -643,11 +822,11 @@ SpeechRecognitionEngine::CloseUpstreamAndWaitForResults(
 
 SpeechRecognitionEngine::FSMState
 SpeechRecognitionEngine::CloseDownstream(const FSMEventArgs&) {
-  DCHECK(!upstream_fetcher_.get());
-  DCHECK(downstream_fetcher_.get());
+  DCHECK(!upstream_loader_.get());
+  DCHECK(downstream_loader_.get());
 
   DVLOG(1) <<  "Closing downstream.";
-  downstream_fetcher_.reset();
+  downstream_loader_.reset();
   return STATE_IDLE;
 }
 
@@ -669,8 +848,8 @@ SpeechRecognitionEngine::FSMState SpeechRecognitionEngine::Abort(
     delegate_->OnSpeechRecognitionEngineError(mojom::SpeechRecognitionError(
         error_code, mojom::SpeechAudioErrorDetails::kNone));
   }
-  downstream_fetcher_.reset();
-  upstream_fetcher_.reset();
+  downstream_loader_.reset();
+  upstream_loader_.reset();
   encoder_.reset();
   return STATE_IDLE;
 }
@@ -689,12 +868,12 @@ SpeechRecognitionEngine::NotFeasible(const FSMEventArgs& event_args) {
 
 std::string SpeechRecognitionEngine::GetAcceptedLanguages() const {
   std::string langs = config_.language;
-  if (langs.empty() && url_context_.get()) {
+  if (langs.empty() && deprecated_url_request_context_getter_.get()) {
     // If no language is provided then we use the first from the accepted
     // language list. If this list is empty then it defaults to "en-US".
     // Example of the contents of this list: "es,en-GB;q=0.8", ""
     net::URLRequestContext* request_context =
-        url_context_->GetURLRequestContext();
+        deprecated_url_request_context_getter_->GetURLRequestContext();
     DCHECK(request_context);
     // TODO(pauljensen): SpeechRecognitionEngine should be constructed with
     // a reference to the HttpUserAgentSettings rather than accessing the
@@ -732,9 +911,9 @@ void SpeechRecognitionEngine::UploadAudioChunk(const std::string& data,
     base::WriteBigEndian(&frame[0], static_cast<uint32_t>(data.size()));
     base::WriteBigEndian(&frame[4], static_cast<uint32_t>(type));
     frame.replace(8, data.size(), data);
-    upstream_fetcher_->AppendChunkToUpload(frame, is_final);
+    upstream_loader_->AppendChunkToUpload(frame, is_final);
   } else {
-    upstream_fetcher_->AppendChunkToUpload(data, is_final);
+    upstream_loader_->AppendChunkToUpload(data, is_final);
   }
 }
 

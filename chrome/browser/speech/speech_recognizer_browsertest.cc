@@ -17,6 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,8 +70,11 @@ class AppListSpeechRecognizerBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AppListSpeechRecognizerBrowserTest, RecognizeSpeech) {
-  SpeechRecognizer recognizer(mock_speech_delegate_->GetWeakPtr(),
-                              browser()->profile()->GetRequestContext(), "en");
+  SpeechRecognizer recognizer(
+      mock_speech_delegate_->GetWeakPtr(),
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetURLLoaderFactoryForBrowserProcessIOThread(),
+      browser()->profile()->GetRequestContext(), "en");
 
   base::RunLoop run_loop;
   EXPECT_CALL(*mock_speech_delegate_,

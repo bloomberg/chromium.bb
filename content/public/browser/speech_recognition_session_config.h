@@ -16,6 +16,7 @@
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/common/speech_recognition_grammar.mojom.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/origin.h"
 
 namespace content {
@@ -39,7 +40,11 @@ struct CONTENT_EXPORT SpeechRecognitionSessionConfig {
   std::string auth_scope;
   scoped_refptr<SpeechRecognitionSessionPreamble> preamble;
   SpeechRecognitionSessionContext initial_context;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory;
+  // TODO(mmenke):  Remove this dependency.
+  scoped_refptr<net::URLRequestContextGetter>
+      deprecated_url_request_context_getter;
+
   base::WeakPtr<SpeechRecognitionEventListener> event_listener;
 };
 

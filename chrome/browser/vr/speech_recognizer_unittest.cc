@@ -20,6 +20,8 @@
 #include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_result.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,6 +43,65 @@ enum FakeRecognitionEvent {
   INTERIM_RESULT,
   FINAL_RESULT,
   MULTIPLE_FINAL_RESULT,
+};
+
+// A SharedURLLoaderFactory that hangs.
+class FakeSharedURLLoaderFactory : public network::SharedURLLoaderFactory {
+ public:
+  FakeSharedURLLoaderFactory() {}
+
+  // network::mojom::URLLoaderFactory:
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    test_url_loader_factory_.Clone(std::move(request));
+  }
+
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    test_url_loader_factory_.CreateLoaderAndStart(
+        std::move(loader), routing_id, request_id, options, request,
+        std::move(client), traffic_annotation);
+  }
+
+  // network::SharedURLLoaderFactory:
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+ private:
+  friend class base::RefCounted<FakeSharedURLLoaderFactory>;
+
+  ~FakeSharedURLLoaderFactory() override {}
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSharedURLLoaderFactory);
+};
+
+// Returns a SharedURLLoaderFactory that hangs.
+class FakeSharedURLLoaderFactoryInfo
+    : public network::SharedURLLoaderFactoryInfo {
+ public:
+  FakeSharedURLLoaderFactoryInfo() {}
+  ~FakeSharedURLLoaderFactoryInfo() override {}
+
+ protected:
+  friend class network::SharedURLLoaderFactory;
+
+  // network::SharedURLLoaderFactoryInfo:
+  scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override {
+    return base::MakeRefCounted<FakeSharedURLLoaderFactory>();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeSharedURLLoaderFactoryInfo);
 };
 
 class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
@@ -195,8 +256,12 @@ class SpeechRecognizerTest : public testing::Test {
       : fake_speech_recognition_manager_(new FakeSpeechRecognitionManager()),
         ui_(new MockBrowserUiInterface),
         delegate_(new MockVoiceSearchDelegate),
-        speech_recognizer_(
-            new SpeechRecognizer(delegate_.get(), ui_.get(), nullptr, "en")) {
+        speech_recognizer_(new SpeechRecognizer(
+            delegate_.get(),
+            ui_.get(),
+            std::make_unique<FakeSharedURLLoaderFactoryInfo>(),
+            nullptr,
+            "en")) {
     SpeechRecognizer::SetManagerForTest(fake_speech_recognition_manager_.get());
   }
 

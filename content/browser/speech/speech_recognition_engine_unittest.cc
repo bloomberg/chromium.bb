@@ -20,16 +20,17 @@
 #include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_result.mojom.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::HostToNet32;
 using base::checked_cast;
-using net::URLRequestStatus;
-using net::TestURLFetcher;
-using net::TestURLFetcherFactory;
 
 namespace content {
 
@@ -48,10 +49,6 @@ class SpeechRecognitionEngineTest
       : last_number_of_upstream_chunks_seen_(0U),
         error_(mojom::SpeechRecognitionErrorCode::kNone),
         end_of_utterance_counter_(0) {}
-
-  // Creates a speech recognition request and invokes its URL fetcher delegate
-  // with the given test data.
-  void CreateAndTestRequest(bool success, const std::string& http_response);
 
   // SpeechRecognitionRequestDelegate methods.
   void OnSpeechRecognitionEngineResults(
@@ -86,13 +83,12 @@ class SpeechRecognitionEngineTest
   static std::string SerializeProtobufResponse(
       const proto::SpeechRecognitionEvent& msg);
 
-  TestURLFetcher* GetUpstreamFetcher();
-  TestURLFetcher* GetDownstreamFetcher();
+  const network::TestURLLoaderFactory::PendingRequest* GetUpstreamRequest();
+  const network::TestURLLoaderFactory::PendingRequest* GetDownstreamRequest();
   void StartMockRecognition();
   void EndMockRecognition();
   void InjectDummyAudioChunk();
-  size_t UpstreamChunksUploadedFromLastCall();
-  std::string LastUpstreamChunkUploaded();
+  void ProvideMockResponseStartDownstreamIfNeeded();
   void ProvideMockProtoResultDownstream(
       const proto::SpeechRecognitionEvent& result);
   void ProvideMockResultDownstream(
@@ -100,12 +96,20 @@ class SpeechRecognitionEngineTest
   void ExpectResultsReceived(
       const std::vector<mojom::SpeechRecognitionResultPtr>& result);
   void ExpectFramedChunk(const std::string& chunk, uint32_t type);
+  // Reads and returns all pending upload data from |upstream_data_pipe_|,
+  // initializing the pipe from |GetUpstreamRequest()|, if needed.
+  std::string ConsumeChunkedUploadData();
   void CloseMockDownstream(DownstreamError error);
 
-  std::unique_ptr<SpeechRecognitionEngine> engine_under_test_;
-  TestURLFetcherFactory url_fetcher_factory_;
-  size_t last_number_of_upstream_chunks_seen_;
   base::MessageLoop message_loop_;
+
+  network::TestURLLoaderFactory url_loader_factory_;
+  mojo::ScopedDataPipeProducerHandle downstream_data_pipe_;
+  network::mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter_;
+  mojo::ScopedDataPipeConsumerHandle upstream_data_pipe_;
+
+  std::unique_ptr<SpeechRecognitionEngine> engine_under_test_;
+  size_t last_number_of_upstream_chunks_seen_;
   std::string response_buffer_;
   mojom::SpeechRecognitionErrorCode error_;
   int end_of_utterance_counter_;
@@ -114,19 +118,19 @@ class SpeechRecognitionEngineTest
 
 TEST_F(SpeechRecognitionEngineTest, SingleDefinitiveResult) {
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
-  ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData());
 
   // Inject some dummy audio chunks and check a corresponding chunked upload
   // is performed every time on the server.
   for (int i = 0; i < 3; ++i) {
     InjectDummyAudioChunk();
-    ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+    ASSERT_FALSE(ConsumeChunkedUploadData().empty());
   }
 
   // Ensure that a final (empty) audio chunk is uploaded on chunks end.
   engine_under_test_->AudioChunksEnded();
-  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_FALSE(ConsumeChunkedUploadData().empty());
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Simulate a protobuf message streamed from the server containing a single
@@ -154,12 +158,12 @@ TEST_F(SpeechRecognitionEngineTest, SingleDefinitiveResult) {
 
 TEST_F(SpeechRecognitionEngineTest, SeveralStreamingResults) {
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
-  ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData());
 
   for (int i = 0; i < 4; ++i) {
     InjectDummyAudioChunk();
-    ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+    ASSERT_NE("", ConsumeChunkedUploadData());
 
     std::vector<mojom::SpeechRecognitionResultPtr> results;
     results.push_back(mojom::SpeechRecognitionResult::New());
@@ -176,7 +180,7 @@ TEST_F(SpeechRecognitionEngineTest, SeveralStreamingResults) {
 
   // Ensure that a final (empty) audio chunk is uploaded on chunks end.
   engine_under_test_->AudioChunksEnded();
-  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_NE("", ConsumeChunkedUploadData());
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Simulate a final definitive result.
@@ -200,12 +204,12 @@ TEST_F(SpeechRecognitionEngineTest, SeveralStreamingResults) {
 
 TEST_F(SpeechRecognitionEngineTest, NoFinalResultAfterAudioChunksEnded) {
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
-  ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData());
 
   // Simulate one pushed audio chunk.
   InjectDummyAudioChunk();
-  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_NE("", ConsumeChunkedUploadData());
 
   // Simulate the corresponding definitive result.
   std::vector<mojom::SpeechRecognitionResultPtr> results;
@@ -219,7 +223,62 @@ TEST_F(SpeechRecognitionEngineTest, NoFinalResultAfterAudioChunksEnded) {
 
   // Simulate a silent downstream closure after |AudioChunksEnded|.
   engine_under_test_->AudioChunksEnded();
-  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_NE("", ConsumeChunkedUploadData());
+  ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
+  CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
+
+  // Expect an empty result, aimed at notifying recognition ended with no
+  // actual results nor errors.
+  std::vector<mojom::SpeechRecognitionResultPtr> empty_results;
+  ExpectResultsReceived(empty_results);
+
+  // Ensure everything is closed cleanly after the downstream is closed.
+  ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
+  EndMockRecognition();
+  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
+  ASSERT_EQ(0U, results_.size());
+}
+
+// Simulate the network service repeatedly re-requesting data (Possibly due to
+// using a stale socket, for instance).
+TEST_F(SpeechRecognitionEngineTest, ReRequestData) {
+  StartMockRecognition();
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData());
+
+  // Simulate one pushed audio chunk.
+  InjectDummyAudioChunk();
+  std::string uploaded_data = ConsumeChunkedUploadData();
+  ASSERT_NE(uploaded_data, ConsumeChunkedUploadData());
+
+  // The network service closes the data pipe.
+  upstream_data_pipe_.reset();
+
+  // Re-opening the data pipe should result in the data being re-uploaded.
+  ASSERT_EQ(uploaded_data, ConsumeChunkedUploadData());
+
+  // Simulate the corresponding definitive result.
+  std::vector<mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(mojom::SpeechRecognitionResult::New());
+  mojom::SpeechRecognitionResultPtr& result = results.back();
+  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+      base::UTF8ToUTF16("hypothesis"), 1.0F));
+  ProvideMockResultDownstream(result);
+  ExpectResultsReceived(results);
+  ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
+
+  // Simulate a silent downstream closure after |AudioChunksEnded|.
+  engine_under_test_->AudioChunksEnded();
+  std::string new_uploaded_data = ConsumeChunkedUploadData();
+  ASSERT_NE(new_uploaded_data, ConsumeChunkedUploadData());
+  uploaded_data += new_uploaded_data;
+
+  // The network service closes the data pipe.
+  upstream_data_pipe_.reset();
+
+  // Re-opening the data pipe should result in the data being re-uploaded.
+  ASSERT_EQ(uploaded_data, ConsumeChunkedUploadData());
+
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
   CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
 
@@ -237,13 +296,15 @@ TEST_F(SpeechRecognitionEngineTest, NoFinalResultAfterAudioChunksEnded) {
 
 TEST_F(SpeechRecognitionEngineTest, NoMatchError) {
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
-  ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData());
 
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 3; ++i) {
     InjectDummyAudioChunk();
+    ASSERT_NE("", ConsumeChunkedUploadData());
+  }
   engine_under_test_->AudioChunksEnded();
-  ASSERT_EQ(4U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_NE("", ConsumeChunkedUploadData());
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Simulate only a provisional result.
@@ -268,11 +329,11 @@ TEST_F(SpeechRecognitionEngineTest, NoMatchError) {
 
 TEST_F(SpeechRecognitionEngineTest, HTTPError) {
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
-  ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData());
 
   InjectDummyAudioChunk();
-  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_NE("", ConsumeChunkedUploadData());
 
   // Close the downstream with a HTTP 500 error.
   CloseMockDownstream(DOWNSTREAM_ERROR_HTTP500);
@@ -286,11 +347,11 @@ TEST_F(SpeechRecognitionEngineTest, HTTPError) {
 
 TEST_F(SpeechRecognitionEngineTest, NetworkError) {
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
-  ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData());
 
   InjectDummyAudioChunk();
-  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_NE("", ConsumeChunkedUploadData());
 
   // Close the downstream fetcher simulating a network failure.
   CloseMockDownstream(DOWNSTREAM_ERROR_NETWORK);
@@ -304,12 +365,12 @@ TEST_F(SpeechRecognitionEngineTest, NetworkError) {
 
 TEST_F(SpeechRecognitionEngineTest, Stability) {
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
-  ASSERT_EQ(0U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData());
 
   // Upload a dummy audio chunk.
   InjectDummyAudioChunk();
-  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
+  ASSERT_NE("", ConsumeChunkedUploadData());
   engine_under_test_->AudioChunksEnded();
 
   // Simulate a protobuf message with an intermediate result without confidence,
@@ -351,7 +412,7 @@ TEST_F(SpeechRecognitionEngineTest, Stability) {
 
 TEST_F(SpeechRecognitionEngineTest, EndOfUtterance) {
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
+  ASSERT_TRUE(GetUpstreamRequest());
 
   // Simulate a END_OF_UTTERANCE proto event with continuous true.
   SpeechRecognitionEngine::Config config;
@@ -388,16 +449,16 @@ TEST_F(SpeechRecognitionEngineTest, SendPreamble) {
   engine_under_test_->SetConfig(config);
 
   StartMockRecognition();
-  ASSERT_TRUE(GetUpstreamFetcher());
+  ASSERT_TRUE(GetUpstreamRequest());
   // First chunk uploaded should be the preamble.
-  ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
-  std::string chunk = LastUpstreamChunkUploaded();
+  std::string chunk = ConsumeChunkedUploadData();
+  ASSERT_NE("", chunk);
   ExpectFramedChunk(chunk, kFrameTypePreamble);
 
   for (int i = 0; i < 3; ++i) {
     InjectDummyAudioChunk();
-    ASSERT_EQ(1U, UpstreamChunksUploadedFromLastCall());
-    chunk = LastUpstreamChunkUploaded();
+    chunk = ConsumeChunkedUploadData();
+    ASSERT_NE("", chunk);
     ExpectFramedChunk(chunk, kFrameTypeRecognitionAudio);
   }
   engine_under_test_->AudioChunksEnded();
@@ -425,8 +486,10 @@ TEST_F(SpeechRecognitionEngineTest, SendPreamble) {
 }
 
 void SpeechRecognitionEngineTest::SetUp() {
-  engine_under_test_.reset(
-      new SpeechRecognitionEngine(nullptr /*URLRequestContextGetter*/));
+  engine_under_test_.reset(new SpeechRecognitionEngine(
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &url_loader_factory_),
+      nullptr /*URLRequestContextGetter*/));
   engine_under_test_->set_delegate(this);
 }
 
@@ -434,14 +497,22 @@ void SpeechRecognitionEngineTest::TearDown() {
   engine_under_test_.reset();
 }
 
-TestURLFetcher* SpeechRecognitionEngineTest::GetUpstreamFetcher() {
-  return url_fetcher_factory_.GetFetcherByID(
-        SpeechRecognitionEngine::kUpstreamUrlFetcherIdForTesting);
+const network::TestURLLoaderFactory::PendingRequest*
+SpeechRecognitionEngineTest::GetUpstreamRequest() {
+  for (const auto& pending_request : *url_loader_factory_.pending_requests()) {
+    if (pending_request.url.spec().find("/up") != std::string::npos)
+      return &pending_request;
+  }
+  return nullptr;
 }
 
-TestURLFetcher* SpeechRecognitionEngineTest::GetDownstreamFetcher() {
-  return url_fetcher_factory_.GetFetcherByID(
-        SpeechRecognitionEngine::kDownstreamUrlFetcherIdForTesting);
+const network::TestURLLoaderFactory::PendingRequest*
+SpeechRecognitionEngineTest::GetDownstreamRequest() {
+  for (const auto& pending_request : *url_loader_factory_.pending_requests()) {
+    if (pending_request.url.spec().find("/down") != std::string::npos)
+      return &pending_request;
+  }
+  return nullptr;
 }
 
 // Starts recognition on the engine, ensuring that both stream fetchers are
@@ -454,13 +525,8 @@ void SpeechRecognitionEngineTest::StartMockRecognition() {
   engine_under_test_->StartRecognition();
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
-  TestURLFetcher* upstream_fetcher = GetUpstreamFetcher();
-  ASSERT_TRUE(upstream_fetcher);
-  upstream_fetcher->set_url(upstream_fetcher->GetOriginalURL());
-
-  TestURLFetcher* downstream_fetcher = GetDownstreamFetcher();
-  ASSERT_TRUE(downstream_fetcher);
-  downstream_fetcher->set_url(downstream_fetcher->GetOriginalURL());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_TRUE(GetDownstreamRequest());
 }
 
 void SpeechRecognitionEngineTest::EndMockRecognition() {
@@ -476,7 +542,9 @@ void SpeechRecognitionEngineTest::EndMockRecognition() {
 }
 
 void SpeechRecognitionEngineTest::InjectDummyAudioChunk() {
-  unsigned char dummy_audio_buffer_data[2] = {'\0', '\0'};
+  // Enough data so that the encoder will output something, as can't read 0
+  // bytes from a Mojo stream.
+  unsigned char dummy_audio_buffer_data[2000 * 2] = {'\0'};
   scoped_refptr<AudioChunk> dummy_audio_chunk(
       new AudioChunk(&dummy_audio_buffer_data[0],
                      sizeof(dummy_audio_buffer_data),
@@ -485,38 +553,51 @@ void SpeechRecognitionEngineTest::InjectDummyAudioChunk() {
   engine_under_test_->TakeAudioChunk(*dummy_audio_chunk.get());
 }
 
-size_t SpeechRecognitionEngineTest::UpstreamChunksUploadedFromLastCall() {
-  TestURLFetcher* upstream_fetcher = GetUpstreamFetcher();
-  DCHECK(upstream_fetcher);
-  const size_t number_of_chunks = upstream_fetcher->upload_chunks().size();
-  DCHECK_GE(number_of_chunks, last_number_of_upstream_chunks_seen_);
-  const size_t new_chunks = number_of_chunks -
-                            last_number_of_upstream_chunks_seen_;
-  last_number_of_upstream_chunks_seen_ = number_of_chunks;
-  return new_chunks;
-}
+void SpeechRecognitionEngineTest::ProvideMockResponseStartDownstreamIfNeeded() {
+  if (downstream_data_pipe_.get())
+    return;
+  const network::TestURLLoaderFactory::PendingRequest* downstream_request =
+      GetDownstreamRequest();
+  ASSERT_TRUE(downstream_request);
 
-std::string SpeechRecognitionEngineTest::LastUpstreamChunkUploaded() {
-  TestURLFetcher* upstream_fetcher = GetUpstreamFetcher();
-  DCHECK(upstream_fetcher);
-  DCHECK(!upstream_fetcher->upload_chunks().empty());
-  return upstream_fetcher->upload_chunks().back();
+  network::ResourceResponseHead head;
+  std::string headers("HTTP/1.1 200 OK\n\n");
+  head.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  downstream_request->client->OnReceiveResponse(head, nullptr);
+
+  mojo::DataPipe data_pipe;
+  downstream_request->client->OnStartLoadingResponseBody(
+      std::move(data_pipe.consumer_handle));
+  downstream_data_pipe_ = std::move(data_pipe.producer_handle);
 }
 
 void SpeechRecognitionEngineTest::ProvideMockProtoResultDownstream(
     const proto::SpeechRecognitionEvent& result) {
-  TestURLFetcher* downstream_fetcher = GetDownstreamFetcher();
-
-  ASSERT_TRUE(downstream_fetcher);
-  downstream_fetcher->set_status(URLRequestStatus(/* default=SUCCESS */));
-  downstream_fetcher->set_response_code(200);
+  ProvideMockResponseStartDownstreamIfNeeded();
+  ASSERT_TRUE(downstream_data_pipe_.get());
+  ASSERT_TRUE(downstream_data_pipe_.is_valid());
 
   std::string response_string = SerializeProtobufResponse(result);
   response_buffer_.append(response_string);
-  downstream_fetcher->SetResponseString(response_buffer_);
-  downstream_fetcher->delegate()->OnURLFetchDownloadProgress(
-      downstream_fetcher, response_buffer_.size(),
-      -1 /* total response length not used */, response_buffer_.size());
+  uint32_t written = 0;
+  while (written < response_string.size()) {
+    uint32_t write_bytes = response_string.size() - written;
+    MojoResult result = downstream_data_pipe_->WriteData(
+        response_string.data() + written, &write_bytes,
+        MOJO_WRITE_DATA_FLAG_NONE);
+    if (result == MOJO_RESULT_OK) {
+      written += write_bytes;
+      continue;
+    }
+    if (result == MOJO_RESULT_SHOULD_WAIT) {
+      base::RunLoop().RunUntilIdle();
+      continue;
+    }
+
+    FAIL() << "Mojo pipe unexpectedly closed";
+  }
+  base::RunLoop().RunUntilIdle();
 }
 
 void SpeechRecognitionEngineTest::ProvideMockResultDownstream(
@@ -534,26 +615,42 @@ void SpeechRecognitionEngineTest::ProvideMockResultDownstream(
     proto_alternative->set_transcript(base::UTF16ToUTF8(hypothesis->utterance));
   }
   ProvideMockProtoResultDownstream(proto_event);
+  base::RunLoop().RunUntilIdle();
 }
 
 void SpeechRecognitionEngineTest::CloseMockDownstream(
     DownstreamError error) {
-  TestURLFetcher* downstream_fetcher = GetDownstreamFetcher();
-  ASSERT_TRUE(downstream_fetcher);
+  if (error == DOWNSTREAM_ERROR_HTTP500) {
+    // Can't provide a network error if already gave the consumer a 200
+    // response.
+    ASSERT_FALSE(downstream_data_pipe_.get());
 
-  const net::Error net_error =
-      (error == DOWNSTREAM_ERROR_NETWORK) ? net::ERR_FAILED : net::OK;
-  downstream_fetcher->set_status(URLRequestStatus::FromError(net_error));
-  downstream_fetcher->set_response_code(
-      (error == DOWNSTREAM_ERROR_HTTP500) ? 500 : 200);
-
-  if (error == DOWNSTREAM_ERROR_WEBSERVICE_NO_MATCH) {
-    // Send empty response.
-    proto::SpeechRecognitionEvent response;
-    response_buffer_.append(SerializeProtobufResponse(response));
+    const network::TestURLLoaderFactory::PendingRequest* downstream_request =
+        GetDownstreamRequest();
+    ASSERT_TRUE(downstream_request);
+    network::ResourceResponseHead head;
+    std::string headers("HTTP/1.1 500 Server Sad\n\n");
+    head.headers = new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    downstream_request->client->OnReceiveResponse(head, nullptr);
+    // Wait for the response to be handled.
+    base::RunLoop().RunUntilIdle();
+    return;
   }
-  downstream_fetcher->SetResponseString(response_buffer_);
-  downstream_fetcher->delegate()->OnURLFetchComplete(downstream_fetcher);
+
+  ProvideMockResponseStartDownstreamIfNeeded();
+  const network::TestURLLoaderFactory::PendingRequest* downstream_request =
+      GetDownstreamRequest();
+  ASSERT_TRUE(downstream_request);
+
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = response_buffer_.size();
+  status.error_code =
+      (error == DOWNSTREAM_ERROR_NETWORK) ? net::ERR_FAILED : net::OK;
+  downstream_request->client->OnComplete(status);
+  downstream_data_pipe_.reset();
+  // Wait for the completion events to be handled.
+  base::RunLoop().RunUntilIdle();
 }
 
 void SpeechRecognitionEngineTest::ExpectResultsReceived(
@@ -600,6 +697,55 @@ void SpeechRecognitionEngineTest::ExpectFramedChunk(
   EXPECT_EQ(chunk.size() - 8, value);
   base::ReadBigEndian(&chunk[4], &value);
   EXPECT_EQ(type, value);
+}
+
+std::string SpeechRecognitionEngineTest::ConsumeChunkedUploadData() {
+  std::string result;
+  base::RunLoop().RunUntilIdle();
+
+  if (!upstream_data_pipe_.get()) {
+    if (!chunked_data_pipe_getter_) {
+      const network::TestURLLoaderFactory::PendingRequest* upstream_request =
+          GetUpstreamRequest();
+      EXPECT_TRUE(upstream_request);
+      EXPECT_TRUE(upstream_request->request_body);
+      EXPECT_EQ(1u, upstream_request->request_body->elements()->size());
+      EXPECT_EQ(network::DataElement::TYPE_CHUNKED_DATA_PIPE,
+                (*upstream_request->request_body->elements())[0].type());
+      network::TestURLLoaderFactory::PendingRequest* mutable_upstream_request =
+          const_cast<network::TestURLLoaderFactory::PendingRequest*>(
+              upstream_request);
+      chunked_data_pipe_getter_ =
+          (*mutable_upstream_request->request_body->elements_mutable())[0]
+              .ReleaseChunkedDataPipeGetter();
+    }
+    mojo::DataPipe data_pipe;
+    chunked_data_pipe_getter_->StartReading(
+        std::move(data_pipe.producer_handle));
+    upstream_data_pipe_ = std::move(data_pipe.consumer_handle);
+  }
+  EXPECT_TRUE(upstream_data_pipe_.is_valid());
+
+  std::string out;
+  while (true) {
+    base::RunLoop().RunUntilIdle();
+
+    const void* data;
+    uint32_t num_bytes;
+    MojoResult result = upstream_data_pipe_->BeginReadData(
+        &data, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+    if (result == MOJO_RESULT_OK) {
+      out.append(static_cast<const char*>(data), num_bytes);
+      upstream_data_pipe_->EndReadData(num_bytes);
+      continue;
+    }
+    if (result == MOJO_RESULT_SHOULD_WAIT)
+      break;
+
+    ADD_FAILURE() << "Mojo pipe unexpectedly closed";
+    break;
+  }
+  return out;
 }
 
 std::string SpeechRecognitionEngineTest::SerializeProtobufResponse(

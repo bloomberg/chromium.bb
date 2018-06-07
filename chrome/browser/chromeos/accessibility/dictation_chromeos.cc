@@ -11,7 +11,9 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "media/audio/sounds/sounds_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
@@ -45,8 +47,10 @@ bool DictationChromeos::OnToggleDictation() {
   }
 
   speech_recognizer_ = std::make_unique<SpeechRecognizer>(
-      weak_ptr_factory_.GetWeakPtr(), profile_->GetRequestContext(),
-      GetUserLocale(profile_));
+      weak_ptr_factory_.GetWeakPtr(),
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcessIOThread(),
+      profile_->GetRequestContext(), GetUserLocale(profile_));
   speech_recognizer_->Start(nullptr /* preamble */);
   return true;
 }

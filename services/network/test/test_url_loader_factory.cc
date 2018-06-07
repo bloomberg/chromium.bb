@@ -10,19 +10,21 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_request_body.h"
 
 namespace network {
+
+TestURLLoaderFactory::PendingRequest::PendingRequest() = default;
+TestURLLoaderFactory::PendingRequest::~PendingRequest() = default;
+
+TestURLLoaderFactory::PendingRequest::PendingRequest(PendingRequest&& other) =
+    default;
+TestURLLoaderFactory::PendingRequest& TestURLLoaderFactory::PendingRequest::
+operator=(PendingRequest&& other) = default;
 
 TestURLLoaderFactory::Response::Response() = default;
 TestURLLoaderFactory::Response::~Response() = default;
 TestURLLoaderFactory::Response::Response(const Response&) = default;
-
-TestURLLoaderFactory::Pending::Pending() = default;
-TestURLLoaderFactory::Pending::~Pending() = default;
-
-TestURLLoaderFactory::Pending::Pending(Pending&& other) = default;
-TestURLLoaderFactory::Pending& TestURLLoaderFactory::Pending::operator=(
-    Pending&& other) = default;
 
 TestURLLoaderFactory::TestURLLoaderFactory() {}
 
@@ -41,9 +43,9 @@ void TestURLLoaderFactory::AddResponse(const GURL& url,
   response.status = status;
   responses_[url] = response;
 
-  for (auto it = pending_.begin(); it != pending_.end();) {
+  for (auto it = pending_requests_.begin(); it != pending_requests_.end();) {
     if (CreateLoaderAndStartInternal(it->url, it->client.get())) {
-      it = pending_.erase(it);
+      it = pending_requests_.erase(it);
     } else {
       ++it;
     }
@@ -68,7 +70,7 @@ void TestURLLoaderFactory::AddResponse(const std::string& url,
 bool TestURLLoaderFactory::IsPending(const std::string& url,
                                      int* load_flags_out) {
   base::RunLoop().RunUntilIdle();
-  for (const auto& candidate : pending_) {
+  for (const auto& candidate : pending_requests_) {
     if (candidate.url == url) {
       if (load_flags_out)
         *load_flags_out = candidate.load_flags;
@@ -81,7 +83,7 @@ bool TestURLLoaderFactory::IsPending(const std::string& url,
 int TestURLLoaderFactory::NumPending() {
   int pending = 0;
   base::RunLoop().RunUntilIdle();
-  for (const auto& candidate : pending_) {
+  for (const auto& candidate : pending_requests_) {
     if (!candidate.client.encountered_error())
       ++pending;
   }
@@ -110,11 +112,12 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
   if (CreateLoaderAndStartInternal(url_request.url, client.get()))
     return;
 
-  Pending pending;
-  pending.url = url_request.url;
-  pending.load_flags = url_request.load_flags;
-  pending.client = std::move(client);
-  pending_.push_back(std::move(pending));
+  PendingRequest pending_request;
+  pending_request.url = url_request.url;
+  pending_request.load_flags = url_request.load_flags;
+  pending_request.client = std::move(client);
+  pending_request.request_body = std::move(url_request.request_body);
+  pending_requests_.push_back(std::move(pending_request));
 }
 
 void TestURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
