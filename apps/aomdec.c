@@ -511,6 +511,7 @@ static int main_loop(int argc, const char **argv_) {
   int dec_flags = 0;
   int do_scale = 0;
   int operating_point = 0;
+  int output_all_layers = 0;
   aom_image_t *scaled_img = NULL;
   aom_image_t *img_shifted = NULL;
   int frame_avail, got_data, flush_decoder = 0;
@@ -624,6 +625,7 @@ static int main_loop(int argc, const char **argv_) {
       operating_point = arg_parse_int(&arg);
     } else if (arg_match(&arg, &outallarg, argi)) {
       input.obu_ctx->last_layer_id = 0;
+      output_all_layers = 1;
     } else {
       argj++;
     }
@@ -753,6 +755,13 @@ static int main_loop(int argc, const char **argv_) {
 
   if (aom_codec_control(&decoder, AV1D_SET_OPERATING_POINT, operating_point)) {
     fprintf(stderr, "Failed to set operating_point: %s\n",
+            aom_codec_error(&decoder));
+    goto fail;
+  }
+
+  if (aom_codec_control(&decoder, AV1D_SET_OUTPUT_ALL_LAYERS,
+                        output_all_layers)) {
+    fprintf(stderr, "Failed to set output_all_layers: %s\n",
             aom_codec_error(&decoder));
     goto fail;
   }

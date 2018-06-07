@@ -75,6 +75,7 @@
 #include <string.h>
 
 #include "aom/aom_decoder.h"
+#include "aom/aomdx.h"
 #include "common/obudec.h"
 #include "common/tools_common.h"
 #include "common/video_reader.h"
@@ -118,6 +119,10 @@ int main(int argc, char **argv) {
 
   if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0))
     die_codec(&codec, "Failed to initialize decoder.");
+
+  if (aom_codec_control(&codec, AV1D_SET_OUTPUT_ALL_LAYERS, 1)) {
+    die_codec(&codec, "Failed to set output_all_layers control.");
+  }
 
   // peak sequence header OBU to get number of spatial layers
   const size_t ret = fread(tmpbuf, 1, 32, inputfile);

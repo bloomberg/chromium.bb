@@ -192,6 +192,17 @@ enum aom_dec_control_id {
    */
   AV1D_SET_OPERATING_POINT,
 
+  /** control function to indicate whether to output one frame per temporal
+   *  unit (the default), or one frame per spatial layer.
+   *  In a scalable stream, each temporal unit corresponds to a single "frame"
+   *  of video, and within a temporal unit there may be multiple spatial layers
+   *  with different versions of that frame.
+   *  For video playback, only the highest-quality version (within the
+   *  selected operating point) is needed, but for some use cases it is useful
+   *  to have access to multiple versions of a frame when they are available.
+   */
+  AV1D_SET_OUTPUT_ALL_LAYERS,
+
   /** control function to set an aom_inspect_cb callback that is invoked each
    * time a frame is decoded.  When compiled without --enable-inspection, this
    * returns AOM_CODEC_INCAPABLE.
@@ -243,6 +254,8 @@ AOM_CTRL_USE_TYPE(AV1D_SET_IS_ANNEXB, unsigned int)
 #define AOM_CTRL_AV1D_SET_IS_ANNEXB
 AOM_CTRL_USE_TYPE(AV1D_SET_OPERATING_POINT, int)
 #define AOM_CTRL_AV1D_SET_OPERATING_POINT
+AOM_CTRL_USE_TYPE(AV1D_SET_OUTPUT_ALL_LAYERS, int)
+#define AOM_CTRL_AV1D_SET_OUTPUT_ALL_LAYERS
 AOM_CTRL_USE_TYPE(AV1_SET_INSPECTION_CALLBACK, aom_inspect_init *)
 #define AOM_CTRL_AV1_SET_INSPECTION_CALLBACK
 /*!\endcond */
