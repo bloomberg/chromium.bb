@@ -126,6 +126,17 @@ class CORE_EXPORT ExceptionState {
   virtual void ThrowRangeError(const String& message);
   virtual void ThrowTypeError(const String& message);
 
+  // These overloads reduce the binary code size because the call sites do not
+  // need the conversion by String::String(const char*) that is inlined at each
+  // call site. As there are many call sites that pass in a const char*, this
+  // size optimization is effective (32kb reduction as of June 2018).
+  // See also https://crbug.com/849743
+  void ThrowDOMException(ExceptionCode, const char* message);
+  void ThrowSecurityError(const char* sanitized_message,
+                          const char* unsanitized_message = nullptr);
+  void ThrowRangeError(const char* message);
+  void ThrowTypeError(const char* message);
+
   // Rethrows a v8::Value as an exception.
   virtual void RethrowV8Exception(v8::Local<v8::Value>);
 
