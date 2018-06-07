@@ -575,6 +575,7 @@ class PLATFORM_EXPORT ThreadState {
   template <typename T>
   friend class PrefinalizerRegistration;
   friend class TestGCMarkingScope;
+  friend class ThreadStateSchedulingTest;
 
   // Number of ThreadState's that are currently in incremental marking. The
   // counter is incremented by one when some ThreadState enters incremental
@@ -631,6 +632,8 @@ class PLATFORM_EXPORT ThreadState {
   // estimatedRemovalRatio is the estimated ratio of objects that will be no
   // longer necessary due to the navigation.
   bool ShouldSchedulePageNavigationGC(float estimated_removal_ratio);
+
+  void RescheduleIdleGC();
 
   // Internal helpers to handle memory pressure conditions.
 
