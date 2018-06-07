@@ -12,10 +12,13 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/common/media_router/media_sink.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -23,6 +26,13 @@
 #include "ui/views/window/dialog_client_view.h"
 
 namespace media_router {
+
+namespace {
+
+// This value is negative so that it doesn't overlap with a sink index.
+constexpr int kAlternativeSourceButtonId = -1;
+
+}  // namespace
 
 // static
 void CastDialogView::ShowDialog(views::View* anchor_view,
@@ -66,21 +76,38 @@ base::string16 CastDialogView::GetWindowTitle() const {
 base::string16 CastDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return sink_buttons_.empty()
-             ? base::string16()
+             ? l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_START_CASTING_BUTTON)
              : sink_buttons_.at(selected_sink_index_)->GetActionText();
 }
 
+bool CastDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
+  return !sink_buttons_.empty() &&
+         sink_buttons_.at(selected_sink_index_)->sink().state !=
+             UIMediaSinkState::CONNECTING;
+}
+
 int CastDialogView::GetDialogButtons() const {
-  return sink_buttons_.empty() ? ui::DIALOG_BUTTON_NONE : ui::DIALOG_BUTTON_OK;
+  return ui::DIALOG_BUTTON_OK;
+}
+
+views::View* CastDialogView::CreateExtraView() {
+  alternative_sources_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this,
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
+  alternative_sources_button_->set_id(kAlternativeSourceButtonId);
+  alternative_sources_button_->SetEnabled(false);
+  return alternative_sources_button_;
 }
 
 bool CastDialogView::Accept() {
   scroll_position_ = scroll_view_->GetVisibleRect().y();
   const UIMediaSink& sink = sink_buttons_.at(selected_sink_index_)->sink();
-  if (sink.allowed_actions & static_cast<int>(UICastAction::CAST_TAB)) {
-    controller_->StartCasting(sink.id, TAB_MIRROR);
-  } else if (sink.allowed_actions & static_cast<int>(UICastAction::STOP)) {
+  if (!sink.route_id.empty()) {
     controller_->StopCasting(sink.route_id);
+  } else if (base::ContainsKey(sink.cast_modes, PRESENTATION)) {
+    controller_->StartCasting(sink.id, PRESENTATION);
+  } else if (base::ContainsKey(sink.cast_modes, TAB_MIRROR)) {
+    controller_->StartCasting(sink.id, TAB_MIRROR);
   }
   return false;
 }
@@ -113,7 +140,23 @@ CastDialogView::~CastDialogView() {
 
 void CastDialogView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
-  SelectSinkAtIndex(sender->tag());
+  if (sender->tag() == kAlternativeSourceButtonId)
+    ShowAlternativeSources();
+  else
+    SelectSinkAtIndex(sender->tag());
+}
+
+bool CastDialogView::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool CastDialogView::IsCommandIdEnabled(int command_id) const {
+  return true;
+}
+
+void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
+  const UIMediaSink& sink = sink_buttons_.at(selected_sink_index_)->sink();
+  controller_->StartCasting(sink.id, static_cast<MediaCastMode>(command_id));
 }
 
 gfx::Size CastDialogView::CalculatePreferredSize() const {
@@ -187,6 +230,29 @@ views::View* CastDialogView::CreateSinkListView(
   return view;
 }
 
+void CastDialogView::ShowAlternativeSources() {
+  alternative_sources_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+  const CastModeSet& cast_modes =
+      sink_buttons_.at(selected_sink_index_)->sink().cast_modes;
+
+  if (base::ContainsKey(cast_modes, DESKTOP_MIRROR)) {
+    alternative_sources_menu_model_->AddItemWithStringId(
+        DESKTOP_MIRROR, IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE);
+  }
+  if (base::ContainsKey(cast_modes, LOCAL_FILE)) {
+    alternative_sources_menu_model_->AddItemWithStringId(
+        LOCAL_FILE, IDS_MEDIA_ROUTER_LOCAL_FILE_CAST_MODE);
+  }
+
+  alternative_sources_menu_runner_ = std::make_unique<views::MenuRunner>(
+      alternative_sources_menu_model_.get(), views::MenuRunner::COMBOBOX);
+  const gfx::Rect& screen_bounds =
+      alternative_sources_button_->GetBoundsInScreen();
+  alternative_sources_menu_runner_->RunMenuAt(
+      alternative_sources_button_->GetWidget(), nullptr, screen_bounds,
+      views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_MOUSE);
+}
+
 void CastDialogView::SelectSinkAtIndex(size_t index) {
   if (selected_sink_index_ != index &&
       selected_sink_index_ < sink_buttons_.size()) {
@@ -195,6 +261,13 @@ void CastDialogView::SelectSinkAtIndex(size_t index) {
   CastDialogSinkButton* selected_button = sink_buttons_.at(index);
   selected_button->SetSelected(true);
   selected_sink_index_ = index;
+
+  if (alternative_sources_button_) {
+    const CastModeSet& cast_modes = selected_button->sink().cast_modes;
+    alternative_sources_button_->SetEnabled(
+        base::ContainsKey(cast_modes, DESKTOP_MIRROR) ||
+        base::ContainsKey(cast_modes, LOCAL_FILE));
+  }
 
   // Update the text on the main action button.
   DialogModelChanged();

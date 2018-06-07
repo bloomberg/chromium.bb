@@ -48,39 +48,42 @@
 
   <!-- Cast Mode Picker -->
   <message name="IDS_MEDIA_ROUTER_SELECT_CAST_MODE_HEADER" desc="Header for the select cast mode view, which shows a list of cast modes that the user can select.">
-   Select source
+    Select source
   </message>
   <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_SUBHEADING" desc="Subheading for screen sharing cast modes. The subheading appears above a list of screen sharing cast modes.">
-   Share your screen
+    Share your screen
   </message>
   <message name="IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_SUBHEADING" desc="Subheading for local file cast modes. The subheading appears above a list of media cast modes.">
-   Stream a video or audio file
+    Stream a video or audio file
   </message>
   <message name="IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_TITLE" desc="Title of the local file cast mode after a local file is selected for casting.">
-   Cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>
+    Cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON" desc="Label for the button which, on click, shows non-default Cast sources (desktop, local media file).">
+    Other sources
   </message>
 
   <!-- Contextual Menu -->
   <message name="IDS_MEDIA_ROUTER_ABOUT" desc="Title of a menu item which, on click, opens a page with product information about Chromecast.">
-   About
+    About
   </message>
   <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE" desc="Title of a menu item which, on click, toggles the preference to opt in or out of cloud services.">
     Enable cloud services
   </message>
   <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of a menu item which, on click, opens a page to the Chromecast help center.">
-   Help
+    Help
   </message>
   <message name="IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION" desc="Title of a menu item which, on click, toggles whether or not the Media Router action icon is always shown. When toggled off, the icon is shown only when the Media Router dialog is open or if there is an active local Media Route or an issue.">
-   Always show icon
+    Always show icon
   </message>
   <message name="IDS_MEDIA_ROUTER_REPORT_ISSUE" desc="Title of a menu item which, on click, opens a page to give feedback or report an issue with Chromecast integration.">
-   Report an issue
+    Report an issue
   </message>
   <message name="IDS_MEDIA_ROUTER_MANAGE_DEVICES" desc="Title of a menu item which, on click, opens a page that allows the user to manage Cast devices: view, reboot, reset, and manage settings of available Cast devices, or set up new Cast devices.">
-   Manage Cast devices
+    Manage Cast devices
   </message>
   <message name="IDS_MEDIA_ROUTER_SHOWN_BY_POLICY" desc="Title of a menu item, which indicates that the Media Router action icon was added to the toolbar by the policy enabled by the user's administrator.">
-   Added by your administrator
+    Added by your administrator
   </message>
 
   <!-- First Run Flow -->
