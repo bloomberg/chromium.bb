@@ -352,15 +352,6 @@ void ThreadHeap::ReportMemoryUsageHistogram() {
   }
 }
 
-namespace {
-
-size_t CappedSizeInKB(size_t size) {
-  return std::min(size / 1024,
-                  static_cast<size_t>(std::numeric_limits<int>::max()));
-}
-
-}  // namespace
-
 void ThreadHeap::ReportMemoryUsageForTracing() {
   bool gc_tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
