@@ -643,7 +643,7 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
 
   if (IsGCForbidden()) {
     // If GC is forbidden at this point, try again.
-    ScheduleIdleGC();
+    RescheduleIdleGC();
     return;
   }
 
@@ -657,7 +657,7 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
            ->CanExceedIdleDeadlineIfRequired()) {
     // If marking is estimated to take longer than the deadline and we can't
     // exceed the deadline, then reschedule for the next idle period.
-    ScheduleIdleGC();
+    RescheduleIdleGC();
     return;
   }
 
@@ -733,21 +733,25 @@ void ThreadState::ScheduleIncrementalMarkingFinalize() {
 }
 
 void ThreadState::ScheduleIdleGC() {
-  if (GetGCState() != kNoGCScheduled)
-    return;
-  SetGCState(kIdleGCScheduled);
-  if (IsSweepingInProgress())
-    return;
   // Some threads (e.g. PPAPI thread) don't have a scheduler.
   // Also some tests can call Platform::SetCurrentPlatformForTesting() at any
-  // time, so we need to check for the scheduler here instead of
-  // ScheduleIdleGC().
-  if (!Platform::Current()->CurrentThread()->Scheduler()) {
-    SetGCState(kNoGCScheduled);
+  // time, so we need to check if it exists.
+  if (!Platform::Current()->CurrentThread()->Scheduler())
     return;
-  }
+  // Idle GC has the lowest priority so do not schedule if a GC is already
+  // scheduled or if marking is in progress.
+  if (GetGCState() != kNoGCScheduled)
+    return;
+  CompleteSweep();
+  SetGCState(kIdleGCScheduled);
   Platform::Current()->CurrentThread()->Scheduler()->PostNonNestableIdleTask(
       FROM_HERE, WTF::Bind(&ThreadState::PerformIdleGC, WTF::Unretained(this)));
+}
+
+void ThreadState::RescheduleIdleGC() {
+  DCHECK_EQ(kIdleGCScheduled, GetGCState());
+  SetGCState(kNoGCScheduled);
+  ScheduleIdleGC();
 }
 
 void ThreadState::ScheduleIdleLazySweep() {
@@ -830,11 +834,7 @@ void ThreadState::SetGCState(GCState gc_state) {
       break;
     case kIdleGCScheduled:
       DCHECK(CheckThread());
-      VERIFY_STATE_TRANSITION(
-          gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
-          gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
-          gc_state_ == kPageNavigationGCScheduled);
-      CompleteSweep();
+      VERIFY_STATE_TRANSITION(gc_state_ == kNoGCScheduled);
       break;
     default:
       NOTREACHED();
