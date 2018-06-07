@@ -586,10 +586,9 @@ sk_sp<SkColorSpace> ImageDecoder::ColorSpaceForSkImages() {
     // we xform at decode time.
     if (!color_space_for_sk_images_ && profile->has_toXYZD50) {
       // Preserve the gamut, but convert to a standard transfer function.
-      SkMatrix44 to_xyz_d50(SkMatrix44::kUninitialized_Constructor);
-      to_xyz_d50.set3x3RowMajorf(&profile->toXYZD50.vals[0][0]);
-      color_space_for_sk_images_ = SkColorSpace::MakeRGB(
-          SkColorSpace::kSRGB_RenderTargetGamma, to_xyz_d50);
+      skcms_ICCProfile with_srgb = *profile;
+      skcms_SetTransferFunction(&with_srgb, skcms_sRGB_TransferFunction());
+      color_space_for_sk_images_ = SkColorSpace::Make(with_srgb);
     }
   }
 
