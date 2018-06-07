@@ -60,7 +60,7 @@ void DeviceOrientationDispatcher::Trace(blink::Visitor* visitor) {
   PlatformEventDispatcher::Trace(visitor);
 }
 
-void DeviceOrientationDispatcher::StartListening() {
+void DeviceOrientationDispatcher::StartListening(LocalFrame* frame) {
   Platform::Current()->StartListening(GetWebPlatformEventType(), this);
 }
 

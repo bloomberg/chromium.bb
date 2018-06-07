@@ -75,7 +75,7 @@ void GamepadDispatcher::DispatchDidConnectOrDisconnectGamepad(
   NotifyControllers();
 }
 
-void GamepadDispatcher::StartListening() {
+void GamepadDispatcher::StartListening(LocalFrame* frame) {
   Platform::Current()->StartListening(kWebPlatformEventTypeGamepad, this);
 }
 

@@ -70,7 +70,7 @@ class DeviceOrientationDispatcher final
   explicit DeviceOrientationDispatcher(bool absolute);
 
   // Inherited from PlatformEventDispatcher.
-  void StartListening() override;
+  void StartListening(LocalFrame* frame) override;
   void StopListening() override;
 
   WebPlatformEventType GetWebPlatformEventType() const;

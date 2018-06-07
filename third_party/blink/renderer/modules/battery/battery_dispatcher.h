@@ -34,7 +34,7 @@ class MODULES_EXPORT BatteryDispatcher final
   void UpdateBatteryStatus(const BatteryStatus&);
 
   // Inherited from PlatformEventDispatcher.
-  void StartListening() override;
+  void StartListening(LocalFrame* frame) override;
   void StopListening() override;
 
   device::mojom::blink::BatteryMonitorPtr monitor_;

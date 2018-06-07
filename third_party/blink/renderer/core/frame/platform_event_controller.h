@@ -26,6 +26,7 @@ class CORE_EXPORT PlatformEventController : public PageVisibilityObserver {
   virtual void DidUpdateData() = 0;
 
   void Trace(blink::Visitor*) override;
+  Document* GetDocument() const { return document_; }
 
  protected:
   explicit PlatformEventController(Document*);

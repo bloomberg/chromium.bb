@@ -23,7 +23,9 @@ void PlatformEventDispatcher::AddController(
   controllers_.insert(controller);
 
   if (!is_listening_) {
-    StartListening();
+    StartListening(controller->GetDocument()
+                       ? controller->GetDocument()->GetFrame()
+                       : nullptr);
     is_listening_ = true;
   }
 }

@@ -43,7 +43,7 @@ void BatteryDispatcher::UpdateBatteryStatus(
   NotifyControllers();
 }
 
-void BatteryDispatcher::StartListening() {
+void BatteryDispatcher::StartListening(LocalFrame* frame) {
   DCHECK(!monitor_.is_bound());
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&monitor_));

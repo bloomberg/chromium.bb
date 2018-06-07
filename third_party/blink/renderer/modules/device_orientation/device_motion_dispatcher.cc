@@ -51,7 +51,7 @@ void DeviceMotionDispatcher::Trace(blink::Visitor* visitor) {
   PlatformEventDispatcher::Trace(visitor);
 }
 
-void DeviceMotionDispatcher::StartListening() {
+void DeviceMotionDispatcher::StartListening(LocalFrame* frame) {
   Platform::Current()->StartListening(kWebPlatformEventTypeDeviceMotion, this);
 }
 
