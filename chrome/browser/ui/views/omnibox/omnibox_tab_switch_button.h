@@ -24,6 +24,7 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // views::Button
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -38,6 +39,12 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   void ProvideWidthHint(size_t width);
 
  private:
+  // Consults the parent views to see if the button is selected.
+  bool IsSelected() const;
+
+  // Produces a path custom to this button for the focus ring to follow.
+  SkPath GetFocusRingPath() const;
+
   // Encapsulates the color look-up, which uses the button state (hovered,
   // etc.) and consults the parent result view.
   SkColor GetBackgroundColor() const;

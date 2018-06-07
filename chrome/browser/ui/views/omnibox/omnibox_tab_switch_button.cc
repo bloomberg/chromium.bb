@@ -50,6 +50,12 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
   set_corner_radius(CalculatePreferredSize().height() / 2.f);
   animation_->SetSlideDuration(500);
   SetElideBehavior(gfx::FADE_TAIL);
+
+  SetInstallFocusRingOnFocus(true);
+  focus_ring()->SetHasFocusPredicate([](View* view) {
+    auto* button = static_cast<OmniboxTabSwitchButton*>(view);
+    return button->IsSelected();
+  });
 }
 
 OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
@@ -100,6 +106,11 @@ gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
   return size;
 }
 
+void OmniboxTabSwitchButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  MdTextButton::OnBoundsChanged(previous_bounds);
+  focus_ring()->SetPath(GetFocusRingPath());
+}
+
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
   if (state() == STATE_NORMAL) {
     // If used to be pressed, transfer ownership.
@@ -138,10 +149,22 @@ void OmniboxTabSwitchButton::AnimationProgressed(
 }
 
 void OmniboxTabSwitchButton::UpdateBackground() {
+  focus_ring()->SchedulePaint();
   if (model_->IsButtonSelected())
     SetPressed();
   else
     SetBgColorOverride(GetBackgroundColor());
+}
+
+bool OmniboxTabSwitchButton::IsSelected() const {
+  return model_->IsButtonSelected();
+}
+
+SkPath OmniboxTabSwitchButton::GetFocusRingPath() const {
+  SkPath path;
+  path.addRRect(SkRRect::MakeRectXY(RectToSkRect(GetLocalBounds()),
+                                    height() / 2.f, height() / 2.f));
+  return path;
 }
 
 SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
@@ -152,8 +175,7 @@ SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
 }
 
 void OmniboxTabSwitchButton::SetPressed() {
-  SetBgColorOverride(color_utils::AlphaBlend(
-      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
-                      OmniboxPartState::SELECTED),
-      SK_ColorBLACK, 0.8 * 255));
+  SetBgColorOverride(GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
+                                     result_view_->GetTint(),
+                                     OmniboxPartState::NORMAL));
 }
