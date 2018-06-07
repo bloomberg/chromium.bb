@@ -14,10 +14,35 @@ namespace blink {
 
 class JSONValue;
 
-PLATFORM_EXPORT std::unique_ptr<JSONValue> ParseJSON(const String& json);
+enum class JSONParseErrorType {
+  kNoError,
+  kUnexpectedToken,
+  kSyntaxError,
+  kInvalidEscape,
+  kTooMuchNesting,
+  kUnexpectedDataAfterRoot,
+  kUnsupportedEncoding,
+};
 
-PLATFORM_EXPORT std::unique_ptr<JSONValue> ParseJSON(const String& json,
-                                                     int max_depth);
+struct PLATFORM_EXPORT JSONParseError {
+  JSONParseErrorType type;
+  int line;
+  int column;
+  String message;
+};
+
+// Parses |json| string and returns a value it represents.
+// In case of parsing failure, returns nullptr.
+// Optional error struct may be passed in, which will contain
+// error details or |kNoError| if parsing succeeded.
+PLATFORM_EXPORT std::unique_ptr<JSONValue> ParseJSON(
+    const String& json,
+    JSONParseError* opt_error = nullptr);
+
+PLATFORM_EXPORT std::unique_ptr<JSONValue> ParseJSON(
+    const String& json,
+    int max_depth,
+    JSONParseError* opt_error = nullptr);
 
 }  // namespace blink
 

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -11,20 +12,45 @@
 namespace blink {
 
 TEST(JSONParserTest, Reading) {
+  JSONParseError error;
   JSONValue* tmp_value;
   std::unique_ptr<JSONValue> root;
   std::unique_ptr<JSONValue> root2;
   String str_val;
   int int_val = 0;
 
+  // Successfull parsing returns kNoError.
+  root = ParseJSON("1", &error);
+  ASSERT_TRUE(root.get());
+  EXPECT_EQ(JSONParseErrorType::kNoError, error.type);
+  root = ParseJSON("\"string\"", &error);
+  ASSERT_TRUE(root.get());
+  EXPECT_EQ(JSONParseErrorType::kNoError, error.type);
+  root = ParseJSON("[]", &error);
+  ASSERT_TRUE(root.get());
+  EXPECT_EQ(JSONParseErrorType::kNoError, error.type);
+  root = ParseJSON("{}", &error);
+  ASSERT_TRUE(root.get());
+  EXPECT_EQ(JSONParseErrorType::kNoError, error.type);
+
   // some whitespace checking
-  root = ParseJSON("    null    ");
+  root = ParseJSON("    null    ", &error);
   ASSERT_TRUE(root.get());
   EXPECT_EQ(JSONValue::kTypeNull, root->GetType());
+  EXPECT_EQ(JSONParseErrorType::kNoError, error.type);
 
   // Invalid JSON string
-  root = ParseJSON("nu");
+  root = ParseJSON("nu", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 1, Syntax error.", error.message);
+
+  // Error reporting
+  root = ParseJSON("\n\n  nu", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 3, column: 3, Syntax error.", error.message);
+  EXPECT_EQ(JSONParseErrorType::kSyntaxError, error.type);
+  EXPECT_EQ(3, error.line);
+  EXPECT_EQ(3, error.column);
 
   // Simple bool
   root = ParseJSON("true  ");
@@ -32,8 +58,9 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(JSONValue::kTypeBoolean, root->GetType());
 
   // Embedded comment
-  root = ParseJSON("40 /*/");
-  EXPECT_FALSE(root.get());
+  root = ParseJSON("40 /*/", &error);
+  // EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Syntax error.", error.message);
   root = ParseJSON("/* comment */null");
   ASSERT_TRUE(root.get());
   EXPECT_EQ(JSONValue::kTypeNull, root->GetType());
@@ -94,12 +121,16 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(43, int_val);
 
   // According to RFC4627, oct, hex, and leading zeros are invalid JSON.
-  root = ParseJSON("043");
+  root = ParseJSON("043", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("0x43");
+  EXPECT_EQ("Line: 1, column: 2, Syntax error.", error.message);
+  root = ParseJSON("0x43", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("00");
+  EXPECT_EQ("Line: 1, column: 2, Unexpected data after root element.",
+            error.message);
+  root = ParseJSON("00", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 2, Syntax error.", error.message);
 
   // Test 0 (which needs to be special cased because of the leading zero
   // clause).
@@ -170,36 +201,52 @@ TEST(JSONParserTest, Reading) {
   EXPECT_DOUBLE_EQ(1.0, double_val);
 
   // Fractional parts must have a digit before and after the decimal point.
-  root = ParseJSON("1.");
+  root = ParseJSON("1.", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON(".1");
+  EXPECT_EQ("Line: 1, column: 3, Syntax error.", error.message);
+  root = ParseJSON(".1", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("1.e10");
+  EXPECT_EQ("Line: 1, column: 1, Syntax error.", error.message);
+  root = ParseJSON("1.e10", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 3, Syntax error.", error.message);
 
   // Exponent must have a digit following the 'e'.
-  root = ParseJSON("1e");
+  root = ParseJSON("1e", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("1E");
+  EXPECT_EQ("Line: 1, column: 3, Syntax error.", error.message);
+  root = ParseJSON("1E", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("1e1.");
+  EXPECT_EQ("Line: 1, column: 3, Syntax error.", error.message);
+  root = ParseJSON("1e1.", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("1e1.0");
+  EXPECT_EQ("Line: 1, column: 4, Unexpected data after root element.",
+            error.message);
+  root = ParseJSON("1e1.0", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Unexpected data after root element.",
+            error.message);
 
   // INF/-INF/NaN are not valid
-  root = ParseJSON("NaN");
+  root = ParseJSON("NaN", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("nan");
+  EXPECT_EQ("Line: 1, column: 1, Syntax error.", error.message);
+  root = ParseJSON("nan", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("inf");
+  EXPECT_EQ("Line: 1, column: 1, Syntax error.", error.message);
+  root = ParseJSON("inf", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 1, Syntax error.", error.message);
 
   // Invalid number formats
-  root = ParseJSON("4.3.1");
+  root = ParseJSON("4.3.1", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("4e3.1");
+  EXPECT_EQ("Line: 1, column: 4, Unexpected data after root element.",
+            error.message);
+  root = ParseJSON("4e3.1", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Unexpected data after root element.",
+            error.message);
 
   // Test string parser
   root = ParseJSON("\"hello world\"");
@@ -221,20 +268,38 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(JSONValue::kTypeString, root->GetType());
   EXPECT_TRUE(root->AsString(&str_val));
   EXPECT_EQ(" \"\\/\b\f\n\r\t\v", str_val);
+  root = ParseJSON("\"\n\"");
+  ASSERT_TRUE(root.get());
+  EXPECT_EQ(JSONValue::kTypeString, root->GetType());
+  EXPECT_TRUE(root->AsString(&str_val));
+  EXPECT_EQ("\n", str_val);
 
   // Test hex and unicode escapes including the null character.
-  root = ParseJSON("\"\\x41\\x00\\u1234\"");
+  root = ParseJSON("\"\\x41\\x00\\u1234\"", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Invalid escape sequence.", error.message);
 
   // Test invalid strings
-  root = ParseJSON("\"no closing quote");
+  root = ParseJSON("\"no closing quote", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("\"\\z invalid escape char\"");
+  EXPECT_EQ("Line: 1, column: 18, Syntax error.", error.message);
+  root = ParseJSON("\"\\z invalid escape char\"", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("\"not enough escape chars\\u123\"");
+  EXPECT_EQ("Line: 1, column: 4, Invalid escape sequence.", error.message);
+  root = ParseJSON("\"not enough escape chars\\u123\"", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("\"extra backslash at end of input\\\"");
+  EXPECT_EQ("Line: 1, column: 27, Invalid escape sequence.", error.message);
+  root = ParseJSON("\"extra backslash at end of input\\\"", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 35, Syntax error.", error.message);
+  root = ParseJSON("\"a\"extra data", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Unexpected data after root element.",
+            error.message);
+  root = ParseJSON("\"string with \n new \n lines in it\"extra data", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 3, column: 14, Unexpected data after root element.",
+            error.message);
 
   // Basic array
   root = ParseJSON("[true, false, null]");
@@ -261,20 +326,24 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(4U, list->size());
 
   // Invalid, missing close brace.
-  root = ParseJSON("[[true], [], [false, [], [null]], null");
+  root = ParseJSON("[[true], [], [false, [], [null]], null", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 39, Syntax error.", error.message);
 
   // Invalid, too many commas
-  root = ParseJSON("[true,, null]");
+  root = ParseJSON("[true,, null]", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 7, Unexpected token.", error.message);
 
   // Invalid, no commas
-  root = ParseJSON("[true null]");
+  root = ParseJSON("[true null]", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 7, Unexpected token.", error.message);
 
   // Invalid, trailing comma
-  root = ParseJSON("[true,]");
+  root = ParseJSON("[true,]", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 7, Unexpected token.", error.message);
 
   root = ParseJSON("[true]");
   ASSERT_TRUE(root.get());
@@ -290,14 +359,18 @@ TEST(JSONParserTest, Reading) {
   EXPECT_TRUE(bool_value);
 
   // Don't allow empty elements.
-  root = ParseJSON("[,]");
+  root = ParseJSON("[,]", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("[true,,]");
+  EXPECT_EQ("Line: 1, column: 2, Unexpected token.", error.message);
+  root = ParseJSON("[true,,]", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("[,true,]");
+  EXPECT_EQ("Line: 1, column: 7, Unexpected token.", error.message);
+  root = ParseJSON("[,true,]", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("[true,,false]");
+  EXPECT_EQ("Line: 1, column: 2, Unexpected token.", error.message);
+  root = ParseJSON("[true,,false]", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 7, Unexpected token.", error.message);
 
   // Test objects
   root = ParseJSON("{}");
@@ -388,30 +461,38 @@ TEST(JSONParserTest, Reading) {
   EXPECT_FALSE(root.get());
 
   // Invalid, keys must be quoted
-  root = ParseJSON("{foo:true}");
+  root = ParseJSON("{foo:true}", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 2, Syntax error.", error.message);
 
   // Invalid, trailing comma
-  root = ParseJSON("{\"a\":true,}");
+  root = ParseJSON("{\"a\":true,}", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 11, Unexpected token.", error.message);
 
   // Invalid, too many commas
-  root = ParseJSON("{\"a\":true,,\"b\":false}");
+  root = ParseJSON("{\"a\":true,,\"b\":false}", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 11, Unexpected token.", error.message);
 
   // Invalid, no separator
-  root = ParseJSON("{\"a\" \"b\"}");
+  root = ParseJSON("{\"a\" \"b\"}", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 6, Unexpected token.", error.message);
 
   // Invalid, lone comma.
-  root = ParseJSON("{,}");
+  root = ParseJSON("{,}", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("{\"a\":true,,}");
+  EXPECT_EQ("Line: 1, column: 2, Unexpected token.", error.message);
+  root = ParseJSON("{\"a\":true,,}", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("{,\"a\":true}");
+  EXPECT_EQ("Line: 1, column: 11, Unexpected token.", error.message);
+  root = ParseJSON("{,\"a\":true}", &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("{\"a\":true,,\"b\":false}");
+  EXPECT_EQ("Line: 1, column: 2, Unexpected token.", error.message);
+  root = ParseJSON("{\"a\":true,,\"b\":false}", &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 11, Unexpected token.", error.message);
 
   // Test stack overflow
   StringBuilder evil;
@@ -420,8 +501,9 @@ TEST(JSONParserTest, Reading) {
     evil.Append('[');
   for (int i = 0; i < 1000000; ++i)
     evil.Append(']');
-  root = ParseJSON(evil.ToString());
+  root = ParseJSON(evil.ToString(), &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 1001, Too much nesting.", error.message);
 
   // A few thousand adjacent lists is fine.
   StringBuilder not_evil;
@@ -438,8 +520,9 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(5001U, list->size());
 
   // Test utf8 encoded input
-  root = ParseJSON("\"\\xe7\\xbd\\x91\\xe9\\xa1\\xb5\"");
+  root = ParseJSON("\"\\xe7\\xbd\\x91\\xe9\\xa1\\xb5\"", &error);
   ASSERT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Invalid escape sequence.", error.message);
 
   // Test utf16 encoded strings.
   root = ParseJSON("\"\\u20ac3,14\"");
@@ -447,17 +530,44 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(JSONValue::kTypeString, root->GetType());
   EXPECT_TRUE(root->AsString(&str_val));
   UChar tmp2[] = {0x20ac, 0x33, 0x2c, 0x31, 0x34};
-  EXPECT_EQ(String(tmp2, arraysize(tmp2)), str_val);
+  EXPECT_EQ(String(tmp2, base::size(tmp2)), str_val);
 
   root = ParseJSON("\"\\ud83d\\udca9\\ud83d\\udc6c\"");
   ASSERT_TRUE(root.get());
   EXPECT_EQ(JSONValue::kTypeString, root->GetType());
   EXPECT_TRUE(root->AsString(&str_val));
   UChar tmp3[] = {0xd83d, 0xdca9, 0xd83d, 0xdc6c};
-  EXPECT_EQ(String(tmp3, arraysize(tmp3)), str_val);
+  EXPECT_EQ(String(tmp3, base::size(tmp3)), str_val);
+
+  // Invalid unicode in a string literal after applying escape sequences.
+  root = ParseJSON("\n\n    \"\\ud800\"", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ(
+      "Line: 3, column: 5, Unsupported encoding. JSON and all string literals "
+      "must contain valid Unicode characters.",
+      error.message);
+
+  // Invalid unicode in a JSON itself.
+  UChar tmp4[] = {0x22, 0xd800, 0x22};  // "?"
+  root = ParseJSON(String(tmp4, base::size(tmp4)), &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ(
+      "Line: 1, column: 1, Unsupported encoding. JSON and all string literals "
+      "must contain valid Unicode characters.",
+      error.message);
+
+  // Invalid unicode in a JSON itself.
+  UChar tmp5[] = {0x7b, 0x22, 0xd800, 0x22, 0x3a, 0x31, 0x7d};  // {"?":1}
+  root = ParseJSON(String(tmp5, base::size(tmp5)), &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ(
+      "Line: 1, column: 2, Unsupported encoding. JSON and all string literals "
+      "must contain valid Unicode characters.",
+      error.message);
 
   // Test literal root objects.
   root = ParseJSON("null");
+  ASSERT_TRUE(root.get());
   EXPECT_EQ(JSONValue::kTypeNull, root->GetType());
 
   root = ParseJSON("true");
@@ -481,7 +591,7 @@ TEST(JSONParserTest, InvalidSanity) {
       "/* test *", "{\"foo\"", "{\"foo\":", "  [", "\"\\u123g\"", "{\n\"eh:\n}",
       "////",      "*/**/",    "/**/",      "/*/", "//**/",       "\"\\"};
 
-  for (size_t i = 0; i < arraysize(kInvalidJson); ++i) {
+  for (size_t i = 0; i < base::size(kInvalidJson); ++i) {
     std::unique_ptr<JSONValue> result = ParseJSON(kInvalidJson[i]);
     EXPECT_FALSE(result.get());
   }
@@ -491,6 +601,7 @@ TEST(JSONParserTest, InvalidSanity) {
 // cannot be extended past that maximum.
 TEST(JSONParserTest, LimitedDepth) {
   std::unique_ptr<JSONValue> root;
+  JSONParseError error;
 
   // Test cases. Each pair is a JSON string, and the minimum depth required
   // to successfully parse that string.
@@ -516,12 +627,15 @@ TEST(JSONParserTest, LimitedDepth) {
   }
 
   // Test that everything fails to parse with depth 0
-  root = ParseJSON("", 0);
+  root = ParseJSON("", 0, &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("", -1);
+  EXPECT_EQ("Line: 1, column: 1, Syntax error.", error.message);
+  root = ParseJSON("", -1, &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON("true", 0);
+  EXPECT_EQ("Line: 1, column: 1, Syntax error.", error.message);
+  root = ParseJSON("true", 0, &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 1, Too much nesting.", error.message);
 
   // Test that the limit can be set to the constant maximum.
   StringBuilder evil;
@@ -541,10 +655,12 @@ TEST(JSONParserTest, LimitedDepth) {
     evil.Append('[');
   for (int i = 0; i < 1001; ++i)
     evil.Append(']');
-  root = ParseJSON(evil.ToString());
+  root = ParseJSON(evil.ToString(), &error);
   EXPECT_FALSE(root.get());
-  root = ParseJSON(evil.ToString(), 1001);
+  EXPECT_EQ("Line: 1, column: 1001, Too much nesting.", error.message);
+  root = ParseJSON(evil.ToString(), 1001, &error);
   EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 1001, Too much nesting.", error.message);
 }
 
 }  // namespace blink
