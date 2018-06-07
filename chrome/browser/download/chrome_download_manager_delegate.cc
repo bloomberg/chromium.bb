@@ -855,6 +855,14 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
         callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
         return;
       }
+
+      if (!download_prefs_->PromptForDownload() && web_contents) {
+        android::ChromeDuplicateDownloadInfoBarDelegate::Create(
+            InfoBarService::FromWebContents(web_contents), download,
+            suggested_path, callback);
+        return;
+      }
+
       gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
       DownloadPathReservationTracker::GetReservedPath(
           download, suggested_path, download_dir, true,
@@ -957,7 +965,7 @@ void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
   // with the filename automatically set to be the unique filename.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (result == PathValidationResult::SUCCESS) {
-    if (download_prefs_ && download_prefs_->PromptForDownload()) {
+    if (download_prefs_->PromptForDownload()) {
       ChooseDownloadLocation(
           native_window, DownloadLocationDialogType::NAME_CONFLICT, target_path,
           base::BindOnce(&OnDownloadLocationDetermined, callback));
