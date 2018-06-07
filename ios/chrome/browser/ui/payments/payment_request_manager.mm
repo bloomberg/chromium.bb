@@ -758,11 +758,10 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
           GURL(url_formatter::FormatUrlForSecurityDisplay(
               _activeWebState->GetLastCommittedURL())),
           paymentRequest->stringified_method_data())) {
-    if (paymentRequest->IsIncognito()) {
-      canMakePayment = !paymentRequest->supported_card_networks_set().empty() ||
-                       base::FeatureList::IsEnabled(
-                           payments::features::kWebPaymentsNativeApps);
-    }
+    // canMakePayment should return false if user has not allowed canMakePayment
+    // to return a truthful value.
+    canMakePayment &=
+        _browserState->GetPrefs()->GetBoolean(payments::kCanMakePaymentEnabled);
 
     [_paymentRequestJsManager
         resolveCanMakePaymentPromiseWithValue:canMakePayment

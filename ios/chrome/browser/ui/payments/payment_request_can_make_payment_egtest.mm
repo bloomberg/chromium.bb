@@ -5,8 +5,12 @@
 #include "base/ios/ios_util.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/payments/core/payment_prefs.h"
+#include "components/prefs/pref_service.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -36,6 +40,14 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 @end
 
 @implementation PaymentRequestCanMakePaymentEGTest
+
+- (void)setUp {
+  [super setUp];
+
+  // Allow canMakePayment to return a truthful value by default.
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->SetBoolean(payments::kCanMakePaymentEnabled, true);
+}
 
 #pragma mark - Tests
 
@@ -81,8 +93,7 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 }
 
 // Tests canMakePayment() when visa is required, user doesn't have a visa
-// instrument and the user is in incognito mode. In this case canMakePayment()
-// returns true.
+// instrument and the user is in incognito mode.
 - (void)testCanMakePaymentIsNotSupportedInIncognitoMode {
   // Open an Incognito tab.
   [ChromeEarlGreyUI openToolsMenu];
@@ -95,7 +106,49 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
 
-  [self waitForWebViewContainingTexts:{"true"}];
+  [self waitForWebViewContainingTexts:{"false"}];
+}
+
+// Tests canMakePayment() when visa is required, user has a visa instrument, but
+// user has not allowed canMakePayment to return a truthful value.
+- (void)testCanMakePaymentIsSupportedNoUserConsent {
+  // Disallow canMakePayment to return a truthful value.
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);
+
+  [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+
+  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+
+  [self waitForWebViewContainingTexts:{"false"}];
+}
+
+// Tests canMakePayment() when visa is required, user has a visa instrument,
+// user is in incognito mode, but user has not allowed canMakePayment to return
+// a truthful value.
+- (void)testCanMakePaymentIsSupportedInIncognitoModeNoUserConsent {
+  // Disallow canMakePayment to return a truthful value.
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);
+
+  [self addCreditCard:autofill::test::GetCreditCard()];  // visa.
+
+  // Open an Incognito tab.
+  [ChromeEarlGreyUI openToolsMenu];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kToolsMenuNewIncognitoTabId)]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
+
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
+
+  [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
+
+  [self waitForWebViewContainingTexts:{"false"}];
 }
 
 @end
@@ -108,6 +161,16 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 @end
 
 @implementation PaymentRequestCanMakePaymentExceedsQueryQuotaEGTest
+
+- (void)setUp {
+  [super setUp];
+
+  // Allow canMakePayment to return a truthful value by default.
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->SetBoolean(payments::kCanMakePaymentEnabled, true);
+}
+
+#pragma mark - Tests
 
 // Tests canMakePayment() exceeds query quota when different payment methods are
 // queried one after another.
@@ -162,6 +225,14 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 @end
 
 @implementation PaymentRequestCanMakePaymentExceedsQueryQuotaBasicaCardEGTest
+
+- (void)setUp {
+  [super setUp];
+
+  // Allow canMakePayment to return a truthful value by default.
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefs->SetBoolean(payments::kCanMakePaymentEnabled, true);
+}
 
 #pragma mark - Tests
 

@@ -11,6 +11,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/payments/core/payment_prefs.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -57,6 +58,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierOtherDevices = kSectionIdentifierEnumZero,
   SectionIdentifierWebServices,
   SectionIdentifierWebServicesFooter,
+  SectionIdentifierCanMakePayment,
   SectionIdentifierClearBrowsingData,
 };
 
@@ -68,6 +70,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeWebServicesShowSuggestions,
   ItemTypeWebServicesSendUsageData,
   ItemTypeWebServicesDoNotTrack,
+  ItemTypeCanMakePaymentSwitch,
   ItemTypeClearBrowsingDataClear,
 };
 
@@ -96,6 +99,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewSwitchItem*)showSuggestionsSwitchItem;
 - (CollectionViewItem*)showSuggestionsFooterItem;
 - (CollectionViewItem*)clearBrowsingDetailItem;
+- (CollectionViewItem*)canMakePaymentItem;
 - (CollectionViewItem*)sendUsageDetailItem;
 - (CollectionViewItem*)doNotTrackDetailItem;
 
@@ -193,6 +197,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self showSuggestionsFooterItem]
       toSectionWithIdentifier:SectionIdentifierWebServicesFooter];
 
+  // CanMakePayment Section
+  [model addSectionWithIdentifier:SectionIdentifierCanMakePayment];
+  [model addItem:[self canMakePaymentItem]
+      toSectionWithIdentifier:SectionIdentifierCanMakePayment];
+
   // Clear Browsing Section
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingData];
   [model addItem:[self clearBrowsingDetailItem]
@@ -242,6 +251,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return [self detailItemWithType:ItemTypeClearBrowsingDataClear
                           titleId:IDS_IOS_CLEAR_BROWSING_DATA_TITLE
                        detailText:nil];
+}
+
+- (CollectionViewItem*)canMakePaymentItem {
+  CollectionViewSwitchItem* canMakePaymentItem =
+      [[CollectionViewSwitchItem alloc]
+          initWithType:ItemTypeCanMakePaymentSwitch];
+  canMakePaymentItem.text =
+      l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL);
+  canMakePaymentItem.on = [self isCanMakePaymentEnabled];
+  return canMakePaymentItem;
+}
+
+- (BOOL)isCanMakePaymentEnabled {
+  return _browserState->GetPrefs()->GetBoolean(
+      payments::kCanMakePaymentEnabled);
+}
+
+- (void)setCanMakePaymentEnabled:(BOOL)isEnabled {
+  _browserState->GetPrefs()->SetBoolean(payments::kCanMakePaymentEnabled,
+                                        isEnabled);
 }
 
 - (CollectionViewItem*)sendUsageDetailItem {
@@ -296,6 +325,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [switchCell.switchView addTarget:self
                               action:@selector(showSuggestionsToggled:)
                     forControlEvents:UIControlEventValueChanged];
+  } else if (itemType == ItemTypeCanMakePaymentSwitch) {
+    CollectionViewSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+    [switchCell.switchView addTarget:self
+                              action:@selector(canMakePaymentSwitchChanged:)
+                    forControlEvents:UIControlEventValueChanged];
   }
 
   return cell;
@@ -332,6 +367,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       controller = [[ClearBrowsingDataCollectionViewController alloc]
           initWithBrowserState:_browserState];
       break;
+    case ItemTypeCanMakePaymentSwitch:
     case ItemTypeWebServicesShowSuggestions:
     default:
       break;
@@ -362,6 +398,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switch (type) {
     case ItemTypeWebServicesFooter:
     case ItemTypeWebServicesShowSuggestions:
+    case ItemTypeCanMakePaymentSwitch:
       return YES;
     default:
       return NO;
@@ -373,10 +410,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
 
-  if (item.type == ItemTypeWebServicesFooter)
+  if (item.type == ItemTypeWebServicesFooter ||
+      item.type == ItemTypeCanMakePaymentSwitch) {
     return [MDCCollectionViewCell
         cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                            forItem:item];
+  }
+
   return MDCCellDefaultOneLineHeight;
 }
 
@@ -430,6 +470,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL isOn = switchCell.switchView.isOn;
   switchItem.on = isOn;
   [_suggestionsEnabled setValue:isOn];
+}
+
+- (void)canMakePaymentSwitchChanged:(UISwitch*)sender {
+  NSIndexPath* switchPath = [self.collectionViewModel
+      indexPathForItemType:ItemTypeCanMakePaymentSwitch
+         sectionIdentifier:SectionIdentifierCanMakePayment];
+
+  CollectionViewSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<CollectionViewSwitchItem>(
+          [self.collectionViewModel itemAtIndexPath:switchPath]);
+  CollectionViewSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<CollectionViewSwitchCell>(
+          [self.collectionView cellForItemAtIndexPath:switchPath]);
+
+  DCHECK_EQ(switchCell.switchView, sender);
+  switchItem.on = sender.isOn;
+  [self setCanMakePaymentEnabled:sender.isOn];
 }
 
 #pragma mark - PrefObserverDelegate
