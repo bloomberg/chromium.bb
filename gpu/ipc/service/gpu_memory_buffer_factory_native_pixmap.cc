@@ -134,14 +134,6 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
   return image;
 }
 
-bool GpuMemoryBufferFactoryNativePixmap::SupportsCreateAnonymousImage() const {
-#if defined(USE_OZONE)
-  return true;
-#else
-  return false;
-#endif
-}
-
 scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
     const gfx::Size& size,

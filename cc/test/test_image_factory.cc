@@ -33,4 +33,14 @@ scoped_refptr<gl::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
   return image;
 }
 
+scoped_refptr<gl::GLImage> TestImageFactory::CreateAnonymousImage(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    unsigned internalformat,
+    bool* is_cleared) {
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace cc

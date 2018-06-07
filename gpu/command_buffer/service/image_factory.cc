@@ -12,10 +12,6 @@ ImageFactory::ImageFactory() = default;
 
 ImageFactory::~ImageFactory() = default;
 
-bool ImageFactory::SupportsCreateAnonymousImage() const {
-  return false;
-}
-
 scoped_refptr<gl::GLImage> ImageFactory::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,

@@ -116,6 +116,16 @@ GpuMemoryBufferFactoryDXGI::CreateImageForGpuMemoryBuffer(
   return image;
 }
 
+scoped_refptr<gl::GLImage> GpuMemoryBufferFactoryDXGI::CreateAnonymousImage(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    unsigned internalformat,
+    bool* is_cleared) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 unsigned GpuMemoryBufferFactoryDXGI::RequiredTextureType() {
   return GL_TEXTURE_2D;
 }

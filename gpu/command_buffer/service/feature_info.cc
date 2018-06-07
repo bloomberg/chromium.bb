@@ -320,13 +320,6 @@ bool IsGL_REDSupportedOnFBOs() {
   return result;
 }
 
-void FeatureInfo::EnableCHROMIUMTextureStorageImage() {
-  if (!feature_flags_.chromium_texture_storage_image) {
-    feature_flags_.chromium_texture_storage_image = true;
-    AddExtensionString("GL_CHROMIUM_texture_storage_image");
-  }
-}
-
 void FeatureInfo::EnableEXTColorBufferFloat() {
   if (!ext_color_buffer_float_available_)
     return;
@@ -463,6 +456,16 @@ void FeatureInfo::InitializeFeatures() {
   // OES_vertex_array_object is emulated if not present natively,
   // so the extension string is always exposed.
   AddExtensionString("GL_OES_vertex_array_object");
+
+  if (!disallowed_features_.gpu_memory_manager) {
+// Texture storage image is only usable with native gpu memory buffer support.
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && defined(USE_OZONE))
+    feature_flags_.chromium_texture_storage_image = true;
+    AddExtensionString("GL_CHROMIUM_texture_storage_image");
+#endif
+
+    AddExtensionString("GL_CHROMIUM_gpu_memory_manager");
+  }
 
   if (gl::HasExtension(extensions, "GL_ANGLE_translated_shader_source")) {
     feature_flags_.angle_translated_shader_source = true;
