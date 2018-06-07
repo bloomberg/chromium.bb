@@ -4,7 +4,7 @@
 
 #include "content/renderer/low_memory_mode_controller.h"
 
-#include "base/test/histogram_tester.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
