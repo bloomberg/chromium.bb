@@ -68,7 +68,7 @@ if (is_android) {
 }
 
 if (is_fuchsia) {
-  import("//third_party/fuchsia-sdk/fidl_library.gni")
+  import("//build/config/fuchsia/fidl_library.gni")
 }
 
 config("base_flags") {
