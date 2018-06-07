@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/prerender_client.h"
 
@@ -114,6 +115,12 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
   bool LoadLink(const LinkLoadParameters&,
                 Document&,
                 const NetworkHintsInterface&);
+  void LoadStylesheet(const LinkLoadParameters&,
+                      const AtomicString&,
+                      const WTF::TextEncoding&,
+                      FetchParameters::DeferOption,
+                      Document&,
+                      ResourceClient*);
   void DispatchLinkLoadingErroredAsync();
 
   enum CanLoadResources {
