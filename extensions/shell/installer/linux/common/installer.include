@@ -1,6 +1,28 @@
 # TODO(michaelpg): Dedupe common functionality with the Chrome installer. See
 # https://crbug.com/820270.
 
+# Shows the output of a given command only on failure, or when VERBOSE is set.
+log_cmd() {
+  if [ "${VERBOSE:-}" ]; then
+    "$@"
+  else
+    # Record $- into a separate variable because it gets reset in the subshell.
+    FORWARD_SHELL_OPTS=$-
+    ERREXIT=$(echo ${FORWARD_SHELL_OPTS} | grep -o e || true)
+    set +${ERREXIT}
+    CMD_OUTPUT=$("$@" 2>&1)
+    ERRCODE=$?
+    set -${ERREXIT}
+    if [ ${ERRCODE} -ne 0 ]; then
+      echo "$@"
+      echo "${CMD_OUTPUT}"
+      if [ ${ERREXIT} ]; then
+        exit ${ERRCODE}
+      fi
+    fi
+  fi
+}
+
 # Recursively replace @@include@@ template variables with the referenced file,
 # and write the resulting text to stdout.
 process_template_includes() {
@@ -105,7 +127,7 @@ get_version_info() {
 }
 
 stage_install_common() {
-  echo "Staging common install files in '${STAGEDIR}'..."
+  log_cmd echo "Staging common install files in '${STAGEDIR}'..."
 
   # Note: Changes here may also need to be applied to ChromeOS's
   # chromite/lib/chrome_util.py.
