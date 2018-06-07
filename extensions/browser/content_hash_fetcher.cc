@@ -32,11 +32,10 @@ namespace extensions {
 
 namespace internals {
 
-ContentHashFetcher::ContentHashFetcher(
-    const ContentHash::ExtensionKey& key,
-    const ContentHash::FetchParams& fetch_params)
+ContentHashFetcher::ContentHashFetcher(const ContentHash::ExtensionKey& key,
+                                       ContentHash::FetchParams fetch_params)
     : extension_key_(key),
-      fetch_params_(fetch_params),
+      fetch_params_(std::move(fetch_params)),
       response_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 void ContentHashFetcher::OnURLFetchComplete(const net::URLFetcher* source) {

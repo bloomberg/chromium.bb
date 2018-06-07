@@ -147,7 +147,7 @@ class ContentVerifier::HashHelper {
   // Must be called on IO thread. The method responds through |callback| on IO
   // thread.
   void GetContentHash(const ContentHash::ExtensionKey& extension_key,
-                      const ContentHash::FetchParams& fetch_params,
+                      ContentHash::FetchParams fetch_params,
                       bool force_missing_computed_hashes_creation,
                       ContentHashCallback callback) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -171,7 +171,8 @@ class ContentVerifier::HashHelper {
     GetExtensionFileTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            &HashHelper::ReadHashOnFileTaskRunner, extension_key, fetch_params,
+            &HashHelper::ReadHashOnFileTaskRunner, extension_key,
+            std::move(fetch_params),
             base::BindRepeating(&IsCancelledChecker::IsCancelled, checker),
             base::BindOnce(&HashHelper::DidReadHash, weak_factory_.GetWeakPtr(),
                            callback_key, checker)));
@@ -251,11 +252,11 @@ class ContentVerifier::HashHelper {
 
   static void ReadHashOnFileTaskRunner(
       const ContentHash::ExtensionKey& extension_key,
-      const ContentHash::FetchParams& fetch_params,
+      ContentHash::FetchParams fetch_params,
       const IsCancelledCallback& is_cancelled,
       ContentHash::CreatedCallback created_callback) {
     ContentHash::Create(
-        extension_key, fetch_params, is_cancelled,
+        extension_key, std::move(fetch_params), is_cancelled,
         base::BindOnce(&HashHelper::ForwardToIO, std::move(created_callback)));
   }
 
@@ -457,8 +458,8 @@ void ContentVerifier::GetContentHash(
   // Since |shutdown_on_io_| = false, GetOrCreateHashHelper() must return
   // non-nullptr instance of HashHelper.
   GetOrCreateHashHelper()->GetContentHash(
-      extension_key, fetch_params, force_missing_computed_hashes_creation,
-      std::move(callback));
+      extension_key, std::move(fetch_params),
+      force_missing_computed_hashes_creation, std::move(callback));
 }
 
 void ContentVerifier::VerifyFailed(const ExtensionId& extension_id,

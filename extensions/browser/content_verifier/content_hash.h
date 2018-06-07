@@ -71,14 +71,14 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
 
   // Parameters to fetch verified_contents.json.
   struct FetchParams {
-    net::URLRequestContextGetter* request_context;
-    GURL fetch_url;
-
     FetchParams(net::URLRequestContextGetter* request_context,
                 const GURL& fetch_url);
+    ~FetchParams();
+    FetchParams(FetchParams&&);
+    FetchParams& operator=(FetchParams&&);
 
-    FetchParams(const FetchParams& other);
-    FetchParams& operator=(const FetchParams& other);
+    net::URLRequestContextGetter* request_context;
+    GURL fetch_url;
   };
 
   using IsCancelledCallback = base::RepeatingCallback<bool(void)>;
@@ -93,7 +93,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
       base::OnceCallback<void(const scoped_refptr<ContentHash>& hash,
                               bool was_cancelled)>;
   static void Create(const ExtensionKey& key,
-                     const FetchParams& fetch_params,
+                     FetchParams fetch_params,
                      const IsCancelledCallback& is_cancelled,
                      CreatedCallback created_callback);
 
@@ -146,7 +146,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   ~ContentHash();
 
   static void FetchVerifiedContents(const ExtensionKey& extension_key,
-                                    const FetchParams& fetch_params,
+                                    FetchParams fetch_params,
                                     const IsCancelledCallback& is_cancelled,
                                     CreatedCallback created_callback);
   static void DidFetchVerifiedContents(

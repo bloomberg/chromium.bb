@@ -51,7 +51,7 @@ class ContentHashFetcher : public net::URLFetcherDelegate {
                               std::unique_ptr<std::string>)>;
 
   ContentHashFetcher(const ContentHash::ExtensionKey& extension_key,
-                     const ContentHash::FetchParams& fetch_params);
+                     ContentHash::FetchParams fetch_params);
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;

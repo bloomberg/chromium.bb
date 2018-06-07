@@ -48,10 +48,11 @@ class ContentHashWaiter {
 
   std::unique_ptr<ContentHashFetcherResult> CreateAndWaitForCallback(
       const ContentHash::ExtensionKey& key,
-      const ContentHash::FetchParams& fetch_params) {
+      ContentHash::FetchParams fetch_params) {
     GetExtensionFileTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ContentHashWaiter::CreateContentHash,
-                                  base::Unretained(this), key, fetch_params));
+        FROM_HERE,
+        base::BindOnce(&ContentHashWaiter::CreateContentHash,
+                       base::Unretained(this), key, std::move(fetch_params)));
     run_loop_.Run();
     DCHECK(result_);
     return std::move(result_);
@@ -78,8 +79,9 @@ class ContentHashWaiter {
   }
 
   void CreateContentHash(const ContentHash::ExtensionKey& key,
-                         const ContentHash::FetchParams& fetch_params) {
-    ContentHash::Create(key, fetch_params, ContentHash::IsCancelledCallback(),
+                         ContentHash::FetchParams fetch_params) {
+    ContentHash::Create(key, std::move(fetch_params),
+                        ContentHash::IsCancelledCallback(),
                         base::BindOnce(&ContentHashWaiter::CreatedCallback,
                                        base::Unretained(this)));
   }
