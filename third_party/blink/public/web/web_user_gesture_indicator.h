@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_INDICATOR_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_INDICATOR_H_
 
+#include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
@@ -56,7 +57,10 @@ class WebUserGestureIndicator {
 
   // Returns true if a consumable gesture exists and has been successfully
   // consumed.
-  BLINK_EXPORT static bool ConsumeUserGesture(WebLocalFrame*);
+  BLINK_EXPORT static bool ConsumeUserGesture(
+      WebLocalFrame*,
+      UserActivationUpdateSource update_source =
+          UserActivationUpdateSource::kRenderer);
 
   // Returns true if a user gesture was processed on the provided frame since
   // the time the frame was loaded.
