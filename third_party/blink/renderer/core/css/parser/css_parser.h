@@ -47,26 +47,29 @@ class CORE_EXPORT CSSParser {
                                    MutableCSSPropertyValueSet*,
                                    const String&);
 
-  static bool ParseValue(MutableCSSPropertyValueSet*,
-                         CSSPropertyID unresolved_property,
-                         const String&,
-                         bool important,
-                         SecureContextMode);
-  static bool ParseValue(MutableCSSPropertyValueSet*,
-                         CSSPropertyID unresolved_property,
-                         const String&,
-                         bool important,
-                         SecureContextMode,
-                         StyleSheetContents*);
+  static MutableCSSPropertyValueSet::SetResult ParseValue(
+      MutableCSSPropertyValueSet*,
+      CSSPropertyID unresolved_property,
+      const String&,
+      bool important,
+      SecureContextMode);
+  static MutableCSSPropertyValueSet::SetResult ParseValue(
+      MutableCSSPropertyValueSet*,
+      CSSPropertyID unresolved_property,
+      const String&,
+      bool important,
+      SecureContextMode,
+      StyleSheetContents*);
 
-  static bool ParseValueForCustomProperty(MutableCSSPropertyValueSet*,
-                                          const AtomicString& property_name,
-                                          const PropertyRegistry*,
-                                          const String& value,
-                                          bool important,
-                                          SecureContextMode,
-                                          StyleSheetContents*,
-                                          bool is_animation_tainted);
+  static MutableCSSPropertyValueSet::SetResult ParseValueForCustomProperty(
+      MutableCSSPropertyValueSet*,
+      const AtomicString& property_name,
+      const PropertyRegistry*,
+      const String& value,
+      bool important,
+      SecureContextMode,
+      StyleSheetContents*,
+      bool is_animation_tainted);
 
   // This is for non-shorthands only
   static const CSSValue* ParseSingleValue(CSSPropertyID,
@@ -101,11 +104,12 @@ class CORE_EXPORT CSSParser {
                                                CSSParserObserver&);
 
  private:
-  static bool ParseValue(MutableCSSPropertyValueSet*,
-                         CSSPropertyID unresolved_property,
-                         const String&,
-                         bool important,
-                         const CSSParserContext*);
+  static MutableCSSPropertyValueSet::SetResult ParseValue(
+      MutableCSSPropertyValueSet*,
+      CSSPropertyID unresolved_property,
+      const String&,
+      bool important,
+      const CSSParserContext*);
 };
 
 }  // namespace blink

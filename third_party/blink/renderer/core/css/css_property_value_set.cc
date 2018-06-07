@@ -366,11 +366,10 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
   }
 
   // When replacing an existing property value, this moves the property to the
-  // end of the list.
-  bool parsed_and_changed =
-      CSSParser::ParseValue(this, unresolved_property, value, important,
-                            secure_context_mode, context_style_sheet);
-  return SetResult{parsed_and_changed, parsed_and_changed};
+  // end of the list. Firefox preserves the position, and MSIE moves the
+  // property to the beginning.
+  return CSSParser::ParseValue(this, unresolved_property, value, important,
+                               secure_context_mode, context_style_sheet);
 }
 
 MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
@@ -384,12 +383,11 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
   if (value.IsEmpty()) {
     bool did_parse = true;
     bool did_change = RemoveProperty(custom_property_name);
-    return SetResult{did_parse, did_change};
+    return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
   }
-  bool parsed_and_changed = CSSParser::ParseValueForCustomProperty(
+  return CSSParser::ParseValueForCustomProperty(
       this, custom_property_name, registry, value, important,
       secure_context_mode, context_style_sheet, is_animation_tainted);
-  return SetResult{parsed_and_changed, parsed_and_changed};
 }
 
 void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
@@ -410,21 +408,31 @@ void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
   }
 }
 
-void MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property) {
-  if (property.Id() == CSSPropertyVariable) {
-    RemoveProperty(ToCSSCustomPropertyDeclaration(property.Value())->GetName());
-  } else {
-    RemoveProperty(property.Id());
+bool MutableCSSPropertyValueSet::SetProperty(const CSSPropertyValue& property,
+                                             CSSPropertyValue* slot) {
+  const AtomicString& name =
+      (property.Id() == CSSPropertyVariable)
+          ? ToCSSCustomPropertyDeclaration(property.Value())->GetName()
+          : g_null_atom;
+  CSSPropertyValue* to_replace =
+      slot ? slot : FindCSSPropertyWithID(property.Id(), name);
+  if (to_replace && *to_replace == property)
+    return false;
+  if (to_replace) {
+    *to_replace = property;
+    return true;
   }
   property_vector_.push_back(property);
+  return true;
 }
 
-void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
+bool MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,
                                              CSSValueID identifier,
                                              bool important) {
   SetProperty(CSSPropertyValue(CSSProperty::Get(property_id),
                                *CSSIdentifierValue::Create(identifier),
                                important));
+  return true;
 }
 
 void MutableCSSPropertyValueSet::ParseDeclarationList(
@@ -445,20 +453,21 @@ void MutableCSSPropertyValueSet::ParseDeclarationList(
   CSSParser::ParseDeclarationList(context, this, style_declaration);
 }
 
-void MutableCSSPropertyValueSet::AddParsedProperties(
+bool MutableCSSPropertyValueSet::AddParsedProperties(
     const HeapVector<CSSPropertyValue, 256>& properties) {
+  bool changed = false;
   property_vector_.ReserveCapacity(property_vector_.size() + properties.size());
   for (unsigned i = 0; i < properties.size(); ++i)
-    SetProperty(properties[i]);
+    changed |= SetProperty(properties[i]);
+  return changed;
 }
 
 bool MutableCSSPropertyValueSet::AddRespectingCascade(
     const CSSPropertyValue& property) {
   // Only add properties that have no !important counterpart present
-  if (PropertyIsImportant(property.Id()) && !property.IsImportant())
-    return false;
-  SetProperty(property);
-  return true;
+  if (!PropertyIsImportant(property.Id()) || property.IsImportant())
+    return SetProperty(property);
+  return false;
 }
 
 String CSSPropertyValueSet::AsText() const {
@@ -470,8 +479,15 @@ void MutableCSSPropertyValueSet::MergeAndOverrideOnConflict(
   unsigned size = other->PropertyCount();
   for (unsigned n = 0; n < size; ++n) {
     PropertyReference to_merge = other->PropertyAt(n);
-    SetProperty(
-        CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()));
+    // TODO(leviw): This probably doesn't work correctly with Custom Properties
+    CSSPropertyValue* old = FindCSSPropertyWithID(to_merge.Id());
+    if (old) {
+      SetProperty(
+          CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()), old);
+    } else {
+      property_vector_.push_back(
+          CSSPropertyValue(to_merge.PropertyMetadata(), to_merge.Value()));
+    }
   }
 }
 
