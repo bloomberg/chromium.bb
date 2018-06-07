@@ -199,7 +199,7 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
 
   recorder_.reset();
   SkSurfaceCharacterization* characterization = nullptr;
-  std::unique_ptr<base::WaitableEvent> event;
+  base::Optional<base::WaitableEvent> event;
   if (characterization_.isValid()) {
     characterization_ =
         characterization_.createResized(size.width(), size.height());
@@ -208,18 +208,18 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
     // TODO(penghuang): avoid blocking compositor thread.
     // We don't have a valid surface characterization, so we have to wait
     // until reshape is finished on Gpu thread.
-    event = std::make_unique<base::WaitableEvent>(
-        base::WaitableEvent::ResetPolicy::MANUAL,
-        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    event.emplace(base::WaitableEvent::ResetPolicy::MANUAL,
+                  base::WaitableEvent::InitialState::NOT_SIGNALED);
   }
 
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
-                                 base::Unretained(impl_on_gpu_.get()), size,
-                                 device_scale_factor, color_space, has_alpha,
-                                 use_stencil, characterization, event.get());
+  auto callback =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
+                     base::Unretained(impl_on_gpu_.get()), size,
+                     device_scale_factor, color_space, has_alpha, use_stencil,
+                     characterization, base::OptionalOrNullptr(event));
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
 

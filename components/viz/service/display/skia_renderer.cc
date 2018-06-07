@@ -78,7 +78,7 @@ class SkiaRenderer::ScopedSkImageBuilder {
   const SkImage* sk_image() const { return sk_image_; }
 
  private:
-  std::unique_ptr<DisplayResourceProvider::ScopedReadLockSkImage> lock_;
+  base::Optional<DisplayResourceProvider::ScopedReadLockSkImage> lock_;
   const SkImage* sk_image_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSkImageBuilder);
@@ -93,8 +93,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
   if (!skia_renderer->is_using_ddl() || skia_renderer->non_root_surface_ ||
       !IsTextureResource(resource_provider, resource_id)) {
     // TODO(penghuang): remove this code when DDL is used everywhere.
-    lock_ = std::make_unique<DisplayResourceProvider::ScopedReadLockSkImage>(
-        resource_provider, resource_id);
+    lock_.emplace(resource_provider, resource_id);
     sk_image_ = lock_->sk_image();
   } else {
     // Look up the image from promise_images_by resource_id and return the
