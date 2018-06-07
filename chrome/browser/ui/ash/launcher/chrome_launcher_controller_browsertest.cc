@@ -976,9 +976,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateApp) {
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app1"));
 
-  controller_->ActivateApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0);
+  controller_->ActivateApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0,
+                           display::kInvalidDisplayId);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  controller_->ActivateApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0);
+  controller_->ActivateApp(extension->id(), ash::LAUNCH_FROM_UNKNOWN, 0,
+                           display::kInvalidDisplayId);
   EXPECT_EQ(tab_count, tab_strip->count());
 }
 
@@ -1852,8 +1854,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
             shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
 
   // Now use the launcher controller to activate the apps.
-  controller_->ActivateApp(hosted_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
-  controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
+  controller_->ActivateApp(hosted_app->id(), ash::LAUNCH_FROM_APP_LIST, 0,
+                           display::kInvalidDisplayId);
+  controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0,
+                           display::kInvalidDisplayId);
 
   // There should be no new browsers or tabs as both apps were already open.
   EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
@@ -1903,8 +1907,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
             shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
 
   // Now use the launcher controller to activate the apps.
-  controller_->ActivateApp(hosted_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
-  controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
+  controller_->ActivateApp(hosted_app->id(), ash::LAUNCH_FROM_APP_LIST, 0,
+                           display::kInvalidDisplayId);
+  controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0,
+                           display::kInvalidDisplayId);
 
   // There should be two new browsers.
   EXPECT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));
