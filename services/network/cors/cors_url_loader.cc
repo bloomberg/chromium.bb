@@ -284,10 +284,11 @@ void CORSURLLoader::OnUpstreamConnectionError() {
 
 void CORSURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
   forwarding_client_->OnComplete(status);
-  forwarding_client_.reset();
 
   // Close pipes to ignore possible subsequent callback invocations.
   network_client_binding_.Close();
+
+  forwarding_client_.reset();
   network_loader_.reset();
 }
 
