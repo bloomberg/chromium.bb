@@ -9,7 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/handoff/pref_names_ios.h"
+#include "components/payments/core/payment_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/application_context.h"
@@ -43,6 +45,10 @@ class PrivacyCollectionViewControllerTest
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPrefService(CreatePrefService());
     chrome_browser_state_ = test_cbs_builder.Build();
+
+    // Toggle off payments::kCanMakePaymentEnabled.
+    chrome_browser_state_->GetPrefs()->SetBoolean(
+        payments::kCanMakePaymentEnabled, false);
 
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     initialValueForSpdyProxyEnabled_ =
@@ -87,7 +93,7 @@ class PrivacyCollectionViewControllerTest
 // and sections.
 TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
   CheckController();
-  EXPECT_EQ(4, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
 
   int sectionIndex = 0;
   EXPECT_EQ(1, NumberOfItemsInSection(sectionIndex));
@@ -130,6 +136,12 @@ TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
   sectionIndex++;
   EXPECT_EQ(1, NumberOfItemsInSection(sectionIndex));
   CheckSectionFooterWithId(IDS_IOS_OPTIONS_PRIVACY_FOOTER, sectionIndex);
+
+  sectionIndex++;
+  EXPECT_EQ(1, NumberOfItemsInSection(sectionIndex));
+  CheckSwitchCellStateAndTitle(
+      NO, l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL),
+      sectionIndex, 0);
 
   sectionIndex++;
   EXPECT_EQ(1, NumberOfItemsInSection(sectionIndex));
