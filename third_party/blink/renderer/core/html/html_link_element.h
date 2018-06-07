@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
 namespace blink {
 
@@ -101,6 +102,10 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
   // For LinkStyle
   bool LoadLink(const LinkLoadParameters&);
+  void LoadStylesheet(const LinkLoadParameters&,
+                      const WTF::TextEncoding&,
+                      FetchParameters::DeferOption,
+                      ResourceClient*);
   bool IsAlternate() const {
     return GetLinkStyle()->IsUnset() && rel_attribute_.IsAlternate();
   }

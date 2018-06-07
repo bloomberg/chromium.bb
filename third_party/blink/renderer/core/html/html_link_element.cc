@@ -134,6 +134,14 @@ bool HTMLLinkElement::LoadLink(const LinkLoadParameters& params) {
                                 NetworkHintsInterfaceImpl());
 }
 
+void HTMLLinkElement::LoadStylesheet(const LinkLoadParameters& params,
+                                     const WTF::TextEncoding& charset,
+                                     FetchParameters::DeferOption defer_option,
+                                     ResourceClient* link_client) {
+  return link_loader_->LoadStylesheet(params, localName(), charset,
+                                      defer_option, GetDocument(), link_client);
+}
+
 LinkResource* HTMLLinkElement::LinkResourceToProcess() {
   if (!ShouldLoadLink()) {
     // If we shouldn't load the link, but the link is already of type

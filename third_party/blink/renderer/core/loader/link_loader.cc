@@ -51,13 +51,13 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/link_fetch_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
@@ -691,6 +691,55 @@ bool LinkLoader::LoadLink(
     prerender_.Clear();
   }
   return true;
+}
+
+void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
+                                const AtomicString& local_name,
+                                const WTF::TextEncoding& charset,
+                                FetchParameters::DeferOption defer_option,
+                                Document& document,
+                                ResourceClient* link_client) {
+  ResourceRequest resource_request(document.CompleteURL(params.href));
+  ReferrerPolicy referrer_policy = params.referrer_policy;
+  if (referrer_policy != kReferrerPolicyDefault) {
+    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+        referrer_policy, params.href, document.OutgoingReferrer()));
+  }
+
+  mojom::FetchImportanceMode importance_mode =
+      GetFetchImportanceAttributeValue(params.importance);
+  DCHECK(importance_mode == mojom::FetchImportanceMode::kImportanceAuto ||
+         RuntimeEnabledFeatures::PriorityHintsEnabled());
+  resource_request.SetFetchImportanceMode(importance_mode);
+
+  ResourceLoaderOptions options;
+  options.initiator_info.name = local_name;
+  FetchParameters link_fetch_params(resource_request, options);
+  link_fetch_params.SetCharset(charset);
+
+  link_fetch_params.SetDefer(defer_option);
+
+  link_fetch_params.SetContentSecurityPolicyNonce(params.nonce);
+
+  CrossOriginAttributeValue cross_origin = params.cross_origin;
+  if (cross_origin != kCrossOriginAttributeNotSet) {
+    link_fetch_params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
+                                                  cross_origin);
+  }
+
+  String integrity_attr = params.integrity;
+  if (!integrity_attr.IsEmpty()) {
+    IntegrityMetadataSet metadata_set;
+    SubresourceIntegrity::ParseIntegrityAttribute(
+        integrity_attr, SubresourceIntegrityHelper::GetFeatures(&document),
+        metadata_set);
+    link_fetch_params.SetIntegrityMetadata(metadata_set);
+    link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
+        integrity_attr);
+  }
+
+  CSSStyleSheetResource::Fetch(link_fetch_params, document.Fetcher(),
+                               link_client);
 }
 
 void LinkLoader::DispatchLinkLoadingErroredAsync() {

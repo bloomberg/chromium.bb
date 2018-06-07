@@ -17,8 +17,6 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -254,11 +252,11 @@ void LinkStyle::SetCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
 }
 
 LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
-    const LinkLoadParameters& parameters,
+    const LinkLoadParameters& params,
     const WTF::TextEncoding& charset) {
   if (disabled_state_ == kDisabled || !owner_->RelAttribute().IsStyleSheet() ||
-      !StyleSheetTypeIsSupported(parameters.type) || !ShouldLoadResource() ||
-      !parameters.href.IsValid())
+      !StyleSheetTypeIsSupported(params.type) || !ShouldLoadResource() ||
+      !params.href.IsValid())
     return kNotNeeded;
 
   if (GetResource()) {
@@ -292,51 +290,18 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
                   owner_->IsCreatedByParser();
   AddPendingSheet(blocking ? kBlocking : kNonBlocking);
 
-  // TODO(domfarolino): move the below fetching logic to
-  // LinkLoader::LoadStylesheet
-  ResourceRequest resource_request(GetDocument().CompleteURL(parameters.href));
-  ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
-  if (referrer_policy != kReferrerPolicyDefault) {
-    resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        referrer_policy, parameters.href, GetDocument().OutgoingReferrer()));
+  if (params.cross_origin != kCrossOriginAttributeNotSet) {
+    SetFetchFollowingCORS();
   }
-
-  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
-    resource_request.SetFetchImportanceMode(
-        GetFetchImportanceAttributeValue(owner_->ImportanceValue()));
-  }
-
-  ResourceLoaderOptions options;
-  options.initiator_info.name = owner_->localName();
-  FetchParameters params(resource_request, options);
-  params.SetCharset(charset);
 
   // Load stylesheets that are not needed for the layout immediately with low
   // priority.  When the link element is created by scripts, load the
   // stylesheets asynchronously but in high priority.
-  if (!media_query_matches || owner_->IsAlternate())
-    params.SetDefer(FetchParameters::kLazyLoad);
+  FetchParameters::DeferOption defer_option =
+      !media_query_matches || owner_->IsAlternate() ? FetchParameters::kLazyLoad
+                                                    : FetchParameters::kNoDefer;
 
-  params.SetContentSecurityPolicyNonce(owner_->nonce());
-
-  CrossOriginAttributeValue cross_origin =
-      GetCrossOriginAttributeValue(owner_->FastGetAttribute(crossoriginAttr));
-  if (cross_origin != kCrossOriginAttributeNotSet) {
-    params.SetCrossOriginAccessControl(GetDocument().GetSecurityOrigin(),
-                                       cross_origin);
-    SetFetchFollowingCORS();
-  }
-
-  String integrity_attr = owner_->FastGetAttribute(integrityAttr);
-  if (!integrity_attr.IsEmpty()) {
-    IntegrityMetadataSet metadata_set;
-    SubresourceIntegrity::ParseIntegrityAttribute(
-        integrity_attr, SubresourceIntegrityHelper::GetFeatures(&GetDocument()),
-        metadata_set);
-    params.SetIntegrityMetadata(metadata_set);
-    params.MutableResourceRequest().SetFetchIntegrity(integrity_attr);
-  }
-  CSSStyleSheetResource::Fetch(params, GetDocument().Fetcher(), this);
+  owner_->LoadStylesheet(params, charset, defer_option, this);
 
   if (loading_ && !GetResource()) {
     // Fetch() synchronous failure case.
