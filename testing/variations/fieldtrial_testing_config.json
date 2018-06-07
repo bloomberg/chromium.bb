@@ -370,6 +370,27 @@
             ]
         }
     ],
+    "AudioService": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Standalone",
+                    "params": {
+                        "teardown_timeout_s": "300"
+                    },
+                    "enable_features": [
+                        "AudioServiceAudioStreams",
+                        "AudioServiceOutOfProcess"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillCreditCardBankNameDisplay": [
         {
             "platforms": [
