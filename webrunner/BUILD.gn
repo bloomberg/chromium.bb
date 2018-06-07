@@ -96,7 +96,7 @@ repack("webrunner_pak") {
 }
 
 fidl_library("fidl") {
-  library_name = "fuchsia.web"
+  library_name = "chromium.web"
 
   sources = [
     "fidl/context.fidl",
