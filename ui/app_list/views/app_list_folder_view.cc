@@ -583,9 +583,8 @@ void AppListFolderView::UpdatePreferredBounds() {
                         preferred_bounds_.CenterPoint());
   preferred_bounds_.AdjustToFit(container_view_->GetContentsBounds());
 
-  keyboard::KeyboardController* const keyboard_controller =
-      keyboard::KeyboardController::GetInstance();
-  if (keyboard_controller &&
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->enabled() &&
       contents_view_->app_list_view()->onscreen_keyboard_shown()) {
     // This view should be on top of on-screen keyboard to prevent the folder
     // title from being blocked.

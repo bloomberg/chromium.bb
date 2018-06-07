@@ -217,6 +217,7 @@ test("app_list_unittests") {
     "//ui/events:test_support",
     "//ui/gfx:test_support",
     "//ui/gl:test_support",
+    "//ui/keyboard",
     "//ui/resources",
     "//ui/views",
     "//ui/views:test_support",
