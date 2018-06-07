@@ -44,6 +44,10 @@ class TestServiceImpl : public mojom::TestService {
     base::Process::TerminateCurrentProcessImmediately(0);
   }
 
+  void DoCrashImmediately(DoCrashImmediatelyCallback callback) override {
+    IMMEDIATE_CRASH();
+  }
+
   void CreateFolder(CreateFolderCallback callback) override {
     // Note: This is used to check if the sandbox is disabled or not since
     //       creating a folder is forbidden when it is enabled.

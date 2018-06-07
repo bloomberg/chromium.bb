@@ -35,6 +35,7 @@ class TestService : public service_manager::Service, public mojom::TestService {
   // TestService:
   void DoSomething(DoSomethingCallback callback) override;
   void DoTerminateProcess(DoTerminateProcessCallback callback) override;
+  void DoCrashImmediately(DoCrashImmediatelyCallback callback) override;
   void CreateFolder(CreateFolderCallback callback) override;
   void GetRequestorName(GetRequestorNameCallback callback) override;
   void CreateSharedBuffer(const std::string& message,

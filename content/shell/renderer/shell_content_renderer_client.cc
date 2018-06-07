@@ -76,6 +76,10 @@ class TestServiceImpl : public mojom::TestService {
     NOTREACHED();
   }
 
+  void DoCrashImmediately(DoCrashImmediatelyCallback callback) override {
+    NOTREACHED();
+  }
+
   void CreateFolder(CreateFolderCallback callback) override { NOTREACHED(); }
 
   void GetRequestorName(GetRequestorNameCallback callback) override {

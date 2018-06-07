@@ -12,6 +12,10 @@ interface TestService {
   // a connection error for the utility process.
   DoTerminateProcess() => ();
 
+  // Crashes the current process. Meant to test that crash notifications are
+  // being sent correctly.
+  DoCrashImmediately() => ();
+
   // Tries to create a temporary folder. Requires a sandbox to succeed.
   CreateFolder() => (bool succeeded);
 
