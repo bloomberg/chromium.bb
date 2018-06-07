@@ -26,6 +26,7 @@
 #include "components/ntp_tiles/icon_cacher_impl.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
+#include "content/public/browser/storage_partition.h"
 
 using suggestions::SuggestionsServiceFactory;
 
@@ -127,6 +128,7 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
           LargeIconServiceFactory::GetForBrowserContext(profile),
           std::make_unique<image_fetcher::ImageFetcherImpl>(
               std::make_unique<suggestions::ImageDecoderImpl>(),
-              profile->GetRequestContext())),
+              content::BrowserContext::GetDefaultStoragePartition(profile)
+                  ->GetURLLoaderFactoryForBrowserProcess())),
       std::make_unique<SupervisorBridge>(profile));
 }
