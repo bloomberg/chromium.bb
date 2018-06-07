@@ -2480,19 +2480,15 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                        !(!is_inter && x->use_default_intra_tx_type) &&
                        !(is_inter && x->use_default_inter_tx_type) &&
                        cpi->sf.tx_type_search.prune_mode > NO_PRUNE;
-  if (do_prune) {
+  if (do_prune && is_inter) {
     if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE) {
-      if (is_inter) {
-        prune = prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col,
-                            tx_set_type, cpi->sf.tx_type_search.prune_mode);
-      }
+      prune = prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col,
+                          tx_set_type, cpi->sf.tx_type_search.prune_mode);
     } else {
-      if (is_inter) prune = x->tx_search_prune[tx_set_type];
+      prune = x->tx_search_prune[tx_set_type];
     }
   }
 
-  int allowed_tx_mask[TX_TYPES] = { 0 };  // 1: allow; 0: skip.
-  int allowed_tx_num = 0;
   TX_TYPE uv_tx_type = DCT_DCT;
   if (plane) {
     // tx_type of PLANE_TYPE_UV should be the same as PLANE_TYPE_Y
@@ -2500,37 +2496,34 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size,
                         cm->reduced_tx_set_used);
   }
+  if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32) {
+    txk_start = txk_end = DCT_DCT;
+  }
 
+  int8_t allowed_tx_mask[TX_TYPES] = { 0 };  // 1: allow; 0: skip.
+  int allowed_tx_num = 0;
+  if (fast_tx_search) {
+    allowed_tx_mask[DCT_DCT] = 1;
+    allowed_tx_mask[H_DCT] = 1;
+    allowed_tx_mask[V_DCT] = 1;
+  } else {
+    memset(allowed_tx_mask + txk_start, 1, txk_end - txk_start + 1);
+  }
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
-    allowed_tx_mask[tx_type] = 1;
     if (do_prune) {
       if (!do_tx_type_search(tx_type, prune, cpi->sf.tx_type_search.prune_mode))
         allowed_tx_mask[tx_type] = 0;
     }
-    if (fast_tx_search && tx_type != DCT_DCT && tx_type != H_DCT &&
-        tx_type != V_DCT)
-      allowed_tx_mask[tx_type] = 0;
-    if (plane == 0) {
-      if (!is_inter && x->use_default_intra_tx_type &&
-          tx_type != get_default_tx_type(0, xd, tx_size))
+    if (plane == 0 && allowed_tx_mask[tx_type]) {
+      if (!av1_ext_tx_used[tx_set_type][tx_type])
         allowed_tx_mask[tx_type] = 0;
-      if (is_inter && x->use_default_inter_tx_type &&
-          tx_type != get_default_tx_type(0, xd, tx_size))
+      else if (!is_inter && x->use_default_intra_tx_type &&
+               tx_type != get_default_tx_type(0, xd, tx_size))
         allowed_tx_mask[tx_type] = 0;
-
-      if (allowed_tx_mask[tx_type]) {
-        mbmi->txk_type[txk_type_idx] = tx_type;
-        const TX_TYPE ref_tx_type =
-            av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col,
-                            tx_size, cm->reduced_tx_set_used);
-        if (tx_type != ref_tx_type) {
-          // use av1_get_tx_type() to check if the tx_type is valid for the
-          // current mode if it's not, we skip it here.
-          allowed_tx_mask[tx_type] = 0;
-        }
-      }
+      else if (is_inter && x->use_default_inter_tx_type &&
+               tx_type != get_default_tx_type(0, xd, tx_size))
+        allowed_tx_mask[tx_type] = 0;
     }
-
     allowed_tx_num += allowed_tx_mask[tx_type];
   }
   // Need to have at least one transform type allowed.
