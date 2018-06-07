@@ -10,6 +10,197 @@
 chrome.fileManagerPrivate = {};
 
 /** @enum {string} */
+chrome.fileManagerPrivate.VolumeType = {
+  DRIVE: 'drive',
+  DOWNLOADS: 'downloads',
+  REMOVABLE: 'removable',
+  ARCHIVE: 'archive',
+  PROVIDED: 'provided',
+  MTP: 'mtp',
+  MEDIA_VIEW: 'media_view',
+  CROSTINI: 'crostini',
+  ANDROID_FILES: 'android_files',
+  TESTING: 'testing',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.DeviceType = {
+  USB: 'usb',
+  SD: 'sd',
+  OPTICAL: 'optical',
+  MOBILE: 'mobile',
+  UNKNOWN: 'unknown',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.MountCondition = {
+  UNKNOWN: 'unknown',
+  UNSUPPORTED: 'unsupported',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.MountContext = {
+  USER: 'user',
+  AUTO: 'auto',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.MountCompletedEventType = {
+  MOUNT: 'mount',
+  UNMOUNT: 'unmount',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.MountCompletedStatus = {
+  SUCCESS: 'success',
+  ERROR_UNKNOWN: 'error_unknown',
+  ERROR_INTERNAL: 'error_internal',
+  ERROR_INVALID_ARGUMENT: 'error_invalid_argument',
+  ERROR_INVALID_PATH: 'error_invalid_path',
+  ERROR_PATH_ALREADY_MOUNTED: 'error_path_already_mounted',
+  ERROR_PATH_NOT_MOUNTED: 'error_path_not_mounted',
+  ERROR_DIRECTORY_CREATION_FAILED: 'error_directory_creation_failed',
+  ERROR_INVALID_MOUNT_OPTIONS: 'error_invalid_mount_options',
+  ERROR_INVALID_UNMOUNT_OPTIONS: 'error_invalid_unmount_options',
+  ERROR_INSUFFICIENT_PERMISSIONS: 'error_insufficient_permissions',
+  ERROR_MOUNT_PROGRAM_NOT_FOUND: 'error_mount_program_not_found',
+  ERROR_MOUNT_PROGRAM_FAILED: 'error_mount_program_failed',
+  ERROR_INVALID_DEVICE_PATH: 'error_invalid_device_path',
+  ERROR_UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
+  ERROR_UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
+  ERROR_INVALID_ARCHIVE: 'error_invalid_archive',
+  ERROR_AUTHENTICATION: 'error_authentication',
+  ERROR_PATH_UNMOUNTED: 'error_path_unmounted',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.TransferState = {
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.CopyProgressStatusType = {
+  BEGIN_COPY_ENTRY: 'begin_copy_entry',
+  END_COPY_ENTRY: 'end_copy_entry',
+  PROGRESS: 'progress',
+  SUCCESS: 'success',
+  ERROR: 'error',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.FileWatchEventType = {
+  CHANGED: 'changed',
+  ERROR: 'error',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.ChangeType = {
+  ADD_OR_UPDATE: 'add_or_update',
+  DELETE: 'delete',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.SearchType = {
+  EXCLUDE_DIRECTORIES: 'EXCLUDE_DIRECTORIES',
+  SHARED_WITH_ME: 'SHARED_WITH_ME',
+  OFFLINE: 'OFFLINE',
+  ALL: 'ALL',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.ZoomOperationType = {
+  IN: 'in',
+  OUT: 'out',
+  RESET: 'reset',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.InspectionType = {
+  NORMAL: 'normal',
+  CONSOLE: 'console',
+  ELEMENT: 'element',
+  BACKGROUND: 'background',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.DeviceEventType = {
+  DISABLED: 'disabled',
+  REMOVED: 'removed',
+  HARD_UNPLUGGED: 'hard_unplugged',
+  FORMAT_START: 'format_start',
+  FORMAT_SUCCESS: 'format_success',
+  FORMAT_FAIL: 'format_fail',
+  RENAME_START: 'rename_start',
+  RENAME_SUCCESS: 'rename_success',
+  RENAME_FAIL: 'rename_fail',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.DriveSyncErrorType = {
+  DELETE_WITHOUT_PERMISSION: 'delete_without_permission',
+  SERVICE_UNAVAILABLE: 'service_unavailable',
+  NO_SERVER_SPACE: 'no_server_space',
+  MISC: 'misc',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.TaskResult = {
+  OPENED: 'opened',
+  MESSAGE_SENT: 'message_sent',
+  FAILED: 'failed',
+  EMPTY: 'empty',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.DriveShareType = {
+  CAN_EDIT: 'can_edit',
+  CAN_COMMENT: 'can_comment',
+  CAN_VIEW: 'can_view',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.EntryPropertyName = {
+  SIZE: 'size',
+  MODIFICATION_TIME: 'modificationTime',
+  MODIFICATION_BY_ME_TIME: 'modificationByMeTime',
+  THUMBNAIL_URL: 'thumbnailUrl',
+  CROPPED_THUMBNAIL_URL: 'croppedThumbnailUrl',
+  IMAGE_WIDTH: 'imageWidth',
+  IMAGE_HEIGHT: 'imageHeight',
+  IMAGE_ROTATION: 'imageRotation',
+  PINNED: 'pinned',
+  PRESENT: 'present',
+  HOSTED: 'hosted',
+  AVAILABLE_OFFLINE: 'availableOffline',
+  AVAILABLE_WHEN_METERED: 'availableWhenMetered',
+  DIRTY: 'dirty',
+  CUSTOM_ICON_URL: 'customIconUrl',
+  CONTENT_MIME_TYPE: 'contentMimeType',
+  SHARED_WITH_ME: 'sharedWithMe',
+  SHARED: 'shared',
+  STARRED: 'starred',
+  EXTERNAL_FILE_URL: 'externalFileUrl',
+  ALTERNATE_URL: 'alternateUrl',
+  SHARE_URL: 'shareUrl',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.EntryTagVisibility = {
+  PRIVATE: 'private',
+  PUBLIC: 'public',
+};
+
+/** @enum {string} */
+chrome.fileManagerPrivate.Source = {
+  FILE: 'file',
+  DEVICE: 'device',
+  NETWORK: 'network',
+  SYSTEM: 'system',
+};
+
+/** @enum {string} */
 chrome.fileManagerPrivate.Verb = {
   OPEN_WITH: 'open_with',
   ADD_TO: 'add_to',
@@ -28,8 +219,10 @@ chrome.fileManagerPrivate.SourceRestriction = {
  * @typedef {{
  *   taskId: string,
  *   title: string,
+ *   verb: (!chrome.fileManagerPrivate.Verb|undefined),
  *   iconUrl: string,
- *   isDefault: boolean
+ *   isDefault: boolean,
+ *   isGenericFileHandler: boolean
  * }}
  */
 chrome.fileManagerPrivate.FileTask;
@@ -54,6 +247,7 @@ chrome.fileManagerPrivate.FileTask;
  *   contentMimeType: (string|undefined),
  *   sharedWithMe: (boolean|undefined),
  *   shared: (boolean|undefined),
+ *   starred: (boolean|undefined),
  *   externalFileUrl: (string|undefined),
  *   alternateUrl: (string|undefined),
  *   shareUrl: (string|undefined)
@@ -90,12 +284,13 @@ chrome.fileManagerPrivate.IconSet;
  * @typedef {{
  *   volumeId: string,
  *   fileSystemId: (string|undefined),
- *   source: string,
+ *   providerId: (string|undefined),
+ *   source: !chrome.fileManagerPrivate.Source,
  *   volumeLabel: (string|undefined),
- *   profile: chrome.fileManagerPrivate.ProfileInfo,
+ *   profile: !chrome.fileManagerPrivate.ProfileInfo,
  *   sourcePath: (string|undefined),
- *   volumeType: string,
- *   deviceType: (string|undefined),
+ *   volumeType: !chrome.fileManagerPrivate.VolumeType,
+ *   deviceType: (!chrome.fileManagerPrivate.DeviceType|undefined),
  *   devicePath: (string|undefined),
  *   isParentDevice: (boolean|undefined),
  *   isReadOnly: boolean,
@@ -103,19 +298,19 @@ chrome.fileManagerPrivate.IconSet;
  *   hasMedia: boolean,
  *   configurable: boolean,
  *   watchable: boolean,
- *   mountCondition: (string|undefined),
- *   mountContext: (string|undefined),
+ *   mountCondition: (!chrome.fileManagerPrivate.MountCondition|undefined),
+ *   mountContext: (!chrome.fileManagerPrivate.MountContext|undefined),
  *   diskFileSystemType: (string|undefined),
- *   iconSet: chrome.fileManagerPrivate.IconSet
+ *   iconSet: !chrome.fileManagerPrivate.IconSet
  * }}
  */
 chrome.fileManagerPrivate.VolumeMetadata;
 
 /**
  * @typedef {{
- *   eventType: string,
- *   status: string,
- *   volumeMetadata: chrome.fileManagerPrivate.VolumeMetadata,
+ *   eventType: !chrome.fileManagerPrivate.MountCompletedEventType,
+ *   status: !chrome.fileManagerPrivate.MountCompletedStatus,
+ *   volumeMetadata: !chrome.fileManagerPrivate.VolumeMetadata,
  *   shouldNotify: boolean
  * }}
  */
@@ -124,7 +319,7 @@ chrome.fileManagerPrivate.MountCompletedEvent;
 /**
  * @typedef {{
  *   fileUrl: string,
- *   transferState: string,
+ *   transferState: !chrome.fileManagerPrivate.TransferState,
  *   processed: number,
  *   total: number,
  *   num_total_jobs: number,
@@ -135,7 +330,7 @@ chrome.fileManagerPrivate.FileTransferStatus;
 
 /**
  * @typedef {{
- *   type: string,
+ *   type: !chrome.fileManagerPrivate.DriveSyncErrorType,
  *   fileUrl: string
  * }}
  */
@@ -143,7 +338,7 @@ chrome.fileManagerPrivate.DriveSyncErrorEvent;
 
 /**
  * @typedef {{
- *   type: string,
+ *   type: !chrome.fileManagerPrivate.CopyProgressStatusType,
  *   sourceUrl: (string|undefined),
  *   destinationUrl: (string|undefined),
  *   size: (number|undefined),
@@ -155,16 +350,16 @@ chrome.fileManagerPrivate.CopyProgressStatus;
 /**
  * @typedef {{
  *   url: string,
- *   changes: Array
+ *   changes: !Array<!chrome.fileManagerPrivate.ChangeType>
  * }}
  */
 chrome.fileManagerPrivate.FileChange;
 
 /**
  * @typedef {{
- *   eventType: string,
+ *   eventType: !chrome.fileManagerPrivate.FileWatchEventType,
  *   entry: Object,
- *   changedFiles: (Array|undefined)
+ *   changedFiles: (!Array<!chrome.fileManagerPrivate.FileChange>|undefined)
  * }}
  */
 chrome.fileManagerPrivate.FileWatchEvent;
@@ -218,14 +413,15 @@ chrome.fileManagerPrivate.SearchResult;
 /**
  * @typedef {{
  *   type: string,
- *   reason: (string|undefined)
+ *   reason: (string|undefined),
+ *   hasCellularNetworkAccess: boolean
  * }}
  */
 chrome.fileManagerPrivate.DriveConnectionState;
 
 /**
  * @typedef {{
- *   type: string,
+ *   type: !chrome.fileManagerPrivate.DeviceEventType,
  *   devicePath: string
  * }}
  */
@@ -234,7 +430,7 @@ chrome.fileManagerPrivate.DeviceEvent;
 /**
  * @typedef {{
  *   providerId: string,
- *   iconSet: chrome.fileManagerPrivate.IconSet,
+ *   iconSet: !chrome.fileManagerPrivate.IconSet,
  *   name: string,
  *   configurable: boolean,
  *   watchable: boolean,
