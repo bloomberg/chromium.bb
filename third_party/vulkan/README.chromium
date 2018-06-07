@@ -1,14 +1,13 @@
-Name: Vulkan API headers & library
+Name: Vulkan API headers
 Short Name: Vulkan
-URL: https://github.com/KhronosGroup/Vulkan-Docs/blob/1.0/src/vulkan/
-Version: 1.0.68
+URL: https://github.com/KhronosGroup/Vulkan-Docs/tree/v1.1.76/include/vulkan/
+Version: 1.1.76
 Security Critical: yes
-License: MIT
-License File: LICENSE
+License: Apache 2.0
+License File: NOT_SHIPPED
 
 Description:
-This simply includes the include files and library for the Vulkan SDK. Eventually this
-will just be taken from the build system.
+This simply includes the include files for the Vulkan SDK.
 
 Local Modifications:
 Placed the include files into "third_party/vulkan/include/vulkan".
