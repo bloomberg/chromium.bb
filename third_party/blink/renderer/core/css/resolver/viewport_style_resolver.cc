@@ -322,24 +322,23 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
   return result;
 }
 
-ViewportDescription::ViewportFit ViewportStyleResolver::ViewportFitValue()
-    const {
+mojom::ViewportFit ViewportStyleResolver::ViewportFitValue() const {
   const CSSValue* value =
       property_set_->GetPropertyCSSValue(CSSPropertyViewportFit);
   if (value->IsIdentifierValue()) {
     switch (ToCSSIdentifierValue(value)->GetValueID()) {
       case CSSValueCover:
-        return ViewportDescription::ViewportFit::kCover;
+        return mojom::ViewportFit::kCover;
       case CSSValueContain:
-        return ViewportDescription::ViewportFit::kContain;
+        return mojom::ViewportFit::kContain;
       case CSSValueAuto:
       default:
-        return ViewportDescription::ViewportFit::kAuto;
+        return mojom::ViewportFit::kAuto;
     }
   }
 
   NOTREACHED();
-  return ViewportDescription::ViewportFit::kAuto;
+  return mojom::ViewportFit::kAuto;
 }
 
 void ViewportStyleResolver::InitialStyleChanged() {

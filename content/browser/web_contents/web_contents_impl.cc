@@ -390,6 +390,54 @@ class WebContentsImpl::ColorChooser : public blink::mojom::ColorChooser {
   blink::mojom::ColorChooserClientPtr client_;
 };
 
+// WebContentsImpl::DisplayCutoutHostImpl --------------------------------------
+
+class WebContentsImpl::DisplayCutoutHostImpl
+    : public blink::mojom::DisplayCutoutHost {
+ public:
+  explicit DisplayCutoutHostImpl(WebContentsImpl* web_contents)
+      : web_contents_(web_contents), bindings_(web_contents, this) {}
+
+  // blink::mojom::DisplayCutoutHost
+  void ViewportFitChanged(blink::mojom::ViewportFit value) override {
+    ViewportFitChangedForFrame(bindings_.GetCurrentTargetFrame(), value);
+  }
+
+  // Stores the updated viewport fit value for a frame and notifies observers if
+  // it has changed.
+  void ViewportFitChangedForFrame(RenderFrameHost* rfh,
+                                  blink::mojom::ViewportFit value) {
+    if (GetValueOrDefault(rfh) == value)
+      return;
+
+    values_[rfh] = value;
+
+    // TODO(beccahughes): Add logic based on fullscreen and orientation to
+    // decide which frame's viewport fit value should be used.
+    for (auto& observer : web_contents_->observers_)
+      observer.ViewportFitChanged(value);
+  }
+
+  // Removes any state built up by a render frame.
+  void RenderFrameDeleted(RenderFrameHost* rfh) { values_.erase(rfh); }
+
+ private:
+  // Get the stored viewport fit value for a frame or kAuto if there is no
+  // stored value.
+  blink::mojom::ViewportFit GetValueOrDefault(RenderFrameHost* rfh) const {
+    auto value = values_.find(rfh);
+    if (value != values_.end())
+      return value->second;
+    return blink::mojom::ViewportFit::kAuto;
+  }
+
+  // Stores a map of RenderFrameHosts and their current viewport fit values.
+  std::map<RenderFrameHost*, blink::mojom::ViewportFit> values_;
+
+  WebContentsImpl* web_contents_;
+  WebContentsFrameBindingSet<blink::mojom::DisplayCutoutHost> bindings_;
+};
+
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
 WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
     WebContentsImpl* current_web_contents)
@@ -542,6 +590,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #if !defined(OS_ANDROID)
   host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
 #endif  // !defined(OS_ANDROID)
+
+  display_cutout_host_impl_.reset(new DisplayCutoutHostImpl(this));
 
   registry_.AddInterface(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
@@ -3916,6 +3966,11 @@ void WebContentsImpl::ReadyToCommitNavigation(
       net::IsCertStatusError(navigation_handle->GetSSLInfo().cert_status));
 
   SetNotWaitingForResponse();
+
+  // Reset the viewport fit
+  display_cutout_host_impl_->ViewportFitChangedForFrame(
+      navigation_handle->GetRenderFrameHost(),
+      blink::mojom::ViewportFit::kAuto);
 }
 
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
@@ -4829,6 +4884,7 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   pepper_playback_observer_->RenderFrameDeleted(render_frame_host);
 #endif
+  display_cutout_host_impl_->RenderFrameDeleted(render_frame_host);
 }
 
 void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,

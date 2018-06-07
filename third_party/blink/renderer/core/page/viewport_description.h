@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VIEWPORT_DESCRIPTION_H_
 
 #include "base/optional.h"
+#include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -65,20 +66,6 @@ struct CORE_EXPORT ViewportDescription {
     kXhtmlMobileProfile = 6,
 
     kTypeCount = 7
-  };
-
-  // Stores the different possible |viewport-fit| configurations.
-  enum class ViewportFit {
-    // No effect - the whole web page is viewable (default).
-    kAuto = 0,
-
-    // The initial layout viewport and the visual viewport are set to the
-    // largest rectangle which is inscribed in the display of the device.
-    kContain,
-
-    // The initial layout viewport and the visual viewport are set to the
-    // circumscribed rectangle of the physical screen of the device.
-    kCover,
   };
 
   enum {
@@ -133,10 +120,10 @@ struct CORE_EXPORT ViewportDescription {
   bool max_zoom_is_explicit;
   bool user_zoom_is_explicit;
 
-  ViewportFit GetViewportFit() const {
-    return viewport_fit_.value_or(ViewportFit::kAuto);
+  mojom::ViewportFit GetViewportFit() const {
+    return viewport_fit_.value_or(mojom::ViewportFit::kAuto);
   }
-  void SetViewportFit(ViewportFit value) { viewport_fit_ = value; }
+  void SetViewportFit(mojom::ViewportFit value) { viewport_fit_ = value; }
 
   bool operator==(const ViewportDescription& other) const {
     // Used for figuring out whether to reset the viewport or not,
@@ -177,7 +164,11 @@ struct CORE_EXPORT ViewportDescription {
                                      const FloatSize& initial_viewport_size,
                                      Direction);
 
-  base::Optional<ViewportFit> viewport_fit_;
+  // Optional is used to identify if |viewport_fit_| has been explicitly set.
+  // This is because a Document will have multiple ViewportDescriptions are
+  // which one that will be used is dependent on whether any values have been
+  // explicitly set.
+  base::Optional<mojom::ViewportFit> viewport_fit_;
 };
 
 }  // namespace blink
