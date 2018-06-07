@@ -348,6 +348,8 @@ MinMaxSize ComputeMinAndMaxContentContribution(
       // definition.
       NGConstraintSpaceBuilder builder(*constraint_space);
       builder.SetAvailableSize(constraint_space->AvailableSize())
+          .SetPercentageResolutionSize(
+              constraint_space->PercentageResolutionSize())
           .SetFloatsBfcOffset(NGBfcOffset())
           .SetIsNewFormattingContext(node.CreatesNewFormattingContext())
           .SetIsShrinkToFit(true);
