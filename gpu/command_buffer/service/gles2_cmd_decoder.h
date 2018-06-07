@@ -64,7 +64,6 @@ struct DisallowedFeatures {
     oes_texture_half_float_linear = false;
   }
 
-  bool gpu_memory_manager = false;
   bool npot_support = false;
   bool chromium_color_buffer_float_rgba = false;
   bool chromium_color_buffer_float_rgb = false;
