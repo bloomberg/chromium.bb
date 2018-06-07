@@ -1244,9 +1244,10 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
 void av1_foreach_rest_unit_in_row(
     RestorationTileLimits *limits, const AV1PixelRect *tile_rect,
     rest_unit_visitor_t on_rest_unit, int row_number, int unit_size,
-    int unit_idx0, int hunits_per_tile, int plane, void *priv, int32_t *tmpbuf,
-    RestorationLineBuffers *rlbs, sync_read_fn_t on_sync_read,
-    sync_write_fn_t on_sync_write, struct AV1LrSyncData *const lr_sync) {
+    int unit_idx0, int hunits_per_tile, int vunits_per_tile, int plane,
+    void *priv, int32_t *tmpbuf, RestorationLineBuffers *rlbs,
+    sync_read_fn_t on_sync_read, sync_write_fn_t on_sync_write,
+    struct AV1LrSyncData *const lr_sync) {
   const int tile_w = tile_rect->right - tile_rect->left;
   const int ext_size = unit_size * 3 / 2;
   int x0 = 0, j = 0;
@@ -1260,7 +1261,15 @@ void av1_foreach_rest_unit_in_row(
 
     const int unit_idx = unit_idx0 + row_number * hunits_per_tile + j;
 
+    // No sync for even numbered rows
+    // For odd numbered rows, Loop Restoration of current block requires the LR
+    // of top-right and bottom-right blocks to be completed
+
+    // top-right sync
     on_sync_read(lr_sync, row_number, j, plane);
+    if ((row_number + 1) < vunits_per_tile)
+      // bottom-right sync
+      on_sync_read(lr_sync, row_number + 2, j, plane);
 
     on_rest_unit(limits, tile_rect, unit_idx, priv, tmpbuf, rlbs);
 
@@ -1287,13 +1296,11 @@ void av1_lr_sync_write_dummy(void *const lr_sync, int r, int c,
   (void)plane;
 }
 
-static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
-                                      int tile_row, int tile_col, int tile_cols,
-                                      int hunits_per_tile, int units_per_tile,
-                                      int unit_size, int ss_y, int plane,
-                                      rest_unit_visitor_t on_rest_unit,
-                                      void *priv, int32_t *tmpbuf,
-                                      RestorationLineBuffers *rlbs) {
+static void foreach_rest_unit_in_tile(
+    const AV1PixelRect *tile_rect, int tile_row, int tile_col, int tile_cols,
+    int hunits_per_tile, int vunits_per_tile, int units_per_tile, int unit_size,
+    int ss_y, int plane, rest_unit_visitor_t on_rest_unit, void *priv,
+    int32_t *tmpbuf, RestorationLineBuffers *rlbs) {
   const int tile_h = tile_rect->bottom - tile_rect->top;
   const int ext_size = unit_size * 3 / 2;
 
@@ -1314,10 +1321,10 @@ static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
     limits.v_start = AOMMAX(tile_rect->top, limits.v_start - voffset);
     if (limits.v_end < tile_rect->bottom) limits.v_end -= voffset;
 
-    av1_foreach_rest_unit_in_row(&limits, tile_rect, on_rest_unit, i, unit_size,
-                                 unit_idx0, hunits_per_tile, plane, priv,
-                                 tmpbuf, rlbs, av1_lr_sync_read_dummy,
-                                 av1_lr_sync_write_dummy, NULL);
+    av1_foreach_rest_unit_in_row(
+        &limits, tile_rect, on_rest_unit, i, unit_size, unit_idx0,
+        hunits_per_tile, vunits_per_tile, plane, priv, tmpbuf, rlbs,
+        av1_lr_sync_read_dummy, av1_lr_sync_write_dummy, NULL);
 
     y0 += h;
     ++i;
@@ -1335,9 +1342,9 @@ void av1_foreach_rest_unit_in_plane(const struct AV1Common *cm, int plane,
   const RestorationInfo *rsi = &cm->rst_info[plane];
 
   foreach_rest_unit_in_tile(tile_rect, LR_TILE_ROW, LR_TILE_COL, LR_TILE_COLS,
-                            rsi->horz_units_per_tile, rsi->units_per_tile,
-                            rsi->restoration_unit_size, ss_y, plane,
-                            on_rest_unit, priv, tmpbuf, rlbs);
+                            rsi->horz_units_per_tile, rsi->vert_units_per_tile,
+                            rsi->units_per_tile, rsi->restoration_unit_size,
+                            ss_y, plane, on_rest_unit, priv, tmpbuf, rlbs);
 }
 
 int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,

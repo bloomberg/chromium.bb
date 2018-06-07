@@ -59,6 +59,9 @@ typedef struct AV1LrMTInfo {
   int v_end;
   int lr_unit_row;
   int plane;
+  int sync_mode;
+  int v_copy_start;
+  int v_copy_end;
 } AV1LrMTInfo;
 
 typedef struct LoopRestorationWorkerData {

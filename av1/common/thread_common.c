@@ -557,8 +557,17 @@ static void enqueue_lr_jobs(AV1LrSync *lr_sync, AV1LrStruct *lr_ctxt,
 
   const int num_planes = av1_num_planes(cm);
   AV1LrMTInfo *lr_job_queue = lr_sync->job_queue;
+  int32_t lr_job_counter[2], num_even_lr_jobs = 0;
   lr_sync->jobs_enqueued = 0;
   lr_sync->jobs_dequeued = 0;
+
+  for (int plane = 0; plane < num_planes; plane++) {
+    if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) continue;
+    num_even_lr_jobs =
+        num_even_lr_jobs + ((ctxt[plane].rsi->vert_units_per_tile + 1) >> 1);
+  }
+  lr_job_counter[0] = 0;
+  lr_job_counter[1] = num_even_lr_jobs;
 
   for (int plane = 0; plane < num_planes; plane++) {
     if (cm->rst_info[plane].frame_restoration_type == RESTORE_NONE) continue;
@@ -585,11 +594,33 @@ static void enqueue_lr_jobs(AV1LrSync *lr_sync, AV1LrStruct *lr_ctxt,
       limits.v_start = AOMMAX(tile_rect.top, limits.v_start - voffset);
       if (limits.v_end < tile_rect.bottom) limits.v_end -= voffset;
 
-      lr_job_queue->lr_unit_row = i;
-      lr_job_queue->plane = plane;
-      lr_job_queue->v_start = limits.v_start;
-      lr_job_queue->v_end = limits.v_end;
-      lr_job_queue++;
+      assert(lr_job_counter[0] <= num_even_lr_jobs);
+
+      lr_job_queue[lr_job_counter[i & 1]].lr_unit_row = i;
+      lr_job_queue[lr_job_counter[i & 1]].plane = plane;
+      lr_job_queue[lr_job_counter[i & 1]].v_start = limits.v_start;
+      lr_job_queue[lr_job_counter[i & 1]].v_end = limits.v_end;
+      lr_job_queue[lr_job_counter[i & 1]].sync_mode = i & 1;
+      if ((i & 1) == 0) {
+        lr_job_queue[lr_job_counter[i & 1]].v_copy_start =
+            limits.v_start + RESTORATION_BORDER;
+        lr_job_queue[lr_job_counter[i & 1]].v_copy_end =
+            limits.v_end - RESTORATION_BORDER;
+        if (i == 0) {
+          assert(limits.v_start == tile_rect.top);
+          lr_job_queue[lr_job_counter[i & 1]].v_copy_start = tile_rect.top;
+        }
+        if (i == (ctxt[plane].rsi->vert_units_per_tile - 1)) {
+          assert(limits.v_end == tile_rect.bottom);
+          lr_job_queue[lr_job_counter[i & 1]].v_copy_end = tile_rect.bottom;
+        }
+      } else {
+        lr_job_queue[lr_job_counter[i & 1]].v_copy_start =
+            AOMMAX(limits.v_start - RESTORATION_BORDER, tile_rect.top);
+        lr_job_queue[lr_job_counter[i & 1]].v_copy_end =
+            AOMMIN(limits.v_end + RESTORATION_BORDER, tile_rect.bottom);
+      }
+      lr_job_counter[i & 1]++;
       lr_sync->jobs_enqueued++;
 
       y0 += h;
@@ -639,26 +670,32 @@ static int loop_restoration_row_worker(AV1LrSync *const lr_sync,
     AV1LrMTInfo *cur_job_info = get_lr_job_info(lr_sync);
     if (cur_job_info != NULL) {
       RestorationTileLimits limits;
+      sync_read_fn_t on_sync_read;
+      sync_write_fn_t on_sync_write;
       limits.v_start = cur_job_info->v_start;
       limits.v_end = cur_job_info->v_end;
       lr_unit_row = cur_job_info->lr_unit_row;
       plane = cur_job_info->plane;
       const int unit_idx0 = tile_idx * ctxt[plane].rsi->units_per_tile;
-      int copy_v_start = AOMMAX(limits.v_start - RESTORATION_BORDER, 0);
-      int copy_v_end = AOMMAX(limits.v_end - RESTORATION_BORDER, 0);
-      if (cur_job_info->lr_unit_row ==
-          (ctxt[plane].rsi->vert_units_per_tile - 1))
-        copy_v_end = limits.v_end;
+
+      // sync_mode == 1 implies only sync read is required in LR Multi-threading
+      // sync_mode == 0 implies only sync write is required.
+      on_sync_read =
+          cur_job_info->sync_mode == 1 ? lr_sync_read : av1_lr_sync_read_dummy;
+      on_sync_write = cur_job_info->sync_mode == 0 ? lr_sync_write
+                                                   : av1_lr_sync_write_dummy;
 
       av1_foreach_rest_unit_in_row(
           &limits, &(ctxt[plane].tile_rect), lr_ctxt->on_rest_unit, lr_unit_row,
           ctxt[plane].rsi->restoration_unit_size, unit_idx0,
-          ctxt[plane].rsi->horz_units_per_tile, plane, &ctxt[plane],
-          lrworkerdata->rst_tmpbuf, lrworkerdata->rlbs, lr_sync_read,
-          lr_sync_write, lr_sync);
+          ctxt[plane].rsi->horz_units_per_tile,
+          ctxt[plane].rsi->vert_units_per_tile, plane, &ctxt[plane],
+          lrworkerdata->rst_tmpbuf, lrworkerdata->rlbs, on_sync_read,
+          on_sync_write, lr_sync);
 
       copy_funs[plane](lr_ctxt->dst, lr_ctxt->frame, ctxt[plane].tile_rect.left,
-                       ctxt[plane].tile_rect.right, copy_v_start, copy_v_end);
+                       ctxt[plane].tile_rect.right, cur_job_info->v_copy_start,
+                       cur_job_info->v_copy_end);
     } else {
       break;
     }
