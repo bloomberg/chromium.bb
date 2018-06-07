@@ -64,58 +64,69 @@ PlayerUtils.registerEMEEventListeners = function(player) {
       });
     }
 
-    // Call getStatusForPolicy() and compare the result with |expectedResult|.
-    // |expectedResult| can be a valid key status, e.g. "usable", in which case
-    // getStatusForPolicy() should return a resolved promise. It can also be
-    // "rejected", in which getStatusForPolicy() should return a rejected
-    // promise.
-    function getStatusForHdcpPolicy(mediaKeys, hdcpVersion, expectedResult) {
-      return mediaKeys.getStatusForPolicy({minHdcpVersion: hdcpVersion})
-          .then(
-              keyStatus => {
-                if (keyStatus == expectedResult) {
-                  return Promise.resolve();
-                } else {
-                  return Promise.reject(
-                      'keyStatus ' + keyStatus + ' does not match ' +
-                      expectedResult);
-                }
-              },
-              error => {
-                if (expectedResult == 'rejected') {
-                  return Promise.resolve();
-                } else {
-                  return Promise.reject("Promise rejected unexpectedly.");
-                }
-              });
+    // Calls getStatusForPolicy() and returns a resolved promise if the result
+    // matches the |expectedResult|, whose value can be:
+    // - a valid key status, e.g. "usable", in which case getStatusForPolicy()
+    //   must be resolved with |expectedResult|.
+    // - "rejected", in which case getStatusForPolicy() must be rejected.
+    // - "resolved", in which case getStatusForPolicy() can be resolved by any
+    //   value.
+    async function getStatusForHdcpPolicy(
+        mediaKeys, hdcpVersion, expectedResult) {
+      try {
+        var keyStatus =
+            await mediaKeys.getStatusForPolicy({minHdcpVersion: hdcpVersion});
+        if (expectedResult == 'resolved' ||
+            (expectedResult != 'rejected' && keyStatus == expectedResult)) {
+          return true;
+        }
+
+        throw new Error(
+            'keyStatus ' + keyStatus + ' does not match ' + expectedResult);
+      } catch (e) {
+        if (expectedResult == 'rejected') {
+          return true;
+        }
+
+        throw new Error('Promise rejected unexpectedly: ' + e);
+      }
     }
 
+    // Tests HDCP policy check. Returns a resolved promise if all tests pass.
     function testGetStatusForHdcpPolicy(mediaKeys) {
       const keySystem = this.testConfig.keySystem;
       Utils.timeLog('Key system: ' + keySystem);
+
       if (keySystem == EXTERNAL_CLEARKEY) {
-        return Promise.resolve().then(function() {
-          return getStatusForHdcpPolicy(mediaKeys, "", "usable");
-        }).then(function() {
-          return getStatusForHdcpPolicy(mediaKeys, "hdcp-1.0", "usable");
-        }).then(function() {
-          return getStatusForHdcpPolicy(
-              mediaKeys, "hdcp-2.2", "output-restricted");
-        });
-      } else if (keySystem == CLEARKEY) {
-        return Promise.resolve().then(function () {
-          return getStatusForHdcpPolicy(mediaKeys, "", "rejected");
-        }).then(function () {
-          return getStatusForHdcpPolicy(mediaKeys, "hdcp-1.0", "rejected");
-        });
-      } else if (keySystem == WIDEVINE_KEYSYSTEM) {
-        // TODO(crbug.com/849846): Currently support on HDCP policy check by
-        // Widevine CDM varies on different platforms. Update this to test more
-        // specific behaviors.
-        return Promise.resolve();
-      } else {
-        return Promise.reject("Unsupported key system");
+        // ClearKeyCdm pretends the device is HDCP 2.0 compliant. See
+        // ClearKeyCdm::GetStatusForPolicy() for details.
+        return Promise.all([
+          getStatusForHdcpPolicy(mediaKeys, '', 'usable'),
+          getStatusForHdcpPolicy(mediaKeys, 'hdcp-1.0', 'usable'),
+          getStatusForHdcpPolicy(mediaKeys, 'hdcp-2.2', 'output-restricted'),
+        ]);
       }
+
+      if (keySystem == CLEARKEY) {
+        // AesDecryptor does not support getStatusForPolicy() so the promise
+        // is always rejected.
+        return Promise.all([
+          getStatusForHdcpPolicy(mediaKeys, '', 'rejected'),
+          getStatusForHdcpPolicy(mediaKeys, 'hdcp-1.0', 'rejected'),
+        ]);
+      }
+
+      if (keySystem == WIDEVINE_KEYSYSTEM) {
+        // Widevine CDM supports getStatusForPolicy() so the promise is always
+        // resolved. However the key status depends on the device's HDCP level
+        // so we cannot enforce it.
+        return Promise.all([
+          getStatusForHdcpPolicy(mediaKeys, '', 'usable'),
+          getStatusForHdcpPolicy(mediaKeys, 'hdcp-1.0', 'resolved'),
+        ]);
+      }
+
+      return Promise.reject('Unsupported key system');
     }
 
     try {
@@ -158,13 +169,13 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         // new test js file once we figure out an easy way to separate the
         // requrestMediaKeySystemAccess() logic from the rest of this file.
         Utils.timeLog('Policy check test.');
-        player.access.createMediaKeys().then(function(mediaKeys) {
+        player.access.createMediaKeys().then(function (mediaKeys) {
           // Call getStatusForPolicy() before creating any MediaKeySessions.
           return testGetStatusForHdcpPolicy(mediaKeys);
-        }).then(function(result) {
+        }).then(function (result) {
           Utils.timeLog('Policy check test passed.');
           Utils.setResultInTitle(UNIT_TEST_SUCCESS);
-        }).catch(function(error) {
+        }).catch(function (error) {
           Utils.timeLog('Policy check test failed.');
           Utils.failTest(error, UNIT_TEST_FAILURE);
         });
