@@ -72,7 +72,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
       const network::URLLoaderCompletionStatus& status);
 
   void OnSignedExchangeReceived(
-      const base::Optional<SignedExchangeEnvelope>& header,
+      const base::Optional<SignedExchangeEnvelope>& envelope,
       const scoped_refptr<net::X509Certificate>& certificate,
       const net::SSLInfo* ssl_info);
 

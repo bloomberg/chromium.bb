@@ -83,15 +83,15 @@ TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
       contents_bytes + SignedExchangePrologue::kEncodedPrologueInBytes +
           prologue->signature_header_field_length(),
       prologue->cbor_header_length());
-  const base::Optional<SignedExchangeEnvelope> header =
+  const base::Optional<SignedExchangeEnvelope> envelope =
       SignedExchangeEnvelope::Parse(signature_header_field, cbor_bytes,
                                     nullptr /* devtools_proxy */);
-  ASSERT_TRUE(header.has_value());
-  EXPECT_EQ(header->request_url(), GURL("https://test.example.org/test/"));
-  EXPECT_EQ(header->request_method(), "GET");
-  EXPECT_EQ(header->response_code(), static_cast<net::HttpStatusCode>(200u));
-  EXPECT_EQ(header->response_headers().size(), 3u);
-  EXPECT_EQ(header->response_headers().find("content-encoding")->second,
+  ASSERT_TRUE(envelope.has_value());
+  EXPECT_EQ(envelope->request_url(), GURL("https://test.example.org/test/"));
+  EXPECT_EQ(envelope->request_method(), "GET");
+  EXPECT_EQ(envelope->response_code(), static_cast<net::HttpStatusCode>(200u));
+  EXPECT_EQ(envelope->response_headers().size(), 3u);
+  EXPECT_EQ(envelope->response_headers().find("content-encoding")->second,
             "mi-sha256");
 }
 

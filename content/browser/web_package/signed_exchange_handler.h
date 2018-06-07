@@ -105,13 +105,12 @@ class CONTENT_EXPORT SignedExchangeHandler {
   std::unique_ptr<net::SourceStream> source_;
 
   State state_ = State::kReadingPrologue;
-  // Buffer used for header reading.
+  // Buffer used for prologue and envelope reading.
   scoped_refptr<net::IOBuffer> header_buf_;
   // Wrapper around |header_buf_| to progressively read fixed-size data.
   scoped_refptr<net::DrainableIOBuffer> header_read_buf_;
   base::Optional<SignedExchangePrologue> prologue_;
-
-  base::Optional<SignedExchangeEnvelope> header_;
+  base::Optional<SignedExchangeEnvelope> envelope_;
 
   std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory_;
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher_;
