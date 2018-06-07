@@ -1358,7 +1358,6 @@ public class LocationBarLayout
 
         // Ensure the results container is initialized and add the suggestion list to it.
         initOmniboxResultsContainer();
-        mOmniboxResultsContainer.addView(mSuggestionList);
 
         // Start with visibility GONE to ensure that show() is called. http://crbug.com/517438
         mSuggestionList.setVisibility(GONE);
@@ -1453,9 +1452,11 @@ public class LocationBarLayout
             final boolean isShowing = mSuggestionList.isShown();
             if (visible && !isShowing) {
                 mIgnoreOmniboxItemSelection = true; // Reset to default value.
+                mOmniboxResultsContainer.addView(mSuggestionList);
                 mSuggestionList.show();
             } else if (!visible && isShowing) {
                 mSuggestionList.setVisibility(GONE);
+                mOmniboxResultsContainer.removeView(mSuggestionList);
             }
         }
         maybeShowOmniboxResultsContainer();
