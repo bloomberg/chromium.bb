@@ -7,7 +7,7 @@ from blinkpy.w3c.chromium_finder import absolute_chromium_dir
 from blinkpy.w3c.common import CHROMIUM_WPT_DIR
 
 
-DEFAULT_COMMIT_HISTORY_WINDOW = 5000
+DEFAULT_COMMIT_HISTORY_WINDOW = 10000
 
 
 def exportable_commits_over_last_n_commits(
