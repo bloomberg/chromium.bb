@@ -134,15 +134,12 @@ static AV1_QUANT_FACADE
 
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
-                     TX_SIZE tx_size, AV1_XFORM_QUANT xform_quant_idx) {
+                     TX_SIZE tx_size, TX_TYPE tx_type,
+                     AV1_XFORM_QUANT xform_quant_idx) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  PLANE_TYPE plane_type = get_plane_type(plane);
-  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
-                                    cm->reduced_tx_set_used);
-
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
 
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
@@ -161,17 +158,14 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
           ? pd->seg_iqmatrix[seg_id][qm_tx_size]
           : cm->giqmatrix[NUM_QM_LEVELS - 1][0][qm_tx_size];
 
-  TxfmParam txfm_param;
+  const int src_offset = (blk_row * diff_stride + blk_col);
+  const int16_t *src_diff = &p->src_diff[src_offset << tx_size_wide_log2[0]];
   QUANT_PARAM qparam;
-  const int16_t *src_diff;
-
-  src_diff =
-      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
   qparam.log_scale = av1_get_tx_scale(tx_size);
   qparam.tx_size = tx_size;
   qparam.qmatrix = qmatrix;
   qparam.iqmatrix = iqmatrix;
-
+  TxfmParam txfm_param;
   txfm_param.tx_type = tx_type;
   txfm_param.tx_size = tx_size;
   txfm_param.lossless = xd->lossless[mbmi->segment_id];
@@ -230,20 +224,21 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
-
   // Assert not magic number (uninitialized).
   assert(plane != 0 || x->blk_skip[blk_row * bw + blk_col] != 234);
 
   if ((plane != 0 || x->blk_skip[blk_row * bw + blk_col] == 0) &&
       !mbmi->skip_mode) {
+    TX_TYPE tx_type = av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col,
+                                      tx_size, cm->reduced_tx_set_used);
     if (args->enable_optimize_b) {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size, AV1_XFORM_QUANT_FP);
+                      tx_size, tx_type, AV1_XFORM_QUANT_FP);
       av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1, &dummy_rate_cost);
     } else {
       av1_xform_quant(
-          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
     }
   } else {
@@ -374,9 +369,8 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   uint8_t *dst;
   dst = &pd->dst
              .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
-
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  AV1_XFORM_QUANT_B);
+                  DCT_DCT, AV1_XFORM_QUANT_B);
 
   if (p->eobs[block] > 0) {
     txfm_param.bd = xd->bd;
@@ -531,12 +525,12 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     const ENTROPY_CONTEXT *l = &args->tl[blk_row];
     if (args->enable_optimize_b) {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size, AV1_XFORM_QUANT_FP);
+                      tx_size, tx_type, AV1_XFORM_QUANT_FP);
       av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1, &dummy_rate_cost);
     } else {
       av1_xform_quant(
-          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
     }
   }

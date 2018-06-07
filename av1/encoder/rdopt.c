@@ -2572,13 +2572,13 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
     if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
       av1_xform_quant(
-          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
       rate_cost = av1_cost_coeffs(cm, x, plane_bsize, plane, blk_row, blk_col,
                                   block, tx_size, a, l, use_fast_coef_costing);
     } else {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size, AV1_XFORM_QUANT_FP);
+                      tx_size, tx_type, AV1_XFORM_QUANT_FP);
       if (cpi->sf.optimize_b_precheck && best_rd < INT64_MAX &&
           eobs_ptr[block] >= 4) {
         // Calculate distortion quickly in transform domain.
@@ -2688,10 +2688,11 @@ RECON_INTRA:
       if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
         av1_xform_quant(
             cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+            best_tx_type,
             USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
       } else {
         av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                        tx_size, AV1_XFORM_QUANT_FP);
+                        tx_size, best_tx_type, AV1_XFORM_QUANT_FP);
         av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                        tx_size, a, l, 1, &rate_cost);
       }

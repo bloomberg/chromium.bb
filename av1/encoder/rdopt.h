@@ -125,10 +125,6 @@ void av1_rd_pick_inter_mode_sb_seg_skip(
     struct macroblock *x, int mi_row, int mi_col, struct RD_STATS *rd_cost,
     BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far);
 
-void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
-                                        int blk_row, int blk_col, int eob,
-                                        int reduced_tx_set);
-
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 #define INTER_MODE_RD_TEST 0
 void av1_inter_mode_data_init();
