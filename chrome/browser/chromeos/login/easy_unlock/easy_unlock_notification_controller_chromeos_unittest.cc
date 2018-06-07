@@ -48,8 +48,6 @@ class EasyUnlockNotificationControllerTest : public BrowserWithTestWindowTest {
             profile());
   }
 
-  // const content::TestBrowserThreadBundle thread_bundle_;
-  // TestMessageCenter message_center_;
   std::unique_ptr<testing::StrictMock<TestableNotificationController>>
       notification_controller_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;

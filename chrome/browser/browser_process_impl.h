@@ -271,7 +271,7 @@ class BrowserProcessImpl : public BrowserProcess,
       background_printing_manager_;
 #endif
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_ = false;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;

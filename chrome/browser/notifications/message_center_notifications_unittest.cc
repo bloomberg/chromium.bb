@@ -33,10 +33,7 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 
  protected:
   void SetUp() override {
-#if !defined(OS_CHROMEOS)
-    // Ash shell initializes the message center.
     MessageCenter::Initialize();
-#endif
 
     BrowserWithTestWindowTest::SetUp();
     message_center_ = MessageCenter::Get();
@@ -46,10 +43,7 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     BrowserWithTestWindowTest::TearDown();
-#if !defined(OS_CHROMEOS)
-    // Shutdown the message center if we initialized it manually.
     MessageCenter::Shutdown();
-#endif
   }
 
   MessageCenterNotificationManager* notification_manager() {
