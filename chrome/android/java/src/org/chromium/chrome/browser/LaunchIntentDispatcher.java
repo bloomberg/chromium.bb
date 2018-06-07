@@ -335,7 +335,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 // Force a new document L+ to ensure the proper task/stack creation.
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                if (VrIntentUtils.isVrIntent(intent)) {
+                if (VrIntentUtils.isCustomTabVrIntent(intent)) {
                     newIntent.setClassName(context, CustomTabVrActivity.class.getName());
                 } else {
                     newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
@@ -406,6 +406,14 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     @SuppressLint("InlinedApi")
     private @Action int dispatchToTabbedActivity() {
+        // Avoid Daydream's 2D-in-VR rendering mode by launching 2D intents in VR if we're in
+        // VR mode and the intent is supported in VR.
+        // TODO(mthiesse): If we ever support VR browsing in more than just Tabbed Activity,
+        // (ie CCT), we'll need to figure out how to handle this at a higher level.
+        if (VrIntentUtils.maybeForwardToVrLauncher(mIntent, mActivity)) {
+            return Action.FINISH_ACTIVITY;
+        }
+
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(mIntent);
