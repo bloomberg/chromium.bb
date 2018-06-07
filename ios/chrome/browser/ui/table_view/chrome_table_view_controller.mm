@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
@@ -36,19 +37,14 @@
   return self;
 }
 
-- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
-                           appBarStyle:
-                               (ChromeTableViewControllerStyle)appBarStyle
-                                styler:(ChromeTableViewStyler*)styler {
-  if (self = [self initWithTableViewStyle:style appBarStyle:appBarStyle]) {
-    _styler = styler;
-  }
-  return self;
-}
-
 - (instancetype)init {
   return [self initWithTableViewStyle:UITableViewStylePlain
                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+}
+
+- (void)setStyler:(ChromeTableViewStyler*)styler {
+  DCHECK(![self isViewLoaded]);
+  _styler = styler;
 }
 
 - (void)loadModel {
