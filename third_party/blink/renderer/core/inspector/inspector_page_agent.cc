@@ -95,6 +95,8 @@ static const char kSansSerifFontFamily[] = "sansSerifFontFamily";
 static const char kCursiveFontFamily[] = "cursiveFontFamily";
 static const char kFantasyFontFamily[] = "fantasyFontFamily";
 static const char kPictographFontFamily[] = "pictographFontFamily";
+static const char kStandardFontSize[] = "standardFontSize";
+static const char kFixedFontSize[] = "fixedFontSize";
 }  // namespace PageAgentState
 
 namespace {
@@ -508,6 +510,17 @@ void InspectorPageAgent::Restore() {
     }
     if (notifyGenericFontFamilyChange) {
       settings->NotifyGenericFontFamilyChange();
+    }
+  }
+
+  // Re-apply default font size overrides.
+  int font_size;
+  if (settings) {
+    if (state_->getInteger(PageAgentState::kStandardFontSize, &font_size)) {
+      settings->SetDefaultFontSize(font_size);
+    }
+    if (state_->getInteger(PageAgentState::kFixedFontSize, &font_size)) {
+      settings->SetDefaultFixedFontSize(font_size);
     }
   }
 }
@@ -1239,6 +1252,26 @@ Response InspectorPageAgent::setFontFamilies(
           AtomicString(font_families->getPictograph(String())));
     }
     settings->NotifyGenericFontFamilyChange();
+  }
+
+  return Response::OK();
+}
+
+Response InspectorPageAgent::setFontSizes(
+    std::unique_ptr<protocol::Page::FontSizes> font_sizes) {
+  LocalFrame* frame = inspected_frames_->Root();
+  auto* settings = frame->GetSettings();
+  if (settings) {
+    if (font_sizes->hasStandard()) {
+      state_->setInteger(PageAgentState::kStandardFontSize,
+                         font_sizes->getStandard(0));
+      settings->SetDefaultFontSize(font_sizes->getStandard(0));
+    }
+    if (font_sizes->hasFixed()) {
+      state_->setInteger(PageAgentState::kFixedFontSize,
+                         font_sizes->getFixed(0));
+      settings->SetDefaultFixedFontSize(font_sizes->getFixed(0));
+    }
   }
 
   return Response::OK();
