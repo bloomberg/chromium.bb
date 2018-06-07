@@ -1112,20 +1112,9 @@ if (enable_java_templates) {
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
-        "--android-sdk-tools",
-        rebase_path(android_sdk_build_tools, root_build_dir),
         "--dex-path",
         _rebased_output,
       ]
-
-      if (enable_incremental_dx) {
-        args += [ "--incremental" ]
-      }
-
-      # EMMA requires --no-locals.
-      if (emma_coverage) {
-        args += [ "--no-locals=1" ]
-      }
 
       if (_enable_multidex) {
         args += [
@@ -1146,6 +1135,13 @@ if (enable_java_templates) {
         inputs += invoker.input_jars
         args += rebase_path(invoker.input_jars, root_build_dir)
       }
+
+      _d8_path = "//third_party/r8/lib/d8.jar"
+      inputs += [ _d8_path ]
+      args += [
+        "--d8-jar-path",
+        rebase_path(_d8_path, root_build_dir),
+      ]
     }
   }
 
