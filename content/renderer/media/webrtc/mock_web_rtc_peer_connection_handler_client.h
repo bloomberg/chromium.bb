@@ -27,7 +27,8 @@ class MockWebRTCPeerConnectionHandlerClient
   MOCK_METHOD0(NegotiationNeeded, void());
   MOCK_METHOD1(DidGenerateICECandidate,
                void(scoped_refptr<blink::WebRTCICECandidate> candidate));
-  MOCK_METHOD1(DidChangeSignalingState, void(SignalingState state));
+  MOCK_METHOD1(DidChangeSignalingState,
+               void(webrtc::PeerConnectionInterface::SignalingState state));
   MOCK_METHOD1(DidChangeICEGatheringState, void(ICEGatheringState state));
   MOCK_METHOD1(DidChangeICEConnectionState, void(ICEConnectionState state));
   void DidAddRemoteTrack(

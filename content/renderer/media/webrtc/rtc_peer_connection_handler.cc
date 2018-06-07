@@ -119,30 +119,6 @@ GetWebKitIceConnectionState(
   }
 }
 
-blink::WebRTCPeerConnectionHandlerClient::SignalingState
-GetWebKitSignalingState(webrtc::PeerConnectionInterface::SignalingState state) {
-  using blink::WebRTCPeerConnectionHandlerClient;
-  switch (state) {
-    case webrtc::PeerConnectionInterface::kStable:
-      return WebRTCPeerConnectionHandlerClient::kSignalingStateStable;
-    case webrtc::PeerConnectionInterface::kHaveLocalOffer:
-      return WebRTCPeerConnectionHandlerClient::kSignalingStateHaveLocalOffer;
-    case webrtc::PeerConnectionInterface::kHaveLocalPrAnswer:
-      return WebRTCPeerConnectionHandlerClient::
-          kSignalingStateHaveLocalPrAnswer;
-    case webrtc::PeerConnectionInterface::kHaveRemoteOffer:
-      return WebRTCPeerConnectionHandlerClient::kSignalingStateHaveRemoteOffer;
-    case webrtc::PeerConnectionInterface::kHaveRemotePrAnswer:
-      return WebRTCPeerConnectionHandlerClient::
-          kSignalingStateHaveRemotePrAnswer;
-    case webrtc::PeerConnectionInterface::kClosed:
-      return WebRTCPeerConnectionHandlerClient::kSignalingStateClosed;
-    default:
-      NOTREACHED();
-      return WebRTCPeerConnectionHandlerClient::kSignalingStateClosed;
-  }
-}
-
 blink::WebRTCSessionDescription CreateWebKitSessionDescription(
     const std::string& sdp, const std::string& type) {
   blink::WebRTCSessionDescription description;
@@ -430,61 +406,6 @@ class CreateSessionDescriptionRequest
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   blink::WebRTCSessionDescriptionRequest webkit_request_;
-  SessionDescriptionRequestTracker tracker_;
-};
-
-// Class mapping responses from calls to libjingle SetLocalDescription and a
-// blink::WebRTCVoidRequest.
-class SetLocalDescriptionRequest
-    : public webrtc::SetSessionDescriptionObserver {
- public:
-  explicit SetLocalDescriptionRequest(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-      const blink::WebRTCVoidRequest& request,
-      const base::WeakPtr<RTCPeerConnectionHandler>& handler,
-      const base::WeakPtr<PeerConnectionTracker>& tracker,
-      PeerConnectionTracker::Action action)
-      : main_thread_(main_thread),
-        webkit_request_(request),
-        tracker_(handler, tracker, action) {}
-
-  void OnSuccess() override {
-    if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&SetLocalDescriptionRequest::OnSuccess, this));
-      return;
-    }
-    tracker_.TrackOnSuccess(nullptr);
-    webkit_request_.RequestSucceeded();
-    webkit_request_.Reset();
-  }
-  void OnFailure(webrtc::RTCError error) override {
-    if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(
-          FROM_HERE, base::BindOnce(&SetLocalDescriptionRequest::OnFailure,
-                                    this, std::move(error)));
-      return;
-    }
-    tracker_.TrackOnFailure(error);
-    webkit_request_.RequestFailed(error);
-    webkit_request_.Reset();
-  }
-
- protected:
-  ~SetLocalDescriptionRequest() override {
-    // This object is reference counted and its callback methods |OnSuccess| and
-    // |OnFailure| will be invoked on libjingle's signaling thread and posted to
-    // the main thread. Since the main thread may complete before the signaling
-    // thread has deferenced this object there is no guarantee that this object
-    // is destructed on the main thread.
-    DLOG_IF(ERROR, !webkit_request_.IsNull())
-        << "SetLocalDescriptionRequest not completed. Shutting down?";
-  }
-
- private:
-  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  blink::WebRTCVoidRequest webkit_request_;
   SessionDescriptionRequestTracker tracker_;
 };
 
@@ -978,6 +899,73 @@ void LocalRTCStatsResponse::addStats(const blink::WebRTCLegacyStats& stats) {
   impl_.AddStats(stats);
 }
 
+// Class mapping responses from calls to libjingle SetLocalDescription and a
+// blink::WebRTCVoidRequest.
+class RTCPeerConnectionHandler::SetLocalDescriptionRequest
+    : public webrtc::SetSessionDescriptionObserver {
+ public:
+  explicit SetLocalDescriptionRequest(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+      const blink::WebRTCVoidRequest& request,
+      const base::WeakPtr<RTCPeerConnectionHandler>& handler,
+      const base::WeakPtr<PeerConnectionTracker>& tracker,
+      PeerConnectionTracker::Action action)
+      : handler_(handler),
+        main_thread_(main_thread),
+        native_peer_connection_(handler_->native_peer_connection()),
+        webkit_request_(request),
+        tracker_(handler, tracker, action) {}
+
+  void OnSuccess() override {
+    DCHECK(!main_thread_->BelongsToCurrentThread());
+    // We must read the signaling state before jumping thread to ensure we
+    // surface the state change of this operation and not a future one.
+    auto signaling_state = native_peer_connection_->signaling_state();
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SetLocalDescriptionRequest::OnSuccessOnMainThread, this,
+                       signaling_state));
+  }
+  void OnFailure(webrtc::RTCError error) override {
+    if (!main_thread_->BelongsToCurrentThread()) {
+      main_thread_->PostTask(
+          FROM_HERE, base::BindOnce(&SetLocalDescriptionRequest::OnFailure,
+                                    this, std::move(error)));
+      return;
+    }
+    tracker_.TrackOnFailure(error);
+    webkit_request_.RequestFailed(error);
+    webkit_request_.Reset();
+  }
+
+ protected:
+  ~SetLocalDescriptionRequest() override {
+    // This object is reference counted and its callback methods |OnSuccess| and
+    // |OnFailure| will be invoked on libjingle's signaling thread and posted to
+    // the main thread. Since the main thread may complete before the signaling
+    // thread has deferenced this object there is no guarantee that this object
+    // is destructed on the main thread.
+    DLOG_IF(ERROR, !webkit_request_.IsNull())
+        << "SetLocalDescriptionRequest not completed. Shutting down?";
+  }
+
+ private:
+  void OnSuccessOnMainThread(
+      webrtc::PeerConnectionInterface::SignalingState signaling_state) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    handler_->OnSignalingChange(signaling_state);
+    tracker_.TrackOnSuccess(nullptr);
+    webkit_request_.RequestSucceeded();
+    webkit_request_.Reset();
+  }
+
+  const base::WeakPtr<RTCPeerConnectionHandler> handler_;
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
+  blink::WebRTCVoidRequest webkit_request_;
+  SessionDescriptionRequestTracker tracker_;
+};
+
 // Processes the resulting state changes of a SetRemoteDescription call.
 class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
     : public WebRtcSetRemoteDescriptionObserver {
@@ -1010,6 +998,8 @@ class RTCPeerConnectionHandler::WebRtcSetRemoteDescriptionObserverImpl
 
     auto& states = states_or_error.value();
     if (handler_) {
+      handler_->OnSignalingChange(states.signaling_state);
+
       // Determine which receivers have been removed before processing the
       // removal as to not invalidate the iterator.
       std::vector<RTCRtpReceiver*> removed_receivers;
@@ -1181,19 +1171,8 @@ class RTCPeerConnectionHandler::Observer
   friend class base::RefCountedThreadSafe<RTCPeerConnectionHandler::Observer>;
   ~Observer() override = default;
 
-  void OnSignalingChange(
-      PeerConnectionInterface::SignalingState new_state) override {
-    if (!main_thread_->BelongsToCurrentThread()) {
-      main_thread_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&RTCPeerConnectionHandler::Observer::OnSignalingChange,
-                         this, new_state));
-    } else if (handler_) {
-      handler_->OnSignalingChange(new_state);
-    }
-  }
-
   // TODO(hbos): Remove once no longer mandatory to implement.
+  void OnSignalingChange(PeerConnectionInterface::SignalingState) override {}
   void OnAddStream(rtc::scoped_refptr<MediaStreamInterface>) override {}
   void OnRemoveStream(rtc::scoped_refptr<MediaStreamInterface>) override {}
 
@@ -1967,12 +1946,10 @@ void RTCPeerConnectionHandler::OnSignalingChange(
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnSignalingChange");
 
-  blink::WebRTCPeerConnectionHandlerClient::SignalingState state =
-      GetWebKitSignalingState(new_state);
   if (peer_connection_tracker_)
-    peer_connection_tracker_->TrackSignalingStateChange(this, state);
+    peer_connection_tracker_->TrackSignalingStateChange(this, new_state);
   if (!is_closed_)
-    client_->DidChangeSignalingState(state);
+    client_->DidChangeSignalingState(new_state);
 }
 
 // Called any time the IceConnectionState changes

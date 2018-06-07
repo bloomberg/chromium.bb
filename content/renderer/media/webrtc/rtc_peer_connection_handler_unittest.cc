@@ -188,11 +188,11 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
   MOCK_METHOD1(TrackStop, void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD2(TrackSignalingStateChange,
                void(RTCPeerConnectionHandler* pc_handler,
-                    WebRTCPeerConnectionHandlerClient::SignalingState state));
+                    webrtc::PeerConnectionInterface::SignalingState state));
   MOCK_METHOD2(
       TrackIceConnectionStateChange,
       void(RTCPeerConnectionHandler* pc_handler,
-           WebRTCPeerConnectionHandlerClient::ICEConnectionState state));
+           MockWebRTCPeerConnectionHandlerClient::ICEConnectionState state));
   MOCK_METHOD2(
       TrackIceGatheringStateChange,
       void(RTCPeerConnectionHandler* pc_handler,
@@ -1047,67 +1047,6 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
   }
   EXPECT_EQ(undefined_stats_count, 1);
   EXPECT_EQ(defined_stats_count, 1);
-}
-
-TEST_F(RTCPeerConnectionHandlerTest, OnSignalingChange) {
-  testing::InSequence sequence;
-
-  webrtc::PeerConnectionInterface::SignalingState new_state =
-      webrtc::PeerConnectionInterface::kHaveRemoteOffer;
-  EXPECT_CALL(
-      *mock_tracker_.get(),
-      TrackSignalingStateChange(
-          pc_handler_.get(),
-          WebRTCPeerConnectionHandlerClient::kSignalingStateHaveRemoteOffer));
-  EXPECT_CALL(
-      *mock_client_.get(),
-      DidChangeSignalingState(
-          WebRTCPeerConnectionHandlerClient::kSignalingStateHaveRemoteOffer));
-  pc_handler_->observer()->OnSignalingChange(new_state);
-
-  new_state = webrtc::PeerConnectionInterface::kHaveLocalPrAnswer;
-  EXPECT_CALL(
-      *mock_tracker_.get(),
-      TrackSignalingStateChange(
-          pc_handler_.get(),
-          WebRTCPeerConnectionHandlerClient::kSignalingStateHaveLocalPrAnswer));
-  EXPECT_CALL(
-      *mock_client_.get(),
-      DidChangeSignalingState(
-          WebRTCPeerConnectionHandlerClient::kSignalingStateHaveLocalPrAnswer));
-  pc_handler_->observer()->OnSignalingChange(new_state);
-
-  new_state = webrtc::PeerConnectionInterface::kHaveLocalOffer;
-  EXPECT_CALL(
-      *mock_tracker_.get(),
-      TrackSignalingStateChange(
-          pc_handler_.get(),
-          WebRTCPeerConnectionHandlerClient::kSignalingStateHaveLocalOffer));
-  EXPECT_CALL(
-      *mock_client_.get(),
-      DidChangeSignalingState(
-          WebRTCPeerConnectionHandlerClient::kSignalingStateHaveLocalOffer));
-  pc_handler_->observer()->OnSignalingChange(new_state);
-
-  new_state = webrtc::PeerConnectionInterface::kHaveRemotePrAnswer;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackSignalingStateChange(pc_handler_.get(),
-                                        WebRTCPeerConnectionHandlerClient::
-                                            kSignalingStateHaveRemotePrAnswer));
-  EXPECT_CALL(*mock_client_.get(),
-              DidChangeSignalingState(WebRTCPeerConnectionHandlerClient::
-                                          kSignalingStateHaveRemotePrAnswer));
-  pc_handler_->observer()->OnSignalingChange(new_state);
-
-  new_state = webrtc::PeerConnectionInterface::kClosed;
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackSignalingStateChange(
-                  pc_handler_.get(),
-                  WebRTCPeerConnectionHandlerClient::kSignalingStateClosed));
-  EXPECT_CALL(*mock_client_.get(),
-              DidChangeSignalingState(
-                  WebRTCPeerConnectionHandlerClient::kSignalingStateClosed));
-  pc_handler_->observer()->OnSignalingChange(new_state);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnIceConnectionChange) {

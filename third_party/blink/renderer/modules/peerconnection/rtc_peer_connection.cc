@@ -124,9 +124,9 @@ const char kModifiedSdpMessage[] =
 const long kMaxPeerConnections = 500;
 
 bool ThrowExceptionIfSignalingStateClosed(
-    RTCPeerConnection::SignalingState state,
+    webrtc::PeerConnectionInterface::SignalingState state,
     ExceptionState& exception_state) {
-  if (state == RTCPeerConnection::kSignalingStateClosed) {
+  if (state == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSignalingStateClosedMessage);
     return true;
@@ -146,9 +146,9 @@ void AsyncCallErrorCallback(V8RTCPeerConnectionErrorCallback* error_callback,
 }
 
 bool CallErrorCallbackIfSignalingStateClosed(
-    RTCPeerConnection::SignalingState state,
+    webrtc::PeerConnectionInterface::SignalingState state,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  if (state == RTCPeerConnection::kSignalingStateClosed) {
+  if (state == webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     if (error_callback) {
       AsyncCallErrorCallback(
           error_callback,
@@ -529,7 +529,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
                                      WebMediaConstraints constraints,
                                      ExceptionState& exception_state)
     : PausableObject(context),
-      signaling_state_(kSignalingStateStable),
+      signaling_state_(
+          webrtc::PeerConnectionInterface::SignalingState::kStable),
       ice_gathering_state_(kICEGatheringStateNew),
       ice_connection_state_(kICEConnectionStateNew),
       // WebRTC spec specifies kNetworking as task source.
@@ -613,7 +614,8 @@ void RTCPeerConnection::Dispose() {
 
 ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
                                              const RTCOfferOptions& options) {
-  if (signaling_state_ == kSignalingStateClosed) {
+  if (signaling_state_ ==
+      webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
@@ -697,7 +699,8 @@ ScriptPromise RTCPeerConnection::createOffer(
 
 ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
                                               const RTCAnswerOptions& options) {
-  if (signaling_state_ == kSignalingStateClosed) {
+  if (signaling_state_ ==
+      webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
@@ -757,7 +760,8 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
     ExecutionContext* context,
     const RTCSessionDescriptionInit& session_description_init,
     String* sdp) {
-  if (signaling_state_ == kSignalingStateClosed) {
+  if (signaling_state_ ==
+      webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                 kSignalingStateClosedMessage);
   }
@@ -863,7 +867,8 @@ RTCSessionDescription* RTCPeerConnection::localDescription() {
 ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit& session_description_init) {
-  if (signaling_state_ == kSignalingStateClosed) {
+  if (signaling_state_ ==
+      webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
@@ -1088,7 +1093,8 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     ScriptState* script_state,
     const RTCIceCandidateInitOrRTCIceCandidate& candidate,
     ExceptionState& exception_state) {
-  if (signaling_state_ == kSignalingStateClosed) {
+  if (signaling_state_ ==
+      webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kSignalingStateClosedMessage));
@@ -1151,17 +1157,17 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
 
 String RTCPeerConnection::signalingState() const {
   switch (signaling_state_) {
-    case kSignalingStateStable:
+    case webrtc::PeerConnectionInterface::SignalingState::kStable:
       return "stable";
-    case kSignalingStateHaveLocalOffer:
+    case webrtc::PeerConnectionInterface::SignalingState::kHaveLocalOffer:
       return "have-local-offer";
-    case kSignalingStateHaveRemoteOffer:
+    case webrtc::PeerConnectionInterface::SignalingState::kHaveRemoteOffer:
       return "have-remote-offer";
-    case kSignalingStateHaveLocalPrAnswer:
+    case webrtc::PeerConnectionInterface::SignalingState::kHaveLocalPrAnswer:
       return "have-local-pranswer";
-    case kSignalingStateHaveRemotePrAnswer:
+    case webrtc::PeerConnectionInterface::SignalingState::kHaveRemotePrAnswer:
       return "have-remote-pranswer";
-    case kSignalingStateClosed:
+    case webrtc::PeerConnectionInterface::SignalingState::kClosed:
       return "closed";
   }
 
@@ -1618,7 +1624,8 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
 }
 
 void RTCPeerConnection::close() {
-  if (signaling_state_ == RTCPeerConnection::kSignalingStateClosed)
+  if (signaling_state_ ==
+      webrtc::PeerConnectionInterface::SignalingState::kClosed)
     return;
 
   CloseInternal();
@@ -1685,10 +1692,11 @@ void RTCPeerConnection::DidGenerateICECandidate(
   ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(ice_candidate));
 }
 
-void RTCPeerConnection::DidChangeSignalingState(SignalingState new_state) {
+void RTCPeerConnection::DidChangeSignalingState(
+    webrtc::PeerConnectionInterface::SignalingState new_state) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
-  ChangeSignalingState(new_state);
+  ChangeSignalingState(new_state, true);
 }
 
 void RTCPeerConnection::DidChangeICEGatheringState(
@@ -1709,7 +1717,8 @@ void RTCPeerConnection::DidAddRemoteTrack(
     std::unique_ptr<WebRTCRtpReceiver> web_rtp_receiver) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
-  if (signaling_state_ == kSignalingStateClosed)
+  if (signaling_state_ ==
+      webrtc::PeerConnectionInterface::SignalingState::kClosed)
     return;
   HeapVector<Member<MediaStream>> streams;
   WebVector<WebMediaStream> web_streams = web_rtp_receiver->Streams();
@@ -1836,7 +1845,8 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
 
-  if (signaling_state_ == kSignalingStateClosed)
+  if (signaling_state_ ==
+      webrtc::PeerConnectionInterface::SignalingState::kClosed)
     return;
 
   RTCDataChannel* channel =
@@ -1852,7 +1862,7 @@ void RTCPeerConnection::ReleasePeerConnectionHandler() {
 
   stopped_ = true;
   ice_connection_state_ = kICEConnectionStateClosed;
-  signaling_state_ = kSignalingStateClosed;
+  signaling_state_ = webrtc::PeerConnectionInterface::SignalingState::kClosed;
 
   dispatch_scheduled_event_runner_->Stop();
 
@@ -1862,7 +1872,8 @@ void RTCPeerConnection::ReleasePeerConnectionHandler() {
 }
 
 void RTCPeerConnection::ClosePeerConnection() {
-  DCHECK(signaling_state_ != RTCPeerConnection::kSignalingStateClosed);
+  DCHECK(signaling_state_ !=
+         webrtc::PeerConnectionInterface::SignalingState::kClosed);
   CloseInternal();
 }
 
@@ -1893,10 +1904,19 @@ void RTCPeerConnection::ContextDestroyed(ExecutionContext*) {
   ReleasePeerConnectionHandler();
 }
 
-void RTCPeerConnection::ChangeSignalingState(SignalingState signaling_state) {
-  if (signaling_state_ != kSignalingStateClosed) {
+void RTCPeerConnection::ChangeSignalingState(
+    webrtc::PeerConnectionInterface::SignalingState signaling_state,
+    bool dispatch_event_immediately) {
+  if (signaling_state_ == signaling_state)
+    return;
+  if (signaling_state_ !=
+      webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     signaling_state_ = signaling_state;
-    ScheduleDispatchEvent(Event::Create(EventTypeNames::signalingstatechange));
+    Event* event = Event::Create(EventTypeNames::signalingstatechange);
+    if (dispatch_event_immediately)
+      DispatchEvent(event);
+    else
+      ScheduleDispatchEvent(event);
   }
 }
 
@@ -1949,12 +1969,14 @@ bool RTCPeerConnection::SetIceConnectionState(
 }
 
 void RTCPeerConnection::CloseInternal() {
-  DCHECK(signaling_state_ != RTCPeerConnection::kSignalingStateClosed);
+  DCHECK(signaling_state_ !=
+         webrtc::PeerConnectionInterface::SignalingState::kClosed);
   peer_handler_->Stop();
   closed_ = true;
 
   ChangeIceConnectionState(kICEConnectionStateClosed);
-  ChangeSignalingState(kSignalingStateClosed);
+  ChangeSignalingState(webrtc::PeerConnectionInterface::SignalingState::kClosed,
+                       false);
   Document* document = ToDocument(GetExecutionContext());
   HostsUsingFeatures::CountAnyWorld(
       *document, HostsUsingFeatures::Feature::kRTCPeerConnectionUsed);

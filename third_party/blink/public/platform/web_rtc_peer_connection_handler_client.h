@@ -35,6 +35,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace blink {
 
@@ -44,15 +45,6 @@ class WebRTCRtpReceiver;
 
 class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
  public:
-  enum SignalingState {
-    kSignalingStateStable = 1,
-    kSignalingStateHaveLocalOffer = 2,
-    kSignalingStateHaveRemoteOffer = 3,
-    kSignalingStateHaveLocalPrAnswer = 4,
-    kSignalingStateHaveRemotePrAnswer = 5,
-    kSignalingStateClosed = 6,
-  };
-
   enum ICEConnectionState {
     kICEConnectionStateNew = 1,
     kICEConnectionStateChecking = 2,
@@ -80,7 +72,8 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
 
   virtual void NegotiationNeeded() = 0;
   virtual void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) = 0;
-  virtual void DidChangeSignalingState(SignalingState) = 0;
+  virtual void DidChangeSignalingState(
+      webrtc::PeerConnectionInterface::SignalingState) = 0;
   virtual void DidChangeICEGatheringState(ICEGatheringState) = 0;
   virtual void DidChangeICEConnectionState(ICEConnectionState) = 0;
   virtual void DidAddRemoteTrack(std::unique_ptr<WebRTCRtpReceiver>) = 0;
