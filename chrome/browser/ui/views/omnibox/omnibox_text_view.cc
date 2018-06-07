@@ -352,10 +352,14 @@ int OmniboxTextView::GetLineHeight() const {
 }
 
 void OmniboxTextView::UpdateLineHeight() {
-  font_height_ = std::max(render_text_->font_list().GetHeight(),
-                          render_text_->font_list()
-                              .DeriveWithWeight(gfx::Font::Weight::BOLD)
-                              .GetHeight());
+  const int height_normal = render_text_->font_list().GetHeight();
+  const int height_bold =
+      ui::ResourceBundle::GetSharedInstance()
+          .GetFontListWithDelta(render_text_->font_list().GetFontSize() -
+                                    gfx::FontList().GetFontSize(),
+                                gfx::Font::NORMAL, gfx::Font::Weight::BOLD)
+          .GetHeight();
+  font_height_ = std::max(height_normal, height_bold);
   font_height_ += ui::MaterialDesignController::IsRefreshUi()
                       ? kRefreshVerticalPadding
                       : kVerticalPadding;
