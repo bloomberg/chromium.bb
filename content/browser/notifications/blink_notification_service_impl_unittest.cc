@@ -18,7 +18,6 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -109,7 +108,7 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
 
     blink::mojom::NotificationServicePtr notification_service_ptr;
     notification_service_ = std::make_unique<BlinkNotificationServiceImpl>(
-        notification_context_.get(), &browser_context_, &resource_context_,
+        notification_context_.get(), &browser_context_,
         embedded_worker_helper_->context_wrapper(), kFakeRenderProcessId,
         url::Origin::Create(GURL(kTestOrigin)),
         mojo::MakeRequest(&notification_service_ptr));
@@ -314,8 +313,6 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   std::vector<std::string> get_notifications_callback_result_;
 
   bool read_notification_data_callback_result_ = false;
-
-  MockResourceContext resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkNotificationServiceImplTest);
 };

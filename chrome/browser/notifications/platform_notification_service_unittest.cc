@@ -327,8 +327,8 @@ TEST_F(PlatformNotificationServiceTest, ExtensionPermissionChecks) {
   // check the UI thread-method for now, as that's the one guarding the behavior
   // in the browser process.
   EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            service()->CheckPermissionOnUIThread(profile_, extension->url(),
-                                                 kFakeRenderProcessId));
+            service()->CheckPermission(profile_, extension->url(),
+                                       kFakeRenderProcessId));
 }
 
 TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
