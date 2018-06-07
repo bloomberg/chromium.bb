@@ -4346,7 +4346,8 @@
         ],
         "name": "network_service_interactive_ui_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       }
@@ -4484,7 +4485,8 @@
         ],
         "name": "network_service_interactive_ui_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -8637,7 +8639,8 @@
         ],
         "name": "network_service_interactive_ui_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
