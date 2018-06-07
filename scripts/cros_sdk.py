@@ -876,22 +876,6 @@ def main(argv):
   if options.working_dir is not None and not os.path.isabs(options.working_dir):
     options.working_dir = path_util.ToChrootPath(options.working_dir)
 
-  # Clean up potential leftovers from previous interrupted builds.
-  # TODO(bmgordon): Remove this at the end of 2017.  That should be long enough
-  # to get rid of them all.
-  chroot_build_path = options.chroot + '.build'
-  if options.use_image and os.path.exists(chroot_build_path):
-    try:
-      with cgroups.SimpleContainChildren('cros_sdk'):
-        with locking.FileLock(lock_path, 'chroot lock') as lock:
-          logging.notice('Cleaning up leftover build directory %s',
-                         chroot_build_path)
-          lock.write_lock()
-          osutils.UmountTree(chroot_build_path)
-          osutils.RmDir(chroot_build_path)
-    except cros_build_lib.RunCommandError as e:
-      logging.warning('Unable to remove %s: %s', chroot_build_path, e)
-
   # Discern if we need to create the chroot.
   chroot_ver_file = os.path.join(options.chroot, 'etc', 'cros_chroot_version')
   chroot_exists = os.path.exists(chroot_ver_file)
