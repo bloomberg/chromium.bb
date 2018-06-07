@@ -441,10 +441,11 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
   EXPECT_EQ(1U, responses_.size());
   EXPECT_LT(download_manager_.fetcher_backoff_.GetTimeUntilRelease(),
             base::TimeDelta::FromMilliseconds(1100));
+  base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(1100));
-  base::RunLoop().Run();
+  run_loop.Run();
 
   // Get the retried request.
   fetcher = factory.GetFetcherByID(1);
@@ -507,10 +508,11 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   EXPECT_EQ(1U, responses_.size());
   EXPECT_LT(download_manager_.fetcher_backoff_.GetTimeUntilRelease(),
             base::TimeDelta::FromMilliseconds(1100));
+  base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(1100));
-  base::RunLoop().Run();
+  run_loop.Run();
 
   // Check that it was a failure.
   EXPECT_EQ(AutofillDownloadManagerTest::REQUEST_UPLOAD_FAILED,
