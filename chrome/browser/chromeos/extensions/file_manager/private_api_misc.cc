@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
@@ -716,9 +717,7 @@ void FileManagerPrivateMountCrostiniContainerFunction::SshKeysCallback(
   source_path_ = base::StringPrintf(
       "sshfs://%s@%s:", ContainerUserNameForProfile(profile).c_str(),
       host.c_str());
-  mount_label_ = base::StringPrintf(
-      "crostini_%s_%s_%s", CryptohomeIdForProfile(profile).c_str(),
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+  mount_label_ = file_manager::util::GetCrostiniMountPointName(profile);
   std::vector<std::string> mount_options;
   std::string base64_known_hosts;
   std::string base64_identity;
