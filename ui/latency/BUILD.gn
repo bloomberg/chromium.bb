@@ -18,6 +18,8 @@ jumbo_source_set("latency") {
     "latency_info.h",
     "latency_tracker.cc",
     "latency_tracker.h",
+    "skipped_frame_tracker.cc",
+    "skipped_frame_tracker.h",
     "stream_analyzer.cc",
     "stream_analyzer.h",
     "windowed_analyzer.cc",
@@ -53,6 +55,7 @@ test("latency_unittests") {
     "frame_metrics_unittest.cc",
     "histograms_unittest.cc",
     "latency_info_unittest.cc",
+    "skipped_frame_tracker_unittest.cc",
     "stream_analyzer_unittest.cc",
     "windowed_analyzer_unittest.cc",
   ]

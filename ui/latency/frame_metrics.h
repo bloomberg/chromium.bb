@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "ui/latency/skipped_frame_tracker.h"
 
 namespace ui {
 namespace frame_metrics {
@@ -92,19 +93,21 @@ struct FrameMetricsSettings {
 // Statistics will be reported automatically. Either periodically, based
 // on the client interface, or on destruction if any samples were added since
 // the last call to StartNewReportPeriod.
-class FrameMetrics {
+class FrameMetrics : public SkippedFrameTracker::Client {
  public:
   explicit FrameMetrics(FrameMetricsSettings settings);
-  virtual ~FrameMetrics();
+  ~FrameMetrics() override;
 
   // Resets all data and history as if the class were just created.
   void Reset();
 
   // AddFrameProduced should be called every time a source produces a frame.
   // The information added here affects the number of frames skipped.
+  // Note: If the FrameMetrics class is hooked up to an optional
+  //   SkippedFrameTracker, the client should not call this directly.
   void AddFrameProduced(base::TimeTicks source_timestamp,
                         base::TimeDelta amount_produced,
-                        base::TimeDelta amount_skipped);
+                        base::TimeDelta amount_skipped) override;
 
   // AddFrameDisplayed should be called whenever a frame causes damage and
   // we know when the result became visible on the display.
