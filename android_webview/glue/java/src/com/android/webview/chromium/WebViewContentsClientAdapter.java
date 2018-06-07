@@ -29,7 +29,6 @@ import android.webkit.JsDialogHelper;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
-import android.webkit.RenderProcessGoneDetail;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -1235,17 +1234,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
 
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onRenderProcessGone");
-            return mWebViewClient.onRenderProcessGone(mWebView, new RenderProcessGoneDetail() {
-                @Override
-                public boolean didCrash() {
-                    return detail.didCrash();
-                }
-
-                @Override
-                public int rendererPriorityAtExit() {
-                    return detail.rendererPriority();
-                }
-            });
+            return ApiHelperForO.onRenderProcessGone(mWebViewClient, mWebView, detail);
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onRenderProcessGone");
         }
