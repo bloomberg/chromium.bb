@@ -20,6 +20,7 @@ class TextureImageFactory : public gpu::ImageFactory {
       unsigned internalformat,
       int client_id,
       SurfaceHandle surface_handle) override;
+  bool SupportsCreateAnonymousImage() const override;
   scoped_refptr<gl::GLImage> CreateAnonymousImage(const gfx::Size& size,
                                                   gfx::BufferFormat format,
                                                   gfx::BufferUsage usage,
