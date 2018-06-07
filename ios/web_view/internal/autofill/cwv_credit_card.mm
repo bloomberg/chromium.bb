@@ -84,8 +84,8 @@
   return base::SysUTF8ToNSString(_internalCard.bank_name());
 }
 
-- (BOOL)isSavedLocally {
-  return _internalCard.record_type() == autofill::CreditCard::LOCAL_CARD;
+- (BOOL)isFromGooglePay {
+  return _internalCard.record_type() != autofill::CreditCard::LOCAL_CARD;
 }
 
 #pragma mark - Internal
