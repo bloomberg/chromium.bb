@@ -56,6 +56,7 @@ class FontFaceSet;
 class ConsoleMessage;
 class ExceptionState;
 class OffscreenFontSelector;
+class SettingsObject;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -136,6 +137,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   // Imports the top-level module script for |module_url_record|.
   virtual void ImportModuleScript(const KURL& module_url_record,
+                                  const SettingsObject& outside_settings_object,
                                   network::mojom::FetchCredentialsMode) = 0;
 
   double TimeOrigin() const { return time_origin_; }

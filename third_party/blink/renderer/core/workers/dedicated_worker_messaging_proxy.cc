@@ -46,6 +46,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     const WorkerOptions& options,
     const KURL& script_url,
+    const SettingsObject& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id,
     const String& source_code) {
   DCHECK(IsParentContextThread());
@@ -67,7 +68,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     bool result =
         Request::ParseCredentialsMode(options.credentials(), &credentials_mode);
     DCHECK(result);
-    GetWorkerThread()->ImportModuleScript(script_url, credentials_mode);
+    GetWorkerThread()->ImportModuleScript(script_url, outside_settings_object,
+                                          credentials_mode);
   } else {
     NOTREACHED();
   }

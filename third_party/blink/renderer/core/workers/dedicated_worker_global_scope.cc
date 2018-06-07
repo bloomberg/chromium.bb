@@ -64,19 +64,18 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
 void DedicatedWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
+    const SettingsObject& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
   WebURLRequest::RequestContext destination =
       WebURLRequest::kRequestContextWorker;
+
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
+
   // Step 13: "... Fetch a module worker script graph given url, outside
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
-  // TODO(nhiroki): Currently we specify inside settings' referrer policy and
-  // security origin here. These should be replaced with outside settings'
-  // referrer policy and security origin (https://crbug.com/842553).
-  SettingsObject outside_settings_object(*this);
   FetchModuleScript(module_url_record, outside_settings_object, destination,
                     credentials_mode, new WorkerModuleTreeClient(modulator));
 }

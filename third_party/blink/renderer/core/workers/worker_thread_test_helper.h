@@ -74,6 +74,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
 
   // WorkerGlobalScope
   void ImportModuleScript(const KURL& module_url_record,
+                          const SettingsObject& outside_settings_object,
                           network::mojom::FetchCredentialsMode) override {
     NOTREACHED();
   }

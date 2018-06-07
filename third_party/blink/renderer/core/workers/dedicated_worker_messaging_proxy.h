@@ -25,6 +25,7 @@ namespace blink {
 
 class DedicatedWorker;
 class DedicatedWorkerObjectProxy;
+class SettingsObject;
 class SerializedScriptValue;
 class WorkerOptions;
 
@@ -41,6 +42,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
   void StartWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                               const WorkerOptions&,
                               const KURL& script_url,
+                              const SettingsObject& outside_settings_object,
                               const v8_inspector::V8StackTraceId&,
                               const String& source_code);
   void PostMessageToWorkerGlobalScope(scoped_refptr<SerializedScriptValue>,

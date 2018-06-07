@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script.h"
+#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
@@ -121,6 +122,7 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
                                                  std::move(channels), stack_id);
 }
 
+// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
 void DedicatedWorker::Start() {
   DCHECK(GetExecutionContext()->IsContextThread());
 
@@ -128,7 +130,11 @@ void DedicatedWorker::Start() {
       ThreadDebugger::From(ToIsolate(GetExecutionContext()))
           ->StoreCurrentStackTrace("Worker Created");
 
+  // Step 13: "Obtain script by switching on the value of options's type
+  // member:"
   if (options_.type() == "classic") {
+    // "classic: Fetch a classic worker script given url, outside settings,
+    // destination, and inside settings."
     network::mojom::FetchRequestMode fetch_request_mode =
         network::mojom::FetchRequestMode::kSameOrigin;
     network::mojom::FetchCredentialsMode fetch_credentials_mode =
@@ -149,12 +155,17 @@ void DedicatedWorker::Start() {
     return;
   }
   if (options_.type() == "module") {
+    // "module: Fetch a module worker script graph given url, outside settings,
+    // destination, the value of the credentials member of options, and inside
+    // settings."
+    //
     // Specify empty source code here because module scripts will be fetched on
     // the worker thread as opposed to classic scripts that are fetched on the
     // main thread.
-    context_proxy_->StartWorkerGlobalScope(CreateGlobalScopeCreationParams(),
-                                           options_, script_url_, stack_id,
-                                           String() /* source_code */);
+    SettingsObject outside_settings_object(*GetExecutionContext());
+    context_proxy_->StartWorkerGlobalScope(
+        CreateGlobalScopeCreationParams(), options_, script_url_,
+        outside_settings_object, stack_id, String() /* source_code */);
     return;
   }
   NOTREACHED() << "Invalid type: " << options_.type();
@@ -246,8 +257,10 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
     std::unique_ptr<GlobalScopeCreationParams> creation_params =
         CreateGlobalScopeCreationParams();
     creation_params->referrer_policy = referrer_policy;
+    SettingsObject outside_settings_object(*GetExecutionContext());
     context_proxy_->StartWorkerGlobalScope(
-        std::move(creation_params), options_, script_url_, stack_id,
+        std::move(creation_params), options_, script_url_,
+        outside_settings_object, stack_id,
         classic_script_loader_->SourceText());
     probe::scriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),
