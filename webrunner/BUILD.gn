@@ -5,10 +5,12 @@
 assert(is_fuchsia)
 
 import("//build/config/fuchsia/rules.gni")
+import("//third_party/fuchsia-sdk/fidl_library.gni")
 import("//tools/grit/repack.gni")
 
 executable("webrunner") {
   deps = [
+    ":fidl",
     ":webrunner_pak",
     "//base",
     "//components/version_info",
@@ -91,4 +93,21 @@ repack("webrunner_pak") {
   ]
 
   output = "$root_out_dir/webrunner.pak"
+}
+
+fidl_library("fidl") {
+  library_name = "fuchsia.web"
+
+  sources = [
+    "fidl/context.fidl",
+    "fidl/context_provider.fidl",
+    "fidl/frame.fidl",
+    "fidl/frame_observer.fidl",
+    "fidl/navigation_controller.fidl",
+  ]
+
+  deps = [
+    "//third_party/fuchsia-sdk:sys",
+    "//third_party/fuchsia-sdk:views_v1",
+  ]
 }
