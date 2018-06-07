@@ -137,6 +137,12 @@ constexpr const char kPrefUserDraggedApp[] = "user_dragged_app_ntp";
 constexpr const char kPrefActivePermissions[] = "active_permissions";
 constexpr const char kPrefGrantedPermissions[] = "granted_permissions";
 
+// The set of permissions that were granted at runtime, rather than at install
+// time. This includes permissions granted through the permissions API and
+// runtime host permissions.
+constexpr const char kPrefRuntimeGrantedPermissions[] =
+    "runtime_granted_permissions";
+
 // The preference names for PermissionSet values.
 constexpr const char kPrefAPIs[] = "api";
 constexpr const char kPrefManifestPermissions[] = "manifest_permissions";
@@ -629,6 +635,40 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
                                 new_value.scriptable_hosts());
 }
 
+void ExtensionPrefs::AddToPrefPermissionSet(const ExtensionId& extension_id,
+                                            const PermissionSet& permissions,
+                                            const char* pref_name) {
+  CHECK(crx_file::id_util::IdIsValid(extension_id));
+  std::unique_ptr<const PermissionSet> current =
+      ReadPrefAsPermissionSet(extension_id, pref_name);
+  std::unique_ptr<const PermissionSet> union_set;
+  if (current)
+    union_set = PermissionSet::CreateUnion(permissions, *current);
+  // The new permissions are the union of the already stored permissions and the
+  // newly added permissions.
+  SetExtensionPrefPermissionSet(extension_id, pref_name,
+                                union_set ? *union_set : permissions);
+}
+
+void ExtensionPrefs::RemoveFromPrefPermissionSet(
+    const ExtensionId& extension_id,
+    const PermissionSet& permissions,
+    const char* pref_name) {
+  CHECK(crx_file::id_util::IdIsValid(extension_id));
+
+  std::unique_ptr<const PermissionSet> current =
+      ReadPrefAsPermissionSet(extension_id, pref_name);
+
+  if (!current)
+    return;  // Nothing to remove.
+
+  // The new permissions are the difference of the already stored permissions
+  // and the newly removed permissions.
+  SetExtensionPrefPermissionSet(
+      extension_id, pref_name,
+      *PermissionSet::CreateDifference(*current, permissions));
+}
+
 int ExtensionPrefs::IncrementAcknowledgePromptCount(
     const std::string& extension_id) {
   int count = 0;
@@ -922,29 +962,14 @@ std::unique_ptr<const PermissionSet> ExtensionPrefs::GetGrantedPermissions(
 
 void ExtensionPrefs::AddGrantedPermissions(const std::string& extension_id,
                                            const PermissionSet& permissions) {
-  CHECK(crx_file::id_util::IdIsValid(extension_id));
-  std::unique_ptr<const PermissionSet> granted =
-      GetGrantedPermissions(extension_id);
-  std::unique_ptr<const PermissionSet> union_set;
-  if (granted)
-    union_set = PermissionSet::CreateUnion(permissions, *granted);
-  // The new granted permissions are the union of the already granted
-  // permissions and the newly granted permissions.
-  SetExtensionPrefPermissionSet(extension_id, kPrefGrantedPermissions,
-                                union_set ? *union_set : permissions);
+  AddToPrefPermissionSet(extension_id, permissions, kPrefGrantedPermissions);
 }
 
 void ExtensionPrefs::RemoveGrantedPermissions(
     const std::string& extension_id,
     const PermissionSet& permissions) {
-  CHECK(crx_file::id_util::IdIsValid(extension_id));
-
-  // The new granted permissions are the difference of the already granted
-  // permissions and the newly ungranted permissions.
-  SetExtensionPrefPermissionSet(
-      extension_id, kPrefGrantedPermissions,
-      *PermissionSet::CreateDifference(*GetGrantedPermissions(extension_id),
-                                       permissions));
+  RemoveFromPrefPermissionSet(extension_id, permissions,
+                              kPrefGrantedPermissions);
 }
 
 std::unique_ptr<const PermissionSet> ExtensionPrefs::GetActivePermissions(
@@ -957,6 +982,27 @@ void ExtensionPrefs::SetActivePermissions(const std::string& extension_id,
                                           const PermissionSet& permissions) {
   SetExtensionPrefPermissionSet(
       extension_id, kPrefActivePermissions, permissions);
+}
+
+std::unique_ptr<const PermissionSet>
+ExtensionPrefs::GetRuntimeGrantedPermissions(
+    const ExtensionId& extension_id) const {
+  CHECK(crx_file::id_util::IdIsValid(extension_id));
+  return ReadPrefAsPermissionSet(extension_id, kPrefRuntimeGrantedPermissions);
+}
+
+void ExtensionPrefs::AddRuntimeGrantedPermissions(
+    const ExtensionId& extension_id,
+    const PermissionSet& permissions) {
+  AddToPrefPermissionSet(extension_id, permissions,
+                         kPrefRuntimeGrantedPermissions);
+}
+
+void ExtensionPrefs::RemoveRuntimeGrantedPermissions(
+    const ExtensionId& extension_id,
+    const PermissionSet& permissions) {
+  RemoveFromPrefPermissionSet(extension_id, permissions,
+                              kPrefRuntimeGrantedPermissions);
 }
 
 void ExtensionPrefs::SetExtensionRunning(const std::string& extension_id,

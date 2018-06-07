@@ -524,4 +524,51 @@ TEST_F(PermissionsUpdaterTest, Delegate) {
   PermissionsUpdater::SetPlatformDelegate(nullptr);
 }
 
+TEST_F(PermissionsUpdaterTest, UpdatingRuntimeGrantedPermissions) {
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .SetManifestKey("optional_permissions",
+                          extensions::ListBuilder().Append("tabs").Build())
+          .Build();
+
+  PermissionsUpdater updater(profile());
+  updater.InitializePermissions(extension.get());
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  // Initially, there should be no runtime-granted permissions.
+  EXPECT_TRUE(prefs->GetRuntimeGrantedPermissions(extension->id())->IsEmpty());
+
+  APIPermissionSet apis;
+  apis.insert(APIPermission::kTab);
+  PermissionSet optional_permissions(apis, ManifestPermissionSet(),
+                                     URLPatternSet(), URLPatternSet());
+
+  // Granting permissions should update runtime-granted permissions.
+  updater.AddPermissions(extension.get(), optional_permissions);
+  EXPECT_EQ(optional_permissions,
+            *prefs->GetRuntimeGrantedPermissions(extension->id()));
+
+  // Removing permissions with REMOVE_SOFT should not remove the permission
+  // from runtime-granted permissions; this happens when the extension opts
+  // into lower privilege.
+  updater.RemovePermissions(extension.get(), optional_permissions,
+                            PermissionsUpdater::REMOVE_SOFT);
+  EXPECT_EQ(optional_permissions,
+            *prefs->GetRuntimeGrantedPermissions(extension->id()));
+
+  // Removing permissions with REMOVE_HARD should remove the permission from
+  // runtime granted permissions; this happens when the user chooses to revoke
+  // the permission.
+  // Note: we need to add back the permission first, so it shows up as a
+  // revokable permission.
+  // TODO(devlin): Inactive, but granted, permissions should be revokable.
+  updater.AddPermissions(extension.get(), optional_permissions);
+  updater.RemovePermissions(extension.get(), optional_permissions,
+                            PermissionsUpdater::REMOVE_HARD);
+  EXPECT_TRUE(prefs->GetRuntimeGrantedPermissions(extension->id())->IsEmpty());
+}
+
 }  // namespace extensions

@@ -1003,4 +1003,92 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
 TEST_F(ExtensionPrefsComponentExtension, ExtensionPrefsComponentExtension) {
 }
 
+// Tests reading and writing runtime granted permissions.
+class ExtensionPrefsRuntimeGrantedPermissions : public ExtensionPrefsTest {
+ public:
+  ExtensionPrefsRuntimeGrantedPermissions() = default;
+  ~ExtensionPrefsRuntimeGrantedPermissions() override {}
+
+  void Initialize() override {
+    extension_a_ = prefs_.AddExtension("a");
+    extension_b_ = prefs_.AddExtension("b");
+
+    // By default, runtime-granted permissions are empty.
+    EXPECT_TRUE(
+        prefs()->GetRuntimeGrantedPermissions(extension_a_->id())->IsEmpty());
+    EXPECT_TRUE(
+        prefs()->GetRuntimeGrantedPermissions(extension_b_->id())->IsEmpty());
+
+    URLPattern example_com(URLPattern::SCHEME_ALL, "https://example.com/*");
+    URLPattern chromium_org(URLPattern::SCHEME_ALL, "https://chromium.org/*");
+
+    {
+      // Add two hosts to the runtime granted permissions. Verify they were
+      // correctly added.
+      URLPatternSet added_urls({example_com, chromium_org});
+      PermissionSet added_permissions(APIPermissionSet(),
+                                      ManifestPermissionSet(), added_urls,
+                                      URLPatternSet());
+      prefs()->AddRuntimeGrantedPermissions(extension_a_->id(),
+                                            added_permissions);
+
+      std::unique_ptr<const PermissionSet> retrieved_permissions =
+          prefs()->GetRuntimeGrantedPermissions(extension_a_->id());
+      ASSERT_TRUE(retrieved_permissions);
+      EXPECT_EQ(added_permissions, *retrieved_permissions);
+    }
+
+    {
+      // Remove one of the hosts. The only remaining host should be
+      // example.com
+      URLPatternSet removed_urls({chromium_org});
+      PermissionSet removed_permissions(APIPermissionSet(),
+                                        ManifestPermissionSet(), removed_urls,
+                                        URLPatternSet());
+      prefs()->RemoveRuntimeGrantedPermissions(extension_a_->id(),
+                                               removed_permissions);
+
+      URLPatternSet remaining_urls({example_com});
+      PermissionSet remaining_permissions(APIPermissionSet(),
+                                          ManifestPermissionSet(),
+                                          remaining_urls, URLPatternSet());
+      std::unique_ptr<const PermissionSet> retrieved_permissions =
+          prefs()->GetRuntimeGrantedPermissions(extension_a_->id());
+      ASSERT_TRUE(retrieved_permissions);
+      EXPECT_EQ(remaining_permissions, *retrieved_permissions);
+    }
+
+    // The second extension should still have no runtime-granted permissions.
+    EXPECT_TRUE(
+        prefs()->GetRuntimeGrantedPermissions(extension_b_->id())->IsEmpty());
+  }
+
+  void Verify() override {
+    {
+      // The first extension should still have example.com as the granted
+      // permission.
+      URLPattern example_com(URLPattern::SCHEME_ALL, "https://example.com/*");
+      URLPatternSet remaining_urls({example_com});
+      PermissionSet remaining_permissions(APIPermissionSet(),
+                                          ManifestPermissionSet(),
+                                          remaining_urls, URLPatternSet());
+      std::unique_ptr<const PermissionSet> retrieved_permissions =
+          prefs()->GetRuntimeGrantedPermissions(extension_a_->id());
+      ASSERT_TRUE(retrieved_permissions);
+      EXPECT_EQ(remaining_permissions, *retrieved_permissions);
+    }
+
+    EXPECT_TRUE(
+        prefs()->GetRuntimeGrantedPermissions(extension_b_->id())->IsEmpty());
+  }
+
+ private:
+  scoped_refptr<const Extension> extension_a_;
+  scoped_refptr<const Extension> extension_b_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsRuntimeGrantedPermissions);
+};
+TEST_F(ExtensionPrefsRuntimeGrantedPermissions,
+       ExtensionPrefsRuntimeGrantedPermissions) {}
+
 }  // namespace extensions

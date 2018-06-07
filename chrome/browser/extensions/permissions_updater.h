@@ -60,6 +60,8 @@ class PermissionsUpdater {
   // Adds the set of |permissions| to the |extension|'s active permission set
   // and sends the relevant messages and notifications. This method assumes the
   // user has already been prompted, if necessary, for the extra permissions.
+  // NOTE: This should only be used for granting permissions that were approved
+  // at runtime, such as from the permissions API or runtime host permissions.
   void AddPermissions(const Extension* extension,
                       const PermissionSet& permissions);
 
@@ -72,6 +74,8 @@ class PermissionsUpdater {
   // the permission, which is the case when the permission is removed by the
   // user. If it's the extension itself removing the permission, it is safe to
   // use REMOVE_SOFT.
+  // NOTE: This should only be used for removing permissions at runtime, such
+  // as through the permissions API or runtime host permissions.
   void RemovePermissions(const Extension* extension,
                          const PermissionSet& permissions,
                          RemoveType remove_type);
