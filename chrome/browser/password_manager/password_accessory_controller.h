@@ -71,11 +71,13 @@ class PasswordAccessoryController
       content::WebContents* web_contents,
       std::unique_ptr<PasswordAccessoryViewInterface> view);
 
-  // Hold the native instance of the view.
-  std::unique_ptr<PasswordAccessoryViewInterface> view_;
-
   // The web page view this accessory sheet and the focused field live in.
   const gfx::NativeView container_view_;
+
+  // Hold the native instance of the view. Must be last declared and initialized
+  // member so the view can be created in the constructor with a fully set up
+  // controller instance.
+  std::unique_ptr<PasswordAccessoryViewInterface> view_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryController);
 };

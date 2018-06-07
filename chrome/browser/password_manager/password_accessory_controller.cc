@@ -20,15 +20,14 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordAccessoryController);
 
 PasswordAccessoryController::PasswordAccessoryController(
     content::WebContents* web_contents)
-    : PasswordAccessoryController(
-          web_contents,
-          PasswordAccessoryViewInterface::Create(this)) {}
+    : container_view_(web_contents->GetNativeView()),
+      view_(PasswordAccessoryViewInterface::Create(this)) {}
 
 // Additional creation functions in unit tests only:
 PasswordAccessoryController::PasswordAccessoryController(
     content::WebContents* web_contents,
     std::unique_ptr<PasswordAccessoryViewInterface> view)
-    : view_(std::move(view)), container_view_(web_contents->GetNativeView()) {}
+    : container_view_(web_contents->GetNativeView()), view_(std::move(view)) {}
 
 PasswordAccessoryController::~PasswordAccessoryController() = default;
 
