@@ -69,6 +69,11 @@ bool PaintRenderingContext2D::ParseColorOrCurrentColor(
   return ::blink::ParseColorOrCurrentColor(color, color_string, nullptr);
 }
 
+// We need to account for the |effective_zoom_| for shadow effects only, and not
+// for line width. This is because the line width is affected by skia's current
+// transform matrix (CTM) while shadows are not. The skia's CTM combines both
+// the canvas context transform and the CSS layout transform. That means, the
+// |effective_zoom_| is implictly applied to line width through CTM.
 double PaintRenderingContext2D::shadowBlur() const {
   return BaseRenderingContext2D::shadowBlur() / effective_zoom_;
 }
