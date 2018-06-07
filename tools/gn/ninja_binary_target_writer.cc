@@ -60,8 +60,8 @@ struct DefineWriter {
   }
 
   void operator()(const std::string& s, std::ostream& out) const {
-    out << " -D";
-    EscapeStringToStream(out, s, options);
+    out << " ";
+    EscapeStringToStream(out, "-D" + s, options);
   }
 
   EscapeOptions options;
