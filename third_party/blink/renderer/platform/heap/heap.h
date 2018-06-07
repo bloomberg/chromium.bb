@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_H_
 
+#include <limits>
 #include <memory>
 
 #include "base/macros.h"
@@ -599,6 +600,15 @@ inline int ThreadHeap::ArenaIndexForObjectSize(size_t size) {
 inline bool ThreadHeap::IsNormalArenaIndex(int index) {
   return index >= BlinkGC::kNormalPage1ArenaIndex &&
          index <= BlinkGC::kNormalPage4ArenaIndex;
+}
+
+// Helper function to convert a byte count to a KB count, capping at
+// INT_MAX if the number is larger than that. Useful for reporting
+// purposes.
+constexpr size_t CappedSizeInKB(size_t size) {
+  size_t size_kb = size / 1024;
+  size_t limit = std::numeric_limits<int>::max();
+  return size_kb > limit ? limit : size_kb;
 }
 
 #define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW() \

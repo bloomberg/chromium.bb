@@ -409,7 +409,7 @@ double ThreadState::HeapGrowingRate() {
       estimated_size > 0 ? 1.0 * current_size / estimated_size : 100;
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadState::heapEstimatedSizeKB",
-                 std::min(estimated_size / 1024, static_cast<size_t>(INT_MAX)));
+                 CappedSizeInKB(estimated_size));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadState::heapGrowingRate",
                  static_cast<int>(100 * growing_rate));
@@ -426,7 +426,7 @@ double ThreadState::PartitionAllocGrowingRate() {
       estimated_size > 0 ? 1.0 * current_size / estimated_size : 100;
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadState::partitionAllocEstimatedSizeKB",
-                 std::min(estimated_size / 1024, static_cast<size_t>(INT_MAX)));
+                 CappedSizeInKB(estimated_size));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadState::partitionAllocGrowingRate",
                  static_cast<int>(100 * growing_rate));
@@ -1001,11 +1001,6 @@ BlinkGCObserver::~BlinkGCObserver() {
 }
 
 namespace {
-
-size_t CappedSizeInKB(size_t size) {
-  return std::min(size / 1024,
-                  static_cast<size_t>(std::numeric_limits<int>::max()));
-}
 
 void UpdateHistogramsAndCounters(const ThreadHeapStatsCollector::Event& event) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, gc_reason_histogram,
