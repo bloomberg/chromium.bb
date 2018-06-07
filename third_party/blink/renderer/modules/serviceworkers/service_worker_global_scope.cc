@@ -167,6 +167,7 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
 
 void ServiceWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
+    const SettingsObject& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   // TODO(nhiroki): Implement module loading for service workers.
   // (https://crbug.com/824647)
