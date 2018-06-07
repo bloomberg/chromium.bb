@@ -56,10 +56,10 @@ shouldBe('testGradient("background-image: linear-gradient(10deg, black 0%, 50%, 
 shouldBe('testGradient("background-image: linear-gradient(black, 10% 20%, white)")', '"none"');
 shouldBe('testGradient("background-image: linear-gradient(black 10% 20% 30%, white)")', '"none"');
 shouldBe('testGradient("background-image: linear-gradient(black 10% 20%, white 100px 200px 300px)")', '"none"');
-shouldBe('testGradient("background-image: linear-gradient(black 10% 20%, white)")', '"linear-gradient(black 10% 20%, white)"');
-shouldBe('testGradient("background-image: linear-gradient(black, white 100px 200px)")', '"linear-gradient(black, white 100px 200px)"');
-shouldBe('testGradient("background-image: linear-gradient(black 10% 20%, white 100px 200px)")', '"linear-gradient(black 10% 20%, white 100px 200px)"');
-shouldBe('testGradient("background-image: linear-gradient(black 10% 20%, 50%, white 100px 200px)")', '"linear-gradient(black 10% 20%, 50%, white 100px 200px)"');
+shouldBe('testGradient("background-image: linear-gradient(black 10% 20%, white)")', '"linear-gradient(black 10%, black 20%, white)"');
+shouldBe('testGradient("background-image: linear-gradient(black, white 100px 200px)")', '"linear-gradient(black, white 100px, white 200px)"');
+shouldBe('testGradient("background-image: linear-gradient(black 10% 20%, white 100px 200px)")', '"linear-gradient(black 10%, black 20%, white 100px, white 200px)"');
+shouldBe('testGradient("background-image: linear-gradient(black 10% 20%, 50%, white 100px 200px)")', '"linear-gradient(black 10%, black 20%, 50%, white 100px, white 200px)"');
 
 debug('<p>repeating-linear-gradient</p>');
 shouldBe('testGradient("background-image: repeating-linear-gradient(black, white)")', '"repeating-linear-gradient(black, white)"');
@@ -104,10 +104,10 @@ shouldBe('testGradient("background-image: radial-gradient(10px 10px at center, w
 shouldBe('testGradient("background-image: radial-gradient(black, 10% 20%, white)")', '"none"');
 shouldBe('testGradient("background-image: radial-gradient(black 10% 20% 30%, white)")', '"none"');
 shouldBe('testGradient("background-image: radial-gradient(black 10% 20%, white 100px 200px 300px)")', '"none"');
-shouldBe('testGradient("background-image: radial-gradient(black 10% 20%, white)")', '"radial-gradient(black 10% 20%, white)"');
-shouldBe('testGradient("background-image: radial-gradient(black, white 100px 200px)")', '"radial-gradient(black, white 100px 200px)"');
-shouldBe('testGradient("background-image: radial-gradient(black 10% 20%, white 100px 200px)")', '"radial-gradient(black 10% 20%, white 100px 200px)"');
-shouldBe('testGradient("background-image: radial-gradient(black 10% 20%, 50%, white 100px 200px)")', '"radial-gradient(black 10% 20%, 50%, white 100px 200px)"');
+shouldBe('testGradient("background-image: radial-gradient(black 10% 20%, white)")', '"radial-gradient(black 10%, black 20%, white)"');
+shouldBe('testGradient("background-image: radial-gradient(black, white 100px 200px)")', '"radial-gradient(black, white 100px, white 200px)"');
+shouldBe('testGradient("background-image: radial-gradient(black 10% 20%, white 100px 200px)")', '"radial-gradient(black 10%, black 20%, white 100px, white 200px)"');
+shouldBe('testGradient("background-image: radial-gradient(black 10% 20%, 50%, white 100px 200px)")', '"radial-gradient(black 10%, black 20%, 50%, white 100px, white 200px)"');
 
 debug('<p>repeating-radial-gradient</p>');
 shouldBe('testGradient("background-image: repeating-radial-gradient(white, black)")', '"repeating-radial-gradient(white, black)"');
