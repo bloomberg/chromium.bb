@@ -213,10 +213,10 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     cm->op_params[0].decoder_model_param_present_flag = 0;
     cm->op_params[0].display_model_param_present_flag = 0;
   } else {
-    seq_params->display_model_info_present_flag = aom_rb_read_bit(rb);
     seq_params->decoder_model_info_present_flag = aom_rb_read_bit(rb);
     if (seq_params->decoder_model_info_present_flag)
       av1_read_decoder_model_info(cm, rb);
+    seq_params->display_model_info_present_flag = aom_rb_read_bit(rb);
     seq_params->operating_points_cnt_minus_1 =
         aom_rb_read_literal(rb, OP_POINTS_CNT_MINUS_1_BITS);
     for (int i = 0; i < seq_params->operating_points_cnt_minus_1 + 1; i++) {

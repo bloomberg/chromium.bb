@@ -3541,11 +3541,11 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   if (cm->seq_params.reduced_still_picture_hdr) {
     write_bitstream_level(cm->seq_params.level[0], &wb);
   } else {
-    aom_wb_write_bit(&wb, cm->seq_params.display_model_info_present_flag);
     aom_wb_write_bit(&wb, cm->seq_params.decoder_model_info_present_flag);
     if (cm->seq_params.decoder_model_info_present_flag) {
       write_decoder_model_info(cm, &wb);
     }
+    aom_wb_write_bit(&wb, cm->seq_params.display_model_info_present_flag);
     aom_wb_write_literal(&wb, cm->seq_params.operating_points_cnt_minus_1,
                          OP_POINTS_CNT_MINUS_1_BITS);
     int i;
