@@ -30,6 +30,10 @@ class ResourcePoolTest : public testing::Test {
         ResourcePool::kDefaultExpirationDelay, false);
   }
 
+  void TearDown() override {
+    resource_provider_->ShutdownAndReleaseAllResources();
+  }
+
  protected:
   class StubGpuBacking : public ResourcePool::GpuBacking {
    public:

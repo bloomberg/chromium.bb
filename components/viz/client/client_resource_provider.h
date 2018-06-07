@@ -74,12 +74,32 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
   // originally, once the resource is no longer in use by any compositor frame.
   void RemoveImportedResource(ResourceId);
 
+  // Call this to indicate that the connection to the parent is lost and
+  // resources previously exported will not be able to be returned. If |lose| is
+  // true, the resources are also marked as lost, to indicate the state of each
+  // resource can not be known, and/or they can not be reused.
+  //
+  // When a resource is sent to the parent (via PrepareSendToParent) it is put
+  // into an exported state, preventing it from being released until the parent
+  // returns the resource. Calling this drops that exported state on all
+  // resources allowing immediate release of them if they are removed via
+  // RemoveImportedResource().
+  void ReleaseAllExportedResources(bool lose);
+
+  // Immediately runs the SingleReleaseCallback for all resources that have been
+  // previously imported and removed, but not released yet. There should not be
+  // any imported resources yet when this is called, as they can be removed
+  // first via RemoveImportedResource(), and potentially avoid being lost.
+  void ShutdownAndReleaseAllResources();
+
   // Verify that the ResourceId is valid and is known to this class, for debug
   // checks.
   void ValidateResource(ResourceId id) const;
 
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(ResourceId id);
+
+  size_t num_resources_for_testing() const;
 
   class VIZ_CLIENT_EXPORT ScopedSkSurface {
    public:

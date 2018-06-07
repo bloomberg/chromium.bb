@@ -8357,18 +8357,23 @@ class BlendStateCheckLayer : public LayerImpl {
                        int id,
                        viz::ClientResourceProvider* resource_provider)
       : LayerImpl(tree_impl, id),
+        resource_provider_(resource_provider),
         blend_(false),
         has_render_surface_(false),
         comparison_layer_(nullptr),
         quads_appended_(false),
         quad_rect_(5, 5, 5, 5),
         quad_visible_rect_(5, 5, 5, 5) {
-    resource_id_ = resource_provider->ImportResource(
+    resource_id_ = resource_provider_->ImportResource(
         viz::TransferableResource::MakeSoftware(
             viz::SharedBitmap::GenerateId(), gfx::Size(1, 1), viz::RGBA_8888),
         viz::SingleReleaseCallback::Create(base::DoNothing()));
     SetBounds(gfx::Size(10, 10));
     SetDrawsContent(true);
+  }
+
+  void ReleaseResources() override {
+    resource_provider_->RemoveImportedResource(resource_id_);
   }
 
   void AppendQuads(viz::RenderPass* render_pass,
@@ -8417,6 +8422,7 @@ class BlendStateCheckLayer : public LayerImpl {
   }
 
  private:
+  viz::ClientResourceProvider* resource_provider_;
   bool blend_;
   bool has_render_surface_;
   LayerImpl* comparison_layer_;

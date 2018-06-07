@@ -272,23 +272,11 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     : client_(client),
       task_runner_provider_(task_runner_provider),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
-      need_update_gpu_rasterization_status_(false),
-      content_has_slow_paths_(false),
-      content_has_non_aa_paint_(false),
-      has_gpu_rasterization_trigger_(false),
-      use_gpu_rasterization_(false),
-      use_msaa_(false),
-      gpu_rasterization_status_(GpuRasterizationStatus::OFF_DEVICE),
-      input_handler_client_(nullptr),
-      did_lock_scrolling_layer_(false),
-      wheel_scrolling_(false),
-      scroll_affects_scroll_handler_(false),
-      tile_priorities_dirty_(false),
       settings_(settings),
-      visible_(false),
-      cached_managed_memory_policy_(settings.memory_policy),
       is_synchronous_single_threaded_(!task_runner_provider->HasImplThread() &&
-                                      !settings.single_thread_proxy_scheduler),
+                                      !settings_.single_thread_proxy_scheduler),
+      resource_provider_(settings_.delegated_sync_points_required),
+      cached_managed_memory_policy_(settings.memory_policy),
       // Must be initialized after is_synchronous_single_threaded_ and
       // task_runner_provider_.
       tile_manager_(this,
@@ -298,28 +286,17 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                         ? std::numeric_limits<size_t>::max()
                         : settings.scheduled_raster_task_limit,
                     settings.ToTileManagerSettings()),
-      pinch_gesture_active_(false),
-      pinch_gesture_end_should_clear_scrolling_node_(false),
       fps_counter_(
           FrameRateCounter::Create(task_runner_provider_->HasImplThread())),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
-      max_memory_needed_bytes_(0),
-      resourceless_software_draw_(false),
       mutator_host_(std::move(mutator_host)),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       task_graph_runner_(task_graph_runner),
       id_(id),
-      requires_high_res_to_draw_(false),
-      is_likely_to_require_a_draw_(false),
-      has_valid_layer_tree_frame_sink_(false),
       consecutive_frame_with_damage_count_(settings.damaged_frame_limit),
       scroll_animating_latched_element_id_(kInvalidElementId),
-      has_scrolled_by_wheel_(false),
-      has_scrolled_by_touch_(false),
-      touchpad_and_wheel_scroll_latching_enabled_(false),
-      impl_thread_phase_(ImplThreadPhase::IDLE),
       // It is safe to use base::Unretained here since we will outlive the
       // ImageAnimationController.
       image_animation_controller_(
@@ -327,9 +304,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
           base::BindRepeating(
               &LayerTreeHostImpl::RequestInvalidationForAnimatedImages,
               base::Unretained(this)),
-          settings_.enable_image_animation_resync),
-      default_color_space_id_(gfx::ColorSpace::GetNextId()),
-      default_color_space_(gfx::ColorSpace::CreateSRGB()) {
+          settings_.enable_image_animation_resync) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -364,13 +339,15 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                                      "cc::LayerTreeHostImpl", id_);
 
-  // It is released before shutdown.
+  // The frame sink is released before shutdown, which takes down
+  // all the resource and raster structures.
   DCHECK(!layer_tree_frame_sink_);
-
-  DCHECK(!resource_provider_);
   DCHECK(!resource_pool_);
-  DCHECK(!single_thread_synchronous_task_graph_runner_);
   DCHECK(!image_decode_cache_);
+  DCHECK(!single_thread_synchronous_task_graph_runner_);
+
+  // All resources should already be removed, so lose anything still exported.
+  resource_provider_.ShutdownAndReleaseAllResources();
 
   if (input_handler_client_) {
     input_handler_client_->WillShutdown();
@@ -1078,7 +1055,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       bool occluded =
           layer->draw_properties().occlusion_in_content_space.IsOccluded(
               layer->visible_layer_rect());
-      if (!occluded && layer->WillDraw(draw_mode, resource_provider_.get())) {
+      if (!occluded && layer->WillDraw(draw_mode, &resource_provider_)) {
         DCHECK_EQ(active_tree_.get(), layer->layer_tree_impl());
 
         frame->will_draw_layers.push_back(layer);
@@ -1761,12 +1738,7 @@ void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t frame_token) {}
 
 void LayerTreeHostImpl::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
-  // TODO(piman): We may need to do some validation on this ack before
-  // processing it.
-  if (!resource_provider_)
-    return;
-
-  resource_provider_->ReceiveReturnsFromParent(resources);
+  resource_provider_.ReceiveReturnsFromParent(resources);
 
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.
@@ -2000,7 +1972,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   if (active_tree_->hud_layer()) {
     TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
     active_tree_->hud_layer()->UpdateHudTexture(
-        draw_mode, layer_tree_frame_sink_, resource_provider_.get(),
+        draw_mode, layer_tree_frame_sink_, &resource_provider_,
         // The hud uses Gpu rasterization if the device is capable, not related
         // to the content of the web page.
         gpu_rasterization_status_ != GpuRasterizationStatus::OFF_DEVICE,
@@ -2059,7 +2031,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   viz::CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
-  resource_provider_->PrepareSendToParent(
+  resource_provider_.PrepareSendToParent(
       resources, &compositor_frame.resource_list,
       layer_tree_frame_sink_->context_provider());
   compositor_frame.render_pass_list = std::move(frame->render_passes);
@@ -2112,7 +2084,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
 void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
   for (size_t i = 0; i < frame.will_draw_layers.size(); ++i)
-    frame.will_draw_layers[i]->DidDraw(resource_provider_.get());
+    frame.will_draw_layers[i]->DidDraw(&resource_provider_);
 
   for (auto* it : video_frame_controllers_)
     it->DidDrawFrame();
@@ -3010,25 +2982,44 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
 
   has_valid_layer_tree_frame_sink_ = false;
 
-  // Since we will create a new resource provider, we cannot continue to use
-  // the old resources (i.e. render_surfaces and texture IDs). Clear them
-  // before we destroy the old resource provider.
   ReleaseTreeResources();
-
-  // Note: ui resource cleanup uses the |resource_provider_|.
   CleanUpTileManagerResources();
   resource_pool_ = nullptr;
   ClearUIResources();
-  resource_provider_ = nullptr;
 
   // Release any context visibility before we destroy the LayerTreeFrameSink.
   SetContextVisibility(false);
+
+  bool all_resources_are_lost = layer_tree_frame_sink_->context_provider();
 
   // Detach from the old LayerTreeFrameSink and reset |layer_tree_frame_sink_|
   // pointer as this surface is going to be destroyed independent of if binding
   // the new LayerTreeFrameSink succeeds or not.
   layer_tree_frame_sink_->DetachFromClient();
   layer_tree_frame_sink_ = nullptr;
+
+  // If gpu compositing, then any resources created with the gpu context in the
+  // LayerTreeFrameSink were exported to the display compositor may be modified
+  // by it, and thus we would be unable to determine what state they are in, in
+  // order to reuse them, so they must be lost. In software compositing, the
+  // resources are not modified by the display compositor (there is no stateful
+  // metadata for shared memory), so we do not need to consider them lost.
+  //
+  // In both cases, the resources that are exported to the display compositor
+  // will have no means of being returned to this client without the
+  // LayerTreeFrameSink, so they should no longer be considered as exported.
+  // Do this *after* any interactions with the |layer_tree_frame_sink_| in case
+  // it tries to return resources during destruction.
+  //
+  // The assumption being made here is that the display compositor WILL NOT use
+  // any resources previously exported when the CompositorFrameSink is closed.
+  // This should be true as the connection is closed when the display compositor
+  // shuts down/crashes, or when it believes we are a malicious client in which
+  // case it will not display content from the previous CompositorFrameSink. If
+  // this assumption is violated, we may modify resources no longer considered
+  // as exported while the display compositor is still making use of them,
+  // leading to visual mistakes.
+  resource_provider_.ReleaseAllExportedResources(all_resources_are_lost);
 
   // We don't know if the next LayerTreeFrameSink will support GPU
   // rasterization. Make sure to clear the flag so that we force a
@@ -3060,12 +3051,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
     max_texture_size_ = 16 * 1024;
   }
 
-  // TODO(danakj): Move delegated_sync_points_required to LayerTreeSettings,
-  // then don't recreate this when the LayerTreeFrameSink changes.
-  resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
-      settings_.delegated_sync_points_required);
   resource_pool_ = std::make_unique<ResourcePool>(
-      resource_provider_.get(), layer_tree_frame_sink_->context_provider(),
+      &resource_provider_, layer_tree_frame_sink_->context_provider(),
       GetTaskRunner(), ResourcePool::kDefaultExpirationDelay,
       settings_.disallow_non_exact_resource_reuse);
 
@@ -4990,7 +4977,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
                                                            upload_size, format);
   }
   transferable.color_space = color_space;
-  id = resource_provider_->ImportResource(
+  id = resource_provider_.ImportResource(
       transferable,
       // The OnUIResourceReleased method is bound with a WeakPtr, but the
       // resource backing will be deleted when the LayerTreeFrameSink is
@@ -5022,7 +5009,7 @@ void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
     deleted_ui_resources_[uid] = std::move(data);
     ui_resource_map_.erase(it);
 
-    resource_provider_->RemoveImportedResource(id);
+    resource_provider_.RemoveImportedResource(id);
   }
   MarkUIResourceNotEvicted(uid);
 }
@@ -5063,7 +5050,7 @@ void LayerTreeHostImpl::ClearUIResources() {
   for (auto& pair : ui_resource_map_) {
     UIResourceId uid = pair.first;
     UIResourceData& data = pair.second;
-    resource_provider_->RemoveImportedResource(data.resource_id_for_export);
+    resource_provider_.RemoveImportedResource(data.resource_id_for_export);
     // Immediately drop the backing instead of waiting for the resource to be
     // returned from the ResourceProvider, as this is called in cases where the
     // ability to clean up the backings will go away (context loss, shutdown).

@@ -540,6 +540,10 @@ class GLRendererShaderTest : public GLRendererTest {
     child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
   }
 
+  ~GLRendererShaderTest() override {
+    child_resource_provider_->ShutdownAndReleaseAllResources();
+  }
+
   void TestRenderPassProgram(TexCoordPrecision precision,
                              BlendMode blend_mode) {
     const Program* program = renderer_->GetProgramIfInitialized(
@@ -969,6 +973,12 @@ class TextureStateTrackingGLES2Interface : public TestGLES2Interface {
 };
 
 TEST_F(GLRendererTest, ActiveTextureState) {
+  auto child_gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
+  auto child_context_provider =
+      TestContextProvider::Create(std::move(child_gl_owned));
+  child_context_provider->BindToCurrentThread();
+  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
+
   auto gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
   gl_owned->set_have_extension_egl_image(true);
   auto* gl = gl_owned.get();
@@ -995,13 +1005,6 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
   // During initialization we are allowed to set any texture parameters.
   EXPECT_CALL(*gl, TexParameteri(_, _, _)).Times(AnyNumber());
-
-  auto child_gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
-
-  auto child_context_provider =
-      TestContextProvider::Create(std::move(child_gl_owned));
-  child_context_provider->BindToCurrentThread();
-  auto child_resource_provider = std::make_unique<ClientResourceProvider>(true);
 
   RenderPass* root_pass =
       cc::AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(100, 100),
@@ -1051,6 +1054,8 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   gfx::Size viewport_size(100, 100);
   DrawFrame(&renderer, viewport_size);
   Mock::VerifyAndClearExpectations(gl);
+
+  child_resource_provider->ShutdownAndReleaseAllResources();
 }
 
 class NoClearRootRenderPassMockGLES2Interface : public TestGLES2Interface {
@@ -2184,6 +2189,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // being in use.
   parent_resource_provider->DeclareUsedResourcesFromChild(child_id,
                                                           ResourceIdSet());
+
+  child_resource_provider->RemoveImportedResource(resource_id);
+  child_resource_provider->ShutdownAndReleaseAllResources();
 }
 
 class SingleOverlayOnTopProcessor : public OverlayProcessor {
@@ -2345,6 +2353,9 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   // being in use.
   parent_resource_provider->DeclareUsedResourcesFromChild(child_id,
                                                           ResourceIdSet());
+
+  child_resource_provider->RemoveImportedResource(resource_id);
+  child_resource_provider->ShutdownAndReleaseAllResources();
 }
 
 class OutputColorMatrixMockGLES2Interface : public TestGLES2Interface {
@@ -2730,6 +2741,9 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   // being in use.
   parent_resource_provider->DeclareUsedResourcesFromChild(child_id,
                                                           ResourceIdSet());
+
+  child_resource_provider->RemoveImportedResource(resource_id);
+  child_resource_provider->ShutdownAndReleaseAllResources();
 }
 
 class GLRendererWithMockContextTest : public ::testing::Test {

@@ -299,6 +299,10 @@ ResourceId CreateResource(DisplayResourceProvider* parent_resource_provider,
                                                child_context_provider);
   parent_resource_provider->ReceiveFromChild(child_id, list);
 
+  // Delete it in the child so it won't be leaked, and will be released once
+  // returned from the parent.
+  child_resource_provider->RemoveImportedResource(resource_id);
+
   // In DisplayResourceProvider's namespace, use the mapped resource id.
   std::unordered_map<ResourceId, ResourceId> resource_map =
       parent_resource_provider->GetChildToParentMap(child_id);
@@ -532,6 +536,17 @@ class OverlayTest : public testing::Test {
     overlay_processor_ =
         std::make_unique<OverlayProcessor>(output_surface_.get());
     overlay_processor_->Initialize();
+  }
+
+  void TearDown() override {
+    overlay_processor_ = nullptr;
+    child_resource_provider_->ShutdownAndReleaseAllResources();
+    child_resource_provider_ = nullptr;
+    child_provider_ = nullptr;
+    resource_provider_ = nullptr;
+    shared_bitmap_manager_ = nullptr;
+    output_surface_ = nullptr;
+    provider_ = nullptr;
   }
 
   scoped_refptr<TestContextProvider> provider_;
@@ -2589,6 +2604,10 @@ class GLRendererWithOverlaysTest : public testing::Test {
     child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
     child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
+  }
+
+  ~GLRendererWithOverlaysTest() override {
+    child_resource_provider_->ShutdownAndReleaseAllResources();
   }
 
   void Init(bool use_validator) {

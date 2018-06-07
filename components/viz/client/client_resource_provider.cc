@@ -5,6 +5,7 @@
 #include "components/viz/client/client_resource_provider.h"
 
 #include "base/bits.h"
+#include "base/debug/stack_trace.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -28,6 +29,10 @@ struct ClientResourceProvider::ImportedResource {
 
   gpu::SyncToken returned_sync_token;
   bool returned_lost = false;
+
+#if DCHECK_IS_ON()
+  base::debug::StackTrace stack_trace;
+#endif
 
   ImportedResource(ResourceId id,
                    const TransferableResource& resource,
@@ -55,13 +60,13 @@ ClientResourceProvider::ClientResourceProvider(
 }
 
 ClientResourceProvider::~ClientResourceProvider() {
-  for (auto& pair : imported_resources_) {
-    ImportedResource& imported = pair.second;
-    // If the resource is exported we can't report when it can be used again
-    // once this class is destroyed, so consider the resource lost.
-    bool is_lost = imported.exported_count || imported.returned_lost;
-    imported.release_callback->Run(imported.returned_sync_token, is_lost);
-  }
+  // If this fails, there are outstanding resources exported that should be
+  // lost and returned by calling ShutdownAndReleaseAllResources(), or there
+  // are resources that were imported without being removed by
+  // RemoveImportedResource(). In either case, calling
+  // ShutdownAndReleaseAllResources() will help, as it will report which
+  // resources were imported without being removed as well.
+  DCHECK(imported_resources_.empty());
 }
 
 gpu::SyncToken ClientResourceProvider::GenerateSyncTokenHelper(
@@ -182,6 +187,45 @@ void ClientResourceProvider::RemoveImportedResource(ResourceId id) {
   }
 }
 
+void ClientResourceProvider::ReleaseAllExportedResources(bool lose) {
+  std::vector<ResourceId> to_remove;
+  for (auto& pair : imported_resources_) {
+    ImportedResource& imported = pair.second;
+    if (!imported.exported_count)
+      continue;
+    imported.exported_count = 0;
+    imported.returned_lost |= lose;
+    if (imported.marked_for_deletion) {
+      imported.release_callback->Run(imported.returned_sync_token,
+                                     imported.returned_lost);
+      to_remove.push_back(pair.first);
+    }
+  }
+  for (ResourceId id : to_remove)
+    imported_resources_.erase(id);
+}
+
+void ClientResourceProvider::ShutdownAndReleaseAllResources() {
+  for (auto& pair : imported_resources_) {
+    ImportedResource& imported = pair.second;
+
+#if DCHECK_IS_ON()
+    // If this is false, then the resource has not been removed via
+    // RemoveImportedResource(), and all resources should be removed before
+    // we resort to marking resources as lost during shutdown.
+    DCHECK(imported.marked_for_deletion)
+        << "id: " << pair.first << " from:\n"
+        << imported.stack_trace.ToString() << "===";
+    DCHECK(imported.exported_count) << "id: " << pair.first << " from:\n"
+                                    << imported.stack_trace.ToString() << "===";
+#endif
+
+    imported.release_callback->Run(imported.returned_sync_token,
+                                   /*is_lost=*/true);
+  }
+  imported_resources_.clear();
+}
+
 ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
     GrContext* gr_context,
     GLuint texture_id,
@@ -234,6 +278,10 @@ bool ClientResourceProvider::InUseByConsumer(ResourceId id) {
   DCHECK(it != imported_resources_.end());
   ImportedResource& imported = it->second;
   return imported.exported_count > 0 || imported.returned_lost;
+}
+
+size_t ClientResourceProvider::num_resources_for_testing() const {
+  return imported_resources_.size();
 }
 
 }  // namespace viz
