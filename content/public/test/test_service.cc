@@ -44,6 +44,10 @@ void TestService::DoTerminateProcess(DoTerminateProcessCallback callback) {
   NOTREACHED();
 }
 
+void TestService::DoCrashImmediately(DoCrashImmediatelyCallback callback) {
+  NOTREACHED();
+}
+
 void TestService::CreateFolder(CreateFolderCallback callback) {
   NOTREACHED();
 }
