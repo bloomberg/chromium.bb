@@ -5,6 +5,7 @@
 #include "components/browser_sync/sync_auth_manager.h"
 
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
@@ -129,11 +130,53 @@ TEST_F(SyncAuthManagerTest, ForwardsPrimaryAccountEvents) {
 }
 #endif  // !OS_CHROMEOS
 
+TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
+  // Start out already signed in before the SyncAuthManager is created.
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+
+  base::MockCallback<AccountStateChangedCallback> account_state_changed;
+  base::MockCallback<CredentialsChangedCallback> credentials_changed;
+  EXPECT_CALL(account_state_changed, Run()).Times(0);
+  EXPECT_CALL(credentials_changed, Run()).Times(0);
+  auto auth_manager =
+      CreateAuthManager(account_state_changed.Get(), credentials_changed.Get());
+
+  ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+
+  auth_manager->RegisterForAuthNotifications();
+
+  // During Sync startup, the SyncEngine attempts to connect to the server
+  // without an access token, resulting in a call to ConnectionStatusChanged
+  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
+  // fetch.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+
+  // Once an access token is available, the callback should get run.
+  EXPECT_CALL(credentials_changed, Run());
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+
+  // Now the refresh token gets updated. The access token will get dropped, so
+  // this should cause another notification.
+  EXPECT_CALL(credentials_changed, Run());
+  identity_env()->SetRefreshTokenForAccount(account_id);
+  ASSERT_TRUE(auth_manager->GetCredentials().sync_token.empty());
+
+  // And finally, once a new token is available, there's another notification.
+  EXPECT_CALL(credentials_changed, Run());
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token_2", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token_2");
+}
+
 TEST_F(SyncAuthManagerTest, RequestsAccessTokenOnSyncStartup) {
   std::string account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com");
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
 
   // During Sync startup, the SyncEngine attempts to connect to the server
   // without an access token, resulting in a call to ConnectionStatusChanged
@@ -147,11 +190,13 @@ TEST_F(SyncAuthManagerTest, RequestsAccessTokenOnSyncStartup) {
   EXPECT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
 }
 
-TEST_F(SyncAuthManagerTest, RetriesAccessTokenFetchOnTransientFailure) {
+TEST_F(SyncAuthManagerTest,
+       RetriesAccessTokenFetchWithBackoffOnTransientFailure) {
   std::string account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com");
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
 
   // During Sync startup, the SyncEngine attempts to connect to the server
   // without an access token, resulting in a call to ConnectionStatusChanged
@@ -162,7 +207,8 @@ TEST_F(SyncAuthManagerTest, RetriesAccessTokenFetchOnTransientFailure) {
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError::FromConnectionError(net::ERR_TIMED_OUT));
 
-  // Access token fetch should get retried, without exposing an auth error.
+  // The access token fetch should get retried (with backoff, hence no actual
+  // request yet), without exposing an auth error.
   EXPECT_TRUE(auth_manager->IsRetryingAccessTokenFetchForTest());
   EXPECT_EQ(auth_manager->GetLastAuthError(),
             GoogleServiceAuthError::AuthErrorNone());
@@ -173,6 +219,7 @@ TEST_F(SyncAuthManagerTest, AbortsAccessTokenFetchOnPersistentFailure) {
       identity_env()->MakePrimaryAccountAvailable("test@email.com");
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
 
   // During Sync startup, the SyncEngine attempts to connect to the server
   // without an access token, resulting in a call to ConnectionStatusChanged
@@ -192,11 +239,39 @@ TEST_F(SyncAuthManagerTest, AbortsAccessTokenFetchOnPersistentFailure) {
   EXPECT_EQ(auth_manager->GetLastAuthError(), auth_error);
 }
 
+TEST_F(SyncAuthManagerTest, FetchesNewAccessTokenWithBackoffOnServerError) {
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+  auto auth_manager = CreateAuthManager();
+  ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
+
+  // During Sync startup, the SyncEngine attempts to connect to the server
+  // without an access token, resulting in a call to ConnectionStatusChanged
+  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
+  // fetch.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+
+  // But now the server is still returning AUTH_ERROR - maybe something's wrong
+  // with the token.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+
+  // The access token fetch should get retried (with backoff, hence no actual
+  // request yet), without exposing an auth error.
+  EXPECT_TRUE(auth_manager->IsRetryingAccessTokenFetchForTest());
+  EXPECT_EQ(auth_manager->GetLastAuthError(),
+            GoogleServiceAuthError::AuthErrorNone());
+}
+
 TEST_F(SyncAuthManagerTest, ExposesServerError) {
   std::string account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com");
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
 
   // During Sync startup, the SyncEngine attempts to connect to the server
   // without an access token, resulting in a call to ConnectionStatusChanged
@@ -218,11 +293,12 @@ TEST_F(SyncAuthManagerTest, ExposesServerError) {
   EXPECT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
 }
 
-TEST_F(SyncAuthManagerTest, RequestsNewAccesTokenOnExpiry) {
+TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnExpiry) {
   std::string account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com");
   auto auth_manager = CreateAuthManager();
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
 
   // During Sync startup, the SyncEngine attempts to connect to the server
   // without an access token, resulting in a call to ConnectionStatusChanged
@@ -248,6 +324,64 @@ TEST_F(SyncAuthManagerTest, RequestsNewAccesTokenOnExpiry) {
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token_2", base::Time::Now() + base::TimeDelta::FromHours(1));
   EXPECT_EQ(auth_manager->GetCredentials().sync_token, "access_token_2");
+}
+
+TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnRefreshTokenUpdate) {
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+  auto auth_manager = CreateAuthManager();
+  ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
+
+  // During Sync startup, the SyncEngine attempts to connect to the server
+  // without an access token, resulting in a call to ConnectionStatusChanged
+  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
+  // fetch.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+
+  // Now everything is okay for a while.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_OK);
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+  ASSERT_EQ(auth_manager->GetLastAuthError(),
+            GoogleServiceAuthError::AuthErrorNone());
+
+  // But then the refresh token changes.
+  identity_env()->SetRefreshTokenForAccount(account_id);
+
+  // Should immediately drop the access token and fetch a new one (no backoff).
+  EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
+
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token_2", base::Time::Now() + base::TimeDelta::FromHours(1));
+  EXPECT_EQ(auth_manager->GetCredentials().sync_token, "access_token_2");
+}
+
+TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenAutonomously) {
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+  auto auth_manager = CreateAuthManager();
+  ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
+
+  // Enable auto-granting of access tokens, so that we can later verify none was
+  // requested.
+  identity_env()->SetAutomaticIssueOfAccessTokens(true);
+
+  // Do *not* call ConnectionStatusChanged here (which is what usually kicks off
+  // the token fetch).
+
+  // Now the refresh token gets updated. If we already had an access token
+  // before, then this should trigger a new fetch. But since that initial fetch
+  // never happened (e.g. because Sync is turned off), this should do nothing.
+  identity_env()->SetRefreshTokenForAccount(account_id);
+
+  // Spin the message loop to make sure no access token request was sent.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
 }
 
 }  // namespace
