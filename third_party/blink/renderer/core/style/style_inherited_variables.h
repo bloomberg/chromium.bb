@@ -51,7 +51,7 @@ class StyleInheritedVariables : public RefCounted<StyleInheritedVariables> {
   friend class CSSVariableResolver;
 
   HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;
-  HashMap<AtomicString, Persistent<CSSValue>> registered_data_;
+  PersistentHeapHashMap<AtomicString, Member<CSSValue>> registered_data_;
   scoped_refptr<StyleInheritedVariables> root_;
 };
 

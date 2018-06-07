@@ -76,7 +76,6 @@ void StyleInheritedVariables::RemoveVariable(const AtomicString& name) {
 
 HashMap<AtomicString, scoped_refptr<CSSVariableData>>
 StyleInheritedVariables::GetVariables() const {
-  std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>> result;
   if (root_) {
     HashMap<AtomicString, scoped_refptr<CSSVariableData>> result(root_->data_);
     for (const auto& pair : data_)
