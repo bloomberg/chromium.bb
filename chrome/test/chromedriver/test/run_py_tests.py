@@ -2623,6 +2623,7 @@ class ExistingUserDataDirTest(ChromeDriverBaseTest):
     self.user_data_dir = tempfile.mkdtemp()
 
   def tearDown(self):
+    super(ExistingUserDataDirTest, self).tearDown()
     shutil.rmtree(self.user_data_dir, ignore_errors=True)
 
   def testStartUpWithExistingDevToolsPortFile(self):
