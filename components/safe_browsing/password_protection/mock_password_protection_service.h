@@ -17,6 +17,7 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MockPasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      history::HistoryService* history_service,
       scoped_refptr<HostContentSettingsMap> content_setting_map);
   ~MockPasswordProtectionService() override;
 

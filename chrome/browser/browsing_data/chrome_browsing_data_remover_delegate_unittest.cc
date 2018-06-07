@@ -96,6 +96,7 @@
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #else  // !defined(OS_ANDROID)
+#include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "content/public/browser/host_zoom_map.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -2852,6 +2853,18 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
   auto* content_setting_registry =
       content_settings::ContentSettingsRegistry::GetInstance();
 
+#if !defined(OS_ANDROID)
+  auto* history_service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(profile);
+  // Create a PasswordProtectionService that will handle deletion of
+  // CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION entries. The mock is sufficient
+  // as we don't need to rely any functionality of the Chrome* implementation.
+  safe_browsing::MockPasswordProtectionService password_protection_service(
+      nullptr, nullptr, history_service, map);
+  EXPECT_CALL(password_protection_service,
+              RemoveUnhandledSyncPasswordReuseOnURLsDeleted(true, _));
+#endif  // !defined(OS_ANDROID)
+
   GURL url("https://example.com");
 
   // Whitelist of types that don't have to be deletable.
@@ -2866,9 +2879,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
       // TODO(710873): Make sure that these get fixed:
       // Not deleted but should be deleted with history?
       CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
-      // Is cleared in PasswordProtectionService::CleanUpExpiredVerdicts()
-      // but not when CBD is executed.
-      CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
   };
 
   // Set a value for every WebsiteSetting.

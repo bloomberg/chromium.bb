@@ -65,6 +65,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
       scoped_refptr<HostContentSettingsMap> content_setting_map)
       : MockPasswordProtectionService(database_manager,
                                       url_loader_factory,
+                                      nullptr,
                                       content_setting_map.get()) {}
 
   void RequestFinished(
