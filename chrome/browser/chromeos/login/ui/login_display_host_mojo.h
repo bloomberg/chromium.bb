@@ -18,7 +18,7 @@
 namespace chromeos {
 
 class ExistingUserController;
-class GaiaDialogDelegate;
+class OobeUIDialogDelegate;
 class UserBoardViewMojo;
 class UserSelectionScreen;
 
@@ -32,10 +32,22 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   ~LoginDisplayHostMojo() override;
 
   // Called when the gaia dialog is destroyed.
-  void OnDialogDestroyed(const GaiaDialogDelegate* dialog);
+  void OnDialogDestroyed(const OobeUIDialogDelegate* dialog);
 
   // Set the users in the views login screen.
   void SetUsers(const user_manager::UserList& users);
+
+  // Show password changed dialog. If |show_password_error| is true, user
+  // already tried to enter old password but it turned out to be incorrect.
+  void ShowPasswordChangedDialog(bool show_password_error,
+                                 const std::string& email);
+
+  // Show whitelist check failed error. Happens after user completes online
+  // signin but whitelist check fails.
+  void ShowWhitelistCheckFailedError();
+
+  // Show unrecoverable cryptohome error dialog.
+  void ShowUnrecoverableCrypthomeErrorDialog();
 
   UserSelectionScreen* user_selection_screen() {
     return user_selection_screen_.get();
@@ -64,6 +76,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
       const base::Optional<AccountId>& account) override;
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
+  void CancelPasswordChangedFlow() override;
 
   // LoginScreenClient::Delegate:
   void HandleAuthenticateUser(const AccountId& account_id,
@@ -99,7 +112,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;
-  GaiaDialogDelegate* dialog_ = nullptr;
+  OobeUIDialogDelegate* dialog_ = nullptr;
   std::unique_ptr<WizardController> wizard_controller_;
 
   // Users that are visible in the views login screen.

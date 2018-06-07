@@ -188,12 +188,6 @@ gfx::NativeWindow LoginDisplayWebUI::GetNativeWindow() const {
 }
 
 // LoginDisplayWebUI, SigninScreenHandlerDelegate implementation: --------------
-void LoginDisplayWebUI::CancelPasswordChangedFlow() {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->CancelPasswordChangedFlow();
-}
-
 void LoginDisplayWebUI::CancelUserAdding() {
   if (!UserAddingScreen::Get()->IsRunning()) {
     LOG(ERROR) << "User adding screen not running.";
@@ -208,12 +202,6 @@ void LoginDisplayWebUI::Login(const UserContext& user_context,
     delegate_->Login(user_context, specifics);
 }
 
-void LoginDisplayWebUI::MigrateUserData(const std::string& old_password) {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->MigrateUserData(old_password);
-}
-
 void LoginDisplayWebUI::OnSigninScreenReady() {
   SignInScreenController::Get()->OnSigninScreenReady();
 
@@ -223,12 +211,6 @@ void LoginDisplayWebUI::OnSigninScreenReady() {
 
 void LoginDisplayWebUI::RemoveUser(const AccountId& account_id) {
   SignInScreenController::Get()->RemoveUser(account_id);
-}
-
-void LoginDisplayWebUI::ResyncUserData() {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->ResyncUserData();
 }
 
 void LoginDisplayWebUI::ShowEnterpriseEnrollmentScreen() {

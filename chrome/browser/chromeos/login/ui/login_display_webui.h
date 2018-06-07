@@ -54,10 +54,6 @@ class LoginDisplayWebUI : public LoginDisplay,
   gfx::NativeWindow GetNativeWindow() const override;
 
   // SigninScreenHandlerDelegate implementation:
-  void CancelPasswordChangedFlow() override;
-  void ResyncUserData() override;
-  void MigrateUserData(const std::string& old_password) override;
-
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
   bool IsSigninInProgress() const override;

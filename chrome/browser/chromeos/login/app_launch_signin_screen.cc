@@ -67,10 +67,6 @@ user_manager::UserManager* AppLaunchSigninScreen::GetUserManager() {
                             : user_manager::UserManager::Get();
 }
 
-void AppLaunchSigninScreen::CancelPasswordChangedFlow() {
-  NOTREACHED();
-}
-
 void AppLaunchSigninScreen::CancelUserAdding() {
   NOTREACHED();
 }
@@ -86,17 +82,9 @@ void AppLaunchSigninScreen::Login(const UserContext& user_context,
                      user_context));
 }
 
-void AppLaunchSigninScreen::MigrateUserData(const std::string& old_password) {
-  NOTREACHED();
-}
-
 void AppLaunchSigninScreen::OnSigninScreenReady() {}
 
 void AppLaunchSigninScreen::RemoveUser(const AccountId& account_id) {
-  NOTREACHED();
-}
-
-void AppLaunchSigninScreen::ResyncUserData() {
   NOTREACHED();
 }
 

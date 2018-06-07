@@ -229,6 +229,27 @@ bool LoginDisplayHostCommon::IsUserWhitelisted(const AccountId& account_id) {
   return controller->IsUserWhitelisted(account_id);
 }
 
+void LoginDisplayHostCommon::CancelPasswordChangedFlow() {
+  ExistingUserController* controller =
+      ExistingUserController::current_controller();
+  if (controller)
+    controller->CancelPasswordChangedFlow();
+}
+
+void LoginDisplayHostCommon::MigrateUserData(const std::string& old_password) {
+  ExistingUserController* controller =
+      ExistingUserController::current_controller();
+  if (controller)
+    controller->MigrateUserData(old_password);
+}
+
+void LoginDisplayHostCommon::ResyncUserData() {
+  ExistingUserController* controller =
+      ExistingUserController::current_controller();
+  if (controller)
+    controller->ResyncUserData();
+}
+
 void LoginDisplayHostCommon::Observe(
     int type,
     const content::NotificationSource& source,

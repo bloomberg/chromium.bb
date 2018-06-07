@@ -58,6 +58,9 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
       const base::Optional<AccountId>& account) override;
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
+  void CancelPasswordChangedFlow() override;
+  void MigrateUserData(const std::string& old_password) override;
+  void ResyncUserData() override;
 
  private:
   class FakeBaseScreen;

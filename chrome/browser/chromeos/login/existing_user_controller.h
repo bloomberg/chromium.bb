@@ -89,20 +89,28 @@ class ExistingUserController
   // Stop the auto-login timer when a login attempt begins.
   void StopAutoLoginTimer();
 
+  // Cancels current password changed flow.
+  void CancelPasswordChangedFlow();
+
+  // Decrypt cryptohome using user provided |old_password| and migrate to new
+  // password.
+  void MigrateUserData(const std::string& old_password);
+
+  // Ignore password change, remove existing cryptohome and force full sync of
+  // user data.
+  void ResyncUserData();
+
   // LoginDisplay::Delegate: implementation
-  void CancelPasswordChangedFlow() override;
   base::string16 GetConnectedNetworkName() override;
   bool IsSigninInProgress() const override;
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
-  void MigrateUserData(const std::string& old_password) override;
   void OnSigninScreenReady() override;
   void OnStartEnterpriseEnrollment() override;
   void OnStartEnableDebuggingScreen() override;
   void OnStartKioskEnableScreen() override;
   void OnStartKioskAutolaunchScreen() override;
   void ResetAutoLoginTimer() override;
-  void ResyncUserData() override;
   void ShowWrongHWIDScreen() override;
   void ShowUpdateRequiredScreen() override;
   void Signout() override;

@@ -167,6 +167,18 @@ class LoginDisplayHost {
   // Returns true if user is allowed to log in by domain policy.
   virtual bool IsUserWhitelisted(const AccountId& account_id) = 0;
 
+  // ----- Password change flow methods -----
+  // Cancels current password changed flow.
+  virtual void CancelPasswordChangedFlow() = 0;
+
+  // Decrypt cryptohome using user provided |old_password| and migrate to new
+  // password.
+  virtual void MigrateUserData(const std::string& old_password) = 0;
+
+  // Ignore password change, remove existing cryptohome and force full sync of
+  // user data.
+  virtual void ResyncUserData() = 0;
+
  protected:
   LoginDisplayHost();
   virtual ~LoginDisplayHost();

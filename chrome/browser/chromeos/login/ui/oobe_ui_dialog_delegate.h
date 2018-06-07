@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_GAIA_DIALOG_DELEGATE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_GAIA_DIALOG_DELEGATE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_OOBE_UI_DIALOG_DELEGATE_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_OOBE_UI_DIALOG_DELEGATE_H_
 
 #include <string>
 
@@ -26,17 +26,17 @@ namespace chromeos {
 class LoginDisplayHostMojo;
 class OobeUI;
 
-// This class manages the behavior of the gaia signin dialog.
+// This class manages the behavior of the Oobe UI dialog.
 // And its lifecycle is managed by the widget created in Show().
-//   WebDialogView<----delegate_----GaiaDialogDelegate
+//   WebDialogView<----delegate_----OobeUIDialogDelegate
 //         |
 //         |
 //         V
 //   clientView---->Widget's view hierarchy
-class GaiaDialogDelegate : public ui::WebDialogDelegate {
+class OobeUIDialogDelegate : public ui::WebDialogDelegate {
  public:
-  explicit GaiaDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
-  ~GaiaDialogDelegate() override;
+  explicit OobeUIDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
+  ~OobeUIDialogDelegate() override;
 
   // Show the dialog widget.
   // |closable_by_esc|: Whether the widget will be hidden after press escape
@@ -54,6 +54,7 @@ class GaiaDialogDelegate : public ui::WebDialogDelegate {
 
   void SetSize(int width, int height);
   OobeUI* GetOobeUI() const;
+  gfx::NativeWindow GetNativeWindow() const;
 
  private:
   // ui::WebDialogDelegate:
@@ -83,9 +84,9 @@ class GaiaDialogDelegate : public ui::WebDialogDelegate {
   gfx::Size size_;
   bool closable_by_esc_ = true;
 
-  DISALLOW_COPY_AND_ASSIGN(GaiaDialogDelegate);
+  DISALLOW_COPY_AND_ASSIGN(OobeUIDialogDelegate);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_GAIA_DIALOG_DELEGATE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_OOBE_UI_DIALOG_DELEGATE_H_
