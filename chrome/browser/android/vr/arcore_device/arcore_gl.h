@@ -46,7 +46,7 @@ class ARCoreGl {
   explicit ARCoreGl(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge);
   ~ARCoreGl();
 
-  bool Initialize();
+  void Initialize(mojom::VRDisplayHost::RequestSessionCallback callback);
 
   void ProduceFrame(const gfx::Size& frame_size,
                     display::Display::Rotation display_rotation,
@@ -70,6 +70,7 @@ class ARCoreGl {
       const gfx::Size& frame_size,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
 
+  bool InitializeGl();
   bool IsOnGlThread() const;
 
   scoped_refptr<gl::GLSurface> surface_;

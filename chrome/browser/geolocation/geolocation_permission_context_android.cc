@@ -128,8 +128,9 @@ void GeolocationPermissionContextAndroid::RequestPermission(
   std::vector<ContentSettingsType> content_settings_types;
   content_settings_types.push_back(CONTENT_SETTINGS_TYPE_GEOLOCATION);
   if (content_setting == CONTENT_SETTING_ALLOW &&
-      PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
-          web_contents, content_settings_types)) {
+      PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
+          web_contents, content_settings_types) ==
+          ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR) {
     PermissionUpdateInfoBarDelegate::Create(
         web_contents, content_settings_types,
         base::Bind(&GeolocationPermissionContextAndroid ::

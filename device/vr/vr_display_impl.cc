@@ -19,8 +19,13 @@ VRDisplayImpl::VRDisplayImpl(VRDevice* device,
                              mojom::VRServiceClient* service_client,
                              mojom::VRDisplayInfoPtr display_info,
                              mojom::VRDisplayHostPtr display_host,
-                             mojom::VRDisplayClientRequest client_request)
-    : binding_(this), device_(static_cast<VRDeviceBase*>(device)) {
+                             mojom::VRDisplayClientRequest client_request,
+                             int render_process_id,
+                             int render_frame_id)
+    : binding_(this),
+      device_(static_cast<VRDeviceBase*>(device)),
+      render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id) {
   mojom::VRMagicWindowProviderPtr magic_window_provider;
   binding_.Bind(mojo::MakeRequest(&magic_window_provider));
   service_client->OnDisplayConnected(
@@ -31,8 +36,10 @@ VRDisplayImpl::VRDisplayImpl(VRDevice* device,
 VRDisplayImpl::~VRDisplayImpl() = default;
 
 void VRDisplayImpl::RequestSession(
+    bool has_user_activation,
     mojom::VRDisplayHost::RequestSessionCallback callback) {
-  device_->RequestSession(this, std::move(callback));
+  device_->RequestSession(render_process_id_, render_frame_id_,
+                          has_user_activation, std::move(callback));
 }
 
 // Gets a pose for magic window sessions.

@@ -98,7 +98,40 @@ ARCoreGl::ARCoreGl(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge)
 
 ARCoreGl::~ARCoreGl() {}
 
-bool ARCoreGl::Initialize() {
+void ARCoreGl::Initialize(
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
+  DCHECK(IsOnGlThread());
+
+  // Do not DCHECK !is_initialized to allow multiple calls to correctly
+  // proceed. This method may be called multiple times if a subsequent session
+  // request occurs before the first one completes and the callback is called.
+  // TODO(https://crbug.com/849568): This may not be necessary after
+  // addressing this issue.
+  if (is_initialized_) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  if (!InitializeGl()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!arcore_->Initialize()) {
+    DLOG(ERROR) << "ARCore failed to initialize";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // Set the texture on ARCore to render the camera.
+  arcore_->SetCameraTexture(ar_image_transport_->GetCameraTextureId());
+
+  is_initialized_ = true;
+
+  std::move(callback).Run(true);
+}
+
+bool ARCoreGl::InitializeGl() {
   DCHECK(IsOnGlThread());
   DCHECK(!is_initialized_);
 
@@ -126,25 +159,16 @@ bool ARCoreGl::Initialize() {
     return false;
   }
 
-  if (!arcore_->Initialize()) {
-    DLOG(ERROR) << "ARCore failed to initialize";
-    return false;
-  }
-
   if (!ar_image_transport_->Initialize()) {
     DLOG(ERROR) << "ARImageTransport failed to initialize";
     return false;
   }
-
-  // Set the texture on ARCore to render the camera.
-  arcore_->SetCameraTexture(ar_image_transport_->GetCameraTextureId());
 
   // Assign the surface and context members now that initialization has
   // succeeded.
   surface_ = std::move(surface);
   context_ = std::move(context);
 
-  is_initialized_ = true;
   return true;
 }
 
@@ -270,12 +294,14 @@ void ARCoreGl::ProcessFrame(
 void ARCoreGl::Pause() {
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
+
   arcore_->Pause();
 }
 
 void ARCoreGl::Resume() {
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
+
   arcore_->Resume();
 }
 

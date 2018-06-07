@@ -26,7 +26,8 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
     content::WebContents* web_contents,
     const std::vector<ContentSettingsType>& content_settings_types,
     const PermissionUpdatedCallback& callback) {
-  DCHECK(ShouldShowPermissionInfobar(web_contents, content_settings_types))
+  DCHECK(ShouldShowPermissionInfoBar(web_contents, content_settings_types) ==
+         ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR)
       << "Caller should check ShouldShowPermissionInfobar before creating the "
       << "infobar.";
 
@@ -96,15 +97,16 @@ infobars::InfoBar* PermissionUpdateInfoBarDelegate::Create(
 }
 
 // static
-bool PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
+ShowPermissionInfoBarState
+PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
     content::WebContents* web_contents,
     const std::vector<ContentSettingsType>& content_settings_types) {
   if (!web_contents)
-    return false;
+    return ShowPermissionInfoBarState::CANNOT_SHOW_PERMISSION_INFOBAR;
 
   auto* window_android = web_contents->GetNativeView()->GetWindowAndroid();
   if (!window_android)
-    return false;
+    return ShowPermissionInfoBarState::CANNOT_SHOW_PERMISSION_INFOBAR;
 
   for (ContentSettingsType content_settings_type : content_settings_types) {
     std::vector<std::string> android_permissions;
@@ -113,11 +115,11 @@ bool PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
 
     for (const auto& android_permission : android_permissions) {
       if (!window_android->HasPermission(android_permission))
-        return true;
+        return ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR;
     }
   }
 
-  return false;
+  return ShowPermissionInfoBarState::NO_NEED_TO_SHOW_PERMISSION_INFOBAR;
 }
 
 void PermissionUpdateInfoBarDelegate::OnPermissionResult(

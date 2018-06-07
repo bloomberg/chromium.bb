@@ -32,10 +32,13 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
                 mojom::VRServiceClient* service_client,
                 mojom::VRDisplayInfoPtr display_info,
                 mojom::VRDisplayHostPtr display_host,
-                mojom::VRDisplayClientRequest client_request);
+                mojom::VRDisplayClientRequest client_request,
+                int render_process_id,
+                int render_frame_id);
   ~VRDisplayImpl() override;
 
-  void RequestSession(mojom::VRDisplayHost::RequestSessionCallback callback);
+  void RequestSession(bool has_user_activation,
+                      mojom::VRDisplayHost::RequestSessionCallback callback);
 
   mojom::VRDisplayInfoPtr GetVRDisplayInfo();
 
@@ -57,6 +60,9 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
   device::VRDeviceBase* device_;
 
   bool restrict_frame_data_ = true;
+
+  const int render_process_id_;
+  const int render_frame_id_;
 };
 
 }  // namespace device
