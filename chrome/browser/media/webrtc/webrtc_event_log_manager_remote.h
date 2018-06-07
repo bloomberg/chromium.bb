@@ -17,12 +17,21 @@
 
 // TODO(crbug.com/775415): Avoid uploading logs when Chrome shutdown imminent.
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 class WebRtcRemoteEventLogManager final
     : public LogFileWriter,
       public WebRtcEventLogUploaderObserver {
  public:
   explicit WebRtcRemoteEventLogManager(WebRtcRemoteEventLogsObserver* observer);
   ~WebRtcRemoteEventLogManager() override;
+
+  // Sets a net::URLRequestContextGetter which will be used for uploads.
+  // Must not be called more than once.
+  // Must be called before any call to EnableForBrowserContext().
+  void SetUrlRequestContextGetter(net::URLRequestContextGetter* context_getter);
 
   // Enables remote-bound logging for a given BrowserContext. Logs stored during
   // previous sessions become eligible for upload, and recording of new logs for
@@ -92,11 +101,10 @@ class WebRtcRemoteEventLogManager final
   bool EventLogWrite(const PeerConnectionKey& key, const std::string& message);
 
   // Clear PENDING WebRTC event logs associated with a given browser context,
-  // in a  given time range, then post |reply| back to the thread from which
+  // in a given time range, then post |reply| back to the thread from which
   // the method was originally invoked (which can be any thread).
-  // Log files currently being written are not interrupted.
-  // Active uploads are not interrupted.
-  // TODO(crbug.com/775415): Allow interrupting active uploads.
+  // Log files currently being written are *not* interrupted.
+  // Active uploads *are* interrupted.
   void ClearCacheForBrowserContext(BrowserContextId browser_context_id,
                                    const base::Time& delete_begin,
                                    const base::Time& delete_end);
@@ -119,38 +127,8 @@ class WebRtcRemoteEventLogManager final
   void SetWebRtcEventLogUploaderFactoryForTesting(
       std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory);
 
- protected:
-  friend class WebRtcEventLogManagerTestBase;
-
-  // Given a BrowserContext's directory, return the path to the directory where
-  // we store the pending remote-bound logs associated with this BrowserContext.
-  static base::FilePath GetLogsDirectoryPath(
-      const base::FilePath& browser_context_dir);
-
  private:
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
-
-  struct PendingLog {
-    PendingLog(BrowserContextId browser_context_id,
-               const base::FilePath& path,
-               base::Time last_modified)
-        : browser_context_id(browser_context_id),
-          path(path),
-          last_modified(last_modified) {}
-
-    bool operator<(const PendingLog& other) const {
-      if (last_modified != other.last_modified) {
-        return last_modified < other.last_modified;
-      }
-      return path < other.path;  // Break ties arbitrarily, but consistently.
-    }
-
-    const BrowserContextId browser_context_id;  // This file's owner.
-    const base::FilePath path;
-    // |last_modified| recorded at BrowserContext initialization. Chrome will
-    // not modify it afterwards, and neither should the user.
-    const base::Time last_modified;
-  };
 
   // Checks whether a browser context has already been enabled via a call to
   // EnableForBrowserContext(), and not yet disabled using a call to
@@ -204,16 +182,38 @@ class WebRtcRemoteEventLogManager final
   // PrunePendingLogs() and schedule the next proactive prune.
   void RecurringPendingLogsPrune();
 
-  // Removes pending logs whose last modification date was between at or later
-  // than |delete_begin|, and earlier than |delete_end|.
-  // If a null time-point is given as either |delete_begin| or |delete_begin|,
-  // it is treated as "beginning-of-time" or "end-of-time", respectively.
-  // If |browser_context_id| is set, only logs associated with it are considered
-  // for removal; otherwise, all logs are considered.
-  void RemovePendingLogs(const base::Time& delete_begin,
+  // Removes pending logs files which match the given filter criteria, as
+  // described by LogFileMatchesFilter's documentation.
+  void MaybeRemovePendingLogs(
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      base::Optional<BrowserContextId> browser_context_id =
+          base::Optional<BrowserContextId>());
+
+  // If the currently uploaded file matches the given filter criteria, as
+  // described by LogFileMatchesFilter's documentation, the upload will be
+  // cancelled, and the log file deleted. If this happens, the next pending log
+  // file will be considered for upload.
+  // This method is used to ensure that clearing of browsing data by the user
+  // does not leave the currently-uploaded file on disk, even for the duration
+  // of the upload.
+  void MaybeCancelUpload(const base::Time& delete_begin,
                          const base::Time& delete_end,
                          base::Optional<BrowserContextId> browser_context_id =
                              base::Optional<BrowserContextId>());
+
+  // Checks whether a log file matches a range and (potentially) BrowserContext:
+  // * A file matches if its last modification date was at or later than
+  //   |range_begin|, and earlier than |range_end|.
+  // * If a null time-point is given as either |range_begin| or |range_end|,
+  //   it is treated as "beginning-of-time" or "end-of-time", respectively.
+  // * If |browser_context_id| is set, only log files associated with it are
+  //   could match the filter.
+  bool LogFileMatchesFilter(
+      const WebRtcLogFileInfo& log,
+      const base::Time& range_begin,
+      const base::Time& range_end,
+      base::Optional<BrowserContextId> browser_context_id) const;
 
   // Return |true| if and only if we can start another active log (with respect
   // to limitations on the numbers active and pending logs).
@@ -290,7 +290,7 @@ class WebRtcRemoteEventLogManager final
   // Remote-bound logs which have been written to disk before (either during
   // this Chrome session or during an earlier one), and which are no waiting to
   // be uploaded.
-  std::set<PendingLog> pending_logs_;
+  std::set<WebRtcLogFileInfo> pending_logs_;
 
   // Null if no ongoing upload, or an uploader which owns a file, and is
   // currently busy uploading it to a remote server.

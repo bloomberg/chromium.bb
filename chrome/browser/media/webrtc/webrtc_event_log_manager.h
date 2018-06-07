@@ -57,18 +57,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
         bool event_logging_enabled) = 0;
   };
 
-  // Translate a BrowserContext into an ID, allowing associating PeerConnections
-  // with it while making sure that its methods would never be called outside
-  // of the UI thread.
-  static BrowserContextId GetBrowserContextId(
-      const content::BrowserContext* browser_context);
-
-  // Fetches the BrowserContext associated with the render process ID, then
-  // returns its BrowserContextId. (If the render process has already died,
-  // it would have no BrowserContext associated, so kNullBrowserContextId will
-  // be returned.)
-  static BrowserContextId GetBrowserContextId(int render_process_id);
-
   // Ensures that no previous instantiation of the class was performed, then
   // instantiates the class and returns the object (ownership is transfered to
   // the caller). Subsequent calls to GetInstance() will return this object,
@@ -222,6 +210,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void EnableForBrowserContextInternal(
       BrowserContextId browser_context_id,
       const base::FilePath& browser_context_dir,
+      net::URLRequestContextGetter* context_getter,
       base::OnceClosure reply);
   void DisableForBrowserContextInternal(BrowserContextId browser_context_id,
                                         base::OnceClosure reply);
@@ -337,6 +326,11 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // PeerConnectionTracker) to start/stop producing event logs for a specific
   // peer connection. In (relevant) unit tests, a mock will be injected.
   std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy_;
+
+  // The global system_request_context() is sent down to |remote_logs_manager_|
+  // with the first enabled browser context.
+  // This member must only be accessed on the UI thread.
+  bool url_request_context_getter_was_set_;
 
   // The main logic will run sequentially on this runner, on which blocking
   // tasks are allowed.

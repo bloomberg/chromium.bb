@@ -14,6 +14,10 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 // This file is intended for:
 // 1. Code shared between WebRtcEventLogManager, WebRtcLocalEventLogManager
 //    and WebRtcRemoteEventLogManager.
@@ -125,6 +129,43 @@ struct WebRtcEventLogPeerConnectionKey {
   BrowserContextId browser_context_id;
 };
 
+// Sentinel value for an unknown BrowserContext.
+extern const WebRtcEventLogPeerConnectionKey::BrowserContextId
+    kNullBrowserContextId;
+
+// Holds housekeeping information about log files.
+struct WebRtcLogFileInfo {
+  WebRtcLogFileInfo(
+      WebRtcEventLogPeerConnectionKey::BrowserContextId browser_context_id,
+      const base::FilePath& path,
+      base::Time last_modified)
+      : browser_context_id(browser_context_id),
+        path(path),
+        last_modified(last_modified) {}
+
+  WebRtcLogFileInfo(const WebRtcLogFileInfo& other)
+      : browser_context_id(other.browser_context_id),
+        path(other.path),
+        last_modified(other.last_modified) {}
+
+  bool operator<(const WebRtcLogFileInfo& other) const {
+    if (last_modified != other.last_modified) {
+      return last_modified < other.last_modified;
+    }
+    return path < other.path;  // Break ties arbitrarily, but consistently.
+  }
+
+  // The BrowserContext which produced this file.
+  const WebRtcEventLogPeerConnectionKey::BrowserContextId browser_context_id;
+
+  // The path to the log file itself.
+  const base::FilePath path;
+
+  // |last_modified| recorded at BrowserContext initialization. Chrome will
+  // not modify it afterwards, and neither should the user.
+  const base::Time last_modified;
+};
+
 // An observer for notifications of local log files being started/stopped, and
 // the paths which will be used for these logs.
 class WebRtcLocalEventLogsObserver {
@@ -196,5 +237,25 @@ class LogFileWriter {
   // used when iterating and closing several log files.
   virtual LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it) = 0;
 };
+
+// Translate a BrowserContext into an ID. This lets us associate PeerConnections
+// with BrowserContexts, while making sure that we never call the
+// BrowserContext's methods outside of the UI thread (because we can't call them
+// at all without a cast that would alert us to the danger).
+WebRtcEventLogPeerConnectionKey::BrowserContextId GetBrowserContextId(
+    const content::BrowserContext* browser_context);
+
+// Fetches the BrowserContext associated with the render process ID, then
+// returns its BrowserContextId. (If the render process has already died,
+// it would have no BrowserContext associated, so the ID associated with a
+// null BrowserContext will be returned.)
+WebRtcEventLogPeerConnectionKey::BrowserContextId GetBrowserContextId(
+    int render_process_id);
+
+// Given a BrowserContext's directory, return the path to the directory where
+// we store the pending remote-bound logs associated with this BrowserContext.
+// This function may be called on any task queue.
+base::FilePath GetRemoteBoundWebRtcEventLogsDir(
+    const base::FilePath& browser_context_dir);
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_EVENT_LOG_MANAGER_COMMON_H_
