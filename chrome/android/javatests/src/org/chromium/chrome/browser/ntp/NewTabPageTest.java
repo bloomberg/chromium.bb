@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceTestUtils;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.TileSectionType;
 import org.chromium.chrome.browser.suggestions.TileSource;
@@ -262,6 +263,26 @@ public class NewTabPageTest {
         });
 
         Assert.assertEquals(1, activityMonitor.getHits());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testSimplifiedNtp_DefaultSearchEngineChange() throws Exception {
+        View logo = mNtp.getView().findViewById(R.id.search_provider_logo);
+        View shortcuts = mNtp.getView().findViewById(R.id.shortcuts);
+        Assert.assertEquals(View.VISIBLE, logo.getVisibility());
+        Assert.assertEquals(View.VISIBLE, shortcuts.getVisibility());
+
+        TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
+        Assert.assertEquals(View.GONE, logo.getVisibility());
+        Assert.assertEquals(View.VISIBLE, shortcuts.getVisibility());
+
+        TemplateUrlServiceTestUtils.setSearchEngine("google.com");
+        Assert.assertEquals(View.VISIBLE, logo.getVisibility());
+        Assert.assertEquals(View.VISIBLE, shortcuts.getVisibility());
     }
 
     @Test
