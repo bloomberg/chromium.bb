@@ -11,6 +11,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/assistant_card_renderer.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
@@ -34,7 +35,8 @@ class AssistantController
     : public mojom::AssistantController,
       public chromeos::assistant::mojom::AssistantEventSubscriber,
       public AssistantInteractionModelObserver,
-      public HighlighterController::Observer {
+      public HighlighterController::Observer,
+      public DialogPlateDelegate {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
@@ -86,15 +88,6 @@ class AssistantController
   void StopInteraction();
   void ToggleInteraction();
 
-  // Invoked on dialog plate action pressed event.
-  void OnDialogPlateActionPressed(const std::string& text);
-
-  // Invoked on dialog plate contents changed event.
-  void OnDialogPlateContentsChanged(const std::string& text);
-
-  // Invoked on dialog plate contents committed event.
-  void OnDialogPlateContentsCommitted(const std::string& text);
-
   // Invoked on suggestion chip pressed event.
   void OnSuggestionChipPressed(int id);
 
@@ -132,6 +125,11 @@ class AssistantController
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
   void OnCardPressed(const GURL& url) override;
+
+  // DialogPlateDelegate:
+  void OnDialogPlateActionPressed(const std::string& text) override;
+  void OnDialogPlateContentsChanged(const std::string& text) override;
+  void OnDialogPlateContentsCommitted(const std::string& text) override;
 
   AssistantBubbleController* bubble_controller() {
     DCHECK(assistant_bubble_controller_);

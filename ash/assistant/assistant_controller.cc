@@ -241,70 +241,6 @@ void AssistantController::OnCardPressed(const GURL& url) {
   OpenUrl(url);
 }
 
-void AssistantController::OnDialogPlateActionPressed(const std::string& text) {
-  InputModality input_modality = assistant_interaction_model_.input_modality();
-
-  // When using keyboard input modality, pressing the dialog plate action is
-  // equivalent to a commit.
-  if (input_modality == InputModality::kKeyboard) {
-    OnDialogPlateContentsCommitted(text);
-    return;
-  }
-
-  DCHECK(assistant_);
-
-  // It should not be possible to press the dialog plate action when not using
-  // keyboard or voice input modality.
-  DCHECK(input_modality == InputModality::kVoice);
-
-  // When using voice input modality, pressing the dialog plate action will
-  // toggle the voice interaction state.
-  switch (assistant_interaction_model_.mic_state()) {
-    case MicState::kClosed:
-      assistant_->StartVoiceInteraction();
-      break;
-    case MicState::kOpen:
-      has_active_interaction_ = false;
-      assistant_->StopActiveInteraction();
-      break;
-  }
-}
-
-void AssistantController::OnDialogPlateContentsChanged(
-    const std::string& text) {
-  if (text.empty()) {
-    // Note: This does not open the mic. It only updates the input modality to
-    // voice so that we will show the mic icon in the UI.
-    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
-  } else {
-    assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
-    assistant_interaction_model_.SetMicState(MicState::kClosed);
-  }
-}
-
-void AssistantController::OnDialogPlateContentsCommitted(
-    const std::string& text) {
-  // TODO(dmblack): Handle an empty text query more gracefully by showing a
-  // helpful message to the user. Currently we just reset state and pretend as
-  // if nothing happened.
-  if (text.empty()) {
-    assistant_interaction_model_.ClearInteraction();
-    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
-    return;
-  }
-
-  assistant_interaction_model_.ClearInteraction();
-  assistant_interaction_model_.SetQuery(
-      std::make_unique<AssistantTextQuery>(text));
-
-  // Note: This does not open the mic. It only updates the input modality to
-  // voice so that we will show the mic icon in the UI.
-  assistant_interaction_model_.SetInputModality(InputModality::kVoice);
-
-  DCHECK(assistant_);
-  assistant_->SendTextQuery(text);
-}
-
 void AssistantController::OnHtmlResponse(const std::string& response) {
   if (!has_active_interaction_)
     return;
@@ -387,6 +323,67 @@ void AssistantController::OnOpenUrlResponse(const GURL& url) {
     return;
 
   OpenUrl(url);
+}
+
+void AssistantController::OnDialogPlateActionPressed(const std::string& text) {
+  InputModality input_modality = assistant_interaction_model_.input_modality();
+
+  // When using keyboard input modality, pressing the dialog plate action is
+  // equivalent to a commit.
+  if (input_modality == InputModality::kKeyboard) {
+    OnDialogPlateContentsCommitted(text);
+    return;
+  }
+
+  // It should not be possible to press the dialog plate action when not using
+  // keyboard or voice input modality.
+  DCHECK(input_modality == InputModality::kVoice);
+
+  // When using voice input modality, pressing the dialog plate action will
+  // toggle the voice interaction state.
+  switch (assistant_interaction_model_.mic_state()) {
+    case MicState::kClosed:
+      assistant_->StartVoiceInteraction();
+      break;
+    case MicState::kOpen:
+      has_active_interaction_ = false;
+      assistant_->StopActiveInteraction();
+      break;
+  }
+}
+
+void AssistantController::OnDialogPlateContentsChanged(
+    const std::string& text) {
+  if (text.empty()) {
+    // Note: This does not open the mic. It only updates the input modality to
+    // voice so that we will show the mic icon in the UI.
+    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+  } else {
+    assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+    assistant_interaction_model_.SetMicState(MicState::kClosed);
+  }
+}
+
+void AssistantController::OnDialogPlateContentsCommitted(
+    const std::string& text) {
+  // TODO(dmblack): Handle an empty text query more gracefully by showing a
+  // helpful message to the user. Currently we just reset state and pretend as
+  // if nothing happened.
+  if (text.empty()) {
+    assistant_interaction_model_.ClearInteraction();
+    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+    return;
+  }
+
+  assistant_interaction_model_.ClearInteraction();
+  assistant_interaction_model_.SetQuery(
+      std::make_unique<AssistantTextQuery>(text));
+
+  // Note: This does not open the mic. It only updates the input modality to
+  // voice so that we will show the mic icon in the UI.
+  assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+
+  assistant_->SendTextQuery(text);
 }
 
 void AssistantController::OpenUrl(const GURL& url) {

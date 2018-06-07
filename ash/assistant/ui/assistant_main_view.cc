@@ -28,12 +28,16 @@ constexpr int kMaxHeightDip = 640;
 
 AssistantMainView::AssistantMainView(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      caption_bar_(new CaptionBar(assistant_controller->bubble_controller())),
+      caption_bar_(new CaptionBar()),
       ui_element_container_(new UiElementContainerView(assistant_controller)),
       suggestions_container_(new SuggestionContainerView(assistant_controller)),
       dialog_plate_(new DialogPlate(assistant_controller)),
       min_height_dip_(kMinHeightDip) {
   InitLayout();
+
+  // Set delegates.
+  caption_bar_->set_delegate(assistant_controller_->bubble_controller());
+  dialog_plate_->set_delegate(assistant_controller_);
 
   // Observe changes to interaction model.
   assistant_controller_->AddInteractionModelObserver(this);
