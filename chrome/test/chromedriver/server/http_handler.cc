@@ -563,6 +563,9 @@ HttpHandler::HttpHandler(
           kPost, "session/:sessionId/chromium/send_command",
           WrapToCommand("SendCommand", base::Bind(&ExecuteSendCommand))),
       CommandMapping(
+          kPost, "session/:sessionId/goog/cdp/execute",
+          WrapToCommand("ExecuteCDP", base::Bind(&ExecuteSendCommandAndGetResult))),
+      CommandMapping(
           kPost, "session/:sessionId/chromium/send_command_and_get_result",
           WrapToCommand("SendCommandAndGetResult",
                         base::Bind(&ExecuteSendCommandAndGetResult))),
