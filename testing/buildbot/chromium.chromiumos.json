@@ -258,6 +258,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "dbus_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "device_unittests"
       },
       {
@@ -735,6 +741,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "dbus_unittests"
       },
       {
         "swarming": {
