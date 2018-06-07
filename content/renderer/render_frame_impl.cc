@@ -5546,11 +5546,12 @@ void RenderFrameImpl::UpdateStateForCommit(
     engagement_level_.first = url::Origin();
   }
 
-  // If we are a top frame navigation we should clear any existing autoplay
-  // flags on the Page. This is because flags are stored at the page level so
-  // subframes would only add to them.
-  if (!frame_->Parent())
+  // If we are a top frame navigation to another document we should clear any
+  // existing autoplay flags on the Page. This is because flags are stored at
+  // the page level so subframes would only add to them.
+  if (!frame_->Parent() && !navigation_state->WasWithinSameDocument()) {
     render_view_->webview()->ClearAutoplayFlags();
+  }
 
   // Set the correct autoplay flags on the Page and wipe the cached origin so
   // this will not be used incorrectly.
