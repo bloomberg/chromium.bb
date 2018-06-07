@@ -10,9 +10,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "components/consent_auditor/consent_sync_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace syncer {
+class ModelTypeControllerDelegate;
 class UserEventService;
 }
 
@@ -51,6 +54,7 @@ enum class ConsentStatus { NOT_GIVEN, GIVEN };
 class ConsentAuditor : public KeyedService {
  public:
   ConsentAuditor(PrefService* pref_service,
+                 std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge,
                  syncer::UserEventService* user_event_service,
                  const std::string& app_version,
                  const std::string& app_locale);
@@ -81,6 +85,10 @@ class ConsentAuditor : public KeyedService {
                           const std::string& description_text,
                           const std::string& confirmation_text);
 
+  // Returns the underlying Sync integration point.
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetControllerDelegateOnUIThread();
+
  private:
   std::unique_ptr<sync_pb::UserEventSpecifics> ConstructUserConsent(
       const std::string& account_id,
@@ -90,6 +98,7 @@ class ConsentAuditor : public KeyedService {
       ConsentStatus status);
 
   PrefService* pref_service_;
+  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge_;
   syncer::UserEventService* user_event_service_;
   std::string app_version_;
   std::string app_locale_;

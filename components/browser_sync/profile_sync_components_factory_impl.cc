@@ -254,10 +254,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         syncer::USER_EVENTS, sync_client_, ui_thread_));
   }
 
-  // TODO(vitaliii): Enable consents once their controller delegate is wired
-  // properly.
-  if (false) {
-    // Consents should always be enabled.
+  if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
     controllers.push_back(std::make_unique<ModelTypeController>(
         syncer::USER_CONSENTS, sync_client_, ui_thread_));
   }

@@ -50,8 +50,10 @@ std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(browser_state);
   syncer::UserEventService* const user_event_service =
       IOSUserEventServiceFactory::GetForBrowserState(ios_browser_state);
+  // TODO(crbug.com/840357): Wire ConsentSyncBridge behind a feature.
   return std::make_unique<consent_auditor::ConsentAuditor>(
-      ios_browser_state->GetPrefs(), user_event_service,
+      ios_browser_state->GetPrefs(), /*consent_sync_bridge=*/nullptr,
+      user_event_service,
       // The browser version and locale do not change runtime, so we can pass
       // them directly.
       version_info::GetVersionNumber(),

@@ -41,7 +41,8 @@ UserEventServiceFactory::UserEventServiceFactory()
   // TODO(vitaliii): This is missing
   // DependsOn(ProfileSyncServiceFactory::GetInstance()), which we can't
   // simply add because ProfileSyncServiceFactory itself depends on this
-  // factory.
+  // factory. This won't be relevant anymore once the separate consents datatype
+  // is fully launched.
 }
 
 UserEventServiceFactory::~UserEventServiceFactory() {}

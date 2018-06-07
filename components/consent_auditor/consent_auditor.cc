@@ -58,15 +58,20 @@ UserConsentTypes::ConsentStatus StatusToProtoEnum(
 
 }  // namespace
 
-ConsentAuditor::ConsentAuditor(PrefService* pref_service,
-                               syncer::UserEventService* user_event_service,
-                               const std::string& app_version,
-                               const std::string& app_locale)
+ConsentAuditor::ConsentAuditor(
+    PrefService* pref_service,
+    std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge,
+    syncer::UserEventService* user_event_service,
+    const std::string& app_version,
+    const std::string& app_locale)
     : pref_service_(pref_service),
+      consent_sync_bridge_(std::move(consent_sync_bridge)),
       user_event_service_(user_event_service),
       app_version_(app_version),
       app_locale_(app_locale) {
   DCHECK(pref_service_);
+  // TODO(vitaliii): Don't require user_event_service when the separate datatype
+  // is enabled.
   DCHECK(user_event_service_);
 }
 
@@ -150,6 +155,14 @@ void ConsentAuditor::RecordLocalConsent(const std::string& feature,
   record.SetKey(kLocalConsentLocaleKey, base::Value(app_locale_));
 
   consents->SetKey(feature, std::move(record));
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+ConsentAuditor::GetControllerDelegateOnUIThread() {
+  if (consent_sync_bridge_) {
+    return consent_sync_bridge_->GetControllerDelegateOnUIThread();
+  }
+  return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 }
 
 }  // namespace consent_auditor

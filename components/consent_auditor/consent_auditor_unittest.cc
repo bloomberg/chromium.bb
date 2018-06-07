@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/consent_auditor/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/model/fake_model_type_controller_delegate.h"
 #include "components/sync/user_events/fake_user_event_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,6 +67,30 @@ void LoadEntriesFromLocalConsentRecord(const base::Value* consents,
   *locale = locale_entry->GetString();
 }
 
+class FakeConsentSyncBridge : public syncer::ConsentSyncBridge {
+ public:
+  ~FakeConsentSyncBridge() override = default;
+
+  // ConsentSyncBridge implementation.
+  void RecordConsent(
+      std::unique_ptr<sync_pb::UserConsentSpecifics> specifics) override {
+    NOTIMPLEMENTED();
+  }
+
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetControllerDelegateOnUIThread() override {
+    return delegate_;
+  }
+
+  void SetControllerDelegateOnUIThread(
+      base::WeakPtr<syncer::ModelTypeControllerDelegate> delegate) {
+    delegate_ = delegate;
+  }
+
+ private:
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> delegate_;
+};
+
 }  // namespace
 
 class ConsentAuditorTest : public testing::Test {
@@ -78,19 +104,22 @@ class ConsentAuditorTest : public testing::Test {
     BuildConsentAuditor();
   }
 
+  // TODO(vitaliii): Add a real builder class instead.
   void BuildConsentAuditor() {
     consent_auditor_ = std::make_unique<ConsentAuditor>(
-        pref_service_.get(), user_event_service_.get(), app_version_,
-        app_locale_);
+        pref_service_.get(), std::move(consent_sync_bridge_),
+        user_event_service_.get(), app_version_, app_locale_);
   }
 
   // These have no effect before |BuildConsentAuditor|.
   void SetAppVersion(const std::string& new_app_version) {
     app_version_ = new_app_version;
   }
-
   void SetAppLocale(const std::string& new_app_locale) {
     app_locale_ = new_app_locale;
+  }
+  void SetConsentSyncBridge(std::unique_ptr<syncer::ConsentSyncBridge> bridge) {
+    consent_sync_bridge_ = std::move(bridge);
   }
 
   ConsentAuditor* consent_auditor() { return consent_auditor_.get(); }
@@ -105,6 +134,7 @@ class ConsentAuditorTest : public testing::Test {
   std::unique_ptr<syncer::FakeUserEventService> user_event_service_;
   std::string app_version_;
   std::string app_locale_;
+  std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge_;
 };
 
 TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
@@ -220,6 +250,33 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
   EXPECT_EQ(kDescriptionMessageIds[2], consent.description_grd_ids(2));
   EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
+}
+
+TEST_F(ConsentAuditorTest, ShouldReturnNoSyncDelegateWhenNoBridge) {
+  SetConsentSyncBridge(nullptr);
+  BuildConsentAuditor();
+
+  // There is no bridge (i.e. separate sync type for consents is disabled),
+  // thus, there should be no delegate as well.
+  EXPECT_EQ(nullptr, consent_auditor()->GetControllerDelegateOnUIThread());
+}
+
+TEST_F(ConsentAuditorTest, ShouldReturnSyncDelegateWhenBridgePresent) {
+  auto fake_bridge = std::make_unique<FakeConsentSyncBridge>();
+
+  syncer::FakeModelTypeControllerDelegate fake_delegate(
+      syncer::ModelType::USER_CONSENTS);
+  auto expected_delegate_ptr = fake_delegate.GetWeakPtr();
+  DCHECK(expected_delegate_ptr);
+  fake_bridge->SetControllerDelegateOnUIThread(expected_delegate_ptr);
+
+  SetConsentSyncBridge(std::move(fake_bridge));
+  BuildConsentAuditor();
+
+  // There is a bridge (i.e. separate sync type for consents is enabled), thus,
+  // there should be a delegate as well.
+  EXPECT_EQ(expected_delegate_ptr.get(),
+            consent_auditor()->GetControllerDelegateOnUIThread().get());
 }
 
 }  // namespace consent_auditor
