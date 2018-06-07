@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -40,7 +41,8 @@ import java.util.Stack;
  */
 public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
                                         PartnerBookmarksReader.FaviconUpdateObserver {
-    private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+    private static final int FAVICON_MAX_CACHE_SIZE_BYTES =
+            10 * ConversionUtils.BYTES_PER_MEGABYTE; // 10MB
 
     /**
      * This shared preference used to be used to save a list of recent searches. That feature
@@ -173,8 +175,9 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
         ActivityManager activityManager = ((ActivityManager) ContextUtils
                 .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
-        int maxSize = Math.min(activityManager.getMemoryClass() / 4 * 1024 * 1024,
-                FAVICON_MAX_CACHE_SIZE_BYTES);
+        int maxSize =
+                Math.min(activityManager.getMemoryClass() / 4 * ConversionUtils.BYTES_PER_MEGABYTE,
+                        FAVICON_MAX_CACHE_SIZE_BYTES);
         mLargeIconBridge.createCache(maxSize);
 
         RecordUserAction.record("MobileBookmarkManagerOpen");

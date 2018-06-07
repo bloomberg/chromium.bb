@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
@@ -166,7 +167,8 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
         return dialogFragment;
     }
 
-    private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 100 * 1024; // 100KB
+    private static final int FAVICON_MAX_CACHE_SIZE_BYTES =
+            100 * ConversionUtils.BYTES_PER_KILOBYTE; // 100KB
 
     /** The tag used when showing the clear browsing fragment. */
     public static final String FRAGMENT_TAG = "ConfirmImportantSitesDialogFragment";
@@ -270,7 +272,8 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
                 ((ActivityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.ACTIVITY_SERVICE));
         int maxSize = Math.min(
-                activityManager.getMemoryClass() / 16 * 25 * 1024, FAVICON_MAX_CACHE_SIZE_BYTES);
+                activityManager.getMemoryClass() / 16 * 25 * ConversionUtils.BYTES_PER_KILOBYTE,
+                FAVICON_MAX_CACHE_SIZE_BYTES);
         mLargeIconBridge.createCache(maxSize);
 
         mAdapter = new ClearBrowsingDataAdapter(mImportantDomains, mFaviconURLs, getResources());

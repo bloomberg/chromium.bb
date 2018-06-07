@@ -21,6 +21,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.ThumbnailCacheEntry.ContentId;
 import org.chromium.chrome.browser.widget.ThumbnailCacheEntry.ThumbnailEntry;
 
@@ -49,7 +50,8 @@ import java.util.LinkedHashSet;
  */
 public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
     private static final String TAG = "ThumbnailStorage";
-    private static final int MAX_CACHE_BYTES = 1024 * 1024; // Max disk cache size is 1MB.
+    private static final int MAX_CACHE_BYTES =
+            ConversionUtils.BYTES_PER_MEGABYTE; // Max disk cache size is 1MB.
 
     // LRU cache of a pair of thumbnail's contentID and size. The order is based on the sequence of
     // add and get with the most recent at the end. The order at initialization (i.e. browser

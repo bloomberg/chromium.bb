@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences.datareduction;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.util.ConversionUtils;
 
 /**
  * Centralizes UMA data collection for the Data Reduction Proxy.
@@ -92,10 +93,11 @@ public class DataReductionProxyUma {
             long compressedTotalBytes, long originalTotalBytes) {
         // The byte counts are stored in KB. The largest histogram bucket is set to ~1 TB.
         RecordHistogram.recordCustomCountHistogram(USER_VIEWED_ORIGINAL_SIZE_HISTOGRAM_NAME,
-                (int) (originalTotalBytes / 1024), 1, 1000 * 1000 * 1000, 100);
-        RecordHistogram.recordCustomCountHistogram(USER_VIEWED_SAVINGS_SIZE_HISTOGRAM_NAME,
-                (int) ((originalTotalBytes - compressedTotalBytes) / 1024), 1, 1000 * 1000 * 1000,
+                (int) ConversionUtils.bytesToKilobytes(originalTotalBytes), 1, 1000 * 1000 * 1000,
                 100);
+        RecordHistogram.recordCustomCountHistogram(USER_VIEWED_SAVINGS_SIZE_HISTOGRAM_NAME,
+                (int) ConversionUtils.bytesToKilobytes(originalTotalBytes - compressedTotalBytes),
+                1, 1000 * 1000 * 1000, 100);
     }
 
     /**

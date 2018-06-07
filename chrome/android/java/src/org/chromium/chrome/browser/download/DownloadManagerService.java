@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -108,8 +109,6 @@ public class DownloadManagerService
     private static final int UMA_DOWNLOAD_RESUMPTION_FAILED = 3;
     private static final int UMA_DOWNLOAD_RESUMPTION_AUTO_STARTED = 4;
     private static final int UMA_DOWNLOAD_RESUMPTION_COUNT = 5;
-
-    private static final int GB_IN_KILO_BYTES = 1024 * 1024;
 
     // Set will be more expensive to initialize, so use an ArrayList here.
     private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
@@ -1161,14 +1160,14 @@ public class DownloadManagerService
                             totalDuration, TimeUnit.MILLISECONDS);
                     RecordHistogram.recordCount1000Histogram(
                             "MobileDownload.BytesDownloaded.DownloadManager.Success",
-                            (int) (bytesDownloaded / 1024));
+                            (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
                 } else {
                     RecordHistogram.recordLongTimesHistogram(
                             "MobileDownload.DownloadTime.ChromeNetworkStack.Success",
                             totalDuration, TimeUnit.MILLISECONDS);
                     RecordHistogram.recordCount1000Histogram(
                             "MobileDownload.BytesDownloaded.ChromeNetworkStack.Success",
-                            (int) (bytesDownloaded / 1024));
+                            (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
                     RecordHistogram.recordCountHistogram(
                             "MobileDownload.InterruptionsCount.ChromeNetworkStack.Success",
                             numInterruptions);
@@ -1183,14 +1182,14 @@ public class DownloadManagerService
                             totalDuration, TimeUnit.MILLISECONDS);
                     RecordHistogram.recordCount1000Histogram(
                             "MobileDownload.BytesDownloaded.DownloadManager.Failure",
-                            (int) (bytesDownloaded / 1024));
+                            (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
                 } else {
                     RecordHistogram.recordLongTimesHistogram(
                             "MobileDownload.DownloadTime.ChromeNetworkStack.Failure",
                             totalDuration, TimeUnit.MILLISECONDS);
                     RecordHistogram.recordCount1000Histogram(
                             "MobileDownload.BytesDownloaded.ChromeNetworkStack.Failure",
-                            (int) (bytesDownloaded / 1024));
+                            (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
                     RecordHistogram.recordCountHistogram(
                             "MobileDownload.InterruptionsCount.ChromeNetworkStack.Failure",
                             numInterruptions);
@@ -1221,8 +1220,9 @@ public class DownloadManagerService
      * @param bytesWasted Bytes wasted during download.
      */
     private void recordBytesWasted(String name, long bytesWasted) {
-        RecordHistogram.recordCustomCountHistogram(
-                name, (int) (bytesWasted / 1024), 1, GB_IN_KILO_BYTES, 50);
+        RecordHistogram.recordCustomCountHistogram(name,
+                (int) ConversionUtils.bytesToKilobytes(bytesWasted), 1,
+                ConversionUtils.KILOBYTES_PER_GIGABYTE, 50);
     }
 
     @Override

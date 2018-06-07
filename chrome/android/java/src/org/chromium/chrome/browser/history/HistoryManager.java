@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.SearchDelegate;
@@ -59,8 +60,8 @@ import java.util.List;
 public class HistoryManager implements OnMenuItemClickListener, SignInStateObserver,
                                        SelectionObserver<HistoryItem>, SearchDelegate,
                                        SnackbarController, PrefObserver {
-    private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
-    private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
+    private static final int FAVICON_MAX_CACHE_SIZE_BYTES =
+            10 * ConversionUtils.BYTES_PER_MEGABYTE; // 10MB
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
     private static final String PREF_SHOW_HISTORY_INFO = "history_home_show_info";
 
@@ -137,7 +138,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
         ActivityManager activityManager = ((ActivityManager) ContextUtils
                 .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
-        int maxSize = Math.min((activityManager.getMemoryClass() / 4) * MEGABYTES_TO_BYTES,
+        int maxSize = Math.min(
+                (activityManager.getMemoryClass() / 4) * ConversionUtils.BYTES_PER_MEGABYTE,
                 FAVICON_MAX_CACHE_SIZE_BYTES);
         mLargeIconBridge.createCache(maxSize);
 
