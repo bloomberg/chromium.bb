@@ -14,9 +14,7 @@
 
 namespace sync_sessions {
 
-// Overrides StartModels to avoid sync contention with sessions during
-// a session restore operation at startup and to wait for the local
-// device info to become available.
+// Overrides StartModels to wait for the local device info to become available.
 class SessionDataTypeController : public syncer::AsyncDirectoryTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -30,9 +28,6 @@ class SessionDataTypeController : public syncer::AsyncDirectoryTypeController {
   bool StartModels() override;
   void StopModels() override;
   bool ReadyForStart() const override;
-
-  // Called when asynchronous session restore has completed.
-  void OnSessionRestoreComplete();
 
  private:
   bool IsWaiting();
@@ -49,7 +44,6 @@ class SessionDataTypeController : public syncer::AsyncDirectoryTypeController {
   const char* history_disabled_pref_name_;
 
   // Flags that indicate the reason for pending loading models.
-  bool waiting_on_session_restore_;
   bool waiting_on_local_device_info_;
 
   PrefChangeRegistrar pref_registrar_;

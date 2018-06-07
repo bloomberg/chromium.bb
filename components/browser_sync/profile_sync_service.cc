@@ -415,23 +415,6 @@ ProfileSyncService::GetLocalDeviceInfoProvider() const {
   return local_device_.get();
 }
 
-void ProfileSyncService::OnSessionRestoreComplete() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DataTypeController::TypeMap::const_iterator iter =
-      data_type_controllers_.find(syncer::SESSIONS);
-  if (iter == data_type_controllers_.end()) {
-    return;
-  }
-  DCHECK(iter->second);
-
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
-    sessions_sync_manager_->OnSessionRestoreComplete();
-  } else {
-    static_cast<sync_sessions::SessionDataTypeController*>(iter->second.get())
-        ->OnSessionRestoreComplete();
-  }
-}
-
 syncer::WeakHandle<syncer::JsEventHandler>
 ProfileSyncService::GetJsEventHandler() {
   return syncer::MakeWeakHandle(sync_js_controller_.AsWeakPtr());

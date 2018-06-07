@@ -361,6 +361,13 @@ TestSyncedTabDelegate* TestSyncedWindowDelegatesGetter::AddTab(
   return tabs_.back().get();
 }
 
+void TestSyncedWindowDelegatesGetter::SessionRestoreComplete() {
+  for (auto& window : windows_)
+    window->SetIsSessionRestoreInProgress(false);
+
+  router_.NotifySessionRestoreComplete();
+}
+
 LocalSessionEventRouter* TestSyncedWindowDelegatesGetter::router() {
   return &router_;
 }
@@ -396,6 +403,12 @@ void TestSyncedWindowDelegatesGetter::DummyRouter::NotifyNav(
     SyncedTabDelegate* tab) {
   if (handler_)
     handler_->OnLocalTabModified(tab);
+}
+
+void TestSyncedWindowDelegatesGetter::DummyRouter::
+    NotifySessionRestoreComplete() {
+  if (handler_)
+    handler_->OnSessionRestoreComplete();
 }
 
 }  // namespace sync_sessions

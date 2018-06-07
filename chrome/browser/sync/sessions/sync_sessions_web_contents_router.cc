@@ -70,6 +70,12 @@ void SyncSessionsWebContentsRouter::NotifyTabModified(
   }
 }
 
+void SyncSessionsWebContentsRouter::NotifySessionRestoreComplete() {
+  if (handler_) {
+    handler_->OnSessionRestoreComplete();
+  }
+}
+
 void SyncSessionsWebContentsRouter::InjectStartSyncFlare(
     syncer::SyncableService::StartSyncFlare flare) {
   flare_ = flare;

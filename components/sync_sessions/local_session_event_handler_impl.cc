@@ -27,6 +27,20 @@ using sessions::SerializedNavigationEntry;
 // The maximum number of navigations in each direction we care to sync.
 const int kMaxSyncNavigationCount = 6;
 
+bool IsSessionRestoreInProgress(SyncSessionsClient* sessions_client) {
+  DCHECK(sessions_client);
+  SyncedWindowDelegatesGetter* synced_window_getter =
+      sessions_client->GetSyncedWindowDelegatesGetter();
+  SyncedWindowDelegatesGetter::SyncedWindowDelegateMap windows =
+      synced_window_getter->GetSyncedWindowDelegates();
+  for (const auto& window_iter_pair : windows) {
+    if (window_iter_pair.second->IsSessionRestoreInProgress()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool IsWindowSyncable(const SyncedWindowDelegate& window_delegate) {
   return window_delegate.ShouldSync() && window_delegate.GetTabCount() &&
          window_delegate.HasWindow();
@@ -117,24 +131,30 @@ LocalSessionEventHandlerImpl::Delegate::~Delegate() = default;
 LocalSessionEventHandlerImpl::LocalSessionEventHandlerImpl(
     Delegate* delegate,
     SyncSessionsClient* sessions_client,
-    SyncedSessionTracker* session_tracker,
-    WriteBatch* initial_batch)
+    SyncedSessionTracker* session_tracker)
     : delegate_(delegate),
       sessions_client_(sessions_client),
       session_tracker_(session_tracker) {
   DCHECK(delegate);
   DCHECK(sessions_client);
   DCHECK(session_tracker);
-  DCHECK(initial_batch);
 
   current_session_tag_ = session_tracker_->GetLocalSessionTag();
   DCHECK(!current_session_tag_.empty());
 
-  AssociateExistingSyncIds();
-  AssociateWindows(RELOAD_TABS, ScanForTabbedWindow(), initial_batch);
+  if (!IsSessionRestoreInProgress(sessions_client)) {
+    OnSessionRestoreComplete();
+  }
 }
 
 LocalSessionEventHandlerImpl::~LocalSessionEventHandlerImpl() {}
+
+void LocalSessionEventHandlerImpl::OnSessionRestoreComplete() {
+  std::unique_ptr<WriteBatch> batch = delegate_->CreateLocalSessionWriteBatch();
+  AssociateExistingSyncIds();
+  AssociateWindows(RELOAD_TABS, ScanForTabbedWindow(), batch.get());
+  batch->Commit();
+}
 
 sync_pb::SessionTab
 LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegateForTest(
@@ -175,6 +195,7 @@ void LocalSessionEventHandlerImpl::AssociateExistingSyncIds() {
 void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
                                                     bool has_tabbed_window,
                                                     WriteBatch* batch) {
+  DCHECK(!IsSessionRestoreInProgress(sessions_client_));
   // Note that |current_session| is a pointer owned by |session_tracker_|.
   // |session_tracker_| will continue to update |current_session| under
   // the hood so care must be taken accessing it. In particular, invoking
@@ -465,6 +486,11 @@ void LocalSessionEventHandlerImpl::WriteTasksIntoSpecifics(
 void LocalSessionEventHandlerImpl::OnLocalTabModified(
     SyncedTabDelegate* modified_tab) {
   DCHECK(!current_session_tag_.empty());
+
+  // Defers updates if session restore is in progress.
+  if (IsSessionRestoreInProgress(sessions_client_)) {
+    return;
+  }
 
   sessions::SerializedNavigationEntry current;
   modified_tab->GetSerializedNavigationAtIndex(

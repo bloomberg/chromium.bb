@@ -41,6 +41,8 @@ class SyncSessionsWebContentsRouter : public LocalSessionEventRouter,
   // modified in some way.
   void NotifyTabModified(content::WebContents* web_contents,
                          bool page_load_completed);
+  // Notify the router that session restore has completed.
+  void NotifySessionRestoreComplete();
   // Inject a flare that can be used to start sync. See the comment for
   // StartSyncFlare in syncable_service.h for more.
   void InjectStartSyncFlare(syncer::SyncableService::StartSyncFlare flare);

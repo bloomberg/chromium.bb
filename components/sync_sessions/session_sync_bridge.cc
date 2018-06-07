@@ -94,20 +94,6 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
   syncer::ModelTypeChangeProcessor* const processor_;
 };
 
-bool IsSessionRestoreInProgress(SyncSessionsClient* sessions_client) {
-  DCHECK(sessions_client);
-  SyncedWindowDelegatesGetter* synced_window_getter =
-      sessions_client->GetSyncedWindowDelegatesGetter();
-  SyncedWindowDelegatesGetter::SyncedWindowDelegateMap windows =
-      synced_window_getter->GetSyncedWindowDelegates();
-  for (const auto& window_iter_pair : windows) {
-    if (window_iter_pair.second->IsSessionRestoreInProgress()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
 SessionSyncBridge::SessionSyncBridge(
@@ -131,9 +117,7 @@ SessionSyncBridge::SessionSyncBridge(
           local_device_info_provider,
           store_factory,
           base::BindRepeating(&FaviconCache::UpdateMappingsFromForeignTab,
-                              base::Unretained(&favicon_cache_)))),
-      is_session_restore_in_progress_(
-          IsSessionRestoreInProgress(sessions_client)) {
+                              base::Unretained(&favicon_cache_)))) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
   DCHECK(foreign_sessions_updated_callback_);
@@ -169,14 +153,6 @@ OpenTabsUIDelegate* SessionSyncBridge::GetOpenTabsUIDelegate() {
   return syncing_->open_tabs_ui_delegate.get();
 }
 
-void SessionSyncBridge::OnSessionRestoreComplete() {
-  is_session_restore_in_progress_ = false;
-
-  if (syncing_) {
-    StartLocalSessionEventHandler();
-  }
-}
-
 syncer::SyncableService* SessionSyncBridge::GetSyncableService() {
   return nullptr;
 }
@@ -196,9 +172,7 @@ base::Optional<syncer::ModelError> SessionSyncBridge::MergeSyncData(
   DCHECK(syncing_);
   DCHECK(change_processor()->IsTrackingMetadata());
 
-  if (!is_session_restore_in_progress_) {
-    StartLocalSessionEventHandler();
-  }
+  StartLocalSessionEventHandler();
 
   return ApplySyncChanges(std::move(metadata_change_list),
                           std::move(entity_data));
@@ -209,19 +183,11 @@ void SessionSyncBridge::StartLocalSessionEventHandler() {
   DCHECK(syncing_);
   DCHECK(!syncing_->local_session_event_handler);
   DCHECK(change_processor()->IsTrackingMetadata());
-  DCHECK(!is_session_restore_in_progress_);
 
-  // TODO(crbug.com/681921): Remove injecting |local_session_write_batch| and
-  // let the impl create one via the delegate once the directory-based
-  // implementation is removed.
-  std::unique_ptr<LocalSessionEventHandlerImpl::WriteBatch>
-      local_session_write_batch = CreateLocalSessionWriteBatch();
   syncing_->local_session_event_handler =
       std::make_unique<LocalSessionEventHandlerImpl>(
           /*delegate=*/this, sessions_client_,
-          syncing_->store->mutable_tracker(), local_session_write_batch.get());
-
-  local_session_write_batch->Commit();
+          syncing_->store->mutable_tracker());
 
   // Start processing local changes, which will be propagated to the store as
   // well as the processor.
@@ -403,8 +369,7 @@ void SessionSyncBridge::OnStoreInitialized(
 
   // If initial sync was already done, MergeSyncData() will never be called so
   // we need to start syncing local changes.
-  if (change_processor()->IsTrackingMetadata() &&
-      !is_session_restore_in_progress_) {
+  if (change_processor()->IsTrackingMetadata()) {
     StartLocalSessionEventHandler();
   }
 }
