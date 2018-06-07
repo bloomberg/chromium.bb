@@ -9,6 +9,7 @@
 #include "base/lazy_instance.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "url/gurl.h"
@@ -39,13 +40,14 @@ WebUIControllerFactoryRegistry* WebUIControllerFactoryRegistry::GetInstance() {
   return base::Singleton<WebUIControllerFactoryRegistry>::get();
 }
 
-WebUIController* WebUIControllerFactoryRegistry::CreateWebUIControllerForURL(
-    WebUI* web_ui, const GURL& url) const {
-  std::vector<WebUIControllerFactory*>* factories =
-      g_web_ui_controller_factories.Pointer();
-  for (size_t i = 0; i < factories->size(); ++i) {
-    WebUIController* controller = (*factories)[i]->CreateWebUIControllerForURL(
-        web_ui, url);
+std::unique_ptr<WebUIController>
+WebUIControllerFactoryRegistry::CreateWebUIControllerForURL(
+    WebUI* web_ui,
+    const GURL& url) const {
+  std::vector<WebUIControllerFactory*>& factories =
+      g_web_ui_controller_factories.Get();
+  for (const WebUIControllerFactory* factory : factories) {
+    auto controller = factory->CreateWebUIControllerForURL(web_ui, url);
     if (controller)
       return controller;
   }

@@ -131,12 +131,13 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   }
 
   // WebUIFactory implementation.
-  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
-                                               const GURL& url) const override {
+  std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
+      WebUI* web_ui,
+      const GURL& url) const override {
     // If WebUI creation is enabled for the test and this is a WebUI URL,
     // returns a new instance.
     if (should_create_webui_ && HasWebUIScheme(url))
-      return new WebUIController(web_ui);
+      return std::make_unique<WebUIController>(web_ui);
     return nullptr;
   }
 

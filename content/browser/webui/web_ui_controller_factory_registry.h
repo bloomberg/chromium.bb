@@ -20,8 +20,9 @@ class CONTENT_EXPORT WebUIControllerFactoryRegistry
 
   // WebUIControllerFactory implementation. Each method loops through the same
   // method on all the factories.
-  WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
-                                               const GURL& url) const override;
+  std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
+      WebUI* web_ui,
+      const GURL& url) const override;
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override;
   bool UseWebUIForURL(BrowserContext* browser_context,
