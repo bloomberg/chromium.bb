@@ -102,6 +102,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
         ['no_passthrough'], bug=1619) # angle bug ID
 
+    # Need to implement new error semantics
+    # https://github.com/KhronosGroup/WebGL/pull/2607
+    self.Fail('conformance/extensions/' +
+        'angle-instanced-arrays-out-of-bounds.html', bug=849572)
+    self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
+        bug=849572)
+
     # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
     self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
         ['nvidia'], bug=772651)
