@@ -956,7 +956,12 @@ void WizardController::OnAutoEnrollmentCheckCompleted() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void WizardController::OnDemoSetupClosed() {
+void WizardController::OnDemoSetupFinished() {
+  PerformOOBECompletedActions();
+  ShowLoginScreen(LoginScreenContext());
+}
+
+void WizardController::OnDemoSetupCanceled() {
   DCHECK(previous_screen_);
   SetCurrentScreen(previous_screen_);
 }
@@ -1353,8 +1358,11 @@ void WizardController::OnExit(BaseScreen& /* screen */,
     case ScreenExitCode::RECOMMEND_APPS_SELECTED:
       // TODO(rsgingerrs): Actions if user selects some apps to install
       break;
-    case ScreenExitCode::DEMO_MODE_SETUP_CLOSED:
-      OnDemoSetupClosed();
+    case ScreenExitCode::DEMO_MODE_SETUP_FINISHED:
+      OnDemoSetupFinished();
+      break;
+    case ScreenExitCode::DEMO_MODE_SETUP_CANCELED:
+      OnDemoSetupCanceled();
       break;
     default:
       NOTREACHED();

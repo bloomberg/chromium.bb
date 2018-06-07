@@ -72,8 +72,10 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "WAIT_FOR_CONTAINER_READY_ERROR";
     case ScreenExitCode::SYNC_CONSENT_FINISHED:
       return "SYNC_CONSENT_FINISHED";
-    case ScreenExitCode::DEMO_MODE_SETUP_CLOSED:
-      return "DEMO_MODE_SETUP_CLOSED";
+    case ScreenExitCode::DEMO_MODE_SETUP_FINISHED:
+      return "DEMO_MODE_SETUP_FINISHED";
+    case ScreenExitCode::DEMO_MODE_SETUP_CANCELED:
+      return "DEMO_MODE_SETUP_CANCELED";
     case ScreenExitCode::RECOMMEND_APPS_SKIPPED:
       return "RECOMMEND_APPS_SKIPPED";
     case ScreenExitCode::RECOMMEND_APPS_SELECTED:
