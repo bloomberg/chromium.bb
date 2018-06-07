@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -78,6 +79,17 @@ void WaitForRenderWidgetHostCount(size_t target_count) {
     run_loop.Run();
   }
 }
+
+// Used to disable a few problematic tests for MacViews:
+// https://crbug.com/850594
+bool IsMacViewsBrowser() {
+#if defined(OS_MACOSX)
+  return !views_mode_controller::IsViewsBrowserCocoa();
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 class SitePerProcessInteractiveBrowserTest : public InProcessBrowserTest {
@@ -644,6 +656,8 @@ void WaitForMultipleFullscreenEvents(
 //
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
                        FullscreenElementInSubframe) {
+  if (IsMacViewsBrowser())
+    return;
   // Start on a page with one subframe (id "child-0") that has
   // "allowfullscreen" enabled.
   GURL main_url(embedded_test_server()->GetURL(
@@ -836,11 +850,15 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
                        FullscreenElementInABAAndExitViaEscapeKey) {
+  if (IsMacViewsBrowser())
+    return;
   FullscreenElementInABA(FullscreenExitMethod::ESC_PRESS);
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
                        FullscreenElementInABAAndExitViaJS) {
+  if (IsMacViewsBrowser())
+    return;
   FullscreenElementInABA(FullscreenExitMethod::JS_CALL);
 }
 
