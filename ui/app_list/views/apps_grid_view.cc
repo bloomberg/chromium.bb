@@ -301,7 +301,9 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       bounds_animator_(this),
       page_flip_delay_in_ms_(kPageFlipDelayInMsFullscreen),
       pagination_animation_start_frame_number_(0),
-      view_structure_(this) {
+      view_structure_(this),
+      is_apps_grid_gap_feature_enabled_(
+          features::IsAppsGridGapFeatureEnabled()) {
   DCHECK(contents_view_);
   SetPaintToLayer();
   // Clip any icons that are outside the grid view's bounds. These icons would
@@ -2510,8 +2512,7 @@ void AppsGridView::SetAsFolderDroppingTarget(const GridIndex& target_index,
 }
 
 bool AppsGridView::IsAppsGridGapEnabled() const {
-  return !folder_delegate_ &&
-         contents_view_->app_list_view()->is_home_launcher_enabled();
+  return !folder_delegate_ && is_apps_grid_gap_feature_enabled_;
 }
 
 GridIndex AppsGridView::GetIndexFromModelIndex(int model_index) const {

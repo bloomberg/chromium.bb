@@ -734,7 +734,7 @@ class AppsGridViewDragTest : public AppsGridViewTest {
       is_apps_grid_gap_enabled_ = GetParam().is_apps_grid_gap_enabled;
       if (is_apps_grid_gap_enabled_) {
         scoped_feature_list_.InitWithFeatures(
-            {app_list::features::kEnableHomeLauncher}, {});
+            {app_list::features::kEnableAppsGridGapFeature}, {});
       }
     }
     AppsGridViewTest::SetUp();
@@ -1111,7 +1111,7 @@ class AppsGridGapTest : public AppsGridViewTest {
   // testing::Test overrides:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {app_list::features::kEnableHomeLauncher}, {});
+        {app_list::features::kEnableAppsGridGapFeature}, {});
     AppsGridViewTest::SetUp();
     apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
     GetPaginationModel()->SetTransitionDurations(10, 10);

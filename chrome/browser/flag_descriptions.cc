@@ -2837,6 +2837,12 @@ const char kEnableAppShortcutSearchName[] =
 const char kEnableAppShortcutSearchDescription[] =
     "Enables app shortcut search in launcher";
 
+const char kEnableAppsGridGapFeatureName[] =
+    "Enable apps grid gap feature in launcher.";
+const char kEnableAppsGridGapFeatureDescription[] =
+    "Enables gaps at the end of each page and enables dragging an item to an "
+    "empty page in launcher.";
+
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher and Tab Switcher.";
