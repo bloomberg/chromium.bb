@@ -70,6 +70,14 @@ class MEDIA_GPU_EXPORT AcceleratedVideoDecoder {
   virtual gfx::Size GetPicSize() const = 0;
   virtual size_t GetRequiredNumOfPictures() const = 0;
 
+  // About 3 secs for 30 fps video. When the new sized keyframe is missed, the
+  // decoder cannot decode the frame. The number of frames are skipped until
+  // getting new keyframe. If dropping more than the number of frames, the
+  // decoder reports decode error, which may take longer time to recover it.
+  // The number is the sweet spot which the decoder can tolerate to handle the
+  // missing keyframe by itself. In addition, this situation is exceptional.
+  static constexpr size_t kVPxMaxNumOfSizeChangeFailures = 75;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AcceleratedVideoDecoder);
 };

@@ -599,6 +599,9 @@ source_set("unit_tests") {
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi:unit_test" ]
   }
+  if (use_v4l2_codec || use_vaapi) {
+    sources += [ "vp8_decoder_unittest.cc" ]
+  }
   if (is_win && enable_library_cdms) {
     sources += [
       "windows/d3d11_cdm_proxy_unittest.cc",

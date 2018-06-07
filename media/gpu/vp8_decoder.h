@@ -91,7 +91,10 @@ class MEDIA_GPU_EXPORT VP8Decoder : public AcceleratedVideoDecoder {
   Vp8ReferenceFrameVector ref_frames_;
 
   // Current stream buffer id; to be assigned to pictures decoded from it.
-  int32_t stream_id_ = -1;
+  static constexpr int32_t kInvalidId = -1;
+  int32_t stream_id_ = kInvalidId;
+  int32_t last_decoded_stream_id_ = kInvalidId;
+  size_t size_change_failure_counter_ = 0;
 
   const uint8_t* curr_frame_start_;
   size_t frame_size_;

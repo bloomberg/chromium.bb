@@ -71,27 +71,44 @@ VP8Decoder::DecodeResult VP8Decoder::Decode() {
     }
   }
 
+  // The |stream_id_|s are expected to be monotonically increasing, and we've
+  // lost (at least) a frame if this condition doesn't uphold.
+  const bool have_skipped_frame = last_decoded_stream_id_ + 1 != stream_id_ &&
+                                  last_decoded_stream_id_ != kInvalidId;
   if (curr_frame_hdr_->IsKeyframe()) {
-    gfx::Size new_pic_size(curr_frame_hdr_->width, curr_frame_hdr_->height);
-    if (new_pic_size.IsEmpty())
+    const gfx::Size new_picture_size(curr_frame_hdr_->width,
+                                     curr_frame_hdr_->height);
+    if (new_picture_size.IsEmpty())
       return kDecodeError;
 
-    if (new_pic_size != pic_size_) {
-      DVLOG(2) << "New resolution: " << new_pic_size.ToString();
-      pic_size_ = new_pic_size;
+    if (new_picture_size != pic_size_) {
+      DVLOG(2) << "New resolution: " << new_picture_size.ToString();
+      pic_size_ = new_picture_size;
 
       ref_frames_.Clear();
+      last_decoded_stream_id_ = stream_id_;
+      size_change_failure_counter_ = 0;
 
       return kAllocateNewSurfaces;
     }
 
     state_ = kDecoding;
-  } else {
-    if (state_ != kDecoding) {
-      // Need a resume point.
-      curr_frame_hdr_ = nullptr;
-      return kRanOutOfStreamData;
+  } else if (state_ != kDecoding || have_skipped_frame) {
+    // Only trust the next frame. Otherwise, new keyframe might be missed, so
+    // |pic_size_| might be stale.
+    // TODO(dshwang): if rtc decoder can know the size of inter frame, change
+    // this condition to check if new keyframe is missed.
+    // https://crbug.com/832545
+    DVLOG(4) << "Drop the frame because the size maybe stale.";
+    if (have_skipped_frame &&
+        ++size_change_failure_counter_ > kVPxMaxNumOfSizeChangeFailures) {
+      state_ = kError;
+      return kDecodeError;
     }
+
+    // Need a resume point.
+    curr_frame_hdr_ = nullptr;
+    return kRanOutOfStreamData;
   }
 
   scoped_refptr<VP8Picture> pic = accelerator_->CreateVP8Picture();
@@ -103,6 +120,8 @@ VP8Decoder::DecodeResult VP8Decoder::Decode() {
     return kDecodeError;
   }
 
+  last_decoded_stream_id_ = stream_id_;
+  size_change_failure_counter_ = 0;
   return kRanOutOfStreamData;
 }
 
