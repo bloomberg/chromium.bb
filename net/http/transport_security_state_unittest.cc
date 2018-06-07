@@ -60,7 +60,6 @@ namespace test3 {
 }
 
 const char kHost[] = "example.test";
-const char kSubdomain[] = "foo.example.test";
 const uint16_t kPort = 443;
 const char kReportUri[] = "http://report-example.test/test";
 const char kExpectCTStaticHostname[] = "expect-ct.preloaded.test";
@@ -2861,6 +2860,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTUMA) {
 }
 
 #if BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)
+const char kSubdomain[] = "foo.example.test";
+
 class TransportSecurityStateStaticTest : public TransportSecurityStateTest {
  public:
   TransportSecurityStateStaticTest() {
