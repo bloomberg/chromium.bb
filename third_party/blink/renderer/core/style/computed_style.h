@@ -1869,9 +1869,9 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Cursor utility functions.
   CursorList* Cursors() const { return CursorDataInternal().Get(); }
-  void AddCursor(StyleImage*,
-                 bool hot_spot_specified,
-                 const IntPoint& hot_spot = IntPoint());
+  CORE_EXPORT void AddCursor(StyleImage*,
+                             bool hot_spot_specified,
+                             const IntPoint& hot_spot = IntPoint());
   void SetCursorList(CursorList*);
   void ClearCursorList();
 
