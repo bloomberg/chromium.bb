@@ -51,13 +51,13 @@ void GamepadSharedMemoryReader::Start(
   if (!valid_handle)
     return;
 
-  renderer_shared_buffer_mapping_ =
-      renderer_shared_buffer_handle_->Map(sizeof(GamepadHardwareBuffer));
+  renderer_shared_buffer_mapping_ = renderer_shared_buffer_handle_->Map(
+      sizeof(device::GamepadHardwareBuffer));
   CHECK(renderer_shared_buffer_mapping_);
   void* memory = renderer_shared_buffer_mapping_.get();
   CHECK(memory);
   gamepad_hardware_buffer_ =
-      static_cast<GamepadHardwareBuffer*>(memory);
+      static_cast<device::GamepadHardwareBuffer*>(memory);
 }
 
 void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {

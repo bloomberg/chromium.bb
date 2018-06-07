@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "device/gamepad/gamepad_shared_buffer.h"
+#include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
