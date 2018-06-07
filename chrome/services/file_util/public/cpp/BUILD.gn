@@ -35,6 +35,7 @@ source_set("unit_tests") {
 
   sources = [
     "sandboxed_dmg_analyzer_mac_unittest.cc",
+    "sandboxed_rar_analyzer_unittest.cc",
     "sandboxed_zip_analyzer_unittest.cc",
   ]
 
