@@ -1002,7 +1002,12 @@ BlinkGCObserver::~BlinkGCObserver() {
 
 namespace {
 
-void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
+size_t CappedSizeInKB(size_t size) {
+  return std::min(size / 1024,
+                  static_cast<size_t>(std::numeric_limits<int>::max()));
+}
+
+void UpdateHistogramsAndCounters(const ThreadHeapStatsCollector::Event& event) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, gc_reason_histogram,
                       ("BlinkGC.GCReason", BlinkGC::kLastGCReason + 1));
   gc_reason_histogram.Count(event.reason);
@@ -1041,8 +1046,9 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_by_heap_compaction,
       ("BlinkGC.ObjectSizeFreedByHeapCompaction", 1, 4 * 1024 * 1024, 50));
-  object_size_freed_by_heap_compaction.Count(event.compaction_freed_bytes /
-                                             1024);
+  object_size_freed_by_heap_compaction.Count(
+      CappedSizeInKB(event.compaction_freed_bytes));
+
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, weak_processing_time_histogram,
       ("BlinkGC.TimeForGlobalWeakProcessing", 1, 10 * 1000, 50));
@@ -1052,33 +1058,30 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_before_gc_histogram,
                       ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
   object_size_before_gc_histogram.Count(
-      event.object_size_in_bytes_before_sweeping / 1024);
+      CappedSizeInKB(event.object_size_in_bytes_before_sweeping));
   DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_after_gc_histogram,
                       ("BlinkGC.ObjectSizeAfterGC", 1, 4 * 1024 * 1024, 50));
-  object_size_after_gc_histogram.Count(event.marked_bytes / 1024);
+  object_size_after_gc_histogram.Count(CappedSizeInKB(event.marked_bytes));
 
-  const double collection_rate = 1.0 - event.live_object_rate;
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadState::collectionRate",
-                 static_cast<int>(100 * collection_rate));
-
+  const int collection_rate_percent =
+      static_cast<int>(100 * (1.0 - event.live_object_rate));
   DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,
                       ("BlinkGC.CollectionRate", 1, 100, 20));
-  collection_rate_histogram.Count(static_cast<int>(100 * collection_rate));
+  collection_rate_histogram.Count(collection_rate_percent);
 
   // Per GCReason metrics.
   switch (event.reason) {
-#define COUNT_BY_GC_REASON(GCReason)                                          \
-  case BlinkGC::k##GCReason: {                                                \
-    DEFINE_STATIC_LOCAL(                                                      \
-        CustomCountHistogram, atomic_marking_phase_histogram,                 \
-        ("BlinkGC.AtomicPhaseMarking_" #GCReason, 0, 10000, 50));             \
-    atomic_marking_phase_histogram.Count(                                     \
-        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);     \
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,      \
-                        ("BlinkGC.CollectionRate_" #GCReason, 1, 100, 20));   \
-    collection_rate_histogram.Count(static_cast<int>(100 * collection_rate)); \
-    break;                                                                    \
+#define COUNT_BY_GC_REASON(GCReason)                                        \
+  case BlinkGC::k##GCReason: {                                              \
+    DEFINE_STATIC_LOCAL(                                                    \
+        CustomCountHistogram, atomic_marking_phase_histogram,               \
+        ("BlinkGC.AtomicPhaseMarking_" #GCReason, 0, 10000, 50));           \
+    atomic_marking_phase_histogram.Count(                                   \
+        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);   \
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,    \
+                        ("BlinkGC.CollectionRate_" #GCReason, 1, 100, 20)); \
+    collection_rate_histogram.Count(collection_rate_percent);               \
+    break;                                                                  \
   }
 
     COUNT_BY_GC_REASON(IdleGC)
@@ -1093,6 +1096,21 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
 #undef COUNT_BY_GC_REASON
   }
+
+  bool gc_tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                                     &gc_tracing_enabled);
+  if (!gc_tracing_enabled)
+    return;
+
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.CollectionRate", collection_rate_percent);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.MarkedObjectSizeAtLastCompleteSweepKB",
+                 CappedSizeInKB(event.marked_bytes));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.ObjectSizeAtLastGCKB",
+                 CappedSizeInKB(event.object_size_in_bytes_before_sweeping));
 }
 
 }  // namespace
@@ -1112,7 +1130,7 @@ void ThreadState::PostSweep() {
 
   Heap().stats_collector()->NotifySweepingCompleted();
   if (IsMainThread())
-    UpdateHistograms(Heap().stats_collector()->previous());
+    UpdateHistogramsAndCounters(Heap().stats_collector()->previous());
 }
 
 void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
