@@ -70,16 +70,12 @@ void AvatarToolbarButton::UpdateIcon() {
 }
 
 void AvatarToolbarButton::UpdateTooltipText() {
-  if (IsIncognito()) {
-    SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_INCOGNITO_AVATAR_BUTTON_TOOLTIP));
-  } else {
-    SetTooltipText(profiles::GetAvatarNameForProfile(profile_->GetPath()));
-  }
+  SetTooltipText(GetAvatarTooltipText());
 }
 
 void AvatarToolbarButton::OnAvatarErrorChanged() {
   UpdateIcon();
+  UpdateTooltipText();
 }
 
 void AvatarToolbarButton::OnProfileAdded(const base::FilePath& profile_path) {
@@ -121,6 +117,30 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
                  ->GetProfileAttributesStorage()
                  .GetNumberOfProfiles() == 1 &&
          !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
+}
+
+base::string16 AvatarToolbarButton::GetAvatarTooltipText() {
+  if (IsIncognito())
+    return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_INCOGNITO_TOOLTIP);
+
+  if (ShouldShowGenericIcon())
+    return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
+
+  const base::string16 profile_name =
+      profiles::GetAvatarNameForProfile(profile_->GetPath());
+  switch (GetSyncState()) {
+    case SyncState::kNormal:
+      return profile_name;
+    case SyncState::kPaused:
+      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED,
+                                        profile_name);
+    case SyncState::kError:
+      return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR,
+                                        profile_name);
+  }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() {
