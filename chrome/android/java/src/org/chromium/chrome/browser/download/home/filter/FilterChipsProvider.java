@@ -45,23 +45,26 @@ public class FilterChipsProvider implements ChipsProvider, OfflineItemFilterObse
         mSource = source;
 
         Chip noneChip = new Chip(Filters.NONE, R.string.download_manager_ui_all_downloads,
-                R.string.download_manager_ui_all_downloads, R.drawable.ic_play_arrow_white_24dp,
+                R.string.download_manager_ui_all_downloads, Chip.INVALID_ICON_ID,
                 () -> onChipSelected(Filters.NONE));
         Chip videosChip = new Chip(Filters.VIDEOS, R.string.download_manager_ui_video,
-                R.string.download_manager_ui_video, R.drawable.ic_play_arrow_white_24dp,
+                R.string.download_manager_ui_video, R.drawable.ic_videocam_24dp,
                 () -> onChipSelected(Filters.VIDEOS));
         Chip musicChip = new Chip(Filters.MUSIC, R.string.download_manager_ui_audio,
-                R.string.download_manager_ui_audio, R.drawable.ic_play_arrow_white_24dp,
+                R.string.download_manager_ui_audio, R.drawable.ic_music_note_24dp,
                 () -> onChipSelected(Filters.MUSIC));
         Chip imagesChip = new Chip(Filters.IMAGES, R.string.download_manager_ui_images,
-                R.string.download_manager_ui_images, R.drawable.ic_play_arrow_white_24dp,
+                R.string.download_manager_ui_images, R.drawable.ic_drive_image_24dp,
                 () -> onChipSelected(Filters.IMAGES));
         Chip sitesChip = new Chip(Filters.SITES, R.string.download_manager_ui_pages,
-                R.string.download_manager_ui_pages, R.drawable.ic_play_arrow_white_24dp,
+                R.string.download_manager_ui_pages, R.drawable.ic_globe_24dp,
                 () -> onChipSelected(Filters.SITES));
         Chip otherChip = new Chip(Filters.OTHER, R.string.download_manager_ui_other,
-                R.string.download_manager_ui_other, R.drawable.ic_play_arrow_white_24dp,
+                R.string.download_manager_ui_other, R.drawable.ic_drive_file_24dp,
                 () -> onChipSelected(Filters.OTHER));
+
+        // By default select the none chip.
+        noneChip.selected = true;
 
         mSortedChips.add(noneChip);
         mSortedChips.add(videosChip);

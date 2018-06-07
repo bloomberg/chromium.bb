@@ -4,10 +4,8 @@
      found in the LICENSE file.
 -->
 
-<!-- TODO(crbug.com/839489): Update based on specs. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/google_grey_300" />
-    <stroke android:width="2dp" android:color="@color/google_blue_300" />
-    <corners android:radius="3dp" />
-    <padding android:left="3dp" android:top="3dp" android:right="3dp" android:bottom="3dp" />
+    <solid android:color="@color/chip_background_color" />
+    <stroke android:width="1dp" android:color="@color/chip_stroke_color" />
+    <corners android:radius="8dp" />
 </shape>

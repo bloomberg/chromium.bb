@@ -636,6 +636,10 @@
     </style>
 
     <!-- Download Home -->
+    <style name="DownloadHomeChipText">
+        <item name="android:textColor">@color/chip_text_color</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
     <style name="DownloadHomeStatusText">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>

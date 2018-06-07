@@ -4,17 +4,29 @@
      found in the LICENSE file.
 -->
 
-<!-- TODO(crbug.com/839489): Update values based on specs. -->
-<org.chromium.chrome.browser.download.home.filter.chips.ChipView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:minHeight="32dp"
-    android:gravity="center"
-    android:maxLines="1"
-    android:paddingStart="13dp"
-    android:paddingEnd="13dp"
-    android:textAlignment="center"
-    android:clickable="true"
-    android:textAppearance="@style/BlueButtonText2"
-    android:background="@drawable/chip_bg" />
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/chip_bg">
+    <org.chromium.chrome.browser.widget.TintedImageView
+        android:id="@+id/icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="8dp"
+        android:gravity="center"
+        android:scaleType="fitCenter" />
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:maxLines="1"
+        android:paddingStart="@dimen/chip_icon_padding"
+        android:paddingEnd="@dimen/chip_no_icon_padding"
+        android:textAlignment="center"
+        android:textAppearance="@style/DownloadHomeChipText" />
+</LinearLayout>
