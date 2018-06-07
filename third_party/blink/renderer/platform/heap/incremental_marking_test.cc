@@ -1603,7 +1603,7 @@ class IncrementalMarkingTestDriver {
 
   bool SingleStep() {
     CHECK(thread_state_->IsIncrementalMarking());
-    if (thread_state_->GcState() ==
+    if (thread_state_->GetGCState() ==
         ThreadState::kIncrementalMarkingStepScheduled) {
       thread_state_->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
       return true;
@@ -1621,7 +1621,7 @@ class IncrementalMarkingTestDriver {
     CHECK(thread_state_->IsIncrementalMarking());
     FinishSteps();
     CHECK_EQ(ThreadState::kIncrementalMarkingFinalizeScheduled,
-             thread_state_->GcState());
+             thread_state_->GetGCState());
     thread_state_->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
     CHECK(!thread_state_->IsIncrementalMarking());
     thread_state_->CompleteSweep();
