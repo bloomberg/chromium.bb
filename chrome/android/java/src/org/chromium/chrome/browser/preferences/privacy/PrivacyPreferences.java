@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -37,6 +38,7 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_SAFE_BROWSING_SCOUT_REPORTING =
             "safe_browsing_scout_reporting";
     private static final String PREF_SAFE_BROWSING = "safe_browsing";
+    private static final String PREF_CAN_MAKE_PAYMENT = "can_make_payment";
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
@@ -103,6 +105,10 @@ public class PrivacyPreferences extends PreferenceFragment
         safeBrowsingPref.setOnPreferenceChangeListener(this);
         safeBrowsingPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
+        ChromeBaseCheckBoxPreference canMakePaymentPref =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
+        canMakePaymentPref.setOnPreferenceChangeListener(this);
+
         updateSummaries();
     }
 
@@ -122,6 +128,9 @@ public class PrivacyPreferences extends PreferenceFragment
             recordNetworkPredictionEnablingUMA((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
+        } else if (PREF_CAN_MAKE_PAYMENT.equals(key)) {
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.CAN_MAKE_PAYMENT_ENABLED, (boolean) newValue);
         }
 
         return true;
@@ -175,6 +184,13 @@ public class PrivacyPreferences extends PreferenceFragment
                 (CheckBoxPreference) findPreference(PREF_SAFE_BROWSING);
         if (safeBrowsingPref != null) {
             safeBrowsingPref.setChecked(prefServiceBridge.isSafeBrowsingEnabled());
+        }
+
+        CheckBoxPreference canMakePaymentPref =
+                (CheckBoxPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
+        if (canMakePaymentPref != null) {
+            canMakePaymentPref.setChecked(
+                    prefServiceBridge.getBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED));
         }
 
         Preference doNotTrackPref = findPreference(PREF_DO_NOT_TRACK);

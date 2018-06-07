@@ -44,6 +44,8 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(READER_FOR_ACCESSIBILITY_ENABLED));
   EXPECT_EQ(prefs::kShowMissingSdCardErrorAndroid,
             GetPrefName(SHOW_MISSING_SD_CARD_ERROR_ANDROID));
+  EXPECT_EQ(payments::kCanMakePaymentEnabled,
+            GetPrefName(CAN_MAKE_PAYMENT_ENABLED));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);
