@@ -11,6 +11,7 @@
 #include "ui/compositor/canvas_painter.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/test/menu_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/vector_icons.h"
@@ -47,7 +48,21 @@ class TestMenuItemView : public MenuItemView {
   DISALLOW_COPY_AND_ASSIGN(TestMenuItemView);
 };
 
-TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
+class MenuItemViewUnitTest : public ::testing::Test {
+ public:
+  MenuItemViewUnitTest() = default;
+  ~MenuItemViewUnitTest() override = default;
+
+ private:
+  // The layout provider is meant to be a singleton, but it is not initialized
+  // for unit tests. Constructing one here makes it globally available, which
+  // is later used by the menu item during initialization.
+  LayoutProvider layout_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuItemViewUnitTest);
+};
+
+TEST_F(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
   TestMenuItemView root_menu;
   root_menu.set_owned_by_client();
 
@@ -86,7 +101,7 @@ TEST(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
 
 // Tests that the top-level menu item with hidden children should contain the
 // "(empty)" menu item to display.
-TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
+TEST_F(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
   TestMenuItemView root_menu;
   views::MenuItemView* item1 =
       root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("item 1"));
@@ -117,7 +132,7 @@ TEST(MenuItemViewUnitTest, TestEmptyTopLevelWhenAllItemsAreHidden) {
 
 // Tests that submenu with hidden children should contain the "(empty)" menu
 // item to display.
-TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
+TEST_F(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
   TestMenuItemView root_menu;
   MenuItemView* submenu_item =
       root_menu.AppendSubMenu(1, base::ASCIIToUTF16("My Submenu"));
@@ -148,7 +163,7 @@ TEST(MenuItemViewUnitTest, TestEmptySubmenuWhenAllChildItemsAreHidden) {
             empty_item->title());
 }
 
-TEST(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
+TEST_F(MenuItemViewUnitTest, UseMnemonicOnPlatform) {
   TestMenuItemView root_menu;
   views::MenuItemView* item1 =
       root_menu.AppendMenuItemWithLabel(1, base::ASCIIToUTF16("&Item 1"));

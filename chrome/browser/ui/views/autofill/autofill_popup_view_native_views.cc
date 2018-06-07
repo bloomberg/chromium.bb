@@ -115,7 +115,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal,
         gfx::Insets(extra_bottom_padding_,
-                    views::MenuConfig::instance().item_left_margin)));
+                    views::MenuConfig::instance().item_horizontal_padding)));
 
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -130,7 +130,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
 
     AddChildView(text_label_);
 
-    AddSpacerWithSize(views::MenuConfig::instance().label_to_minor_text_padding,
+    AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
                       /*resize=*/true, layout);
 
     const base::string16& description_text =
@@ -147,7 +147,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
     const gfx::ImageSkia icon =
         controller_->layout_model().GetIconImage(line_number_);
     if (!icon.isNull()) {
-      AddSpacerWithSize(views::MenuConfig::instance().icon_to_label_padding,
+      AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
                         /*resize=*/false, layout);
 
       auto* image_view = new views::ImageView();

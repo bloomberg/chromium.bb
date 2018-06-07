@@ -94,6 +94,8 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return 6;
     case DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL:
       return 8;
+    case DistanceMetric::DISTANCE_TOUCHABLE_RELATED_CONTROL_HORIZONTAL:
+      return 16;
     case DistanceMetric::DISTANCE_RELATED_CONTROL_VERTICAL:
       return 8;
     case DistanceMetric::DISTANCE_RELATED_LABEL_HORIZONTAL:
