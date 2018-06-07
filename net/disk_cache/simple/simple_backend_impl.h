@@ -80,7 +80,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   void SetWorkerPoolForTesting(scoped_refptr<base::TaskRunner> task_runner);
 
-  int Init(const CompletionCallback& completion_callback);
+  int Init(CompletionOnceCallback completion_callback);
 
   // Sets the maximum size for the total amount of data stored by this instance.
   bool SetMaxSize(int max_bytes);
@@ -102,7 +102,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // SimpleIndexDelegate:
   void DoomEntries(std::vector<uint64_t>* entry_hashes,
-                   const CompletionCallback& callback) override;
+                   CompletionOnceCallback callback) override;
 
   // Backend:
   net::CacheType GetCacheType() const override;
@@ -110,25 +110,24 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   int OpenEntry(const std::string& key,
                 net::RequestPriority request_priority,
                 Entry** entry,
-                const CompletionCallback& callback) override;
+                CompletionOnceCallback callback) override;
   int CreateEntry(const std::string& key,
                   net::RequestPriority request_priority,
                   Entry** entry,
-                  const CompletionCallback& callback) override;
+                  CompletionOnceCallback callback) override;
   int DoomEntry(const std::string& key,
                 net::RequestPriority priority,
-                const CompletionCallback& callback) override;
-  int DoomAllEntries(const CompletionCallback& callback) override;
+                CompletionOnceCallback callback) override;
+  int DoomAllEntries(CompletionOnceCallback callback) override;
   int DoomEntriesBetween(base::Time initial_time,
                          base::Time end_time,
-                         const CompletionCallback& callback) override;
+                         CompletionOnceCallback callback) override;
   int DoomEntriesSince(base::Time initial_time,
-                       const CompletionCallback& callback) override;
-  int CalculateSizeOfAllEntries(const CompletionCallback& callback) override;
-  int CalculateSizeOfEntriesBetween(
-      base::Time initial_time,
-      base::Time end_time,
-      const CompletionCallback& callback) override;
+                       CompletionOnceCallback callback) override;
+  int CalculateSizeOfAllEntries(CompletionOnceCallback callback) override;
+  int CalculateSizeOfEntriesBetween(base::Time initial_time,
+                                    base::Time end_time,
+                                    CompletionOnceCallback callback) override;
   std::unique_ptr<Iterator> CreateIterator() override;
   void GetStats(base::StringPairs* stats) override;
   void OnExternalCacheHit(const std::string& key) override;
@@ -165,33 +164,34 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   struct PostDoomWaiter {
     PostDoomWaiter();
     // Also initializes |time_queued|.
-    explicit PostDoomWaiter(const base::Closure& to_run_post_doom);
-    explicit PostDoomWaiter(const PostDoomWaiter& other);
+    explicit PostDoomWaiter(base::OnceClosure to_run_post_doom);
+    explicit PostDoomWaiter(PostDoomWaiter&& other);
     ~PostDoomWaiter();
+    PostDoomWaiter& operator=(PostDoomWaiter&& other);
 
     base::TimeTicks time_queued;
-    base::Closure run_post_doom;
+    base::OnceClosure run_post_doom;
   };
 
-  void InitializeIndex(const CompletionCallback& callback,
+  void InitializeIndex(CompletionOnceCallback callback,
                        const DiskStatResult& result);
 
   // Dooms all entries previously accessed between |initial_time| and
   // |end_time|. Invoked when the index is ready.
   void IndexReadyForDoom(base::Time initial_time,
                          base::Time end_time,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          int result);
 
   // Calculates the size of the entire cache. Invoked when the index is ready.
-  void IndexReadyForSizeCalculation(const CompletionCallback& callback,
+  void IndexReadyForSizeCalculation(CompletionOnceCallback callback,
                                     int result);
 
   // Calculates the size all cache entries between |initial_time| and
   // |end_time|. Invoked when the index is ready.
   void IndexReadyForSizeBetweenCalculation(base::Time initial_time,
                                            base::Time end_time,
-                                           const CompletionCallback& callback,
+                                           CompletionOnceCallback callback,
                                            int result);
 
   // Try to create the directory if it doesn't exist. This must run on the IO
@@ -219,13 +219,12 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // the disk.
   int OpenEntryFromHash(uint64_t entry_hash,
                         Entry** entry,
-                        const CompletionCallback& callback);
+                        CompletionOnceCallback callback);
 
   // Doom the entry corresponding to |entry_hash|, if it's active or currently
   // pending doom. This function does not block if there is an active entry,
   // which is very important to prevent races in DoomEntries() above.
-  int DoomEntryFromHash(uint64_t entry_hash,
-                        const CompletionCallback& callback);
+  int DoomEntryFromHash(uint64_t entry_hash, CompletionOnceCallback callback);
 
   // Called when we tried to open an entry with hash alone. When a blank entry
   // has been created and filled in with information from the disk - based on a
@@ -234,7 +233,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   void OnEntryOpenedFromHash(uint64_t hash,
                              Entry** entry,
                              const scoped_refptr<SimpleEntryImpl>& simple_entry,
-                             const CompletionCallback& callback,
+                             CompletionOnceCallback callback,
                              int error_code);
 
   // Called when we tried to open an entry from key. When the entry has been
@@ -242,13 +241,13 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   void OnEntryOpenedFromKey(const std::string key,
                             Entry** entry,
                             const scoped_refptr<SimpleEntryImpl>& simple_entry,
-                            const CompletionCallback& callback,
+                            CompletionOnceCallback callback,
                             int error_code);
 
   // A callback thunk used by DoomEntries to clear the |entries_pending_doom_|
   // after a mass doom.
   void DoomEntriesComplete(std::unique_ptr<std::vector<uint64_t>> entry_hashes,
-                           const CompletionCallback& callback,
+                           CompletionOnceCallback callback,
                            int result);
 
   // Calculates and returns a new entry's worker pool priority.

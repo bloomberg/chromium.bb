@@ -184,8 +184,11 @@ int32_t MemEntryImpl::GetDataSize(int index) const {
   return data_[index].size();
 }
 
-int MemEntryImpl::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
-                           const CompletionCallback& callback) {
+int MemEntryImpl::ReadData(int index,
+                           int offset,
+                           IOBuffer* buf,
+                           int buf_len,
+                           CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
         net::NetLogEventType::ENTRY_READ_DATA,
@@ -201,8 +204,12 @@ int MemEntryImpl::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
   return result;
 }
 
-int MemEntryImpl::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
-                            const CompletionCallback& callback, bool truncate) {
+int MemEntryImpl::WriteData(int index,
+                            int offset,
+                            IOBuffer* buf,
+                            int buf_len,
+                            CompletionOnceCallback callback,
+                            bool truncate) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(
         net::NetLogEventType::ENTRY_WRITE_DATA,
@@ -221,7 +228,7 @@ int MemEntryImpl::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
 int MemEntryImpl::ReadSparseData(int64_t offset,
                                  IOBuffer* buf,
                                  int buf_len,
-                                 const CompletionCallback& callback) {
+                                 CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(net::NetLogEventType::SPARSE_READ,
                         CreateNetLogSparseOperationCallback(offset, buf_len));
@@ -235,7 +242,7 @@ int MemEntryImpl::ReadSparseData(int64_t offset,
 int MemEntryImpl::WriteSparseData(int64_t offset,
                                   IOBuffer* buf,
                                   int buf_len,
-                                  const CompletionCallback& callback) {
+                                  CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(net::NetLogEventType::SPARSE_WRITE,
                         CreateNetLogSparseOperationCallback(offset, buf_len));
@@ -249,7 +256,7 @@ int MemEntryImpl::WriteSparseData(int64_t offset,
 int MemEntryImpl::GetAvailableRange(int64_t offset,
                                     int len,
                                     int64_t* start,
-                                    const CompletionCallback& callback) {
+                                    CompletionOnceCallback callback) {
   if (net_log_.IsCapturing()) {
     net_log_.BeginEvent(net::NetLogEventType::SPARSE_GET_RANGE,
                         CreateNetLogSparseOperationCallback(offset, len));
@@ -268,7 +275,7 @@ bool MemEntryImpl::CouldBeSparse() const {
   return (children_.get() != nullptr);
 }
 
-int MemEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
+int MemEntryImpl::ReadyForSparseIO(CompletionOnceCallback callback) {
   return net::OK;
 }
 
@@ -443,8 +450,9 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
           CreateNetLogSparseReadWriteCallback(child->net_log_.source(),
                                               io_buf->BytesRemaining()));
     }
-    int ret = child->ReadData(kSparseData, child_offset, io_buf.get(),
-                              io_buf->BytesRemaining(), CompletionCallback());
+    int ret =
+        child->ReadData(kSparseData, child_offset, io_buf.get(),
+                        io_buf->BytesRemaining(), CompletionOnceCallback());
     if (net_log_.IsCapturing()) {
       net_log_.EndEventWithNetErrorCode(
           net::NetLogEventType::SPARSE_READ_CHILD_DATA, ret);
@@ -510,7 +518,7 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
     // TODO(hclam): if there is data in the entry and this write is not
     // continuous we may want to discard this write.
     int ret = child->WriteData(kSparseData, child_offset, io_buf.get(),
-                               write_len, CompletionCallback(), true);
+                               write_len, CompletionOnceCallback(), true);
     if (net_log_.IsCapturing()) {
       net_log_.EndEventWithNetErrorCode(
           net::NetLogEventType::SPARSE_WRITE_CHILD_DATA, ret);

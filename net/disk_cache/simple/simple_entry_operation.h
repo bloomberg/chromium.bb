@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 
 namespace net {
 class IOBuffer;
@@ -24,7 +24,7 @@ class SimpleEntryImpl;
 // and the moment when they are executed.
 class SimpleEntryOperation {
  public:
-  typedef net::CompletionCallback CompletionCallback;
+  typedef net::CompletionOnceCallback CompletionOnceCallback;
 
   enum EntryOperationType {
     TYPE_OPEN = 0,
@@ -38,56 +38,53 @@ class SimpleEntryOperation {
     TYPE_DOOM = 8,
   };
 
-  SimpleEntryOperation(const SimpleEntryOperation& other);
+  SimpleEntryOperation(SimpleEntryOperation&& other);
   ~SimpleEntryOperation();
 
   static SimpleEntryOperation OpenOperation(SimpleEntryImpl* entry,
                                             bool have_index,
-                                            const CompletionCallback& callback,
+                                            CompletionOnceCallback,
                                             Entry** out_entry);
-  static SimpleEntryOperation CreateOperation(
-      SimpleEntryImpl* entry,
-      bool have_index,
-      const CompletionCallback& callback,
-      Entry** out_entry);
+  static SimpleEntryOperation CreateOperation(SimpleEntryImpl* entry,
+                                              bool have_index,
+                                              CompletionOnceCallback callback,
+                                              Entry** out_entry);
   static SimpleEntryOperation CloseOperation(SimpleEntryImpl* entry);
   static SimpleEntryOperation ReadOperation(SimpleEntryImpl* entry,
                                             int index,
                                             int offset,
                                             int length,
                                             net::IOBuffer* buf,
-                                            const CompletionCallback& callback,
+                                            CompletionOnceCallback callback,
                                             bool alone_in_queue);
-  static SimpleEntryOperation WriteOperation(
-      SimpleEntryImpl* entry,
-      int index,
-      int offset,
-      int length,
-      net::IOBuffer* buf,
-      bool truncate,
-      bool optimistic,
-      const CompletionCallback& callback);
+  static SimpleEntryOperation WriteOperation(SimpleEntryImpl* entry,
+                                             int index,
+                                             int offset,
+                                             int length,
+                                             net::IOBuffer* buf,
+                                             bool truncate,
+                                             bool optimistic,
+                                             CompletionOnceCallback callback);
   static SimpleEntryOperation ReadSparseOperation(
       SimpleEntryImpl* entry,
       int64_t sparse_offset,
       int length,
       net::IOBuffer* buf,
-      const CompletionCallback& callback);
+      CompletionOnceCallback callback);
   static SimpleEntryOperation WriteSparseOperation(
       SimpleEntryImpl* entry,
       int64_t sparse_offset,
       int length,
       net::IOBuffer* buf,
-      const CompletionCallback& callback);
+      CompletionOnceCallback callback);
   static SimpleEntryOperation GetAvailableRangeOperation(
       SimpleEntryImpl* entry,
       int64_t sparse_offset,
       int length,
       int64_t* out_start,
-      const CompletionCallback& callback);
-  static SimpleEntryOperation DoomOperation(
-      SimpleEntryImpl* entry,
-      const CompletionCallback& callback);
+      CompletionOnceCallback callback);
+  static SimpleEntryOperation DoomOperation(SimpleEntryImpl* entry,
+                                            CompletionOnceCallback callback);
 
   bool ConflictsWith(const SimpleEntryOperation& other_op) const;
   // Releases all references. After calling this operation, SimpleEntryOperation
@@ -97,7 +94,8 @@ class SimpleEntryOperation {
   EntryOperationType type() const {
     return static_cast<EntryOperationType>(type_);
   }
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback ReleaseCallback() { return std::move(callback_); }
+
   Entry** out_entry() { return out_entry_; }
   bool have_index() const { return have_index_; }
   int index() const { return index_; }
@@ -113,7 +111,7 @@ class SimpleEntryOperation {
  private:
   SimpleEntryOperation(SimpleEntryImpl* entry,
                        net::IOBuffer* buf,
-                       const CompletionCallback& callback,
+                       CompletionOnceCallback callback,
                        Entry** out_entry,
                        int offset,
                        int64_t sparse_offset,
@@ -129,7 +127,7 @@ class SimpleEntryOperation {
   // This ensures entry will not be deleted until the operation has ran.
   scoped_refptr<SimpleEntryImpl> entry_;
   scoped_refptr<net::IOBuffer> buf_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   // Used in open and create operations.
   Entry** out_entry_;

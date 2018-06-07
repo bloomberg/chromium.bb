@@ -84,42 +84,44 @@ class DelayableBackend : public disk_cache::Backend {
   int OpenEntry(const std::string& key,
                 net::RequestPriority request_priority,
                 disk_cache::Entry** entry,
-                const CompletionCallback& callback) override {
+                CompletionOnceCallback callback) override {
     if (delay_open_entry_ && open_entry_callback_.is_null()) {
       open_entry_callback_ = base::BindOnce(
           &DelayableBackend::OpenEntryDelayedImpl, base::Unretained(this), key,
-          base::Unretained(entry), callback);
+          base::Unretained(entry), std::move(callback));
       return net::ERR_IO_PENDING;
     }
-    return backend_->OpenEntry(key, request_priority, entry, callback);
+    return backend_->OpenEntry(key, request_priority, entry,
+                               std::move(callback));
   }
 
   int CreateEntry(const std::string& key,
                   net::RequestPriority request_priority,
                   disk_cache::Entry** entry,
-                  const CompletionCallback& callback) override {
-    return backend_->CreateEntry(key, request_priority, entry, callback);
+                  CompletionOnceCallback callback) override {
+    return backend_->CreateEntry(key, request_priority, entry,
+                                 std::move(callback));
   }
   int DoomEntry(const std::string& key,
                 net::RequestPriority request_priority,
-                const CompletionCallback& callback) override {
-    return backend_->DoomEntry(key, request_priority, callback);
+                CompletionOnceCallback callback) override {
+    return backend_->DoomEntry(key, request_priority, std::move(callback));
   }
-  int DoomAllEntries(const CompletionCallback& callback) override {
-    return backend_->DoomAllEntries(callback);
+  int DoomAllEntries(CompletionOnceCallback callback) override {
+    return backend_->DoomAllEntries(std::move(callback));
   }
   int DoomEntriesBetween(base::Time initial_time,
                          base::Time end_time,
-                         const CompletionCallback& callback) override {
-    return backend_->DoomEntriesBetween(initial_time, end_time, callback);
+                         CompletionOnceCallback callback) override {
+    return backend_->DoomEntriesBetween(initial_time, end_time,
+                                        std::move(callback));
   }
   int DoomEntriesSince(base::Time initial_time,
-                       const CompletionCallback& callback) override {
-    return backend_->DoomEntriesSince(initial_time, callback);
+                       CompletionOnceCallback callback) override {
+    return backend_->DoomEntriesSince(initial_time, std::move(callback));
   }
-  int CalculateSizeOfAllEntries(
-      const CompletionCallback& callback) override {
-    return backend_->CalculateSizeOfAllEntries(callback);
+  int CalculateSizeOfAllEntries(CompletionOnceCallback callback) override {
+    return backend_->CalculateSizeOfAllEntries(std::move(callback));
   }
   std::unique_ptr<Iterator> CreateIterator() override {
     return backend_->CreateIterator();
@@ -151,10 +153,12 @@ class DelayableBackend : public disk_cache::Backend {
  private:
   void OpenEntryDelayedImpl(const std::string& key,
                             disk_cache::Entry** entry,
-                            const CompletionCallback& callback) {
-    int rv = backend_->OpenEntry(key, net::HIGHEST, entry, callback);
+                            CompletionOnceCallback callback) {
+    auto copyable_callback =
+        base::AdaptCallbackForRepeating(std::move(callback));
+    int rv = backend_->OpenEntry(key, net::HIGHEST, entry, copyable_callback);
     if (rv != net::ERR_IO_PENDING)
-      callback.Run(rv);
+      copyable_callback.Run(rv);
   }
 
   std::unique_ptr<disk_cache::Backend> backend_;
