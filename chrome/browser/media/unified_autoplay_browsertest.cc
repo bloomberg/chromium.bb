@@ -13,6 +13,8 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/platform/autoplay.mojom.h"
 
 namespace {
 
@@ -60,6 +62,20 @@ class UnifiedAutoplayBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
         web_contents, "attemptPlay();", &played));
     return played;
+  }
+
+  void SetAutoplayForceAllowFlag(const GURL& url) {
+    blink::mojom::AutoplayConfigurationClientAssociatedPtr client;
+    GetWebContents()
+        ->GetMainFrame()
+        ->GetRemoteAssociatedInterfaces()
+        ->GetInterface(&client);
+    client->AddAutoplayFlags(url::Origin::Create(url),
+                             blink::mojom::kAutoplayFlagForceAllow);
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
  private:
@@ -176,4 +192,37 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, OpenFromRendererNoGesture) {
 
   content::WebContents* new_contents = OpenFromRenderer(kTestPageUrl, false);
   EXPECT_EQ(nullptr, new_contents);
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, NoBypassUsingAutoplayFlag) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
+
+  EXPECT_FALSE(AttemptPlay(GetWebContents()));
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, BypassUsingAutoplayFlag) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  SetAutoplayForceAllowFlag(kTestPageUrl);
+  ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
+
+  EXPECT_TRUE(AttemptPlay(GetWebContents()));
+}
+
+IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
+                       BypassUsingAutoplayFlag_SameDocument) {
+  const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
+
+  SetAutoplayForceAllowFlag(kTestPageUrl);
+  ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
+
+  // Simulate a same document navigation by navigating to #test.
+  GURL::Replacements replace_ref;
+  replace_ref.SetRefStr("test");
+  ui_test_utils::NavigateToURL(browser(),
+                               kTestPageUrl.ReplaceComponents(replace_ref));
+
+  EXPECT_TRUE(AttemptPlay(GetWebContents()));
 }
