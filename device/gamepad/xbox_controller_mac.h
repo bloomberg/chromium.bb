@@ -150,6 +150,7 @@ class XboxControllerMac {
   void WriteXbox360Rumble(uint8_t strong_magnitude, uint8_t weak_magnitude);
   void WriteXboxOneInit();
   void WriteXboxOneRumble(uint8_t strong_magnitude, uint8_t weak_magnitude);
+  void WriteXboxOneAckGuide(uint8_t sequence_number);
 
   // Handle for the USB device. IOUSBDeviceStruct320 is the latest version of
   // the device API that is supported on Mac OS 10.6.
