@@ -722,12 +722,11 @@ LayoutUnit RootInlineBox::VerticalPositionForBox(
                                BaselineType(), first_line, line_direction) -
                            font_metrics.Ascent(BaselineType());
     } else if (vertical_align == EVerticalAlign::kMiddle) {
-      vertical_position = LayoutUnit(
-          (vertical_position - LayoutUnit(font_metrics.XHeight() / 2) -
-           box_model.LineHeight(first_line, line_direction) / 2 +
-           box_model.BaselinePosition(BaselineType(), first_line,
-                                      line_direction))
-              .Round());
+      vertical_position = vertical_position -
+                          LayoutUnit(font_metrics.XHeight() / 2) -
+                          box_model.LineHeight(first_line, line_direction) / 2 +
+                          box_model.BaselinePosition(BaselineType(), first_line,
+                                                     line_direction);
     } else if (vertical_align == EVerticalAlign::kTextBottom) {
       vertical_position += font_metrics.Descent(BaselineType());
       // lineHeight - baselinePosition is always 0 for replaced elements (except

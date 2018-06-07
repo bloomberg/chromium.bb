@@ -68,7 +68,7 @@ layer at (0,0) size 785x2345 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (556,184) size 28x16
           text run at (556,184) width 28: " and "
         LayoutImage {IMG} at (599,199) size 130x130 [border: (10px solid #000000)]
-        LayoutText {#text} at (744,184) size 759x256
+        LayoutText {#text} at (744,184) size 759x257
           text run at (744,184) width 4: "."
           text run at (0,346) width 755: "This is additional text to make sure that there is enough room left below the image so that this line does not hit the image that is text-"
           text run at (0,366) width 71: "top aligned. "
@@ -118,7 +118,7 @@ layer at (0,0) size 785x2345 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                 LayoutText {#text} at (605,184) size 28x16
                   text run at (605,184) width 28: " and "
                 LayoutImage {IMG} at (15,219) size 130x130 [border: (10px solid #000000)]
-                LayoutText {#text} at (160,204) size 736x236
+                LayoutText {#text} at (160,204) size 736x237
                   text run at (160,204) width 8: ". "
                   text run at (168,204) width 558: "This is additional text to make sure that there is enough room left below the image so that this line"
                   text run at (0,366) width 264: "does not hit the image that is text-top aligned. "
