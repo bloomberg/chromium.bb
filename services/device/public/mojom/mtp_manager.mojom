@@ -48,7 +48,6 @@ interface MtpManager {
       uint32 file_id, uint64 max_size) =>
     (array<MtpFileEntry> file_entries, bool has_more, bool error);
 
-
   // Reads file data from |file_id| on |storage_handle|.
   // Reads |count| bytes of data starting at |offset|.
   ReadFileChunk(string storage_handle,
@@ -56,10 +55,14 @@ interface MtpManager {
       uint32 offset,
       uint32 count) => (string data, bool error);
 
-  // Gets the file metadata for |file_id| on |storage_handle|.
+  // Gets the file metadata for entries in |file_ids| on |storage_handle|.
+  // Only do so for the |entries_to_read| number of entries in |file_ids|
+  // starting at 0-based |offset|.
   GetFileInfo(string storage_handle,
-      uint32 file_id) =>
-    (MtpFileEntry file_entry, bool error);
+      array<uint32> file_ids,
+      uint32 offset,
+      uint32 entries_to_read) =>
+    (array<MtpFileEntry> file_entries, bool error);
 
   // Renames |object_id| to |new_name|.
   RenameObject(string storage_handle,

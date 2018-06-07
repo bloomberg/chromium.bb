@@ -237,21 +237,19 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   void GetFileInfo(const std::string& storage_handle,
-                   uint32_t file_id,
+                   const std::vector<uint32_t>& file_ids,
+                   uint32_t offset,
+                   uint32_t entries_to_read,
                    mojom::MtpManager::GetFileInfoCallback callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
-      std::move(callback).Run(nullptr, true);
+      std::move(callback).Run(std::vector<device::mojom::MtpFileEntryPtr>(),
+                              /*error=*/true);
       return;
     }
-    std::vector<uint32_t> file_ids;
-    file_ids.push_back(file_id);
     get_file_info_callbacks_.push(std::move(callback));
     mtp_client_->GetFileInfo(
-        storage_handle,
-        file_ids,
-        kInitialOffset,
-        file_ids.size(),
+        storage_handle, file_ids, offset, entries_to_read,
         base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfo,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfoError,
@@ -552,18 +550,19 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   void OnGetFileInfo(const std::vector<mojom::MtpFileEntry>& entries) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (entries.size() == 1) {
-      std::move(get_file_info_callbacks_.front())
-          .Run(entries[0].Clone(), false /* no error */);
-      get_file_info_callbacks_.pop();
-    } else {
-      OnGetFileInfoError();
-    }
+
+    std::vector<device::mojom::MtpFileEntryPtr> ret(entries.size());
+    for (size_t i = 0; i < entries.size(); ++i)
+      ret[i] = entries[i].Clone();
+    std::move(get_file_info_callbacks_.front())
+        .Run(std::move(ret), /*error=*/false);
+    get_file_info_callbacks_.pop();
   }
 
   void OnGetFileInfoError() {
     DCHECK(thread_checker_.CalledOnValidThread());
-    std::move(get_file_info_callbacks_.front()).Run(nullptr, true);
+    std::move(get_file_info_callbacks_.front())
+        .Run(std::vector<device::mojom::MtpFileEntryPtr>(), /*error=*/true);
     get_file_info_callbacks_.pop();
   }
 

@@ -24,6 +24,10 @@ using storage_monitor::StorageMonitor;
 
 namespace {
 
+// When calling GetFileInfo() with only a single file ID, the offset into the
+// file IDs vector should be 0.
+constexpr size_t kSingleFileIdOffset = 0;
+
 device::mojom::MtpManager* GetMediaTransferProtocolManager() {
   return StorageMonitor::GetInstance()->media_transfer_protocol_manager();
 }
@@ -81,11 +85,11 @@ void MTPDeviceTaskHelper::GetFileInfo(
   if (device_handle_.empty())
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
+  const std::vector<uint32_t> file_ids = {file_id};
   GetMediaTransferProtocolManager()->GetFileInfo(
-      device_handle_, file_id,
+      device_handle_, file_ids, kSingleFileIdOffset, file_ids.size(),
       base::Bind(&MTPDeviceTaskHelper::OnGetFileInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 success_callback,
+                 weak_ptr_factory_.GetWeakPtr(), success_callback,
                  error_callback));
 }
 
@@ -144,10 +148,11 @@ void MTPDeviceTaskHelper::ReadBytes(
                              base::File::FILE_ERROR_FAILED);
   }
 
+  const std::vector<uint32_t> file_ids = {request.file_id};
   GetMediaTransferProtocolManager()->GetFileInfo(
-      device_handle_, request.file_id,
-      base::Bind(&MTPDeviceTaskHelper::OnGetFileInfoToReadBytes,
-                 weak_ptr_factory_.GetWeakPtr(), request));
+      device_handle_, file_ids, kSingleFileIdOffset, file_ids.size(),
+      base::BindOnce(&MTPDeviceTaskHelper::OnGetFileInfoToReadBytes,
+                     weak_ptr_factory_.GetWeakPtr(), request));
 }
 
 void MTPDeviceTaskHelper::RenameObject(
@@ -218,18 +223,18 @@ void MTPDeviceTaskHelper::OnDidOpenStorage(
 void MTPDeviceTaskHelper::OnGetFileInfo(
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    device::mojom::MtpFileEntryPtr file_entry,
+    std::vector<device::mojom::MtpFileEntryPtr> entries,
     bool error) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (error) {
+  if (error || entries.size() != 1) {
     return HandleDeviceError(error_callback,
                              base::File::FILE_ERROR_NOT_FOUND);
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(success_callback,
-                 FileInfoFromMTPFileEntry(std::move(file_entry))));
+      base::BindOnce(success_callback,
+                     FileInfoFromMTPFileEntry(std::move(entries[0]))));
 }
 
 void MTPDeviceTaskHelper::OnCreateDirectory(
@@ -279,27 +284,29 @@ void MTPDeviceTaskHelper::OnDidReadDirectory(
 
 void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
     const MTPDeviceAsyncDelegate::ReadBytesRequest& request,
-    device::mojom::MtpFileEntryPtr file_entry,
+    std::vector<device::mojom::MtpFileEntryPtr> entries,
     bool error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(request.buf.get());
   DCHECK_GE(request.buf_len, 0);
   DCHECK_GE(request.offset, 0);
-  if (error) {
+  if (error || entries.size() != 1) {
     return HandleDeviceError(request.error_callback,
                              base::File::FILE_ERROR_FAILED);
   }
 
-  base::File::Info file_info = FileInfoFromMTPFileEntry(std::move(file_entry));
+  base::File::Info file_info = FileInfoFromMTPFileEntry(std::move(entries[0]));
   if (file_info.is_directory) {
     return HandleDeviceError(request.error_callback,
                              base::File::FILE_ERROR_NOT_A_FILE);
-  } else if (file_info.size < 0 ||
-             file_info.size > std::numeric_limits<uint32_t>::max() ||
-             request.offset > file_info.size) {
+  }
+  if (file_info.size < 0 ||
+      file_info.size > std::numeric_limits<uint32_t>::max() ||
+      request.offset > file_info.size) {
     return HandleDeviceError(request.error_callback,
                              base::File::FILE_ERROR_FAILED);
-  } else if (request.offset == file_info.size) {
+  }
+  if (request.offset == file_info.size) {
     content::BrowserThread::PostTask(content::BrowserThread::IO,
                                      FROM_HERE,
                                      base::Bind(request.success_callback,

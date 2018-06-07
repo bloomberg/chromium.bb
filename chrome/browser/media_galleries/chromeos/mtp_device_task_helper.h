@@ -160,16 +160,16 @@ class MTPDeviceTaskHelper {
 
   // Query callback for GetFileInfo().
   //
-  // If there is no error, |file_entry| will contain the
+  // If there is no error, |entries| will contain a single element with the
   // requested media device file details and |error| is set to false.
   // |success_callback| is invoked on the IO thread to notify the caller.
   //
-  // If there is an error, |file_entry| is invalid and |error| is
-  // set to true. |error_callback| is invoked on the IO thread to notify the
-  // caller.
+  // When |entries| has a size other than 1, or if |error| is true, then an
+  // error has occurred. In this case, |error_callback| is invoked on the IO
+  // thread to notify the caller.
   void OnGetFileInfo(const GetFileInfoSuccessCallback& success_callback,
                      const ErrorCallback& error_callback,
-                     device::mojom::MtpFileEntryPtr file_entry,
+                     std::vector<device::mojom::MtpFileEntryPtr> entries,
                      bool error) const;
 
   // Called when CreateDirectory completes.
@@ -195,7 +195,7 @@ class MTPDeviceTaskHelper {
   // Intermediate step to finish a ReadBytes request.
   void OnGetFileInfoToReadBytes(
       const MTPDeviceAsyncDelegate::ReadBytesRequest& request,
-      device::mojom::MtpFileEntryPtr file_entry,
+      std::vector<device::mojom::MtpFileEntryPtr> entries,
       bool error);
 
   // Query callback for ReadBytes();
