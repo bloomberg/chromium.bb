@@ -161,6 +161,13 @@ const GpuFeatureData GetGpuFeatureData(
        "Accelerated rasterization has been disabled, either via blacklist, "
        "about:flags or the command line.",
        true, true},
+      {"oop_rasterization",
+       SafeGetFeatureStatus(gpu_feature_info,
+                            gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION),
+       command_line.HasSwitch(switches::kDisableOopRasterization),
+       "Out-of-process accelerated rasterization has been disabled, either "
+       "via blacklist, about:flags or the command line.",
+       false, true},
       {"multiple_raster_threads", gpu::kGpuFeatureStatusEnabled,
        NumberOfRendererRasterThreads() == 1, "Raster is using a single thread.",
        false, true},

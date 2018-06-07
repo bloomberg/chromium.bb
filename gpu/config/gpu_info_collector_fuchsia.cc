@@ -9,7 +9,7 @@
 namespace gpu {
 
 bool CollectContextGraphicsInfo(GPUInfo* gpu_info,
-                                GpuPreferences* gpu_preferences) {
+                                const GpuPreferences& gpu_preferences) {
   DCHECK(gpu_info);
 
   TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");

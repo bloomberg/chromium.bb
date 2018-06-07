@@ -535,9 +535,7 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   if (in_host_process())
     return;
 
-  // TODO(https://crbug.com/847543): Unfold the OSX specific codepath so that we
-  // can call this earlier and leave gpu_preferences_ const.
-  bool success = gpu::CollectContextGraphicsInfo(&gpu_info_, &gpu_preferences_);
+  bool success = gpu::CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
   if (!success) {
     LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
     // TODO(piman): can we signal overall failure?

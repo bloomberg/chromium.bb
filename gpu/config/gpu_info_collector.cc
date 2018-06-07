@@ -23,7 +23,6 @@
 #include "gpu/config/gpu_switches.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"  // nogncheck
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -167,7 +166,8 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
   return CollectBasicGraphicsInfo(gpu_info);
 }
 
-bool CollectGraphicsInfoGL(GPUInfo* gpu_info, GpuPreferences* gpu_preferences) {
+bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
+                           const GpuPreferences& gpu_preferences) {
   TRACE_EVENT0("startup", "gpu_info_collector::CollectGraphicsInfoGL");
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone);
 
@@ -246,11 +246,9 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info, GpuPreferences* gpu_preferences) {
   }
 #endif
 
-  if (gpu_preferences->enable_oop_rasterization) {
-    gpu_preferences->enable_oop_rasterization = SupportsOOPRaster(gl_info);
+  if (gpu_preferences.enable_oop_rasterization) {
+    gpu_info->oop_rasterization_supported = SupportsOOPRaster(gl_info);
   }
-  gpu_info->oop_rasterization_supported =
-      gpu_preferences->enable_oop_rasterization;
 
   // TODO(kbr): remove once the destruction of a current context automatically
   // clears the current context.
@@ -380,8 +378,7 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
 void CollectGraphicsInfoForTesting(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 #if defined(OS_ANDROID)
-  GpuPreferences gpu_preferences;
-  CollectContextGraphicsInfo(gpu_info, &gpu_preferences);
+  CollectContextGraphicsInfo(gpu_info, GpuPreferences());
 #else
   CollectBasicGraphicsInfo(gpu_info);
 #endif  // OS_ANDROID

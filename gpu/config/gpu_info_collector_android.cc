@@ -13,7 +13,7 @@
 namespace gpu {
 
 bool CollectContextGraphicsInfo(GPUInfo* gpu_info,
-                                GpuPreferences* gpu_preferences) {
+                                const GpuPreferences& gpu_preferences) {
   // When command buffer is compiled as a standalone library, the process might
   // not have a Java environment.
   if (base::android::IsVMInitialized()) {

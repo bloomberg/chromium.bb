@@ -62,7 +62,7 @@ DeferredGpuCommandService::CreateDeferredGpuCommandService() {
   gpu::GpuPreferences gpu_preferences =
       content::GetGpuPreferencesFromCommandLine();
   bool success = gpu::InitializeGLThreadSafe(
-      base::CommandLine::ForCurrentProcess(), &gpu_preferences, &gpu_info,
+      base::CommandLine::ForCurrentProcess(), gpu_preferences, &gpu_info,
       &gpu_feature_info);
   if (!success) {
     LOG(FATAL) << "gpu::InitializeGLThreadSafe() failed.";

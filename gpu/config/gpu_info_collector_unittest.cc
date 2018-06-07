@@ -208,8 +208,7 @@ INSTANTIATE_TEST_CASE_P(GPUConfig,
 // be fixed.
 TEST_P(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
   GPUInfo gpu_info;
-  GpuPreferences gpu_preferences;
-  CollectGraphicsInfoGL(&gpu_info, &gpu_preferences);
+  CollectGraphicsInfoGL(&gpu_info, GpuPreferences());
 #if defined(OS_WIN)
   if (GetParam() == kMockedWindows) {
     EXPECT_EQ(test_values_.gpu.driver_vendor, gpu_info.gpu.driver_vendor);

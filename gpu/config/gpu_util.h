@@ -60,7 +60,7 @@ GPU_EXPORT bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info);
 // GPU driver bug workaround decisions. This is intended to be called
 // by Android WebView render thread and in-process GPU thread.
 GPU_EXPORT bool InitializeGLThreadSafe(base::CommandLine* command_line,
-                                       GpuPreferences* gpu_preferences,
+                                       const GpuPreferences& gpu_preferences,
                                        GPUInfo* out_gpu_info,
                                        GpuFeatureInfo* out_gpu_feature_info);
 #endif  // OS_ANDROID
