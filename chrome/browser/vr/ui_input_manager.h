@@ -79,22 +79,25 @@ class VR_EXPORT UiInputManager {
   void SendScrollEnd(GestureList* gesture_list,
                      const gfx::PointF& target_point,
                      ButtonState button_state);
-  bool SendScrollBegin(UiElement* target,
+  void SendScrollBegin(UiElement* target,
                        GestureList* gesture_list,
                        const gfx::PointF& target_point);
   void SendScrollUpdate(GestureList* gesture_list,
                         const gfx::PointF& target_point);
 
-  void SendHoverEvents(UiElement* target,
-                       const gfx::PointF& target_point,
-                       bool send_move);
-  void SendMove(UiElement* element, const gfx::PointF& target_point);
+  void SendHoverLeave(UiElement* current_target);
+  void SendHoverEnter(UiElement* target, const gfx::PointF& target_point);
+  void SendHoverMove(UiElement* target, const gfx::PointF& target_point);
+
+  void SendButtonUp(const gfx::PointF& target_point, ButtonState button_state);
   void SendButtonDown(UiElement* target,
                       const gfx::PointF& target_point,
                       ButtonState button_state);
-  bool SendButtonUp(const gfx::PointF& target_point, ButtonState button_state);
-  void GetVisualTargetElement(const ControllerModel& controller_model,
-                              ReticleModel* reticle_model) const;
+  void SendTouchMove(const gfx::PointF& target_point);
+
+  UiElement* GetTargetElement(const ControllerModel& controller_model,
+                              ReticleModel* reticle_model,
+                              const GestureList& gesture_list) const;
   void UpdateQuiescenceState(base::TimeTicks current_time,
                              const ControllerModel& controller_model);
   void UpdateControllerFocusState(base::TimeTicks current_time,
@@ -102,6 +105,9 @@ class VR_EXPORT UiInputManager {
                                   const ControllerModel& controller_model);
 
   void UnfocusFocusedElement();
+
+  gfx::PointF GetCapturedElementHitPoint(
+      const gfx::Point3F& target_point) const;
 
   UiScene* scene_;
   int hover_target_id_ = 0;
