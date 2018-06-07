@@ -210,8 +210,8 @@ KURL ModuleScript::ResolveModuleSpecifier(const String& module_request,
   if (found != specifier_to_url_cache_.end())
     return found->value;
 
-  KURL url = Modulator::ResolveModuleSpecifier(module_request, BaseURL(),
-                                               failure_reason);
+  KURL url = settings_object_->ResolveModuleSpecifier(module_request, BaseURL(),
+                                                      failure_reason);
   // Cache the result only on success, so that failure_reason is set for
   // subsequent calls too.
   if (url.IsValid())

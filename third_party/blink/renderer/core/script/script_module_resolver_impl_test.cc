@@ -44,6 +44,12 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
   // Implements Modulator:
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
+  KURL ResolveModuleSpecifier(const String& module_request,
+                              const KURL& base_url,
+                              String* failure_reason) final {
+    return KURL(base_url, module_request);
+  }
+
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
 
   scoped_refptr<ScriptState> script_state_;

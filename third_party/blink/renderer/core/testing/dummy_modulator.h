@@ -51,6 +51,7 @@ class DummyModulator : public Modulator {
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
+  KURL ResolveModuleSpecifier(const String&, const KURL&, String*) override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             const SettingsObject& fetch_client_settings_object,
                             ModuleGraphLevel,

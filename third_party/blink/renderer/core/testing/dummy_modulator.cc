@@ -86,6 +86,13 @@ ModuleScript* DummyModulator::GetFetchedModuleScript(const KURL&) {
   return nullptr;
 }
 
+KURL DummyModulator::ResolveModuleSpecifier(const String&,
+                                            const KURL&,
+                                            String*) {
+  NOTREACHED();
+  return KURL();
+}
+
 void DummyModulator::FetchNewSingleModule(const ModuleScriptFetchRequest&,
                                           const SettingsObject&,
                                           ModuleGraphLevel,

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
+#include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/module_map.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
@@ -107,6 +108,54 @@ void ModulatorImplBase::FetchNewSingleModule(
 
 ModuleScript* ModulatorImplBase::GetFetchedModuleScript(const KURL& url) {
   return map_->GetFetchedModuleScript(url);
+}
+
+// https://html.spec.whatwg.org/multipage/webappapis.html#resolve-a-module-specifier
+KURL ModulatorImplBase::ResolveModuleSpecifier(const String& module_request,
+                                               const KURL& base_url,
+                                               String* failure_reason) {
+  // <spec step="1">Apply the URL parser to specifier. If the result is not
+  // failure, return the result.</spec>
+  KURL url(NullURL(), module_request);
+  if (url.IsValid()) {
+    // <spec
+    // href="https://github.com/drufball/layered-apis/blob/master/spec.md#resolve-a-module-specifier"
+    // step="1">Let parsed be the result of applying the URL parser to
+    // specifier. If parsed is not failure, then return the layered API fetching
+    // URL given parsed and script's base URL.</spec>
+    if (RuntimeEnabledFeatures::LayeredAPIEnabled())
+      return blink::layered_api::ResolveFetchingURL(url, base_url);
+
+    return url;
+  }
+
+  // <spec step="2">If specifier does not start with the character U+002F
+  // SOLIDUS (/), the two-character sequence U+002E FULL STOP, U+002F SOLIDUS
+  // (./), or the three-character sequence U+002E FULL STOP, U+002E FULL STOP,
+  // U+002F SOLIDUS (../), return failure.</spec>
+  //
+  // (../), return failure and abort these steps." [spec text]
+  if (!module_request.StartsWith("/") && !module_request.StartsWith("./") &&
+      !module_request.StartsWith("../")) {
+    if (failure_reason) {
+      *failure_reason =
+          "Relative references must start with either \"/\", \"./\", or "
+          "\"../\".";
+    }
+    return KURL();
+  }
+
+  // <spec step="3">Return the result of applying the URL parser to specifier
+  // with script's base URL as the base URL.</spec>
+  DCHECK(base_url.IsValid());
+  KURL absolute_url(base_url, module_request);
+  if (absolute_url.IsValid())
+    return absolute_url;
+
+  if (failure_reason) {
+    *failure_reason = "Invalid relative url or base scheme isn't hierarchical.";
+  }
+  return KURL();
 }
 
 bool ModulatorImplBase::HasValidContext() {

@@ -60,6 +60,15 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     return module_script;
   }
 
+  KURL ResolveModuleSpecifier(const String& module_request,
+                              const KURL& base_url,
+                              String* failure_reason) final {
+    if (module_request == "invalid-specifier")
+      return KURL();
+
+    return KURL(base_url, module_request);
+  }
+
   void FetchTree(const KURL& url,
                  const SettingsObject&,
                  WebURLRequest::RequestContext,
