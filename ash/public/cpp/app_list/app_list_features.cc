@@ -23,6 +23,8 @@ const base::Feature kEnableHomeLauncher{"EnableHomeLauncher",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableSettingsShortcutSearch{
     "EnableSettingsShortcutSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAppsGridGapFeature{
+    "EnableAppsGridGapFeature", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -48,6 +50,10 @@ bool IsHomeLauncherEnabled() {
 
 bool IsSettingsShortcutSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableSettingsShortcutSearch);
+}
+
+bool IsAppsGridGapFeatureEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppsGridGapFeature);
 }
 
 std::string AnswerServerUrl() {

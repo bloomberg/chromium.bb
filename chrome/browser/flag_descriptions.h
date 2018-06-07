@@ -1745,6 +1745,9 @@ extern const char kDisableTabletSplitViewDescription[];
 extern const char kEnableAppShortcutSearchName[];
 extern const char kEnableAppShortcutSearchDescription[];
 
+extern const char kEnableAppsGridGapFeatureName[];
+extern const char kEnableAppsGridGapFeatureDescription[];
+
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 

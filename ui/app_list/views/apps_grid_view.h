@@ -701,6 +701,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // apps grid gap is enabled.
   bool extra_page_opened_ = false;
 
+  // True if the apps grid gap feature is enabled.
+  const bool is_apps_grid_gap_feature_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };
 
