@@ -57,7 +57,8 @@ class SingleClientMessageProxyImpl : public SingleClientMessageProxy,
   // ChannelImpl::Delegate:
   void OnSendMessageRequested(const std::string& message,
                               base::OnceClosure on_sent_callback) override;
-  const mojom::ConnectionMetadata& GetConnectionMetadata() override;
+  void GetConnectionMetadata(
+      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
   void OnClientDisconnected() override;
 
   void FlushForTesting();

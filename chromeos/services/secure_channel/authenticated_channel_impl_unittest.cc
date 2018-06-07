@@ -94,6 +94,16 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     return base::ContainsKey(sent_sequence_numbers_, sequence_number);
   }
 
+  void CallGetConnectionMetadata() {
+    channel()->GetConnectionMetadata(base::BindOnce(
+        &SecureChannelAuthenticatedChannelImplTest::OnGetConnectionMetadata,
+        base::Unretained(this)));
+  }
+
+  void OnGetConnectionMetadata(mojom::ConnectionMetadata connection_metadata) {
+    connection_metadata_ = std::move(connection_metadata);
+  }
+
   cryptauth::FakeSecureChannel* fake_secure_channel() {
     return fake_secure_channel_;
   }
@@ -103,6 +113,8 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
   }
 
   AuthenticatedChannel* channel() { return channel_.get(); }
+
+  base::Optional<mojom::ConnectionMetadata> connection_metadata_;
 
  private:
   void OnMessageSent(int sequence_number) {
@@ -125,15 +137,16 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
 };
 
 TEST_F(SecureChannelAuthenticatedChannelImplTest, ConnectionMetadata) {
-  const auto& connection_metadata = channel()->GetConnectionMetadata();
+  CallGetConnectionMetadata();
+
   EXPECT_EQ(std::vector<mojom::ConnectionCreationDetail>(
                 std::begin(kTestConnectionCreationDetails),
                 std::end(kTestConnectionCreationDetails)),
-            connection_metadata.creation_details);
+            connection_metadata_->creation_details);
   // TODO(khorimoto): Update test to test RSSI rolling average when implemented.
   // https://crbug.com/844759.
   EXPECT_EQ(mojom::ConnectionMetadata::kNoRssiAvailable,
-            connection_metadata.rssi_rolling_average);
+            connection_metadata_->rssi_rolling_average);
 }
 
 TEST_F(SecureChannelAuthenticatedChannelImplTest, DisconnectRequestFromClient) {

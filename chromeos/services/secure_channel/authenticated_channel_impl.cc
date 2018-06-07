@@ -61,12 +61,9 @@ AuthenticatedChannelImpl::~AuthenticatedChannelImpl() {
   secure_channel_->RemoveObserver(this);
 }
 
-const mojom::ConnectionMetadata&
-AuthenticatedChannelImpl::GetConnectionMetadata() const {
-  // TODO(khorimoto): Update |connection_metadata_.rssi_rolling_average|
-  // periodically throughout the connection when applicable. For now,
-  // kNoRssiAvailable is used in all cases.
-  return connection_metadata_;
+void AuthenticatedChannelImpl::GetConnectionMetadata(
+    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+  std::move(callback).Run(connection_metadata_);
 }
 
 void AuthenticatedChannelImpl::PerformSendMessage(

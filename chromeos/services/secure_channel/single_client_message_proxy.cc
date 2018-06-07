@@ -25,9 +25,9 @@ void SingleClientMessageProxy::NotifyClientDisconnected() {
   delegate_->OnClientDisconnected(GetProxyId());
 }
 
-const mojom::ConnectionMetadata&
-SingleClientMessageProxy::GetConnectionMetadataFromDelegate() {
-  return delegate_->GetConnectionMetadata();
+void SingleClientMessageProxy::GetConnectionMetadataFromDelegate(
+    base::OnceCallback<void(mojom::ConnectionMetadata)> callback) {
+  delegate_->GetConnectionMetadata(std::move(callback));
 }
 
 }  // namespace secure_channel

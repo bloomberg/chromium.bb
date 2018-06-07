@@ -256,6 +256,17 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     EXPECT_TRUE(success);
   }
 
+  void CallGetConnectionMetadataFromDelegate(
+      FakeSingleClientMessageProxy* proxy) {
+    proxy->GetConnectionMetadataFromDelegate(base::BindOnce(
+        &SecureChannelMultiplexedChannelImplTest::OnGetConnectionMetadata,
+        base::Unretained(this)));
+  }
+
+  void OnGetConnectionMetadata(mojom::ConnectionMetadata connection_metadata) {
+    connection_metadata_ = std::move(connection_metadata);
+  }
+
   std::vector<std::unique_ptr<ClientConnectionParameters>>&
   initial_client_list() {
     return initial_client_list_;
@@ -276,6 +287,8 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
   FakeAuthenticatedChannel* fake_authenticated_channel() {
     return fake_authenticated_channel_;
   }
+
+  base::Optional<mojom::ConnectionMetadata> connection_metadata_;
 
  private:
   void OnMessageSent(int message_counter) {
@@ -314,15 +327,11 @@ TEST_F(SecureChannelMultiplexedChannelImplTest, ConnectionMetadata) {
   // Retrieving the metadata through the proxy should cause
   // |fake_authenticated_channel_|'s metadata to be passed through
   // |multiplexed_channel_|.
-  EXPECT_EQ(details, id_to_active_proxy_map()
-                         .begin()
-                         ->second->GetConnectionMetadataFromDelegate()
-                         .creation_details);
+  CallGetConnectionMetadataFromDelegate(
+      id_to_active_proxy_map().begin()->second);
+  EXPECT_EQ(details, connection_metadata_->creation_details);
   EXPECT_EQ(mojom::ConnectionMetadata::kNoRssiAvailable,
-            id_to_active_proxy_map()
-                .begin()
-                ->second->GetConnectionMetadataFromDelegate()
-                .rssi_rolling_average);
+            connection_metadata_->rssi_rolling_average);
 
   // Now, change the values and set them on |fake_authenticated_channel_|.
   connection_metadata.creation_details =
@@ -331,15 +340,11 @@ TEST_F(SecureChannelMultiplexedChannelImplTest, ConnectionMetadata) {
   fake_authenticated_channel()->set_connection_metadata(connection_metadata);
 
   // The new updates should be available.
+  CallGetConnectionMetadataFromDelegate(
+      id_to_active_proxy_map().begin()->second);
   EXPECT_EQ(std::vector<mojom::ConnectionCreationDetail>(),
-            id_to_active_proxy_map()
-                .begin()
-                ->second->GetConnectionMetadataFromDelegate()
-                .creation_details);
-  EXPECT_EQ(-5.5f, id_to_active_proxy_map()
-                       .begin()
-                       ->second->GetConnectionMetadataFromDelegate()
-                       .rssi_rolling_average);
+            connection_metadata_->creation_details);
+  EXPECT_EQ(-5.5f, connection_metadata_->rssi_rolling_average);
 
   DisconnectClientAndVerifyState(id_to_active_proxy_map().begin()->second,
                                  true /* expected_to_be_last_client */);

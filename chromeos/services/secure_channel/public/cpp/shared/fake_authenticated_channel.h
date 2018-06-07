@@ -40,7 +40,8 @@ class FakeAuthenticatedChannel : public AuthenticatedChannel {
   }
 
   // AuthenticatedChannel:
-  const mojom::ConnectionMetadata& GetConnectionMetadata() const override;
+  void GetConnectionMetadata(
+      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) override;
   void PerformSendMessage(const std::string& feature,
                           const std::string& payload,
                           base::OnceClosure on_sent_callback) override;

@@ -15,7 +15,7 @@ const char kReasonForDisconnection[] = "Remote device disconnected.";
 }  // namespace
 
 ChannelImpl::ChannelImpl(Delegate* delegate)
-    : delegate_(delegate), binding_(this) {}
+    : delegate_(delegate), binding_(this), weak_ptr_factory_(this) {}
 
 ChannelImpl::~ChannelImpl() = default;
 
@@ -48,7 +48,15 @@ void ChannelImpl::SendMessage(const std::string& message,
 
 void ChannelImpl::GetConnectionMetadata(
     GetConnectionMetadataCallback callback) {
-  std::move(callback).Run(delegate_->GetConnectionMetadata().Clone());
+  delegate_->GetConnectionMetadata(
+      base::BindOnce(&ChannelImpl::OnConnectionMetadataFetchedFromDelegate,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ChannelImpl::OnConnectionMetadataFetchedFromDelegate(
+    GetConnectionMetadataCallback callback,
+    mojom::ConnectionMetadata connection_metadata_from_delegate) {
+  std::move(callback).Run(connection_metadata_from_delegate.Clone());
 }
 
 void ChannelImpl::OnBindingDisconnected() {

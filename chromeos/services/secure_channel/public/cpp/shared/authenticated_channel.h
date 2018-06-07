@@ -31,7 +31,8 @@ class AuthenticatedChannel {
 
   virtual ~AuthenticatedChannel();
 
-  virtual const mojom::ConnectionMetadata& GetConnectionMetadata() const = 0;
+  virtual void GetConnectionMetadata(
+      base::OnceCallback<void(mojom::ConnectionMetadata)> callback) = 0;
 
   // Sends a message with the specified |feature| and |payload|. Once the
   // message has been sent, |on_sent_callback| will be invoked. Returns whether
