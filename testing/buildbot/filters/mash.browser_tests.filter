@@ -199,9 +199,6 @@
 # ash::Shell access in test.
 -SystemTrayTrayCastMediaRouterChromeOSTest.*
 
-# ash::Shell access in test.
--SystemUse24HourClockPolicyTest.*
-
 # Flaky shutdown crashes in ~MusClient http://crbug.com/786234 and AtExit
 # crashes in ~WebContentsTaskProvider http://crbug.com/786230
 -AppBackgroundPageApiTest.*
