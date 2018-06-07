@@ -45,6 +45,7 @@ config("config") {
 # These are defined as vars so they can be shared with different targets below.
 ios_web_view_public_headers = [
   "public/cwv_export.h",
+  "public/cwv_favicon.h",
   "public/cwv_html_element.h",
   "public/cwv_navigation_action.h",
   "public/cwv_navigation_delegate.h",
@@ -96,6 +97,8 @@ ios_web_view_sources = [
   "internal/content_settings/web_view_cookie_settings_factory.h",
   "internal/content_settings/web_view_host_content_settings_map_factory.cc",
   "internal/content_settings/web_view_host_content_settings_map_factory.h",
+  "internal/cwv_favicon.mm",
+  "internal/cwv_favicon_internal.h",
   "internal/cwv_html_element.mm",
   "internal/cwv_html_element_internal.h",
   "internal/cwv_navigation_action.mm",
@@ -315,6 +318,7 @@ test("ios_web_view_unittests") {
     "internal/autofill/cwv_autofill_suggestion_unittest.mm",
     "internal/autofill/cwv_credit_card_unittest.mm",
     "internal/autofill/cwv_credit_card_verifier_unittest.mm",
+    "internal/cwv_favicon_unittest.mm",
     "internal/cwv_html_element_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
     "internal/cwv_preview_element_info_unittest.mm",

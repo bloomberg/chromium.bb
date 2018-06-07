@@ -15,6 +15,7 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "google_apis/google_api_keys.h"
+#include "ios/web/public/favicon_url.h"
 #include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
@@ -30,6 +31,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web_view/cwv_web_view_features.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_controller_internal.h"
+#import "ios/web_view/internal/cwv_favicon_internal.h"
 #import "ios/web_view/internal/cwv_html_element_internal.h"
 #import "ios/web_view/internal/cwv_navigation_action_internal.h"
 #import "ios/web_view/internal/cwv_script_command_internal.h"
@@ -414,6 +416,15 @@ static NSString* gUserAgentProduct = nil;
   if ([_UIDelegate respondsToSelector:selector]) {
     [_UIDelegate webView:self
         commitPreviewingViewController:previewingViewController];
+  }
+}
+
+- (void)webState:(web::WebState*)webState
+    didUpdateFaviconURLCandidates:
+        (const std::vector<web::FaviconURL>&)candidates {
+  if ([_UIDelegate respondsToSelector:@selector(webView:didLoadFavicons:)]) {
+    [_UIDelegate webView:self
+         didLoadFavicons:[CWVFavicon faviconsFromFaviconURLs:candidates]];
   }
 }
 
