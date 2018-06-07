@@ -48,7 +48,7 @@ class PLATFORM_EXPORT LongTaskDetector final
   void WillProcessTask(double start_time) override {}
   void DidProcessTask(double start_time, double end_time) override;
 
-  HeapHashSet<WeakMember<LongTaskObserver>> observers_;
+  HeapHashSet<Member<LongTaskObserver>> observers_;
 };
 
 }  // namespace blink

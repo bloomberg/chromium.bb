@@ -44,15 +44,12 @@ InteractiveDetector::InteractiveDetector(
     Document& document,
     NetworkActivityChecker* network_activity_checker)
     : Supplement<Document>(document),
+      ContextLifecycleObserver(&document),
       network_activity_checker_(network_activity_checker),
       time_to_interactive_timer_(
           document.GetTaskRunner(TaskType::kInternalDefault),
           this,
           &InteractiveDetector::TimeToInteractiveTimerFired) {}
-
-InteractiveDetector::~InteractiveDetector() {
-  LongTaskDetector::Instance().UnregisterObserver(this);
-}
 
 void InteractiveDetector::SetNavigationStartTime(
     TimeTicks navigation_start_time) {
@@ -468,8 +465,13 @@ void InteractiveDetector::OnTimeToInteractiveDetected() {
   }
 }
 
+void InteractiveDetector::ContextDestroyed(ExecutionContext*) {
+  LongTaskDetector::Instance().UnregisterObserver(this);
+}
+
 void InteractiveDetector::Trace(Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/long_task_detector.h"
@@ -29,6 +30,7 @@ class WebInputEvent;
 class CORE_EXPORT InteractiveDetector
     : public GarbageCollectedFinalized<InteractiveDetector>,
       public Supplement<Document>,
+      public ContextLifecycleObserver,
       public LongTaskObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InteractiveDetector);
 
@@ -54,7 +56,7 @@ class CORE_EXPORT InteractiveDetector
   // Exposed for tests. See crbug.com/810381. We must use a consistent address
   // for the supplement name.
   static const char* SupplementName();
-  ~InteractiveDetector() override;
+  ~InteractiveDetector() override = default;
 
   // Calls to CurrentTimeTicksInSeconds is expensive, so we try not to call it
   // unless we really have to. If we already have the event time available, we
@@ -93,6 +95,9 @@ class CORE_EXPORT InteractiveDetector
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
   void HandleForFirstInputDelay(const WebInputEvent&);
+
+  // ContextLifecycleObserver
+  void ContextDestroyed(ExecutionContext*) override;
 
   void Trace(Visitor*) override;
 
