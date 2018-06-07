@@ -58,6 +58,7 @@ const CGFloat kFaviconContainerWidth = 28;
   cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;
+  cell.accessibilityTraits |= UIAccessibilityTraitButton;
 }
 
 - (NSString*)uniqueIdentifier {
@@ -166,6 +167,28 @@ const CGFloat kFaviconContainerWidth = 28;
 - (void)prepareForReuse {
   [super prepareForReuse];
   [self.faviconView configureWithAttributes:nil];
+}
+
+- (NSString*)accessibilityLabel {
+  NSString* accessibilityLabel = self.titleLabel.text;
+  if (self.URLLabel.text.length > 0) {
+    accessibilityLabel = [NSString
+        stringWithFormat:@"%@, %@", accessibilityLabel, self.URLLabel.text];
+  }
+  if (self.metadataLabel.text.length > 0) {
+    accessibilityLabel =
+        [NSString stringWithFormat:@"%@, %@", accessibilityLabel,
+                                   self.metadataLabel.text];
+  }
+  return accessibilityLabel;
+}
+
+- (NSString*)accessibilityIdentifier {
+  return self.titleLabel.text;
+}
+
+- (BOOL)isAccessibilityElement {
+  return YES;
 }
 
 @end

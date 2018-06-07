@@ -208,7 +208,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
-  self.view.accessibilityIdentifier = @"Single Bookmark Editor";
+  self.view.accessibilityIdentifier = kBookmarkEditViewContainerIdentifier;
 
   if (experimental_flags::IsBookmarksUIRebootEnabled()) {
     // Add a tableFooterView in order to disable separators at the bottom of the
@@ -238,7 +238,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(save)];
-  doneItem.accessibilityIdentifier = @"Done";
+  doneItem.accessibilityIdentifier =
+      kBookmarkEditNavigationBarDoneButtonIdentifier;
   self.navigationItem.rightBarButtonItem = doneItem;
   self.doneItem = doneItem;
 

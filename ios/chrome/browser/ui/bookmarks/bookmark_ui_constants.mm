@@ -8,6 +8,24 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kBookmarkHomeViewContainerIdentifier =
+    @"kBookmarkHomeViewContainerIdentifier";
+NSString* const kBookmarkEditViewContainerIdentifier =
+    @"kBookmarkEditViewContainerIdentifier";
+NSString* const kBookmarkFolderEditViewContainerIdentifier =
+    @"kBookmarkFolderEditViewContainerIdentifier";
+NSString* const kBookmarkFolderCreateViewContainerIdentifier =
+    @"kBookmarkFolderCreateViewContainerIdentifier";
+NSString* const kBookmarkFolderPickerViewContainerIdentifier =
+    @"kBookmarkFolderPickerViewContainerIdentifier";
+
+NSString* const kBookmarkHomeNavigationBarDoneButtonIdentifier =
+    @"kBookmarkHomeNavigationBarDoneButtonIdentifier";
+NSString* const kBookmarkEditNavigationBarDoneButtonIdentifier =
+    @"kBookmarkEditNavigationBarDoneButtonIdentifier";
+NSString* const kBookmarkFolderEditNavigationBarDoneButtonIdentifier =
+    @"kBookmarkFolderEditNavigationBarDoneButtonIdentifier";
+
 NSString* const kBookmarkEditDeleteButtonIdentifier =
     @"kBookmarkEditDeleteButtonIdentifier";
 NSString* const kBookmarkFolderEditorDeleteButtonIdentifier =

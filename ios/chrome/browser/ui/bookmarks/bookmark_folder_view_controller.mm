@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
@@ -158,7 +159,8 @@ using bookmarks::BookmarkNode;
     [self setEdgesForExtendedLayout:UIRectEdgeNone];
   }
   self.view.backgroundColor = [UIColor whiteColor];
-  self.view.accessibilityIdentifier = @"Folder Picker";
+  self.view.accessibilityIdentifier =
+      kBookmarkFolderPickerViewContainerIdentifier;
 
   self.title = l10n_util::GetNSString(IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON);
 
@@ -168,7 +170,8 @@ using bookmarks::BookmarkNode;
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(done:)];
-  doneItem.accessibilityIdentifier = @"Done";
+  doneItem.accessibilityIdentifier =
+      kBookmarkFolderEditNavigationBarDoneButtonIdentifier;
   self.navigationItem.rightBarButtonItem = doneItem;
 
   if (self.allowsCancel) {

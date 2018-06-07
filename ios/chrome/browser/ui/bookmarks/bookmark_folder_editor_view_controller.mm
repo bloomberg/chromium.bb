@@ -189,7 +189,8 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(saveFolder)];
-  doneItem.accessibilityIdentifier = @"Save";
+  doneItem.accessibilityIdentifier =
+      kBookmarkFolderEditNavigationBarDoneButtonIdentifier;
   self.navigationItem.rightBarButtonItem = doneItem;
   self.doneItem = doneItem;
 
@@ -410,7 +411,8 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
     return;
 
   self.view.accessibilityIdentifier =
-      (self.folder) ? @"Folder Editor" : @"Folder Creator";
+      (self.folder) ? kBookmarkFolderEditViewContainerIdentifier
+                    : kBookmarkFolderCreateViewContainerIdentifier;
 
   [self setTitle:(self.folder)
                      ? l10n_util::GetNSString(

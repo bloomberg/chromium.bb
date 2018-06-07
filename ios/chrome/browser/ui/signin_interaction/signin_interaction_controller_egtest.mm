@@ -31,7 +31,7 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::BookmarksNavigationBarDoneButton;
 using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsDoneButton;
 
@@ -496,7 +496,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
   // Close sign-in screen and Bookmarks.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarDoneButton()]
       performAction:grey_tap()];
 }
 

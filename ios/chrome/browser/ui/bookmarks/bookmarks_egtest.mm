@@ -111,11 +111,19 @@ id<GREYMatcher> BookmarksBackButton() {
 }
 
 // Matcher for the DONE button on the bookmarks UI.
-id<GREYMatcher> BookmarksDoneButton() {
-  return grey_allOf(
-      ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
-      grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)),
-      grey_sufficientlyVisible(), nil);
+id<GREYMatcher> BookmarkHomeDoneButton() {
+  return grey_accessibilityID(kBookmarkHomeNavigationBarDoneButtonIdentifier);
+}
+
+// Matcher for the DONE button on the bookmarks edit UI.
+id<GREYMatcher> BookmarksSaveEditDoneButton() {
+  return grey_accessibilityID(kBookmarkEditNavigationBarDoneButtonIdentifier);
+}
+
+// Matcher for the DONE button on the bookmarks edit folder UI.
+id<GREYMatcher> BookmarksSaveEditFolderButton() {
+  return grey_accessibilityID(
+      kBookmarkFolderEditNavigationBarDoneButtonIdentifier);
 }
 
 // Matcher for context bar leading button.
@@ -357,8 +365,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                  expectedCount:1];
 
   // Verify that the editor is present.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
       assertWithMatcher:grey_notNil()];
 
   [BookmarksTestCase assertFolderName:@"Mobile Bookmarks"];
@@ -371,8 +379,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase addFolderWithName:nil];
 
   // Verify that the editor is present.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
       assertWithMatcher:grey_notNil()];
 
   [BookmarksTestCase assertFolderExists:@"New Folder"];
@@ -401,19 +409,19 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase addFolderWithName:@"Sticky Folder"];
 
   // Verify that the editor is present.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap the Done button.
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
       performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
 
   // Close bookmarks
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
 
   // Second, bookmark a page.
@@ -475,25 +483,25 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase addFolderWithName:nil];
 
   // Verify that the editor is present.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Check that the new folder doesn't contain the bookmark.
   [BookmarksTestCase assertChildCount:0 ofFolderWithName:@"New Folder"];
 
   // Tap the Done button.
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
       performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Single Bookmark Editor")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
 
   // Check that the new folder contains the bookmark.
   [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"New Folder"];
 
   // Close bookmarks
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
 
   // Check that the new folder still contains the bookmark.
@@ -533,7 +541,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Choose to move the bookmark into a new folder.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
       performAction:grey_tap()];
 
   // Enter custom new folder name.
@@ -553,7 +562,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify folder picker UI is displayed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify Folder 2 only has one item.
@@ -564,9 +575,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify folder picker is dismissed and folder creator is now visible.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Creator")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
 
   // Verify picked parent folder (Change Folder) is Folder 2.
@@ -576,16 +591,22 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                    grey_accessibilityLabel(@"Folder 2"), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Tap Done (accessibilityID is 'Save') to close bookmark move flow.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Save")]
+  // Tap Done to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
       performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Creator")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
 
   // Verify new folder has been created under Folder 2.
@@ -1065,11 +1086,12 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Modify the title.
-  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                                 openEditor:@"Single Bookmark Editor"
-                            modifyTextField:@"Title Field_textField"
-                                         to:@"n5"
-                                dismissWith:@"Done"];
+  [BookmarksTestCase
+      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                  openEditor:kBookmarkEditViewContainerIdentifier
+             modifyTextField:@"Title Field_textField"
+                          to:@"n5"
+                 dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
 
   // Verify that the bookmark was updated.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"n5")]
@@ -1098,11 +1120,12 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Modify the url.
-  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                                 openEditor:@"Single Bookmark Editor"
-                            modifyTextField:@"URL Field_textField"
-                                         to:@"www.b.fr"
-                                dismissWith:@"Done"];
+  [BookmarksTestCase
+      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                  openEditor:kBookmarkEditViewContainerIdentifier
+             modifyTextField:@"URL Field_textField"
+                          to:@"www.b.fr"
+                 dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
 
   // Verify that the bookmark was updated.
   [BookmarksTestCase assertExistenceOfBookmarkWithURL:@"http://www.b.fr/"
@@ -1132,7 +1155,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Move the "Second URL" to "Folder 1.1".
   [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                                 openEditor:@"Single Bookmark Editor"
+                                 openEditor:kBookmarkEditViewContainerIdentifier
                           setParentFolderTo:@"Folder 1.1"
                                        from:@"Mobile Bookmarks"];
 
@@ -1167,7 +1190,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Tap cancel after modifying the url.
   [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                                 openEditor:@"Single Bookmark Editor"
+                                 openEditor:kBookmarkEditViewContainerIdentifier
                             modifyTextField:@"URL Field_textField"
                                          to:@"www.b.fr"
                                 dismissWith:@"Cancel"];
@@ -1522,7 +1545,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify it shows edit view controller.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -1659,13 +1684,16 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify that the editor is present.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
       assertWithMatcher:grey_notNil()];
   NSString* existingFolderTitle = @"Folder 1";
   NSString* newFolderTitle = @"New Folder Title";
   [BookmarksTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
 
-  [BookmarksTestCase closeEditBookmarkFolder];
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
+      performAction:grey_tap()];
 
   // Verify that the change has been made.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(existingFolderTitle)]
@@ -1693,11 +1721,11 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Move the "New Folder Title" to "Folder 1.1".
   [BookmarksTestCase
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER
-                  openEditor:@"Folder Editor"
+                  openEditor:kBookmarkFolderEditViewContainerIdentifier
            setParentFolderTo:@"Folder 1.1"
                         from:@"Mobile Bookmarks"];
 
-  // Verify edit mode is stayed.
+  // Verify edit mode remains.
   [self verifyContextBarInEditMode];
 
   // Close edit mode.
@@ -1725,7 +1753,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Tap cancel after modifying the title.
   [BookmarksTestCase
       tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER
-                  openEditor:@"Folder Editor"
+                  openEditor:kBookmarkFolderEditViewContainerIdentifier
              modifyTextField:@"Title_textField"
                           to:@"Dummy"
                  dismissWith:@"Cancel"];
@@ -1751,7 +1779,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify that the editor is present.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey
@@ -1798,7 +1828,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Choose to move the bookmark folder - "Folder 1" into a new folder.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
       performAction:grey_tap()];
 
   // Enter custom new folder name.
@@ -1819,7 +1850,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify folder picker UI is displayed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify Folder 2 only has one item.
@@ -1831,9 +1864,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify folder picker is dismissed and folder creator is now visible.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Creator")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
 
   // Verify picked parent folder is Folder 2.
@@ -1843,8 +1880,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                    grey_accessibilityLabel(@"Folder 2"), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Tap Done (accessibilityID is 'Save') to close bookmark move flow.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Save")]
+  // Tap Done to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
       performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
@@ -1901,9 +1938,10 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       performAction:grey_tap()];
 
-  // Choose to move into a new folder.
-  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
-                                          @"Create New Folder")]
+  // Choose to move into a new folder. By tapping on the New Folder Cell.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
       performAction:grey_tap()];
 
   // Enter custom new folder name.
@@ -1919,8 +1957,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Tap Done (accessibilityID is 'Save') to close bookmark move flow.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Save")]
+  // Tap Done to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
       performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
@@ -1994,7 +2032,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Choose to move into a new folder.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
       performAction:grey_tap()];
 
   // Enter custom new folder name.
@@ -2010,8 +2049,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Tap Done (accessibilityID is 'Save') to close bookmark move flow.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Save")]
+  // Tap Done to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
       performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
@@ -2505,7 +2544,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       20, prefs->GetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount),
       @"Should have incremented the display count");
   // Close the bookmark view and open it again.
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
   [BookmarksTestCase openBookmarks];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -2591,7 +2630,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                                 pressReturn:NO];
 
   // Interrupt the folder name editing by tapping on done.
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
   // Reopen bookmarks.
   [BookmarksTestCase openBookmarks];
@@ -2785,7 +2824,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Close bookmarks
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
 
   // Reopen bookmarks.
@@ -2812,7 +2851,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Close bookmarks, it will store Folder 2 as the cache position.
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
 
   // Delete Folder 2.
@@ -2834,7 +2873,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase openMobileBookmarks];
 
   // Close bookmarks, it will store Mobile Bookmarks as the cache position.
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
 
   // Delete all bookmarks and folders under Mobile Bookmarks.
@@ -2870,7 +2909,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Close bookmarks
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
       performAction:grey_tap()];
 
   // Move Folder 3 under Folder 1.
@@ -2922,7 +2961,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify that the editor is present.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
       assertWithMatcher:grey_notNil()];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
@@ -2980,7 +3021,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Tap on "Create New Folder."
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
       performAction:grey_tap()];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
@@ -3183,7 +3225,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_replaceText(title)];
 
   // Dismiss the window.
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -3224,16 +3266,21 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 // Passing a |name| of 0 length will use the default value.
 + (void)addFolderWithName:(NSString*)name {
   // Wait for folder picker to appear.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on "Create New Folder."
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"Create New Folder")]
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
       performAction:grey_tap()];
 
   // Verify the folder creator is displayed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Creator")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Change the name of the folder.
@@ -3243,8 +3290,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
         performAction:grey_replaceText(name)];
   }
 
-  // Tap the Save button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Save")]
+  // Tap the Done button.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
       performAction:grey_tap()];
 }
 
@@ -3368,7 +3415,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 // Dismisses the edit folder UI.
 + (void)closeEditBookmarkFolder {
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
       performAction:grey_tap()];
 }
 
@@ -3538,11 +3585,17 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 }
 
 - (void)verifyFolderFlowIsClosed {
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Creator")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -3668,7 +3721,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify folder picker UI is displayed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Select the new destination folder.
@@ -3677,7 +3732,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify folder picker is dismissed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Picker")]
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_notVisible()];
 
   // Verify parent folder has been changed in edit page.
@@ -3689,8 +3746,14 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Dismiss edit page (editor).
-  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
-      performAction:grey_tap()];
+  id<GREYMatcher> dismissMatcher = BookmarksSaveEditDoneButton();
+  // If a folder is being edited use the EditFolder button dismiss matcher
+  // instead.
+  if ([editorId isEqualToString:kBookmarkFolderEditViewContainerIdentifier])
+    dismissMatcher = BookmarksSaveEditFolderButton();
+  [[EarlGrey selectElementWithMatcher:dismissMatcher] performAction:grey_tap()];
+
+  // Verify the Editor was dismissed.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(editorId)]
       assertWithMatcher:grey_notVisible()];
 

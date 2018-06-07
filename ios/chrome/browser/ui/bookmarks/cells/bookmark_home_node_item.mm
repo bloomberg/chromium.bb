@@ -46,12 +46,13 @@
           base::mac::ObjCCastStrict<TableViewBookmarkFolderCell>(cell);
       bookmarkCell.folderTitleTextField.text =
           bookmark_utils_ios::TitleForBookmarkNode(_bookmarkNode);
-      bookmarkCell.accessibilityIdentifier =
-          bookmark_utils_ios::TitleForBookmarkNode(_bookmarkNode);
       bookmarkCell.folderImageView.image =
           [UIImage imageNamed:@"bookmark_blue_folder"];
       bookmarkCell.bookmarkAccessoryType =
           TableViewBookmarkFolderAccessoryTypeDisclosureIndicator;
+      bookmarkCell.accessibilityIdentifier =
+          bookmark_utils_ios::TitleForBookmarkNode(_bookmarkNode);
+      bookmarkCell.accessibilityTraits |= UIAccessibilityTraitButton;
     } else {
       TableViewURLCell* urlCell =
           base::mac::ObjCCastStrict<TableViewURLCell>(cell);
@@ -59,6 +60,7 @@
           bookmark_utils_ios::TitleForBookmarkNode(_bookmarkNode);
       urlCell.URLLabel.text =
           base::SysUTF8ToNSString(_bookmarkNode->url().host());
+      urlCell.accessibilityTraits |= UIAccessibilityTraitButton;
     }
   } else {
     BookmarkTableCell* bookmarkCell =

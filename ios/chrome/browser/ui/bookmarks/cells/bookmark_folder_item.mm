@@ -68,12 +68,13 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
             [UIImage imageNamed:@"bookmark_blue_new_folder"];
         folderCell.accessibilityIdentifier =
             kBookmarkCreateNewFolderCellIdentifier;
+        folderCell.accessibilityTraits |= UIAccessibilityTraitButton;
         break;
       }
       case BookmarkFolderStyleFolderEntry: {
         folderCell.folderTitleTextField.text = self.title;
         folderCell.accessibilityIdentifier = self.title;
-        folderCell.accessibilityLabel = self.title;
+        folderCell.accessibilityTraits |= UIAccessibilityTraitButton;
         if (self.isCurrentFolder)
           folderCell.bookmarkAccessoryType =
               TableViewBookmarkFolderAccessoryTypeCheckmark;
@@ -96,7 +97,8 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
             l10n_util::GetNSString(IDS_IOS_BOOKMARK_CREATE_GROUP);
         folderCell.imageView.image =
             [UIImage imageNamed:@"bookmark_gray_new_folder"];
-        folderCell.accessibilityIdentifier = @"Create New Folder";
+        folderCell.accessibilityIdentifier =
+            kBookmarkCreateNewFolderCellIdentifier;
         break;
       }
       case BookmarkFolderStyleFolderEntry: {
@@ -119,8 +121,6 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
 #pragma mark - TableViewBookmarkFolderCell
 
 @interface TableViewBookmarkFolderCell ()<UITextFieldDelegate>
-// Lists the accessibility elements that are to be seen by UIAccessibility.
-@property(nonatomic, readonly) NSMutableArray* accessibilityElements;
 // Re-declare as readwrite.
 @property(nonatomic, strong, readwrite)
     NSLayoutConstraint* indentationConstraint;
@@ -129,7 +129,6 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
 @end
 
 @implementation TableViewBookmarkFolderCell
-@synthesize accessibilityElements = _accessibilityElements;
 @synthesize bookmarkAccessoryType = _bookmarkAccessoryType;
 @synthesize folderImageView = _folderImageView;
 @synthesize folderTitleTextField = _folderTitleTextFieldl;
@@ -142,7 +141,7 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     self.selectionStyle = UITableViewCellSelectionStyleGray;
-    self.accessibilityTraits |= UIAccessibilityTraitButton;
+    self.isAccessibilityElement = YES;
 
     self.folderImageView = [[UIImageView alloc] init];
     self.folderImageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -191,14 +190,6 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
                          constant:-kFolderCellHorizonalInset],
       self.indentationConstraint,
     ]];
-
-    // Setup accessibility elements.
-    self.accessibilityElements = [[NSMutableArray alloc] init];
-    self.contentView.isAccessibilityElement = YES;
-    self.contentView.accessibilityTraits |= UIAccessibilityTraitButton;
-    self.contentView.accessibilityLabel = self.folderTitleTextField.text;
-    self.contentView.accessibilityIdentifier = self.folderTitleTextField.text;
-    [self.accessibilityElements addObject:self.contentView];
   }
   return self;
 }
@@ -227,22 +218,23 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
   self.indentationWidth = 0;
   self.imageView.image = nil;
   self.indentationConstraint.constant = kFolderCellHorizonalInset;
-  [self.accessibilityElements removeObject:self.folderTitleTextField];
   self.folderTitleTextField.userInteractionEnabled = NO;
   self.textDelegate = nil;
   self.folderTitleTextField.accessibilityIdentifier = nil;
+  self.accessoryType = UITableViewCellAccessoryNone;
+  self.isAccessibilityElement = YES;
 }
 
 #pragma mark BookmarkTableCellTitleEditing
 
 - (void)startEdit {
+  self.isAccessibilityElement = NO;
   self.isTextCommitted = NO;
   self.folderTitleTextField.userInteractionEnabled = YES;
   self.folderTitleTextField.enablesReturnKeyAutomatically = YES;
   self.folderTitleTextField.keyboardType = UIKeyboardTypeDefault;
   self.folderTitleTextField.returnKeyType = UIReturnKeyDone;
   self.folderTitleTextField.accessibilityIdentifier = @"bookmark_editing_text";
-  self.accessoryType = UITableViewCellAccessoryNone;
   [self.folderTitleTextField becomeFirstResponder];
   // selectAll doesn't work immediately after calling becomeFirstResponder.
   // Do selectAll on the next run loop.
@@ -251,9 +243,6 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
       [self.folderTitleTextField selectAll:nil];
     }
   });
-  if (![self.accessibilityElements containsObject:self.folderTitleTextField]) {
-    [self.accessibilityElements addObject:self.folderTitleTextField];
-  }
   self.folderTitleTextField.delegate = self;
 }
 
@@ -262,24 +251,16 @@ const CGFloat kFolderCellHorizonalInset = 17.0;
     return;
   }
   self.isTextCommitted = YES;
+  self.isAccessibilityElement = YES;
   [self.textDelegate textDidChangeTo:self.folderTitleTextField.text];
   self.folderTitleTextField.userInteractionEnabled = NO;
   [self.folderTitleTextField endEditing:YES];
-  [self.accessibilityElements removeObject:self.folderTitleTextField];
 }
 
-#pragma mark UIAccessibilityContainer
+#pragma mark Accessibility
 
-- (NSInteger)accessibilityElementCount {
-  return [self.accessibilityElements count];
-}
-
-- (id)accessibilityElementAtIndex:(NSInteger)index {
-  return [self.accessibilityElements objectAtIndex:index];
-}
-
-- (NSInteger)indexOfAccessibilityElement:(id)element {
-  return [self.accessibilityElements indexOfObject:element];
+- (NSString*)accessibilityLabel {
+  return self.folderTitleTextField.text;
 }
 
 @end
