@@ -161,6 +161,10 @@ ScriptPromise XRDevice::requestSession(
                                            reject_reason));
   }
 
+  // TODO(ijamardo): Should we just exit if there is not document?
+  bool has_user_activation =
+      Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr);
+
   // Check if the current page state prevents the requested session from being
   // created.
   if (options.exclusive()) {
@@ -171,7 +175,7 @@ ScriptPromise XRDevice::requestSession(
                                kActiveExclusiveSession));
     }
 
-    if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+    if (!has_user_activation) {
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                              kRequestRequiresUserActivation));
@@ -181,7 +185,7 @@ ScriptPromise XRDevice::requestSession(
   // All AR sessions require a user gesture.
   // TODO(https://crbug.com/828321): Use session options instead.
   if (RuntimeEnabledFeatures::WebXRHitTestEnabled()) {
-    if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+    if (!has_user_activation) {
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                              kRequestRequiresUserActivation));
@@ -194,6 +198,7 @@ ScriptPromise XRDevice::requestSession(
   device::mojom::blink::XRSessionOptionsPtr session_options =
       device::mojom::blink::XRSessionOptions::New();
   session_options->exclusive = options.exclusive();
+  session_options->has_user_activation = has_user_activation;
 
   display_->RequestSession(
       std::move(session_options),

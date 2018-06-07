@@ -19,7 +19,7 @@ class ARCoreGl;
 class ARCoreGlThread : public base::android::JavaHandlerThread {
  public:
   ARCoreGlThread(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge,
-                 base::OnceCallback<void(bool)> initialized_callback);
+                 base::OnceCallback<void()> initialized_callback);
   ~ARCoreGlThread() override;
   ARCoreGl* GetARCoreGl();
 
@@ -29,7 +29,7 @@ class ARCoreGlThread : public base::android::JavaHandlerThread {
 
  private:
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
-  base::OnceCallback<void(bool)> initialized_callback_;
+  base::OnceCallback<void()> initialized_callback_;
 
   // Created on GL thread.
   std::unique_ptr<ARCoreGl> arcore_gl_;

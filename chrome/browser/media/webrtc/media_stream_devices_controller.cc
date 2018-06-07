@@ -203,19 +203,29 @@ void MediaStreamDevicesController::RequestAndroidPermissionsIfNeeded(
     return;
   }
 
-  if (PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
-          web_contents, content_settings_types)) {
-    PermissionUpdateInfoBarDelegate::Create(
-        web_contents, content_settings_types,
-        base::Bind(&MediaStreamDevicesController::AndroidOSPromptAnswered,
-                   base::Passed(&controller), responses));
-  } else {
-    // TODO(raymes): We can get here for 2 reasons: (1) android permission has
-    // already been granted, and (2) we can't get a handle to WindowAndroid.
-    // In case (2) this will actually result in success being reported even
-    // when the Android permission isn't present. crbug.com/775372.
-    controller->PromptAnsweredGroupedRequest(responses);
+  ShowPermissionInfoBarState show_permission_infobar_state =
+      PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
+          web_contents, content_settings_types);
+  switch (show_permission_infobar_state) {
+    case ShowPermissionInfoBarState::NO_NEED_TO_SHOW_PERMISSION_INFOBAR:
+      controller->PromptAnsweredGroupedRequest(responses);
+      return;
+    case ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR:
+      PermissionUpdateInfoBarDelegate::Create(
+          web_contents, content_settings_types,
+          base::BindRepeating(
+              &MediaStreamDevicesController::AndroidOSPromptAnswered,
+              base::Passed(&controller), responses));
+      return;
+    case ShowPermissionInfoBarState::CANNOT_SHOW_PERMISSION_INFOBAR: {
+      std::vector<ContentSetting> blocked_responses(responses.size(),
+                                                    CONTENT_SETTING_BLOCK);
+      controller->PromptAnsweredGroupedRequest(blocked_responses);
+      return;
+    }
   }
+
+  NOTREACHED() << "Unknown show permission infobar state.";
 #else
   controller->PromptAnsweredGroupedRequest(responses);
 #endif

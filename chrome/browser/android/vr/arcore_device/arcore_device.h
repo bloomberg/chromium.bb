@@ -9,12 +9,17 @@
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_base.h"
 
 namespace vr {
 class MailboxToSurfaceBridge;
 }  // namespace vr
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace device {
 
@@ -29,7 +34,9 @@ class ARCoreDevice : public VRDeviceBase {
   void PauseTracking() override;
   void ResumeTracking() override;
   void RequestSession(
-      VRDisplayImpl* display,
+      int render_process_id,
+      int render_frame_id,
+      bool has_user_activation,
       mojom::VRDisplayHost::RequestSessionCallback callback) override;
 
   base::WeakPtr<ARCoreDevice> GetWeakPtr() {
@@ -48,11 +55,14 @@ class ARCoreDevice : public VRDeviceBase {
       mojom::VRMagicWindowProvider::RequestHitTestCallback callback) override;
 
   void OnMailboxBridgeReady();
-  void OnARCoreGlThreadInitialized(bool success);
+  void OnARCoreGlThreadInitialized();
+  void OnRequestCameraPermissionComplete(
+      mojom::VRDisplayHost::RequestSessionCallback callback,
+      bool success);
 
   template <typename DataType>
   static void RunCallbackOnTaskRunner(
-      scoped_refptr<base::TaskRunner> task_runner,
+      const scoped_refptr<base::TaskRunner>& task_runner,
       base::OnceCallback<void(DataType)> callback,
       DataType data) {
     task_runner->PostTask(FROM_HERE,
@@ -69,11 +79,31 @@ class ARCoreDevice : public VRDeviceBase {
 
   bool IsOnMainThread();
 
+  void RequestCameraPermission(
+      int render_process_id,
+      int render_frame_id,
+      bool has_user_activation,
+      mojom::VRDisplayHost::RequestSessionCallback callback);
+  void OnRequestCameraPermissionResult(
+      content::WebContents* web_contents,
+      mojom::VRDisplayHost::RequestSessionCallback callback,
+      ContentSetting content_setting);
+  void OnRequestAndroidCameraPermissionResult(
+      mojom::VRDisplayHost::RequestSessionCallback callback,
+      bool was_android_camera_permission_granted);
+  void OnRequestSessionPreconditionsComplete(
+      mojom::VRDisplayHost::RequestSessionCallback callback,
+      bool success);
+  void OnARCoreGlInitializationComplete(
+      mojom::VRDisplayHost::RequestSessionCallback callback,
+      bool success);
+
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
   std::unique_ptr<ARCoreGlThread> arcore_gl_thread_;
 
   bool is_arcore_gl_thread_initialized_ = false;
+  bool is_arcore_gl_initialized_ = false;
 
   // This object is not paused when it is created. Although it is not
   // necessarily running during initialization, it is not paused. If it is

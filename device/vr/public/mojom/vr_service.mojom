@@ -30,6 +30,10 @@ enum XRPointerOrigin {
 
 struct XRSessionOptions {
   bool exclusive;
+
+  // A flag to indicate if there has been a user activation when the request
+  // session is made.
+  bool has_user_activation;
 };
 
 struct XRInputSourceDescription {
@@ -279,6 +283,7 @@ interface VRDisplayHost {
   // TODO(https://crbug.com/842025): Refactor VR device interfaces to better
   // reflect WebXR.
   RequestSession(XRSessionOptions options) => (bool success);
+
   SupportsSession(XRSessionOptions options) => (bool supports_session);
 
   // The returned transport_options is marked optional: it's null for

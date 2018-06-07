@@ -40,13 +40,13 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
                       RequestSessionCallback callback) override;
   void SupportsSession(device::mojom::XRSessionOptionsPtr options,
                        SupportsSessionCallback callback) override;
-
   void RequestPresent(device::mojom::VRSubmitFrameClientPtr client,
                       device::mojom::VRPresentationProviderRequest request,
                       device::mojom::VRRequestPresentOptionsPtr options,
                       bool triggered_by_displayactive,
                       RequestPresentCallback callback) override;
   void ExitPresent() override;
+
   void SetListeningForActivate(bool listening);
   void SetInFocusedFrame(bool in_focused_frame);
 

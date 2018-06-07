@@ -13,7 +13,7 @@ namespace device {
 
 ARCoreGlThread::ARCoreGlThread(
     std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge,
-    base::OnceCallback<void(bool)> initialized_callback)
+    base::OnceCallback<void()> initialized_callback)
     : base::android::JavaHandlerThread("ARCoreGL"),
       mailbox_bridge_(std::move(mailbox_bridge)),
       initialized_callback_(std::move(initialized_callback)) {}
@@ -31,12 +31,8 @@ void ARCoreGlThread::Init() {
 
   arcore_gl_ =
       std::make_unique<ARCoreGl>(base::ResetAndReturn(&mailbox_bridge_));
-  bool success = arcore_gl_->Initialize();
-  if (!success) {
-    CleanUp();
-  }
 
-  std::move(initialized_callback_).Run(success);
+  std::move(initialized_callback_).Run();
 }
 
 void ARCoreGlThread::CleanUp() {

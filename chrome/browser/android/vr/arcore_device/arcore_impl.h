@@ -71,7 +71,6 @@ class ARCoreImpl : public ARCore {
   ~ARCoreImpl() override;
 
   bool Initialize() override;
-
   void SetDisplayGeometry(const gfx::Size& frame_size,
                           display::Display::Rotation display_rotation) override;
   void SetCameraTexture(GLuint camera_texture_id) override;
@@ -81,7 +80,6 @@ class ARCoreImpl : public ARCore {
   mojom::VRPosePtr Update(bool* camera_updated) override;
   void Pause() override;
   void Resume() override;
-
   bool RequestHitTest(const mojom::XRRayPtr& ray,
                       const gfx::Size& image_size,
                       std::vector<mojom::XRHitResultPtr>* hit_results) override;

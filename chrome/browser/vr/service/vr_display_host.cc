@@ -11,6 +11,7 @@
 #include "chrome/browser/vr/service/browser_xr_device.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -52,7 +53,9 @@ VRDisplayHost::VRDisplayHost(BrowserXrDevice* device,
   binding_.Bind(mojo::MakeRequest(&display));
   display_ = std::make_unique<device::VRDisplayImpl>(
       device->GetDevice(), std::move(service_client), std::move(display_info),
-      std::move(display), mojo::MakeRequest(&client_));
+      std::move(display), mojo::MakeRequest(&client_),
+      render_frame_host ? render_frame_host->GetProcess()->GetID() : -1,
+      render_frame_host ? render_frame_host->GetRoutingID() : -1);
   display_->SetFrameDataRestricted(!in_focused_frame_);
   browser_device_->OnDisplayHostAdded(this);
 }
@@ -64,6 +67,7 @@ VRDisplayHost::~VRDisplayHost() {
 
 void VRDisplayHost::RequestSession(device::mojom::XRSessionOptionsPtr options,
                                    RequestSessionCallback callback) {
+  bool has_user_activation = options->has_user_activation;
   if (!InternalSupportsSession(std::move(options)) ||
       !IsSecureContextRequirementSatisfied()) {
     std::move(callback).Run(false);
@@ -75,7 +79,7 @@ void VRDisplayHost::RequestSession(device::mojom::XRSessionOptionsPtr options,
     return;
   }
 
-  display_->RequestSession(std::move(callback));
+  display_->RequestSession(has_user_activation, std::move(callback));
 }
 
 bool VRDisplayHost::IsAnotherHostPresenting() {

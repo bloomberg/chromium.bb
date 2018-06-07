@@ -40,7 +40,7 @@ class VRDisplayImplTest : public testing::Test {
     mojom::VRDisplayClientPtr display_client;
     auto display = std::make_unique<VRDisplayImpl>(
         device(), client(), device()->GetVRDisplayInfo(), nullptr,
-        mojo::MakeRequest(&display_client));
+        mojo::MakeRequest(&display_client), 0, 0);
     display->SetFrameDataRestricted(true);
     return display;
   }

@@ -30,7 +30,9 @@ class DEVICE_VR_EXPORT VRDeviceBase : public VRDevice {
   void SetMagicWindowEnabled(bool enabled) final;
   void SetVRDeviceEventListener(VRDeviceEventListener* listener) final;
   void RequestSession(
-      VRDisplayImpl* display,
+      int render_process_id,
+      int render_frame_id,
+      bool has_user_activation,
       mojom::VRDisplayHost::RequestSessionCallback callback) override;
   void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                       mojom::VRPresentationProviderRequest request,
