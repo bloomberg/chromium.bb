@@ -127,9 +127,15 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       if (!curr_frame_hdr_->IsKeyframe()) {
         // TODO(posciak): This is doable, but requires a few modifications to
         // VDA implementations to allow multiple picture buffer sets in flight.
+        // http://crbug.com/832264
         DVLOG(1) << "Resolution change currently supported for keyframes only";
-        SetError();
-        return kDecodeError;
+        if (++size_change_failure_counter_ > kVPxMaxNumOfSizeChangeFailures) {
+          SetError();
+          return kDecodeError;
+        }
+
+        curr_frame_hdr_.reset();
+        return kRanOutOfStreamData;
       }
 
       // TODO(posciak): This requires us to be on a keyframe (see above) and is
@@ -140,6 +146,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
         ref_frame = nullptr;
 
       pic_size_ = new_pic_size;
+      size_change_failure_counter_ = 0;
       return kAllocateNewSurfaces;
     }
 

@@ -146,6 +146,8 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   // Current coded resolution.
   gfx::Size pic_size_;
 
+  size_t size_change_failure_counter_ = 0;
+
   const std::unique_ptr<VP9Accelerator> accelerator_;
 
   Vp9Parser parser_;
