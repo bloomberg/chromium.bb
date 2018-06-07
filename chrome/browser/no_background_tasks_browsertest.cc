@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -54,10 +55,8 @@ class NoBackgroundTasksTest : public InProcessBrowserTest {
 // Verify that it is possible to get the first non-empty paint without running
 // background tasks.
 //
-// TODO(fdoray): Enable on ChromeOS once all dependencies on background tasks to
-// produce the first non-empty paint have been removed. https://crbug.com/831835
-// This test is flaky on Mac: https://crbug.com/833989
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+// TODO(fdoray): This test is flaky on Mac: https://crbug.com/833989
+#if defined(OS_MACOSX)
 #define MAYBE_FirstNonEmptyPaintWithoutBackgroundTasks \
   DISABLED_FirstNonEmptyPaintWithoutBackgroundTasks
 #else
@@ -66,6 +65,14 @@ class NoBackgroundTasksTest : public InProcessBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(NoBackgroundTasksTest,
                        MAYBE_FirstNonEmptyPaintWithoutBackgroundTasks) {
+#if defined(OS_CHROMEOS)
+  // TODO(fdoray): With Mash, RenderWidgetHostImpl::DidProcessFrame() isn't
+  // called in the browser process and the first non-empty paint signal isn't
+  // dispatched. https://crbug.com/831835
+  if (features::IsMashEnabled())
+    return;
+#endif
+
   RunLoopUntilNonEmptyPaint run_loop_until_non_empty_paint(
       browser()->tab_strip_model()->GetActiveWebContents());
   run_loop_until_non_empty_paint.RunUntilIdle();
