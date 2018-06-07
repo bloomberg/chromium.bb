@@ -39,7 +39,7 @@ public class LanguageListBaseAdapter
     private static final int ANIMATION_DELAY_MS = 100;
 
     /**
-     * Listener used to respond to click event on a langauge item.
+     * Listener used to respond to click event on a language item.
      */
     interface ItemClickListener {
         /**
