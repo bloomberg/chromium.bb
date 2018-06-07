@@ -132,6 +132,23 @@ void SchedulerWorker::Cleanup() {
   wake_up_event_.Signal();
 }
 
+void SchedulerWorker::BeginUnusedPeriod() {
+  AutoSchedulerLock auto_lock(thread_lock_);
+  DCHECK(last_used_time_.is_null());
+  last_used_time_ = TimeTicks::Now();
+}
+
+void SchedulerWorker::EndUnusedPeriod() {
+  AutoSchedulerLock auto_lock(thread_lock_);
+  DCHECK(!last_used_time_.is_null());
+  last_used_time_ = TimeTicks();
+}
+
+TimeTicks SchedulerWorker::GetLastUsedTime() const {
+  AutoSchedulerLock auto_lock(thread_lock_);
+  return last_used_time_;
+}
+
 bool SchedulerWorker::ShouldExit() const {
   // The ordering of the checks is important below. This SchedulerWorker may be
   // released and outlive |task_tracker_| in unit tests. However, when the

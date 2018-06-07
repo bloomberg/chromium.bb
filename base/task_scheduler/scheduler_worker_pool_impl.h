@@ -125,12 +125,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Waits until all workers are idle.
   void WaitForAllWorkersIdleForTesting();
 
-  // Waits until |n| workers have cleaned up. Tests that use this must:
-  //  - Invoke WaitForWorkersCleanedUpForTesting(n) well before any workers
-  //    have had time to clean up.
-  //  - Have a long enough |suggested_reclaim_time_| to strengthen the above.
-  //  - Only invoke this once (currently doesn't support waiting for multiple
-  //    cleanup phases in the same test).
+  // Waits until |n| workers have cleaned up (since the last call to
+  // WaitForWorkersCleanedUpForTesting() or Start() if it wasn't called yet).
   void WaitForWorkersCleanedUpForTesting(size_t n);
 
   // Returns the number of workers in this worker pool.
@@ -180,9 +176,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Adds |worker| to |idle_workers_stack_|.
   void AddToIdleWorkersStackLockRequired(SchedulerWorker* worker);
-
-  // Peeks from |idle_workers_stack_|.
-  const SchedulerWorker* PeekAtIdleWorkersStackLockRequired() const;
 
   // Removes |worker| from |idle_workers_stack_|.
   void RemoveFromIdleWorkersStackLockRequired(SchedulerWorker* worker);
@@ -305,10 +298,16 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Indicates to the delegates that workers are not permitted to cleanup.
   bool worker_cleanup_disallowed_for_testing_ = false;
 
-  // Counts the number of workers cleaned up since Start(). Tests with a custom
-  // |suggested_reclaim_time_| can wait on a specific number of workers being
-  // cleaned up via WaitForWorkersCleanedUpForTesting().
+  // Counts the number of workers cleaned up since the last call to
+  // WaitForWorkersCleanedUpForTesting() (or Start() if it wasn't called yet).
+  // |some_workers_cleaned_up_for_testing_| is true if this was ever
+  // incremented. Tests with a custom |suggested_reclaim_time_| can wait on a
+  // specific number of workers being cleaned up via
+  // WaitForWorkersCleanedUpForTesting().
   size_t num_workers_cleaned_up_for_testing_ = 0;
+#if DCHECK_IS_ON()
+  bool some_workers_cleaned_up_for_testing_ = false;
+#endif
 
   // Signaled, if non-null, when |num_workers_cleaned_up_for_testing_| is
   // incremented.

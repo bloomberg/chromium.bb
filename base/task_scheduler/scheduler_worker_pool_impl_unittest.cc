@@ -45,6 +45,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -837,6 +838,104 @@ TEST_F(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
   // Give extra time for a worker to cleanup : none should as the pool is
   // expected to keep a worker ready regardless of how long it was idle for.
   PlatformThread::Sleep(kReclaimTimeForCleanupTests);
+  EXPECT_EQ(1U, worker_pool_->NumberOfWorkersForTesting());
+}
+
+// Verify that being "the" idle thread counts as being active (i.e. won't be
+// reclaimed even if not on top of the idle stack when reclaim timeout expires).
+// Regression test for https://crbug.com/847501.
+TEST_F(TaskSchedulerWorkerPoolStandbyPolicyTest,
+       InAndOutStandbyThreadIsActive) {
+  auto sequenced_task_runner =
+      worker_pool_->CreateSequencedTaskRunnerWithTraits({});
+
+  WaitableEvent timer_started;
+
+  RepeatingTimer recurring_task;
+  sequenced_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        recurring_task.Start(FROM_HERE, kReclaimTimeForCleanupTests / 2,
+                             DoNothing());
+        timer_started.Signal();
+      }));
+
+  timer_started.Wait();
+
+  // Running a task should have brought up a new standby thread.
+  EXPECT_EQ(2U, worker_pool_->NumberOfWorkersForTesting());
+
+  // Give extra time for a worker to cleanup : none should as the two workers
+  // are both considered "active" per the timer ticking faster than the reclaim
+  // timeout.
+  PlatformThread::Sleep(kReclaimTimeForCleanupTests * 2);
+  EXPECT_EQ(2U, worker_pool_->NumberOfWorkersForTesting());
+
+  sequenced_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { recurring_task.Stop(); }));
+
+  // Stopping the recurring task should let the second worker be reclaimed per
+  // not being "the" standby thread for a full reclaim timeout.
+  worker_pool_->WaitForWorkersCleanedUpForTesting(1);
+  EXPECT_EQ(1U, worker_pool_->NumberOfWorkersForTesting());
+}
+
+// Verify that being "the" idle thread counts as being active but isn't sticky.
+// Regression test for https://crbug.com/847501.
+TEST_F(TaskSchedulerWorkerPoolStandbyPolicyTest, OnlyKeepActiveStandbyThreads) {
+  auto sequenced_task_runner =
+      worker_pool_->CreateSequencedTaskRunnerWithTraits({});
+
+  // Start this test like
+  // TaskSchedulerWorkerPoolStandbyPolicyTest.InAndOutStandbyThreadIsActive and
+  // give it some time to stabilize.
+  RepeatingTimer recurring_task;
+  sequenced_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        recurring_task.Start(FROM_HERE, kReclaimTimeForCleanupTests / 2,
+                             DoNothing());
+      }));
+
+  PlatformThread::Sleep(kReclaimTimeForCleanupTests * 2);
+  EXPECT_EQ(2U, worker_pool_->NumberOfWorkersForTesting());
+
+  // Then also flood the pool (cycling the top of the idle stack).
+  {
+    auto task_runner =
+        worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+
+    WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC);
+    WaitableEvent threads_continue;
+
+    RepeatingClosure thread_blocker = BindLambdaForTesting([&]() {
+      thread_running.Signal();
+      WaitWithoutBlockingObserver(&threads_continue);
+    });
+
+    for (size_t i = 0; i < kMaxTasks; ++i) {
+      task_runner->PostTask(FROM_HERE, thread_blocker);
+      thread_running.Wait();
+    }
+
+    EXPECT_EQ(kMaxTasks, worker_pool_->NumberOfWorkersForTesting());
+    threads_continue.Signal();
+
+    // Flush to ensure all references to |threads_continue| are gone before it
+    // goes out of scope.
+    task_tracker_.FlushForTesting();
+  }
+
+  // All workers should clean up but two (since the timer is still running).
+  worker_pool_->WaitForWorkersCleanedUpForTesting(kMaxTasks - 2);
+  EXPECT_EQ(2U, worker_pool_->NumberOfWorkersForTesting());
+
+  // Extra time shouldn't change this.
+  PlatformThread::Sleep(kReclaimTimeForCleanupTests * 2);
+  EXPECT_EQ(2U, worker_pool_->NumberOfWorkersForTesting());
+
+  // Stopping the timer should let the number of active threads go down to one.
+  sequenced_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() { recurring_task.Stop(); }));
+  worker_pool_->WaitForWorkersCleanedUpForTesting(1);
   EXPECT_EQ(1U, worker_pool_->NumberOfWorkersForTesting());
 }
 

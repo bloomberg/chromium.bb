@@ -17,22 +17,26 @@ namespace internal {
 
 class SchedulerWorker;
 
-// A stack of SchedulerWorkers. Supports removal of arbitrary SchedulerWorkers.
-// DCHECKs when a SchedulerWorker is inserted multiple times. SchedulerWorkers
-// are not owned by the stack. Push() is amortized O(1). Pop(), Peek(), Size()
-// and Empty() are O(1). Contains() and Remove() are O(n).
-// This class is NOT thread-safe.
+// A stack of SchedulerWorkers which has custom logic to treat the worker on top
+// of the stack as being "in-use" (so its time in that position doesn't count
+// towards being inactive / reclaimable). Supports removal of arbitrary
+// SchedulerWorkers. DCHECKs when a SchedulerWorker is inserted multiple times.
+// SchedulerWorkers are not owned by the stack. Push() is amortized O(1). Pop(),
+// Peek(), Size() and Empty() are O(1). Contains() and Remove() are O(n). This
+// class is NOT thread-safe.
 class BASE_EXPORT SchedulerWorkerStack {
  public:
   SchedulerWorkerStack();
   ~SchedulerWorkerStack();
 
   // Inserts |worker| at the top of the stack. |worker| must not already be on
-  // the stack.
+  // the stack. Flags the SchedulerWorker previously on top of the stack, if
+  // any, as unused.
   void Push(SchedulerWorker* worker);
 
-  // Removes the top SchedulerWorker from the stack and returns it.
-  // Returns nullptr if the stack is empty.
+  // Removes the top SchedulerWorker from the stack and returns it. Returns
+  // nullptr if the stack is empty. Flags the SchedulerWorker now on top of the
+  // stack, if any, as being in-use.
   SchedulerWorker* Pop();
 
   // Returns the top SchedulerWorker from the stack, nullptr if empty.
@@ -41,7 +45,8 @@ class BASE_EXPORT SchedulerWorkerStack {
   // Returns true if |worker| is already on the stack.
   bool Contains(const SchedulerWorker* worker) const;
 
-  // Removes |worker| from the stack.
+  // Removes |worker| from the stack. Must not be invoked for the first worker
+  // on the stack.
   void Remove(const SchedulerWorker* worker);
 
   // Returns the number of SchedulerWorkers on the stack.
