@@ -48,6 +48,12 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Returns whether DevTools are allowed for the specified
+  // |profile| and |web_contents|. If |web_contents| is null,
+  // only checks for |profile| in general.
+  static bool AllowDevToolsFor(Profile* profile,
+                               content::WebContents* web_contents);
+
   // Return the DevToolsWindow for the given WebContents if one exists,
   // otherwise NULL.
   static DevToolsWindow* GetInstanceForInspectedWebContents(

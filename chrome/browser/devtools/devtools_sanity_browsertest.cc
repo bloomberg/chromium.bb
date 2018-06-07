@@ -80,6 +80,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
@@ -1914,8 +1915,7 @@ IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, MAYBE_RemoteDebugger) {
   ASSERT_TRUE(RunExtensionTest("target_list")) << message_;
 }
 
-using DevToolsPolicyTest = InProcessBrowserTest;
-IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, DevToolsAvailabilityPolicy) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, PolicyDisallowed) {
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kDevToolsAvailability,
       static_cast<int>(
@@ -1923,11 +1923,36 @@ IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, DevToolsAvailabilityPolicy) {
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  scoped_refptr<content::DevToolsAgentHost> agent(
-      content::DevToolsAgentHost::GetOrCreateFor(web_contents));
   DevToolsWindow::OpenDevToolsWindow(web_contents);
-  DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
-  ASSERT_FALSE(window);
+  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
+}
+
+using DevToolsSanityExtensionTest = extensions::ExtensionBrowserTest;
+IN_PROC_BROWSER_TEST_F(DevToolsSanityExtensionTest,
+                       PolicyDisallowedForForceInstalledExtensions) {
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kDevToolsAvailability,
+      static_cast<int>(policy::DeveloperToolsPolicyHandler::Availability::
+                           kDisallowedForForceInstalledExtensions));
+
+  base::FilePath crx_path;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &crx_path);
+  crx_path = crx_path.AppendASCII("devtools")
+                 .AppendASCII("extensions")
+                 .AppendASCII("options.crx");
+  const Extension* extension = InstallExtension(
+      crx_path, 1, extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  ASSERT_TRUE(extension);
+
+  GURL url("chrome-extension://" + extension->id() + "/options.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  DevToolsWindow::OpenDevToolsWindow(web_contents);
+  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 }
 
 class DevToolsPixelOutputTests : public DevToolsSanityTest {
