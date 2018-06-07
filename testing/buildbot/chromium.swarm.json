@@ -29,7 +29,8 @@
           "dimension_sets": [
             {
               "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_type": "hammerhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -72,7 +73,8 @@
           "dimension_sets": [
             {
               "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_type": "hammerhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -116,7 +118,8 @@
           "dimension_sets": [
             {
               "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_type": "hammerhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -160,7 +163,8 @@
           "dimension_sets": [
             {
               "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_type": "hammerhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -204,7 +208,8 @@
           "dimension_sets": [
             {
               "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_type": "hammerhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -248,7 +253,8 @@
           "dimension_sets": [
             {
               "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_type": "hammerhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -292,7 +298,8 @@
           "dimension_sets": [
             {
               "device_os": "KTU84P",
-              "device_type": "hammerhead"
+              "device_type": "hammerhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -340,7 +347,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -384,7 +392,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -428,7 +437,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -472,7 +482,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -516,7 +527,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -560,7 +572,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -604,7 +617,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -648,7 +662,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "expiration": 10800,

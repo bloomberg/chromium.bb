@@ -4016,7 +4016,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "hard_timeout": 3600,
@@ -4428,7 +4429,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4439,7 +4441,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4450,7 +4453,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4461,7 +4465,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4472,7 +4477,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4483,7 +4489,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4494,7 +4501,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4505,7 +4513,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4516,7 +4525,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4527,7 +4537,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4538,7 +4549,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4549,7 +4561,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4560,7 +4573,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4571,7 +4585,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4582,7 +4597,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4593,7 +4609,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4604,7 +4621,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4615,7 +4633,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4626,7 +4645,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4637,7 +4657,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4648,7 +4669,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4659,7 +4681,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4670,7 +4693,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4681,7 +4705,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4692,7 +4717,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4703,7 +4729,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4714,7 +4741,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4725,7 +4753,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4736,7 +4765,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4747,7 +4777,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4758,7 +4789,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4769,7 +4801,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4780,7 +4813,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4791,7 +4825,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4802,7 +4837,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4813,7 +4849,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4824,7 +4861,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ],
           "hard_timeout": 300
@@ -4836,7 +4874,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4847,7 +4886,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4858,7 +4898,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4869,7 +4910,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4880,7 +4922,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4891,7 +4934,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4902,7 +4946,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4913,7 +4958,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4924,7 +4970,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4935,7 +4982,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4946,7 +4994,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4957,7 +5006,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4968,7 +5018,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -4979,7 +5030,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_type": "coho"
+              "device_type": "coho",
+              "os": "Android"
             }
           ]
         },
@@ -6419,7 +6471,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "hard_timeout": 960
@@ -6436,7 +6489,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "hard_timeout": 960
@@ -6449,7 +6503,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "hard_timeout": 960,
@@ -6468,7 +6523,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "hard_timeout": 960,
@@ -6482,7 +6538,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ]
         },
@@ -6498,7 +6555,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "os": "Android"
             }
           ],
           "hard_timeout": 960
