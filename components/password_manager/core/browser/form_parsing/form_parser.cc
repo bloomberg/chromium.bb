@@ -403,7 +403,7 @@ void SetFields(const ParseResult& parse_result, PasswordForm* password_form) {
 
 std::unique_ptr<PasswordForm> ParseFormData(
     const autofill::FormData& form_data,
-    const autofill::FormsPredictionsMap* form_predictions,
+    const FormPredictions* form_predictions,
     FormParsingMode mode) {
   // TODO(crbug.com/845426): Use predictions.
 

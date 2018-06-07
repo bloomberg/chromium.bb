@@ -998,6 +998,12 @@ void PasswordManager::ProcessAutofillPredictions(
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
 
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kNewPasswordFormParsing)) {
+    for (auto& manager : form_managers_)
+      manager->ProcessServerPredictions(forms);
+  }
+
   // Leave only forms that contain fields that are useful for password manager.
   std::map<FormData, autofill::PasswordFormFieldPredictionMap> predictions;
   for (const autofill::FormStructure* form : forms) {
