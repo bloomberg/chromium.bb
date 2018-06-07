@@ -28,6 +28,7 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -88,7 +89,7 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher =
       std::make_unique<image_fetcher::ImageFetcherImpl>(
           image_fetcher::CreateIOSImageDecoder(),
-          browser_state->GetRequestContext());
+          browser_state->GetSharedURLLoaderFactory());
 
   std::unique_ptr<ImageManager> thumbnail_manager(
       new ImageManager(std::move(image_fetcher), std::move(db), database_dir));

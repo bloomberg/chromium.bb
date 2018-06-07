@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -100,6 +101,11 @@ PrefService* IOSChromeSigninClient::GetPrefs() {
 
 net::URLRequestContextGetter* IOSChromeSigninClient::GetURLRequestContext() {
   return browser_state_->GetRequestContext();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+IOSChromeSigninClient::GetURLLoaderFactory() {
+  return browser_state_->GetSharedURLLoaderFactory();
 }
 
 void IOSChromeSigninClient::DoFinalInit() {}

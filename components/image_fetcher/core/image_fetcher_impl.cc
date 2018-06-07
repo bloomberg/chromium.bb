@@ -9,17 +9,17 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/image/image.h"
 
 namespace image_fetcher {
 
 ImageFetcherImpl::ImageFetcherImpl(
     std::unique_ptr<ImageDecoder> image_decoder,
-    net::URLRequestContextGetter* url_request_context)
-    : url_request_context_(url_request_context),
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(url_loader_factory),
       image_decoder_(std::move(image_decoder)),
-      image_data_fetcher_(new ImageDataFetcher(url_request_context_.get())) {}
+      image_data_fetcher_(new ImageDataFetcher(url_loader_factory)) {}
 
 ImageFetcherImpl::~ImageFetcherImpl() {}
 

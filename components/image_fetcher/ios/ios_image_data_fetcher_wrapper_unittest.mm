@@ -9,17 +9,17 @@
 #include <memory>
 
 #include "base/mac/scoped_block.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/http/http_status_code.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -111,27 +111,25 @@ class IOSImageDataFetcherWrapperTest : public PlatformTest {
           result_ = [UIImage imageWithData:data];
           called_ = true;
         } copy]) {
-    image_fetcher_ = std::make_unique<IOSImageDataFetcherWrapper>(
-        new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get()));
+    shared_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &factory_);
+    image_fetcher_ =
+        std::make_unique<IOSImageDataFetcherWrapper>(shared_factory_);
   }
 
-  net::TestURLFetcher* SetupFetcher() {
+  void SetupFetcher() {
     image_fetcher_->FetchImageDataWebpDecoded(GURL(kTestUrl), callback_);
     EXPECT_EQ(nil, result_);
     EXPECT_EQ(false, called_);
-    net::TestURLFetcher* fetcher =
-        factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
-    DCHECK(fetcher);
-    DCHECK(fetcher->delegate());
-    return fetcher;
   }
 
   // Message loop for the main test thread.
   base::test::ScopedTaskEnvironment environment_;
 
   base::mac::ScopedBlock<ImageDataFetcherBlock> callback_;
-  net::TestURLFetcherFactory factory_;
+  network::TestURLLoaderFactory factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<IOSImageDataFetcherWrapper> image_fetcher_;
   NSData* result_data_ = nil;
   UIImage* result_ = nil;
@@ -142,77 +140,88 @@ class IOSImageDataFetcherWrapperTest : public PlatformTest {
 };
 
 TEST_F(IOSImageDataFetcherWrapperTest, TestError) {
-  net::TestURLFetcher* fetcher = SetupFetcher();
-  fetcher->set_response_code(404);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SetupFetcher();
+  factory_.AddResponse(kTestUrl, "", net::HTTP_NOT_FOUND);
+  environment_.RunUntilIdle();
   EXPECT_EQ(nil, result_);
   EXPECT_TRUE(called_);
 }
 
 TEST_F(IOSImageDataFetcherWrapperTest, TestJpg) {
-  net::TestURLFetcher* fetcher = SetupFetcher();
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(
+  SetupFetcher();
+  factory_.AddResponse(
+      kTestUrl,
       std::string(reinterpret_cast<const char*>(kJPGImage), sizeof(kJPGImage)));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  environment_.RunUntilIdle();
   EXPECT_NE(nil, result_);
   EXPECT_TRUE(called_);
 }
 
 TEST_F(IOSImageDataFetcherWrapperTest, TestPng) {
-  net::TestURLFetcher* fetcher = SetupFetcher();
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(
+  SetupFetcher();
+  factory_.AddResponse(
+      kTestUrl,
       std::string(reinterpret_cast<const char*>(kPNGImage), sizeof(kPNGImage)));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  environment_.RunUntilIdle();
   EXPECT_NE(nil, result_);
   EXPECT_TRUE(called_);
 }
 
 TEST_F(IOSImageDataFetcherWrapperTest, TestGoodWebP) {
-  net::TestURLFetcher* fetcher = SetupFetcher();
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(std::string(
-      reinterpret_cast<const char*>(kWEBPImage), sizeof(kWEBPImage)));
-  scoped_refptr<net::HttpResponseHeaders> headers(new net::HttpResponseHeaders(
-      std::string(kWEBPHeaderResponse, arraysize(kWEBPHeaderResponse))));
-  fetcher->set_response_headers(headers);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SetupFetcher();
+
+  std::string content(reinterpret_cast<const char*>(kWEBPImage),
+                      sizeof(kWEBPImage));
+  network::ResourceResponseHead head;
+  head.headers = new net::HttpResponseHeaders(
+      std::string(kWEBPHeaderResponse, base::size(kWEBPHeaderResponse)));
+  head.mime_type = "image/webp";
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = content.size();
+  factory_.AddResponse(GURL(kTestUrl), head, content, status);
   environment_.RunUntilIdle();
   EXPECT_NE(nil, result_);
   EXPECT_TRUE(called_);
 }
 
 TEST_F(IOSImageDataFetcherWrapperTest, TestGoodWebPNoHeader) {
-  net::TestURLFetcher* fetcher = SetupFetcher();
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(std::string(
-      reinterpret_cast<const char*>(kWEBPImage), sizeof(kWEBPImage)));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SetupFetcher();
+  factory_.AddResponse(kTestUrl,
+                       std::string(reinterpret_cast<const char*>(kWEBPImage),
+                                   sizeof(kWEBPImage)));
   environment_.RunUntilIdle();
   EXPECT_TRUE([DecodedWebpImage() isEqualToData:result_data_]);
   EXPECT_TRUE(called_);
 }
 
 TEST_F(IOSImageDataFetcherWrapperTest, TestBadWebP) {
-  net::TestURLFetcher* fetcher = SetupFetcher();
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString("This is not a valid WebP image");
-  scoped_refptr<net::HttpResponseHeaders> headers(new net::HttpResponseHeaders(
-      std::string(kWEBPHeaderResponse, arraysize(kWEBPHeaderResponse))));
-  fetcher->set_response_headers(headers);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SetupFetcher();
+
+  std::string content = "This is not a valid WebP image";
+  network::ResourceResponseHead head;
+  head.headers = new net::HttpResponseHeaders(
+      std::string(kWEBPHeaderResponse, base::size(kWEBPHeaderResponse)));
+  head.mime_type = "image/webp";
+  network::URLLoaderCompletionStatus status;
+  status.decoded_body_length = content.size();
+  factory_.AddResponse(GURL(kTestUrl), head, content, status);
   environment_.RunUntilIdle();
   EXPECT_EQ(nil, result_);
   EXPECT_TRUE(called_);
 }
 
 TEST_F(IOSImageDataFetcherWrapperTest, DeleteDuringWebPDecoding) {
-  net::TestURLFetcher* fetcher = SetupFetcher();
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(std::string(
-      reinterpret_cast<const char*>(kWEBPImage), sizeof(kWEBPImage)));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SetupFetcher();
+  // To control timing of events precisely below, this needs to inject the
+  // result synchronously, so it's done via some test-only methods rather than
+  // via TestURLLoaderFactory.
+  image_fetcher::RequestMetadata metadata;
+  metadata.mime_type = "image/webp";
+  metadata.http_response_code = 200;
+  image_fetcher_->AccessImageDataFetcherForTesting()->InjectResultForTesting(
+      metadata, std::string(reinterpret_cast<const char*>(kWEBPImage),
+                            sizeof(kWEBPImage)));
+
   // Delete the image fetcher, and check that the callback is called.
   image_fetcher_.reset();
   environment_.RunUntilIdle();

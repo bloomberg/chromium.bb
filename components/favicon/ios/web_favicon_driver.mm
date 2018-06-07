@@ -15,6 +15,7 @@
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -154,7 +155,7 @@ WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,
                                    FaviconService* favicon_service,
                                    history::HistoryService* history_service)
     : FaviconDriverImpl(favicon_service, history_service),
-      image_fetcher_(web_state->GetBrowserState()->GetRequestContext()),
+      image_fetcher_(web_state->GetBrowserState()->GetSharedURLLoaderFactory()),
       web_state_(web_state) {
   web_state_->AddObserver(this);
 }

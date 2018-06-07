@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,9 +49,10 @@ namespace payments {
 
 IOSPaymentInstrumentFinder::IOSPaymentInstrumentFinder(
     net::URLRequestContextGetter* context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
     : downloader_(context_getter),
-      image_fetcher_(context_getter),
+      image_fetcher_(url_loader_factory),
       payment_request_ui_delegate_(payment_request_ui_delegate),
       num_instruments_to_find_(0),
       weak_factory_(this) {}
