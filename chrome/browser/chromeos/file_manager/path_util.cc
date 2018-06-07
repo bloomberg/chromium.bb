@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/chrome_content_provider_url_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -112,6 +113,14 @@ std::string GetDownloadsMountPointName(Profile* profile) {
           : nullptr;
   const std::string id = user ? "-" + user->username_hash() : "";
   return net::EscapeQueryParamValue(kDownloadsFolderName + id, false);
+}
+
+std::string GetCrostiniMountPointName(Profile* profile) {
+  // crostini_<hash>_termina_penguin
+  return base::JoinString(
+      {"crostini", CryptohomeIdForProfile(profile), kCrostiniDefaultVmName,
+       kCrostiniDefaultContainerName},
+      "_");
 }
 
 bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
