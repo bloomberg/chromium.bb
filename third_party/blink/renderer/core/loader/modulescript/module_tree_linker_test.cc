@@ -123,6 +123,12 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
+  KURL ResolveModuleSpecifier(const String& module_request,
+                              const KURL& base_url,
+                              String* failure_reason) final {
+    return KURL(base_url, module_request);
+  }
+
   void FetchSingle(const ModuleScriptFetchRequest& request,
                    const SettingsObject& fetch_client_settings_object,
                    ModuleGraphLevel,

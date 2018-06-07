@@ -175,7 +175,7 @@ void DynamicModuleResolver::ResolveDynamically(
   }
   DCHECK(!base_url.IsNull());
 
-  KURL url = Modulator::ResolveModuleSpecifier(specifier, base_url);
+  KURL url = modulator_->ResolveModuleSpecifier(specifier, base_url);
   if (!url.IsValid()) {
     // Step 2.2.1. "If the result is failure, then:" [spec text]
     // Step 2.2.2.1. "Let completion be Completion { [[Type]]: throw, [[Value]]:

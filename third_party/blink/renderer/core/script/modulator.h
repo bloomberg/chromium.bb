@@ -124,9 +124,9 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ModuleScript* GetFetchedModuleScript(const KURL&) = 0;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#resolve-a-module-specifier
-  static KURL ResolveModuleSpecifier(const String& module_request,
-                                     const KURL& base_url,
-                                     String* failure_reason = nullptr);
+  virtual KURL ResolveModuleSpecifier(const String& module_request,
+                                      const KURL& base_url,
+                                      String* failure_reason = nullptr) = 0;
 
   // https://tc39.github.io/proposal-dynamic-import/#sec-hostimportmoduledynamically
   virtual void ResolveDynamically(const String& specifier,

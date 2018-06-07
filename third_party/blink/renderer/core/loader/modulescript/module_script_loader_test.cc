@@ -76,6 +76,12 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
 
   ~ModuleScriptLoaderTestModulator() override = default;
 
+  KURL ResolveModuleSpecifier(const String& module_request,
+                              const KURL& base_url,
+                              String* failure_reason) final {
+    return KURL(base_url, module_request);
+  }
+
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
   ScriptModule CompileModule(const String& script,

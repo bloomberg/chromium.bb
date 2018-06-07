@@ -68,6 +68,9 @@ class ModulatorImplBase : public Modulator {
                             const SettingsObject& fetch_client_settings_object,
                             ModuleGraphLevel,
                             ModuleScriptLoaderClient*) override;
+  KURL ResolveModuleSpecifier(const String& module_request,
+                              const KURL& base_url,
+                              String* failure_reason) final;
   void ResolveDynamically(const String& specifier,
                           const KURL&,
                           const ReferrerScriptInfo&,
