@@ -35,8 +35,10 @@ void FakeUIResourceLayerTreeHostImpl::CreateUIResource(
 
 void FakeUIResourceLayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
   viz::ResourceId id = ResourceIdForUIResource(uid);
-  if (id)
+  if (id) {
+    resource_provider()->RemoveImportedResource(id);
     fake_ui_resource_map_.erase(uid);
+  }
 }
 
 viz::ResourceId FakeUIResourceLayerTreeHostImpl::ResourceIdForUIResource(

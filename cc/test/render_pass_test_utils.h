@@ -74,9 +74,10 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
                        gfx::Transform transform,
                        SkBlendMode blend_mode);
 
-void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
-                           viz::ClientResourceProvider* resource_provider,
-                           viz::RenderPassId child_pass_id);
+std::vector<viz::ResourceId> AddOneOfEveryQuadType(
+    viz::RenderPass* to_pass,
+    viz::ClientResourceProvider* resource_provider,
+    viz::RenderPassId child_pass_id);
 
 // Adds a render pass quad with the given mask resource, filter, and transform.
 // The resource used in render pass is created by viz::ClientResourceProvider,

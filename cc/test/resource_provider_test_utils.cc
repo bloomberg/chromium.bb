@@ -24,6 +24,12 @@ SendResourceAndGetChildToParentMap(
                                                child_context_provider);
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
+  // Delete them in the child so they won't be leaked, and will be released once
+  // returned from the parent. This assumes they won't need to be sent to the
+  // parent again.
+  for (viz::ResourceId id : resource_ids)
+    child_resource_provider->RemoveImportedResource(id);
+
   // Return the child to parent map.
   return resource_provider->GetChildToParentMap(child_id);
 }

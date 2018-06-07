@@ -361,6 +361,11 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
 
   DisplayResourceProviderTest() : DisplayResourceProviderTest(true) {}
 
+  ~DisplayResourceProviderTest() {
+    if (child_resource_provider_)
+      child_resource_provider_->ShutdownAndReleaseAllResources();
+  }
+
   bool use_gpu() const { return use_gpu_; }
 
   void MakeChildResourceProvider() {
@@ -733,6 +738,10 @@ TEST_P(DisplayResourceProviderTest, ReadLockFenceContextLost) {
 
   EXPECT_TRUE(returned_to_child[0].lost);
   EXPECT_TRUE(returned_to_child[1].lost);
+
+  child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+  child_resource_provider_->RemoveImportedResource(id1);
+  child_resource_provider_->RemoveImportedResource(id2);
 }
 
 TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
@@ -800,6 +809,7 @@ TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
   }
 
   resource_provider_->DestroyChild(child_id);
+  no_token_resource_provider->RemoveImportedResource(id);
 }
 
 // Test that ScopedBatchReturnResources batching works.
@@ -1371,6 +1381,9 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   EXPECT_EQ(0u, resource_provider_->CountPromotionHintRequestsForTesting());
 
   resource_provider_->DestroyChild(child_id);
+
+  child_resource_provider_->RemoveImportedResource(id2);
+  child_resource_provider_->RemoveImportedResource(id1);
 }
 #endif
 

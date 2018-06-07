@@ -22,7 +22,12 @@ VideoFrameResourceProvider::VideoFrameResourceProvider(
     const cc::LayerTreeSettings& settings)
     : settings_(settings) {}
 
-VideoFrameResourceProvider::~VideoFrameResourceProvider() = default;
+VideoFrameResourceProvider::~VideoFrameResourceProvider() {
+  // Drop all resources before closing the ClientResourceProvider.
+  resource_updater_ = nullptr;
+  if (resource_provider_)
+    resource_provider_->ShutdownAndReleaseAllResources();
+}
 
 void VideoFrameResourceProvider::Initialize(
     viz::ContextProvider* media_context_provider,
@@ -48,7 +53,10 @@ void VideoFrameResourceProvider::Initialize(
 }
 
 void VideoFrameResourceProvider::OnContextLost() {
+  // Drop all resources before closing the ClientResourceProvider.
   resource_updater_ = nullptr;
+  if (resource_provider_)
+    resource_provider_->ShutdownAndReleaseAllResources();
   resource_provider_ = nullptr;
   context_provider_ = nullptr;
 }

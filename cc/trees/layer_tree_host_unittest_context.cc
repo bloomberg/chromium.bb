@@ -33,6 +33,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
@@ -1552,6 +1553,176 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceLostEviction);
+
+class UIResourceFreedIfLostWhileExported : public LayerTreeHostContextTest {
+ protected:
+  void BeginTest() override {
+    // Make 1 UIResource, post it to the compositor thread, where it will be
+    // uploaded.
+    ui_resource_ =
+        FakeScopedUIResource::Create(layer_tree_host()->GetUIResourceManager());
+    EXPECT_NE(0, ui_resource_->id());
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        // The UIResource has been created and a gpu resource made for it.
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_EQ(1u, gl_->NumTextures());
+        // Lose the LayerTreeFrameSink connection. The UI resource should
+        // be replaced and the old texture should be destroyed.
+        impl->DidLoseLayerTreeFrameSink();
+        break;
+      case 1:
+        // The UIResource has been recreated, the old texture is not kept
+        // around.
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_EQ(1u, gl_->NumTextures());
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &UIResourceFreedIfLostWhileExported::DeleteAndEndTest,
+                base::Unretained(this)));
+    }
+  }
+
+  void DeleteAndEndTest() {
+    ui_resource_->DeleteResource();
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+  std::unique_ptr<FakeScopedUIResource> ui_resource_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(UIResourceFreedIfLostWhileExported);
+
+class TileResourceFreedIfLostWhileExported : public LayerTreeHostContextTest {
+ protected:
+  void SetupTree() override {
+    PaintFlags flags;
+    client_.set_fill_with_nonsolid_color(true);
+
+    scoped_refptr<FakePictureLayer> picture_layer =
+        FakePictureLayer::Create(&client_);
+    picture_layer->SetBounds(gfx::Size(10, 20));
+    client_.set_bounds(picture_layer->bounds());
+    layer_tree_host()->SetRootLayer(std::move(picture_layer));
+
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        // The PicturLayer has a texture for a tile, that has been exported to
+        // the display compositor now.
+        EXPECT_EQ(1u, impl->resource_provider()->num_resources_for_testing());
+        EXPECT_EQ(1u, impl->resource_pool()->resource_count());
+        // Shows that the tile texture is allocated with the current context.
+        num_textures_ = gl_->NumTextures();
+        EXPECT_GT(num_textures_, 0u);
+
+        // Lose the LayerTreeFrameSink connection. The tile resource should
+        // be replaced and the old texture should be destroyed.
+        LoseContext();
+        break;
+      case 1:
+        // The tile has been recreated, the old texture is not kept around in
+        // the pool indefinitely. It can be dropped as soon as the context is
+        // known to be lost.
+        EXPECT_EQ(1u, impl->resource_provider()->num_resources_for_testing());
+        EXPECT_EQ(1u, impl->resource_pool()->resource_count());
+        // Shows that the replacement tile texture is re-allocated with the
+        // current context, not just the previous one.
+        EXPECT_EQ(num_textures_, gl_->NumTextures());
+        EndTest();
+    }
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+  size_t num_textures_ = 0;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(TileResourceFreedIfLostWhileExported);
+
+class SoftwareTileResourceFreedIfLostWhileExported : public LayerTreeTest {
+ protected:
+  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+      const viz::RendererSettings& renderer_settings,
+      double refresh_rate,
+      scoped_refptr<viz::ContextProvider> compositor_context_provider,
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider)
+      override {
+    // Induce software compositing in cc.
+    return LayerTreeTest::CreateLayerTreeFrameSink(
+        renderer_settings, refresh_rate, nullptr, nullptr);
+  }
+
+  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
+      scoped_refptr<viz::ContextProvider> compositor_context_provider)
+      override {
+    // Induce software compositing in the display compositor.
+    return viz::FakeOutputSurface::CreateSoftware(
+        std::make_unique<viz::SoftwareOutputDevice>());
+  }
+
+  void SetupTree() override {
+    PaintFlags flags;
+    client_.set_fill_with_nonsolid_color(true);
+
+    scoped_refptr<FakePictureLayer> picture_layer =
+        FakePictureLayer::Create(&client_);
+    picture_layer->SetBounds(gfx::Size(10, 20));
+    client_.set_bounds(picture_layer->bounds());
+    layer_tree_host()->SetRootLayer(std::move(picture_layer));
+
+    LayerTreeTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0: {
+        // The PicturLayer has a bitmap for a tile, that has been exported to
+        // the display compositor now.
+        EXPECT_EQ(1u, impl->resource_provider()->num_resources_for_testing());
+        EXPECT_EQ(1u, impl->resource_pool()->resource_count());
+
+        impl->DidLoseLayerTreeFrameSink();
+        break;
+      }
+      case 1: {
+        // The tile did not need to be recreated, the same bitmap/resource
+        // should be used for it.
+        EXPECT_EQ(1u, impl->resource_provider()->num_resources_for_testing());
+        EXPECT_EQ(1u, impl->resource_pool()->resource_count());
+
+        // TODO(danakj): It'd be possible to not destroy and recreate the
+        // software bitmap, however for simplicity we do the same for software
+        // and for gpu paths. If we didn't destroy it we could see the same
+        // bitmap on PictureLayerImpl's tile.
+
+        EndTest();
+      }
+    }
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+  viz::ResourceId exported_resource_id_ = 0;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTileResourceFreedIfLostWhileExported);
 
 class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
     : public LayerTreeHostContextTest {

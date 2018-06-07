@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/test/gtest_util.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_context_provider.h"
@@ -24,11 +25,16 @@ class ClientResourceProviderTest : public testing::TestWithParam<bool> {
   ClientResourceProviderTest()
       : use_gpu_(GetParam()),
         context_provider_(TestContextProvider::Create()),
-        bound_(context_provider_->BindToCurrentThread()),
-        provider_(std::make_unique<ClientResourceProvider>(
-            /*delegated_sync_points_required=*/true)) {
+        bound_(context_provider_->BindToCurrentThread()) {
     DCHECK_EQ(bound_, gpu::ContextResult::kSuccess);
   }
+
+  void SetUp() override {
+    provider_ = std::make_unique<ClientResourceProvider>(
+        /*delegated_sync_points_required=*/true);
+  }
+
+  void TearDown() override { provider_ = nullptr; }
 
   gpu::Mailbox MailboxFromChar(char value) {
     gpu::Mailbox mailbox;
@@ -57,13 +63,14 @@ class ClientResourceProviderTest : public testing::TestWithParam<bool> {
     return r;
   }
 
-  void Shutdown() { provider_.reset(); }
-
   bool use_gpu() const { return use_gpu_; }
   ClientResourceProvider& provider() const { return *provider_; }
   ContextProvider* context_provider() const { return context_provider_.get(); }
 
-  void DestroyProvider() { provider_.reset(); }
+  void DestroyProvider() {
+    provider_->ShutdownAndReleaseAllResources();
+    provider_ = nullptr;
+  }
 
  private:
   bool use_gpu_;
@@ -177,6 +184,10 @@ TEST_P(ClientResourceProviderTest, TransferableResourceSendTwoToParent) {
               tran[i].mailbox_holder.texture_target);
     EXPECT_EQ(exported[i].buffer_format, tran[i].buffer_format);
   }
+
+  provider().RemoveImportedResource(id1);
+  provider().RemoveImportedResource(id2);
+  DestroyProvider();
 }
 
 TEST_P(ClientResourceProviderTest, TransferableResourceSendToParentTwoTimes) {
@@ -206,6 +217,9 @@ TEST_P(ClientResourceProviderTest, TransferableResourceSendToParentTwoTimes) {
   provider().PrepareSendToParent(to_send, &exported, context_provider());
   ASSERT_EQ(exported.size(), 1u);
   EXPECT_EQ(exported[0].id, id);
+
+  provider().RemoveImportedResource(id);
+  DestroyProvider();
 }
 
 TEST_P(ClientResourceProviderTest,
@@ -221,8 +235,10 @@ TEST_P(ClientResourceProviderTest,
   std::vector<TransferableResource> exported;
   provider().PrepareSendToParent(to_send, &exported, context_provider());
 
+  provider().RemoveImportedResource(id);
+
   EXPECT_CALL(release, Released(_, true));
-  Shutdown();
+  DestroyProvider();
 }
 
 TEST_P(ClientResourceProviderTest, TransferableResourceRemovedAfterReturn) {
@@ -484,29 +500,6 @@ TEST_P(ClientResourceProviderTest, LostResourcesAreReturnedLost) {
   provider().RemoveImportedResource(resource);
 }
 
-TEST_P(ClientResourceProviderTest, ShutdownPreservesLostState) {
-  MockReleaseCallback release;
-  TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
-  ResourceId resource = provider().ImportResource(
-      tran, SingleReleaseCallback::Create(base::BindOnce(
-                &MockReleaseCallback::Released, base::Unretained(&release))));
-
-  // Transfer the resource to the parent.
-  std::vector<TransferableResource> list;
-  provider().PrepareSendToParent({resource}, &list, context_provider());
-  EXPECT_EQ(1u, list.size());
-
-  // Receive it back marked lost.
-  std::vector<ReturnedResource> returned_to_child;
-  returned_to_child.push_back(list[0].ToReturnedResource());
-  returned_to_child.back().lost = true;
-  provider().ReceiveReturnsFromParent(returned_to_child);
-
-  // Shutdown, and expect the resource to be lost..
-  EXPECT_CALL(release, Released(_, true));
-  DestroyProvider();
-}
-
 TEST_P(ClientResourceProviderTest, ShutdownLosesExportedResources) {
   MockReleaseCallback release;
   TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
@@ -519,12 +512,16 @@ TEST_P(ClientResourceProviderTest, ShutdownLosesExportedResources) {
   provider().PrepareSendToParent({resource}, &list, context_provider());
   EXPECT_EQ(1u, list.size());
 
+  // Remove it in the ClientResourceProvider, but since it's exported it's not
+  // returned yet.
+  provider().RemoveImportedResource(resource);
+
   // Destroy the ClientResourceProvider, the resource is returned lost.
   EXPECT_CALL(release, Released(_, true));
   DestroyProvider();
 }
 
-TEST_P(ClientResourceProviderTest, ShutdownDoesNotLoseUnexportedResources) {
+TEST_P(ClientResourceProviderTest, ReleaseExportedResources) {
   MockReleaseCallback release;
   TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
   ResourceId resource = provider().ImportResource(
@@ -536,13 +533,42 @@ TEST_P(ClientResourceProviderTest, ShutdownDoesNotLoseUnexportedResources) {
   provider().PrepareSendToParent({resource}, &list, context_provider());
   EXPECT_EQ(1u, list.size());
 
-  // Receive it back.
-  provider().ReceiveReturnsFromParent(
-      TransferableResource::ReturnResources(list));
+  // Remove it in the ClientResourceProvider, but since it's exported it's not
+  // returned yet.
+  provider().RemoveImportedResource(resource);
 
-  // Destroy the ClientResourceProvider, the resource is not lost.
-  EXPECT_CALL(release, Released(_, false));
-  DestroyProvider();
+  // Drop any exported resources. They are returned lost for gpu compositing,
+  // since gpu resources are modified (in their metadata) while being used by
+  // the parent.
+  EXPECT_CALL(release, Released(_, use_gpu()));
+  provider().ReleaseAllExportedResources(use_gpu());
+
+  EXPECT_CALL(release, Released(_, _)).Times(0);
+}
+
+TEST_P(ClientResourceProviderTest, ReleaseExportedResourcesThenRemove) {
+  MockReleaseCallback release;
+  TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
+  ResourceId resource = provider().ImportResource(
+      tran, SingleReleaseCallback::Create(base::BindOnce(
+                &MockReleaseCallback::Released, base::Unretained(&release))));
+
+  // Transfer the resource to the parent.
+  std::vector<TransferableResource> list;
+  provider().PrepareSendToParent({resource}, &list, context_provider());
+  EXPECT_EQ(1u, list.size());
+
+  // Drop any exported resources. Yhey are now considered lost for gpu
+  // compositing, since gpu resources are modified (in their metadata) while
+  // being used by the parent.
+  provider().ReleaseAllExportedResources(use_gpu());
+
+  EXPECT_CALL(release, Released(_, use_gpu()));
+  // Remove it in the ClientResourceProvider, it was exported so wouldn't be
+  // released here, except that we dropped the export above.
+  provider().RemoveImportedResource(resource);
+
+  EXPECT_CALL(release, Released(_, _)).Times(0);
 }
 
 }  // namespace

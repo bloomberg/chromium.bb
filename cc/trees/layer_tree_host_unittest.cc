@@ -7802,13 +7802,30 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
     viz::RenderPass* child_pass =
         AddRenderPass(&frame->render_passes, 2, gfx::Rect(3, 3, 10, 10),
                       gfx::Transform(), FilterOperations());
-    AddOneOfEveryQuadType(child_pass, host_impl->resource_provider(), 0);
+    std::vector<viz::ResourceId> child_resources =
+        AddOneOfEveryQuadType(child_pass, host_impl->resource_provider(), 0);
 
     viz::RenderPass* pass =
         AddRenderPass(&frame->render_passes, 1, gfx::Rect(3, 3, 10, 10),
                       gfx::Transform(), FilterOperations());
-    AddOneOfEveryQuadType(pass, host_impl->resource_provider(), child_pass->id);
+    std::vector<viz::ResourceId> root_resources = AddOneOfEveryQuadType(
+        pass, host_impl->resource_provider(), child_pass->id);
+
+    auto append = [](std::vector<viz::ResourceId>* to,
+                     std::vector<viz::ResourceId> from) {
+      to->insert(to->end(), from.begin(), from.end());
+    };
+    append(&resources_, child_resources);
+    append(&resources_, root_resources);
+
     return draw_result;
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    // The resources have been submitted to the display compositor by now, we
+    // can remove them from cc now, so that they are not leaked.
+    for (viz::ResourceId id : resources_)
+      host_impl->resource_provider()->RemoveImportedResource(id);
   }
 
   void DisplayReceivedCompositorFrameOnThread(
@@ -7824,6 +7841,8 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
   }
 
   void AfterTest() override {}
+
+  std::vector<viz::ResourceId> resources_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSubmitFrameResources);

@@ -82,6 +82,7 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   std::unique_ptr<UIResourceLayerImpl> layer =
       GenerateUIResourceLayer(&host_impl, bitmap_size, layer_size, opaque, uid);
   QuadSizeTest(&host_impl, std::move(layer), expected_quad_size);
+  host_impl.DeleteUIResource(uid);
 
   // Make sure we're not appending quads when there are invalid values.
   expected_quad_size = 0;
@@ -92,6 +93,7 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
                                   opaque,
                                   uid);
   QuadSizeTest(&host_impl, std::move(layer), expected_quad_size);
+  host_impl.DeleteUIResource(uid);
 }
 
 void NeedsBlendingTest(FakeUIResourceLayerTreeHostImpl* host_impl,
@@ -133,6 +135,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   std::unique_ptr<UIResourceLayerImpl> layer =
       GenerateUIResourceLayer(&host_impl, bitmap_size, layer_size, opaque, uid);
   NeedsBlendingTest(&host_impl, std::move(layer), !opaque);
+  host_impl.DeleteUIResource(uid);
 
   opaque = true;
   layer = GenerateUIResourceLayer(&host_impl,
@@ -141,6 +144,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
                                   opaque,
                                   uid);
   NeedsBlendingTest(&host_impl, std::move(layer), !opaque);
+  host_impl.DeleteUIResource(uid);
 }
 
 TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
@@ -162,12 +166,14 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   bool opaque = false;
   layer->SetContentsOpaque(opaque);
   NeedsBlendingTest(&host_impl, std::move(layer), !opaque);
+  host_impl.DeleteUIResource(uid);
 
   opaque = true;
   layer = GenerateUIResourceLayer(
       &host_impl, bitmap_size, layer_size, skbitmap_opaque, uid);
   layer->SetContentsOpaque(true);
   NeedsBlendingTest(&host_impl, std::move(layer), !opaque);
+  host_impl.DeleteUIResource(uid);
 }
 
 TEST(UIResourceLayerImplTest, Occlusion) {

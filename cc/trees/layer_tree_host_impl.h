@@ -550,7 +550,7 @@ class CC_EXPORT LayerTreeHostImpl
   MemoryHistory* memory_history() { return memory_history_.get(); }
   DebugRectHistory* debug_rect_history() { return debug_rect_history_.get(); }
   viz::ClientResourceProvider* resource_provider() {
-    return resource_provider_.get();
+    return &resource_provider_;
   }
   BrowserControlsOffsetManager* browser_controls_manager() {
     return browser_controls_offset_manager_.get();
@@ -728,8 +728,8 @@ class CC_EXPORT LayerTreeHostImpl
   // Removes empty or orphan RenderPasses from the frame.
   static void RemoveRenderPasses(FrameData* frame);
 
-  LayerTreeHostImplClient* client_;
-  TaskRunnerProvider* task_runner_provider_;
+  LayerTreeHostImplClient* const client_;
+  TaskRunnerProvider* const task_runner_provider_;
 
   BeginFrameTracker current_begin_frame_tracker_;
 
@@ -865,6 +865,14 @@ class CC_EXPORT LayerTreeHostImpl
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level);
 
+  const LayerTreeSettings settings_;
+  const bool is_synchronous_single_threaded_;
+
+  const int default_color_space_id_ = gfx::ColorSpace::GetNextId();
+  const gfx::ColorSpace default_color_space_ = gfx::ColorSpace::CreateSRGB();
+
+  viz::ClientResourceProvider resource_provider_;
+
   std::unordered_map<UIResourceId, UIResourceData> ui_resource_map_;
   // UIResources are held here once requested to be deleted until they are
   // released from the display compositor, then the backing can be deleted.
@@ -893,15 +901,15 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<viz::ContextCacheController::ScopedVisibility>
       worker_context_visibility_;
 
-  std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
-  bool need_update_gpu_rasterization_status_;
-  bool content_has_slow_paths_;
-  bool content_has_non_aa_paint_;
-  bool has_gpu_rasterization_trigger_;
-  bool use_gpu_rasterization_;
-  bool use_oop_rasterization_;
-  bool use_msaa_;
-  GpuRasterizationStatus gpu_rasterization_status_;
+  bool need_update_gpu_rasterization_status_ = false;
+  bool content_has_slow_paths_ = false;
+  bool content_has_non_aa_paint_ = false;
+  bool has_gpu_rasterization_trigger_ = false;
+  bool use_gpu_rasterization_ = false;
+  bool use_oop_rasterization_ = false;
+  bool use_msaa_ = false;
+  GpuRasterizationStatus gpu_rasterization_status_ =
+      GpuRasterizationStatus::OFF_DEVICE;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   std::unique_ptr<ResourcePool> resource_pool_;
   std::unique_ptr<ImageDecodeCache> image_decode_cache_;
@@ -919,10 +927,10 @@ class CC_EXPORT LayerTreeHostImpl
   // by the next sync from the main thread.
   std::unique_ptr<LayerTreeImpl> recycle_tree_;
 
-  InputHandlerClient* input_handler_client_;
-  bool did_lock_scrolling_layer_;
-  bool wheel_scrolling_;
-  bool scroll_affects_scroll_handler_;
+  InputHandlerClient* input_handler_client_ = nullptr;
+  bool did_lock_scrolling_layer_ = false;
+  bool wheel_scrolling_ = false;
+  bool scroll_affects_scroll_handler_ = false;
   ElementId scroll_element_id_mouse_currently_over_;
   ElementId scroll_element_id_mouse_currently_captured_;
 
@@ -933,14 +941,12 @@ class CC_EXPORT LayerTreeHostImpl
   // hold all state related to elasticity. May be NULL if never requested.
   std::unique_ptr<ScrollElasticityHelper> scroll_elasticity_helper_;
 
-  bool tile_priorities_dirty_;
+  bool tile_priorities_dirty_ = false;
 
-  const LayerTreeSettings settings_;
   LayerTreeDebugState debug_state_;
-  bool visible_;
+  bool visible_ = false;
   ManagedMemoryPolicy cached_managed_memory_policy_;
 
-  const bool is_synchronous_single_threaded_;
   TileManager tile_manager_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
@@ -950,8 +956,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool did_scroll_x_for_scroll_gesture_;
   bool did_scroll_y_for_scroll_gesture_;
 
-  bool pinch_gesture_active_;
-  bool pinch_gesture_end_should_clear_scrolling_node_;
+  bool pinch_gesture_active_ = false;
+  bool pinch_gesture_end_should_clear_scrolling_node_ = false;
 
   std::unique_ptr<BrowserControlsOffsetManager>
       browser_controls_offset_manager_;
@@ -964,7 +970,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // The maximum memory that would be used by the prioritized resource
   // manager, if there were no limit on memory usage.
-  size_t max_memory_needed_bytes_;
+  size_t max_memory_needed_bytes_ = 0;
 
   // Viewport size passed in from the main thread, in physical pixels.  This
   // value is the default size for all concepts of physical viewport (draw
@@ -986,7 +992,7 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Transform external_transform_;
   gfx::Rect external_viewport_;
   gfx::Rect viewport_rect_for_tile_priority_;
-  bool resourceless_software_draw_;
+  bool resourceless_software_draw_ = false;
 
   gfx::Rect viewport_damage_rect_;
 
@@ -1013,12 +1019,12 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
 
-  bool requires_high_res_to_draw_;
-  bool is_likely_to_require_a_draw_;
+  bool requires_high_res_to_draw_ = false;
+  bool is_likely_to_require_a_draw_ = false;
 
   // TODO(danakj): Delete the LayerTreeFrameSink and all resources when
   // it's lost instead of having this bool.
-  bool has_valid_layer_tree_frame_sink_;
+  bool has_valid_layer_tree_frame_sink_ = false;
 
   // If it is enabled in the LayerTreeSettings, we can check damage in
   // WillBeginImplFrame and abort early if there is no damage. We only check
@@ -1047,12 +1053,12 @@ class CC_EXPORT LayerTreeHostImpl
 
   // These are used to transfer usage of touch and wheel scrolls to the main
   // thread.
-  bool has_scrolled_by_wheel_;
-  bool has_scrolled_by_touch_;
+  bool has_scrolled_by_wheel_ = false;
+  bool has_scrolled_by_touch_ = false;
 
-  bool touchpad_and_wheel_scroll_latching_enabled_;
+  bool touchpad_and_wheel_scroll_latching_enabled_ = false;
 
-  ImplThreadPhase impl_thread_phase_;
+  ImplThreadPhase impl_thread_phase_ = ImplThreadPhase::IDLE;
 
   ImageAnimationController image_animation_controller_;
 
@@ -1067,9 +1073,6 @@ class CC_EXPORT LayerTreeHostImpl
   viz::LocalSurfaceId last_draw_local_surface_id_;
   base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
-
-  const int default_color_space_id_;
-  const gfx::ColorSpace default_color_space_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 

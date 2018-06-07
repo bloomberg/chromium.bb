@@ -58,6 +58,12 @@ class SoftwareRendererTest : public testing::Test {
     child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
   }
 
+  void TearDown() override {
+    if (child_resource_provider_)
+      child_resource_provider_->ShutdownAndReleaseAllResources();
+    child_resource_provider_ = nullptr;
+  }
+
   DisplayResourceProvider* resource_provider() const {
     return resource_provider_.get();
   }

@@ -39,13 +39,15 @@ namespace cc {
 PixelTest::PixelTest()
     : device_viewport_size_(gfx::Size(200, 200)),
       disable_picture_quad_image_filtering_(false),
-      output_surface_client_(new FakeOutputSurfaceClient) {
+      output_surface_client_(std::make_unique<FakeOutputSurfaceClient>()) {
   // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
   // floating point badness in texcoords.
   renderer_settings_.dont_round_texture_sizes_for_pixel_tests = true;
 }
 
-PixelTest::~PixelTest() = default;
+PixelTest::~PixelTest() {
+  child_resource_provider_->ShutdownAndReleaseAllResources();
+}
 
 bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
                              const base::FilePath& ref_file,

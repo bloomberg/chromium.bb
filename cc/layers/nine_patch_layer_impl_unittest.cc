@@ -115,6 +115,8 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   } else {
     EXPECT_TRUE(layer_remaining.bounds().IsEmpty());
   }
+
+  host_impl.DeleteUIResource(uid);
 }
 
 void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
@@ -218,6 +220,8 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
   EXPECT_EQ(expected_tex_remaining, tex_remaining.bounds());
   Region aperture_region(expected_tex_remaining);
   EXPECT_EQ(aperture_region, tex_remaining);
+
+  host_impl.DeleteUIResource(uid);
 }
 
 TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
