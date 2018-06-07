@@ -100,6 +100,9 @@ std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::vector<uint8_t> CreateSHA256Hash(base::StringPiece data);
 
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::StringPiece ConvertToStringPiece(base::span<const uint8_t> data);
+
 }  // namespace fido_parsing_utils
 }  // namespace device
 

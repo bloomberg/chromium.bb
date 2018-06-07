@@ -254,5 +254,10 @@ TEST(U2fParsingUtils, CreateSHA256Hash) {
               ::testing::ElementsAreArray(test_data::kApplicationParameter));
 }
 
+TEST(U2fParsingUtils, ConvertSpanToStringPiece) {
+  constexpr uint8_t kTestAsciiAbcd[] = {'a', 'b', 'c', 'd'};
+  EXPECT_EQ("abcd", ConvertToStringPiece(kTestAsciiAbcd));
+}
+
 }  // namespace fido_parsing_utils
 }  // namespace device
