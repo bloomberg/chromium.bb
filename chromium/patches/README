@@ -121,3 +121,7 @@ Current patches:
   libavcodec/vp3.c
     avcodec/vp3: Fix end of bitstream check in unpack_superblocks()
     Cherry-pick from upstream (c525c15617f).
+
+  libavformat/mov.c
+    Fix saio/saiz with some clear content.  Sent for upstream approval.
+    https://crbug.com/850389 .
