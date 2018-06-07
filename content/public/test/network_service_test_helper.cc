@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
@@ -37,7 +38,8 @@
 namespace content {
 
 class NetworkServiceTestHelper::NetworkServiceTestImpl
-    : public network::mojom::NetworkServiceTest {
+    : public network::mojom::NetworkServiceTest,
+      public base::MessageLoopCurrent::DestructionObserver {
  public:
   NetworkServiceTestImpl() {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -114,9 +116,20 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
 
   void BindRequest(network::mojom::NetworkServiceTestRequest request) {
     bindings_.AddBinding(this, std::move(request));
+    if (!registered_as_destruction_observer_) {
+      base::MessageLoopCurrentForIO::Get()->AddDestructionObserver(this);
+      registered_as_destruction_observer_ = true;
+    }
+  }
+
+  // base::MessageLoopCurrent::DestructionObserver:
+  void WillDestroyCurrentMessageLoop() override {
+    // Needs to be called on the IO thread.
+    bindings_.CloseAllBindings();
   }
 
  private:
+  bool registered_as_destruction_observer_ = false;
   mojo::BindingSet<network::mojom::NetworkServiceTest> bindings_;
   TestHostResolver test_host_resolver_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
