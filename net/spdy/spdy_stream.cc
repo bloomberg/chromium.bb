@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -401,6 +402,8 @@ void SpdyStream::OnHeadersReceived(
           session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
           return;
         }
+
+        base::UmaHistogramSparse("Net.SpdyResponseCode", status);
 
         // Ignore informational headers like 103 Early Hints.
         // TODO(bnc): Add support for 103 Early Hints, https://crbug.com/671310.

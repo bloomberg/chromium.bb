@@ -23303,6 +23303,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="HttpResponseCode">
   <int value="100" label="100: Continue"/>
   <int value="101" label="101: Switching Protocols"/>
+  <int value="102" label="102: Processing"/>
+  <int value="103" label="103: Early Hints"/>
   <int value="200" label="200: OK"/>
   <int value="201" label="201: Created"/>
   <int value="202" label="202: Accepted"/>
