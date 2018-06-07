@@ -41,7 +41,6 @@ class AutofillPopupViewViews : public AutofillPopupBaseView,
 
   // views::Views implementation
   void OnPaint(gfx::Canvas* canvas) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Draw the given autofill entry in |entry_rect|.
   void DrawAutofillEntry(gfx::Canvas* canvas,
