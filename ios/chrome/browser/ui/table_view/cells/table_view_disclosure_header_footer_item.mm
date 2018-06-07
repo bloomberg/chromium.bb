@@ -111,6 +111,8 @@ constexpr float kRotationNinetyCCW = -(90 / 180.0) * M_PI;
 
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
+      [self.contentView.heightAnchor constraintGreaterThanOrEqualToConstant:
+                                         kTableViewHeaderFooterViewHeight],
       [horizontalStack.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],

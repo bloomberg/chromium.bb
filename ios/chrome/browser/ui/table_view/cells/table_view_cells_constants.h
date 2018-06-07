@@ -7,6 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+// The minimum height for a TableViewHeaderFooterView.
+extern const CGFloat kTableViewHeaderFooterViewHeight;
+
 // The horizontal spacing between views and the container view of a cell.
 extern const CGFloat kTableViewHorizontalSpacing;
 

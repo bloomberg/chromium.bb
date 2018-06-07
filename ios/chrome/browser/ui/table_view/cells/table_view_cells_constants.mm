@@ -8,6 +8,7 @@
 #error "This file requires ARC support."
 #endif
 
+const CGFloat kTableViewHeaderFooterViewHeight = 44.0;
 const CGFloat kTableViewHorizontalSpacing = 16.0;
 const CGFloat kTableViewVerticalSpacing = 8.0;
 const CGFloat kTableViewSubViewHorizontalSpacing = 12.0;

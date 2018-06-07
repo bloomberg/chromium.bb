@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -72,8 +73,13 @@ id<GREYMatcher> TitleOfTestPage() {
       web::test::HttpServer::MakeUrl(kURLOfTestPage),
       std::string(kHTMLOfTestPage),
   }});
-  [NSUserDefaults.standardUserDefaults setObject:@{}
-                                          forKey:kCollapsedSectionsKey];
+  if (IsUIRefreshPhase1Enabled()) {
+    [NSUserDefaults.standardUserDefaults setObject:@{}
+                                            forKey:kTableViewModelCollapsedKey];
+  } else {
+    [NSUserDefaults.standardUserDefaults setObject:@{}
+                                            forKey:kCollapsedSectionsKey];
+  }
 }
 
 // Closes the recent tabs panel.
@@ -197,7 +203,8 @@ id<GREYMatcher> TitleOfTestPage() {
       l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
   id<GREYMatcher> otherDevicesMatcher =
       IsUIRefreshPhase1Enabled()
-          ? grey_accessibilityLabel(otherDevicesLabel)
+          ? grey_allOf(grey_accessibilityLabel(otherDevicesLabel),
+                       grey_sufficientlyVisible(), nil)
           : chrome_test_util::ButtonWithAccessibilityLabel(otherDevicesLabel);
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
