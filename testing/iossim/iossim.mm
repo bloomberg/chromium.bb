@@ -260,22 +260,31 @@ int RunApplication(NSString* app_path,
   [testingEnvironmentVariables setValue:[app_path lastPathComponent]
                                  forKey:@"IDEiPhoneInternalTestBundleName"];
 
-  NSString* frameworkPath =
-      @"__PLATFORMS__/iPhoneSimulator.platform/Developer/Library/Frameworks";
-  [testingEnvironmentVariables setValue:frameworkPath
-                                 forKey:@"DYLD_FRAMEWORK_PATH"];
-  NSString* libraryPath =
-      @"__PLATFORMS__/iPhoneSimulator.platform/Developer/Library";
-  [testingEnvironmentVariables setValue:libraryPath
-                                 forKey:@"DYLD_LIBRARY_PATH"];
+  [testingEnvironmentVariables
+      setValue:
+          @"__TESTROOT__/Debug-iphonesimulator:__PLATFORMS__/"
+          @"iPhoneSimulator.platform/Developer/Library/Frameworks"
+        forKey:@"DYLD_FRAMEWORK_PATH"];
+  [testingEnvironmentVariables
+      setValue:
+          @"__TESTROOT__/Debug-iphonesimulator:__PLATFORMS__/"
+          @"iPhoneSimulator.platform/Developer/Library"
+        forKey:@"DYLD_LIBRARY_PATH"];
 
   if (xctest_path) {
     [testTargetName setValue:xctest_path forKey:@"TestBundlePath"];
     NSString* inject =
         @"__PLATFORMS__/iPhoneSimulator.platform/Developer/Library/"
-         "PrivateFrameworks/IDEBundleInjection.framework/IDEBundleInjection";
+        @"PrivateFrameworks/IDEBundleInjection.framework/"
+        @"IDEBundleInjection:__PLATFORMS__/iPhoneSimulator.platform/Developer/"
+        @"usr/lib/libXCTestBundleInject.dylib";
     [testingEnvironmentVariables setValue:inject
                                    forKey:@"DYLD_INSERT_LIBRARIES"];
+    [testingEnvironmentVariables
+        setValue:[NSString stringWithFormat:@"__TESTHOST__/%@",
+                                            [[app_path lastPathComponent]
+                                                stringByDeletingPathExtension]]
+          forKey:@"XCInjectBundleInto"];
   } else {
     [testTargetName setValue:app_path forKey:@"TestBundlePath"];
   }
