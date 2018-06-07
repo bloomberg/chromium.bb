@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/paint/color_space_transfer_cache_entry.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -41,8 +40,7 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
         /*service=*/nullptr, attributes, SharedMemoryLimits(),
         gpu_memory_buffer_manager_.get(),
         gpu_memory_buffer_factory_->AsImageFactory(),
-        /*gpu_channel_manager_delegate=*/nullptr,
-        base::ThreadTaskRunnerHandle::Get());
+        /*gpu_channel_manager_delegate=*/nullptr);
     DCHECK_EQ(result, ContextResult::kSuccess);
     return context;
   }
