@@ -56,7 +56,9 @@ class MtpDeviceManager : public mojom::MtpManager {
                      uint32_t count,
                      ReadFileChunkCallback callback) override;
   void GetFileInfo(const std::string& storage_handle,
-                   uint32_t file_id,
+                   const std::vector<uint32_t>& file_ids,
+                   uint32_t offset,
+                   uint32_t entries_to_read,
                    GetFileInfoCallback callback) override;
   void RenameObject(const std::string& storage_handle,
                     uint32_t object_id,

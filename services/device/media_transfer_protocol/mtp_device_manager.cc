@@ -136,10 +136,12 @@ void MtpDeviceManager::ReadFileChunk(const std::string& storage_handle,
 }
 
 void MtpDeviceManager::GetFileInfo(const std::string& storage_handle,
-                                   uint32_t file_id,
+                                   const std::vector<uint32_t>& file_ids,
+                                   uint32_t offset,
+                                   uint32_t entries_to_read,
                                    GetFileInfoCallback callback) {
-  media_transfer_protocol_manager_->GetFileInfo(storage_handle, file_id,
-                                                std::move(callback));
+  media_transfer_protocol_manager_->GetFileInfo(
+      storage_handle, file_ids, offset, entries_to_read, std::move(callback));
 }
 
 void MtpDeviceManager::RenameObject(const std::string& storage_handle,

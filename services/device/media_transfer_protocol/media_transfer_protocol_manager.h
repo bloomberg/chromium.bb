@@ -146,12 +146,15 @@ class MediaTransferProtocolManager {
                              uint32_t count,
                              const ReadFileCallback& callback) = 0;
 
-  // Gets the file metadata for |file_id| on |storage_handle| and runs
-  // |callback|.
+  // Gets the metadata for files on |storage_handle| with |file_ids|. Only
+  // considers |entries_to_read| number of entries in |file_ids| starting at
+  // offset|. Runs |callback| with the results.
   // Use mojom::MtpManager::GetFileInfoCallback directly to get prepared for
   // future merge.
   virtual void GetFileInfo(const std::string& storage_handle,
-                           uint32_t file_id,
+                           const std::vector<uint32_t>& file_ids,
+                           uint32_t offset,
+                           uint32_t entries_to_read,
                            mojom::MtpManager::GetFileInfoCallback callback) = 0;
 
   // Renames |object_id| to |new_name|.

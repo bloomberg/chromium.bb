@@ -91,9 +91,11 @@ void TestMediaTransferProtocolManagerChromeOS::ReadFileChunk(
 
 void TestMediaTransferProtocolManagerChromeOS::GetFileInfo(
     const std::string& storage_handle,
-    uint32_t file_id,
+    const std::vector<uint32_t>& file_ids,
+    uint32_t offset,
+    uint32_t entries_to_read,
     GetFileInfoCallback callback) {
-  std::move(callback).Run(device::mojom::MtpFileEntry::New(), true);
+  std::move(callback).Run(std::vector<device::mojom::MtpFileEntryPtr>(), true);
 }
 
 void TestMediaTransferProtocolManagerChromeOS::RenameObject(
