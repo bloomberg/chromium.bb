@@ -141,6 +141,8 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
 
   // Flip the canvas in RTL so the separator is drawn on the correct side.
   separator_view_->EnableCanvasFlippingForRTLUI(true);
+
+  SetInstallFocusRingOnFocus(views::PlatformStyle::kPreferFocusRings);
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {
@@ -235,6 +237,16 @@ void IconLabelBubbleView::Layout() {
   }
 
   ink_drop_container_->SetBoundsRect(ink_drop_bounds);
+
+  if (focus_ring() && !ink_drop_bounds.IsEmpty()) {
+    focus_ring()->Layout();
+    int radius = ink_drop_bounds.height() / 2;
+    SkRRect rect =
+        SkRRect::MakeRectXY(gfx::RectToSkRect(ink_drop_bounds), radius, radius);
+    SkPath path;
+    path.addRRect(rect);
+    focus_ring()->SetPath(path);
+  }
 }
 
 bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
@@ -283,7 +295,7 @@ void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(true);
+  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
   ink_drop->AddObserver(this);
   return std::move(ink_drop);
 }
