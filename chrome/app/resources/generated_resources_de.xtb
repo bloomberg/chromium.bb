@@ -2339,7 +2339,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4663373278480897665">Kameranutzung zulässig</translation>
 <translation id="4664482161435122549">PKCS #12 - Fehler beim Export</translation>
 <translation id="4665014895760275686">Hersteller</translation>
-<translation id="466506872045057845">Chrome setzt die Berechtigungen auf die Standardeinstellungen zurück</translation>
 <translation id="4667176955651319626">Drittanbieter-Cookies und Websitedaten blockieren</translation>
 <translation id="4668721319092543482">Zum Aktivieren von <ph name="PLUGIN_NAME" /> klicken</translation>
 <translation id="4669606053856530811">Mitglieder von "<ph name="SOURCE_NAME" />" verlieren den Zugriff, sofern Sie diese Dateien nicht mit ihnen teilen.</translation>
@@ -2692,7 +2691,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="52232769093306234">Fehler bei der Paketerstellung.</translation>
 <translation id="5225324770654022472">Verknüpfung "Apps" anzeigen</translation>
-<translation id="5225360179303283478">Website-Einstellungen zurücksetzen</translation>
 <translation id="5227679487546032910">Blaugrüner Standardavatar</translation>
 <translation id="5227808808023563348">Vorherigen Text suchen</translation>
 <translation id="5228076606934445476">Bei dem Gerät ist ein Problem aufgetreten. Starten Sie das Gerät neu und versuchen Sie es erneut.</translation>
@@ -3699,7 +3697,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6718273304615422081">Wird gezippt...</translation>
 <translation id="671928215901716392">Bildschirm sperren</translation>
-<translation id="67211069045302358">Einstellungen für diese Website zurücksetzen?</translation>
 <translation id="6721678857435001674">Den Hersteller und das Modell Ihres Sicherheitsschlüssels anzeigen</translation>
 <translation id="6721972322305477112">&amp;Ablage</translation>
 <translation id="672213144943476270">Bitte entsperren Sie Ihr Profil, bevor Sie als Gast surfen.</translation>

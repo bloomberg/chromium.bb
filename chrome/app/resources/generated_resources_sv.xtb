@@ -2342,7 +2342,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="4663373278480897665">Kamera är tillåten</translation>
 <translation id="4664482161435122549">Fel vid export av PKCS #12</translation>
 <translation id="4665014895760275686">Tillverkare</translation>
-<translation id="466506872045057845">Behörigheter i Chrome återställs till standardinställningarna</translation>
 <translation id="4667176955651319626">Blockera cookies och webbplatsdata från tredje part</translation>
 <translation id="4668721319092543482">Klicka för att aktivera <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">De som använder <ph name="SOURCE_NAME" /> förlorar åtkomsten till objekten såvida de inte delas med dem.</translation>
@@ -2695,7 +2694,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="52232769093306234">Komprimeringen misslyckades.</translation>
 <translation id="5225324770654022472">Visa genväg för appar</translation>
-<translation id="5225360179303283478">Återställ webbplatsinställningarna</translation>
 <translation id="5227679487546032910">Blågrön standardavatar</translation>
 <translation id="5227808808023563348">Hitta föregående text</translation>
 <translation id="5228076606934445476">Det är något fel på enheten. Du måste starta om den och försöka igen.</translation>
@@ -3702,7 +3700,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6718273304615422081">Komprimerar ...</translation>
 <translation id="671928215901716392">Lås skärmen</translation>
-<translation id="67211069045302358">Vill du återställa inställningarna för den här webbplatsen?</translation>
 <translation id="6721678857435001674">Visa säkerhetsnyckelns märke och modell</translation>
 <translation id="6721972322305477112">&amp;Arkiv</translation>
 <translation id="672213144943476270">Du måste låsa upp din profil innan du kan surfa som gäst.</translation>

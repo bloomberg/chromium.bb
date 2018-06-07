@@ -209,6 +209,7 @@
 <translation id="1296497012903089238">Tipo di certificato</translation>
 <translation id="1297175357211070620">Destinazione</translation>
 <translation id="1297922636971898492">Google Drive non è al momento disponibile. Il caricamento riprenderà automaticamente una volta che Google Drive sarà tornato operativo.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> richiede che Google controlli l'identità del tuo dispositivo per determinarne l'idoneità alla riproduzione avanzata di contenuti protetti.</translation>
 <translation id="1300806585489372370">Per poter modificare questa impostazione devi <ph name="BEGIN_LINK" />attivare gli identificatori<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Consenti JavaScript da Apple Events</translation>
 <translation id="1303101771013849280">File HTML preferiti</translation>
@@ -2340,7 +2341,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4663373278480897665">Videocamera consentita</translation>
 <translation id="4664482161435122549">Errore di esportazione di PKCS #12</translation>
 <translation id="4665014895760275686">Produttore</translation>
-<translation id="466506872045057845">Chrome ripristinerà le impostazioni predefinite delle autorizzazioni</translation>
 <translation id="4667176955651319626">Blocca cookie di terze parti e dati dei siti</translation>
 <translation id="4668721319092543482">Fai clic per attivare <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">I membri di "<ph name="SOURCE_NAME" />" non avranno più accesso, a meno che questi elementi vengano condivisi con loro.</translation>
@@ -2693,7 +2693,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5222676887888702881">Esci</translation>
 <translation id="52232769093306234">Compressione non riuscita.</translation>
 <translation id="5225324770654022472">Mostra scorciatoia app</translation>
-<translation id="5225360179303283478">Ripristina le impostazioni iniziali del sito</translation>
 <translation id="5227679487546032910">Avatar verde acqua predefinito</translation>
 <translation id="5227808808023563348">Trova testo precedente</translation>
 <translation id="5228076606934445476">Si è verificato un problema con il dispositivo. Per risolvere il problema dovuto a questo errore dovrai riavviare il dispositivo e riprovare.</translation>
@@ -3699,7 +3698,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6718273304615422081">Compressione...</translation>
 <translation id="671928215901716392">Blocco schermo</translation>
-<translation id="67211069045302358">Ripristinare le impostazioni iniziali per questo sito?</translation>
 <translation id="6721678857435001674">Accedere a marca e modello del token di sicurezza</translation>
 <translation id="6721972322305477112">&amp;File</translation>
 <translation id="672213144943476270">Sblocca il tuo profilo prima di navigare come ospite.</translation>

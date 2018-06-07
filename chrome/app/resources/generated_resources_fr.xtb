@@ -2343,7 +2343,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4663373278480897665">Caméra autorisée</translation>
 <translation id="4664482161435122549">Erreur d'exportation de fichier PKCS #12</translation>
 <translation id="4665014895760275686">Fabricant</translation>
-<translation id="466506872045057845">Chrome rétablira les autorisations par défaut</translation>
 <translation id="4667176955651319626">Bloquer les cookies et les données de site tiers</translation>
 <translation id="4668721319092543482">Cliquez pour activer <ph name="PLUGIN_NAME" />.</translation>
 <translation id="4669606053856530811">Les membres de "<ph name="SOURCE_NAME" />" n'auront plus accès à ces éléments, à moins qu'ils ne soient partagés avec eux.</translation>
@@ -2696,7 +2695,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="52232769093306234">Échec de la compression.</translation>
 <translation id="5225324770654022472">Afficher le raccourci des applications</translation>
-<translation id="5225360179303283478">Réinitialiser les paramètres du site</translation>
 <translation id="5227679487546032910">Avatar turquoise par défaut</translation>
 <translation id="5227808808023563348">Retrouver le texte précédent</translation>
 <translation id="5228076606934445476">Une erreur s'est produite sur cet appareil. Pour résoudre ce problème, veuillez redémarrer votre appareil, puis réessayer.</translation>
@@ -3704,7 +3702,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6718273304615422081">Compression en cours…</translation>
 <translation id="671928215901716392">Verrouillage d'écran</translation>
-<translation id="67211069045302358">Réinitialiser les paramètres de ce site ?</translation>
 <translation id="6721678857435001674">Voir la marque et le modèle de votre clé de sécurité</translation>
 <translation id="6721972322305477112">&amp;Fichier</translation>
 <translation id="672213144943476270">Veuillez déverrouiller votre profil avant de naviguer en tant qu'invité.</translation>

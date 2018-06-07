@@ -2343,7 +2343,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4663373278480897665">Kamera engedélyezve</translation>
 <translation id="4664482161435122549">PKCS #12 exportálási hiba</translation>
 <translation id="4665014895760275686">Gyártó</translation>
-<translation id="466506872045057845">A Chrome visszaállítja az engedélyeket az alapértelmezett beállításra</translation>
 <translation id="4667176955651319626">Harmadik féltől származó cookie-k és webhelyadatok tiltása</translation>
 <translation id="4668721319092543482">Kattintson a(z) <ph name="PLUGIN_NAME" /> engedélyezéséhez</translation>
 <translation id="4669606053856530811">A(z) „<ph name="SOURCE_NAME" />” tagjai elveszítik hozzáférésüket, kivéve, ha meg vannak osztva velük ezek az elemek.</translation>
@@ -2696,7 +2695,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="52232769093306234">Sikertelen csomagolás.</translation>
 <translation id="5225324770654022472">Alkalmazások parancsikon megjelenítése</translation>
-<translation id="5225360179303283478">Webhelybeállítások visszaállítása</translation>
 <translation id="5227679487546032910">Alapértelmezett kékeszöld avatar</translation>
 <translation id="5227808808023563348">Előző szöveg keresése</translation>
 <translation id="5228076606934445476">Valami gond van az eszközzel. A hiba javításához indítsa újra az eszközt, majd próbálja újra.</translation>
@@ -3705,7 +3703,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6718273304615422081">Tömörítés...</translation>
 <translation id="671928215901716392">Képernyő lezárása</translation>
-<translation id="67211069045302358">Visszaállítja a beállításokat a webhelyhez?</translation>
 <translation id="6721678857435001674">Biztonsági hardverkulcsa gyártmányának és típusának megtekintése</translation>
 <translation id="6721972322305477112">&amp;Fájl</translation>
 <translation id="672213144943476270">Kérjük, oldja fel profilját, mielőtt vendégként kezdene böngészni.</translation>

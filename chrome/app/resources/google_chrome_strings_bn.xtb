@@ -46,7 +46,7 @@
 <translation id="210890598424854131">{0,plural, =0{Chrome এখনই আবার চালু করা হবে}=1{Chrome ১ সেকেন্ডের মধ্যে আবার চালু করা হবে}one{Chrome # সেকেন্ডের মধ্যে আবার চালু করা হবে}other{Chrome # সেকেন্ডের মধ্যে আবার চালু করা হবে}}</translation>
 <translation id="2120620239521071941">এটি এই ডিভাইস থেকে <ph name="ITEMS_COUNT" />টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome এ <ph name="USER_EMAIL" /> হিসেবে প্রবেশ করুন।</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />বর্তমান সেটিংসের<ph name="END_LINK" /> প্রতিবেদন করে Chrome কে আরও ভাল করে তুলতে সাহায্য করুন</translation>
-<translation id="216054706567564023">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট পুনরুদ্ধারের ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
+<translation id="216054706567564023">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট ফিরিয়ে আনার ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
 <translation id="2246246234298806438">অন্তর্ভুক্ত PDF viewer অনুপস্থিত থাকার সময়ে Google Chrome প্রিন্টের পূর্বরুপ দেখাতে পারে না৷</translation>
 <translation id="2252923619938421629">বর্তমান সেটিংস প্রতিবেদন করে Google Chrome আরও উত্তম করে তুলতে সাহায্য করুন</translation>
 <translation id="2286950485307333924">আপনি এখন Chrome এ প্রবেশ করেছেন</translation>
@@ -255,7 +255,7 @@
 <translation id="8406086379114794905">Chrome কে সর্বোত্তম করে তুলতে সাহায্য করুন</translation>
 <translation id="8439301513305169426">Chrome এই পাসওয়ার্ডটি <ph name="SAVED_PASSWORD_LINK" /> এ সংরক্ষণ করবে। আপনার এটি মনে রাখার দরকার নেই।</translation>
 <translation id="8455999171311319804">ঐচ্ছিক: ডায়াগনস্টিক ও ব্যবহারের ডেটা স্বয়ংক্রিয়ভাবে Google এ পাঠিয়ে Chrome OS কে আরও ভাল করে তুলতে সাহায্য করুন।</translation>
-<translation id="8478823064122749032">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট পুনরুদ্ধারের ফোন নম্বরে একটি এসএমএস পাঠাব: <ph name="PHONE_NUMBER" /></translation>
+<translation id="8478823064122749032">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট ফিরিয়ে আনার ফোন নম্বরে একটি এসএমএস পাঠাব: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8521348052903287641">mDNS ট্রাফিকের অনুমতি দিতে Google Chrome ডেভেলপারের জন্য ইনবাউন্ড নিয়ম।</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome অ্যাপ্লিকেশান লঞ্চার Canary</translation>

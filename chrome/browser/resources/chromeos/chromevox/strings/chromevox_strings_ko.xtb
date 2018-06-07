@@ -146,6 +146,7 @@
 <translation id="2416512023405990736">선택 취소된 체크박스</translation>
 <translation id="2417569100218200841">콘텐츠 정보</translation>
 <translation id="2417948780551741035">미주</translation>
+<translation id="2421113964388408478">삭제</translation>
 <translation id="2422937916923936891">메뉴 항목 체크박스</translation>
 <translation id="2428534162001909979">명령 메뉴</translation>
 <translation id="2429669115401274487">오후</translation>
@@ -179,6 +180,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">오디오</translation>
 <translation id="2732718972699418926">오전</translation>
+<translation id="2737520612859577214">위 첨자 끝</translation>
 <translation id="2749275490991666823">선택됨</translation>
 <translation id="27527859628328957">다음 초점 가능 항목으로 이동</translation>
 <translation id="276402504937943375">목차</translation>
@@ -203,6 +205,7 @@
 <translation id="288178314850623291">특정 유형의 요소로 건너뛰려면 이동 명령어를 사용합니다. 제목 간 이동하려면 검색+H를 눌러 앞으로 이동, 검색+Shift+H를 눌러 뒤로 이동합니다.</translation>
 <translation id="2894654529758326923">정보</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{왼쪽 중괄호}other{왼쪽 중괄호 #개}}</translation>
+<translation id="2909478709401302630">위 첨자 시작</translation>
 <translation id="2911433807131383493">ChromeVox 가이드 열기</translation>
 <translation id="2932083475399492303">구조 선/레이아웃 선 간의 선 유형 전환</translation>
 <translation id="2944762337049891859">로드가 끝나면 자동으로 페이지를 읽습니다.</translation>
@@ -384,6 +387,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{오른쪽 중괄호}other{오른쪽 중괄호 #개}}</translation>
 <translation id="4158704014418536539">대소문자를 구분합니다.</translation>
 <translation id="4161663686871496107">ChromeVox 음성 피드백 사용할 수 있음</translation>
+<translation id="4166192625054637755">아래 첨자 끝</translation>
 <translation id="4173994908659439270">다음 수정 가능한 텍스트 입력란이 없습니다.</translation>
 <translation id="4176463684765177261">사용 중지</translation>
 <translation id="4188530942454211480">이전 문장</translation>
@@ -423,6 +427,7 @@
 <translation id="4476183483923481720">새로운 행</translation>
 <translation id="4482330759234983253">이전 표</translation>
 <translation id="4491109536499578614">이미지</translation>
+<translation id="4505167975768625962">삽입</translation>
 <translation id="4517854969512651305">값 늘리기</translation>
 <translation id="4529987814483543472">기본 키맵</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{슬래시}other{슬래시 #개}}</translation>
@@ -527,6 +532,7 @@
 <translation id="5330443287809544590"><ph name="NAME" />, 링크</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">뒤로 링크</translation>
+<translation id="5350654862897073517">아래 첨자 시작</translation>
 <translation id="536031132345979795">계속 읽고 있는 중에 뒤로 건너뛰기</translation>
 <translation id="5368000168321181111">이어콘 사용 안함</translation>
 <translation id="5374320867641260420">다음 버튼이 없습니다.</translation>

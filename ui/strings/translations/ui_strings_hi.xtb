@@ -18,7 +18,7 @@
 <translation id="1761785978543082658"><ph name="QUANTITY" /> बाइट</translation>
 <translation id="1801827354178857021">अवधि</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 माह}one{# माह}other{# माह}}</translation>
-<translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
+<translation id="1809410197924942083"><ph name="QUANTITY" /> एमबी/सेकंड</translation>
 <translation id="1812519734428420144">तारा रेटिंग <ph name="RATING_SCORE" /></translation>
 <translation id="1830179671306812954">{HOURS,plural, =1{1 घंटा और }one{# घंटे और }other{# घंटे और }}</translation>
 <translation id="1842960171412779397">चुनें</translation>
@@ -47,7 +47,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 वर्ष पहले}one{# वर्ष पहले}other{# वर्ष पहले}}</translation>
 <translation id="2931838996092594335">क्लिक करें</translation>
 <translation id="3036649622769666520">फ़ाइलें खोलें</translation>
-<translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
+<translation id="3049748772180311791"><ph name="QUANTITY" /> एमबी</translation>
 <translation id="3087734570205094154">नीचे</translation>
 <translation id="3157931365184549694">पुनर्स्थापित करें</translation>
 <translation id="3183922693828471536">यहां तक स्क्रॉल करें</translation>
@@ -161,14 +161,14 @@
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1y}one{#y}other{#y}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> फ़ाइल (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
-<translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY" /> केबी/सेकंड</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> और</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1h}one{#h}other{#h}}</translation>
 <translation id="8798099450830957504">सामान्य</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फ़ोल्डर</translation>
 <translation id="883911313571074303">व्याख्या चित्र</translation>
-<translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY" /> केबी</translation>
 <translation id="9002566407876343676">खोलें</translation>
 <translation id="9038489124413477075">अनाम फ़ोल्डर</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 सेकंड}one{# सेकंड}other{# सेकंड}}</translation>

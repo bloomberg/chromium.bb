@@ -2344,7 +2344,6 @@
 <translation id="4663373278480897665">Дозволено використовувати камеру</translation>
 <translation id="4664482161435122549">Помилка експортування PKCS #12</translation>
 <translation id="4665014895760275686">Виробник</translation>
-<translation id="466506872045057845">Chrome відновить дозволи за умовчанням</translation>
 <translation id="4667176955651319626">Блокувати файли cookie та дані із сайтів третіх сторін</translation>
 <translation id="4668721319092543482">Натисніть, щоб увімкнути плагін <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Учасники, які мають доступ до розташування "<ph name="SOURCE_NAME" />", втратять доступ до елементів, якими з ними не поділилися.</translation>
@@ -2697,7 +2696,6 @@
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="52232769093306234">Помилка пакування.</translation>
 <translation id="5225324770654022472">Показувати ярлики додатків</translation>
-<translation id="5225360179303283478">Скинути налаштування сайту</translation>
 <translation id="5227679487546032910">Стандартний бірюзовий аватар</translation>
 <translation id="5227808808023563348">Знайти попередній текст</translation>
 <translation id="5228076606934445476">Виникла проблема з пристроєм. Щоб виправити цю помилку, перезавантажте пристрій і повторіть спробу.</translation>
@@ -3704,7 +3702,6 @@
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="6718273304615422081">Архівування…</translation>
 <translation id="671928215901716392">Блокування екрана</translation>
-<translation id="67211069045302358">Скинути налаштування цього сайту?</translation>
 <translation id="6721678857435001674">Переглядати марку й модель ключа безпеки</translation>
 <translation id="6721972322305477112">&amp;Файл</translation>
 <translation id="672213144943476270">Перш ніж переглядати сторінки в гостьовому режимі, розблокуйте профіль.</translation>

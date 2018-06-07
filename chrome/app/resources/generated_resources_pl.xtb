@@ -2344,7 +2344,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="4663373278480897665">Zezwolono na dostęp do kamery</translation>
 <translation id="4664482161435122549">Błąd eksportowania PKCS #12</translation>
 <translation id="4665014895760275686">Producent</translation>
-<translation id="466506872045057845">Chrome przywróci ustawienia domyślne uprawnień</translation>
 <translation id="4667176955651319626">Blokuj pliki cookie i dane z witryn innych firm</translation>
 <translation id="4668721319092543482">Kliknij, by włączyć wtyczkę <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Osoby z uprawnieniami do: „<ph name="SOURCE_NAME" />” utracą dostęp do tych elementów, chyba że zostaną one im udostępnione.</translation>
@@ -2697,7 +2696,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="52232769093306234">Nie udało się spakować.</translation>
 <translation id="5225324770654022472">Pokaż skrót do aplikacji</translation>
-<translation id="5225360179303283478">Zresetuj ustawienia witryny</translation>
 <translation id="5227679487546032910">Domyślny turkusowy awatar</translation>
 <translation id="5227808808023563348">Znajdź poprzedni tekst</translation>
 <translation id="5228076606934445476">Coś jest nie tak z urządzeniem. Aby usunąć skutki tego błędu, musisz ponownie uruchomić urządzenie i spróbować jeszcze raz.</translation>
@@ -3704,7 +3702,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6718273304615422081">Pakuję...</translation>
 <translation id="671928215901716392">Zablokuj ekran</translation>
-<translation id="67211069045302358">Zresetować ustawienia tej witryny?</translation>
 <translation id="6721678857435001674">Odczytywanie marki i modelu klucza bezpieczeństwa</translation>
 <translation id="6721972322305477112">&amp;Plik</translation>
 <translation id="672213144943476270">Aby przeglądać jako gość, odblokuj swój profil.</translation>

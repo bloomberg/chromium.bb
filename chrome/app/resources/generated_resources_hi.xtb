@@ -892,7 +892,7 @@
 <translation id="2350182423316644347">ऐप्स  आरंभ किया जा रहा है...</translation>
 <translation id="2350796302381711542"><ph name="HANDLER_HOSTNAME" /> को <ph name="REPLACED_HANDLER_TITLE" /> के बजाय सभी <ph name="PROTOCOL" /> लिंक खोलने दें?</translation>
 <translation id="2351266942280602854">भाषा और इनपुट</translation>
-<translation id="2352662711729498748">&lt; 1 MB</translation>
+<translation id="2352662711729498748">&lt; एक एमबी</translation>
 <translation id="2352810082280059586">लॉक स्क्रीन के नोट <ph name="LOCK_SCREEN_APP_NAME" /> में अपने आप सेव किए जाते हैं. आपका सबसे हाल का नोट लॉक स्क्रीन पर ही रहेगा.</translation>
 <translation id="2352947182261340447">स्थानीय मेमोरी में ज़रूरी जगह उपलब्ध नहीं है.</translation>
 <translation id="2353297238722298836">कैमरे और माइक्रोफ़ोन की अनुमति है</translation>
@@ -1069,7 +1069,7 @@
 <translation id="2630681426381349926">शुरू करने के लिए वाई-फ़ाई  से कनेक्ट करें</translation>
 <translation id="2631006050119455616">बचाया गया</translation>
 <translation id="2631498379019108537">अलमारी में इनपुट विकल्प दिखाएं</translation>
-<translation id="2633199387167390344"><ph name="NAME" /> डिस्क स्थान के <ph name="USAGE" /> MB का उपयोग कर रहा है.</translation>
+<translation id="2633199387167390344"><ph name="NAME" /> डिस्क मेमोरी के <ph name="USAGE" /> एमबी का उपयोग कर रहा है.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" निकालें?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> स्थापना पूर्ण नहीं कर सका, लेकिन इसकी डिस्क चित्र से चलना जारी रहेगा.</translation>
 <translation id="2635276683026132559">हस्ताक्षर</translation>
@@ -1257,7 +1257,7 @@
 <translation id="2902312830803030883">और क्रियाएं</translation>
 <translation id="2903457445916429186">चुने गए आइटम खोलें</translation>
 <translation id="2903493209154104877">पते</translation>
-<translation id="290444763029043472"><ph name="DOWNLOADED_AMOUNT_MB" /> MB / <ph name="TOTAL_AMOUNT_MB" /> MB डाउनलोड की गई</translation>
+<translation id="290444763029043472"><ph name="DOWNLOADED_AMOUNT_MB" /> एमबी / <ph name="TOTAL_AMOUNT_MB" /> एमबी डाउनलोड की गई</translation>
 <translation id="2904456025988372123">जब कोई साइट पहली फ़ाइल के बाद फ़ाइलों को अपने आप डाउनलोड करने का प्रयास करे, तो पूछें</translation>
 <translation id="2907619724991574506">स्टार्टअप URL</translation>
 <translation id="2907798539022650680">'<ph name="NAME" />' से कनेक्ट करने में विफल: <ph name="DETAILS" />
@@ -1587,7 +1587,7 @@
 <translation id="3437801641691368414">बनाने का समय</translation>
 <translation id="3438633801274389918">निंजा</translation>
 <translation id="3439153939049640737"><ph name="HOST" /> को हमेशा अपना माइक्रोफ़ोन एक्सेस करने दें</translation>
-<translation id="3439970425423980614">पूर्वालोकन में PDF खोलें</translation>
+<translation id="3439970425423980614">पीडीएफ़ की झलक देखें</translation>
 <translation id="3440663250074896476"><ph name="BOOKMARK_NAME" /> के लिए और कार्रवाइयां</translation>
 <translation id="3440761377721825626">जब कोई साइट आपका कंप्यूटर एक्सेस करने के लिए किसी प्लग इन का उपयोग करना चाहे, तो पूछें</translation>
 <translation id="3441653493275994384">स्क्रीन</translation>
@@ -1781,7 +1781,7 @@
 <translation id="3726463242007121105">यह डिवाइस नहीं खोला जा सकता क्‍योंकि इसका फ़ाइल सिस्‍टम समर्थित नहीं है.</translation>
 <translation id="3727148787322499904">यह सेटिंग बदलने से सभी शेयर नेटवर्क प्रभावित होंगे</translation>
 <translation id="3727187387656390258">पॉपअप का निरीक्षण करें</translation>
-<translation id="3728067901555601989">OTP:</translation>
+<translation id="3728067901555601989">एक बार इस्तेमाल होने वाला पासवर्ड (ओटीपी):</translation>
 <translation id="3732078975418297900">लाइन <ph name="ERROR_LINE" /> पर गड़बड़ी</translation>
 <translation id="3733127536501031542">स्टेप-अप वाला SSL सर्वर</translation>
 <translation id="3737536731758327622">आपके डाउनलोड यहां दिखाई देंगे</translation>
@@ -2342,7 +2342,6 @@
 <translation id="4663373278480897665">कैमरे की अनुमति है</translation>
 <translation id="4664482161435122549">PKCS #12 निर्यात गड़बड़ी</translation>
 <translation id="4665014895760275686">निर्माता</translation>
-<translation id="466506872045057845">Chrome अनुमतियों को उनके डिफ़ॉल्ट पर रीसेट कर देगा</translation>
 <translation id="4667176955651319626">तृतीय-पक्ष कुकी और साइट डेटा अवरुद्ध करें</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> को सक्षम करने के लिए क्लिक करें</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' के सदस्यों को तब तक एक्सेस नहीं मिलेगा जब तक कि ये आइटम उनसे शेयर नहीं किए जाते.</translation>
@@ -2470,7 +2469,7 @@
 <translation id="4869142322204669043">Google उन साइटों की सामग्री जिन पर आप जाते हैं और आपकी ब्राउज़िंग गतिविधि और इंटरैक्शन का इस्तेमाल <ph name="IDS_SHORT_PRODUCT_NAME" /> को और अनुवाद, खोज और विज्ञापनों जैसी दूसरी Google सेवाओं को मनमुताबिक बनाने के लिए कर सकता है.</translation>
 <translation id="48704129375571883">अतिरिक्त सुविधाएं जोड़ें</translation>
 <translation id="4870903493621965035">कोई भी युग्मित डिवाइस नहीं</translation>
-<translation id="4871210892959306034">$1 KB</translation>
+<translation id="4871210892959306034">$एक केबी</translation>
 <translation id="4871308555310586478">Chrome वेब स्टोर से नहीं.</translation>
 <translation id="4871370605780490696">बुकमार्क जोड़ें</translation>
 <translation id="4871568871368204250">सिंक बंद करें</translation>
@@ -2653,7 +2652,7 @@
 <translation id="5143374789336132547">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने यह बदल दिया है कि जब आप होम बटन क्लिक करते हैं तब कौन सा पेज दिखाया जाए.</translation>
 <translation id="5143712164865402236">पूर्ण स्क्रीन में प्रवेश करें</translation>
 <translation id="5145331109270917438">संशोधन दिनांक</translation>
-<translation id="514575469079499857">स्थान तय करने के लिए अपने आईपी पते का इस्तेमाल करें (डिफ़ॉल्ट)</translation>
+<translation id="514575469079499857">जगह तय करने के लिए अपने आईपी पते का इस्तेमाल करें (डिफ़ॉल्ट)</translation>
 <translation id="5150254825601720210">Netscape प्रमाणपत्र SSL सर्वर नाम</translation>
 <translation id="5151354047782775295">डिस्क स्पेस खाली करें अन्यथा चयनित डेटा अपने आप हट जाएगा</translation>
 <translation id="5153297660536091054">पिन अनलॉक सुविधा</translation>
@@ -2695,7 +2694,6 @@
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="52232769093306234">पैक नहीं किया जा सका.</translation>
 <translation id="5225324770654022472">ऐप्स  शॉर्टकट दिखाएं</translation>
-<translation id="5225360179303283478">साइट सेटिंग रीसेट करें</translation>
 <translation id="5227679487546032910">डिफ़ॉल्ट नीला-हरा अवतार</translation>
 <translation id="5227808808023563348">पि‍छला टेक्‍स्‍ट ढूंढें</translation>
 <translation id="5228076606934445476">इस डिवाइस में कुछ गलत है.  इस गड़बड़ी को ठीक के लिए आपको डिवाइस को रीबूट करना होगा और फिर से प्रयास करना होगा.</translation>
@@ -2974,7 +2972,7 @@
 <translation id="5595152862129936745">बहुत दूर</translation>
 <translation id="5595485650161345191">पता संपादित करें</translation>
 <translation id="5596627076506792578">अधिक विकल्प</translation>
-<translation id="5600706100022181951">अपडेट को डाउनलोड करने में <ph name="UPDATE_SIZE_MB" /> MB मोबाइल डेटा का उपयोग होगा. क्या आप जारी रखना चाहते हैं?</translation>
+<translation id="5600706100022181951">अपडेट को डाउनलोड करने में <ph name="UPDATE_SIZE_MB" /> एमबी मोबाइल डेटा का उपयोग होगा. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="5601503069213153581">पिन</translation>
 <translation id="5602765853043467355">इस डिवाइस से बुकमार्क, इतिहास, पासवर्ड वगैरह साफ़ करें</translation>
 <translation id="5605623530403479164">अन्य खोज इंजन</translation>
@@ -3498,7 +3496,7 @@
 <translation id="6410328738210026208">चैनल बदलें और पावरवॉश करें</translation>
 <translation id="6410668567036790476">खोज इंजन जोड़ें</translation>
 <translation id="641081527798843608">विषय मिलान</translation>
-<translation id="641105183165925463">$1 MB</translation>
+<translation id="641105183165925463">$एक एमबी</translation>
 <translation id="6412931879992742813">नई गुप्त विंडो</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
 <translation id="6418160186546245112"><ph name="IDS_SHORT_PRODUCT_NAME" /> के पहले से इंस्‍टॉल किए गए संस्‍करण पर वापस लाना</translation>
@@ -3541,7 +3539,7 @@
 <translation id="6463795194797719782">&amp;संपादित करें</translation>
 <translation id="6466988389784393586">सभी बुकमार्क &amp;खोलें</translation>
 <translation id="6468485451923838994">फ़ॉन्ट</translation>
-<translation id="6472207088655375767">OTP</translation>
+<translation id="6472207088655375767">एक बार इस्तेमाल होने वाला पासवर्ड (ओटीपी)</translation>
 <translation id="6472893788822429178">Home बटन दिखाएं</translation>
 <translation id="6473842110411557830">पावरवॉश का चित्रण</translation>
 <translation id="6474706907372204693">पिछली इनपुट विधि</translation>
@@ -3591,7 +3589,7 @@
 <translation id="6545834809683560467">ऐप चलाने के साधन के खोज बॉक्स या पता में लिखे गए URL और खोजों को पूर्ण करने में सहायता के लिए पूर्वानुमान सेवा उपयोग करें</translation>
 <translation id="6546686722964485737">Wimax नेटवर्क में शामिल हों</translation>
 <translation id="6547316139431024316">इस एक्सटेंशन के लिए फिर से चेतावनी न दें</translation>
-<translation id="6547354035488017500">कम से कम 512 MB का स्थान खाली करें अन्यथा आपका डिवाइस प्रतिसाद नहीं देगा. स्थान खाली करने के लिए, डिवाइस की जगह से फ़ाइलें हटाएं.</translation>
+<translation id="6547354035488017500">डिवाइस की मेमोरी से कम से कम 512 एमबी जगह खाली करें. ऐसा न करने पर आपका डिवाइस काम नहीं करेगा. जगह खाली करने के लिए, डिवाइस की मेमोरी से फ़ाइलें मिटाएं.</translation>
 <translation id="6549689063733911810">नवीनतम</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6551508934388063976">आदेश अनुपलब्ध है. नई विंडों खोलने के लिए control-N दबाएं.</translation>
@@ -3621,7 +3619,7 @@
 <translation id="6592267180249644460">WebRTC लॉग कैप्चर किया गया <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6596325263575161958">सुरक्षित तरीका विकल्प</translation>
 <translation id="6596745167571172521">Caps Lock अक्षम करें</translation>
-<translation id="6596816719288285829">IP पता</translation>
+<translation id="6596816719288285829">आईपी पता</translation>
 <translation id="6597017209724497268">नमूने</translation>
 <translation id="6597332018579308636">एक्सेस दें</translation>
 <translation id="659934686219830168">आपके इस पेज को छोड़ने के बाद सिंक होना चालू होगा</translation>
@@ -3702,7 +3700,6 @@
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6718273304615422081">ज़िप किया जा रहा है...</translation>
 <translation id="671928215901716392">लॉक स्‍क्रीन</translation>
-<translation id="67211069045302358">इस साइट की सेटिंग रीसेट करें?</translation>
 <translation id="6721678857435001674">अपनी सुरक्षा कुंजी के निर्माता और मॉडल को देखें</translation>
 <translation id="6721972322305477112">&amp;फ़ाइल</translation>
 <translation id="672213144943476270">कृपया मेहमान के रूप में ब्राउज़ करने से पहले अपनी प्रोफ़ाइल अनलॉक करें.</translation>
@@ -3940,7 +3937,7 @@
 <translation id="7093866338626856921"><ph name="HOSTNAMES" /> नामक डिवाइस से डेटा का आदान-प्रदान करें</translation>
 <translation id="7096406577040705016">पूरी स्क्रीन वाला आवर्धक टॉगल करें</translation>
 <translation id="7098447629416471489">सहेजे गए दूसरे खोज इंजन यहां दिखाई देंगे</translation>
-<translation id="7099337801055912064">बड़ा PPD लोड नहीं किया जा सका. अधिकतम आकार 250 केबी है.</translation>
+<translation id="7099337801055912064">बड़ा पीपीडी लोड नहीं किया जा सकता. आकार 250 केबी से ज़्यादा नहीं होना चाहिए.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> आइटम चयनित</translation>
 <translation id="7102687220333134671">ऑटोमैटिक अपडेट चालू हैं</translation>
 <translation id="7106346894903675391">अधिक मेमोरी खरीदें...</translation>
@@ -4280,7 +4277,7 @@
 <translation id="7624337243375417909">caps lock बंद है</translation>
 <translation id="7625568159987162309">सभी साइटों की मंज़ूरियां और साइटों पर संग्रहित डेटा देखें</translation>
 <translation id="7627790789328695202">ओह, <ph name="FILE_NAME" /> पहले से मौजूद है. उसका नाम बदलें और पुन: प्रयास करें.</translation>
-<translation id="7628127343934101653">डिफ़ॉल्ट PDF व्यूअर ऐप्लिकेशन में PDF फ़ाइलें खोलें.</translation>
+<translation id="7628127343934101653">'डिफ़ॉल्ट पीडीएफ़ व्यूअर ऐप्लिकेशन' में पीडीएफ़ फ़ाइलें खोलें.</translation>
 <translation id="7629827748548208700">टैब: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">इस प्रकार की फ़ाइलें &amp;हमेशा खोलें</translation>
 <translation id="7632948528260659758">निम्‍न किऑस्क&amp;#0; ऐप्‍स अपडेट होने में विफल रहे:</translation>
@@ -4848,7 +4845,7 @@
 <translation id="8480082892550707549">भले ही आपने पहले इस वेबसाइट से फ़ाइलें डाउनलोड की हैं, फिर भी साइट अस्थायी रूप से असुरक्षित (हैक की हुई) हो सकती है. इस फ़ाइल को बाद में डाउनलोड करने की कोशिश करें.</translation>
 <translation id="8480869669560681089"><ph name="VENDOR_NAME" /> की ओर से अज्ञात डिवाइस</translation>
 <translation id="8481187309597259238">USB अनुमति की पुष्टि करें</translation>
-<translation id="8483248364096924578">IP पता</translation>
+<translation id="8483248364096924578">आईपी पता</translation>
 <translation id="8487678622945914333">ज़ूम इन</translation>
 <translation id="8487693399751278191">बुकमार्क अभी आयात करें...</translation>
 <translation id="8487700953926739672">ऑफ़लाइन उपलब्ध है</translation>
@@ -4971,7 +4968,7 @@
 <translation id="8677212948402625567">सभी संक्षिप्त करें...</translation>
 <translation id="8678648549315280022">डाउनलोड सेटिंग प्रबंधित करें...</translation>
 <translation id="8678933587484842200">आप इस ऐप्लिकेशन को कैसे लॉन्च करना चाहते हैं?</translation>
-<translation id="8679788109894721265">यह पेज <ph name="MEGABYTES" />MB से भी ज़्यादा डेटा का इस्तेमाल करता है</translation>
+<translation id="8679788109894721265">यह पेज <ph name="MEGABYTES" />एमबी से भी ज़्यादा डेटा का इस्तेमाल करता है</translation>
 <translation id="8680251145628383637">अपने सभी डिवाइसों पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्‍य सेटिंग प्राप्‍त करने के लिए प्रवेश करें. आप अपनी Google सेवाओं में भी अपने आप प्रवेश कर जाएंगे.</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>
 <translation id="8686213429977032554">यह डिस्क अभी तक शेयर नहीं की गई है</translation>
@@ -5071,7 +5068,7 @@
 <translation id="8818152010000655963">वॉलपेपर</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>
 <translation id="8820961991571528294">परीक्षण कर रहा है</translation>
-<translation id="8821045908425223359">IP पता अपने आप कॉन्फ़िगर करें</translation>
+<translation id="8821045908425223359">आईपी पता अपने आप कॉन्फ़िगर होने दें</translation>
 <translation id="882204272221080310">अतिरिक्त सुरक्षा के लिए फ़र्मवेयर अपडेट करें.</translation>
 <translation id="8823514049557262177">लिंक ले&amp;ख को कॉपी करें</translation>
 <translation id="8824701697284169214">पृ&amp;ष्ठ जोड़ें...</translation>

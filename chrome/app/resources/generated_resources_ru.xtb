@@ -289,7 +289,7 @@
 <translation id="1415990189994829608">Расширение "<ph name="EXTENSION_NAME" />" (ID <ph name="EXTENSION_ID" />) запрещено использовать в ходе сеанса этого типа</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420834118113404499">Медиалицензии</translation>
-<translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" />, чтобы разрешить соединение</translation>
+<translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" />, чтобы разрешить подключение</translation>
 <translation id="1422159345171879700">Загрузить небезопасные скрипты</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1426870617281699524">Нажмите "Повторить попытку" и примите запрос на компьютере.</translation>
@@ -2344,7 +2344,6 @@
 <translation id="4663373278480897665">Доступ к камере разрешен</translation>
 <translation id="4664482161435122549">Ошибка экспорта PKCS #12</translation>
 <translation id="4665014895760275686">Производитель</translation>
-<translation id="466506872045057845">Chrome восстановит разрешения по умолчанию.</translation>
 <translation id="4667176955651319626">Блокировать данные и файлы cookie сторонних сайтов</translation>
 <translation id="4668721319092543482">Нажмите, чтобы включить плагин "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="4669606053856530811">Пользователи общего диска "<ph name="SOURCE_NAME" />" больше не смогут использовать эти объекты, если к ним не будет включен общий доступ.</translation>
@@ -2697,7 +2696,6 @@
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="52232769093306234">Не удалось выполнить сжатие.</translation>
 <translation id="5225324770654022472">Показывать кнопку "Сервисы"</translation>
-<translation id="5225360179303283478">Сбросить настройки сайта</translation>
 <translation id="5227679487546032910">Аватар по умолчанию (сине-зеленый)</translation>
 <translation id="5227808808023563348">Найти предыдущий текст</translation>
 <translation id="5228076606934445476">Возникла проблема с устройством. Чтобы решить ее, перезагрузите устройство и повторите попытку.</translation>
@@ -3214,7 +3212,7 @@
 <translation id="5963026469094486319">Выбрать тему</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (макс. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Кроме того, расширение изменило страницу, которая отображается при нажатии кнопки "Главная страница", и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
-<translation id="5971037678316050792">Контроль состояния адаптера Bluetooth и сопряжения</translation>
+<translation id="5971037678316050792">Управление состоянием адаптера Bluetooth и подключением</translation>
 <translation id="5972017421290582825">Настройки MIDI…</translation>
 <translation id="5972708806901999743">К началу</translation>
 <translation id="5972826969634861500">Запустить <ph name="PRODUCT_NAME" /></translation>
@@ -3704,7 +3702,6 @@
 <translation id="6710213216561001401">Назад</translation>
 <translation id="6718273304615422081">Архивирование…</translation>
 <translation id="671928215901716392">Блокировать экран</translation>
-<translation id="67211069045302358">Сбросить настройки?</translation>
 <translation id="6721678857435001674">Просмотр производителя и модели Электронного ключа</translation>
 <translation id="6721972322305477112">&amp;Файл</translation>
 <translation id="672213144943476270">Чтобы пользоваться браузером в гостевом режиме, разблокируйте свой профиль.</translation>

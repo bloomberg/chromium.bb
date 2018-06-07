@@ -119,7 +119,7 @@
 <translation id="1989112275319619282">ब्राउज़ करें</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> युग्मित करना चाहता है</translation>
 <translation id="1994173015038366702">साइट URL</translation>
-<translation id="200815880754187296"><ph name="KILOBYTES" /> KB अन्य ऐप्लिकेशन</translation>
+<translation id="200815880754187296"><ph name="KILOBYTES" /> केबी अन्य ऐप्लिकेशन</translation>
 <translation id="2017836877785168846">इतिहास साफ़ करता है और पता बार में स्वत: पूर्णता को साफ़ करता है.</translation>
 <translation id="2021896219286479412">पूरी स्क्रीन के साइट नियंत्रण</translation>
 <translation id="2038563949887743358">अनुरोध डेस्कटॉप साइट चालू करें</translation>
@@ -284,7 +284,7 @@
 <translation id="3518985090088779359">स्‍वीकार करें और जारी रखें</translation>
 <translation id="3522247891732774234">अपडेट उपलब्ध है. अधिक विकल्प</translation>
 <translation id="3527085408025491307">फ़ोल्डर</translation>
-<translation id="3542235761944717775"><ph name="KILOBYTES" /> KB उपलब्ध</translation>
+<translation id="3542235761944717775"><ph name="KILOBYTES" /> केबी उपलब्ध</translation>
 <translation id="3549644494707163724">सभी समन्वयित डेटा को अपने स्वयं के समन्वयन पासफ़्रेज़ के साथ एन्क्रिप्ट करें</translation>
 <translation id="3549657413697417275">अपने इतिहास में खोजें</translation>
 <translation id="3552151358455404883"><ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में जाकर Chrome सिंक और वैयक्तिकरण प्रबंधित करें</translation>
@@ -306,7 +306,7 @@
 <translation id="3714981814255182093">ढूंढें बार खोलें</translation>
 <translation id="3716182511346448902">यह पेज बहुत ज़्यादा मेमोरी का इस्तेमाल करता है, इसलिए Chrome ने इसे रोक दिया है.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> में बुकमार्क किया गया</translation>
-<translation id="3744111309925758534"><ph name="MEGABYTES" /> MB अन्य ऐप्लिकेशन</translation>
+<translation id="3744111309925758534"><ph name="MEGABYTES" /> एमबी अन्य ऐप्लिकेशन</translation>
 <translation id="3744111561329211289">पृष्ठभूमि समन्वयन</translation>
 <translation id="3773755127849930740">युग्मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />ब्लूटूथ चालू करें<ph name="END_LINK" /></translation>
 <translation id="3778956594442850293">होम स्‍क्रीन में जोड़ा गया</translation>
@@ -344,7 +344,7 @@
 <translation id="4062305924942672200">कानूनी जानकारी</translation>
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="4084712963632273211">प्रकाशक: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Google की ओर से डिलीवर किया गया<ph name="END_DEEMPHASIZED" /></translation>
-<translation id="4084836577264234537"><ph name="MEGABYTES" /> MB डाउनलोड किया गया</translation>
+<translation id="4084836577264234537"><ph name="MEGABYTES" /> एमबी डाउनलोड किया गया</translation>
 <translation id="4089831646916293264">यह सुविधा आपके वाहक द्वारा प्रदान की जाने वाली प्रीमियम डेटा सुविधाओं की ऐक्‍सेस में हस्तक्षेप कर सकती है.</translation>
 <translation id="4095146165863963773">ऐप्लिकेशन डेटा हटाएं?</translation>
 <translation id="4097739989936358050">Chrome में यह ऐप्‍लि‍केशन चल रहा है.</translation>
@@ -805,7 +805,7 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> दिन शेष</translation>
 <translation id="804335162455518893">SD कार्ड नहीं मिला</translation>
 <translation id="805047784848435650">आपके ब्राउज़िंग इतिहास के आधार पर</translation>
-<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB उपलब्ध</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> एमबी उपलब्ध</translation>
 <translation id="8058746566562539958">नए Chrome टैब में खोलें</translation>
 <translation id="8063895661287329888">बुकमार्क जोड़ने में विफल रहा.</translation>
 <translation id="806745655614357130">मेरा डेटा अलग रखें</translation>
@@ -896,7 +896,7 @@
 <translation id="8934029156920711950">खास तौर पर आपके लिए चुने गए लेख देखने के लिए टैप करें</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">अन्य विंडो में खोलें</translation>
-<translation id="8951232171465285730">Chrome ने आपके <ph name="MEGABYTES" /> MB की बचत की</translation>
+<translation id="8951232171465285730">Chrome ने आपके <ph name="MEGABYTES" /> एमबी की बचत की</translation>
 <translation id="8959122750345127698">मार्गदर्शक तक नहीं पहुंचा जा सकता: <ph name="URL" /></translation>
 <translation id="8972098258593396643">डिफ़ॉल्ट फ़ोल्डर में डाउनलोड करें?</translation>
 <translation id="8979405271719829084">बाद में देखने के लिए वीडियो डाउनलोड करें</translation>
@@ -913,7 +913,7 @@
 <translation id="9070377983101773829">बोलकर खोजें चालू करें</translation>
 <translation id="9071742570345586758">आभासी वास्तविकता वाली सामग्री देखने के लिए, Google VR सेवाएं इंस्टॉल करें</translation>
 <translation id="9086455579313502267">नेटवर्क तक पहुंचने में असमर्थ</translation>
-<translation id="9099018167121903954"><ph name="KILOBYTES" /> KB डाउलनोड किया गया</translation>
+<translation id="9099018167121903954"><ph name="KILOBYTES" /> केबी डाउलनोड किया गया</translation>
 <translation id="9100505651305367705">अगर सुविधा उपलब्ध है, तो लेखों को सरल बनाए गए व्यू में दिखाना ऑफ़र करें</translation>
 <translation id="9100610230175265781">पासफ़्रेज़ आवश्यक</translation>
 <translation id="9100939710791843300">नया टैब पेज लोड करने और सुझाए गए लेख देखने के लिए 'होम' बटन पर टैप करें</translation>

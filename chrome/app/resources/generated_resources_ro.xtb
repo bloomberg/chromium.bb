@@ -209,6 +209,7 @@
 <translation id="1296497012903089238">Tip de certificat</translation>
 <translation id="1297175357211070620">Destinație</translation>
 <translation id="1297922636971898492">Google Drive nu este disponibil momentan. Încărcarea va reporni automat când Google Drive va putea fi accesat.</translation>
+<translation id="1300415640239881824">Domeniul <ph name="DOMAIN" /> dorește ca identitatea dispozitivului să fie verificată de Google, ca să determine eligibilitatea pentru redarea îmbunătățită a conținutului protejat.</translation>
 <translation id="1300806585489372370">Pentru a modifica această setare, <ph name="BEGIN_LINK" />activează identificatorii<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Permite JavaScript de la Apple Events</translation>
 <translation id="1303101771013849280">Fișier HTML cu marcaje</translation>
@@ -2343,7 +2344,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4663373278480897665">Camera foto este permisă</translation>
 <translation id="4664482161435122549">PKCS # 12 Eroare de export</translation>
 <translation id="4665014895760275686">Producător</translation>
-<translation id="466506872045057845">Chrome va reseta permisiunile la valorile prestabilite</translation>
 <translation id="4667176955651319626">Blochează cookie-urile și datele privind site-urile terță parte</translation>
 <translation id="4668721319092543482">Dă clic pentru a activa <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Membrii „<ph name="SOURCE_NAME" />” vor pierde accesul, exceptând cazul în care li se permite accesul la aceste articole.</translation>
@@ -2696,7 +2696,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="52232769093306234">Împachetarea nu a reușit.</translation>
 <translation id="5225324770654022472">Afișați comanda rapidă pentru aplicații</translation>
-<translation id="5225360179303283478">Restabilește setările pentru site</translation>
 <translation id="5227679487546032910">Avatar turcoaz prestabilit</translation>
 <translation id="5227808808023563348">Găsește textul anterior</translation>
 <translation id="5228076606934445476">A apărut o problemă legată de dispozitiv. Pentru recuperarea în urma acestei erori, reporniți dispozitivul și încercați din nou.</translation>
@@ -3703,7 +3702,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6710213216561001401">Înapoi</translation>
 <translation id="6718273304615422081">Se arhivează...</translation>
 <translation id="671928215901716392">Blocați ecranul</translation>
-<translation id="67211069045302358">Restabilești setările pentru acest site?</translation>
 <translation id="6721678857435001674">să vadă marca și modelul cheii de securitate</translation>
 <translation id="6721972322305477112">&amp;Fișier</translation>
 <translation id="672213144943476270">Deblochează profilul înainte de a naviga ca invitat.</translation>

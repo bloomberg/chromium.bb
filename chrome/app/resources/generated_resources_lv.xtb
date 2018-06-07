@@ -2343,7 +2343,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4663373278480897665">Kameras lietošana ir atļauta</translation>
 <translation id="4664482161435122549">PKCS #12 eksporta kļūda</translation>
 <translation id="4665014895760275686">Ražotājs</translation>
-<translation id="466506872045057845">Pārlūkā Chrome atļaujām tiks atiestatītas noklusējuma vērtības.</translation>
 <translation id="4667176955651319626">Bloķēt trešo pušu sīkfailus un vietņu datus</translation>
 <translation id="4668721319092543482">Noklikšķiniet, lai iespējotu spraudni <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">“<ph name="SOURCE_NAME" />” dalībnieki zaudēs piekļuvi šiem vienumiem, ja tie netiks kopīgoti ar viņiem.</translation>
@@ -2696,7 +2695,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5222676887888702881">Izrakstīties</translation>
 <translation id="52232769093306234">Neizdevās izveidot pakotni.</translation>
 <translation id="5225324770654022472">Rādīt lietotņu saīsnes</translation>
-<translation id="5225360179303283478">Atiestatīt vietnes iestatījumus</translation>
 <translation id="5227679487546032910">Noklusējuma iemiesojums zilganzaļā krāsā</translation>
 <translation id="5227808808023563348">Atrast iepriekšējo tekstu</translation>
 <translation id="5228076606934445476">Ierīcē radās kļūda. Lai to novērstu, jums ir atkārtoti jāpalaiž ierīce un jāmēģina vēlreiz.</translation>
@@ -3703,7 +3701,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="6718273304615422081">Notiek tilpsaspiešana...</translation>
 <translation id="671928215901716392">Bloķēt ekrānu</translation>
-<translation id="67211069045302358">Vai atiestatīt šīs vietnes iestatījumus?</translation>
 <translation id="6721678857435001674">Skatīt jūsu drošības atslēgas ražotāju un modeli</translation>
 <translation id="6721972322305477112">&amp;Fails</translation>
 <translation id="672213144943476270">Pirms pārlūkošanas viesa režīmā, lūdzu, atbloķējiet savu profilu.</translation>

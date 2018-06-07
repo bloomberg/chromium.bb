@@ -2339,7 +2339,6 @@
 <translation id="4663373278480897665">Камера је дозвољена</translation>
 <translation id="4664482161435122549">Грешка при извозу PKCS #12 стандарда</translation>
 <translation id="4665014895760275686">Произвођач</translation>
-<translation id="466506872045057845">Chrome ће ресетовати дозволе на подразумеване вредности</translation>
 <translation id="4667176955651319626">Блокирај колачиће треће стране и податке сајта</translation>
 <translation id="4668721319092543482">Кликните да бисте омогућили <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Чланови из „<ph name="SOURCE_NAME" />“ ће изгубити приступ ако се ове ставке не деле са њима.</translation>
@@ -2692,7 +2691,6 @@
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="52232769093306234">Паковање није успело.</translation>
 <translation id="5225324770654022472">Прикажи пречицу за апликације</translation>
-<translation id="5225360179303283478">Ресетуј подешавања сајта</translation>
 <translation id="5227679487546032910">Подразумевани тиркизни аватар</translation>
 <translation id="5227808808023563348">Тражење претходног текста</translation>
 <translation id="5228076606934445476">Нешто није у реду са уређајем. Да бисте исправили ову грешку, треба да поново покренете уређај и покушате поново.</translation>
@@ -3700,7 +3698,6 @@
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="6718273304615422081">Прављење zip датотеке...</translation>
 <translation id="671928215901716392">Закључај екран</translation>
-<translation id="67211069045302358">Желите ли да ресетујете подешавања за овај сајт?</translation>
 <translation id="6721678857435001674">да види произвођача и модел безбедносног кључа</translation>
 <translation id="6721972322305477112">&amp;File (Датотека)</translation>
 <translation id="672213144943476270">Откључајте профил да бисте прегледали као гост.</translation>

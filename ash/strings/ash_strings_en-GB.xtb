@@ -72,6 +72,7 @@
 <translation id="2351266942280602854">Language and input</translation>
 <translation id="2352467521400612932">Stylus settings</translation>
 <translation id="2354174487190027830">Activating <ph name="NAME" /></translation>
+<translation id="2359808026110333948">Continue</translation>
 <translation id="2365393535144473978">Enabling mobile data will enable Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
@@ -117,6 +118,7 @@
 <translation id="3151786313568798007">Orientation</translation>
 <translation id="3153444934357957346">You can only have up to <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts in multiple sign-in.</translation>
 <translation id="3236488194889173876">No mobile network available</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="332587331255250389">Please replace the battery</translation>
 <translation id="3351879221545518001">You are currently casting the screen.</translation>

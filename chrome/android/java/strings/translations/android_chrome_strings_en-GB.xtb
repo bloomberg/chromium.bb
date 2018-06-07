@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Open tabs</translation>
 <translation id="1756600373018374892">Tap this button for quick access to your tabs.</translation>
 <translation id="1779089405699405702">Image decoder</translation>
+<translation id="1782483593938241562">End date <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Change the default download location at any time</translation>
 <translation id="1807246157184219062">Light</translation>
 <translation id="1829244130665387512">Find in page</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Refresh page</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="271033894570825754">New</translation>
+<translation id="2728754400939377704">Sort by site</translation>
 <translation id="2736391366332017384">Tap the home button to get to the new tab page in your current tab</translation>
 <translation id="2744248271121720757">Tap a word to search instantly or see related actions</translation>
 <translation id="2762000892062317888">just now</translation>
@@ -353,8 +355,10 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4113030288477039509">Managed by your administrator</translation>
 <translation id="4116038641877404294">Download pages to use them offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}other{%1$d bookmarks}}</translation>
+<translation id="4159800535322890630">Block sites from accessing your sensors</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> used</translation>
 <translation id="4181841719683918333">Languages</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4198423547019359126">No available download locations</translation>
@@ -520,6 +524,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="5585019845078534178">Cards</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="5596627076506792578">More options</translation>
+<translation id="5620299005957670886">Allow sites to access your sensors (recommended)</translation>
 <translation id="5620928963363755975">Find your files and pages in Downloads from the More Options button</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Allow all sites</translation>
@@ -563,6 +568,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> to start sync</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> saved</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="5942872142862698679">Using Google for search</translation>
 <translation id="5956665950594638604">Open the Chrome Help Centre in a new tab</translation>
@@ -643,6 +649,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6612358246767739896">Protected content</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Clear</translation>
+<translation id="6643649862576733715">Sort by amount of data saved</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}other{<ph name="CONTACT_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> more}}</translation>
 <translation id="6656545060687952787">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK" />Update permissions<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Password</translation>
@@ -729,6 +736,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome First Run Experience</translation>
 <translation id="741204030948306876">Yes, I'm in</translation>
+<translation id="7413229368719586778">Start date <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7423538860840206698">Blocked from reading clipboard</translation>
 <translation id="7437998757836447326">Sign out of Chrome</translation>
@@ -834,6 +842,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8313455859591948645">Edit startup page</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> and more sites</translation>
 <translation id="8339163506404995330">Pages in <ph name="LANGUAGE" /> will not be translated</translation>
+<translation id="8349013245300336738">Sort by amount of data used</translation>
 <translation id="8363501664269050863">Navigation panel. Swipe down to close.</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>

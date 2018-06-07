@@ -895,6 +895,12 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3512226956150568738">Si el modelo de dispositivo del cliente ya admitía ARC antes de que fuera necesario realizar la migración a ext4 para ejecutar ese formato y si se ha asignado el valor "True" a la política ArcEnabled, esta opción se comportará como AskUser (valor 3). En el resto de los casos (si el modelo de dispositivo no admitía ARC antes o si se ha asignado el valor "False" a la política ArcEnabled), este valor es equivalente a DisallowArc (valor 0).</translation>
 <translation id="3524204464536655762">No permitir que los sitios web soliciten acceso a dispositivos USB a través de la API WebUSB</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
+<translation id="3545457887306538845">Te permite controlar dónde se pueden usar las herramientas para desarrolladores.
+
+      Si se asigna a esta política el valor "DeveloperToolsDisallowedForForceInstalledExtensions" (el valor 0, que es el predeterminado), se podrá acceder a las herramientas para desarrolladores y a la consola de JavaScript en general, excepto en extensiones instaladas por la política de empresa.
+      Si se asigna a esta política el valor "DeveloperToolsAllowed" (el valor 1), se podrá acceder a las herramientas para desarrolladores y a la consola de JavaScript sin excepciones, incluso en extensiones instaladas por la política de empresa.
+      Si se asigna a esta política el valor "DeveloperToolsDisallowed" (el valor 2), no se podrá acceder a las herramientas para desarrolladores y no se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o menús contextuales que permiten abrir las herramientas para desarrolladores y la consola de JavaScript.
+      Si se asigna el valor "True" a la antigua política DeveloperToolsDisabled, el valor de esta política se ignorará y las herramientas para desarrolladores se inhabilitarán.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3556806727696701427">Habilita la función Navegación Segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta opción.
 
@@ -1985,6 +1991,37 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
 <translation id="6835883744948188639">Mostrar un mensaje periódico al usuario indicando que se recomienda reiniciar el navegador</translation>
+<translation id="6838056959556423778">Anula las reglas para seleccionar la impresora predeterminada de <ph name="PRODUCT_NAME" />.
+
+      Esta política determina las reglas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" />. Esto ocurre la primera vez que se utiliza la función de imprimir con un perfil.
+
+      Si se habilita esta política, <ph name="PRODUCT_NAME" /> intentará encontrar una impresora con todos los atributos especificados y la seleccionará como impresora predeterminada. Se seleccionará la primera impresora detectada cuyas características coincidan con la política. Si coincide más de una impresora, puedes seleccionar cualquiera de ellas en función del orden en el que se detecten.
+
+      Si no se habilita esta política o no se encuentra ninguna impresora que coincida durante el tiempo de espera, se utilizará la impresora de PDF integrada de forma predeterminada o no seleccionará ninguna impresora si la impresora de PDF no está disponible.
+
+      El valor se analiza como objeto JSON, de acuerdo con el siguiente esquema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "DEcide si se limita la búsqueda de impresoras a un conjunto específico de impresoras.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Expresión regular con la que debe coincidir el ID de la impresora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expresión regular con la que debe coincidir el nombre visible de la impresora.",
+            "type": "string"
+          }
+        }
+      }
+
+      Las impresoras conectadas a <ph name="CLOUD_PRINT_NAME" /> se consideran <ph name="PRINTER_TYPE_CLOUD" />, y el resto de las impresoras se clasifican como  <ph name="PRINTER_TYPE_LOCAL" />.
+      La omisión de algún campo significa que todos los valores coinciden. Por ejemplo, si no se especifica la conectividad, la vista previa de impresión buscará todo tipo de impresoras, tanto locales como en la nube.
+      Los patrones de expresión regular deben seguir la sintaxis JavaScript RegExp y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="684856667300805181">Esta política se retiró en <ph name="PRODUCT_NAME" /> 68 y se ha sustituido por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Esta política está obsoleta y se ha quitado de M66, ya que solo se utilizaba para realizar pruebas internas y es un requisito de seguridad.
 
@@ -2262,6 +2299,17 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7511361072385293666">Si se asigna el valor true a esta política o si esta no se configura, se permitirá el uso del protocolo QUIC en <ph name="PRODUCT_NAME" />.
       Si se asigna el valor false, no se permitirá el uso de este protocolo.</translation>
 <translation id="7519251620064708155">Permitir la generación de claves en estos sitios web</translation>
+<translation id="7529083451528428240">Te permite bloquear la sesión del usuario en función del tiempo del cliente o la cuota de uso diaria.
+
+          El parámetro |time_window_limit| especifica un periodo diario durante el que se debería bloquear la sesión del usuario. Solo se admite una regla por cada día de la semana, por lo que la cantidad de |entries| puede variar entre 0 y 7.  Los parámetros |starts_at| y |ends_at| representan el principio y el final del límite de tiempo. Si |ends_at| es inferior a |starts_at|, significa que |time_limit_window| finaliza al día siguiente. |last_updated_millis| es la marca de tiempo UTC de la última vez que se ha actualizado esta entrada y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero.
+
+          |time_usage_limit| especifica una cuota de pantalla y, cuando el usuario la alcanza, se bloquea su sesión. Hay una propiedad para cada día de la semana y se debería definir únicamente si hay una cuota activa ese día. |usage_quota_mins| es la cantidad de tiempo que el dispositivo administrado se puede usar durante un día y |reset_at| es la hora a la que se renueva la cuota de uso. El valor predeterminado de |reset_at| es medianoche ({'hour': 0, 'minute': 0}). |last_updated_millis| es la marca de tiempo UTC de la última vez que se ha actualizado esta entrada y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero.
+
+          El parámetro |overrides| se proporciona para invalidar temporalmente una o más de las reglas anteriores.
+          * Si no están activos time_window_limit ni time_usage_limit, se puede usar |LOCK| para bloquear el dispositivo.
+          * |LOCK| bloquea temporalmente la sesión de un usuario hasta la próxima vez que se inician time_window_limit o time_usage_limit starts.
+           * |UNLOCK| desbloquea la sesión de un usuario durante el periodo de time_window_limit o time_usage_limit. 
+          |created_time_millis| es la marca de tiempo UTC de la creación de la anulación y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero. Se usa para determinar si la anulación se debería seguir aplicando. Si la función de límite de tiempo activa (el límite de tiempo de uso o el periodo límite) se ha iniciado después de crear la anulación, no se debería aplicar. De la misma forma, si la anulación se ha creado antes de que se aplicara el último cambio de los parámetros time_window_limit o time_usage_window activos, no se debería aplicar.</translation>
 <translation id="7529100000224450960">Permite establecer una lista de patrones de URL para especificar sitios que puedan abrir pop-ups.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
