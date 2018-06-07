@@ -441,7 +441,6 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
   DCHECK(iter != registrations_.end());
 
   RegistrationData* registration_data = iter->second.get();
-  DCHECK(!registration_data->HasPendingRequests());
 
   const std::vector<scoped_refptr<BackgroundFetchRequestInfo>>& requests =
       registration_data->GetCompletedRequests();
@@ -567,7 +566,6 @@ void BackgroundFetchDataManager::DeleteRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     HandleBackgroundFetchErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBackgroundFetchPersistence)) {
     AddDatabaseTask(std::make_unique<background_fetch::DeleteRegistrationTask>(

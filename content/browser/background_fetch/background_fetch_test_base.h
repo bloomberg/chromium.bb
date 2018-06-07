@@ -45,6 +45,10 @@ class BackgroundFetchTestBase : public ::testing::Test {
   // ServiceWorkerRegistration will be kept alive for the test's lifetime.
   int64_t RegisterServiceWorker();
 
+  // Unregisters the test Service Worker and verifies that the unregistration
+  // succeeded.
+  void UnregisterServiceWorker();
+
   // Creates a ServiceWorkerFetchRequest instance for the given details and
   // provides a faked |response|.
   ServiceWorkerFetchRequest CreateRequestWithProvidedResponse(

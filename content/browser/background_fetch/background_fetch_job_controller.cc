@@ -16,7 +16,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
-    const BackgroundFetchRegistration& registration,
+    uint64_t bytes_downloaded,
     BackgroundFetchRequestManager* request_manager,
     ProgressCallback progress_callback,
     BackgroundFetchScheduler::FinishedCallback finished_callback)
@@ -24,7 +24,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
                                            std::move(finished_callback)),
       options_(options),
       icon_(icon),
-      complete_requests_downloaded_bytes_cache_(registration.downloaded),
+      complete_requests_downloaded_bytes_cache_(bytes_downloaded),
       request_manager_(request_manager),
       delegate_proxy_(delegate_proxy),
       progress_callback_(std::move(progress_callback)),

@@ -84,6 +84,7 @@ void BackgroundFetchedEvent::DidUpdateUI(
           DOMException::Create(DOMExceptionCode::kAbortError,
                                "Failed to update UI due to I/O error."));
       return;
+    case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
       // Not applicable for this callback.

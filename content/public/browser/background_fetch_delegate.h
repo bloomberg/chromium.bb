@@ -37,6 +37,7 @@ enum class BackgroundFetchReasonToAbort {
   CANCELLED_FROM_UI,
   ABORTED_BY_DEVELOPER,
   TOTAL_DOWNLOAD_SIZE_EXCEEDED,
+  SERVICE_WORKER_UNAVAILABLE,
 };
 
 // Interface for launching background fetches. Implementing classes would

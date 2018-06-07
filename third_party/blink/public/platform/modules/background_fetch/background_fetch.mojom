@@ -13,7 +13,8 @@ enum BackgroundFetchError {
   DUPLICATED_DEVELOPER_ID,
   INVALID_ARGUMENT,
   INVALID_ID,
-  STORAGE_ERROR
+  STORAGE_ERROR,
+  SERVICE_WORKER_UNAVAILABLE
 };
 
 // Represents the definition of an icon developers can optionally provide with a
