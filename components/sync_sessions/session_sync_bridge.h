@@ -56,7 +56,6 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   FaviconCache* GetFaviconCache() override;
   SessionsGlobalIdMapper* GetGlobalIdMapper() override;
   OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
-  void OnSessionRestoreComplete() override;
   syncer::SyncableService* GetSyncableService() override;
   syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
 
@@ -106,7 +105,6 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   FaviconCache favicon_cache_;
   SessionsGlobalIdMapper global_id_mapper_;
   SessionStore::Factory session_store_factory_;
-  bool is_session_restore_in_progress_;
 
   // All data dependent on sync being starting or started.
   struct SyncingState {

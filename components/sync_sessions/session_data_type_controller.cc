@@ -9,9 +9,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_client.h"
-#include "components/sync_sessions/sync_sessions_client.h"
-#include "components/sync_sessions/synced_window_delegate.h"
-#include "components/sync_sessions/synced_window_delegates_getter.h"
 
 namespace sync_sessions {
 
@@ -28,7 +25,6 @@ SessionDataTypeController::SessionDataTypeController(
       sync_client_(sync_client),
       local_device_(local_device),
       history_disabled_pref_name_(history_disabled_pref_name),
-      waiting_on_session_restore_(false),
       waiting_on_local_device_info_(false) {
   DCHECK(local_device_);
   pref_registrar_.Init(sync_client_->GetPrefService());
@@ -42,16 +38,6 @@ SessionDataTypeController::~SessionDataTypeController() {}
 
 bool SessionDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
-  SyncedWindowDelegatesGetter* synced_window_getter =
-      sync_client_->GetSyncSessionsClient()->GetSyncedWindowDelegatesGetter();
-  SyncedWindowDelegatesGetter::SyncedWindowDelegateMap windows =
-      synced_window_getter->GetSyncedWindowDelegates();
-  for (const auto& window_iter_pair : windows) {
-    if (window_iter_pair.second->IsSessionRestoreInProgress()) {
-      waiting_on_session_restore_ = true;
-      break;
-    }
-  }
 
   if (!local_device_->GetLocalDeviceInfo()) {
     subscription_ = local_device_->RegisterOnInitializedCallback(
@@ -74,14 +60,8 @@ bool SessionDataTypeController::ReadyForStart() const {
       history_disabled_pref_name_);
 }
 
-void SessionDataTypeController::OnSessionRestoreComplete() {
-  DCHECK(CalledOnValidThread());
-  waiting_on_session_restore_ = false;
-  MaybeCompleteLoading();
-}
-
 bool SessionDataTypeController::IsWaiting() {
-  return waiting_on_session_restore_ || waiting_on_local_device_info_;
+  return waiting_on_local_device_info_;
 }
 
 void SessionDataTypeController::MaybeCompleteLoading() {

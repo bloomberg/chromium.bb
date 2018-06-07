@@ -66,7 +66,6 @@ class SessionsSyncManager : public AbstractSessionsSyncManager,
   FaviconCache* GetFaviconCache() override;
   SessionsGlobalIdMapper* GetGlobalIdMapper() override;
   OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
-  void OnSessionRestoreComplete() override;
   syncer::SyncableService* GetSyncableService() override;
   syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
 

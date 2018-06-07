@@ -29,7 +29,6 @@ class AbstractSessionsSyncManager {
   virtual FaviconCache* GetFaviconCache() = 0;
   virtual SessionsGlobalIdMapper* GetGlobalIdMapper() = 0;
   virtual OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
-  virtual void OnSessionRestoreComplete() = 0;
   // Exactly one of the two below returns nullptr.
   virtual syncer::SyncableService* GetSyncableService() = 0;
   virtual syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() = 0;

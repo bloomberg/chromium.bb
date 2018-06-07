@@ -23,6 +23,8 @@ namespace sync_sessions {
 
 class MockLocalSessionEventHandler : public LocalSessionEventHandler {
  public:
+  void OnSessionRestoreComplete() override {}
+
   void OnLocalTabModified(SyncedTabDelegate* modified_tab) override {
     seen_urls_.push_back(modified_tab->GetVirtualURLAtIndex(
         modified_tab->GetCurrentEntryIndex()));

@@ -292,6 +292,8 @@ class SessionSyncBridgeTest : public ::testing::Test {
     return tab;
   }
 
+  void SessionRestoreComplete() { window_getter_.SessionRestoreComplete(); }
+
   SessionSyncBridge* bridge() { return bridge_.get(); }
 
   syncer::MockModelTypeChangeProcessor& mock_processor() {
@@ -363,7 +365,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDeferLocalEventDueToSessionRestore) {
   // OnSessionRestoreComplete() should issue three Put() calls, one updating the
   // header and one for each of the two added tabs.
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(3);
-  bridge()->OnSessionRestoreComplete();
+  SessionRestoreComplete();
   EXPECT_THAT(GetAllData(), SizeIs(3));
 }
 

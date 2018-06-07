@@ -95,11 +95,6 @@ class SyncChangeListWriteBatch
 
   syncer::SyncChangeList* sync_change_list() { return &changes_; }
 
-  void AddKnownTabNodeIds(const std::set<int>& known_tab_node_ids) {
-    known_tab_node_ids_.insert(known_tab_node_ids.begin(),
-                               known_tab_node_ids.end());
-  }
-
   void PutWithType(std::unique_ptr<sync_pb::SessionSpecifics> specifics,
                    SyncChange::SyncChangeType change_type) {
     sync_pb::EntitySpecifics entity_specifics;
@@ -179,11 +174,6 @@ void SessionsSyncManager::ScheduleGarbageCollection() {
                                 base::AsWeakPtr(this)));
 }
 
-void SessionsSyncManager::OnSessionRestoreComplete() {
-  // Do nothing. The very same event is plumbed manually to
-  // SessionDataTypeController by ProfileSyncComponentsFactoryImpl.
-}
-
 syncer::SyncableService* SessionsSyncManager::GetSyncableService() {
   return this;
 }
@@ -253,9 +243,6 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     batch.PutWithType(std::move(specifics), SyncChange::ACTION_ADD);
   }
 
-  batch.AddKnownTabNodeIds(
-      session_tracker_.LookupTabNodeIds(current_machine_tag()));
-
 #if defined(OS_ANDROID)
   std::string sync_machine_tag(
       BuildMachineTag(local_device_->GetLocalSyncCacheGUID()));
@@ -263,13 +250,14 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
     DeleteForeignSessionInternal(sync_machine_tag, batch.sync_change_list());
 #endif
 
-  // Check if anything has changed on the local client side.
-  local_session_event_handler_ = std::make_unique<LocalSessionEventHandlerImpl>(
-      /*delegate=*/this, sessions_client_, &session_tracker_, &batch);
-  local_tab_pool_out_of_sync_ = false;
-
   merge_result.set_error(sync_processor_->ProcessSyncChanges(
       FROM_HERE, *batch.sync_change_list()));
+
+  local_tab_pool_out_of_sync_ = false;
+
+  // Check if anything has changed on the local client side.
+  local_session_event_handler_ = std::make_unique<LocalSessionEventHandlerImpl>(
+      /*delegate=*/this, sessions_client_, &session_tracker_);
 
   sessions_client_->GetLocalSessionEventRouter()->StartRoutingTo(
       local_session_event_handler_.get());

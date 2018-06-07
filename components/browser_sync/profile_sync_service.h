@@ -326,9 +326,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Returns synced devices tracker.
   virtual syncer::DeviceInfoTracker* GetDeviceInfoTracker() const;
 
-  // Called when asynchronous session restore has completed.
-  void OnSessionRestoreComplete();
-
   // SyncEngineHost implementation.
   void OnEngineInitialized(
       syncer::ModelTypeSet initial_types,

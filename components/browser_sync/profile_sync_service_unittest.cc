@@ -1168,24 +1168,6 @@ TEST_F(ProfileSyncServiceTest, LocalBackendDisabledByPolicy) {
   EXPECT_TRUE(service()->IsSyncActive());
 }
 
-// Regression test for crbug/555434. The issue is that check for sessions DTC in
-// OnSessionRestoreComplete was creating map entry with nullptr which later was
-// dereferenced in OnSyncCycleCompleted. The fix is to use find() to check if
-// entry for sessions exists in map.
-TEST_F(ProfileSyncServiceTest, ValidPointersInDTCMap) {
-  CreateService(ProfileSyncService::AUTO_START);
-  service()->OnSessionRestoreComplete();
-  service()->OnSyncCycleCompleted(syncer::SyncCycleSnapshot(
-      syncer::ModelNeutralState(), syncer::ProgressMarkerMap(), false, 0, 0, 0,
-      false, 0, base::Time::Now(), base::Time::Now(),
-      std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
-      std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
-      sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
-      /*has_remaining_local_changes=*/false));
-}
-
 // The OpenTabsUIDelegate should not be accessible when PROXY_TABS is not
 // enabled.
 TEST_F(ProfileSyncServiceTest, GetOpenTabsUIDelegateNullIfDisabled) {

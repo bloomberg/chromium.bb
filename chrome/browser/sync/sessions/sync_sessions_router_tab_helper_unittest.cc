@@ -22,6 +22,8 @@ namespace sync_sessions {
 
 class FakeLocalSessionEventHandler : public LocalSessionEventHandler {
  public:
+  void OnSessionRestoreComplete() override {}
+
   void OnLocalTabModified(SyncedTabDelegate* modified_tab) override {
     was_notified_ = true;
   }

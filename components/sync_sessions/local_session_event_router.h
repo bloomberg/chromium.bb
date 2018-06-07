@@ -22,6 +22,11 @@ class LocalSessionEventHandler {
  public:
   virtual ~LocalSessionEventHandler() {}
 
+  // Called when asynchronous session restore has completed. On Android, this
+  // can be called multiple times (e.g. transition from a CCT without tabbed
+  // window to actually starting a tabbed activity).
+  virtual void OnSessionRestoreComplete() = 0;
+
   // A local navigation event took place that affects the synced session
   // for this instance of Chrome.
   virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) = 0;

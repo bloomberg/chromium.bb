@@ -170,6 +170,7 @@ class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   // TestSyncedTabDelegate (not owned).
   TestSyncedTabDelegate* AddTab(SessionID window_id,
                                 SessionID tab_id = SessionID::NewUnique());
+  void SessionRestoreComplete();
   LocalSessionEventRouter* router();
 
   // SyncedWindowDelegatesGetter overrides.
@@ -184,6 +185,7 @@ class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
     void StartRoutingTo(LocalSessionEventHandler* handler) override;
     void Stop() override;
     void NotifyNav(SyncedTabDelegate* tab);
+    void NotifySessionRestoreComplete();
 
    private:
     LocalSessionEventHandler* handler_ = nullptr;

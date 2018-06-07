@@ -57,18 +57,17 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
                                   const GURL& favicon_url) = 0;
   };
 
-  // Raw pointers must not be null and all pointees except |*initial_batch| must
-  // outlive this object. |*initial_batch| may or may not be initially empty
-  // (depending on whether the caller wants to bundle together other writes).
-  // This constructor populates |*initial_batch| to resync local window and tab
-  // information, but does *not* Commit() the batch.
+  // Raw pointers must not be null and all pointees must outlive this object.
+  // A side effect of this constructor could include (unless session restore is
+  // ongoing) the creation of a write batch (via |delegate| and committing
+  // changes).
   LocalSessionEventHandlerImpl(Delegate* delegate,
                                SyncSessionsClient* sessions_client,
-                               SyncedSessionTracker* session_tracker,
-                               WriteBatch* initial_batch);
+                               SyncedSessionTracker* session_tracker);
   ~LocalSessionEventHandlerImpl() override;
 
   // LocalSessionEventHandler implementation.
+  void OnSessionRestoreComplete() override;
   void OnLocalTabModified(SyncedTabDelegate* modified_tab) override;
   void OnFaviconsChanged(const std::set<GURL>& page_urls,
                          const GURL& icon_url) override;
