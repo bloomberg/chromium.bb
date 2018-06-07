@@ -72,17 +72,6 @@ GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateImageForGpuMemoryBuffer(
   return image;
 }
 
-scoped_refptr<gl::GLImage>
-GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateAnonymousImage(
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    unsigned internalformat,
-    bool* is_cleared) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 unsigned GpuMemoryBufferFactoryAndroidHardwareBuffer::RequiredTextureType() {
   return GL_TEXTURE_EXTERNAL_OES;
 }

@@ -34,6 +34,7 @@ class GPU_EXPORT ImageFactory {
 
   // Create an anonymous GLImage backed by a GpuMemoryBuffer that doesn't have a
   // client_id. It can't be passed to other processes.
+  virtual bool SupportsCreateAnonymousImage() const;
   virtual scoped_refptr<gl::GLImage> CreateAnonymousImage(
       const gfx::Size& size,
       gfx::BufferFormat format,

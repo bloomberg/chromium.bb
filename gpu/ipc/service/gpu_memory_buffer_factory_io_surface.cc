@@ -99,6 +99,10 @@ ImageFactory* GpuMemoryBufferFactoryIOSurface::AsImageFactory() {
   return this;
 }
 
+bool GpuMemoryBufferFactoryIOSurface::SupportsCreateAnonymousImage() const {
+  return true;
+}
+
 scoped_refptr<gl::GLImage>
 GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     const gfx::GpuMemoryBufferHandle& handle,
