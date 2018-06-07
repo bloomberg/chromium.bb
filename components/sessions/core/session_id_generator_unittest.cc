@@ -22,6 +22,9 @@ const int kExpectedIdPadding = 50;
 class SessionIdGeneratorTest : public testing::Test {
  protected:
   SessionIdGeneratorTest() {
+    // Call Shutdown() in case other tests outside this file have forgotten to
+    // do so, which would leak undesired state across tests.
+    SessionIdGenerator::GetInstance()->Shutdown();
     SessionIdGenerator::RegisterPrefs(prefs_.registry());
   }
 
@@ -155,6 +158,7 @@ TEST(SessionIdGeneratorWithoutInitTest, ShouldStartFromOneAndIncrement) {
   SessionIdGenerator* generator = SessionIdGenerator::GetInstance();
   EXPECT_EQ(1, generator->NewUnique().id());
   EXPECT_EQ(2, generator->NewUnique().id());
+  generator->Shutdown();
 }
 
 }  // namespace
