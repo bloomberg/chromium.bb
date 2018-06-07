@@ -399,6 +399,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           request_info->frame_tree_node_id,
           request_info->devtools_navigation_token,
           request_info->report_raw_headers,
+          request_info->begin_params->load_flags,
           base::MakeRefCounted<
               SignedExchangeURLLoaderFactoryForNonNetworkService>(
               resource_context_, url_request_context_getter),
@@ -608,6 +609,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           request_info->frame_tree_node_id,
           request_info->devtools_navigation_token,
           request_info->report_raw_headers,
+          request_info->begin_params->load_flags,
           default_url_loader_factory_getter_->GetNetworkFactory(),
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,

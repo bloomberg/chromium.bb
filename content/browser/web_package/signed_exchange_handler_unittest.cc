@@ -16,6 +16,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/filter/mock_source_stream.h"
@@ -128,8 +129,8 @@ class SignedExchangeHandlerTest
         ContentType(), std::move(source),
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
-        std::move(cert_fetcher_factory), request_context_getter_,
-        nullptr /* devtools_proxy */);
+        std::move(cert_fetcher_factory), net::LOAD_NORMAL,
+        request_context_getter_, nullptr /* devtools_proxy */);
   }
 
   void TearDown() override {

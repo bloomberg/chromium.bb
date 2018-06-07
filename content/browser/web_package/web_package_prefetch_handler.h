@@ -37,6 +37,7 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
   WebPackagePrefetchHandler(
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
       bool report_raw_headers,
+      int load_flags,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr network_loader,
       network::mojom::URLLoaderClientRequest network_client_request,

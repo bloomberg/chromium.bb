@@ -21,6 +21,7 @@ namespace content {
 WebPackagePrefetchHandler::WebPackagePrefetchHandler(
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     bool report_raw_headers,
+    int load_flags,
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr network_loader,
     network::mojom::URLLoaderClientRequest network_client_request,
@@ -49,6 +50,7 @@ WebPackagePrefetchHandler::WebPackagePrefetchHandler(
   web_package_loader_ = std::make_unique<WebPackageLoader>(
       outer_request_url, response, std::move(client), std::move(endpoints),
       std::move(request_initiator), network::mojom::kURLLoadOptionNone,
+      load_flags,
       std::make_unique<SignedExchangeDevToolsProxy>(
           outer_request_url, response, std::move(frame_tree_node_id_getter),
           base::nullopt /* devtools_navigation_token */, report_raw_headers),

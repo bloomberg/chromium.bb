@@ -21,6 +21,7 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
@@ -71,11 +72,13 @@ SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback,
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
+    int load_flags,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy)
     : headers_callback_(std::move(headers_callback)),
       source_(std::move(body)),
       cert_fetcher_factory_(std::move(cert_fetcher_factory)),
+      load_flags_(load_flags),
       request_context_getter_(std::move(request_context_getter)),
       net_log_(net::NetLogWithSource::Make(
           request_context_getter_->GetURLRequestContext()->net_log(),
@@ -112,7 +115,8 @@ SignedExchangeHandler::SignedExchangeHandler(
 
 SignedExchangeHandler::~SignedExchangeHandler() = default;
 
-SignedExchangeHandler::SignedExchangeHandler() : weak_factory_(this) {}
+SignedExchangeHandler::SignedExchangeHandler()
+    : load_flags_(net::LOAD_NORMAL), weak_factory_(this) {}
 
 void SignedExchangeHandler::SetupBuffers(size_t size) {
   header_buf_ = base::MakeRefCounted<net::IOBuffer>(size);
@@ -230,9 +234,12 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
   DCHECK(version_.has_value());
 
   DCHECK(cert_fetcher_factory_);
+
+  const bool force_fetch = load_flags_ & net::LOAD_BYPASS_CACHE;
+
   cert_fetcher_ = std::move(cert_fetcher_factory_)
                       ->CreateFetcherAndStart(
-                          cert_url, false, *version_,
+                          cert_url, force_fetch, *version_,
                           base::BindOnce(&SignedExchangeHandler::OnCertReceived,
                                          base::Unretained(this)),
                           devtools_proxy_.get());
