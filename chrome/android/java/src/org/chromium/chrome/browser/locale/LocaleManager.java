@@ -307,7 +307,7 @@ public class LocaleManager {
             return;
         }
 
-        if (VrIntentUtils.isLaunchingIntoVr(activity)) {
+        if (VrIntentUtils.isLaunchingIntoVr(activity, activity.getIntent())) {
             showPromoDialogForVr(dialogCreator, activity);
         } else {
             showPromoDialog(dialogCreator);

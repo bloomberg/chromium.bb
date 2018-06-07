@@ -653,7 +653,7 @@ public class VrShellDelegate
      * This is called every time ChromeActivity gets a new intent.
      */
     public static void onNewIntentWithNative(ChromeActivity activity, Intent intent) {
-        if (!VrIntentUtils.isVrIntent(intent)) return;
+        if (!VrIntentUtils.isLaunchingIntoVr(activity, intent)) return;
 
         VrShellDelegate instance = getInstance(activity);
         if (instance == null) return;
@@ -665,10 +665,7 @@ public class VrShellDelegate
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) {
-            if (!VrIntentUtils.wouldUse2DInVrRenderingMode(activity)
-                    || !deviceSupportsVrLaunches()) {
-                return;
-            }
+            if (!VrIntentUtils.isLaunchingIntoVr(activity, intent)) return;
             // This is to handle intents that are sent directly to ChromeActivitys, bypassing the
             // launcher.
             intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);

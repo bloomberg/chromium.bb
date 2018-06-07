@@ -335,7 +335,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         // We need to explicitly enable VR mode here so that the system doesn't kick us out of VR,
         // or drop us into the 2D-in-VR rendering mode, while we prepare for VR rendering.
-        if (VrIntentUtils.isLaunchingIntoVr(this)) VrShellDelegate.setVrModeEnabled(this, true);
+        if (VrIntentUtils.isLaunchingIntoVr(this, getIntent())) {
+            VrShellDelegate.setVrModeEnabled(this, true);
+        }
 
         // Force a partner customizations refresh if it has yet to be initialized.  This can happen
         // if Chrome is killed and you refocus a previous activity from Android recents, which does

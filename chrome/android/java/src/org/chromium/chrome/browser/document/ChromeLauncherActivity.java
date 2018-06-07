@@ -29,13 +29,6 @@ public class ChromeLauncherActivity extends Activity {
             // VR Intents should only ever get routed through the VrMainActivity.
             assert !VrIntentUtils.isVrIntent(getIntent());
 
-            // Handle Daydream's 2D-in-VR rendering mode by launching 2D intents in VR if we're in
-            // VR mode and the intent is supported in VR.
-            if (VrIntentUtils.maybeForwardToVrLauncher(getIntent(), this)) {
-                finish();
-                return;
-            }
-
             @LaunchIntentDispatcher.Action
             int dispatchAction = LaunchIntentDispatcher.dispatch(this, getIntent());
             switch (dispatchAction) {
