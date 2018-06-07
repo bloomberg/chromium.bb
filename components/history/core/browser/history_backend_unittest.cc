@@ -1236,7 +1236,7 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
       url, base::Time::Now(), 0,
       ui::PageTransitionFromInt(
           ui::PageTransitionGetQualifier(ui::PAGE_TRANSITION_TYPED)),
-      false, history::SOURCE_BROWSED);
+      false, history::SOURCE_BROWSED, true);
 
   // Fetch the row information about stripped url from history db.
   VisitVector visits;
@@ -1257,7 +1257,7 @@ TEST_F(HistoryBackendTest, AddPageVisitBackForward) {
 
   // Visit the url after typing it.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_BROWSED);
+                         false, history::SOURCE_BROWSED, true);
 
   // Ensure both the typed count and visit count are 1.
   VisitVector visits;
@@ -1272,7 +1272,7 @@ TEST_F(HistoryBackendTest, AddPageVisitBackForward) {
       url, base::Time::Now(), 0,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_FORWARD_BACK),
-      false, history::SOURCE_BROWSED);
+      false, history::SOURCE_BROWSED, false);
 
   // Ensure the typed count is still 1 but the visit count is 2.
   id = backend_->db()->GetRowForURL(url, &row);
@@ -1292,12 +1292,12 @@ TEST_F(HistoryBackendTest, AddPageVisitRedirectBackForward) {
 
   // Visit a typed URL with a redirect.
   backend_->AddPageVisit(url1, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_BROWSED);
+                         false, history::SOURCE_BROWSED, true);
   backend_->AddPageVisit(
       url2, base::Time::Now(), 0,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_CLIENT_REDIRECT),
-      false, history::SOURCE_BROWSED);
+      false, history::SOURCE_BROWSED, false);
 
   // Ensure the redirected URL does not count as typed.
   VisitVector visits;
@@ -1313,7 +1313,7 @@ TEST_F(HistoryBackendTest, AddPageVisitRedirectBackForward) {
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_FORWARD_BACK |
                                 ui::PAGE_TRANSITION_CLIENT_REDIRECT),
-      false, history::SOURCE_BROWSED);
+      false, history::SOURCE_BROWSED, false);
 
   // Ensure the typed count is still 1 but the visit count is 2.
   id = backend_->db()->GetRowForURL(url2, &row);
@@ -1332,13 +1332,13 @@ TEST_F(HistoryBackendTest, AddPageVisitSource) {
 
   // Assume visiting the url from an externsion.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_EXTENSION);
+                         false, history::SOURCE_EXTENSION, true);
   // Assume the url is imported from Firefox.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_FIREFOX_IMPORTED);
+                         false, history::SOURCE_FIREFOX_IMPORTED, true);
   // Assume this url is also synced.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_SYNCED);
+                         false, history::SOURCE_SYNCED, true);
 
   // Fetch the row information about the url from history db.
   VisitVector visits;
@@ -1387,7 +1387,7 @@ TEST_F(HistoryBackendTest, AddPageVisitNotLastVisit) {
       url, recent_time, 0,
       ui::PageTransitionFromInt(
           ui::PageTransitionGetQualifier(ui::PAGE_TRANSITION_TYPED)),
-      false, history::SOURCE_BROWSED);
+      false, history::SOURCE_BROWSED, false);
 
   // Add to the url a visit with older time (could be syncing from another
   // client, etc.).
@@ -1395,7 +1395,7 @@ TEST_F(HistoryBackendTest, AddPageVisitNotLastVisit) {
       url, older_time, 0,
       ui::PageTransitionFromInt(
           ui::PageTransitionGetQualifier(ui::PAGE_TRANSITION_TYPED)),
-      false, history::SOURCE_SYNCED);
+      false, history::SOURCE_SYNCED, false);
 
   // Fetch the row information about url from history db.
   VisitVector visits;
@@ -1421,11 +1421,11 @@ TEST_F(HistoryBackendTest, AddPageVisitFiresNotificationWithCorrectDetails) {
 
   // Visit two distinct URLs, the second one twice.
   backend_->AddPageVisit(url1, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                         false, history::SOURCE_BROWSED);
+                         false, history::SOURCE_BROWSED, false);
   for (int i = 0; i < 2; ++i) {
     backend_->AddPageVisit(url2, base::Time::Now(), 0,
                            ui::PAGE_TRANSITION_TYPED, false,
-                           history::SOURCE_BROWSED);
+                           history::SOURCE_BROWSED, true);
   }
 
   URLRow stored_row1, stored_row2;
@@ -3266,7 +3266,7 @@ TEST_F(HistoryBackendTest, TopHosts) {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END),
-        false, history::SOURCE_BROWSED);
+        false, history::SOURCE_BROWSED, false);
   }
 
   EXPECT_THAT(backend_->TopHosts(3),
@@ -3285,7 +3285,7 @@ TEST_F(HistoryBackendTest, TopHosts_ElidePortAndScheme) {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END),
-        false, history::SOURCE_BROWSED);
+        false, history::SOURCE_BROWSED, false);
   }
 
   EXPECT_THAT(backend_->TopHosts(3), ElementsAre(std::make_pair("cnn.com", 3)));
@@ -3302,7 +3302,7 @@ TEST_F(HistoryBackendTest, TopHosts_ElideWWW) {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END),
-        false, history::SOURCE_BROWSED);
+        false, history::SOURCE_BROWSED, false);
   }
 
   EXPECT_THAT(backend_->TopHosts(3),
@@ -3321,7 +3321,7 @@ TEST_F(HistoryBackendTest, TopHosts_OnlyLast30Days) {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END),
-        false, history::SOURCE_BROWSED);
+        false, history::SOURCE_BROWSED, false);
   }
   backend_->AddPageVisit(
       GURL("http://www.oracle.com/"),
@@ -3329,7 +3329,7 @@ TEST_F(HistoryBackendTest, TopHosts_OnlyLast30Days) {
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_CHAIN_START |
                                 ui::PAGE_TRANSITION_CHAIN_END),
-      false, history::SOURCE_BROWSED);
+      false, history::SOURCE_BROWSED, false);
 
   EXPECT_THAT(backend_->TopHosts(3),
               ElementsAre(std::make_pair("cnn.com", 2),
@@ -3350,7 +3350,7 @@ TEST_F(HistoryBackendTest, TopHosts_MaxNumHosts) {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END),
-        false, history::SOURCE_BROWSED);
+        false, history::SOURCE_BROWSED, false);
   }
 
   EXPECT_THAT(backend_->TopHosts(2),
@@ -3375,7 +3375,7 @@ TEST_F(HistoryBackendTest, TopHosts_IgnoreUnusualURLs) {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END),
-        false, history::SOURCE_BROWSED);
+        false, history::SOURCE_BROWSED, false);
   }
 
   EXPECT_THAT(backend_->TopHosts(5), ElementsAre(std::make_pair("cnn.com", 3)));
@@ -3405,7 +3405,7 @@ TEST_F(HistoryBackendTest, HostRankIfAvailable) {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END),
-        false, history::SOURCE_BROWSED);
+        false, history::SOURCE_BROWSED, false);
   }
 
   EXPECT_EQ(kMaxTopHosts,
@@ -3433,7 +3433,7 @@ TEST_F(HistoryBackendTest, RecordTopHostsMetrics) {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                   ui::PAGE_TRANSITION_CHAIN_START |
                                   ui::PAGE_TRANSITION_CHAIN_END),
-        false, history::SOURCE_BROWSED);
+        false, history::SOURCE_BROWSED, false);
   }
 
   // Compute host_ranks_ for RecordTopHostsMetrics.
@@ -3448,7 +3448,7 @@ TEST_F(HistoryBackendTest, RecordTopHostsMetrics) {
   for (const GURL& url : urls) {
     backend_->AddPageVisit(url, base::Time::Now(), 0,
                            ui::PAGE_TRANSITION_CHAIN_END, false,
-                           history::SOURCE_BROWSED);
+                           history::SOURCE_BROWSED, false);
   }
 
   EXPECT_THAT(histogram.GetAllSamples("History.TopHostsVisitsByRank"),
@@ -3463,22 +3463,22 @@ TEST_F(HistoryBackendTest, GetCountsAndLastVisitForOrigins) {
 
   backend_->AddPageVisit(GURL("http://cnn.com/intl"), yesterday, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED);
+                         history::SOURCE_BROWSED, false);
   backend_->AddPageVisit(GURL("http://cnn.com/us"), last_week, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED);
+                         history::SOURCE_BROWSED, false);
   backend_->AddPageVisit(GURL("http://cnn.com/ny"), now, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED);
+                         history::SOURCE_BROWSED, false);
   backend_->AddPageVisit(GURL("https://cnn.com/intl"), yesterday, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED);
+                         history::SOURCE_BROWSED, false);
   backend_->AddPageVisit(GURL("http://cnn.com:8080/path"), yesterday, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED);
+                         history::SOURCE_BROWSED, false);
   backend_->AddPageVisit(GURL("http://dogtopia.com/pups?q=poods"), now, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED);
+                         history::SOURCE_BROWSED, false);
 
   std::set<GURL> origins;
   origins.insert(GURL("http://cnn.com/"));
@@ -3492,7 +3492,7 @@ TEST_F(HistoryBackendTest, GetCountsAndLastVisitForOrigins) {
   origins.insert(GURL("http://notpresent.com/"));
   backend_->AddPageVisit(GURL("http://cnn.com/"), tomorrow, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED);
+                         history::SOURCE_BROWSED, false);
 
   EXPECT_THAT(
       backend_->GetCountsAndLastVisitForOrigins(origins),
@@ -3858,6 +3858,128 @@ TEST_F(HistoryBackendTest, DatabaseError) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Tests that a typed navigation which results in a redirect from HTTP to HTTPS
+// will cause the HTTPS URL to accrue the typed count, and the HTTP URL to not.
+TEST_F(HistoryBackendTest, RedirectScoring) {
+  // Non-typed navigations should not increase the count for either.
+  const char* redirect1[] = {"http://foo1.com/page1.html",
+                             "https://foo1.com/page1.html", nullptr};
+  AddRedirectChainWithTransitionAndTime(redirect1, 0, ui::PAGE_TRANSITION_LINK,
+                                        base::Time::Now());
+  URLRow url_row;
+  ASSERT_TRUE(backend_->GetURL(GURL("http://foo1.com/page1.html"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo1.com/page1.html"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+
+  // Typed navigation with a redirect from HTTP to HTTPS should count for the
+  // HTTPS URL.
+  AddRedirectChainWithTransitionAndTime(redirect1, 1, ui::PAGE_TRANSITION_TYPED,
+                                        base::Time::Now());
+  ASSERT_TRUE(backend_->GetURL(GURL("http://foo1.com/page1.html"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo1.com/page1.html"), &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+
+  // The HTTPS URL should accrue the typed count, even if it adds a trivial
+  // subdomain.
+  const char* redirect2[] = {"http://foo2.com", "https://www.foo2.com",
+                             nullptr};
+  AddRedirectChainWithTransitionAndTime(redirect2, 2, ui::PAGE_TRANSITION_TYPED,
+                                        base::Time::Now());
+  ASSERT_TRUE(backend_->GetURL(GURL("http://foo2.com"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://www.foo2.com"), &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+
+  // The HTTPS URL should accrue the typed count, even if it removes a trivial
+  // subdomain.
+  const char* redirect3[] = {"http://m.foo3.com", "https://foo3.com", nullptr};
+  AddRedirectChainWithTransitionAndTime(redirect3, 3, ui::PAGE_TRANSITION_TYPED,
+                                        base::Time::Now());
+  ASSERT_TRUE(backend_->GetURL(GURL("http://m.foo3.com"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo3.com"), &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+
+  // A typed navigation redirecting to a different URL (not simply HTTP to HTTPS
+  // with trivial subdomain changes) should have the first URL accrue the typed
+  // count, not the second.
+  const char* redirect4[] = {"http://foo4.com", "https://foo4.com/page1.html",
+                             nullptr};
+  AddRedirectChainWithTransitionAndTime(redirect4, 4, ui::PAGE_TRANSITION_TYPED,
+                                        base::Time::Now());
+  ASSERT_TRUE(backend_->GetURL(GURL("http://foo4.com"), &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo4.com/page1.html"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+
+  const char* redirect5[] = {"http://bar.com", "https://baz.com", nullptr};
+  AddRedirectChainWithTransitionAndTime(redirect5, 5, ui::PAGE_TRANSITION_TYPED,
+                                        base::Time::Now());
+  ASSERT_TRUE(backend_->GetURL(GURL("http://bar.com"), &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://baz.com"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+
+  // A typed navigation redirecting from HTTPS to HTTP should have the first URL
+  // accrue the typed count, not the second.
+  const char* redirect6[] = {"https://foo6.com", "http://foo6.com", nullptr};
+  AddRedirectChainWithTransitionAndTime(redirect6, 6, ui::PAGE_TRANSITION_TYPED,
+                                        base::Time::Now());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo6.com"), &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("http://foo6.com"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+
+  // A long redirect chain where the first redirect is HTTP to HTTPS should
+  // count for the second URL (not the first or later URLs).
+  const char* redirect7[] = {"http://foo7.com", "https://foo7.com",
+                             "https://foo7.com/page1.html", nullptr};
+  AddRedirectChainWithTransitionAndTime(redirect7, 7, ui::PAGE_TRANSITION_TYPED,
+                                        base::Time::Now());
+  ASSERT_TRUE(backend_->GetURL(GURL("http://foo7.com"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo7.com"), &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo7.com/page1.html"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+
+  // A typed navigation redirecting from HTTP to HTTPS but using non-standard
+  // port numbers should have the HTTPS URL accrue the typed count.
+  const char* redirect8[] = {"http://foo8.com:1234", "https://foo8.com:9876",
+                             nullptr};
+  AddRedirectChainWithTransitionAndTime(redirect8, 8, ui::PAGE_TRANSITION_TYPED,
+                                        base::Time::Now());
+  ASSERT_TRUE(backend_->GetURL(GURL("http://foo8.com:1234"), &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(GURL("https://foo8.com:9876"), &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+}
+
+// Tests that a typed navigation will accrue the typed count even when a client
+// redirect from HTTP to HTTPS occurs.
+TEST_F(HistoryBackendTest, ClientRedirectScoring) {
+  const GURL typed_url("http://foo.com");
+  const GURL redirected_url("https://foo.com");
+
+  // Initial typed page visit, with no server redirects.
+  HistoryAddPageArgs request(typed_url, base::Time::Now(), nullptr, 0, GURL(),
+                             {}, ui::PAGE_TRANSITION_TYPED, false,
+                             history::SOURCE_BROWSED, false, true);
+  backend_->AddPage(request);
+
+  // Client redirect to HTTPS (non-user initiated).
+  AddClientRedirect(typed_url, redirected_url, /*did_replace=*/true,
+                    base::Time::Now(), /*transition1=*/nullptr,
+                    /*transition2=*/nullptr);
+  URLRow url_row;
+  ASSERT_TRUE(backend_->GetURL(typed_url, &url_row));
+  EXPECT_EQ(1, url_row.typed_count());
+  ASSERT_TRUE(backend_->GetURL(redirected_url, &url_row));
+  EXPECT_EQ(0, url_row.typed_count());
+}
+
 // Common implementation for the two tests below, given that the only difference
 // between them is the type of the notification sent out.
 void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(
@@ -4092,6 +4214,24 @@ TEST_F(HistoryBackendTest, QueryMostVisitedURLs) {
       most_visited,
       ElementsAre(MostVisitedURL(GURL("http://example1.com"), kSomeTitle),
                   MostVisitedURL(GURL("http://example5.com"), kSomeTitle)));
+}
+
+TEST(FormatUrlForRedirectComparisonTest, TestUrlFormatting) {
+  // Tests that the formatter removes HTTPS scheme, port, username/password,
+  // and trivial "www." subdomain. Domain and path are left unchanged.
+  GURL url1("https://foo:bar@www.baz.com:4443/path1.html");
+  EXPECT_EQ(base::ASCIIToUTF16("baz.com/path1.html"),
+            FormatUrlForRedirectComparison(url1));
+
+  // Tests that the formatter removes the HTTP scheme.
+  GURL url2("http://www.baz.com");
+  EXPECT_EQ(base::ASCIIToUTF16("baz.com/"),
+            FormatUrlForRedirectComparison(url2));
+
+  // Tests that the formatter removes repeated trivial subdomains.
+  GURL url3("http://m.www.www.baz.com/");
+  EXPECT_EQ(base::ASCIIToUTF16("baz.com/"),
+            FormatUrlForRedirectComparison(url3));
 }
 
 }  // namespace history
