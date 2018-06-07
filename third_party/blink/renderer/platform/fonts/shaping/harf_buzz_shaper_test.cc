@@ -563,6 +563,59 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingToNegative) {
   EXPECT_GE(result->Bounds().MaxX(), char_width);
 }
 
+static struct GlyphDataRangeTestData {
+  const char16_t* text;
+  TextDirection direction;
+  unsigned run_index;
+  unsigned start_offset;
+  unsigned end_offset;
+  unsigned start_glyph;
+  unsigned end_glyph;
+} glyph_data_range_test_data[] = {
+    // Hebrew, taken from fast/text/selection/hebrew-selection.html
+    // The two code points form a grapheme cluster, which produces two glyphs.
+    // Character index array should be [0, 0].
+    {u"\u05E9\u05B0", TextDirection::kRtl, 0, 0, 1, 0, 2},
+#if !defined(OS_MACOSX)
+    // ZWJ tests taken from fast/text/international/zerowidthjoiner.html
+    // Character index array should be [6, 3, 3, 3, 0, 0, 0].
+    // Mac shapes differently and that glyph index expectations do not match.
+    {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 0,
+     1, 4, 7},
+    {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 2,
+     5, 1, 4},
+    {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 4,
+     7, 0, 1},
+#endif
+};
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const GlyphDataRangeTestData& data) {
+  return ostream << data.text;
+}
+
+class GlyphDataRangeTest
+    : public HarfBuzzShaperTest,
+      public testing::WithParamInterface<GlyphDataRangeTestData> {};
+
+INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
+                        GlyphDataRangeTest,
+                        testing::ValuesIn(glyph_data_range_test_data));
+
+TEST_P(GlyphDataRangeTest, Data) {
+  auto data = GetParam();
+  String string(data.text);
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, data.direction);
+
+  auto& run = TestInfo(result)->RunInfoForTesting(data.run_index);
+  auto glyphs = run.FindGlyphDataRange(data.start_offset, data.end_offset);
+  unsigned start_glyph = std::distance(run.glyph_data_.begin(), glyphs.begin);
+  EXPECT_EQ(data.start_glyph, start_glyph);
+  unsigned end_glyph = std::distance(run.glyph_data_.begin(), glyphs.end);
+  EXPECT_EQ(data.end_glyph, end_glyph);
+}
+
 static struct OffsetForPositionTestData {
   float position;
   unsigned offset_ltr;
