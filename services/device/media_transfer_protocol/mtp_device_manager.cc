@@ -41,17 +41,6 @@ void EnumerateStorageCallbackWrapper(
   std::move(callback).Run(std::move(storage_info_ptr_list));
 }
 
-void ReadDirectoryCallbackWrapper(
-    mojom::MtpManager::ReadDirectoryCallback callback,
-    const std::vector<mojom::MtpFileEntry>& file_entries,
-    bool has_more,
-    bool error) {
-  std::vector<mojom::MtpFileEntryPtr> files(file_entries.size());
-  for (size_t i = 0; i < file_entries.size(); ++i)
-    files[i] = file_entries[i].Clone();
-  std::move(callback).Run(std::move(files), has_more, error);
-}
-
 }  // namespace
 
 MtpDeviceManager::MtpDeviceManager()
@@ -115,14 +104,12 @@ void MtpDeviceManager::CreateDirectory(const std::string& storage_handle,
       base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
-void MtpDeviceManager::ReadDirectory(const std::string& storage_handle,
-                                     uint32_t file_id,
-                                     uint64_t max_size,
-                                     ReadDirectoryCallback callback) {
-  media_transfer_protocol_manager_->ReadDirectory(
-      storage_handle, file_id, max_size,
-      base::Bind(ReadDirectoryCallbackWrapper,
-                 base::AdaptCallbackForRepeating(std::move(callback))));
+void MtpDeviceManager::ReadDirectoryEntryIds(
+    const std::string& storage_handle,
+    uint32_t file_id,
+    ReadDirectoryEntryIdsCallback callback) {
+  media_transfer_protocol_manager_->ReadDirectoryEntryIds(
+      storage_handle, file_id, std::move(callback));
 }
 
 void MtpDeviceManager::ReadFileChunk(const std::string& storage_handle,

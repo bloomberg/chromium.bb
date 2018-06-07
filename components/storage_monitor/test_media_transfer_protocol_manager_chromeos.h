@@ -45,10 +45,9 @@ class TestMediaTransferProtocolManagerChromeOS
                        uint32_t parent_id,
                        const std::string& directory_name,
                        CreateDirectoryCallback callback) override;
-  void ReadDirectory(const std::string& storage_handle,
-                     uint32_t file_id,
-                     uint64_t max_size,
-                     ReadDirectoryCallback callback) override;
+  void ReadDirectoryEntryIds(const std::string& storage_handle,
+                             uint32_t file_id,
+                             ReadDirectoryEntryIdsCallback callback) override;
   void ReadFileChunk(const std::string& storage_handle,
                      uint32_t file_id,
                      uint32_t offset,

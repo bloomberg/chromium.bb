@@ -177,20 +177,44 @@ class MTPDeviceTaskHelper {
                          const ErrorCallback& error_callback,
                          const bool error) const;
 
-  // Query callback for ReadDirectory().
+  // Query callback for ReadDirectoryEntryIds().
   //
-  // If there is no error, |error| is set to false, |file_entries| has the
-  // directory file entries and |success_callback| is invoked on the IO thread
-  // to notify the caller.
+  // |max_size| specifies the number of entries to read. If it is zero, then
+  // read all the entries.
   //
-  // If there is an error, |error| is set to true, |file_entries| is empty
-  // and |error_callback| is invoked on the IO thread to notify the caller.
-  void OnDidReadDirectory(
+  // If there is no error, |error| is set to false, and |file_ids| has the IDs
+  // of the directory file entries. If |file_ids| is empty, then just run
+  // |success_callback|. Otherwise, get the directories entries from |file_ids|
+  // in chunks via OnGotDirectoryEntries().
+  //
+  // If there is an error, then |error| is set to true, and |error_callback| is
+  // invoked on the IO thread to notify the caller.
+  void OnReadDirectoryEntryIdsToReadDirectory(
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
+      size_t max_size,
+      const std::vector<uint32_t>& file_ids,
+      bool error);
+
+  // Query callback for GetFileInfo() when called by
+  // OnReadDirectoryEntryIdsToReadDirectory().
+  //
+  // Many of the parameters are shared with
+  // OnReadDirectoryEntryIdsToReadDirectory() and are exactly the same.
+  //
+  // |offset| is the offset into |file_ids| to read from.
+  // |sorted_file_ids| is a sorted copy of |file_ids|.
+  // |file_entries| contains the results of the GetFileInfo() call.
+  // |error| indicates if the GetFileInfo() call succeeded or failed.
+  void OnGotDirectoryEntries(
+      const ReadDirectorySuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const std::vector<uint32_t>& file_ids,
+      size_t offset,
+      size_t max_size,
+      const std::vector<uint32_t>& sorted_file_ids,
       std::vector<device::mojom::MtpFileEntryPtr> file_entries,
-      bool has_more,
-      bool error) const;
+      bool error);
 
   // Intermediate step to finish a ReadBytes request.
   void OnGetFileInfoToReadBytes(
