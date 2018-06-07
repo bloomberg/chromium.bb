@@ -58,12 +58,6 @@ void ExceptionState::ThrowDOMException(ExceptionCode ec,
       s_create_dom_exception_func_(isolate_, ec, processed_message, String()));
 }
 
-void ExceptionState::ThrowRangeError(const String& message) {
-  SetException(ESErrorType::kRangeError, message,
-               V8ThrowException::CreateRangeError(
-                   isolate_, AddExceptionContext(message)));
-}
-
 void ExceptionState::ThrowSecurityError(const String& sanitized_message,
                                         const String& unsanitized_message) {
   const String& final_sanitized = AddExceptionContext(sanitized_message);
@@ -74,10 +68,34 @@ void ExceptionState::ThrowSecurityError(const String& sanitized_message,
                                    final_sanitized, final_unsanitized));
 }
 
+void ExceptionState::ThrowRangeError(const String& message) {
+  SetException(ESErrorType::kRangeError, message,
+               V8ThrowException::CreateRangeError(
+                   isolate_, AddExceptionContext(message)));
+}
+
 void ExceptionState::ThrowTypeError(const String& message) {
   SetException(ESErrorType::kTypeError, message,
                V8ThrowException::CreateTypeError(isolate_,
                                                  AddExceptionContext(message)));
+}
+
+void ExceptionState::ThrowDOMException(ExceptionCode exception_code,
+                                       const char* message) {
+  ThrowDOMException(exception_code, String(message));
+}
+
+void ExceptionState::ThrowSecurityError(const char* sanitized_message,
+                                        const char* unsanitized_message) {
+  ThrowSecurityError(String(sanitized_message), String(unsanitized_message));
+}
+
+void ExceptionState::ThrowRangeError(const char* message) {
+  ThrowRangeError(String(message));
+}
+
+void ExceptionState::ThrowTypeError(const char* message) {
+  ThrowTypeError(String(message));
 }
 
 void ExceptionState::RethrowV8Exception(v8::Local<v8::Value> value) {
