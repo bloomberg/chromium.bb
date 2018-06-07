@@ -47,8 +47,11 @@ AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
   if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     SetBorder(views::CreateEmptyBorder(gfx::Insets(4)));
 
-  set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                              ui::EF_MIDDLE_MOUSE_BUTTON);
+  // Activate on press for left-mouse-button only to mimic other MenuButtons
+  // without drag-drop actions (specifically the adjacent browser menu).
+  set_notify_action(Button::NOTIFY_ON_PRESS);
+  set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON);
+
   set_tag(IDC_SHOW_AVATAR_MENU);
   set_id(VIEW_ID_AVATAR_BUTTON);
 
