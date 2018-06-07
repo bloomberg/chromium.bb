@@ -31,6 +31,10 @@
         android:title="@string/network_predictions_title"
         android:summary="@string/network_predictions_summary"
         android:persistent="false" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
+        android:key="can_make_payment"
+        android:title="@string/can_make_payment_title"
+        android:summary="@string/settings_can_make_payment_toggle_label" />
     <Preference
         android:key="usage_and_crash_reports"
         android:title="@string/usage_and_crash_reports_title"

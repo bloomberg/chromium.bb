@@ -11,6 +11,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -19,6 +20,8 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.ExecutionException;
@@ -78,5 +81,39 @@ public class PaymentRequestCcCanMakePaymentQueryTest implements MainActivityStar
         mPaymentRequestTestRule.clickNodeAndWait(
                 "buy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testCanMakePaymentDisabled()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        ThreadUtils.runOnUiThreadBlocking((Runnable) () -> {
+            PrefServiceBridge.getInstance().setBoolean(Pref.CAN_MAKE_PAYMENT_ENABLED, false);
+        });
+
+        mPaymentRequestTestRule.openPageAndClickBuyAndWait(
+                mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
+
+        // Repeating a query does not count against the quota.
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "buy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
+
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "buy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
+
+        // Different queries are throttled for a period of time.
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "other-buy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"Not allowed to check whether can make payment"});
+
+        // Repeating the same query again does not count against the quota.
+        mPaymentRequestTestRule.clickNodeAndWait(
+                "buy", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
+        mPaymentRequestTestRule.expectResultContains(new String[] {"false"});
     }
 }
