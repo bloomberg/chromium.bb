@@ -76,6 +76,8 @@ static_library("secure_channel") {
     "secure_channel_impl.h",
     "secure_channel_service.cc",
     "secure_channel_service.h",
+    "shared_resource_scheduler.cc",
+    "shared_resource_scheduler.h",
     "single_client_message_proxy.cc",
     "single_client_message_proxy.h",
     "single_client_message_proxy_impl.cc",
@@ -172,6 +174,7 @@ source_set("unit_tests") {
     "pending_connection_manager_impl_unittest.cc",
     "pending_connection_request_base_unittest.cc",
     "secure_channel_service_unittest.cc",
+    "shared_resource_scheduler_unittest.cc",
     "single_client_message_proxy_impl_unittest.cc",
   ]
 
