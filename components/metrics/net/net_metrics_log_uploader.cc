@@ -12,6 +12,7 @@
 #include "components/encrypted_messages/message_encrypter.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "third_party/metrics_proto/reporting_info.pb.h"
@@ -195,8 +196,10 @@ void NetMetricsLogUploader::UploadLogToURL(
                                                          service);
   current_fetch_->SetRequestContext(request_context_getter_);
   std::string reporting_info_string = SerializeReportingInfo(reporting_info);
-  // If we are not using HTTPS for this upload, encrypt it.
-  if (!url.SchemeIs(url::kHttpsScheme)) {
+  // If we are not using HTTPS for this upload, encrypt it. We do not encrypt
+  // requests to localhost to allow testing with a local collector that doesn't
+  // have decryption enabled.
+  if (!url.SchemeIs(url::kHttpsScheme) && !net::IsLocalhost(url)) {
     std::string encrypted_message;
     if (!EncryptString(compressed_log_data, &encrypted_message)) {
       current_fetch_.reset();
