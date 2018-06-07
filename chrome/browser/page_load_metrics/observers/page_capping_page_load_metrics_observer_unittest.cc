@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
@@ -22,6 +23,24 @@
 namespace {
 const char kTestURL[] = "http://www.test.com";
 }
+
+// Class that overrides WriteToSavings.
+class TestPageCappingPageLoadMetricsObserver
+    : public PageCappingPageLoadMetricsObserver {
+ public:
+  using SizeUpdateCallback = base::RepeatingCallback<void(int64_t)>;
+  explicit TestPageCappingPageLoadMetricsObserver(
+      const SizeUpdateCallback& callback)
+      : size_callback_(callback) {}
+  ~TestPageCappingPageLoadMetricsObserver() override {}
+
+  void WriteToSavings(int64_t bytes_saved) override {
+    size_callback_.Run(bytes_saved);
+  }
+
+ private:
+  SizeUpdateCallback size_callback_;
+};
 
 class PageCappingObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
@@ -42,14 +61,19 @@ class PageCappingObserverTest
     return InfoBarService::FromWebContents(web_contents());
   }
 
+  // Called from the observer when |WriteToSavings| is called.
+  void UpdateSavings(int64_t savings) { savings_ += savings; }
+
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    auto observer = std::make_unique<PageCappingPageLoadMetricsObserver>();
+    auto observer = std::make_unique<TestPageCappingPageLoadMetricsObserver>(
+        base::BindRepeating(&PageCappingObserverTest::UpdateSavings,
+                            base::Unretained(this)));
     observer_ = observer.get();
     tracker->AddObserver(std::move(observer));
   }
-
-  PageCappingPageLoadMetricsObserver* observer_;
+  int64_t savings_ = 0;
+  TestPageCappingPageLoadMetricsObserver* observer_;
 };
 
 TEST_F(PageCappingObserverTest, ExperimentDisabled) {
@@ -188,7 +212,7 @@ TEST_F(PageCappingObserverTest, DefaultThresholdMetMedia) {
 
 TEST_F(PageCappingObserverTest, NotEnoughForThreshold) {
   std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMB", "1"}, {"PageCapMB", "1"}};
+      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}};
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
@@ -216,7 +240,7 @@ TEST_F(PageCappingObserverTest, NotEnoughForThreshold) {
 
 TEST_F(PageCappingObserverTest, InfobarOnlyShownOnce) {
   std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMB", "1"}, {"PageCapMB", "1"}};
+      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}};
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
@@ -255,7 +279,7 @@ TEST_F(PageCappingObserverTest, InfobarOnlyShownOnce) {
 
 TEST_F(PageCappingObserverTest, MediaCap) {
   std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMB", "10"}, {"PageCapMB", "1"}};
+      {"MediaPageCapMiB", "10"}, {"PageCapMiB", "1"}};
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
@@ -288,7 +312,7 @@ TEST_F(PageCappingObserverTest, MediaCap) {
 
 TEST_F(PageCappingObserverTest, PageCap) {
   std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMB", "1"}, {"PageCapMB", "10"}};
+      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "10"}};
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
@@ -318,7 +342,7 @@ TEST_F(PageCappingObserverTest, PageCap) {
 
 TEST_F(PageCappingObserverTest, PageCappingTriggered) {
   std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMB", "1"}, {"PageCapMB", "1"}};
+      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}};
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
@@ -364,4 +388,146 @@ TEST_F(PageCappingObserverTest, PageCappingTriggered) {
   EXPECT_FALSE(content::WebContentsTester::For(web_contents())
                    ->GetPauseSubresourceLoadingCalled());
   EXPECT_FALSE(observer_->IsPausedForTesting());
+}
+
+// Check that data savings works without a specific param. The estimated page
+// size should be 1.5 the threshold.
+TEST_F(PageCappingObserverTest, DataSavingsDefault) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+
+  // A resource of 1/4 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 256) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an infobar as the non-media cap is met.
+  for (size_t i = 0; i < 4; i++)
+    SimulateLoadedResource(resource);
+  EXPECT_EQ(1u, InfoBarCount());
+
+  // Verify the callback is called twice with appropriate bool values.
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+  EXPECT_TRUE(content::WebContentsTester::For(web_contents())
+                  ->GetPauseSubresourceLoadingCalled());
+  EXPECT_EQ(1u, InfoBarCount());
+  EXPECT_TRUE(observer_->IsPausedForTesting());
+
+  // This should cause savings to be written.
+  SimulateAppEnterBackground();
+  EXPECT_EQ(1024 * 1024 / 2, savings_);
+
+  SimulateLoadedResource(resource);
+
+  // Adding another resource and forcing savings to be written should reduce
+  // total savings.
+  SimulateAppEnterBackground();
+  EXPECT_EQ(1024 * 1024 / 4, savings_);
+
+  content::WebContentsTester::For(web_contents())
+      ->ResetPauseSubresourceLoadingCalled();
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+  EXPECT_FALSE(observer_->IsPausedForTesting());
+
+  // Resuming the page should force savings to 0.
+  NavigateToUntrackedUrl();
+  EXPECT_EQ(0l, savings_);
+}
+
+// Check that data savings works with a specific param. The estimated page size
+// should be |PageTypicalLargePageMB|.
+TEST_F(PageCappingObserverTest, DataSavingsParam) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+
+  // A resource of 1/4 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 256) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an infobar as the non-media cap is met.
+  for (size_t i = 0; i < 4; i++)
+    SimulateLoadedResource(resource);
+  EXPECT_EQ(1u, InfoBarCount());
+
+  // Verify the callback is called twice with appropriate bool values.
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+  EXPECT_TRUE(content::WebContentsTester::For(web_contents())
+                  ->GetPauseSubresourceLoadingCalled());
+  EXPECT_EQ(1u, InfoBarCount());
+  EXPECT_TRUE(observer_->IsPausedForTesting());
+
+  // This should cause savings to be written.
+  SimulateAppEnterBackground();
+  EXPECT_EQ(1024 * 1024, savings_);
+
+  SimulateLoadedResource(resource);
+
+  // Adding another resource and forcing savings to be written should reduce
+  // total savings.
+  SimulateAppEnterBackground();
+  EXPECT_EQ(1024 * 1024 * 3 / 4, savings_);
+
+  content::WebContentsTester::For(web_contents())
+      ->ResetPauseSubresourceLoadingCalled();
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+  EXPECT_FALSE(content::WebContentsTester::For(web_contents())
+                   ->GetPauseSubresourceLoadingCalled());
+  EXPECT_FALSE(observer_->IsPausedForTesting());
+
+  // Resuming should make the savings 0.
+  SimulateAppEnterBackground();
+  EXPECT_EQ(0l, savings_);
+
+  // Forcing savings to be written again should not change savings.
+  NavigateToUntrackedUrl();
+  EXPECT_EQ(0l, savings_);
 }

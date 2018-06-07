@@ -15,7 +15,7 @@
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 // A class that tracks the data usage of a page load and triggers an infobar
 // when the page load is above a certain threshold. The thresholds are field
@@ -45,6 +45,19 @@ class PageCappingPageLoadMetricsObserver
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       bool is_in_main_frame) override;
+  ObservePolicy FlushMetricsOnAppEnterBackground(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
+                  const page_load_metrics::PageLoadExtraInfo& info) override;
+
+  // Records a new estimate of data savings based on data used and field trial
+  // params.
+  void RecordDataSavings();
+
+  // Writes the amount of savings to the data saver feature. Virtual for
+  // testing.
+  virtual void WriteToSavings(int64_t bytes_saved);
 
   // Show the page capping infobar if it has not been shown before and the data
   // use is above the threshold.
@@ -61,8 +74,17 @@ class PageCappingPageLoadMetricsObserver
   // The WebContents for this page load. |this| cannot outlive |web_contents|.
   content::WebContents* web_contents_ = nullptr;
 
+  // The host to attribute savings to.
+  std::string url_host_;
+
+  // Whether a media element has been played on the page.
+  bool media_page_load_ = false;
+
   // The cumulative network body bytes used so far.
   int64_t network_bytes_ = 0;
+
+  // The amount of bytes when the data savings was last recorded.
+  int64_t recorded_savings_ = 0;
 
   // Track if the infobar has already been shown from this observer.
   bool displayed_infobar_ = false;
