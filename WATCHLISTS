@@ -763,7 +763,7 @@
       'filepath': 'tools/perf/contrib/cros_benchmarks',
     },
     'crostini': {
-      'filepath': 'chrome/browser/ui/app_list/crostini',
+      'filepath': 'crostini',
     },
     'custom_tabs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/customtabs/|'\
