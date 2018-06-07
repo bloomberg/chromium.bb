@@ -192,10 +192,8 @@ TestDelegate::TestDelegate()
       cancel_in_rs_(false),
       cancel_in_rd_(false),
       cancel_in_rd_pending_(false),
-      quit_on_complete_(true),
-      quit_on_redirect_(false),
-      quit_on_auth_required_(false),
       allow_certificate_errors_(false),
+      on_complete_(base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()),
       response_started_count_(0),
       received_bytes_count_(0),
       received_redirect_count_(0),
@@ -210,6 +208,28 @@ TestDelegate::TestDelegate()
       buf_(new IOBuffer(kBufferSize)) {}
 
 TestDelegate::~TestDelegate() = default;
+
+void TestDelegate::RunUntilComplete() {
+  base::RunLoop run_loop;
+  set_on_complete(run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+void TestDelegate::set_quit_on_complete(bool val) {
+  on_complete_ = val ? base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()
+                     : base::RepeatingClosure();
+}
+
+void TestDelegate::set_quit_on_redirect(bool val) {
+  on_redirect_ = val ? base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()
+                     : base::RepeatingClosure();
+}
+
+void TestDelegate::set_quit_on_auth_required(bool val) {
+  on_auth_required_ =
+      val ? base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()
+          : base::RepeatingClosure();
+}
 
 void TestDelegate::ClearFullRequestHeaders() {
   full_request_headers_.Clear();
@@ -227,10 +247,9 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
       request->GetFullRequestHeaders(&full_request_headers_);
 
   received_redirect_count_++;
-  if (quit_on_redirect_) {
+  if (on_redirect_) {
     *defer_redirect = true;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_redirect_);
   } else if (cancel_in_rr_) {
     request->Cancel();
   }
@@ -239,9 +258,8 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
 void TestDelegate::OnAuthRequired(URLRequest* request,
                                   AuthChallengeInfo* auth_info) {
   auth_required_ = true;
-  if (quit_on_auth_required_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  if (on_auth_required_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_auth_required_);
     return;
   }
   if (!credentials_.Empty()) {
@@ -313,9 +331,8 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
     if (cancel_in_rd_) {
       request_status_ = request->Cancel();
       // If bytes_read is 0, won't get a notification on cancelation.
-      if (bytes_read == 0 && quit_on_complete_) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+      if (bytes_read == 0 && on_complete_) {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_complete_);
       }
       return;
     }
@@ -339,9 +356,9 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
 
 void TestDelegate::OnResponseCompleted(URLRequest* request) {
   response_completed_ = true;
-  if (quit_on_complete_)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  if (on_complete_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, on_complete_);
+  }
 }
 
 TestNetworkDelegate::TestNetworkDelegate()
