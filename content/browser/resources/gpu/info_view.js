@@ -230,6 +230,7 @@ cr.define('gpu', function() {
         'texture_sharing': 'Texture Sharing',
         'video_decode': 'Video Decode',
         'rasterization': 'Rasterization',
+        'oop_rasterization': 'Out-of-process Rasterization',
         'multiple_raster_threads': 'Multiple Raster Threads',
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',
         'protected_video_decode': 'Hardware Protected Video Decode',

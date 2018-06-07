@@ -41,7 +41,8 @@
 namespace gpu {
 
 namespace {
-bool CollectGraphicsInfo(GPUInfo* gpu_info, GpuPreferences* gpu_preferences) {
+bool CollectGraphicsInfo(GPUInfo* gpu_info,
+                         const GpuPreferences& gpu_preferences) {
   DCHECK(gpu_info);
   TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
   base::TimeTicks before_collect_context_graphics_info = base::TimeTicks::Now();
@@ -217,7 +218,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
   if (!gl_disabled && !use_swiftshader) {
-    if (!CollectGraphicsInfo(&gpu_info_, &gpu_preferences_))
+    if (!CollectGraphicsInfo(&gpu_info_, gpu_preferences))
       return false;
     gpu::SetKeysForCrashLogging(gpu_info_);
     gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, gpu_preferences,
@@ -310,7 +311,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
                                   gpu_preferences.disable_software_rasterizer,
                                   false));
 
-  InitializeGLThreadSafe(command_line, &gpu_preferences_, &gpu_info_,
+  InitializeGLThreadSafe(command_line, gpu_preferences, &gpu_info_,
                          &gpu_feature_info_);
 }
 #else
@@ -355,7 +356,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
   if (!gl_disabled && !use_swiftshader) {
-    CollectContextGraphicsInfo(&gpu_info_, &gpu_preferences_);
+    CollectContextGraphicsInfo(&gpu_info_, gpu_preferences);
     gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences,
                                               command_line, nullptr);
     use_swiftshader = ShouldEnableSwiftShader(

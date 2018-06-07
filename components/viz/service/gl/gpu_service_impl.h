@@ -233,7 +233,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
-  gpu::GpuPreferences gpu_preferences_;
+  const gpu::GpuPreferences gpu_preferences_;
 
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;

@@ -480,7 +480,7 @@ void RecordGpuSupportedRuntimeVersionHistograms(GPUInfo* gpu_info) {
 }
 
 bool CollectContextGraphicsInfo(GPUInfo* gpu_info,
-                                GpuPreferences* gpu_preferences) {
+                                const GpuPreferences& gpu_preferences) {
   TRACE_EVENT0("gpu", "CollectGraphicsInfo");
 
   DCHECK(gpu_info);

@@ -505,7 +505,7 @@ bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info) {
 
 #if defined(OS_ANDROID)
 bool InitializeGLThreadSafe(base::CommandLine* command_line,
-                            GpuPreferences* gpu_preferences,
+                            const GpuPreferences& gpu_preferences,
                             GPUInfo* out_gpu_info,
                             GpuFeatureInfo* out_gpu_feature_info) {
   static base::NoDestructor<base::Lock> gl_bindings_initialization_lock;
@@ -528,7 +528,7 @@ bool InitializeGLThreadSafe(base::CommandLine* command_line,
     }
   }
   CollectContextGraphicsInfo(out_gpu_info, gpu_preferences);
-  *out_gpu_feature_info = ComputeGpuFeatureInfo(*out_gpu_info, *gpu_preferences,
+  *out_gpu_feature_info = ComputeGpuFeatureInfo(*out_gpu_info, gpu_preferences,
                                                 command_line, nullptr);
   if (!out_gpu_feature_info->disabled_extensions.empty()) {
     gl::init::SetDisabledExtensionsPlatform(

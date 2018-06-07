@@ -117,18 +117,21 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
       gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING,
       gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION,
+      gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
       gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2};
   const std::string kGpuBlacklistFeatureHistogramNames[] = {
       "GPU.BlacklistFeatureTestResults.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResults.GpuCompositing",
       "GPU.BlacklistFeatureTestResults.GpuRasterization",
+      "GPU.BlacklistFeatureTestResults.OopRasterization",
       "GPU.BlacklistFeatureTestResults.Webgl",
       "GPU.BlacklistFeatureTestResults.Webgl2"};
   const bool kGpuFeatureUserFlags[] = {
       command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
       command_line.HasSwitch(switches::kDisableGpu),
       command_line.HasSwitch(switches::kDisableGpuRasterization),
+      command_line.HasSwitch(switches::kDisableOopRasterization),
       command_line.HasSwitch(switches::kDisableWebGL),
       (command_line.HasSwitch(switches::kDisableWebGL) ||
        command_line.HasSwitch(switches::kDisableWebGL2))};
@@ -137,6 +140,7 @@ void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
       "GPU.BlacklistFeatureTestResultsWindows2.Accelerated2dCanvas",
       "GPU.BlacklistFeatureTestResultsWindows2.GpuCompositing",
       "GPU.BlacklistFeatureTestResultsWindows2.GpuRasterization",
+      "GPU.BlacklistFeatureTestResultsWindows2.OopRasterization",
       "GPU.BlacklistFeatureTestResultsWindows2.Webgl",
       "GPU.BlacklistFeatureTestResultsWindows2.Webgl2"};
 #endif
