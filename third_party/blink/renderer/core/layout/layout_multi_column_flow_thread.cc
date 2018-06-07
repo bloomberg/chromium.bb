@@ -106,7 +106,7 @@ static inline bool CanContainSpannerInParentFragmentationContext(
     return false;
   const LayoutBlockFlow& block_flow = ToLayoutBlockFlow(object);
   return !block_flow.CreatesNewFormattingContext() &&
-         !block_flow.HasTransformRelatedProperty() &&
+         !block_flow.StyleRef().CanContainFixedPositionObjects(false) &&
          block_flow.GetPaginationBreakability() != LayoutBox::kForbidBreaks &&
          !IsMultiColumnContainer(block_flow);
 }
@@ -1169,8 +1169,8 @@ static inline bool NeedsToReinsertIntoFlowThread(
   // re-evaluate the need for column sets. There may be out-of-flow descendants
   // further down that become part of the flow thread, or cease to be part of
   // the flow thread, because of this change.
-  if (old_style.HasTransformRelatedProperty() !=
-      new_style.HasTransformRelatedProperty())
+  if (old_style.CanContainFixedPositionObjects(false) !=
+      new_style.CanContainFixedPositionObjects(false))
     return true;
   return (old_style.HasInFlowPosition() &&
           new_style.GetPosition() == EPosition::kStatic) ||
