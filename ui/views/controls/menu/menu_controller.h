@@ -498,7 +498,8 @@ class VIEWS_EXPORT MenuController
   MenuItemView* FindNextSelectableMenuItem(
       MenuItemView* parent,
       int index,
-      SelectionIncrementDirectionType direction);
+      SelectionIncrementDirectionType direction,
+      bool is_initial);
 
   // If the selected item has a submenu and it isn't currently open, the
   // the selection is changed such that the menu opens immediately.
