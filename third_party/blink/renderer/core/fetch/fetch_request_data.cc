@@ -57,6 +57,7 @@ FetchRequestData* FetchRequestData::Create(
   request->SetMIMEType(request->header_list_->ExtractMIMEType());
   request->SetIntegrity(web_request.Integrity());
   request->SetKeepalive(web_request.Keepalive());
+  request->SetIsHistoryNavigation(web_request.IsHistoryNavigation());
   return request;
 }
 
@@ -78,6 +79,7 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->integrity_ = integrity_;
   request->importance_ = importance_;
   request->keepalive_ = keepalive_;
+  request->is_history_navigation_ = is_history_navigation_;
   return request;
 }
 

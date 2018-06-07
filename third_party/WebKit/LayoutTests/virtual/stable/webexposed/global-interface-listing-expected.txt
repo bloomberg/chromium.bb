@@ -4827,6 +4827,7 @@ interface Request
     getter destination
     getter headers
     getter integrity
+    getter isHistoryNavigation
     getter keepalive
     getter method
     getter mode

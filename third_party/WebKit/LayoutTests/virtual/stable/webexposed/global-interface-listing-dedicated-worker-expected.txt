@@ -744,6 +744,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter destination
 [Worker]     getter headers
 [Worker]     getter integrity
+[Worker]     getter isHistoryNavigation
 [Worker]     getter keepalive
 [Worker]     getter method
 [Worker]     getter mode

@@ -1032,6 +1032,10 @@
       status: "experimental",
     },
     {
+      name: "RequestIsHistoryNavigation",
+      status: "stable",
+    },
+    {
       name: "RequireCSSExtensionForFile",
       status: "stable",
     },

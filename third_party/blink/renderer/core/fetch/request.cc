@@ -52,6 +52,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetIntegrity(original->Integrity());
   request->SetImportance(original->Importance());
   request->SetKeepalive(original->Keepalive());
+  request->SetIsHistoryNavigation(original->IsHistoryNavigation());
   if (original->URLLoaderFactory()) {
     network::mojom::blink::URLLoaderFactoryPtr factory_clone;
     original->URLLoaderFactory()->Clone(MakeRequest(&factory_clone));
@@ -171,7 +172,9 @@ Request* Request::CreateRequestWithRequestOrString(
 
     // TODO(yhirano): Implement the following substep:
     // "Unset |request|'s reload-navigation flag."
+
     // "Unset |request|'s history-navigation flag."
+    request->SetIsHistoryNavigation(false);
 
     // The substep "Set |request|'s referrer to "client"." is performed by
     // the code below as follows:
@@ -734,6 +737,10 @@ bool Request::keepalive() const {
   return request_->Keepalive();
 }
 
+bool Request::isHistoryNavigation() const {
+  return request_->IsHistoryNavigation();
+}
+
 Request* Request::clone(ScriptState* script_state,
                         ExceptionState& exception_state) {
   if (IsBodyLocked() || bodyUsed()) {
@@ -772,6 +779,7 @@ void Request::PopulateWebServiceWorkerRequest(
   web_request.SetCacheMode(request_->CacheMode());
   web_request.SetRedirectMode(request_->Redirect());
   web_request.SetIntegrity(request_->Integrity());
+  web_request.SetIsHistoryNavigation(request_->IsHistoryNavigation());
   web_request.SetRequestContext(request_->Context());
 
   // Strip off the fragment part of URL. So far, all users of
