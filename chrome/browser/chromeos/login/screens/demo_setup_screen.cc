@@ -48,7 +48,7 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionOfflineSetup) {
     demo_controller_->EnrollOffline();
   } else if (action_id == kUserActionClose) {
-    Finish(ScreenExitCode::DEMO_MODE_SETUP_CLOSED);
+    Finish(ScreenExitCode::DEMO_MODE_SETUP_CANCELED);
   } else {
     BaseScreen::OnUserAction(action_id);
   }
@@ -59,7 +59,7 @@ void DemoSetupScreen::OnSetupError() {
 }
 
 void DemoSetupScreen::OnSetupSuccess() {
-  Finish(ScreenExitCode::DEMO_MODE_SETUP_CLOSED);
+  Finish(ScreenExitCode::DEMO_MODE_SETUP_FINISHED);
 }
 
 void DemoSetupScreen::OnViewDestroyed(DemoSetupScreenView* view) {

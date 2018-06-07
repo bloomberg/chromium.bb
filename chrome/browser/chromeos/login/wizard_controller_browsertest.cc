@@ -1990,8 +1990,25 @@ class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerDemoSetupTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
-                       CloseDemoSetupShouldShowSignIn) {
+IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupFinished) {
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  WaitUntilJSIsReady();
+
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_demo_setup_screen_, Show()).Times(1);
+
+  WizardController::default_controller()->AdvanceToScreen(
+      OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
+
+  OnExit(*mock_demo_setup_screen_, ScreenExitCode::DEMO_MODE_SETUP_FINISHED);
+
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(ExistingUserController::current_controller());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   WaitUntilJSIsReady();
 
@@ -2006,7 +2023,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_CALL(*mock_demo_setup_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
 
-  OnExit(*mock_demo_setup_screen_, ScreenExitCode::DEMO_MODE_SETUP_CLOSED);
+  OnExit(*mock_demo_setup_screen_, ScreenExitCode::DEMO_MODE_SETUP_CANCELED);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
 }
@@ -2111,7 +2128,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerCellularFirstTest, CellularFirstFlow) {
 // TODO(alemate): Add tests for Sync Consent UI.
 
 // TODO(rsgingerrs): Add tests for Recommend Apps UI.
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 36,
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 37,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

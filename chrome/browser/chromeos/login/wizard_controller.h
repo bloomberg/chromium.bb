@@ -191,7 +191,8 @@ class WizardController : public BaseScreenDelegate,
   void OnVoiceInteractionValuePropAccepted();
   void OnControllerPairingFinished();
   void OnAutoEnrollmentCheckCompleted();
-  void OnDemoSetupClosed();
+  void OnDemoSetupFinished();
+  void OnDemoSetupCanceled();
   void OnWaitForContainerReadyFinished();
   void OnOobeFlowFinished();
 
