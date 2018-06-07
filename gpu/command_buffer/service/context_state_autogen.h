@@ -78,6 +78,7 @@ GLclampf z_far;
 GLenum front_face;
 GLenum hint_generate_mipmap;
 GLenum hint_fragment_shader_derivative;
+GLenum hint_texture_filtering;
 GLfloat line_width;
 GLfloat modelview_matrix[16];
 GLfloat projection_matrix[16];

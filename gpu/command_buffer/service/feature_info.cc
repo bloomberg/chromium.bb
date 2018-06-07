@@ -984,6 +984,13 @@ void FeatureInfo::InitializeFeatures() {
     validators_.g_l_state.AddValue(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
   }
 
+  if (gl::HasExtension(extensions, "GL_CHROMIUM_texture_filtering_hint")) {
+    AddExtensionString("GL_CHROMIUM_texture_filtering_hint");
+    feature_flags_.chromium_texture_filtering_hint = true;
+    validators_.hint_target.AddValue(GL_TEXTURE_FILTERING_HINT_CHROMIUM);
+    validators_.g_l_state.AddValue(GL_TEXTURE_FILTERING_HINT_CHROMIUM);
+  }
+
   if (gl::HasExtension(extensions, "GL_OES_EGL_image_external")) {
     AddExtensionString("GL_OES_EGL_image_external");
     feature_flags_.oes_egl_image_external = true;
@@ -1464,8 +1471,6 @@ void FeatureInfo::InitializeFeatures() {
       gl::HasExtension(extensions, "GL_KHR_robustness");
   feature_flags_.ext_robustness =
       gl::HasExtension(extensions, "GL_EXT_robustness");
-  feature_flags_.chromium_texture_filtering_hint =
-      gl::HasExtension(extensions, "GL_CHROMIUM_texture_filtering_hint");
   feature_flags_.ext_pixel_buffer_object =
       gl::HasExtension(extensions, "GL_NV_pixel_buffer_object");
   feature_flags_.oes_rgb8_rgba8 =

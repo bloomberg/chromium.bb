@@ -76,6 +76,11 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
         .Times(1)
         .RetiresOnSaturation();
   }
+  if (feature_info_->feature_flags().chromium_texture_filtering_hint) {
+    EXPECT_CALL(*gl_, Hint(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   SetupInitStateManualExpectationsForDoLineWidth(1.0f);
   if (feature_info_->feature_flags().chromium_path_rendering) {
     EXPECT_CALL(*gl_, MatrixLoadfEXT(GL_PATH_MODELVIEW_CHROMIUM, _))
