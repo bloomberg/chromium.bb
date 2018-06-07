@@ -54,6 +54,8 @@ class WebViewImpl : public WebView {
   Status GetUrl(std::string* url) override;
   Status Load(const std::string& url, const Timeout* timeout) override;
   Status Reload(const Timeout* timeout) override;
+  Status Freeze(const Timeout* timeout) override;
+  Status Resume(const Timeout* timeout) override;
   Status SendCommand(const std::string& cmd,
                      const base::DictionaryValue& params) override;
   Status SendCommandAndGetResult(const std::string& cmd,

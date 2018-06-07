@@ -231,6 +231,20 @@ Status WebViewImpl::Reload(const Timeout* timeout) {
   return client_->SendCommandWithTimeout("Page.reload", params, timeout);
 }
 
+Status WebViewImpl::Freeze(const Timeout* timeout) {
+  base::DictionaryValue params;
+  params.SetString("state", "frozen");
+  return client_->SendCommandWithTimeout("Page.setWebLifecycleState", params,
+                                         timeout);
+}
+
+Status WebViewImpl::Resume(const Timeout* timeout) {
+  base::DictionaryValue params;
+  params.SetString("state", "active");
+  return client_->SendCommandWithTimeout("Page.setWebLifecycleState", params,
+                                         timeout);
+}
+
 Status WebViewImpl::SendCommand(const std::string& cmd,
                                 const base::DictionaryValue& params) {
   return client_->SendCommand(cmd, params);

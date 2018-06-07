@@ -388,6 +388,7 @@ test("chromedriver_unittests") {
     "session_commands_unittest.cc",
     "session_unittest.cc",
     "util_unittest.cc",
+    "window_commands_unittest.cc",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
