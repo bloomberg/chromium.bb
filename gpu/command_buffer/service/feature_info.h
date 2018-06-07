@@ -181,6 +181,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   bool IsWebGL1OrES2Context() const;
   bool IsWebGL2OrES3Context() const;
 
+  void EnableCHROMIUMTextureStorageImage();
   void EnableCHROMIUMColorBufferFloatRGBA();
   void EnableCHROMIUMColorBufferFloatRGB();
   void EnableEXTColorBufferFloat();
