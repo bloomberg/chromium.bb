@@ -8,6 +8,7 @@
 #include <sstream>
 #include <utility>
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/config.h"
 #include "tools/gn/scheduler.h"
@@ -148,6 +149,30 @@ TEST_F(NinjaBinaryTargetWriterTest, SourceSet) {
     std::string out_str = out.str();
     EXPECT_EQ(expected, out_str);
   }
+}
+
+TEST_F(NinjaBinaryTargetWriterTest, EscapeDefines) {
+  TestWithScope setup;
+  Err err;
+
+  TestTarget target(setup, "//foo:bar", Target::STATIC_LIBRARY);
+  target.config_values().defines().push_back("BOOL_DEF");
+  target.config_values().defines().push_back("INT_DEF=123");
+  target.config_values().defines().push_back("STR_DEF=\"ABCD-1\"");
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  std::ostringstream out;
+  NinjaBinaryTargetWriter writer(&target, out);
+  writer.Run();
+
+  const char expectedSubstr[] =
+#if defined(OS_WIN)
+      "defines = -DBOOL_DEF -DINT_DEF=123 \"-DSTR_DEF=\\\"ABCD-1\\\"\"";
+#else
+      "defines = -DBOOL_DEF -DINT_DEF=123 -DSTR_DEF=\\\"ABCD-1\\\"";
+#endif
+  std::string out_str = out.str();
+  EXPECT_PRED_FORMAT2(testing::IsSubstring, expectedSubstr, out_str);
 }
 
 TEST_F(NinjaBinaryTargetWriterTest, StaticLibrary) {
