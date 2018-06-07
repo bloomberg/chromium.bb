@@ -15,11 +15,13 @@ namespace net {
 PrioritizedTaskRunner::Job::Job(const base::Location& from_here,
                                 base::OnceClosure task,
                                 base::OnceClosure reply,
-                                uint32_t priority)
+                                uint32_t priority,
+                                uint32_t task_count)
     : from_here(from_here),
       task(std::move(task)),
       reply(std::move(reply)),
-      priority(priority) {}
+      priority(priority),
+      task_count(task_count) {}
 
 PrioritizedTaskRunner::Job::~Job() = default;
 PrioritizedTaskRunner::Job::Job(Job&& other) = default;
@@ -34,7 +36,8 @@ void PrioritizedTaskRunner::PostTaskAndReply(const base::Location& from_here,
                                              base::OnceClosure task,
                                              base::OnceClosure reply,
                                              uint32_t priority) {
-  Job job(from_here, std::move(task), std::move(reply), priority);
+  Job job(from_here, std::move(task), std::move(reply), priority,
+          task_count_++);
   {
     base::AutoLock lock(job_heap_lock_);
     job_heap_.push_back(std::move(job));
