@@ -225,8 +225,7 @@ class Mp2tStreamParserTest : public testing::Test {
   }
 
   void OnInit(const StreamParser::InitParameters& params) {
-    DVLOG(1) << "OnInit: dur=" << params.duration.InMilliseconds()
-             << ", autoTimestampOffset=" << params.auto_update_timestamp_offset;
+    DVLOG(1) << "OnInit: dur=" << params.duration.InMilliseconds();
   }
 
   bool OnNewConfig(std::unique_ptr<MediaTracks> tracks,

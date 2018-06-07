@@ -243,12 +243,6 @@ class MEDIA_EXPORT SourceBufferState {
   std::vector<AudioCodec> expected_audio_codecs_;
   std::vector<VideoCodec> expected_video_codecs_;
 
-  // Indicates that timestampOffset should be updated automatically during
-  // OnNewBuffers() based on the earliest end timestamp of the buffers provided.
-  // TODO(wolenetz): Refactor this function while integrating April 29, 2014
-  // changes to MSE spec. See http://crbug.com/371499.
-  bool auto_update_timestamp_offset_;
-
   DISALLOW_COPY_AND_ASSIGN(SourceBufferState);
 };
 

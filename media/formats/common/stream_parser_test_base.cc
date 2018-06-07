@@ -81,9 +81,7 @@ bool StreamParserTestBase::AppendDataInPieces(const uint8_t* data,
 
 void StreamParserTestBase::OnInitDone(
     const StreamParser::InitParameters& params) {
-  EXPECT_TRUE(params.auto_update_timestamp_offset);
-  DVLOG(1) << __func__ << "(" << params.duration.InMilliseconds() << ", "
-           << params.auto_update_timestamp_offset << ")";
+  DVLOG(1) << __func__ << "(" << params.duration.InMilliseconds() << ")";
 }
 
 bool StreamParserTestBase::OnNewConfig(

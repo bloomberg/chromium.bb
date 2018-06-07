@@ -96,12 +96,9 @@ class MP4StreamParserTest : public testing::Test {
 
   void InitF(const StreamParser::InitParameters& expected_params,
              const StreamParser::InitParameters& params) {
-    DVLOG(1) << "InitF: dur=" << params.duration.InMicroseconds()
-             << ", autoTimestampOffset=" << params.auto_update_timestamp_offset;
+    DVLOG(1) << "InitF: dur=" << params.duration.InMicroseconds();
     EXPECT_EQ(expected_params.duration, params.duration);
     EXPECT_EQ(expected_params.timeline_offset, params.timeline_offset);
-    EXPECT_EQ(expected_params.auto_update_timestamp_offset,
-              params.auto_update_timestamp_offset);
     EXPECT_EQ(expected_params.liveness, params.liveness);
     EXPECT_EQ(expected_params.detected_audio_track_count,
               params.detected_audio_track_count);

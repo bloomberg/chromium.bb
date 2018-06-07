@@ -61,10 +61,6 @@ class MEDIA_EXPORT StreamParser {
     // null Time is returned if no mapping to Time exists.
     base::Time timeline_offset;
 
-    // Indicates that timestampOffset should be updated based on the earliest
-    // end timestamp (audio or video) provided during each NewBuffersCB.
-    bool auto_update_timestamp_offset;
-
     // Indicates live stream.
     DemuxerStream::Liveness liveness;
 
