@@ -386,15 +386,14 @@ void LocalFrameClientImpl::
 
 void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     HistoryItem* item,
-    HistoryCommitType commit_type,
+    WebHistoryCommitType commit_type,
     bool content_initiated) {
-  bool should_create_history_entry = commit_type == kStandardCommit;
+  bool should_create_history_entry = commit_type == kWebStandardCommit;
   // TODO(dglazkov): Does this need to be called for subframes?
   web_frame_->ViewImpl()->DidCommitLoad(should_create_history_entry, true);
   if (web_frame_->Client()) {
     web_frame_->Client()->DidFinishSameDocumentNavigation(
-        WebHistoryItem(item), static_cast<WebHistoryCommitType>(commit_type),
-        content_initiated);
+        WebHistoryItem(item), commit_type, content_initiated);
   }
   virtual_time_pauser_.UnpauseVirtualTime();
 }
@@ -431,17 +430,16 @@ void LocalFrameClientImpl::DispatchDidChangeIcons(IconType type) {
 
 void LocalFrameClientImpl::DispatchDidCommitLoad(
     HistoryItem* item,
-    HistoryCommitType commit_type,
+    WebHistoryCommitType commit_type,
     WebGlobalObjectReusePolicy global_object_reuse_policy) {
   if (!web_frame_->Parent()) {
-    web_frame_->ViewImpl()->DidCommitLoad(commit_type == kStandardCommit,
+    web_frame_->ViewImpl()->DidCommitLoad(commit_type == kWebStandardCommit,
                                           false);
   }
 
   if (web_frame_->Client()) {
     web_frame_->Client()->DidCommitProvisionalLoad(
-        WebHistoryItem(item), static_cast<WebHistoryCommitType>(commit_type),
-        global_object_reuse_policy);
+        WebHistoryItem(item), commit_type, global_object_reuse_policy);
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
@@ -451,13 +449,14 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
 
 void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
     const ResourceError& error,
-    HistoryCommitType commit_type) {
+    WebHistoryCommitType commit_type) {
   web_frame_->DidFail(error, true, commit_type);
   virtual_time_pauser_.UnpauseVirtualTime();
 }
 
-void LocalFrameClientImpl::DispatchDidFailLoad(const ResourceError& error,
-                                               HistoryCommitType commit_type) {
+void LocalFrameClientImpl::DispatchDidFailLoad(
+    const ResourceError& error,
+    WebHistoryCommitType commit_type) {
   web_frame_->DidFail(error, false, commit_type);
 }
 

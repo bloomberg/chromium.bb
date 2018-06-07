@@ -44,6 +44,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_global_object_reuse_policy.h"
+#include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -123,7 +124,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchDidHandleOnloadEvents() = 0;
   virtual void DispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
   virtual void DidFinishSameDocumentNavigation(HistoryItem*,
-                                               HistoryCommitType,
+                                               WebHistoryCommitType,
                                                bool content_initiated) {}
   virtual void DispatchWillCommitProvisionalLoad() = 0;
   virtual void DispatchDidStartProvisionalLoad(DocumentLoader*,
@@ -131,11 +132,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidChangeIcons(IconType) = 0;
   virtual void DispatchDidCommitLoad(HistoryItem*,
-                                     HistoryCommitType,
+                                     WebHistoryCommitType,
                                      WebGlobalObjectReusePolicy) = 0;
   virtual void DispatchDidFailProvisionalLoad(const ResourceError&,
-                                              HistoryCommitType) = 0;
-  virtual void DispatchDidFailLoad(const ResourceError&, HistoryCommitType) = 0;
+                                              WebHistoryCommitType) = 0;
+  virtual void DispatchDidFailLoad(const ResourceError&,
+                                   WebHistoryCommitType) = 0;
   virtual void DispatchDidFinishDocumentLoad() = 0;
   virtual void DispatchDidFinishLoad() = 0;
   virtual void DispatchDidChangeThemeColor() = 0;
