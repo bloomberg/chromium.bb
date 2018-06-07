@@ -23,6 +23,7 @@ namespace content {
 SynchronousCompositorProxy::SynchronousCompositorProxy(
     ui::SynchronousInputHandlerProxy* input_handler_proxy)
     : input_handler_proxy_(input_handler_proxy),
+      binding_(this),
       use_in_process_zero_copy_software_draw_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSingleProcess)),
@@ -334,6 +335,57 @@ void SynchronousCompositorProxy::ZoomBy(float zoom_delta,
 
 uint32_t SynchronousCompositorProxy::NextMetadataVersion() {
   return ++metadata_version_;
+}
+
+void SynchronousCompositorProxy::SendDemandDrawHwAsyncReply(
+    const content::SyncCompositorCommonRendererParams&,
+    uint32_t layer_tree_frame_sink_id,
+    uint32_t metadata_version,
+    base::Optional<viz::CompositorFrame> frame) {
+  control_host_->ReturnFrame(layer_tree_frame_sink_id, metadata_version,
+                             std::move(frame));
+}
+
+void SynchronousCompositorProxy::SendBeginFrameResponse(
+    const content::SyncCompositorCommonRendererParams& param) {
+  control_host_->BeginFrameResponse(param);
+}
+
+void SynchronousCompositorProxy::SendAsyncRendererStateIfNeeded() {
+  if (hardware_draw_reply_ || software_draw_reply_ || zoom_by_reply_ || !host_)
+    return;
+
+  SyncCompositorCommonRendererParams params;
+  PopulateCommonParams(&params);
+  host_->UpdateState(params);
+}
+
+void SynchronousCompositorProxy::SendSetNeedsBeginFrames(
+    bool needs_begin_frames) {
+  needs_begin_frame_ = needs_begin_frames;
+  if (host_)
+    host_->SetNeedsBeginFrames(needs_begin_frames);
+}
+
+void SynchronousCompositorProxy::LayerTreeFrameSinkCreated() {
+  DCHECK(layer_tree_frame_sink_);
+  if (host_)
+    host_->LayerTreeFrameSinkCreated();
+}
+
+void SynchronousCompositorProxy::BindChannel(
+    mojom::SynchronousCompositorControlHostPtr control_host,
+    mojom::SynchronousCompositorHostAssociatedPtrInfo host,
+    mojom::SynchronousCompositorAssociatedRequest compositor_request) {
+  control_host_ = std::move(control_host);
+  host_.Bind(std::move(host));
+  binding_.Bind(std::move(compositor_request));
+
+  if (layer_tree_frame_sink_)
+    LayerTreeFrameSinkCreated();
+
+  if (needs_begin_frame_)
+    host_->SetNeedsBeginFrames(true);
 }
 
 }  // namespace content

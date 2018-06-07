@@ -23,7 +23,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/public/common/content_client.h"
-#include "content/renderer/android/synchronous_compositor_proxy_mojo.h"
+#include "content/renderer/android/synchronous_compositor_proxy.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
 #endif
 
@@ -80,14 +80,14 @@ class SynchronousCompositorProxyRegistry
 
   void CreateProxy(ui::SynchronousInputHandlerProxy* handler) {
     DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-    proxy_ = std::make_unique<SynchronousCompositorProxyMojo>(handler);
+    proxy_ = std::make_unique<SynchronousCompositorProxy>(handler);
     proxy_->Init();
 
     if (sink_)
       proxy_->SetLayerTreeFrameSink(sink_);
   }
 
-  SynchronousCompositorProxyMojo* proxy() { return proxy_.get(); }
+  SynchronousCompositorProxy* proxy() { return proxy_.get(); }
 
   void RegisterLayerTreeFrameSink(
       int routing_id,
@@ -114,7 +114,7 @@ class SynchronousCompositorProxyRegistry
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  std::unique_ptr<SynchronousCompositorProxyMojo> proxy_;
+  std::unique_ptr<SynchronousCompositorProxy> proxy_;
   SynchronousLayerTreeFrameSink* sink_ = nullptr;
 };
 

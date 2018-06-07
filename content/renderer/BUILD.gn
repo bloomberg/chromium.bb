@@ -45,8 +45,6 @@ target(link_target_type, "renderer") {
     "android/renderer_date_time_picker.h",
     "android/synchronous_compositor_proxy.cc",
     "android/synchronous_compositor_proxy.h",
-    "android/synchronous_compositor_proxy_mojo.cc",
-    "android/synchronous_compositor_proxy_mojo.h",
     "android/synchronous_compositor_registry.h",
     "android/synchronous_layer_tree_frame_sink.cc",
     "android/synchronous_layer_tree_frame_sink.h",
