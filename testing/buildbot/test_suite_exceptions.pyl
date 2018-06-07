@@ -2488,6 +2488,9 @@
   },
   'viz_browser_tests': {
     'remove_from': [
+      # chromium.memory
+      'Linux TSan Tests',  # https://crbug.com/368525
+      # chromium.win
       # Currently too flaky on Windows.
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',

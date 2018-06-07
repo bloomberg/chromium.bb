@@ -2411,6 +2411,7 @@
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_mac_chromium_gtests',
+    'viz_gtests',
     'vr_platform_specific_chromium_gtests',
   ],
 
@@ -2426,6 +2427,7 @@
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_mac_chromium_gtests',
+    'viz_gtests',
     'vr_platform_specific_chromium_gtests',
   ],
 
@@ -2542,6 +2544,7 @@
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_android_chromium_gtests',
     'non_mac_chromium_gtests',
+    'viz_gtests',
     'vr_platform_specific_chromium_gtests',
   ],
 
@@ -2564,6 +2567,7 @@
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_linux_chromium_gtests',
     'non_mac_chromium_gtests',
+    'viz_gtests',
     'vr_platform_specific_chromium_gtests',
     'win_specific_chromium_gtests',
   ],
@@ -2578,6 +2582,7 @@
     'non_android_and_cast_and_chromeos_and_clang_and_mac_fyi_chromium_gtests',
     'non_linux_chromium_gtests',
     'non_mac_chromium_gtests',
+    'viz_gtests',
     'vr_platform_specific_chromium_gtests',
     'win_specific_chromium_gtests',
   ],
