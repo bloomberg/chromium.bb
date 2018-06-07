@@ -256,12 +256,6 @@
 # Flaky segfaults: https://crbug.com/818147
 -ExtensionApiTest.BookmarkManager
 
-# Depends on chrome/browser/media/webrtc; CHECKs in ash::Shell::Get()
-# https://crbug.com/723880
--MediaRouterIntegrationBrowserTest.*
--MediaRouterIntegrationOneUABrowserTest.*
--MediaRouterIntegrationOneUANoReceiverBrowserTest.*
-
 # Segfaults after massive recursion setting ash::kWindowStateTypeKey:
 # crbug.com/824458
 -PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
