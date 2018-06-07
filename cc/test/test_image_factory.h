@@ -23,6 +23,11 @@ class TestImageFactory : public gpu::ImageFactory {
       unsigned internalformat,
       int client_id,
       gpu::SurfaceHandle surface_handle) override;
+  scoped_refptr<gl::GLImage> CreateAnonymousImage(const gfx::Size& size,
+                                                  gfx::BufferFormat format,
+                                                  gfx::BufferUsage usage,
+                                                  unsigned internalformat,
+                                                  bool* is_cleared) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestImageFactory);

@@ -510,6 +510,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   gles2::DisallowedFeatures disallowed_features;
+  disallowed_features.gpu_memory_manager = true;
   auto result = decoder_->Initialize(surface_, context_, params.is_offscreen,
                                      disallowed_features, params.attribs);
   if (result != gpu::ContextResult::kSuccess) {

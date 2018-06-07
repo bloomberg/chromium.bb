@@ -61,10 +61,6 @@ scoped_refptr<gl::GLImage> TextureImageFactory::CreateImageForGpuMemoryBuffer(
   return nullptr;
 }
 
-bool TextureImageFactory::SupportsCreateAnonymousImage() const {
-  return true;
-}
-
 scoped_refptr<gl::GLImage> TextureImageFactory::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
