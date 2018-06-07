@@ -816,9 +816,13 @@
     {
       "id": 100,
       "description": "Disable Direct3D11 on systems with AMD switchable graphics",
-      "cr_bugs": [451420, 755722],
+      "cr_bugs": [451420, 721121, 755722],
       "os": {
-        "type": "win"
+        "type": "win",
+        "version": {
+          "op": "<",
+          "value": "10"
+        }
       },
       "driver_date": {
         "op": "<",
