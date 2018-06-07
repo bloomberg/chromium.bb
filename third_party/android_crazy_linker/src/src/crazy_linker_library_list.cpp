@@ -95,8 +95,8 @@ LibraryList::~LibraryList() {
 
   // Destroy all known libraries.
   while (!known_libraries_.IsEmpty()) {
-    LibraryView* wrap = known_libraries_.PopLast();
-    delete wrap;
+    LibraryView* view = known_libraries_.PopLast();
+    delete view;
   }
 }
 
@@ -149,9 +149,8 @@ void LibraryList::LoadPreloads() {
 
   if (CRAZY_DEBUG) {
     LOG("Preloads loaded");
-    for (size_t n = 0; n < preloaded_libraries_.GetCount(); ++n)
-      LOG("  ... %p %s\n",
-          preloaded_libraries_[n], preloaded_libraries_[n]->GetName());
+    for (const LibraryView* preload : preloaded_libraries_)
+      LOG("  ... %p %s\n", preload, preload->GetName());
     LOG("    preloads @%p\n", &preloaded_libraries_);
   }
 }
@@ -161,12 +160,11 @@ LibraryView* LibraryList::FindLibraryByName(const char* lib_name) {
   if (!lib_name)
     return NULL;
 
-  for (size_t n = 0; n < known_libraries_.GetCount(); ++n) {
-    LibraryView* wrap = known_libraries_[n];
-    if (!strcmp(lib_name, wrap->GetName()))
-      return wrap;
+  for (LibraryView* view : known_libraries_) {
+    if (!strcmp(lib_name, view->GetName()))
+      return view;
   }
-  return NULL;
+  return nullptr;
 }
 
 void* LibraryList::FindSymbolFrom(const char* symbol_name, LibraryView* from) {
@@ -224,13 +222,12 @@ LibraryView* LibraryList::FindLibraryForAddress(void* address) {
   // Linearly scan all libraries, looking for one that contains
   // a given address. NOTE: This doesn't check that this falls
   // inside one of the mapped library segments.
-  for (size_t n = 0; n < known_libraries_.GetCount(); ++n) {
-    LibraryView* wrap = known_libraries_[n];
+  for (LibraryView* view : known_libraries_) {
     // TODO(digit): Search addresses inside system libraries.
-    if (wrap->IsCrazy()) {
-      SharedLibrary* lib = wrap->GetCrazy();
+    if (view->IsCrazy()) {
+      SharedLibrary* lib = view->GetCrazy();
       if (lib->ContainsAddress(address))
-        return wrap;
+        return view;
     }
   }
   return NULL;
@@ -402,8 +399,8 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
   }
   if (CRAZY_DEBUG) {
     LOG("Dependencies loaded for %s", base_name);
-    for (size_t n = 0; n < dependencies.GetCount(); ++n)
-      LOG("  ... %p %s\n", dependencies[n], dependencies[n]->GetName());
+    for (const LibraryView* dep : dependencies)
+      LOG("  ... %p %s\n", dep, dep->GetName());
     LOG("    dependencies @%p\n", &dependencies);
   }
 
@@ -520,10 +517,9 @@ void LibraryList::AddLibrary(LibraryView* wrap) {
 
 LibraryView* LibraryList::FindKnownLibrary(const char* name) {
   const char* base_name = GetBaseNamePtr(name);
-  for (size_t n = 0; n < known_libraries_.GetCount(); ++n) {
-    LibraryView* wrap = known_libraries_[n];
-    if (!strcmp(base_name, wrap->GetName()))
-      return wrap;
+  for (LibraryView* view : known_libraries_) {
+    if (!strcmp(base_name, view->GetName()))
+      return view;
   }
   return NULL;
 }

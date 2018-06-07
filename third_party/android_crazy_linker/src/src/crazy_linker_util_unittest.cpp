@@ -185,14 +185,29 @@ TEST(Vector, At) {
   }
 }
 
-TEST(Vector, IndexOf) {
+TEST(Vector, Find) {
   const int kMaxCount = 500;
   Vector<int> v;
   for (int n = 0; n < kMaxCount; ++n)
     v.PushBack(n * 100);
 
   for (int n = 0; n < kMaxCount; ++n) {
-    EXPECT_EQ(n, v.IndexOf(n * 100)) << "Checking v.IndexOf(" << n * 100 << ")";
+    SearchResult r = v.Find(n * 100);
+    EXPECT_TRUE(r.found) << "Looking for " << n * 100;
+    EXPECT_EQ(n, r.pos) << "Looking for " << n * 100;
+  }
+}
+
+TEST(Vector, ForRangeLoop) {
+  const int kMaxCount = 500;
+  Vector<int> v;
+  for (int n = 0; n < kMaxCount; ++n)
+    v.PushBack(n * 100);
+
+  int n = 0;
+  for (const int& value : v) {
+    EXPECT_EQ(n * 100, value) << "Checking v[" << n << "]";
+    n++;
   }
 }
 

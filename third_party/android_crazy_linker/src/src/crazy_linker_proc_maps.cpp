@@ -174,8 +174,7 @@ class ProcMapsInternal {
 
  private:
   void Reset() {
-    for (size_t n = 0; n < entries_.GetCount(); ++n) {
-      ProcMaps::Entry& entry = entries_[n];
+    for (ProcMaps::Entry& entry : entries_) {
       ::free(const_cast<char*>(entry.path));
     }
     entries_.Resize(0);

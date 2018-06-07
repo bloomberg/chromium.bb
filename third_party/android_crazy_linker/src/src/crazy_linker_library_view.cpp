@@ -44,7 +44,7 @@ bool LibraryView::GetInfo(size_t* load_address,
                           size_t* load_size,
                           size_t* relro_start,
                           size_t* relro_size,
-                          Error* error) {
+                          Error* error) const {
   if (type_ != TYPE_CRAZY) {
     *error = "No RELRO sharing with system libraries";
     return false;
