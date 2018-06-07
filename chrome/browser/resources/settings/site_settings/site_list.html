@@ -115,6 +115,12 @@
           on-close="onEditExceptionDialogClosed_">
       </settings-edit-exception-dialog>
     </template>
+    <template is="dom-if" if="[[showAddSiteDialog_]]" restamp>
+      <add-site-dialog has-incognito="[[hasIncognito_]]" category="[[category]]"
+          content-setting="[[categorySubtype]]"
+          on-close="onAddSiteDialogClosed_">
+      </add-site-dialog>
+    </template>
   </template>
   <script src="site_list.js"></script>
 </dom-module>

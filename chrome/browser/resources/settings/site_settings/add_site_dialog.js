@@ -26,7 +26,10 @@ Polymer({
     contentSetting: String,
 
     /** @private */
-    showIncognitoSessionOnly_: Boolean,
+    hasIncognito: {
+      type: Boolean,
+      observer: 'hasIncognitoChanged_',
+    },
 
     /**
      * The site to add an exception for.
@@ -39,17 +42,8 @@ Polymer({
   attached: function() {
     assert(this.category);
     assert(this.contentSetting);
-  },
+    assert(typeof this.hasIncognito != 'undefined');
 
-  /** Open the dialog. */
-  open: function() {
-    this.addWebUIListener('onIncognitoStatusChanged', hasIncognito => {
-      this.$.incognito.checked = false;
-      this.showIncognitoSessionOnly_ = hasIncognito &&
-          !loadTimeData.getBoolean('isGuest') &&
-          this.contentSetting != settings.ContentSetting.SESSION_ONLY;
-    });
-    this.browserProxy.updateIncognitoStatus();
     this.$.dialog.showModal();
   },
 
@@ -89,5 +83,17 @@ Polymer({
         this.site_, this.site_, this.category, this.contentSetting,
         this.$.incognito.checked);
     this.$.dialog.close();
+  },
+
+  /** @private */
+  showIncognitoSessionOnly_: function() {
+    return this.hasIncognito && !loadTimeData.getBoolean('isGuest') &&
+        this.contentSetting != settings.ContentSetting.SESSION_ONLY;
+  },
+
+  /** @private */
+  hasIncognitoChanged_: function() {
+    if (!this.hasIncognito)
+      this.$.incognito.checked = false;
   },
 });

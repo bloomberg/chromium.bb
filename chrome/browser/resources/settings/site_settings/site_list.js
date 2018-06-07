@@ -65,6 +65,12 @@ Polymer({
       value: settings.INVALID_CATEGORY_SUBTYPE,
     },
 
+    /** @private */
+    hasIncognito_: Boolean,
+
+    /** @private */
+    showAddSiteDialog_: Boolean,
+
     /**
      * Whether to show the Allow action in the action menu.
      * @private
@@ -115,6 +121,7 @@ Polymer({
         this.siteWithinCategoryChanged_.bind(this));
     this.addWebUIListener(
         'onIncognitoStatusChanged', this.onIncognitoStatusChanged_.bind(this));
+    this.browserProxy.updateIncognitoStatus();
   },
 
   /**
@@ -134,7 +141,9 @@ Polymer({
    * Another message is sent when the *last* incognito window closes.
    * @private
    */
-  onIncognitoStatusChanged_: function() {
+  onIncognitoStatusChanged_: function(hasIncognito) {
+    this.hasIncognito_ = hasIncognito;
+
     // The SESSION_ONLY list won't have any incognito exceptions. (Minor
     // optimization, not required).
     if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY)
@@ -202,23 +211,17 @@ Polymer({
 
   /**
    * A handler for the Add Site button.
-   * @param {!Event} e
    * @private
    */
-  onAddSiteTap_: function(e) {
+  onAddSiteTap_: function() {
     assert(!this.readOnlyList);
-    e.preventDefault();
-    const dialog = document.createElement('add-site-dialog');
-    dialog.category = this.category;
-    dialog.contentSetting = this.categorySubtype;
-    this.shadowRoot.appendChild(dialog);
+    this.showAddSiteDialog_ = true;
+  },
 
-    dialog.open(this.categorySubtype);
-
-    dialog.addEventListener('close', () => {
-      cr.ui.focusWithoutInk(assert(this.$.addSite));
-      dialog.remove();
-    });
+  /** @private */
+  onAddSiteDialogClosed_: function() {
+    this.showAddSiteDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.$.addSite));
   },
 
   /**
