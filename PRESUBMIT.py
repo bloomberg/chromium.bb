@@ -585,6 +585,12 @@ _IPC_ENUM_TRAITS_DEPRECATED = (
     'See http://www.chromium.org/Home/chromium-security/education/'
     'security-tips-for-ipc')
 
+_LONG_PATH_ERROR = (
+    'Some files included in this CL have file names that are too long (> 200'
+    ' characters). If committed, these files will cause issues on Windows. See'
+    ' https://crbug.com/612667 for more details.'
+)
+
 _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
     r".*[\\\/]BuildHooksAndroidImpl\.java",
     r".*[\\\/]ClassRegisterImpl\.java",
@@ -2827,6 +2833,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedJs(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
+  results.extend(_CheckForLongPathnames(input_api, output_api))
   results.extend(_CheckForIncludeGuards(input_api, output_api))
   results.extend(_CheckForWindowsLineEndings(input_api, output_api))
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
@@ -3032,6 +3039,24 @@ def _CheckForIPCRules(input_api, output_api):
   if problems:
     return [output_api.PresubmitPromptWarning(
         _IPC_ENUM_TRAITS_DEPRECATED, problems)]
+  else:
+    return []
+
+
+def _CheckForLongPathnames(input_api, output_api):
+  """Check to make sure no files being submitted have long paths.
+  This causes issues on Windows.
+  """
+  problems = []
+  for f in input_api.AffectedSourceFiles(None):
+    local_path = f.LocalPath()
+    # Windows has a path limit of 260 characters. Limit path length to 200 so
+    # that we have some extra for the prefix on dev machines and the bots.
+    if len(local_path) > 200:
+      problems.append(local_path)
+
+  if problems:
+    return [output_api.PresubmitError(_LONG_PATH_ERROR, problems)]
   else:
     return []
 
