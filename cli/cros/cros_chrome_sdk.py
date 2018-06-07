@@ -14,7 +14,6 @@ import contextlib
 import glob
 import json
 import os
-import re
 
 from chromite.cbuildbot import archive_lib
 from chromite.cli import command
@@ -932,9 +931,13 @@ class ChromeSDKCommand(command.CliCommand):
     # The format of ld flags is something like
     # '-Wl,-O1 -Wl,-O2 -Wl,--as-needed -stdlib=libc++'
     extra_ldflags = gn_args.get('cros_target_extra_ldflags', '')
-    gn_args['cros_target_extra_ldflags'] = \
-        re.sub(r'-Wl,-plugin-opt,-import-instr-limit=\d+', '',
-               extra_ldflags)
+
+    ld_flags_list = extra_ldflags.split()
+    ld_flags_list = (
+        [f for f in ld_flags_list
+         if not f.startswith('-Wl,-plugin-opt,-import-instr-limit')])
+    if extra_ldflags:
+      gn_args['cros_target_extra_ldflags'] = ' '.join(ld_flags_list)
 
     # We removed webcore debug symbols on release builds on arm.
     # See crbug.com/792999. However, we want to keep the symbols
@@ -1083,7 +1086,7 @@ class ChromeSDKCommand(command.CliCommand):
                    '--output', self._GOMA_TGZ])
               if result.returncode:
                 raise GomaError('Failed to fetch Goma')
-            except retry_util.DownloadError as e:
+            except retry_util.DownloadError:
               raise GomaError('Failed to fetch Goma')
             result = cros_build_lib.DebugRunCommand(
                 ['tar', 'xf', self._GOMA_TGZ,
