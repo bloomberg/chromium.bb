@@ -23,7 +23,7 @@ uint32_t cros_gralloc_convert_format(int format)
 	case HAL_PIXEL_FORMAT_RGB_565:
 		return DRM_FORMAT_RGB565;
 	case HAL_PIXEL_FORMAT_RGB_888:
-		return DRM_FORMAT_RGB888;
+		return DRM_FORMAT_BGR888;
 	case HAL_PIXEL_FORMAT_RGBA_8888:
 		return DRM_FORMAT_ABGR8888;
 	case HAL_PIXEL_FORMAT_RGBX_8888:
