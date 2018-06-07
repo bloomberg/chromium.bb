@@ -85,6 +85,8 @@ NSString* const kOtherDeviceCollapsedKey = @"OtherDevicesCollapsed";
 NSString* const kRecentlyClosedCollapsedKey = @"RecentlyClosedCollapsed";
 // Estimated Table Row height.
 const CGFloat kEstimatedRowHeight = 56;
+// Separation space between sections.
+const CGFloat kSeparationSpaceBetweenSections = 9;
 // The UI displays relative time for up to this number of hours and then
 // switches to absolute values.
 const int kRelativeTimeMaxHours = 4;
@@ -618,6 +620,16 @@ const int kRelativeTimeMaxHours = 4;
   }
 }
 
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForFooterInSection:(NSInteger)section {
+  // If section is collapsed there's no need to add a separation space.
+  return [self.tableViewModel
+             sectionIsCollapsed:[self.tableViewModel
+                                    sectionIdentifierForSection:section]]
+             ? 1.0
+             : kSeparationSpaceBetweenSections;
+}
+
 #pragma mark - UITableViewDataSource
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
@@ -667,12 +679,6 @@ const int kRelativeTimeMaxHours = 4;
   std::advance(iter, index);
   CHECK(*iter);
   return iter->get();
-}
-
-// TO IMPLEMENT. Remove this depending on which TableStyle we'll use.
-- (CGFloat)tableView:(UITableView*)tableView
-    heightForFooterInSection:(NSInteger)section {
-  return 1.0;
 }
 
 // Retrieves favicon from FaviconLoader and sets image in URLCell.

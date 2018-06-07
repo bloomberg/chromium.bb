@@ -87,6 +87,8 @@
 
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
+      [self.contentView.heightAnchor constraintGreaterThanOrEqualToConstant:
+                                         kTableViewHeaderFooterViewHeight],
       [horizontalStack.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],

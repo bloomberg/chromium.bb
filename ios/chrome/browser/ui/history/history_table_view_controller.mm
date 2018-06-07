@@ -52,6 +52,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 const NSInteger kEntriesStatusSectionIdentifier = kSectionIdentifierEnumZero;
 // Maximum number of entries to retrieve in a single query to history service.
 const int kMaxFetchCount = 100;
+// Separation space between sections.
+const CGFloat kSeparationSpaceBetweenSections = 9;
 }
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
@@ -420,6 +422,11 @@ const int kMaxFetchCount = 100;
           sectionForSectionIdentifier:kEntriesStatusSectionIdentifier])
     return 0;
   return UITableViewAutomaticDimension;
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForFooterInSection:(NSInteger)section {
+  return kSeparationSpaceBetweenSections;
 }
 
 - (void)tableView:(UITableView*)tableView
