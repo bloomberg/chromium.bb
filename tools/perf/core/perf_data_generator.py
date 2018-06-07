@@ -941,7 +941,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=desktop_5_shard_map.json',
+            '--test-shard-map-filename=mac1012_5_shard_map.json',
           ],
           'num_shards': 5
         },

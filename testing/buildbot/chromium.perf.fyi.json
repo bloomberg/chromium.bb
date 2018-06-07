@@ -531,7 +531,7 @@
           "--browser=release",
           "--upload-results",
           "--run-ref-build",
-          "--test-shard-map-filename=desktop_5_shard_map.json"
+          "--test-shard-map-filename=mac1012_5_shard_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
