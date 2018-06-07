@@ -3340,11 +3340,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       &QuotaDispatcherHost::CreateForFrame, GetProcess(), routing_id_));
 
   registry_->AddInterface(
-      base::BindRepeating(
-          SpeechRecognitionDispatcherHost::Create, GetProcess()->GetID(),
-          routing_id_,
-          base::WrapRefCounted(
-              GetProcess()->GetStoragePartition()->GetURLRequestContext())),
+      base::BindRepeating(SpeechRecognitionDispatcherHost::Create,
+                          GetProcess()->GetID(), routing_id_),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {

@@ -20,18 +20,18 @@
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
 SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
     int render_process_id,
-    int render_frame_id,
-    scoped_refptr<net::URLRequestContextGetter> context_getter)
+    int render_frame_id)
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
-      context_getter_(std::move(context_getter)),
       weak_factory_(this) {
   // Do not add any non-trivial initialization here, instead do it lazily when
   // required (e.g. see the method |SpeechRecognitionManager::GetInstance()|) or
@@ -42,12 +42,10 @@ SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
 void SpeechRecognitionDispatcherHost::Create(
     int render_process_id,
     int render_frame_id,
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
     mojom::SpeechRecognizerRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<SpeechRecognitionDispatcherHost>(
-          render_process_id, render_frame_id, std::move(context_getter)),
-      std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<SpeechRecognitionDispatcherHost>(
+                              render_process_id, render_frame_id),
+                          std::move(request));
 }
 
 SpeechRecognitionDispatcherHost::~SpeechRecognitionDispatcherHost() {}
@@ -133,19 +131,28 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
           ->delegate()
           ->FilterProfanities(embedder_render_process_id);
 
+  StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
+      web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SpeechRecognitionDispatcherHost::StartSessionOnIO,
-                     speech_recognition_dispatcher_host, std::move(params),
-                     embedder_render_process_id, embedder_render_frame_id,
-                     filter_profanities));
+      base::BindOnce(
+          &SpeechRecognitionDispatcherHost::StartSessionOnIO,
+          speech_recognition_dispatcher_host, std::move(params),
+          embedder_render_process_id, embedder_render_frame_id,
+          filter_profanities,
+          storage_partition->GetURLLoaderFactoryForBrowserProcessIOThread(),
+          base::WrapRefCounted(storage_partition->GetURLRequestContext())));
 }
 
 void SpeechRecognitionDispatcherHost::StartSessionOnIO(
     mojom::StartSpeechRecognitionRequestParamsPtr params,
     int embedder_render_process_id,
     int embedder_render_frame_id,
-    bool filter_profanities) {
+    bool filter_profanities,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        shared_url_loader_factory_info,
+    scoped_refptr<net::URLRequestContextGetter> deprecated_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SpeechRecognitionSessionContext context;
@@ -163,7 +170,10 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   config.max_hypotheses = params->max_hypotheses;
   config.origin = params->origin;
   config.initial_context = context;
-  config.url_request_context_getter = context_getter_.get();
+  config.shared_url_loader_factory = network::SharedURLLoaderFactory::Create(
+      std::move(shared_url_loader_factory_info));
+  config.deprecated_url_request_context_getter =
+      std::move(deprecated_context_getter);
   config.filter_profanities = filter_profanities;
   config.continuous = params->continuous;
   config.interim_results = params->interim_results;

@@ -17,6 +17,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/url_request_context_getter.h"
 
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}
+
 namespace content {
 
 class SpeechRecognitionSession;
@@ -28,14 +32,10 @@ class SpeechRecognitionManager;
 class CONTENT_EXPORT SpeechRecognitionDispatcherHost
     : public mojom::SpeechRecognizer {
  public:
-  SpeechRecognitionDispatcherHost(
-      int render_process_id,
-      int render_frame_id,
-      scoped_refptr<net::URLRequestContextGetter> context_getter);
+  SpeechRecognitionDispatcherHost(int render_process_id, int render_frame_id);
   ~SpeechRecognitionDispatcherHost() override;
   static void Create(int render_process_id,
                      int render_frame_id,
-                     scoped_refptr<net::URLRequestContextGetter> context_getter,
                      mojom::SpeechRecognizerRequest request);
   base::WeakPtr<SpeechRecognitionDispatcherHost> AsWeakPtr();
 
@@ -49,14 +49,18 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
       int render_process_id,
       int render_frame_id,
       mojom::StartSpeechRecognitionRequestParamsPtr params);
-  void StartSessionOnIO(mojom::StartSpeechRecognitionRequestParamsPtr params,
-                        int embedder_render_process_id,
-                        int embedder_render_frame_id,
-                        bool filter_profanities);
+
+  void StartSessionOnIO(
+      mojom::StartSpeechRecognitionRequestParamsPtr params,
+      int embedder_render_process_id,
+      int embedder_render_frame_id,
+      bool filter_profanities,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          shared_url_loader_factory_info,
+      scoped_refptr<net::URLRequestContextGetter> deprecated_context_getter);
 
   const int render_process_id_;
   const int render_frame_id_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
 
   // Used for posting asynchronous tasks (on the IO thread) without worrying
   // about this class being destroyed in the meanwhile (due to browser shutdown)

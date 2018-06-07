@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_SPEECH_RECOGNIZER_H_
 #define CHROME_BROWSER_VR_SPEECH_RECOGNIZER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -18,6 +19,10 @@ class SpeechRecognitionManager;
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace network {
+class SharedURLLoaderFactoryInfo;
 }
 
 namespace vr {
@@ -91,10 +96,15 @@ class IOBrowserUIInterface {
 // collection of results, error cases, and threading.
 class VR_EXPORT SpeechRecognizer : public IOBrowserUIInterface {
  public:
-  SpeechRecognizer(VoiceResultDelegate* delegate,
-                   BrowserUiInterface* ui,
-                   net::URLRequestContextGetter* url_request_context_getter,
-                   const std::string& locale);
+  // |shared_url_loader_factory_info| must be for a creating a
+  // SharedURLLoaderFactory that can be used on the IO Thread.
+  SpeechRecognizer(
+      VoiceResultDelegate* delegate,
+      BrowserUiInterface* ui,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          shared_url_loader_factory_info,
+      net::URLRequestContextGetter* deprecated_url_request_context_getter,
+      const std::string& locale);
   ~SpeechRecognizer() override;
 
   // Start/stop the speech recognizer.
@@ -117,7 +127,14 @@ class VR_EXPORT SpeechRecognizer : public IOBrowserUIInterface {
  private:
   VoiceResultDelegate* delegate_;
   BrowserUiInterface* ui_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  // Non-null until first Start() call, at which point it's moved to the IO
+  // thread.
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+      shared_url_loader_factory_info_;
+
+  scoped_refptr<net::URLRequestContextGetter>
+      deprecated_url_request_context_getter_;
   std::string locale_;
   base::string16 final_result_;
 

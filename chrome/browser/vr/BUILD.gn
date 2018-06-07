@@ -332,6 +332,7 @@ test("vr_common_unittests") {
     ":vr_test_support",
     "//components/url_formatter",
     "//mojo/public/cpp/bindings",
+    "//services/network:test_support",
     "//testing/gmock",
     "//ui/gfx/geometry",
   ]

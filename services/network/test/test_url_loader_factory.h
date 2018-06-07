@@ -14,11 +14,25 @@
 
 namespace network {
 
+class ResourceRequestBody;
+
 // A helper class to ease testing code that uses URLLoader interface. A test
 // would pass this factory instead of the production factory to code, and
 // would prime it with response data for arbitrary URLs.
 class TestURLLoaderFactory : public mojom::URLLoaderFactory {
  public:
+  struct PendingRequest {
+    PendingRequest();
+    ~PendingRequest();
+    PendingRequest(PendingRequest&& other);
+    PendingRequest& operator=(PendingRequest&& other);
+
+    GURL url;
+    int load_flags;
+    mojom::URLLoaderClientPtr client;
+    scoped_refptr<ResourceRequestBody> request_body;
+  };
+
   TestURLLoaderFactory();
   ~TestURLLoaderFactory() override;
 
@@ -57,6 +71,11 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   using Interceptor = base::RepeatingCallback<void(const ResourceRequest&)>;
   void SetInterceptor(const Interceptor& interceptor);
 
+  // Returns a mutable list of pending requests, for consumers that need direct
+  // access. It's recommended that consumers use AddResponse() rather than
+  // servicing requests themselves, whenever possible.
+  std::vector<PendingRequest>* pending_requests() { return &pending_requests_; }
+
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
                             int32_t routing_id,
@@ -84,16 +103,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   };
   std::map<GURL, Response> responses_;
 
-  struct Pending {
-    Pending();
-    ~Pending();
-    Pending(Pending&& other);
-    Pending& operator=(Pending&& other);
-    GURL url;
-    int load_flags;
-    mojom::URLLoaderClientPtr client;
-  };
-  std::vector<Pending> pending_;
+  std::vector<PendingRequest> pending_requests_;
 
   Interceptor interceptor_;
 

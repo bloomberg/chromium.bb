@@ -21,6 +21,8 @@
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
@@ -281,7 +283,8 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.preamble = config.preamble;
 
   SpeechRecognitionEngine* google_remote_engine =
-      new SpeechRecognitionEngine(config.url_request_context_getter.get());
+      new SpeechRecognitionEngine(config.shared_url_loader_factory,
+                                  config.deprecated_url_request_context_getter);
   google_remote_engine->SetConfig(remote_engine_config);
 
   session->recognizer = new SpeechRecognizerImpl(

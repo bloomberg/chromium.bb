@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 #define CHROME_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
 namespace content {
@@ -18,6 +20,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}
+
 class SpeechRecognizerDelegate;
 
 // SpeechRecognizer is a wrapper around the speech recognition engine that
@@ -25,9 +31,12 @@ class SpeechRecognizerDelegate;
 // collection of results, error cases, and threading.
 class SpeechRecognizer {
  public:
-  SpeechRecognizer(const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
-                   net::URLRequestContextGetter* url_request_context_getter,
-                   const std::string& locale);
+  SpeechRecognizer(
+      const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          shared_url_loader_factory_info,
+      net::URLRequestContextGetter* deprecated_url_request_context_getter,
+      const std::string& locale);
   ~SpeechRecognizer();
 
   // Start/stop the speech recognizer. |preamble| contains the preamble audio to

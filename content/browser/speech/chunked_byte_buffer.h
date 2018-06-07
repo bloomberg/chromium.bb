@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -36,7 +37,7 @@ class CONTENT_EXPORT ChunkedByteBuffer {
   void Append(const uint8_t* start, size_t length);
 
   // Appends bytes contained in the |string| to the buffer.
-  void Append(const std::string& string);
+  void Append(base::StringPiece string);
 
   // Checks whether one or more complete chunks are available in the buffer.
   bool HasChunks() const;

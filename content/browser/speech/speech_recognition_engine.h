@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_piece.h"
 #include "content/browser/speech/audio_encoder.h"
 #include "content/browser/speech/chunked_byte_buffer.h"
 #include "content/common/content_export.h"
@@ -20,10 +21,15 @@
 #include "content/public/common/speech_recognition_error.mojom.h"
 #include "content/public/common/speech_recognition_grammar.mojom.h"
 #include "content/public/common/speech_recognition_result.mojom.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace net {
 class URLRequestContextGetter;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace content {
@@ -57,7 +63,7 @@ struct SpeechRecognitionError;
 // EndRecognition. If a recognition was started, the caller can free the
 // SpeechRecognitionEngine only after calling EndRecognition.
 
-class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
+class CONTENT_EXPORT SpeechRecognitionEngine {
  public:
   class Delegate {
    public:
@@ -97,12 +103,15 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
   // Duration of each audio packet.
   static const int kAudioPacketIntervalMs;
 
-  // IDs passed to URLFetcher::Create(). Used for testing.
-  static const int kUpstreamUrlFetcherIdForTesting;
-  static const int kDownstreamUrlFetcherIdForTesting;
-
-  explicit SpeechRecognitionEngine(net::URLRequestContextGetter* context);
-  ~SpeechRecognitionEngine() override;
+  // |deprecated_url_request_context_getter| is only for poking at the
+  // Accept-Language header.
+  // TODO(mmenke): Remove |deprecated_url_request_context_getter| as an
+  // argument.
+  SpeechRecognitionEngine(
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      scoped_refptr<net::URLRequestContextGetter>
+          deprecated_url_request_context_getter);
+  ~SpeechRecognitionEngine();
 
   // Sets the URL requests are sent to for tests.
   static void set_web_service_base_url_for_tests(
@@ -116,14 +125,10 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
   bool IsRecognitionPending() const;
   int GetDesiredAudioChunkDurationMs() const;
 
-  // net::URLFetcherDelegate methods.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64_t current,
-                                  int64_t total,
-                                  int64_t current_network_bytes) override;
-
  private:
+  class UpstreamLoader;
+  class DownstreamLoader;
+
   Delegate* delegate_;
 
   // Response status codes from the speech recognition webservice.
@@ -173,10 +178,10 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
     DISALLOW_COPY_AND_ASSIGN(FSMEventArgs);
   };
 
-  // Invoked by both upstream and downstream URLFetcher callbacks to handle
-  // new chunk data, connection closed or errors notifications.
-  void DispatchHTTPResponse(const net::URLFetcher* source,
-                            bool end_of_response);
+  void OnUpstreamDataComplete(bool success, int response_code);
+
+  void OnDownstreamDataReceived(base::StringPiece new_response_data);
+  void OnDownstreamDataComplete(bool success, int response_code);
 
   // Entry point for pushing any new external event into the recognizer FSM.
   void DispatchEvent(const FSMEventArgs& event_args);
@@ -206,13 +211,14 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
   void UploadAudioChunk(const std::string& data, FrameType type, bool is_final);
 
   Config config_;
-  std::unique_ptr<net::URLFetcher> upstream_fetcher_;
-  std::unique_ptr<net::URLFetcher> downstream_fetcher_;
-  scoped_refptr<net::URLRequestContextGetter> url_context_;
+  std::unique_ptr<UpstreamLoader> upstream_loader_;
+  std::unique_ptr<DownstreamLoader> downstream_loader_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  scoped_refptr<net::URLRequestContextGetter>
+      deprecated_url_request_context_getter_;
   std::unique_ptr<AudioEncoder> encoder_;
   std::unique_ptr<AudioEncoder> preamble_encoder_;
   ChunkedByteBuffer chunked_byte_buffer_;
-  size_t previous_response_length_;
   bool got_last_definitive_result_;
   bool is_dispatching_event_;
   bool use_framed_post_data_;

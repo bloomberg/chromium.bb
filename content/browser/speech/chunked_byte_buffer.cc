@@ -89,7 +89,7 @@ void ChunkedByteBuffer::Append(const uint8_t* start, size_t length) {
   total_bytes_stored_ += length;
 }
 
-void ChunkedByteBuffer::Append(const std::string& string) {
+void ChunkedByteBuffer::Append(base::StringPiece string) {
   Append(reinterpret_cast<const uint8_t*>(string.data()), string.size());
 }
 
