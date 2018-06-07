@@ -103,12 +103,8 @@ bool LayoutSVGEllipse::ShapeDependentStrokeContains(const FloatPoint& point) {
 
   // The optimized check below for circles does not support non-circular and
   // the cases that we set use_path_fallback_ in UpdateShapeFromElement().
-  if (use_path_fallback_ || radii_.Width() != radii_.Height()) {
-    // Create path for non-circular if needed.
-    if (!HasPath())
-      CreatePath();
+  if (use_path_fallback_ || radii_.Width() != radii_.Height())
     return LayoutSVGShape::ShapeDependentStrokeContains(point);
-  }
 
   const FloatPoint center =
       FloatPoint(center_.X() - point.X(), center_.Y() - point.Y());
