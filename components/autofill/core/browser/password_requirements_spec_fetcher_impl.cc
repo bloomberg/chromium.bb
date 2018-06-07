@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/password_requirements_spec_fetcher.h"
+#include "components/autofill/core/browser/password_requirements_spec_fetcher_impl.h"
 
 #include "base/logging.h"
 #include "base/md5.h"
@@ -20,7 +20,7 @@
 
 namespace autofill {
 
-PasswordRequirementsSpecFetcher::PasswordRequirementsSpecFetcher(
+PasswordRequirementsSpecFetcherImpl::PasswordRequirementsSpecFetcherImpl(
     int version,
     size_t prefix_length,
     int timeout)
@@ -30,7 +30,8 @@ PasswordRequirementsSpecFetcher::PasswordRequirementsSpecFetcher(
   DCHECK_GE(timeout_, 0);
 }
 
-PasswordRequirementsSpecFetcher::~PasswordRequirementsSpecFetcher() = default;
+PasswordRequirementsSpecFetcherImpl::~PasswordRequirementsSpecFetcherImpl() =
+    default;
 
 namespace {
 
@@ -81,7 +82,7 @@ GURL GetUrlForRequirementsSpec(const GURL& origin,
 
 }  // namespace
 
-void PasswordRequirementsSpecFetcher::Fetch(
+void PasswordRequirementsSpecFetcherImpl::Fetch(
     network::mojom::URLLoaderFactory* loader_factory,
     const GURL& origin,
     FetchCallback callback) {
@@ -139,14 +140,15 @@ void PasswordRequirementsSpecFetcher::Fetch(
                                                  traffic_annotation);
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory,
-      base::BindOnce(&PasswordRequirementsSpecFetcher::OnFetchComplete,
+      base::BindOnce(&PasswordRequirementsSpecFetcherImpl::OnFetchComplete,
                      base::Unretained(this)));
 
   download_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),
-                        this, &PasswordRequirementsSpecFetcher::OnFetchTimeout);
+                        this,
+                        &PasswordRequirementsSpecFetcherImpl::OnFetchTimeout);
 }
 
-void PasswordRequirementsSpecFetcher::OnFetchComplete(
+void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
     std::unique_ptr<std::string> response_body) {
   download_timer_.Stop();
 
@@ -200,12 +202,12 @@ void PasswordRequirementsSpecFetcher::OnFetchComplete(
   TriggerCallback(ResultCode::kFoundNoSpec, PasswordRequirementsSpec());
 }
 
-void PasswordRequirementsSpecFetcher::OnFetchTimeout() {
+void PasswordRequirementsSpecFetcherImpl::OnFetchTimeout() {
   url_loader_.reset();
   TriggerCallback(ResultCode::kErrorTimeout, PasswordRequirementsSpec());
 }
 
-void PasswordRequirementsSpecFetcher::TriggerCallback(
+void PasswordRequirementsSpecFetcherImpl::TriggerCallback(
     ResultCode result,
     const PasswordRequirementsSpec& spec) {
   // TODO(crbug.com/846694) Return latencies.
