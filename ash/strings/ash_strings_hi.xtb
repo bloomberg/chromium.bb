@@ -72,6 +72,7 @@
 <translation id="2351266942280602854">भाषा और इनपुट</translation>
 <translation id="2352467521400612932">स्टाइलस की सेटिंग</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
+<translation id="2359808026110333948">जारी रखें</translation>
 <translation id="2365393535144473978">मोबाइल डेटा सक्षम करने से ब्लूटूथ सक्षम हो जाएगा.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
@@ -298,7 +299,7 @@
 <translation id="743058460480092004">कैमरे और माइक्रोफ़ोन का उपयोग हो रहा है.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">नेटवर्क की निगरानी की जा सकती है</translation>
-<translation id="7536035074519304529">IP पता: <ph name="ADDRESS" /></translation>
+<translation id="7536035074519304529">आईपी पता: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> का समर्थन नहीं करता. रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> में बदल दिया गया था</translation>
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7564874036684306347">विंडो को किसी दूसरे डेस्कटॉप पर ले जाने से अनचाहा बर्ताव हो सकता है. इसके बाद की सूचनाएं, विंडो और संवाद डेस्कटॉप के बीच बंट सकती हैं.</translation>

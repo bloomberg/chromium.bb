@@ -2343,7 +2343,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4663373278480897665">Kaamera on lubatud</translation>
 <translation id="4664482161435122549">PKCS #12 ekspordi viga</translation>
 <translation id="4665014895760275686">Tootja</translation>
-<translation id="466506872045057845">Chrome lähtestab load vaikeseadetele</translation>
 <translation id="4667176955651319626">Blokeeri kolmanda osapoole küpsised ja saidi andmed</translation>
 <translation id="4668721319092543482">Pistikprogrammi <ph name="PLUGIN_NAME" /> lubamiseks klõpsake</translation>
 <translation id="4669606053856530811">Üksuse „<ph name="SOURCE_NAME" />” liikmed kaotavad juurdepääsu, kui neid üksusi nendega ei jagata.</translation>
@@ -2696,7 +2695,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="52232769093306234">Pakkimine ebaõnnestus.</translation>
 <translation id="5225324770654022472">Kuva rakenduste otsetee</translation>
-<translation id="5225360179303283478">Lähtesta saidi seaded</translation>
 <translation id="5227679487546032910">Sinakasroheline vaikeavatar</translation>
 <translation id="5227808808023563348">Eelmise teksti otsimine</translation>
 <translation id="5228076606934445476">Seadmega on midagi valesti. Vea kõrvaldamiseks peate seadme taaskäivitama ja uuesti proovima.</translation>
@@ -3703,7 +3701,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6710213216561001401">Eelmine</translation>
 <translation id="6718273304615422081">Pakkimine ...</translation>
 <translation id="671928215901716392">Lukusta ekraan</translation>
-<translation id="67211069045302358">Kas lähtestada selle saidi seaded?</translation>
 <translation id="6721678857435001674">Vaadata teie turvavõtme tootjat ja mudelit</translation>
 <translation id="6721972322305477112">&amp;Fail</translation>
 <translation id="672213144943476270">Enne külalisena sirvimist avage oma profiil.</translation>

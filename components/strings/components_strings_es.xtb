@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6948701128805548767">Selecciona una dirección para ver los métodos de recogida y los requisitos</translation>
 <translation id="6949872517221025916">Cambiar contraseña</translation>
+<translation id="6950684638814147129">No se ha podido analizar el valor JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">El certificado del servidor parece ser falso.</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Tus padres aún no lo han aprobado</translation>
 <translation id="8625384913736129811">Guardar esta tarjeta en el dispositivo</translation>
 <translation id="8639963783467694461">Configuración de Autocompletar</translation>
+<translation id="8663226718884576429">Resumen del pedido: <ph name="TOTAL_LABEL" /> (más detalles)</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, respuesta: <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
 <translation id="8718314106902482036">El pago no se ha completado</translation>

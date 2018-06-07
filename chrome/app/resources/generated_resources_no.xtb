@@ -2326,7 +2326,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="4663373278480897665">Kameraet er tillatt</translation>
 <translation id="4664482161435122549">Eksportfeil for PKCS #12</translation>
 <translation id="4665014895760275686">Produsent</translation>
-<translation id="466506872045057845">Chrome tilbakestiller tillatelsene til standardinnstillingene</translation>
 <translation id="4667176955651319626">Blokkér informasjonskapsler og nettstedsdata fra tredjeparter</translation>
 <translation id="4668721319092543482">Klikk for å slå på <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Medlemmer av «<ph name="SOURCE_NAME" />» mister tilgangen, med mindre disse elementene deles med dem.</translation>
@@ -2676,7 +2675,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="52232769093306234">Pakkingen mislyktes.</translation>
 <translation id="5225324770654022472">Vis appsnarveien</translation>
-<translation id="5225360179303283478">Tilbakestill innstillingene for nettstedet</translation>
 <translation id="5227679487546032910">Blågrønt standardbrukerbilde</translation>
 <translation id="5227808808023563348">Finn forrige tekst</translation>
 <translation id="5228076606934445476">Noe er galt med enheten. For å rette opp i denne feilen må du starte enheten på nytt og prøve igjen.</translation>
@@ -3681,7 +3679,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6718273304615422081">Zipper ...</translation>
 <translation id="671928215901716392">Lås skjerm</translation>
-<translation id="67211069045302358">Vil du tilbakestille innstillingene for dette nettstedet?</translation>
 <translation id="6721678857435001674">se merket og modellen til sikkerhetsnøkkelen din</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
 <translation id="672213144943476270">Du må låse opp profilen din før du kan surfe som gjest.</translation>

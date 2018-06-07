@@ -821,6 +821,7 @@
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6948701128805548767">Valitse osoite, niin näet noutotavat ja vaatimukset.</translation>
 <translation id="6949872517221025916">Pyydä uusi salasana</translation>
+<translation id="6950684638814147129">Virhe jäsennettäessä JSON-arvoa: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Palvelimen varmenne näyttää olevan väärennös.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Laite</translation>
@@ -1052,6 +1053,7 @@
 <translation id="8620436878122366504">Vanhempasi eivät ole hyväksyneet sitä vielä.</translation>
 <translation id="8625384913736129811">Tallenna kortti tälle laitteelle</translation>
 <translation id="8639963783467694461">Automaattisen täytön asetukset</translation>
+<translation id="8663226718884576429">Tilauksen yhteenveto, <ph name="TOTAL_LABEL" />, lisätietoja</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, vastaus, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Yhteyttäsi verkkotunnukseen <ph name="DOMAIN" /> ei ole salattu.</translation>
 <translation id="8718314106902482036">Maksua ei suoritettu loppuun</translation>

@@ -2341,7 +2341,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4663373278480897665">Der er givet adgang til kameraet</translation>
 <translation id="4664482161435122549">PKCS #12-eksportfejl</translation>
 <translation id="4665014895760275686">Producent</translation>
-<translation id="466506872045057845">Chrome gendanner standardtilladelserne</translation>
 <translation id="4667176955651319626">Bloker tredjepartscookies og websitedata</translation>
 <translation id="4668721319092543482">Klik for at aktivere <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Medlemmer af "<ph name="SOURCE_NAME" />" mister adgang, medmindre disse elementer deles med dem.</translation>
@@ -2694,7 +2693,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="52232769093306234">Pakning mislykkedes.</translation>
 <translation id="5225324770654022472">Vis genvejen for apps</translation>
-<translation id="5225360179303283478">Nulstil indstillinger for website</translation>
 <translation id="5227679487546032910">Grønblå standardavatar</translation>
 <translation id="5227808808023563348">Find tidligere tekst</translation>
 <translation id="5228076606934445476">Der er noget galt med enheden. Du skal genstarte enheden og prøve igen for at undgå denne fejl.</translation>
@@ -3702,7 +3700,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6718273304615422081">Komprimerer...</translation>
 <translation id="671928215901716392">Lås skærmen</translation>
-<translation id="67211069045302358">Vil du nulstille indstillingerne for dette website?</translation>
 <translation id="6721678857435001674">Se din sikkerhedsnøgles fabrikat og model</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
 <translation id="672213144943476270">Lås din profil op, før du kan bruge internettet som gæst.</translation>

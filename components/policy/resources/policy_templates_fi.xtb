@@ -867,6 +867,11 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3512226956150568738">Jos asiakkaan laitemalli tuki ARC:tä jo ennen kuin siirtyminen ext4:ään oli pakollista ARC:n suorittamiseksi ja jos ArcEnabled-käytännön arvoksi on asetettu tosi, tämä vaihtoehto toimii samalla tavalla kuin AskUser (arvo 3). Kaikissa muissa tapauksissa (jos laitemalli ei tukenut ARC:tä ennen tai jos ArcEnabled-käytännön arvoksi on asetettu epätosi), tämä arvo on sama kuin DisallowArc (arvo 0).</translation>
 <translation id="3524204464536655762">Älä salli sivustojen pyytää USB-laitteiden käyttöoikeutta WebUSB-sovellusliittymän kautta</translation>
 <translation id="3528000905991875314">Ota vaihtoehtoiset virhesivut käyttöön</translation>
+<translation id="3545457887306538845">Antaa sinun valita, missä kehittäjätyökaluja voi käyttää
+
+      Jos käytännön arvoksi on asetettu DeveloperToolsDisallowedForForceInstalledExtensions (oletusarvo 0), kehittäjätyökalujen ja JavaScript-konsolin käyttö on sallittua yleisesti mutta ei yrityskäytännön asentamien laajennusten yhteydessä.
+      Jos käytännön arvoksi on asetettu DeveloperToolsAllowed (arvo 1), kehittäjätyökalujen ja JavaScript-konsolin käyttö on sallittua kaikissa yhteyksissä, mukaan lukien yrityskäytännön asentamat laajennukset.
+     Jos käytännön arvoksi on asetettu DeveloperToolsDisallowed (arvo 2), kehittäjätyökaluja ei voi käyttää eikä verkkosivustojen elementtejä enää voi tarkastaa. Kehittäjän työkalut tai JavaScript-konsolin avaavat pikanäppäimet ja valikkokohteet poistetaan käytöstä.</translation>
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="3556806727696701427">Ota käyttöön Selaussuoja-ominaisuus, jonka <ph name="PRODUCT_NAME" /> sisältää, ja estä käyttäjiä muuttamasta tätä asetusta.
 
@@ -1896,6 +1901,38 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6810445994095397827">Estä JavaScript näissä sivustoissa</translation>
 <translation id="681446116407619279">Tuetut todennusjärjestelmät</translation>
 <translation id="6835883744948188639">Näytä käyttäjälle toistuva kehote suositellusta uudelleenkäynnistyksestä</translation>
+<translation id="6838056959556423778">Ohittaa tuotteen <ph name="PRODUCT_NAME" /> oletustulostimen valinnan säännöt
+
+      Tämä käytäntö määrittää säännöt, joiden perusteella <ph name="PRODUCT_NAME" /> valitsee oletustulostimen, kun tulostustoimintoa käytetään profiilin kautta ensimmäistä kertaa.
+
+      Kun käytäntö on määritetty, <ph name="PRODUCT_NAME" /> pyrkii löytämään tulostimen, joka täyttää kaikki asetut vaatimukset, ja valitsemaan sen oletustulostimeksi. Valinta kohdistuu ensimmäiseen tulostimeen, joka vastaa käytäntöä. Jos useita tulostimia löydetään, mikä tahansa niistä voi tulla valituksi, riippuen niiden löytämisjärjestyksestä.
+
+      Jos käytäntöä ei ole määritetty tai sopivaa tulostinta ei ole löydetty ennen aikakatkaisua, tulostin valitsee oletukseksi sisäänrakennetun tulostuksen PDF:ään tai se ei valitse mitään, jos PDF-tulostusta ei ole saatavilla.
+
+      Arvo merkitään JSON-objektin muodossa seuraavan mallin mukaisesti:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Rajoitetaanko sopivan tulostimen etsintä tiettyyn tulostinjoukkoon.",
+            "type": {
+            "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Säännöllinen lauseke, joka vastaa tulostimen tunnusta.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Säännöllinen lauseke, joka vastaa tulostimen näyttönimeä.",
+            "type": "string"
+          }
+        }
+      }
+
+      Palveluun <ph name="CLOUD_PRINT_NAME" /> yhdistetyt tulostimet ovat tyyppiä <ph name="PRINTER_TYPE_CLOUD" />, ja muut tulostimet ovat tyyppiä <ph name="PRINTER_TYPE_LOCAL" />.
+      Kentän tyhjäksi jättäminen tarkoittaa, että kaikki arvot hyväksytään siihen. Jos esimerkiksi yhteydet jätetään tyhjäksi, tulostuksen esikatselu pyrkii löytämään sekä pilvitulostimia että paikallisia tulostimia.
+      Säännöllisten lausekkeiden muodon tulee noudattaa JavaScript RegExp ‑syntaksia, ja kirjainkoolla on väliä osumissa.</translation>
 <translation id="684856667300805181">Tämä käytäntö poistettiin tuotteessa <ph name="PRODUCT_NAME" /> 68 ja korvattiin käytännöllä <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Tämä käytäntö on poistettu käytöstä ja M66:sta, sillä sitä käytettiin ainoastaan sisäisessä testauksessa. Se on lisäksi tietosuojariski.
 
@@ -2156,6 +2193,17 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7511361072385293666">Jos tämän käytännön arvo on Tosi tai sitä ei aseteta, <ph name="PRODUCT_NAME" /> sallii QUIC-protokollan käytön.
       Jos käytännön arvo on Epätosi, QUIC-protokollan käyttöä ei sallita.</translation>
 <translation id="7519251620064708155">Salli avainten luominen näillä sivustoilla.</translation>
+<translation id="7529083451528428240">Sallii käyttäjän käyttökerran lukitsemisen perustuen asiakasaikaan tai päivän käyttökiintiöön.
+
+          |time_window_limit| määrittää päivittäisen aikaikkunan, jolloin käyttäjän käyttökerta pitäisi lukita. Tuemme vain yhtä sääntöä viikonpäivää kohti, minkä vuoksi |entries|-joukko voi olla kooltaan 0–7. |starts_at| ja |ends_at| ovat aikaikkunan aloitus- ja päättymisajat. Jos |ends_at| on aiemmin kuin |starts_at|, |time_limit_window| päättyy seuraavana päivänä. |last_updated_millis| on tämän merkinnän edellisen päivityskerran UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun.
+
+          |time_usage_limit| määrittää päivittäisen näyttökiintiön, joten käyttäjän saavuttaessa sen hänen käyttökertansa lukitaan. Jokaiselle viikonpäivälle on ominaisuus, ja se pitäisi määrittää vain, jos kyseiselle päivälle on aktiivinen kiintiö. |usage_quota_mins| on aika, jonka verran hallinnoitua laitetta voi käyttää päivässä ja |reset_at| on aika, jolloin käyttökiintiö uusitaan. |reset_at|-oletusarvo on keskiyö ({'hour': 0, 'minute': 0}). |last_updated_millis| on merkinnän edellisen päivityskerran UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun.
+
+          |overrides| mitätöi väliaikaisesti yhden tai useamman aiemmista säännöistä.
+          * Jos time_window_limit tai time_usage_limit ei ole aktiivinen, laite voidaan lukita |LOCK|-toiminnon avulla.
+          * |LOCK| lukitsee väliaikaisesti käyttökerran, kunnes seuraava time_window_limit tai time_usage_limit alkaa.
+          * |UNLOCK| avaa käyttäjän käyttökerran lukituksen time_window_limit- tai time_usage_limit-aikaan mennessä.
+          |created_time_millis| on mitätöinnin luonnin UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun. Sen avulla määritetään, pitäisikö tätä mitätöintiä käyttää. Jos nykyinen aktiivinen aikarajaominaisuus (ajankäyttöraja tai aikaikkunaraja) alkoi mitätöinnin luomisen jälkeen, sen ei pitäisi käynnistyä. Jos mitätöinti luotiin ennen viimeisen active time_window_limit- tai time_usage_window-arvon luontia, sitä ei pitäisi käyttää.</translation>
 <translation id="7529100000224450960">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat avata ponnahdusikkunoita. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPopupsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7529144158022474049">Hajontatekijän automaattinen päivitys</translation>
 <translation id="7534199150025803530">Tällä käytännöllä ei ole vaikutusta Androidin Google Drive ‑sovellukseen. Jos haluat estää Google Driven käytön mobiiliyhteyden kautta, sinun on estettävä Androidin Google Drive ‑sovelluksen asennus.</translation>

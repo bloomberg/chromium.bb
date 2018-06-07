@@ -72,6 +72,7 @@
 <translation id="2351266942280602854">Idioma y entrada</translation>
 <translation id="2352467521400612932">Configuración del lápiz óptico</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME" /></translation>
+<translation id="2359808026110333948">Continuar</translation>
 <translation id="2365393535144473978">La conexión Bluetooth se activará al habilitar los datos móviles.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Antes de aceptar, comprueba que la clave de contraseña <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
@@ -117,6 +118,7 @@
 <translation id="3151786313568798007">Orientación</translation>
 <translation id="3153444934357957346">Solo puedes tener un máximo de <ph name="MULTI_PROFILE_USER_LIMIT" /> cuentas en el inicio de sesión múltiple.</translation>
 <translation id="3236488194889173876">No hay ninguna red móvil disponible</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="332587331255250389">Cambia la batería</translation>
 <translation id="3351879221545518001">Estás enviando la pantalla.</translation>

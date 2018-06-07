@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Avoimet välilehdet</translation>
 <translation id="1756600373018374892">Käytä välilehtiäsi kätevästi napauttamalla tätä painiketta.</translation>
 <translation id="1779089405699405702">Kuvien dekooderi</translation>
+<translation id="1782483593938241562">Päättymispäivä: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Muuta oletuslataussijaintia milloin tahansa</translation>
 <translation id="1807246157184219062">Vaalea</translation>
 <translation id="1829244130665387512">Haku sivulta</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Päivitä sivu</translation>
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="271033894570825754">Uusi</translation>
+<translation id="2728754400939377704">Lajittele sivuston mukaan</translation>
 <translation id="2736391366332017384">Kosketa aloitusnäyttöpainiketta siirtyäksesi uusi välilehti ‑sivulle nykyisellä välilehdellä</translation>
 <translation id="2744248271121720757">Napauta sanaa etsiäksesi välittömästi tai nähdäksesi asiaan liittyviä toimia.</translation>
 <translation id="2762000892062317888">äsken</translation>
@@ -353,8 +355,10 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4113030288477039509">Järjestelmänvalvojasi hallinnoima</translation>
 <translation id="4116038641877404294">Lataa sivuja offline-käyttöä varten.</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d kirjanmerkki}other{%1$d kirjanmerkkiä}}</translation>
+<translation id="4159800535322890630">Estä sivustoja käyttämästä tunnistimiasi</translation>
 <translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> käytetty</translation>
 <translation id="4181841719683918333">Kielet</translation>
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
 <translation id="4198423547019359126">Tallennussijainteja ei ole saatavilla</translation>
@@ -520,6 +524,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="5585019845078534178">Kortit</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
 <translation id="5596627076506792578">Lisäasetukset</translation>
+<translation id="5620299005957670886">Anna sivustojen käyttää tunnistimiasi (suositus)</translation>
 <translation id="5620928963363755975">Valitse Lisäasetukset ja sitten Lataukset, niin löydät tiedostosi ja sivusi.</translation>
 <translation id="5626134646977739690">Nimi:</translation>
 <translation id="5639724618331995626">Salli kaikki sivustot</translation>
@@ -563,6 +568,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="5911030830365207728">Google Kääntäjä</translation>
 <translation id="5916664084637901428">Käytössä</translation>
 <translation id="5919204609460789179">Aloita synkronointi päivittämällä <ph name="PRODUCT_NAME" /></translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> säästetty</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="5942872142862698679">Hakukoneena käytetään Googlea.</translation>
 <translation id="5956665950594638604">Avaa Chromen ohjekeskus uudella välilehdellä</translation>
@@ -643,6 +649,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6612358246767739896">Suojattu sisältö</translation>
 <translation id="6627583120233659107">Muokkaa kansiota</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
+<translation id="6643649862576733715">Lajittele säästetyn datan määrän mukaan</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> muu}other{<ph name="CONTACT_PREVIEW" />\u2026 ja <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> muuta}}</translation>
 <translation id="6656545060687952787">Chrome tarvitsee sijaintitietojen käyttöoikeuden hakeakseen laitteita. <ph name="BEGIN_LINK" />Päivitä käyttöoikeudet<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">Salasana</translation>
@@ -729,6 +736,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7400418766976504921">URL-osoite</translation>
 <translation id="7403691278183511381">Chromen ensimmäinen käyttökerta</translation>
 <translation id="741204030948306876">Kyllä</translation>
+<translation id="7413229368719586778">Alkamispäivä: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Kysy ensin</translation>
 <translation id="7423538860840206698">Leikepöydältä lukeminen estetty</translation>
 <translation id="7437998757836447326">Uloskirjautuminen Chromesta</translation>
@@ -834,6 +842,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8313455859591948645">Muokkaa aloitussivua</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ja muita sivustoja</translation>
 <translation id="8339163506404995330">Kielellä <ph name="LANGUAGE" /> kirjoitettuja sivuja ei käännetä.</translation>
+<translation id="8349013245300336738">Lajittele käytetyn datan määrän mukaa</translation>
 <translation id="8363501664269050863">Navigointipaneeli. Sulje pyyhkäisemällä alas.</translation>
 <translation id="8372893542064058268">Salli taustasynkronointi tietyllä sivustolla.</translation>
 <translation id="8374821112118309944">TalkBack täytyy päivittää uudempaan versioon.</translation>

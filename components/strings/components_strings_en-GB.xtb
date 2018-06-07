@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Select</translation>
 <translation id="6948701128805548767">To see pickup methods and requirements, select an address</translation>
 <translation id="6949872517221025916">Reset password</translation>
+<translation id="6950684638814147129">Error while parsing JSON value: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">The server's certificate appears to be a forgery.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Device</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
 <translation id="8625384913736129811">Save This Card to This Device</translation>
 <translation id="8639963783467694461">Auto-fill settings</translation>
+<translation id="8663226718884576429">Order Summary, <ph name="TOTAL_LABEL" />, More Details</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, answer, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
 <translation id="8718314106902482036">Payment not completed</translation>

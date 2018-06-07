@@ -2340,7 +2340,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="4663373278480897665">La càmera es pot utilitzar</translation>
 <translation id="4664482161435122549">Error d'exportació PKCS #12</translation>
 <translation id="4665014895760275686">Fabricant</translation>
-<translation id="466506872045057845">Chrome restablirà la configuració predeterminada dels permisos</translation>
 <translation id="4667176955651319626">Bloqueja les galetes de tercers i les dades de llocs web</translation>
 <translation id="4668721319092543482">Fes clic per activar <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Els membres de l'equip <ph name="SOURCE_NAME" /> ja no podran accedir a aquests elements, tret que es comparteixin amb ells.</translation>
@@ -2695,7 +2694,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="52232769093306234">S'ha produït un error en l'empaquetat.</translation>
 <translation id="5225324770654022472">Mostra la drecera d'aplicacions 
 </translation>
-<translation id="5225360179303283478">Restableix la configuració del lloc web</translation>
 <translation id="5227679487546032910">Avatar turquesa predeterminat</translation>
 <translation id="5227808808023563348">Cerca el text anterior</translation>
 <translation id="5228076606934445476">S'ha produït algun error amb el dispositiu. Per recuperar-vos d'aquest error, cal que reinicieu el dispositiu i ho torneu a provar.</translation>
@@ -3702,7 +3700,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6718273304615422081">S'està comprimint...</translation>
 <translation id="671928215901716392">Bloqueja la pantalla</translation>
-<translation id="67211069045302358">Vols restablir la configuració d'aquest lloc web?</translation>
 <translation id="6721678857435001674">Veure la marca i el model de la teva clau de seguretat</translation>
 <translation id="6721972322305477112">&amp;Fitxer</translation>
 <translation id="672213144943476270">Desbloquegeu el perfil per poder navegar com a convidat.</translation>

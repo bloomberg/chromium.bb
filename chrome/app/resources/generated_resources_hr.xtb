@@ -2344,7 +2344,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="4663373278480897665">Kamera je dopuštena</translation>
 <translation id="4664482161435122549">Pogreška pri izvozu PKCS #12</translation>
 <translation id="4665014895760275686">Proizvođač</translation>
-<translation id="466506872045057845">Chrome će poništiti dopuštenja za njihove zadane vrijednosti</translation>
 <translation id="4667176955651319626">Blokiraj kolačiće trećih strana i podatke web-lokacije</translation>
 <translation id="4668721319092543482">Kliknite da biste omogućili <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Članovi grupe "<ph name="SOURCE_NAME" />" izgubit će pristup ako se te stavke ne podijele s njima.</translation>
@@ -2697,7 +2696,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="52232769093306234">Pakiranje nije uspjelo.</translation>
 <translation id="5225324770654022472">Prikaži prečac za aplikacije</translation>
-<translation id="5225360179303283478">Vratite postavke web-lokacije na zadane vrijednosti</translation>
 <translation id="5227679487546032910">Zadani tirkiznoplavi avatar</translation>
 <translation id="5227808808023563348">Nađi prethodni tekst</translation>
 <translation id="5228076606934445476">Nešto nije u redu s uređajem. Da biste uklonili tu pogrešku, morat ćete ponovo pokrenuti uređaj i pokušati još jednom.</translation>
@@ -3704,7 +3702,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="6718273304615422081">Komprimiranje...</translation>
 <translation id="671928215901716392">Zaključaj zaslon</translation>
-<translation id="67211069045302358">Želite li poništiti postavke za ovu web-lokaciju?</translation>
 <translation id="6721678857435001674">Pogledajte izradu i model sigurnosnog ključa</translation>
 <translation id="6721972322305477112">&amp;File (Datoteka)</translation>
 <translation id="672213144943476270">Otključajte profil da biste mogli pregledavati kao gost.</translation>

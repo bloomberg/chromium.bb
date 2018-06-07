@@ -2343,7 +2343,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4663373278480897665">Kameraya izin veriliyor</translation>
 <translation id="4664482161435122549">PKCS #12 Dışa Aktarma Hatası</translation>
 <translation id="4665014895760275686">Üretici</translation>
-<translation id="466506872045057845">Chrome izinleri varsayılan ayarlarına sıfırlayacak</translation>
 <translation id="4667176955651319626">Üçüncü taraf çerezlerini ve site verilerini engelle</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> eklentisini etkinleştirmek için tıklayın</translation>
 <translation id="4669606053856530811">"<ph name="SOURCE_NAME" />" kaynağının üyeleri, bu öğeler kendileriyle paylaşılmadığı sürece erişimi kaybedecektir.</translation>
@@ -2696,7 +2695,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="52232769093306234">Paketleme başarısız oldu.</translation>
 <translation id="5225324770654022472">Uygulamalar kısayolunu göster</translation>
-<translation id="5225360179303283478">Site ayarlarını sıfırla</translation>
 <translation id="5227679487546032910">Varsayılan koyu camgöbeği avatar</translation>
 <translation id="5227808808023563348">Önceki metni bul</translation>
 <translation id="5228076606934445476">Cihazda bir sorun var. Bu hatadan kurtulmak için cihazı yeniden başlatıp tekrar denemeniz gerekir.</translation>
@@ -3704,7 +3702,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="6718273304615422081">Sıkıştırılıyor...</translation>
 <translation id="671928215901716392">Kilit ekranı</translation>
-<translation id="67211069045302358">Bu sitenin ayarları sıfırlansın mı?</translation>
 <translation id="6721678857435001674">Güvenlik Anahtarınızın markasını ve modelini görme</translation>
 <translation id="6721972322305477112">&amp;Dosya</translation>
 <translation id="672213144943476270">Lütfen misafir olarak göz atmadan önce profilinizin kilidini açın.</translation>

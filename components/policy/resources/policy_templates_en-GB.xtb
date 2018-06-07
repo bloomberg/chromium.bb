@@ -898,6 +898,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
 <translation id="3524204464536655762">Do not allow any site to request access to USB devices via the WebUSB API</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
+<translation id="3545457887306538845">Allows you to control where Developer Tools can be used.
+
+      If this policy is set to 'DeveloperToolsDisallowedForForceInstalledExtensions' (value 0, which is the default value), the Developer Tools and the JavaScript console can be accessed in general, but they cannot be accessed in the context of extensions installed by enterprise policy.
+      If this policy is set to 'DeveloperToolsAllowed' (value 1), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
+      If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools cannot be accessed and website elements can no longer be inspected. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3556806727696701427">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
 
@@ -1983,6 +1988,37 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6810445994095397827">Block JavaScript on these sites</translation>
 <translation id="681446116407619279">Supported authentication schemes</translation>
 <translation id="6835883744948188639">Show a recurring prompt to the user indicating that a relaunch is recommended</translation>
+<translation id="6838056959556423778">Overrides <ph name="PRODUCT_NAME" /> default printer selection rules.
+
+      This policy determines the rules for selecting the default printer in <ph name="PRODUCT_NAME" /> which happens the first time that the print function is used with a profile.
+
+      When this policy is set, <ph name="PRODUCT_NAME" /> will attempt to find a printer matching all of the specified attributes, and select it as default printer. The first printer found matching the policy is selected; in the case of non-unique matches, any matching printer can be selected, depending on the order in which printers are discovered.
+
+      If this policy is not set or a matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected, when PDF printer is not available.
+
+      The value is parsed as JSON object, conforming to the following schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printers connected to <ph name="CLOUD_PRINT_NAME" /> are considered <ph name="PRINTER_TYPE_CLOUD" />; the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL" />.
+      Omitting a field means all values match. For example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers: local and cloud.
+      Regular expression patterns must follow the JavaScript RegExp syntax and matches are case sensitive.</translation>
 <translation id="684856667300805181">This policy was removed in <ph name="PRODUCT_NAME" /> 68 and replaced by <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">This policy is deprecated and removed in M66, because it was used only for internal testing and it is a security liability.
 
@@ -2261,6 +2297,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7511361072385293666">If this policy is set to true or not set usage of QUIC protocol in <ph name="PRODUCT_NAME" /> is allowed.
       If this policy is set to false usage of QUIC protocol is disallowed.</translation>
 <translation id="7519251620064708155">Allow key generation on these sites</translation>
+<translation id="7529083451528428240">Allows you to lock the user's session based on the client time or the usage quota of the day.
+
+          The |time_window_limit| specifies a daily window in which the user's session should be locked. We only support one rule for each day of the week, therefore the |entries| array may vary from 0-7 in size. |starts_at| and |ends_at| are the beginning and the end of the window limit, when |ends_at| is smaller than |starts_at| it means that the |time_limit_window| ends on the following day. |last_updated_millis| is the UTC timestamp for the last time that this entry was updated. It is sent as a string because the timestamp wouldn't fit in an integer.
+
+          The |time_usage_limit| specifies a daily screen quota, so when the user reaches it, the user's session is locked. There is a property for each day of the week, and it should be set only if there is an active quota for that day. |usage_quota_mins| is the amount of time that the managed device can be used in a day and |reset_at| is the time when the usage quota is renewed. The default value for |reset_at| is midnight ({'hour': 0, 'minute': 0}). |last_updated_millis| is the UTC timestamp for the last time that this entry was updated. It is sent as a string because the timestamp wouldn't fit in an integer.
+
+          |overrides| is provided to temporarily invalidate one or more of the previous rules.
+          * If neither time_window_limit nor time_usage_limit is active, |LOCK| can be used to lock the device.
+          * |LOCK| temporarily locks a user session until the next time_window_limit or time_usage_limit starts.
+          * |UNLOCK| unlocks a user's session locked by time_window_limit or time_usage_limit.
+          |created_time_millis| is the UTC timestamp for the override creation. It is sent as a String because the timestamp wouldn't fit in an integer. It is used to determine whether this override should still be applied. If the current active time limit feature (time usage limit or time window limit) started after the override was created, it should not take action. Also, if the override was created before the last change of the active time_window_limit or time_usage_window it should not be applied.</translation>
 <translation id="7529100000224450960">Allows you to set a list of url patterns that specify sites which are allowed to open pop-ups.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultPop-upsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>

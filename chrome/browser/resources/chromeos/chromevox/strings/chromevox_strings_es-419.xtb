@@ -146,6 +146,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2416512023405990736">Una casilla de verificación desmarcada</translation>
 <translation id="2417569100218200841">Información del contenido</translation>
 <translation id="2417948780551741035">Notas finales</translation>
+<translation id="2421113964388408478">Contenido borrado</translation>
 <translation id="2422937916923936891">Casilla de verificación del elemento de menú</translation>
 <translation id="2428534162001909979">Menús de comandos</translation>
 <translation id="2429669115401274487">p. m.</translation>
@@ -179,6 +180,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">a. m.</translation>
+<translation id="2737520612859577214">Final del superíndice</translation>
 <translation id="2749275490991666823">Seleccionado</translation>
 <translation id="27527859628328957">Saltar al siguiente elemento enfocable</translation>
 <translation id="276402504937943375">índice</translation>
@@ -203,6 +205,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="288178314850623291">Usa los comandos de navegación para ir directamente a tipos de elementos específicos. Para avanzar entre encabezados, presiona Búsqueda + H; para ir hacia atrás, presiona Búsqueda + mayúscula + H.</translation>
 <translation id="2894654529758326923">Información</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{llave de apertura}other{# llaves de apertura}}</translation>
+<translation id="2909478709401302630">Inicio del superíndice</translation>
 <translation id="2911433807131383493">Abrir tutorial de ChromeVox</translation>
 <translation id="2932083475399492303">Alternar entre líneas estructurales y líneas de diseño</translation>
 <translation id="2944762337049891859">Leer la página automáticamente después de que termina de cargarse</translation>
@@ -384,6 +387,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4148180433151187540">{COUNT,plural, =1{llave de cierre}other{# llaves de cierre}}</translation>
 <translation id="4158704014418536539">Distingue mayúsculas de minúsculas.</translation>
 <translation id="4161663686871496107">Los comentarios por voz de ChromeVox están listos.</translation>
+<translation id="4166192625054637755">Final del superíndice</translation>
 <translation id="4173994908659439270">No hay ningún campo de texto editable posterior.</translation>
 <translation id="4176463684765177261">Deshabilitado</translation>
 <translation id="4188530942454211480">Frase anterior</translation>
@@ -423,6 +427,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4476183483923481720">Nueva línea</translation>
 <translation id="4482330759234983253">Tabla anterior</translation>
 <translation id="4491109536499578614">Imagen</translation>
+<translation id="4505167975768625962">Contenido agregado</translation>
 <translation id="4517854969512651305">Incrementar el valor</translation>
 <translation id="4529987814483543472">Mapa de teclado clásico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
@@ -527,6 +532,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="5330443287809544590"><ph name="NAME" />, vínculo</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Retrovínculo</translation>
+<translation id="5350654862897073517">Inicio del superíndice</translation>
 <translation id="536031132345979795">Saltar atrás durante la lectura continua</translation>
 <translation id="5368000168321181111">Sonido desactivado</translation>
 <translation id="5374320867641260420">No hay ningún botón posterior.</translation>

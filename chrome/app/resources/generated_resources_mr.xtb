@@ -664,7 +664,7 @@
 <translation id="1997616988432401742">तुमची प्रमाणपत्रे</translation>
 <translation id="1999115740519098545">स्टार्टअप वर</translation>
 <translation id="2001796770603320721">ड्राइव्ह मध्ये व्यवस्थापित करा</translation>
-<translation id="200544492091181894">तुम्ही नाहेमी हे नंतर सेटिंग्ज मध्ये बदलू शकता.</translation>
+<translation id="200544492091181894">तुम्ही हे नंतर कधीही सेटिंग्ज मध्ये बदलू शकता.</translation>
 <translation id="2006638907958895361">लिंक <ph name="APP" /> मध्ये उघडा</translation>
 <translation id="2007404777272201486">समस्या नोंदवा...</translation>
 <translation id="2016430552235416146">पारंपारिक</translation>
@@ -2332,7 +2332,6 @@
 <translation id="4663373278480897665">कॅमेऱ्याला अनुमती आहे</translation>
 <translation id="4664482161435122549">PKCS #12 निर्यात एरर</translation>
 <translation id="4665014895760275686">निर्माता</translation>
-<translation id="466506872045057845">Chrome त्यांच्या परवानग्या डीफॉल्टवर सेट करेल</translation>
 <translation id="4667176955651319626">तृतीत-पक्ष कुकीज आणि साइट डेटा अवरोधित करा</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> सक्षम करण्यासाठी क्लिक करा</translation>
 <translation id="4669606053856530811">जोपर्यंत '<ph name="SOURCE_NAME" />' च्या सदस्यांशी हे आयटम शेअर केले जाणार नाहीत, ते अॅक्सेस गमावतील.</translation>
@@ -2684,7 +2683,6 @@
 <translation id="5222676887888702881">साइन आउट करा</translation>
 <translation id="52232769093306234">पॅकिंग अयशस्वी झाले.</translation>
 <translation id="5225324770654022472">अ‍ॅप्स शॉर्टकट दर्शवा</translation>
-<translation id="5225360179303283478">साइट सेटिंग्ज रीसेट करा</translation>
 <translation id="5227679487546032910">डीफॉल्ट हिरवट निळा अवतार</translation>
 <translation id="5227808808023563348">मागील मजकूर शोधा</translation>
 <translation id="5228076606934445476">डीव्हाइससह काहीतरी चुकीचे झाले. या त्रुटीमधून पुनर्प्राप्त करण्यासाठी आपल्याला डीव्हाइस रीबूट करण्याची आवश्यकता असेल आणि पुन्हा प्रयत्न करा.</translation>
@@ -3604,7 +3602,7 @@
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6585283250473596934">सार्वजनिक सत्रात प्रवेश करत आहे.</translation>
 <translation id="6586451623538375658">प्राथमिक माउस बटण स्वॅप करा</translation>
-<translation id="6589660129740381104"><ph name="IDS_SHORT_PRODUCT_NAME" /> मध्ये तुमचा अनुभव आणखी सहजपणे व्यवस्थापित करयास तुम्हाला मदत करण्यासाठी, सिंक आणि पर्सनलायझेशनशी संबंधित वैशिष्ट्ये आता एकाच नियंत्रणाखाली आहेत. हे सुरू केल्याने तुमच्या वर्तमान सएटिंग्ज बदलू शकतात.</translation>
+<translation id="6589660129740381104"><ph name="IDS_SHORT_PRODUCT_NAME" /> मध्ये तुमचा अनुभव आणखी सहजपणे व्यवस्थापित करण्यास तुम्हाला मदत करण्यासाठी, सिंक आणि पर्सनलायझेशनशी संबंधित वैशिष्ट्ये आता एकाच नियंत्रणाखाली आहेत. हे सुरू केल्याने तुमच्या वर्तमान सेटिंग्ज बदलू शकतात.</translation>
 <translation id="6589706261477377614">की चकाकी वाढवा</translation>
 <translation id="6590458744723262880">फोल्डरचे नाव बदला</translation>
 <translation id="6592267180249644460">WebRTC लॉग ने कॅप्चर केलेला <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
@@ -3691,7 +3689,6 @@
 <translation id="6710213216561001401">मागील</translation>
 <translation id="6718273304615422081">झिप करत आहे...</translation>
 <translation id="671928215901716392">लॉक स्क्रीन</translation>
-<translation id="67211069045302358">या साइटसाठी सेटिंग्ज रीसेट करायच्या?</translation>
 <translation id="6721678857435001674">तुमच्या सिक्युरिटी कीची निर्मिती आणि मॉडेल पहा</translation>
 <translation id="6721972322305477112">&amp;फाइल</translation>
 <translation id="672213144943476270">कृपया अतिथी म्हणून ब्राउझ करण्यापूर्वी आपले प्रोफाईल अनलॉक करा.</translation>

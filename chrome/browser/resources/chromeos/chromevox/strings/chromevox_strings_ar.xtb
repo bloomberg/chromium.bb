@@ -146,6 +146,7 @@
 <translation id="2416512023405990736">مربع اختيار غير محدد</translation>
 <translation id="2417569100218200841">معلومات المحتوى</translation>
 <translation id="2417948780551741035">تعليقات ختامية</translation>
+<translation id="2421113964388408478">حذف</translation>
 <translation id="2422937916923936891">مربّع اختيار عنصر القائمة</translation>
 <translation id="2428534162001909979">قوائم الأوامر</translation>
 <translation id="2429669115401274487">مساءً</translation>
@@ -179,6 +180,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">الصوت</translation>
 <translation id="2732718972699418926">صباحًا</translation>
+<translation id="2737520612859577214">نهاية الرموز العلوية</translation>
 <translation id="2749275490991666823">محدد</translation>
 <translation id="27527859628328957">الانتقال إلى العنصر التالي القابل للتركيز</translation>
 <translation id="276402504937943375">جدول المحتويات</translation>
@@ -203,6 +205,7 @@
 <translation id="288178314850623291">‏استخدم أوامر الانتقال السريع للتخطي إلى أنواع محددة من العناصر. للانتقال السريع للأمام بين العناوين، اضغط على بحث + H، أو للانتقال السريع للخلف، اضغط على بحث + Shift + H.</translation>
 <translation id="2894654529758326923">المعلومات</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{قوس كبير أيسر واحد}zero{# left braces}two{قوسان كبيران أيسران (#)}few{# أقواس كبيرة يسرى}many{# قوسًا كبيرًا أيسرًا}other{# من الأقواس الكبيرة اليسرى}}</translation>
+<translation id="2909478709401302630">بداية الرموز العلوية</translation>
 <translation id="2911433807131383493">‏فتح برنامج ChromeVox التعليمي</translation>
 <translation id="2932083475399492303">تبديل نوع الخط بين تنظيمي أو تخطيطي</translation>
 <translation id="2944762337049891859">يمكنك قراءة الصفحة تلقائيًا بعد انتهاء التحميل.</translation>
@@ -384,6 +387,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{قوس كبير أيمن واحد}zero{# right braces}two{قوسان كبيران أيمنان (#)}few{# أقواس كبيرة يمنى}many{# قوسًا كبيرًا أيمنًا}other{# من الأقواس الكبيرة اليمنى}}</translation>
 <translation id="4158704014418536539">حساس لحالة الأحرف.</translation>
 <translation id="4161663686871496107">‏تعليقات ChromeVox المنطوقة جاهزة</translation>
+<translation id="4166192625054637755">نهاية الرموز السفلية</translation>
 <translation id="4173994908659439270">ليس هناك حقل تالٍ قابل للتعديل.</translation>
 <translation id="4176463684765177261">غير مفعّل</translation>
 <translation id="4188530942454211480">الجملة السابقة</translation>
@@ -423,6 +427,7 @@
 <translation id="4476183483923481720">سطر جديد</translation>
 <translation id="4482330759234983253">الجدول السابق</translation>
 <translation id="4491109536499578614">صورة</translation>
+<translation id="4505167975768625962">إدراج</translation>
 <translation id="4517854969512651305">زيادة القيمة</translation>
 <translation id="4529987814483543472">مخطط مفاتيح كلاسيكي</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{شرطة مائلة واحدة}zero{# slashes}two{شرطتان مائلتان (#)}few{# شرطات مائلة}many{# شرطة مائلة}other{# من الشرطات المائلة}}</translation>
@@ -527,6 +532,7 @@
 <translation id="5330443287809544590">الرابط <ph name="NAME" /></translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">رابط رجوع</translation>
+<translation id="5350654862897073517">بداية الرموز السفلية</translation>
 <translation id="536031132345979795">الرجوع إلى الخلف أثناء القراءة المتواصلة</translation>
 <translation id="5368000168321181111">‏تم إيقاف Earcons</translation>
 <translation id="5374320867641260420">ليس هناك زر تالٍ.</translation>

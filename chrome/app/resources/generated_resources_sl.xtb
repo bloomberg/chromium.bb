@@ -209,6 +209,7 @@
 <translation id="1296497012903089238">Vrsta potrdila</translation>
 <translation id="1297175357211070620">Cilj</translation>
 <translation id="1297922636971898492">Google Drive trenutno ni na voljo. Ko bo spet na voljo, se bo prenos samodejno začel znova.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> zahteva, da Google preveri identiteto naprave in tako določi, ali je ustrezna za izboljšano predvajanje zaščitene vsebine.</translation>
 <translation id="1300806585489372370">Če želite spremeniti to nastavitev, najprej <ph name="BEGIN_LINK" />vklopite identifikatorje<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Dovoli JavaScript v Applovih dogodkih</translation>
 <translation id="1303101771013849280">Datoteka HTML z zaznamki</translation>
@@ -2344,7 +2345,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="4663373278480897665">Kamera je dovoljena</translation>
 <translation id="4664482161435122549">Napaka pri izvozu PKCS #12</translation>
 <translation id="4665014895760275686">Proizvajalec</translation>
-<translation id="466506872045057845">Chrome bo ponastavil dovoljenja na privzete vrednosti</translation>
 <translation id="4667176955651319626">Blokiraj piškotke in podatke drugih spletnih mest</translation>
 <translation id="4668721319092543482">Kliknite, če želite omogočiti <ph name="PLUGIN_NAME" /></translation>
 <translation id="4669606053856530811">Člani skupine »<ph name="SOURCE_NAME" />« bodo izgubili dostop, razen če te elemente delite z njimi.</translation>
@@ -2697,7 +2697,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="52232769093306234">Pakiranje ni uspelo.</translation>
 <translation id="5225324770654022472">Prikaži bližnjico do aplikacij</translation>
-<translation id="5225360179303283478">Ponastavi nastavitve spletnega mesta</translation>
 <translation id="5227679487546032910">Privzeti modrozeleni avatar</translation>
 <translation id="5227808808023563348">Iskanje prejšnjega besedila</translation>
 <translation id="5228076606934445476">Z napravo je nekaj narobe. Napako poskušajte odpraviti tako, da napravo znova zaženete in poskusite še enkrat.</translation>
@@ -3704,7 +3703,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6718273304615422081">Stiskanje ...</translation>
 <translation id="671928215901716392">Zakleni zaslon</translation>
-<translation id="67211069045302358">Želite ponastaviti nastavitve za to spletno mesto?</translation>
 <translation id="6721678857435001674">Ogled znamke in modela varnostnega ključa</translation>
 <translation id="6721972322305477112">&amp;Datoteka</translation>
 <translation id="672213144943476270">Preden brskate kot gost, odklenite profil.</translation>
