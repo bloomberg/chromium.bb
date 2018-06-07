@@ -82,14 +82,14 @@ ContentHash::FetchParams::FetchParams(
     net::URLRequestContextGetter* request_context,
     const GURL& fetch_url)
     : request_context(request_context), fetch_url(fetch_url) {}
-
-ContentHash::FetchParams::FetchParams(const FetchParams& other) = default;
-ContentHash::FetchParams& ContentHash::FetchParams::operator=(
-    const FetchParams& other) = default;
+ContentHash::FetchParams::~FetchParams() = default;
+ContentHash::FetchParams::FetchParams(FetchParams&&) = default;
+ContentHash::FetchParams& ContentHash::FetchParams::operator=(FetchParams&&) =
+    default;
 
 // static
 void ContentHash::Create(const ExtensionKey& key,
-                         const FetchParams& fetch_params,
+                         FetchParams fetch_params,
                          const IsCancelledCallback& is_cancelled,
                          CreatedCallback created_callback) {
   base::AssertBlockingAllowed();
@@ -102,7 +102,7 @@ void ContentHash::Create(const ExtensionKey& key,
 
   if (!verified_contents) {
     // Fetch verified_contents.json and then respond.
-    FetchVerifiedContents(key, fetch_params, is_cancelled,
+    FetchVerifiedContents(key, std::move(fetch_params), is_cancelled,
                           std::move(created_callback));
     return;
   }
@@ -154,12 +154,12 @@ ContentHash::~ContentHash() = default;
 // static
 void ContentHash::FetchVerifiedContents(
     const ContentHash::ExtensionKey& extension_key,
-    const ContentHash::FetchParams& fetch_params,
+    ContentHash::FetchParams fetch_params,
     const ContentHash::IsCancelledCallback& is_cancelled,
     ContentHash::CreatedCallback created_callback) {
   // |fetcher| deletes itself when it's done.
   internals::ContentHashFetcher* fetcher =
-      new internals::ContentHashFetcher(extension_key, fetch_params);
+      new internals::ContentHashFetcher(extension_key, std::move(fetch_params));
   fetcher->Start(base::BindOnce(&ContentHash::DidFetchVerifiedContents,
                                 std::move(created_callback), is_cancelled));
 }
