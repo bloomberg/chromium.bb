@@ -2968,6 +2968,7 @@ void TextureManager::ValidateAndDoTexSubImage(
     DecoderFramebufferState* framebuffer_state,
     const char* function_name,
     const DoTexSubImageArguments& args) {
+  TRACE_EVENT0("gpu", "TextureManager::ValidateAndDoTexSubImage");
   ErrorState* error_state = state->GetErrorState();
   TextureRef* texture_ref;
   if (!ValidateTexSubImage(state, function_name, args, &texture_ref)) {
@@ -3021,6 +3022,7 @@ void TextureManager::ValidateAndDoTexSubImage(
     const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
     if (unpack_params.row_length != 0 &&
         unpack_params.row_length < args.width) {
+      TRACE_EVENT0("gpu", "RowByRowWorkaround");
       // The rows overlap in unpack memory. Upload the texture row by row to
       // work around driver bug.
       DoTexSubImageRowByRowWorkaround(texture_state, state, args,
@@ -3036,6 +3038,7 @@ void TextureManager::ValidateAndDoTexSubImage(
     const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
     if (unpack_params.image_height != 0 &&
         unpack_params.image_height != args.height) {
+      TRACE_EVENT0("gpu", "LayerByLayerWorkaround");
       DoTexSubImageLayerByLayerWorkaround(texture_state, state, args,
                                           unpack_params);
       return;
@@ -3046,6 +3049,7 @@ void TextureManager::ValidateAndDoTexSubImage(
       args.width && args.height && args.depth) {
     uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
     if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
+      TRACE_EVENT0("gpu", "WithAlignmentWorkaround");
       DoTexSubImageWithAlignmentWorkaround(texture_state, state, args);
       return;
     }
@@ -3053,6 +3057,7 @@ void TextureManager::ValidateAndDoTexSubImage(
 
   if (full_image && !texture_state->texsubimage_faster_than_teximage &&
       !texture->IsImmutable() && !texture->HasImages()) {
+    TRACE_EVENT0("gpu", "FullImage");
     GLenum internal_format;
     GLenum tex_type;
     texture->GetLevelType(args.target, args.level, &tex_type, &internal_format);
@@ -3074,6 +3079,7 @@ void TextureManager::ValidateAndDoTexSubImage(
           args.pixels);
     }
   } else {
+    TRACE_EVENT0("gpu", "SubImage");
     if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
       glTexSubImage3D(args.target, args.level, args.xoffset, args.yoffset,
                       args.zoffset, args.width, args.height, args.depth,
