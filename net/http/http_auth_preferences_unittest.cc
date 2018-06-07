@@ -16,16 +16,6 @@
 
 namespace net {
 
-TEST(HttpAuthPreferencesTest, AuthSchemes) {
-  const char* const expected_schemes[] = {"scheme1", "scheme2"};
-  std::vector<std::string> expected_schemes_vector(
-      expected_schemes, expected_schemes + arraysize(expected_schemes));
-  HttpAuthPreferences http_auth_preferences(expected_schemes_vector);
-  EXPECT_TRUE(http_auth_preferences.IsSupportedScheme("scheme1"));
-  EXPECT_TRUE(http_auth_preferences.IsSupportedScheme("scheme2"));
-  EXPECT_FALSE(http_auth_preferences.IsSupportedScheme("scheme3"));
-}
-
 TEST(HttpAuthPreferencesTest, DisableCnameLookup) {
   HttpAuthPreferences http_auth_preferences;
   EXPECT_FALSE(http_auth_preferences.NegotiateDisableCnameLookup());
@@ -57,28 +47,6 @@ TEST(HttpAuthPreferencesTest, AuthAndroidhNegotiateAccountType) {
   http_auth_preferences.set_auth_android_negotiate_account_type("foo");
   EXPECT_EQ(std::string("foo"),
             http_auth_preferences.AuthAndroidNegotiateAccountType());
-}
-#endif
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-TEST(HttpAuthPreferencesTest, GssApiLibraryName) {
-  std::vector<std::string> auth_schemes;
-  HttpAuthPreferences http_auth_preferences(auth_schemes, "bar");
-  EXPECT_EQ(std::string("bar"), http_auth_preferences.GssapiLibraryName());
-}
-#endif
-
-#if defined(OS_CHROMEOS)
-TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoadTrue) {
-  std::vector<std::string> auth_schemes;
-  HttpAuthPreferences http_auth_preferences(auth_schemes, true);
-  EXPECT_TRUE(http_auth_preferences.AllowGssapiLibraryLoad());
-}
-
-TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoadFalse) {
-  std::vector<std::string> auth_schemes;
-  HttpAuthPreferences http_auth_preferences(auth_schemes, false);
-  EXPECT_FALSE(http_auth_preferences.AllowGssapiLibraryLoad());
 }
 #endif
 

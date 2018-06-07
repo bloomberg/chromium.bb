@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 #include "net/http/url_security_manager.h"
@@ -126,7 +127,16 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // HttpAuthHandlerRegistryFactory and any HttpAuthHandlers created by said
   // factory.
   static std::unique_ptr<HttpAuthHandlerRegistryFactory> CreateDefault(
-      HostResolver* resolver);
+      HostResolver* resolver,
+      const HttpAuthPreferences* prefs = nullptr
+#if defined(OS_CHROMEOS)
+      ,
+      bool allow_gssapi_library_load = true
+#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+      ,
+      const std::string& gssapi_library_name = ""
+#endif
+      );
 
  private:
   // The preferences for HTTP authentication.
@@ -167,17 +177,30 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
 
   // Creates an HttpAuthHandlerRegistryFactory.
   //
-  // |prefs| is a pointer to the (single) authentication preferences object.
-  // That object tracks preference, and hence policy, updates relevant to HTTP
-  // authentication, and provides the current values of the preferences.
-  //
   // |host_resolver| is used by the Negotiate authentication handler to perform
   // CNAME lookups to generate a Kerberos SPN for the server. If the "negotiate"
   // scheme is used and |negotiate_disable_cname_lookup| is false,
   // |host_resolver| must not be NULL.
+  //
+  // |prefs| is a pointer to the (single) authentication preferences object.
+  // That object tracks preference, and hence policy, updates relevant to HTTP
+  // authentication, and provides the current values of the preferences.
+  //
+  // |auth_schemes| is a list of authentication schemes to support. Unknown
+  // schemes are ignored.
   static std::unique_ptr<HttpAuthHandlerRegistryFactory> Create(
+      HostResolver* host_resolver,
       const HttpAuthPreferences* prefs,
-      HostResolver* host_resolver);
+      const std::vector<std::string>& auth_schemes
+#if defined(OS_CHROMEOS)
+      ,
+      bool allow_gssapi_library_load = true
+#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+      ,
+      const std::string& gssapi_library_name = ""
+#endif
+      );
+
   // Creates an auth handler by dispatching out to the registered factories
   // based on the first token in |challenge|.
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,

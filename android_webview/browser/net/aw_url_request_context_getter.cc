@@ -400,13 +400,13 @@ AwURLRequestContextGetter::CreateAuthHandlerFactory(
   // there is no interest to have it available so far.
   std::vector<std::string> supported_schemes = {"basic", "digest", "ntlm",
                                                 "negotiate"};
-  http_auth_preferences_.reset(new net::HttpAuthPreferences(supported_schemes));
 
+  http_auth_preferences_.reset(new net::HttpAuthPreferences());
   UpdateServerWhitelist();
   UpdateAndroidAuthNegotiateAccountType();
 
   return net::HttpAuthHandlerRegistryFactory::Create(
-      http_auth_preferences_.get(), resolver);
+      resolver, http_auth_preferences_.get(), supported_schemes);
 }
 
 void AwURLRequestContextGetter::UpdateServerWhitelist() {

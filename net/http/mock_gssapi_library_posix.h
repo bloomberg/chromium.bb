@@ -165,6 +165,7 @@ class MockGSSAPILibrary : public GSSAPILibrary {
                             OM_uint32* ctx_flags,
                             int* locally_initiated,
                             int* open) override;
+  const std::string& GetLibraryNameForTesting() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpAuthGSSAPIPOSIXTest, GSSAPICycle);
@@ -173,6 +174,9 @@ class MockGSSAPILibrary : public GSSAPILibrary {
   // |init_sec_context()| calls and the return values for those
   // calls.
   std::list<SecurityContextQuery> expected_security_queries_;
+
+  // Empty string. Enables GetLibraryNameForTesting() to return a reference.
+  std::string library_name_;
 };
 
 }  // namespace test

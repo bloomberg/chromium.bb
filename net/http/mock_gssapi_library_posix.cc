@@ -475,6 +475,10 @@ OM_uint32 MockGSSAPILibrary::inquire_context(
   return GSS_S_COMPLETE;
 }
 
+const std::string& MockGSSAPILibrary::GetLibraryNameForTesting() {
+  return library_name_;
+}
+
 }  // namespace test
 
 }  // namespace net

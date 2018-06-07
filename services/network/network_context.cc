@@ -43,7 +43,6 @@
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
-#include "net/http/http_auth_scheme.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
@@ -102,13 +101,6 @@ namespace network {
 namespace {
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
-
-const char* const kDefaultAuthSchemes[] = {net::kBasicAuthScheme,
-                                           net::kDigestAuthScheme,
-#if defined(USE_KERBEROS) && !defined(OS_ANDROID)
-                                           net::kNegotiateAuthScheme,
-#endif
-                                           net::kNtlmAuthScheme};
 
 // A CertVerifier that forwards all requests to |g_cert_verifier_for_testing|.
 // This is used to allow NetworkContexts to have their own
@@ -981,22 +973,19 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     DCHECK(!network_context_params->persist_session_cookies);
   }
 
-  std::vector<std::string> supported_schemes(std::begin(kDefaultAuthSchemes),
-                                             std::end(kDefaultAuthSchemes));
-  http_auth_preferences_ = std::make_unique<net::HttpAuthPreferences>(
-      supported_schemes
-#if defined(OS_CHROMEOS)
-      ,
-      network_context_params->allow_gssapi_library_load
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
-      ,
-      network_context_params->gssapi_library_name
-#endif
-      );
+  http_auth_preferences_ = std::make_unique<net::HttpAuthPreferences>();
 
   std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory =
-      net::HttpAuthHandlerRegistryFactory::Create(
-          http_auth_preferences_.get(), network_service_->host_resolver());
+      net::HttpAuthHandlerFactory::CreateDefault(
+          network_service_->host_resolver(), http_auth_preferences_.get()
+#if defined(OS_CHROMEOS)
+                                                 ,
+          network_context_params->allow_gssapi_library_load
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+                                                 ,
+          network_context_params->gssapi_library_name
+#endif
+          );
 
   builder.SetHttpAuthHandlerFactory(std::move(http_auth_handler_factory));
 

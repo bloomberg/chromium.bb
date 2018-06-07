@@ -101,6 +101,7 @@ class NET_EXPORT_PRIVATE GSSAPILibrary {
       OM_uint32* ctx_flags,
       int* locally_initiated,
       int* open) = 0;
+  virtual const std::string& GetLibraryNameForTesting() = 0;
 };
 
 // GSSAPISharedLibrary class is defined here so that unit tests can access it.
@@ -162,6 +163,7 @@ class NET_EXPORT_PRIVATE GSSAPISharedLibrary : public GSSAPILibrary {
                             OM_uint32* ctx_flags,
                             int* locally_initiated,
                             int* open) override;
+  const std::string& GetLibraryNameForTesting() override;
 
  private:
   typedef decltype(&gss_import_name) gss_import_name_type;

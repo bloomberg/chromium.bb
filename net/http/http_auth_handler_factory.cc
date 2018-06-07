@@ -58,50 +58,6 @@ const char* const kDefaultAuthSchemes[] = {kBasicAuthScheme, kDigestAuthScheme,
 #endif
                                            kNtlmAuthScheme};
 
-// Create a registry factory. Note that |prefs| may be a temporary, and
-// should only be used to create the factories. It should not be passed
-// to the registry factory or its children as the preferences they should
-// use.
-std::unique_ptr<HttpAuthHandlerRegistryFactory>
-CreateAuthHandlerRegistryFactory(const HttpAuthPreferences& prefs,
-                                 HostResolver* host_resolver) {
-  std::unique_ptr<HttpAuthHandlerRegistryFactory> registry_factory(
-      new HttpAuthHandlerRegistryFactory());
-  if (prefs.IsSupportedScheme(kBasicAuthScheme))
-    registry_factory->RegisterSchemeFactory(
-        kBasicAuthScheme, new HttpAuthHandlerBasic::Factory());
-  if (prefs.IsSupportedScheme(kDigestAuthScheme))
-    registry_factory->RegisterSchemeFactory(
-        kDigestAuthScheme, new HttpAuthHandlerDigest::Factory());
-  if (prefs.IsSupportedScheme(kNtlmAuthScheme)) {
-    HttpAuthHandlerNTLM::Factory* ntlm_factory =
-        new HttpAuthHandlerNTLM::Factory();
-#if defined(OS_WIN)
-    ntlm_factory->set_sspi_library(new SSPILibraryDefault());
-#endif  // defined(OS_WIN)
-    registry_factory->RegisterSchemeFactory(kNtlmAuthScheme, ntlm_factory);
-  }
-#if defined(USE_KERBEROS)
-  if (prefs.IsSupportedScheme(kNegotiateAuthScheme)) {
-    DCHECK(host_resolver);
-    HttpAuthHandlerNegotiate::Factory* negotiate_factory =
-        new HttpAuthHandlerNegotiate::Factory();
-#if defined(OS_WIN)
-    negotiate_factory->set_library(std::make_unique<SSPILibraryDefault>());
-#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-    negotiate_factory->set_library(
-        std::make_unique<GSSAPISharedLibrary>(prefs.GssapiLibraryName()));
-#elif defined(OS_CHROMEOS)
-    negotiate_factory->set_library(std::make_unique<GSSAPISharedLibrary>(""));
-#endif
-    negotiate_factory->set_host_resolver(host_resolver);
-    registry_factory->RegisterSchemeFactory(kNegotiateAuthScheme,
-                                            negotiate_factory);
-  }
-#endif  // defined(USE_KERBEROS)
-  return registry_factory;
-}
-
 }  // namespace
 
 HttpAuthHandlerRegistryFactory::HttpAuthHandlerRegistryFactory() = default;
@@ -139,31 +95,93 @@ HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(
 
 // static
 std::unique_ptr<HttpAuthHandlerRegistryFactory>
-HttpAuthHandlerFactory::CreateDefault(HostResolver* host_resolver) {
+HttpAuthHandlerFactory::CreateDefault(HostResolver* host_resolver,
+                                      const HttpAuthPreferences* prefs
+#if defined(OS_CHROMEOS)
+                                      ,
+                                      bool allow_gssapi_library_load
+#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+                                      ,
+                                      const std::string& gssapi_library_name
+#endif
+                                      ) {
   std::vector<std::string> auth_types(std::begin(kDefaultAuthSchemes),
                                       std::end(kDefaultAuthSchemes));
-  HttpAuthPreferences prefs(auth_types
+  return HttpAuthHandlerRegistryFactory::Create(host_resolver, prefs, auth_types
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                            ,
-                            std::string()
+                                                ,
+                                                gssapi_library_name
 #endif
 #if defined(OS_CHROMEOS)
-                                ,
-                            true
+                                                ,
+                                                allow_gssapi_library_load
 #endif
-                            );
-  return CreateAuthHandlerRegistryFactory(prefs, host_resolver);
+                                                );
 }
 
 // static
 std::unique_ptr<HttpAuthHandlerRegistryFactory>
-HttpAuthHandlerRegistryFactory::Create(const HttpAuthPreferences* prefs,
-                                       HostResolver* host_resolver) {
+HttpAuthHandlerRegistryFactory::Create(
+    HostResolver* host_resolver,
+    const HttpAuthPreferences* prefs,
+    const std::vector<std::string>& auth_schemes
+#if defined(OS_CHROMEOS)
+    ,
+    bool allow_gssapi_library_load
+#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+    ,
+    const std::string& gssapi_library_name
+#endif
+    ) {
+  std::set<std::string> auth_schemes_set(auth_schemes.begin(),
+                                         auth_schemes.end());
+
   std::unique_ptr<HttpAuthHandlerRegistryFactory> registry_factory(
-      CreateAuthHandlerRegistryFactory(*prefs, host_resolver));
-  registry_factory->set_http_auth_preferences(prefs);
-  for (auto& factory_entry : registry_factory->factory_map_) {
-    factory_entry.second->set_http_auth_preferences(prefs);
+      new HttpAuthHandlerRegistryFactory());
+  if (base::ContainsKey(auth_schemes_set, kBasicAuthScheme)) {
+    registry_factory->RegisterSchemeFactory(
+        kBasicAuthScheme, new HttpAuthHandlerBasic::Factory());
+  }
+
+  if (base::ContainsKey(auth_schemes_set, kDigestAuthScheme)) {
+    registry_factory->RegisterSchemeFactory(
+        kDigestAuthScheme, new HttpAuthHandlerDigest::Factory());
+  }
+
+  if (base::ContainsKey(auth_schemes_set, kNtlmAuthScheme)) {
+    HttpAuthHandlerNTLM::Factory* ntlm_factory =
+        new HttpAuthHandlerNTLM::Factory();
+#if defined(OS_WIN)
+    ntlm_factory->set_sspi_library(new SSPILibraryDefault());
+#endif  // defined(OS_WIN)
+    registry_factory->RegisterSchemeFactory(kNtlmAuthScheme, ntlm_factory);
+  }
+
+#if defined(USE_KERBEROS)
+  if (base::ContainsKey(auth_schemes_set, kNegotiateAuthScheme)) {
+    DCHECK(host_resolver);
+    HttpAuthHandlerNegotiate::Factory* negotiate_factory =
+        new HttpAuthHandlerNegotiate::Factory();
+#if defined(OS_WIN)
+    negotiate_factory->set_library(std::make_unique<SSPILibraryDefault>());
+#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+    negotiate_factory->set_library(
+        std::make_unique<GSSAPISharedLibrary>(gssapi_library_name));
+#elif defined(OS_CHROMEOS)
+    negotiate_factory->set_library(std::make_unique<GSSAPISharedLibrary>(""));
+    negotiate_factory->set_allow_gssapi_library_load(allow_gssapi_library_load);
+#endif
+    negotiate_factory->set_host_resolver(host_resolver);
+    registry_factory->RegisterSchemeFactory(kNegotiateAuthScheme,
+                                            negotiate_factory);
+  }
+#endif  // defined(USE_KERBEROS)
+
+  if (prefs) {
+    registry_factory->set_http_auth_preferences(prefs);
+    for (auto& factory_entry : registry_factory->factory_map_) {
+      factory_entry.second->set_http_auth_preferences(prefs);
+    }
   }
   return registry_factory;
 }
