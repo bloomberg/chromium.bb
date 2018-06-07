@@ -8,8 +8,8 @@ import json
 import logging
 import optparse
 import os
+import shutil
 import sys
-import tempfile
 import zipfile
 
 from util import build_utils
@@ -17,7 +17,6 @@ from util import build_utils
 
 def _CheckFilePathEndsWithJar(parser, file_path):
   if not file_path.endswith(".jar"):
-    # dx ignores non .jar files.
     parser.error("%s does not end in .jar" % file_path)
 
 
@@ -43,8 +42,6 @@ def _ParseArgs(args):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
 
-  parser.add_option('--android-sdk-tools',
-                    help='Android sdk build tools directory.')
   parser.add_option('--output-directory',
                     default=os.getcwd(),
                     help='Path to the output build directory.')
@@ -58,11 +55,6 @@ def _ParseArgs(args):
   parser.add_option('--proguard-enabled-input-path',
                     help=('Path to dex in Release mode when proguard '
                           'is enabled.'))
-  parser.add_option('--no-locals', default='0',
-                    help='Exclude locals list from the dex file.')
-  parser.add_option('--incremental',
-                    action='store_true',
-                    help='Enable incremental builds when possible.')
   parser.add_option('--inputs', help='A list of additional input paths.')
   parser.add_option('--excluded-paths',
                     help='A list of paths to exclude from the dex file.')
@@ -73,10 +65,12 @@ def _ParseArgs(args):
                     help='A JSON file containing multidex build configuration.')
   parser.add_option('--multi-dex', default=False, action='store_true',
                     help='Generate multiple dex files.')
+  parser.add_option('--d8-jar-path',
+                    help='Path to D8 jar.')
 
   options, paths = parser.parse_args(args)
 
-  required_options = ('android_sdk_tools',)
+  required_options = ('d8_jar_path',)
   build_utils.CheckOptions(options, parser, required=required_options)
 
   if options.multidex_configuration_path:
@@ -103,89 +97,45 @@ def _ParseArgs(args):
   return options, paths
 
 
-def _AllSubpathsAreClassFiles(paths, changes):
-  for path in paths:
-    if any(not p.endswith('.class') for p in changes.IterChangedSubpaths(path)):
-      return False
+def _MoveTempDexFile(tmp_dex_dir, dex_path):
+  """Move the temp dex file out of |tmp_dex_dir|.
+
+  Args:
+    tmp_dex_dir: Path to temporary directory created with tempfile.mkdtemp().
+      The directory should have just a single file.
+    dex_path: Target path to move dex file to.
+
+  Raises:
+    Exception if there are multiple files in |tmp_dex_dir|.
+  """
+  tempfiles = os.listdir(tmp_dex_dir)
+  if len(tempfiles) > 1:
+    raise Exception('%d files created, expected 1' % len(tempfiles))
+
+  tmp_dex_path = os.path.join(tmp_dex_dir, tempfiles[0])
+  shutil.move(tmp_dex_path, dex_path)
+
+
+def _NoClassFiles(jar_paths):
+  """Returns True if there are no .class files in the given JARs.
+
+  Args:
+    jar_paths: list of strings representing JAR file paths.
+
+  Returns:
+    (bool) True if no .class files are found.
+  """
+  for jar_path in jar_paths:
+    with zipfile.ZipFile(jar_path) as jar:
+      if any(name.endswith('.class') for name in jar.namelist()):
+        return False
   return True
 
 
-def _DexWasEmpty(paths, changes):
-  for path in paths:
-    if any(p.endswith('.class')
-           for p in changes.old_metadata.IterSubpaths(path)):
-      return False
-  return True
-
-
-def _IterAllClassFiles(changes):
-  for path in changes.IterAllPaths():
-    for subpath in changes.IterAllSubpaths(path):
-      if subpath.endswith('.class'):
-        yield path
-
-
-def _MightHitDxBug(changes):
-  # We've seen dx --incremental fail for small libraries. It's unlikely a
-  # speed-up anyways in this case.
-  num_classes = sum(1 for x in _IterAllClassFiles(changes))
-  if num_classes < 10:
-    return True
-
-  # We've also been able to consistently produce a failure by adding an empty
-  # line to the top of the first .java file of a library.
-  # https://crbug.com/617935
-  first_file = next(_IterAllClassFiles(changes))
-  for path in changes.IterChangedPaths():
-    for subpath in changes.IterChangedSubpaths(path):
-      if first_file == subpath:
-        return True
-  return False
-
-
-def _RunDx(changes, options, dex_cmd, paths):
-  with build_utils.TempDir() as classes_temp_dir:
-    # --multi-dex is incompatible with --incremental.
-    if options.multi_dex:
-      dex_cmd.append('--main-dex-list=%s' % options.main_dex_list_path)
-    else:
-      # --incremental tells dx to merge all newly dex'ed .class files with
-      # what that already exist in the output dex file (existing classes are
-      # replaced).
-      # Use --incremental when .class files are added or modified, but not when
-      # any are removed (since it won't know to remove them).
-      if (options.incremental
-          and not _MightHitDxBug(changes)
-          and changes.AddedOrModifiedOnly()):
-        changed_inputs = set(changes.IterChangedPaths())
-        changed_paths = [p for p in paths if p in changed_inputs]
-        if not changed_paths:
-          return
-        # When merging in other dex files, there's no easy way to know if
-        # classes were removed from them.
-        if (_AllSubpathsAreClassFiles(changed_paths, changes)
-            and not _DexWasEmpty(changed_paths, changes)):
-          dex_cmd.append('--incremental')
-          for path in changed_paths:
-            changed_subpaths = set(changes.IterChangedSubpaths(path))
-            # Note: |changed_subpaths| may be empty if nothing changed.
-            if changed_subpaths:
-              build_utils.ExtractAll(path, path=classes_temp_dir,
-                                     predicate=lambda p: p in changed_subpaths)
-          paths = [classes_temp_dir]
-
-    dex_cmd += paths
-    build_utils.CheckOutput(dex_cmd, print_stderr=False)
-
-  if options.dex_path.endswith('.zip'):
-    _RemoveUnwantedFilesFromZip(options.dex_path)
-
-
-def _OnStaleMd5(changes, options, dex_cmd, paths):
-  _RunDx(changes, options, dex_cmd, paths)
-  build_utils.WriteJson(
-      [os.path.relpath(p, options.output_directory) for p in paths],
-      options.dex_path + '.inputs')
+def _RunD8(dex_cmd, input_paths, output_path):
+  dex_cmd += ['--output', output_path]
+  dex_cmd += input_paths
+  build_utils.CheckOutput(dex_cmd, print_stderr=False)
 
 
 def main(args):
@@ -206,23 +156,8 @@ def main(args):
              os.path.relpath(p, options.output_directory) in exclude_paths]
 
   input_paths = list(paths)
-
-  dx_binary = os.path.join(options.android_sdk_tools, 'dx')
-  # See http://crbug.com/272064 for context on --force-jumbo.
-  # See https://github.com/android/platform_dalvik/commit/dd140a22d for
-  # --num-threads.
-  # See http://crbug.com/658782 for why -JXmx2G was added.
-  dex_cmd = [dx_binary, '-JXmx2G', '--num-threads=8', '--dex', '--force-jumbo',
-             '--output', options.dex_path]
-  if options.no_locals != '0':
-    dex_cmd.append('--no-locals')
-
   if options.multi_dex:
     input_paths.append(options.main_dex_list_path)
-    dex_cmd += [
-      '--multi-dex',
-      '--minimal-main-dex',
-    ]
 
   output_paths = [
     options.dex_path,
@@ -233,14 +168,40 @@ def main(args):
   # problems.
   force = int(os.environ.get('DISABLE_INCREMENTAL_DX', 0))
 
+  dex_cmd = ['java', '-jar', options.d8_jar_path]
+  if options.multi_dex:
+    dex_cmd += ['--main-dex-list', options.main_dex_list_path]
+
+  is_dex = options.dex_path.endswith('.dex')
+  is_jar = options.dex_path.endswith('.jar')
+
+  def on_stale_md5_callback():
+    if is_jar and _NoClassFiles(paths):
+      # Handle case where no classfiles are specified in inputs
+      # by creating an empty JAR
+      with zipfile.ZipFile(options.dex_path, 'w') as outfile:
+        outfile.comment = 'empty'
+    elif is_dex:
+      # .dex files can't specify a name for D8. Instead, we output them to a
+      # temp directory then move them after the command has finished running
+      # (see _MoveTempDexFile). For other files, tmp_dex_dir is None.
+      with build_utils.TempDir() as tmp_dex_dir:
+        _RunD8(dex_cmd, paths, tmp_dex_dir)
+        _MoveTempDexFile(tmp_dex_dir, options.dex_path)
+    else:
+      _RunD8(dex_cmd, paths, options.dex_path)
+
+    build_utils.WriteJson(
+        [os.path.relpath(p, options.output_directory) for p in paths],
+        options.dex_path + '.inputs')
+
   build_utils.CallAndWriteDepfileIfStale(
-      lambda changes: _OnStaleMd5(changes, options, dex_cmd, paths),
+      on_stale_md5_callback,
       options,
       input_paths=input_paths,
       input_strings=dex_cmd,
       output_paths=output_paths,
       force=force,
-      pass_changes=True,
       depfile_deps=input_paths)
 
 
