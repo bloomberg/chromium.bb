@@ -176,8 +176,9 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   sk_surface_->draw(ddl.get());
   gpu_service_->gr_context()->flush();
   OnSwapBuffers();
-  surface_->SwapBuffers(
-      base::BindRepeating([](const gfx::PresentationFeedback&) {}));
+  surface_->SwapBuffers(frame.need_presentation_feedback
+                            ? buffer_presented_callback_
+                            : base::DoNothing());
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
 }
 
@@ -305,7 +306,6 @@ void SkiaOutputSurfaceImplOnGpu::SetSnapshotRequestedCallback(
 void SkiaOutputSurfaceImplOnGpu::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  buffer_presented_callback_.Run(feedback);
 }
 
 void SkiaOutputSurfaceImplOnGpu::AddFilter(IPC::MessageFilter* message_filter) {
