@@ -525,6 +525,9 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/void aom_subtract_block/, "int rows, int cols, int16_t *diff_ptr, ptrdiff_t diff_stride, const uint8_t *src_ptr, ptrdiff_t src_stride, const uint8_t *pred_ptr, ptrdiff_t pred_stride";
   specialize qw/aom_subtract_block neon msa sse2/;
 
+  add_proto qw/void aom_highbd_subtract_block/, "int rows, int cols, int16_t *diff_ptr, ptrdiff_t diff_stride, const uint8_t *src_ptr, ptrdiff_t src_stride, const uint8_t *pred_ptr, ptrdiff_t pred_stride, int bd";
+  specialize qw/aom_highbd_subtract_block sse2/;
+
   if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     #
     # Sum of Squares
@@ -536,34 +539,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_sum_squares_i16 sse2/;
   }
 
-
-  #
-  # Avg
-  #
-  if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
-    #
-    # Avg
-    #
-    specialize qw/aom_avg_8x8 sse2 neon msa/;
-      add_proto qw/void aom_highbd_subtract_block/, "int rows, int cols, int16_t *diff_ptr, ptrdiff_t diff_stride, const uint8_t *src_ptr, ptrdiff_t src_stride, const uint8_t *pred_ptr, ptrdiff_t pred_stride, int bd";
-      specialize qw/aom_highbd_subtract_block sse2/;
-
-    #
-    # Minmax
-    #
-    add_proto qw/void aom_minmax_8x8/, "const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max";
-    specialize qw/aom_minmax_8x8 sse2 neon/;
-      add_proto qw/void aom_highbd_minmax_8x8/, "const uint8_t *s, int p, const uint8_t *d, int dp, int *min, int *max";
-
-    add_proto qw/void aom_hadamard_8x8/, "const int16_t *src_diff, int src_stride, int16_t *coeff";
-    specialize qw/aom_hadamard_8x8 sse2 neon/, "$ssse3_x86_64";
-
-    add_proto qw/void aom_hadamard_16x16/, "const int16_t *src_diff, int src_stride, int16_t *coeff";
-    specialize qw/aom_hadamard_16x16 sse2 neon/;
-
-    add_proto qw/int aom_satd/, "const int16_t *coeff, int length";
-    specialize qw/aom_satd sse2 neon/;
-  }  # CONFIG_AV1_ENCODER
 
   #
   # Single block SAD / Single block Avg SAD
