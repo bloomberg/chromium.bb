@@ -149,6 +149,30 @@ class TestDelegate : public URLRequest::Delegate {
   TestDelegate();
   ~TestDelegate() override;
 
+  // Helper to create a RunLoop, set |on_complete_| from it, then Run() it.
+  void RunUntilComplete();
+
+  // Sets the closures to be run when the specified events occur, for tests
+  // which need more fine-grained control than RunUntilComplete().
+  void set_on_complete(base::RepeatingClosure on_complete) {
+    on_complete_ = std::move(on_complete);
+  }
+  void set_on_redirect(base::RepeatingClosure on_redirect) {
+    on_redirect_ = std::move(on_redirect);
+  }
+  void set_on_auth_required(base::RepeatingClosure on_auth_required) {
+    on_auth_required_ = std::move(on_auth_required);
+  }
+
+  // Deprecated quit-on-event flags. If no on-event closures are configured
+  // then TestDelegate will post QuitCurrent*Deprecated() when a flagged event
+  // occurs.
+  void set_quit_on_complete(bool val);
+  void set_quit_on_redirect(bool val);
+  // Enables quitting the message loop in response to auth requests, as opposed
+  // to returning credentials or cancelling the request.
+  void set_quit_on_auth_required(bool val);
+
   void set_cancel_in_received_redirect(bool val) { cancel_in_rr_ = val; }
   void set_cancel_in_response_started(bool val) { cancel_in_rs_ = val; }
   void set_cancel_in_received_data(bool val) { cancel_in_rd_ = val; }
@@ -156,11 +180,6 @@ class TestDelegate : public URLRequest::Delegate {
     cancel_in_rd_pending_ = val;
   }
 
-  void set_quit_on_complete(bool val) { quit_on_complete_ = val; }
-  void set_quit_on_redirect(bool val) { quit_on_redirect_ = val; }
-  // Enables quitting the message loop in response to auth requests, as opposed
-  // to returning credentials or cancelling the request.
-  void set_quit_on_auth_required(bool val) { quit_on_auth_required_ = val; }
   void set_allow_certificate_errors(bool val) {
     allow_certificate_errors_ = val;
   }
@@ -217,11 +236,13 @@ class TestDelegate : public URLRequest::Delegate {
   bool cancel_in_rs_;
   bool cancel_in_rd_;
   bool cancel_in_rd_pending_;
-  bool quit_on_complete_;
-  bool quit_on_redirect_;
-  bool quit_on_auth_required_;
   bool allow_certificate_errors_;
   AuthCredentials credentials_;
+
+  // Options for quitting test's RunLoops on particular events.
+  base::RepeatingClosure on_complete_;
+  base::RepeatingClosure on_redirect_;
+  base::RepeatingClosure on_auth_required_;
 
   // tracks status of callbacks
   int response_started_count_;
