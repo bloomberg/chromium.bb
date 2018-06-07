@@ -5165,6 +5165,18 @@
             }
           ]
         },
+        "test": "gin_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho",
+              "os": "Android"
+            }
+          ]
+        },
         "test": "gl_tests"
       },
       {
@@ -8330,6 +8342,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gin_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -8561,6 +8579,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gin_unittests"
       },
       {
         "swarming": {
