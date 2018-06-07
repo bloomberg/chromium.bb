@@ -46,8 +46,16 @@ IdentityManagerFactory::~IdentityManagerFactory() {}
 // static
 identity::IdentityManager* IdentityManagerFactory::GetForProfile(
     Profile* profile) {
+  // IdentityManager is nullptr in incognito mode by design, which will
+  // concretely manifest in |holder| being nullptr below. Handle that case by
+  // short-circuiting out early. This is the only case in which |holder| is
+  // expected to be nullptr.
+  if (profile->IsOffTheRecord())
+    return nullptr;
+
   IdentityManagerHolder* holder = static_cast<IdentityManagerHolder*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
+  DCHECK(holder);
 
   return holder->identity_manager();
 }
