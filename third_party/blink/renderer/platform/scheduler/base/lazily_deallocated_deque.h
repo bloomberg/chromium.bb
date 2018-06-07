@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
