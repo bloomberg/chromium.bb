@@ -67,7 +67,7 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
                                       public AudioInputIPCDelegate {
  public:
   // NOTE: Clients must call Initialize() before using.
-  AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc);
+  explicit AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc);
 
   // AudioCapturerSource implementation.
   void Initialize(const AudioParameters& params,
@@ -90,6 +90,16 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
     IDLE,             // Not started.
     CREATING_STREAM,  // Waiting for OnStreamCreated() to be called back.
     RECORDING,        // Receiving audio data.
+  };
+
+  // This enum is used for UMA, so the only allowed operation on this definition
+  // is to add new states to the bottom, update kMaxValue, and update the
+  // histogram "Media.Audio.Capture.StreamCallbackError2".
+  enum Error {
+    kNoError = 0,
+    kErrorDuringCreation = 1,
+    kErrorDuringCapture = 2,
+    kMaxValue = kErrorDuringCapture
   };
 
   ~AudioInputDevice() override;
@@ -117,8 +127,8 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   // Current state. See comments for State enum above.
   State state_;
 
-  // For UMA stats.
-  bool had_callback_error_ = false;
+  // For UMA stats. May only be accessed on the IO thread.
+  Error had_error_ = kNoError;
 
   // Stores the Automatic Gain Control state. Default is false.
   bool agc_is_enabled_;

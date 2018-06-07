@@ -131,8 +131,9 @@ void AudioInputDevice::Stop() {
       "Media.Audio.Capture.DetectedMissingCallbacks",
       alive_checker_ ? alive_checker_->DetectedDead() : false);
 
-  UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.StreamCallbackError",
-                        had_callback_error_);
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.Capture.StreamCallbackError2",
+                            had_error_);
+  had_error_ = kNoError;
 
   // Close the stream, if we haven't already.
   if (state_ >= CREATING_STREAM) {
@@ -144,7 +145,7 @@ void AudioInputDevice::Stop() {
   // We can run into an issue where Stop is called right after
   // OnStreamCreated is called in cases where Start/Stop are called before we
   // get the OnStreamCreated callback.  To handle that corner case, we call
-  // audio_tread.reset(). In most cases, the thread will already be stopped.
+  // audio_thread_.reset(). In most cases, the thread will already be stopped.
   //
   // |alive_checker_| must outlive |audio_callback_|.
   base::ScopedAllowBlocking allow_blocking;
@@ -264,7 +265,6 @@ void AudioInputDevice::OnError() {
   if (state_ < CREATING_STREAM)
     return;
 
-  had_callback_error_ = true;
 
   if (state_ == CREATING_STREAM) {
     // At this point, we haven't attempted to start the audio thread.
@@ -273,6 +273,7 @@ void AudioInputDevice::OnError() {
     // We must report the error to the |callback_| so that a potential
     // audio source object will enter the correct state (e.g. 'ended' for
     // a local audio source).
+    had_error_ = kErrorDuringCreation;
     callback_->OnCaptureError(
         "Maximum allowed input device limit reached or OS failure.");
   } else {
@@ -282,6 +283,7 @@ void AudioInputDevice::OnError() {
     // TODO(tommi): Add an explicit contract for clearing the callback
     // object.  Possibly require calling Initialize again or provide
     // a callback object via Start() and clear it in Stop().
+    had_error_ = kErrorDuringCapture;
     if (audio_thread_)
       callback_->OnCaptureError("IPC delegate state error.");
   }

@@ -1777,6 +1777,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="12" label="Other error (file missing)"/>
 </enum>
 
+<enum name="AudioCaptureDeviceError">
+  <int value="0" label="No error"/>
+  <int value="1" label="Error during stream creation"/>
+  <int value="2" label="Error during active capture"/>
+</enum>
+
 <enum name="AudioCaptureStartupResult">
   <int value="0" label="OK"/>
   <int value="1" label="Failed to create stream"/>
@@ -1931,6 +1937,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Terminated by client"/>
   <int value="3" label="Stream creation failed"/>
   <int value="4" label="Document destroyed"/>
+</enum>
+
+<enum name="AudioRenderDeviceError">
+  <int value="0" label="No error"/>
+  <int value="1" label="Error during stream creation"/>
+  <int value="2" label="Error during active rendering"/>
 </enum>
 
 <enum name="AudioRendererEvents">

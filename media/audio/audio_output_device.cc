@@ -252,6 +252,10 @@ void AudioOutputDevice::ShutDownOnIOThread() {
   // Destoy the timer on the thread it's used on.
   auth_timeout_action_.reset();
 
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.Render.StreamCallbackError2",
+                            had_error_);
+  had_error_ = kNoError;
+
   // We can run into an issue where ShutDownOnIOThread is called right after
   // OnStreamCreated is called in cases where Start/Stop are called before we
   // get the OnStreamCreated callback.  To handle that corner case, we call
@@ -265,9 +269,6 @@ void AudioOutputDevice::ShutDownOnIOThread() {
   audio_thread_.reset();
   audio_callback_.reset();
   stopping_hack_ = false;
-
-  UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.StreamCallbackError",
-                        had_callback_error_);
 }
 
 void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
@@ -285,7 +286,6 @@ void AudioOutputDevice::OnError() {
   if (state_ == IDLE)
     return;
 
-  had_callback_error_ = true;
   // Don't dereference the callback object if the audio thread
   // is stopped or stopping.  That could mean that the callback
   // object has been deleted.
@@ -424,8 +424,14 @@ void AudioOutputDevice::NotifyRenderCallbackOfError() {
   base::AutoLock auto_lock(audio_thread_lock_);
   // Avoid signaling error if Initialize() hasn't been called yet, or if
   // Stop() has already been called.
-  if (callback_ && !stopping_hack_)
+  if (callback_ && !stopping_hack_) {
+    // Update |had_error_| for UMA stats.
+    if (audio_callback_)
+      had_error_ = kErrorDuringRendering;
+    else
+      had_error_ = kErrorDuringCreation;
     callback_->OnRenderError();
+  }
 }
 
 // AudioOutputDevice::AudioThreadCallback
