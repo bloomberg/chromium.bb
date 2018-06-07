@@ -16,19 +16,13 @@
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "ui/wm/public/activation_change_observer.h"
-
-namespace aura {
-class Window;
-}  // namespace aura
 
 class Browser;
 
 // BrowserStatusMonitor monitors creation/deletion of Browser and its
 // TabStripModel to keep the launcher representation up to date as the
 // active tab changes.
-class BrowserStatusMonitor : public wm::ActivationChangeObserver,
-                             public BrowserTabStripTrackerDelegate,
+class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
                              public BrowserListObserver,
                              public TabStripModelObserver {
  public:
@@ -47,17 +41,11 @@ class BrowserStatusMonitor : public wm::ActivationChangeObserver,
   virtual void ActiveUserChanged(const std::string& user_email) {}
 
   // A shortcut to call the ChromeLauncherController's UpdateAppState().
-  void UpdateAppItemState(content::WebContents* contents,
-                          ChromeLauncherController::AppState app_state);
+  void UpdateAppItemState(content::WebContents* contents, bool remove);
 
   // A shortcut to call the BrowserShortcutLauncherItemController's
   // UpdateBrowserItemState().
   void UpdateBrowserItemState();
-
-  // wm::ActivationChangeObserver overrides:
-  void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
-                         aura::Window* gained_active,
-                         aura::Window* lost_active) override;
 
   // BrowserTabStripTrackerDelegate overrides:
   bool ShouldTrackBrowser(Browser* browser) override;
