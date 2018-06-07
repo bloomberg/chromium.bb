@@ -53,12 +53,10 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 SyncAuthManager::SyncAuthManager(
     syncer::SyncPrefs* sync_prefs,
     identity::IdentityManager* identity_manager,
-    OAuth2TokenService* token_service,
     const AccountStateChangedCallback& account_state_changed,
     const CredentialsChangedCallback& credentials_changed)
     : sync_prefs_(sync_prefs),
       identity_manager_(identity_manager),
-      token_service_(token_service),
       account_state_changed_callback_(account_state_changed),
       credentials_changed_callback_(credentials_changed),
       registered_for_auth_notifications_(false),
@@ -66,13 +64,11 @@ SyncAuthManager::SyncAuthManager(
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       weak_ptr_factory_(this) {
   DCHECK(sync_prefs_);
-  // |identity_manager_| and |token_service_| can be null if local Sync is
-  // enabled.
+  // |identity_manager_|can be null if local Sync is enabled.
 }
 
 SyncAuthManager::~SyncAuthManager() {
   if (registered_for_auth_notifications_) {
-    token_service_->RemoveObserver(this);
     identity_manager_->RemoveObserver(this);
   }
 }
@@ -80,7 +76,6 @@ SyncAuthManager::~SyncAuthManager() {
 void SyncAuthManager::RegisterForAuthNotifications() {
   DCHECK(!registered_for_auth_notifications_);
   identity_manager_->AddObserver(this);
-  token_service_->AddObserver(this);
   registered_for_auth_notifications_ = true;
 }
 
@@ -212,28 +207,29 @@ void SyncAuthManager::OnPrimaryAccountCleared(
   account_state_changed_callback_.Run();
 }
 
-void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
-  if (account_id != GetAuthenticatedAccountInfo().account_id) {
+void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    bool is_valid) {
+  if (account_info.account_id != GetAuthenticatedAccountInfo().account_id) {
     return;
   }
 
-  GoogleServiceAuthError token_error = token_service_->GetAuthError(account_id);
-  if (token_error == GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                         GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                             CREDENTIALS_REJECTED_BY_CLIENT)) {
-    // When the refresh token is replaced by a new token with a
-    // CREDENTIALS_REJECTED_BY_CLIENT error, Sync must be stopped immediately,
-    // even if the current access token is still valid. This happens e.g. when
-    // the user signs out of the web with Dice enabled.
-    // It is not necessary to do this when the refresh token is
-    // CREDENTIALS_REJECTED_BY_SERVER, because in that case the access token
-    // will be rejected by the server too.
-    // We only do this in OnRefreshTokensLoaded(), as opposed to
-    // OAuth2TokenService::Observer::OnAuthErrorChanged(), because
-    // CREDENTIALS_REJECTED_BY_CLIENT is only set by the signin component when
-    // the refresh token is created.
+  if (!is_valid) {
+    // When the refresh token is replaced by an invalid token, Sync must be
+    // stopped immediately, even if the current access token is still valid.
+    // This happens e.g. when the user signs out of the web with Dice enabled.
     ClearAccessTokenAndRequest();
-    UpdateAuthErrorState(token_error);
+
+    // Set the last auth error to the one that is specified in
+    // google_service_auth_error.h to correspond to this case (token was
+    // invalidated client-side).
+    // TODO(blundell): Long-term, it would be nicer if Sync didn't have to
+    // cache signin-level authentication errors.
+    GoogleServiceAuthError invalid_token_error =
+        GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+            GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_CLIENT);
+    UpdateAuthErrorState(invalid_token_error);
 
     credentials_changed_callback_.Run();
     return;
@@ -253,8 +249,9 @@ void SyncAuthManager::OnRefreshTokenAvailable(const std::string& account_id) {
   }
 }
 
-void SyncAuthManager::OnRefreshTokenRevoked(const std::string& account_id) {
-  if (account_id != GetAuthenticatedAccountInfo().account_id) {
+void SyncAuthManager::OnRefreshTokenRemovedForAccount(
+    const AccountInfo& account_info) {
+  if (account_info.account_id != GetAuthenticatedAccountInfo().account_id) {
     return;
   }
 

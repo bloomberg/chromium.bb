@@ -15,7 +15,6 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -32,8 +31,7 @@ namespace browser_sync {
 
 // SyncAuthManager tracks the primary (i.e. blessed-for-sync) account and its
 // authentication state.
-class SyncAuthManager : public identity::IdentityManager::Observer,
-                        public OAuth2TokenService::Observer {
+class SyncAuthManager : public identity::IdentityManager::Observer {
  public:
   // Called when the existence of an authenticated account changes. Call
   // GetAuthenticatedAccountInfo to get the new state.
@@ -43,13 +41,10 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   using CredentialsChangedCallback = base::RepeatingClosure;
 
   // |sync_prefs| must not be null and must outlive this.
-  // |identity_manager| and |token_service| may be null (this is the case if
-  // local Sync is enabled), but if non-null, must outlive this object.
-  // TODO(crbug.com/842697): Don't pass the ProfileSyncService in here. Instead,
-  // pass a callback ("AccountStateChanged(new_state)").
+  // |identity_manager| may be null (this is the case if local Sync is enabled),
+  // but if non-null, must outlive this object.
   SyncAuthManager(syncer::SyncPrefs* sync_prefs,
                   identity::IdentityManager* identity_manager,
-                  OAuth2TokenService* token_service,
                   const AccountStateChangedCallback& account_state_changed,
                   const CredentialsChangedCallback& credentials_changed);
   ~SyncAuthManager() override;
@@ -89,10 +84,10 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
-
-  // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
+  void OnRefreshTokenRemovedForAccount(
+      const AccountInfo& account_info) override;
 
   // Test-only methods for inspecting/modifying internal state.
   bool IsRetryingAccessTokenFetchForTest() const;
@@ -111,7 +106,6 @@ class SyncAuthManager : public identity::IdentityManager::Observer,
 
   syncer::SyncPrefs* const sync_prefs_;
   identity::IdentityManager* const identity_manager_;
-  OAuth2TokenService* const token_service_;
 
   const AccountStateChangedCallback account_state_changed_callback_;
   const CredentialsChangedCallback credentials_changed_callback_;
