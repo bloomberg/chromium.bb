@@ -19,6 +19,8 @@ enum ViewID {
   // System tray network submenu item for extension-controlled networks.
   VIEW_ID_EXTENSION_CONTROLLED_WIFI,
   VIEW_ID_MEDIA_TRAY_VIEW,
+  // Power button in system tray.
+  VIEW_ID_POWER_BUTTON,
   // Sticky header rows in a scroll view.
   VIEW_ID_STICKY_HEADER,
   // System tray menu item for "device is managed by example.com".

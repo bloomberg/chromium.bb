@@ -180,9 +180,6 @@
 # http://crbug.com/831826
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus*
 
-# ash::Shell access in test.
--ShutdownPolicyInSessionTest.*
-
 # content::WaitForChildFrameSurfaceReady hangs.
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
 -WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder

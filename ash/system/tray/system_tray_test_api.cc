@@ -72,6 +72,11 @@ void SystemTrayTestApi::ShowBubble(ShowBubbleCallback cb) {
   std::move(cb).Run();
 }
 
+void SystemTrayTestApi::CloseBubble(CloseBubbleCallback cb) {
+  tray_->CloseBubble();
+  std::move(cb).Run();
+}
+
 void SystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
                                          ShowDetailedViewCallback cb) {
   SystemTrayItem* tray_item;

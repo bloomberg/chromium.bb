@@ -38,6 +38,7 @@ specific_include_rules = {
   ".*test.*": [
    "!ash",
    "+ash/public",
+   "+ash/ash_view_ids.h",
   ],
   "chrome_browser_main_chromeos\.cc": [
     # TODO(mash): Support EventRewriters, http://crbug.com/647781.
