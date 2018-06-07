@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/serialize_host_descriptions.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -151,6 +152,8 @@ void LocalTargetsUIHandler::UpdateTargets() {
   targets_.clear();
   for (const scoped_refptr<DevToolsAgentHost>& host : targets) {
     if (Profile::FromBrowserContext(host->GetBrowserContext()) != profile_)
+      continue;
+    if (!DevToolsWindow::AllowDevToolsFor(profile_, host->GetWebContents()))
       continue;
     targets_[host->GetId()] = host;
     hosts.push_back({host->GetId(), host->GetParentId(),

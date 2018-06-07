@@ -22,6 +22,10 @@ std::string DevToolsManagerDelegate::GetTargetDescription(WebContents* wc) {
   return std::string();
 }
 
+bool DevToolsManagerDelegate::AllowInspectingWebContents(WebContents* wc) {
+  return true;
+}
+
 DevToolsAgentHost::List DevToolsManagerDelegate::RemoteDebuggingTargets() {
   return DevToolsAgentHost::GetOrCreateAll();
 }

@@ -2196,12 +2196,10 @@ void Browser::OnTranslateEnabledChanged(content::WebContents* source) {
 
 void Browser::OnDevToolsAvailabilityChanged() {
   using DTPH = policy::DeveloperToolsPolicyHandler;
-  // TODO(pfeldman): If |new_value| maps to
-  // |DTPH::Availability::kDisallowedForForceInstalledExtensions|, we may either
-  // close all windows as a safety measure, or close those that are known to
-  // correspond to such extensions (https://crbug.com/838146).
-  if (DTPH::GetDevToolsAvailability(profile_->GetPrefs()) ==
-      DTPH::Availability::kDisallowed) {
+  // We close all windows as a safety measure, even for
+  // kDisallowedForForceInstalledExtensions.
+  if (DTPH::GetDevToolsAvailability(profile_->GetPrefs()) !=
+      DTPH::Availability::kAllowed) {
     content::DevToolsAgentHost::DetachAllClients();
   }
 }

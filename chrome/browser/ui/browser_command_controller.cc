@@ -18,10 +18,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -1072,13 +1072,8 @@ void BrowserCommandController::UpdateCommandsForDevTools() {
   if (is_locked_fullscreen_)
     return;
 
-  using DTPH = policy::DeveloperToolsPolicyHandler;
-  // TODO(pfeldman): Possibly implement handling for
-  // Availability::kDisallowedForForceInstalledExtensions
-  // (https://crbug.com/838146).
-  bool dev_tools_enabled =
-      DTPH::GetDevToolsAvailability(profile()->GetPrefs()) !=
-      DTPH::Availability::kDisallowed;
+  bool dev_tools_enabled = DevToolsWindow::AllowDevToolsFor(
+      profile(), browser_->tab_strip_model()->GetActiveWebContents());
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS,
                                         dev_tools_enabled);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE,
