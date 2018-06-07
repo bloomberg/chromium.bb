@@ -457,6 +457,7 @@ class LockDebugView::DebugLoginDetachableBaseModel
 };
 
 LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
+                             LockScreen::ScreenType screen_type,
                              LoginDataDispatcher* data_dispatcher)
     : debug_data_dispatcher_(std::make_unique<DebugDataDispatcherTransformer>(
           initial_note_action_state,
@@ -468,7 +469,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
       std::make_unique<DebugLoginDetachableBaseModel>(data_dispatcher);
   debug_detachable_base_model_ = debug_detachable_base_model.get();
 
-  lock_ = new LockContentsView(initial_note_action_state,
+  lock_ = new LockContentsView(initial_note_action_state, screen_type,
                                debug_data_dispatcher_->debug_dispatcher(),
                                std::move(debug_detachable_base_model));
   AddChildView(lock_);

@@ -77,16 +77,16 @@ void LockScreen::Show(ScreenType type) {
       Shell::Get()->tray_action()->GetLockScreenNoteState();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kShowLoginDevOverlay)) {
-    auto* debug_view =
-        new LockDebugView(initial_note_action_state, data_dispatcher.get());
+    auto* debug_view = new LockDebugView(initial_note_action_state, type,
+                                         data_dispatcher.get());
     instance_->contents_view_ = debug_view->lock();
     instance_->window_->SetContentsView(debug_view);
   } else {
     auto detachable_base_model = LoginDetachableBaseModel::Create(
         Shell::Get()->detachable_base_handler(), data_dispatcher.get());
-    instance_->contents_view_ =
-        new LockContentsView(initial_note_action_state, data_dispatcher.get(),
-                             std::move(detachable_base_model));
+    instance_->contents_view_ = new LockContentsView(
+        initial_note_action_state, type, data_dispatcher.get(),
+        std::move(detachable_base_model));
     instance_->window_->SetContentsView(instance_->contents_view_);
   }
 

@@ -242,11 +242,16 @@ LockContentsView::UserState::UserState(UserState&&) = default;
 
 LockContentsView::UserState::~UserState() = default;
 
+// static
+const int LockContentsView::kLoginAttemptsBeforeGaiaDialog = 4;
+
 LockContentsView::LockContentsView(
     mojom::TrayActionState initial_note_action_state,
+    LockScreen::ScreenType screen_type,
     LoginDataDispatcher* data_dispatcher,
     std::unique_ptr<LoginDetachableBaseModel> detachable_base_model)
     : NonAccessibleView(kLockContentsViewName),
+      screen_type_(screen_type),
       data_dispatcher_(data_dispatcher),
       detachable_base_model_(std::move(detachable_base_model)),
       display_observer_(this),
@@ -703,7 +708,7 @@ void LockContentsView::OnFingerprintUnlockStateChanged(
 
 void LockContentsView::SetAvatarForUser(const AccountId& account_id,
                                         const mojom::UserAvatarPtr& avatar) {
-  auto replace = [&](const ash::mojom::LoginUserInfoPtr& user) {
+  auto replace = [&](const mojom::LoginUserInfoPtr& user) {
     auto changed = user->Clone();
     changed->basic_user_info->avatar = avatar->Clone();
     return changed;
@@ -958,8 +963,8 @@ void LockContentsView::OnAuthenticate(bool auth_success) {
           *CurrentBigUserView()->GetCurrentUser()->basic_user_info);
     }
   } else {
-    ShowAuthErrorMessage();
     ++unlock_attempt_;
+    ShowAuthErrorMessage();
   }
 }
 
@@ -1092,9 +1097,17 @@ void LockContentsView::ShowAuthErrorMessage() {
   if (!big_view->auth_user())
     return;
 
+  // Show gaia signin if this is login and the user has failed too many times.
+  if (screen_type_ == LockScreen::ScreenType::kLogin &&
+      unlock_attempt_ >= kLoginAttemptsBeforeGaiaDialog) {
+    Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+        big_view->auth_user()->current_user()->basic_user_info->account_id);
+    return;
+  }
+
   base::string16 error_text = l10n_util::GetStringUTF16(
-      unlock_attempt_ ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
-                      : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
+      unlock_attempt_ > 1 ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
+                          : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
   ImeController* ime_controller = Shell::Get()->ime_controller();
   if (ime_controller->IsCapsLockEnabled()) {
     error_text += base::ASCIIToUTF16(" ") +

@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/login_screen_controller_observer.h"
+#include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/non_accessible_view.h"
@@ -100,8 +101,15 @@ class ASH_EXPORT LockContentsView
     kExclusivePublicAccountExpandedView,
   };
 
+  // Number of login attempts before a login dialog is shown. For example, if
+  // this value is 4 then the user can submit their password 4 times, and on the
+  // 4th bad attempt the login dialog is shown. This only applies to the login
+  // screen.
+  static const int kLoginAttemptsBeforeGaiaDialog;
+
   LockContentsView(
       mojom::TrayActionState initial_note_action_state,
+      LockScreen::ScreenType screen_type,
       LoginDataDispatcher* data_dispatcher,
       std::unique_ptr<LoginDetachableBaseModel> detachable_base_model);
   ~LockContentsView() override;
@@ -328,6 +336,8 @@ class ASH_EXPORT LockContentsView
   // Set the lock screen note state to |mojom::TrayActionState::kNotAvailable|.
   // All the subsequent calls of |OnLockScreenNoteStateChanged| will be ignored.
   void DisableLockScreenNote();
+
+  const LockScreen::ScreenType screen_type_;
 
   std::vector<UserState> users_;
 

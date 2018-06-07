@@ -58,6 +58,8 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   // Destroys an existing lock screen instance.
   void Destroy();
 
+  ScreenType screen_type() const { return type_; }
+
   // Enables/disables background blur. Used for debugging purpose.
   void ToggleBlurForDebug();
 

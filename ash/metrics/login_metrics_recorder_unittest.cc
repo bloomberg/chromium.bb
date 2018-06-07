@@ -112,7 +112,8 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
   auto* contents = new LockContentsView(
-      mojom::TrayActionState::kNotAvailable, data_dispatcher(),
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
   LockContentsView::TestApi test_api(contents);
   SetUserCount(1);
@@ -195,7 +196,8 @@ TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
       session_manager::SessionState::LOCKED);
 
   auto* contents = new LockContentsView(
-      mojom::TrayActionState::kAvailable, data_dispatcher(),
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);

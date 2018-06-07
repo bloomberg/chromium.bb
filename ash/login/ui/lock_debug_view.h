@@ -11,6 +11,7 @@
 
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/login/login_screen_controller.h"
+#include "ash/login/ui/lock_screen.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -31,6 +32,7 @@ enum class TrayActionState;
 class LockDebugView : public views::View, public views::ButtonListener {
  public:
   LockDebugView(mojom::TrayActionState initial_note_action_state,
+                LockScreen::ScreenType screen_type,
                 LoginDataDispatcher* data_dispatcher);
   ~LockDebugView() override;
 
