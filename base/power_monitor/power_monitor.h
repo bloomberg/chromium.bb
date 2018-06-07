@@ -27,7 +27,8 @@ class BASE_EXPORT PowerMonitor {
   static PowerMonitor* Get();
 
   // Add and remove an observer.
-  // Can be called from any thread.
+  // Can be called from any thread. |observer| is notified on the sequence
+  // from which it was registered.
   // Must not be called from within a notification callback.
   void AddObserver(PowerObserver* observer);
   void RemoveObserver(PowerObserver* observer);
@@ -44,7 +45,7 @@ class BASE_EXPORT PowerMonitor {
   void NotifySuspend();
   void NotifyResume();
 
-  scoped_refptr<ObserverListThreadSafe<PowerObserver> > observers_;
+  scoped_refptr<ObserverListThreadSafe<PowerObserver>> observers_;
   std::unique_ptr<PowerMonitorSource> source_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitor);
