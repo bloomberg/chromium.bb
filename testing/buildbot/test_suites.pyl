@@ -1584,6 +1584,8 @@
     },
   },
 
+  # TODO(thakis): Move snapshot_unittests into chromium_gtests since we use
+  # the snapshot code on all platforms.
   'linux_and_mac_specific_chromium_gtests': {
     'snapshot_unittests': {},
   },
@@ -2403,6 +2405,7 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
+    'linux_and_mac_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_specific_chromium_gtests',
     'network_service_gtests',
@@ -2420,6 +2423,7 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
+    'linux_and_mac_specific_chromium_gtests',
     'clang_gl_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_specific_chromium_gtests',
