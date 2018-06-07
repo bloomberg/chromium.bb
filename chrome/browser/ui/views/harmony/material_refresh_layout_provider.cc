@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/harmony/material_refresh_layout_provider.h"
 
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/layout/layout_provider.h"
 
 int MaterialRefreshLayoutProvider::GetDistanceMetric(int metric) const {
@@ -17,7 +18,11 @@ int MaterialRefreshLayoutProvider::GetDistanceMetric(int metric) const {
 gfx::Insets MaterialRefreshLayoutProvider::GetInsetsMetric(int metric) const {
   switch (metric) {
     case INSETS_BOOKMARKS_BAR_BUTTON:
-      return gfx::Insets(5, 8);
+      // The paddings here are chosen so that the resulting inkdrops are
+      // circular for favicon-only bookmarks.
+      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+        return gfx::Insets(8, 10);
+      return gfx::Insets(5, 6);
   }
   return HarmonyLayoutProvider::GetInsetsMetric(metric);
 }
