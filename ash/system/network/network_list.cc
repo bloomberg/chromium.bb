@@ -66,9 +66,9 @@
 
 #include "ui/views/view.h"
 
+using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkStateHandler;
-using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ash {
@@ -303,6 +303,11 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
         network_state_handler_->GetTechnologyState(
             NetworkTypePattern::Tether());
 
+    // Only enable the toggle for the primary user since secondary users can not
+    // change network configurations.
+    bool default_toggle_enabled =
+        Shell::Get()->session_controller()->IsUserPrimary();
+
     // If Cellular is available, toggle state and subtitle reflect Cellular.
     if (cellular_state != NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
       const chromeos::DeviceState* cellular_device =
@@ -310,7 +315,7 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
               NetworkTypePattern::Cellular());
       bool cellular_enabled =
           cellular_state == NetworkStateHandler::TECHNOLOGY_ENABLED;
-      SetToggleState(true /* toggle_enabled */, cellular_enabled);
+      SetToggleState(default_toggle_enabled, cellular_enabled);
 
       int subtitle = 0;
       if (!cellular_device ||
@@ -357,7 +362,7 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
         // "Initializing...". TODO(stevenjb): Rename the string to _MOBILE.
         SetSubtitle(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR);
       } else {
-        SetToggleState(true /* toggle_enabled */, false /* is_on */);
+        SetToggleState(default_toggle_enabled, false /* is_on */);
         SetSubtitle(IDS_ASH_STATUS_TRAY_ENABLING_MOBILE_ENABLES_BLUETOOTH);
       }
       return;
@@ -375,7 +380,7 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
         network_state_handler_->SetTechnologyEnabled(
             NetworkTypePattern::Tether(), true /* enabled */,
             chromeos::network_handler::ErrorCallback());
-        SetToggleState(true /* toggle_enabled */, true /* is_on */);
+        SetToggleState(default_toggle_enabled, true /* is_on */);
         // "Initializing...". TODO(stevenjb): Rename the string to _MOBILE.
         SetSubtitle(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR);
         return;
@@ -388,7 +393,7 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
                               NetworkTypePattern::Tether())) {
       subtitle = IDS_ASH_STATUS_TRAY_NO_MOBILE_DEVICES_FOUND;
     }
-    SetToggleState(true /* toggle_enabled */, tether_enabled /* is_on */);
+    SetToggleState(default_toggle_enabled, tether_enabled /* is_on */);
     SetSubtitle(subtitle);
   }
 
@@ -431,12 +436,12 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
  public:
   WifiHeaderRowView()
       : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_WIFI),
-        join_(nullptr) {}
+        join_button_(nullptr) {}
 
   ~WifiHeaderRowView() override = default;
 
   void SetToggleState(bool toggle_enabled, bool is_on) override {
-    join_->SetEnabled(is_on);
+    join_button_->SetEnabled(toggle_enabled && is_on);
     SectionHeaderRowView::SetToggleState(toggle_enabled, is_on);
   }
 
@@ -460,15 +465,15 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
     gfx::ImageSkia disabled_image = network_icon::GetImageForNewWifiNetwork(
         SkColorSetA(prominent_color, kDisabledJoinIconAlpha),
         SkColorSetA(prominent_color, kDisabledJoinBadgeAlpha));
-    join_ = new SystemMenuButton(this, normal_image, disabled_image,
-                                 IDS_ASH_STATUS_TRAY_OTHER_WIFI);
-    join_->SetInkDropColor(prominent_color);
-    join_->SetEnabled(enabled);
-    container()->AddView(TriView::Container::END, join_);
+    join_button_ = new SystemMenuButton(this, normal_image, disabled_image,
+                                        IDS_ASH_STATUS_TRAY_OTHER_WIFI);
+    join_button_->SetInkDropColor(prominent_color);
+    join_button_->SetEnabled(enabled);
+    container()->AddView(TriView::Container::END, join_button_);
   }
 
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (sender == join_) {
+    if (sender == join_button_) {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
       Shell::Get()->system_tray_controller()->ShowNetworkCreate(
@@ -492,7 +497,7 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
   static constexpr int kDisabledJoinIconAlpha = 0x1D;
 
   // A button to invoke "Join Wi-Fi network" dialog.
-  SystemMenuButton* join_;
+  SystemMenuButton* join_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiHeaderRowView);
 };
@@ -919,9 +924,13 @@ int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
     *separator_view = nullptr;
   }
 
+  // Only enable the toggle for the primary user since secondary users can not
+  // change network configurations.
+  bool default_toggle_enabled =
+      Shell::Get()->session_controller()->IsUserPrimary();
   // Mobile updates its toggle state independently.
   if (!pattern.MatchesPattern(NetworkTypePattern::Mobile()))
-    (*view)->SetToggleState(true /* toggle_enabled */, enabled /* is_on */);
+    (*view)->SetToggleState(default_toggle_enabled, enabled /* is_on */);
   PlaceViewAtIndex(*view, child_index++);
   return child_index;
 }

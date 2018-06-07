@@ -232,24 +232,28 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           guid);
-  // TODO(stevenjb): Test network->connectable() here instead of
-  // IsDefaultCellular once network configuration is integrated into Settings.
-  // crbug.com/380937.
-  if (!network || network->IsConnectingOrConnected() ||
-      network->IsDefaultCellular()) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        list_type_ == LIST_TYPE_VPN
-            ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS
-            : UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS);
-    Shell::Get()->system_tray_controller()->ShowNetworkSettings(
-        network ? network->guid() : std::string());
-  } else {
+  bool can_connect = network && !network->IsConnectingOrConnected();
+  if (network->IsDefaultCellular())
+    can_connect = false;  // Default Cellular network is not connectable.
+  if (!network->connectable() &&
+      !Shell::Get()->session_controller()->IsUserPrimary()) {
+    // Secondary users can only connect to fully configured networks.
+    can_connect = false;
+  }
+  if (can_connect) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_CONNECT_TO_VPN
             : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
     chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid());
+    return;
   }
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      list_type_ == LIST_TYPE_VPN
+          ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS
+          : UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS);
+  Shell::Get()->system_tray_controller()->ShowNetworkSettings(
+      network ? network->guid() : std::string());
 }
 
 void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
