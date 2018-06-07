@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/ash_view_ids.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/interfaces/cast_config.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -160,6 +161,7 @@ CastCastView::CastCastView()
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_STOP)) {
   icon()->SetImage(
       gfx::CreateVectorIcon(kSystemMenuCastEnabledIcon, kMenuIconColor));
+  label()->set_id(VIEW_ID_CAST_CAST_VIEW_LABEL);
 }
 
 CastCastView::~CastCastView() = default;
@@ -428,15 +430,6 @@ TrayCast::~TrayCast() {
   Shell::Get()->RemoveShellObserver(this);
 }
 
-void TrayCast::StartCastForTest(const std::string& receiver_id) {
-  if (detailed_ != nullptr)
-    detailed_->SimulateViewClickedForTest(receiver_id);
-}
-
-void TrayCast::StopCastForTest() {
-  default_->cast_view()->StopCasting();
-}
-
 const std::string& TrayCast::GetDisplayedCastId() {
   return default_->cast_view()->displayed_route_id();
 }
@@ -457,9 +450,9 @@ views::View* TrayCast::CreateDefaultView(LoginStatus status) {
 
   default_ = new tray::CastDuplexView(this, status != LoginStatus::LOCKED,
                                       sinks_and_routes_);
-  default_->set_id(TRAY_VIEW);
-  default_->select_view()->set_id(SELECT_VIEW);
-  default_->cast_view()->set_id(CAST_VIEW);
+  default_->set_id(VIEW_ID_CAST_MAIN_VIEW);
+  default_->select_view()->set_id(VIEW_ID_CAST_SELECT_VIEW);
+  default_->cast_view()->set_id(VIEW_ID_CAST_CAST_VIEW);
 
   UpdatePrimaryView();
   return default_;
