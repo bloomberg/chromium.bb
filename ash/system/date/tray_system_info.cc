@@ -27,14 +27,6 @@ const tray::TimeView* TraySystemInfo::GetTimeTrayForTesting() const {
   return tray_view_;
 }
 
-const SystemInfoDefaultView* TraySystemInfo::GetDefaultViewForTesting() const {
-  return default_view_;
-}
-
-views::View* TraySystemInfo::CreateDefaultViewForTesting(LoginStatus status) {
-  return CreateDefaultView(status);
-}
-
 views::View* TraySystemInfo::CreateTrayView(LoginStatus status) {
   CHECK(tray_view_ == nullptr);
   tray::TimeView::ClockLayout clock_layout =

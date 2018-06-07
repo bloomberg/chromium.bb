@@ -2,18 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/login_status.h"
-#include "ash/shell.h"
-#include "ash/system/date/date_view.h"
-#include "ash/system/date/system_info_default_view.h"
-#include "ash/system/date/tray_system_info.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_test_api.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.mojom.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -24,6 +18,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace em = enterprise_management;
@@ -34,6 +30,15 @@ class SystemUse24HourClockPolicyTest
     : public policy::DevicePolicyCrosBrowserTest {
  public:
   SystemUse24HourClockPolicyTest() {
+  }
+
+  // policy::DevicePolicyCrosBrowserTest:
+  void SetUpOnMainThread() override {
+    policy::DevicePolicyCrosBrowserTest::SetUpOnMainThread();
+    // Connect to the ash test interface.
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName, &tray_test_api_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -67,47 +72,22 @@ class SystemUse24HourClockPolicyTest
     run_loop.Run();
   }
 
+  bool IsPrimarySystemTrayUse24Hour() {
+    ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
+    bool is_24_hour = false;
+    wait_for.Is24HourClock(&is_24_hour);
+    return is_24_hour;
+  }
+
   static bool SystemClockShouldUse24Hour() {
     return g_browser_process->platform_part()
         ->GetSystemClock()
         ->ShouldUse24HourClock();
   }
 
-  static ash::TraySystemInfo* GetTraySystemInfo() {
-    return ash::SystemTrayTestApi(ash::Shell::Get()->GetPrimarySystemTray())
-        .tray_system_info();
-  }
-
-  static base::HourClockType TestGetPrimarySystemTrayTimeHourType() {
-    const ash::TraySystemInfo* tray_system_info = GetTraySystemInfo();
-    const ash::tray::TimeView* time_tray =
-        tray_system_info->GetTimeTrayForTesting();
-
-    return time_tray->GetHourTypeForTesting();
-  }
-
-  static bool TestPrimarySystemTrayHasDateDefaultView() {
-    const ash::TraySystemInfo* tray_system_info = GetTraySystemInfo();
-    const ash::SystemInfoDefaultView* system_info_default_view =
-        tray_system_info->GetDefaultViewForTesting();
-    return system_info_default_view != nullptr;
-  }
-
-  static void TestPrimarySystemTrayCreateDefaultView() {
-    ash::TraySystemInfo* tray_system_info = GetTraySystemInfo();
-    tray_system_info->CreateDefaultViewForTesting(
-        ash::LoginStatus::NOT_LOGGED_IN);
-  }
-
-  static base::HourClockType TestGetPrimarySystemTrayDateHourType() {
-    const ash::TraySystemInfo* tray_system_info = GetTraySystemInfo();
-    const ash::SystemInfoDefaultView* system_info_default_view =
-        tray_system_info->GetDefaultViewForTesting();
-
-    return system_info_default_view->GetDateView()->GetHourTypeForTesting();
-  }
-
  private:
+  ash::mojom::SystemTrayTestApiPtr tray_test_api_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemUse24HourClockPolicyTest);
 };
 
@@ -117,23 +97,16 @@ IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckUnset) {
                                                &system_use_24hour_clock));
 
   EXPECT_FALSE(SystemClockShouldUse24Hour());
-  EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayTimeHourType());
-  EXPECT_FALSE(TestPrimarySystemTrayHasDateDefaultView());
-
-  TestPrimarySystemTrayCreateDefaultView();
-  EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayDateHourType());
+  EXPECT_FALSE(IsPrimarySystemTrayUse24Hour());
 }
 
 IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckTrue) {
   bool system_use_24hour_clock = true;
   EXPECT_FALSE(CrosSettings::Get()->GetBoolean(kSystemUse24HourClock,
                                                &system_use_24hour_clock));
-  EXPECT_FALSE(TestPrimarySystemTrayHasDateDefaultView());
 
   EXPECT_FALSE(SystemClockShouldUse24Hour());
-  EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayTimeHourType());
-  TestPrimarySystemTrayCreateDefaultView();
-  EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayDateHourType());
+  EXPECT_FALSE(IsPrimarySystemTrayUse24Hour());
 
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_use_24hour_clock()->set_use_24hour_clock(true);
@@ -144,22 +117,16 @@ IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckTrue) {
                                               &system_use_24hour_clock));
   EXPECT_TRUE(system_use_24hour_clock);
   EXPECT_TRUE(SystemClockShouldUse24Hour());
-  EXPECT_EQ(base::k24HourClock, TestGetPrimarySystemTrayTimeHourType());
-
-  EXPECT_TRUE(TestPrimarySystemTrayHasDateDefaultView());
-  EXPECT_EQ(base::k24HourClock, TestGetPrimarySystemTrayDateHourType());
+  EXPECT_TRUE(IsPrimarySystemTrayUse24Hour());
 }
 
 IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckFalse) {
   bool system_use_24hour_clock = true;
   EXPECT_FALSE(CrosSettings::Get()->GetBoolean(kSystemUse24HourClock,
                                                &system_use_24hour_clock));
-  EXPECT_FALSE(TestPrimarySystemTrayHasDateDefaultView());
 
   EXPECT_FALSE(SystemClockShouldUse24Hour());
-  EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayTimeHourType());
-  TestPrimarySystemTrayCreateDefaultView();
-  EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayDateHourType());
+  EXPECT_FALSE(IsPrimarySystemTrayUse24Hour());
 
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_use_24hour_clock()->set_use_24hour_clock(false);
@@ -170,9 +137,7 @@ IN_PROC_BROWSER_TEST_F(SystemUse24HourClockPolicyTest, CheckFalse) {
                                               &system_use_24hour_clock));
   EXPECT_FALSE(system_use_24hour_clock);
   EXPECT_FALSE(SystemClockShouldUse24Hour());
-  EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayTimeHourType());
-  EXPECT_TRUE(TestPrimarySystemTrayHasDateDefaultView());
-  EXPECT_EQ(base::k12HourClock, TestGetPrimarySystemTrayDateHourType());
+  EXPECT_FALSE(IsPrimarySystemTrayUse24Hour());
 }
 
 }  // namespace chromeos

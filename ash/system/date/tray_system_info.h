@@ -32,8 +32,6 @@ class ASH_EXPORT TraySystemInfo : public SystemTrayItem {
   ~TraySystemInfo() override;
 
   const tray::TimeView* GetTimeTrayForTesting() const;
-  const SystemInfoDefaultView* GetDefaultViewForTesting() const;
-  views::View* CreateDefaultViewForTesting(LoginStatus status);
 
  private:
   // SystemTrayItem:
