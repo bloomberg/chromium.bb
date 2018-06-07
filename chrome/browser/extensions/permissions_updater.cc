@@ -110,6 +110,12 @@ void PermissionsUpdater::AddPermissions(const Extension* extension,
   // Update the granted permissions so we don't auto-disable the extension.
   GrantActivePermissions(extension);
 
+  // Also add the new permissions to the set of runtime granted permissions.
+  // Note: we only add the permissions that were added here, as opposed to
+  // GrantActivePermissions(), which grants all active permissions.
+  ExtensionPrefs::Get(browser_context_)
+      ->AddRuntimeGrantedPermissions(extension->id(), permissions);
+
   NotifyPermissionsUpdated(ADDED, extension, *added);
 }
 
@@ -140,8 +146,9 @@ void PermissionsUpdater::RemovePermissions(const Extension* extension,
   // not the user, removed the permissions. This allows the extension to add
   // them again without prompting the user.
   if (remove_type == REMOVE_HARD) {
-    ExtensionPrefs::Get(browser_context_)
-        ->RemoveGrantedPermissions(extension->id(), to_remove);
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+    prefs->RemoveGrantedPermissions(extension->id(), to_remove);
+    prefs->RemoveRuntimeGrantedPermissions(extension->id(), to_remove);
   }
 
   NotifyPermissionsUpdated(REMOVED, extension, to_remove);

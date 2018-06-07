@@ -274,17 +274,37 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl));
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl2));
 
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  {
+    std::unique_ptr<const PermissionSet> permissions =
+        prefs->GetRuntimeGrantedPermissions(extension->id());
+    EXPECT_FALSE(permissions->effective_hosts().MatchesURL(kUrl));
+    EXPECT_FALSE(permissions->effective_hosts().MatchesURL(kUrl2));
+  }
+
   modifier.GrantHostPermission(kUrl);
   EXPECT_TRUE(modifier.HasGrantedHostPermission(kUrl));
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kUrl2));
   EXPECT_EQ(PermissionsData::PageAccess::kAllowed, get_page_access(kUrl));
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl2));
+  {
+    std::unique_ptr<const PermissionSet> permissions =
+        prefs->GetRuntimeGrantedPermissions(extension->id());
+    EXPECT_TRUE(permissions->effective_hosts().MatchesURL(kUrl));
+    EXPECT_FALSE(permissions->effective_hosts().MatchesURL(kUrl2));
+  }
 
   modifier.RemoveGrantedHostPermission(kUrl);
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kUrl));
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kUrl2));
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl));
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl2));
+  {
+    std::unique_ptr<const PermissionSet> permissions =
+        prefs->GetRuntimeGrantedPermissions(extension->id());
+    EXPECT_FALSE(permissions->effective_hosts().MatchesURL(kUrl));
+    EXPECT_FALSE(permissions->effective_hosts().MatchesURL(kUrl2));
+  }
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest, CanAffectExtensionByLocation) {
