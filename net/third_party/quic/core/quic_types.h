@@ -81,6 +81,7 @@ enum WriteStatus {
   // - Errors MUST be added after WRITE_STATUS_ERROR.
   WRITE_STATUS_ERROR,
   WRITE_STATUS_MSG_TOO_BIG,
+  WRITE_STATUS_NUM_VALUES,
 };
 
 inline bool IsWriteError(WriteStatus status) {

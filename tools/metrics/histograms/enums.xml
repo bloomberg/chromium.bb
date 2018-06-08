@@ -39247,6 +39247,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="NOTIFY_FACTORY_OF_SESSION_CLOSED"/>
 </enum>
 
+<enum name="QuicWriteStatus">
+  <int value="0" label="WRITE_STATUS_OK"/>
+  <int value="1" label="WRITE_STATUS_BLOCKED"/>
+  <int value="2" label="WRITE_STATUS_ERROR"/>
+  <int value="3" label="WRITE_STATUS_MSG_TOO_BIG"/>
+</enum>
+
 <enum name="QuotaOriginTypes">
   <int value="0" label="Other"/>
   <int value="1" label="None"/>

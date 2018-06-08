@@ -28,6 +28,7 @@
 #include "net/third_party/quic/core/quic_pending_retransmission.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_exported_stats.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
@@ -2111,6 +2112,13 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       peer_address(), per_packet_options_);
   if (result.error_code == net::ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
+  }
+
+  if (GetQuicReloadableFlag(quic_export_connection_write_packet_results)) {
+    QUIC_HISTOGRAM_ENUM(
+        "QuicConnection.WritePacketStatus", result.status,
+        WRITE_STATUS_NUM_VALUES,
+        "Status code returned by writer_->WritePacket() in QuicConnection.");
   }
 
   if (result.status == WRITE_STATUS_BLOCKED) {
