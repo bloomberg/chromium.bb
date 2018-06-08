@@ -17,7 +17,7 @@
 #include "media/base/test_data_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-MediaBrowserTest::MediaBrowserTest() : ignore_plugin_crash_(false) {}
+MediaBrowserTest::MediaBrowserTest() {}
 
 MediaBrowserTest::~MediaBrowserTest() {}
 
@@ -47,8 +47,7 @@ std::string MediaBrowserTest::RunTest(const GURL& gurl,
                                       const std::string& expected_title) {
   DVLOG(0) << base::TimeFormatTimeOfDayWithMilliseconds(base::Time::Now())
            << " Running test URL: " << gurl;
-  // Observe the web contents for plugin crashes.
-  Observe(browser()->tab_strip_model()->GetActiveWebContents());
+
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(),
       base::ASCIIToUTF16(expected_title));
@@ -62,16 +61,4 @@ void MediaBrowserTest::AddWaitForTitles(content::TitleWatcher* title_watcher) {
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kEnded));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kError));
   title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kFailed));
-}
-
-void MediaBrowserTest::PluginCrashed(const base::FilePath& plugin_path,
-                                     base::ProcessId plugin_pid) {
-  DVLOG(0) << "Plugin crashed: " << plugin_path.value();
-  if (ignore_plugin_crash_)
-    return;
-  ADD_FAILURE() << "Failing test due to plugin crash.";
-}
-
-void MediaBrowserTest::IgnorePluginCrash() {
-  ignore_plugin_crash_ = true;
 }
