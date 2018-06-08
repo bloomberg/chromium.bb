@@ -137,7 +137,7 @@ int PageLoadCappingInfoBarDelegate::GetIconId() const {
 
 bool PageLoadCappingInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  return true;
+  return details.is_navigation_to_different_page;
 }
 
 int PageLoadCappingInfoBarDelegate::GetButtons() const {
