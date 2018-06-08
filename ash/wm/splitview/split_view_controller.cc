@@ -676,7 +676,7 @@ void SplitViewController::AddObserver(mojom::SplitViewObserverPtr observer) {
   observer_ptr->OnSplitViewStateChanged(ToMojomSplitViewState(state_));
 }
 
-void SplitViewController::OnWindowDestroying(aura::Window* window) {
+void SplitViewController::OnWindowDestroyed(aura::Window* window) {
   DCHECK(IsSplitViewModeActive());
   DCHECK(window == left_window_ || window == right_window_);
   auto iter = overview_window_item_bounds_map_.find(window);
@@ -879,14 +879,15 @@ void SplitViewController::StartObserving(aura::Window* window) {
 
 void SplitViewController::StopObserving(SnapPosition snap_position) {
   aura::Window* window = snap_position == LEFT ? left_window_ : right_window_;
+  if (window == left_window_)
+    left_window_ = nullptr;
+  else
+    right_window_ = nullptr;
+
   if (window && window->HasObserver(this)) {
     window->RemoveObserver(this);
     wm::GetWindowState(window)->RemoveObserver(this);
     split_view_divider_->RemoveObservedWindow(window);
-    if (window == left_window_)
-      left_window_ = nullptr;
-    else
-      right_window_ = nullptr;
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window);
   }
 }
