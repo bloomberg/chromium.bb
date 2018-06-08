@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
-import android.graphics.Bitmap;
 import android.support.annotation.CallSuper;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -16,13 +19,16 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
+import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
@@ -31,6 +37,8 @@ import org.chromium.components.offline_items_collection.VisualsCallback;
  * {@link View}s for the Download Manager list.
  */
 abstract class ListItemViewHolder extends ViewHolder {
+    private static final int INVALID_ID = -1;
+
     /** Creates an instance of a {@link ListItemViewHolder}. */
     public ListItemViewHolder(View itemView) {
         super(itemView);
@@ -43,7 +51,9 @@ abstract class ListItemViewHolder extends ViewHolder {
      */
     public abstract void bind(ListPropertyModel properties, ListItem item);
 
+    /** A {@link ViewHolder} that holds a {@link View} that is opaque to the holder. */
     public static class CustomViewHolder extends ListItemViewHolder {
+        /** Creates a new {@link CustomViewHolder} instance. */
         public CustomViewHolder(ViewGroup parent) {
             super(new FrameLayout(parent.getContext()));
             itemView.setLayoutParams(
@@ -68,8 +78,15 @@ abstract class ListItemViewHolder extends ViewHolder {
 
     /** A {@link ViewHolder} specifically meant to display a date header. */
     public static class DateViewHolder extends ListItemViewHolder {
-        public DateViewHolder(ViewGroup parent) {
-            super(new AppCompatTextView(parent.getContext()));
+        /** Creates a new {@link DateViewHolder} instance. */
+        public static DateViewHolder create(ViewGroup parent) {
+            View view = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.download_manager_date_item, null);
+            return new DateViewHolder(view);
+        }
+
+        private DateViewHolder(View view) {
+            super(view);
         }
 
         // ListItemViewHolder implementation.
@@ -82,6 +99,7 @@ abstract class ListItemViewHolder extends ViewHolder {
 
     /** A {@link ViewHolder} specifically meant to display an in-progress {@code OfflineItem}. */
     public static class InProgressViewHolder extends ListItemViewHolder {
+        /** Creates a new {@link InProgressViewHolder} instance. */
         public InProgressViewHolder(ViewGroup parent) {
             super(new AppCompatTextView(parent.getContext()));
         }
@@ -96,8 +114,23 @@ abstract class ListItemViewHolder extends ViewHolder {
 
     /** A {@link ViewHolder} specifically meant to display a generic {@code OfflineItem}. */
     public static class GenericViewHolder extends ThumbnailAwareViewHolder {
+        private final TextView mTitle;
+        private final TextView mCaption;
+        private final TintedImageView mThumbnail;
+
+        /**
+         * Whether or not we are currently showing an icon.  This determines whether or not we
+         * udpate the icon on rebind.
+         */
+        private boolean mDrawingIcon;
+
+        /** The icon to use when there is no thumbnail. */
+        private @DrawableRes int mIconId = INVALID_ID;
+
+        /** Creates a new {@link GenericViewHolder} instance. */
         public static GenericViewHolder create(ViewGroup parent) {
-            View view = new AppCompatTextView(parent.getContext());
+            View view = LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.download_manager_generic_item, null);
             int imageSize = parent.getContext().getResources().getDimensionPixelSize(
                     R.dimen.download_manager_generic_thumbnail_size);
             return new GenericViewHolder(view, imageSize);
@@ -105,6 +138,10 @@ abstract class ListItemViewHolder extends ViewHolder {
 
         private GenericViewHolder(View view, int thumbnailSizePx) {
             super(view, thumbnailSizePx, thumbnailSizePx);
+
+            mTitle = (TextView) itemView.findViewById(R.id.title);
+            mCaption = (TextView) itemView.findViewById(R.id.caption);
+            mThumbnail = (TintedImageView) itemView.findViewById(R.id.thumbnail);
         }
 
         // ListItemViewHolder implementation.
@@ -112,7 +149,44 @@ abstract class ListItemViewHolder extends ViewHolder {
         public void bind(ListPropertyModel properties, ListItem item) {
             super.bind(properties, item);
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
-            ((TextView) itemView).setText(offlineItem.item.title);
+
+            mTitle.setText(offlineItem.item.title);
+            mCaption.setText(UiUtils.generateGenericCaption(offlineItem.item));
+
+            itemView.setOnClickListener(
+                    v -> properties.getOpenCallback().onResult(offlineItem.item));
+
+            mIconId = UiUtils.getIconForItem(offlineItem.item);
+
+            if (mDrawingIcon) setThumbnailToIcon();
+        }
+
+        @Override
+        void onVisualsChanged(ImageView view, OfflineItemVisuals visuals) {
+            mDrawingIcon = visuals == null || visuals.icon == null;
+
+            if (mDrawingIcon) {
+                setThumbnailToIcon();
+            } else {
+                mThumbnail.setBackground(null);
+                mThumbnail.setTint(null);
+
+                RoundedBitmapDrawable drawable =
+                        RoundedBitmapDrawableFactory.create(view.getResources(), visuals.icon);
+                drawable.setCircular(true);
+                mThumbnail.setImageDrawable(drawable);
+            }
+        }
+
+        private void setThumbnailToIcon() {
+            if (mIconId == INVALID_ID) return;
+
+            mThumbnail.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
+            mThumbnail.getBackground().setLevel(
+                    itemView.getResources().getInteger(R.integer.list_item_level_default));
+            mThumbnail.setImageResource(mIconId);
+            mThumbnail.setTint(ApiCompatibilityUtils.getColorStateList(
+                    itemView.getResources(), R.color.google_blue_500));
         }
     }
 
@@ -179,6 +253,11 @@ abstract class ListItemViewHolder extends ViewHolder {
             itemView.setOnClickListener(
                     v -> properties.getOpenCallback().onResult(offlineItem.item));
         }
+
+        @Override
+        void onVisualsChanged(ImageView view, OfflineItemVisuals visuals) {
+            view.setImageBitmap(visuals == null ? null : visuals.icon);
+        }
     }
 
     /** Helper {@link ViewHolder} that handles showing a 3-dot menu with preset actions. */
@@ -225,14 +304,22 @@ abstract class ListItemViewHolder extends ViewHolder {
     /** Helper {@link ViewHolder} that handles querying for thumbnails if necessary. */
     private abstract static class ThumbnailAwareViewHolder
             extends MoreButtonViewHolder implements VisualsCallback {
-        private final int mThumbnailWidthPx;
-        private final int mThumbnailHeightPx;
         private final ImageView mThumbnail;
 
-        /** Track whether or not the result of a query came back while we were making it. */
-        private boolean mQueryFinished;
-        private ContentId mQueryId;
-        private Runnable mQueryCancelRunnable;
+        /** The {@link ContentId} of the associated thumbnail/request if any. */
+        private @Nullable ContentId mId;
+
+        /** A {@link Runnable} to cancel an outstanding thumbnail request if any. */
+        private @Nullable Runnable mCancellable;
+
+        /** Whether or not a request is outstanding to support synchronous responses. */
+        private boolean mIsRequesting;
+
+        /** The ideal width of the queried thumbnail. */
+        private int mWidthPx;
+
+        /** The ideal height of the queried thumbnail. */
+        private int mHeightPx;
 
         /**
          * Creates a new instance of a {@link ThumbnailAwareViewHolder}.
@@ -243,9 +330,9 @@ abstract class ListItemViewHolder extends ViewHolder {
         public ThumbnailAwareViewHolder(View view, int thumbnailWidthPx, int thumbnailHeightPx) {
             super(view);
 
-            mThumbnailWidthPx = thumbnailWidthPx;
-            mThumbnailHeightPx = thumbnailHeightPx;
             mThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+            mWidthPx = thumbnailWidthPx;
+            mHeightPx = thumbnailHeightPx;
         }
 
         // MoreButtonViewHolder implementation.
@@ -253,36 +340,50 @@ abstract class ListItemViewHolder extends ViewHolder {
         @CallSuper
         public void bind(ListPropertyModel properties, ListItem item) {
             super.bind(properties, item);
-            OfflineItemListItem offlineItem = (OfflineItemListItem) item;
-
+            // If we have no thumbnail to show just return early.
             if (mThumbnail == null) return;
-            if (offlineItem.item.id.equals(mQueryId)) return;
 
-            if (mQueryId != null) onVisualsChanged(null);
-            if (mQueryCancelRunnable != null) mQueryCancelRunnable.run();
+            OfflineItem offlineItem = ((OfflineItemListItem) item).item;
 
-            mQueryId = offlineItem.item.id;
-            mQueryFinished = false;
-            mQueryCancelRunnable = properties.getVisualsProvider().getVisuals(
-                    offlineItem.item, mThumbnailWidthPx, mThumbnailHeightPx, this);
+            // If we're rebinding the same item, ignore the bind.
+            if (offlineItem.id.equals(mId)) return;
 
-            // Handle reentrancy case.
-            if (mQueryFinished) mQueryCancelRunnable = null;
+            // Clear any associated bitmap from the thumbnail.
+            if (mId != null) onVisualsChanged(mThumbnail, null);
+
+            // Clear out any outstanding thumbnail request.
+            if (mCancellable != null) mCancellable.run();
+
+            // Start the new request.
+            mId = offlineItem.id;
+            mCancellable = properties.getVisualsProvider().getVisuals(
+                    offlineItem, mWidthPx, mHeightPx, this);
+
+            // Make sure to update our state properly if we got a synchronous response.
+            if (!mIsRequesting) mCancellable = null;
         }
 
         // VisualsCallback implementation.
         @Override
         public void onVisualsAvailable(ContentId id, OfflineItemVisuals visuals) {
-            if (!id.equals(mQueryId)) return;
-            mQueryCancelRunnable = null;
-            mQueryFinished = true;
-            onVisualsChanged(visuals);
+            // Quit early if the request is not for our currently bound item.
+            if (!id.equals(mId)) return;
+
+            // Clear out the request state.
+            mCancellable = null;
+            mIsRequesting = false;
+
+            // Notify of the new visuals (if any).
+            onVisualsChanged(mThumbnail, visuals);
         }
 
-        private void onVisualsChanged(OfflineItemVisuals visuals) {
-            Bitmap bitmap = null;
-            if (visuals != null && visuals.icon != null) bitmap = visuals.icon;
-            mThumbnail.setImageBitmap(bitmap);
-        }
+        /**
+         * Called when the contents of the thumbnail should be changed to due an event (either this
+         * {@link ViewHolder} being rebound to another {@link ListItem} or a thumbnail query
+         * returning results.
+         * @param view    The {@link ImageView} that the thumbnail should be set on.
+         * @param visuals The {@link OfflineItemVisuals} that were returned by the backend if any.
+         */
+        abstract void onVisualsChanged(ImageView view, @Nullable OfflineItemVisuals visuals);
     }
 }

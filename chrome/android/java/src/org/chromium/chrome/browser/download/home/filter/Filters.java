@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.home.filter;
 
 import android.support.annotation.IntDef;
 
+import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 
 import java.lang.annotation.Retention;
@@ -47,6 +48,26 @@ public class Filters {
             case OfflineItemFilter.FILTER_DOCUMENT:
             default:
                 return OTHER;
+        }
+    }
+
+    /** Converts between a {@link OfflineItemFilter} and a {@link DownloadFilter.Type}. */
+    public static @DownloadFilter.Type int offlineItemFilterToDownloadFilter(
+            @OfflineItemFilter int filter) {
+        switch (filter) {
+            case OfflineItemFilter.FILTER_PAGE:
+                return DownloadFilter.FILTER_PAGE;
+            case OfflineItemFilter.FILTER_VIDEO:
+                return DownloadFilter.FILTER_VIDEO;
+            case OfflineItemFilter.FILTER_AUDIO:
+                return DownloadFilter.FILTER_AUDIO;
+            case OfflineItemFilter.FILTER_IMAGE:
+                return DownloadFilter.FILTER_IMAGE;
+            case OfflineItemFilter.FILTER_DOCUMENT:
+                return DownloadFilter.FILTER_DOCUMENT;
+            case OfflineItemFilter.FILTER_OTHER:
+            default:
+                return DownloadFilter.FILTER_OTHER;
         }
     }
 
