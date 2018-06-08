@@ -22,7 +22,6 @@ namespace {
 
 // Appearance.
 constexpr int kMinHeightDip = 200;
-constexpr int kMaxHeightDip = 640;
 
 }  // namespace
 

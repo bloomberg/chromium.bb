@@ -16,7 +16,7 @@ class AssistantBubbleModelObserver;
 enum class AssistantUiMode {
   kMainUi,
   kMiniUi,
-  kSettingsUi,
+  kWebUi,
 };
 
 // Models the Assistant bubble.

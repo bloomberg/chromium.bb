@@ -74,6 +74,14 @@ void CaptionBar::InitLayout() {
   layout_manager->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_END);
 
+  // Settings.
+  // TODO(dmblack): Remove this caption button. This is only being added as
+  // an entry point for development purposes.
+  CaptionButton* settings_button =
+      new CaptionButton(kNotificationSettingsIcon, this);
+  settings_button->set_id(CaptionButtonId::kSettings);
+  AddChildView(settings_button);
+
   // Minimize.
   CaptionButton* minimize_button =
       new CaptionButton(kWindowControlMinimizeIcon, this);
@@ -100,6 +108,7 @@ void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
       GetWidget()->Close();
       break;
     case CaptionButtonId::kMinimize:
+    case CaptionButtonId::kSettings:
       // No default behavior defined.
       NOTIMPLEMENTED();
       break;

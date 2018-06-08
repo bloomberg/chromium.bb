@@ -9,6 +9,7 @@
 #include "ash/assistant/model/assistant_bubble_model.h"
 #include "ash/assistant/ui/assistant_main_view.h"
 #include "ash/assistant/ui/assistant_mini_view.h"
+#include "ash/assistant/ui/assistant_web_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -94,7 +95,9 @@ void AssistantBubbleView::Init() {
       std::make_unique<AssistantMiniView>(assistant_controller_);
   assistant_mini_view_->set_owned_by_client();
 
-  // TODO(dmblack): Add Settings view.
+  // Web view.
+  assistant_web_view_ = std::make_unique<AssistantWebView>();
+  assistant_web_view_->set_owned_by_client();
 
   // Update the view state based on the current UI mode.
   OnUiModeChanged(
@@ -121,22 +124,21 @@ void AssistantBubbleView::SetAnchor() {
 }
 
 void AssistantBubbleView::OnUiModeChanged(AssistantUiMode ui_mode) {
+  RemoveAllChildViews(/*delete_children=*/false);
+
   switch (ui_mode) {
     case AssistantUiMode::kMiniUi:
-      RemoveAllChildViews(/*delete_children=*/false);
       AddChildView(assistant_mini_view_.get());
-      PreferredSizeChanged();
       break;
     case AssistantUiMode::kMainUi:
-      RemoveAllChildViews(/*delete_children=*/false);
       AddChildView(assistant_main_view_.get());
-      PreferredSizeChanged();
       break;
-    case AssistantUiMode::kSettingsUi:
-      // TODO(dmblack): Implement.
-      NOTIMPLEMENTED();
+    case AssistantUiMode::kWebUi:
+      AddChildView(assistant_web_view_.get());
       break;
   }
+
+  PreferredSizeChanged();
 }
 
 }  // namespace ash
