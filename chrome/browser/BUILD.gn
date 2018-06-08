@@ -1545,6 +1545,8 @@ jumbo_split_static_library("browser") {
     "vr/vr_tab_helper.h",
     "web_data_service_factory.cc",
     "web_data_service_factory.h",
+    "webauthn/authenticator_request_dialog_model.cc",
+    "webauthn/authenticator_request_dialog_model.h",
     "webauthn/authenticator_request_scheduler.cc",
     "webauthn/authenticator_request_scheduler.h",
     "webauthn/chrome_authenticator_request_delegate.cc",

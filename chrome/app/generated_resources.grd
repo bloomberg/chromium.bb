@@ -10552,6 +10552,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Got it
       </message>
     </if>
+
+    <!-- Web-modal dialog shown during Web Authenticaton API requests. -->
+    <message name="IDS_WEBAUTHN_DIALOG_TITLE" desc="Title of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
+      Verify your Security Key
+    </message>
+    <message name="IDS_WEBAUTHN_DIALOG_DESCRIPTION" desc="Contents of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
+      The site wants to verify your Security Key for added security for your account.
+    </message>
   </messages>
  </release>
 </grit>

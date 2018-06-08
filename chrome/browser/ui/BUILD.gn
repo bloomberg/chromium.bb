@@ -739,6 +739,7 @@ split_static_library("ui") {
     "uninstall_browser_prompt.h",
     "view_ids.h",
     "web_contents_sizer.h",
+    "webauthn/authenticator_request_dialog.h",
     "webui/about_ui.cc",
     "webui/about_ui.h",
     "webui/chrome_web_ui_controller_factory.cc",
@@ -2995,6 +2996,8 @@ split_static_library("ui") {
       "views/translate/translate_bubble_view.h",
       "views/update_recommended_message_box.cc",
       "views/update_recommended_message_box.h",
+      "views/webauthn/authenticator_request_dialog_view.cc",
+      "views/webauthn/authenticator_request_dialog_view.h",
     ]
     deps += [
       "//chrome/browser/ui/views",
