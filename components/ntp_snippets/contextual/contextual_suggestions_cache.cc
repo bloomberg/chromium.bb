@@ -10,6 +10,12 @@ ContextualSuggestionsCache::ContextualSuggestionsCache(size_t capacity)
     : cache_(capacity) {}
 ContextualSuggestionsCache::~ContextualSuggestionsCache() = default;
 
+base::flat_map<GURL, ContextualSuggestionsResult>
+ContextualSuggestionsCache::GetAllCachedResultsForDebugging() {
+  return base::flat_map<GURL, ContextualSuggestionsResult>(cache_.begin(),
+                                                           cache_.end());
+}
+
 bool ContextualSuggestionsCache::GetSuggestionsResult(
     const GURL& url,
     ContextualSuggestionsResult* result) {

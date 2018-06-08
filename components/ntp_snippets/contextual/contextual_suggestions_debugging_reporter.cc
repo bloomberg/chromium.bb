@@ -23,6 +23,10 @@ ContextualSuggestionsDebuggingReporter::GetEvents() const {
   return events_;
 }
 
+void ContextualSuggestionsDebuggingReporter::ClearEvents() {
+  events_.clear();
+}
+
 void ContextualSuggestionsDebuggingReporter::SetupForPage(
     const std::string& url,
     ukm::SourceId source_id) {

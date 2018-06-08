@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/eoc_internals/eoc_internals_ui.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/eoc_internals/eoc_internals_page_handler.h"
 #include "chrome/common/url_constants.h"
@@ -14,6 +15,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #endif
+
+using contextual_suggestions::ContextualContentSuggestionsService;
 
 EocInternalsUI::EocInternalsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
@@ -27,6 +30,8 @@ EocInternalsUI::EocInternalsUI(content::WebUI* web_ui)
   source->UseGzip();
 
   Profile* profile = Profile::FromWebUI(web_ui);
+  contextual_content_suggestions_service_ =
+      ContextualContentSuggestionsServiceFactory::GetForProfile(profile);
   content::WebUIDataSource::Add(profile, source);
   // This class is the caller of the callback when an observer interface is
   // triggered. So this base::Unretained is safe.
@@ -38,5 +43,6 @@ EocInternalsUI::~EocInternalsUI() {}
 
 void EocInternalsUI::BindEocInternalsPageHandler(
     eoc_internals::mojom::PageHandlerRequest request) {
-  page_handler_.reset(new EocInternalsPageHandler(std::move(request)));
+  page_handler_.reset(new EocInternalsPageHandler(
+      std::move(request), contextual_content_suggestions_service_));
 }

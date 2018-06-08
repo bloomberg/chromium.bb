@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_CACHE_H_
 #define COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_CACHE_H_
 
+#include "base/containers/flat_map.h"
 #include "base/containers/mru_cache.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_result.h"
 #include "url/gurl.h"
@@ -29,6 +30,10 @@ class ContextualSuggestionsCache {
                             ContextualSuggestionsResult result);
   // Removes all items from the cache.
   void Clear();
+
+  // Returns all suggestion results for debugging purposes.
+  base::flat_map<GURL, ContextualSuggestionsResult>
+  GetAllCachedResultsForDebugging();
 
  private:
   base::MRUCache<GURL, ContextualSuggestionsResult> cache_;

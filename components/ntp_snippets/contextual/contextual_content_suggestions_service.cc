@@ -99,6 +99,20 @@ void ContextualContentSuggestionsService::FetchDone(
   std::move(callback).Run(result);
 }
 
+ContextualSuggestionsDebuggingReporter*
+ContextualContentSuggestionsService::GetDebuggingReporter() {
+  return reporter_provider_->GetDebuggingReporter();
+}
+
+base::flat_map<GURL, ContextualSuggestionsResult>
+ContextualContentSuggestionsService::GetAllCachedResultsForDebugging() {
+  return fetch_cache_.GetAllCachedResultsForDebugging();
+}
+
+void ContextualContentSuggestionsService::ClearCachedResultsForDebugging() {
+  fetch_cache_.Clear();
+}
+
 std::unique_ptr<
     contextual_suggestions::ContextualContentSuggestionsServiceProxy>
 ContextualContentSuggestionsService::CreateProxy() {
