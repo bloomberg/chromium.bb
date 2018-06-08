@@ -35129,6 +35129,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="Unknown"/>
 </enum>
 
+<enum name="PageWhitelistingInitiatorCheck">
+  <int value="0" label="Initiator absent"/>
+  <int value="1" label="Neither candidate matches initiator"/>
+  <int value="2" label="Committed candidate matches initiator"/>
+  <int value="3" label="Pending candidate matches initiator"/>
+  <int value="4" label="Both candidates match initiator"/>
+</enum>
+
 <enum name="PaletteModeCancelType">
   <int value="0" label="Palette laser pointer mode is cancelled."/>
   <int value="1" label="Palette laser pointer mode is switched out of"/>
