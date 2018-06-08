@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="cups_add_printer_dialog_util.html">
@@ -108,24 +108,15 @@
       <div slot="dialog-title">$i18n{addPrintersManuallyTitle}</div>
       <div slot="dialog-body">
         <div class="settings-box first two-line">
-          <div class="start">
-            <div class="label">$i18n{printerName}</div>
-            <div class="secondary">
-              <paper-input class="printer-name-input" no-label-float autofocus
-                  id="printerNameInput" value="{{newPrinter.printerName}}">
-              </paper-input>
-            </div>
-          </div>
+          <cr-input class="printer-name-input" autofocus
+            id="printerNameInput" value="{{newPrinter.printerName}}"
+            label="$i18n{printerName}">
+          </cr-input>
         </div>
         <div class="settings-box two-line">
-          <div class="start">
-            <div class="label">$i18n{printerAddress}</div>
-            <div class="secondary">
-              <paper-input no-label-float id="printerAddressInput"
-                  value="{{newPrinter.printerAddress}}">
-              </paper-input>
-            </div>
-          </div>
+          <cr-input id="printerAddressInput" label="$i18n{printerAddress}"
+              value="{{newPrinter.printerAddress}}">
+          </cr-input>
         </div>
         <div class="settings-box two-line">
           <div class="start">
@@ -146,14 +137,9 @@
           </div>
         </div>
         <div class="settings-box two-line">
-          <div class="start">
-            <div class="label">$i18n{printerQueue}</div>
-            <div class="secondary">
-              <paper-input no-label-float label="ipp/print"
-                  value="{{newPrinter.printerQueue}}">
-              </paper-input>
-            </div>
-          </div>
+          <cr-input placeholder="ipp/print" label="$i18n{printerQueue}"
+              value="{{newPrinter.printerQueue}}">
+          </cr-input>
         </div>
       </div>
       <div slot="dialog-buttons">
@@ -208,20 +194,14 @@
           </div>
         </div>
         <div class="settings-box two-line last">
-          <div class="start">
-            <div class="label">$i18n{selectDriver}</div>
-            <div class="secondary">
-              <paper-input class="browse-file-input" no-label-float readonly
-                  value="[[newUserPPD_]]"
-                  error-message="$i18n{selectDriverErrorMessage}"
-                  invalid="[[invalidPPD_]]">
-                <paper-button class="browse-button" slot="suffix"
-                    on-click="onBrowseFile_">
-                  $i18n{selectDriverButtonText}
-                </paper-button>
-              </paper-input>
-            </div>
-          </div>
+          <cr-input class="browse-file-input" readonly value="[[newUserPPD_]]"
+              label="$i18n{selectDriver}" invalid="[[invalidPPD_]]"
+              error-message="$i18n{selectDriverErrorMessage}">
+            <paper-button class="browse-button" on-click="onBrowseFile_"
+                slot="suffix">
+              $i18n{selectDriverButtonText}
+            </paper-button>
+          </cr-input>
         </div>
       </div>
       <div slot="dialog-buttons">

@@ -96,7 +96,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertDeepEquals([], quickUnlockPrivateApi.credentials);
       });
 
-      test('EnterInvalidPasswordSelectsAllText', function() {
+      test('InvalidPasswordInteractions', function() {
         const confirmButton = getFromElement('#confirmButton');
         quickUnlockPrivateApi.accountPassword = 'bar';
         passwordElement.value = 'foo';
@@ -106,13 +106,18 @@ cr.define('settings_people_page_quick_unlock', function() {
             getFromElement('paper-button[class="action-button"]'));
         Polymer.dom.flush();
 
-        assertEquals(
-            0, passwordElement.inputElement.inputElement.selectionStart);
+        assertEquals(0, passwordElement.inputElement.selectionStart);
         assertEquals(
             passwordElement.value.length,
-            passwordElement.inputElement.inputElement.selectionEnd);
+            passwordElement.inputElement.selectionEnd);
         assertTrue(passwordElement.invalid);
         assertTrue(confirmButton.disabled);
+
+        // Changing value should reset invalid state.
+        passwordElement.value = 'bar';
+        Polymer.dom.flush();
+        assertFalse(passwordElement.invalid);
+        assertFalse(confirmButton.disabled);
       });
 
       test('TapConfirmButtonWithWrongPasswordRestoresFocus', function() {
@@ -122,7 +127,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         MockInteractions.tap(
             getFromElement('paper-button[class="action-button"]'));
 
-        assertTrue(passwordElement.focused);
+        assertTrue(passwordElement.hasAttribute('focused_'));
       });
 
       // A bad password does not provide an authenticated setModes object, and a
@@ -168,7 +173,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         }, 0);
       });
 
-      test('ConfirmButtonDisabled', function() {
+      test('ConfirmButtonDisabledWhenEmpty', function() {
         // Confirm button is diabled when there is nothing entered.
         let confirmButton = testElement.$$('#confirmButton');
         assertTrue(!!confirmButton);
@@ -178,19 +183,6 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertFalse(!!confirmButton.disabled);
         passwordElement.value = '';
         assertTrue(confirmButton.disabled);
-
-        // Confirm button is disabled when input is invalid.
-        passwordElement.value = 'foo';
-        passwordElement.invalid = true;
-        Polymer.dom.flush();
-        assertTrue(passwordElement.invalid);
-        assertTrue(confirmButton.disabled);
-
-        // Changing value should reset invalid state.
-        passwordElement.value = 'bar';
-        Polymer.dom.flush();
-        assertFalse(passwordElement.invalid);
-        assertFalse(confirmButton.disabled);
       });
     });
   }
