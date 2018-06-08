@@ -155,10 +155,8 @@ bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
 }
 
 bool ManualPasswordGenerationEnabled(syncer::SyncService* sync_service) {
-  if (!(base::FeatureList::IsEnabled(
-            password_manager::features::kEnableManualPasswordGeneration) &&
-        (password_manager_util::GetPasswordSyncState(sync_service) ==
-         password_manager::SYNCING_NORMAL_ENCRYPTION))) {
+  if (password_manager_util::GetPasswordSyncState(sync_service) !=
+      password_manager::SYNCING_NORMAL_ENCRYPTION) {
     return false;
   }
   LogPasswordGenerationEvent(

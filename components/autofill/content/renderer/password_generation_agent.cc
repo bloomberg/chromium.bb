@@ -32,6 +32,7 @@
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
 
 using blink::WebAutofillState;
@@ -184,7 +185,8 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       password_edited_(false),
       generation_popup_shown_(false),
       editing_popup_shown_(false),
-      enabled_(password_generation::IsPasswordGenerationEnabled()),
+      enabled_(password_generation::IsPasswordGenerationEnabled() ||
+               base::FeatureList::IsEnabled(features::kExperimentalUi)),
       form_classifier_enabled_(false),
       mark_generation_element_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
