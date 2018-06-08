@@ -955,6 +955,13 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   bool is_non_empty_inline =
       child.IsInline() && !ToNGInlineNode(child).IsEmptyInline();
 
+  // We update marker text in WillCollectInlines(). If ListItem isn't
+  // ChildrenInline(), we should WillCollectInlines() manually.
+  if (Node().IsListItem() && !child.IsInline()) {
+    LayoutBlockFlow* block = ToLayoutBlockFlow(Node().GetLayoutObject());
+    block->WillCollectInlines();
+  }
+
   bool has_clearance_past_adjoining_floats =
       child.IsBlock() &&
       HasClearancePastAdjoiningFloats(container_builder_.AdjoiningFloatTypes(),
