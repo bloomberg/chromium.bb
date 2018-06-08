@@ -47,6 +47,9 @@ class ContextualSuggestionsDebuggingReporter
   // Get all events currently in the buffer.
   const std::vector<ContextualSuggestionsDebuggingEvent>& GetEvents() const;
 
+  // Clear the debugging cache of events.
+  void ClearEvents();
+
   // ContextualSuggestionsReporter
   void SetupForPage(const std::string& url, ukm::SourceId source_id) override;
   void RecordEvent(

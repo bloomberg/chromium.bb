@@ -25,6 +25,8 @@ class EocInternalsUI : public ui::MojoWebUIController {
       eoc_internals::mojom::PageHandlerRequest request);
 
   std::unique_ptr<EocInternalsPageHandler> page_handler_;
+  contextual_suggestions::ContextualContentSuggestionsService*
+      contextual_content_suggestions_service_;
 
   DISALLOW_COPY_AND_ASSIGN(EocInternalsUI);
 };

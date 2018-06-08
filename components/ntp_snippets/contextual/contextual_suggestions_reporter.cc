@@ -28,6 +28,11 @@ ContextualSuggestionsReporterProvider::CreateReporter() {
   return reporter;
 }
 
+ContextualSuggestionsDebuggingReporter*
+ContextualSuggestionsReporterProvider::GetDebuggingReporter() {
+  return debugging_reporter_.get();
+}
+
 ContextualSuggestionsReporter::ContextualSuggestionsReporter() = default;
 ContextualSuggestionsReporter::~ContextualSuggestionsReporter() = default;
 

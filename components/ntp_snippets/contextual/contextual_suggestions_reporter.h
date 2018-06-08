@@ -29,6 +29,8 @@ class ContextualSuggestionsReporterProvider {
 
   virtual std::unique_ptr<ContextualSuggestionsReporter> CreateReporter();
 
+  virtual ContextualSuggestionsDebuggingReporter* GetDebuggingReporter();
+
  private:
   // The debugging reporter is shared between instances of top-level reporter.
   // Since multiple objects need a reference to this, it's kept as a unique

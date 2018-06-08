@@ -17,6 +17,7 @@
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_cache.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_debugging_reporter.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_reporter.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -64,6 +65,16 @@ class ContextualContentSuggestionsService : public KeyedService {
                  FetchClustersCallback callback,
                  ReportFetchMetricsCallback metrics_callback,
                  ContextualSuggestionsResult result);
+
+  // Used to surface metrics events via chrome://eoc-internals.
+  ContextualSuggestionsDebuggingReporter* GetDebuggingReporter();
+
+  // Expose cached results for debugging.
+  base::flat_map<GURL, ContextualSuggestionsResult>
+  GetAllCachedResultsForDebugging();
+
+  // Clear the cached results for debugging.
+  void ClearCachedResultsForDebugging();
 
   std::unique_ptr<ContextualContentSuggestionsServiceProxy> CreateProxy();
 
