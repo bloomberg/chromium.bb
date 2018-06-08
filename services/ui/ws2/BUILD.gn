@@ -49,6 +49,7 @@ component("lib") {
     "window_service.cc",
     "window_service_client.cc",
     "window_service_client_binding.cc",
+    "window_service_delegate.cc",
     "window_tree_factory.cc",
   ]
 

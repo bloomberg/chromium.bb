@@ -28,6 +28,10 @@ class ASH_EXPORT ToplevelWindowEventHandler : public ui::EventHandler,
   ToplevelWindowEventHandler();
   ~ToplevelWindowEventHandler() override;
 
+  wm::WmToplevelWindowEventHandler* wm_toplevel_window_event_handler() {
+    return &wm_toplevel_window_event_handler_;
+  }
+
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -41,7 +45,7 @@ class ASH_EXPORT ToplevelWindowEventHandler : public ui::EventHandler,
       aura::Window* window,
       const gfx::Point& point_in_parent,
       int window_component,
-      const wm::WmToplevelWindowEventHandler::EndClosure& end_closure);
+      wm::WmToplevelWindowEventHandler::EndClosure end_closure);
 
   // Overridden form wm::WindowMoveClient:
   ::wm::WindowMoveResult RunMoveLoop(

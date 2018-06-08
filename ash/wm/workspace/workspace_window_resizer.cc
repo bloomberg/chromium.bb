@@ -80,12 +80,12 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   }
 
   if (!window_state->IsNormalOrSnapped())
-    return std::unique_ptr<WindowResizer>();
+    return nullptr;
 
   int bounds_change =
       WindowResizer::GetBoundsChangeForWindowComponent(window_component);
   if (bounds_change == WindowResizer::kBoundsChangeDirection_None)
-    return std::unique_ptr<WindowResizer>();
+    return nullptr;
 
   window_state->CreateDragDetails(point_in_parent, window_component, source);
   const int parent_shell_window_id =

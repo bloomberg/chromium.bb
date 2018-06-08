@@ -1120,6 +1120,119 @@ TEST(WindowServiceClientTest, StackAbove) {
       setup.client_test_helper()->StackAbove(top_level1, non_top_level_window));
 }
 
+TEST(WindowServiceClientTest, RunMoveLoopTouch) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  const Id top_level_id =
+      setup.client_test_helper()->TransportIdForWindow(top_level);
+  setup.changes()->clear();
+  setup.client_test_helper()->window_tree()->PerformWindowMove(
+      12, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point());
+  // |top_level| isn't visible, so should fail immediately.
+  EXPECT_EQ("ChangeCompleted id=12 success=false",
+            SingleChangeToDescription(*setup.changes()));
+  setup.changes()->clear();
+
+  // Make the window visible and repeat.
+  top_level->Show();
+  setup.client_test_helper()->window_tree()->PerformWindowMove(
+      13, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point());
+  // WindowServiceDelegate should be asked to do the move.
+  WindowServiceDelegate::DoneCallback move_loop_callback =
+      setup.delegate()->TakeMoveLoopCallback();
+  ASSERT_TRUE(move_loop_callback);
+  // As the move is in progress, changes should be empty.
+  EXPECT_TRUE(setup.changes()->empty());
+
+  // Respond to the callback with success, which should notify client.
+  std::move(move_loop_callback).Run(true);
+  EXPECT_EQ("ChangeCompleted id=13 success=true",
+            SingleChangeToDescription(*setup.changes()));
+
+  // Trying to move non-top-level should fail.
+  aura::Window* non_top_level_window = setup.client_test_helper()->NewWindow();
+  non_top_level_window->Show();
+  setup.changes()->clear();
+  setup.client_test_helper()->window_tree()->PerformWindowMove(
+      14,
+      setup.client_test_helper()->TransportIdForWindow(non_top_level_window),
+      mojom::MoveLoopSource::TOUCH, gfx::Point());
+  EXPECT_EQ("ChangeCompleted id=14 success=false",
+            SingleChangeToDescription(*setup.changes()));
+}
+
+TEST(WindowServiceClientTest, RunMoveLoopMouse) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  const Id top_level_id =
+      setup.client_test_helper()->TransportIdForWindow(top_level);
+  setup.changes()->clear();
+  setup.client_test_helper()->window_tree()->PerformWindowMove(
+      12, top_level_id, mojom::MoveLoopSource::MOUSE, gfx::Point());
+  // The mouse isn't down, so this should fail.
+  EXPECT_EQ("ChangeCompleted id=12 success=false",
+            SingleChangeToDescription(*setup.changes()));
+  setup.changes()->clear();
+
+  // Press the left button and repeat.
+  test::EventGenerator event_generator(setup.root());
+  event_generator.PressLeftButton();
+  setup.client_test_helper()->window_tree()->PerformWindowMove(
+      13, top_level_id, mojom::MoveLoopSource::MOUSE, gfx::Point());
+  // WindowServiceDelegate should be asked to do the move.
+  WindowServiceDelegate::DoneCallback move_loop_callback =
+      setup.delegate()->TakeMoveLoopCallback();
+  ASSERT_TRUE(move_loop_callback);
+  // As the move is in progress, changes should be empty.
+  EXPECT_TRUE(setup.changes()->empty());
+
+  // Respond to the callback, which should notify client.
+  std::move(move_loop_callback).Run(true);
+  EXPECT_EQ("ChangeCompleted id=13 success=true",
+            SingleChangeToDescription(*setup.changes()));
+  setup.changes()->clear();
+}
+
+TEST(WindowServiceClientTest, CancelMoveLoop) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  const Id top_level_id =
+      setup.client_test_helper()->TransportIdForWindow(top_level);
+  setup.changes()->clear();
+  setup.client_test_helper()->window_tree()->PerformWindowMove(
+      12, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point());
+
+  // WindowServiceDelegate should be asked to do the move.
+  WindowServiceDelegate::DoneCallback move_loop_callback =
+      setup.delegate()->TakeMoveLoopCallback();
+  ASSERT_TRUE(move_loop_callback);
+  // As the move is in progress, changes should be empty.
+  EXPECT_TRUE(setup.changes()->empty());
+
+  // Cancelling with an invalid id should do nothing.
+  EXPECT_FALSE(setup.delegate()->cancel_window_move_loop_called());
+  setup.client_test_helper()->window_tree()->CancelWindowMove(
+      kInvalidTransportId);
+  EXPECT_TRUE(setup.changes()->empty());
+  EXPECT_FALSE(setup.delegate()->cancel_window_move_loop_called());
+
+  // Cancel with the real id should notify the delegate.
+  EXPECT_FALSE(setup.delegate()->cancel_window_move_loop_called());
+  setup.client_test_helper()->window_tree()->CancelWindowMove(top_level_id);
+  EXPECT_TRUE(setup.delegate()->cancel_window_move_loop_called());
+  // No changes yet, because |move_loop_callback| was not run yet.
+  EXPECT_TRUE(setup.changes()->empty());
+  // Run the closure, which triggers notifying the client.
+  std::move(move_loop_callback).Run(false);
+  EXPECT_EQ("ChangeCompleted id=12 success=false",
+            SingleChangeToDescription(*setup.changes()));
+}
+
 }  // namespace
 }  // namespace ws2
 }  // namespace ui

@@ -404,17 +404,15 @@ bool WmToplevelWindowEventHandler::AttemptToStartDrag(
     const gfx::Point& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source,
-    const EndClosure& end_closure) {
-  if (window_resizer_.get())
+    EndClosure end_closure) {
+  if (!PrepareForDrag(window, point_in_parent, window_component, source)) {
+    // Treat failure to start as a revert.
+    if (end_closure)
+      std::move(end_closure).Run(DragResult::REVERT);
     return false;
-  std::unique_ptr<WindowResizer> resizer(
-      CreateWindowResizer(window, point_in_parent, window_component, source));
-  if (!resizer)
-    return false;
+  }
 
-  end_closure_ = end_closure;
-  window_resizer_.reset(new ScopedWindowResizer(this, std::move(resizer)));
-
+  end_closure_ = std::move(end_closure);
   pre_drag_window_bounds_ = window->bounds();
   in_gesture_drag_ = (source == ::wm::WINDOW_MOVE_SOURCE_TOUCH);
   return true;
@@ -422,6 +420,23 @@ bool WmToplevelWindowEventHandler::AttemptToStartDrag(
 
 void WmToplevelWindowEventHandler::RevertDrag() {
   CompleteDrag(DragResult::REVERT);
+}
+
+bool WmToplevelWindowEventHandler::PrepareForDrag(
+    aura::Window* window,
+    const gfx::Point& point_in_parent,
+    int window_component,
+    ::wm::WindowMoveSource source) {
+  if (window_resizer_)
+    return false;
+
+  std::unique_ptr<WindowResizer> resizer(
+      CreateWindowResizer(window, point_in_parent, window_component, source));
+  if (!resizer)
+    return false;
+  window_resizer_ =
+      std::make_unique<ScopedWindowResizer>(this, std::move(resizer));
+  return true;
 }
 
 bool WmToplevelWindowEventHandler::CompleteDrag(DragResult result) {
@@ -446,12 +461,8 @@ bool WmToplevelWindowEventHandler::CompleteDrag(DragResult result) {
 
   first_finger_hittest_ = HTNOWHERE;
   in_gesture_drag_ = false;
-  if (!end_closure_.is_null()) {
-    // Clear local state in case running the closure deletes us.
-    EndClosure end_closure = end_closure_;
-    end_closure_.Reset();
-    end_closure.Run(result);
-  }
+  if (end_closure_)
+    std::move(end_closure_).Run(result);
   return true;
 }
 

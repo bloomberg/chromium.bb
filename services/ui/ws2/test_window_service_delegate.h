@@ -37,19 +37,35 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
     return &unhandled_key_events_;
   }
 
+  bool cancel_window_move_loop_called() const {
+    return cancel_window_move_loop_called_;
+  }
+
+  DoneCallback TakeMoveLoopCallback();
+
   // WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void OnUnhandledKeyEvent(const KeyEvent& key_event) override;
+  void RunWindowMoveLoop(aura::Window* window,
+                         mojom::MoveLoopSource source,
+                         const gfx::Point& cursor,
+                         DoneCallback callback) override;
+  void CancelWindowMoveLoop() override;
 
  private:
   aura::Window* top_level_parent_;
   aura::WindowDelegate* delegate_for_next_top_level_ = nullptr;
 
+  // Callback supplied to RunWindowMoveLoop() is set here.
+  DoneCallback move_loop_callback_;
+
   // Events passed to OnUnhandledKeyEvent() are added here.
   std::vector<KeyEvent> unhandled_key_events_;
+
+  bool cancel_window_move_loop_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowServiceDelegate);
 };

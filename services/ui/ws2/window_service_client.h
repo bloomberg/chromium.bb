@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/focus_handler.h"
@@ -136,6 +137,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   void DeleteClientRootWithRoot(aura::Window* window);
 
   aura::Window* GetWindowByClientId(const ClientWindowId& id);
+  aura::Window* GetWindowByTransportId(Id transport_window_id);
 
   // Returns true if |this| created |window|.
   bool IsClientCreatedWindow(aura::Window* window);
@@ -152,6 +154,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // Called when one of the windows known to the client loses capture.
   // |lost_capture| is the window that had capture.
   void OnCaptureLost(aura::Window* lost_capture);
+
+  // Callback from WindowServiceDelegate::RunWindowMoveLoop(). |change_id| is
+  // the id at the time the move-loop was initiated. |result| is the result of
+  // the move loop (true for success).
+  void OnPerformWindowMoveDone(uint32_t change_id, bool result);
 
   // Called for windows created by the client (including top-levels).
   aura::Window* AddClientCreatedWindow(
@@ -353,10 +360,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   void GetCursorLocationMemory(
       GetCursorLocationMemoryCallback callback) override;
   void PerformWindowMove(uint32_t change_id,
-                         Id window_id,
+                         Id transport_window_id,
                          ::ui::mojom::MoveLoopSource source,
                          const gfx::Point& cursor) override;
-  void CancelWindowMove(Id window_id) override;
+  void CancelWindowMove(Id transport_window_id) override;
   void PerformDragDrop(
       uint32_t change_id,
       Id source_window_id,
@@ -409,6 +416,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 
   // Events that an ack is expected from the client are added here.
   std::queue<std::unique_ptr<InFlightKeyEvent>> in_flight_key_events_;
+
+  // Set while a window move loop is in progress.
+  aura::Window* window_moving_ = nullptr;
+
+  base::WeakPtrFactory<WindowServiceClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceClient);
 };

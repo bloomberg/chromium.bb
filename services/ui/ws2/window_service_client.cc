@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -269,6 +270,11 @@ aura::Window* WindowServiceClient::GetWindowByClientId(
   return iter == client_window_id_to_window_map_.end() ? nullptr : iter->second;
 }
 
+aura::Window* WindowServiceClient::GetWindowByTransportId(
+    Id transport_window_id) {
+  return GetWindowByClientId(MakeClientWindowId(transport_window_id));
+}
+
 bool WindowServiceClient::IsClientCreatedWindow(aura::Window* window) {
   return window && client_created_windows_.count(window) > 0u;
 }
@@ -304,6 +310,12 @@ void WindowServiceClient::OnCaptureLost(aura::Window* lost_capture) {
   DCHECK(IsWindowKnown(lost_capture));
   window_tree_client_->OnCaptureChanged(kInvalidTransportId,
                                         TransportIdForWindow(lost_capture));
+}
+
+void WindowServiceClient::OnPerformWindowMoveDone(uint32_t change_id,
+                                                  bool result) {
+  window_moving_ = nullptr;
+  window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
 aura::Window* WindowServiceClient::AddClientCreatedWindow(
@@ -1120,8 +1132,7 @@ void WindowServiceClient::AttachCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClientPtr client) {
   DVLOG(3) << "AttachCompositorFrameSink id="
            << MakeClientWindowId(transport_window_id).ToString();
-  aura::Window* window =
-      GetWindowByClientId(MakeClientWindowId(transport_window_id));
+  aura::Window* window = GetWindowByTransportId(transport_window_id);
   if (!window) {
     DVLOG(1) << "AttachCompositorFrameSink failed (invalid window id)";
     return;
@@ -1231,8 +1242,8 @@ void WindowServiceClient::SetFocus(uint32_t change_id, Id transport_window_id) {
 }
 
 void WindowServiceClient::SetCanFocus(Id transport_window_id, bool can_focus) {
-  focus_handler_.SetCanFocus(
-      GetWindowByClientId(MakeClientWindowId(transport_window_id)), can_focus);
+  focus_handler_.SetCanFocus(GetWindowByTransportId(transport_window_id),
+                             can_focus);
 }
 
 void WindowServiceClient::SetCursor(uint32_t change_id,
@@ -1257,8 +1268,7 @@ void WindowServiceClient::SetImeVisibility(
 void WindowServiceClient::SetEventTargetingPolicy(
     Id transport_window_id,
     ::ui::mojom::EventTargetingPolicy policy) {
-  aura::Window* window =
-      GetWindowByClientId(MakeClientWindowId(transport_window_id));
+  aura::Window* window = GetWindowByTransportId(transport_window_id);
   if (IsClientCreatedWindow(window) || IsClientRootWindow(window))
     window->SetEventTargetingPolicy(policy);
 }
@@ -1315,14 +1325,44 @@ void WindowServiceClient::GetCursorLocationMemory(
 }
 
 void WindowServiceClient::PerformWindowMove(uint32_t change_id,
-                                            Id window_id,
-                                            ::ui::mojom::MoveLoopSource source,
+                                            Id transport_window_id,
+                                            mojom::MoveLoopSource source,
                                             const gfx::Point& cursor) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  DVLOG(3) << "PerformWindowMove id="
+           << MakeClientWindowId(transport_window_id).ToString();
+  aura::Window* window = GetWindowByTransportId(transport_window_id);
+  if (!IsClientCreatedWindow(window) || !IsTopLevel(window) ||
+      !window->IsVisible() || window_moving_) {
+    DVLOG(1) << "PerformWindowMove failed (invalid window)";
+    window_tree_client_->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  if (source == ui::mojom::MoveLoopSource::MOUSE &&
+      !aura::Env::GetInstance()->IsMouseButtonDown()) {
+    DVLOG(1) << "PerformWindowMove failed (mouse not down)";
+    window_tree_client_->OnChangeCompleted(change_id, false);
+    return;
+  }
+
+  window_moving_ = window;
+  window_service_->delegate()->RunWindowMoveLoop(
+      window, source, cursor,
+      base::BindOnce(&WindowServiceClient::OnPerformWindowMoveDone,
+                     weak_factory_.GetWeakPtr(), change_id));
 }
 
-void WindowServiceClient::CancelWindowMove(Id window_id) {
-  NOTIMPLEMENTED_LOG_ONCE();
+void WindowServiceClient::CancelWindowMove(Id transport_window_id) {
+  if (!window_moving_) {
+    DVLOG(1) << "CancelWindowMove called and a move is not underway";
+    return;
+  }
+
+  aura::Window* window = GetWindowByTransportId(transport_window_id);
+  if (window == window_moving_)
+    window_service_->delegate()->CancelWindowMoveLoop();
+  else
+    DVLOG(1) << "CancelWindowMove called with wrong window";
 }
 
 void WindowServiceClient::PerformDragDrop(
