@@ -37,7 +37,10 @@ def GetChrootVersion(chroot=None, buildroot=None):
     buildroot: If |chroot| is not set, find it relative to |buildroot|.
 
   Returns:
-    The version of the chroot dir.
+    The version of the chroot dir, or None if the version is missing/invalid.
+
+  Raises:
+    ValueError if neither |chroot| nor |buildroot| is passed.
   """
   if chroot is None and buildroot is None:
     raise ValueError('need either |chroot| or |buildroot| to search')
@@ -45,11 +48,37 @@ def GetChrootVersion(chroot=None, buildroot=None):
   if chroot is None:
     chroot = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
   ver_path = os.path.join(chroot, 'etc', 'cros_chroot_version')
+  chroot_version = None
   try:
-    return osutils.ReadFile(ver_path).strip()
+    chroot_version = osutils.ReadFile(ver_path).strip()
+    return int(chroot_version)
   except IOError:
     logging.warning('could not read %s', ver_path)
     return None
+  except ValueError as e:
+    logging.warning('chroot %s contains invalid version %s: %s', chroot,
+                    chroot_version, e)
+    return None
+
+
+def IsChrootReady(chroot=None, buildroot=None):
+  """Checks if the chroot is mounted and set up.
+
+  /etc/cros_chroot_version is set to the current version of the chroot at the
+  end of the setup process.  If this file exists and contains a non-zero value,
+  the chroot is ready for use.
+
+  Args:
+    chroot: Full path to the chroot to examine.
+    buildroot: If |chroot| is not set, find it relative to |buildroot|.
+
+  Returns:
+    True iff the chroot contains a valid version.
+
+  Raises:
+    ValueError if neither |chroot| nor |buildroot| is passed.
+  """
+  return GetChrootVersion(chroot, buildroot) > 0
 
 
 def FindVolumeGroupForDevice(chroot_path, chroot_dev):

@@ -877,8 +877,7 @@ def main(argv):
     options.working_dir = path_util.ToChrootPath(options.working_dir)
 
   # Discern if we need to create the chroot.
-  chroot_ver_file = os.path.join(options.chroot, 'etc', 'cros_chroot_version')
-  chroot_exists = os.path.exists(chroot_ver_file)
+  chroot_exists = cros_sdk_lib.IsChrootReady(options.chroot)
   if (options.use_image and not chroot_exists and not options.delete and
       not missing_image_tools and
       os.path.exists(_ImageFileForChroot(options.chroot))):
@@ -888,21 +887,17 @@ def main(argv):
         logging.debug('Checking if existing chroot image can be mounted.')
         lock.write_lock()
         cros_sdk_lib.MountChroot(options.chroot, create=False)
-        chroot_exists = os.path.exists(chroot_ver_file)
+        chroot_exists = cros_sdk_lib.IsChrootReady(options.chroot)
         if chroot_exists:
           logging.notice('Mounted existing image %s on chroot',
                          _ImageFileForChroot(options.chroot))
-  if (options.create or options.enter or options.snapshot_create or
-      options.snapshot_restore):
-    # Only create if it's being wiped, or if it doesn't exist.
-    if not options.delete and chroot_exists:
-      options.create = False
-    else:
-      options.download = True
 
   # Finally, flip create if necessary.
   if options.enter or options.snapshot_create:
     options.create |= not chroot_exists
+
+  # Make sure we will download if we plan to create.
+  options.download |= options.create
 
   # Anything that needs to manipulate the main chroot mount or communicate with
   # LVM needs to be done here before we enter the new namespaces.
@@ -1091,8 +1086,14 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
 
       if options.create:
         lock.write_lock()
-        CreateChroot(options.chroot, sdk_tarball, options.cache_dir,
-                     nousepkg=(options.bootstrap or options.nousepkg))
+        # Recheck if the chroot is set up here before creating to make sure we
+        # account for whatever the various delete/unmount/remount steps above
+        # have done.
+        if cros_sdk_lib.IsChrootReady(options.chroot):
+          logging.debug('Chroot already exists.  Skipping creation.')
+        else:
+          CreateChroot(options.chroot, sdk_tarball, options.cache_dir,
+                       nousepkg=(options.bootstrap or options.nousepkg))
 
       if options.enter:
         lock.read_lock()
