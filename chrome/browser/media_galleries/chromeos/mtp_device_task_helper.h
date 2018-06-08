@@ -47,8 +47,10 @@ class MTPDeviceTaskHelper {
 
   typedef base::Closure CreateDirectorySuccessCallback;
 
-  typedef base::Callback<void(const MTPEntries& entries, bool has_more)>
-      ReadDirectorySuccessCallback;
+  // When |has_more| is true, it means to expect another callback with more
+  // entries.
+  using ReadDirectorySuccessCallback =
+      base::RepeatingCallback<void(const MTPEntries& entries, bool has_more)>;
 
   using CheckDirectoryEmptySuccessCallback =
       base::OnceCallback<void(bool is_empty)>;
@@ -95,13 +97,14 @@ class MTPDeviceTaskHelper {
 
   // Dispatches the read directory request to the MediaTransferProtocolManager.
   //
-  // |dir_id| specifies the directory id.
+  // |directory_id| specifies the directory to enumerate entries for.
   //
   // If the directory file entries are enumerated successfully,
   // |success_callback| is invoked on the IO thread to notify the caller about
-  // the directory file entries. Please see the note in the
-  // ReadDirectorySuccessCallback typedef regarding the special treatment of
-  // file names.
+  // the directory file entries. When there are many entries, instead of calling
+  // |success_callback| once with the complete set of entries,
+  // |success_callback| may be called repeatedly with subsets of the complete
+  // set.
   //
   // If there is an error, |error_callback| is invoked on the IO thread to
   // notify the caller about the file error.
@@ -209,19 +212,17 @@ class MTPDeviceTaskHelper {
   // Query callback for GetFileInfo() when called by
   // OnReadDirectoryEntryIdsToReadDirectory().
   //
-  // Many of the parameters are shared with
-  // OnReadDirectoryEntryIdsToReadDirectory() and are exactly the same.
+  // |success_callback| and |error_callback| are the same as the parameters to
+  // OnReadDirectoryEntryIdsToReadDirectory().
   //
-  // |offset| is the offset into |file_ids| to read from.
-  // |sorted_file_ids| is a sorted copy of |file_ids|.
-  // |file_entries| contains the results of the GetFileInfo() call.
+  // |expected_file_ids| contains the expected IDs for |file_entries|.
+  // |file_ids_to_read| contains the IDs to read next.
   // |error| indicates if the GetFileInfo() call succeeded or failed.
   void OnGotDirectoryEntries(
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
-      const std::vector<uint32_t>& file_ids,
-      size_t offset,
-      const std::vector<uint32_t>& sorted_file_ids,
+      const std::vector<uint32_t>& expected_file_ids,
+      const std::vector<uint32_t>& file_ids_to_read,
       std::vector<device::mojom::MtpFileEntryPtr> file_entries,
       bool error);
 

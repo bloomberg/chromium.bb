@@ -24,16 +24,34 @@ using storage_monitor::StorageMonitor;
 
 namespace {
 
-// When reading directory entries, this is the number of entries for
-// GetFileInfo() to read in one operation. If set too low, efficiency goes down
-// slightly due to the overhead of D-Bus calls. If set too high, then slow
-// devices may trigger a D-Bus timeout.
-// The value below is a good initial estimate.
-const size_t kFileInfoToFetchChunkSize = 25;
+// Splits |file_ids| into |file_ids_to_read_now| and |file_ids_to_read_later|.
+// This is used to prevent GetFileInfo() from being called with too many entries
+// at once.
+void SplitFileIds(const std::vector<uint32_t>& file_ids,
+                  std::vector<uint32_t>* file_ids_to_read_now,
+                  std::vector<uint32_t>* file_ids_to_read_later) {
+  DCHECK(file_ids_to_read_now);
+  DCHECK(file_ids_to_read_now->empty());
+  DCHECK(file_ids_to_read_later);
+  DCHECK(file_ids_to_read_later->empty());
 
-// When calling GetFileInfo() with only a single file ID, the offset into the
-// file IDs vector should be 0.
-constexpr size_t kSingleFileIdOffset = 0;
+  // When reading directory entries, this is the number of entries for
+  // GetFileInfo() to read in one operation. If set too low, efficiency goes
+  // down slightly due to the overhead of D-Bus calls. If set too high, then
+  // slow devices may trigger a D-Bus timeout.
+  // The value below is a good initial estimate.
+  static constexpr size_t kFileInfoToFetchChunkSize = 25;
+
+  size_t chunk_size = kFileInfoToFetchChunkSize;
+  if (file_ids.size() <= chunk_size) {
+    *file_ids_to_read_now = file_ids;
+  } else {
+    std::copy_n(file_ids.begin(), chunk_size,
+                std::back_inserter(*file_ids_to_read_now));
+    std::copy(file_ids.begin() + chunk_size, file_ids.end(),
+              std::back_inserter(*file_ids_to_read_later));
+  }
+}
 
 device::mojom::MtpManager* GetMediaTransferProtocolManager() {
   return StorageMonitor::GetInstance()->media_transfer_protocol_manager();
@@ -94,7 +112,7 @@ void MTPDeviceTaskHelper::GetFileInfo(
 
   const std::vector<uint32_t> file_ids = {file_id};
   GetMediaTransferProtocolManager()->GetFileInfo(
-      device_handle_, file_ids, kSingleFileIdOffset, file_ids.size(),
+      device_handle_, file_ids,
       base::Bind(&MTPDeviceTaskHelper::OnGetFileInfo,
                  weak_ptr_factory_.GetWeakPtr(), success_callback,
                  error_callback));
@@ -170,7 +188,7 @@ void MTPDeviceTaskHelper::ReadBytes(
 
   const std::vector<uint32_t> file_ids = {request.file_id};
   GetMediaTransferProtocolManager()->GetFileInfo(
-      device_handle_, file_ids, kSingleFileIdOffset, file_ids.size(),
+      device_handle_, file_ids,
       base::BindOnce(&MTPDeviceTaskHelper::OnGetFileInfoToReadBytes,
                      weak_ptr_factory_.GetWeakPtr(), request));
 }
@@ -290,41 +308,38 @@ void MTPDeviceTaskHelper::OnReadDirectoryEntryIdsToReadDirectory(
     return;
   }
 
-  std::vector<uint32_t> sorted_file_ids = file_ids;
-  std::sort(sorted_file_ids.begin(), sorted_file_ids.end());
-
-  // This is the first GetFileInfo() call for a read directory operation. Start
-  // at offset 0.
-  static constexpr size_t kInitialOffset = 0;
+  std::vector<uint32_t> file_ids_to_read_now;
+  std::vector<uint32_t> file_ids_to_read_later;
+  SplitFileIds(file_ids, &file_ids_to_read_now, &file_ids_to_read_later);
 
   GetMediaTransferProtocolManager()->GetFileInfo(
-      device_handle_, file_ids, kInitialOffset, kFileInfoToFetchChunkSize,
+      device_handle_, file_ids_to_read_now,
       base::BindOnce(&MTPDeviceTaskHelper::OnGotDirectoryEntries,
                      weak_ptr_factory_.GetWeakPtr(), success_callback,
-                     error_callback, file_ids, kInitialOffset,
-                     sorted_file_ids));
+                     error_callback, file_ids_to_read_now,
+                     file_ids_to_read_later));
 }
 
 void MTPDeviceTaskHelper::OnGotDirectoryEntries(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    const std::vector<uint32_t>& file_ids,
-    size_t offset,
-    const std::vector<uint32_t>& sorted_file_ids,
+    const std::vector<uint32_t>& expected_file_ids,
+    const std::vector<uint32_t>& file_ids_to_read,
     std::vector<device::mojom::MtpFileEntryPtr> file_entries,
     bool error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(file_ids.size(), sorted_file_ids.size());
 
   if (error)
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
-  // Use |sorted_file_ids| to sanity check and make sure the results are a
-  // subset of the requested file ids.
+  // Use |expected_file_ids| to verify the results are the requested ids.
+  std::vector<uint32_t> sorted_expected_file_ids = expected_file_ids;
+  std::sort(sorted_expected_file_ids.begin(), sorted_expected_file_ids.end());
   for (const auto& entry : file_entries) {
-    std::vector<uint32_t>::const_iterator it = std::lower_bound(
-        sorted_file_ids.begin(), sorted_file_ids.end(), entry->item_id);
-    if (it == sorted_file_ids.end()) {
+    std::vector<uint32_t>::const_iterator it =
+        std::lower_bound(sorted_expected_file_ids.begin(),
+                         sorted_expected_file_ids.end(), entry->item_id);
+    if (it == sorted_expected_file_ids.end()) {
       return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
     }
   }
@@ -343,11 +358,7 @@ void MTPDeviceTaskHelper::OnGotDirectoryEntries(
     entries.push_back(entry);
   }
 
-  const size_t directory_size = file_ids.size();
-  size_t next_offset = directory_size;
-  if (offset < SIZE_MAX - kFileInfoToFetchChunkSize)
-    next_offset = std::min(next_offset, offset + kFileInfoToFetchChunkSize);
-  bool has_more = next_offset < directory_size;
+  bool has_more = !file_ids_to_read.empty();
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
@@ -356,13 +367,17 @@ void MTPDeviceTaskHelper::OnGotDirectoryEntries(
   if (!has_more)
     return;
 
-  const size_t chunk_size =
-      std::min(directory_size - next_offset, kFileInfoToFetchChunkSize);
+  std::vector<uint32_t> file_ids_to_read_now;
+  std::vector<uint32_t> file_ids_to_read_later;
+  SplitFileIds(file_ids_to_read, &file_ids_to_read_now,
+               &file_ids_to_read_later);
+
   GetMediaTransferProtocolManager()->GetFileInfo(
-      device_handle_, file_ids, next_offset, chunk_size,
+      device_handle_, file_ids_to_read_now,
       base::BindOnce(&MTPDeviceTaskHelper::OnGotDirectoryEntries,
                      weak_ptr_factory_.GetWeakPtr(), success_callback,
-                     error_callback, file_ids, next_offset, sorted_file_ids));
+                     error_callback, file_ids_to_read_now,
+                     file_ids_to_read_later));
 }
 
 void MTPDeviceTaskHelper::OnCheckedDirectoryEmpty(
