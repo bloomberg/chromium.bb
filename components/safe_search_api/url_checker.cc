@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_search_api/safe_search_url_checker.h"
+#include "components/safe_search_api/url_checker.h"
 
 #include <string>
 #include <utility>
@@ -25,6 +25,8 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/url_constants.h"
+
+namespace safe_search_api {
 
 namespace {
 
@@ -71,7 +73,7 @@ bool ParseResponse(const std::string& response, bool* is_porn) {
 
 }  // namespace
 
-struct SafeSearchURLChecker::Check {
+struct URLChecker::Check {
   Check(const GURL& url,
         std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
         CheckCallback callback);
@@ -83,7 +85,7 @@ struct SafeSearchURLChecker::Check {
   base::TimeTicks start_time;
 };
 
-SafeSearchURLChecker::Check::Check(
+URLChecker::Check::Check(
     const GURL& url,
     std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
     CheckCallback callback)
@@ -93,26 +95,26 @@ SafeSearchURLChecker::Check::Check(
   callbacks.push_back(std::move(callback));
 }
 
-SafeSearchURLChecker::Check::~Check() {
+URLChecker::Check::~Check() {
   for (const CheckCallback& callback : callbacks) {
     DCHECK(!callback);
   }
 }
 
-SafeSearchURLChecker::CheckResult::CheckResult(Classification classification,
-                                               bool uncertain)
+URLChecker::CheckResult::CheckResult(Classification classification,
+                                     bool uncertain)
     : classification(classification),
       uncertain(uncertain),
       timestamp(base::TimeTicks::Now()) {}
 
-SafeSearchURLChecker::SafeSearchURLChecker(
+URLChecker::URLChecker(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : SafeSearchURLChecker(std::move(url_loader_factory),
-                           traffic_annotation,
-                           kDefaultCacheSize) {}
+    : URLChecker(std::move(url_loader_factory),
+                 traffic_annotation,
+                 kDefaultCacheSize) {}
 
-SafeSearchURLChecker::SafeSearchURLChecker(
+URLChecker::URLChecker(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     size_t cache_size)
@@ -122,9 +124,9 @@ SafeSearchURLChecker::SafeSearchURLChecker(
       cache_timeout_(
           base::TimeDelta::FromSeconds(kDefaultCacheTimeoutSeconds)) {}
 
-SafeSearchURLChecker::~SafeSearchURLChecker() {}
+URLChecker::~URLChecker() = default;
 
-bool SafeSearchURLChecker::CheckURL(const GURL& url, CheckCallback callback) {
+bool URLChecker::CheckURL(const GURL& url, CheckCallback callback) {
   // TODO(treib): Hack: For now, allow all Google URLs to save QPS. If we ever
   // remove this, we should find a way to allow at least the NTP.
   if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
@@ -183,12 +185,12 @@ bool SafeSearchURLChecker::CheckURL(const GURL& url, CheckCallback callback) {
   network::SimpleURLLoader* loader = it->get()->simple_url_loader.get();
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
-      base::BindOnce(&SafeSearchURLChecker::OnSimpleLoaderComplete,
+      base::BindOnce(&URLChecker::OnSimpleLoaderComplete,
                      base::Unretained(this), std::move(it)));
   return false;
 }
 
-void SafeSearchURLChecker::OnSimpleLoaderComplete(
+void URLChecker::OnSimpleLoaderComplete(
     CheckList::iterator it,
     std::unique_ptr<std::string> response_body) {
   Check* check = it->get();
@@ -219,3 +221,5 @@ void SafeSearchURLChecker::OnSimpleLoaderComplete(
   for (size_t i = 0; i < callbacks.size(); i++)
     std::move(callbacks[i]).Run(url, classification, uncertain);
 }
+
+}  // namespace safe_search_api

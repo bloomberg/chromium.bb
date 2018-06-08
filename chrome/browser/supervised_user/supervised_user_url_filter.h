@@ -15,9 +15,9 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
-#include "chrome/browser/safe_search_api/safe_search_url_checker.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
+#include "components/safe_search_api/url_checker.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -192,7 +192,7 @@ class SupervisedUserURLFilter {
 
   void CheckCallback(FilteringBehaviorCallback callback,
                      const GURL& url,
-                     SafeSearchURLChecker::Classification classification,
+                     safe_search_api::Classification classification,
                      bool uncertain) const;
 
   // This is mutable to allow notification in const member functions.
@@ -212,7 +212,7 @@ class SupervisedUserURLFilter {
   // Not owned.
   const SupervisedUserBlacklist* blacklist_;
 
-  std::unique_ptr<SafeSearchURLChecker> async_url_checker_;
+  std::unique_ptr<safe_search_api::URLChecker> async_url_checker_;
 
   re2::RE2 amp_cache_path_regex_;
   re2::RE2 google_amp_viewer_path_regex_;

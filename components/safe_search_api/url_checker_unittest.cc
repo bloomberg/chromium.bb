@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_search_api/safe_search_url_checker.h"
+#include "components/safe_search_api/url_checker.h"
 
 #include <stddef.h>
 
@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
@@ -25,22 +26,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using Classification = SafeSearchURLChecker::Classification;
 using testing::_;
+
+namespace safe_search_api {
 
 namespace {
 
 const size_t kCacheSize = 2;
 
 const char* kURLs[] = {
-    "http://www.randomsite1.com",
-    "http://www.randomsite2.com",
-    "http://www.randomsite3.com",
-    "http://www.randomsite4.com",
-    "http://www.randomsite5.com",
-    "http://www.randomsite6.com",
-    "http://www.randomsite7.com",
-    "http://www.randomsite8.com",
+    "http://www.randomsite1.com", "http://www.randomsite2.com",
+    "http://www.randomsite3.com", "http://www.randomsite4.com",
+    "http://www.randomsite5.com", "http://www.randomsite6.com",
+    "http://www.randomsite7.com", "http://www.randomsite8.com",
     "http://www.randomsite9.com",
 };
 
@@ -49,8 +47,7 @@ const char kSafeSearchApiUrl[] =
 
 std::string BuildResponse(bool is_porn) {
   base::DictionaryValue dict;
-  std::unique_ptr<base::DictionaryValue> classification_dict(
-      new base::DictionaryValue);
+  auto classification_dict = std::make_unique<base::DictionaryValue>();
   if (is_porn)
     classification_dict->SetBoolean("pornography", is_porn);
   auto classifications_list = std::make_unique<base::ListValue>();
@@ -82,7 +79,7 @@ class SafeSearchURLCheckerTest : public testing::Test {
 
  protected:
   GURL GetNewURL() {
-    CHECK(next_url_ < arraysize(kURLs));
+    CHECK(next_url_ < base::size(kURLs));
     return GURL(kURLs[next_url_++]);
   }
 
@@ -124,7 +121,7 @@ class SafeSearchURLCheckerTest : public testing::Test {
   base::MessageLoop message_loop_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
-  SafeSearchURLChecker checker_;
+  URLChecker checker_;
 };
 
 TEST_F(SafeSearchURLCheckerTest, Simple) {
@@ -197,3 +194,5 @@ TEST_F(SafeSearchURLCheckerTest, CacheTimeout) {
   EXPECT_CALL(*this, OnCheckDone(url, Classification::UNSAFE, false));
   ASSERT_FALSE(SendValidResponse(url, true));
 }
+
+}  // namespace safe_search_api

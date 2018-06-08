@@ -60,11 +60,11 @@ struct HashHostnameHash {
 
 SupervisedUserURLFilter::FilteringBehavior
 GetBehaviorFromSafeSearchClassification(
-    SafeSearchURLChecker::Classification classification) {
+    safe_search_api::Classification classification) {
   switch (classification) {
-    case SafeSearchURLChecker::Classification::SAFE:
+    case safe_search_api::Classification::SAFE:
       return SupervisedUserURLFilter::ALLOW;
-    case SafeSearchURLChecker::Classification::UNSAFE:
+    case safe_search_api::Classification::UNSAFE:
       return SupervisedUserURLFilter::BLOCK;
   }
   NOTREACHED();
@@ -553,8 +553,8 @@ void SupervisedUserURLFilter::InitAsyncURLChecker(
             "family dashboard."
           policy_exception_justification: "Not implemented."
         })");
-  async_url_checker_.reset(new SafeSearchURLChecker(
-      std::move(url_loader_factory), traffic_annotation));
+  async_url_checker_ = std::make_unique<safe_search_api::URLChecker>(
+      std::move(url_loader_factory), traffic_annotation);
 }
 
 void SupervisedUserURLFilter::ClearAsyncURLChecker() {
@@ -675,7 +675,7 @@ void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {
 void SupervisedUserURLFilter::CheckCallback(
     FilteringBehaviorCallback callback,
     const GURL& url,
-    SafeSearchURLChecker::Classification classification,
+    safe_search_api::Classification classification,
     bool uncertain) const {
   DCHECK(default_behavior_ != BLOCK);
 
