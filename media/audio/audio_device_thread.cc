@@ -40,10 +40,11 @@ void AudioDeviceThread::Callback::InitializeOnAudioThread() {
 
 AudioDeviceThread::AudioDeviceThread(Callback* callback,
                                      base::SyncSocket::Handle socket,
-                                     const char* thread_name)
+                                     const char* thread_name,
+                                     base::ThreadPriority thread_priority)
     : callback_(callback), thread_name_(thread_name), socket_(socket) {
-  CHECK(base::PlatformThread::CreateWithPriority(
-      0, this, &thread_handle_, base::ThreadPriority::REALTIME_AUDIO));
+  CHECK(base::PlatformThread::CreateWithPriority(0, this, &thread_handle_,
+                                                 thread_priority));
 
   DCHECK(!thread_handle_.is_null());
 }

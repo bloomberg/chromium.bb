@@ -53,6 +53,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "media/audio/alive_checker.h"
 #include "media/audio/audio_device_thread.h"
@@ -67,7 +68,8 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
                                       public AudioInputIPCDelegate {
  public:
   // NOTE: Clients must call Initialize() before using.
-  explicit AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc);
+  AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc,
+                   base::ThreadPriority thread_priority);
 
   // AudioCapturerSource implementation.
   void Initialize(const AudioParameters& params,
@@ -117,6 +119,8 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   void DetectedDeadInputStream();
 
   AudioParameters audio_parameters_;
+
+  const base::ThreadPriority thread_priority_;
 
   CaptureCallback* callback_;
 

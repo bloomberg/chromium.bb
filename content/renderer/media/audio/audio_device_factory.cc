@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
@@ -168,7 +169,8 @@ AudioDeviceFactory::NewAudioCapturerSource(int render_frame_id,
 
   return base::MakeRefCounted<media::AudioInputDevice>(
       AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id,
-                                                       session_id));
+                                                       session_id),
+      base::ThreadPriority::REALTIME_AUDIO);
 }
 
 // static
