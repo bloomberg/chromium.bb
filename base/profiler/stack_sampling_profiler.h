@@ -23,7 +23,6 @@
 
 namespace base {
 
-class NativeStackSampler;
 class NativeStackSamplerTestDelegate;
 
 // StackSamplingProfiler periodically stops a thread to sample its stack, for
@@ -296,10 +295,6 @@ class BASE_EXPORT StackSamplingProfiler {
   // This starts "signaled", is reset when sampling begins, and is signaled
   // when that sampling is complete and the callback done.
   WaitableEvent profiling_inactive_;
-
-  // Object that does the native sampling. This is created during construction
-  // and later passed to the sampling thread when profiling is started.
-  std::unique_ptr<NativeStackSampler> native_sampler_;
 
   // An ID uniquely identifying this profiler to the sampling thread. This
   // will be an internal "null" value when no collection has been started.
