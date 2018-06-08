@@ -220,15 +220,6 @@ public class ChromeTabbedActivity
     /** The task id of the activity that tabs were merged into. */
     private static int sMergedInstanceTaskId;
 
-    /**
-     * Time in ms from when we last backgrounded Chrome until we show the bottom sheet at half.
-     * Default time is 3 hours.
-     * crbug.com/706258
-     */
-    private static final int TIME_SINCE_BACKGROUNDED_TO_SHOW_BOTTOM_SHEET_HALF_MINS = 180;
-    private static final String TIME_SINCE_BACKGROUNDED_IN_MINS_PARAM =
-            "time_since_backgrounded_in_mins";
-
     // Name of the ChromeTabbedActivity alias that handles MAIN intents.
     public static final String MAIN_LAUNCHER_ACTIVITY_NAME = "com.google.android.apps.chrome.Main";
 
@@ -1477,8 +1468,6 @@ public class ChromeTabbedActivity
             public boolean shouldShowHeader(int maxMenuHeight) {
                 if (getBottomSheet() == null) return super.shouldShowHeader(maxMenuHeight);
 
-                Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-
                 if (DataReductionProxySettings.getInstance().shouldUseDataReductionMainMenuItem()) {
                     return canShowDataReductionItem(maxMenuHeight);
                 }
@@ -2099,7 +2088,6 @@ public class ChromeTabbedActivity
             return;
         }
 
-        int tabSwitcherColor = Color.BLACK;
         boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
         if (!supportsDarkStatusIcons || !supportsModernDesign()
                 || !FeatureUtilities.isChromeModernDesignEnabled()) {
