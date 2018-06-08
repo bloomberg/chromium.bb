@@ -1465,9 +1465,21 @@ void TabStrip::ScheduleRemoveTabAnimation(Tab* tab) {
 
 void TabStrip::AnimateToIdealBounds() {
   for (int i = 0; i < tab_count(); ++i) {
+    // If the tab is being dragged manually, skip it.
     Tab* tab = tab_at(i);
+    if (tab->dragging() && !bounds_animator_.IsAnimating(tab))
+      continue;
+
+    bounds_animator_.AnimateViewTo(tab, ideal_bounds(i));
+
+    // Set an animation delegate for the tab so it will clip appropriately.
+    // Don't do this if dragging() is true.  In this case the tab was
+    // previously being dragged and is now animating back to its ideal
+    // bounds; it already has an associated ResetDraggingStateDelegate that
+    // will reset this dragging state. Replacing this delegate would mean
+    // this code would also need to reset the dragging state immediately,
+    // and that could allow the new tab button to be drawn atop this tab.
     if (!tab->dragging()) {
-      bounds_animator_.AnimateViewTo(tab, ideal_bounds(i));
       bounds_animator_.SetAnimationDelegate(
           tab, std::make_unique<TabAnimationDelegate>(this, tab));
     }

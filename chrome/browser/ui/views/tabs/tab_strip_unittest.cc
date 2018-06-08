@@ -69,6 +69,41 @@ class TabStripTestViewsDelegate : public ChromeTestViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(TabStripTestViewsDelegate);
 };
 
+class AnimationWaiter {
+ public:
+  AnimationWaiter(TabStrip* tab_strip, base::TimeDelta duration)
+      : tab_strip_(tab_strip), duration_(duration) {}
+
+  ~AnimationWaiter() = default;
+
+  // Blocks until |tab_strip_| is not animating.
+  void Wait() {
+    interval_timer_.Start(
+        FROM_HERE, duration_,
+        base::BindRepeating(&AnimationWaiter::CheckAnimationEnds,
+                            base::Unretained(this)));
+
+    run_loop_.Run();
+  }
+
+ private:
+  void CheckAnimationEnds() {
+    if (tab_strip_->IsAnimating())
+      return;
+
+    interval_timer_.Stop();
+    run_loop_.Quit();
+  }
+
+  TabStrip* tab_strip_;
+
+  base::RepeatingTimer interval_timer_;
+  base::TimeDelta duration_;
+
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationWaiter);
+};
 }  // namespace
 
 class TestTabStripObserver : public TabStripObserver {
@@ -176,6 +211,18 @@ class TabStripTest : public ChromeViewsTestBase,
 
   const StackedTabStripLayout* touch_layout() const {
     return tab_strip_->touch_layout_.get();
+  }
+
+  views::BoundsAnimator* bounds_animator() {
+    return &tab_strip_->bounds_animator_;
+  }
+
+  // End any outstanding drag and animate tabs back to their ideal bounds.
+  void StopDraggingTab(Tab* tab) {
+    // Passing false for |is_first_tab| results in running the post-drag
+    // animation unconditionally.
+    bool is_first_tab = false;
+    tab_strip_->StoppedDraggingTab(tab, &is_first_tab);
   }
 
   // Owned by TabStrip.
@@ -698,6 +745,47 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
     tab_strip_->CloseTab(tab_strip_->tab_at(active_index),
                          CLOSE_TAB_FROM_MOUSE);
   }
+}
+
+// When dragged tabs are moving back to their position, changes to ideal bounds
+// should be respected. http://crbug.com/848016
+TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
+  tab_strip_->SetBounds(0, 0, 200, 20);
+
+  // Create a lot of tabs in order to make inactive tabs tiny.
+  const int min_inactive_width = Tab::GetMinimumInactiveSize().width();
+  while (current_inactive_width() != min_inactive_width)
+    controller_->CreateNewTab();
+
+  const int min_active_width = Tab::GetMinimumActiveSize().width();
+
+  int dragged_tab_index = controller_->GetActiveIndex();
+  EXPECT_GE(tab_strip_->ideal_bounds(dragged_tab_index).width(),
+            min_active_width);
+
+  // Mark the active tab as being dragged.
+  Tab* dragged_tab = tab_strip_->tab_at(dragged_tab_index);
+  dragged_tab->set_dragging(true);
+
+  // Ending the drag triggers the tabstrip to begin animating this tab back
+  // to its ideal bounds.
+  StopDraggingTab(dragged_tab);
+  EXPECT_TRUE(bounds_animator()->IsAnimating(dragged_tab));
+
+  // Change the ideal bounds of the tabs mid-animation by selecting a
+  // different tab.
+  controller_->SelectTab(0);
+
+  // Once the animation completes, the dragged tab should have animated to
+  // the new ideal bounds (computed with this as an inactive tab) rather
+  // than the original ones (where it's an active tab).
+  const auto duration = base::TimeDelta::FromMilliseconds(
+      bounds_animator()->GetAnimationDuration());
+  AnimationWaiter waiter(tab_strip_, duration);
+  waiter.Wait();
+
+  EXPECT_FALSE(dragged_tab->dragging());
+  EXPECT_LT(dragged_tab->bounds().width(), min_active_width);
 }
 
 // Defines an alias to be used for tests that are only relevant to the touch-
