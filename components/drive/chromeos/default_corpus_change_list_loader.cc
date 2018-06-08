@@ -80,12 +80,16 @@ bool DefaultCorpusChangeListLoader::IsRefreshing() {
 void DefaultCorpusChangeListLoader::LoadIfNeeded(
     const FileOperationCallback& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  team_drive_list_loader_->LoadIfNeeded(base::BindRepeating(
-      &DefaultCorpusChangeListLoader::OnTeamDriveLoadIfNeeded,
+  // We execute the change list loader and then the team drive loader when it
+  // is completed. If the change list loader detects that it has previously
+  // loaded from the server, then it is a no-op. If it is a fresh load then it
+  // uses GetAllFiles which does not read any change lists with team drive info.
+  change_list_loader_->LoadIfNeeded(base::BindRepeating(
+      &DefaultCorpusChangeListLoader::OnChangeListLoadIfNeeded,
       weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void DefaultCorpusChangeListLoader::OnTeamDriveLoadIfNeeded(
+void DefaultCorpusChangeListLoader::OnChangeListLoadIfNeeded(
     const FileOperationCallback& callback,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -95,7 +99,7 @@ void DefaultCorpusChangeListLoader::OnTeamDriveLoadIfNeeded(
     return;
   }
 
-  change_list_loader_->LoadIfNeeded(callback);
+  team_drive_list_loader_->LoadIfNeeded(callback);
 }
 
 void DefaultCorpusChangeListLoader::ReadDirectory(

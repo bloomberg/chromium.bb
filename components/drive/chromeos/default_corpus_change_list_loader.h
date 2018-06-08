@@ -58,8 +58,8 @@ class DefaultCorpusChangeListLoader : public DriveChangeListLoader {
 
  private:
   // Called after calling LoadIfNeeded on team drives.
-  void OnTeamDriveLoadIfNeeded(const FileOperationCallback& callback,
-                               FileError error);
+  void OnChangeListLoadIfNeeded(const FileOperationCallback& callback,
+                                FileError error);
 
   std::unique_ptr<internal::AboutResourceRootFolderIdLoader>
       root_folder_id_loader_;

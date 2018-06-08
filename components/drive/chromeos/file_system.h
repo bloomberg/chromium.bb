@@ -19,6 +19,7 @@
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"
 #include "components/drive/chromeos/file_system_interface.h"
+#include "components/drive/chromeos/team_drive_change_list_loader.h"
 #include "components/drive/chromeos/team_drive_list_observer.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
@@ -226,9 +227,14 @@ class FileSystem : public FileSystemInterface,
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::AboutResource> about_resource);
 
+  // Stores any file error as a result of Checking updates.
+  void OnUpdateChecked(const std::string& team_drive_id,
+                       const base::RepeatingClosure& closure,
+                       FileError error);
+
   // Part of CheckForUpdates(). Called when
   // ChangeListLoader::CheckForUpdates() is complete.
-  void OnUpdateChecked(FileError error);
+  void OnUpdateCompleted();
 
   // Part of GetResourceEntry().
   // Called when ReadDirectory() is complete.
@@ -284,6 +290,11 @@ class FileSystem : public FileSystemInterface,
   // Used to retrieve changelists from the default corpus.
   std::unique_ptr<internal::DriveChangeListLoader>
       default_corpus_change_list_loader_;
+
+  // Used to retrieve changelists for team drives. The key for the map is the
+  // team_drive_id.
+  std::map<std::string, std::unique_ptr<internal::TeamDriveChangeListLoader>>
+      team_drive_change_list_loaders_;
 
   std::unique_ptr<internal::SyncClient> sync_client_;
 

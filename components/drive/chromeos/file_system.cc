@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner.h"
@@ -402,19 +403,44 @@ void FileSystem::ResetComponents() {
       blocking_task_runner_.get(), delegate, resource_metadata_);
 }
 
+// TODO(slangley): Support checking a specific team drive or default corpus,
+// rather than just polling all of them.
 void FileSystem::CheckForUpdates() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "CheckForUpdates";
 
+  size_t num_callbacks = team_drive_change_list_loaders_.size() + 1;
+
+  base::RepeatingClosure closure = base::BarrierClosure(
+      num_callbacks, base::BindOnce(&FileSystem::OnUpdateCompleted,
+                                    weak_ptr_factory_.GetWeakPtr()));
+
+  for (auto& team_drive : team_drive_change_list_loaders_) {
+    team_drive.second->CheckForUpdates(
+        base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr(),
+                   team_drive.first, closure));
+  }
+
   default_corpus_change_list_loader_->CheckForUpdates(
-      base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr(),
+                 std::string(), closure));
 }
 
-void FileSystem::OnUpdateChecked(FileError error) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+void FileSystem::OnUpdateChecked(const std::string& team_drive_id,
+                                 const base::RepeatingClosure& closure,
+                                 FileError error) {
   DVLOG(1) << "CheckForUpdates finished: " << FileErrorToString(error);
+  // TODO(slangley): Store the error reasons for team drives and show them on
+  // chrome://drive-internals.
+  if (team_drive_id.empty()) {
+    last_update_check_error_ = error;
+  }
+  closure.Run();
+}
+
+void FileSystem::OnUpdateCompleted() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   last_update_check_time_ = base::Time::Now();
-  last_update_check_error_ = error;
 }
 
 void FileSystem::AddObserver(FileSystemObserver* observer) {
@@ -667,6 +693,23 @@ void FileSystem::ReadDirectory(
   if (entries_callback && hide_hosted_docs)
     entries_callback = base::Bind(&FilterHostedDocuments, entries_callback);
 
+  if (util::GetDriveTeamDrivesRootPath().IsParent(directory_path)) {
+    // TODO(slangley): It would be nice to cache the result, rather than needing
+    // to iterate every time. But then most users have very few team drives so
+    // in general this is fine.
+    for (auto& team_drive_loader : team_drive_change_list_loaders_) {
+      if (team_drive_loader.second->root_entry_path().IsParent(
+              directory_path)) {
+        team_drive_loader.second->ReadDirectory(
+            directory_path, entries_callback, completion_callback);
+        return;
+      }
+    }
+    DVLOG(1) << "No team drive loader for path, " << directory_path;
+  }
+  // Fall through to the default corpus loader if no team drive loader is found.
+  // We do not refresh the list of team drives from the server until the first
+  // ReadDirectory is called on the default corpus change list loader.
   default_corpus_change_list_loader_->ReadDirectory(
       directory_path, entries_callback, completion_callback);
 }
@@ -867,13 +910,11 @@ void FileSystem::OnFileChanged(const FileChange& changed_files) {
 
 void FileSystem::OnLoadFromServerComplete() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   sync_client_->StartCheckingExistingPinnedFiles();
 }
 
 void FileSystem::OnInitialLoadComplete() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   blocking_task_runner_->PostTask(FROM_HERE,
                                   base::Bind(&internal::RemoveStaleCacheFiles,
                                              cache_,
@@ -885,7 +926,26 @@ void FileSystem::OnTeamDriveListLoaded(
     const std::vector<internal::TeamDrive>& team_drives_list,
     const std::vector<internal::TeamDrive>& added_team_drives,
     const std::vector<internal::TeamDrive>& removed_team_drives) {
-  // TODO(slangley): Create change list loaders for the team drives.
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  for (const auto& team_drive : removed_team_drives) {
+    auto it = team_drive_change_list_loaders_.find(team_drive.team_drive_id());
+    if (it != team_drive_change_list_loaders_.end()) {
+      it->second->RemoveChangeListLoaderObserver(this);
+      team_drive_change_list_loaders_.erase(it);
+    }
+  }
+
+  for (const auto& team_drive : added_team_drives) {
+    auto loader = std::make_unique<internal::TeamDriveChangeListLoader>(
+        team_drive.team_drive_id(), team_drive.team_drive_path(), logger_,
+        blocking_task_runner_.get(), resource_metadata_, scheduler_,
+        loader_controller_.get());
+    loader->AddChangeListLoaderObserver(this);
+    loader->LoadIfNeeded(base::DoNothing());
+    team_drive_change_list_loaders_.emplace(team_drive.team_drive_id(),
+                                            std::move(loader));
+  }
 }
 
 void FileSystem::GetMetadata(

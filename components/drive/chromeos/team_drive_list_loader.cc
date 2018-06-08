@@ -299,6 +299,7 @@ void TeamDriveListLoader::OnTeamDrivesRemoved(
     const TeamDriveUpdateData& team_drive_updates,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (error != FILE_ERROR_OK) {
     logger_->Log(logging::LOG_ERROR, "Failed to remove team drives: %s",
                  drive::FileErrorToString(error).c_str());
@@ -322,6 +323,7 @@ void TeamDriveListLoader::OnAddOrUpdateTeamDrives(
     const TeamDriveUpdateData& team_drive_updates,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   if (error != FILE_ERROR_OK) {
     logger_->Log(logging::LOG_ERROR, "Failed to add or update team drives: %s",
                  drive::FileErrorToString(error).c_str());

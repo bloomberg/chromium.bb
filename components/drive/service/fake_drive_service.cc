@@ -137,7 +137,7 @@ void FileListCallbackAdapter(const FileListCallback& callback,
   file_list->set_next_link(change_list->next_link());
   for (size_t i = 0; i < change_list->items().size(); ++i) {
     const ChangeResource& entry = *change_list->items()[i];
-    if (entry.file())
+    if (entry.type() == ChangeResource::FILE && entry.file())
       file_list->mutable_items()->push_back(
           std::make_unique<FileResource>(*entry.file()));
   }
@@ -442,6 +442,11 @@ void FakeDriveService::GetTeamDriveListInternal(
   }
   if (load_counter)
     ++*load_counter;
+
+  // If max_results is zero then we want to return the entire list.
+  if (max_results <= 0) {
+    max_results = team_drive_value_.size();
+  }
 
   std::unique_ptr<TeamDriveList> result;
   result.reset(new TeamDriveList);
