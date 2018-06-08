@@ -761,23 +761,5 @@ TEST_F(VisibleUnitsTest,
   EXPECT_EQ(Position(text, 2), start);
 }
 
-static unsigned MockBoundarySearch(const UChar*,
-                                   unsigned,
-                                   unsigned,
-                                   BoundarySearchContextAvailability,
-                                   bool&) {
-  return true;
-}
-
-// Regression test for crbug.com/788661
-TEST_F(VisibleUnitsTest, NextBoundaryOfEditableTableWithLeadingSpaceInOutput) {
-  VisiblePosition pos = CreateVisiblePosition(SetCaretTextToBody(
-      // The leading whitespace is necessary for bug repro
-      "<output> <table contenteditable><!--|--></table></output>"));
-  Position result = NextBoundary(pos, MockBoundarySearch);
-  EXPECT_EQ("<output> <table contenteditable>|</table></output>",
-            GetCaretTextFromBody(result));
-}
-
 }  // namespace visible_units_test
 }  // namespace blink
