@@ -110,6 +110,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         public ContentId id;
 
         public String message;
+        public String accessibilityMessage;
         public String link;
         public int icon;
 
@@ -618,6 +619,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         }
 
         setForceReparent(info);
+        setAccessibilityMessage(
+                info, showAccelerating && infoBarState == DownloadInfoBarState.DOWNLOADING);
         showInfoBar(infoBarState, info);
     }
 
@@ -625,6 +628,15 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         info.downloadCount = getDownloadCount();
         info.forceReparent = !info.downloadCount.equals(
                 mCurrentInfo == null ? null : mCurrentInfo.downloadCount);
+    }
+
+    private void setAccessibilityMessage(
+            DownloadProgressInfoBarData info, boolean showAccelerating) {
+        info.accessibilityMessage = info.message;
+        if (!showAccelerating) {
+            info.accessibilityMessage = info.accessibilityMessage + " "
+                    + getContext().getString(R.string.bottom_bar_screen_position);
+        }
     }
 
     private void clearEndTimerRunnable() {
