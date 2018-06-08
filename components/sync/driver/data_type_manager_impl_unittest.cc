@@ -342,7 +342,7 @@ TEST_F(SyncDataTypeManagerImplTest, NoControllers) {
   FinishDownload(ModelTypeSet(), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
@@ -366,7 +366,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(1U, configurer_.activated_types().Size());
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
@@ -388,7 +388,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
     EXPECT_EQ(ModelTypeSet(BOOKMARKS),
               configurer_.registered_directory_types());
 
-    dtm_->Stop();
+    dtm_->Stop(STOP_SYNC);
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
     EXPECT_TRUE(configurer_.registered_directory_types().Empty());
   }
@@ -418,7 +418,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
     FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
-    dtm_->Stop();
+    dtm_->Stop(STOP_SYNC);
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
     EXPECT_TRUE(configurer_.registered_directory_types().Empty());
     dtm_.reset();
@@ -451,7 +451,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
     EXPECT_TRUE(configurer_.activated_types().Empty());
 
-    dtm_->Stop();
+    dtm_->Stop(STOP_SYNC);
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
     EXPECT_TRUE(configurer_.registered_directory_types().Empty());
     dtm_.reset();
@@ -498,7 +498,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 
   // Step 5.
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
@@ -553,7 +553,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   EXPECT_EQ(2U, configurer_.activated_types().Size());
 
   // Step 7.
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
@@ -610,7 +610,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   EXPECT_EQ(1U, configurer_.activated_types().Size());
 
   // Step 7.
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
@@ -663,7 +663,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
             configurer_.registered_directory_types());
 
   // Step 7.
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
@@ -788,7 +788,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
   EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.registered_directory_types());
 
   // Step 6.
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
@@ -836,7 +836,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
             configurer_.registered_directory_types());
 
   // Step 6.
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
@@ -887,7 +887,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
             configurer_.registered_directory_types());
 
   // Step 6.
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
 }
@@ -1088,7 +1088,7 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationStop) {
   EXPECT_EQ(DataTypeController::MODEL_LOADED,
             GetController(BOOKMARKS)->state());
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
             GetController(PREFERENCES)->state());
@@ -1259,7 +1259,7 @@ TEST_F(SyncDataTypeManagerImplTest, FilterDesiredTypes) {
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
@@ -1338,7 +1338,7 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
   observer_.ResetExpectations();
   dtm_->ReenableType(BOOKMARKS);
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
 }
@@ -1487,7 +1487,7 @@ TEST_F(SyncDataTypeManagerImplTest, AllLowPriorityTypesReady) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(2U, configurer_.activated_types().Size());
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
 }
@@ -1536,7 +1536,7 @@ TEST_F(SyncDataTypeManagerImplTest, AllHighPriorityTypesReady) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(2U, configurer_.activated_types().Size());
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
 }
@@ -1586,7 +1586,7 @@ TEST_F(SyncDataTypeManagerImplTest, AllTypesReady) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(2U, configurer_.activated_types().Size());
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
 }
@@ -1617,7 +1617,7 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpTypeAddedToConfigureClean) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(2U, configurer_.activated_types().Size());
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
 }
@@ -1656,7 +1656,7 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpMultipleConfigureCalls) {
   GetController(PASSWORDS)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 
-  dtm_->Stop();
+  dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 

@@ -757,12 +757,12 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   }
 }
 
-void DataTypeManagerImpl::Stop() {
+void DataTypeManagerImpl::Stop(ShutdownReason reason) {
   if (state_ == STOPPED)
     return;
 
   bool need_to_notify = state_ == CONFIGURING;
-  StopImpl();
+  StopImpl(reason);
 
   if (need_to_notify) {
     ConfigureResult result(ABORTED, last_requested_types_);
@@ -773,14 +773,14 @@ void DataTypeManagerImpl::Stop() {
 void DataTypeManagerImpl::Abort(ConfigureStatus status) {
   DCHECK_EQ(CONFIGURING, state_);
 
-  StopImpl();
+  StopImpl(STOP_SYNC);
 
   DCHECK_NE(OK, status);
   ConfigureResult result(status, last_requested_types_);
   NotifyDone(result);
 }
 
-void DataTypeManagerImpl::StopImpl() {
+void DataTypeManagerImpl::StopImpl(ShutdownReason reason) {
   state_ = STOPPING;
 
   // Invalidate weak pointer to drop download callbacks.

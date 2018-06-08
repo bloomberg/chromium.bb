@@ -687,7 +687,7 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
       // When aborting as part of shutdown, we should expect an aborted sync
       // configure result, else we'll dcheck when we try to read the sync error.
       expect_sync_configuration_aborted_ = true;
-      data_type_manager_->Stop();
+      data_type_manager_->Stop(reason);
     }
     data_type_manager_.reset();
   }

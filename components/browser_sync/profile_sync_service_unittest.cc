@@ -60,7 +60,7 @@ class FakeDataTypeManager : public syncer::DataTypeManager {
   void ResetDataTypeErrors() override {}
   void PurgeForMigration(syncer::ModelTypeSet undesired_types,
                          syncer::ConfigureReason reason) override {}
-  void Stop() override {}
+  void Stop(syncer::ShutdownReason reason) override {}
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     return syncer::ModelTypeSet();
   }

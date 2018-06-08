@@ -13,6 +13,7 @@
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_status_table.h"
 #include "components/sync/engine/configure_reason.h"
+#include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/model/sync_error.h"
 
 namespace syncer {
@@ -80,11 +81,12 @@ class DataTypeManager {
   virtual void PurgeForMigration(ModelTypeSet undesired_types,
                                  ConfigureReason reason) = 0;
 
-  // Synchronously stops all registered data types.  If called after
+  // Synchronously stops all registered data types. If called after
   // Configure() is called but before it finishes, it will abort the
   // configure and any data types that have been started will be
   // stopped.
-  virtual void Stop() = 0;
+  // If called with reason |DISABLE_SYNC|, purges sync data for all datatypes.
+  virtual void Stop(ShutdownReason reason) = 0;
 
   // Get the set of current active data types (those chosen or configured by the
   // user which have not also encountered a runtime error). Note that during

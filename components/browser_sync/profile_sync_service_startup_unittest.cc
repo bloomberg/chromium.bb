@@ -26,6 +26,7 @@ using testing::_;
 using testing::ByMove;
 using testing::DoAll;
 using testing::Mock;
+using testing::NiceMock;
 using testing::Return;
 
 namespace browser_sync {
@@ -111,7 +112,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   DataTypeManagerMock* SetUpDataTypeManagerMock() {
-    auto data_type_manager = std::make_unique<DataTypeManagerMock>();
+    auto data_type_manager = std::make_unique<NiceMock<DataTypeManagerMock>>();
     DataTypeManagerMock* data_type_manager_raw = data_type_manager.get();
     ON_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
         .WillByDefault(Return(ByMove(std::move(data_type_manager))));
@@ -216,7 +217,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   EXPECT_TRUE(sync_service()->IsSyncActive());
   EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
 
-  EXPECT_CALL(*data_type_manager, Stop());
+  EXPECT_CALL(*data_type_manager, Stop(syncer::BROWSER_SHUTDOWN));
 }
 #endif  // OS_CHROMEOS
 
@@ -288,13 +289,13 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(*data_type_manager, state())
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop());
 
   // The primary account is already populated, all that's left to do is provide
   // a refresh token.
   UpdateCredentials();
   sync_service()->Initialize();
   EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_CALL(*data_type_manager, Stop(syncer::BROWSER_SHUTDOWN));
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
@@ -306,10 +307,42 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(*data_type_manager, state())
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop());
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
 
   sync_service()->Initialize();
+  EXPECT_CALL(*data_type_manager, Stop(syncer::BROWSER_SHUTDOWN));
+}
+
+TEST_F(ProfileSyncServiceStartupTest, StopSync) {
+  CreateSyncService(ProfileSyncService::MANUAL_START);
+  SimulateTestUserSignin();
+  sync_service()->SetFirstSetupComplete();
+  SetUpFakeSyncEngine();
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
+
+  sync_service()->Initialize();
+
+  EXPECT_CALL(*data_type_manager, Stop(syncer::STOP_SYNC));
+  sync_service()->RequestStop(syncer::SyncService::KEEP_DATA);
+}
+
+TEST_F(ProfileSyncServiceStartupTest, DisableSync) {
+  CreateSyncService(ProfileSyncService::MANUAL_START);
+  SimulateTestUserSignin();
+  sync_service()->SetFirstSetupComplete();
+  SetUpFakeSyncEngine();
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
+  ON_CALL(*data_type_manager, state())
+      .WillByDefault(Return(DataTypeManager::CONFIGURED));
+  ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
+
+  sync_service()->Initialize();
+
+  EXPECT_CALL(*data_type_manager, Stop(syncer::DISABLE_SYNC));
+  sync_service()->RequestStop(syncer::SyncService::CLEAR_DATA);
 }
 
 // Test that we can recover from a case where a bug in the code resulted in
@@ -333,7 +366,6 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(*data_type_manager, state())
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop());
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
 
   sync_service()->Initialize();
@@ -357,7 +389,6 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(*data_type_manager, state())
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop());
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
   sync_service()->Initialize();
 
@@ -397,7 +428,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*data_type_manager, state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop());
+  EXPECT_CALL(*data_type_manager, Stop(syncer::DISABLE_SYNC));
   pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
   // Note that PSS no longer references |data_type_manager| after stopping.
