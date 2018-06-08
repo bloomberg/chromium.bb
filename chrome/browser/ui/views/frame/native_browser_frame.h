@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_BROWSER_FRAME_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_NATIVE_BROWSER_FRAME_H_
 
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
@@ -36,8 +37,12 @@ class NativeBrowserFrame {
   virtual void GetWindowPlacement(gfx::Rect* bounds,
                                   ui::WindowShowState* show_state) const = 0;
 
-  // Returns true if the |event| was handled by the platform implementation.
-  virtual bool PreHandleKeyboardEvent(
+  // Returns HANDLED if the |event| was handled by the platform implementation
+  // before sending it to the renderer. E.g., it may be swallowed by a native
+  // menu bar. Returns NOT_HANDLED_IS_SHORTCUT if the event was not handled, but
+  // would be handled as a shortcut if the renderer chooses not to handle it.
+  // Otherwise returns NOT_HANDLED.
+  virtual content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
 
   // Returns true if the |event| was handled by the platform implementation.

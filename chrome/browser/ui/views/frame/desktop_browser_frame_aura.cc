@@ -106,9 +106,10 @@ void DesktopBrowserFrameAura::GetWindowPlacement(
     *show_state = ui::SHOW_STATE_NORMAL;
 }
 
-bool DesktopBrowserFrameAura::PreHandleKeyboardEvent(
+content::KeyboardEventProcessingResult
+DesktopBrowserFrameAura::PreHandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  return false;
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool DesktopBrowserFrameAura::HandleKeyboardEvent(

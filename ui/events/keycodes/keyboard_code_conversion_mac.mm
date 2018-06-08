@@ -322,144 +322,6 @@ KeyboardCode KeyboardCodeFromCharCode(unichar charCode) {
   return VKEY_UNKNOWN;
 }
 
-KeyboardCode KeyboardCodeFromKeyCode(unsigned short keyCode) {
-  static const KeyboardCode kKeyboardCodes[] = {
-    /* 0 */ VKEY_A,
-    /* 1 */ VKEY_S,
-    /* 2 */ VKEY_D,
-    /* 3 */ VKEY_F,
-    /* 4 */ VKEY_H,
-    /* 5 */ VKEY_G,
-    /* 6 */ VKEY_Z,
-    /* 7 */ VKEY_X,
-    /* 8 */ VKEY_C,
-    /* 9 */ VKEY_V,
-    /* 0x0A */ VKEY_OEM_3, // Section key.
-    /* 0x0B */ VKEY_B,
-    /* 0x0C */ VKEY_Q,
-    /* 0x0D */ VKEY_W,
-    /* 0x0E */ VKEY_E,
-    /* 0x0F */ VKEY_R,
-    /* 0x10 */ VKEY_Y,
-    /* 0x11 */ VKEY_T,
-    /* 0x12 */ VKEY_1,
-    /* 0x13 */ VKEY_2,
-    /* 0x14 */ VKEY_3,
-    /* 0x15 */ VKEY_4,
-    /* 0x16 */ VKEY_6,
-    /* 0x17 */ VKEY_5,
-    /* 0x18 */ VKEY_OEM_PLUS, // =+
-    /* 0x19 */ VKEY_9,
-    /* 0x1A */ VKEY_7,
-    /* 0x1B */ VKEY_OEM_MINUS, // -_
-    /* 0x1C */ VKEY_8,
-    /* 0x1D */ VKEY_0,
-    /* 0x1E */ VKEY_OEM_6, // ]}
-    /* 0x1F */ VKEY_O,
-    /* 0x20 */ VKEY_U,
-    /* 0x21 */ VKEY_OEM_4, // {[
-    /* 0x22 */ VKEY_I,
-    /* 0x23 */ VKEY_P,
-    /* 0x24 */ VKEY_RETURN, // Return
-    /* 0x25 */ VKEY_L,
-    /* 0x26 */ VKEY_J,
-    /* 0x27 */ VKEY_OEM_7, // '"
-    /* 0x28 */ VKEY_K,
-    /* 0x29 */ VKEY_OEM_1, // ;:
-    /* 0x2A */ VKEY_OEM_5, // \|
-    /* 0x2B */ VKEY_OEM_COMMA, // ,<
-    /* 0x2C */ VKEY_OEM_2, // /?
-    /* 0x2D */ VKEY_N,
-    /* 0x2E */ VKEY_M,
-    /* 0x2F */ VKEY_OEM_PERIOD, // .>
-    /* 0x30 */ VKEY_TAB,
-    /* 0x31 */ VKEY_SPACE,
-    /* 0x32 */ VKEY_OEM_3, // `~
-    /* 0x33 */ VKEY_BACK, // Backspace
-    /* 0x34 */ VKEY_UNKNOWN, // n/a
-    /* 0x35 */ VKEY_ESCAPE,
-    /* 0x36 */ VKEY_APPS, // Right Command
-    /* 0x37 */ VKEY_LWIN, // Left Command
-    /* 0x38 */ VKEY_SHIFT, // Left Shift
-    /* 0x39 */ VKEY_CAPITAL, // Caps Lock
-    /* 0x3A */ VKEY_MENU, // Left Option
-    /* 0x3B */ VKEY_CONTROL, // Left Ctrl
-    /* 0x3C */ VKEY_SHIFT, // Right Shift
-    /* 0x3D */ VKEY_MENU, // Right Option
-    /* 0x3E */ VKEY_CONTROL, // Right Ctrl
-    /* 0x3F */ VKEY_UNKNOWN, // fn
-    /* 0x40 */ VKEY_F17,
-    /* 0x41 */ VKEY_DECIMAL, // Num Pad .
-    /* 0x42 */ VKEY_UNKNOWN, // n/a
-    /* 0x43 */ VKEY_MULTIPLY, // Num Pad *
-    /* 0x44 */ VKEY_UNKNOWN, // n/a
-    /* 0x45 */ VKEY_ADD, // Num Pad +
-    /* 0x46 */ VKEY_UNKNOWN, // n/a
-    /* 0x47 */ VKEY_CLEAR, // Num Pad Clear
-    /* 0x48 */ VKEY_VOLUME_UP,
-    /* 0x49 */ VKEY_VOLUME_DOWN,
-    /* 0x4A */ VKEY_VOLUME_MUTE,
-    /* 0x4B */ VKEY_DIVIDE, // Num Pad /
-    /* 0x4C */ VKEY_RETURN, // Num Pad Enter
-    /* 0x4D */ VKEY_UNKNOWN, // n/a
-    /* 0x4E */ VKEY_SUBTRACT, // Num Pad -
-    /* 0x4F */ VKEY_F18,
-    /* 0x50 */ VKEY_F19,
-    /* 0x51 */ VKEY_OEM_PLUS, // Num Pad =.
-    /* 0x52 */ VKEY_NUMPAD0,
-    /* 0x53 */ VKEY_NUMPAD1,
-    /* 0x54 */ VKEY_NUMPAD2,
-    /* 0x55 */ VKEY_NUMPAD3,
-    /* 0x56 */ VKEY_NUMPAD4,
-    /* 0x57 */ VKEY_NUMPAD5,
-    /* 0x58 */ VKEY_NUMPAD6,
-    /* 0x59 */ VKEY_NUMPAD7,
-    /* 0x5A */ VKEY_F20,
-    /* 0x5B */ VKEY_NUMPAD8,
-    /* 0x5C */ VKEY_NUMPAD9,
-    /* 0x5D */ VKEY_UNKNOWN, // Yen (JIS Keyboard Only)
-    /* 0x5E */ VKEY_UNKNOWN, // Underscore (JIS Keyboard Only)
-    /* 0x5F */ VKEY_UNKNOWN, // KeypadComma (JIS Keyboard Only)
-    /* 0x60 */ VKEY_F5,
-    /* 0x61 */ VKEY_F6,
-    /* 0x62 */ VKEY_F7,
-    /* 0x63 */ VKEY_F3,
-    /* 0x64 */ VKEY_F8,
-    /* 0x65 */ VKEY_F9,
-    /* 0x66 */ VKEY_UNKNOWN, // Eisu (JIS Keyboard Only)
-    /* 0x67 */ VKEY_F11,
-    /* 0x68 */ VKEY_UNKNOWN, // Kana (JIS Keyboard Only)
-    /* 0x69 */ VKEY_F13,
-    /* 0x6A */ VKEY_F16,
-    /* 0x6B */ VKEY_F14,
-    /* 0x6C */ VKEY_UNKNOWN, // n/a
-    /* 0x6D */ VKEY_F10,
-    /* 0x6E */ VKEY_APPS, // Context Menu key
-    /* 0x6F */ VKEY_F12,
-    /* 0x70 */ VKEY_UNKNOWN, // n/a
-    /* 0x71 */ VKEY_F15,
-    /* 0x72 */ VKEY_INSERT, // Help
-    /* 0x73 */ VKEY_HOME, // Home
-    /* 0x74 */ VKEY_PRIOR, // Page Up
-    /* 0x75 */ VKEY_DELETE, // Forward Delete
-    /* 0x76 */ VKEY_F4,
-    /* 0x77 */ VKEY_END, // End
-    /* 0x78 */ VKEY_F2,
-    /* 0x79 */ VKEY_NEXT, // Page Down
-    /* 0x7A */ VKEY_F1,
-    /* 0x7B */ VKEY_LEFT, // Left Arrow
-    /* 0x7C */ VKEY_RIGHT, // Right Arrow
-    /* 0x7D */ VKEY_DOWN, // Down Arrow
-    /* 0x7E */ VKEY_UP, // Up Arrow
-    /* 0x7F */ VKEY_UNKNOWN // n/a
-  };
-
-  if (keyCode >= 0x80)
-    return VKEY_UNKNOWN;
-
-  return kKeyboardCodes[keyCode];
-}
-
 DomKey DomKeyFromKeyCode(unsigned short keyCode) {
   switch (keyCode) {
     case kVK_ANSI_KeypadEnter:
@@ -786,6 +648,144 @@ int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
 
   // TODO(suzhe): Support characters for Option key bindings.
   return macKeycode;
+}
+
+KeyboardCode KeyboardCodeFromKeyCode(unsigned short keyCode) {
+  static const KeyboardCode kKeyboardCodes[] = {
+      /* 0 */ VKEY_A,
+      /* 1 */ VKEY_S,
+      /* 2 */ VKEY_D,
+      /* 3 */ VKEY_F,
+      /* 4 */ VKEY_H,
+      /* 5 */ VKEY_G,
+      /* 6 */ VKEY_Z,
+      /* 7 */ VKEY_X,
+      /* 8 */ VKEY_C,
+      /* 9 */ VKEY_V,
+      /* 0x0A */ VKEY_OEM_3,  // Section key.
+      /* 0x0B */ VKEY_B,
+      /* 0x0C */ VKEY_Q,
+      /* 0x0D */ VKEY_W,
+      /* 0x0E */ VKEY_E,
+      /* 0x0F */ VKEY_R,
+      /* 0x10 */ VKEY_Y,
+      /* 0x11 */ VKEY_T,
+      /* 0x12 */ VKEY_1,
+      /* 0x13 */ VKEY_2,
+      /* 0x14 */ VKEY_3,
+      /* 0x15 */ VKEY_4,
+      /* 0x16 */ VKEY_6,
+      /* 0x17 */ VKEY_5,
+      /* 0x18 */ VKEY_OEM_PLUS,  // =+
+      /* 0x19 */ VKEY_9,
+      /* 0x1A */ VKEY_7,
+      /* 0x1B */ VKEY_OEM_MINUS,  // -_
+      /* 0x1C */ VKEY_8,
+      /* 0x1D */ VKEY_0,
+      /* 0x1E */ VKEY_OEM_6,  // ]}
+      /* 0x1F */ VKEY_O,
+      /* 0x20 */ VKEY_U,
+      /* 0x21 */ VKEY_OEM_4,  // {[
+      /* 0x22 */ VKEY_I,
+      /* 0x23 */ VKEY_P,
+      /* 0x24 */ VKEY_RETURN,  // Return
+      /* 0x25 */ VKEY_L,
+      /* 0x26 */ VKEY_J,
+      /* 0x27 */ VKEY_OEM_7,  // '"
+      /* 0x28 */ VKEY_K,
+      /* 0x29 */ VKEY_OEM_1,      // ;:
+      /* 0x2A */ VKEY_OEM_5,      // \|
+      /* 0x2B */ VKEY_OEM_COMMA,  // ,<
+      /* 0x2C */ VKEY_OEM_2,      // /?
+      /* 0x2D */ VKEY_N,
+      /* 0x2E */ VKEY_M,
+      /* 0x2F */ VKEY_OEM_PERIOD,  // .>
+      /* 0x30 */ VKEY_TAB,
+      /* 0x31 */ VKEY_SPACE,
+      /* 0x32 */ VKEY_OEM_3,    // `~
+      /* 0x33 */ VKEY_BACK,     // Backspace
+      /* 0x34 */ VKEY_UNKNOWN,  // n/a
+      /* 0x35 */ VKEY_ESCAPE,
+      /* 0x36 */ VKEY_APPS,     // Right Command
+      /* 0x37 */ VKEY_LWIN,     // Left Command
+      /* 0x38 */ VKEY_SHIFT,    // Left Shift
+      /* 0x39 */ VKEY_CAPITAL,  // Caps Lock
+      /* 0x3A */ VKEY_MENU,     // Left Option
+      /* 0x3B */ VKEY_CONTROL,  // Left Ctrl
+      /* 0x3C */ VKEY_SHIFT,    // Right Shift
+      /* 0x3D */ VKEY_MENU,     // Right Option
+      /* 0x3E */ VKEY_CONTROL,  // Right Ctrl
+      /* 0x3F */ VKEY_UNKNOWN,  // fn
+      /* 0x40 */ VKEY_F17,
+      /* 0x41 */ VKEY_DECIMAL,   // Num Pad .
+      /* 0x42 */ VKEY_UNKNOWN,   // n/a
+      /* 0x43 */ VKEY_MULTIPLY,  // Num Pad *
+      /* 0x44 */ VKEY_UNKNOWN,   // n/a
+      /* 0x45 */ VKEY_ADD,       // Num Pad +
+      /* 0x46 */ VKEY_UNKNOWN,   // n/a
+      /* 0x47 */ VKEY_CLEAR,     // Num Pad Clear
+      /* 0x48 */ VKEY_VOLUME_UP,
+      /* 0x49 */ VKEY_VOLUME_DOWN,
+      /* 0x4A */ VKEY_VOLUME_MUTE,
+      /* 0x4B */ VKEY_DIVIDE,    // Num Pad /
+      /* 0x4C */ VKEY_RETURN,    // Num Pad Enter
+      /* 0x4D */ VKEY_UNKNOWN,   // n/a
+      /* 0x4E */ VKEY_SUBTRACT,  // Num Pad -
+      /* 0x4F */ VKEY_F18,
+      /* 0x50 */ VKEY_F19,
+      /* 0x51 */ VKEY_OEM_PLUS,  // Num Pad =.
+      /* 0x52 */ VKEY_NUMPAD0,
+      /* 0x53 */ VKEY_NUMPAD1,
+      /* 0x54 */ VKEY_NUMPAD2,
+      /* 0x55 */ VKEY_NUMPAD3,
+      /* 0x56 */ VKEY_NUMPAD4,
+      /* 0x57 */ VKEY_NUMPAD5,
+      /* 0x58 */ VKEY_NUMPAD6,
+      /* 0x59 */ VKEY_NUMPAD7,
+      /* 0x5A */ VKEY_F20,
+      /* 0x5B */ VKEY_NUMPAD8,
+      /* 0x5C */ VKEY_NUMPAD9,
+      /* 0x5D */ VKEY_UNKNOWN,  // Yen (JIS Keyboard Only)
+      /* 0x5E */ VKEY_UNKNOWN,  // Underscore (JIS Keyboard Only)
+      /* 0x5F */ VKEY_UNKNOWN,  // KeypadComma (JIS Keyboard Only)
+      /* 0x60 */ VKEY_F5,
+      /* 0x61 */ VKEY_F6,
+      /* 0x62 */ VKEY_F7,
+      /* 0x63 */ VKEY_F3,
+      /* 0x64 */ VKEY_F8,
+      /* 0x65 */ VKEY_F9,
+      /* 0x66 */ VKEY_UNKNOWN,  // Eisu (JIS Keyboard Only)
+      /* 0x67 */ VKEY_F11,
+      /* 0x68 */ VKEY_UNKNOWN,  // Kana (JIS Keyboard Only)
+      /* 0x69 */ VKEY_F13,
+      /* 0x6A */ VKEY_F16,
+      /* 0x6B */ VKEY_F14,
+      /* 0x6C */ VKEY_UNKNOWN,  // n/a
+      /* 0x6D */ VKEY_F10,
+      /* 0x6E */ VKEY_APPS,  // Context Menu key
+      /* 0x6F */ VKEY_F12,
+      /* 0x70 */ VKEY_UNKNOWN,  // n/a
+      /* 0x71 */ VKEY_F15,
+      /* 0x72 */ VKEY_INSERT,  // Help
+      /* 0x73 */ VKEY_HOME,    // Home
+      /* 0x74 */ VKEY_PRIOR,   // Page Up
+      /* 0x75 */ VKEY_DELETE,  // Forward Delete
+      /* 0x76 */ VKEY_F4,
+      /* 0x77 */ VKEY_END,  // End
+      /* 0x78 */ VKEY_F2,
+      /* 0x79 */ VKEY_NEXT,  // Page Down
+      /* 0x7A */ VKEY_F1,
+      /* 0x7B */ VKEY_LEFT,    // Left Arrow
+      /* 0x7C */ VKEY_RIGHT,   // Right Arrow
+      /* 0x7D */ VKEY_DOWN,    // Down Arrow
+      /* 0x7E */ VKEY_UP,      // Up Arrow
+      /* 0x7F */ VKEY_UNKNOWN  // n/a
+  };
+
+  if (keyCode >= 0x80)
+    return VKEY_UNKNOWN;
+
+  return kKeyboardCodes[keyCode];
 }
 
 KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event) {

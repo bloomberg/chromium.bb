@@ -159,6 +159,7 @@
 #endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
+#include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/views/frame/browser_view_commands_mac.h"
 #endif
 
@@ -557,10 +558,21 @@ bool BrowserView::HasClientEdge() const {
 
 bool BrowserView::GetAccelerator(int cmd_id,
                                  ui::Accelerator* accelerator) const {
+#if defined(OS_MACOSX)
+  // On macOS, most accelerators are defined in MainMenu.xib and are user
+  // configurable. Furthermore, their values and enabled state depends on the
+  // key window. Views code relies on a static mapping that is not dependent on
+  // the key window. Thus, we provide the default Mac accelerator for each
+  // CommandId, which is static. This may be inaccurate, but is at least
+  // sufficiently well defined for Views to use.
+  if (GetDefaultMacAcceleratorForCommandId(cmd_id, accelerator))
+    return true;
+#else
   // We retrieve the accelerator information for standard accelerators
   // for cut, copy and paste.
   if (GetStandardAcceleratorForCommandId(cmd_id, accelerator))
     return true;
+#endif
   // Else, we retrieve the accelerator information from the accelerator table.
   for (std::map<ui::Accelerator, int>::const_iterator it =
            accelerator_table_.begin(); it != accelerator_table_.end(); ++it) {
@@ -1356,8 +1368,10 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
   }
 #endif  // defined(OS_CHROMEOS)
 
-  if (frame_->PreHandleKeyboardEvent(event))
-    return content::KeyboardEventProcessingResult::HANDLED;
+  content::KeyboardEventProcessingResult result =
+      frame_->PreHandleKeyboardEvent(event);
+  if (result != content::KeyboardEventProcessingResult::NOT_HANDLED)
+    return result;
 
 #if defined(OS_CHROMEOS)
   if (event.os_event && event.os_event->IsKeyEvent() &&

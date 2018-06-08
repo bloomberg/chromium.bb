@@ -5,52 +5,20 @@
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/browser_window_views_mac.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 
-namespace {
+@implementation ChromeCommandDispatcherDelegate
 
-// Type of functions listed in global_keyboard_shortcuts_mac.h.
-typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);
-
-// Returns the command that would be executed if |window| received |event|
-// according to |command_for_keyboard_shortcut|, or -1 if no command would be
-// executed.
-int CommandForExtraKeyboardShortcut(
-    NSEvent* event,
-    NSWindow* window,
-    KeyToCommandMapper command_for_keyboard_shortcut) {
-  // Extract info from |event|.
-  NSUInteger modifers = [event modifierFlags];
-  const bool command = modifers & NSCommandKeyMask;
-  const bool shift = modifers & NSShiftKeyMask;
-  const bool control = modifers & NSControlKeyMask;
-  const bool option = modifers & NSAlternateKeyMask;
-  const int key_code = [event keyCode];
-  const unichar key_char = KeyCharacterForEvent(event);
-
-  int cmd = command_for_keyboard_shortcut(command, shift, control, option,
-                                          key_code, key_char);
-
-  // Non-browser windows don't execute any commands.
-  if (!chrome::FindBrowserWithWindow(window))
-    return -1;
-
-  return cmd;
-}
-
-// If the event is for a Browser window, and the key combination has an
-// associated command, execute the command.
-bool HandleExtraKeyboardShortcut(
-    NSEvent* event,
-    NSWindow* window,
-    KeyToCommandMapper command_for_keyboard_shortcut) {
-  int cmd = CommandForExtraKeyboardShortcut(event, window,
-                                            command_for_keyboard_shortcut);
+- (BOOL)handleExtraKeyboardShortcut:(NSEvent*)event window:(NSWindow*)window {
+  int cmd = CommandForKeyEvent(event);
   if (cmd == -1)
     return false;
 
@@ -58,37 +26,9 @@ bool HandleExtraKeyboardShortcut(
   return true;
 }
 
-bool HandleExtraWindowKeyboardShortcut(NSEvent* event, NSWindow* window) {
-  return HandleExtraKeyboardShortcut(event, window,
-                                     CommandForWindowKeyboardShortcut);
-}
-
-bool HandleDelayedWindowKeyboardShortcut(NSEvent* event, NSWindow* window) {
-  return HandleExtraKeyboardShortcut(event, window,
-                                     CommandForDelayedWindowKeyboardShortcut);
-}
-
-bool HandleExtraBrowserKeyboardShortcut(NSEvent* event, NSWindow* window) {
-  return HandleExtraKeyboardShortcut(event, window,
-                                     CommandForBrowserKeyboardShortcut);
-}
-
-}  // namespace
-
-@implementation ChromeCommandDispatcherDelegate
-
-- (BOOL)handleExtraKeyboardShortcut:(NSEvent*)event window:(NSWindow*)window {
-  return HandleExtraBrowserKeyboardShortcut(event, window) ||
-         HandleExtraWindowKeyboardShortcut(event, window) ||
-         HandleDelayedWindowKeyboardShortcut(event, window);
-}
-
 - (BOOL)eventHandledByExtensionCommand:(NSEvent*)event
-                          isRedispatch:(BOOL)isRedispatch {
-  // Some extension commands have higher priority than web content, and some
-  // have lower priority. Regardless of whether the event is being redispatched,
-  // let the extension system try to handle the event. In case this is a
-  // redispatched event, [event window] gives the correct window.
+                              priority:(ui::AcceleratorManager::HandlerPriority)
+                                           priority {
   if ([event window]) {
     BrowserWindowController* controller =
         BrowserWindowControllerForWindow([event window]);
@@ -96,9 +36,6 @@ bool HandleExtraBrowserKeyboardShortcut(NSEvent* event, NSWindow* window) {
     // are handled by BrowserView.
     if ([controller respondsToSelector:@selector(handledByExtensionCommand:
                                                                   priority:)]) {
-      ui::AcceleratorManager::HandlerPriority priority =
-          isRedispatch ? ui::AcceleratorManager::kNormalPriority
-                       : ui::AcceleratorManager::kHighPriority;
       if ([controller handledByExtensionCommand:event priority:priority])
         return YES;
     }
@@ -107,34 +44,79 @@ bool HandleExtraBrowserKeyboardShortcut(NSEvent* event, NSWindow* window) {
 }
 
 - (BOOL)prePerformKeyEquivalent:(NSEvent*)event window:(NSWindow*)window {
-  // If a command has a menu key equivalent that *replaces* one of the window
-  // keyboard shortcuts, the menu key equivalent needs to be executed, because
-  // these are user-addded keyboard shortcuts that replace builtin shortcuts.
+  // TODO(erikchen): Detect symbolic hot keys, and force control to be passed
+  // back to AppKit so that it can handle it correctly.
+  // https://crbug.com/846893.
+
+  NSResponder* responder = [window firstResponder];
+  if ([responder conformsToProtocol:@protocol(CommandDispatcherTarget)]) {
+    NSObject<CommandDispatcherTarget>* target =
+        static_cast<NSObject<CommandDispatcherTarget>*>(responder);
+    if ([target isKeyLocked:event])
+      return NO;
+  }
+
+  if ([self eventHandledByExtensionCommand:event
+                                  priority:ui::AcceleratorManager::
+                                               kHighPriority]) {
+    return YES;
+  }
+
+  // The specification for this private extensions API is incredibly vague. For
+  // now, we avoid triggering chrome commands prior to giving the firstResponder
+  // a chance to handle the event.
+  if (extensions::GlobalShortcutListener::GetInstance()
+          ->IsShortcutHandlingSuspended()) {
+    return NO;
+  }
+
+  // If this keyEquivalent corresponds to a Chrome command, trigger it directly
+  // via chrome::ExecuteCommand. We avoid going through the NSMenu for two
+  // reasons:
+  //  * consistency - some commands are not present in the NSMenu. Furthermore,
+  //  the NSMenu's contents can be dynamically updated, so there's no guarantee
+  //  that passing the event to NSMenu will even do what we think it will do.
+  //  * Avoiding sleeps. By default, the implementation of NSMenu
+  //  performKeyEquivalent: has a nested run loop that spins for 100ms. If we
+  //  avoid that by spinning our task runner in their private mode, there's a
+  //  built in nanosleep. See https://crbug.com/836947#c8.
   //
-  // If a command has a menu key equivalent that does *not* replace a window
-  // keyboard shortcut, it will be handled later; only window shortcuts need
-  // special handling here since they happen before normal command dispatch.
-  int cmd = MenuCommandForKeyEvent(event);
+  // By not passing the event to AppKit, we do lose out on the brief
+  // highlighting of the NSMenu.
+  //
+  // TODO(erikchen): Add a throttle. Otherwise, it's possible for a user holding
+  // down a hotkey [e.g. cmd + w] to accidentally close too many tabs!
+  // https://crbug.com/846893.
+  int cmd = CommandForKeyEvent(event);
   if (cmd != -1) {
-    int keyCmd = CommandForExtraKeyboardShortcut(
-        event, window, CommandForWindowKeyboardShortcut);
     Browser* browser = chrome::FindBrowserWithWindow(window);
-    if (keyCmd != -1 && browser) {
+    if (browser && browser->command_controller()->IsReservedCommandOrKey(
+                       cmd, content::NativeWebKeyboardEvent(event))) {
       chrome::ExecuteCommand(browser, cmd);
       return YES;
     }
   }
 
-  // Handle per-window shortcuts like cmd-1, but do not handle browser-level
-  // shortcuts like cmd-left (else, cmd-left would do history navigation even
-  // if e.g. the Omnibox has focus).
-  return HandleExtraWindowKeyboardShortcut(event, window);
+  return NO;
 }
 
 - (BOOL)postPerformKeyEquivalent:(NSEvent*)event window:(NSWindow*)window {
-  // Handle per-window shortcuts like Esc after giving everybody else a chance
-  // to handle them
-  return HandleDelayedWindowKeyboardShortcut(event, window);
+  if ([self eventHandledByExtensionCommand:event
+                                  priority:ui::AcceleratorManager::
+                                               kNormalPriority]) {
+    return true;
+  }
+
+  int cmd = CommandForKeyEvent(event);
+  if (cmd != -1) {
+    Browser* browser = chrome::FindBrowserWithWindow(window);
+    if (browser) {
+      chrome::ExecuteCommand(browser, cmd);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 @end  // ChromeCommandDispatchDelegate

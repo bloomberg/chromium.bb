@@ -36,24 +36,6 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
   return [event.os_event type] == NSKeyDown;
 }
 
-// Returns true if |event| was handled.
-bool HandleExtraKeyboardShortcut(NSEvent* event,
-                                 Browser* browser,
-                                 ChromeCommandDispatcherDelegate* delegate) {
-  // Send the event to the menu before sending it to the browser/window
-  // shortcut handling, so that if a user configures cmd-left to mean
-  // "previous tab", it takes precedence over the built-in "history back"
-  // binding.
-  if ([[NSApp mainMenu] performKeyEquivalent:event])
-    return true;
-
-  // Invoke ChromeCommandDispatcherDelegate for Mac-specific shortcuts that
-  // can't be handled by accelerator_table.cc.
-  return [delegate
-      handleExtraKeyboardShortcut:event
-                           window:browser->window()->GetNativeWindow()];
-}
-
 }  // namespace
 
 BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
@@ -158,30 +140,19 @@ void BrowserFrameMac::GetWindowPlacement(
   return NativeWidgetMac::GetWindowPlacement(bounds, show_state);
 }
 
-// Mac is special because the user could override the menu shortcuts (see
-// comment in HandleExtraKeyboardShortcut), and there's a set of additional
-// accelerator tables (handled by ChromeCommandDispatcherDelegate) that couldn't
-// be ported to accelerator_table.cc: see global_keyboard_shortcuts_views_mac.mm
-bool BrowserFrameMac::PreHandleKeyboardEvent(
+content::KeyboardEventProcessingResult BrowserFrameMac::PreHandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  if (!ShouldHandleKeyboardEvent(event))
-    return false;
+  // On macOS, all keyEquivalents that use modifier keys are handled by
+  // -[CommandDispatcher performKeyEquivalent:]. If this logic is being hit,
+  // it means that the event was not handled, so we must return either
+  // NOT_HANDLED or NOT_HANDLED_IS_SHORTCUT.
+  if (EventUsesPerformKeyEquivalent(event.os_event)) {
+    int command_id = CommandForKeyEvent(event.os_event);
+    if (command_id != -1)
+      return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
+  }
 
-  // CommandForKeyEvent consults the [NSApp mainMenu] and Mac-specific
-  // accelerator tables internally.
-  int command_id = CommandForKeyEvent(event.os_event);
-  if (command_id == -1)
-    return false;
-
-  // Only handle a small list of reserved commands that we don't want to be
-  // handled by the renderer.
-  Browser* browser = browser_view_->browser();
-  if (!browser->command_controller()->IsReservedCommandOrKey(
-          command_id, event))
-    return false;
-
-  return HandleExtraKeyboardShortcut(event.os_event, browser,
-                                     command_dispatcher_delegate_);
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool BrowserFrameMac::HandleKeyboardEvent(
@@ -189,6 +160,11 @@ bool BrowserFrameMac::HandleKeyboardEvent(
   if (!ShouldHandleKeyboardEvent(event))
     return false;
 
-  return HandleExtraKeyboardShortcut(event.os_event, browser_view_->browser(),
-                                     command_dispatcher_delegate_);
+  // Redispatch the event. If it's a keyEquivalent:, this gives
+  // CommandDispatcher the opportunity to finish passing the event to consumers.
+  NSWindow* window = GetNativeWindow();
+  DCHECK([window.class conformsToProtocol:@protocol(CommandDispatchingWindow)]);
+  NSObject<CommandDispatchingWindow>* command_dispatching_window =
+      base::mac::ObjCCastStrict<NSObject<CommandDispatchingWindow>>(window);
+  return [command_dispatching_window redispatchKeyEvent:event.os_event];
 }

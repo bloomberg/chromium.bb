@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -48,7 +49,9 @@ class AppShimMenuControllerUITest : public extensions::PlatformAppBrowserTest {
     app1_ = GetFirstAppWindow();
     app2_ = CreateAppWindow(browser()->profile(), extension);
     browser1_ = browser()->window();
-    browser2_ = (new Browser(Browser::CreateParams(profile(), true)))->window();
+    Browser* browser_new = new Browser(Browser::CreateParams(profile(), true));
+    chrome::AddTabAt(browser_new, GURL(), -1, true);
+    browser2_ = browser_new->window();
     browser2_->Show();
 
     // Since a pending key status change on any window could cause the test to

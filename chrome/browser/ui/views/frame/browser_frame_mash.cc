@@ -134,9 +134,9 @@ void BrowserFrameMash::GetWindowPlacement(
   }
 }
 
-bool BrowserFrameMash::PreHandleKeyboardEvent(
+content::KeyboardEventProcessingResult BrowserFrameMash::PreHandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  return false;
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool BrowserFrameMash::HandleKeyboardEvent(

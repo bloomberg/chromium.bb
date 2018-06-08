@@ -35,7 +35,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   bool ShouldSaveWindowPlacement() const override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const override;
-  bool PreHandleKeyboardEvent(
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
   bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;

@@ -53,21 +53,6 @@ CGFloat GetPatternVerticalOffsetWithTabStrip(bool tabStripVisible) {
       static_cast<ChromeEventProcessingWindow*>(window);
   DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
 
-  // Do not fire shortcuts on key up.
-  if ([event type] == NSKeyDown) {
-    // Send the event to the menu before sending it to the browser/window
-    // shortcut handling, so that if a user configures cmd-left to mean
-    // "previous tab", it takes precedence over the built-in "history back"
-    // binding. Other than that, the |-redispatchKeyEvent:| call would take care
-    // of invoking the original menu item shortcut as well.
-
-    if ([[NSApp mainMenu] performKeyEquivalent:event])
-      return true;
-
-    if ([event_window handleExtraKeyboardShortcut:event])
-      return true;
-  }
-
   return [event_window redispatchKeyEvent:event];
 }
 

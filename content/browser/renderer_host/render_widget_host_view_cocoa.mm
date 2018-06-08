@@ -203,7 +203,6 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)sendViewBoundsInWindowToClient;
 - (void)sendWindowFrameInScreenToClient;
 - (bool)clientIsDisconnected;
-- (bool)isKeyLocked:(int)keyCode;
 @end
 
 @implementation RenderWidgetHostViewCocoa
@@ -556,7 +555,9 @@ void ExtractUnderlines(NSAttributedString* string,
   lockedKeys_.reset();
 }
 
-- (bool)isKeyLocked:(int)keyCode {
+// CommandDispatcherTarget implementation:
+- (BOOL)isKeyLocked:(NSEvent*)event {
+  int keyCode = [event keyCode];
   // Note: We do not want to treat the ESC key as locked as that key is used
   // to exit fullscreen and we don't want to prevent them from exiting.
   ui::DomCode domCode = ui::KeycodeConverter::NativeKeycodeToDomCode(keyCode);
@@ -668,7 +669,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
   // If KeyboardLock has been requested for this keyCode, then mark the event
   // so it skips the pre-handler and is delivered straight to the website.
-  if ([self isKeyLocked:keyCode])
+  if ([self isKeyLocked:theEvent])
     event.skip_in_browser = true;
 
   // Do not forward key up events unless preceded by a matching key down,
