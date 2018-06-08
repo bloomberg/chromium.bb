@@ -4410,6 +4410,21 @@
             ]
         }
     ],
+    "ViewsBrowserWindows": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ViewsBrowserWindows"
+                    ]
+                }
+            ]
+        }
+    ],
     "VizHitTestDrawQuad": [
         {
             "platforms": [
