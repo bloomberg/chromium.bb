@@ -6,6 +6,8 @@
 
 #include <d3d11.h>
 #include <d3d11_1.h>
+#include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include "base/win/iunknown_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,6 +44,14 @@
 
 namespace media {
 
+// Use this function to create a mock so that they are ref-counted correctly.
+template <typename Interface>
+Microsoft::WRL::ComPtr<Interface> CreateD3D11Mock() {
+  Interface* mock = new Interface();
+  mock->AddRef();
+  return mock;
+}
+
 template <class Interface>
 class MockCOMInterface : public Interface, public base::win::IUnknownImpl {
  public:
@@ -74,6 +84,21 @@ class D3D11Texture2DMock : public MockCOMInterface<ID3D11Texture2D> {
   MOCK_STDCALL_METHOD1(SetEvictionPriority, void(UINT));
   MOCK_STDCALL_METHOD0(GetEvictionPriority, UINT());
   MOCK_STDCALL_METHOD1(GetDesc, void(D3D11_TEXTURE2D_DESC*));
+};
+
+class D3D11BufferMock : public MockCOMInterface<ID3D11Buffer> {
+ public:
+  D3D11BufferMock();
+  ~D3D11BufferMock() override;
+  MOCK_STDCALL_METHOD1(GetDevice, void(ID3D11Device**));
+  MOCK_STDCALL_METHOD3(GetPrivateData, HRESULT(const GUID&, UINT*, void*));
+  MOCK_STDCALL_METHOD3(SetPrivateData, HRESULT(const GUID&, UINT, const void*));
+  MOCK_STDCALL_METHOD2(SetPrivateDataInterface,
+                       HRESULT(const GUID&, const IUnknown*));
+  MOCK_STDCALL_METHOD1(GetType, void(D3D11_RESOURCE_DIMENSION*));
+  MOCK_STDCALL_METHOD1(SetEvictionPriority, void(UINT));
+  MOCK_STDCALL_METHOD0(GetEvictionPriority, UINT());
+  MOCK_STDCALL_METHOD1(GetDesc, void(D3D11_BUFFER_DESC*));
 };
 
 // This classs must mock QueryInterface, since a lot of things are

@@ -8,6 +8,9 @@ namespace media {
 D3D11Texture2DMock::D3D11Texture2DMock() = default;
 D3D11Texture2DMock::~D3D11Texture2DMock() = default;
 
+D3D11BufferMock::D3D11BufferMock() = default;
+D3D11BufferMock::~D3D11BufferMock() = default;
+
 D3D11DeviceMock::D3D11DeviceMock() = default;
 D3D11DeviceMock::~D3D11DeviceMock() = default;
 
