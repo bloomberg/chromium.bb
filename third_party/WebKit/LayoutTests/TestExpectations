@@ -2807,7 +2807,6 @@ crbug.com/626703 external/wpt/console/console-number-format-specifiers-symbol-ma
 crbug.com/626703 [ Mac10.13 ] external/wpt/accelerometer/Accelerometer.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=x-cp1251 [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=utf8 [ Timeout ]
-crbug.com/626703 external/wpt/css/css-animations/set-animation-play-state-to-paused-002.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/encoding/textdecoder-fatal-single-byte.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/range/sw.https.window.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/accelerometer/Accelerometer.https.html [ Timeout ]

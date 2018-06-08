@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 517 tests; 403 PASS, 114 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 519 tests; 404 PASS, 115 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS URL.searchParams getter
 PASS URL.searchParams updating, clearing
 PASS URL.searchParams setter, invalid values
@@ -334,6 +334,8 @@ PASS Parsing: <#> against <test:test?test>
 PASS Parsing: <https://@test@test@example:800/> against <http://doesnotmatter/>
 PASS Parsing: <https://@@@example> against <http://doesnotmatter/>
 PASS Parsing: <http://`{}:`{}@h/`{}?`{}> against <http://doesnotmatter/>
+PASS Parsing: <http://host/?'> against <about:blank>
+FAIL Parsing: <notspecial://host/?'> against <about:blank> assert_equals: host expected "host" but got ""
 PASS Parsing: </some/path> against <http://user@example.org/smth>
 PASS Parsing: <> against <http://user:pass@example.org:21/smth>
 PASS Parsing: </some/path> against <http://user:pass@example.org:21/smth>
