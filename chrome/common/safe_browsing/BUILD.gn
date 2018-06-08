@@ -41,6 +41,21 @@ if (safe_browsing_mode == 1) {
     ]
   }
 
+  source_set("download_protection_util") {
+    sources = [
+      "download_protection_util.cc",
+      "download_protection_util.h",
+    ]
+    deps = [
+      ":file_type_policies",
+      "//base",
+      "//components/safe_browsing:features",
+    ]
+    public_deps = [
+      "//components/safe_browsing:csd_proto",
+    ]
+  }
+
   source_set("rar_analyzer") {
     sources = [
       "rar_analyzer.cc",
@@ -49,8 +64,10 @@ if (safe_browsing_mode == 1) {
 
     deps = [
       ":archive_analyzer_results",
+      ":download_protection_util",
       ":file_type_policies",
       "//base",
+      "//base:i18n",
       "//third_party/unrar:unrar",
     ]
 
@@ -85,8 +102,6 @@ source_set("safe_browsing") {
       "binary_feature_extractor.h",
       "binary_feature_extractor_mac.cc",
       "binary_feature_extractor_win.cc",
-      "download_protection_util.cc",
-      "download_protection_util.h",
       "ipc_protobuf_message_macros.h",
       "ipc_protobuf_message_null_macros.h",
       "mach_o_image_reader_mac.cc",
@@ -105,6 +120,7 @@ source_set("safe_browsing") {
 
     deps += [
       ":archive_analyzer_results",
+      ":download_protection_util",
       ":rar_analyzer",
       "//components/safe_browsing:features",
     ]

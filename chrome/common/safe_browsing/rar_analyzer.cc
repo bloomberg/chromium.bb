@@ -7,9 +7,11 @@
 #include <memory>
 #include <string>
 #include "base/files/file_path.h"
+#include "base/i18n/streaming_utf8_validator.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
+#include "chrome/common/safe_browsing/download_protection_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "third_party/unrar/src/unrar_wrapper.h"
 
@@ -59,8 +61,33 @@ void AnalyzeRarFile(base::File rar_file,
 
     bool is_archive = FileTypePolicies::GetInstance()->IsArchiveFile(file_path);
     results->has_archive |= is_archive;
+
+    int64 unpacked_size =
+        archive->FileHead.UnpSize;  // Read from header, may not be accurate.
+    // TODO(vakh): Log UMA if |unpacked_size| < 0.
+
+    base::FilePath basename = file_path.BaseName();
+    std::string basename_utf8(basename.AsUTF8Unsafe());
+    bool is_utf8_valid_basename =
+        base::StreamingUtf8Validator::Validate(basename_utf8);
+
     if (is_archive) {
-      archived_archive_filenames.insert(file_path.BaseName());
+      archived_archive_filenames.insert(basename);
+      ClientDownloadRequest::ArchivedBinary* archived_archive =
+          results->archived_binary.Add();
+      if (is_utf8_valid_basename)
+        archived_archive->set_file_basename(basename_utf8);
+      archived_archive->set_download_type(
+          ClientDownloadRequest::RAR_COMPRESSED_ARCHIVE);
+      archived_archive->set_length(unpacked_size);
+    } else if (is_executable) {
+      ClientDownloadRequest::ArchivedBinary* archived_binary =
+          results->archived_binary.Add();
+      if (is_utf8_valid_basename)
+        archived_binary->set_file_basename(basename_utf8);
+      archived_binary->set_download_type(
+          download_protection_util::GetDownloadType(file_path));
+      archived_binary->set_length(unpacked_size);
     }
     results->archived_archive_filenames.assign(
         archived_archive_filenames.begin(), archived_archive_filenames.end());
