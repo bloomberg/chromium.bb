@@ -78,14 +78,14 @@ class CustomResourcesClassAdapter extends ClassVisitor {
     private boolean mShouldTransform;
     private String mClassName;
     private String mSuperClassName;
-    private ClassUtils mClassUtils;
+    private ClassLoader mClassLoader;
 
     CustomResourcesClassAdapter(ClassVisitor visitor, String className, String superClassName,
             ClassLoader classLoader) {
         super(ASM5, visitor);
         this.mClassName = className;
         this.mSuperClassName = superClassName;
-        this.mClassUtils = new ClassUtils(classLoader);
+        this.mClassLoader = classLoader;
     }
 
     @Override
@@ -138,18 +138,29 @@ class CustomResourcesClassAdapter extends ClassVisitor {
     }
 
     private boolean superClassIsFrameworkClass() {
-        return mClassUtils.loadClass(mSuperClassName)
-                .getProtectionDomain()
-                .toString()
-                .contains("android.jar");
+        return loadClass(mSuperClassName).getProtectionDomain().toString().contains("android.jar");
     }
 
     private boolean isDescendantOfContext() {
-        return mClassUtils.isSubClass(mClassName, CONTEXT);
+        return isSubClass(mClassName, CONTEXT);
     }
 
     private boolean superClassIsContextWrapper() {
         return mSuperClassName.equals(CONTEXT_WRAPPER);
+    }
+
+    private boolean isSubClass(String candidate, String other) {
+        Class<?> candidateClazz = loadClass(candidate);
+        Class<?> parentClazz = loadClass(other);
+        return parentClazz.isAssignableFrom(candidateClazz);
+    }
+
+    private Class<?> loadClass(String className) {
+        try {
+            return mClassLoader.loadClass(className.replace('/', '.'));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

@@ -1244,10 +1244,6 @@ if (enable_java_templates) {
     _enable_custom_resources = defined(invoker.enable_build_hooks_android) &&
                                invoker.enable_build_hooks_android
 
-    _enable_trace_event =
-        defined(invoker.enable_build_hooks) && invoker.enable_build_hooks &&
-        !(defined(invoker.testonly) && invoker.testonly)
-
     _desugar = defined(invoker.supports_android) && invoker.supports_android
     _emma_instrument = invoker.emma_instrument
 
@@ -1274,7 +1270,7 @@ if (enable_java_templates) {
     assert(!defined(invoker.alternative_android_sdk_jar) ||
            invoker.alternative_android_sdk_jar != "")
 
-    if (_enable_assert || _enable_custom_resources || _enable_trace_event) {
+    if (_enable_assert || _enable_custom_resources) {
       _java_bytecode_rewriter_target = "${target_name}__bytecode_rewrite"
       _java_bytecode_rewriter_input_jar = _previous_output_jar
       _java_bytecode_rewriter_output_jar =
@@ -1317,9 +1313,6 @@ if (enable_java_templates) {
         }
         if (_enable_custom_resources) {
           args += [ "--enable-custom-resources" ]
-        }
-        if (_enable_trace_event) {
-          args += [ "--enable-trace-event" ]
         }
         args += [
           "--extra-classpath-jar",

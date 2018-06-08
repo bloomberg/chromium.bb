@@ -23,14 +23,6 @@ import org.chromium.base.annotations.MainDex;
  * }
  * }</pre>
  *
- * If you want to trace an entire method, you can alternatively use the @TraceEvent annotation:
- * <pre>{@code
- * @TraceEvent
- * public void myTracedMethod() {
- *   // code.
- * }
- * }</pre>
- *
  * It is OK to use tracing before the native library has loaded, in a slightly restricted fashion.
  * @see EarlyTraceEvent for details.
  */
