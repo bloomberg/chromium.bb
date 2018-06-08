@@ -158,7 +158,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   static const SkColor kTableGroupingIndicatorColor =
       SkColorSetRGB(0xCC, 0xCC, 0xCC);
   // Material spinner/throbber:
-  static const SkColor kThrobberSpinningColor = gfx::kGoogleBlue500;
+  static const SkColor kThrobberSpinningColor = gfx::kGoogleBlue600;
   static const SkColor kThrobberWaitingColor = SkColorSetRGB(0xA6, 0xA6, 0xA6);
   static const SkColor kThrobberLightColor = SkColorSetRGB(0xF4, 0xF8, 0xFD);
 
