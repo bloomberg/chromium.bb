@@ -36,7 +36,7 @@ CompositorThreadScheduler::~CompositorThreadScheduler() = default;
 
 scoped_refptr<NonMainThreadTaskQueue>
 CompositorThreadScheduler::DefaultTaskQueue() {
-  return helper_->DefaultNonMainThreadTaskQueue();
+  return helper()->DefaultNonMainThreadTaskQueue();
 }
 
 void CompositorThreadScheduler::InitImpl() {}
@@ -93,12 +93,12 @@ bool CompositorThreadScheduler::ShouldYieldForHighPriorityWork() {
 
 void CompositorThreadScheduler::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
-  helper_->AddTaskObserver(task_observer);
+  helper()->AddTaskObserver(task_observer);
 }
 
 void CompositorThreadScheduler::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
-  helper_->RemoveTaskObserver(task_observer);
+  helper()->RemoveTaskObserver(task_observer);
 }
 
 void CompositorThreadScheduler::Shutdown() {}

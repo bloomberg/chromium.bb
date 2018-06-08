@@ -27,7 +27,11 @@ class TaskQueueManager;
 namespace blink {
 namespace scheduler {
 
+class WorkerScheduler;
 class WorkerSchedulerProxy;
+class TaskQueueThrottler;
+class WakeUpBudgetPool;
+class CPUTimeBudgetPool;
 
 class PLATFORM_EXPORT WorkerThreadScheduler
     : public NonMainThreadSchedulerImpl,
@@ -75,12 +79,25 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   SchedulingLifecycleState lifecycle_state() const { return lifecycle_state_; }
 
-  void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler) override;
+  // Each WorkerScheduler should notify NonMainThreadSchedulerImpl when it is
+  // created or destroyed.
+  void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler);
+  void UnregisterWorkerScheduler(WorkerScheduler* worker_scheduler);
 
   // Returns the control task queue.  Tasks posted to this queue are executed
   // with the highest priority. Care must be taken to avoid starvation of other
   // task queues.
   scoped_refptr<NonMainThreadTaskQueue> ControlTaskQueue();
+
+  // TaskQueueThrottler might be null if throttling is not enabled or
+  // not supported.
+  TaskQueueThrottler* task_queue_throttler() const {
+    return task_queue_throttler_.get();
+  }
+  WakeUpBudgetPool* wake_up_budget_pool() const { return wake_up_budget_pool_; }
+  CPUTimeBudgetPool* cpu_time_budget_pool() const {
+    return cpu_time_budget_pool_;
+  }
 
  protected:
   // NonMainThreadScheduler implementation:
@@ -99,6 +116,8 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   void SetCPUTimeBudgetPoolForTesting(CPUTimeBudgetPool* cpu_time_budget_pool);
 
+  std::unordered_set<WorkerScheduler*>& GetWorkerSchedulersForTesting();
+
  private:
   void MaybeStartLongIdlePeriod();
 
@@ -115,6 +134,18 @@ class PLATFORM_EXPORT WorkerThreadScheduler
   WorkerMetricsHelper worker_metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
+
+  // This controller should be initialized before any TraceableVariables
+  // because they require one to initialize themselves.
+  TraceableVariableController traceable_variable_controller_;
+
+  // Worker schedulers associated with this thread.
+  std::unordered_set<WorkerScheduler*> worker_schedulers_;
+
+  std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
+  // Owned by |task_queue_throttler_|.
+  WakeUpBudgetPool* wake_up_budget_pool_ = nullptr;
+  CPUTimeBudgetPool* cpu_time_budget_pool_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadScheduler);
 };
