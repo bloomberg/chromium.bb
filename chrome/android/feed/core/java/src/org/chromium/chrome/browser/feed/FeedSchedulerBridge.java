@@ -104,9 +104,8 @@ public class FeedSchedulerBridge implements SchedulerApi {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedSchedulerBridge);
-    private native @NativeRequestBehavior int nativeShouldSessionRequestData(
-            long nativeFeedSchedulerBridge, boolean hasContent, long contentCreationDateTimeMs,
-            boolean hasOutstandingRequest);
+    private native int nativeShouldSessionRequestData(long nativeFeedSchedulerBridge,
+            boolean hasContent, long contentCreationDateTimeMs, boolean hasOutstandingRequest);
     private native void nativeOnReceiveNewContent(long nativeFeedSchedulerBridge);
     private native void nativeOnRequestError(
             long nativeFeedSchedulerBridge, int networkResponseCode);
