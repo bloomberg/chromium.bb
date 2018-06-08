@@ -22,7 +22,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/suggestions/suggestions_ui.h"
-#include "chrome/browser/ui/history_ui.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
@@ -75,6 +74,7 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/pref_service.h"
@@ -92,6 +92,7 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
@@ -796,9 +797,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host_piece() == chrome::kChromeUIFlagsHost)
     return FlagsUI::GetFaviconResourceBytes(scale_factor);
 
-  // TODO(dbeam): does this actually need to exist on all platforms?
-  if (page_url.host_piece() == chrome::kChromeUIHistoryHost)
-    return history_ui::GetFaviconResourceBytes(scale_factor);
+  if (page_url.host_piece() == chrome::kChromeUIHistoryHost) {
+    return ui::ResourceBundle::GetSharedInstance()
+        .LoadDataResourceBytesForScale(IDR_HISTORY_FAVICON, scale_factor);
+  }
 
 #if !defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS)
