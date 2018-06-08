@@ -590,6 +590,9 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   if (!config.has_proxy_config())
     return false;
 
+  config_->SetIgnoreLongTermBlackListRules(
+      config.ignore_long_term_black_list_rules());
+
   // An empty proxy config is OK, and allows the server to effectively turn off
   // DataSaver if needed. See http://crbug.com/840978.
   std::vector<DataReductionProxyServer> proxies =

@@ -202,6 +202,12 @@ class DataReductionProxyConfig
   void EnableGetNetworkIdAsynchronously();
 #endif  // defined(OS_CHROMEOS)
 
+  // When triggering previews, prevent long term black list rules.
+  void SetIgnoreLongTermBlackListRules(bool ignore_long_term_black_list_rules);
+
+  // Returns the value set in SetIgnoreLongTermBlackListRules.
+  bool IgnoreBlackListLongTermRulesForTesting() const;
+
  protected:
   virtual base::TimeTicks GetTicksNow() const;
 
@@ -362,6 +368,9 @@ class DataReductionProxyConfig
   // in-flight.
   bool warmup_url_fetch_in_flight_secure_proxy_;
   bool warmup_url_fetch_in_flight_core_proxy_;
+
+  // When triggerring previews, prevent long term black list rules.
+  bool ignore_long_term_black_list_rules_;
 
   // Should be accessed only on the IO thread. Guaranteed to be non-null during
   // the lifetime of |this| if accessed on the IO thread.

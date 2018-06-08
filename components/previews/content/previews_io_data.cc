@@ -206,16 +206,20 @@ void PreviewsIOData::SetIgnorePreviewsBlacklistDecision(bool ignored) {
 
 bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
                                         PreviewsType type) const {
+  DCHECK(type == PreviewsType::OFFLINE || type == PreviewsType::NOSCRIPT);
+  // Consumers that need to specify a blacklist or ignore flag should use
+  // ShouldAllowPreviewAtECT directly.
   return ShouldAllowPreviewAtECT(request, type,
                                  params::GetECTThresholdForPreview(type),
-                                 std::vector<std::string>());
+                                 std::vector<std::string>(), false);
 }
 
 bool PreviewsIOData::ShouldAllowPreviewAtECT(
     const net::URLRequest& request,
     PreviewsType type,
     net::EffectiveConnectionType effective_connection_type_threshold,
-    const std::vector<std::string>& host_blacklist_from_server) const {
+    const std::vector<std::string>& host_blacklist_from_server,
+    bool ignore_long_term_black_list_rules) const {
   if (!previews::params::ArePreviewsAllowed()) {
     return false;
   }
@@ -243,7 +247,9 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     // The blacklist will disallow certain hosts for periods of time based on
     // user's opting out of the preview.
     PreviewsEligibilityReason status = previews_black_list_->IsLoadedAndAllowed(
-        request.url(), type, &passed_reasons);
+        request.url(), type, ignore_long_term_black_list_rules,
+        &passed_reasons);
+
     if (status != PreviewsEligibilityReason::ALLOWED) {
       if (type == PreviewsType::LITE_PAGE) {
         PreviewsUserData::GetData(request)->set_black_listed_for_lite_page(
@@ -343,12 +349,13 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
 
 bool PreviewsIOData::IsURLAllowedForPreview(const net::URLRequest& request,
                                             PreviewsType type) const {
+  DCHECK_EQ(PreviewsType::NOSCRIPT, type);
   if (previews_black_list_ && !blacklist_ignored_) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
     // The blacklist will disallow certain hosts for periods of time based on
     // user's opting out of the preview.
     PreviewsEligibilityReason status = previews_black_list_->IsLoadedAndAllowed(
-        request.url(), type, &passed_reasons);
+        request.url(), type, false, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
       if (type == PreviewsType::LITE_PAGE) {
         PreviewsUserData::GetData(request)->set_black_listed_for_lite_page(

@@ -147,6 +147,7 @@ void PreviewsBlackList::AddPreviewNavigationSync(const GURL& url,
 PreviewsEligibilityReason PreviewsBlackList::IsLoadedAndAllowed(
     const GURL& url,
     PreviewsType type,
+    bool ignore_long_term_black_list_rules,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(url.has_host());
@@ -161,6 +162,8 @@ PreviewsEligibilityReason PreviewsBlackList::IsLoadedAndAllowed(
     return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
   }
   passed_reasons->push_back(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT);
+  if (ignore_long_term_black_list_rules)
+    return PreviewsEligibilityReason::ALLOWED;
   if (host_indifferent_black_list_item_->IsBlackListed(clock_->Now()))
     return PreviewsEligibilityReason::USER_BLACKLISTED;
   passed_reasons->push_back(PreviewsEligibilityReason::USER_BLACKLISTED);

@@ -31,8 +31,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
       const net::URLRequest& request,
       PreviewsType type,
       net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_server)
-      const override {
+      const std::vector<std::string>& host_blacklist_from_server,
+      bool ignore_long_term_black_list_rules) const override {
     return IsEnabled(type);
   }
 
@@ -40,7 +40,7 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
                           PreviewsType type) const override {
     return ShouldAllowPreviewAtECT(request, type,
                                    params::GetECTThresholdForPreview(type),
-                                   std::vector<std::string>());
+                                   std::vector<std::string>(), false);
   }
 
   bool IsURLAllowedForPreview(const net::URLRequest& request,

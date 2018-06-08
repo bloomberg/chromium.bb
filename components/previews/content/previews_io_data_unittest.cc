@@ -94,6 +94,7 @@ class TestPreviewsBlackList : public PreviewsBlackList {
   PreviewsEligibilityReason IsLoadedAndAllowed(
       const GURL& url,
       PreviewsType type,
+      bool ignore_long_term_black_list_rules,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const override {
     PreviewsEligibilityReason ordered_reasons[] = {
         PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
@@ -430,12 +431,12 @@ TEST_F(PreviewsIODataTest, AllPreviewsDisabledByFeature) {
       *CreateHttpsRequest(), PreviewsType::LOFI,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
-      std::vector<std::string>()));
+      std::vector<std::string>(), false));
   EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
       *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
-      std::vector<std::string>()));
+      std::vector<std::string>(), false));
 }
 
 // Tests most of the reasons that a preview could be disallowed because of the
@@ -494,8 +495,8 @@ TEST_F(PreviewsIODataTest, TestSetBlacklistBoolDueToBlackListState) {
       PreviewsUserData::Create(request.get(), 54321 /* page_id, not used */);
   EXPECT_FALSE(data->black_listed_for_lite_page());
   EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
-      *request, PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_2G,
-      {}));
+      *request, PreviewsType::LITE_PAGE, net::EFFECTIVE_CONNECTION_TYPE_2G, {},
+      false));
   EXPECT_TRUE(data->black_listed_for_lite_page());
 }
 
@@ -528,7 +529,7 @@ TEST_F(PreviewsIODataTest, TestAllowLitePageWhenNetworkQualityFast) {
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), PreviewsType::LITE_PAGE,
-      net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>()));
+      net::EFFECTIVE_CONNECTION_TYPE_4G, std::vector<std::string>(), false));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LitePage",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
@@ -618,7 +619,7 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenFeatureDisabled) {
   EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial()));
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
   histogram_tester.ExpectTotalCount("Previews.EligibilityReason.LoFi", 0);
 }
 
@@ -635,7 +636,7 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkQualityUnavailable) {
   EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial()));
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
@@ -657,7 +658,7 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkFast) {
   EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial()));
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
@@ -692,7 +693,7 @@ TEST_F(PreviewsIODataTest, ClientLoFiAllowed) {
               io_data()->ShouldAllowPreviewAtECT(
                   *CreateRequest(), PreviewsType::LOFI,
                   params::EffectiveConnectionTypeThresholdForClientLoFi(),
-                  params::GetBlackListedHostsForClientLoFiFieldTrial()))
+                  params::GetBlackListedHostsForClientLoFiFieldTrial(), false))
         << " effective_connection_type=" << test.effective_connection_type;
     if (test.expected_client_lofi_allowed) {
       histogram_tester.ExpectUniqueSample(
@@ -720,7 +721,7 @@ TEST_F(PreviewsIODataTest, MissingHostDisallowed) {
   EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
       *CreateRequestWithURL(GURL("file:///sdcard")), PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial()));
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiAllowedOnReload) {
@@ -741,7 +742,7 @@ TEST_F(PreviewsIODataTest, ClientLoFiAllowedOnReload) {
   EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
       *request, PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial()));
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.LoFi",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
@@ -785,7 +786,7 @@ TEST_F(PreviewsIODataTest, ClientLoFiObeysHostBlackListFromServer) {
               io_data()->ShouldAllowPreviewAtECT(
                   *request, PreviewsType::LOFI,
                   params::EffectiveConnectionTypeThresholdForClientLoFi(),
-                  params::GetBlackListedHostsForClientLoFiFieldTrial()));
+                  params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.LoFi",
@@ -810,7 +811,7 @@ TEST_F(PreviewsIODataTest, NoScriptDisallowedByDefault) {
       *CreateRequest(), PreviewsType::NOSCRIPT,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
-      std::vector<std::string>()));
+      std::vector<std::string>(), false));
   histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
 }
 
@@ -841,7 +842,7 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeature) {
                   *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
                   previews::params::GetECTThresholdForPreview(
                       previews::PreviewsType::NOSCRIPT),
-                  std::vector<std::string>()))
+                  std::vector<std::string>(), false))
         << " effective_connection_type=" << test.effective_connection_type;
     if (test.expected_noscript_allowed) {
       histogram_tester.ExpectUniqueSample(
@@ -877,7 +878,7 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
       *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
-      std::vector<std::string>()));
+      std::vector<std::string>(), false));
 
   histogram_tester.ExpectUniqueSample(
       "Previews.EligibilityReason.NoScript",
@@ -891,7 +892,7 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
       PreviewsType::NOSCRIPT,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
-      std::vector<std::string>()));
+      std::vector<std::string>(), false));
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.NoScript",
@@ -1003,8 +1004,8 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistNotAvailable) {
 
   io_data()->InjectTestBlacklist(nullptr /* blacklist */);
   io_data()->ShouldAllowPreviewAtECT(*CreateRequest(), expected_type,
-                                     net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
-                                     {});
+                                     net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, {},
+                                     false);
   base::RunLoop().RunUntilIdle();
   // Testing correct log method is called.
   EXPECT_THAT(ui_service()->decision_reasons(),
@@ -1038,7 +1039,7 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistStatusesDefault) {
 
     io_data()->ShouldAllowPreviewAtECT(*CreateRequest(), expected_type,
                                        net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
-                                       {});
+                                       {}, false);
     base::RunLoop().RunUntilIdle();
     // Testing correct log method is called.
     // Check for all decision upto current decision is logged.
@@ -1119,7 +1120,7 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistStatusesIgnore) {
     io_data()->ShouldAllowPreviewAtECT(
         *CreateRequest(), expected_type,
         params::EffectiveConnectionTypeThresholdForClientLoFi(),
-        params::GetBlackListedHostsForClientLoFiFieldTrial());
+        params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
 
     base::RunLoop().RunUntilIdle();
     // Testing correct log method is called.
@@ -1157,7 +1158,7 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeNetworkQualityNotAvailable) {
   io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), expected_type,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial());
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
 
   base::RunLoop().RunUntilIdle();
   // Testing correct log method is called.
@@ -1202,7 +1203,7 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeNetworkNotSlow) {
 
   io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), expected_type,
-      net::EFFECTIVE_CONNECTION_TYPE_2G /* threshold */, {});
+      net::EFFECTIVE_CONNECTION_TYPE_2G /* threshold */, {}, false);
   base::RunLoop().RunUntilIdle();
   // Testing correct log method is called.
   EXPECT_THAT(ui_service()->decision_reasons(),
@@ -1254,7 +1255,7 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeHostBlacklisted) {
   io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), expected_type,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial());
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
   base::RunLoop().RunUntilIdle();
 
   // Testing correct log method is called.
@@ -1302,7 +1303,7 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeReloadDisallowed) {
   io_data()->ShouldAllowPreviewAtECT(
       *request, expected_type,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial());
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
   base::RunLoop().RunUntilIdle();
 
   // Testing correct log method is called.
@@ -1344,7 +1345,7 @@ TEST_F(PreviewsIODataTest, IgnoreBlacklistEnabledViaFlag) {
   EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), PreviewsType::LOFI,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial()));
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(ui_service()->decision_reasons(),
@@ -1384,7 +1385,7 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeAllowPreviewsOnECT) {
   io_data()->ShouldAllowPreviewAtECT(
       *CreateRequest(), expected_type,
       params::EffectiveConnectionTypeThresholdForClientLoFi(),
-      params::GetBlackListedHostsForClientLoFiFieldTrial());
+      params::GetBlackListedHostsForClientLoFiFieldTrial(), false);
   base::RunLoop().RunUntilIdle();
 
   // Testing correct log method is called.

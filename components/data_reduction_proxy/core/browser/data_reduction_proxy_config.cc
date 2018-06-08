@@ -196,6 +196,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       configurator_(configurator),
       event_creator_(event_creator),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
+      ignore_long_term_black_list_rules_(false),
       network_properties_manager_(nullptr),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
@@ -766,7 +767,7 @@ bool DataReductionProxyConfig::IsBlackListedOrDisabled(
   // TODO(crbug.com/720102): Consider new method to just check blacklist.
   return !previews_decider.ShouldAllowPreviewAtECT(
       request, previews_type, net::EFFECTIVE_CONNECTION_TYPE_4G,
-      std::vector<std::string>());
+      std::vector<std::string>(), ignore_long_term_black_list_rules_);
 }
 
 bool DataReductionProxyConfig::ShouldAcceptServerPreview(
@@ -851,5 +852,16 @@ void DataReductionProxyConfig::EnableGetNetworkIdAsynchronously() {
   get_network_id_asynchronously_ = true;
 }
 #endif  // defined(OS_CHROMEOS)
+
+void DataReductionProxyConfig::SetIgnoreLongTermBlackListRules(
+    bool ignore_long_term_black_list_rules) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ignore_long_term_black_list_rules_ = ignore_long_term_black_list_rules;
+}
+
+bool DataReductionProxyConfig::IgnoreBlackListLongTermRulesForTesting() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return ignore_long_term_black_list_rules_;
+}
 
 }  // namespace data_reduction_proxy
