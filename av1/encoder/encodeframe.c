@@ -4481,10 +4481,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     xd->qindex[i] = qindex;
     if (xd->lossless[i]) {
       cpi->optimize_seg_arr[i] = 0;
-      // The purpose of setting alt q as -255 for all lossless segments is to
-      // force the qindex of any block belonging to a lossless segment not to be
-      // reverted to non-zero (lossy) when sb level delta-q is also on.
-      cm->seg.feature_data[i][SEG_LVL_ALT_Q] = -255;
     } else {
       cpi->optimize_seg_arr[i] = cpi->optimize_speed_feature;
     }
