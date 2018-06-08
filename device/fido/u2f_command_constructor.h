@@ -14,7 +14,6 @@
 #include "base/optional.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
-#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -72,7 +71,7 @@ base::Optional<std::vector<uint8_t>> ConstructU2fSignCommand(
     bool check_only = false);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::vector<uint8_t>> ConstructBogusU2fRegistrationCommand();
+std::vector<uint8_t> ConstructBogusU2fRegistrationCommand();
 
 }  // namespace device
 

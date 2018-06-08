@@ -32,6 +32,9 @@ void FidoTask::CancelTask() {
 
 void FidoTask::GetAuthenticatorInfo(base::OnceClosure ctap_callback,
                                     base::OnceClosure u2f_callback) {
+  // When AuthenticatorInfo command is sent to authenticators, we first assume
+  // that the connected device is a CTAP2 device.
+  device_->set_supported_protocol(ProtocolVersion::kCtap);
   device()->DeviceTransact(
       AuthenticatorGetInfoRequest().Serialize(),
       base::BindOnce(&FidoTask::OnAuthenticatorInfoReceived,
@@ -47,13 +50,11 @@ void FidoTask::OnAuthenticatorInfoReceived(
 
   base::Optional<AuthenticatorGetInfoResponse> get_info_response;
   if (!response || !(get_info_response = ReadCTAPGetInfoResponse(*response))) {
-    device()->set_supported_protocol(ProtocolVersion::kU2f);
     std::move(u2f_callback).Run();
     return;
   }
 
   device()->SetDeviceInfo(std::move(*get_info_response));
-  device()->set_supported_protocol(ProtocolVersion::kCtap);
   std::move(ctap_callback).Run();
 }
 

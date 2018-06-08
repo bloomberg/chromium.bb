@@ -28,6 +28,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
+#include "device/base/features.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -36,8 +37,6 @@
 #include "device/fido/make_credential_request_handler.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
-#include "device/fido/u2f_register.h"
-#include "device/fido/u2f_request.h"
 #include "device/fido/u2f_sign.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request_context.h"
@@ -54,7 +53,6 @@ const char kGetType[] = "webauthn.get";
 }  // namespace client_data
 
 namespace {
-constexpr int32_t kCoseEs256 = -7;
 
 // Ensure that the origin's effective domain is a valid domain.
 // Only the domain format of host is valid.
@@ -166,33 +164,6 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
   return false;
 }
 
-// Check that at least one of the cryptographic parameters is supported.
-// Only ES256 is currently supported by U2F_V2 (CTAP 1.0).
-bool IsAlgorithmSupportedByU2fAuthenticators(
-    const std::vector<webauth::mojom::PublicKeyCredentialParametersPtr>&
-        parameters) {
-  for (const auto& params : parameters) {
-    if (params->algorithm_identifier == kCoseEs256)
-      return true;
-  }
-  return false;
-}
-
-// Verify that the request doesn't contain parameters that U2F authenticators
-// cannot fulfill.
-bool AreOptionsSupportedByU2fAuthenticators(
-    const webauth::mojom::PublicKeyCredentialCreationOptionsPtr& options) {
-  if (options->authenticator_selection) {
-    if (options->authenticator_selection->user_verification ==
-            webauth::mojom::UserVerificationRequirement::REQUIRED ||
-        options->authenticator_selection->require_resident_key ||
-        options->authenticator_selection->authenticator_attachment ==
-            webauth::mojom::AuthenticatorAttachment::PLATFORM)
-      return false;
-  }
-  return true;
-}
-
 std::vector<std::vector<uint8_t>> FilterCredentialList(
     const std::vector<webauth::mojom::PublicKeyCredentialDescriptorPtr>&
         descriptors) {
@@ -208,7 +179,8 @@ std::vector<std::vector<uint8_t>> FilterCredentialList(
 
 device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
     std::vector<uint8_t> client_data_hash,
-    const webauth::mojom::PublicKeyCredentialCreationOptionsPtr& options) {
+    const webauth::mojom::PublicKeyCredentialCreationOptionsPtr& options,
+    bool is_individual_attestation) {
   auto credential_params = mojo::ConvertTo<
       std::vector<device::PublicKeyCredentialParams::CredentialInfo>>(
       options->public_key_parameters);
@@ -225,6 +197,7 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
           options->exclude_credentials);
 
   make_credential_param.SetExcludeList(std::move(exclude_list));
+  make_credential_param.SetIsIndividualAttestation(is_individual_attestation);
   return make_credential_param;
 }
 
@@ -479,28 +452,6 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  // Verify that the request doesn't contain parameters that U2F authenticators
-  // cannot fulfill.
-  // TODO(crbug.com/819256): Improve messages for "Not Allowed" errors.
-  if (!base::FeatureList::IsEnabled(features::kWebAuthCtap2) &&
-      !AreOptionsSupportedByU2fAuthenticators(options)) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
-        nullptr, Focus::kDontCheck);
-    return;
-  }
-
-  if (!base::FeatureList::IsEnabled(features::kWebAuthCtap2) &&
-      !IsAlgorithmSupportedByU2fAuthenticators(
-          options->public_key_parameters)) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::ALGORITHM_UNSUPPORTED, nullptr,
-        Focus::kDontCheck);
-    return;
-  }
-
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
 
@@ -509,12 +460,6 @@ void AuthenticatorImpl::MakeCredential(
       base::Bind(&AuthenticatorImpl::OnTimeout, base::Unretained(this)));
   if (!connector_)
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
-
-  // Extract list of credentials to exclude.
-  std::vector<std::vector<uint8_t>> registered_keys;
-  for (const auto& credential : options->exclude_credentials) {
-    registered_keys.push_back(credential->id);
-  }
 
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
@@ -533,7 +478,6 @@ void AuthenticatorImpl::MakeCredential(
   protocols_.erase(
       device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
 
-  if (base::FeatureList::IsEnabled(features::kWebAuthCtap2)) {
     auto authenticator_selection_criteria =
         options->authenticator_selection
             ? mojo::ConvertTo<device::AuthenticatorSelectionCriteria>(
@@ -543,24 +487,11 @@ void AuthenticatorImpl::MakeCredential(
     ctap_request_ = std::make_unique<device::MakeCredentialRequestHandler>(
         connector_, protocols_,
         CreateCtapMakeCredentialRequest(
-            ConstructClientDataHash(client_data_json_), options),
+            ConstructClientDataHash(client_data_json_), options,
+            individual_attestation),
         std::move(authenticator_selection_criteria),
         base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
                        weak_factory_.GetWeakPtr()));
-  } else {
-    // TODO(kpaulhamus): Mock U2fRegister for unit tests.
-    // http://crbug.com/785955.
-    // Per fido-u2f-raw-message-formats:
-    // The challenge parameter is the SHA-256 hash of the Client Data,
-    // Among other things, the Client Data contains the challenge from the
-    // relying party (hence the name of the parameter).
-    u2f_request_ = device::U2fRegister::TryRegistration(
-        connector_, protocols_, registered_keys,
-        ConstructClientDataHash(client_data_json_),
-        CreateApplicationParameter(relying_party_id_), individual_attestation,
-        base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
-                       weak_factory_.GetWeakPtr()));
-  }
 }
 
 // mojom:Authenticator
@@ -605,7 +536,7 @@ void AuthenticatorImpl::GetAssertion(
   }
 
   // To use U2F, the relying party must not require user verification.
-  if (!base::FeatureList::IsEnabled(features::kWebAuthCtap2) &&
+  if (!base::FeatureList::IsEnabled(device::kNewCtap2Device) &&
       options->user_verification ==
           webauth::mojom::UserVerificationRequirement::REQUIRED) {
     InvokeCallbackAndCleanup(
@@ -648,7 +579,7 @@ void AuthenticatorImpl::GetAssertion(
   // [1] https://w3c.github.io/webauthn/#authenticatorgetassertion
   // [2]
   // https://fidoalliance.org/specs/fido-v2.0-ps-20170927/fido-client-to-authenticator-protocol-v2.0-ps-20170927.html
-  if (!base::FeatureList::IsEnabled(features::kWebAuthCtap2) &&
+  if (!base::FeatureList::IsEnabled(device::kNewCtap2Device) &&
       handles.empty()) {
     InvokeCallbackAndCleanup(
         std::move(callback),
@@ -673,7 +604,7 @@ void AuthenticatorImpl::GetAssertion(
       client_data::kGetType, caller_origin, std::move(options->challenge),
       base::nullopt);
 
-  if (base::FeatureList::IsEnabled(features::kWebAuthCtap2)) {
+  if (base::FeatureList::IsEnabled(device::kNewCtap2Device)) {
     ctap_request_ = std::make_unique<device::GetAssertionRequestHandler>(
         connector_, protocols_,
         CreateCtapGetAssertionRequest(

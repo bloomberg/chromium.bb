@@ -4669,6 +4669,7 @@ crbug.com/826936 external/wpt/webauthn/getcredential-badargs-userverification.ht
 crbug.com/826936 external/wpt/webauthn/getcredential-extensions.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/getcredential-passing.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass Timeout ]
+crbug.com/826936 external/wpt/webauthn/createcredential-pubkeycredparams.https.html [ Pass Timeout ]
 
 # WebRTC with Unified Plan
 crbug.com/828866 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-tracks.https.html [ Timeout ]

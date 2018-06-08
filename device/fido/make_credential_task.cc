@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "device/base/features.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
 #include "device/fido/ctap_register_operation.h"
 #include "device/fido/device_response_converter.h"
+#include "device/fido/u2f_command_constructor.h"
+#include "device/fido/u2f_register_operation.h"
 
 namespace device {
 
@@ -28,10 +31,14 @@ MakeCredentialTask::MakeCredentialTask(
 MakeCredentialTask::~MakeCredentialTask() = default;
 
 void MakeCredentialTask::StartTask() {
-  GetAuthenticatorInfo(base::BindOnce(&MakeCredentialTask::MakeCredential,
-                                      weak_factory_.GetWeakPtr()),
-                       base::BindOnce(&MakeCredentialTask::U2fRegister,
-                                      weak_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(kNewCtap2Device)) {
+    GetAuthenticatorInfo(base::BindOnce(&MakeCredentialTask::MakeCredential,
+                                        weak_factory_.GetWeakPtr()),
+                         base::BindOnce(&MakeCredentialTask::U2fRegister,
+                                        weak_factory_.GetWeakPtr()));
+  } else {
+    U2fRegister();
+  }
 }
 
 void MakeCredentialTask::MakeCredential() {
@@ -49,12 +56,21 @@ void MakeCredentialTask::MakeCredential() {
 }
 
 void MakeCredentialTask::U2fRegister() {
-  // TODO(hongjunchoi): Implement U2F register request logic to support
-  // interoperability with U2F protocol. Currently all U2F devices are not
-  // supported and request to U2F devices will be silently dropped.
-  // See: https://crbug.com/798573
-  std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                           base::nullopt);
+  device()->set_supported_protocol(ProtocolVersion::kU2f);
+
+  if (!CheckIfAuthenticatorSelectionCriteriaAreSatisfied() ||
+      !IsConvertibleToU2fRegisterCommand(request_parameter_)) {
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                             base::nullopt);
+    return;
+  }
+
+  register_operation_ = std::make_unique<U2fRegisterOperation>(
+      device(),
+      base::BindOnce(&MakeCredentialTask::OnCtapMakeCredentialResponseReceived,
+                     weak_factory_.GetWeakPtr()),
+      request_parameter_);
+  register_operation_->Start();
 }
 
 void MakeCredentialTask::OnCtapMakeCredentialResponseReceived(

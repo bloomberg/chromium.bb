@@ -44,6 +44,7 @@ const size_t kMaxKeyHandleLength = 255;
 const size_t kU2fParameterLength = 32;
 
 const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(3);
+const base::TimeDelta kU2fRetryDelay = base::TimeDelta::FromMilliseconds(200);
 const base::TimeDelta kHidKeepAliveDelay =
     base::TimeDelta::FromMilliseconds(100);
 

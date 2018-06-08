@@ -20,6 +20,8 @@ DEVICE_BASE_EXPORT extern const base::Feature kNewBLEWinImplementation;
 DEVICE_BASE_EXPORT extern const base::Feature kNewblueDaemon;
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
+DEVICE_BASE_EXPORT extern const base::Feature kNewCtap2Device;
+
 }  // namespace device
 
 #endif  // DEVICE_BASE_FEATURES_H_
