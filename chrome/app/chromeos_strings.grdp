@@ -4064,6 +4064,18 @@
   <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT" desc="Prompt shown in the device requisition shark prompt popup.">
     Are you sure you want to set up this device as a "Shark"?
   </message>
+  <message name="IDS_ENABLE_DEMO_MODE_DIALOG_TITLE" desc="Title of the enable demo mode dialog.">
+    Enable demo mode
+  </message>
+  <message name="IDS_ENABLE_DEMO_MODE_DIALOG_TEXT" desc="Prompt shown in the enable demo mode dialog.">
+    Are you sure you want to enable demo mode?
+  </message>
+  <message name="IDS_ENABLE_DEMO_MODE_DIALOG_CANCEL" desc="Cancel button text in the enable demo mode dialog.">
+    Cancel
+  </message>
+  <message name="IDS_ENABLE_DEMO_MODE_DIALOG_CONFIRM" desc="Confirm button text in the enable demo mode dialog.">
+    OK
+  </message>
   <message name="IDS_PAIRING_CONTROLLER_WELCOME" desc="Message shown on 'Hangouts Meet' controller in the beginning of the setup process.">
     Welcome to Hangouts Meet
   </message>
