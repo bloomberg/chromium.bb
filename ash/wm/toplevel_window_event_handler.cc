@@ -44,7 +44,7 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
     aura::Window* window,
     const gfx::Point& point_in_parent,
     int window_component,
-    const wm::WmToplevelWindowEventHandler::EndClosure& end_closure) {
+    wm::WmToplevelWindowEventHandler::EndClosure end_closure) {
   aura::Window* gesture_target =
       wm_toplevel_window_event_handler_.gesture_target();
   ::wm::WindowMoveSource source = gesture_target
@@ -56,7 +56,8 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
         ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
   }
   return wm_toplevel_window_event_handler_.AttemptToStartDrag(
-      window, point_in_parent, window_component, source, end_closure);
+      window, point_in_parent, window_component, source,
+      std::move(end_closure));
 }
 
 ::wm::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(

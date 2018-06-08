@@ -317,6 +317,9 @@
 -WindowSelectorTest.RemoveDisplay
 -WindowSelectorTest.RemoveDisplayWithAnimation
 
+# These tests exercise the WindowService, which is no longer applicable to mash.
+-WindowServiceDelegateImplTest.*
+
 # Needs CursorManager/CursorManagerTestApi. http://crbug.com/780637
 -WindowTreeHostManagerTest.DontUpdateInvisibleCursorLocationAfterDisplayChange
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange

@@ -1918,6 +1918,7 @@ test("ash_unittests") {
     "wm/workspace/workspace_layout_manager_unittest.cc",
     "wm/workspace/workspace_window_resizer_unittest.cc",
     "wm/workspace_controller_unittest.cc",
+    "ws/window_service_delegate_impl_unittest.cc",
   ]
   configs += [
     "//build/config:precompiled_headers",

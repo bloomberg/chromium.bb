@@ -227,6 +227,15 @@ void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
     test_windows->push_back(WindowDataToTestWindow(data[i]));
 }
 
+bool ContainsChange(const std::vector<Change>& changes,
+                    const std::string& change_description) {
+  for (auto& change : changes) {
+    if (change_description == ChangeToDescription(change))
+      return true;
+  }
+  return false;
+}
+
 Change::Change()
     : type(CHANGE_TYPE_EMBED),
       window_id(0),

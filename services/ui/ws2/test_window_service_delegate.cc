@@ -16,6 +16,11 @@ TestWindowServiceDelegate::TestWindowServiceDelegate(
 
 TestWindowServiceDelegate::~TestWindowServiceDelegate() = default;
 
+WindowServiceDelegate::DoneCallback
+TestWindowServiceDelegate::TakeMoveLoopCallback() {
+  return std::move(move_loop_callback_);
+}
+
 std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
@@ -34,6 +39,17 @@ std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
 
 void TestWindowServiceDelegate::OnUnhandledKeyEvent(const KeyEvent& key_event) {
   unhandled_key_events_.push_back(key_event);
+}
+
+void TestWindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
+                                                  mojom::MoveLoopSource source,
+                                                  const gfx::Point& cursor,
+                                                  DoneCallback callback) {
+  move_loop_callback_ = std::move(callback);
+}
+
+void TestWindowServiceDelegate::CancelWindowMoveLoop() {
+  cancel_window_move_loop_called_ = true;
 }
 
 }  // namespace ws2

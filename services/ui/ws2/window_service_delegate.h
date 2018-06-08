@@ -11,12 +11,18 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 
 namespace aura {
 class PropertyConverter;
 class Window;
+}
+
+namespace gfx {
+class Point;
 }
 
 namespace ui {
@@ -41,6 +47,19 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
 
   // Called for KeyEvents the client does not handle.
   virtual void OnUnhandledKeyEvent(const KeyEvent& key_event) {}
+
+  // Called to start a move operation on |window|. When done, |callback| should
+  // be run with the result (true if the move was successful). If a move is not
+  // allowed, the delegate should run |callback| immediately.
+  using DoneCallback = base::OnceCallback<void(bool)>;
+  virtual void RunWindowMoveLoop(aura::Window* window,
+                                 mojom::MoveLoopSource source,
+                                 const gfx::Point& cursor,
+                                 DoneCallback callback);
+
+  // Called to cancel an in-progress window move loop that was started by
+  // RunWindowMoveLoop().
+  virtual void CancelWindowMoveLoop() {}
 
  protected:
   virtual ~WindowServiceDelegate() = default;
