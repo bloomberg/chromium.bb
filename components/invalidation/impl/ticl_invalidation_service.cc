@@ -187,12 +187,9 @@ void TiclInvalidationService::RequestAccessToken() {
   OAuth2TokenService::ScopeSet oauth2_scopes;
   for (size_t i = 0; i < arraysize(kOAuth2Scopes); i++)
     oauth2_scopes.insert(kOAuth2Scopes[i]);
-  // Invalidate previous token, otherwise token service will return the same
-  // token again.
-  const std::string& account_id = identity_provider_->GetActiveAccountId();
-  OAuth2TokenService* token_service = identity_provider_->GetTokenService();
-  token_service->InvalidateAccessToken(account_id, oauth2_scopes,
-                                       access_token_);
+  // Invalidate previous token, otherwise the identity provider will return the
+  // same token again.
+  identity_provider_->InvalidateAccessToken(oauth2_scopes, access_token_);
   access_token_.clear();
   access_token_fetcher_ = identity_provider_->FetchAccessToken(
       "ticl_invalidation", oauth2_scopes,

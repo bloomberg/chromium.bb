@@ -88,6 +88,13 @@ IdentityProvider::FetchAccessToken(const std::string& oauth_consumer_name,
       std::move(callback));
 }
 
+void IdentityProvider::InvalidateAccessToken(
+    const OAuth2TokenService::ScopeSet& scopes,
+    const std::string& access_token) {
+  GetTokenService()->InvalidateAccessToken(GetActiveAccountId(), scopes,
+                                           access_token);
+}
+
 void IdentityProvider::AddObserver(Observer* observer) {
   // See the comment on |num_observers_| in the .h file for why this addition
   // must happen here.
