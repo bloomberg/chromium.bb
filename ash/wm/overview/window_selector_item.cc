@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -683,10 +684,12 @@ WindowSelectorItem::WindowSelectorItem(aura::Window* window,
       ScopedTransformOverviewWindow::GridWindowFillMode::kNormal) {
     backdrop_widget_ = CreateBackdropWidget(window->parent());
   }
+  GetWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
 }
 
 WindowSelectorItem::~WindowSelectorItem() {
   GetWindow()->RemoveObserver(this);
+  GetWindow()->ClearProperty(ash::kIsShowingInOverviewKey);
 }
 
 aura::Window* WindowSelectorItem::GetWindow() {

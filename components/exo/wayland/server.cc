@@ -2169,7 +2169,7 @@ void remote_surface_set_window_type(wl_client* client,
   if (type == ZCR_REMOTE_SURFACE_V1_WINDOW_TYPE_SYSTEM_UI) {
     auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
     if (widget) {
-      widget->GetNativeWindow()->SetProperty(ash::kShowInOverviewKey, false);
+      widget->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
 
       wm::SetWindowVisibilityAnimationType(
           widget->GetNativeWindow(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);

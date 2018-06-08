@@ -8,7 +8,11 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/drag_details.h"
+#include "ash/wm/overview/window_grid.h"
+#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/root_window_finder.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -22,6 +26,26 @@ namespace {
 // The threshold to compute the the minimum vertical distance to start showing
 // the phantom window.
 constexpr float kThresholdRatio = 0.25;
+
+// Returns true if overview mode is active and |location_in_screen| is contained
+// inside of the overview window grid.
+bool OverviewGridBoundsContains(const gfx::Point& location_in_screen) {
+  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+    return false;
+
+  WindowSelector* window_selector =
+      Shell::Get()->window_selector_controller()->window_selector();
+  WindowGrid* current_grid = window_selector->GetGridWithRootWindow(
+      wm::GetRootWindowAt(location_in_screen));
+  if (!current_grid)
+    return false;
+
+  const auto& windows = current_grid->window_list();
+  gfx::Rect windows_bounds;
+  for (const auto& window_selector_item : windows)
+    windows_bounds.Union(window_selector_item->target_bounds());
+  return windows_bounds.Contains(location_in_screen);
+}
 
 }  // namespace
 
@@ -125,6 +149,13 @@ void TabletModeWindowResizer::UpdateSnapPhantomWindow(
 SplitViewController::SnapPosition
 TabletModeWindowResizer::GetSnapPositionForPhantomWindow(
     const gfx::Point& location_in_parent) const {
+  // If the overview mode is active and |location_in_parent| is contained in
+  // overview window grid, do not show the phantom window.
+  gfx::Point location_in_screen = location_in_parent;
+  ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
+  if (OverviewGridBoundsContains(location_in_screen))
+    return SplitViewController::NONE;
+
   const gfx::Rect work_area_bounds(
       screen_util::GetDisplayWorkAreaBoundsInParent(GetTarget()));
 
@@ -133,8 +164,6 @@ TabletModeWindowResizer::GetSnapPositionForPhantomWindow(
   if (location_in_parent.y() < vertical_threshold)
     return SplitViewController::NONE;
 
-  gfx::Point location_in_screen(location_in_parent);
-  ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
   const int divider_position =
       split_view_controller_->IsSplitViewModeActive()
           ? split_view_controller_->divider_position()

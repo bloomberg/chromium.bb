@@ -59,15 +59,30 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::ImageSkia*>* const
     kFrameImageActiveKey;
 
+// A property key to indicate whether we should hide this window in overview
+// mode and Alt + Tab.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kHideInOverviewKey;
+
 // Whether the shelf should be hidden when this window is put into fullscreen.
 // Exposed because some windows want to explicitly opt-out of this.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kHideShelfWhenFullscreenKey;
 
+// If true, the window is the target window for the tab-dragged window. The key
+// is used by overview to show a highlight indication to indicate which overview
+// window the dragged tabs will merge into when the user releases the pointer.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kIsDeferredTabDraggingTargetWindowKey;
+
 // If true, the window is a browser window and its tab(s) are currently being
 // dragged.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kIsDraggingTabsKey;
+
+// If true, the window is currently showing in overview mode.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kIsShowingInOverviewKey;
 
 // If true (and the window is a panel), it's attached to its shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
@@ -97,11 +112,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
 // A property key to store the type of a window's shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
     kShelfItemTypeKey;
-
-// A property key to indicate whether we should hide this window in overview
-// mode and Alt + Tab.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kShowInOverviewKey;
 
 // A property key to store the address of the source window that the drag
 // originated from if the window is currenlty in tab-dragging process.

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -481,10 +482,7 @@ void WindowGrid::AddItem(aura::Window* window) {
 
 void WindowGrid::RemoveItem(WindowSelectorItem* selector_item) {
   auto iter =
-      std::find_if(window_list_.begin(), window_list_.end(),
-                   [selector_item](std::unique_ptr<WindowSelectorItem>& item) {
-                     return (item.get() == selector_item);
-                   });
+      GetWindowSelectorItemIterContainingWindow(selector_item->GetWindow());
   if (iter != window_list_.end()) {
     window_observer_.Remove(selector_item->GetWindow());
     window_state_observer_.Remove(
@@ -569,10 +567,7 @@ void WindowGrid::OnSelectorItemDragEnded() {
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
   window_state_observer_.Remove(wm::GetWindowState(window));
-  auto iter = std::find_if(window_list_.begin(), window_list_.end(),
-                           [window](std::unique_ptr<WindowSelectorItem>& item) {
-                             return item->GetWindow() == window;
-                           });
+  auto iter = GetWindowSelectorItemIterContainingWindow(window);
   DCHECK(iter != window_list_.end());
 
   size_t removed_index = iter - window_list_.begin();
@@ -608,10 +603,7 @@ void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
   if (!prepared_for_overview_)
     return;
 
-  auto iter = std::find_if(window_list_.begin(), window_list_.end(),
-                           [window](std::unique_ptr<WindowSelectorItem>& item) {
-                             return item->GetWindow() == window;
-                           });
+  auto iter = GetWindowSelectorItemIterContainingWindow(window);
   DCHECK(iter != window_list_.end());
 
   // Immediately finish any active bounds animation.
@@ -619,6 +611,34 @@ void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
       ui::LayerAnimationElement::BOUNDS);
   (*iter)->UpdateWindowDimensionsType();
   PositionWindows(false);
+}
+
+void WindowGrid::OnWindowPropertyChanged(aura::Window* window,
+                                         const void* key,
+                                         intptr_t old) {
+  if (key == ash::kIsDeferredTabDraggingTargetWindowKey) {
+    if (window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+      // Show the selection widget.
+      auto iter = GetWindowSelectorItemIterContainingWindow(window);
+      size_t previous_selected_index = selected_index_;
+      selected_index_ = iter - window_list_.begin();
+      if (previous_selected_index == selected_index_ && selection_widget_)
+        return;
+
+      const WindowSelector::Direction direction =
+          (selected_index_ - previous_selected_index > 0)
+              ? WindowSelector::RIGHT
+              : WindowSelector::LEFT;
+      MoveSelectionWidget(direction,
+                          /*recreate_selection_widget=*/true,
+                          /*out_of_bounds=*/false,
+                          /*animate=*/false);
+    } else {
+      // Remove the selection widget.
+      SelectedWindow()->set_selected(false);
+      selection_widget_.reset();
+    }
+  }
 }
 
 void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
@@ -998,6 +1018,14 @@ void WindowGrid::SetWindowSelectorItemAnimationState(
     }
     *has_covered_available_workspace = true;
   }
+}
+
+std::vector<std::unique_ptr<WindowSelectorItem>>::iterator
+WindowGrid::GetWindowSelectorItemIterContainingWindow(aura::Window* window) {
+  return std::find_if(window_list_.begin(), window_list_.end(),
+                      [window](std::unique_ptr<WindowSelectorItem>& item) {
+                        return item->GetWindow() == window;
+                      });
 }
 
 }  // namespace ash

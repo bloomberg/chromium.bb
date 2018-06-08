@@ -260,7 +260,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   modal_window.reset();
   std::unique_ptr<Window> skip_overview_window(
       CreateTestWindowInShellWithId(-3));
-  skip_overview_window->SetProperty(kShowInOverviewKey, false);
+  skip_overview_window->SetProperty(kHideInOverviewKey, true);
   wm::ActivateWindow(window0.get());
   wm::ActivateWindow(skip_overview_window.get());
   wm::ActivateWindow(window1.get());
