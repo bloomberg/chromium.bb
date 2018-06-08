@@ -5,7 +5,6 @@
 #include "media/audio/win/core_audio_util_win.h"
 
 #include <devicetopology.h>
-#include <dxdiag.h>
 #include <functiondiscoverykeys_devpkey.h>
 #include <objbase.h>
 #include <stddef.h>
@@ -918,59 +917,6 @@ bool CoreAudioUtil::FillRenderEndpointBufferWithSilence(
                                           AUDCLNT_BUFFERFLAGS_SILENT))) {
     PLOG(ERROR) << "Failed IAudioRenderClient::ReleaseBuffer()";
     return false;
-  }
-
-  return true;
-}
-
-bool CoreAudioUtil::GetDxDiagDetails(std::string* driver_name,
-                                     std::string* driver_version) {
-  ComPtr<IDxDiagProvider> provider;
-  HRESULT hr =
-      ::CoCreateInstance(CLSID_DxDiagProvider, NULL, CLSCTX_INPROC_SERVER,
-                         IID_IDxDiagProvider, &provider);
-  if (FAILED(hr))
-    return false;
-
-  DXDIAG_INIT_PARAMS params = {sizeof(params)};
-  params.dwDxDiagHeaderVersion = DXDIAG_DX9_SDK_VERSION;
-  params.bAllowWHQLChecks = FALSE;
-  params.pReserved = NULL;
-  hr = provider->Initialize(&params);
-  if (FAILED(hr))
-    return false;
-
-  ComPtr<IDxDiagContainer> root;
-  hr = provider->GetRootContainer(root.GetAddressOf());
-  if (FAILED(hr))
-    return false;
-
-  // Limit to the SoundDevices subtree. The tree in its entirity is
-  // enormous and only this branch contains useful information.
-  ComPtr<IDxDiagContainer> sound_devices;
-  hr = root->GetChildContainer(L"DxDiag_DirectSound.DxDiag_SoundDevices.0",
-                               sound_devices.GetAddressOf());
-  if (FAILED(hr))
-    return false;
-
-  base::win::ScopedVariant variant;
-  hr = sound_devices->GetProp(L"szDriverName", variant.Receive());
-  if (FAILED(hr))
-    return false;
-
-  if (variant.type() == VT_BSTR && variant.ptr()->bstrVal) {
-    base::WideToUTF8(variant.ptr()->bstrVal, wcslen(variant.ptr()->bstrVal),
-                     driver_name);
-  }
-
-  variant.Reset();
-  hr = sound_devices->GetProp(L"szDriverVersion", variant.Receive());
-  if (FAILED(hr))
-    return false;
-
-  if (variant.type() == VT_BSTR && variant.ptr()->bstrVal) {
-    base::WideToUTF8(variant.ptr()->bstrVal, wcslen(variant.ptr()->bstrVal),
-                     driver_version);
   }
 
   return true;
