@@ -56,6 +56,11 @@
 #include "av1/encoder/grain_test_vectors.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
+#if CONFIG_DENOISE
+#include "aom_dsp/grain_table.h"
+#include "aom_dsp/noise_util.h"
+#include "aom_dsp/noise_model.h"
+#endif
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
@@ -443,11 +448,11 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   cpi->oxcf = *oxcf;
 
-  if (cm->film_grain_table) {
-    aom_film_grain_table_free(cm->film_grain_table);
-    aom_free(cm->film_grain_table);
+  if (cpi->film_grain_table) {
+    aom_film_grain_table_free(cpi->film_grain_table);
+    aom_free(cpi->film_grain_table);
+    cpi->film_grain_table = NULL;
   }
-  cm->film_grain_table = 0;
 
   if (oxcf->film_grain_test_vector) {
     cm->film_grain_params_present = 1;
@@ -462,10 +467,10 @@ static void update_film_grain_parameters(struct AV1_COMP *cpi,
       }
     }
   } else if (oxcf->film_grain_table_filename) {
-    cm->film_grain_table = aom_malloc(sizeof(*cm->film_grain_table));
-    memset(cm->film_grain_table, 0, sizeof(aom_film_grain_table_t));
+    cpi->film_grain_table = aom_malloc(sizeof(*cpi->film_grain_table));
+    memset(cpi->film_grain_table, 0, sizeof(aom_film_grain_table_t));
 
-    aom_film_grain_table_read(cm->film_grain_table,
+    aom_film_grain_table_read(cpi->film_grain_table,
                               oxcf->film_grain_table_filename, &cm->error);
   } else {
     cm->film_grain_params_present = 0;
@@ -525,6 +530,17 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   av1_free_pc_tree(&cpi->td, num_planes);
 
   aom_free(cpi->td.mb.palette_buffer);
+
+#if CONFIG_DENOISE
+  if (cpi->denoise_and_model) {
+    aom_denoise_and_model_free(cpi->denoise_and_model);
+    cpi->denoise_and_model = NULL;
+  }
+#endif
+  if (cpi->film_grain_table) {
+    aom_film_grain_table_free(cpi->film_grain_table);
+    cpi->film_grain_table = NULL;
+  }
 }
 
 static void save_coding_context(AV1_COMP *cpi) {
@@ -5295,6 +5311,40 @@ static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   return AOM_CODEC_OK;
 }
 
+#if CONFIG_DENOISE
+static int apply_denoise_2d(AV1_COMP *cpi, YV12_BUFFER_CONFIG *sd,
+                            int block_size, float noise_level,
+                            int64_t time_stamp, int64_t end_time) {
+  AV1_COMMON *const cm = &cpi->common;
+  if (!cpi->denoise_and_model) {
+    cpi->denoise_and_model =
+        aom_denoise_and_model_alloc(cm->bit_depth, block_size, noise_level);
+    if (!cpi->denoise_and_model) {
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Error allocating denoise and model");
+      return -1;
+    }
+  }
+  if (!cpi->film_grain_table) {
+    cpi->film_grain_table = aom_malloc(sizeof(*cpi->film_grain_table));
+    if (!cpi->film_grain_table) {
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Error allocating grain table");
+      return -1;
+    }
+    memset(cpi->film_grain_table, 0, sizeof(*cpi->film_grain_table));
+  }
+  if (aom_denoise_and_model_run(cpi->denoise_and_model, sd,
+                                &cm->film_grain_params)) {
+    if (cm->film_grain_params.apply_grain) {
+      aom_film_grain_table_append(cpi->film_grain_table, time_stamp, end_time,
+                                  &cm->film_grain_params);
+    }
+  }
+  return 0;
+}
+#endif
+
 int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
                           YV12_BUFFER_CONFIG *sd, int64_t time_stamp,
                           int64_t end_time) {
@@ -5308,6 +5358,13 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
   check_initial_width(cpi, use_highbitdepth, subsampling_x, subsampling_y);
 
   aom_usec_timer_start(&timer);
+
+#if CONFIG_DENOISE
+  if (cpi->oxcf.noise_level > 0)
+    if (apply_denoise_2d(cpi, sd, cpi->oxcf.noise_block_size,
+                         cpi->oxcf.noise_level, time_stamp, end_time) < 0)
+      res = -1;
+#endif  //  CONFIG_DENOISE
 
   if (av1_lookahead_push(cpi->lookahead, sd, time_stamp, end_time,
                          use_highbitdepth, frame_flags))
@@ -6004,9 +6061,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
   cm->cur_frame->buf.buf_8bit_valid = 0;
 
-  if (cm->film_grain_table) {
+  if (cpi->film_grain_table) {
     cm->film_grain_params_present = aom_film_grain_table_lookup(
-        cm->film_grain_table, *time_stamp, *time_end, 0 /* erase */,
+        cpi->film_grain_table, *time_stamp, *time_end, 0 /* =erase */,
         &cm->film_grain_params);
   }
   cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;

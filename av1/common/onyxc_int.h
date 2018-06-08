@@ -493,9 +493,9 @@ typedef struct AV1Common {
   ENTROPY_CONTEXT **above_context[MAX_MB_PLANE];
   TXFM_CONTEXT **above_txfm_context;
   WarpedMotionParams global_motion[REF_FRAMES];
-  aom_film_grain_table_t *film_grain_table;
   int film_grain_params_present;
   aom_film_grain_t film_grain_params;
+
   int cdef_pri_damping;
   int cdef_sec_damping;
   int nb_cdef_strengths;

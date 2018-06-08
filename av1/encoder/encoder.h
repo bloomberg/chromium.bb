@@ -41,6 +41,9 @@
 #include "aom_dsp/ssim.h"
 #endif
 #include "aom_dsp/variance.h"
+#if CONFIG_DENOISE
+#include "aom_dsp/noise_model.h"
+#endif
 #include "aom/internal/aom_codec_internal.h"
 #include "aom_util/aom_thread.h"
 
@@ -301,6 +304,11 @@ typedef struct AV1EncoderConfig {
   int allow_warped_motion;
   int enable_superres;
   unsigned int save_as_annexb;
+
+#if CONFIG_DENOISE
+  float noise_level;
+  int noise_block_size;
+#endif
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {
@@ -690,6 +698,11 @@ typedef struct AV1_COMP {
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;
   AV1LrStruct lr_ctxt;
+
+  aom_film_grain_table_t *film_grain_table;
+#if CONFIG_DENOISE
+  struct aom_denoise_and_model_t *denoise_and_model;
+#endif
 } AV1_COMP;
 
 void av1_initialize_enc(void);
