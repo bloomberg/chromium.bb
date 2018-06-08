@@ -66,18 +66,6 @@ constexpr char kRelyingPartySecurityErrorMessage[] =
     "SecurityError: The relying party ID 'localhost' is not a registrable "
     "domain suffix of, nor equal to 'https://www.acme.com";
 
-constexpr char kUserVerificationErrorMessage[] =
-    "NotSupportedError: The specified `userVerification` "
-    "requirement cannot be fulfilled by "
-    "CTAP1/U2F authenticators, and CTAP2 "
-    "authenticators are not yet supported.";
-
-constexpr char kEmptyAllowCredentialsErrorMessage[] =
-    "NotSupportedError: The `allowCredentials` list cannot be left "
-    "empty for CTAP1/U2F authenticators, and "
-    "support for CTAP2 authenticators is not yet "
-    "implemented.";
-
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
 // any additional replacements added should also be added to the
@@ -129,7 +117,7 @@ constexpr char kGetPublicKeyTemplate[] =
     "navigator.credentials.get({ publicKey: {"
     "  challenge: new TextEncoder().encode('climb a mountain'),"
     "  rp: 'acme.com',"
-    "  timeout: 60000,"
+    "  timeout: 1000,"
     "  userVerification: '$1',"
     "  $2}"
     "}).catch(c => window.domAutomationController.send(c.toString()));";
@@ -605,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       shell()->web_contents()->GetMainFrame(),
       BuildGetCallWithParameters(parameters), &result));
-  ASSERT_EQ(kUserVerificationErrorMessage, result);
+  ASSERT_EQ(kTimeoutErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.get() is called with an empty
@@ -618,7 +606,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       shell()->web_contents()->GetMainFrame(),
       BuildGetCallWithParameters(parameters), &result));
-  ASSERT_EQ(kEmptyAllowCredentialsErrorMessage, result);
+  ASSERT_EQ(kTimeoutErrorMessage, result);
 }
 
 // WebAuthBrowserBleDisabledTest

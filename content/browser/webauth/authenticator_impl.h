@@ -30,7 +30,6 @@ class OneShotTimer;
 
 namespace device {
 
-class U2fRequest;
 class FidoRequestHandlerBase;
 
 enum class FidoReturnCode : uint8_t;
@@ -146,8 +145,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
   service_manager::Connector* connector_ = nullptr;
   base::flat_set<device::FidoTransportProtocol> protocols_;
 
-  std::unique_ptr<device::U2fRequest> u2f_request_;
-  std::unique_ptr<device::FidoRequestHandlerBase> ctap_request_;
+  std::unique_ptr<device::FidoRequestHandlerBase> request_;
   std::unique_ptr<AuthenticatorRequestClientDelegate> request_delegate_;
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;

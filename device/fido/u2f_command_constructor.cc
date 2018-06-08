@@ -67,7 +67,8 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
   auto application_parameter =
       application_parameter_type == ApplicationParameterType::kPrimary
           ? fido_parsing_utils::CreateSHA256Hash(request.rp_id())
-          : std::vector<uint8_t>();
+          : request.alternative_application_parameter().value_or(
+                std::vector<uint8_t>());
 
   return ConstructU2fSignCommand(std::move(application_parameter),
                                  request.client_data_hash(), key_handle,

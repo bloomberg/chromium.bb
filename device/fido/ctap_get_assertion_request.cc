@@ -118,4 +118,12 @@ CtapGetAssertionRequest& CtapGetAssertionRequest::SetCableExtension(
   return *this;
 }
 
+CtapGetAssertionRequest&
+CtapGetAssertionRequest::SetAlternativeApplicationParameter(
+    std::vector<uint8_t> alternative_application_parameter) {
+  alternative_application_parameter_ =
+      std::move(alternative_application_parameter);
+  return *this;
+}
+
 }  // namespace device

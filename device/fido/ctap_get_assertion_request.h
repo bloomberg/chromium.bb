@@ -46,6 +46,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   CtapGetAssertionRequest& SetPinProtocol(uint8_t pin_protocol);
   CtapGetAssertionRequest& SetCableExtension(
       std::vector<FidoCableDiscovery::CableDiscoveryData> cable_extension);
+  CtapGetAssertionRequest& SetAlternativeApplicationParameter(
+      std::vector<uint8_t> alternative_application_parameter);
 
   const std::string& rp_id() const { return rp_id_; }
   const std::vector<uint8_t>& client_data_hash() const {
@@ -71,6 +73,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   cable_extension() const {
     return cable_extension_;
   }
+  const base::Optional<std::vector<uint8_t>>&
+  alternative_application_parameter() const {
+    return alternative_application_parameter_;
+  }
 
  private:
   std::string rp_id_;
@@ -84,6 +90,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<uint8_t> pin_protocol_;
   base::Optional<std::vector<FidoCableDiscovery::CableDiscoveryData>>
       cable_extension_;
+  base::Optional<std::vector<uint8_t>> alternative_application_parameter_;
 };
 
 }  // namespace device

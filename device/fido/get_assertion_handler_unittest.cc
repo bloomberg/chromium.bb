@@ -5,7 +5,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "device/base/features.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/fake_fido_discovery.h"
@@ -43,8 +45,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
         fido_parsing_utils::Materialize(test_data::kClientDataHash));
     request_param.SetAllowList(
         {{CredentialType::kPublicKey,
-          fido_parsing_utils::Materialize(
-              test_data::kTestGetAssertionCredentialId)}});
+          fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});
 
     return std::make_unique<GetAssertionRequestHandler>(
         nullptr /* connector */,
@@ -53,8 +54,11 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
         std::move(request_param), get_assertion_cb_.callback());
   }
 
-  test::FakeFidoDiscovery* discovery() const { return discovery_; }
+  void InitFeatureListWithCtapFlag() {
+    scoped_feature_list_.InitAndEnableFeature(kNewCtap2Device);
+  }
 
+  test::FakeFidoDiscovery* discovery() const { return discovery_; }
   TestGetAssertionRequestCallback& get_assertion_callback() {
     return get_assertion_cb_;
   }
@@ -62,12 +66,14 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+  base::test::ScopedFeatureList scoped_feature_list_;
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeFidoDiscovery* discovery_;
   TestGetAssertionRequestCallback get_assertion_cb_;
 };
 
 TEST_F(FidoGetAssertionHandlerTest, TestGetAssertionRequestOnSingleDevice) {
+  InitFeatureListWithCtapFlag();
   auto request_handler = CreateGetAssertionHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
   auto device = std::make_unique<MockFidoDevice>();
@@ -88,9 +94,9 @@ TEST_F(FidoGetAssertionHandlerTest, TestGetAssertionRequestOnSingleDevice) {
   EXPECT_TRUE(request_handler->is_complete());
 }
 
-// Test a scenario where the connected authenticator is a U2F device. Request
-// be silently dropped and request should remain in incomplete state.
-TEST_F(FidoGetAssertionHandlerTest, TestGetAssertionIncorrectGetInfoResponse) {
+// Test a scenario where the connected authenticator is a U2F device.
+TEST_F(FidoGetAssertionHandlerTest, TestU2fSign) {
+  InitFeatureListWithCtapFlag();
   auto request_handler = CreateGetAssertionHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -98,10 +104,40 @@ TEST_F(FidoGetAssertionHandlerTest, TestGetAssertionIncorrectGetInfoResponse) {
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fCheckOnlySignCommandApdu,
+      test_data::kApduEncodedNoErrorSignResponse);
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fSignCommandApdu,
+      test_data::kApduEncodedNoErrorSignResponse);
 
   discovery()->AddDevice(std::move(device));
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_TRUE(get_assertion_callback().value());
+  EXPECT_TRUE(request_handler->is_complete());
+}
+
+// Test a scenario where the connected authenticator is a U2F device and
+// "WebAuthenticationCtap2" flag is not enabled.
+TEST_F(FidoGetAssertionHandlerTest, TestU2fSignWithoutCtapFlag) {
+  auto request_handler = CreateGetAssertionHandler();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fCheckOnlySignCommandApdu,
+      test_data::kApduEncodedNoErrorSignResponse);
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fSignCommandApdu,
+      test_data::kApduEncodedNoErrorSignResponse);
+
+  discovery()->AddDevice(std::move(device));
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  EXPECT_TRUE(get_assertion_callback().value());
+  EXPECT_TRUE(request_handler->is_complete());
 }
 
 }  // namespace device
