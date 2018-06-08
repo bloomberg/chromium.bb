@@ -122,6 +122,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   base::circular_deque<Controller*> controller_queue_;
   std::map<std::string, Controller*> download_controller_map_;
 
+  bool lock_scheduler_ = false;
   size_t max_concurrent_downloads_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchScheduler);
