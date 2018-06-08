@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -176,9 +177,9 @@ TEST_F(LoadingPredictorTest, TestMainFrameResponseCancelsHint) {
   predictor_->PrepareForPageLoad(url, HintOrigin::EXTERNAL);
   EXPECT_EQ(1UL, predictor_->active_hints_.size());
 
-  auto summary =
-      CreateURLRequestSummary(SessionID::FromSerializedValue(12), url.spec());
-  predictor_->OnMainFrameResponse(summary);
+  auto navigation_id =
+      CreateNavigationID(SessionID::FromSerializedValue(12), url.spec());
+  predictor_->OnNavigationFinished(navigation_id, navigation_id, false);
   EXPECT_TRUE(predictor_->active_hints_.empty());
 }
 
@@ -189,19 +190,17 @@ TEST_F(LoadingPredictorTest, TestMainFrameRequestCancelsStaleNavigations) {
   const auto& active_navigations = predictor_->active_navigations_;
   const auto& active_hints = predictor_->active_hints_;
 
-  auto summary = CreateURLRequestSummary(tab_id, url);
   auto navigation_id = CreateNavigationID(tab_id, url);
 
-  predictor_->OnMainFrameRequest(summary);
+  predictor_->OnNavigationStarted(navigation_id);
   EXPECT_NE(active_navigations.find(navigation_id), active_navigations.end());
   EXPECT_NE(active_hints.find(GURL(url)), active_hints.end());
 
-  summary = CreateURLRequestSummary(tab_id, url2);
-  predictor_->OnMainFrameRequest(summary);
+  auto navigation_id2 = CreateNavigationID(tab_id, url2);
+  predictor_->OnNavigationStarted(navigation_id2);
   EXPECT_EQ(active_navigations.find(navigation_id), active_navigations.end());
   EXPECT_EQ(active_hints.find(GURL(url)), active_hints.end());
 
-  auto navigation_id2 = CreateNavigationID(tab_id, url2);
   EXPECT_NE(active_navigations.find(navigation_id2), active_navigations.end());
 }
 
@@ -212,29 +211,23 @@ TEST_F(LoadingPredictorTest, TestMainFrameResponseClearsNavigations) {
   const auto& active_navigations = predictor_->active_navigations_;
   const auto& active_hints = predictor_->active_hints_;
 
-  auto summary = CreateURLRequestSummary(tab_id, url);
   auto navigation_id = CreateNavigationID(tab_id, url);
 
-  predictor_->OnMainFrameRequest(summary);
+  predictor_->OnNavigationStarted(navigation_id);
   EXPECT_NE(active_navigations.find(navigation_id), active_navigations.end());
   EXPECT_FALSE(active_hints.empty());
 
-  predictor_->OnMainFrameResponse(summary);
+  predictor_->OnNavigationFinished(navigation_id, navigation_id, false);
   EXPECT_TRUE(active_navigations.empty());
   EXPECT_TRUE(active_hints.empty());
 
   // With redirects.
-  predictor_->OnMainFrameRequest(summary);
+  predictor_->OnNavigationStarted(navigation_id);
   EXPECT_NE(active_navigations.find(navigation_id), active_navigations.end());
   EXPECT_FALSE(active_hints.empty());
 
-  summary.redirect_url = GURL(redirected);
-  predictor_->OnMainFrameRedirect(summary);
-  EXPECT_FALSE(active_navigations.empty());
-  EXPECT_FALSE(active_hints.empty());
-
-  summary.navigation_id.main_frame_url = GURL(redirected);
-  predictor_->OnMainFrameResponse(summary);
+  auto new_navigation_id = CreateNavigationID(tab_id, redirected);
+  predictor_->OnNavigationFinished(navigation_id, new_navigation_id, false);
   EXPECT_TRUE(active_navigations.empty());
   EXPECT_TRUE(active_hints.empty());
 }
@@ -255,10 +248,9 @@ TEST_F(LoadingPredictorTest, TestMainFrameRequestDoesntCancelExternalHint) {
   base::TimeTicks start_time = it->second - base::TimeDelta::FromSeconds(10);
   it->second = start_time;
 
-  auto summary = CreateURLRequestSummary(tab_id, url.spec());
-  predictor_->OnMainFrameRequest(summary);
-  EXPECT_NE(active_navigations.find(summary.navigation_id),
-            active_navigations.end());
+  auto navigation_id = CreateNavigationID(tab_id, url.spec());
+  predictor_->OnNavigationStarted(navigation_id);
+  EXPECT_NE(active_navigations.find(navigation_id), active_navigations.end());
   it = active_hints.find(url);
   EXPECT_NE(it, active_hints.end());
   EXPECT_EQ(start_time, it->second);

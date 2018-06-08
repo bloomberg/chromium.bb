@@ -15,13 +15,6 @@
 
 namespace {
 
-class EmptyURLRequestDelegate : public net::URLRequest::Delegate {
-  void OnResponseStarted(net::URLRequest* request, int net_error) override {}
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override {}
-};
-
-EmptyURLRequestDelegate g_empty_url_request_delegate;
-
 bool AlmostEqual(const double x, const double y) {
   return std::fabs(x - y) <= 1e-6;  // Arbitrary but close enough.
 }
@@ -92,44 +85,47 @@ NavigationID CreateNavigationID(SessionID tab_id,
 PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
-    const std::vector<URLRequestSummary>& subresource_requests) {
+    const std::vector<content::mojom::ResourceLoadInfoPtr>&
+        resource_load_infos) {
   GURL main_frame_gurl(main_frame_url);
   PageRequestSummary summary(main_frame_gurl);
   summary.initial_url = GURL(initial_url);
-  summary.UpdateOrAddToOrigins(CreateURLRequestSummary(
-      SessionID::FromSerializedValue(1), main_frame_url));
-  for (auto& request_summary : subresource_requests)
-    summary.UpdateOrAddToOrigins(request_summary);
+  for (const auto& resource_load_info : resource_load_infos)
+    summary.UpdateOrAddToOrigins(*resource_load_info);
   return summary;
 }
 
-URLRequestSummary CreateURLRequestSummary(SessionID tab_id,
-                                          const std::string& main_frame_url,
-                                          const std::string& request_url,
-                                          content::ResourceType resource_type,
-                                          const std::string& redirect_url,
-                                          bool always_revalidate) {
-  URLRequestSummary summary;
-  summary.navigation_id = CreateNavigationID(tab_id, main_frame_url);
-  summary.request_url =
-      request_url.empty() ? GURL(main_frame_url) : GURL(request_url);
-  if (!redirect_url.empty())
-    summary.redirect_url = GURL(redirect_url);
-  summary.resource_type = resource_type;
-  summary.always_revalidate = always_revalidate;
-  summary.is_no_store = false;
-  summary.network_accessed = true;
-  return summary;
+content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
+    const std::string& url,
+    content::ResourceType resource_type,
+    bool always_access_network) {
+  auto resource_load_info = content::mojom::ResourceLoadInfo::New();
+  resource_load_info->url = GURL(url);
+  resource_load_info->original_url = GURL(url);
+  resource_load_info->method = "GET";
+  resource_load_info->resource_type = resource_type;
+  resource_load_info->network_info = content::mojom::CommonNetworkInfo::New(
+      true, always_access_network, base::nullopt);
+  return resource_load_info;
 }
 
-URLRequestSummary CreateRedirectRequestSummary(
-    SessionID session_id,
-    const std::string& main_frame_url,
-    const std::string& redirect_url) {
-  URLRequestSummary summary =
-      CreateURLRequestSummary(session_id, main_frame_url);
-  summary.redirect_url = GURL(redirect_url);
-  return summary;
+content::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
+    const std::vector<std::string>& redirect_chain,
+    content::ResourceType resource_type) {
+  auto resource_load_info = content::mojom::ResourceLoadInfo::New();
+  resource_load_info->url = GURL(redirect_chain.back());
+  resource_load_info->original_url = GURL(redirect_chain.front());
+  resource_load_info->method = "GET";
+  resource_load_info->resource_type = resource_type;
+  auto common_network_info =
+      content::mojom::CommonNetworkInfo::New(true, false, base::nullopt);
+  resource_load_info->network_info = common_network_info.Clone();
+  for (size_t i = 0; i + 1 < redirect_chain.size(); ++i) {
+    resource_load_info->redirect_info_chain.push_back(
+        content::mojom::RedirectInfo::New(GURL(redirect_chain[i]),
+                                          common_network_info.Clone()));
+  }
+  return resource_load_info;
 }
 
 PreconnectPrediction CreatePreconnectPrediction(
@@ -153,95 +149,6 @@ void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
   config->is_origin_learning_enabled = true;
   config->mode = LoadingPredictorConfig::LEARNING;
   config->flush_data_to_disk_delay_seconds = 0;
-}
-
-scoped_refptr<net::HttpResponseHeaders> MakeResponseHeaders(
-    const char* headers) {
-  return base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers, strlen(headers)));
-}
-
-MockURLRequestJob::MockURLRequestJob(
-    net::URLRequest* request,
-    const net::HttpResponseInfo& response_info,
-    const net::LoadTimingInfo& load_timing_info,
-    const std::string& mime_type)
-    : net::URLRequestJob(request, nullptr),
-      response_info_(response_info),
-      load_timing_info_(load_timing_info),
-      mime_type_(mime_type) {}
-
-bool MockURLRequestJob::GetMimeType(std::string* mime_type) const {
-  *mime_type = mime_type_;
-  return true;
-}
-
-void MockURLRequestJob::Start() {
-  NotifyHeadersComplete();
-}
-
-void MockURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
-  *info = response_info_;
-}
-
-void MockURLRequestJob::GetLoadTimingInfo(net::LoadTimingInfo* info) const {
-  *info = load_timing_info_;
-}
-
-MockURLRequestJobFactory::MockURLRequestJobFactory() {}
-MockURLRequestJobFactory::~MockURLRequestJobFactory() {}
-
-void MockURLRequestJobFactory::Reset() {
-  response_info_ = net::HttpResponseInfo();
-  mime_type_ = std::string();
-}
-
-net::URLRequestJob* MockURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
-    const std::string& scheme,
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return new MockURLRequestJob(request, response_info_, load_timing_info_,
-                               mime_type_);
-}
-
-net::URLRequestJob* MockURLRequestJobFactory::MaybeInterceptRedirect(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const GURL& location) const {
-  return nullptr;
-}
-
-net::URLRequestJob* MockURLRequestJobFactory::MaybeInterceptResponse(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return nullptr;
-}
-
-bool MockURLRequestJobFactory::IsHandledProtocol(
-    const std::string& scheme) const {
-  return true;
-}
-
-bool MockURLRequestJobFactory::IsSafeRedirectTarget(
-    const GURL& location) const {
-  return true;
-}
-
-std::unique_ptr<net::URLRequest> CreateURLRequest(
-    const net::TestURLRequestContext& url_request_context,
-    const GURL& url,
-    net::RequestPriority priority,
-    content::ResourceType resource_type,
-    bool is_main_frame) {
-  std::unique_ptr<net::URLRequest> request = url_request_context.CreateRequest(
-      url, priority, &g_empty_url_request_delegate,
-      TRAFFIC_ANNOTATION_FOR_TESTS);
-  request->set_site_for_cookies(url);
-  content::ResourceRequestInfo::AllocateForTesting(
-      request.get(), resource_type, nullptr, -1, -1, -1, is_main_frame, false,
-      true, content::PREVIEWS_OFF, nullptr);
-  request->Start();
-  return request;
 }
 
 std::ostream& operator<<(std::ostream& os, const RedirectData& data) {
@@ -286,13 +193,6 @@ std::ostream& operator<<(std::ostream& os, const PageRequestSummary& summary) {
   for (const auto& pair : summary.origins)
     os << "\t\t" << pair.first << ":" << pair.second << std::endl;
   return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const URLRequestSummary& summary) {
-  return os << "[" << summary.navigation_id << "," << summary.request_url << ","
-            << summary.redirect_url << "," << summary.resource_type << ","
-            << summary.always_revalidate << "," << summary.is_no_store << ","
-            << summary.network_accessed << "]";
 }
 
 std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
@@ -341,16 +241,6 @@ bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs) {
          lhs.origins == rhs.origins;
 }
 
-bool operator==(const URLRequestSummary& lhs, const URLRequestSummary& rhs) {
-  return lhs.navigation_id == rhs.navigation_id &&
-         lhs.request_url == rhs.request_url &&
-         lhs.redirect_url == rhs.redirect_url &&
-         lhs.resource_type == rhs.resource_type &&
-         lhs.always_revalidate == rhs.always_revalidate &&
-         lhs.is_no_store == rhs.is_no_store &&
-         lhs.network_accessed == rhs.network_accessed;
-}
-
 bool operator==(const OriginRequestSummary& lhs,
                 const OriginRequestSummary& rhs) {
   return lhs.origin == rhs.origin &&
@@ -393,3 +283,31 @@ bool operator==(const PreconnectPrediction& lhs,
 }
 
 }  // namespace predictors
+
+namespace content {
+namespace mojom {
+
+std::ostream& operator<<(std::ostream& os, const CommonNetworkInfo& info) {
+  return os << "[" << info.network_accessed << "," << info.always_access_network
+            << "]";
+}
+
+std::ostream& operator<<(std::ostream& os, const ResourceLoadInfo& info) {
+  return os << "[" << info.url.spec() << "," << info.resource_type << ","
+            << info.mime_type << "," << info.method << "," << *info.network_info
+            << "]";
+}
+
+bool operator==(const CommonNetworkInfo& lhs, const CommonNetworkInfo& rhs) {
+  return lhs.network_accessed == rhs.network_accessed &&
+         lhs.always_access_network == rhs.always_access_network;
+}
+
+bool operator==(const ResourceLoadInfo& lhs, const ResourceLoadInfo& rhs) {
+  return lhs.url == rhs.url && lhs.resource_type == rhs.resource_type &&
+         lhs.mime_type == rhs.mime_type && lhs.method == rhs.method &&
+         *lhs.network_info == *rhs.network_info;
+}
+
+}  // namespace mojom
+}  // namespace content

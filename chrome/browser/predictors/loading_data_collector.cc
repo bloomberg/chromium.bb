@@ -42,90 +42,9 @@ const char* const kFontMimeTypes[] = {"font/woff2",
                                       "application/font-sfnt",
                                       "application/font-ttf"};
 
-bool IsNoStore(const net::URLRequest& response) {
-  if (response.was_cached())
-    return false;
-
-  const net::HttpResponseInfo& response_info = response.response_info();
-  if (!response_info.headers.get())
-    return false;
-  return response_info.headers->HasHeaderValue("cache-control", "no-store");
-}
-
-}  // namespace
-
-OriginRequestSummary::OriginRequestSummary() = default;
-OriginRequestSummary::OriginRequestSummary(const OriginRequestSummary& other) =
-    default;
-OriginRequestSummary::~OriginRequestSummary() = default;
-
-URLRequestSummary::URLRequestSummary() = default;
-URLRequestSummary::URLRequestSummary(const URLRequestSummary& other) = default;
-URLRequestSummary::~URLRequestSummary() = default;
-
-// static
-bool URLRequestSummary::SummarizeResponse(const net::URLRequest& request,
-                                          URLRequestSummary* summary) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(&request);
-  if (!request_info)
-    return false;
-
-  summary->request_url = request.url();
-  content::ResourceType resource_type_from_request =
-      request_info->GetResourceType();
-  std::string mime_type;
-  request.GetMimeType(&mime_type);
-  summary->resource_type = LoadingDataCollector::GetResourceType(
-      resource_type_from_request, mime_type);
-
-  scoped_refptr<net::HttpResponseHeaders> headers =
-      request.response_info().headers;
-  if (headers.get()) {
-    // RFC 2616, section 14.9.
-    summary->always_revalidate =
-        headers->HasHeaderValue("cache-control", "no-cache") ||
-        headers->HasHeaderValue("pragma", "no-cache") ||
-        headers->HasHeaderValue("vary", "*");
-    summary->is_no_store = IsNoStore(request);
-  }
-  summary->network_accessed = request.response_info().network_accessed;
-
-  return true;
-}
-
-PageRequestSummary::PageRequestSummary(const GURL& i_main_frame_url)
-    : main_frame_url(i_main_frame_url),
-      initial_url(i_main_frame_url),
-      first_contentful_paint(base::TimeTicks::Max()) {}
-
-PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
-    default;
-
-void PageRequestSummary::UpdateOrAddToOrigins(
-    const URLRequestSummary& request_summary) {
-  GURL origin = request_summary.request_url.GetOrigin();
-  DCHECK(origin.is_valid());
-  if (!origin.is_valid())
-    return;
-
-  auto it = origins.find(origin);
-  if (it == origins.end()) {
-    OriginRequestSummary summary;
-    summary.origin = origin;
-    summary.first_occurrence = origins.size();
-    it = origins.insert({origin, summary}).first;
-  }
-
-  it->second.always_access_network |=
-      request_summary.always_revalidate || request_summary.is_no_store;
-  it->second.accessed_network |= request_summary.network_accessed;
-}
-
-PageRequestSummary::~PageRequestSummary() = default;
-
-// static
-content::ResourceType LoadingDataCollector::GetResourceTypeFromMimeType(
+// Determines the ResourceType from the mime type, defaulting to the
+// |fallback| if the ResourceType could not be determined.
+content::ResourceType GetResourceTypeFromMimeType(
     const std::string& mime_type,
     content::ResourceType fallback) {
   if (mime_type.empty()) {
@@ -148,10 +67,10 @@ content::ResourceType LoadingDataCollector::GetResourceTypeFromMimeType(
   return fallback;
 }
 
-// static
-content::ResourceType LoadingDataCollector::GetResourceType(
-    content::ResourceType resource_type,
-    const std::string& mime_type) {
+// Determines the resource type from the declared one, falling back to MIME
+// type detection when it is not explicit.
+content::ResourceType GetResourceType(content::ResourceType resource_type,
+                                      const std::string& mime_type) {
   // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE,XHR} to a small set
   // of mime types, because these resource types don't communicate how the
   // resources will be used.
@@ -164,107 +83,49 @@ content::ResourceType LoadingDataCollector::GetResourceType(
   return resource_type;
 }
 
-// static
-bool LoadingDataCollector::ShouldRecordRequest(
-    net::URLRequest* request,
-    content::ResourceType resource_type) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!request_info)
-    return false;
+}  // namespace
 
-  if (!request_info->IsMainFrame())
-    return false;
+OriginRequestSummary::OriginRequestSummary() = default;
+OriginRequestSummary::OriginRequestSummary(const OriginRequestSummary& other) =
+    default;
+OriginRequestSummary::~OriginRequestSummary() = default;
 
-  return resource_type == content::RESOURCE_TYPE_MAIN_FRAME &&
-         IsHandledMainPage(request);
+PageRequestSummary::PageRequestSummary(const GURL& i_main_frame_url)
+    : main_frame_url(i_main_frame_url),
+      initial_url(i_main_frame_url),
+      first_contentful_paint(base::TimeTicks::Max()) {}
+
+PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
+    default;
+
+void PageRequestSummary::UpdateOrAddToOrigins(
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
+  for (const auto& redirect_info : resource_load_info.redirect_info_chain)
+    UpdateOrAddToOrigins(redirect_info->url, redirect_info->network_info);
+  UpdateOrAddToOrigins(resource_load_info.url, resource_load_info.network_info);
 }
 
-// static
-bool LoadingDataCollector::ShouldRecordResponse(net::URLRequest* response) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(response);
-  if (!request_info)
-    return false;
-
-  if (!request_info->IsMainFrame())
-    return false;
-
-  content::ResourceType resource_type = request_info->GetResourceType();
-  return resource_type == content::RESOURCE_TYPE_MAIN_FRAME
-             ? IsHandledMainPage(response)
-             : IsHandledSubresource(response, resource_type);
-}
-
-// static
-bool LoadingDataCollector::ShouldRecordRedirect(net::URLRequest* response) {
-  return ShouldRecordResponse(response);
-}
-
-// static
-bool LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+void PageRequestSummary::UpdateOrAddToOrigins(
     const GURL& url,
-    content::ResourceType resource_type,
-    const std::string& mime_type) {
-  return IsHandledUrl(url) && IsHandledResourceType(resource_type, mime_type);
-}
+    const content::mojom::CommonNetworkInfoPtr& network_info) {
+  GURL origin = url.GetOrigin();
+  DCHECK(origin.is_valid());
+  if (!origin.is_valid())
+    return;
 
-// static
-bool LoadingDataCollector::IsHandledMainPage(net::URLRequest* request) {
-  const GURL& url = request->url();
-  bool bad_port = !g_allow_port_in_urls && url.has_port();
-  return url.SchemeIsHTTPOrHTTPS() && !bad_port;
-}
-
-// static
-bool LoadingDataCollector::IsHandledSubresource(
-    net::URLRequest* response,
-    content::ResourceType resource_type) {
-  if (!response->site_for_cookies().SchemeIsHTTPOrHTTPS())
-    return false;
-
-  std::string mime_type;
-  response->GetMimeType(&mime_type);
-  if (!IsHandledResourceType(resource_type, mime_type))
-    return false;
-
-  if (response->method() != "GET")
-    return false;
-
-  if (!IsHandledUrl(response->url()) ||
-      !IsHandledUrl(response->original_url())) {
-    return false;
+  auto it = origins.find(origin);
+  if (it == origins.end()) {
+    OriginRequestSummary summary;
+    summary.origin = origin;
+    summary.first_occurrence = origins.size();
+    it = origins.insert({origin, summary}).first;
   }
 
-  if (!response->response_info().headers.get())
-    return false;
-
-  return true;
+  it->second.always_access_network |= network_info->always_access_network;
+  it->second.accessed_network |= network_info->network_accessed;
 }
 
-// static
-bool LoadingDataCollector::IsHandledResourceType(
-    content::ResourceType resource_type,
-    const std::string& mime_type) {
-  content::ResourceType actual_resource_type =
-      GetResourceType(resource_type, mime_type);
-  return actual_resource_type == content::RESOURCE_TYPE_STYLESHEET ||
-         actual_resource_type == content::RESOURCE_TYPE_SCRIPT ||
-         actual_resource_type == content::RESOURCE_TYPE_IMAGE ||
-         actual_resource_type == content::RESOURCE_TYPE_FONT_RESOURCE;
-}
-
-// static
-bool LoadingDataCollector::IsHandledUrl(const GURL& url) {
-  bool bad_port = !g_allow_port_in_urls && url.has_port();
-  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS() || bad_port)
-    return false;
-
-  if (url.spec().length() > ResourcePrefetchPredictorTables::kMaxStringLength)
-    return false;
-
-  return true;
-}
+PageRequestSummary::~PageRequestSummary() = default;
 
 // static
 void LoadingDataCollector::SetAllowPortInUrlsForTesting(bool state) {
@@ -281,51 +142,62 @@ LoadingDataCollector::LoadingDataCollector(
 
 LoadingDataCollector::~LoadingDataCollector() = default;
 
-void LoadingDataCollector::RecordURLRequest(const URLRequestSummary& request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(request.resource_type, content::RESOURCE_TYPE_MAIN_FRAME);
-
-  CleanupAbandonedNavigations(request.navigation_id);
+void LoadingDataCollector::RecordStartNavigation(
+    const NavigationID& navigation_id) {
+  CleanupAbandonedNavigations(navigation_id);
 
   // New empty navigation entry.
-  const GURL& main_frame_url = request.navigation_id.main_frame_url;
   inflight_navigations_.emplace(
-      request.navigation_id,
-      std::make_unique<PageRequestSummary>(main_frame_url));
+      navigation_id,
+      std::make_unique<PageRequestSummary>(navigation_id.main_frame_url));
 }
 
-void LoadingDataCollector::RecordURLResponse(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+void LoadingDataCollector::RecordFinishNavigation(
+    const NavigationID& old_navigation_id,
+    const NavigationID& new_navigation_id,
+    bool is_error_page) {
+  if (is_error_page) {
+    inflight_navigations_.erase(old_navigation_id);
+    return;
+  }
+  // All subsequent events corresponding to this navigation will have
+  // |new_navigation_id|. Find the |old_navigation_id| entry in
+  // |inflight_navigations_| and change its key to the |new_navigation_id|.
+  std::unique_ptr<PageRequestSummary> summary;
+  auto nav_it = inflight_navigations_.find(old_navigation_id);
+  if (nav_it != inflight_navigations_.end()) {
+    summary = std::move(nav_it->second);
+    DCHECK_EQ(summary->main_frame_url, old_navigation_id.main_frame_url);
+    summary->main_frame_url = new_navigation_id.main_frame_url;
+    inflight_navigations_.erase(nav_it);
+  } else {
+    summary =
+        std::make_unique<PageRequestSummary>(new_navigation_id.main_frame_url);
+    summary->initial_url = old_navigation_id.main_frame_url;
+  }
 
-  NavigationMap::const_iterator nav_it =
-      inflight_navigations_.find(response.navigation_id);
+  inflight_navigations_.emplace(new_navigation_id, std::move(summary));
+}
+
+void LoadingDataCollector::RecordResourceLoadComplete(
+    const NavigationID& navigation_id,
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
+  auto nav_it = inflight_navigations_.find(navigation_id);
   if (nav_it == inflight_navigations_.end())
     return;
+
+  if (!ShouldRecordResourceLoad(resource_load_info))
+    return;
+
   auto& page_request_summary = *nav_it->second;
 
   if (config_.is_origin_learning_enabled)
-    page_request_summary.UpdateOrAddToOrigins(response);
-}
-
-void LoadingDataCollector::RecordURLRedirect(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (response.resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
-    OnMainFrameRedirect(response);
-  else
-    OnSubresourceRedirect(response);
+    page_request_summary.UpdateOrAddToOrigins(resource_load_info);
 }
 
 void LoadingDataCollector::RecordMainFrameLoadComplete(
     const NavigationID& navigation_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // WebContents can return an empty URL if the navigation entry corresponding
-  // to the navigation has not been created yet.
-  if (navigation_id.main_frame_url.is_empty())
-    return;
 
   // Initialize |predictor_| no matter whether the |navigation_id| is present in
   // |inflight_navigations_|. This is the case for NTP and about:blank pages,
@@ -358,49 +230,32 @@ void LoadingDataCollector::RecordFirstContentfulPaint(
     nav_it->second->first_contentful_paint = first_contentful_paint;
 }
 
-void LoadingDataCollector::OnMainFrameRedirect(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+// static
+bool LoadingDataCollector::ShouldRecordResourceLoad(
+    const content::mojom::ResourceLoadInfo& resource_load_info) {
+  const GURL& url = resource_load_info.url;
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
+    return false;
 
-  const GURL& main_frame_url = response.navigation_id.main_frame_url;
-  std::unique_ptr<PageRequestSummary> summary;
-  NavigationMap::iterator nav_it =
-      inflight_navigations_.find(response.navigation_id);
-  if (nav_it != inflight_navigations_.end()) {
-    summary = std::move(nav_it->second);
-    inflight_navigations_.erase(nav_it);
-  }
+  if (!g_allow_port_in_urls && url.has_port())
+    return false;
 
-  // The redirect url may be empty if the URL was invalid.
-  if (response.redirect_url.is_empty())
-    return;
-
-  // If we lost the information about the first hop for some reason.
-  if (!summary) {
-    summary = std::make_unique<PageRequestSummary>(main_frame_url);
-  }
-
-  // A redirect will not lead to another OnMainFrameRequest call, so record the
-  // redirect url as a new navigation id and save the initial url.
-  NavigationID navigation_id(response.navigation_id);
-  navigation_id.main_frame_url = response.redirect_url;
-  summary->main_frame_url = response.redirect_url;
-  inflight_navigations_.emplace(navigation_id, std::move(summary));
+  return IsHandledResourceType(resource_load_info.resource_type,
+                               resource_load_info.mime_type) &&
+         resource_load_info.method == "GET";
 }
 
-void LoadingDataCollector::OnSubresourceRedirect(
-    const URLRequestSummary& response) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!config_.is_origin_learning_enabled)
-    return;
-
-  NavigationMap::const_iterator nav_it =
-      inflight_navigations_.find(response.navigation_id);
-  if (nav_it == inflight_navigations_.end())
-    return;
-  auto& page_request_summary = *nav_it->second;
-  page_request_summary.UpdateOrAddToOrigins(response);
+// static
+bool LoadingDataCollector::IsHandledResourceType(
+    content::ResourceType resource_type,
+    const std::string& mime_type) {
+  content::ResourceType actual_resource_type =
+      GetResourceType(resource_type, mime_type);
+  return actual_resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
+         actual_resource_type == content::RESOURCE_TYPE_STYLESHEET ||
+         actual_resource_type == content::RESOURCE_TYPE_SCRIPT ||
+         actual_resource_type == content::RESOURCE_TYPE_IMAGE ||
+         actual_resource_type == content::RESOURCE_TYPE_FONT_RESOURCE;
 }
 
 void LoadingDataCollector::CleanupAbandonedNavigations(

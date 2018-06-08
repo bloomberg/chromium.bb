@@ -49,10 +49,6 @@ namespace chromeos {
 class CertificateProvider;
 }
 
-namespace chrome_browser_net {
-class LoadingPredictorObserver;
-}
-
 namespace content_settings {
 class CookieSettings;
 }
@@ -219,11 +215,6 @@ class ProfileIOData {
   }
 #endif
 
-  chrome_browser_net::LoadingPredictorObserver* loading_predictor_observer()
-      const {
-    return loading_predictor_observer_.get();
-  }
-
   policy::PolicyHeaderIOHelper* policy_header_helper() const {
     return policy_header_helper_.get();
   }
@@ -347,8 +338,6 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
 #endif
-    std::unique_ptr<chrome_browser_net::LoadingPredictorObserver>
-        loading_predictor_observer_;
 
     // This pointer exists only as a means of conveying a url job factory
     // pointer from the protocol handler registry on the UI thread to the
@@ -624,9 +613,6 @@ class ProfileIOData {
   mutable scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-
-  mutable std::unique_ptr<chrome_browser_net::LoadingPredictorObserver>
-      loading_predictor_observer_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Is NULL if switches::kDisableExtensionsHttpThrottling is on.
