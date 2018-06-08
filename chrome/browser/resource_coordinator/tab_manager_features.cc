@@ -357,10 +357,4 @@ InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams() {
   return params;
 }
 
-const InfiniteSessionRestoreParams& GetStaticInfiniteSessionRestoreParams() {
-  static base::NoDestructor<InfiniteSessionRestoreParams> params(
-      GetInfiniteSessionRestoreParams());
-  return *params;
-}
-
 }  // namespace resource_coordinator

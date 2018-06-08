@@ -6,7 +6,6 @@
 
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,9 +55,10 @@ class TestSessionRestorePolicy : public SessionRestorePolicy {
  public:
   using SessionRestorePolicy::CalculateSimultaneousTabLoads;
   using SessionRestorePolicy::SetTabLoadsStartedForTesting;
-  TestSessionRestorePolicy(const Delegate* delegate,
+  TestSessionRestorePolicy(bool policy_enabled,
+                           const Delegate* delegate,
                            const InfiniteSessionRestoreParams* params)
-      : SessionRestorePolicy(delegate, params) {}
+      : SessionRestorePolicy(policy_enabled, delegate, params) {}
 
   ~TestSessionRestorePolicy() override {}
 
@@ -117,8 +117,9 @@ class SessionRestorePolicyTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void CreatePolicy() {
-    policy_ = std::make_unique<TestSessionRestorePolicy>(&delegate_, &params_);
+  void CreatePolicy(bool policy_enabled) {
+    policy_ = std::make_unique<TestSessionRestorePolicy>(policy_enabled,
+                                                         &delegate_, &params_);
   }
 
  protected:
@@ -170,16 +171,7 @@ TEST_F(SessionRestorePolicyTest, CalculateSimultaneousTabLoads) {
 }
 
 TEST_F(SessionRestorePolicyTest, ShouldLoadFeatureEnabled) {
-  // Enable the InfiniteSessionRestore feature so that the policy logic is
-  // actually enabled.
-  std::set<std::string> features;
-  std::map<std::string, std::string> variations_params;
-  variations::testing::VariationParamsManager variations_manager;
-  features.insert(features::kInfiniteSessionRestore.name);
-  variations_manager.SetVariationParamsWithFeatureAssociations(
-      "DummyTrial", variations_params, features);
-
-  CreatePolicy();
+  CreatePolicy(true);
   EXPECT_TRUE(policy_->policy_enabled());
   EXPECT_EQ(2u, policy_->simultaneous_tab_loads());
 
@@ -247,7 +239,7 @@ TEST_F(SessionRestorePolicyTest, ShouldLoadFeatureEnabled) {
 }
 
 TEST_F(SessionRestorePolicyTest, ShouldLoadFeatureDisabled) {
-  CreatePolicy();
+  CreatePolicy(false);
   EXPECT_FALSE(policy_->policy_enabled());
   EXPECT_EQ(std::numeric_limits<size_t>::max(),
             policy_->simultaneous_tab_loads());

@@ -63,7 +63,8 @@ SessionRestorePolicy::SessionRestorePolicy()
     : policy_enabled_(
           base::FeatureList::IsEnabled(features::kInfiniteSessionRestore)),
       delegate_(SysInfoDelegate::Get()),
-      params_(&GetStaticInfiniteSessionRestoreParams()),
+      parsed_params_(GetInfiniteSessionRestoreParams()),
+      params_(&parsed_params_),
       simultaneous_tab_loads_(CalculateSimultaneousTabLoadsFromParams()) {}
 
 SessionRestorePolicy::~SessionRestorePolicy() = default;
@@ -110,10 +111,10 @@ void SessionRestorePolicy::NotifyTabLoadStarted() {
 }
 
 SessionRestorePolicy::SessionRestorePolicy(
+    bool policy_enabled,
     const Delegate* delegate,
     const InfiniteSessionRestoreParams* params)
-    : policy_enabled_(
-          base::FeatureList::IsEnabled(features::kInfiniteSessionRestore)),
+    : policy_enabled_(policy_enabled),
       delegate_(delegate),
       params_(params),
       simultaneous_tab_loads_(CalculateSimultaneousTabLoadsFromParams()) {}
