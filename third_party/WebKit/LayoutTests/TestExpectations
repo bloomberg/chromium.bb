@@ -4307,6 +4307,8 @@ crbug.com/694855 media/video-src-suspend-after-have-metadata.html [ Skip ]
 crbug.com/694855 virtual/video-surface-layer/media/audio-src-suspend-after-have-metadata.html [ Skip ]
 crbug.com/694855 virtual/video-surface-layer/media/video-src-suspend-after-have-metadata.html [ Skip ]
 
+crbug.com/849979 media/video-layer-crash.html [ Pass Timeout ]
+
 crbug.com/770232 [ Win10 ] editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
