@@ -53,3 +53,4 @@ integer 0x1234567890AbCdEf
 integer 0X1234567890aBcDeF
 
 identifier blah
+identifier include-hyphen
