@@ -170,6 +170,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   CommandLineHelper::AddDisabledFeature(*cl,
                                         media::kMediaDrmPersistentLicense.name);
 
+  // WebView requires audio autoplay to respect the document autoplay behavior.
+  CommandLineHelper::AddDisabledFeature(*cl,
+                                        media::kAutoplayIgnoreWebAudio.name);
+
   CommandLineHelper::AddEnabledFeature(
       *cl, autofill::features::kAutofillSkipComparingInferredLabels.name);
 
