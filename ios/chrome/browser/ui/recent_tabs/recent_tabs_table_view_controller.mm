@@ -90,6 +90,10 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 // The UI displays relative time for up to this number of hours and then
 // switches to absolute values.
 const int kRelativeTimeMaxHours = 4;
+// Height for single line headers.
+const CGFloat kSingleLineSectionHeaderHeight = 44;
+// Height for double line headers.
+const CGFloat kDoubleLineSectionHeaderHeight = 56;
 
 }  // namespace
 
@@ -164,7 +168,6 @@ const int kRelativeTimeMaxHours = 4;
   [self.tableView setDelegate:self];
   self.tableView.estimatedRowHeight = kEstimatedRowHeight;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
-  self.tableView.estimatedSectionHeaderHeight = kEstimatedRowHeight;
   self.tableView.sectionFooterHeight = 0.0;
   // Gesture recognizer for long press context menu on Session Headers.
   UILongPressGestureRecognizer* longPress =
@@ -617,6 +620,23 @@ const int kRelativeTimeMaxHours = 4;
     case ItemTypeOtherDevicesNoSessions:
     case ItemTypeOtherDevicesSigninPromo:
       break;
+  }
+}
+
+// TODO(crbug.com/850814): Use estimatedSectionHeaderHeight once we stop
+// supporting iOS10.
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  DCHECK_EQ(tableView, self.tableView);
+  NSInteger sectionIdentifier =
+      [self.tableViewModel sectionIdentifierForSection:section];
+  switch (sectionIdentifier) {
+    case SectionIdentifierRecentlyClosedTabs:
+    case SectionIdentifierOtherDevices:
+      return kSingleLineSectionHeaderHeight;
+    default:
+      // All remote session sections.
+      return kDoubleLineSectionHeaderHeight;
   }
 }
 
