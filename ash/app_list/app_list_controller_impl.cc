@@ -39,8 +39,6 @@ int64_t GetDisplayIdToShowAppListOn() {
 
 namespace ash {
 
-// TODO(hejq): Get rid of AppListPresenterDelegateFactory and pass in
-// ash::AppListPresenterDelegate directly.
 AppListControllerImpl::AppListControllerImpl()
     : presenter_(std::make_unique<AppListPresenterDelegate>(), this),
       keyboard_observer_(this),
@@ -536,8 +534,11 @@ bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
 
 void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
   last_raw_query_ = raw_query;
-  if (client_)
-    client_->StartSearch(raw_query);
+  if (client_) {
+    base::string16 query;
+    base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+    client_->StartSearch(query);
+  }
 }
 
 void AppListControllerImpl::OpenSearchResult(const std::string& result_id,

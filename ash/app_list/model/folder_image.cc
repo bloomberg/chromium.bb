@@ -4,10 +4,12 @@
 
 #include "ash/app_list/model/folder_image.h"
 
+#include <memory>
 #include <vector>
 
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_item_list.h"
+#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,9 +29,6 @@ namespace {
 constexpr int kItemIconDimension = 16;
 constexpr float kFolderBubbleRadius = 23;
 constexpr float kFolderBubbleOffsetY = 1;
-// Keep this consistent with |kGridIconDimension| in app_list_constants.cc.
-// TODO(hejq): Figure out a way to consolidate the two.
-constexpr int kGridIconDimension = 48;
 
 // Gets the size of a small app icon inside the folder icon.
 gfx::Size ItemIconSize() {

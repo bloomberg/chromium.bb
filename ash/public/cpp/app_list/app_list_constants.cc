@@ -92,8 +92,6 @@ const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 5;
 const int kPreferredRows = 5;
-// Keep |kGridIconDimension| in folder_image.cc consistent with this.
-// TODO(hejq): Figure out a way to consolidate the two.
 const int kGridIconDimension = 48;
 
 // The preferred app badge icon size.

@@ -30,8 +30,7 @@ class SearchController {
   explicit SearchController(AppListModelUpdater* model_updater);
   virtual ~SearchController();
 
-  // TODO(hejq): can we accept a trimmed query here?
-  void Start(const base::string16& raw_query);
+  void Start(const base::string16& query);
 
   void OpenResult(ChromeSearchResult* result, int event_flags);
   void InvokeResultAction(ChromeSearchResult* result,
@@ -50,8 +49,6 @@ class SearchController {
  private:
   // Invoked when the search results are changed.
   void OnResultsChanged();
-
-  base::string16 last_raw_query_;
 
   bool dispatching_query_ = false;
 

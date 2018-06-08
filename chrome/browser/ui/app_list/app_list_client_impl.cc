@@ -71,9 +71,9 @@ AppListClientImpl* AppListClientImpl::GetInstance() {
   return g_app_list_client_instance;
 }
 
-void AppListClientImpl::StartSearch(const base::string16& raw_query) {
+void AppListClientImpl::StartSearch(const base::string16& trimmed_query) {
   if (search_controller_) {
-    search_controller_->Start(raw_query);
+    search_controller_->Start(trimmed_query);
     controller_delegate_.OnSearchStarted();
   }
 }
