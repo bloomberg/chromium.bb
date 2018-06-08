@@ -35,6 +35,7 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -81,6 +82,11 @@ constexpr auto kMinExpansionStepDuration =
     base::TimeDelta::FromMilliseconds(20);
 constexpr auto kMaxExpansionStepDuration =
     base::TimeDelta::FromMilliseconds(150);
+
+const gfx::FontList& GetFont() {
+  return views::style::GetFont(views::style::CONTEXT_LABEL,
+                               views::style::STYLE_PRIMARY);
+}
 
 }  // namespace
 
@@ -490,8 +496,9 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   SkColor blended_text_color = color_utils::AlphaBlend(
       theme_provider_->GetColor(ThemeProperties::COLOR_TAB_TEXT), bubble_color,
       0x99);
+
   canvas->DrawStringRect(
-      text_, gfx::FontList(),
+      text_, GetFont(),
       color_utils::GetReadableColor(blended_text_color, bubble_color),
       text_rect);
 }
@@ -700,7 +707,7 @@ void StatusBubbleViews::RepositionPopup() {
 }
 
 int StatusBubbleViews::GetPreferredHeight() {
-  return gfx::FontList().GetHeight() + kTotalVerticalPadding;
+  return GetFont().GetHeight() + kTotalVerticalPadding;
 }
 
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
@@ -759,8 +766,7 @@ void StatusBubbleViews::SetURL(const GURL& url) {
   // Set Elided Text corresponding to the GURL object.
   int text_width = static_cast<int>(size_.width() - (kShadowThickness * 2) -
                                     kTextPositionX - kTextHorizPadding - 1);
-  url_text_ =
-      url_formatter::ElideUrl(url, gfx::FontList(), text_width);
+  url_text_ = url_formatter::ElideUrl(url, GetFont(), text_width);
 
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
