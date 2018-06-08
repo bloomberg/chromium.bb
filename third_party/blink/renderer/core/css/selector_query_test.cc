@@ -68,9 +68,11 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
       "<body><style>span::before { content: 'X' }</style><span></span></body>");
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(*document, NullURL(), kReferrerPolicyDefault,
-                               WTF::TextEncoding(),
-                               CSSParserContext::kSnapshotProfile),
+      CSSParserContext::Create(
+          *document, NullURL(),
+          false /* is_opaque_response_from_service_worker */,
+          kReferrerPolicyDefault, WTF::TextEncoding(),
+          CSSParserContext::kSnapshotProfile),
       nullptr, "span::before");
   std::unique_ptr<SelectorQuery> query =
       SelectorQuery::Adopt(std::move(selector_list));
@@ -78,9 +80,11 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   EXPECT_EQ(nullptr, elm);
 
   selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(*document, NullURL(), kReferrerPolicyDefault,
-                               WTF::TextEncoding(),
-                               CSSParserContext::kSnapshotProfile),
+      CSSParserContext::Create(
+          *document, NullURL(),
+          false /* is_opaque_response_from_service_worker */,
+          kReferrerPolicyDefault, WTF::TextEncoding(),
+          CSSParserContext::kSnapshotProfile),
       nullptr, "span");
   query = SelectorQuery::Adopt(std::move(selector_list));
   elm = query->QueryFirst(*document);
@@ -97,9 +101,11 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   document->body()->BeginParsingChildren();
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(*document, NullURL(), kReferrerPolicyDefault,
-                               WTF::TextEncoding(),
-                               CSSParserContext::kSnapshotProfile),
+      CSSParserContext::Create(
+          *document, NullURL(),
+          false /* is_opaque_response_from_service_worker */,
+          kReferrerPolicyDefault, WTF::TextEncoding(),
+          CSSParserContext::kSnapshotProfile),
       nullptr, "p:last-of-type");
   std::unique_ptr<SelectorQuery> query =
       SelectorQuery::Adopt(std::move(selector_list));

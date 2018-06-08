@@ -202,6 +202,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
     CSSStyleSheetResource* style_resource = ToCSSStyleSheetResource(resource);
     CSSParserContext* parser_context = CSSParserContext::Create(
         GetDocument(), style_resource->GetResponse().Url(),
+        style_resource->GetResponse().IsOpaqueResponseFromServiceWorker(),
         style_resource->GetReferrerPolicy(), style_resource->Encoding());
 
     StyleSheetContents* new_sheet =

@@ -78,10 +78,11 @@ void StyleRuleImport::NotifyFinished(Resource* resource) {
     document = parent_style_sheet_->SingleOwnerDocument();
     context = parent_style_sheet_->ParserContext();
   }
-  context =
-      CSSParserContext::Create(context, cached_style_sheet->GetResponse().Url(),
-                               cached_style_sheet->GetReferrerPolicy(),
-                               cached_style_sheet->Encoding(), document);
+  context = CSSParserContext::Create(
+      context, cached_style_sheet->GetResponse().Url(),
+      cached_style_sheet->GetResponse().IsOpaqueResponseFromServiceWorker(),
+      cached_style_sheet->GetReferrerPolicy(), cached_style_sheet->Encoding(),
+      document);
 
   style_sheet_ =
       StyleSheetContents::Create(this, cached_style_sheet->Url(), context);
