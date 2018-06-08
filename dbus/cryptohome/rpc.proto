@@ -449,3 +449,7 @@ message GetSupportedKeyPoliciesReply {
 message MigrateKeyRequest {
   optional bytes secret = 1;
 }
+
+// Mount the guest user partition.
+message MountGuestRequest {
+}
