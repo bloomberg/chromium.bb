@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/apdu/apdu_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
@@ -21,24 +22,23 @@ namespace device {
 
 U2fRegisterOperation::U2fRegisterOperation(
     FidoDevice* device,
-    DeviceResponseCallback callback,
-    const CtapMakeCredentialRequest& request)
-    : DeviceOperation(device, std::move(callback)),
-      request_(request),
+    const CtapMakeCredentialRequest& request,
+    DeviceResponseCallback callback)
+    : DeviceOperation(device, request, std::move(callback)),
       weak_factory_(this) {}
 
 U2fRegisterOperation::~U2fRegisterOperation() = default;
 
 void U2fRegisterOperation::Start() {
-  DCHECK(IsConvertibleToU2fRegisterCommand(request_));
+  DCHECK(IsConvertibleToU2fRegisterCommand(request()));
 
-  const auto& exclude_list = request_.exclude_list();
+  const auto& exclude_list = request().exclude_list();
   if (!exclude_list || exclude_list->empty()) {
     TryRegistration(false /* is_duplicate_registration */);
   } else {
-    auto it = request_.exclude_list()->cbegin();
+    auto it = request().exclude_list()->cbegin();
     DispatchDeviceRequest(
-        ConvertToU2fCheckOnlySignCommand(request_, *it),
+        ConvertToU2fCheckOnlySignCommand(request(), *it),
         base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
                        weak_factory_.GetWeakPtr(), it));
   }
@@ -47,7 +47,7 @@ void U2fRegisterOperation::Start() {
 void U2fRegisterOperation::TryRegistration(bool is_duplicate_registration) {
   auto command = is_duplicate_registration
                      ? ConstructBogusU2fRegistrationCommand()
-                     : ConvertToU2fRegisterCommand(request_);
+                     : ConvertToU2fRegisterCommand(request());
 
   DispatchDeviceRequest(
       std::move(command),
@@ -68,17 +68,18 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
   switch (return_code) {
     case apdu::ApduResponse::Status::SW_NO_ERROR: {
       if (is_duplicate_registration) {
-        std::move(callback_).Run(
-            CtapDeviceResponseCode::kCtap2ErrCredentialExcluded, base::nullopt);
+        std::move(callback())
+            .Run(CtapDeviceResponseCode::kCtap2ErrCredentialExcluded,
+                 base::nullopt);
         break;
       }
 
       auto response =
           AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
-              fido_parsing_utils::CreateSHA256Hash(request_.rp().rp_id()),
+              fido_parsing_utils::CreateSHA256Hash(request().rp().rp_id()),
               apdu_response->data());
-      std::move(callback_).Run(CtapDeviceResponseCode::kSuccess,
-                               std::move(response));
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kSuccess, std::move(response));
       break;
     }
     case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:
@@ -92,8 +93,8 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
       break;
     default:
       // An error has occurred, quit trying this device.
-      std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                               base::nullopt);
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
       break;
   }
 }
@@ -123,16 +124,16 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
     case apdu::ApduResponse::Status::SW_WRONG_DATA:
       // Continue to iterate through the provided key handles in the exclude
       // list and check for already registered keys.
-      if (++it != request_.exclude_list()->cend()) {
+      if (++it != request().exclude_list()->cend()) {
         DispatchDeviceRequest(
-            ConvertToU2fCheckOnlySignCommand(request_, *it),
+            ConvertToU2fCheckOnlySignCommand(request(), *it),
             base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
                            weak_factory_.GetWeakPtr(), it));
       } else {
         // Reached the end of exclude list with no duplicate credential.
         // Proceed with registration.
         DispatchDeviceRequest(
-            ConvertToU2fRegisterCommand(request_),
+            ConvertToU2fRegisterCommand(request()),
             base::BindOnce(&U2fRegisterOperation::OnRegisterResponseReceived,
                            weak_factory_.GetWeakPtr(),
                            false /* is_duplicate_registration */));
@@ -140,8 +141,8 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
       break;
     default:
       // Some sort of failure occurred. Silently drop device request.
-      std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                               base::nullopt);
+      std::move(callback())
+          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
       break;
   }
 }

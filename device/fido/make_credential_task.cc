@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "device/base/features.h"
+#include "device/fido/ctap2_device_operation.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
-#include "device/fido/ctap_register_operation.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/u2f_command_constructor.h"
 #include "device/fido/u2f_register_operation.h"
@@ -48,10 +48,12 @@ void MakeCredentialTask::MakeCredential() {
     return;
   }
 
-  register_operation_ = std::make_unique<CtapRegisterOperation>(
-      device(), &request_parameter_,
+  register_operation_ = std::make_unique<Ctap2DeviceOperation<
+      CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
+      device(), request_parameter_,
       base::BindOnce(&MakeCredentialTask::OnCtapMakeCredentialResponseReceived,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ReadCTAPMakeCredentialResponse));
   register_operation_->Start();
 }
 
@@ -66,10 +68,9 @@ void MakeCredentialTask::U2fRegister() {
   }
 
   register_operation_ = std::make_unique<U2fRegisterOperation>(
-      device(),
+      device(), request_parameter_,
       base::BindOnce(&MakeCredentialTask::OnCtapMakeCredentialResponseReceived,
-                     weak_factory_.GetWeakPtr()),
-      request_parameter_);
+                     weak_factory_.GetWeakPtr()));
   register_operation_->Start();
 }
 

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -15,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "device/fido/ctap_get_assertion_request.h"
+#include "device/fido/device_operation.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_task.h"
 
@@ -29,6 +31,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   using GetAssertionTaskCallback = base::OnceCallback<void(
       CtapDeviceResponseCode,
       base::Optional<AuthenticatorGetAssertionResponse>)>;
+  using SignOperation = DeviceOperation<CtapGetAssertionRequest,
+                                        AuthenticatorGetAssertionResponse>;
 
   GetAssertionTask(FidoDevice* device,
                    CtapGetAssertionRequest request,
@@ -75,9 +79,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
   bool CheckUserVerificationCompatible();
 
   void OnCtapGetAssertionResponseReceived(
-      base::Optional<std::vector<uint8_t>> device_response);
+      CtapDeviceResponseCode response_code,
+      base::Optional<AuthenticatorGetAssertionResponse> device_response);
 
   CtapGetAssertionRequest request_;
+  std::unique_ptr<SignOperation> sign_operation_;
   GetAssertionTaskCallback callback_;
   base::WeakPtrFactory<GetAssertionTask> weak_factory_;
 

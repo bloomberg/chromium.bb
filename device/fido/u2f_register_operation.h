@@ -20,6 +20,7 @@ namespace device {
 class FidoDevice;
 class CtapMakeCredentialRequest;
 class AuthenticatorMakeCredentialResponse;
+class PublicKeyCredentialDescriptor;
 
 // Represents per device registration logic for U2F tokens. Handles regular U2F
 // registration as well as the logic of iterating key handles in the exclude
@@ -31,8 +32,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
                              AuthenticatorMakeCredentialResponse> {
  public:
   U2fRegisterOperation(FidoDevice* device,
-                       DeviceResponseCallback callback,
-                       const CtapMakeCredentialRequest& request);
+                       const CtapMakeCredentialRequest& request,
+                       DeviceResponseCallback callback);
   ~U2fRegisterOperation() override;
 
   // DeviceOperation:
@@ -49,8 +50,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
   void OnCheckForExcludedKeyHandle(
       ExcludeListIterator it,
       base::Optional<std::vector<uint8_t>> device_response);
-
-  const CtapMakeCredentialRequest& request_;
 
   base::WeakPtrFactory<U2fRegisterOperation> weak_factory_;
 
