@@ -139,10 +139,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // Called by Browser::WindowFullscreenStateChanged.
   void WindowFullscreenStateChanged();
 
-  void set_is_tab_fullscreen_for_testing(bool is_tab_fullscreen) {
-    is_tab_fullscreen_for_testing_ = is_tab_fullscreen;
-  }
-
  private:
   friend class FullscreenControllerTest;
 
@@ -206,9 +202,6 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // Used in testing to confirm proper behavior for specific, privileged
   // fullscreen cases.
   bool is_privileged_fullscreen_for_testing_;
-
-  // Used in testing to set the state to tab fullscreen.
-  bool is_tab_fullscreen_for_testing_;
 
   base::WeakPtrFactory<FullscreenController> ptr_factory_;
 
