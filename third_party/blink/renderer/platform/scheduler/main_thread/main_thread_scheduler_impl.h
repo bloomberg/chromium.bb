@@ -23,7 +23,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/child/pollable_thread_safe_flag.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"

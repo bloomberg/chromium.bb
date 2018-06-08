@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_TASK_QUEUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_TASK_QUEUE_H_
 
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 
 namespace blink {
 namespace scheduler {

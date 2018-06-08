@@ -813,6 +813,7 @@ jumbo_component("base") {
     "task/sequence_manager/lazy_now.cc",
     "task/sequence_manager/lazy_now.h",
     "task/sequence_manager/sequenced_task_source.h",
+    "task/sequence_manager/task_queue.h",
     "task/sequence_manager/thread_controller.h",
     "task_runner.cc",
     "task_runner.h",

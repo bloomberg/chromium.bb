@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
 #include "third_party/blink/renderer/platform/scheduler/base/lazily_deallocated_deque.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 
 namespace base {
 namespace sequence_manager {
