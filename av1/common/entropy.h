@@ -29,7 +29,7 @@ extern "C" {
 
 #define TXB_SKIP_CONTEXTS 13
 
-#define EOB_COEF_CONTEXTS 22
+#define EOB_COEF_CONTEXTS 9
 
 #define SIG_COEF_CONTEXTS_2D 26
 #define SIG_COEF_CONTEXTS_1D 16
