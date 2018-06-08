@@ -6,17 +6,7 @@
       "chromium_builder_asan"
     ]
   },
-  "ASAN Debug (32-bit x86 with V8-ARM)": {
-    "additional_compile_targets": [
-      "chromium_builder_asan"
-    ]
-  },
   "ASAN Release": {
-    "additional_compile_targets": [
-      "chromium_builder_asan"
-    ]
-  },
-  "ASAN Release (32-bit x86 with V8-ARM)": {
     "additional_compile_targets": [
       "chromium_builder_asan"
     ]
@@ -26,7 +16,17 @@
       "chromium_builder_asan"
     ]
   },
-  "ASAN Release Media (32-bit x86 with V8-ARM)": {
+  "ASan Debug (32-bit x86 with V8-ARM)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
+  "ASan Release (32-bit x86 with V8-ARM)": {
+    "additional_compile_targets": [
+      "chromium_builder_asan"
+    ]
+  },
+  "ASan Release Media (32-bit x86 with V8-ARM)": {
     "additional_compile_targets": [
       "chromium_builder_asan"
     ]
@@ -46,17 +46,17 @@
       "chromium_builder_asan"
     ]
   },
-  "Mac ASan Debug": {
+  "Mac ASAN Debug": {
     "additional_compile_targets": [
       "chromium_builder_asan"
     ]
   },
-  "Mac ASan Release": {
+  "Mac ASAN Release": {
     "additional_compile_targets": [
       "chromium_builder_asan"
     ]
   },
-  "Mac ASan Release Media": {
+  "Mac ASAN Release Media": {
     "additional_compile_targets": [
       "chromium_builder_asan"
     ]

@@ -168,8 +168,6 @@
       'Linux x64 Goma Canary LocalOutputCache': 'release_bot',
 
       'mac-views-rel': 'mac_views_browser_release_bot',
-      'Chromium Mac 10.11': 'release_bot',
-      'Chromium Mac 10.11 Force Mac Toolchain': 'release_bot_mac_new_sdk',
       'Chromium Mac 10.13': 'release_bot',
 
       'Mac Builder Goma Canary': 'gpu_tests_release_bot',
@@ -178,15 +176,6 @@
       'Mac Builder (dbg) Goma Canary (clobber)': 'debug_bot',
       'Mac Goma Canary LocalOutputCache': 'release_bot_mac_strip',
 
-      'Chromium Win 10 GCE Tests': 'release_bot_minimal_symbols',
-      'Chromium Win PGO Builder': {
-        '1': 'official_optimize_chrome_pgo_phase_1_x86',
-        '2': 'official_optimize_chrome_pgo_phase_2_x86',
-      },
-      'Chromium Win x64 PGO Builder': {
-        '1': 'official_optimize_chrome_pgo_phase_1',
-        '2': 'official_optimize_chrome_pgo_phase_2',
-      },
       'Chromium Windows Analyze': 'windows_analyze',
 
       'Win7 Builder Goma Canary': 'release_bot_x86_minimal_symbols',
@@ -704,14 +693,6 @@
       'win_nacl_sdk': 'release_bot_x86_minimal_symbols',
       'win_nacl_sdk_build': 'release_bot_x86_minimal_symbols',
       'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_x86',
-      'win_pgo': {
-        '1': 'official_optimize_chrome_pgo_phase_1_x86',
-        '2': 'official_optimize_chrome_pgo_phase_2_x86',
-      },
-      'win_pgo_x64': {
-        '1': 'official_optimize_chrome_pgo_phase_1',
-        '2': 'official_optimize_chrome_pgo_phase_2',
-      },
       'win_upload_clang': 'release_bot',
       'win_chrome_official': 'official_goma_x86',
     },
@@ -1450,22 +1431,6 @@
       'official', 'goma', 'x86',
     ],
 
-    'official_optimize_chrome_pgo_phase_1': [
-      'official_optimize', 'chrome_pgo_phase_1',
-    ],
-
-    'official_optimize_chrome_pgo_phase_1_x86': [
-      'official_optimize', 'chrome_pgo_phase_1', 'x86',
-    ],
-
-    'official_optimize_chrome_pgo_phase_2': [
-      'official_optimize', 'chrome_pgo_phase_2',
-    ],
-
-    'official_optimize_chrome_pgo_phase_2_x86': [
-      'official_optimize', 'chrome_pgo_phase_2', 'x86',
-    ],
-
     'ozone_linux_release_bot': [
       'ozone_linux', 'release_bot',
     ],
@@ -1517,10 +1482,6 @@
 
     'release_bot_fuchsia_arm64_cast_audio': [
       'release_bot', 'fuchsia', 'arm64', 'cast', 'cast_audio', 'no_symbols',
-    ],
-
-    'release_bot_mac_new_sdk': [
-      'release_bot', 'mac_new_sdk',
     ],
 
     'release_bot_mac_strip': [
@@ -1756,14 +1717,6 @@
       'gn_args': 'use_cfi_recover=true',
     },
 
-    'chrome_pgo_phase_1': {
-      'gn_args': 'chrome_pgo_phase=1 is_clang=false',
-    },
-
-    'chrome_pgo_phase_2': {
-      'gn_args': 'chrome_pgo_phase=2 is_clang=false',
-    },
-
     'chrome_with_codecs': {
       'mixins': ['ffmpeg_branding_chrome', 'proprietary_codecs'],
     },
@@ -1915,10 +1868,6 @@
 
     'gpu_tests': {
       'mixins': ['chrome_with_codecs'],
-    },
-
-    'mac_new_sdk': {
-      'gn_args': 'mac_sdk_min="10.12"',
     },
 
     'headless': {

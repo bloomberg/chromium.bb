@@ -784,6 +784,15 @@ class BBJSONGenerator(object):
       'Optional Win10 Release (Intel HD 630)',
       'Optional Win10 Release (NVIDIA)',
       'Win7 ANGLE Tryserver (AMD)',
+      # chromium.android.fyi
+      'Unswarmed N5 Tests Dummy Builder',
+      'Unswarmed N5X Tests Dummy Builder',
+      # chromium.fyi
+      'chromeos-amd64-generic-rel-vm-tests',
+      'Dummy WebKit Mac10.13',
+      'WebKit Linux layout_ng Dummy Builder',
+      'WebKit Linux root_layer_scrolls Dummy Builder',
+      'WebKit Linux slimming_paint_v2 Dummy Builder',
     ]
 
   def check_input_file_consistency(self):
@@ -798,9 +807,7 @@ class BBJSONGenerator(object):
         if bot_name in bots_that_dont_exist:
           continue  # pragma: no cover
         if bot_name not in bot_names:
-          if waterfall['name'] in ['chromium.android.fyi', 'chromium.fyi',
-                                   'chromium.lkgr', 'client.v8.chromium',
-                                   'client.v8.fyi']:
+          if waterfall['name'] in ['client.v8.chromium', 'client.v8.fyi']:
             # TODO(thakis): Remove this once these bots move to luci.
             continue  # pragma: no cover
           if waterfall['name'] in ['tryserver.webrtc']:
