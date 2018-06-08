@@ -135,7 +135,7 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
   // content bounds so the background gets painted correctly.
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING),
-                  GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING))));
+                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
 
   set_notify_enter_exit_on_child(true);
 
@@ -419,7 +419,7 @@ int IconLabelBubbleView::GetInternalSpacing() const {
   return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
              ? kIconLabelSpacingTouch
              : GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-                   GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
+                   GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
 }
 
 int IconLabelBubbleView::GetSeparatorLayoutWidth() const {

@@ -61,13 +61,6 @@ enum LayoutConstant {
   // The size of the icons used inside the LocationBar.
   LOCATION_BAR_ICON_SIZE,
 
-  // The amount of padding used around the icon inside the LocationBar, i.e. the
-  // full width of a LocationBar icon will be LOCATION_BAR_ICON_SIZE + 2 *
-  // LOCATION_BAR_ICON_INTERIOR_PADDING. Icons may additionally be spaced
-  // horizontally by LOCATION_BAR_ELEMENT_PADDING, but this region is not part
-  // of the icon view (e.g. does not highlight on hover).
-  LOCATION_BAR_ICON_INTERIOR_PADDING,
-
   // Padding after the tab title.
   TAB_AFTER_TITLE_PADDING,
 
@@ -106,6 +99,14 @@ enum LayoutConstant {
 };
 
 enum LayoutInset {
+  // The padding used around the icon inside the LocationBar. The full width of
+  // the icon would be LOCATION_BAR_ICON_SIZE + 2 * inset.width(). The full
+  // height of the icon would be LOCATION_BAR_ICON_SIZE + 2 * inset.height().
+  // Icons may additionally be spaced horizontally by
+  // LOCATION_BAR_ELEMENT_PADDING, but this region is not part of the icon view
+  // (e.g. does not highlight on hover).
+  LOCATION_BAR_ICON_INTERIOR_PADDING,
+
   // The padding inside the tab bounds that defines the tab contents region.
   TAB,
 

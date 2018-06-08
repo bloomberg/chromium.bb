@@ -57,7 +57,7 @@ static constexpr int kRichSuggestionMarginHeight = 4;
 // Returns the padding width between elements.
 int HorizontalPadding() {
   return GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-         GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
+         GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).width() / 2;
 }
 
 // Returns the horizontal offset that ensures icons align vertically with the
