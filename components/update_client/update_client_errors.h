@@ -100,12 +100,16 @@ enum class ServiceError {
 // error in any meaningful way, but this value may be reported in UMA stats,
 // therefore avoiding collisions with known network errors is desirable.
 enum class ProtocolError : int {
+  NONE = 0,
   RESPONSE_NOT_TRUSTED = -10000,
   MISSING_PUBLIC_KEY = -10001,
   MISSING_URLS = -10002,
   PARSE_FAILED = -10003,
   UPDATE_RESPONSE_NOT_FOUND = -10004,
   URL_FETCHER_FAILED = -10005,
+  UNKNOWN_APPLICATION = -10006,
+  RESTRICTED_APPLICATION = -10007,
+  INVALID_APPID = -10008,
 };
 
 }  // namespace update_client

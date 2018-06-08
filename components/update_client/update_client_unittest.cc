@@ -269,10 +269,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -436,10 +434,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -641,10 +637,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -855,10 +849,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -1190,10 +1182,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -1487,10 +1477,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -1767,10 +1755,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       ProtocolParser::Results results;
       results.list.push_back(result);
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -2020,10 +2006,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -2247,10 +2231,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -2397,10 +2379,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       EXPECT_TRUE(components.at(id)->is_foreground());
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -2652,10 +2632,8 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       EXPECT_TRUE(components.at(id)->is_foreground());
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -2937,10 +2915,8 @@ TEST_F(UpdateClientTest, RetryAfter) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, retry_after_sec));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, retry_after_sec));
     }
   };
 
@@ -3182,10 +3158,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -3417,6 +3391,208 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
   update_client->RemoveObserver(&observer);
 }
 
+// Tests the scenario where the server responds with different values for
+// application status.
+TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
+  class DataCallbackMock {
+   public:
+    static std::vector<std::unique_ptr<CrxComponent>> Callback(
+        const std::vector<std::string>& ids) {
+      std::vector<std::unique_ptr<CrxComponent>> component;
+
+      std::unique_ptr<CrxComponent> crx = std::make_unique<CrxComponent>();
+      crx->name = "test_jebg";
+      crx->pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
+      crx->version = base::Version("0.9");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      component.push_back(std::move(crx));
+
+      crx = std::make_unique<CrxComponent>();
+      crx->name = "test_abag";
+      crx->pk_hash.assign(abag_hash, abag_hash + base::size(abag_hash));
+      crx->version = base::Version("0.1");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      component.push_back(std::move(crx));
+
+      crx = std::make_unique<CrxComponent>();
+      crx->name = "test_ihfo";
+      crx->pk_hash.assign(ihfo_hash, ihfo_hash + base::size(ihfo_hash));
+      crx->version = base::Version("0.2");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      component.push_back(std::move(crx));
+
+      crx = std::make_unique<CrxComponent>();
+      crx->name = "test_gjpm";
+      crx->pk_hash.assign(gjpm_hash, gjpm_hash + base::size(gjpm_hash));
+      crx->version = base::Version("0.3");
+      crx->installer = base::MakeRefCounted<TestInstaller>();
+      component.push_back(std::move(crx));
+
+      return component;
+    }
+  };
+
+  class CompletionCallbackMock {
+   public:
+    static void Callback(base::OnceClosure quit_closure, Error error) {
+      EXPECT_EQ(Error::NONE, error);
+      std::move(quit_closure).Run();
+    }
+  };
+
+  class MockUpdateChecker : public UpdateChecker {
+   public:
+    static std::unique_ptr<UpdateChecker> Create(
+        scoped_refptr<Configurator> config,
+        PersistedData* metadata) {
+      return std::make_unique<MockUpdateChecker>();
+    }
+
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
+      EXPECT_TRUE(enabled_component_updates);
+      EXPECT_EQ(4u, ids_to_check.size());
+
+      const std::string update_response =
+          R"(<?xml version="1.0" encoding="UTF-8"?>)"
+          R"(<response protocol="3.1">)"
+          R"(<app appid="jebgalgnebhfojomionfpkfelancnnkf")"
+          R"( status="error-unknownApplication"/>)"
+          R"(<app appid="abagagagagagagagagagagagagagagag")"
+          R"( status="restricted"/>)"
+          R"(<app appid="ihfokbkgjpifnbbojhneepfflplebdkc")"
+          R"( status="error-invalidAppId"/>)"
+          R"(<app appid="gjpmebpgbhcamgdgjcmnjfhggjpgcimm")"
+          R"( status="error-foobarApp"/>)"
+          R"(</response>)";
+
+      ProtocolParser parser;
+      EXPECT_TRUE(parser.Parse(update_response));
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(update_check_callback), parser.results(),
+                         ErrorCategory::kNone, 0, 0));
+    }
+  };
+
+  class MockCrxDownloader : public CrxDownloader {
+   public:
+    static std::unique_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        scoped_refptr<net::URLRequestContextGetter> context_getter) {
+      return std::make_unique<MockCrxDownloader>();
+    }
+
+    MockCrxDownloader() : CrxDownloader(nullptr) {}
+
+   private:
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  class MockPingManager : public MockPingManagerImpl {
+   public:
+    explicit MockPingManager(scoped_refptr<Configurator> config)
+        : MockPingManagerImpl(config) {}
+
+   protected:
+    ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
+  };
+
+  scoped_refptr<UpdateClient> update_client =
+      base::MakeRefCounted<UpdateClientImpl>(
+          config(), base::MakeRefCounted<MockPingManager>(config()),
+          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+
+  MockObserver observer;
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
+                                  "jebgalgnebhfojomionfpkfelancnnkf"))
+        .Times(1)
+        .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
+          CrxUpdateItem item;
+          update_client->GetCrxUpdateState(id, &item);
+          EXPECT_EQ(ComponentState::kUpdateError, item.state);
+          EXPECT_EQ(5, static_cast<int>(item.error_category));
+          EXPECT_EQ(-10006, item.error_code);  // UNKNOWN_APPPLICATION.
+          EXPECT_EQ(0, item.extra_code1);
+        }));
+  }
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "abagagagagagagagagagagagagagagag"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
+                                  "abagagagagagagagagagagagagagagag"))
+        .Times(1)
+        .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
+          CrxUpdateItem item;
+          update_client->GetCrxUpdateState(id, &item);
+          EXPECT_EQ(ComponentState::kUpdateError, item.state);
+          EXPECT_EQ(5, static_cast<int>(item.error_category));
+          EXPECT_EQ(-10007, item.error_code);  // RESTRICTED_APPLICATION.
+          EXPECT_EQ(0, item.extra_code1);
+        }));
+  }
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "ihfokbkgjpifnbbojhneepfflplebdkc"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
+                                  "ihfokbkgjpifnbbojhneepfflplebdkc"))
+        .Times(1)
+        .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
+          CrxUpdateItem item;
+          update_client->GetCrxUpdateState(id, &item);
+          EXPECT_EQ(ComponentState::kUpdateError, item.state);
+          EXPECT_EQ(5, static_cast<int>(item.error_category));
+          EXPECT_EQ(-10008, item.error_code);  // INVALID_APPID.
+          EXPECT_EQ(0, item.extra_code1);
+        }));
+  }
+  {
+    InSequence seq;
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                  "gjpmebpgbhcamgdgjcmnjfhggjpgcimm"))
+        .Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
+                                  "gjpmebpgbhcamgdgjcmnjfhggjpgcimm"))
+        .Times(1)
+        .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
+          CrxUpdateItem item;
+          update_client->GetCrxUpdateState(id, &item);
+          EXPECT_EQ(ComponentState::kUpdateError, item.state);
+          EXPECT_EQ(5, static_cast<int>(item.error_category));
+          EXPECT_EQ(-10004, item.error_code);  // UPDATE_RESPONSE_NOT_FOUND.
+          EXPECT_EQ(0, item.extra_code1);
+        }));
+  }
+
+  update_client->AddObserver(&observer);
+
+  const std::vector<std::string> ids = {
+      "jebgalgnebhfojomionfpkfelancnnkf", "abagagagagagagagagagagagagagagag",
+      "ihfokbkgjpifnbbojhneepfflplebdkc", "gjpmebpgbhcamgdgjcmnjfhggjpgcimm"};
+  update_client->Update(
+      ids, base::BindOnce(&DataCallbackMock::Callback), true,
+      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
+
+  RunThreads();
+
+  update_client->RemoveObserver(&observer);
+}
+
 #if defined(OS_WIN)  // ActionRun is only implemented on Windows.
 
 // Tests that a run action in invoked in the CRX install scenario.
@@ -3484,10 +3660,8 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
@@ -3633,10 +3807,8 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(update_check_callback),
-                         base::make_optional<ProtocolParser::Results>(results),
-                         ErrorCategory::kNone, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), results,
+                                    ErrorCategory::kNone, 0, 0));
     }
   };
 
