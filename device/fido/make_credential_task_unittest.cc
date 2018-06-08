@@ -39,7 +39,7 @@ using TestMakeCredentialTaskCallback =
 class FidoMakeCredentialTaskTest : public testing::Test {
  public:
   FidoMakeCredentialTaskTest() {
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_.emplace();
     scoped_feature_list_->InitAndEnableFeature(kNewCtap2Device);
   }
 
@@ -76,7 +76,7 @@ class FidoMakeCredentialTaskTest : public testing::Test {
   }
 
   void RemoveCtapFlag() {
-    scoped_feature_list_.reset(new base::test::ScopedFeatureList());
+    scoped_feature_list_.emplace();
     scoped_feature_list_->InitAndDisableFeature(kNewCtap2Device);
   }
 
@@ -85,7 +85,7 @@ class FidoMakeCredentialTaskTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+  base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestMakeCredentialTaskCallback callback_receiver_;
 };

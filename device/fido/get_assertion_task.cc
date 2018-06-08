@@ -8,10 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "device/base/features.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap2_device_operation.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
 #include "device/fido/device_response_converter.h"
+#include "device/fido/u2f_command_constructor.h"
+#include "device/fido/u2f_sign_operation.h"
 
 namespace device {
 
@@ -40,10 +43,14 @@ GetAssertionTask::GetAssertionTask(FidoDevice* device,
 GetAssertionTask::~GetAssertionTask() = default;
 
 void GetAssertionTask::StartTask() {
-  GetAuthenticatorInfo(
-      base::BindOnce(&GetAssertionTask::GetAssertion,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&GetAssertionTask::U2fSign, weak_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(kNewCtap2Device)) {
+    GetAuthenticatorInfo(
+        base::BindOnce(&GetAssertionTask::GetAssertion,
+                       weak_factory_.GetWeakPtr()),
+        base::BindOnce(&GetAssertionTask::U2fSign, weak_factory_.GetWeakPtr()));
+  } else {
+    U2fSign();
+  }
 }
 
 void GetAssertionTask::GetAssertion() {
@@ -64,12 +71,18 @@ void GetAssertionTask::GetAssertion() {
 }
 
 void GetAssertionTask::U2fSign() {
-  // TODO(hongjunchoi): Implement U2F sign request logic to support
-  // interoperability with U2F protocol. Currently all requests for U2F devices
-  // are silently dropped.
-  // See: https://www.crbug.com/798573
-  std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                           base::nullopt);
+  device()->set_supported_protocol(ProtocolVersion::kU2f);
+  if (!IsConvertibleToU2fSignCommand(request_)) {
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                             base::nullopt);
+    return;
+  }
+
+  sign_operation_ = std::make_unique<U2fSignOperation>(
+      device(), request_,
+      base::BindOnce(&GetAssertionTask::OnCtapGetAssertionResponseReceived,
+                     weak_factory_.GetWeakPtr()));
+  sign_operation_->Start();
 }
 
 bool GetAssertionTask::CheckRequirementsOnReturnedUserEntities(
@@ -131,7 +144,11 @@ void GetAssertionTask::OnCtapGetAssertionResponseReceived(
 }
 
 bool GetAssertionTask::CheckUserVerificationCompatible() {
-  DCHECK(device()->device_info());
+  if (!device()->device_info()) {
+    return request_.user_verification() !=
+           UserVerificationRequirement::kRequired;
+  }
+
   const auto uv_availability =
       device()->device_info()->options().user_verification_availability();
 

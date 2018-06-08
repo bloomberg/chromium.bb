@@ -40,6 +40,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   using AuthenticatorMap =
       std::map<std::string, std::unique_ptr<FidoAuthenticator>, std::less<>>;
 
+  // TODO(https://crbug.com/769631): Remove the dependency on Connector once
+  // device/fido is servicified.
   FidoRequestHandlerBase(
       service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& transports);

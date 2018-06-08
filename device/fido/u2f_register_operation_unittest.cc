@@ -117,7 +117,7 @@ TEST_F(U2fRegisterOperationTest, TestDelayedSuccess) {
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
-      test_data::kU2fConditionNotSatisfiedResponse);
+      test_data::kU2fConditionNotSatisfiedApduResponse);
 
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
@@ -158,10 +158,10 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithExclusionList) {
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
       test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha,
-      test_data::kU2fWrongDataResponse);
+      test_data::kU2fWrongDataApduResponse);
   device->ExpectRequestAndRespondWith(
       test_data::kU2fCheckOnlySignCommandApduWithKeyBeta,
-      test_data::kU2fWrongDataResponse);
+      test_data::kU2fWrongDataApduResponse);
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);
@@ -207,10 +207,10 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithDuplicateHandle) {
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
       test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha,
-      test_data::kU2fWrongDataResponse);
+      test_data::kU2fWrongDataApduResponse);
   device->ExpectRequestAndRespondWith(
       test_data::kU2fCheckOnlySignCommandApduWithKeyBeta,
-      test_data::kU2fWrongDataResponse);
+      test_data::kU2fWrongDataApduResponse);
   device->ExpectRequestAndRespondWith(
       test_data::kU2fCheckOnlySignCommandApduWithKeyGamma,
       test_data::kApduEncodedNoErrorSignResponse);

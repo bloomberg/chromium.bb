@@ -40,25 +40,6 @@ class MockFidoDevice : public FidoDevice {
   MOCK_METHOD2(DeviceTransactPtr,
                void(const std::vector<uint8_t>& command, DeviceCallback& cb));
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
-
-  // Old interface ------------------------------------------------------------
-  // TODO(hongjunchoi): Remove all old test interface functions once U2F sign
-  // logic is migrated to GetAssertionTask.
-  // See: https://crbug.com/843788
-  static void NotSatisfied(const std::vector<uint8_t>& command,
-                           DeviceCallback& cb);
-  static void WrongData(const std::vector<uint8_t>& command,
-                        DeviceCallback& cb);
-  static void NoErrorSign(const std::vector<uint8_t>& command,
-                          DeviceCallback& cb);
-  static void NoErrorRegister(const std::vector<uint8_t>& command,
-                              DeviceCallback& cb);
-  static void SignWithCorruptedResponse(const std::vector<uint8_t>& command,
-                                        DeviceCallback& cb);
-  static void WinkDoNothing(WinkCallback& cb);
-
-  // New interface ------------------------------------------------------------
-
   void ExpectWinkedAtLeastOnce();
   void ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand command,

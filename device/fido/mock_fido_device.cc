@@ -33,64 +33,6 @@ void MockFidoDevice::DeviceTransact(std::vector<uint8_t> command,
   DeviceTransactPtr(command, cb);
 }
 
-// static
-void MockFidoDevice::NotSatisfied(const std::vector<uint8_t>& command,
-                                  DeviceCallback& cb) {
-  std::move(cb).Run(apdu::ApduResponse(
-                        std::vector<uint8_t>(),
-                        apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED)
-                        .GetEncodedResponse());
-}
-
-// static
-void MockFidoDevice::WrongData(const std::vector<uint8_t>& command,
-                               DeviceCallback& cb) {
-  std::move(cb).Run(
-      apdu::ApduResponse(std::vector<uint8_t>(),
-                         apdu::ApduResponse::Status::SW_WRONG_DATA)
-          .GetEncodedResponse());
-}
-
-// static
-void MockFidoDevice::NoErrorSign(const std::vector<uint8_t>& command,
-                                 DeviceCallback& cb) {
-  std::move(cb).Run(
-      apdu::ApduResponse(
-          std::vector<uint8_t>(std::begin(test_data::kTestU2fSignResponse),
-                               std::end(test_data::kTestU2fSignResponse)),
-          apdu::ApduResponse::Status::SW_NO_ERROR)
-          .GetEncodedResponse());
-}
-
-// static
-void MockFidoDevice::NoErrorRegister(const std::vector<uint8_t>& command,
-                                     DeviceCallback& cb) {
-  std::move(cb).Run(
-      apdu::ApduResponse(
-          std::vector<uint8_t>(std::begin(test_data::kTestU2fRegisterResponse),
-                               std::end(test_data::kTestU2fRegisterResponse)),
-          apdu::ApduResponse::Status::SW_NO_ERROR)
-          .GetEncodedResponse());
-}
-
-// static
-void MockFidoDevice::SignWithCorruptedResponse(
-    const std::vector<uint8_t>& command,
-    DeviceCallback& cb) {
-  std::move(cb).Run(
-      apdu::ApduResponse(
-          std::vector<uint8_t>(
-              std::begin(test_data::kTestCorruptedU2fSignResponse),
-              std::end(test_data::kTestCorruptedU2fSignResponse)),
-          apdu::ApduResponse::Status::SW_NO_ERROR)
-          .GetEncodedResponse());
-}
-
-// static
-void MockFidoDevice::WinkDoNothing(WinkCallback& cb) {
-  std::move(cb).Run();
-}
-
 void MockFidoDevice::ExpectWinkedAtLeastOnce() {
   EXPECT_CALL(*this, TryWinkRef(::testing::_)).Times(::testing::AtLeast(1));
 }

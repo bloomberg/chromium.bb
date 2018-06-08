@@ -37,7 +37,6 @@
 #include "device/fido/make_credential_request_handler.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
-#include "device/fido/u2f_sign.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -164,19 +163,6 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
   return false;
 }
 
-std::vector<std::vector<uint8_t>> FilterCredentialList(
-    const std::vector<webauth::mojom::PublicKeyCredentialDescriptorPtr>&
-        descriptors) {
-  std::vector<std::vector<uint8_t>> handles;
-  for (const auto& credential_descriptor : descriptors) {
-    if (credential_descriptor->type ==
-        webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY) {
-      handles.push_back(credential_descriptor->id);
-    }
-  }
-  return handles;
-}
-
 device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
     std::vector<uint8_t> client_data_hash,
     const webauth::mojom::PublicKeyCredentialCreationOptionsPtr& options,
@@ -203,7 +189,8 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
 
 device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
     std::vector<uint8_t> client_data_hash,
-    const webauth::mojom::PublicKeyCredentialRequestOptionsPtr& options) {
+    const webauth::mojom::PublicKeyCredentialRequestOptionsPtr& options,
+    base::Optional<std::vector<uint8_t>> alternative_application_parameter) {
   device::CtapGetAssertionRequest request_parameter(
       options->relying_party_id, std::move(client_data_hash));
 
@@ -215,6 +202,11 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
   request_parameter.SetUserVerification(
       mojo::ConvertTo<device::UserVerificationRequirement>(
           options->user_verification));
+
+  if (alternative_application_parameter) {
+    request_parameter.SetAlternativeApplicationParameter(
+        std::move(*alternative_application_parameter));
+  }
 
   if (!options->cable_authentication_data.empty()) {
     request_parameter.SetCableExtension(
@@ -404,7 +396,7 @@ std::string AuthenticatorImpl::SerializeCollectedClientDataToJson(
 void AuthenticatorImpl::MakeCredential(
     webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
     MakeCredentialCallback callback) {
-  if (u2f_request_ || ctap_request_) {
+  if (request_) {
     std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
     return;
@@ -484,7 +476,7 @@ void AuthenticatorImpl::MakeCredential(
                   options->authenticator_selection)
             : device::AuthenticatorSelectionCriteria();
 
-    ctap_request_ = std::make_unique<device::MakeCredentialRequestHandler>(
+    request_ = std::make_unique<device::MakeCredentialRequestHandler>(
         connector_, protocols_,
         CreateCtapMakeCredentialRequest(
             ConstructClientDataHash(client_data_json_), options,
@@ -498,7 +490,7 @@ void AuthenticatorImpl::MakeCredential(
 void AuthenticatorImpl::GetAssertion(
     webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,
     GetAssertionCallback callback) {
-  if (u2f_request_ || ctap_request_) {
+  if (request_) {
     std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
     return;
@@ -535,17 +527,6 @@ void AuthenticatorImpl::GetAssertion(
     return;
   }
 
-  // To use U2F, the relying party must not require user verification.
-  if (!base::FeatureList::IsEnabled(device::kNewCtap2Device) &&
-      options->user_verification ==
-          webauth::mojom::UserVerificationRequirement::REQUIRED) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::USER_VERIFICATION_UNSUPPORTED,
-        nullptr);
-    return;
-  }
-
   std::vector<uint8_t> application_parameter =
       CreateApplicationParameter(options->relying_party_id);
 
@@ -561,30 +542,6 @@ void AuthenticatorImpl::GetAssertion(
     alternative_application_parameter = std::move(appid_hash);
     // TODO(agl): needs a test once a suitable, mock U2F device exists.
     echo_appid_extension_ = true;
-  }
-
-  // Pass along valid keys from allow_list.
-  std::vector<std::vector<uint8_t>> handles =
-      FilterCredentialList(std::move(options->allow_credentials));
-
-  // There are two different descriptions of what should happen when
-  // "allowCredentials" is empty for U2F.
-  // a) WebAuthN 6.2.3 step 6[1] implies "NotAllowedError".
-  // b) CTAP step 7.2 step 2[2] says the device should error out with
-  // "CTAP2_ERR_OPTION_NOT_SUPPORTED". This also resolves to "NotAllowedError".
-  // The behavior in both cases is consistent with the current implementation.
-  // When CTAP2 is enabled, however, this check is done by handlers in
-  // fido/device on a per-device basis.
-
-  // [1] https://w3c.github.io/webauthn/#authenticatorgetassertion
-  // [2]
-  // https://fidoalliance.org/specs/fido-v2.0-ps-20170927/fido-client-to-authenticator-protocol-v2.0-ps-20170927.html
-  if (!base::FeatureList::IsEnabled(device::kNewCtap2Device) &&
-      handles.empty()) {
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        webauth::mojom::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS, nullptr);
-    return;
   }
 
   DCHECK(get_assertion_response_callback_.is_null());
@@ -604,25 +561,13 @@ void AuthenticatorImpl::GetAssertion(
       client_data::kGetType, caller_origin, std::move(options->challenge),
       base::nullopt);
 
-  if (base::FeatureList::IsEnabled(device::kNewCtap2Device)) {
-    ctap_request_ = std::make_unique<device::GetAssertionRequestHandler>(
-        connector_, protocols_,
-        CreateCtapGetAssertionRequest(
-            ConstructClientDataHash(client_data_json_), options),
-        base::BindOnce(&AuthenticatorImpl::OnSignResponse,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    // Communication using Cable protocol is only supported for CTAP2 devices.
-    protocols_.erase(
-        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
-
-    u2f_request_ = device::U2fSign::TrySign(
-        connector_, protocols_, handles,
-        ConstructClientDataHash(client_data_json_), application_parameter,
-        alternative_application_parameter,
-        base::BindOnce(&AuthenticatorImpl::OnSignResponse,
-                       weak_factory_.GetWeakPtr()));
-  }
+  request_ = std::make_unique<device::GetAssertionRequestHandler>(
+      connector_, protocols_,
+      CreateCtapGetAssertionRequest(
+          ConstructClientDataHash(client_data_json_), std::move(options),
+          std::move(alternative_application_parameter)),
+      base::BindOnce(&AuthenticatorImpl::OnSignResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
@@ -658,11 +603,10 @@ void AuthenticatorImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
 void AuthenticatorImpl::OnRegisterResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorMakeCredentialResponse> response_data) {
-  if (!u2f_request_ && !ctap_request_) {
+  if (!request_) {
     // Either the callback has been called immediately (in which case
-    // |u2f_request_| / |ctap_request_| won't have been set yet), or
-    // |RenderFrameDeleted| / |DidFinishNavigation| noticed that this object has
-    // been orphaned.
+    // |request_| won't have been set yet), or |RenderFrameDeleted| /
+    // |DidFinishNavigation| noticed that this object has been orphaned.
     return;
   }
 
@@ -727,7 +671,7 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
   DCHECK(attestation_preference_ !=
          webauth::mojom::AttestationConveyancePreference::NONE);
 
-  if (!u2f_request_ && !ctap_request_) {
+  if (!request_) {
     // |DidFinishNavigation| / |RenderFrameDeleted| noticed that this object has
     // been orphaned.
     return;
@@ -776,9 +720,9 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 void AuthenticatorImpl::OnSignResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorGetAssertionResponse> response_data) {
-  if (!u2f_request_ && !ctap_request_) {
+  if (!request_) {
     // Either the callback has been called immediately (in which case
-    // |u2f_request_| / |ctap_request_| won't have been set yet), or
+    // |request_| won't have been set yet), or
     // |DidFinishNavigation| / |RenderFrameDeleted| noticed that this object has
     // been orphaned.
     return;
@@ -857,8 +801,7 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
 
 void AuthenticatorImpl::Cleanup() {
   timer_->Stop();
-  u2f_request_.reset();
-  ctap_request_.reset();
+  request_.reset();
   request_delegate_.reset();
   make_credential_response_callback_.Reset();
   get_assertion_response_callback_.Reset();

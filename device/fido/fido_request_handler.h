@@ -85,6 +85,8 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       // authenticator.
       case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
         return FidoReturnCode::kUserConsentButCredentialExcluded;
+      case CtapDeviceResponseCode::kCtap2ErrInvalidCredential:
+      case CtapDeviceResponseCode::kCtap2ErrCredentialNotValid:
       case CtapDeviceResponseCode::kCtap2ErrNoCredentials:
         return FidoReturnCode::kUserConsentButCredentialNotRecognized;
       default:
