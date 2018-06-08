@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/widget/widget.h"
 
@@ -84,10 +85,13 @@ class BrowserFrame
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const;
 
-  // Returns true if the |event| was handled by the platform implementation
+  // Returns HANDLED if the |event| was handled by the platform implementation
   // before sending it to the renderer. E.g., it may be swallowed by a native
-  // menu bar.
-  bool PreHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event);
+  // menu bar. Returns NOT_HANDLED_IS_SHORTCUT if the event was not handled, but
+  // would be handled as a shortcut if the renderer chooses not to handle it.
+  // Otherwise returns NOT_HANDLED.
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event);
 
   // Returns true if the |event| was handled by the platform implementation,
   // if the renderer did not process it.

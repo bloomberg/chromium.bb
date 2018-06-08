@@ -978,6 +978,14 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommandsNoMenu) {
 
   ExtensionTestMessageListener start_of_line_listener("StartOfLine", false);
   SendStartOfLineKeyPressToPlatformApp();
+#if defined(OS_MACOSX)
+  // On macOS, sending an accelerator [key-down] will also cause the subsequent
+  // key-up to be swallowed. The implementation of guest.html is waiting for a
+  // key-up to send the caret-position message. So we send a key-down/key-up of
+  // a character that otherwise has no effect.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      GetPlatformAppWindow(), ui::VKEY_UP, false, false, false, false));
+#endif
   // Wait for the guest to receive a 'copy' edit command.
   ASSERT_TRUE(start_of_line_listener.WaitUntilSatisfied());
 }

@@ -36,6 +36,9 @@ EVENTS_BASE_EXPORT int MacKeyCodeForWindowsKeyCode(
     unichar* us_keyboard_shifted_character,
     unichar* keyboard_character);
 
+// Returns the WindowsKeyCode from the Mac key code.
+EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromKeyCode(unsigned short keyCode);
+
 // This implementation cribbed from:
 //   content/browser/render_host/input/web_input_event_builder_mac.mm
 // Converts |event| into a |KeyboardCode|.  The mapping is not direct as the Mac

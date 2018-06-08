@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "printing/buildflags/buildflags.h"
 #import "ui/base/accelerators/platform_accelerator_cocoa.h"
@@ -120,10 +121,12 @@ std::unique_ptr<ui::PlatformAccelerator> PlatformAcceleratorFromKeyCode(
       new ui::PlatformAcceleratorCocoa(key_equivalent, cocoa_modifiers));
 }
 
-// Create a cross platform accelerator given a cross platform |key_code| and
-// the |cocoa_modifiers|.
-ui::Accelerator AcceleratorFromKeyCode(ui::KeyboardCode key_code,
-                                       NSUInteger cocoa_modifiers) {
+}  // namespace
+
+// static
+ui::Accelerator AcceleratorsCocoa::AcceleratorFromKeyCode(
+    ui::KeyboardCode key_code,
+    NSUInteger cocoa_modifiers) {
   int cross_platform_modifiers = ui::EventFlagsFromModifiers(cocoa_modifiers);
   ui::Accelerator accelerator(key_code, cross_platform_modifiers);
 
@@ -133,17 +136,15 @@ ui::Accelerator AcceleratorFromKeyCode(ui::KeyboardCode key_code,
   return accelerator;
 }
 
-}  // namespace
-
 AcceleratorsCocoa::AcceleratorsCocoa() {
-  for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
+  for (size_t i = 0; i < base::size(kAcceleratorMap); ++i) {
     const AcceleratorMapping& entry = kAcceleratorMap[i];
     ui::Accelerator accelerator =
         AcceleratorFromKeyCode(entry.key_code, entry.modifiers);
     accelerators_.insert(std::make_pair(entry.command_id, accelerator));
   }
 
-  for (size_t i = 0; i < arraysize(kAcceleratorList); ++i) {
+  for (size_t i = 0; i < base::size(kAcceleratorList); ++i) {
     const AcceleratorListing& entry = kAcceleratorList[i];
     ui::Accelerator accelerator =
         AcceleratorFromKeyCode(entry.key_code, entry.modifiers);

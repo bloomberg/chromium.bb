@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/metrics/browser_window_histogram_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_views.h"
@@ -571,48 +574,45 @@ void BrowserWindowCocoa::ShowAppMenu() {
 content::KeyboardEventProcessingResult
 BrowserWindowCocoa::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
+  using Result = content::KeyboardEventProcessingResult;
   // Handle ESC to dismiss permission bubbles, but still forward it
   // to the window afterwards.
   if (event.windows_key_code == ui::VKEY_ESCAPE)
     [controller_ dismissPermissionBubble];
 
   if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
-    return content::KeyboardEventProcessingResult::NOT_HANDLED;
+    return Result::NOT_HANDLED;
 
-  if (event.GetType() == blink::WebInputEvent::kRawKeyDown &&
-      [controller_
-          handledByExtensionCommand:event.os_event
-                           priority:ui::AcceleratorManager::kHighPriority])
-    return content::KeyboardEventProcessingResult::HANDLED;
-
-  int id = [BrowserWindowUtils getCommandId:event];
-  if (id == -1)
-    return content::KeyboardEventProcessingResult::NOT_HANDLED;
-
-  if (browser_->command_controller()->IsReservedCommandOrKey(id, event)) {
-    using Result = content::KeyboardEventProcessingResult;
-    return [BrowserWindowUtils handleKeyboardEvent:event.os_event
-                                          inWindow:window()]
-               ? Result::HANDLED
-               : Result::NOT_HANDLED;
-  }
-
-  return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
+  int command = CommandForKeyEvent(event.os_event);
+  return command == -1 ? Result::NOT_HANDLED : Result::NOT_HANDLED_IS_SHORTCUT;
 }
 
 void BrowserWindowCocoa::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if ([BrowserWindowUtils shouldHandleKeyboardEvent:event]) {
-    if (![BrowserWindowUtils handleKeyboardEvent:event.os_event
-                                        inWindow:window()]) {
+  if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
+    return;
 
-      // TODO(spqchan): This is a temporary fix for exit extension fullscreen.
-      // A priority system for exiting extension fullscreen when there is a
-      // conflict is being experimented. See Issue 536047.
-      if (event.windows_key_code == ui::VKEY_ESCAPE)
-        [controller_ exitExtensionFullscreenIfPossible];
+  // TODO(spqchan): This is a temporary fix for exit extension fullscreen.
+  // A priority system for exiting extension fullscreen when there is a
+  // conflict is being experimented. See Issue 536047.
+  if (event.windows_key_code == ui::VKEY_ESCAPE) {
+    [controller_ exitExtensionFullscreenIfPossible];
+
+    // This is a press of an escape key with no modifiers except potentially
+    // shift. This will not be handled by the performKeyEquivalent: path, so
+    // handle it directly here.
+    if (!EventUsesPerformKeyEquivalent(event.os_event)) {
+      int command = IDC_STOP;
+      Browser* browser = chrome::FindBrowserWithWindow(window());
+      if (browser)
+        chrome::ExecuteCommand(browser, command);
+      return;
     }
   }
+
+  ChromeEventProcessingWindow* event_window =
+      base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(window());
+  [event_window redispatchKeyEvent:event.os_event];
 }
 
 void BrowserWindowCocoa::CutCopyPaste(int command_id) {

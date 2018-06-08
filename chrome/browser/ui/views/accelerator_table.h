@@ -23,6 +23,15 @@ struct AcceleratorMapping {
 
 // Returns a list of accelerator mapping information for accelerators
 // handled by Chrome but excluding accelerators handled by Ash.
+//
+// On macOS, most accelerators are present in the main menu. The mapping from
+// vkey -> command is modifiable by the user at any point in time. As such, it
+// doesn't make sense to have a static mapping. Furthermore, on macOS, all
+// accelerators that use a modifier key are handled much earlier during event
+// processing.
+//
+// On macOS (only), the result will only contain accelerators that do not use a
+// modifier key (e.g. escape).
 CHROME_VIEWS_EXPORT std::vector<AcceleratorMapping> GetAcceleratorList();
 
 // Returns true on Ash and if the command id has an associated accelerator which

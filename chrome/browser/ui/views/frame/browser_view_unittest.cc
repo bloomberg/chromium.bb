@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -178,6 +179,8 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
+// On macOS, most accelerators are handled by CommandDispatcher.
+#if !defined(OS_MACOSX)
 // Test that repeated accelerators are processed or ignored depending on the
 // commands that they refer to. The behavior for different commands is dictated
 // by IsCommandRepeatable() in chrome/browser/ui/views/accelerator_table.h.
@@ -196,6 +199,7 @@ TEST_F(BrowserViewTest, RepeatedAccelerators) {
       ui::VKEY_TAB, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
   EXPECT_TRUE(browser_view()->AcceleratorPressed(kNextTabRepeatAccel));
 }
+#endif  // !defined(OS_MACOSX)
 
 // Test that bookmark bar view becomes invisible when closing the browser.
 TEST_F(BrowserViewTest, BookmarkBarInvisibleOnShutdown) {

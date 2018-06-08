@@ -5,12 +5,19 @@
 #ifndef CHROME_BROWSER_GLOBAL_KEYBOARD_SHORTCUTS_MAC_H_
 #define CHROME_BROWSER_GLOBAL_KEYBOARD_SHORTCUTS_MAC_H_
 
-#include <Carbon/Carbon.h>  // For unichar.
 #include <stddef.h>
 
 #include <vector>
 
+#if defined(__OBJC__)
 @class NSEvent;
+#else   // __OBJC__
+class NSEvent;
+#endif  // __OBJC__
+
+namespace ui {
+class Accelerator;
+}
 
 struct KeyboardShortcutData {
   bool command_key;
@@ -22,70 +29,50 @@ struct KeyboardShortcutData {
   // should be specified instead.
   // Set 0 for the one you do not want to specify.
   int vkey_code;  // Virtual Key code for the command.
-  unichar key_char;  // Key event characters for the command as reported by
-                     // [NSEvent charactersIgnoringModifiers].
+
+  // Key event characters for the command as reported by
+  // [NSEvent charactersIgnoringModifiers].
+  // This should be a unichar, but the type is defined in
+  // Foundation.framework/.../NSString.h, which is an ObjC header. This header
+  // is included in non-ObjC translation units, so we cannot rely on that
+  // include.
+  unsigned short key_char;
+
   int chrome_command;  // The chrome command # to execute for this shortcut.
 };
 
-// Check if a given keycode + modifiers (or keychar + modifiers if the
-// |key_char| is specified) correspond to a given Chrome command.
-// returns: Command number (as passed to
-// BrowserCommandController::ExecuteCommand) or -1 if there was no match.
+// macOS applications are supposed to put all keyEquivalents [hotkeys] in the
+// menu bar. For legacy reasons, Chrome does not. There are around 30 hotkeys
+// that are explicitly coded to virtual keycodes. This has the following
+// downsides:
+//  * There is no way for the user to configure or disable these keyEquivalents.
+//  * This can cause keyEquivalent conflicts for non-US keyboard layouts with
+//    different default keyEquivalents, see https://crbug.com/841299.
 //
-// |performKeyEquivalent:| bubbles events up from the window to the views.  If
-// we let it bubble up to the Omnibox, then the Omnibox handles cmd-left/right
-// just fine, but it swallows cmd-1 and doesn't give us a chance to intercept
-// this. Hence, we need three types of keyboard shortcuts: shortcuts that are
-// intercepted before the Omnibox handles events, shortcuts that are
-// intercepted after the Omnibox had a chance but did not handle them, and
-// shortcuts that are only handled when tab contents is focused.
+// This function first searches the menu bar for a matching keyEquivalent. If
+// nothing is found, then it searches through the explicitly coded virtual
+// keycodes not present in the NSMenu.
 //
-// This means cmd-left doesn't work if you hit cmd-l tab, which focusses
-// something that's neither omnibox nor tab contents. This behavior is
-// consistent with safari and camino, and I think it's the best we can do
-// without rewriting event dispatching ( http://crbug.com/251069 ).
-
-// This returns shortcuts that should work no matter what component of the
-// browser is focused. They are executed by the window, before any view has the
-// opportunity to override the shortcut (with the exception of the tab contents,
-// which first checks if the current web page wants to handle the shortcut).
-int CommandForWindowKeyboardShortcut(
-    bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
-    int vkey_code, unichar key_char);
-
-// This returns shortcuts that should work no matter what component of the
-// browser is focused. They are executed by the window, after any view has the
-// opportunity to override the shortcut
-int CommandForDelayedWindowKeyboardShortcut(
-    bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
-    int vkey_code, unichar key_char);
-
-// This returns shortcuts that should work only if the tab contents have focus
-// (e.g. cmd-left, which shouldn't do history navigation if e.g. the omnibox has
-// focus).
-int CommandForBrowserKeyboardShortcut(
-    bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
-    int vkey_code, unichar key_char);
-
-// Returns the Chrome command associated with |event|, or -1 if not found.
+// Note: AppKit exposes symbolic hotkeys [e.g. cmd + `] not present in the
+// NSMenu as well. The user can remap these to conflict with Chrome hotkeys.
+// This function will return the Chrome hotkey, regardless of whether there's a
+// conflicting symbolic hotkey.
 int CommandForKeyEvent(NSEvent* event);
 
-// Returns the menu command associated with |event|, or -1 if not found.
-int MenuCommandForKeyEvent(NSEvent* event);
+// Whether the event goes through the performKeyEquivalent: path and is handled
+// by CommandDispatcher.
+bool EventUsesPerformKeyEquivalent(NSEvent* event);
 
-// Returns a keyboard event character for the given |event|.  In most cases
-// this returns the first character of [NSEvent charactersIgnoringModifiers],
-// but when [NSEvent character] has different printable ascii character
-// we may return the first character of [NSEvent characters] instead.
-// (E.g. for dvorak-qwerty layout we want [NSEvent characters] rather than
-// [charactersIgnoringModifiers] for command keys.  Similarly, on german
-// layout we want '{' character rather than '8' for opt-8.)
-unichar KeyCharacterForEvent(NSEvent* event);
+// On macOS, most accelerators are defined in MainMenu.xib and are user
+// configurable. Furthermore, their values and enabled state depends on the key
+// window. Views code relies on a static mapping that is not dependent on the
+// key window. Thus, we provide the default Mac accelerator for each CommandId,
+// which is static. This may be inaccurate, but is at least sufficiently well
+// defined for Views to use.
+bool GetDefaultMacAcceleratorForCommandId(int command_id,
+                                          ui::Accelerator* accelerator);
 
 // For testing purposes.
-const std::vector<KeyboardShortcutData>& GetWindowKeyboardShortcutTable();
-const std::vector<KeyboardShortcutData>&
-GetDelayedWindowKeyboardShortcutTable();
-const std::vector<KeyboardShortcutData>& GetBrowserKeyboardShortcutTable();
+const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu();
 
 #endif  // #ifndef CHROME_BROWSER_GLOBAL_KEYBOARD_SHORTCUTS_MAC_H_

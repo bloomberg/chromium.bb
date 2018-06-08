@@ -50,6 +50,14 @@ class AcceleratorsCocoa {
   // Returns the singleton instance.
   static AcceleratorsCocoa* GetInstance();
 
+  // TODO(erikchen): This shouldn't be necessary because ui::Accelerator has
+  // almost the same constructor and contains the same information. Remove this.
+  // https://crbug.com/846893.
+  // Create a cross platform accelerator given a cross platform |key_code| and
+  // the |cocoa_modifiers|.
+  static ui::Accelerator AcceleratorFromKeyCode(ui::KeyboardCode key_code,
+                                                NSUInteger cocoa_modifiers);
+
  private:
   friend struct base::DefaultSingletonTraits<AcceleratorsCocoa>;
   FRIEND_TEST_ALL_PREFIXES(AcceleratorsCocoaBrowserTest,

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views_mode_controller.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 using cocoa_test_event_utils::SynthesizeKeyEvent;
@@ -63,12 +64,12 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
 }
 
 IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, MenuCommandPriority) {
-  // This test doesn't work in Views mode at the moment:
-  // https://crbug.com/845503. Disabled pending a bit of design work to fix it.
-  if (!views_mode_controller::IsViewsBrowserCocoa())
-    return;
   NSWindow* ns_window = browser()->window()->GetNativeWindow();
   TabStripModel* tab_strip = browser()->tab_strip_model();
+
+  // The IDC_SELECT_NEXT_TAB menu item is only enabled when the browser window
+  // is key.
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(ns_window));
 
   // Set up window with 4 tabs.
   chrome::NewTab(browser());
@@ -95,6 +96,7 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, MenuCommandPriority) {
   ASSERT_NE(nil, next_item);
   [next_item setKeyEquivalent:@"2"];
   [next_item setKeyEquivalentModifierMask:NSCommandKeyMask];
+  ASSERT_TRUE([next_item isEnabled]);
 
   // Send cmd-2 again, and ensure the tab switches.
   ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,

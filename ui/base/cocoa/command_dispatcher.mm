@@ -63,6 +63,11 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
  @private
   BOOL redispatchingEvent_;
   BOOL eventHandled_;
+
+  // If CommandDispatcher handles a keyEquivalent: [e.g. cmd + w], then it
+  // should suppress future key-up events, e.g. [cmd + w (key up)].
+  BOOL suppressEventsUntilKeyDown_;
+
   NSWindow<CommandDispatchingWindow>* owner_;  // Weak, owns us.
 }
 
@@ -75,37 +80,55 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   return self;
 }
 
-- (BOOL)performKeyEquivalent:(NSEvent*)event {
-  if ([delegate_ eventHandledByExtensionCommand:event
-                                   isRedispatch:redispatchingEvent_]) {
-    return YES;
+- (BOOL)doPerformKeyEquivalent:(NSEvent*)event {
+  // If |redispatchingEvent_| is true, then this is the second time
+  // performKeyEquivalent: is being called on the event. The first time, a
+  // WebContents was firstResponder and claimed to have handled the event [but
+  // instead sent the event asynchronously to the renderer process]. The
+  // renderer process chose not to handle the event, and the consumer
+  // redispatched the event by calling -[CommandDispatchingWindow
+  // redispatchKeyEvent:].
+  //
+  // We skip all steps before postPerformKeyEquivalent, since those were already
+  // triggered on the first pass of the event.
+  if (redispatchingEvent_) {
+    if ([delegate_ postPerformKeyEquivalent:event window:owner_])
+      return YES;
+    return [[self bubbleParent] performKeyEquivalent:event];
   }
 
-  if (redispatchingEvent_)
-    return NO;
-
-  // Give a CommandDispatcherTarget (e.g. a web site) a chance to handle the
-  // event. If it doesn't want to handle it, it will call us back with
-  // -redispatchKeyEvent:. Only allow this behavior when dispatching key events
-  // on the key window.
-  if ([owner_ isKeyWindow]) {
-    NSResponder* r = [owner_ firstResponder];
-    if ([r conformsToProtocol:@protocol(CommandDispatcherTarget)])
-      return [r performKeyEquivalent:event];
-  }
-
+  // First, give the delegate an opportunity to consume this event.
   if ([delegate_ prePerformKeyEquivalent:event window:owner_])
     return YES;
 
+  // Next, pass the event down the NSView hierarchy. Surprisingly, this doesn't
+  // use the responder chain. See implementation of -[NSWindow
+  // performKeyEquivalent:]. If the view hierarchy contains a
+  // RenderWidgetHostViewCocoa, it may choose to return true, and to
+  // asynchronously pass the event to the renderer. See
+  // -[RenderWidgetHostViewCocoa performKeyEquivalent:].
   if ([owner_ defaultPerformKeyEquivalent:event])
     return YES;
 
+  // If the firstResponder [e.g. omnibox] chose not to handle the keyEquivalent,
+  // then give the delegate another chance to consume it.
   if ([delegate_ postPerformKeyEquivalent:event window:owner_])
     return YES;
 
   // Allow commands to "bubble up" to CommandDispatchers in parent windows, if
   // they were not handled here.
   return [[self bubbleParent] performKeyEquivalent:event];
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent*)event {
+  DCHECK_EQ(NSKeyDown, [event type]);
+  suppressEventsUntilKeyDown_ = NO;
+
+  BOOL consumed = [self doPerformKeyEquivalent:event];
+  if (consumed)
+    suppressEventsUntilKeyDown_ = YES;
+
+  return consumed;
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
@@ -172,10 +195,32 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 }
 
 - (BOOL)preSendEvent:(NSEvent*)event {
+  // AppKit does not call performKeyEquivalent: if the event only has the
+  // NSEventModifierFlagOption modifier. However, Chrome wants to treat these
+  // events just like keyEquivalents, since they can be consumed by extensions.
+  if ([event type] == NSKeyDown &&
+      ([event modifierFlags] & NSEventModifierFlagOption)) {
+    BOOL handled = [self performKeyEquivalent:event];
+    if (handled)
+      return YES;
+  }
+
   if (redispatchingEvent_) {
     // If we get here, then the event was not handled by NSApplication.
     eventHandled_ = NO;
     // Return YES to stop native -sendEvent handling.
+    return YES;
+  }
+
+  // This occurs after redispatchingEvent_, since we want a physical
+  // key-press from the user to reset this.
+  if ([event type] == NSKeyDown)
+    suppressEventsUntilKeyDown_ = NO;
+
+  // If CommandDispatcher handled a keyEquivalent: [e.g. cmd + w], then it
+  // should suppress future key-up events, e.g. [cmd + w (key up)].
+  if (suppressEventsUntilKeyDown_ &&
+      ([event type] == NSKeyUp || [event type] == NSFlagsChanged)) {
     return YES;
   }
 

@@ -21,7 +21,8 @@
 // NSWindow can use CommandDispatcher by implementing CommandDispatchingWindow
 // and overriding -[NSWindow performKeyEquivalent:] and -[NSWindow sendEvent:]
 // to call the respective CommandDispatcher methods.
-UI_BASE_EXPORT @interface CommandDispatcher : NSObject
+UI_BASE_EXPORT
+@interface CommandDispatcher : NSObject
 
 @property(assign, nonatomic) id<CommandDispatcherDelegate> delegate;
 
@@ -59,33 +60,34 @@ UI_BASE_EXPORT @interface CommandDispatcher : NSObject
 
 @end
 
-// If the NSWindow's firstResponder implements CommandDispatcherTarget, it is
-// given the first opportunity to process a command.
+// If the NSWindow's firstResponder implements CommandDispatcherTarget, then
+// it is allowed to grant itself exclusive access to certain keyEquivalents,
+// preempting the usual consumer order.
 @protocol CommandDispatcherTarget
 
-// To handle an event asynchronously, return YES. If the event is ultimately not
-// handled, return the event to the CommandDispatchingWindow via -[[event
-// window] redispatchKeyEvent:event].
-- (BOOL)performKeyEquivalent:(NSEvent*)event;
+// The System Keyboard Lock API <https://w3c.github.io/keyboard-lock/>
+// allows web contents to override keyEquivalents normally reserved by the
+// browser. If the firstResponder returns |YES| from this method, then
+// keyEquivalents shortcuts should be skipped.
+- (BOOL)isKeyLocked:(NSEvent*)event;
 
 @end
 
 // Provides CommandDispatcher with the means to redirect key equivalents at
 // different stages of event handling.
-@protocol CommandDispatcherDelegate<NSObject>
+@protocol CommandDispatcherDelegate
 
-// Called before any other event handling, and possibly again if an unhandled
-// event comes back from CommandDispatcherTarget.
-- (BOOL)eventHandledByExtensionCommand:(NSEvent*)event
-                          isRedispatch:(BOOL)isRedispatch;
-
-// Called before the default -performKeyEquivalent:, but after the
-// CommandDispatcherTarget has had a chance to intercept it. |window| is the
-// CommandDispatchingWindow that owns CommandDispatcher.
+// Gives the delegate a chance to process the keyEquivalent before the first
+// responder. See https://crbug.com/846893#c5 for more details on
+// keyEquivalent consumer ordering. |window| is the CommandDispatchingWindow
+// that owns CommandDispatcher, not the window of the event.
 - (BOOL)prePerformKeyEquivalent:(NSEvent*)event window:(NSWindow*)window;
 
-// Called after the default -performKeyEquivalent:. |window| is the
-// CommandDispatchingWindow that owns CommandDispatcher.
+// Gives the delegate a chance to process the keyEquivalent after the first
+// responder has declined to process the event. See https://crbug.com/846893#c5
+// for more details on keyEquivalent consumer ordering.
+// |window| is the CommandDispatchingWindow that owns CommandDispatcher, not the
+// window of the event.
 - (BOOL)postPerformKeyEquivalent:(NSEvent*)event window:(NSWindow*)window;
 
 @end
