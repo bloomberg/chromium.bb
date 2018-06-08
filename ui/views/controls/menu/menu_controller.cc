@@ -424,11 +424,11 @@ void MenuController::Run(Widget* parent,
   menu_start_time_ = base::TimeTicks::Now();
   menu_start_mouse_press_loc_ = gfx::Point();
 
+  ui::Event* event = nullptr;
   if (parent) {
     View* root_view = parent->GetRootView();
     if (root_view) {
-      const ui::Event* event =
-          static_cast<internal::RootView*>(root_view)->current_event();
+      event = static_cast<internal::RootView*>(root_view)->current_event();
       if (event && event->type() == ui::ET_MOUSE_PRESSED) {
         gfx::Point screen_loc(
             static_cast<const ui::MouseEvent*>(event)->location());
@@ -476,8 +476,10 @@ void MenuController::Run(Widget* parent,
   // Set the selection, which opens the initial menu.
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
-  if (button)
-    pressed_lock_ = std::make_unique<MenuButton::PressedLock>(button);
+  if (button) {
+    pressed_lock_ = std::make_unique<MenuButton::PressedLock>(
+        button, false, ui::LocatedEvent::FromIfValid(event));
+  }
 
   if (for_drop_) {
     if (!is_nested_drag) {
