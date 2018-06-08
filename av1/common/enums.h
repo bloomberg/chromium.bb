@@ -78,18 +78,10 @@ extern "C" {
 // u plane, and v plane
 #define FRAME_LF_COUNT 4
 #define DEFAULT_DELTA_LF_MULTI 0
-
 #define MAX_MODE_LF_DELTAS 2
 
-typedef enum COMPOUND_DIST_WEIGHT_MODE {
-  DIST,
-} COMPOUND_DIST_WEIGHT_MODE;
-
-#define COMPOUND_WEIGHT_MODE DIST
 #define DIST_PRECISION_BITS 4
 #define DIST_PRECISION (1 << DIST_PRECISION_BITS)  // 16
-
-#define FRAME_NUM_LIMIT (INT_MAX - MAX_FRAME_DISTANCE - 1)
 
 // TODO(chengchen): Temporal flag serve as experimental flag for WIP
 // bitmask construction.
