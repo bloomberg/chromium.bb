@@ -6,7 +6,6 @@ from core import perf_benchmark
 from benchmarks import silk_flags
 from measurements import smoothness
 import page_sets
-import page_sets.key_silk_cases
 from telemetry import benchmark
 from telemetry import story as story_module
 
