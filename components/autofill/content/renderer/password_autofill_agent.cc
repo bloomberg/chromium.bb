@@ -408,19 +408,22 @@ void UpdateFieldValueAndPropertiesMaskMap(
     FieldPropertiesMask added_flags,
     FieldValueAndPropertiesMaskMap* field_value_and_properties_map) {
   FieldValueAndPropertiesMaskMap::iterator it =
-      field_value_and_properties_map->find(element);
+      field_value_and_properties_map->find(
+          element.UniqueRendererFormControlId());
   if (it != field_value_and_properties_map->end()) {
     if (value)
       it->second.first.reset(new base::string16(*value));
     it->second.second |= added_flags;
   } else {
-    (*field_value_and_properties_map)[element] = std::make_pair(
-        value ? std::make_unique<base::string16>(*value) : nullptr,
-        added_flags);
+    (*field_value_and_properties_map)[element.UniqueRendererFormControlId()] =
+        std::make_pair(
+            value ? std::make_unique<base::string16>(*value) : nullptr,
+            added_flags);
   }
   // Reset USER_TYPED and AUTOFILLED flags if the value is empty.
   if (value && value->empty()) {
-    (*field_value_and_properties_map)[element].second &=
+    (*field_value_and_properties_map)[element.UniqueRendererFormControlId()]
+        .second &=
         ~(FieldPropertiesFlags::USER_TYPED | FieldPropertiesFlags::AUTOFILLED);
   }
 }

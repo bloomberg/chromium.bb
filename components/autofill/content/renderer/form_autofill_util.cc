@@ -1264,10 +1264,7 @@ bool ScriptModifiedUsernameAcceptable(
     const base::string16* typed_from_key = map_key.second.first.get();
     if (!typed_from_key)
       continue;
-    const WebInputElement* input_element = ToWebInputElement(&map_key.first);
-    if (input_element && input_element->IsTextField() &&
-        !input_element->IsPasswordFieldForAutofill() &&
-        typed_from_key->size() >= kMinMatchSize &&
+    if (typed_from_key->size() >= kMinMatchSize &&
         lowercase.find(base::i18n::ToLower(*typed_from_key)) !=
             base::string16::npos) {
       return true;
@@ -1511,7 +1508,8 @@ void WebFormControlElementToFormField(
 
   if (field_value_and_properties_map) {
     FieldValueAndPropertiesMaskMap::const_iterator it =
-        field_value_and_properties_map->find(element);
+        field_value_and_properties_map->find(
+            element.UniqueRendererFormControlId());
     if (it != field_value_and_properties_map->end())
       field->properties_mask = it->second.second;
   }
@@ -1596,7 +1594,9 @@ void WebFormControlElementToFormField(
       field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
                                 FieldPropertiesFlags::AUTOFILLED)) {
     const base::string16 typed_value =
-        *field_value_and_properties_map->at(element).first;
+        *field_value_and_properties_map
+             ->at(element.UniqueRendererFormControlId())
+             .first;
 
     // The typed value is preserved for all passwords. It is also preserved for
     // potential usernames, as long as the |value| is not deemed acceptable.
