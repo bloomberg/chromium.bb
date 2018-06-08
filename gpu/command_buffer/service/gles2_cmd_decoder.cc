@@ -20246,7 +20246,6 @@ std::unique_ptr<AbstractTexture> GLES2DecoderImpl::CreateAbstractTexture(
     GLenum type) {
   GLuint service_id;
   api()->glGenTexturesFn(1, &service_id);
-  service_id = 1;
   scoped_refptr<gpu::gles2::TextureRef> texture_ref =
       TextureRef::Create(texture_manager(), 0, service_id);
   texture_manager()->SetTarget(texture_ref.get(), target);
