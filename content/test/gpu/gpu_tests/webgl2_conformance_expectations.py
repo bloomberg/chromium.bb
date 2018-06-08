@@ -1291,6 +1291,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/transform_feedback/switching-objects.html',
         ['linux', ('amd', 0x6613), 'no_angle'], bug=696345)
 
+    self.Fail('conformance2/buffers/get-buffer-sub-data-validity.html',
+        ['linux', ('amd', 0x6613)], bug=851159)
+
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
     # page_name = 'conformance/glsl/constructors/glsl-construct-ivec4.html'
