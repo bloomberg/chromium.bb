@@ -194,9 +194,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   static bool ValidateHost(GpuProcessHost* host);
 
-  // Increments the given crash count. Also, for each hour passed since the
-  // previous crash, removes an old crash from the count.
-  static void IncrementCrashCount(int* crash_count);
+  // Increments |crash_count| by one. Before incrementing |crash_count|, for
+  // each |forgive_minutes| that has passed since the previous crash remove one
+  // old crash.
+  static void IncrementCrashCount(int forgive_minutes, int* crash_count);
 
   GpuProcessHost(int host_id, GpuProcessKind kind);
   ~GpuProcessHost() override;
