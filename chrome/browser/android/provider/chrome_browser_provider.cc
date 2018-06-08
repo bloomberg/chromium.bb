@@ -20,7 +20,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/provider/blocking_ui_thread_async_request.h"
-#include "chrome/browser/android/provider/bookmark_model_observer_task.h"
+#include "chrome/browser/android/provider/bookmark_model_task.h"
 #include "chrome/browser/android/provider/run_on_ui_thread_blocking.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -216,80 +216,69 @@ class AddBookmarkTask : public BookmarkModelTask {
 };
 
 // Utility method to remove a bookmark.
-class RemoveBookmarkTask : public BookmarkModelObserverTask {
+class RemoveBookmarkTask : public BookmarkModelTask {
  public:
   explicit RemoveBookmarkTask(BookmarkModel* model)
-      : BookmarkModelObserverTask(model),
-        deleted_(0),
-        id_to_delete_(kInvalidBookmarkId) {}
-  ~RemoveBookmarkTask() override {}
+      : BookmarkModelTask(model) {}
 
   int Run(const int64_t id) {
-    id_to_delete_ = id;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&RemoveBookmarkTask::RunOnUIThread, model(), id));
-    return deleted_;
+    bool did_delete = false;
+    RunOnUIThreadBlocking::Run(base::Bind(&RemoveBookmarkTask::RunOnUIThread,
+                                          model(), id, &did_delete));
+    return did_delete ? 1 : 0;
   }
 
-  static void RunOnUIThread(BookmarkModel* model, const int64_t id) {
+  static void RunOnUIThread(BookmarkModel* model,
+                            const int64_t id,
+                            bool* did_delete) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
-    if (node && node->parent())
+    if (node && node->parent()) {
       model->Remove(node);
+      *did_delete = true;
+    }
   }
-
-  // Verify that the bookmark was actually removed. Called synchronously.
-  void BookmarkNodeRemoved(BookmarkModel* bookmark_model,
-                           const BookmarkNode* parent,
-                           int old_index,
-                           const BookmarkNode* node,
-                           const std::set<GURL>& removed_urls) override {
-    if (bookmark_model == model() && node->id() == id_to_delete_)
-        ++deleted_;
-  }
-
- private:
-  int deleted_;
-  int64_t id_to_delete_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveBookmarkTask);
 };
 
 // Utility method to update a bookmark.
-class UpdateBookmarkTask : public BookmarkModelObserverTask {
+class UpdateBookmarkTask : public BookmarkModelTask {
  public:
   explicit UpdateBookmarkTask(BookmarkModel* model)
-      : BookmarkModelObserverTask(model),
-        updated_(0),
-        id_to_update_(kInvalidBookmarkId){}
-  ~UpdateBookmarkTask() override {}
+      : BookmarkModelTask(model) {}
 
   int Run(const int64_t id,
           const base::string16& title,
           const base::string16& url,
           const int64_t parent_id) {
-    id_to_update_ = id;
-    RunOnUIThreadBlocking::Run(
-        base::Bind(&UpdateBookmarkTask::RunOnUIThread,
-                   model(), id, title, url, parent_id));
-    return updated_;
+    bool did_update = false;
+    RunOnUIThreadBlocking::Run(base::Bind(&UpdateBookmarkTask::RunOnUIThread,
+                                          model(), id, title, url, parent_id,
+                                          &did_update));
+    return did_update ? 1 : 0;
   }
 
   static void RunOnUIThread(BookmarkModel* model,
                             const int64_t id,
                             const base::string16& title,
                             const base::string16& url,
-                            const int64_t parent_id) {
+                            const int64_t parent_id,
+                            bool* did_update) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
     if (node) {
-      if (node->GetTitle() != title)
+      if (node->GetTitle() != title) {
         model->SetTitle(node, title);
+        *did_update = true;
+      }
 
       if (node->type() == BookmarkNode::URL) {
         GURL bookmark_url = ParseAndMaybeAppendScheme(url, kDefaultUrlScheme);
-        if (bookmark_url != node->url())
+        if (bookmark_url != node->url()) {
           model->SetURL(node, bookmark_url);
+          *did_update = true;
+        }
       }
 
       if (parent_id >= 0 &&
@@ -297,22 +286,13 @@ class UpdateBookmarkTask : public BookmarkModelObserverTask {
         const BookmarkNode* new_parent =
             bookmarks::GetBookmarkNodeByID(model, parent_id);
 
-        if (new_parent)
+        if (new_parent) {
           model->Move(node, new_parent, 0);
+          *did_update = true;
+        }
       }
     }
   }
-
-  // Verify that the bookmark was actually updated. Called synchronously.
-  void BookmarkNodeChanged(BookmarkModel* bookmark_model,
-                           const BookmarkNode* node) override {
-    if (bookmark_model == model() && node->id() == id_to_update_)
-      ++updated_;
-  }
-
- private:
-  int updated_;
-  int64_t id_to_update_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateBookmarkTask);
 };
