@@ -83,45 +83,45 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, QueryPolicy) {
   // before any action has been taken.
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kExampleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kExampleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost.
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
 
   // Verify that only kWWWGoogleHost is allowed and that the other two certs
   // being tested still are denied.
   EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kExampleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kExampleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kExampleHost.
-  state->AllowCert(kExampleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kExampleHost, *cert, net::ERR_CERT_DATE_INVALID);
 
   // Verify that both kWWWGoogleHost and kExampleHost have allow exceptions
   // while kGoogleHost still is denied.
   EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
   EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
-            state->QueryPolicy(kExampleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kExampleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
 }
 
 // HasPolicyAndRevoke unit tests the expected behavior of calling
@@ -138,8 +138,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasPolicyAndRevoke) {
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
-  state->AllowCert(kExampleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
+  state->AllowCert(kExampleHost, *cert, net::ERR_CERT_DATE_INVALID);
 
   // Verify that HasAllowException correctly acknowledges that a user decision
   // has been made about kWWWGoogleHost. Then verify that HasAllowException
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, HasPolicyAndRevoke) {
   EXPECT_FALSE(state->HasAllowException(kWWWGoogleHost));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
 
   // Verify that the revocation of the kWWWGoogleHost decision does not affect
   // the Allow for kExampleHost.
@@ -176,8 +176,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Clear) {
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
-  state->AllowCert(kExampleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
+  state->AllowCert(kExampleHost, *cert, net::ERR_CERT_DATE_INVALID);
 
   EXPECT_TRUE(state->HasAllowException(kWWWGoogleHost));
   EXPECT_TRUE(state->HasAllowException(kExampleHost));
@@ -196,15 +196,15 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Clear) {
   EXPECT_FALSE(state->HasAllowException(kWWWGoogleHost));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
   EXPECT_FALSE(state->HasAllowException(kExampleHost));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kExampleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kExampleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
   EXPECT_FALSE(state->HasAllowException(kGoogleHost));
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
 }
 
 // DidHostRunInsecureContent unit tests the expected behavior of calling
@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
 
   // Simulate a user decision to allow an invalid certificate exception for
   // kWWWGoogleHost and for kExampleHost.
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
 
   // Move the new-format setting (<origin, wildcard>) to be an old-format one
   // (<origin, origin>).
@@ -515,16 +515,16 @@ IN_PROC_BROWSER_TEST_F(ForgetAtSessionEndSSLHostStateDelegateTest,
   // should also indicate that it hasn't expired.
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
                          &expired_previous_decision));
   EXPECT_FALSE(expired_previous_decision);
 
   // After allowing the certificate, a query should say that it is allowed and
   // also specify that it hasn't expired.
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
   EXPECT_EQ(
       content::SSLHostStateDelegate::ALLOWED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
                          &expired_previous_decision));
   EXPECT_FALSE(expired_previous_decision);
 }
@@ -546,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(ForgetAtSessionEndSSLHostStateDelegateTest,
   // that they expired since the last query.
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
                          &expired_previous_decision));
   EXPECT_TRUE(expired_previous_decision);
 
@@ -554,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(ForgetAtSessionEndSSLHostStateDelegateTest,
   // occurred.
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
                          &expired_previous_decision));
   EXPECT_FALSE(expired_previous_decision);
 }
@@ -579,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, PRE_AfterRestart) {
 
   // Add a cert exception to the profile and then verify that it still exists
   // in the incognito profile.
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
 
   std::unique_ptr<Profile> incognito(profile->CreateOffTheRecordProfile());
   content::SSLHostStateDelegate* incognito_state =
@@ -587,20 +587,20 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, PRE_AfterRestart) {
 
   EXPECT_EQ(
       content::SSLHostStateDelegate::ALLOWED,
-      incognito_state->QueryPolicy(
-          kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID, &unused_value));
+      incognito_state->QueryPolicy(kWWWGoogleHost, *cert,
+                                   net::ERR_CERT_DATE_INVALID, &unused_value));
 
   // Add a cert exception to the incognito profile. It will be checked after
   // restart that this exception does not exist. Note the different cert URL and
   // error than above thus mapping to a second exception. Also validate that it
   // was not added as an exception to the regular profile.
   incognito_state->AllowCert(kGoogleHost, *cert,
-                             net::CERT_STATUS_COMMON_NAME_INVALID);
+                             net::ERR_CERT_COMMON_NAME_INVALID);
 
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kGoogleHost, *cert,
-                         net::CERT_STATUS_COMMON_NAME_INVALID, &unused_value));
+      state->QueryPolicy(kGoogleHost, *cert, net::ERR_CERT_COMMON_NAME_INVALID,
+                         &unused_value));
 }
 
 // AfterRestart ensures that any cert decisions made in an incognito profile are
@@ -619,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
   // incognito session ended.
   EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
 
   std::unique_ptr<Profile> incognito(profile->CreateOffTheRecordProfile());
   content::SSLHostStateDelegate* incognito_state =
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
   // cleared when the incognito session ended.
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             incognito_state->QueryPolicy(kGoogleHost, *cert,
-                                         net::CERT_STATUS_COMMON_NAME_INVALID,
+                                         net::ERR_CERT_COMMON_NAME_INVALID,
                                          &unused_value));
 }
 
@@ -646,10 +646,10 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
   content::SSLHostStateDelegate* state = profile->GetSSLHostStateDelegate();
   bool unused_value;
 
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
   EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
 }
 
 IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
@@ -673,7 +673,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
   // and thus has now been rememebered across browser restarts.
   EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
 
   // Simulate the clock advancing by one day, which is less than the expiration
   // length.
@@ -683,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
   // has not passed yet.
   EXPECT_EQ(content::SSLHostStateDelegate::ALLOWED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
 
   // Now simulate the clock advancing by one week, which is past the expiration
   // point.
@@ -693,7 +693,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest, AfterRestart) {
   // The cert should now be |DENIED| because the specified delta has passed.
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
             state->QueryPolicy(kWWWGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+                               net::ERR_CERT_DATE_INVALID, &unused_value));
 }
 
 // The same test as ChromeSSLHostStateDelegateTest.QueryPolicyExpired but now
@@ -723,16 +723,16 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
   // should also indicate that it hasn't expired.
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
                          &expired_previous_decision));
   EXPECT_FALSE(expired_previous_decision);
 
   // After allowing the certificate, a query should say that it is allowed and
   // also specify that it hasn't expired.
-  state->AllowCert(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
   EXPECT_EQ(
       content::SSLHostStateDelegate::ALLOWED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
                          &expired_previous_decision));
   EXPECT_FALSE(expired_previous_decision);
 
@@ -744,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
   // query.
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
                          &expired_previous_decision));
   EXPECT_TRUE(expired_previous_decision);
 
@@ -752,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(DefaultMemorySSLHostStateDelegateTest,
   // occurred.
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy(kWWWGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID,
+      state->QueryPolicy(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
                          &expired_previous_decision));
   EXPECT_FALSE(expired_previous_decision);
 }
@@ -789,11 +789,11 @@ IN_PROC_BROWSER_TEST_F(RemoveBrowsingHistorySSLHostStateDelegateTest,
 
   // Add an exception for an invalid certificate. Then remove the last hour's
   // worth of browsing history and verify that the exception has been deleted.
-  state->AllowCert(kGoogleHost, *cert, net::CERT_STATUS_DATE_INVALID);
+  state->AllowCert(kGoogleHost, *cert, net::ERR_CERT_DATE_INVALID);
   RemoveAndWait(profile);
   EXPECT_EQ(content::SSLHostStateDelegate::DENIED,
-            state->QueryPolicy(kGoogleHost, *cert,
-                               net::CERT_STATUS_DATE_INVALID, &unused_value));
+            state->QueryPolicy(kGoogleHost, *cert, net::ERR_CERT_DATE_INVALID,
+                               &unused_value));
 }
 
 // Tests to make sure that localhost certificate errors are treated as
@@ -814,13 +814,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
 
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy("localhost", *cert,
-                         net::CERT_STATUS_COMMON_NAME_INVALID, &unused_value));
+      state->QueryPolicy("localhost", *cert, net::ERR_CERT_COMMON_NAME_INVALID,
+                         &unused_value));
 
   EXPECT_EQ(
       content::SSLHostStateDelegate::DENIED,
-      state->QueryPolicy("127.0.0.1", *cert,
-                         net::CERT_STATUS_COMMON_NAME_INVALID, &unused_value));
+      state->QueryPolicy("127.0.0.1", *cert, net::ERR_CERT_COMMON_NAME_INVALID,
+                         &unused_value));
 }
 
 // When the flag is set, requests to localhost with invalid certificates
@@ -846,11 +846,11 @@ IN_PROC_BROWSER_TEST_F(AllowLocalhostErrorsSSLHostStateDelegateTest,
 
   EXPECT_EQ(
       content::SSLHostStateDelegate::ALLOWED,
-      state->QueryPolicy("localhost", *cert,
-                         net::CERT_STATUS_COMMON_NAME_INVALID, &unused_value));
+      state->QueryPolicy("localhost", *cert, net::ERR_CERT_COMMON_NAME_INVALID,
+                         &unused_value));
 
   EXPECT_EQ(
       content::SSLHostStateDelegate::ALLOWED,
-      state->QueryPolicy("127.0.0.1", *cert,
-                         net::CERT_STATUS_COMMON_NAME_INVALID, &unused_value));
+      state->QueryPolicy("127.0.0.1", *cert, net::ERR_CERT_COMMON_NAME_INVALID,
+                         &unused_value));
 }

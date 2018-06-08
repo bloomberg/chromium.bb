@@ -44,7 +44,7 @@ class SSLHostStateDelegate {
   // a specified |error| type.
   virtual void AllowCert(const std::string&,
                          const net::X509Certificate& cert,
-                         net::CertStatus error) = 0;
+                         int error) = 0;
 
   // Clear allow preferences matched by |host_filter|. If the filter is null,
   // clear all preferences.
@@ -56,7 +56,7 @@ class SSLHostStateDelegate {
   // prior to this query, otherwise false.
   virtual CertJudgment QueryPolicy(const std::string& host,
                                    const net::X509Certificate& cert,
-                                   net::CertStatus error,
+                                   int error,
                                    bool* expired_previous_decision) = 0;
 
   // Records that a host has run insecure content of the given |content_type|.

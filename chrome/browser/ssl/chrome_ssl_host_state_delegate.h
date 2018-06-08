@@ -40,15 +40,15 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // SSLHostStateDelegate:
+  // content::SSLHostStateDelegate overrides:
   void AllowCert(const std::string& host,
                  const net::X509Certificate& cert,
-                 net::CertStatus error) override;
+                 int error) override;
   void Clear(
       const base::Callback<bool(const std::string&)>& host_filter) override;
   CertJudgment QueryPolicy(const std::string& host,
                            const net::X509Certificate& cert,
-                           net::CertStatus error,
+                           int error,
                            bool* expired_previous_decision) override;
   void HostRanInsecureContent(const std::string& host,
                               int child_id,
@@ -57,22 +57,14 @@ class ChromeSSLHostStateDelegate : public content::SSLHostStateDelegate {
       const std::string& host,
       int child_id,
       InsecureContentType content_type) const override;
-
-  // Revokes all SSL certificate error allow exceptions made by the user for
-  // |host| in the given Profile.
   void RevokeUserAllowExceptions(const std::string& host) override;
+  bool HasAllowException(const std::string& host) const override;
 
   // RevokeUserAllowExceptionsHard is the same as RevokeUserAllowExceptions but
   // additionally may close idle connections in the process. This should be used
   // *only* for rare events, such as a user controlled button, as it may be very
   // disruptive to the networking stack.
   virtual void RevokeUserAllowExceptionsHard(const std::string& host);
-
-  // Returns whether the user has allowed a certificate error exception for
-  // |host|. This does not mean that *all* certificate errors are allowed, just
-  // that there exists an exception. To see if a particular certificate and
-  // error combination exception is allowed, use QueryPolicy().
-  bool HasAllowException(const std::string& host) const override;
 
   // Called when an error page is displayed for a given error code |error|.
   // Tracks whether an error of interest has recurred over a threshold number of
