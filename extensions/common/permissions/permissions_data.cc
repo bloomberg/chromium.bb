@@ -85,13 +85,6 @@ bool PermissionsData::CanExecuteScriptEverywhere(
   return base::ContainsValue(whitelist, extension_id);
 }
 
-// static
-bool PermissionsData::ShouldSkipPermissionWarnings(
-    const std::string& extension_id) {
-  // See http://b/4946060 for more details.
-  return extension_id == extension_misc::kProdHangoutsExtensionId;
-}
-
 bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
                                       std::string* error) const {
   if (CanExecuteScriptEverywhere(extension_id_, location_))

@@ -678,10 +678,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     }
   }
 
-  if (permissions_to_display &&
-      (!extension_ ||
-       !extensions::PermissionsData::ShouldSkipPermissionWarnings(
-           extension_->id()))) {
+  if (permissions_to_display) {
     Manifest::Type type =
         extension_ ? extension_->GetType() : Manifest::TYPE_UNKNOWN;
     const extensions::PermissionMessageProvider* message_provider =

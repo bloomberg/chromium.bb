@@ -77,10 +77,6 @@ class PermissionsData {
   static bool CanExecuteScriptEverywhere(const ExtensionId& extension_id,
                                          Manifest::Location location);
 
-  // Returns true if we should skip the permissions warning for the extension
-  // with the given |extension_id|.
-  static bool ShouldSkipPermissionWarnings(const std::string& extension_id);
-
   // Returns true if the given |url| is restricted for the given |extension|,
   // as is commonly the case for chrome:// urls.
   // NOTE: You probably want to use CanAccessPage().
