@@ -2768,7 +2768,10 @@ crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Timeout ]
-crbug.com/800901 virtual/mojo-blob-urls/external/wpt/FileAPI/url/sandboxed-iframe.html [ Timeout ]
+
+crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/sandboxed-iframe.html [ Pass Timeout ]
+crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.html [ Pass Timeout ]
+crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.worker.html [ Pass Timeout ]
 
 # Websockets
 crbug.com/803558 external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
