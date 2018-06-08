@@ -4387,7 +4387,7 @@
   },
   "Mac Goma Canary LocalOutputCache": {
     "additional_compile_targets": [
-      "all"
+      "chrome"
     ],
     "gtest_tests": [
       {

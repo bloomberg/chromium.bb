@@ -2295,7 +2295,9 @@
       },
       'Mac Goma Canary LocalOutputCache': {
         'additional_compile_targets': [
-          'all',
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/825536
+          'chrome',
         ],
         'test_suites': {
           'gtest_tests': 'goma_mac_gtests',
