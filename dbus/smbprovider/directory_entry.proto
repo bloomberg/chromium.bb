@@ -218,6 +218,10 @@ message RemountOptionsProto {
   optional string path = 1;
   // ID to assign to the mount.
   optional int32 mount_id = 2;
+
+  // Authentication parameters.
+  optional string workgroup = 3;
+  optional string username = 4;
 }
 
 // Used for returning a list of hostnames from a parsed NetBios response packet.
