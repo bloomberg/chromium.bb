@@ -147,12 +147,8 @@ class MediaTransferProtocolDaemonClient {
   // Calls GetFileInfo method. |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.
   // |file_ids| is a list of MTP-device specific file ids.
-  // |offset| is the index into |file_ids| to read from.
-  // |entries_to_read| is the maximum number of file entries to read.
   virtual void GetFileInfo(const std::string& handle,
                            const std::vector<uint32_t>& file_ids,
-                           size_t offset,
-                           size_t entries_to_read,
                            const GetFileInfoCallback& callback,
                            const ErrorCallback& error_callback) = 0;
 

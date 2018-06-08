@@ -225,8 +225,6 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   void GetFileInfo(const std::string& storage_handle,
                    const std::vector<uint32_t>& file_ids,
-                   uint32_t offset,
-                   uint32_t entries_to_read,
                    mojom::MtpManager::GetFileInfoCallback callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!base::ContainsKey(handles_, storage_handle) || !mtp_client_) {
@@ -236,7 +234,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     }
     get_file_info_callbacks_.push(std::move(callback));
     mtp_client_->GetFileInfo(
-        storage_handle, file_ids, offset, entries_to_read,
+        storage_handle, file_ids,
         base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfo,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfoError,

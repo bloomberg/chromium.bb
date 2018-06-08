@@ -54,12 +54,8 @@ interface MtpManager {
       uint32 count) => (string data, bool error);
 
   // Gets the file metadata for entries in |file_ids| on |storage_handle|.
-  // Only do so for the |entries_to_read| number of entries in |file_ids|
-  // starting at 0-based |offset|.
   GetFileInfo(string storage_handle,
-      array<uint32> file_ids,
-      uint32 offset,
-      uint32 entries_to_read) =>
+      array<uint32> file_ids) =>
     (array<MtpFileEntry> file_entries, bool error);
 
   // Renames |object_id| to |new_name|.

@@ -178,15 +178,8 @@ class MediaTransferProtocolDaemonClientImpl
 
   void GetFileInfo(const std::string& handle,
                    const std::vector<uint32_t>& file_ids,
-                   size_t offset,
-                   size_t entries_to_read,
                    const GetFileInfoCallback& callback,
                    const ErrorCallback& error_callback) override {
-    if (offset >= file_ids.size()) {
-      error_callback.Run();
-      return;
-    }
-
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kGetFileInfo);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
@@ -194,11 +187,8 @@ class MediaTransferProtocolDaemonClientImpl
       dbus::MessageWriter array_writer(nullptr);
       writer.OpenArray("u", &array_writer);
 
-      size_t end_offset = file_ids.size();
-      if (offset <= SIZE_MAX - entries_to_read)
-        end_offset = std::min(end_offset, offset + entries_to_read);
-      for (size_t i = offset; i < end_offset; ++i)
-        array_writer.AppendUint32(file_ids[i]);
+      for (uint32_t file_id : file_ids)
+        array_writer.AppendUint32(file_id);
 
       writer.CloseContainer(&array_writer);
     }
