@@ -318,7 +318,11 @@ bool ARCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
   }
 
   screen_point->set_x((screen_point_3d.x() + 1) / 2);
-  screen_point->set_y((screen_point_3d.y() + 1) / 2);
+  // The calculated point in GL's normalized device coordinates (NDC) ranges
+  // from -1..1, with -1, -1 at the bottom left of the screen, +1 at the top.
+  // The output screen space coordinates range from 0..1, with 0, 0 at the
+  // top left.
+  screen_point->set_y((-screen_point_3d.y() + 1) / 2);
   return true;
 }
 
