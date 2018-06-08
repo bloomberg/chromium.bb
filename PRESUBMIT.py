@@ -656,7 +656,8 @@ _ALL_PYDEPS_FILES = _ANDROID_SPECIFIC_PYDEPS_FILES + _GENERIC_PYDEPS_FILES
 _KNOWN_ROBOTS = set(
     '%s-chromium-autoroll@skia-buildbots.google.com.iam.gserviceaccount.com' % s
     for s in ('afdo', 'angle', 'catapult', 'chromite', 'depot-tools',
-              'fuchsia-sdk', 'nacl', 'pdfium', 'skia', 'src-internal', 'webrtc')
+              'fuchsia-sdk', 'nacl', 'pdfium', 'perfetto', 'skia',
+              'src-internal', 'webrtc')
   ) | set('%s@appspot.gserviceaccount.com' % s for s in ('findit-for-me',))
 
 
