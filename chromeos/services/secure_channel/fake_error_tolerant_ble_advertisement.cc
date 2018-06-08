@@ -11,19 +11,13 @@ namespace chromeos {
 namespace secure_channel {
 
 FakeErrorTolerantBleAdvertisement::FakeErrorTolerantBleAdvertisement(
-    const DeviceIdPair& device_id_pair)
-    : ErrorTolerantBleAdvertisement(device_id_pair) {}
-
-FakeErrorTolerantBleAdvertisement::FakeErrorTolerantBleAdvertisement(
     const DeviceIdPair& device_id_pair,
-    const base::Callback<void(FakeErrorTolerantBleAdvertisement*)>&
-        deletion_callback)
+    base::OnceCallback<void(const DeviceIdPair&)> destructor_callback)
     : ErrorTolerantBleAdvertisement(device_id_pair),
-      deletion_callback_(deletion_callback) {}
+      destructor_callback_(std::move(destructor_callback)) {}
 
 FakeErrorTolerantBleAdvertisement::~FakeErrorTolerantBleAdvertisement() {
-  if (!deletion_callback_.is_null())
-    deletion_callback_.Run(this);
+  std::move(destructor_callback_).Run(device_id_pair());
 }
 
 bool FakeErrorTolerantBleAdvertisement::HasBeenStopped() {

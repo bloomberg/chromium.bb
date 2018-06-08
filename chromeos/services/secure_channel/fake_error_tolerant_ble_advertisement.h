@@ -17,11 +17,9 @@ namespace secure_channel {
 // Test double for ErrorTolerantBleAdvertisement.
 class FakeErrorTolerantBleAdvertisement : public ErrorTolerantBleAdvertisement {
  public:
-  FakeErrorTolerantBleAdvertisement(const DeviceIdPair& device_id_pair);
   FakeErrorTolerantBleAdvertisement(
       const DeviceIdPair& device_id_pair,
-      const base::Callback<void(FakeErrorTolerantBleAdvertisement*)>&
-          deletion_callback);
+      base::OnceCallback<void(const DeviceIdPair&)> destructor_callback);
   ~FakeErrorTolerantBleAdvertisement() override;
 
   void InvokeStopCallback();
@@ -31,8 +29,7 @@ class FakeErrorTolerantBleAdvertisement : public ErrorTolerantBleAdvertisement {
   bool HasBeenStopped() override;
 
  private:
-  const base::Callback<void(FakeErrorTolerantBleAdvertisement*)>
-      deletion_callback_;
+  base::OnceCallback<void(const DeviceIdPair&)> destructor_callback_;
   base::Closure stop_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeErrorTolerantBleAdvertisement);
