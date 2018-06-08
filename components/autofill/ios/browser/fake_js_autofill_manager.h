@@ -13,8 +13,12 @@
 @interface FakeJSAutofillManager : JsAutofillManager
 
 // The name of the form that was most recently passed to
-// |clearAutofilledFieldsForFormNamed:completionHandler:|.
+// |clearAutofilledFieldsForFormName:fieldIdentifier:completionHandler:|.
 @property(nonatomic, copy, readonly) NSString* lastClearedFormName;
+
+// The field identifier that was most recently passed to
+// |clearAutofilledFieldsForFormName:fieldIdentifier:completionHandler:|.
+@property(nonatomic, copy, readonly) NSString* lastClearedFieldIdentifier;
 
 @end
 

@@ -14,11 +14,15 @@
 @implementation FakeJSAutofillManager
 
 @synthesize lastClearedFormName = _lastClearedFormName;
+@synthesize lastClearedFieldIdentifier = _lastClearedFieldIdentifier;
 
-- (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
-                        completionHandler:(ProceduralBlock)completionHandler {
+- (void)clearAutofilledFieldsForFormName:(NSString*)formName
+                         fieldIdentifier:(NSString*)fieldIdentifier
+                       completionHandler:(ProceduralBlock)completionHandler {
   web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, base::BindOnce(^{
                              _lastClearedFormName = [formName copy];
+                             _lastClearedFieldIdentifier =
+                                 [fieldIdentifier copy];
                              completionHandler();
                            }));
 }

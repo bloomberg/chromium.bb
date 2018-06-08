@@ -41,10 +41,12 @@
 // autofilled are not modified. Field contents are cleared, and Autofill flag
 // and styling are removed. 'change' events are sent for fields whose contents
 // changed.
+// |fieldIdentifier| identifies the field that initiated the clear action.
 // |completionHandler| is called after the forms are filled. |completionHandler|
 // cannot be nil.
-- (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
-                        completionHandler:(ProceduralBlock)completionHandler;
+- (void)clearAutofilledFieldsForFormName:(NSString*)formName
+                         fieldIdentifier:(NSString*)fieldIdentifier
+                       completionHandler:(ProceduralBlock)completionHandler;
 
 // Marks up the form with autofill field prediction data (diagnostic tool).
 - (void)fillPredictionData:(NSString*)dataString;
