@@ -61,12 +61,11 @@ HitTestResult::HitTestResult(const HitTestRequest& request,
       is_over_embedded_content_view_(false) {}
 
 HitTestResult::HitTestResult(const HitTestRequest& request,
-                             const LayoutPoint& center_point,
-                             const LayoutRectOutsets& padding)
-    : hit_test_location_(center_point, padding),
+                             const LayoutRect& rect)
+    : hit_test_location_(rect),
       hit_test_request_(request),
       cacheable_(true),
-      point_in_inner_node_frame_(center_point),
+      point_in_inner_node_frame_(rect.Center()),
       is_over_embedded_content_view_(false) {}
 
 HitTestResult::HitTestResult(const HitTestRequest& other_request,

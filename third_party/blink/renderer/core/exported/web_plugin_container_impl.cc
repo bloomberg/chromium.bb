@@ -575,23 +575,9 @@ bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {
   IntPoint location = FrameRect().Location();
   LayoutRect document_rect(location.X() + rect.x, location.Y() + rect.y,
                            rect.width, rect.height);
-  // hitTestResultAtPoint() takes a padding rectangle.
-  // FIXME: We'll be off by 1 when the width or height is even.
-  LayoutPoint center = document_rect.Center();
-  // Make the rect we're checking (the point surrounded by padding rects)
-  // contained inside the requested rect.
-  // TODO(pdr): This logic for calculating padding is only needed because the
-  // hit test rect for a point has non-zero dimensions. This can be simplified
-  // when the hit test rect is 0px x 0px, see: HitTestLocation::RectForPoint.
-  LayoutRect hit_rect = HitTestLocation::RectForPoint(center);
-  LayoutRectOutsets padding(
-      hit_rect.Y() - document_rect.Y(), document_rect.MaxX() - hit_rect.MaxX(),
-      document_rect.MaxY() - hit_rect.MaxY(), hit_rect.X() - document_rect.X());
-  HitTestResult result = frame->GetEventHandler().HitTestResultAtPoint(
-      center,
-      HitTestRequest::kReadOnly | HitTestRequest::kActive |
-          HitTestRequest::kListBased,
-      padding);
+  HitTestResult result = frame->GetEventHandler().HitTestResultAtRect(
+      document_rect, HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                         HitTestRequest::kListBased);
   const HitTestResult::NodeSet& nodes = result.ListBasedTestResult();
   if (nodes.size() != 1)
     return false;

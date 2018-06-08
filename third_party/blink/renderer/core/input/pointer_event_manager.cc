@@ -328,23 +328,24 @@ void PointerEventManager::AdjustTouchPointerEvent(
   DCHECK(pointer_event.pointer_type ==
          WebPointerProperties::PointerType::kTouch);
 
-  LayoutSize padding = GetHitTestRectForAdjustment(
-      LayoutSize(pointer_event.width, pointer_event.height) * 0.5f);
+  LayoutSize hit_rect_size = GetHitTestRectForAdjustment(
+      LayoutSize(pointer_event.width, pointer_event.height));
 
-  if (padding.IsEmpty())
+  if (hit_rect_size.IsEmpty())
     return;
 
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kTouchEvent | HitTestRequest::kReadOnly |
       HitTestRequest::kActive | HitTestRequest::kListBased;
-  LayoutPoint hit_test_point = frame_->View()->RootFrameToContents(
-      LayoutPoint(pointer_event.PositionInWidget()));
+  LocalFrame& root_frame = frame_->LocalFrameRoot();
+  // TODO(szager): Shouldn't this be PositionInScreen() ?
+  LayoutPoint hit_test_point((FloatPoint)pointer_event.PositionInWidget());
+  hit_test_point.Move(-hit_rect_size * 0.5f);
   HitTestResult hit_test_result =
-      frame_->GetEventHandler().HitTestResultAtPoint(
-          hit_test_point, hit_type,
-          LayoutRectOutsets(padding.Height(), padding.Width(), padding.Height(),
-                            padding.Width()));
-
+      root_frame.GetEventHandler().HitTestResultAtRect(
+          LayoutRect(root_frame.View()->FrameToContents(hit_test_point),
+                     hit_rect_size),
+          hit_type);
   Node* adjusted_node = nullptr;
   IntPoint adjusted_point;
   bool adjusted = frame_->GetEventHandler().BestClickableNodeForHitTestResult(

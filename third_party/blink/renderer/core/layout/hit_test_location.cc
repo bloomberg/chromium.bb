@@ -51,12 +51,11 @@ HitTestLocation::HitTestLocation(const FloatPoint& point, const FloatQuad& quad)
   is_rectilinear_ = quad.IsRectilinear();
 }
 
-HitTestLocation::HitTestLocation(const LayoutPoint& center_point,
-                                 const LayoutRectOutsets& padding)
-    : point_(center_point),
-      bounding_box_(RectForPoint(center_point, padding)),
-      transformed_point_(center_point),
-      is_rect_based_(!padding.IsZero()),
+HitTestLocation::HitTestLocation(const LayoutRect& rect)
+    : point_(rect.Center()),
+      bounding_box_(rect),
+      transformed_point_(point_),
+      is_rect_based_(true),
       is_rectilinear_(true) {
   transformed_rect_ = FloatQuad(FloatRect(bounding_box_));
 }

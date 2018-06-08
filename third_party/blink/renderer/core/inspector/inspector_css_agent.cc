@@ -152,12 +152,7 @@ HeapVector<Member<Element>> ElementsFromRect(LayoutRect rect,
                          HitTestRequest::kPenetratingList |
                          HitTestRequest::kIgnoreClipping);
 
-  LayoutPoint center = rect.Center();
-  LayoutUnit horizontal_padding = rect.Width() / 2;
-  LayoutUnit vertical_padding = rect.Height() / 2;
-  LayoutRectOutsets padding(vertical_padding, horizontal_padding,
-                            vertical_padding, horizontal_padding);
-  HitTestResult result(request, center, padding);
+  HitTestResult result(request, rect);
   document.GetFrame()->ContentLayoutObject()->HitTest(result);
   HeapVector<Member<Element>> elements;
   Node* previous_node = nullptr;

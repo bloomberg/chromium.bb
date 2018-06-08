@@ -171,8 +171,8 @@ enum EffectiveConnectionType {
     sequence<DOMString> svgTags();
 
     [RaisesException] NodeList nodesFromRect(Document document, long x, long y,
-        unsigned long topPadding, unsigned long rightPadding, unsigned long bottomPadding, unsigned long leftPadding,
-        boolean ignoreClipping, boolean allowChildFrameContent);
+        unsigned long width, unsigned long height, boolean ignoreClipping,
+        boolean allowChildFrameContent);
 
     [RaisesException] boolean hasSpellingMarker(Document document, long from, long length);
     [RaisesException] boolean hasGrammarMarker(Document document, long from, long length);

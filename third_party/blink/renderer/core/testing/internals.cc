@@ -1432,6 +1432,22 @@ String Internals::rangeAsText(const Range* range) {
 // FIXME: The next four functions are very similar - combine them once
 // bestClickableNode/bestContextMenuNode have been combined..
 
+void Internals::HitTestRect(HitTestResult& result,
+                            long x,
+                            long y,
+                            long width,
+                            long height,
+                            Document* document) {
+  document->UpdateStyleAndLayout();
+  EventHandler& event_handler = document->GetFrame()->GetEventHandler();
+  LayoutPoint hit_test_point(
+      document->GetFrame()->View()->RootFrameToContents(LayoutPoint(x, y)));
+  result = event_handler.HitTestResultAtRect(
+      LayoutRect(hit_test_point, LayoutSize((int)width, (int)height)),
+      HitTestRequest::kReadOnly | HitTestRequest::kActive |
+          HitTestRequest::kListBased);
+}
+
 DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(
     long x,
     long y,
@@ -1446,24 +1462,12 @@ DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(
     return nullptr;
   }
 
-  document->UpdateStyleAndLayout();
-
-  IntSize radius(width / 2, height / 2);
-  IntPoint point(x + radius.Width(), y + radius.Height());
-
-  EventHandler& event_handler = document->GetFrame()->GetEventHandler();
-  IntPoint hit_test_point =
-      document->GetFrame()->View()->RootFrameToContents(point);
-  HitTestResult result = event_handler.HitTestResultAtPoint(
-      hit_test_point,
-      HitTestRequest::kReadOnly | HitTestRequest::kActive |
-          HitTestRequest::kListBased,
-      LayoutRectOutsets(radius.Height(), radius.Width(), radius.Height(),
-                        radius.Width()));
-
+  HitTestResult result;
+  HitTestRect(result, x, y, width, height, document);
   Node* target_node = nullptr;
   IntPoint adjusted_point;
 
+  EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   bool found_node = event_handler.BestClickableNodeForHitTestResult(
       result, adjusted_point, target_node);
   if (found_node)
@@ -1486,21 +1490,8 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(
     return nullptr;
   }
 
-  document->UpdateStyleAndLayout();
-
-  IntSize radius(width / 2, height / 2);
-  IntPoint point(x + radius.Width(), y + radius.Height());
-
-  EventHandler& event_handler = document->GetFrame()->GetEventHandler();
-  IntPoint hit_test_point =
-      document->GetFrame()->View()->RootFrameToContents(point);
-  HitTestResult result = event_handler.HitTestResultAtPoint(
-      hit_test_point,
-      HitTestRequest::kReadOnly | HitTestRequest::kActive |
-          HitTestRequest::kListBased,
-      LayoutRectOutsets(radius.Height(), radius.Width(), radius.Height(),
-                        radius.Width()));
-
+  HitTestResult result;
+  HitTestRect(result, x, y, width, height, document);
   Node* target_node = nullptr;
   IntPoint adjusted_point;
   document->GetFrame()->GetEventHandler().BestClickableNodeForHitTestResult(
@@ -1522,24 +1513,12 @@ DOMPoint* Internals::touchPositionAdjustedToBestContextMenuNode(
     return nullptr;
   }
 
-  document->UpdateStyleAndLayout();
-
-  IntSize radius(width / 2, height / 2);
-  IntPoint point(x + radius.Width(), y + radius.Height());
-
-  EventHandler& event_handler = document->GetFrame()->GetEventHandler();
-  IntPoint hit_test_point =
-      document->GetFrame()->View()->RootFrameToContents(point);
-  HitTestResult result = event_handler.HitTestResultAtPoint(
-      hit_test_point,
-      HitTestRequest::kReadOnly | HitTestRequest::kActive |
-          HitTestRequest::kListBased,
-      LayoutRectOutsets(radius.Height(), radius.Width(), radius.Height(),
-                        radius.Width()));
-
+  HitTestResult result;
+  HitTestRect(result, x, y, width, height, document);
   Node* target_node = nullptr;
   IntPoint adjusted_point;
 
+  EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   bool found_node = event_handler.BestContextMenuNodeForHitTestResult(
       result, adjusted_point, target_node);
   if (found_node)
@@ -1562,25 +1541,12 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(
     return nullptr;
   }
 
-  document->UpdateStyleAndLayout();
-
-  IntSize radius(width / 2, height / 2);
-  IntPoint point(x + radius.Width(), y + radius.Height());
-
-  EventHandler& event_handler = document->GetFrame()->GetEventHandler();
-  IntPoint hit_test_point =
-      document->GetFrame()->View()->RootFrameToContents(point);
-  HitTestResult result = event_handler.HitTestResultAtPoint(
-      hit_test_point,
-      HitTestRequest::kReadOnly | HitTestRequest::kActive |
-          HitTestRequest::kListBased,
-      LayoutRectOutsets(radius.Height(), radius.Width(), radius.Height(),
-                        radius.Width()));
-
+  HitTestResult result;
+  HitTestRect(result, x, y, width, height, document);
   Node* target_node = nullptr;
   IntPoint adjusted_point;
-  event_handler.BestContextMenuNodeForHitTestResult(result, adjusted_point,
-                                                    target_node);
+  document->GetFrame()->GetEventHandler().BestContextMenuNodeForHitTestResult(
+      result, adjusted_point, target_node);
   return target_node;
 }
 
@@ -2016,12 +1982,10 @@ Vector<AtomicString> Internals::svgTags() {
 
 StaticNodeList* Internals::nodesFromRect(
     Document* document,
-    int center_x,
-    int center_y,
-    unsigned top_padding,
-    unsigned right_padding,
-    unsigned bottom_padding,
-    unsigned left_padding,
+    int x,
+    int y,
+    int width,
+    int height,
     bool ignore_clipping,
     bool allow_child_frame_content,
     ExceptionState& exception_state) const {
@@ -2033,40 +1997,24 @@ StaticNodeList* Internals::nodesFromRect(
     return nullptr;
   }
 
-  LocalFrame* frame = document->GetFrame();
-  LocalFrameView* frame_view = document->View();
-  auto* layout_view = document->GetLayoutView();
-
-  if (!layout_view)
-    return nullptr;
-
-  float zoom_factor = frame->PageZoomFactor();
-  LayoutPoint point =
-      LayoutPoint(FloatPoint(center_x * zoom_factor + frame_view->ScrollX(),
-                             center_y * zoom_factor + frame_view->ScrollY()));
-
   HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
                                                 HitTestRequest::kActive |
                                                 HitTestRequest::kListBased;
-  if (ignore_clipping)
+  LocalFrame* frame = document->GetFrame();
+  LayoutRect rect(x, y, width, height);
+  if (ignore_clipping) {
     hit_type |= HitTestRequest::kIgnoreClipping;
+  } else if (!frame->View()->VisibleContentRect().Intersects(
+                 EnclosingIntRect(rect))) {
+    return nullptr;
+  }
   if (allow_child_frame_content)
     hit_type |= HitTestRequest::kAllowChildFrameContent;
 
-  HitTestRequest request(hit_type);
-
-  // When ignoreClipping is false, this method returns null for coordinates
-  // outside of the viewport.
-  LayoutRectOutsets padding(top_padding, right_padding, bottom_padding,
-                            left_padding);
-  LayoutRect rect = HitTestLocation::RectForPoint(point, padding);
-  if (!request.IgnoreClipping() &&
-      !frame_view->VisibleContentRect().Intersects(EnclosingIntRect(rect)))
-    return nullptr;
-
   HeapVector<Member<Node>> matches;
-  HitTestResult result(request, point, padding);
-  layout_view->HitTest(result);
+  HitTestRequest request(hit_type);
+  HitTestResult result(request, rect);
+  frame->ContentLayoutObject()->HitTest(result);
   CopyToVector(result.ListBasedTestResult(), matches);
 
   return StaticNodeList::Adopt(matches);

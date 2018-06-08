@@ -52,52 +52,52 @@
 
             window.scrollTo(0, 0);
             debug('Check unrotated area-testing for sanity');
-            check(150, 150, 30, 30, 30, 30, [e.sandbox]);
-            check(220, 220, 10, 10, 10, 10, [e.fleft]);
-            check(470, 220, 10, 10, 10, 10, [e.fright]);
-            check(270, 220, 10, 10, 10, 10, [e.box1]);
-            check(270, 320, 10, 10, 10, 10, [e.box2]);
-            check(240, 290, 30, 30, 30, 30, [e.fleft, e.box2, e.box1, e.layer]);
-            check(180, 220, 10, 30, 10, 0, [e.fleft, e.layer, e.sandbox]);
-            check(270, 280, 0, 10, 30, 10, [e.box2, e.box1, e.layer]);
-            check(180, 220, 10, 0, 10, 30, [e.sandbox]);
+            check(120, 120, 61, 61, [e.sandbox]);
+            check(210, 210, 21, 21, [e.fleft]);
+            check(460, 210, 21, 21, [e.fright]);
+            check(260, 210, 21, 21, [e.box1]);
+            check(260, 310, 21, 21, [e.box2]);
+            check(210, 260, 61, 61, [e.fleft, e.box2, e.box1, e.layer]);
+            check(180, 210, 31, 21, [e.fleft, e.layer, e.sandbox]);
+            check(260, 280, 21, 31, [e.box2, e.box1, e.layer]);
+            check(150, 210, 31, 21, [e.sandbox]);
 
 
             debug('Check rotated 180deg');
             e['layer'].setAttribute('class', 'rotate180');
-            check(150, 150, 30, 30, 30, 30, [e.sandbox]);
-            check(220, 220, 10, 10, 10, 10, [e.fright]);
-            check(470, 220, 10, 10, 10, 10, [e.fleft]);
-            check(270, 220, 10, 10, 10, 10, [e.box3]);
-            check(270, 320, 10, 10, 10, 10, [e.box2]);
-            check(240, 290, 30, 30, 30, 30, [e.fright, e.box3, e.box2, e.layer]);
-            check(180, 220, 10, 30, 10, 0, [e.fright, e.layer, e.sandbox]);
-            check(270, 280, 0, 10, 30, 10, [e.box3, e.box2, e.layer]);
-            check(180, 220, 10, 0, 10, 30, [e.sandbox]);
+            check(120, 120, 61, 61, [e.sandbox]);
+            check(210, 210, 21, 21, [e.fright]);
+            check(460, 210, 21, 21, [e.fleft]);
+            check(260, 210, 21, 21, [e.box3]);
+            check(260, 310, 21, 21, [e.box2]);
+            check(210, 260, 61, 61, [e.fright, e.box3, e.box2, e.layer]);
+            check(180, 210, 31, 21, [e.fright, e.layer, e.sandbox]);
+            check(260, 280, 21, 31, [e.box3, e.box2, e.layer]);
+            check(150, 210, 31, 21, [e.sandbox]);
 
             debug('Check rotated 90deg');
             e['layer'].setAttribute('class', 'rotate90');
-            check(150, 150, 30, 30, 30, 30, [e.sandbox]);
-            check(220, 280, 10, 10, 10, 10, [e.box3]);
-            check(470, 280, 10, 10, 10, 10, [e.box1]);
-            check(270, 220, 10, 10, 10, 10, [e.fleft]);
-            check(270, 470, 10, 10, 10, 10, [e.fright]);
-            check(290, 240, 30, 30, 30, 30, [e.fleft, e.box3, e.box2, e.layer]);
-            check(180, 280, 10, 30, 10, 0, [e.box3, e.layer, e.sandbox]);
-            check(330, 180, 0, 10, 30, 10, [e.fleft, e.layer, e.sandbox]);
-            check(280, 260, 40, 10, 10, 10, [e.fleft, e.box3, e.layer]);
+            check(120, 120, 61, 61, [e.sandbox]);
+            check(210, 270, 21, 21, [e.box3]);
+            check(460, 270, 21, 21, [e.box1]);
+            check(260, 210, 21, 21, [e.fleft]);
+            check(260, 460, 21, 21, [e.fright]);
+            check(260, 210, 61, 61, [e.fleft, e.box3, e.box2, e.layer]);
+            check(180, 270, 31, 21, [e.box3, e.layer, e.sandbox]);
+            check(320, 180, 21, 31, [e.fleft, e.layer, e.sandbox]);
+            check(270, 220, 21, 51, [e.fleft, e.box3, e.layer]);
 
             debug('Check rotated 45deg');
             e['layer'].setAttribute('class', 'rotate45');
-            check(150, 150, 30, 30, 30, 30, [e.sandbox]);
-            check(260, 260, 10, 10, 10, 10, [e.fleft]);
-            check(440, 440, 10, 10, 10, 10, [e.fright]);
-            check(440, 260, 10, 10, 10, 10, [e.box1]);
-            check(260, 440, 10, 10, 10, 10, [e.box3]);
-            check(350, 140, 20, 20, 20, 20, [e.fleft, e.layer, e.sandbox]);
-            check(350, 140, 20, 20, 70, 20, [e.fleft, e.box1, e.layer, e.sandbox]);
-            check(350, 350, 40, 40, 40, 40, [e.box3, e.box2, e.box1, e.layer]);
-            check(260, 260, 1, 27, 1, 27, [e.fleft]);
+            check(120, 120, 61, 61, [e.sandbox]);
+            check(250, 250, 21, 21, [e.fleft]);
+            check(430, 430, 21, 21, [e.fright]);
+            check(430, 250, 21, 21, [e.box1]);
+            check(250, 430, 21, 21, [e.box3]);
+            check(330, 120, 41, 41, [e.fleft, e.layer, e.sandbox]);
+            check(330, 120, 41, 91, [e.fleft, e.box1, e.layer, e.sandbox]);
+            check(310, 310, 81, 81, [e.box3, e.box2, e.box1, e.layer]);
+            check(233, 259, 55, 3, [e.fleft]);
 
         }
 
@@ -108,4 +108,3 @@
     <span id="console"></span>
 </body>
 </html>
-

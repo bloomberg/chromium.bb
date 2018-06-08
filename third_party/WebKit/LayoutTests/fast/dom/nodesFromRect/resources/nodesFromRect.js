@@ -34,7 +34,7 @@ function nodeListToString(nodes) {
     return nodeString;
 }
 
-function check(x, y, topPadding, rightPadding, bottomPadding, leftPadding, list, doc)
+function check(x, y, width, height, list, doc)
 {
   if (!window.internals)
     return;
@@ -42,15 +42,14 @@ function check(x, y, topPadding, rightPadding, bottomPadding, leftPadding, list,
   if (!doc)
     doc = document;
 
-  var nodes = internals.nodesFromRect(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding, true /* ignoreClipping */, false /* allow child-frame content */);
+    var nodes = internals.nodesFromRect(doc, x, y, width, height, true /* ignoreClipping */, false /* allow child-frame content */);
   if (!nodes)
     return;
 
   if (nodes.length != list.length) {
     testFailed("Different number of nodes for rect" +
               "[" + x + "," + y + "], " +
-              "[" + topPadding + "," + rightPadding +
-              "," + bottomPadding + "," + leftPadding +
+              "[" + width + "," + height +
               "]: '" + list.length + "' vs '" + nodes.length +
               "', found: " + nodeListToString(nodes));
     return;
@@ -60,9 +59,8 @@ function check(x, y, topPadding, rightPadding, bottomPadding, leftPadding, list,
     if (nodes[i] != list[i]) {
       testFailed("Unexpected node #" + i + " for rect " +
                 "[" + x + "," + y + "], " +
-                "[" + topPadding + "," + rightPadding +
-                "," + bottomPadding + "," + leftPadding + "]" +
-                " - " + nodeToString(nodes[i]));
+                "[" + width + "," + height + "]" +
+                 " - " + nodeToString(nodes[i]));
       return;
     }
   }
@@ -81,13 +79,7 @@ function checkRect(left, top, width, height, expectedNodeString, doc)
     if (!doc)
         doc = document;
 
-    var topPadding = height / 2;
-    var leftPadding =  width / 2;
-    // FIXME: When nodesFromRect is changed to not add 1 to width and height, remove the correction here.
-    var bottomPadding = (height - 1) - topPadding;
-    var rightPadding = (width - 1) - leftPadding;
-
-    var nodeString = nodesFromRectAsString(doc, left + leftPadding, top + topPadding, topPadding, rightPadding, bottomPadding, leftPadding);
+    var nodeString = nodesFromRectAsString(doc, left, top, width, height);
 
     if (nodeString == expectedNodeString) {
         testPassed("All correct nodes found for rect");
@@ -104,7 +96,7 @@ function checkPoint(left, top, expectedNodeString, doc)
     if (!doc)
         doc = document;
 
-    var nodeString = nodesFromRectAsString(doc, left, top, 0, 0, 0, 0);
+    var nodeString = nodesFromRectAsString(doc, left, top, 1, 1);
 
     if (nodeString == expectedNodeString) {
         testPassed("Correct node found for point");
@@ -113,9 +105,9 @@ function checkPoint(left, top, expectedNodeString, doc)
     }
 }
 
-function nodesFromRectAsString(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding)
+function nodesFromRectAsString(doc, x, y, width, height)
 {
-    var nodes = internals.nodesFromRect(doc, x, y, topPadding, rightPadding, bottomPadding, leftPadding, true /* ignoreClipping */, true /* allow child-frame content */);
+    var nodes = internals.nodesFromRect(doc, x, y, width, height, true /* ignoreClipping */, true /* allow child-frame content */);
     if (!nodes)
         return "";
 

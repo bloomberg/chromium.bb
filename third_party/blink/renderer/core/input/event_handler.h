@@ -103,7 +103,12 @@ class CORE_EXPORT EventHandler final
       const LayoutPoint&,
       HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
                                                     HitTestRequest::kActive,
-      const LayoutRectOutsets& padding = LayoutRectOutsets(),
+      const LayoutObject* stop_node = nullptr);
+
+  HitTestResult HitTestResultAtRect(
+      const LayoutRect&,
+      HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
+                                                    HitTestRequest::kActive,
       const LayoutObject* stop_node = nullptr);
 
   bool MousePressed() const { return mouse_event_manager_->MousePressed(); }
@@ -305,6 +310,8 @@ class CORE_EXPORT EventHandler final
       const GestureEventWithHitTestResults&);
   WebInputEventResult HandleGestureLongTap(
       const GestureEventWithHitTestResults&);
+
+  void PerformHitTest(HitTestResult&) const;
 
   void UpdateGestureTargetNodeForMouseEvent(
       const GestureEventWithHitTestResults&);
