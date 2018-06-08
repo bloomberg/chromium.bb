@@ -6,22 +6,11 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/ranges.h"
-#include "base/sys_info.h"
 #include "chrome/common/chrome_features.h"
 
 namespace {
 
 constexpr char kTabLoadTimeoutInMsParameterName[] = "tabLoadTimeoutInMs";
-
-// The number of cores to use for testing when computing InfiniteSessionRestore
-// parameters. Setting this to zero means the actual system info is used.
-static size_t g_num_cores_for_testing = 0;
-
-size_t GetNumCores() {
-  if (g_num_cores_for_testing != 0)
-    return g_num_cores_for_testing;
-  return base::SysInfo::NumberOfProcessors();
-}
 
 }  // namespace
 
@@ -365,10 +354,6 @@ InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams() {
           kInfiniteSessionRestore_MinSiteEngagementToRestore,
           kInfiniteSessionRestore_MinSiteEngagementToRestoreDefault);
 
-  params.simultaneous_tab_loads = CalculateSimultaneousTabLoads(
-      params.min_simultaneous_tab_loads, params.max_simultaneous_tab_loads,
-      params.cores_per_simultaneous_tab_load, GetNumCores());
-
   return params;
 }
 
@@ -376,38 +361,6 @@ const InfiniteSessionRestoreParams& GetStaticInfiniteSessionRestoreParams() {
   static base::NoDestructor<InfiniteSessionRestoreParams> params(
       GetInfiniteSessionRestoreParams());
   return *params;
-}
-
-size_t CalculateSimultaneousTabLoads(size_t min_loads,
-                                     size_t max_loads,
-                                     size_t cores_per_load,
-                                     size_t num_cores) {
-  DCHECK(max_loads == 0 || min_loads <= max_loads);
-
-  if (num_cores == 0)
-    num_cores = GetNumCores();
-  DCHECK(num_cores > 0);
-
-  size_t loads = 0;
-
-  // Setting |cores_per_load| == 0 means that no per-core limit is applied.
-  if (cores_per_load == 0) {
-    loads = std::numeric_limits<size_t>::max();
-  } else {
-    loads = num_cores / cores_per_load;
-  }
-
-  // If |max_loads| isn't zero then apply the maximum that it implies.
-  if (max_loads != 0)
-    loads = std::min(loads, max_loads);
-
-  loads = std::max(loads, min_loads);
-
-  return loads;
-}
-
-void SetCoresForTesting(size_t num_cores) {
-  g_num_cores_for_testing = num_cores;
 }
 
 }  // namespace resource_coordinator
