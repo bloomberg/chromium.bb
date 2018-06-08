@@ -114,7 +114,6 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kMiscPlatformAPI:
     case TaskType::kInternalDefault:
     case TaskType::kInternalLoading:
-    case TaskType::kUnthrottled:
     case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIndexedDB:

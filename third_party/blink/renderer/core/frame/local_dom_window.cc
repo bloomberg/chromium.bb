@@ -317,13 +317,10 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
 
   document_ = CreateDocument(mime_type, init, force_xhtml);
 
-  // This queue is unthrottled because throttling IndexedDB events may break
-  // scenarios where several tabs, some of which are backgrounded, access
-  // the same database concurrently.
   // TODO(hajimehoshi): Task type should be determined by a posted event instead
   // of specifying here.
   event_queue_ =
-      EventQueueImpl::Create(document_.Get(), TaskType::kUnthrottled);
+      EventQueueImpl::Create(document_.Get(), TaskType::kInternalDefault);
   document_->Initialize();
 
   if (!GetFrame())

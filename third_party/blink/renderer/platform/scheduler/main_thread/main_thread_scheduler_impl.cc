@@ -168,8 +168,6 @@ const char* TaskTypeToString(TaskType task_type) {
       return "InternalDefault";
     case TaskType::kInternalLoading:
       return "InternalLoading";
-    case TaskType::kUnthrottled:
-      return "Unthrottled";
     case TaskType::kInternalTest:
       return "InternalTest";
     case TaskType::kInternalWebCrypto:
