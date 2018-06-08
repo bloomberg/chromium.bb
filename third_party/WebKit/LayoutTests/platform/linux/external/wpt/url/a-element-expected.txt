@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 513 tests; 333 PASS, 180 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 515 tests; 334 PASS, 181 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -308,6 +308,8 @@ PASS Parsing: <#> against <test:test?test>
 PASS Parsing: <https://@test@test@example:800/> against <http://doesnotmatter/>
 PASS Parsing: <https://@@@example> against <http://doesnotmatter/>
 PASS Parsing: <http://`{}:`{}@h/`{}?`{}> against <http://doesnotmatter/>
+PASS Parsing: <http://host/?'> against <about:blank>
+FAIL Parsing: <notspecial://host/?'> against <about:blank> assert_equals: host expected "host" but got ""
 PASS Parsing: </some/path> against <http://user@example.org/smth>
 PASS Parsing: <> against <http://user:pass@example.org:21/smth>
 PASS Parsing: </some/path> against <http://user:pass@example.org:21/smth>

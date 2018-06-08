@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 300 tests; 225 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 302 tests; 226 PASS, 76 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Origin parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -228,6 +228,8 @@ FAIL Origin parsing: <#> against <test:test?test> assert_equals: origin expected
 PASS Origin parsing: <https://@test@test@example:800/> against <http://doesnotmatter/>
 PASS Origin parsing: <https://@@@example> against <http://doesnotmatter/>
 PASS Origin parsing: <http://`{}:`{}@h/`{}?`{}> against <http://doesnotmatter/>
+PASS Origin parsing: <http://host/?'> against <about:blank>
+FAIL Origin parsing: <notspecial://host/?'> against <about:blank> assert_equals: origin expected "notspecial://host" but got "notspecial://"
 PASS Origin parsing: </some/path> against <http://user@example.org/smth>
 PASS Origin parsing: <> against <http://user:pass@example.org:21/smth>
 PASS Origin parsing: </some/path> against <http://user:pass@example.org:21/smth>
