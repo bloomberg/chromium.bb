@@ -406,8 +406,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   process_->AddRoute(routing_id_, this);
   process_->AddWidget(this);
 
-  latency_tracker_.Initialize(routing_id_, GetProcess()->GetID());
-
   SetupInputRouter();
   touch_emulator_.reset();
   SetWidget(std::move(widget));
@@ -1546,8 +1544,9 @@ void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
   GetWidgetInputHandler()->CursorVisibilityChanged(is_visible);
 }
 
-int64_t RenderWidgetHostImpl::GetLatencyComponentId() const {
-  return latency_tracker_.latency_component_id();
+int64_t RenderWidgetHostImpl::GetFrameSinkIdForSnapshot() const {
+  int process_id = GetProcess()->GetID();
+  return static_cast<int64_t>(process_id) << 32 | routing_id_;
 }
 
 // static
@@ -1745,7 +1744,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   if (from_surface) {
     pending_surface_browser_snapshots_.insert(std::make_pair(id, callback));
     ui::LatencyInfo latency_info;
-    latency_info.AddSnapshot(GetLatencyComponentId(), id);
+    latency_info.AddSnapshot(GetFrameSinkIdForSnapshot(), id);
     Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
     return;
   }
@@ -1760,7 +1759,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   // TODO(nzolghadr): Remove the duplication here and the if block just above.
   pending_browser_snapshots_.insert(std::make_pair(id, callback));
   ui::LatencyInfo latency_info;
-  latency_info.AddSnapshot(GetLatencyComponentId(), id);
+  latency_info.AddSnapshot(GetFrameSinkIdForSnapshot(), id);
   Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
 }
 
@@ -2073,9 +2072,9 @@ void RenderWidgetHostImpl::ProcessSnapshotResponses(
   // Note that a compromised renderer can send LatencyInfo to a
   // RenderWidgetHostImpl other than its own. Be mindful of security
   // implications of the code you add here.
-  if (latency_info.Snapshots().find(GetLatencyComponentId()) !=
+  if (latency_info.Snapshots().find(GetFrameSinkIdForSnapshot()) !=
       latency_info.Snapshots().end()) {
-    int snapshot_id = latency_info.Snapshots().at(GetLatencyComponentId());
+    int snapshot_id = latency_info.Snapshots().at(GetFrameSinkIdForSnapshot());
 #if defined(OS_MACOSX) || defined(OS_WIN)
     // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
     // delay between when content is drawn to the screen, and when the
@@ -2749,7 +2748,7 @@ void RenderWidgetHostImpl::NotifyCorrespondingRenderWidgetHost(
     int64_t frame_id,
     std::set<RenderWidgetHostImpl*>& notified_hosts,
     const ui::LatencyInfo& latency_info) {
-  // Matches with GetLatencyComponentId.
+  // Matches with GetFrameSinkIdForSnapshot.
   int routing_id = frame_id & 0xffffffff;
   int process_id = (frame_id >> 32) & 0xffffffff;
   RenderWidgetHost* rwh = RenderWidgetHost::FromID(process_id, routing_id);
