@@ -135,10 +135,27 @@ void StoreCurrentDraggedBrowserBoundsInTabletMode(
                         new gfx::Rect(bounds_in_screen));
   }
 }
+
+// Returns true if we should attach the dragged tabs into |target_tabstrip|
+// after the drag ends. Currently it only happens on Chrome OS, when the dragged
+// tabs are dragged over an overview window, we should not try to attach it
+// to the overview window during dragging, but should wait to do so until the
+// drag ends.
+bool ShouldAttachOnEnd(TabStrip* target_tabstrip) {
+  return target_tabstrip &&
+         target_tabstrip->GetWidget()->GetNativeWindow()->GetProperty(
+             ash::kIsShowingInOverviewKey);
+}
+
 #else
 bool IsSnapped(const TabStrip* tab_strip) {
   return false;
 }
+
+bool ShouldAttachOnEnd(TabStrip* target_tabstrip) {
+  return false;
+}
+
 #endif  // #if defined(OS_CHROMEOS)
 
 #if defined(USE_AURA)
@@ -437,6 +454,12 @@ void TabDragController::EndDrag(EndDragReason reason) {
   // finishes.
   if (reason == END_DRAG_CAPTURE_LOST && is_dragging_window_)
     return;
+
+  // It's possible that in Chrome OS we defer the windows that are showing in
+  // overview to attach into during dragging. If so we need to attach the
+  // dragged tabs to it first.
+  if (reason == END_DRAG_COMPLETE && deferred_target_tabstrip_)
+    PerformDeferredAttach();
   EndDragImpl(reason != END_DRAG_COMPLETE && source_tabstrip_ ?
               CANCELED : NORMAL);
 }
@@ -557,6 +580,18 @@ TabDragController::Liveness TabDragController::ContinueDragging(
           Liveness::DELETED) {
     return Liveness::DELETED;
   }
+
+  // The dragged tabs may not be able to attach into |target_tabstrip| during
+  // dragging if the window accociated with |target_tabstrip| is currently
+  // showing in overview mode in Chrome OS, in this case we defer attaching into
+  // it till the drag ends and reset |target_tabstrip| here.
+  if (ShouldAttachOnEnd(target_tabstrip)) {
+    SetDeferredTargetTabstrip(target_tabstrip);
+    target_tabstrip = is_dragging_window_ ? attached_tabstrip_ : nullptr;
+  } else {
+    SetDeferredTargetTabstrip(nullptr);
+  }
+
   bool tab_strip_changed = (target_tabstrip != attached_tabstrip_);
 
   if (attached_tabstrip_) {
@@ -863,7 +898,15 @@ TabDragController::Liveness TabDragController::GetTargetTabStripForPoint(
   // behavior.  See crbug.com/336691
   if (!GetModalTransient(local_window)) {
     TabStrip* result = GetTabStripForWindow(local_window);
-    if (result && DoesTabStripContain(result, point_in_screen)) {
+    if (ShouldAttachOnEnd(result)) {
+      // No need to check if the specified screen point is within the bounds of
+      // the tabstrip as arriving here we know that the window is currently
+      // showing in overview mode in Chrome OS and its bounds contain the
+      // specified screen point, and these two conditions are enough for a
+      // window to be a valid target window to attach the dragged tabs.
+      *tab_strip = result;
+      return Liveness::ALIVE;
+    } else if (result && DoesTabStripContain(result, point_in_screen)) {
       *tab_strip = result;
       return Liveness::ALIVE;
     }
@@ -907,7 +950,8 @@ bool TabDragController::DoesTabStripContain(
 }
 
 void TabDragController::Attach(TabStrip* attached_tabstrip,
-                               const gfx::Point& point_in_screen) {
+                               const gfx::Point& point_in_screen,
+                               bool set_capture) {
   TRACE_EVENT1("views", "TabDragController::Attach",
                "point_in_screen", point_in_screen.ToString());
 
@@ -990,7 +1034,8 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   // Transfer ownership of us to the new tabstrip as well as making sure the
   // window has capture. This is important so that if activation changes the
   // drag isn't prematurely canceled.
-  attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
+  if (set_capture)
+    attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
   attached_tabstrip_->OwnDragController(this);
   SetTabDraggingInfo();
 }
@@ -1406,6 +1451,29 @@ void TabDragController::EndDragImpl(EndDragType type) {
   TabStrip* owning_tabstrip =
       attached_tabstrip_ ? attached_tabstrip_ : source_tabstrip_;
   owning_tabstrip->DestroyDragController();
+}
+
+void TabDragController::PerformDeferredAttach() {
+  DCHECK(deferred_target_tabstrip_);
+  DCHECK_NE(deferred_target_tabstrip_, attached_tabstrip_);
+
+  // |is_dragging_new_browser_| needs to be reset here since after this function
+  // is called, the browser window that was specially created for the dragged
+  // tab(s) will be destroyed.
+  is_dragging_new_browser_ = false;
+  // |did_restore_window_| is only set to be true if the dragged window is the
+  // source window and the source window was maximized or fullscreen before the
+  // drag starts. It also needs to be reset to false here otherwise after this
+  // function is called, the newly attached window may be maximized unexpectedly
+  // after the drag ends.
+  did_restore_window_ = false;
+
+  TabStrip* target_tabstrip = deferred_target_tabstrip_;
+  SetDeferredTargetTabstrip(nullptr);
+  Detach(DONT_RELEASE_CAPTURE);
+  // If we're attaching the dragged tabs to an overview window's tabstrip, the
+  // tabstrip should not have focus.
+  Attach(target_tabstrip, GetCursorScreenPoint(), /*set_capture=*/false);
 }
 
 void TabDragController::RevertDrag() {
@@ -1929,5 +1997,25 @@ void TabDragController::ClearTabDraggingInfo() {
       dragged_tabstrip->GetWidget()->GetNativeWindow();
   dragged_window->ClearProperty(ash::kIsDraggingTabsKey);
   dragged_window->ClearProperty(ash::kTabDraggingSourceWindowKey);
+#endif
+}
+
+void TabDragController::SetDeferredTargetTabstrip(
+    TabStrip* deferred_target_tabstrip) {
+#if defined(OS_CHROMEOS)
+  if (deferred_target_tabstrip_ == deferred_target_tabstrip)
+    return;
+
+  // Clear the window property on the previous |deferred_target_tabstrip_|.
+  if (deferred_target_tabstrip_) {
+    deferred_target_tabstrip_->GetWidget()->GetNativeWindow()->ClearProperty(
+        ash::kIsDeferredTabDraggingTargetWindowKey);
+  }
+  deferred_target_tabstrip_ = deferred_target_tabstrip;
+  // Set the window property on the new |deferred_target_tabstrip_|.
+  if (deferred_target_tabstrip_) {
+    deferred_target_tabstrip_->GetWidget()->GetNativeWindow()->SetProperty(
+        ash::kIsDeferredTabDraggingTargetWindowKey, true);
+  }
 #endif
 }

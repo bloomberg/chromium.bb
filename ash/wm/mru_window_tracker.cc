@@ -142,7 +142,7 @@ MruWindowTracker::WindowList MruWindowTracker::BuildWindowForCycleList() const {
            window->GetRootWindow()
                ->GetChildById(kShellWindowId_AppListContainer)
                ->Contains(window) ||
-           !window->GetProperty(kShowInOverviewKey);
+           window->GetProperty(kHideInOverviewKey);
   };
   window_list.erase(std::remove_if(window_list.begin(), window_list.end(),
                                    window_is_ineligible),

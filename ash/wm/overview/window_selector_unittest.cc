@@ -929,7 +929,7 @@ TEST_F(WindowSelectorTest, SkipOverviewWindow) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
-  window2->SetProperty(ash::kShowInOverviewKey, false);
+  window2->SetProperty(ash::kHideInOverviewKey, true);
 
   // Enter overview.
   ToggleOverview();

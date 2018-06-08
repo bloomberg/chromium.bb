@@ -157,6 +157,9 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
@@ -245,6 +248,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
       bool* has_fullscreen_coverred,
       bool selected,
       WindowSelector::OverviewTransition transition);
+
+  // Returns the window selector item iterator that contains |window|.
+  std::vector<std::unique_ptr<WindowSelectorItem>>::iterator
+  GetWindowSelectorItemIterContainingWindow(aura::Window* window);
 
   // Root window the grid is in.
   aura::Window* root_window_;

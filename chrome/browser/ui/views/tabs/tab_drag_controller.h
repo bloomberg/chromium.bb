@@ -289,7 +289,7 @@ class TabDragController : public views::WidgetObserver,
   TabStrip* GetTabStripForWindow(gfx::NativeWindow window);
 
   // Returns the compatible TabStrip to drag to at the specified point (screen
-  // coordinates), or NULL if there is none.
+  // coordinates), or nullptr if there is none.
   Liveness GetTargetTabStripForPoint(const gfx::Point& point_in_screen,
                                      TabStrip** tab_strip);
 
@@ -302,8 +302,11 @@ class TabDragController : public views::WidgetObserver,
   // coordinates.
   DetachPosition GetDetachPosition(const gfx::Point& point_in_screen);
 
-  // Attach the dragged Tab to the specified TabStrip.
-  void Attach(TabStrip* attached_tabstrip, const gfx::Point& point_in_screen);
+  // Attach the dragged Tab to the specified TabStrip. If |set_capture| is true,
+  // the newly attached tabstrip will have capture.
+  void Attach(TabStrip* attached_tabstrip,
+              const gfx::Point& point_in_screen,
+              bool set_capture = true);
 
   // Detach the dragged Tab from the current TabStrip.
   void Detach(ReleaseCapture release_capture);
@@ -368,6 +371,9 @@ class TabDragController : public views::WidgetObserver,
   // Does the work for EndDrag(). If we actually started a drag and |how_end| is
   // not TAB_DESTROYED then one of EndDrag() or RevertDrag() is invoked.
   void EndDragImpl(EndDragType how_end);
+
+  // Called after the drag ends and |deferred_target_tabstrip_| is not nullptr.
+  void PerformDeferredAttach();
 
   // Reverts a cancelled drag operation.
   void RevertDrag();
@@ -482,6 +488,10 @@ class TabDragController : public views::WidgetObserver,
   // from the old tabstrip or the tab dragging is ended.
   void ClearTabDraggingInfo();
 
+  // Sets |deferred_target_tabstrip_| and updates its corresponding window
+  // property.
+  void SetDeferredTargetTabstrip(TabStrip* deferred_target_tabstrip);
+
   EventSource event_source_;
 
   // The TabStrip the drag originated from.
@@ -490,6 +500,11 @@ class TabDragController : public views::WidgetObserver,
   // The TabStrip the dragged Tab is currently attached to, or NULL if the
   // dragged Tab is detached.
   TabStrip* attached_tabstrip_;
+
+  // The target TabStrip to attach to after the drag ends. It's only possible
+  // to happen in Chrome OS tablet mode, if the dragged tabs are dragged over
+  // an overview window, we should wait until the drag ends to attach it.
+  TabStrip* deferred_target_tabstrip_ = nullptr;
 
   // Whether capture can be released during the drag. When false, capture should
   // not be released when transferring capture between widgets and when starting

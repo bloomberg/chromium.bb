@@ -39,7 +39,7 @@ constexpr int kBlurSlideDurationMs = 250;
 
 // Returns true if |window| should be hidden when entering overview.
 bool ShouldHideWindowInOverview(const aura::Window* window) {
-  return !window->GetProperty(ash::kShowInOverviewKey);
+  return window->GetProperty(ash::kHideInOverviewKey);
 }
 
 // Returns true if |window| should be excluded from overview.
