@@ -63,9 +63,6 @@ std::map<int, std::vector<SyncedTabDelegate*>> GroupTabsBySyncId(
   int duplicate_count = 0;
   for (auto& window_iter_pair : windows) {
     const SyncedWindowDelegate* window_delegate = window_iter_pair.second;
-    if (!IsWindowSyncable(*window_delegate)) {
-      continue;
-    }
     for (int j = 0; j < window_delegate->GetTabCount(); ++j) {
       SyncedTabDelegate* synced_tab = window_delegate->GetTabAt(j);
       if (!synced_tab ||
