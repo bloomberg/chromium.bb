@@ -16,7 +16,7 @@
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/invalidation/impl/gcm_network_channel_delegate.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "components/invalidation/public/identity_provider.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -36,8 +36,7 @@ class IdentityProvider;
 // all function calls to GCMInvalidationBridge which does actual work to perform
 // them.
 class GCMInvalidationBridge : public gcm::GCMAppHandler,
-                              public gcm::GCMConnectionObserver,
-                              public OAuth2TokenService::Consumer {
+                              public gcm::GCMConnectionObserver {
  public:
   class Core;
 
@@ -45,12 +44,8 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
                         IdentityProvider* identity_provider);
   ~GCMInvalidationBridge() override;
 
-  // OAuth2TokenService::Consumer implementation.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenRequestCompleted(GoogleServiceAuthError error,
+                                     std::string access_token);
 
   // gcm::GCMAppHandler implementation.
   void ShutdownHandler() override;
@@ -99,7 +94,7 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
   scoped_refptr<base::SingleThreadTaskRunner> core_thread_task_runner_;
 
   // Fields related to RequestToken function.
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<ActiveAccountAccessTokenFetcher> access_token_fetcher_;
   syncer::GCMNetworkChannelDelegate::RequestTokenCallback
       request_token_callback_;
   bool subscribed_for_incoming_messages_;

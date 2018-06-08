@@ -12,7 +12,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/impl/gcm_invalidation_bridge.h"
-#include "components/invalidation/public/identity_provider.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 namespace invalidation {
@@ -173,8 +172,7 @@ void GCMInvalidationBridge::Core::OnStoreReset() {
 GCMInvalidationBridge::GCMInvalidationBridge(
     gcm::GCMDriver* gcm_driver,
     IdentityProvider* identity_provider)
-    : OAuth2TokenService::Consumer("gcm_network_channel"),
-      gcm_driver_(gcm_driver),
+    : gcm_driver_(gcm_driver),
       identity_provider_(identity_provider),
       subscribed_for_incoming_messages_(false),
       weak_factory_(this) {}
@@ -205,7 +203,7 @@ void GCMInvalidationBridge::CoreInitializationDone(
 void GCMInvalidationBridge::RequestToken(
     syncer::GCMNetworkChannelDelegate::RequestTokenCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (access_token_request_ != nullptr) {
+  if (access_token_fetcher_ != nullptr) {
     // Report previous request as cancelled.
     GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
     std::string access_token;
@@ -220,41 +218,22 @@ void GCMInvalidationBridge::RequestToken(
   request_token_callback_ = callback;
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  access_token_request_ = identity_provider_->GetTokenService()->StartRequest(
-      identity_provider_->GetActiveAccountId(), scopes, this);
+  access_token_fetcher_ = identity_provider_->FetchAccessToken(
+      "gcm_network_channel", scopes,
+      base::BindOnce(&GCMInvalidationBridge::OnAccessTokenRequestCompleted,
+                     base::Unretained(this)));
 }
 
-void GCMInvalidationBridge::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+void GCMInvalidationBridge::OnAccessTokenRequestCompleted(
+    GoogleServiceAuthError error,
+    std::string access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(access_token_request_.get(), request);
   core_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Core::RequestTokenFinished,
-                 core_,
-                 request_token_callback_,
-                 GoogleServiceAuthError::AuthErrorNone(),
-                 access_token));
+      base::Bind(&GCMInvalidationBridge::Core::RequestTokenFinished, core_,
+                 request_token_callback_, error, access_token));
   request_token_callback_.Reset();
-  access_token_request_.reset();
-}
-
-void GCMInvalidationBridge::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(access_token_request_.get(), request);
-  core_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMInvalidationBridge::Core::RequestTokenFinished,
-                 core_,
-                 request_token_callback_,
-                 error,
-                 std::string()));
-  request_token_callback_.Reset();
-  access_token_request_.reset();
+  access_token_fetcher_.reset();
 }
 
 void GCMInvalidationBridge::InvalidateToken(const std::string& token) {

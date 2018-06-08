@@ -7,12 +7,25 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace invalidation {
+
+// An opaque object that clients can use to control the lifetime of access
+// token requests.
+class ActiveAccountAccessTokenFetcher {
+ public:
+  ActiveAccountAccessTokenFetcher() = default;
+  virtual ~ActiveAccountAccessTokenFetcher() = default;
+};
+
+using ActiveAccountAccessTokenCallback =
+    base::OnceCallback<void(GoogleServiceAuthError error,
+                            std::string access_token)>;
 
 // Helper class that provides access to information about the "active GAIA
 // account" with which invalidation should interact. The definition of the
@@ -57,6 +70,15 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   // of being removed. See https://crbug.com/809452.
   // Gets the token service vending OAuth tokens for all logged-in accounts.
   virtual OAuth2TokenService* GetTokenService() = 0;
+
+  // Starts an access token request for |oauth_consumer_name| and |scopes|. When
+  // the request completes, |callback| will be invoked with the access token
+  // or error. To cancel the request, destroy the returned TokenFetcher.
+  std::unique_ptr<ActiveAccountAccessTokenFetcher> FetchAccessToken(
+      const std::string& oauth_consumer_name,
+      const OAuth2TokenService::ScopeSet& scopes,
+
+      ActiveAccountAccessTokenCallback callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

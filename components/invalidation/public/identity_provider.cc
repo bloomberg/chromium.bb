@@ -6,9 +6,87 @@
 
 namespace invalidation {
 
+class ActiveAccountAccessTokenFetcherImpl
+    : public ActiveAccountAccessTokenFetcher,
+      OAuth2TokenService::Consumer {
+ public:
+  ActiveAccountAccessTokenFetcherImpl(
+      const std::string& active_account_id,
+      const std::string& oauth_consumer_name,
+      OAuth2TokenService* token_service,
+      const OAuth2TokenService::ScopeSet& scopes,
+      ActiveAccountAccessTokenCallback callback);
+  ~ActiveAccountAccessTokenFetcherImpl() override = default;
+
+ private:
+  // OAuth2TokenService::Consumer implementation.
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
+
+  // Invokes |callback_| with (|access_token|, |error|).
+  void HandleTokenRequestCompletion(const OAuth2TokenService::Request* request,
+                                    const GoogleServiceAuthError& error,
+                                    const std::string& access_token);
+
+  ActiveAccountAccessTokenCallback callback_;
+  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveAccountAccessTokenFetcherImpl);
+};
+
+ActiveAccountAccessTokenFetcherImpl::ActiveAccountAccessTokenFetcherImpl(
+    const std::string& active_account_id,
+    const std::string& oauth_consumer_name,
+    OAuth2TokenService* token_service,
+    const OAuth2TokenService::ScopeSet& scopes,
+    ActiveAccountAccessTokenCallback callback)
+    : OAuth2TokenService::Consumer(oauth_consumer_name),
+      callback_(std::move(callback)) {
+  access_token_request_ =
+      token_service->StartRequest(active_account_id, scopes, this);
+}
+
+void ActiveAccountAccessTokenFetcherImpl::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  HandleTokenRequestCompletion(request, GoogleServiceAuthError::AuthErrorNone(),
+                               access_token);
+}
+
+void ActiveAccountAccessTokenFetcherImpl::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  HandleTokenRequestCompletion(request, error, std::string());
+}
+
+void ActiveAccountAccessTokenFetcherImpl::HandleTokenRequestCompletion(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error,
+    const std::string& access_token) {
+  DCHECK_EQ(request, access_token_request_.get());
+  std::unique_ptr<OAuth2TokenService::Request> request_deleter(
+      std::move(access_token_request_));
+
+  std::move(callback_).Run(error, access_token);
+}
+
 IdentityProvider::Observer::~Observer() {}
 
 IdentityProvider::~IdentityProvider() {}
+
+std::unique_ptr<ActiveAccountAccessTokenFetcher>
+IdentityProvider::FetchAccessToken(const std::string& oauth_consumer_name,
+                                   const OAuth2TokenService::ScopeSet& scopes,
+
+                                   ActiveAccountAccessTokenCallback callback) {
+  return std::make_unique<ActiveAccountAccessTokenFetcherImpl>(
+      GetActiveAccountId(), oauth_consumer_name, GetTokenService(), scopes,
+      std::move(callback));
+}
 
 void IdentityProvider::AddObserver(Observer* observer) {
   // See the comment on |num_observers_| in the .h file for why this addition
