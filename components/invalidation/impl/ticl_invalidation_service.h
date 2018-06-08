@@ -43,7 +43,6 @@ class GCMInvalidationBridge;
 // This InvalidationService wraps the C++ Invalidation Client (TICL) library.
 // It provides invalidations for desktop platforms (Win, Mac, Linux).
 class TiclInvalidationService : public InvalidationService,
-                                public OAuth2TokenService::Consumer,
                                 public IdentityProvider::Observer,
                                 public TiclSettingsProvider::Observer,
                                 public syncer::InvalidationHandler {
@@ -84,12 +83,10 @@ class TiclInvalidationService : public InvalidationService,
 
   void RequestAccessToken();
 
-  // OAuth2TokenService::Consumer implementation
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenRequestCompleted(GoogleServiceAuthError error,
+                                     std::string access_token);
+  void OnAccessTokenRequestSucceeded(std::string access_token);
+  void OnAccessTokenRequestFailed(GoogleServiceAuthError error);
 
   // IdentityProvider::Observer implementation.
   void OnActiveAccountRefreshTokenUpdated() override;
@@ -137,9 +134,9 @@ class TiclInvalidationService : public InvalidationService,
   // invalidate it with OAuth2TokenService.
   std::string access_token_;
 
-  // TiclInvalidationService needs to hold reference to access_token_request_
+  // TiclInvalidationService needs to hold reference to access_token_fetcher_
   // for the duration of request in order to receive callbacks.
-  std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
+  std::unique_ptr<ActiveAccountAccessTokenFetcher> access_token_fetcher_;
   base::OneShotTimer request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
 

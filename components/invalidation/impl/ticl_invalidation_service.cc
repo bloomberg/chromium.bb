@@ -61,8 +61,7 @@ TiclInvalidationService::TiclInvalidationService(
     std::unique_ptr<TiclSettingsProvider> settings_provider,
     gcm::GCMDriver* gcm_driver,
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
-    : OAuth2TokenService::Consumer("ticl_invalidation"),
-      user_agent_(user_agent),
+    : user_agent_(user_agent),
       identity_provider_(std::move(identity_provider)),
       settings_provider_(std::move(settings_provider)),
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
@@ -182,7 +181,7 @@ void TiclInvalidationService::RequestDetailedStatus(
 
 void TiclInvalidationService::RequestAccessToken() {
   // Only one active request at a time.
-  if (access_token_request_ != nullptr)
+  if (access_token_fetcher_ != nullptr)
     return;
   request_access_token_retry_timer_.Stop();
   OAuth2TokenService::ScopeSet oauth2_scopes;
@@ -195,16 +194,24 @@ void TiclInvalidationService::RequestAccessToken() {
   token_service->InvalidateAccessToken(account_id, oauth2_scopes,
                                        access_token_);
   access_token_.clear();
-  access_token_request_ =
-      token_service->StartRequest(account_id, oauth2_scopes, this);
+  access_token_fetcher_ = identity_provider_->FetchAccessToken(
+      "ticl_invalidation", oauth2_scopes,
+      base::BindOnce(&TiclInvalidationService::OnAccessTokenRequestCompleted,
+                     base::Unretained(this)));
 }
 
-void TiclInvalidationService::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  DCHECK_EQ(access_token_request_.get(), request);
-  access_token_request_.reset();
+void TiclInvalidationService::OnAccessTokenRequestCompleted(
+    GoogleServiceAuthError error,
+    std::string access_token) {
+  access_token_fetcher_.reset();
+  if (error.state() == GoogleServiceAuthError::NONE)
+    OnAccessTokenRequestSucceeded(access_token);
+  else
+    OnAccessTokenRequestFailed(error);
+}
+
+void TiclInvalidationService::OnAccessTokenRequestSucceeded(
+    std::string access_token) {
   // Reset backoff time after successful response.
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
@@ -215,12 +222,9 @@ void TiclInvalidationService::OnGetTokenSuccess(
   }
 }
 
-void TiclInvalidationService::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  DCHECK_EQ(access_token_request_.get(), request);
+void TiclInvalidationService::OnAccessTokenRequestFailed(
+    GoogleServiceAuthError error) {
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
-  access_token_request_.reset();
   switch (error.state()) {
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE: {
@@ -262,7 +266,7 @@ void TiclInvalidationService::OnActiveAccountRefreshTokenRemoved() {
 }
 
 void TiclInvalidationService::OnActiveAccountLogout() {
-  access_token_request_.reset();
+  access_token_fetcher_.reset();
   request_access_token_retry_timer_.Stop();
 
   if (gcm_invalidation_bridge_)
