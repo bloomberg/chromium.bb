@@ -228,12 +228,31 @@ void UpdateEngine::UpdateCheckResultsAvailable(
     DCHECK_EQ(1u, update_context->components.count(id));
     auto& component = update_context->components.at(id);
     const auto& it = id_to_result.find(id);
-    if (it != id_to_result.end())
-      component->SetUpdateCheckResult(it->second, ErrorCategory::kNone, 0);
-    else
+    if (it != id_to_result.end()) {
+      const auto result = it->second;
+      const auto error = [](const std::string& status) {
+        // First, handle app status literals which can be folded down as an
+        // updatecheck status
+        if (status == "error-unknownApplication")
+          return std::make_pair(ErrorCategory::kUpdateCheck,
+                                ProtocolError::UNKNOWN_APPLICATION);
+        if (status == "restricted")
+          return std::make_pair(ErrorCategory::kUpdateCheck,
+                                ProtocolError::RESTRICTED_APPLICATION);
+        if (status == "error-invalidAppId")
+          return std::make_pair(ErrorCategory::kUpdateCheck,
+                                ProtocolError::INVALID_APPID);
+        // If the parser has return a valid result and the status is not one of
+        // the literals above, then this must be a success an not a parse error.
+        return std::make_pair(ErrorCategory::kNone, ProtocolError::NONE);
+      }(result.status);
+      component->SetUpdateCheckResult(result, error.first,
+                                      static_cast<int>(error.second));
+    } else {
       component->SetUpdateCheckResult(
           base::nullopt, ErrorCategory::kUpdateCheck,
           static_cast<int>(ProtocolError::UPDATE_RESPONSE_NOT_FOUND));
+    }
   }
 }
 

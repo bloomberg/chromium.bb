@@ -990,4 +990,36 @@ TEST_F(UpdateCheckerTest, ParseErrorProtocolVersionMismatch) {
   EXPECT_FALSE(results_);
 }
 
+// The update response contains a status |error-unknownApplication| for the
+// app. The response is succesfully parsed and a result is extracted to
+// indicate this status.
+TEST_F(UpdateCheckerTest, ParseErrorAppStatusErrorUnknownApplication) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_unknownapp.xml")));
+
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+
+  IdToComponentPtrMap components;
+  components[kUpdateItemId] = MakeComponent();
+
+  update_checker_->CheckForUpdates(
+      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
+                     base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_EQ(1, post_interceptor_->GetHitCount())
+      << post_interceptor_->GetRequestsAsString();
+  ASSERT_EQ(1, post_interceptor_->GetCount())
+      << post_interceptor_->GetRequestsAsString();
+
+  EXPECT_EQ(ErrorCategory::kNone, error_category_);
+  EXPECT_EQ(0, error_);
+  EXPECT_TRUE(results_);
+  EXPECT_EQ(1u, results_->list.size());
+  const auto& result = results_->list.front();
+  EXPECT_STREQ("error-unknownApplication", result.status.c_str());
+}
+
 }  // namespace update_client

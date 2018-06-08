@@ -321,7 +321,25 @@ bool ParseAppTag(xmlNode* app,
     return false;
   }
 
-  // Get the <updatecheck> tag.
+  // Read the |status| attribute for the app.
+  // If the status is one of the defined app status error literals, then return
+  // it in the result as if it were an updatecheck status, then stop parsing,
+  // and return success.
+  result->status = GetAttribute(app, "status");
+  if (result->status == "restricted" ||
+      result->status == "error-unknownApplication" ||
+      result->status == "error-invalidAppId")
+    return true;
+
+  // If the status was not handled above and the status is not "ok", then
+  // this must be a status literal that that the parser does not know about.
+  if (!result->status.empty() && result->status != "ok") {
+    *error = "Unknown app status";
+    return false;
+  }
+
+  // Get the <updatecheck> tag if the status is missing or the status is "ok".
+  DCHECK(result->status.empty() || result->status == "ok");
   std::vector<xmlNode*> updates = GetChildren(app, "updatecheck");
   if (updates.empty()) {
     *error = "Missing updatecheck on app.";
