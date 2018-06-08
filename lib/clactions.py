@@ -174,7 +174,7 @@ class CLAction(_CLActionTuple):
     """The type of bot that took this action.
 
     Returns:
-        constants.CQ or constants.PRE_CQ depending on who took the action.
+      constants.CQ or constants.PRE_CQ depending on who took the action.
     """
     build_config = self.build_config
     if build_config.endswith('-%s' % config_lib.CONFIG_TYPE_PALADIN):

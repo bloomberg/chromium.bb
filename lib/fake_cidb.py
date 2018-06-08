@@ -258,7 +258,7 @@ class FakeCIDBConnection(object):
       build_reqs: A list of build_requests.BuildRequest instances.
 
     Returns:
-       The number of inserted rows.
+      The number of inserted rows.
     """
     request_id = len(self.buildRequestTable)
     for build_req in build_reqs:

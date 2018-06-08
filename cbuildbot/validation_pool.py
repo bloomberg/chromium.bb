@@ -214,7 +214,6 @@ class ValidationPool(object):
       builder_name: Builder name on buildbot dashboard.
       is_master: True if this is the master builder for the Commit Queue.
       dryrun: If set to True, do not submit anything to Gerrit.
-    Optional Args:
       candidates: List of changes to consider validating.
       non_os_changes: List of changes that are part of this validation
         pool but aren't part of the cros checkout.

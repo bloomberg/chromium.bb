@@ -226,7 +226,7 @@ class _Results(object):
     """Get a list of the exceptions that failed the build.
 
     Returns:
-       A list of RecordedTraceback objects.
+      A list of RecordedTraceback objects.
     """
     tracebacks = []
     for entry in self._results_log:

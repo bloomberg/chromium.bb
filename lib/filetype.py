@@ -38,7 +38,7 @@ FILE_BUFFER_SIZE = 32 * 1024
 
 
 def SplitShebang(header):
-  """Splits a shebang (#!) into command and arguments.
+  r"""Splits a shebang (#!) into command and arguments.
 
   Args:
     header: The first line of a shebang file, for example

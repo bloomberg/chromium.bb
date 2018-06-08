@@ -817,7 +817,7 @@ def GetCommitDate(git_url, commit):
     commit: A git commit identifier (e.g. a sha1).
 
   Returns:
-     A datetime object.
+    A datetime object.
   """
   parsed_url = urlparse.urlparse(git_url)
   path = '%s/+log/%s?n=1&format=JSON' % (parsed_url.path.rstrip('/'), commit)

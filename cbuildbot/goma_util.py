@@ -89,10 +89,10 @@ class Goma(object):
         deps cache is enabled.
 
     Raises:
-       ValueError if 1) |goma_dir| does not point to a directory, 2)
-       on bots, but |goma_client_json| is not given, 3) |goma_client_json|
-       is given, but it does not point to a file, or 4) if |goma_tmp_dir| is
-       given but it does not point to a directory.
+      ValueError if 1) |goma_dir| does not point to a directory, 2)
+      on bots, but |goma_client_json| is not given, 3) |goma_client_json|
+      is given, but it does not point to a file, or 4) if |goma_tmp_dir| is
+      given but it does not point to a directory.
     """
     # Sanity checks of given paths.
     if not os.path.isdir(goma_dir):

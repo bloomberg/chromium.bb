@@ -72,7 +72,7 @@ class PatchReporter(object):
       package_name: A package name (e.g. 'chromeos-base/chromeos-chrome')
 
     Returns:
-       True if this package should be skipped in the analysis. False otherwise.
+      True if this package should be skipped in the analysis. False otherwise.
     """
     return package_name in self.ignored_packages
 
@@ -83,7 +83,7 @@ class PatchReporter(object):
       deps_map: The packages to analyze.
 
     Returns:
-       A list of patches being applied.
+      A list of patches being applied.
     """
     original = os.environ.get('PORT_LOGDIR', None)
     temp_space = None

@@ -241,9 +241,10 @@ class BuilderStatusManager(object):
       build_id: The build ID (int) of the build to get status of
       master_build_id: The build ID (int) of the master build which may
         have aborted it.
+
     Retuns:
-      A boolean for whether the build was canceled by master
-        during self-destruction.
+      A boolean for whether the build was canceled by master during
+      self-destruction.
     """
     if master_build_id is None:
       # Builds without master_build_id can't be aborted by self-destruction.
@@ -335,12 +336,12 @@ class SlaveBuilderStatus(object):
     """Get slaves aborted by self-destruction of the master.
 
     Args:
-    cidb_info_dict: A dict mapping slave build config names (strings) to their
+      cidb_info_dict: A dict mapping slave build config names (strings) to their
         cidb infos (in the format of CIDBStatusInfo).
 
     Returns:
       A set of build config names (strings) of slaves aborted by
-    self-destruction.
+      self-destruction.
     """
     return set(build_config
                for build_config, cidb_info in cidb_info_dict.iteritems()

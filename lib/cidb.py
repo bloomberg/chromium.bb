@@ -943,7 +943,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       build_reqs: A list of build_requests.BuildRequest instances.
 
     Returns:
-       The number of inserted rows.
+      The number of inserted rows.
     """
     values = []
     for build_request in build_reqs:

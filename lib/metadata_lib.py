@@ -304,7 +304,7 @@ class CBuildbotMetadata(object):
                           should be added to the metadata.
 
     Returns:
-       A metadata dictionary suitable to be json-serialized.
+      A metadata dictionary suitable to be json-serialized.
     """
     config = config or builder_run.config
     start_time = results_lib.Results.start_time

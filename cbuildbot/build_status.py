@@ -130,8 +130,8 @@ class SlaveStatus(object):
       completed_builds: A set of slave build configs (strings) completed before.
 
     Returns:
-       A dict mapping config names of slave builds which are not in the
-       completed_builds set to their BuildbucketInfos.
+      A dict mapping config names of slave builds which are not in the
+      completed_builds set to their BuildbucketInfos.
     """
     completed_builds = completed_builds or {}
     return {k: v for k, v in all_buildbucket_info_dict.iteritems()

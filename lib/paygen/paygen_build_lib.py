@@ -952,13 +952,13 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
   """Run the appropriate command to schedule the Autotests we have prepped.
 
   Args:
-  suite_name: The name of the test suite.
-  board: A string representing the name of the archive board.
-  model: The model that will be tested against.
-  build: A string representing the name of the archive build.
-  skip_duts_check: A boolean indicating to not check minimum available DUTs.
-  debug: A boolean indicating whether or not we are in debug mode.
-  job_keyvals: A dict of job keyvals to be injected to suite control file.
+    suite_name: The name of the test suite.
+    board: A string representing the name of the archive board.
+    model: The model that will be tested against.
+    build: A string representing the name of the archive build.
+    skip_duts_check: A boolean indicating to not check minimum available DUTs.
+    debug: A boolean indicating whether or not we are in debug mode.
+    job_keyvals: A dict of job keyvals to be injected to suite control file.
   """
   timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
   cmd_result = commands.RunHWTestSuite(

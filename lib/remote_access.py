@@ -419,7 +419,7 @@ class RemoteAccess(object):
     device has rebooted.  May throw exceptions.
 
     Returns:
-       True if the device has successfully rebooted, False otherwise.
+      True if the device has successfully rebooted, False otherwise.
     """
     new_boot_id = self._GetBootId(rebooting=True)
     if new_boot_id is None:
@@ -1073,7 +1073,7 @@ class RemoteDevice(object):
     device has rebooted.  May throw exceptions.
 
     Returns:
-       True if the device has successfully rebooted, false otherwise.
+      True if the device has successfully rebooted, false otherwise.
     """
     return self.GetAgent().CheckIfRebooted(old_boot_id)
 

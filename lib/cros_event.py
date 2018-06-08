@@ -77,10 +77,10 @@ class Event(dict):
     """Create an Event, and populate metadata
 
     Args:
-    eid: (optional) unique id number for a given set of events
-    data: (optional) metadata associated with the given Event
-    emit_func: (optional) Callback function to be called when event is complete
-            Function will be passed current event as sole argument
+      eid: Unique id number for a given set of events.
+      data: Metadata associated with the given Event.
+      emit_func: Callback function to be called when event is complete.
+        The function will be passed current event as sole argument.
     """
     super(Event, self).__init__()
 
@@ -97,8 +97,8 @@ class Event(dict):
     """Call to mark event as failed
 
     Args:
-    message: optional message to be set in the event
-    status: optional, override the default status 'failure'
+      message: Message to be set in the event.
+      status: Override the default status 'failure'.
     """
     self[EVENT_STATUS] = status
 
@@ -138,9 +138,9 @@ class EventLogger(object):
     """Initialize EventLogger
 
     Args:
-    emit_func: Function called with single argument, the Event that has occurred
-    default_kind: string, kind that will be using to generate id list [kind, id]
-    data: (optional) metadata that will be copied to all Events generate
+      emit_func: Function called with the Event that has occurred.
+      default_kind: Kind that will be used to generate id list [kind, id].
+      data: Metadata that will be copied to all Events generate.
     """
 
     self.emit_func = emit_func
@@ -155,8 +155,8 @@ class EventLogger(object):
     """Returns new Event with with given Data
 
     Args:
-    kind: str used in the event's id, see gCloud's datastore doc
-    data: dictionary of additional data to be included
+      kind: String used in the event's id, see gCloud's datastore doc.
+      data: Dictionary of additional data to be included.
     """
 
     kind = kind if kind else self.default_kind
