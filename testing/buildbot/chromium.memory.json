@@ -3091,6 +3091,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "nacl_loader_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "native_theme_unittests"
       },
       {
