@@ -1929,6 +1929,8 @@
     'gn_unittests': {},
   },
 
+  # TODO(thakis): merge with non_android_and_cast_and_chromeos_chromium_gtests
+  # once https://crbug.com/844865 is resolved.
   'non_android_and_cast_and_chromeos_and_clang_and_mac_fyi_chromium_gtests': {
     'headless_browsertests': {},
     'headless_unittests': {},
@@ -2411,6 +2413,7 @@
     'network_service_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
+    'non_android_and_cast_and_chromeos_and_clang_and_mac_fyi_chromium_gtests',
     'non_mac_chromium_gtests',
     'site_isolation_chromium_gtests',
     'site_isolation_chromium_linux_gtests',
@@ -2430,6 +2433,7 @@
     'network_service_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
+    'non_android_and_cast_and_chromeos_and_clang_and_mac_fyi_chromium_gtests',
     'non_mac_chromium_gtests',
     'site_isolation_chromium_gtests',
     'site_isolation_chromium_linux_gtests',
