@@ -602,6 +602,7 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   DCHECK(event_type == ServiceWorkerMetrics::EventType::INSTALL ||
          event_type == ServiceWorkerMetrics::EventType::ACTIVATE ||
          event_type == ServiceWorkerMetrics::EventType::MESSAGE ||
+         event_type == ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST ||
          status() == ACTIVATED)
       << "Event of type " << static_cast<int>(event_type)
       << " can only be dispatched to an active worker: " << status();
@@ -637,6 +638,9 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
 
 bool ServiceWorkerVersion::StartExternalRequest(
     const std::string& request_uuid) {
+  if (running_status() == EmbeddedWorkerStatus::STARTING)
+    return pending_external_requests_.insert(request_uuid).second;
+
   // It's possible that the renderer is lying or the version started stopping
   // right around the time of the IPC.
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
@@ -681,6 +685,9 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
 
 bool ServiceWorkerVersion::FinishExternalRequest(
     const std::string& request_uuid) {
+  if (running_status() == EmbeddedWorkerStatus::STARTING)
+    return pending_external_requests_.erase(request_uuid) > 0u;
+
   // It's possible that the renderer is lying or the version started stopping
   // right around the time of the IPC.
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
@@ -947,6 +954,13 @@ void ServiceWorkerVersion::OnStarted() {
   FinishStartWorker(SERVICE_WORKER_OK);
   for (auto& observer : listeners_)
     observer.OnRunningStateChanged(this);
+
+  if (!pending_external_requests_.empty()) {
+    std::set<std::string> pending_external_requests;
+    std::swap(pending_external_requests_, pending_external_requests);
+    for (const std::string& request_uuid : pending_external_requests)
+      StartExternalRequest(request_uuid);
+  }
 }
 
 void ServiceWorkerVersion::OnStopping() {
@@ -1957,6 +1971,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   DCHECK(!controller_request_.is_pending());
   installed_scripts_sender_.reset();
   binding_.Close();
+  pending_external_requests_.clear();
 
   for (auto& observer : listeners_)
     observer.OnRunningStateChanged(this);

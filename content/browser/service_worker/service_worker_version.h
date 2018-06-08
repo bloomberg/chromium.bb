@@ -760,6 +760,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   using RequestUUIDToRequestIDMap = std::map<std::string, int>;
   RequestUUIDToRequestIDMap external_request_uuid_to_request_id_;
 
+  // List of UUIDs of external requests that were issued before this worker
+  // reached RUNNING.
+  std::set<std::string> pending_external_requests_;
+
   // Connected to ServiceWorkerContextClient while the worker is running.
   mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_;
 
