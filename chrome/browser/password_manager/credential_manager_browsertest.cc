@@ -276,11 +276,11 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   std::string fill_password =
       "document.getElementById('username_field').value = 'user';"
       "document.getElementById('password_field').value = 'password';";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_password));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_password));
 
   // Call the API to trigger the notification to the client.
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
+      WebContents(),
       "navigator.credentials.get({password: true})"
       ".then(cred => window.location = '/password/done.html')"));
   // Mojo calls from the renderer are asynchronous.
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
     // Call the API to store 'user1' with the old password.
     ASSERT_TRUE(content::ExecuteScript(
-        RenderViewHost(),
+        WebContents(),
         "navigator.credentials.store("
         "  new PasswordCredential({ id: 'user1', password: 'abcdef' }))"
         ".then(cred => window.location = '/password/done.html');"));
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
     // Call the API to store 'user2' with the old password.
     ASSERT_TRUE(content::ExecuteScript(
-        RenderViewHost(),
+        WebContents(),
         "navigator.credentials.store("
         "  new PasswordCredential({ id: 'user2', password: '123456' }))"
         ".then(cred => window.location = '/password/done.html');"));
@@ -436,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
     // Call the API to store 'user1' with a new password.
     ASSERT_TRUE(content::ExecuteScript(
-        RenderViewHost(),
+        WebContents(),
         "navigator.credentials.store("
         "  new PasswordCredential({ id: 'user1', password: 'ABCDEF' }))"
         ".then(cred => window.location = '/password/done.html');"));
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
     // Call the API to store 'user2' with a new password.
     ASSERT_TRUE(content::ExecuteScript(
-        RenderViewHost(),
+        WebContents(),
         "navigator.credentials.store("
         "  new PasswordCredential({ id: 'user2', password: 'UVWXYZ' }))"
         ".then(cred => window.location = '/password/done.html');"));
@@ -533,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
     // Call the API to store 'user1' with a new password.
     ASSERT_TRUE(content::ExecuteScript(
-        RenderViewHost(),
+        WebContents(),
         "navigator.credentials.store("
         "  new PasswordCredential({ id: 'user1', password: 'ABCDEF' }))"
         ".then(cred => window.location = '/password/done.html');"));
@@ -548,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
     // Call the API to store 'user2' with a new password.
     ASSERT_TRUE(content::ExecuteScript(
-        RenderViewHost(),
+        WebContents(),
         "navigator.credentials.store("
         "  new PasswordCredential({ id: 'user2', password: 'UVWXYZ' }))"
         ".then(cred => window.location = '/password/done.html');"));
@@ -600,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Call the API to trigger |get| and |store| and redirect.
   ASSERT_TRUE(
-      content::ExecuteScript(RenderViewHost(),
+      content::ExecuteScript(WebContents(),
                              "navigator.credentials.get({password: true})"
                              ".then(cred => "
                              "navigator.credentials.store(cred)"
@@ -657,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Call the API to trigger |get| and |store| and redirect.
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
+      WebContents(),
       "navigator.credentials.store("
       "  new PasswordCredential({ id: 'user', password: 'P4SSW0RD' }))"
       ".then(cred => window.location = '/password/done.html');"));
@@ -719,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Call the API to trigger the account chooser.
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(), "navigator.credentials.get({password: true})"));
+      WebContents(), "navigator.credentials.get({password: true})"));
   BubbleObserver(WebContents()).WaitForAccountChooser();
 
   // Wait for the migration logic to actually touch the password store.
@@ -754,11 +754,11 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   std::string fill_password =
   "document.getElementById('username_field').value = 'trash';"
   "document.getElementById('password_field').value = 'trash';";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_password));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_password));
 
   // Call the API to trigger the notification to the client.
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
+      WebContents(),
       "navigator.credentials.get({password: true})"
       ".then(cred => window.location = '/password/done.html');"));
 
@@ -876,17 +876,17 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
   NavigateToFile("/password/password_form.html");
 
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
+      WebContents(),
       "document.getElementById('input_submit_button').addEventListener('click',"
       "function(event) {"
-        "var c = new PasswordCredential({ id: 'user', password: 'API' });"
-        "navigator.credentials.store(c);"
+      "var c = new PasswordCredential({ id: 'user', password: 'API' });"
+      "navigator.credentials.store(c);"
       "});"));
   // Fill the password and click the button to submit the page. The API should
   // suppress the autofill password manager.
   NavigationObserver form_submit_observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
+      WebContents(),
       "document.getElementById('username_field').value = 'user';"
       "document.getElementById('password_field').value = 'autofill';"
       "document.getElementById('input_submit_button').click();"));
@@ -931,18 +931,18 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   NavigateToFile("/password/password_form.html");
 
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
+      WebContents(),
       "document.getElementById('input_submit_button').addEventListener('click',"
       "function(event) {"
-        "var c = new PasswordCredential({ id: 'user', password: 'API' });"
-        "navigator.credentials.store(c);"
+      "var c = new PasswordCredential({ id: 'user', password: 'API' });"
+      "navigator.credentials.store(c);"
       "});"));
   // Fill the new password and click the button to submit the page later. The
   // API should suppress the autofill password manager and overwrite the
   // password.
   NavigationObserver form_submit_observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
+      WebContents(),
       "document.getElementById('username_field').value = 'user';"
       "document.getElementById('password_field').value = 'autofill';"
       "document.getElementById('input_submit_button').click();"));

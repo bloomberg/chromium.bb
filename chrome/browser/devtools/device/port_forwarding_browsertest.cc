@@ -111,29 +111,20 @@ IN_PROC_BROWSER_TEST_F(PortForwardingTest,
 
   ui_test_utils::NavigateToURL(browser(), forwarding_url);
 
-  content::RenderViewHost* rvh = browser()->tab_strip_model()->
-      GetWebContentsAt(0)->GetRenderViewHost();
+  content::WebContents* wc = browser()->tab_strip_model()->GetWebContentsAt(0);
 
   std::string result;
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(
-          rvh,
-          "window.domAutomationController.send(document.title)",
-          &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      wc, "window.domAutomationController.send(document.title)", &result));
   ASSERT_EQ("Port forwarding test", result) << "Document has not loaded.";
 
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(
-          rvh,
-          "window.domAutomationController.send(getBodyTextContent())",
-          &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      wc, "window.domAutomationController.send(getBodyTextContent())",
+      &result));
   ASSERT_EQ("content", result) << "Javascript has not loaded.";
 
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(
-          rvh,
-          "window.domAutomationController.send(getBodyMarginLeft())",
-          &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      wc, "window.domAutomationController.send(getBodyMarginLeft())", &result));
   ASSERT_EQ("100px", result) << "CSS has not loaded.";
 
   // Test that disabling port forwarding is handled normally.

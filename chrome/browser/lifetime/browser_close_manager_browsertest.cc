@@ -50,7 +50,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -825,7 +824,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   // Add beforeunload handler for the 2nd (title2.html) tab which haven't had it
   // yet.
   ASSERT_TRUE(content::ExecuteScript(
-      browser2->tab_strip_model()->GetWebContentsAt(1)->GetRenderViewHost(),
+      browser2->tab_strip_model()->GetWebContentsAt(1),
       "window.addEventListener('beforeunload', "
       "function(event) { event.returnValue = 'Foo'; });"));
   EXPECT_TRUE(browser2->tab_strip_model()

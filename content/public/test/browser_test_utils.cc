@@ -1077,10 +1077,6 @@ RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents) {
   return web_contents->GetMainFrame();
 }
 
-RenderFrameHost* ConvertToRenderFrameHost(RenderViewHost* render_view_host) {
-  return render_view_host->GetMainFrame();
-}
-
 RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_frame_host) {
   return render_frame_host;
 }

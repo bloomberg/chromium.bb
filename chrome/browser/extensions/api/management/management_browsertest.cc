@@ -97,7 +97,7 @@ class ExtensionManagementTest : public extensions::ExtensionBrowserTest {
 
     std::string version_from_bg;
     bool exec = content::ExecuteScriptAndExtractString(
-        ext_host->render_view_host(), "version()", &version_from_bg);
+        ext_host->host_contents(), "version()", &version_from_bg);
     EXPECT_TRUE(exec);
     if (!exec)
       return false;

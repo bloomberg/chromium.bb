@@ -142,7 +142,8 @@ class BrowserFocusTest : public InProcessBrowserTest {
             content::Details<bool>(&is_editable_node)));
         std::string focused_id;
         EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-            render_view_host, kGetFocusedElementJS, &focused_id));
+            WebContents::FromRenderViewHost(render_view_host),
+            kGetFocusedElementJS, &focused_id));
         EXPECT_STREQ(kExpectedIDs[index], focused_id.c_str());
       }
 

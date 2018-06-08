@@ -77,7 +77,6 @@ struct FrameVisualProperties;
 class FrameTreeNode;
 class InterstitialPage;
 class NavigationHandle;
-class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class WebContents;
@@ -308,7 +307,6 @@ class ToRenderFrameHost {
   RenderFrameHost* render_frame_host_;
 };
 
-RenderFrameHost* ConvertToRenderFrameHost(RenderViewHost* render_view_host);
 RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_view_host);
 RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents);
 
