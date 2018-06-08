@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -259,4 +260,17 @@ TEST_F(OmniboxEditModelTest, GenerateMatchesFromFullFormattedUrl) {
   // Bypass the test class's mock method to test the real behavior.
   AutocompleteMatch match = model()->OmniboxEditModel::CurrentMatch(nullptr);
   EXPECT_EQ(AutocompleteMatchType::URL_WHAT_YOU_TYPED, match.type);
+}
+
+TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {
+  EXPECT_TRUE(model()->OmniboxEditModel::CanPasteAndGo(
+      base::ASCIIToUTF16("short text")));
+
+  base::string16 almost_long_text = base::ASCIIToUTF16(
+      std::string(OmniboxEditModel::kMaxPasteAndGoTextLength, '.'));
+  EXPECT_TRUE(model()->OmniboxEditModel::CanPasteAndGo(almost_long_text));
+
+  base::string16 long_text = base::ASCIIToUTF16(
+      std::string(OmniboxEditModel::kMaxPasteAndGoTextLength + 1, '.'));
+  EXPECT_FALSE(model()->OmniboxEditModel::CanPasteAndGo(long_text));
 }
