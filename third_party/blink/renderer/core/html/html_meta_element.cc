@@ -304,18 +304,18 @@ float HTMLMetaElement::ParseViewportValueAsDPI(Document* document,
   return value;
 }
 
-blink::mojom::ViewportFit HTMLMetaElement::ParseViewportFitValueAsEnum(
+ViewportDescription::ViewportFit HTMLMetaElement::ParseViewportFitValueAsEnum(
     bool& unknown_value,
     const String& value_string) {
   if (DeprecatedEqualIgnoringCase(value_string, "auto"))
-    return mojom::ViewportFit::kAuto;
+    return ViewportDescription::ViewportFit::kAuto;
   if (DeprecatedEqualIgnoringCase(value_string, "contain"))
-    return mojom::ViewportFit::kContain;
+    return ViewportDescription::ViewportFit::kContain;
   if (DeprecatedEqualIgnoringCase(value_string, "cover"))
-    return mojom::ViewportFit::kCover;
+    return ViewportDescription::ViewportFit::kCover;
 
   unknown_value = true;
-  return mojom::ViewportFit::kAuto;
+  return ViewportDescription::ViewportFit::kAuto;
 }
 
 void HTMLMetaElement::ProcessViewportKeyValuePair(

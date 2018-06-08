@@ -79,7 +79,7 @@ class CORE_EXPORT ViewportStyleResolver
 
   float ViewportArgumentValue(CSSPropertyID) const;
   Length ViewportLengthValue(CSSPropertyID);
-  mojom::ViewportFit ViewportFitValue() const;
+  ViewportDescription::ViewportFit ViewportFitValue() const;
 
   Member<Document> document_;
   Member<MutableCSSPropertyValueSet> property_set_;

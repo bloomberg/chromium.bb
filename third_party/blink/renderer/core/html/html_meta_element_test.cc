@@ -21,7 +21,8 @@ class HTMLMetaElementTest : public PageTestBase {
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
 
-  mojom::ViewportFit LoadTestPageAndReturnViewportFit(const String& value) {
+  ViewportDescription::ViewportFit LoadTestPageAndReturnViewportFit(
+      const String& value) {
     LoadTestPageWithViewportFitValue(value);
     return GetDocument().GetViewportDescription().GetViewportFit();
   }
@@ -38,22 +39,22 @@ class HTMLMetaElementTest : public PageTestBase {
 };
 
 TEST_F(HTMLMetaElementTest, ViewportFit_Auto) {
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
+  EXPECT_EQ(ViewportDescription::ViewportFit::kAuto,
             LoadTestPageAndReturnViewportFit("auto"));
 }
 
 TEST_F(HTMLMetaElementTest, ViewportFit_Contain) {
-  EXPECT_EQ(mojom::ViewportFit::kContain,
+  EXPECT_EQ(ViewportDescription::ViewportFit::kContain,
             LoadTestPageAndReturnViewportFit("contain"));
 }
 
 TEST_F(HTMLMetaElementTest, ViewportFit_Cover) {
-  EXPECT_EQ(mojom::ViewportFit::kCover,
+  EXPECT_EQ(ViewportDescription::ViewportFit::kCover,
             LoadTestPageAndReturnViewportFit("cover"));
 }
 
 TEST_F(HTMLMetaElementTest, ViewportFit_Invalid) {
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
+  EXPECT_EQ(ViewportDescription::ViewportFit::kAuto,
             LoadTestPageAndReturnViewportFit("invalid"));
 }
 

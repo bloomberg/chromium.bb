@@ -148,7 +148,6 @@
           "blink.mojom.BudgetService",
           "blink.mojom.CacheStorage",
           "blink.mojom.ColorChooserFactory",
-	  "blink.mojom.DisplayCutoutHost",
           "blink.mojom.DedicatedWorkerFactory",
           "blink.mojom.LockManager",
           "blink.mojom.GeolocationService",
