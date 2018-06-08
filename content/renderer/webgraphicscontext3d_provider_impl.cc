@@ -12,10 +12,8 @@
 namespace content {
 
 WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
-    scoped_refptr<ui::ContextProviderCommandBuffer> provider,
-    bool software_rendering)
-    : provider_(std::move(provider)), software_rendering_(software_rendering) {
-}
+    scoped_refptr<ui::ContextProviderCommandBuffer> provider)
+    : provider_(std::move(provider)) {}
 
 WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {
   provider_->RemoveObserver(this);
@@ -54,10 +52,6 @@ viz::GLHelper* WebGraphicsContext3DProviderImpl::GetGLHelper() {
                                                  provider_->ContextSupport());
   }
   return gl_helper_.get();
-}
-
-bool WebGraphicsContext3DProviderImpl::IsSoftwareRendering() const {
-  return software_rendering_;
 }
 
 void WebGraphicsContext3DProviderImpl::SetLostContextCallback(

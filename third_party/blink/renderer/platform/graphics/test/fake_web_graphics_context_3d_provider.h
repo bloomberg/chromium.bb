@@ -40,8 +40,6 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
   viz::GLHelper* GetGLHelper() override { return nullptr; }
 
-  bool IsSoftwareRendering() const override { return false; }
-
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }
 
   bool BindToCurrentThread() override { return false; }

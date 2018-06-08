@@ -67,12 +67,6 @@ class WebGraphicsContext3DProvider {
   // method cannot return null.
   virtual viz::GLHelper* GetGLHelper() = 0;
 
-  // Returns true if the context is driven by software emulation of GL. In
-  // this scenario, the compositor would not be using GPU.
-  // TODO(danakj): Make this IsSoftwareCompositing() instead, based on the
-  // CompositingModeWatcher.
-  virtual bool IsSoftwareRendering() const = 0;
-
   virtual void SetLostContextCallback(base::RepeatingClosure) = 0;
   virtual void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char* msg, int32_t id)>) = 0;
