@@ -4798,3 +4798,4 @@ crbug.com/850892 http/tests/devtools/tracing/timeline-time/timeline-usertiming.j
 crbug.com/850892 http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
 # The following test is known to timeout due to crbug.com/760543.
 crbug.com/850892 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout Failure ]
+crbug.com/851090 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
