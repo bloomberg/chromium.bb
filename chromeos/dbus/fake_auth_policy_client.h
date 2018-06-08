@@ -65,10 +65,14 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
       dbus::ObjectProxy::SignalCallback signal_callback,
       dbus::ObjectProxy::OnConnectedCallback on_connected_callback) override;
 
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
+
   // Mark service as started. It's getting started by the
   // UpstartClient::StartAuthPolicyService on the Active Directory managed
-  // devices.
-  void set_started(bool started) { started_ = started; }
+  // devices. If |started| is true, it triggers calling
+  // |wait_for_service_to_be_available_callbacks_|.
+  void SetStarted(bool started);
 
   bool started() const { return started_; }
 
@@ -132,6 +136,9 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   base::TimeDelta disk_operation_delay_ =
       base::TimeDelta::FromMilliseconds(100);
   enterprise_management::ChromeDeviceSettingsProto device_policy_;
+
+  std::vector<WaitForServiceToBeAvailableCallback>
+      wait_for_service_to_be_available_callbacks_;
 
   base::WeakPtrFactory<FakeAuthPolicyClient> weak_factory_{this};
 

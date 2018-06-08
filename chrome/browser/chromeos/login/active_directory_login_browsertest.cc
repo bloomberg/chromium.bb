@@ -71,7 +71,7 @@ constexpr char kCloseButtonId[] = "closeButton";
 
 class TestAuthPolicyClient : public FakeAuthPolicyClient {
  public:
-  TestAuthPolicyClient() { FakeAuthPolicyClient::set_started(true); }
+  TestAuthPolicyClient() { FakeAuthPolicyClient::SetStarted(true); }
 
   void AuthenticateUser(const authpolicy::AuthenticateUserRequest& request,
                         int password_fd,

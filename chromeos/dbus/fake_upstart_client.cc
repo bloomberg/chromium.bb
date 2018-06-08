@@ -20,7 +20,7 @@ void FakeUpstartClient::Init(dbus::Bus* bus) {}
 void FakeUpstartClient::StartAuthPolicyService() {
   static_cast<FakeAuthPolicyClient*>(
       DBusThreadManager::Get()->GetAuthPolicyClient())
-      ->set_started(true);
+      ->SetStarted(true);
 }
 
 void FakeUpstartClient::RestartAuthPolicyService() {
@@ -28,7 +28,7 @@ void FakeUpstartClient::RestartAuthPolicyService() {
       DBusThreadManager::Get()->GetAuthPolicyClient());
   DLOG_IF(WARNING, !authpolicy_client->started())
       << "Trying to restart authpolicyd which is not started";
-  authpolicy_client->set_started(true);
+  authpolicy_client->SetStarted(true);
 }
 
 void FakeUpstartClient::StartMediaAnalytics(
