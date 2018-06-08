@@ -208,15 +208,25 @@ def BuildManifest(root_dir, out_dir, app_name, app_filename,
     if not app_found:
       raise Exception('Could not locate executable inside runtime_deps.')
 
+    # Write meta/package manifest file.
     with open(os.path.join(os.path.dirname(output_path), 'package'), 'w') \
         as package_json:
       json.dump({'version': '0', 'name': app_name}, package_json)
       manifest.write('meta/package=%s\n' %
                    os.path.relpath(package_json.name, out_dir))
 
-    manifest.write('meta/sandbox=%s\n' %
-                 os.path.relpath(os.path.join(root_dir, sandbox_policy_path),
-                                 out_dir))
+    # Write component manifest file.
+    with open(os.path.join(os.path.dirname(output_path),
+                           app_name + '.cmx'), 'w') as component_manifest_file:
+      component_manifest = {
+          'program': { 'binary': 'bin/app' },
+          'sandbox': json.load(open(sandbox_policy_path, 'r')),
+      }
+      json.dump(component_manifest, component_manifest_file)
+      manifest.write('meta/%s=%s\n' %
+                     (os.path.basename(component_manifest_file.name),
+                      os.path.relpath(component_manifest_file.name, out_dir)))
+
     depfile.write(
         "%s: %s" % (os.path.relpath(output_path, out_dir),
                     " ".join([os.path.relpath(f, out_dir)
