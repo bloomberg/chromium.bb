@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_MOVEABLE_AUTO_LOCK_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_MOVEABLE_AUTO_LOCK_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_MOVEABLE_AUTO_LOCK_H_
+#define BASE_TASK_SEQUENCE_MANAGER_MOVEABLE_AUTO_LOCK_H_
 
 #include "base/synchronization/lock.h"
 
@@ -16,7 +16,7 @@ class MoveableAutoLock {
     lock_.Acquire();
   }
 
-  MoveableAutoLock(MoveableAutoLock&& other)
+  MoveableAutoLock(MoveableAutoLock&& other) noexcept
       : lock_(other.lock_), moved_(other.moved_) {
     lock_.AssertAcquired();
     other.moved_ = true;
@@ -38,4 +38,4 @@ class MoveableAutoLock {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_MOVEABLE_AUTO_LOCK_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_MOVEABLE_AUTO_LOCK_H_

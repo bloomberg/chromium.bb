@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_H_
+#define BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -11,31 +11,37 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequence_manager/moveable_auto_lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/base/moveable_auto_lock.h"
+
+// Currently the implementation is located in Blink because scheduler/base move
+// is in progress https://crbug.com/783309.
+// TODO(kraynov): Remove this hack ASAP.
+#ifndef HACKDEF_INCLUDED_FROM_BLINK
+// Need PLATFORM_EXPORT macro.
+#error Use third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h.
+#endif
 
 namespace base {
+
 namespace trace_event {
 class BlameContext;
 }
-}  // namespace base
 
-namespace base {
 namespace sequence_manager {
 
 namespace internal {
 class TaskQueueImpl;
-}
+class GracefulQueueShutdownHelper;
+}  // namespace internal
 
 class TimeDomain;
 class TaskQueueManagerImpl;
 
 class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
  public:
-  class PLATFORM_EXPORT Observer {
+  class Observer {
    public:
     virtual ~Observer() = default;
 
@@ -71,10 +77,12 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
     int task_type;
   };
 
-  // Unregisters the task queue after which no tasks posted to it will run and
-  // the TaskQueueManagerImpl's reference to it will be released soon.
+  // Prepare the task queue to get released.
+  // All tasks posted after this call will be discarded.
   virtual void ShutdownTaskQueue();
 
+  // TODO(scheduler-dev): Could we define a more clear list of priorities?
+  // See https://crbug.com/847858.
   enum QueuePriority {
     // Queues with control priority will run before any other queue, and will
     // explicitly starve other queues. Typically this should only be used for
@@ -183,8 +191,8 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
   bool HasTaskToRunImmediately() const;
 
   // Returns requested run time of next scheduled wake-up for a delayed task
-  // which is not ready to run. If there are no such tasks or the queue is
-  // disabled (by a QueueEnabledVoter) it returns nullopt.
+  // which is not ready to run. If there are no such tasks (immediate tasks
+  // don't count) or the queue is disabled it returns nullopt.
   // NOTE: this must be called on the thread this TaskQueue was created by.
   Optional<TimeTicks> GetNextScheduledWakeUp();
 
@@ -244,6 +252,9 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
   // blocked by it.
   void RemoveFence();
 
+  // Returns true if the queue has a fence but it isn't necessarily blocking
+  // execution of tasks (it may be the case if tasks enqueue order hasn't
+  // reached the number set for a fence).
   bool HasActiveFence();
 
   // Returns true if the queue has a fence which is blocking execution of tasks.
@@ -277,7 +288,10 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
 
   Optional<MoveableAutoLock> AcquireImplReadLockIfNeeded() const;
 
-  // Take |impl_| and untie it from the enclosing task queue.
+  // TaskQueue has ownership of an underlying implementation but in certain
+  // cases (e.g. detached frames) their lifetime may diverge.
+  // This method should be used to take away the impl for graceful shutdown.
+  // TaskQueue will disregard any calls or posting tasks thereafter.
   std::unique_ptr<internal::TaskQueueImpl> TakeTaskQueueImpl();
 
   // |impl_| can be written to on the main thread but can be read from
@@ -303,4 +317,4 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_H_
