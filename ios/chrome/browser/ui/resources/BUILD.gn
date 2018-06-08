@@ -22,24 +22,6 @@ imageset("keyboard_bg_portrait_tablet") {
   ]
 }
 
-imageset("default_favicon") {
-  sources = [
-    "default_favicon.imageset/Contents.json",
-    "default_favicon.imageset/default_favicon.png",
-    "default_favicon.imageset/default_favicon@2x.png",
-    "default_favicon.imageset/default_favicon@3x.png",
-  ]
-}
-
-imageset("default_favicon_incognito") {
-  sources = [
-    "default_favicon_incognito.imageset/Contents.json",
-    "default_favicon_incognito.imageset/default_favicon_incognito.png",
-    "default_favicon_incognito.imageset/default_favicon_incognito@2x.png",
-    "default_favicon_incognito.imageset/default_favicon_incognito@3x.png",
-  ]
-}
-
 imageset("custom_row_voice") {
   sources = [
     "custom_row_voice.imageset/Contents.json",

@@ -289,8 +289,6 @@ source_set("ui_internal") {
     ":ui",
     "resources:custom_row_voice",
     "resources:custom_row_voice_pressed",
-    "resources:default_favicon",
-    "resources:default_favicon_incognito",
     "resources:keyboard_bg_portrait_tablet",
     "resources:keyboard_button",
     "//base",

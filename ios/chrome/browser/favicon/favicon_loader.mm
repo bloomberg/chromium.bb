@@ -13,6 +13,7 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "url/gurl.h"
@@ -78,6 +79,10 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
       url, min_favicon_size, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 
+  if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+    return [FaviconAttributes
+        attributesWithImage:[UIImage imageNamed:@"default_world_favicon"]];
+  }
   return [FaviconAttributes
       attributesWithImage:[UIImage imageNamed:@"default_favicon"]];
 }
