@@ -11,17 +11,18 @@
   <template>
     <style include="cr-shared-style">
       .items-container,
-      extensions-item {
+      #content-wrapper {
         --extensions-card-width: 400px;
       }
 
       #container {
         box-sizing: border-box;
         height: 100%;
-        overflow: overlay;
+        overflow: auto;
       }
 
       #content-wrapper {
+        min-width: var(--extensions-card-width);
         padding: 24px 60px 64px;
       }
 
