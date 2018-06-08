@@ -14,6 +14,7 @@ FakeErrorTolerantBleAdvertisement::FakeErrorTolerantBleAdvertisement(
     const DeviceIdPair& device_id_pair,
     base::OnceCallback<void(const DeviceIdPair&)> destructor_callback)
     : ErrorTolerantBleAdvertisement(device_id_pair),
+      id_(base::UnguessableToken::Create()),
       destructor_callback_(std::move(destructor_callback)) {}
 
 FakeErrorTolerantBleAdvertisement::~FakeErrorTolerantBleAdvertisement() {
