@@ -260,6 +260,27 @@ void FakeAuthPolicyClient::ConnectToSignal(
       dbus_operation_delay_);
 }
 
+void FakeAuthPolicyClient::WaitForServiceToBeAvailable(
+    dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
+  if (started_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), true /* service_is_available */));
+    return;
+  }
+  wait_for_service_to_be_available_callbacks_.push_back(std::move(callback));
+}
+
+void FakeAuthPolicyClient::SetStarted(bool started) {
+  started_ = started;
+  if (started_) {
+    std::vector<WaitForServiceToBeAvailableCallback> callbacks;
+    callbacks.swap(wait_for_service_to_be_available_callbacks_);
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      std::move(callbacks[i]).Run(true /* service_is_available*/);
+  }
+}
+
 void FakeAuthPolicyClient::OnDevicePolicyRetrieved(
     RefreshPolicyCallback callback,
     SessionManagerClient::RetrievePolicyResponseType response_type,

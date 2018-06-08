@@ -69,6 +69,12 @@ class TestAuthPolicyClient : public chromeos::AuthPolicyClient {
     NOTIMPLEMENTED();
   }
 
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
+      override {
+    NOTIMPLEMENTED();
+  }
+
   void SetRefreshUserPolicyCallbackError(authpolicy::ErrorType error) {
     refresh_user_policy_callback_error_ = error;
   }

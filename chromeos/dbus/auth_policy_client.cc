@@ -159,6 +159,12 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                             std::move(on_connected_callback));
   }
 
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
+      override {
+    proxy_->WaitForServiceToBeAvailable(std::move(callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     bus_ = bus;

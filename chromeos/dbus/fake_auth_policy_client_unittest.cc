@@ -89,6 +89,19 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
         std::string()));
   }
 
+  void WaitForServiceToBeAvailable() {
+    authpolicy_client()->WaitForServiceToBeAvailable(base::BindOnce(
+        &FakeAuthPolicyClientTest::OnWaitForServiceToBeAvailableCalled,
+        base::Unretained(this)));
+  }
+
+  void OnWaitForServiceToBeAvailableCalled(bool is_service_available) {
+    EXPECT_TRUE(is_service_available);
+    service_is_available_called_num_++;
+  }
+
+  int service_is_available_called_num_ = 0;
+
  private:
   FakeAuthPolicyClient* auth_policy_client_ptr_;  // not owned.
   FakeSessionManagerClient* session_manager_client_ptr_;  // not owned.
@@ -99,7 +112,7 @@ class FakeAuthPolicyClientTest : public ::testing::Test {
 
 // Tests parsing machine name.
 TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseMachineName) {
-  authpolicy_client()->set_started(true);
+  authpolicy_client()->SetStarted(true);
   JoinAdDomain("correct_length1", kCorrectUserName,
                base::BindOnce(
                    [](authpolicy::ErrorType error, const std::string& domain) {
@@ -139,7 +152,7 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseMachineName) {
 
 // Tests join to a different machine domain.
 TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_MachineDomain) {
-  authpolicy_client()->set_started(true);
+  authpolicy_client()->SetStarted(true);
   JoinAdDomainWithMachineDomain(kCorrectMachineName, kMachineDomain,
                                 kCorrectUserName,
                                 base::BindOnce([](authpolicy::ErrorType error,
@@ -163,7 +176,7 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_MachineDomain) {
 
 // Tests parsing user name.
 TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseUPN) {
-  authpolicy_client()->set_started(true);
+  authpolicy_client()->SetStarted(true);
   JoinAdDomain(kCorrectMachineName, kCorrectUserName,
                base::BindOnce(
                    [](authpolicy::ErrorType error, const std::string& domain) {
@@ -209,7 +222,7 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_ParseUPN) {
 
 // Tests that fake server does not support legacy encryption types.
 TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_NotSupportedEncType) {
-  authpolicy_client()->set_started(true);
+  authpolicy_client()->SetStarted(true);
   base::RunLoop loop;
   authpolicy::JoinDomainRequest request;
   request.set_machine_name(kCorrectMachineName);
@@ -232,7 +245,7 @@ TEST_F(FakeAuthPolicyClientTest, JoinAdDomain_NotSupportedEncType) {
 
 // Test AuthenticateUser.
 TEST_F(FakeAuthPolicyClientTest, AuthenticateUser_ByAccountId) {
-  authpolicy_client()->set_started(true);
+  authpolicy_client()->SetStarted(true);
   LockDeviceActiveDirectory();
   // Check that account_id do not change.
   AuthenticateUser(
@@ -279,7 +292,7 @@ TEST_F(FakeAuthPolicyClientTest, NotStartedAuthPolicyService) {
 // Tests RefreshDevicePolicy. On a not locked device it should cache policy. On
 // a locked device it should send policy to session_manager.
 TEST_F(FakeAuthPolicyClientTest, NotLockedDeviceCachesPolicy) {
-  authpolicy_client()->set_started(true);
+  authpolicy_client()->SetStarted(true);
   authpolicy_client()->RefreshDevicePolicy(
       base::BindOnce([](authpolicy::ErrorType error) {
         EXPECT_EQ(authpolicy::ERROR_DEVICE_POLICY_CACHED_BUT_NOT_SENT, error);
@@ -297,7 +310,7 @@ TEST_F(FakeAuthPolicyClientTest, NotLockedDeviceCachesPolicy) {
 
 // Tests that RefreshDevicePolicy stores device policy in the session manager.
 TEST_F(FakeAuthPolicyClientTest, RefreshDevicePolicyStoresPolicy) {
-  authpolicy_client()->set_started(true);
+  authpolicy_client()->SetStarted(true);
   LockDeviceActiveDirectory();
 
   {
@@ -333,6 +346,19 @@ TEST_F(FakeAuthPolicyClientTest, RefreshDevicePolicyStoresPolicy) {
     EXPECT_TRUE(policy.has_allow_new_users());
     EXPECT_TRUE(policy.allow_new_users().allow_new_users());
   }
+}
+
+TEST_F(FakeAuthPolicyClientTest, WaitForServiceToBeAvailableCalled) {
+  WaitForServiceToBeAvailable();
+  WaitForServiceToBeAvailable();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, service_is_available_called_num_);
+  authpolicy_client()->SetStarted(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, service_is_available_called_num_);
+  WaitForServiceToBeAvailable();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, service_is_available_called_num_);
 }
 
 }  // namespace chromeos

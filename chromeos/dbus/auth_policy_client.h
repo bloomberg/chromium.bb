@@ -87,6 +87,9 @@ class CHROMEOS_EXPORT AuthPolicyClient : public DBusClient {
       dbus::ObjectProxy::SignalCallback signal_callback,
       dbus::ObjectProxy::OnConnectedCallback on_connected_callback) = 0;
 
+  virtual void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) = 0;
+
  protected:
   // Create() should be used instead.
   AuthPolicyClient();
