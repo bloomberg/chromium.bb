@@ -39,6 +39,7 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     private int mNumDataUseItemsToDisplay = 10;
 
     private TableLayout mTableLayout;
+    private TextView mDetailsTitle;
     private TextView mHostnameTitle;
     private TextView mDataUsedTitle;
     private TextView mDataSavedTitle;
@@ -53,6 +54,7 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mTableLayout = (TableLayout) findViewById(R.id.data_reduction_proxy_breakdown_table);
+        mDetailsTitle = (TextView) findViewById(R.id.data_reduction_data_usage_breakdown_title);
         mHostnameTitle = (TextView) findViewById(R.id.data_reduction_breakdown_site_title);
         mDataUsedTitle = (TextView) findViewById(R.id.data_reduction_breakdown_used_title);
         mDataSavedTitle = (TextView) findViewById(R.id.data_reduction_breakdown_saved_title);
@@ -66,6 +68,8 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
                 setTextViewUnsortedAttributes(mDataUsedTitle);
                 setTextViewSortedAttributes(mHostnameTitle);
                 Collections.sort(mDataUseItems, new HostnameComparator());
+                mDetailsTitle.setContentDescription(
+                        getContext().getString(R.string.data_reduction_breakdown_hostname_sorted));
                 updateSiteBreakdown();
             }
         });
@@ -79,6 +83,8 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
                 setTextViewUnsortedAttributes(mDataSavedTitle);
                 setTextViewSortedAttributes(mDataUsedTitle);
                 Collections.sort(mDataUseItems, new DataUsedComparator());
+                mDetailsTitle.setContentDescription(
+                        getContext().getString(R.string.data_reduction_breakdown_data_used_sorted));
                 updateSiteBreakdown();
             }
         });
@@ -92,6 +98,8 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
                 setTextViewUnsortedAttributes(mDataUsedTitle);
                 setTextViewSortedAttributes(mDataSavedTitle);
                 Collections.sort(mDataUseItems, new DataSavedComparator());
+                mDetailsTitle.setContentDescription(getContext().getString(
+                        R.string.data_reduction_breakdown_data_saved_sorted));
                 updateSiteBreakdown();
             }
         });
@@ -118,6 +126,8 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         setTextViewUnsortedAttributes(mDataUsedTitle);
         setTextViewSortedAttributes(mDataSavedTitle);
         Collections.sort(mDataUseItems, new DataSavedComparator());
+        mDetailsTitle.setContentDescription(
+                getContext().getString(R.string.data_reduction_breakdown_data_saved_sorted));
         if (mDataUseItems.size() == 0) {
             setVisibility(GONE);
         } else {
