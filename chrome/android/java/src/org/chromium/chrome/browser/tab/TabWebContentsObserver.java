@@ -281,11 +281,6 @@ public class TabWebContentsObserver extends WebContentsObserver {
     }
 
     @Override
-    public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
-        mTab.getDisplayCutoutController().setViewportFit(value);
-    }
-
-    @Override
     public void destroy() {
         MediaCaptureNotificationService.updateMediaNotificationForTab(
                 mTab.getApplicationContext(), mTab.getId(), 0, mTab.getUrl());

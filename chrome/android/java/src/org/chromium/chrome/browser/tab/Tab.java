@@ -62,7 +62,6 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.display_cutout.DisplayCutoutController;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -560,9 +559,6 @@ public class Tab
     /** Whether or not the tab's active view is attached to the window. */
     private boolean mIsViewAttachedToWindow;
 
-    /** Controls display cutout states on the tab. */
-    private DisplayCutoutController mDisplayCutoutController;
-
     /**
      * Creates an instance of a {@link Tab}.
      *
@@ -649,8 +645,6 @@ public class Tab
                 updateInteractableState();
             }
         };
-
-        mDisplayCutoutController = new DisplayCutoutController(this);
     }
 
     private int calculateDefaultThemeColor() {
@@ -911,13 +905,6 @@ public class Tab
      */
     public final InfoBarContainer getInfoBarContainer() {
         return mInfoBarContainer;
-    }
-
-    /**
-     * @return The display cutout controller for the tab.
-     */
-    public final DisplayCutoutController getDisplayCutoutController() {
-        return mDisplayCutoutController;
     }
 
     /** @return An opaque "state" object that can be persisted to storage. */
