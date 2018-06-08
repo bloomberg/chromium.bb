@@ -989,7 +989,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* container_window = controller->GetContainerWindow();
   ASSERT_TRUE(container_window);
-  ASSERT_TRUE(root_window->Contains(container_window));
+  ASSERT_EQ(root_window, controller->GetRootWindow());
   container_window->Show();
 
   aura::Window* contents_window = controller->ui()->GetContentsWindow();

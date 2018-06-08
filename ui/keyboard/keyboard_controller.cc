@@ -293,6 +293,10 @@ aura::Window* KeyboardController::GetContainerWindow() {
   return container_.get();
 }
 
+aura::Window* KeyboardController::GetRootWindow() {
+  return container_->GetRootWindow();
+}
+
 void KeyboardController::NotifyContentsBoundsChanging(
     const gfx::Rect& new_bounds) {
   visual_bounds_in_screen_ = new_bounds;

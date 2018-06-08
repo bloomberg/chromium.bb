@@ -177,8 +177,7 @@ keyboard::KeyboardController* GetKeyboardControllerForWidget(
   if (!keyboard_controller->enabled())
     return nullptr;
 
-  aura::Window* keyboard_window =
-      keyboard_controller->GetContainerWindow()->GetRootWindow();
+  aura::Window* keyboard_window = keyboard_controller->GetRootWindow();
   aura::Window* this_window = widget->GetNativeWindow()->GetRootWindow();
   return keyboard_window == this_window ? keyboard_controller : nullptr;
 }

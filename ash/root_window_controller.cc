@@ -564,10 +564,10 @@ void RootWindowController::ActivateKeyboard(
 
   // If the keyboard is already activated, ensure that it is activated in this
   // root window.
-  aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
-  if (keyboard_window->GetRootWindow() == GetRootWindow())
+  if (keyboard_controller->GetRootWindow() == GetRootWindow())
     return;
 
+  aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
   DCHECK(!keyboard_window->parent());
 
   Shell::Get()->NotifyVirtualKeyboardActivated(true, GetRootWindow());
@@ -585,9 +585,10 @@ void RootWindowController::DeactivateKeyboard(
   if (!keyboard_controller->enabled())
     return;
 
-  aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
   // If the VK is under the root window of this controller.
-  if (keyboard_window->GetRootWindow() == GetRootWindow()) {
+  if (keyboard_controller->GetRootWindow() == GetRootWindow()) {
+    aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
+
     // Virtual keyboard may be deactivated while still showing, hide the
     // keyboard before removing it from view hierarchy.
     keyboard_controller->HideKeyboard(

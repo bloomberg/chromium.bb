@@ -37,8 +37,7 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
   // resized and covers the container window. Note the contents' bound is only
   // set in OnWindowResized.
 
-  aura::Window* root_window =
-      controller_->GetContainerWindow()->GetRootWindow();
+  aura::Window* root_window = controller_->GetRootWindow();
 
   // If the keyboard has been deactivated, this reference will be null.
   if (!root_window)

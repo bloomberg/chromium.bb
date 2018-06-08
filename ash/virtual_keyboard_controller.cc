@@ -52,7 +52,7 @@ void MoveKeyboardToDisplayInternal(const display::Display& display) {
   TRACE_EVENT0("vk", "MoveKeyboardToDisplayInternal");
   Shell::Get()->keyboard_ui()->Hide();
   RootWindowController::ForWindow(
-      keyboard::KeyboardController::Get()->GetContainerWindow())
+      keyboard::KeyboardController::Get()->GetRootWindow())
       ->DeactivateKeyboard(keyboard::KeyboardController::Get());
 
   for (RootWindowController* controller :
