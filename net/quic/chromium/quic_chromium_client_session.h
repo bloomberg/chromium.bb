@@ -381,6 +381,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       bool migrate_session_on_network_change,
       bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
+      NetworkChangeNotifier::NetworkHandle default_network,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_path_degrading,
       int yield_after_packets,

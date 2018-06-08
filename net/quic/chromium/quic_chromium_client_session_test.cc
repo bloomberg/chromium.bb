@@ -153,6 +153,7 @@ class QuicChromiumClientSessionTest
         /*require_confirmation=*/false, /*migrate_session_early=*/false,
         /*migrate_session_on_network_change=*/false, migrate_session_early_v2_,
         /*migrate_session_on_network_change_v2=*/false,
+        /*defaulet_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         kQuicYieldAfterPacketsRead,
