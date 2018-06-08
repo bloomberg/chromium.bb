@@ -23,7 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/mock_audio_device_factory.h"
+#include "content/renderer/media/audio/mock_audio_device_factory.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/media_stream_source.h"

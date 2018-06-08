@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
-#include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/mock_audio_renderer_sink.h"

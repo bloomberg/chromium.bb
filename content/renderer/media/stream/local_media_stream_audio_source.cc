@@ -4,7 +4,7 @@
 
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 
-#include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 

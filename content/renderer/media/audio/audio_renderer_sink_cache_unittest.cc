@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_renderer_sink_cache_impl.h"
+#include "content/renderer/media/audio/audio_renderer_sink_cache_impl.h"
 
 #include <utility>
 

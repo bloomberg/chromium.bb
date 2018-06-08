@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 
 #include <algorithm>
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "content/renderer/media/audio_renderer_sink_cache.h"
+#include "content/renderer/media/audio/audio_renderer_sink_cache.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"

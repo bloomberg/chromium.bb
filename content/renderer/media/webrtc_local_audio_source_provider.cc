@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/audio/audio_device_factory.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"

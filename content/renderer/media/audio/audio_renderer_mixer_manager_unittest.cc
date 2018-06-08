@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_renderer_mixer_manager.h"
+#include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 
 #include <memory>
 
 #include "base/bind.h"
-#include "build/build_config.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/renderer/media/audio_renderer_sink_cache.h"
+#include "build/build_config.h"
+#include "content/renderer/media/audio/audio_renderer_sink_cache.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_mixer.h"

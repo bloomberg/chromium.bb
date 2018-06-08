@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_output_ipc_factory.h"
+#include "content/renderer/media/audio/audio_output_ipc_factory.h"
 
 #include <utility>
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "content/renderer/media/mojo_audio_output_ipc.h"
+#include "content/renderer/media/audio/mojo_audio_output_ipc.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {

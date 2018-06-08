@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_input_ipc_factory.h"
+#include "content/renderer/media/audio/audio_input_ipc_factory.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
-#include "content/renderer/media/mojo_audio_input_ipc.h"
+#include "content/renderer/media/audio/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 

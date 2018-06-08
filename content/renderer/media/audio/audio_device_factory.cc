@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/audio/audio_device_factory.h"
 
 #include <algorithm>
 
@@ -11,10 +11,10 @@
 #include "build/build_config.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
-#include "content/renderer/media/audio_input_ipc_factory.h"
-#include "content/renderer/media/audio_output_ipc_factory.h"
-#include "content/renderer/media/audio_renderer_mixer_manager.h"
-#include "content/renderer/media/mojo_audio_input_ipc.h"
+#include "content/renderer/media/audio/audio_input_ipc_factory.h"
+#include "content/renderer/media/audio/audio_output_ipc_factory.h"
+#include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
+#include "content/renderer/media/audio/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_input_device.h"
