@@ -30,7 +30,13 @@
 #endif  // OS_WIN
 
 #if defined(OS_FUCHSIA)
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
+#include <zircon/syscalls/debug.h>
+#include <zircon/syscalls/exception.h>
+#include <zircon/syscalls/port.h>
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/scoped_zx_handle.h"
 #endif
 
 namespace logging {
@@ -279,9 +285,127 @@ TEST_F(LoggingTest, CheckCausesDistinctBreakpoints) {
   EXPECT_NE(addr1, addr3);
   EXPECT_NE(addr2, addr3);
 }
+#elif defined(OS_FUCHSIA)
 
+// CHECK causes a direct crash (without jumping to another function) only in
+// official builds. Unfortunately, continuous test coverage on official builds
+// is lower. Furthermore, since the Fuchsia implementation uses threads, it is
+// not possible to rely on an implementation of CHECK that calls abort(), which
+// takes down the whole process, preventing the thread exception handler from
+// handling the exception. DO_CHECK here falls back on IMMEDIATE_CRASH() in
+// non-official builds, to catch regressions earlier in the CQ.
+#if defined(OFFICIAL_BUILD)
+#define DO_CHECK CHECK
+#else
+#define DO_CHECK(cond) \
+  if (!(cond)) {       \
+    IMMEDIATE_CRASH(); \
+  }
+#endif
+
+static const unsigned int kExceptionPortKey = 1u;
+static const unsigned int kThreadEndedPortKey = 2u;
+
+struct thread_data_t {
+  // For signaling the thread ended properly.
+  zx_handle_t event;
+  // For registering thread termination.
+  zx_handle_t port;
+  // Location where the thread is expected to crash.
+  int death_location;
+};
+
+void* CrashThread(void* arg) {
+  zx_status_t status;
+
+  thread_data_t* data = (thread_data_t*)arg;
+  int death_location = data->death_location;
+
+  // Register the exception handler on the port.
+  status = zx_task_bind_exception_port(zx_thread_self(), data->port,
+                                       kExceptionPortKey, 0);
+  if (status != ZX_OK) {
+    zx_object_signal(data->event, 0, ZX_USER_SIGNAL_0);
+    return nullptr;
+  }
+
+  DO_CHECK(death_location != 1);
+  DO_CHECK(death_location != 2);
+  DO_CHECK(death_location != 3);
+
+  // We should never reach this point, signal the thread incorrectly ended
+  // properly.
+  zx_object_signal(data->event, 0, ZX_USER_SIGNAL_0);
+  return nullptr;
+}
+
+// Runs the CrashThread function in a separate thread.
+void SpawnCrashThread(int death_location, uintptr_t* child_crash_addr) {
+  base::ScopedZxHandle port;
+  base::ScopedZxHandle event;
+  zx_status_t status;
+
+  status = zx_port_create(0, port.receive());
+  ASSERT_EQ(status, ZX_OK);
+  status = zx_event_create(0, event.receive());
+  ASSERT_EQ(status, ZX_OK);
+
+  // Register the thread ended event on the port.
+  status = zx_object_wait_async(event.get(), port.get(), kThreadEndedPortKey,
+                                ZX_USER_SIGNAL_0, ZX_WAIT_ASYNC_ONCE);
+  ASSERT_EQ(status, ZX_OK);
+
+  // Run the thread.
+  thread_data_t thread_data = {event.get(), port.get(), death_location};
+  pthread_t thread;
+  int ret = pthread_create(&thread, nullptr, CrashThread, &thread_data);
+  ASSERT_EQ(ret, 0);
+
+  // Wait on the port.
+  zx_port_packet_t packet;
+  status = zx_port_wait(port.get(), ZX_TIME_INFINITE, &packet);
+  ASSERT_EQ(status, ZX_OK);
+  // Check the thread did crash and not terminate.
+  ASSERT_EQ(packet.key, kExceptionPortKey);
+
+  // Get the crash address.
+  zx_handle_t zircon_thread;
+  status = zx_object_get_child(zx_process_self(), packet.exception.tid,
+                               ZX_RIGHT_SAME_RIGHTS, &zircon_thread);
+  ASSERT_EQ(status, ZX_OK);
+  zx_thread_state_general_regs_t buffer;
+  status = zx_thread_read_state(zircon_thread, ZX_THREAD_STATE_GENERAL_REGS,
+                                &buffer, sizeof(buffer));
+  ASSERT_EQ(status, ZX_OK);
+#if defined(ARCH_CPU_X86_64)
+  *child_crash_addr = static_cast<uintptr_t>(buffer.rip);
+#elif defined(ARCH_CPU_ARM64)
+  *child_crash_addr = static_cast<uintptr_t>(buffer.pc);
+#else
+#error Unsupported architecture
+#endif
+
+  status = zx_task_kill(zircon_thread);
+  ASSERT_EQ(status, ZX_OK);
+}
+
+TEST_F(LoggingTest, CheckCausesDistinctBreakpoints) {
+  uintptr_t child_crash_addr_1 = 0;
+  uintptr_t child_crash_addr_2 = 0;
+  uintptr_t child_crash_addr_3 = 0;
+
+  SpawnCrashThread(1, &child_crash_addr_1);
+  SpawnCrashThread(2, &child_crash_addr_2);
+  SpawnCrashThread(3, &child_crash_addr_3);
+
+  ASSERT_NE(0u, child_crash_addr_1);
+  ASSERT_NE(0u, child_crash_addr_2);
+  ASSERT_NE(0u, child_crash_addr_3);
+  ASSERT_NE(child_crash_addr_1, child_crash_addr_2);
+  ASSERT_NE(child_crash_addr_1, child_crash_addr_3);
+  ASSERT_NE(child_crash_addr_2, child_crash_addr_3);
+}
 #elif defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_IOS) && \
-    !defined(OS_FUCHSIA) &&                                         \
     (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY))
 
 int g_child_crash_pipe;
