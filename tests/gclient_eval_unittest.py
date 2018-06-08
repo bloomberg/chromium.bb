@@ -44,22 +44,19 @@ class GClientEvalTest(unittest.TestCase):
       gclient_eval._gclient_eval('Foo("bar")')
     self.assertIn('Var is the only allowed function', str(cm.exception))
 
-  def test_call(self):
-    self.assertEqual('{bar}', gclient_eval._gclient_eval('Var("bar")'))
-
   def test_expands_vars(self):
     self.assertEqual(
         'foo',
-        gclient_eval._gclient_eval('Var("bar")', {'bar': 'foo'}, True))
+        gclient_eval._gclient_eval('Var("bar")', vars_dict={'bar': 'foo'}))
 
   def test_expands_vars_with_braces(self):
     self.assertEqual(
         'foo',
-        gclient_eval._gclient_eval('"{bar}"', {'bar': 'foo'}, True))
+        gclient_eval._gclient_eval('"{bar}"', vars_dict={'bar': 'foo'}))
 
   def test_invalid_var(self):
-    with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_eval('"{bar}"', {}, True)
+    with self.assertRaises(KeyError) as cm:
+      gclient_eval._gclient_eval('"{bar}"', vars_dict={})
     self.assertIn('bar was used as a variable, but was not declared',
                   str(cm.exception))
 
@@ -140,20 +137,6 @@ class ExecTest(unittest.TestCase):
         'deps': collections.OrderedDict([('a_dep', 'abarb')]),
     }, local_scope)
 
-  def test_var_unexpanded(self):
-    local_scope = gclient_eval.Exec('\n'.join([
-        'vars = {',
-        '  "foo": "bar",',
-        '}',
-        'deps = {',
-        '  "a_dep": "a" + Var("foo") + "b",',
-        '}',
-    ]), False)
-    self.assertEqual({
-        'vars': collections.OrderedDict([('foo', 'bar')]),
-        'deps': collections.OrderedDict([('a_dep', 'a{foo}b')]),
-    }, local_scope)
-
   def test_empty_deps(self):
     local_scope = gclient_eval.Exec('deps = {}')
     self.assertEqual({'deps': {}}, local_scope)
@@ -166,14 +149,14 @@ class ExecTest(unittest.TestCase):
         'deps = {',
         '  "a_dep": "a{foo}b",',
         '}',
-    ]), True, vars_override={'foo': 'baz'})
+    ]), vars_override={'foo': 'baz'})
     self.assertEqual({
         'vars': collections.OrderedDict([('foo', 'bar')]),
         'deps': collections.OrderedDict([('a_dep', 'abazb')]),
     }, local_scope)
 
   def test_doesnt_override_undeclared_vars(self):
-    with self.assertRaises(ValueError) as cm:
+    with self.assertRaises(KeyError) as cm:
       gclient_eval.Exec('\n'.join([
           'vars = {',
           '  "foo": "bar",',
@@ -181,7 +164,7 @@ class ExecTest(unittest.TestCase):
           'deps = {',
           '  "a_dep": "a{baz}b",',
           '}',
-      ]), True, vars_override={'baz': 'lalala'})
+      ]), vars_override={'baz': 'lalala'})
     self.assertIn('baz was used as a variable, but was not declared',
                   str(cm.exception))
 
@@ -601,8 +584,7 @@ class RevisionTest(unittest.TestCase):
 
 
 class ParseTest(unittest.TestCase):
-  def callParse(self, expand_vars=True, validate_syntax=True,
-                vars_override=None):
+  def callParse(self, validate_syntax=True, vars_override=None):
     return gclient_eval.Parse('\n'.join([
         'vars = {',
         '  "foo": "bar",',
@@ -610,7 +592,32 @@ class ParseTest(unittest.TestCase):
         'deps = {',
         '  "a_dep": "a{foo}b",',
         '}',
-    ]), expand_vars, validate_syntax, '<unknown>', vars_override)
+    ]), validate_syntax, '<unknown>', vars_override)
+
+  def test_supports_vars_inside_vars(self):
+    deps_file = '\n'.join([
+        'vars = {',
+        '  "foo": "bar",',
+        '  "baz": "\\"{foo}\\" == \\"bar\\"",',
+        '}',
+        'deps = {',
+        '  "src/baz": {',
+        '    "url": "baz_url",',
+        '    "condition": "baz",',
+        '  },',
+        '}',
+    ])
+    for validate_syntax in False, True:
+      local_scope = gclient_eval.Parse(
+          deps_file, validate_syntax, '<unknown>', None)
+      self.assertEqual({
+          'vars': {'foo': 'bar',
+                   'baz': '"bar" == "bar"'},
+          'deps': {'src/baz': {'url': 'baz_url',
+                               'dep_type': 'git',
+                               'condition': 'baz'}},
+      }, local_scope)
+
 
   def test_expands_vars(self):
     for validate_syntax in True, False:
@@ -618,16 +625,6 @@ class ParseTest(unittest.TestCase):
       self.assertEqual({
           'vars': {'foo': 'bar'},
           'deps': {'a_dep': {'url': 'abarb',
-                             'dep_type': 'git'}},
-      }, local_scope)
-
-  def test_no_expands_vars(self):
-    for validate_syntax in True, False:
-      local_scope = self.callParse(False,
-                                   validate_syntax=validate_syntax)
-      self.assertEqual({
-          'vars': {'foo': 'bar'},
-          'deps': {'a_dep': {'url': 'a{foo}b',
                              'dep_type': 'git'}},
       }, local_scope)
 
@@ -651,17 +648,15 @@ class ParseTest(unittest.TestCase):
         '}',
     ])
 
-    with self.assertRaises(ValueError) as cm:
+    with self.assertRaises(KeyError) as cm:
       gclient_eval.Parse(
-          deps_file, True, True,
-          '<unknown>', {'baz': 'lalala'})
+          deps_file, True, '<unknown>', {'baz': 'lalala'})
     self.assertIn('baz was used as a variable, but was not declared',
                   str(cm.exception))
 
     with self.assertRaises(KeyError) as cm:
       gclient_eval.Parse(
-          deps_file, True, False,
-          '<unknown>', {'baz': 'lalala'})
+          deps_file, False, '<unknown>', {'baz': 'lalala'})
     self.assertIn('baz', str(cm.exception))
 
   def test_standardizes_deps_string_dep(self):
@@ -670,7 +665,7 @@ class ParseTest(unittest.TestCase):
         'deps = {',
         '  "a_dep": "a_url@a_rev",',
         '}',
-      ]), False, validate_syntax, '<unknown>')
+      ]), validate_syntax, '<unknown>')
       self.assertEqual({
           'deps': {'a_dep': {'url': 'a_url@a_rev',
                              'dep_type': 'git'}},
@@ -685,7 +680,7 @@ class ParseTest(unittest.TestCase):
         '     "condition": "checkout_android",',
         '  },',
         '}',
-      ]), False, validate_syntax, '<unknown>')
+      ]), validate_syntax, '<unknown>')
       self.assertEqual({
           'deps': {'a_dep': {'url': 'a_url@a_rev',
                              'dep_type': 'git',
@@ -703,7 +698,7 @@ class ParseTest(unittest.TestCase):
         '     "a_dep": None,',
         '  },',
         '}',
-      ]), False, validate_syntax, '<unknown>')
+      ]), validate_syntax, '<unknown>')
       self.assertEqual({
           'deps': {'a_dep': {'url': 'a_url@a_rev',
                              'dep_type': 'git'}},
@@ -720,7 +715,7 @@ class ParseTest(unittest.TestCase):
         '     "b_dep": "b_url@b_rev"',
         '  },',
         '}',
-      ]), False, validate_syntax, '<unknown>')
+      ]), validate_syntax, '<unknown>')
       self.assertEqual({
           'deps': {'a_dep': {'url': 'a_url@a_rev',
                              'dep_type': 'git'},
@@ -740,7 +735,7 @@ class ParseTest(unittest.TestCase):
         '     "a_dep": "a_url@a_rev"',
         '  },',
         '}',
-      ]), False, validate_syntax, '<unknown>')
+      ]), validate_syntax, '<unknown>')
       self.assertEqual({
           'deps': {'a_dep': {'url': 'a_url@a_rev',
                              'dep_type': 'git'}},
@@ -760,7 +755,7 @@ class ParseTest(unittest.TestCase):
         '     "a_dep": "a_url@a_rev"',
         '  },',
         '}',
-      ]), False, validate_syntax, '<unknown>')
+      ]), validate_syntax, '<unknown>')
       self.assertEqual({
           'deps': {
               'a_dep': {'url': 'a_url@a_rev',
@@ -780,7 +775,7 @@ class ParseTest(unittest.TestCase):
         '     "a_dep": "a_url@a_rev"',
         '  },',
         '}',
-      ]), False, validate_syntax, '<unknown>')
+      ]), validate_syntax, '<unknown>')
       self.assertEqual({
           'deps': {
               'a_dep': {'url': 'a_url@a_rev',
@@ -804,7 +799,7 @@ class ParseTest(unittest.TestCase):
           '     "a_dep": "a_url@b_rev"',
           '  },',
           '}',
-        ]), False, validate_syntax, '<unknown>')
+        ]), validate_syntax, '<unknown>')
       self.assertIn('conflicts with existing deps', str(cm.exception))
 
   def test_merges_hooks_os(self):
@@ -822,7 +817,7 @@ class ParseTest(unittest.TestCase):
         '    },',
         '  ]',
         '}',
-      ]), False, validate_syntax, '<unknown>')
+      ]), validate_syntax, '<unknown>')
       self.assertEqual({
           "hooks": [{"action": ["a", "action"]},
                     {"action": ["b", "action"], "condition": "checkout_mac"}],

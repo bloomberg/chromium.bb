@@ -201,7 +201,7 @@ class GclientTest(trial_dir.TestCase):
     # auto-fixed.
     url = 'proto://host/path/@revision'
     d = gclient.Dependency(
-        None, 'name', url, url, None, None, None,
+        None, 'name', url, None, None, None,
         None, '', True, False, None, True)
     self.assertEquals('proto://host/path@revision', d.url)
 
@@ -212,10 +212,10 @@ class GclientTest(trial_dir.TestCase):
     obj.add_dependencies_and_close(
       [
         gclient.Dependency(
-            obj, 'foo', 'svn://example.com/foo', 'svn://example.com/foo', None,
+            obj, 'foo', 'svn://example.com/foo', None,
             None, None, None, 'DEPS', True, False, None, True),
         gclient.Dependency(
-            obj, 'bar', 'svn://example.com/bar', 'svn://example.com/bar', None,
+            obj, 'bar', 'svn://example.com/bar', None,
             None, None, None, 'DEPS', True, False, None, True),
       ],
       [])
@@ -223,7 +223,7 @@ class GclientTest(trial_dir.TestCase):
       [
         gclient.Dependency(
             obj.dependencies[0], 'foo/dir1', 'svn://example.com/foo/dir1',
-            'svn://example.com/foo/dir1', None, None, None, None, 'DEPS', True,
+            None, None, None, None, 'DEPS', True,
             False, None, True),
       ],
       [])
@@ -1130,7 +1130,7 @@ class GclientTest(trial_dir.TestCase):
     obj.add_dependencies_and_close(
       [
         gclient.Dependency(
-            obj, 'foo', 'svn://example.com/foo', 'svn://example.com/foo', None,
+            obj, 'foo', 'svn://example.com/foo', None,
             None, None, None, 'DEPS', True,
             False, None, True),
       ],

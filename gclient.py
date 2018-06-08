@@ -207,7 +207,7 @@ class Hook(object):
         not gclient_eval.EvaluateCondition(self._condition, self._variables)):
       return
 
-    cmd = [arg.format(**self._variables) for arg in self._action]
+    cmd = [arg for arg in self._action]
 
     if cmd[0] == 'python':
       # If the hook specified "python" as the first item, the action is a
@@ -240,12 +240,11 @@ class Hook(object):
 class DependencySettings(object):
   """Immutable configuration settings."""
   def __init__(
-      self, parent, raw_url, url, managed, custom_deps, custom_vars,
+      self, parent, url, managed, custom_deps, custom_vars,
       custom_hooks, deps_file, should_process, relative, condition):
     # These are not mutable:
     self._parent = parent
     self._deps_file = deps_file
-    self._raw_url = raw_url
     self._url = url
     # The condition as string (or None). Useful to keep e.g. for flatten.
     self._condition = condition
@@ -324,11 +323,6 @@ class DependencySettings(object):
     return self._custom_hooks[:]
 
   @property
-  def raw_url(self):
-    """URL before variable expansion."""
-    return self._raw_url
-
-  @property
   def url(self):
     """URL after variable expansion."""
     return self._url
@@ -351,9 +345,6 @@ class DependencySettings(object):
   def set_url(self, url):
     self._url = url
 
-  def set_raw_url(self, url):
-    self._raw_url = url
-
   def get_custom_deps(self, name, url):
     """Returns a custom deps if applicable."""
     if self.parent:
@@ -365,12 +356,12 @@ class DependencySettings(object):
 class Dependency(gclient_utils.WorkItem, DependencySettings):
   """Object that represents a dependency checkout."""
 
-  def __init__(self, parent, name, raw_url, url, managed, custom_deps,
+  def __init__(self, parent, name, url, managed, custom_deps,
                custom_vars, custom_hooks, deps_file, should_process,
                relative, condition, print_outbuf=False):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
-        self, parent, raw_url, url, managed, custom_deps, custom_vars,
+        self, parent, url, managed, custom_deps, custom_vars,
         custom_hooks, deps_file, should_process, relative, condition)
 
     # This is in both .gclient and DEPS files:
@@ -468,18 +459,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       raise gclient_utils.Error('Unknown url type')
 
   def PinToActualRevision(self):
-    """Updates self.url and self.raw_url to the revision checked out on disk."""
+    """Updates self.url to the revision checked out on disk."""
     if self.url is None:
       return
-    url = raw_url = None
+    url = None
     scm = self.CreateSCM()
     if os.path.isdir(scm.checkout_path):
       revision = scm.revinfo(None, None, None)
       url = '%s@%s' % (gclient_utils.SplitUrlRevision(self.url)[0], revision)
-      raw_url = '%s@%s' % (
-          gclient_utils.SplitUrlRevision(self.raw_url)[0], revision)
     self.set_url(url)
-    self.set_raw_url(raw_url)
 
   def ToLines(self):
     s = []
@@ -488,7 +476,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     s.extend([
         '  # %s' % self.hierarchy(include_url=False),
         '  "%s": {' % (self.name,),
-        '    "url": "%s",' % (self.raw_url,),
+        '    "url": "%s",' % (self.url,),
     ] + condition_part + [
         '  },',
         '',
@@ -642,25 +630,38 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         for package in dep_value.get('packages', []):
           if 'version' in package:
             # Matches version to vars value.
-            raw_version = package['version']
-            version = raw_version.format(**self.get_vars())
+            version = package['version']
             package['version'] = version
           deps_to_add.append(
               CipdDependency(
-                  self, name, package, cipd_root, self.custom_vars,
-                  should_process, use_relative_paths, condition))
+                  parent=self,
+                  name=name,
+                  dep_value=package,
+                  cipd_root=cipd_root,
+                  custom_vars=self.custom_vars,
+                  should_process=should_process,
+                  relative=use_relative_paths,
+                  condition=condition))
       else:
-        raw_url = dep_value.get('url')
-        url = raw_url.format(**self.get_vars()) if raw_url else None
+        url = dep_value.get('url')
         deps_to_add.append(
             GitDependency(
-                self, name, raw_url, url, None, None, self.custom_vars, None,
-                deps_file, should_process, use_relative_paths, condition))
+                parent=self,
+                name=name,
+                url=url,
+                managed=None,
+                custom_deps=None,
+                custom_vars=self.custom_vars,
+                custom_hooks=None,
+                deps_file=deps_file,
+                should_process=should_process,
+                relative=use_relative_paths,
+                condition=condition))
 
     deps_to_add.sort(key=lambda x: x.name)
     return deps_to_add
 
-  def ParseDepsFile(self, expand_vars=True):
+  def ParseDepsFile(self):
     """Parses the DEPS file for this dependency."""
     assert not self.deps_parsed
     assert not self.dependencies
@@ -691,8 +692,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if deps_content:
       try:
         local_scope = gclient_eval.Parse(
-            deps_content, expand_vars,
-            self._get_option('validate_syntax', False),
+            deps_content, self._get_option('validate_syntax', False),
             filepath, self.get_vars())
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
@@ -915,7 +915,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           file_list[i] = file_list[i][1:]
 
     if self.recursion_limit:
-      self.ParseDepsFile(expand_vars=(command != 'flatten'))
+      self.ParseDepsFile()
 
     self._run_is_done(file_list or [])
 
@@ -1294,8 +1294,20 @@ solutions = %(solution_list)s
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    GitDependency.__init__(self, None, None, None, None, True, None, None, None,
-                           'unused', True, None, None, True)
+    super(GClient, self).__init__(
+        parent=None,
+        name=None,
+        url=None,
+        managed=True,
+        custom_deps=None,
+        custom_vars=None,
+        custom_hooks=None,
+        deps_file='unused',
+        should_process=True,
+        relative=None,
+        condition=None,
+        print_outbuf=True)
+
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -1386,16 +1398,18 @@ it or fix the checkout.
     for s in config_dict.get('solutions', []):
       try:
         deps_to_add.append(GitDependency(
-            self, s['name'], s['url'], s['url'],
-            s.get('managed', True),
-            s.get('custom_deps', {}),
-            s.get('custom_vars', {}),
-            s.get('custom_hooks', []),
-            s.get('deps_file', 'DEPS'),
-            True,
-            None,
-            None,
-            True))
+            parent=self,
+            name=s['name'],
+            url=s['url'],
+            managed=s.get('managed', True),
+            custom_deps=s.get('custom_deps', {}),
+            custom_vars=s.get('custom_vars', {}),
+            custom_hooks=s.get('custom_hooks', []),
+            deps_file=s.get('deps_file', 'DEPS'),
+            should_process=True,
+            relative=None,
+            condition=None,
+            print_outbuf=True))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
@@ -1753,7 +1767,7 @@ it or fix the checkout.
           print('%s: %s' % (x, entries[x]))
     logging.info(str(self))
 
-  def ParseDepsFile(self, expand_vars=None):
+  def ParseDepsFile(self):
     """No DEPS to parse for a .gclient file."""
     raise gclient_utils.Error('Internal error')
 
@@ -1814,8 +1828,17 @@ class CipdDependency(Dependency):
     url = urlparse.urljoin(
         cipd_root.service_url, '%s@%s' % (package, version))
     super(CipdDependency, self).__init__(
-        parent, name + ':' + package, url, url, None, None, custom_vars,
-        None, None, should_process, relative, condition)
+        parent=parent,
+        name=name + ':' + package,
+        url=url,
+        managed=None,
+        custom_deps=None,
+        custom_vars=custom_vars,
+        custom_hooks=None,
+        deps_file=None,
+        should_process=should_process,
+        relative=relative,
+        condition=condition)
     if relative:
       # TODO(jbudorick): Implement relative if necessary.
       raise gclient_utils.Error(
@@ -1846,7 +1869,7 @@ class CipdDependency(Dependency):
       self._cipd_package = self._cipd_root.add_package(
           self._cipd_subdir, self._package_name, self._package_version)
 
-  def ParseDepsFile(self, expand_vars=None):
+  def ParseDepsFile(self):
     """CIPD dependencies are not currently allowed to have nested deps."""
     self.add_dependencies_and_close([], [])
 
@@ -2196,7 +2219,7 @@ def _DepsOsToLines(deps_os):
       s.extend([
           '    # %s' % dep.hierarchy(include_url=False),
           '    "%s": {' % (name,),
-          '      "url": "%s",' % (dep.raw_url,),
+          '      "url": "%s",' % (dep.url,),
       ] + condition_part + [
           '    },',
           '',
@@ -2728,8 +2751,7 @@ def CMDgetdep(parser, args):
         'DEPS file %s does not exist.' % options.deps_file)
   with open(options.deps_file) as f:
     contents = f.read()
-  local_scope = gclient_eval.Exec(
-      contents, expand_vars=True, filename=options.deps_file)
+  local_scope = gclient_eval.Exec(contents, options.deps_file)
 
   for var in options.vars:
     print(gclient_eval.GetVar(local_scope, var))
@@ -2778,8 +2800,7 @@ def CMDsetdep(parser, args):
         'DEPS file %s does not exist.' % options.deps_file)
   with open(options.deps_file) as f:
     contents = f.read()
-  local_scope = gclient_eval.Exec(
-      contents, expand_vars=True, filename=options.deps_file)
+  local_scope = gclient_eval.Exec(contents, options.deps_file)
 
   for var in options.vars:
     name, _, value = var.partition('=')
