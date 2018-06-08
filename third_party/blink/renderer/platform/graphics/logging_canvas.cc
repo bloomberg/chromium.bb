@@ -31,12 +31,12 @@
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 
 #include <unicode/unistr.h>
+#include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
-#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
 #include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
@@ -520,8 +520,9 @@ String StringForUTF32LEText(const void* text, size_t byte_length) {
   // Swap LE to BE
   size_t char_length = length / sizeof(UChar32);
   WTF::Vector<UChar32> utf32be(char_length);
+  const UChar32* utf32le = static_cast<const UChar32*>(text);
   for (size_t i = 0; i < char_length; ++i)
-    utf32be[i] = WTF::Bswap32(static_cast<UChar32*>(text)[i]);
+    utf32be[i] = base::ByteSwap(utf32le[i]);
   utf16 = icu::UnicodeString::fromUTF32(utf32be.data(),
                                         static_cast<int32_t>(byte_length));
 #else
