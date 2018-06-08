@@ -663,6 +663,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
         'toolchain',
         'chrome',
         'android',
+        'full',
     )
 
     found_types = set()

@@ -2439,13 +2439,29 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       overlays=constants.PUBLIC_OVERLAYS,
       prebuilts=constants.PUBLIC)
 
-  site_config.ApplyForBoards(
-      config_lib.CONFIG_TYPE_FULL,
-      active_builders,
+  master_config = site_config.Add(
+      'master-full',
+      site_config.templates.full,
+      site_config.templates.build_external_chrome,
+      boards=[],
+      master=True,
+      slave_configs=[],
+      manifest_version=True,
+      # Mark this builder as internal, only because masters need to be.
+      internal=True,
+      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      overlays=constants.BOTH_OVERLAYS,
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='0 */3 * * *',
   )
 
+  master_config.AddSlaves(
+      site_config.ApplyForBoards(
+          config_lib.CONFIG_TYPE_FULL,
+          active_builders,
+          active_waterfall=waterfall.WATERFALL_SWARMING,
+      )
+  )
 
 def CqBuilders(site_config, boards_dict, ge_build_config):
   """Create all CQ build configs.
