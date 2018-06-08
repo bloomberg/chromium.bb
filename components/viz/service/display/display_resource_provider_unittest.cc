@@ -354,6 +354,8 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
     shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
 
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
+        use_gpu_ ? DisplayResourceProvider::kGpu
+                 : DisplayResourceProvider::kSoftware,
         context_provider_.get(), shared_bitmap_manager_.get());
 
     MakeChildResourceProvider();
@@ -999,7 +1001,8 @@ class ResourceProviderTestImportedResourceGLFilters {
     context_provider->BindToCurrentThread();
 
     auto resource_provider = std::make_unique<DisplayResourceProvider>(
-        context_provider.get(), shared_bitmap_manager);
+        DisplayResourceProvider::kGpu, context_provider.get(),
+        shared_bitmap_manager);
 
     auto child_gl_owned =
         std::make_unique<TextureStateTrackingGLES2Interface>();
@@ -1155,7 +1158,8 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
-      context_provider.get(), shared_bitmap_manager_.get());
+      DisplayResourceProvider::kGpu, context_provider.get(),
+      shared_bitmap_manager_.get());
 
   auto child_gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
   TextureStateTrackingGLES2Interface* child_gl = child_gl_owned.get();
@@ -1256,7 +1260,8 @@ TEST_P(DisplayResourceProviderTest, WaitSyncTokenIfNeeded) {
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
-      context_provider.get(), shared_bitmap_manager_.get());
+      DisplayResourceProvider::kGpu, context_provider.get(),
+      shared_bitmap_manager_.get());
 
   const GLuint64 current_fence_sync = gl->GetNextFenceSync();
 

@@ -182,12 +182,13 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
     : DirectRenderer(settings, output_surface, resource_provider),
       skia_output_surface_(skia_output_surface),
       lock_set_for_external_use_(resource_provider) {
-  const auto& context_caps =
-      output_surface_->context_provider()->ContextCapabilities();
-  use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
-  if (context_caps.sync_query) {
-    sync_queries_ = base::Optional<SyncQueryCollection>(
-        output_surface_->context_provider()->ContextGL());
+  if (auto* context_provider = output_surface_->context_provider()) {
+    const auto& context_caps = context_provider->ContextCapabilities();
+    use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
+    if (context_caps.sync_query) {
+      sync_queries_ =
+          base::Optional<SyncQueryCollection>(context_provider->ContextGL());
+    }
   }
 }
 
@@ -197,11 +198,15 @@ bool SkiaRenderer::CanPartialSwap() {
   if (use_swap_with_bounds_)
     return false;
   auto* context_provider = output_surface_->context_provider();
-  return context_provider->ContextCapabilities().post_sub_buffer;
+  return context_provider
+             ? context_provider->ContextCapabilities().post_sub_buffer
+             : false;
 }
 
 void SkiaRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "SkiaRenderer::BeginDrawingFrame");
+  if (is_using_ddl())
+    return;
   // Copied from GLRenderer.
   scoped_refptr<ResourceFence> read_lock_fence;
   if (sync_queries_) {
@@ -213,17 +218,15 @@ void SkiaRenderer::BeginDrawingFrame() {
   }
   resource_provider_->SetReadLockFence(read_lock_fence.get());
 
-  if (!is_using_ddl()) {
-    // Insert WaitSyncTokenCHROMIUM on quad resources prior to drawing the
-    // frame, so that drawing can proceed without GL context switching
-    // interruptions.
-    for (const auto& pass : *current_frame()->render_passes_in_draw_order) {
-      for (auto* quad : pass->quad_list) {
-        for (ResourceId resource_id : quad->resources)
-          resource_provider_->WaitSyncToken(resource_id);
-      }
+  // Insert WaitSyncTokenCHROMIUM on quad resources prior to drawing the
+  // frame, so that drawing can proceed without GL context switching
+  // interruptions.
+  for (const auto& pass : *current_frame()->render_passes_in_draw_order) {
+    for (auto* quad : pass->quad_list) {
+      for (ResourceId resource_id : quad->resources)
+        resource_provider_->WaitSyncToken(resource_id);
     }
-  }
+    }
 }
 
 void SkiaRenderer::FinishDrawingFrame() {
@@ -308,27 +311,29 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
 
   // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
   // How to setup is in ResourceProvider. (http://crbug.com/644851)
-
-  GrContext* gr_context = output_surface_->context_provider()->GrContext();
   if (is_using_ddl()) {
     root_canvas_ = skia_output_surface_->GetSkCanvasForCurrentFrame();
     DCHECK(root_canvas_);
-  } else if (!root_canvas_ || root_canvas_->getGrContext() != gr_context ||
-             gfx::SkISizeToSize(root_canvas_->getBaseLayerSize()) !=
-                 current_frame()->device_viewport_size) {
-    // Either no SkSurface setup yet, or new GrContext, need to create new
-    // surface.
-    GrGLFramebufferInfo framebuffer_info;
-    framebuffer_info.fFBOID = 0;
-    framebuffer_info.fFormat = GL_RGB8_OES;
-    GrBackendRenderTarget render_target(
-        current_frame()->device_viewport_size.width(),
-        current_frame()->device_viewport_size.height(), 0, 8, framebuffer_info);
+  } else {
+    auto* gr_context = output_surface_->context_provider()->GrContext();
+    if (!root_canvas_ || root_canvas_->getGrContext() != gr_context ||
+        gfx::SkISizeToSize(root_canvas_->getBaseLayerSize()) !=
+            current_frame()->device_viewport_size) {
+      // Either no SkSurface setup yet, or new GrContext, need to create new
+      // surface.
+      GrGLFramebufferInfo framebuffer_info;
+      framebuffer_info.fFBOID = 0;
+      framebuffer_info.fFormat = GL_RGB8_OES;
+      GrBackendRenderTarget render_target(
+          current_frame()->device_viewport_size.width(),
+          current_frame()->device_viewport_size.height(), 0, 8,
+          framebuffer_info);
 
-    root_surface_ = SkSurface::MakeFromBackendRenderTarget(
-        gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
-        kRGB_888x_SkColorType, nullptr, &surface_props);
-    root_canvas_ = root_surface_->getCanvas();
+      root_surface_ = SkSurface::MakeFromBackendRenderTarget(
+          gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
+          kRGB_888x_SkColorType, nullptr, &surface_props);
+      root_canvas_ = root_surface_->getCanvas();
+    }
   }
 
   if (settings_->show_overdraw_feedback) {

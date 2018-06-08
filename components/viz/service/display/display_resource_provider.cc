@@ -58,9 +58,11 @@ class ScopedSetActiveTexture {
 };
 
 DisplayResourceProvider::DisplayResourceProvider(
+    Mode mode,
     ContextProvider* compositor_context_provider,
     SharedBitmapManager* shared_bitmap_manager)
-    : compositor_context_provider_(compositor_context_provider),
+    : mode_(mode),
+      compositor_context_provider_(compositor_context_provider),
       shared_bitmap_manager_(shared_bitmap_manager),
       tracing_id_(g_next_display_resource_provider_tracing_id.GetNext()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -285,7 +287,6 @@ void DisplayResourceProvider::ReceiveFromChild(
     int child_id,
     const std::vector<TransferableResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  GLES2Interface* gl = ContextGL();
   Child& child_info = children_.find(child_id)->second;
   DCHECK(!child_info.marked_for_deletion);
   for (std::vector<TransferableResource>::const_iterator it = resources.begin();
@@ -298,7 +299,8 @@ void DisplayResourceProvider::ReceiveFromChild(
       continue;
     }
 
-    if (it->is_software != !gl || it->mailbox_holder.mailbox.IsZero()) {
+    if (it->is_software != IsSoftware() ||
+        it->mailbox_holder.mailbox.IsZero()) {
       TRACE_EVENT0(
           "viz", "DisplayResourceProvider::ReceiveFromChild dropping invalid");
       std::vector<ReturnedResource> to_return;

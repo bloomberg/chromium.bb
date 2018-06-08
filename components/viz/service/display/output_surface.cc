@@ -21,6 +21,8 @@
 
 namespace viz {
 
+OutputSurface::OutputSurface() = default;
+
 OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
     : context_provider_(std::move(context_provider)) {
   DCHECK(context_provider_);

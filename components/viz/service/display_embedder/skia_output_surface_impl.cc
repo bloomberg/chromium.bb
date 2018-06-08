@@ -13,7 +13,6 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/resource_metadata.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
-#include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -127,10 +126,8 @@ void SkiaOutputSurfaceImpl::PromiseTextureHelper<YUVResourceMetadata>::Init(
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
-    scoped_refptr<VizProcessContextProvider> context_provider,
     SyntheticBeginFrameSource* synthetic_begin_frame_source)
-    : SkiaOutputSurface(context_provider),
-      gpu_service_(gpu_service),
+    : gpu_service_(gpu_service),
       surface_handle_(surface_handle),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
       weak_ptr_factory_(this) {

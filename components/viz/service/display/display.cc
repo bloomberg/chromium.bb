@@ -205,20 +205,21 @@ void Display::SetOutputIsSecure(bool secure) {
 }
 
 void Display::InitializeRenderer() {
+  auto mode = output_surface_->context_provider() || skia_output_surface_
+                  ? DisplayResourceProvider::kGpu
+                  : DisplayResourceProvider::kSoftware;
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
-      output_surface_->context_provider(), bitmap_manager_);
+      mode, output_surface_->context_provider(), bitmap_manager_);
 
-  if (output_surface_->context_provider()) {
-    if (!settings_.use_skia_renderer) {
-      renderer_ = std::make_unique<GLRenderer>(
-          &settings_, output_surface_.get(), resource_provider_.get(),
-          current_task_runner_);
-    } else {
-      DCHECK(output_surface_);
-      renderer_ = std::make_unique<SkiaRenderer>(
-          &settings_, output_surface_.get(), resource_provider_.get(),
-          skia_output_surface_);
-    }
+  if (settings_.use_skia_renderer) {
+    DCHECK(output_surface_);
+    renderer_ = std::make_unique<SkiaRenderer>(
+        &settings_, output_surface_.get(), resource_provider_.get(),
+        skia_output_surface_);
+  } else if (output_surface_->context_provider()) {
+    renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
+                                             resource_provider_.get(),
+                                             current_task_runner_);
 #if BUILDFLAG(ENABLE_VULKAN)
   } else if (output_surface_->vulkan_context_provider()) {
     renderer_ = std::make_unique<SkiaRenderer>(

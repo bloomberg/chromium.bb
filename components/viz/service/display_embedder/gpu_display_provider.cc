@@ -119,26 +119,15 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
-  } else if (renderer_settings.use_skia_renderer &&
-             renderer_settings.use_skia_deferred_display_list) {
+  } else if (renderer_settings.use_skia_deferred_display_list) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
     // TODO(penghuang): Support DDL for all platforms.
     NOTIMPLEMENTED();
     // Workaround compile error: private field 'gpu_service_impl_' is not used.
     ALLOW_UNUSED_LOCAL(gpu_service_impl_);
 #else
-    // Create an offscreen context_provider for SkiaOutputSurfaceImpl, because
-    // SkiaRenderer still needs it to draw RenderPass into a texture.
-    // TODO(penghuang): Remove this context_provider. https://crbug.com/825901
-    auto context_provider = base::MakeRefCounted<VizProcessContextProvider>(
-        gpu_service_, gpu::kNullSurfaceHandle, gpu_memory_buffer_manager_.get(),
-        image_factory_, gpu_channel_manager_delegate_,
-        gpu::SharedMemoryLimits());
-    auto result = context_provider->BindToCurrentThread();
-    CHECK_EQ(result, gpu::ContextResult::kSuccess);
     output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-        gpu_service_impl_, surface_handle, std::move(context_provider),
-        synthetic_begin_frame_source.get());
+        gpu_service_impl_, surface_handle, synthetic_begin_frame_source.get());
     skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
   } else {

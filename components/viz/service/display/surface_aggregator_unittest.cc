@@ -2975,7 +2975,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test,
 
   void SetUp() override {
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        nullptr, &shared_bitmap_manager_);
+        DisplayResourceProvider::kSoftware, nullptr, &shared_bitmap_manager_);
 
     aggregator_ = std::make_unique<SurfaceAggregator>(
         manager_.surface_manager(), resource_provider_.get(), false);
