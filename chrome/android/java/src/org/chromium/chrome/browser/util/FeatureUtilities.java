@@ -48,6 +48,7 @@ public class FeatureUtilities {
     private static Boolean sIsChromeModernDesignEnabled;
     private static Boolean sIsHomePageButtonForceEnabled;
     private static Boolean sIsNewTabPageButtonEnabled;
+    private static Boolean sIsBottomToolbarEnabled;
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -155,6 +156,7 @@ public class FeatureUtilities {
         cacheChromeModernDesignEnabled();
         cacheHomePageButtonForceEnabled();
         cacheNewTabPageButtonEnabled();
+        cacheBottomToolbarEnabled();
 
         // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
         // be done in LibraryLoader itself because it lives in //base and can't depend
@@ -238,6 +240,29 @@ public class FeatureUtilities {
             }
         }
         return sIsNewTabPageButtonEnabled;
+    }
+
+    /**
+     * Cache whether or not the bottom toolbar is enabled so on next startup, the value can
+     * be made available immediately.
+     */
+    public static void cacheBottomToolbarEnabled() {
+        ChromePreferenceManager.getInstance().setBottomToolbarEnabled(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUPLEX));
+    }
+
+    /**
+     * @return Whether or not the bottom toolbar is enabled.
+     */
+    public static boolean isBottomToolbarEnabled() {
+        if (sIsBottomToolbarEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                sIsBottomToolbarEnabled = prefManager.isBottomToolbarEnabled();
+            }
+        }
+        return sIsBottomToolbarEnabled;
     }
 
     /**
