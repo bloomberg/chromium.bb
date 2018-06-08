@@ -4010,7 +4010,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/autofill/autofill_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_tooltip_controller_unittest.mm",
         "../browser/ui/cocoa/autofill/credit_card_autofill_touch_bar_controller_unittest.mm",
-        "../browser/ui/cocoa/autofill/password_generation_popup_view_cocoa_unittest.mm",
         "../browser/ui/cocoa/background_gradient_view_unittest.mm",
         "../browser/ui/cocoa/base_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller_unittest.mm",

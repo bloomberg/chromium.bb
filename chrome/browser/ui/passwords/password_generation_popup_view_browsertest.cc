@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 
 #include "base/strings/string16.h"
-#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
@@ -57,8 +56,6 @@ class PasswordGenerationPopupViewTest : public InProcessBrowserTest {
   TestPasswordGenerationPopupController* controller_;
 };
 
-// TODO(gcasto): Enable on Mac when UI is updated. (crbug.com/394303)
-#if !defined(OS_MACOSX)
 // Regression test for crbug.com/400543. Verifying that moving the mouse in the
 // editing dialog doesn't crash.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
@@ -84,7 +81,6 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest, InvalidContainerView) {
       GetWebContents(), NULL);
   controller_->Show(true /* display password */);
 }
-#endif
 
 // Verify that destroying web contents with visible popup does not crash.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
