@@ -64,13 +64,9 @@ ThreadHeapStats::ThreadHeapStats()
     : wrapper_count_(0),
       wrapper_count_at_last_gc_(0),
       collected_wrapper_count_(0),
-      partition_alloc_size_at_last_gc_(
-          WTF::Partitions::TotalSizeOfCommittedPages()),
       estimated_marking_time_per_byte_(0.0) {}
 
 void ThreadHeapStats::Reset() {
-  partition_alloc_size_at_last_gc_ =
-      WTF::Partitions::TotalSizeOfCommittedPages();
   wrapper_count_at_last_gc_ = wrapper_count_;
   collected_wrapper_count_ = 0;
 }
@@ -348,12 +344,6 @@ void ThreadHeap::ReportMemoryUsageForTracing() {
                  "ThreadHeap::collectedWrapperCount",
                  std::min(heap.HeapStats().CollectedWrapperCount(),
                           static_cast<size_t>(INT_MAX)));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadHeap::partitionAllocSizeAtLastGCKB",
-                 CappedSizeInKB(heap.HeapStats().PartitionAllocSizeAtLastGC()));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "Partitions::totalSizeOfCommittedPagesKB",
-                 CappedSizeInKB(WTF::Partitions::TotalSizeOfCommittedPages()));
 }
 
 size_t ThreadHeap::ObjectPayloadSizeForTesting() {

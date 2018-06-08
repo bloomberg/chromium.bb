@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 
 #include "base/logging.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
 
@@ -52,6 +53,8 @@ void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
 void ThreadHeapStatsCollector::NotifyMarkingCompleted() {
   current_.object_size_in_bytes_before_sweeping = object_size_in_bytes();
   current_.allocated_space_in_bytes_before_sweeping = allocated_space_bytes();
+  current_.partition_alloc_bytes_before_sweeping =
+      WTF::Partitions::TotalSizeOfCommittedPages();
   allocated_bytes_since_prev_gc_ = 0;
 }
 

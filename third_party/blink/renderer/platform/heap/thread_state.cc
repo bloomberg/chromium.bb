@@ -419,7 +419,9 @@ double ThreadState::HeapGrowingRate() {
 double ThreadState::PartitionAllocGrowingRate() {
   size_t current_size = WTF::Partitions::TotalSizeOfCommittedPages();
   size_t estimated_size = EstimatedLiveSize(
-      current_size, heap_->HeapStats().PartitionAllocSizeAtLastGC());
+      current_size, heap_->stats_collector()
+                        ->previous()
+                        .partition_alloc_bytes_before_sweeping);
 
   // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
   double growing_rate =
@@ -1036,6 +1038,9 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
   TRACE_COUNTER1(
       TRACE_DISABLED_BY_DEFAULT("blink_gc"), "BlinkGC.AllocatedSpaceAtLastGCKB",
       CappedSizeInKB(event.allocated_space_in_bytes_before_sweeping));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.PartitionAllocSizeAtLastGCKB",
+                 CappedSizeInKB(event.partition_alloc_bytes_before_sweeping));
 
   // Current values.
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
@@ -1045,6 +1050,9 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
       TRACE_DISABLED_BY_DEFAULT("blink_gc"),
       "BlinkGC.AllocatedObjectSizeSincePreviousGCKB",
       CappedSizeInKB(stats_collector.allocated_bytes_since_prev_gc()));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "PartitionAlloc.TotalSizeOfCommittedPagesKB",
+                 CappedSizeInKB(WTF::Partitions::TotalSizeOfCommittedPages()));
 }
 
 // Update histograms with statistics from the previous garbage collection cycle.

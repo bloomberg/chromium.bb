@@ -170,6 +170,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     BlinkGC::GCReason reason;
     size_t object_size_in_bytes_before_sweeping = 0;
     size_t allocated_space_in_bytes_before_sweeping = 0;
+    size_t partition_alloc_bytes_before_sweeping = 0;
     double live_object_rate = 0;
   };
 
