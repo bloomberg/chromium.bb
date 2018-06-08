@@ -971,11 +971,6 @@ const char kMacViewsAutofillPopupName[] =
 const char kMacViewsAutofillPopupDescription[] =
     "Autofill popup will be shown using the Views toolkit rather than Cocoa.";
 
-const char kManualPasswordGenerationName[] = "Manual password generation.";
-const char kManualPasswordGenerationDescription[] =
-    "Show a 'Generate Password' option on the context menu for all password "
-    "fields.";
-
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 

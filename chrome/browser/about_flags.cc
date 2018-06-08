@@ -1605,11 +1605,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"PasswordForceSaving", flag_descriptions::kPasswordForceSavingName,
      flag_descriptions::kPasswordForceSavingDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordForceSaving)},
-    {"enable-manual-password-generation",
-     flag_descriptions::kManualPasswordGenerationName,
-     flag_descriptions::kManualPasswordGenerationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kEnableManualPasswordGeneration)},
     {"new-password-form-parsing",
      flag_descriptions::kNewPasswordFormParsingName,
      flag_descriptions::kNewPasswordFormParsingDescription, kOsAll,

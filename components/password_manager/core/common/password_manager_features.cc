@@ -39,10 +39,6 @@ const base::Feature kEnableManualFallbacksFillingStandalone = {
 const base::Feature kPasswordForceSaving = {
     "PasswordForceSaving", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable the user to trigger password generation manually.
-const base::Feature kEnableManualPasswordGeneration = {
-    "enable-manual-password-generation", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the "Show all saved passwords" option in Context Menu.
 const base::Feature kEnableShowAllSavedPasswordsContextMenu{
     "kEnableShowAllSavedPasswordsContextMenu",
