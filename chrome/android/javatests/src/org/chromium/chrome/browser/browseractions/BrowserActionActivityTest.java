@@ -418,7 +418,6 @@ public class BrowserActionActivityTest {
 
         final BrowserActionActivity activity2 = startBrowserActionActivity(mTestPage3, 1);
         mOnBrowserActionsMenuShownCallback.waitForCallback(1);
-        mOnFinishNativeInitializationCallback.waitForCallback(1);
         Assert.assertEquals(2, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
         openTabInBackground(activity2);
         // Notification title should be shown for multiple tabs.
@@ -431,13 +430,22 @@ public class BrowserActionActivityTest {
         });
 
         // Tabs should always be added at the end of the model.
-        Assert.assertEquals(3, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
+        int tabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         Assert.assertEquals(mTestPage,
-                mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(0).getUrl());
+                mActivityTestRule.getActivity()
+                        .getCurrentTabModel()
+                        .getTabAt(tabCount - 3)
+                        .getUrl());
         Assert.assertEquals(mTestPage2,
-                mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(1).getUrl());
+                mActivityTestRule.getActivity()
+                        .getCurrentTabModel()
+                        .getTabAt(tabCount - 2)
+                        .getUrl());
         Assert.assertEquals(mTestPage3,
-                mActivityTestRule.getActivity().getCurrentTabModel().getTabAt(2).getUrl());
+                mActivityTestRule.getActivity()
+                        .getCurrentTabModel()
+                        .getTabAt(tabCount - 1)
+                        .getUrl());
         Intent notificationIntent = BrowserActionsService.getNotificationIntent();
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 

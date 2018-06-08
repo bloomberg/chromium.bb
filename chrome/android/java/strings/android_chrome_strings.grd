@@ -1917,7 +1917,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Open in incognito tab
       </message>
       <message name="IDS_BROWSER_ACTIONS_SAVE_LINK_AS" desc="Browser Actions menu item to download the page of the selected link. [CHAR-LIMIT=30]">
-        Download page
+        Download link
       </message>
       <message name="IDS_BROWSER_ACTIONS_COPY_ADDRESS" desc="Browser Actions menu item to copy the url address of the selected link. [CHAR-LIMIT=30]">
         Copy link
