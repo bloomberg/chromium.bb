@@ -55,7 +55,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   void PurgeForMigration(ModelTypeSet undesired_types,
                          ConfigureReason reason) override;
 
-  void Stop() override;
+  void Stop(ShutdownReason reason) override;
   ModelTypeSet GetActiveDataTypes() const override;
   bool IsNigoriEnabled() const override;
   State state() const override;
@@ -174,7 +174,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // is busy performing association.
   void StartNextAssociation(AssociationGroup group);
 
-  void StopImpl();
+  void StopImpl(ShutdownReason reason);
 
   // Returns the currently enabled types.
   ModelTypeSet GetEnabledTypes() const;
@@ -189,6 +189,8 @@ class DataTypeManagerImpl : public DataTypeManager,
   // This list is determined at startup by various command line flags.
   const DataTypeController::TypeMap* controllers_;
   State state_;
+
+  // Types that requested in current configuration cycle.
   ModelTypeSet last_requested_types_;
 
   // A set of types that were enabled at the time initialization with the
