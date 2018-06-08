@@ -9,6 +9,7 @@ import android.content.res.Resources;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
+import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation.OverviewAnimationType;
@@ -356,6 +357,125 @@ public class OverlappingStack extends Stack {
     @Override
     protected boolean shouldCloseGapsBetweenTabs() {
         return true;
+    }
+
+    @Override
+    protected void computeTabClippingVisibilityHelper() {
+        // alpha override, clipping and culling.
+        final boolean portrait = mCurrentMode == Orientation.PORTRAIT;
+
+        // Iterate through each tab starting at the top of the stack and working
+        // backwards. Set the clip on each tab such that it does not extend past
+        // the beginning of the tab above it. clipOffset is used to keep track
+        // of where the previous tab started.
+        float clipOffset;
+        if (portrait) {
+            // portrait LTR & RTL
+            clipOffset = mLayout.getHeight() + StackTab.sStackedTabVisibleSize;
+        } else if (!LocalizationUtils.isLayoutRtl()) {
+            // landscape LTR
+            clipOffset = mLayout.getWidth() + StackTab.sStackedTabVisibleSize;
+        } else {
+            // landscape RTL
+            clipOffset = -StackTab.sStackedTabVisibleSize;
+        }
+
+        for (int i = mStackTabs.length - 1; i >= 0; i--) {
+            LayoutTab layoutTab = mStackTabs[i].getLayoutTab();
+            layoutTab.setVisible(true);
+
+            // Don't bother with clipping tabs that are dying, rotating, with an X offset, or
+            // non-opaque.
+            if (mStackTabs[i].isDying() || mStackTabs[i].getXInStackOffset() != 0.0f
+                    || layoutTab.getAlpha() < 1.0f) {
+                layoutTab.setClipOffset(0.0f, 0.0f);
+                layoutTab.setClipSize(Float.MAX_VALUE, Float.MAX_VALUE);
+                continue;
+            }
+
+            // The beginning, size, and clipped size of the current tab.
+            float tabOffset, tabSize, tabClippedSize, borderAdjustmentSize, insetBorderPadding;
+            if (portrait) {
+                // portrait LTR & RTL
+                tabOffset = layoutTab.getY();
+                tabSize = layoutTab.getScaledContentHeight();
+                tabClippedSize = Math.min(tabSize, clipOffset - tabOffset);
+                borderAdjustmentSize = mBorderTransparentTop;
+                insetBorderPadding = mBorderTopPadding;
+            } else if (!LocalizationUtils.isLayoutRtl()) {
+                // landscape LTR
+                tabOffset = layoutTab.getX();
+                tabSize = layoutTab.getScaledContentWidth();
+                tabClippedSize = Math.min(tabSize, clipOffset - tabOffset);
+                borderAdjustmentSize = mBorderTransparentSide;
+                insetBorderPadding = 0;
+            } else {
+                // landscape RTL
+                tabOffset = layoutTab.getX() + layoutTab.getScaledContentWidth();
+                tabSize = layoutTab.getScaledContentWidth();
+                tabClippedSize = Math.min(tabSize, tabOffset - clipOffset);
+                borderAdjustmentSize = -mBorderTransparentSide;
+                insetBorderPadding = 0;
+            }
+
+            float absBorderAdjustmentSize = Math.abs(borderAdjustmentSize);
+
+            if (tabClippedSize <= absBorderAdjustmentSize) {
+                // If the tab is completed covered, don't bother drawing it at all.
+                layoutTab.setVisible(false);
+                layoutTab.setDrawDecoration(true);
+                mLayout.releaseResourcesForTab(layoutTab);
+            } else {
+                // Fade the tab as it gets too close to the next one. This helps
+                // prevent overlapping shadows from becoming too dark.
+                float fade = MathUtils.clamp(((tabClippedSize - absBorderAdjustmentSize)
+                                                     / StackTab.sStackedTabVisibleSize),
+                        0, 1);
+                layoutTab.setDecorationAlpha(fade);
+
+                // When tabs tilt forward, it will expose more of the tab
+                // underneath. To compensate, make the clipping size larger.
+                // Note, this calculation is only an estimate that seems to
+                // work.
+                float clipScale = 1.0f;
+                if (layoutTab.getTiltX() > 0
+                        || ((!portrait && LocalizationUtils.isLayoutRtl())
+                                           ? layoutTab.getTiltY() < 0
+                                           : layoutTab.getTiltY() > 0)) {
+                    final float tilt =
+                            Math.max(layoutTab.getTiltX(), Math.abs(layoutTab.getTiltY()));
+                    clipScale += (tilt / mMaxOverScrollAngle) * 0.60f;
+                }
+
+                float scaledTabClippedSize = Math.min(tabClippedSize * clipScale, tabSize);
+                // Set the clip
+                layoutTab.setClipOffset((!portrait && LocalizationUtils.isLayoutRtl())
+                                ? (tabSize - scaledTabClippedSize)
+                                : 0,
+                        0);
+                layoutTab.setClipSize(portrait ? Float.MAX_VALUE : scaledTabClippedSize,
+                        portrait ? scaledTabClippedSize : Float.MAX_VALUE);
+            }
+
+            // Clip the next tab where this tab begins.
+            if (i > 0) {
+                LayoutTab nextLayoutTab = mStackTabs[i - 1].getLayoutTab();
+                if (nextLayoutTab.getScale() <= layoutTab.getScale()) {
+                    clipOffset = tabOffset;
+                } else {
+                    clipOffset = tabOffset + tabClippedSize * layoutTab.getScale();
+                }
+
+                // Extend the border just a little bit. Otherwise, the
+                // rounded borders will intersect and make it look like the
+                // content is actually smaller.
+                clipOffset += borderAdjustmentSize;
+
+                if (layoutTab.getBorderAlpha() < 1.f && layoutTab.getToolbarAlpha() < 1.f) {
+                    clipOffset += insetBorderPadding;
+                }
+            }
+        }
     }
 
     @Override
