@@ -6,6 +6,7 @@
 #define MOJO_EDK_EMBEDDER_PEER_CONNECTION_H_
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "mojo/edk/embedder/connection_params.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -42,8 +43,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PeerConnection {
   ScopedMessagePipeHandle Connect(ConnectionParams params);
 
  private:
-  bool is_connected_ = false;
-  uint64_t connection_id_ = 0;
+  const base::UnguessableToken token_;
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnection);
 };

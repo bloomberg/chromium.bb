@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "mojo/public/cpp/system/invitation.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -29,12 +31,17 @@
 namespace mojo {
 namespace {
 
+enum class InvitationType {
+  kNormal,
+  kIsolated,
+};
+
 enum class TransportType {
   kChannel,
   kChannelServer,
 };
 
-// Switch and values to tell clients of parameterized test runs what mode they
+// Switches and values to tell clients of parameterized test runs what mode they
 // should be testing against.
 const char kTransportTypeSwitch[] = "test-transport-type";
 const char kTransportTypeChannel[] = "channel";
@@ -50,6 +57,7 @@ class InvitationCppTest : public testing::Test,
   void LaunchChildTestClient(const std::string& test_client_name,
                              ScopedMessagePipeHandle* primordial_pipes,
                              size_t num_primordial_pipes,
+                             InvitationType invitation_type,
                              TransportType transport_type,
                              const ProcessErrorCallback& error_callback = {}) {
     base::CommandLine command_line(
@@ -100,16 +108,33 @@ class InvitationCppTest : public testing::Test,
       channel->RemoteProcessLaunchAttempted();
 
     OutgoingInvitation invitation;
-    for (uint64_t name = 0; name < num_primordial_pipes; ++name)
-      primordial_pipes[name] = invitation.AttachMessagePipe(name);
+    if (invitation_type == InvitationType::kNormal) {
+      for (uint64_t name = 0; name < num_primordial_pipes; ++name)
+        primordial_pipes[name] = invitation.AttachMessagePipe(name);
+    }
+
     if (transport_type == TransportType::kChannel) {
       DCHECK(channel_endpoint.is_valid());
-      OutgoingInvitation::Send(std::move(invitation), child_process_.Handle(),
-                               std::move(channel_endpoint), error_callback);
+      if (invitation_type == InvitationType::kNormal) {
+        OutgoingInvitation::Send(std::move(invitation), child_process_.Handle(),
+                                 std::move(channel_endpoint), error_callback);
+      } else {
+        DCHECK(primordial_pipes);
+        DCHECK_EQ(num_primordial_pipes, 1u);
+        primordial_pipes[0] =
+            OutgoingInvitation::SendIsolated(std::move(channel_endpoint));
+      }
     } else if (transport_type == TransportType::kChannelServer) {
       DCHECK(server_endpoint.is_valid());
-      OutgoingInvitation::Send(std::move(invitation), child_process_.Handle(),
-                               std::move(server_endpoint), error_callback);
+      if (invitation_type == InvitationType::kNormal) {
+        OutgoingInvitation::Send(std::move(invitation), child_process_.Handle(),
+                                 std::move(server_endpoint), error_callback);
+      } else {
+        DCHECK(primordial_pipes);
+        DCHECK_EQ(num_primordial_pipes, 1u);
+        primordial_pipes[0] =
+            OutgoingInvitation::SendIsolated(std::move(server_endpoint));
+      }
     }
   }
 
@@ -147,23 +172,25 @@ class InvitationCppTest : public testing::Test,
 
 class TestClientBase : public InvitationCppTest {
  public:
-  static IncomingInvitation AcceptInvitation() {
+  static PlatformChannelEndpoint RecoverEndpointFromCommandLine() {
     const auto& command_line = *base::CommandLine::ForCurrentProcess();
-
     std::string transport_type_string =
         command_line.GetSwitchValueASCII(kTransportTypeSwitch);
     CHECK(!transport_type_string.empty());
-
     if (transport_type_string == kTransportTypeChannel) {
-      return IncomingInvitation::Accept(
-          PlatformChannel::RecoverPassedEndpointFromCommandLine(command_line));
-    } else if (transport_type_string == kTransportTypeChannelServer) {
-      return IncomingInvitation::Accept(
-          NamedPlatformChannel::ConnectToServer(command_line));
+      return PlatformChannel::RecoverPassedEndpointFromCommandLine(
+          command_line);
+    } else {
+      return NamedPlatformChannel::ConnectToServer(command_line);
     }
+  }
 
-    NOTREACHED();
-    return IncomingInvitation();
+  static IncomingInvitation AcceptInvitation() {
+    return IncomingInvitation::Accept(RecoverEndpointFromCommandLine());
+  }
+
+  static ScopedMessagePipeHandle AcceptIsolatedInvitation() {
+    return IncomingInvitation::AcceptIsolated(RecoverEndpointFromCommandLine());
   }
 
  private:
@@ -186,7 +213,8 @@ const char kTestMessage2[] = "hello";
 
 TEST_P(InvitationCppTest, Send) {
   ScopedMessagePipeHandle pipe;
-  LaunchChildTestClient("CppSendClient", &pipe, 1, GetParam());
+  LaunchChildTestClient("CppSendClient", &pipe, 1, InvitationType::kNormal,
+                        GetParam());
   WriteMessage(pipe, kTestMessage1);
   WaitForChildExit();
 }
@@ -197,9 +225,23 @@ DEFINE_TEST_CLIENT(CppSendClient) {
   CHECK_EQ(kTestMessage1, ReadMessage(pipe));
 }
 
+TEST_P(InvitationCppTest, SendIsolated) {
+  ScopedMessagePipeHandle pipe;
+  LaunchChildTestClient("CppSendIsolatedClient", &pipe, 1,
+                        InvitationType::kIsolated, GetParam());
+  WriteMessage(pipe, kTestMessage1);
+  WaitForChildExit();
+}
+
+DEFINE_TEST_CLIENT(CppSendIsolatedClient) {
+  auto pipe = AcceptIsolatedInvitation();
+  CHECK_EQ(kTestMessage1, ReadMessage(pipe));
+}
+
 TEST_P(InvitationCppTest, SendWithMultiplePipes) {
   ScopedMessagePipeHandle pipes[2];
-  LaunchChildTestClient("CppSendWithMultiplePipesClient", pipes, 2, GetParam());
+  LaunchChildTestClient("CppSendWithMultiplePipesClient", pipes, 2,
+                        InvitationType::kNormal, GetParam());
   WriteMessage(pipes[0], kTestMessage1);
   WriteMessage(pipes[1], kTestMessage2);
   WaitForChildExit();
@@ -213,6 +255,18 @@ DEFINE_TEST_CLIENT(CppSendWithMultiplePipesClient) {
   CHECK_EQ(kTestMessage2, ReadMessage(pipe1));
 }
 
+TEST(InvitationCppTest_NoParam, SendIsolatedInvitationWithDuplicateName) {
+  base::test::ScopedTaskEnvironment task_environment;
+  PlatformChannel channel1;
+  PlatformChannel channel2;
+  const char kConnectionName[] = "foo";
+  ScopedMessagePipeHandle pipe0 = OutgoingInvitation::SendIsolated(
+      channel1.TakeLocalEndpoint(), kConnectionName);
+  ScopedMessagePipeHandle pipe1 = OutgoingInvitation::SendIsolated(
+      channel2.TakeLocalEndpoint(), kConnectionName);
+  Wait(pipe0.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+}
+
 const char kErrorMessage[] = "ur bad :{{";
 const char kDisconnectMessage[] = "go away plz";
 
@@ -221,7 +275,7 @@ TEST_P(InvitationCppTest, ProcessErrors) {
 
   ScopedMessagePipeHandle pipe;
   LaunchChildTestClient(
-      "CppProcessErrorsClient", &pipe, 1, GetParam(),
+      "CppProcessErrorsClient", &pipe, 1, InvitationType::kNormal, GetParam(),
       base::BindLambdaForTesting([&](const std::string& error_message) {
         ASSERT_TRUE(actual_error_callback);
         actual_error_callback.Run(error_message);

@@ -99,6 +99,44 @@ class MOJO_CPP_SYSTEM_EXPORT OutgoingInvitation {
                    PlatformChannelServerEndpoint server_endpoint,
                    const ProcessErrorCallback& error_callback = {});
 
+  // Sends an isolated invitation over |endpoint|. The process at the other
+  // endpoint must use |IncomingInvitation::AcceptIsolated()| to accept the
+  // invitation.
+  //
+  // Isolated invitations must be used in lieu of regular invitations in cases
+  // where both of the processes being connected already belong to independent
+  // multiprocess graphs.
+  //
+  // Such connections are limited in functionality:
+  //
+  //   * Platform handles may not be transferrable between the processes
+  //
+  //   * Pipes sent between the processes may not be subsequently transferred to
+  //     other processes in each others' process graph.
+  //
+  // Only one concurrent isolated connection is supported between any two
+  // processes.
+  //
+  // Unlike |Send()| above, isolated invitations automatically have a single
+  // message pipe attached and this is the only attachment allowed. The local
+  // end of the attached pipe is returned here.
+  //
+  // If |connection_name| is non-empty, any previously established isolated
+  // connection using the same name will be disconnected.
+  static ScopedMessagePipeHandle SendIsolated(
+      PlatformChannelEndpoint channel_endpoint,
+      base::StringPiece connection_name = {});
+
+  // Similar to above but sends |invitation| via |server_endpoint|, which should
+  // correspond to a |PlatformChannelServerEndpoint| taken from a
+  // |NamedPlatformChannel|.
+  //
+  // If |connection_name| is non-empty, any previously established isolated
+  // connection using the same name will be disconnected.
+  static ScopedMessagePipeHandle SendIsolated(
+      PlatformChannelServerEndpoint server_endpoint,
+      base::StringPiece connection_name = {});
+
  private:
   ScopedInvitationHandle handle_;
 
@@ -123,6 +161,11 @@ class MOJO_CPP_SYSTEM_EXPORT IncomingInvitation {
   // |PlatformChannelServerEndpoint|, then |channel_endpoint| should be created
   // by |NamedPlatformChannel::ConnectToServer|.
   static IncomingInvitation Accept(PlatformChannelEndpoint channel_endpoint);
+
+  // Accepts an incoming isolated invitation from |channel_endpoint|. See
+  // notes on |OutgoingInvitation::SendIsolated()|.
+  static ScopedMessagePipeHandle AcceptIsolated(
+      PlatformChannelEndpoint channel_endpoint);
 
   // Extracts an attached message pipe from this invitation. This may succeed
   // even if no such pipe was attached, though the extracted pipe will

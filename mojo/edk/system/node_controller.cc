@@ -224,24 +224,14 @@ void NodeController::AcceptBrokerClientInvitation(
                      base::Unretained(this), std::move(connection_params)));
 }
 
-uint64_t NodeController::ConnectToPeer(ConnectionParams connection_params,
-                                       const ports::PortRef& port) {
-  uint64_t id = 0;
-  {
-    base::AutoLock lock(peers_lock_);
-    id = next_peer_connection_id_++;
-  }
-  io_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&NodeController::ConnectToPeerOnIOThread,
-                                       base::Unretained(this), id,
-                                       base::Passed(&connection_params), port));
-  return id;
-}
-
-void NodeController::ClosePeerConnection(uint64_t peer_connection_id) {
+void NodeController::ConnectIsolated(ConnectionParams connection_params,
+                                     const ports::PortRef& port,
+                                     base::StringPiece connection_name) {
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&NodeController::ClosePeerConnectionOnIOThread,
-                            base::Unretained(this), peer_connection_id));
+      FROM_HERE,
+      base::BindOnce(&NodeController::ConnectIsolatedOnIOThread,
+                     base::Unretained(this), base::Passed(&connection_params),
+                     port, connection_name.as_string()));
 }
 
 void NodeController::SetPortObserver(const ports::PortRef& port,
@@ -397,37 +387,43 @@ void NodeController::AcceptBrokerClientInvitationOnIOThread(
   bootstrap_inviter_channel_->Start();
 }
 
-void NodeController::ConnectToPeerOnIOThread(uint64_t peer_connection_id,
-                                             ConnectionParams connection_params,
-                                             ports::PortRef port) {
+void NodeController::ConnectIsolatedOnIOThread(
+    ConnectionParams connection_params,
+    ports::PortRef port,
+    const std::string& connection_name) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   scoped_refptr<NodeChannel> channel = NodeChannel::Create(
       this, std::move(connection_params), io_task_runner_, {});
 
+  RequestContext request_context;
   ports::NodeName token;
   GenerateRandomName(&token);
-  peer_connections_.emplace(token,
-                            PeerConnection{channel, port, peer_connection_id});
-  peer_connections_by_id_.emplace(peer_connection_id, token);
+  pending_isolated_connections_.emplace(
+      token, IsolatedConnection{channel, port, connection_name});
+  if (!connection_name.empty()) {
+    // If a connection already exists with this name, drop it.
+    auto it = named_isolated_connections_.find(connection_name);
+    if (it != named_isolated_connections_.end()) {
+      ports::NodeName connection_node = it->second;
+      if (connection_node != name_) {
+        DropPeer(connection_node, nullptr);
+      } else {
+        auto pending_it = pending_isolated_connections_.find(connection_node);
+        if (pending_it != pending_isolated_connections_.end()) {
+          node_->ClosePort(pending_it->second.local_port);
+          pending_isolated_connections_.erase(pending_it);
+        }
+        named_isolated_connections_.erase(it);
+      }
+    }
+    named_isolated_connections_.emplace(connection_name, token);
+  }
 
   channel->SetRemoteNodeName(token);
   channel->Start();
 
   channel->AcceptPeer(name_, token, port.name());
-}
-
-void NodeController::ClosePeerConnectionOnIOThread(
-    uint64_t peer_connection_id) {
-  RequestContext request_context(RequestContext::Source::SYSTEM);
-  auto peer = peer_connections_by_id_.find(peer_connection_id);
-  // The connection may already be closed.
-  if (peer == peer_connections_by_id_.end())
-    return;
-
-  // |peer| may be removed so make a copy of |name|.
-  ports::NodeName name = peer->second;
-  DropPeer(name, nullptr);
 }
 
 scoped_refptr<NodeChannel> NodeController::GetPeerChannel(
@@ -536,8 +532,8 @@ void NodeController::DropPeer(const ports::NodeName& name,
   bool is_inviter;
   {
     base::AutoLock lock(inviter_lock_);
-    is_inviter =
-        (name == inviter_name_ || channel == bootstrap_inviter_channel_);
+    is_inviter = (name == inviter_name_ ||
+                  (channel && channel == bootstrap_inviter_channel_));
   }
 
   // If the error comes from the inviter channel, we also need to cancel any
@@ -546,11 +542,13 @@ void NodeController::DropPeer(const ports::NodeName& name,
   if (is_inviter)
     CancelPendingPortMerges();
 
-  auto peer = peer_connections_.find(name);
-  if (peer != peer_connections_.end()) {
-    peer_connections_by_id_.erase(peer->second.connection_id);
-    ports_to_close.push_back(peer->second.local_port);
-    peer_connections_.erase(peer);
+  auto connection_it = pending_isolated_connections_.find(name);
+  if (connection_it != pending_isolated_connections_.end()) {
+    IsolatedConnection& connection = connection_it->second;
+    ports_to_close.push_back(connection.local_port);
+    if (!connection.name.empty())
+      named_isolated_connections_.erase(connection.name);
+    pending_isolated_connections_.erase(connection_it);
   }
 
   for (const auto& port : ports_to_close)
@@ -668,7 +666,8 @@ void NodeController::DropAllPeers() {
     peers_.clear();
     pending_invitations_.clear();
     pending_peer_messages_.clear();
-    peer_connections_.clear();
+    pending_isolated_connections_.clear();
+    named_isolated_connections_.clear();
   }
 
   for (const auto& peer : all_peers)
@@ -1173,30 +1172,29 @@ void NodeController::OnAcceptPeer(const ports::NodeName& from_node,
                                   const ports::PortName& port_name) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
-  auto it = peer_connections_.find(from_node);
-  if (it == peer_connections_.end()) {
+  auto it = pending_isolated_connections_.find(from_node);
+  if (it == pending_isolated_connections_.end()) {
     DLOG(ERROR) << "Received unexpected AcceptPeer message from " << from_node;
     DropPeer(from_node, nullptr);
     return;
   }
 
-  scoped_refptr<NodeChannel> channel = std::move(it->second.channel);
-  ports::PortRef local_port = it->second.local_port;
-  uint64_t peer_connection_id = it->second.connection_id;
-  peer_connections_.erase(it);
+  IsolatedConnection& connection = it->second;
+  scoped_refptr<NodeChannel> channel = std::move(connection.channel);
+  ports::PortRef local_port = connection.local_port;
+  if (!connection.name.empty())
+    named_isolated_connections_[connection.name] = peer_name;
+  pending_isolated_connections_.erase(it);
   DCHECK(channel);
 
-  if (name_ == peer_name) {
-    // If the peer connection is a self connection (which is used in tests),
-    // drop the channel to it and skip straight to merging the ports.
-    peer_connections_by_id_.erase(peer_connection_id);
-  } else {
-    peer_connections_by_id_[peer_connection_id] = peer_name;
-    peer_connections_.emplace(
-        peer_name, PeerConnection{nullptr, local_port, peer_connection_id});
-    DVLOG(1) << "Node " << name_ << " accepted peer " << peer_name;
-
+  if (name_ != peer_name) {
+    // It's possible (e.g. in tests) that we may "connect" to ourself, in which
+    // case we skip this |AddPeer()| call and go straight to merging ports.
+    // Note that we explicitly drop any prior connection to the same peer so
+    // that new isolated connections can replace old ones.
+    DropPeer(peer_name, nullptr);
     AddPeer(peer_name, channel, false /* start_channel */);
+    DVLOG(1) << "Node " << name_ << " accepted peer " << peer_name;
   }
 
   // We need to choose one side to initiate the port merge. It doesn't matter
@@ -1277,29 +1275,27 @@ void NodeController::AttemptShutdownIfRequested() {
   callback.Run();
 }
 
-NodeController::PeerConnection::PeerConnection() = default;
+NodeController::IsolatedConnection::IsolatedConnection() = default;
 
-NodeController::PeerConnection::PeerConnection(
-    const PeerConnection& other) = default;
+NodeController::IsolatedConnection::IsolatedConnection(
+    const IsolatedConnection& other) = default;
 
-NodeController::PeerConnection::PeerConnection(
-    PeerConnection&& other) = default;
+NodeController::IsolatedConnection::IsolatedConnection(
+    IsolatedConnection&& other) = default;
 
-NodeController::PeerConnection::PeerConnection(
+NodeController::IsolatedConnection::IsolatedConnection(
     scoped_refptr<NodeChannel> channel,
     const ports::PortRef& local_port,
-    uint64_t connection_id)
-    : channel(std::move(channel)),
-      local_port(local_port),
-      connection_id(connection_id) {}
+    base::StringPiece name)
+    : channel(std::move(channel)), local_port(local_port), name(name) {}
 
-NodeController::PeerConnection::~PeerConnection() = default;
+NodeController::IsolatedConnection::~IsolatedConnection() = default;
 
-NodeController::PeerConnection& NodeController::PeerConnection::
-operator=(const PeerConnection& other) = default;
+NodeController::IsolatedConnection& NodeController::IsolatedConnection::
+operator=(const IsolatedConnection& other) = default;
 
-NodeController::PeerConnection& NodeController::PeerConnection::
-operator=(PeerConnection&& other) = default;
+NodeController::IsolatedConnection& NodeController::IsolatedConnection::
+operator=(IsolatedConnection&& other) = default;
 
 }  // namespace edk
 }  // namespace mojo

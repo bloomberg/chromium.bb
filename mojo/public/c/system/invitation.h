@@ -181,6 +181,17 @@ typedef uint32_t MojoSendInvitationFlags;
 // No flags. Default behavior.
 #define MOJO_SEND_INVITATION_FLAG_NONE ((MojoSendInvitationFlags)0)
 
+// Send an isolated invitation to the receiver. Isolated invitations only
+// establish communication between the sender and the receiver. Accepting an
+// isolated invitation does not make IPC possible between the sender and any
+// other members of the receiver's process graph, nor does it make IPC possible
+// between the receiver and any other members of the sender's process graph.
+//
+// Invitations sent with this flag set must be accepted with the corresponding
+// |MOJO_ACCEPT_INVITATION_FLAG_ISOLATED| flag set, and may only have a single
+// message pipe attached with a name of exactly four zero-bytes ("\0\0\0\0").
+#define MOJO_SEND_INVITATION_FLAG_ISOLATED ((MojoSendInvitationFlags)1)
+
 // Options passed to |MojoSendInvitation()|.
 struct MOJO_ALIGNAS(8) MojoSendInvitationOptions {
   // The size of this structure, used for versioning.
@@ -188,15 +199,29 @@ struct MOJO_ALIGNAS(8) MojoSendInvitationOptions {
 
   // See |MojoSendInvitationFlags|.
   MojoSendInvitationFlags flags;
+
+  // If |flags| includes |MOJO_SEND_INVITATION_FLAG_ISOLATED| then these fields
+  // specify a name identifying the established isolated connection. There are
+  // no restrictions on the value given. If |isolated_connection_name_length| is
+  // non-zero, the system ensures that only one isolated process connection can
+  // exist for the given name at any time.
+  const char* isolated_connection_name;
+  uint32_t isolated_connection_name_length;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoSendInvitationOptions) == 8,
-                   "MojoSendInvitationOptions has wrong size");
+MOJO_STATIC_ASSERT_FOR_32_BIT(sizeof(MojoSendInvitationOptions) == 16,
+                              "MojoSendInvitationOptions has wrong size");
+MOJO_STATIC_ASSERT_FOR_64_BIT(sizeof(MojoSendInvitationOptions) == 24,
+                              "MojoSendInvitationOptions has wrong size");
 
 // Flags passed to |MojoAcceptInvitation()| via |MojoAcceptInvitationOptions|.
 typedef uint32_t MojoAcceptInvitationFlags;
 
 // No flags. Default behavior.
 #define MOJO_ACCEPT_INVITATION_FLAG_NONE ((MojoAcceptInvitationFlags)0)
+
+// Accept an isoalted invitation from the sender. See
+// |MOJO_SEND_INVITATION_FLAG_ISOLATED| for details.
+#define MOJO_ACCEPT_INVITATION_FLAG_ISOLATED ((MojoAcceptInvitationFlags)1)
 
 // Options passed to |MojoAcceptInvitation()|.
 struct MOJO_ALIGNAS(8) MojoAcceptInvitationOptions {
