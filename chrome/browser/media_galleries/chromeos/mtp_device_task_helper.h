@@ -50,6 +50,9 @@ class MTPDeviceTaskHelper {
   typedef base::Callback<void(const MTPEntries& entries, bool has_more)>
       ReadDirectorySuccessCallback;
 
+  using CheckDirectoryEmptySuccessCallback =
+      base::OnceCallback<void(bool is_empty)>;
+
   typedef base::Closure RenameObjectSuccessCallback;
 
   typedef base::Closure CopyFileFromLocalSuccessCallback;
@@ -106,6 +109,18 @@ class MTPDeviceTaskHelper {
                      const size_t max_size,
                      const ReadDirectorySuccessCallback& success_callback,
                      const ErrorCallback& error_callback);
+
+  // Dispatches a read directory request to the MediaTransferProtocolManager to
+  // check if |directory_id| is empty.
+  //
+  // On success, |success_callback| is invoked on the IO thread to notify the
+  // caller with the results.
+  //
+  // If there is an error, |error_callback| is invoked on the IO thread to
+  // notify the caller about the file error.
+  void CheckDirectoryEmpty(uint32_t directory_id,
+                           CheckDirectoryEmptySuccessCallback success_callback,
+                           const ErrorCallback& error_callback);
 
   // Forwards the WriteDataIntoSnapshotFile request to the MTPReadFileWorker
   // object.
@@ -215,6 +230,20 @@ class MTPDeviceTaskHelper {
       const std::vector<uint32_t>& sorted_file_ids,
       std::vector<device::mojom::MtpFileEntryPtr> file_entries,
       bool error);
+
+  // Query callback for CheckDirectoryEmpty().
+  //
+  // If there is no error, |error| is set to false, |file_ids| has the directory
+  // file ids and |success_callback| is invoked on the IO thread to notify the
+  // caller whether |file_ids| is empty or not.
+  //
+  // If there is an error, |error| is set to true, |file_entries| is empty
+  // and |error_callback| is invoked on the IO thread to notify the caller.
+  void OnCheckedDirectoryEmpty(
+      CheckDirectoryEmptySuccessCallback success_callback,
+      const ErrorCallback& error_callback,
+      const std::vector<uint32_t>& file_ids,
+      bool error) const;
 
   // Intermediate step to finish a ReadBytes request.
   void OnGetFileInfoToReadBytes(

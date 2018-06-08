@@ -209,14 +209,13 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       storage::AsyncFileUtil::EntryList entries,
       const bool has_more);
 
-  // Called when ReadDirectory succeeds.
-  virtual void OnDidReadDirectoryToDeleteDirectory(
+  // Called when CheckDirectoryEmpty() succeeds.
+  virtual void OnDidCheckDirectoryEmptyToDeleteDirectory(
       const base::FilePath& directory_path,
-      const uint32_t directory_id,
+      uint32_t directory_id,
       const DeleteDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
-      const MTPDeviceTaskHelper::MTPEntries& entries,
-      const bool has_more);
+      bool is_empty);
 
   // Calls DeleteObjectOnUIThread on UI thread.
   virtual void RunDeleteObjectOnUIThread(

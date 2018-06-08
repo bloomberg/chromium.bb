@@ -133,6 +133,20 @@ void MTPDeviceTaskHelper::ReadDirectory(
           max_size));
 }
 
+void MTPDeviceTaskHelper::CheckDirectoryEmpty(
+    uint32_t directory_id,
+    CheckDirectoryEmptySuccessCallback success_callback,
+    const ErrorCallback& error_callback) {
+  if (device_handle_.empty())
+    return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
+
+  GetMediaTransferProtocolManager()->ReadDirectoryEntryIds(
+      device_handle_, directory_id,
+      base::BindOnce(&MTPDeviceTaskHelper::OnCheckedDirectoryEmpty,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(success_callback), error_callback));
+}
+
 void MTPDeviceTaskHelper::WriteDataIntoSnapshotFile(
     const SnapshotRequestInfo& request_info,
     const base::File::Info& snapshot_file_info) {
@@ -358,6 +372,20 @@ void MTPDeviceTaskHelper::OnGotDirectoryEntries(
                      weak_ptr_factory_.GetWeakPtr(), success_callback,
                      error_callback, file_ids, next_offset, max_size,
                      sorted_file_ids));
+}
+
+void MTPDeviceTaskHelper::OnCheckedDirectoryEmpty(
+    CheckDirectoryEmptySuccessCallback success_callback,
+    const ErrorCallback& error_callback,
+    const std::vector<uint32_t>& file_ids,
+    bool error) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (error)
+    return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(std::move(success_callback), file_ids.empty()));
 }
 
 void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
