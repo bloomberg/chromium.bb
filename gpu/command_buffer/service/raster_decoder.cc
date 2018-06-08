@@ -3086,7 +3086,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
 
   int op_idx = 0;
   size_t paint_buffer_size = raster_shm_size;
-  while (paint_buffer_size > 4) {
+  while (paint_buffer_size > 0) {
     size_t skip = 0;
     cc::PaintOp* deserialized_op = cc::PaintOp::Deserialize(
         paint_buffer_memory, paint_buffer_size, &data[0],
