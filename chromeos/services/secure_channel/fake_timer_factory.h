@@ -34,6 +34,8 @@ class FakeTimerFactory : public TimerFactory {
     return id_to_active_one_shot_timer_map_;
   }
 
+  size_t num_instances_created() const { return num_instances_created_; }
+
  private:
   // TimerFactory:
   std::unique_ptr<base::Timer> CreateOneShotTimer() override;
@@ -43,6 +45,7 @@ class FakeTimerFactory : public TimerFactory {
   base::UnguessableToken id_for_last_created_one_shot_timer_;
   base::flat_map<base::UnguessableToken, FakeOneShotTimer*>
       id_to_active_one_shot_timer_map_;
+  size_t num_instances_created_ = 0u;
 
   base::WeakPtrFactory<FakeTimerFactory> weak_ptr_factory_;
 
