@@ -47,7 +47,7 @@ PopStateEvent::PopStateEvent(ScriptState* script_state,
 PopStateEvent::PopStateEvent(
     scoped_refptr<SerializedScriptValue> serialized_state,
     History* history)
-    : Event(EventTypeNames::popstate, Bubbles::kNo, Cancelable::kYes),
+    : Event(EventTypeNames::popstate, Bubbles::kNo, Cancelable::kNo),
       serialized_state_(std::move(serialized_state)),
       history_(history) {}
 
