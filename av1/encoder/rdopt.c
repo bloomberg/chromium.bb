@@ -1416,34 +1416,6 @@ static void get_energy_distribution_finer(const int16_t *diff, int stride,
   for (i = 0; i < esq_h - 1; i++) verdist[i] *= e_recip;
 }
 
-// Instead of 1D projections of the block energy distribution computed by
-// get_energy_distribution_finer() this function computes a full
-// two-dimensional energy distribution of the input block.
-static void get_2D_energy_distribution(const int16_t *diff, int stride, int bw,
-                                       int bh, float *edist) {
-  unsigned int esq[256] = { 0 };
-  const int esq_w = bw >> 2;
-  const int esq_h = bh >> 2;
-  const int esq_sz = esq_w * esq_h;
-  uint64_t total = 0;
-  for (int i = 0; i < bh; i += 4) {
-    for (int j = 0; j < bw; j += 4) {
-      unsigned int cur_sum_energy = 0;
-      for (int k = 0; k < 4; k++) {
-        const int16_t *cur_diff = diff + (i + k) * stride + j;
-        cur_sum_energy += cur_diff[0] * cur_diff[0] +
-                          cur_diff[1] * cur_diff[1] +
-                          cur_diff[2] * cur_diff[2] + cur_diff[3] * cur_diff[3];
-      }
-      esq[(i >> 2) * esq_w + (j >> 2)] = cur_sum_energy;
-      total += cur_sum_energy;
-    }
-  }
-
-  const float e_recip = 1.0f / (float)total;
-  for (int i = 0; i < esq_sz - 1; i++) edist[i] = esq[i] * e_recip;
-}
-
 // Similar to get_horver_correlation, but also takes into account first
 // row/column, when computing horizontal/vertical correlation.
 static void get_horver_correlation_full(const int16_t *diff, int stride, int w,
