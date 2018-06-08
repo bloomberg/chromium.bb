@@ -144,20 +144,20 @@ void OomInterventionTabHelper::RenderProcessGone(
 
 void OomInterventionTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  // Filter out sub-frame's navigation.
-  if (!navigation_handle->IsInMainFrame())
+  // Filter out sub-frame's navigation or if the navigation happens without
+  // changing document.
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
+
+  last_navigation_timestamp_ = base::TimeTicks::Now();
 
   // Filter out the first navigation.
   if (!navigation_started_) {
     navigation_started_ = true;
     return;
   }
-
-  // Filter out a navigation if the navigation happens without changing
-  // document.
-  if (navigation_handle->IsSameDocument())
-    return;
 
   ResetInterfaces();
 
@@ -245,6 +245,16 @@ void OomInterventionTabHelper::OnCrashDumpProcessed(
   UMA_HISTOGRAM_MEMORY_MB(
       "Memory.Experimental.OomIntervention.RendererVmSizeAtOOM",
       metrics->current_vm_size_kb / 1024);
+
+  base::TimeDelta time_since_last_navigation;
+  if (!last_navigation_timestamp_.is_null()) {
+    time_since_last_navigation =
+        base::TimeTicks::Now() - last_navigation_timestamp_;
+  }
+  UMA_HISTOGRAM_COUNTS(
+      "Memory.Experimental.OomIntervention."
+      "RendererTimeSinceLastNavigationAtOOM",
+      time_since_last_navigation.InSeconds());
 
   if (decider_) {
     DCHECK(!web_contents()->GetBrowserContext()->IsOffTheRecord());
