@@ -917,12 +917,6 @@ void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
   client_->Invalidate(GetPageScreenRect(index));
 }
 
-#if defined(PDF_ENABLE_XFA)
-void PDFiumEngine::SetScrollPosition(const pp::Point& position) {
-  position_ = position;
-}
-#endif
-
 std::string PDFiumEngine::GetMetadata(const std::string& key) {
   return GetDocumentMetadata(doc(), key);
 }
