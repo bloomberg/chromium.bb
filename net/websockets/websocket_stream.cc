@@ -196,16 +196,10 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   }
 
   void PerformUpgrade() {
-    // Fail gracefully instead of crashing.  TODO(bnc): Investigate and fix.
-    if (!handshake_stream_ || !connect_delegate_) {
-      ReportFailure(ERR_NOT_IMPLEMENTED);
-      return;
-    }
-
     DCHECK(timer_);
     CHECK(!perform_upgrade_has_been_called_);
     CHECK(on_handshake_stream_created_has_been_called_);
-    // TODO(bnc): Change to DCHECK after https://crbug.com/842575 is fixed.
+    // TODO(bnc): Change to DCHECK after https://crbug.com/850183 is fixed.
     CHECK(handshake_stream_);
     CHECK(connect_delegate_);
 
@@ -216,7 +210,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     std::unique_ptr<URLRequest> url_request = std::move(url_request_);
     WebSocketHandshakeStreamBase* handshake_stream = handshake_stream_;
     handshake_stream_ = nullptr;
-    // TODO(bnc): Combine into one line after https://crbug.com/842575 is fixed.
+    // TODO(bnc): Combine into one line after https://crbug.com/850183 is fixed.
     std::unique_ptr<WebSocketStream> stream = handshake_stream->Upgrade();
     connect_delegate_->OnSuccess(std::move(stream));
 
@@ -281,7 +275,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
  private:
   void OnHandshakeStreamCreated(
       WebSocketHandshakeStreamBase* handshake_stream) {
-    // TODO(bnc): Change to DCHECK after https://crbug.com/842575 is fixed.
+    // TODO(bnc): Change to DCHECK after https://crbug.com/850183 is fixed.
     CHECK(handshake_stream);
 
     on_handshake_stream_created_has_been_called_ = true;
@@ -307,7 +301,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   // succeeded.
   WebSocketHandshakeStreamBase* handshake_stream_;
 
-  // TODO(bnc): Remove after https://crbug.com/842575 is fixed.
+  // TODO(bnc): Remove after https://crbug.com/850183 is fixed.
   bool on_handshake_stream_created_has_been_called_;
   bool perform_upgrade_has_been_called_;
 
