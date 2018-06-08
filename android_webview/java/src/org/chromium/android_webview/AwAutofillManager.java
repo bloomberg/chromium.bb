@@ -24,8 +24,8 @@ import java.util.Iterator;
  */
 @TargetApi(Build.VERSION_CODES.O)
 public class AwAutofillManager {
-    private static final String TAG = "AwAutofillManager";
-    private static final boolean DEBUG = false;
+    // Don't change TAG, it is used for runtime log.
+    public static final String TAG = "AwAutofillManager";
 
     /**
      * The observer of suggestion window.
@@ -56,7 +56,7 @@ public class AwAutofillManager {
     private ArrayList<WeakReference<InputUIObserver>> mInputUIObservers;
 
     public AwAutofillManager(Context context) {
-        if (DEBUG) Log.i(TAG, "constructor");
+        log("constructor");
         mAutofillManager = context.getSystemService(AutofillManager.class);
         mDisabled = mAutofillManager == null || !mAutofillManager.isEnabled();
         if (mDisabled) return;
@@ -67,19 +67,19 @@ public class AwAutofillManager {
 
     public void notifyVirtualValueChanged(View parent, int childId, AutofillValue value) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        if (DEBUG) Log.i(TAG, "notifyVirtualValueChanged");
+        log("notifyVirtualValueChanged");
         mAutofillManager.notifyValueChanged(parent, childId, value);
     }
 
     public void commit(int submissionSource) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        if (DEBUG) Log.i(TAG, "commit source:" + submissionSource);
+        log("commit source:" + submissionSource);
         mAutofillManager.commit();
     }
 
     public void cancel() {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        if (DEBUG) Log.i(TAG, "cancel");
+        log("cancel");
         mAutofillManager.cancel();
     }
 
@@ -92,31 +92,31 @@ public class AwAutofillManager {
             return;
         }
         if (checkAndWarnIfDestroyed()) return;
-        if (DEBUG) Log.i(TAG, "notifyVirtualViewEntered");
+        log("notifyVirtualViewEntered");
         mAutofillManager.notifyViewEntered(parent, childId, absBounds);
     }
 
     public void notifyVirtualViewExited(View parent, int childId) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        if (DEBUG) Log.i(TAG, "notifyVirtualViewExited");
+        log("notifyVirtualViewExited");
         mAutofillManager.notifyViewExited(parent, childId);
     }
 
     public void requestAutofill(View parent, int virtualId, Rect absBounds) {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        if (DEBUG) Log.i(TAG, "requestAutofill");
+        log("requestAutofill");
         mAutofillManager.requestAutofill(parent, virtualId, absBounds);
     }
 
     public boolean isAutofillInputUIShowing() {
         if (mDisabled || checkAndWarnIfDestroyed()) return false;
-        if (DEBUG) Log.i(TAG, "isAutofillInputUIShowing: " + mIsAutofillInputUIShowing);
+        log("isAutofillInputUIShowing: " + mIsAutofillInputUIShowing);
         return mIsAutofillInputUIShowing;
     }
 
     public void destroy() {
         if (mDisabled || checkAndWarnIfDestroyed()) return;
-        if (DEBUG) Log.i(TAG, "destroy");
+        log("destroy");
         mAutofillManager.unregisterCallback(mMonitor);
         mAutofillManager = null;
         mDestroyed = true;
@@ -162,5 +162,11 @@ public class AwAutofillManager {
             }
             observer.onInputUIShown();
         }
+    }
+
+    public static void log(String log) {
+        // Use 'setprop log.tag.AwAutofillManager DEBUG' to enable the log at runtime.
+        // Log.i() instead of Log.d() is used here because log.d() is stripped out in release build.
+        if (Log.isLoggable(TAG, Log.DEBUG)) Log.i(TAG, log);
     }
 }
