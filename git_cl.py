@@ -5679,6 +5679,10 @@ def CMDdiff(parser, args):
 def CMDowners(parser, args):
   """Finds potential owners for reviewing."""
   parser.add_option(
+      '--ignore-current',
+      action='store_true',
+      help='Ignore the CL\'s current reviewers and start from scratch.')
+  parser.add_option(
       '--no-color',
       action='store_true',
       help='Use this option to disable color output')
@@ -5714,7 +5718,7 @@ def CMDowners(parser, args):
       affected_files,
       change.RepositoryRoot(),
       author,
-      cl.GetReviewers(),
+      [] if options.ignore_current else cl.GetReviewers(),
       fopen=file, os_path=os.path,
       disable_color=options.no_color,
       override_files=change.OriginalOwnersFiles()).run()
