@@ -68,7 +68,7 @@ class DrmDevice : public GbmDeviceLinux,
 
     // Depending on the property, this may be an actual value describing the
     // property or an ID of another property.
-    uint32_t value;
+    uint64_t value;
   };
 
   DrmDevice(const base::FilePath& device_path,
