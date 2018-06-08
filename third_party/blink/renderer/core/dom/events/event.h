@@ -179,6 +179,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   virtual bool IsRelatedEvent() const;
   virtual bool IsPointerEvent() const;
   virtual bool IsInputEvent() const;
+  virtual bool IsCompositionEvent() const;
 
   // Drag events are a subset of mouse events.
   virtual bool IsDragEvent() const;

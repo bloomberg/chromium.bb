@@ -216,6 +216,10 @@ bool Event::IsDragEvent() const {
   return false;
 }
 
+bool Event::IsCompositionEvent() const {
+  return false;
+}
+
 bool Event::IsClipboardEvent() const {
   return false;
 }

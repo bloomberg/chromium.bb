@@ -22,10 +22,18 @@ EventTiming::EventTiming(LocalDOMWindow* window) {
   performance_ = DOMWindowPerformance::performance(*window);
 }
 
+bool EventTiming::ShouldReportForEventTiming(const Event* event) const {
+  return (event->IsMouseEvent() || event->IsPointerEvent() ||
+          event->IsTouchEvent() || event->IsKeyboardEvent() ||
+          event->IsWheelEvent() || event->IsInputEvent() ||
+          event->IsCompositionEvent()) &&
+         event->isTrusted();
+}
+
 void EventTiming::WillDispatchEvent(const Event* event) {
   // Assume each event can be dispatched only once.
   DCHECK(!finished_will_dispatch_event_);
-  if (!performance_ || !event->isTrusted())
+  if (!performance_ || !ShouldReportForEventTiming(event))
     return;
 
   // Although we screen the events for timing by setting these conditions here,
