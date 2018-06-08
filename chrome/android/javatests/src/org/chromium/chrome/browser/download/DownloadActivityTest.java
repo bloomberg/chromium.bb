@@ -31,6 +31,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemViewHolder;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.download.ui.DownloadManagerToolbar;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.download.ui.SpaceDisplay;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
@@ -123,6 +125,11 @@ public class DownloadActivityTest {
     public void setUp() throws Exception {
         Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, true).apply();
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
+                    DownloadPromptStatus.DONT_SHOW);
+        });
 
         mStubbedProvider = new StubbedProvider();
         DownloadManagerUi.setProviderForTests(mStubbedProvider);
@@ -627,6 +634,7 @@ public class DownloadActivityTest {
 
     @Test
     @MediumTest
+    @DisableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
     public void testToggleSelection() throws Exception {
         // The selection toolbar should not be showing.
         Assert.assertTrue(mAdapterObserver.mOnSelectionItems.isEmpty());
@@ -681,6 +689,7 @@ public class DownloadActivityTest {
 
     @Test
     @MediumTest
+    @DisableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)
     public void testSearchView() throws Exception {
         final DownloadManagerToolbar toolbar = mUi.getDownloadManagerToolbarForTests();
         View toolbarSearchView = toolbar.getSearchViewForTests();

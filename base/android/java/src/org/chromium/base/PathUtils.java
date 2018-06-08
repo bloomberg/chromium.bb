@@ -221,8 +221,10 @@ public abstract class PathUtils {
     public static String[] getAllPrivateDownloadsDirectories() {
         File[] files;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            files = ContextUtils.getApplicationContext().getExternalFilesDirs(
-                    Environment.DIRECTORY_DOWNLOADS);
+            try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+                files = ContextUtils.getApplicationContext().getExternalFilesDirs(
+                        Environment.DIRECTORY_DOWNLOADS);
+            }
         } else {
             files = new File[] {Environment.getExternalStorageDirectory()};
         }

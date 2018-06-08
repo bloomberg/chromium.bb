@@ -175,6 +175,7 @@ public class DownloadTest implements CustomMainActivityStart {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/849876")
     @Feature({"Downloads"})
     @RetryOnFailure
     public void testDuplicateHttpPostDownload_Download() throws Exception {
