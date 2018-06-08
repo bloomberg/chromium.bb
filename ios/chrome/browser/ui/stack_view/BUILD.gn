@@ -54,6 +54,7 @@ source_set("stack_view") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/favicon/resources:default_favicon",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/main:feature_flags",
