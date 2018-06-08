@@ -146,7 +146,7 @@ void AvSyncVideo::UpkeepAvSync() {
   int64_t difference;
   error_->EstimateY(now, &difference, &error);
 
-  VLOG(2) << "Pts_monitor."
+  VLOG(3) << "Pts_monitor."
           << " difference=" << difference / 1000 << " apts_slope=" << apts_slope
           << " apts_slope=" << apts_slope
           << " current_audio_playback_rate_=" << current_audio_playback_rate_
