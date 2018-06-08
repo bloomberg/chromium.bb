@@ -35,9 +35,13 @@
       base::mac::ObjCCastStrict<TableViewTextCell>(tableCell);
   cell.textLabel.text = self.text;
   cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
-  cell.textLabel.textColor = self.textColor
-                                 ? UIColorFromRGB(self.textColor, 1.0)
-                                 : UIColorFromRGB(TextItemColorLightGrey, 1.0);
+  // This item's text color takes precedence over the global styler.
+  if (self.textColor)
+    cell.textLabel.textColor = UIColorFromRGB(self.textColor);
+  else if (styler.cellTitleColor)
+    cell.textLabel.textColor = styler.cellTitleColor;
+  else
+    cell.textLabel.textColor = UIColorFromRGB(TextItemColorLightGrey);
   cell.textLabel.textAlignment =
       self.textAlignment ? self.textAlignment : NSTextAlignmentLeft;
   cell.selectionStyle = UITableViewCellSelectionStyleNone;

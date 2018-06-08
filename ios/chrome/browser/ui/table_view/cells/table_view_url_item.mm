@@ -52,13 +52,17 @@ const CGFloat kFaviconContainerWidth = 28;
   }
   cell.metadataLabel.text = self.metadata;
   cell.metadataLabel.hidden = ([self.metadata length] == 0);
-
   cell.cellUniqueIdentifier = self.uniqueIdentifier;
-  cell.faviconContainerView.backgroundColor = styler.tableViewBackgroundColor;
-  cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
-  cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
-  cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.accessibilityTraits |= UIAccessibilityTraitButton;
+  // Use colors from styler if available.
+  if (styler.tableViewBackgroundColor) {
+    cell.faviconContainerView.backgroundColor = styler.tableViewBackgroundColor;
+    cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
+    cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
+    cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;
+  }
+  if (styler.cellTitleColor)
+    cell.titleLabel.textColor = styler.cellTitleColor;
 }
 
 - (NSString*)uniqueIdentifier {

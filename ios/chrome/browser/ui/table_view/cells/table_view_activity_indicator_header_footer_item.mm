@@ -29,15 +29,16 @@
 - (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter
                        withStyler:(ChromeTableViewStyler*)styler {
   [super configureHeaderFooterView:headerFooter withStyler:styler];
-
-  // Set the contentView backgroundColor, not the header's.
-  headerFooter.contentView.backgroundColor = styler.tableViewBackgroundColor;
-
   TableViewActivityIndicatorHeaderFooterView* header =
       base::mac::ObjCCastStrict<TableViewActivityIndicatorHeaderFooterView>(
           headerFooter);
   header.titleLabel.text = self.text;
   header.subtitleLabel.text = self.subtitleText;
+  // Use colors from styler if available.
+  if (styler.tableViewBackgroundColor)
+    header.contentView.backgroundColor = styler.tableViewBackgroundColor;
+  if (styler.headerFooterTitleColor)
+    header.titleLabel.textColor = styler.headerFooterTitleColor;
 }
 
 @end
