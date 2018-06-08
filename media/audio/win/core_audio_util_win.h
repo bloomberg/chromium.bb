@@ -207,11 +207,6 @@ class MEDIA_EXPORT CoreAudioUtil {
   static bool FillRenderEndpointBufferWithSilence(
       IAudioClient* client, IAudioRenderClient* render_client);
 
-  // Returns the default audio driver file name and version string according to
-  // DxDiag.  Used for crash reporting.  Can be slow (~seconds).
-  static bool GetDxDiagDetails(std::string* driver_name,
-                               std::string* driver_version);
-
   // Gets the device collection index for the device specified by |device_id|.
   // If the device is found in the device collection, the index is written to
   // |*index| and S_OK is returned. If the device is not found, S_FALSE is

@@ -43,14 +43,6 @@ class CoreAudioUtilWinTest : public ::testing::Test {
   ScopedCOMInitializer com_init_;
 };
 
-TEST_F(CoreAudioUtilWinTest, GetDxDiagDetails) {
-  ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
-  std::string name, version;
-  ASSERT_TRUE(CoreAudioUtil::GetDxDiagDetails(&name, &version));
-  EXPECT_TRUE(!name.empty());
-  EXPECT_TRUE(!version.empty());
-}
-
 TEST_F(CoreAudioUtilWinTest, NumberOfActiveDevices) {
   ABORT_AUDIO_TEST_IF_NOT(DevicesAvailable());
 
