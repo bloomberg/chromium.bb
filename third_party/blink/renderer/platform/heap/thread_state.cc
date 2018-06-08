@@ -383,15 +383,18 @@ size_t ThreadState::TotalMemorySize() {
 
 size_t ThreadState::EstimatedLiveSize(size_t estimation_base_size,
                                       size_t size_at_last_gc) {
-  if (heap_->HeapStats().WrapperCountAtLastGC() == 0)
+  const ThreadHeapStatsCollector& stats_collector = *heap_->stats_collector();
+  const ThreadHeapStatsCollector::Event& prev = stats_collector.previous();
+
+  if (prev.wrapper_count_before_sweeping == 0)
     return estimation_base_size;
 
   // (estimated size) = (estimation base size) - (heap size at the last GC) /
   //   (# of persistent handles at the last GC) *
-  //     (# of persistent handles collected since the last GC);
+  //     (# of persistent handles collected since the last GC)
   size_t size_retained_by_collected_persistents = static_cast<size_t>(
-      1.0 * size_at_last_gc / heap_->HeapStats().WrapperCountAtLastGC() *
-      heap_->HeapStats().CollectedWrapperCount());
+      1.0 * size_at_last_gc / prev.wrapper_count_before_sweeping *
+      stats_collector.collected_wrapper_count());
   if (estimation_base_size < size_retained_by_collected_persistents)
     return 0;
   return estimation_base_size - size_retained_by_collected_persistents;
@@ -497,7 +500,6 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   VLOG(2) << "[state:" << this << "] ScheduleV8FollowupGCIfNeeded: v8_gc_type="
           << ((gc_type == BlinkGC::kV8MajorGC) ? "MajorGC" : "MinorGC");
   DCHECK(CheckThread());
-  ThreadHeap::ReportMemoryUsageForTracing();
 
   if (IsGCForbidden())
     return;
@@ -544,7 +546,6 @@ void ThreadState::SchedulePageNavigationGCIfNeeded(
           << "estimatedRemovalRatio=" << std::setprecision(2)
           << estimated_removal_ratio;
   DCHECK(CheckThread());
-  ThreadHeap::ReportMemoryUsageForTracing();
 
   if (IsGCForbidden())
     return;
@@ -585,7 +586,6 @@ void ThreadState::ScheduleFullGC() {
 void ThreadState::ScheduleGCIfNeeded() {
   VLOG(2) << "[state:" << this << "] ScheduleGCIfNeeded";
   DCHECK(CheckThread());
-  ThreadHeap::ReportMemoryUsageForTracing();
 
   // Allocation is allowed during sweeping, but those allocations should not
   // trigger nested GCs.
@@ -1041,6 +1041,9 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "BlinkGC.PartitionAllocSizeAtLastGCKB",
                  CappedSizeInKB(event.partition_alloc_bytes_before_sweeping));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.WrapperCountAtLastGC",
+                 event.wrapper_count_before_sweeping);
 
   // Current values.
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
@@ -1053,6 +1056,11 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "PartitionAlloc.TotalSizeOfCommittedPagesKB",
                  CappedSizeInKB(WTF::Partitions::TotalSizeOfCommittedPages()));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "BlinkGC.WrapperCount",
+                 stats_collector.wrapper_count());
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.CollectedWrapperCount",
+                 stats_collector.collected_wrapper_count());
 }
 
 // Update histograms with statistics from the previous garbage collection cycle.
@@ -1169,7 +1177,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
 void ThreadState::PostSweep() {
   DCHECK(CheckThread());
-  ThreadHeap::ReportMemoryUsageForTracing();
 
   SetGCPhase(GCPhase::kNone);
   if (GetGCState() == kIdleGCScheduled)
@@ -1189,7 +1196,6 @@ void ThreadState::PostSweep() {
 
 void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
   DCHECK(CheckThread());
-  ThreadHeap::ReportMemoryUsageForTracing();
 
   RunScheduledGC(stack_state);
   stack_state_ = BlinkGC::kHeapPointersOnStack;
@@ -1615,9 +1621,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
 
   if (should_compact)
     Heap().Compaction()->Initialize(this);
-
-  if (marking_type != BlinkGC::kTakeSnapshot)
-    Heap().ResetHeapCounters();
 }
 
 void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,

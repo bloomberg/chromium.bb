@@ -275,7 +275,6 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
     ScriptForbiddenScope script_forbidden;
     result = LazySweepPages(allocation_size, gc_info_index);
   }
-  ThreadHeap::ReportMemoryUsageForTracing();
   return result;
 }
 
@@ -319,7 +318,6 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
     if (page_count % kDeadlineCheckInterval == 0) {
       if (deadline_seconds <= CurrentTimeTicksInSeconds()) {
         // Deadline has come.
-        ThreadHeap::ReportMemoryUsageForTracing();
         if (normal_arena)
           normal_arena->SetIsLazySweeping(false);
         return SweepingCompleted();
@@ -327,7 +325,6 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
     }
     page_count++;
   }
-  ThreadHeap::ReportMemoryUsageForTracing();
   if (normal_arena)
     normal_arena->SetIsLazySweeping(false);
   return true;
@@ -344,7 +341,6 @@ void BaseArena::CompleteSweep() {
   while (!SweepingCompleted()) {
     SweepUnsweptPage();
   }
-  ThreadHeap::ReportMemoryUsageForTracing();
 }
 
 Address BaseArena::AllocateLargeObject(size_t allocation_size,
