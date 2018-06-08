@@ -739,21 +739,6 @@ public class LocationBarLayout
     }
 
     /**
-     * Updates the omnibox text selection when focused. When displaying a query in the omnibox,
-     * we want to move the cursor to the end of the search terms to more easily refine the search,
-     * and when displaying a URL we select all.
-     */
-    private void updateFocusedUrlBarSelection() {
-        if (!mUrlBar.hasFocus()) return;
-
-        if (mToolbarDataProvider.shouldDisplaySearchTerms()) {
-            mUrlBar.setSelection(mUrlBar.getText().length());
-        } else {
-            selectAll();
-        }
-    }
-
-    /**
      * Triggered when the URL input field has gained or lost focus.
      * @param hasFocus Whether the URL field has gained focus.
      */
@@ -803,7 +788,7 @@ public class LocationBarLayout
         changeLocationBarIcon();
         updateVerboseStatusVisibility();
         updateLocationBarIconContainerVisibility();
-        updateFocusedUrlBarSelection();
+        if (hasFocus) selectAll();
         mUrlBar.setCursorVisible(hasFocus);
 
         if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
