@@ -97,8 +97,8 @@ finalLayoutAttributesForDisappearingItemAtIndexPath:
   // index path is changing. For an item whose index path is changing, this
   // method is called before
   // -initialLayoutAttributesForAppearingItemAtIndexPath:
-  UICollectionViewLayoutAttributes* attributes =
-      [super finalLayoutAttributesForDisappearingItemAtIndexPath:itemIndexPath];
+  UICollectionViewLayoutAttributes* attributes = [[super
+      finalLayoutAttributesForDisappearingItemAtIndexPath:itemIndexPath] copy];
   // Disappearing items that aren't being deleted just use the default
   // attributes.
   if (![self.indexPathsOfDeletingItems containsObject:itemIndexPath]) {
@@ -123,8 +123,8 @@ initialLayoutAttributesForAppearingItemAtIndexPath:(NSIndexPath*)itemIndexPath {
   // index path is changing. For an item whose index path is changing, this
   // method is called after
   // -finalLayoutAttributesForDisappearingItemAtIndexPath:
-  UICollectionViewLayoutAttributes* attributes =
-      [super initialLayoutAttributesForAppearingItemAtIndexPath:itemIndexPath];
+  UICollectionViewLayoutAttributes* attributes = [[super
+      initialLayoutAttributesForAppearingItemAtIndexPath:itemIndexPath] copy];
   // Appearing items that aren't being inserted just use the default
   // attributes.
   if (![self.indexPathsOfInsertingItems containsObject:itemIndexPath]) {
