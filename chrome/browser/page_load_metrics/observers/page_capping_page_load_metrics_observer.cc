@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -80,6 +81,7 @@ PageCappingPageLoadMetricsObserver::OnCommit(
   web_contents_ = navigation_handle->GetWebContents();
   page_cap_ = GetPageLoadCappingBytesThreshold(false /* media_page_load */);
   url_host_ = navigation_handle->GetURL().host();
+  MaybeCreate();
   // TODO(ryansturm) Check a blacklist of eligible pages.
   // https://crbug.com/797981
   return page_load_metrics::PageLoadMetricsObserver::CONTINUE_OBSERVING;
@@ -122,15 +124,31 @@ void PageCappingPageLoadMetricsObserver::MediaStartedPlaying(
   page_cap_ = GetPageLoadCappingBytesThreshold(true /* media_page_load */);
 }
 
+void PageCappingPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // If the page is not paused, we should not pause new frames.
+  if (!paused_)
+    return;
+  // If the navigation is to the same page, is to an error page, the load hasn't
+  // committed or render frame host is null, no need to pause the page.
+  if (navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage() ||
+      !navigation_handle->HasCommitted() ||
+      !navigation_handle->GetRenderFrameHost()) {
+    return;
+  }
+  // Pause the new frame.
+  handles_.push_back(
+      navigation_handle->GetRenderFrameHost()->PauseSubresourceLoading());
+}
+
 void PageCappingPageLoadMetricsObserver::PauseSubresourceLoading(bool pause) {
   DCHECK_NE(pause, paused_);
   DCHECK(displayed_infobar_);
   paused_ = pause;
-  if (pause) {
+  if (pause)
     handles_ = web_contents_->PauseSubresourceLoading();
-  } else {
+  else
     handles_.clear();
-  }
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
