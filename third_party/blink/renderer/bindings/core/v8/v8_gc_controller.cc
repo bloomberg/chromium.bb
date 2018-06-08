@@ -264,7 +264,7 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
           BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
 
       // Forces a precise GC at the end of the current event loop.
-      current_thread_state->SetGCState(ThreadState::kFullGCScheduled);
+      current_thread_state->ScheduleFullGC();
     }
 
     // v8::kGCCallbackFlagCollectAllAvailableGarbage is used when V8 handles
