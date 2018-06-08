@@ -1232,11 +1232,8 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
   backend_->DeleteAllHistory();
 
   // Visit the url with username, password.
-  backend_->AddPageVisit(
-      url, base::Time::Now(), 0,
-      ui::PageTransitionFromInt(
-          ui::PageTransitionGetQualifier(ui::PAGE_TRANSITION_TYPED)),
-      false, history::SOURCE_BROWSED, true);
+  backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
+                         false, history::SOURCE_BROWSED, true);
 
   // Fetch the row information about stripped url from history db.
   VisitVector visits;
@@ -1383,19 +1380,13 @@ TEST_F(HistoryBackendTest, AddPageVisitNotLastVisit) {
   base::Time older_time = recent_time - visit_age;
 
   // Visit the url with recent time.
-  backend_->AddPageVisit(
-      url, recent_time, 0,
-      ui::PageTransitionFromInt(
-          ui::PageTransitionGetQualifier(ui::PAGE_TRANSITION_TYPED)),
-      false, history::SOURCE_BROWSED, false);
+  backend_->AddPageVisit(url, recent_time, 0, ui::PAGE_TRANSITION_TYPED, false,
+                         history::SOURCE_BROWSED, true);
 
   // Add to the url a visit with older time (could be syncing from another
   // client, etc.).
-  backend_->AddPageVisit(
-      url, older_time, 0,
-      ui::PageTransitionFromInt(
-          ui::PageTransitionGetQualifier(ui::PAGE_TRANSITION_TYPED)),
-      false, history::SOURCE_SYNCED, false);
+  backend_->AddPageVisit(url, older_time, 0, ui::PAGE_TRANSITION_TYPED, false,
+                         history::SOURCE_SYNCED, true);
 
   // Fetch the row information about url from history db.
   VisitVector visits;
