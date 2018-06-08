@@ -15,7 +15,6 @@ if (use_bundled_fontconfig) {
     sources = [
       "src/src/fcarch.h",
       "src/src/fcatomic.c",
-      "src/src/fcblanks.c",
       "src/src/fccache.c",
       "src/src/fccfg.c",
       "src/src/fccharset.c",
@@ -26,6 +25,7 @@ if (use_bundled_fontconfig) {
       "src/src/fcformat.c",
       "src/src/fcfreetype.c",
       "src/src/fcfs.c",
+      "src/src/fchash.c",
       "src/src/fcinit.c",
       "src/src/fclang.c",
       "src/src/fclist.c",
@@ -34,6 +34,7 @@ if (use_bundled_fontconfig) {
       "src/src/fcname.c",
       "src/src/fcobjs.c",
       "src/src/fcpat.c",
+      "src/src/fcptrlist.c",
       "src/src/fcrange.c",
       "src/src/fcserialize.c",
       "src/src/fcstat.c",
@@ -52,14 +53,17 @@ if (use_bundled_fontconfig) {
     defines = [
       "HAVE_CONFIG_H",
       "FC_CACHEDIR=\"/var/cache/fontconfig\"",
+      "FC_TEMPLATEDIR=\"/usr/share/fontconfig/conf.avail\"",
       "FONTCONFIG_PATH=\"/etc/fonts\"",
     ]
 
-    # This is a hack to remove visibility("default") annotations.  Fontconfig
-    # symbols should not be exported from chrome, nacl_helper, or anything
-    # else.
+    # Fontconfig symbols should not be exported from chrome, nacl_helper, or
+    # anything else.
     if (!is_component_build) {
-      defines += [ "visibility(x)=" ]
+      defines += [
+        "FC_ATTRIBUTE_VISIBILITY_HIDDEN=__attribute((visibility(\"hidden\")))",
+        "FC_ATTRIBUTE_VISIBILITY_EXPORT=__attribute((visibility(\"hidden\")))",
+      ]
     }
 
     deps = [
@@ -81,6 +85,10 @@ if (use_bundled_fontconfig) {
         # Work around a pointer-to-bool conversion.
         "-Wno-pointer-bool-conversion",
       ]
+    }
+
+    if (!is_win) {
+      libs = [ "uuid" ]
     }
   }
 } else {
