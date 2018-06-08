@@ -137,23 +137,15 @@ void DCLayerOverlayProcessor::Process(
     gfx::Rect* overlay_damage_rect,
     gfx::Rect* damage_rect,
     DCLayerOverlayList* dc_layer_overlays) {
-  DCHECK(pass_info_.empty());
   processed_overlay_in_frame_ = false;
-  if (base::FeatureList::IsEnabled(
-          features::kDirectCompositionNonrootOverlays)) {
-    for (auto& pass : *render_passes) {
-      bool is_root = (pass == render_passes->back());
-      ProcessRenderPass(resource_provider, display_rect, pass.get(), is_root,
-                        overlay_damage_rect,
-                        is_root ? damage_rect : &pass->damage_rect,
-                        dc_layer_overlays);
-    }
-  } else {
-    ProcessRenderPass(resource_provider, display_rect,
-                      render_passes->back().get(), true, overlay_damage_rect,
-                      damage_rect, dc_layer_overlays);
-  }
   pass_info_.clear();
+  for (auto& pass : *render_passes) {
+    bool is_root = (pass == render_passes->back());
+    ProcessRenderPass(resource_provider, display_rect, pass.get(), is_root,
+                      overlay_damage_rect,
+                      is_root ? damage_rect : &pass->damage_rect,
+                      dc_layer_overlays);
+  }
 }
 
 QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
@@ -288,11 +280,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
 
       RecordDCLayerResult(DC_LAYER_SUCCESS);
       dc_layer_overlays->push_back(dc_layer);
-      if (!base::FeatureList::IsEnabled(
-              features::kDirectCompositionNonrootOverlays)) {
-        // Only allow one overlay for now.
-        break;
-      }
+
       processed_overlay_in_frame_ = true;
     }
   }
@@ -335,13 +323,15 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
     gfx::Rect* damage_rect,
     gfx::Rect* this_frame_underlay_rect,
     DCLayerOverlay* dc_layer) {
+  // TODO(sunnyps): Remove this restriction for |require_overlay| quads.
+  if (!is_root && !base::FeatureList::IsEnabled(
+                      features::kDirectCompositionNonrootOverlays)) {
+    RecordDCLayerResult(DC_LAYER_FAILED_NON_ROOT);
+    return false;
+  }
   if (!dc_layer->require_overlay) {
     if (!base::FeatureList::IsEnabled(features::kDirectCompositionUnderlays)) {
       RecordDCLayerResult(DC_LAYER_FAILED_OCCLUDED);
-      return false;
-    }
-    if (!is_root) {
-      RecordDCLayerResult(DC_LAYER_FAILED_NON_ROOT);
       return false;
     }
     if (processed_overlay_in_frame_) {
