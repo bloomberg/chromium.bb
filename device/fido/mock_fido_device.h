@@ -42,7 +42,9 @@ class MockFidoDevice : public FidoDevice {
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
 
   // Old interface ------------------------------------------------------------
-
+  // TODO(hongjunchoi): Remove all old test interface functions once U2F sign
+  // logic is migrated to GetAssertionTask.
+  // See: https://crbug.com/843788
   static void NotSatisfied(const std::vector<uint8_t>& command,
                            DeviceCallback& cb);
   static void WrongData(const std::vector<uint8_t>& command,

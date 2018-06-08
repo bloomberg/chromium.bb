@@ -90,10 +90,6 @@ class FidoMakeCredentialTaskTest : public testing::Test {
   TestMakeCredentialTaskCallback callback_receiver_;
 };
 
-MATCHER_P(IsCommand, command, "") {
-  return base::make_span(arg) == command;
-}
-
 TEST_F(FidoMakeCredentialTaskTest, MakeCredentialSuccess) {
   auto device = std::make_unique<MockFidoDevice>();
 
@@ -114,7 +110,7 @@ TEST_F(FidoMakeCredentialTaskTest, MakeCredentialSuccess) {
   EXPECT_TRUE(device->device_info());
 }
 
-TEST_F(FidoMakeCredentialTaskTest, TestMakeCredentialWithIncorrectRpIdHash) {
+TEST_F(FidoMakeCredentialTaskTest, MakeCredentialWithIncorrectRpIdHash) {
   auto device = std::make_unique<MockFidoDevice>();
 
   device->ExpectCtap2CommandAndRespondWith(
@@ -136,11 +132,9 @@ TEST_F(FidoMakeCredentialTaskTest, FallbackToU2fRegisterSuccess) {
 
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
-  EXPECT_CALL(
-      *device,
-      DeviceTransactPtr(
-          IsCommand(base::make_span(test_data::kU2fRegisterCommandApdu)), _))
-      .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fRegisterCommandApdu,
+      test_data::kApduEncodedNoErrorRegisterResponse);
 
   const auto task = CreateMakeCredentialTask(device.get());
   make_credential_callback_receiver().WaitForCallback();
@@ -153,11 +147,9 @@ TEST_F(FidoMakeCredentialTaskTest, FallbackToU2fRegisterSuccess) {
 TEST_F(FidoMakeCredentialTaskTest, TestDefaultU2fRegisterOperationWithoutFlag) {
   RemoveCtapFlag();
   auto device = std::make_unique<MockFidoDevice>();
-  EXPECT_CALL(
-      *device,
-      DeviceTransactPtr(
-          IsCommand(base::make_span(test_data::kU2fRegisterCommandApdu)), _))
-      .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fRegisterCommandApdu,
+      test_data::kApduEncodedNoErrorRegisterResponse);
 
   const auto task = CreateMakeCredentialTask(device.get());
   make_credential_callback_receiver().WaitForCallback();
