@@ -221,10 +221,12 @@
 #include "content/public/browser/android/java_interfaces.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/audio/android/audio_manager_android.h"
+#else
+#include "content/browser/compositor/image_transport_factory.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "content/browser/compositor/image_transport_factory.h"
+#if defined(OS_MACOSX)
+#include "content/browser/mach_broker_mac.h"
 #endif
 
 #if defined(OS_WIN)
@@ -235,12 +237,8 @@
 #include "ui/display/win/dpi.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "content/browser/mach_broker_mac.h"
-#endif
-
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_switches.h"
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "content/browser/media/key_system_support_impl.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -248,12 +246,16 @@
 #include "ppapi/shared_impl/ppapi_switches.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "content/browser/media/key_system_support_impl.h"
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "content/browser/net/reporting_service_proxy.h"
 #endif
 
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION)
 #include "content/browser/hyphenation/hyphenation_impl.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_switches.h"
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
@@ -266,16 +268,24 @@
 #define IntToStringType base::IntToString
 #endif
 
-#if BUILDFLAG(ENABLE_REPORTING)
-#include "content/browser/net/reporting_service_proxy.h"
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-
 namespace content {
 
 using CheckOriginLockResult =
     ChildProcessSecurityPolicyImpl::CheckOriginLockResult;
 
 namespace {
+
+// Stores the maximum number of renderer processes the content module can
+// create. Only applies if it is set to a non-zero value.
+size_t g_max_renderer_count_override = 0;
+
+bool g_run_renderer_in_process = false;
+
+RendererMainThreadFactoryFunction g_renderer_main_thread_factory = nullptr;
+RenderProcessHostImpl::CreateStoragePartitionServiceFunction
+    g_create_storage_partition = nullptr;
+
+base::MessageLoop* g_in_process_thread;
 
 const RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
 const char kSiteProcessMapKeyName[] = "content_site_process_map";
@@ -419,12 +429,12 @@ class SiteProcessMap : public base::SupportsUserData::Data {
     // them.
     std::set<std::string> sites;
     for (SiteToProcessMap::const_iterator i = map_.begin(); i != map_.end();
-         i++) {
+         ++i) {
       if (i->second == host)
         sites.insert(i->first);
     }
     for (std::set<std::string>::iterator i = sites.begin(); i != sites.end();
-         i++) {
+         ++i) {
       SiteToProcessMap::iterator iter = map_.find(*i);
       if (iter != map_.end()) {
         DCHECK_EQ(iter->second, host);
@@ -440,13 +450,15 @@ class SiteProcessMap : public base::SupportsUserData::Data {
 // Find the SiteProcessMap specific to the given context.
 SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
   DCHECK(context);
-  SiteProcessMap* map = static_cast<SiteProcessMap*>(
+  SiteProcessMap* existing_map = static_cast<SiteProcessMap*>(
       context->GetUserData(kSiteProcessMapKeyName));
-  if (!map) {
-    map = new SiteProcessMap();
-    context->SetUserData(kSiteProcessMapKeyName, base::WrapUnique(map));
-  }
-  return map;
+  if (existing_map)
+    return existing_map;
+
+  auto new_map = std::make_unique<SiteProcessMap>();
+  auto* new_map_ptr = new_map.get();
+  context->SetUserData(kSiteProcessMapKeyName, std::move(new_map));
+  return new_map_ptr;
 }
 
 // NOTE: changes to this class need to be reviewed by the security team.
@@ -1143,19 +1155,6 @@ void CopyFeatureSwitch(const base::CommandLine& src,
 
 }  // namespace
 
-RendererMainThreadFactoryFunction g_renderer_main_thread_factory = nullptr;
-RenderProcessHostImpl::CreateStoragePartitionServiceFunction
-    g_create_storage_partition = nullptr;
-
-base::MessageLoop* g_in_process_thread;
-
-// Stores the maximum number of renderer processes the content module can
-// create.
-static size_t g_max_renderer_count_override = 0;
-
-// static
-bool g_run_renderer_in_process_ = false;
-
 // Held by the RPH and used to control an (unowned) ConnectionFilterImpl from
 // any thread.
 class RenderProcessHostImpl::ConnectionFilterController
@@ -1327,8 +1326,7 @@ void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
 
 // static
 int RenderProcessHost::GetCurrentRenderProcessCountForTesting() {
-  content::RenderProcessHost::iterator it =
-      content::RenderProcessHost::AllHostsIterator();
+  RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
   int count = 0;
   while (!it.IsAtEnd()) {
     RenderProcessHost* host = it.GetCurrentValue();
@@ -1464,7 +1462,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
 // static
 void RenderProcessHostImpl::ShutDownInProcessRenderer() {
-  DCHECK(g_run_renderer_in_process_);
+  DCHECK(g_run_renderer_in_process);
 
   switch (g_all_hosts.Pointer()->size()) {
     case 0:
@@ -1653,10 +1651,10 @@ bool RenderProcessHostImpl::Init() {
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     // As long as there's no renderer prefix, we can use the zygote process
     // at this stage.
-    child_process_launcher_.reset(new ChildProcessLauncher(
+    child_process_launcher_ = std::make_unique<ChildProcessLauncher>(
         std::make_unique<RendererSandboxedProcessLauncherDelegate>(),
         std::move(cmd_line), GetID(), this, std::move(mojo_invitation_),
-        base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
+        base::BindRepeating(&RenderProcessHostImpl::OnMojoError, id_));
     channel_->Pause();
 
     fast_shutdown_started_ = false;
@@ -1706,8 +1704,8 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
       mojom::kRendererServiceName,
       BrowserContext::GetServiceUserIdFor(GetBrowserContext()),
       base::StringPrintf("%d_%d", id_, instance_id_++));
-  child_connection_.reset(new ChildConnection(child_identity, &mojo_invitation_,
-                                              connector, io_task_runner));
+  child_connection_ = std::make_unique<ChildConnection>(
+      child_identity, &mojo_invitation_, connector, io_task_runner);
 
   // Send an interface request to bootstrap the IPC::Channel. Note that this
   // request will happily sit on the pipe until the process is launched and
@@ -1735,9 +1733,10 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
                                         &never_signaled_);
   }
 #endif  // OS_ANDROID
-  if (!channel_)
-    channel_.reset(new IPC::ChannelProxy(this, io_task_runner.get(),
-                                         base::ThreadTaskRunnerHandle::Get()));
+  if (!channel_) {
+    channel_ = std::make_unique<IPC::ChannelProxy>(
+        this, io_task_runner.get(), base::ThreadTaskRunnerHandle::Get());
+  }
   channel_->Init(std::move(channel_factory), true /* create_pipe_now */);
 
   // Note that Channel send is effectively paused and unpaused at various points
@@ -1782,12 +1781,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   scoped_refptr<net::URLRequestContextGetter> request_context(
       storage_partition_impl_->GetURLRequestContext());
-  scoped_refptr<RenderMessageFilter> render_message_filter(
-      new RenderMessageFilter(
+  scoped_refptr<RenderMessageFilter> render_message_filter =
+      base::MakeRefCounted<RenderMessageFilter>(
           GetID(), GetBrowserContext(), request_context.get(),
           widget_helper_.get(), media_internals,
           storage_partition_impl_->GetDOMStorageContext(),
-          storage_partition_impl_->GetCacheStorageContext()));
+          storage_partition_impl_->GetCacheStorageContext());
   AddFilter(render_message_filter.get());
 
   render_frame_message_filter_ = new RenderFrameMessageFilter(
@@ -2000,7 +1999,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
 
-  associated_interfaces_.reset(new AssociatedInterfaceRegistryImpl());
+  associated_interfaces_ = std::make_unique<AssociatedInterfaceRegistryImpl>();
   blink::AssociatedInterfaceRegistry* associated_registry =
       associated_interfaces_.get();
   associated_registry->AddInterface(base::Bind(
@@ -2038,9 +2037,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
     connection_filter_controller_->DisableFilter();
     service_manager_connection->RemoveConnectionFilter(connection_filter_id_);
   }
-  std::unique_ptr<ConnectionFilterImpl> connection_filter(
-      new ConnectionFilterImpl(child_connection_->child_identity(),
-                               std::move(registry)));
+  std::unique_ptr<ConnectionFilterImpl> connection_filter =
+      std::make_unique<ConnectionFilterImpl>(
+          child_connection_->child_identity(), std::move(registry));
   connection_filter_controller_ = connection_filter->controller();
   connection_filter_id_ = service_manager_connection->AddConnectionFilter(
       std::move(connection_filter));
@@ -3224,8 +3223,8 @@ void RenderProcessHostImpl::Cleanup() {
   // reused in between now and when the Delete task runs.
   UnregisterHost(GetID());
 
-  instance_weak_factory_.reset(
-      new base::WeakPtrFactory<RenderProcessHostImpl>(this));
+  instance_weak_factory_ =
+      std::make_unique<base::WeakPtrFactory<RenderProcessHostImpl>>(this);
 }
 
 void RenderProcessHostImpl::AddPendingView() {
@@ -3484,12 +3483,12 @@ void RenderProcessHost::WarmupSpareRenderProcessHost(
 
 // static
 bool RenderProcessHost::run_renderer_in_process() {
-  return g_run_renderer_in_process_;
+  return g_run_renderer_in_process;
 }
 
 // static
 void RenderProcessHost::SetRunRendererInProcess(bool value) {
-  g_run_renderer_in_process_ = value;
+  g_run_renderer_in_process = value;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (value) {
@@ -3522,10 +3521,9 @@ RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
 // static
 RenderProcessHost* RenderProcessHost::FromRendererIdentity(
     const service_manager::Identity& identity) {
-  for (content::RenderProcessHost::iterator i(
-           content::RenderProcessHost::AllHostsIterator());
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    content::RenderProcessHost* process = i.GetCurrentValue();
+    RenderProcessHost* process = i.GetCurrentValue();
     if (process->GetChildIdentity() == identity)
       return process;
   }
@@ -3797,11 +3795,12 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
     // it. Memory that is not actualy used won't be physically mapped by the
     // system. RendererMetrics usage, as reported in UMA, peaked around 0.7MiB
     // as of 2016-12-20.
-    std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
+    auto shm = std::make_unique<base::SharedMemory>();
     if (!shm->CreateAndMapAnonymous(2 << 20))  // 2 MiB
       return;
-    metrics_allocator_.reset(new base::SharedPersistentMemoryAllocator(
-        std::move(shm), GetID(), "RendererMetrics", /*readonly=*/false));
+    metrics_allocator_ =
+        std::make_unique<base::SharedPersistentMemoryAllocator>(
+            std::move(shm), GetID(), "RendererMetrics", /*readonly=*/false);
   }
 
   HistogramController::GetInstance()->SetHistogramMemory<RenderProcessHost>(
@@ -4264,7 +4263,7 @@ RenderProcessHost* RenderProcessHostImpl::FindReusableProcessHostForSite(
     auto iterator = eligible_foreground_hosts.begin();
     for (int i = 0; i < index; ++i)
       ++iterator;
-    return (*iterator);
+    return *iterator;
   }
 
   if (!eligible_background_hosts.empty()) {
@@ -4272,7 +4271,7 @@ RenderProcessHost* RenderProcessHostImpl::FindReusableProcessHostForSite(
     auto iterator = eligible_background_hosts.begin();
     for (int i = 0; i < index; ++i)
       ++iterator;
-    return (*iterator);
+    return *iterator;
   }
 
   return nullptr;
