@@ -51,6 +51,7 @@ source_set("unit_tests") {
   deps = [
     ":navigation_interception",
     "//base",
+    "//base/test:test_support",
     "//content/public/browser",
     "//content/test:test_support",
     "//testing/gmock",
