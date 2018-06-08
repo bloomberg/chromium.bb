@@ -563,7 +563,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
 
 base::WeakPtr<ServiceWorkerHandle>
 ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
-    ServiceWorkerVersion* version) {
+    scoped_refptr<ServiceWorkerVersion> version) {
   if (!context_ || !version)
     return nullptr;
 
@@ -573,7 +573,7 @@ ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
     return existing_handle->second->AsWeakPtr();
 
   handles_[version_id] =
-      std::make_unique<ServiceWorkerHandle>(context_, this, version);
+      std::make_unique<ServiceWorkerHandle>(context_, this, std::move(version));
   return handles_[version_id]->AsWeakPtr();
 }
 
@@ -778,7 +778,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
   base::WeakPtr<ServiceWorkerHandle> handle =
-      GetOrCreateServiceWorkerHandle(controller_.get());
+      GetOrCreateServiceWorkerHandle(controller_);
   if (handle)
     controller_info->object_info = handle->CreateCompleteObjectInfoToSend();
 
