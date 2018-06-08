@@ -1230,6 +1230,10 @@ void LocationBarView::OnChanged() {
 
 void LocationBarView::OnPopupVisibilityChanged() {
   RefreshBackground();
+
+  // The focus ring may be hidden or shown when the popup visibility changes.
+  if (focus_ring_)
+    focus_ring_->SchedulePaint();
 }
 
 const ToolbarModel* LocationBarView::GetToolbarModel() const {
