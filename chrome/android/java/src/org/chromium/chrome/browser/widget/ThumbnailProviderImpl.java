@@ -21,7 +21,9 @@ import java.util.Locale;
 /**
  * Concrete implementation of {@link ThumbnailProvider}.
  *
- * Thumbnails are cached in {@link BitmapCache}.
+ * Thumbnails are cached in {@link BitmapCache}. The cache key is a pair of the filepath and
+ * the height/width of the thumbnail. Value is the thumbnail.
+ *
  * A queue of requests is maintained in FIFO order.
  *
  * TODO(dfalcantara): Figure out how to send requests simultaneously to the utility process without

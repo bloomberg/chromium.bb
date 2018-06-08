@@ -13,6 +13,7 @@ import android.support.v4.util.LruCache;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -38,8 +39,6 @@ public class BitmapCache {
      * Least-recently-used cache that falls back to the deduplication cache on misses.
      * This propagates bitmaps that were only in the deduplication cache back into the LRU cache
      * and also moves them to the front to ensure correct eviction order.
-     * Cache key is a pair of the filepath and the height/width of the thumbnail. Value is
-     * the thumbnail.
      */
     private static class RecentlyUsedCache extends LruCache<String, Bitmap> {
         private RecentlyUsedCache(int size) {
@@ -147,5 +146,15 @@ public class BitmapCache {
             // clang-format on
             if (it.next().getValue().get() == null) it.remove();
         }
+    }
+
+    @VisibleForTesting
+    static void clearDedupCacheForTesting() {
+        sDeduplicationCache.clear();
+    }
+
+    @VisibleForTesting
+    static int dedupCacheSizeForTesting() {
+        return sDeduplicationCache.size();
     }
 }
