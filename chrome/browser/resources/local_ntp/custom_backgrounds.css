@@ -116,6 +116,12 @@
   z-index: 10000;
 }
 
+@media (max-width: 520px) {
+   #bg-sel-menu {
+     width: 352px;
+   }
+}
+
 #bg-sel-tiles {
   height: 284px;
   overflow-y: scroll;
