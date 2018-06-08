@@ -13,6 +13,9 @@
 
 namespace blink {
 
+AccessibilityTest::AccessibilityTest(LocalFrameClient* local_frame_client)
+    : RenderingTest(local_frame_client) {}
+
 void AccessibilityTest::SetUp() {
   RenderingTest::SetUp();
   DCHECK(GetDocument().GetSettings());

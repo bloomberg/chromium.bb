@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
-#include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
+#include "third_party/blink/renderer/modules/accessibility/testing/accessibility_selection_test.h"
 
 namespace blink {
 
@@ -18,13 +18,14 @@ namespace blink {
 // Basic tests.
 //
 
-TEST_F(AccessibilityTest, SetSelectionInText) {
+TEST_F(AccessibilitySelectionTest, SetSelectionInText) {
   SetBodyInnerHTML(R"HTML(<p id='paragraph'>Hello</p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
+
   const auto ax_base =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
   const auto ax_extent = AXPosition::CreatePositionAfterObject(*ax_static_text);
@@ -37,15 +38,18 @@ TEST_F(AccessibilityTest, SetSelectionInText) {
   EXPECT_EQ(3, dom_selection.Base().OffsetInContainerNode());
   EXPECT_EQ(text, dom_selection.Extent().AnchorNode());
   EXPECT_EQ(5, dom_selection.Extent().OffsetInContainerNode());
+  EXPECT_EQ("<Paragraph: ><StaticText: Hel^lo|>",
+            GetSelectionText(ax_selection));
 }
 
-TEST_F(AccessibilityTest, SetSelectionInTextWithWhiteSpace) {
+TEST_F(AccessibilitySelectionTest, SetSelectionInTextWithWhiteSpace) {
   SetBodyInnerHTML(R"HTML(<p id='paragraph'>     Hello</p>)HTML");
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
       GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
+
   const auto ax_base =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
   const auto ax_extent = AXPosition::CreatePositionAfterObject(*ax_static_text);
@@ -58,6 +62,8 @@ TEST_F(AccessibilityTest, SetSelectionInTextWithWhiteSpace) {
   EXPECT_EQ(8, dom_selection.Base().OffsetInContainerNode());
   EXPECT_EQ(text, dom_selection.Extent().AnchorNode());
   EXPECT_EQ(10, dom_selection.Extent().OffsetInContainerNode());
+  EXPECT_EQ("<Paragraph: ><StaticText: Hel^lo|>",
+            GetSelectionText(ax_selection));
 }
 
 //

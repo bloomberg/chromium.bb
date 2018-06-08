@@ -22,8 +22,7 @@ class AccessibilityTest : public RenderingTest {
   USING_FAST_MALLOC(AccessibilityTest);
 
  public:
-  AccessibilityTest(LocalFrameClient* local_frame_client = nullptr)
-      : RenderingTest(local_frame_client) {}
+  AccessibilityTest(LocalFrameClient* local_frame_client = nullptr);
 
  protected:
   void SetUp() override;

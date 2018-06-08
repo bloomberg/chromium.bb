@@ -230,6 +230,8 @@ jumbo_source_set("unit_tests") {
     "accessibility/ax_position_test.cc",
     "accessibility/ax_range_test.cc",
     "accessibility/ax_selection_test.cc",
+    "accessibility/testing/accessibility_selection_test.cc",
+    "accessibility/testing/accessibility_selection_test.h",
     "accessibility/testing/accessibility_test.cc",
     "accessibility/testing/accessibility_test.h",
     "animationworklet/animation_worklet_global_scope_test.cc",
