@@ -59,7 +59,7 @@ TEST_F(ClearDataItemTest, ConfigureCellTestCounterNotNil) {
       BrowsingDataCounterWrapper::CreateCounterWrapper(
           browsing_data::prefs::kDeleteBrowsingHistory, browser_state_.get(),
           browser_state_.get()->GetPrefs(),
-          base::BindBlockArc(
+          base::BindRepeating(
               ^(const browsing_data::BrowsingDataCounter::Result& result){
               }));
 
@@ -74,9 +74,8 @@ TEST_F(ClearDataItemTest, ConfigureCellTestRestartCounter) {
       BrowsingDataCounterWrapper::CreateCounterWrapper(
           browsing_data::prefs::kDeleteBrowsingHistory, browser_state_.get(),
           browser_state_.get()->GetPrefs(),
-          base::BindBlockArc(
+          base::BindRepeating(
               ^(const browsing_data::BrowsingDataCounter::Result& result) {
-
                 NSString* detail_text = base::SysUTF16ToNSString(
                     browsing_data::GetCounterTextFromResult(&result));
                 EXPECT_EQ(@"None", detail_text);
