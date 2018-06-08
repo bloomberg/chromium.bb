@@ -469,6 +469,8 @@ class PrerenderManager : public content::NotificationObserver,
 
   void DeleteOldEntries();
 
+  void DeleteToDeletePrerenders();
+
   // Virtual so unit tests can override this.
   virtual std::unique_ptr<PrerenderContents> CreatePrerenderContents(
       const GURL& url,
