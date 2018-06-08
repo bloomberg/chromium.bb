@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "media/base/test_data_util.h"
 
 namespace content {
@@ -17,7 +18,8 @@ class TitleWatcher;
 // Class used to automate running media related browser tests. The functions
 // assume that media files are located under media/ folder known to the test
 // http server.
-class MediaBrowserTest : public InProcessBrowserTest {
+class MediaBrowserTest : public InProcessBrowserTest,
+                         public content::WebContentsObserver {
  protected:
   MediaBrowserTest();
   ~MediaBrowserTest() override;
@@ -36,6 +38,17 @@ class MediaBrowserTest : public InProcessBrowserTest {
   std::string RunTest(const GURL& gurl, const std::string& expected);
 
   virtual void AddWaitForTitles(content::TitleWatcher* title_watcher);
+
+  // Fails test and sets document title to kPluginCrashed when a plugin crashes.
+  // If IgnorePluginCrash(true) is called then plugin crash is ignored.
+  void PluginCrashed(const base::FilePath& plugin_path,
+                     base::ProcessId plugin_pid) override;
+
+  // When called, the test will ignore any plugin crashes and not fail the test.
+  void IgnorePluginCrash();
+
+ private:
+  bool ignore_plugin_crash_;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
