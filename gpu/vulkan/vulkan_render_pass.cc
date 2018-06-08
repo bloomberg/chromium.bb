@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image_view.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
 #include "ui/gfx/geometry/size.h"
@@ -169,6 +170,9 @@ bool VulkanRenderPass::Initialize(const VulkanSwapChain* swap_chain,
   DCHECK(frame_buffers_.empty());
   DCHECK(render_pass_data.ValidateData(swap_chain));
 
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
@@ -274,8 +278,8 @@ bool VulkanRenderPass::Initialize(const VulkanSwapChain* swap_chain,
   render_pass_create_info.subpassCount = subpass_descs.size();
   render_pass_create_info.pSubpasses = subpass_descs.data();
 
-  result = vkCreateRenderPass(device, &render_pass_create_info, nullptr,
-                              &render_pass_);
+  result = vulkan_function_pointers->vkCreateRenderPass(
+      device, &render_pass_create_info, nullptr, &render_pass_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateRenderPass() failed: " << result;
     return false;
@@ -327,8 +331,8 @@ bool VulkanRenderPass::Initialize(const VulkanSwapChain* swap_chain,
     framebuffer_create_info.height = height;
     framebuffer_create_info.layers = layers;
 
-    result = vkCreateFramebuffer(device, &framebuffer_create_info, nullptr,
-                                 &frame_buffers_[i]);
+    result = vulkan_function_pointers->vkCreateFramebuffer(
+        device, &framebuffer_create_info, nullptr, &frame_buffers_[i]);
     if (VK_SUCCESS != result) {
       DLOG(ERROR) << "vkCreateFramebuffer() failed: " << result;
       return false;
@@ -340,14 +344,18 @@ bool VulkanRenderPass::Initialize(const VulkanSwapChain* swap_chain,
 
 void VulkanRenderPass::Destroy() {
   VkDevice device = device_queue_->GetVulkanDevice();
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
 
   for (VkFramebuffer frame_buffer : frame_buffers_) {
-    vkDestroyFramebuffer(device, frame_buffer, nullptr);
+    vulkan_function_pointers->vkDestroyFramebuffer(device, frame_buffer,
+                                                   nullptr);
   }
   frame_buffers_.clear();
 
   if (VK_NULL_HANDLE != render_pass_) {
-    vkDestroyRenderPass(device, render_pass_, nullptr);
+    vulkan_function_pointers->vkDestroyRenderPass(device, render_pass_,
+                                                  nullptr);
     render_pass_ = VK_NULL_HANDLE;
   }
 
@@ -361,6 +369,10 @@ void VulkanRenderPass::BeginRenderPass(
     bool exec_inline) {
   DCHECK(!executing_);
   DCHECK_NE(0u, num_sub_passes_);
+
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   executing_ = true;
   execution_type_ = exec_inline ? VK_SUBPASS_CONTENTS_INLINE
                                 : VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS;
@@ -378,20 +390,26 @@ void VulkanRenderPass::BeginRenderPass(
       static_cast<uint32_t>(attachment_clear_values_.size());
   begin_info.pClearValues = attachment_clear_values_.data();
 
-  vkCmdBeginRenderPass(recorder.handle(), &begin_info, execution_type_);
+  vulkan_function_pointers->vkCmdBeginRenderPass(recorder.handle(), &begin_info,
+                                                 execution_type_);
 }
 
 void VulkanRenderPass::NextSubPass(const CommandBufferRecorderBase& recorder) {
   DCHECK(executing_);
   DCHECK_LT(current_sub_pass_ + 1, num_sub_passes_);
-  vkCmdNextSubpass(recorder.handle(), execution_type_);
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+  vulkan_function_pointers->vkCmdNextSubpass(recorder.handle(),
+                                             execution_type_);
   current_sub_pass_++;
 }
 
 void VulkanRenderPass::EndRenderPass(
     const CommandBufferRecorderBase& recorder) {
   DCHECK(executing_);
-  vkCmdEndRenderPass(recorder.handle());
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+  vulkan_function_pointers->vkCmdEndRenderPass(recorder.handle());
   executing_ = false;
 }
 

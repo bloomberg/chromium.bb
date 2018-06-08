@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
 
@@ -19,6 +20,9 @@ VulkanCommandPool::~VulkanCommandPool() {
 }
 
 bool VulkanCommandPool::Initialize() {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   VkCommandPoolCreateInfo command_pool_create_info = {};
   command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   command_pool_create_info.flags =
@@ -26,9 +30,9 @@ bool VulkanCommandPool::Initialize() {
   command_pool_create_info.queueFamilyIndex =
       device_queue_->GetVulkanQueueIndex();
 
-  VkResult result =
-      vkCreateCommandPool(device_queue_->GetVulkanDevice(),
-                          &command_pool_create_info, nullptr, &handle_);
+  VkResult result = vulkan_function_pointers->vkCreateCommandPool(
+      device_queue_->GetVulkanDevice(), &command_pool_create_info, nullptr,
+      &handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateCommandPool() failed: " << result;
     return false;
@@ -39,8 +43,12 @@ bool VulkanCommandPool::Initialize() {
 
 void VulkanCommandPool::Destroy() {
   DCHECK_EQ(0u, command_buffer_count_);
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   if (VK_NULL_HANDLE != handle_) {
-    vkDestroyCommandPool(device_queue_->GetVulkanDevice(), handle_, nullptr);
+    vulkan_function_pointers->vkDestroyCommandPool(
+        device_queue_->GetVulkanDevice(), handle_, nullptr);
     handle_ = VK_NULL_HANDLE;
   }
 }

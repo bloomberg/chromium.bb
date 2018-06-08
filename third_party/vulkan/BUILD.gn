@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 config("vulkan_config") {
+  defines = [ "VK_NO_PROTOTYPES" ]
   include_dirs = [ "include" ]
   vulkan_lib_dir = getenv("VULKAN_SDK") + "/lib"
   libs = [ "vulkan" ]

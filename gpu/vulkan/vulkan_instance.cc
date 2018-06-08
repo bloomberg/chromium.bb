@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
 
@@ -48,6 +49,38 @@ bool VulkanInstance::Initialize(
     const std::vector<const char*>& required_extensions) {
   DCHECK(!vk_instance_);
 
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
+  vulkan_function_pointers->vkGetInstanceProcAddr =
+      reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+          base::GetFunctionPointerFromNativeLibrary(
+              vulkan_function_pointers->vulkan_loader_library_,
+              "vkGetInstanceProcAddr"));
+  if (!vulkan_function_pointers->vkGetInstanceProcAddr)
+    return false;
+
+  vulkan_function_pointers->vkCreateInstance =
+      reinterpret_cast<PFN_vkCreateInstance>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(nullptr,
+                                                          "vkCreateInstance"));
+  if (!vulkan_function_pointers->vkCreateInstance)
+    return false;
+
+  vulkan_function_pointers->vkEnumerateInstanceExtensionProperties =
+      reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              nullptr, "vkEnumerateInstanceExtensionProperties"));
+  if (!vulkan_function_pointers->vkEnumerateInstanceExtensionProperties)
+    return false;
+
+  vulkan_function_pointers->vkEnumerateInstanceLayerProperties =
+      reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              nullptr, "vkEnumerateInstanceLayerProperties"));
+  if (!vulkan_function_pointers->vkEnumerateInstanceLayerProperties)
+    return false;
+
   VkResult result = VK_SUCCESS;
 
   VkApplicationInfo app_info = {};
@@ -62,8 +95,8 @@ bool VulkanInstance::Initialize(
                            std::end(required_extensions));
 
   uint32_t num_instance_exts = 0;
-  result = vkEnumerateInstanceExtensionProperties(nullptr, &num_instance_exts,
-                                                  nullptr);
+  result = vulkan_function_pointers->vkEnumerateInstanceExtensionProperties(
+      nullptr, &num_instance_exts, nullptr);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumerateInstanceExtensionProperties(NULL) failed: "
                 << result;
@@ -71,8 +104,8 @@ bool VulkanInstance::Initialize(
   }
 
   std::vector<VkExtensionProperties> instance_exts(num_instance_exts);
-  result = vkEnumerateInstanceExtensionProperties(nullptr, &num_instance_exts,
-                                                  instance_exts.data());
+  result = vulkan_function_pointers->vkEnumerateInstanceExtensionProperties(
+      nullptr, &num_instance_exts, instance_exts.data());
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumerateInstanceExtensionProperties() failed: "
                 << result;
@@ -90,7 +123,8 @@ bool VulkanInstance::Initialize(
   std::vector<const char*> enabled_layer_names;
 #if DCHECK_IS_ON()
   uint32_t num_instance_layers = 0;
-  result = vkEnumerateInstanceLayerProperties(&num_instance_layers, nullptr);
+  result = vulkan_function_pointers->vkEnumerateInstanceLayerProperties(
+      &num_instance_layers, nullptr);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumerateInstanceLayerProperties(NULL) failed: "
                 << result;
@@ -98,8 +132,8 @@ bool VulkanInstance::Initialize(
   }
 
   std::vector<VkLayerProperties> instance_layers(num_instance_layers);
-  result = vkEnumerateInstanceLayerProperties(&num_instance_layers,
-                                              instance_layers.data());
+  result = vulkan_function_pointers->vkEnumerateInstanceLayerProperties(
+      &num_instance_layers, instance_layers.data());
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumerateInstanceLayerProperties() failed: " << result;
     return false;
@@ -127,7 +161,8 @@ bool VulkanInstance::Initialize(
   instance_create_info.enabledExtensionCount = enabled_ext_names.size();
   instance_create_info.ppEnabledExtensionNames = enabled_ext_names.data();
 
-  result = vkCreateInstance(&instance_create_info, nullptr, &vk_instance_);
+  result = vulkan_function_pointers->vkCreateInstance(&instance_create_info,
+                                                      nullptr, &vk_instance_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateInstance() failed: " << result;
     return false;
@@ -138,8 +173,8 @@ bool VulkanInstance::Initialize(
   if (debug_report_enabled_) {
     PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT =
         reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(
-            vkGetInstanceProcAddr(vk_instance_,
-                                  "vkCreateDebugReportCallbackEXT"));
+            vulkan_function_pointers->vkGetInstanceProcAddr(
+                vk_instance_, "vkCreateDebugReportCallbackEXT"));
     DCHECK(vkCreateDebugReportCallbackEXT);
 
     VkDebugReportCallbackCreateInfoEXT cb_create_info = {};
@@ -166,22 +201,97 @@ bool VulkanInstance::Initialize(
   }
 #endif
 
+  vulkan_function_pointers->vkCreateDevice =
+      reinterpret_cast<PFN_vkCreateDevice>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(vk_instance_,
+                                                          "vkCreateDevice"));
+  if (!vulkan_function_pointers->vkCreateDevice)
+    return false;
+
+  vulkan_function_pointers->vkDestroyInstance =
+      reinterpret_cast<PFN_vkDestroyInstance>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(vk_instance_,
+                                                          "vkDestroyInstance"));
+  if (!vulkan_function_pointers->vkDestroyInstance)
+    return false;
+
+  vulkan_function_pointers->vkDestroySurfaceKHR =
+      reinterpret_cast<PFN_vkDestroySurfaceKHR>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vk_instance_, "vkDestroySurfaceKHR"));
+  if (!vulkan_function_pointers->vkDestroySurfaceKHR)
+    return false;
+
+  vulkan_function_pointers->vkEnumerateDeviceLayerProperties =
+      reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vk_instance_, "vkEnumerateDeviceLayerProperties"));
+  if (!vulkan_function_pointers->vkEnumerateDeviceLayerProperties)
+    return false;
+
+  vulkan_function_pointers->vkEnumeratePhysicalDevices =
+      reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vk_instance_, "vkEnumeratePhysicalDevices"));
+  if (!vulkan_function_pointers->vkEnumeratePhysicalDevices)
+    return false;
+
+  vulkan_function_pointers->vkGetDeviceProcAddr =
+      reinterpret_cast<PFN_vkGetDeviceProcAddr>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vk_instance_, "vkGetDeviceProcAddr"));
+  if (!vulkan_function_pointers->vkGetDeviceProcAddr)
+    return false;
+
+  vulkan_function_pointers->vkGetPhysicalDeviceQueueFamilyProperties =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vk_instance_, "vkGetPhysicalDeviceQueueFamilyProperties"));
+  if (!vulkan_function_pointers->vkGetPhysicalDeviceQueueFamilyProperties)
+    return false;
+
+  vulkan_function_pointers->vkGetPhysicalDeviceSurfaceCapabilitiesKHR =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vk_instance_, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
+  if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+    return false;
+
+  vulkan_function_pointers->vkGetPhysicalDeviceSurfaceFormatsKHR =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vk_instance_, "vkGetPhysicalDeviceSurfaceFormatsKHR"));
+  if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceFormatsKHR)
+    return false;
+
+  vulkan_function_pointers->vkGetPhysicalDeviceSurfaceSupportKHR =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vk_instance_, "vkGetPhysicalDeviceSurfaceSupportKHR"));
+  if (!vulkan_function_pointers->vkGetPhysicalDeviceSurfaceSupportKHR)
+    return false;
+
   return true;
 }
 
 void VulkanInstance::Destroy() {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
 #if DCHECK_IS_ON()
   if (debug_report_enabled_) {
     PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT =
         reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
-            vkGetInstanceProcAddr(vk_instance_,
-                                  "vkDestroyDebugReportCallbackEXT"));
+            vulkan_function_pointers->vkGetInstanceProcAddr(
+                vk_instance_, "vkDestroyDebugReportCallbackEXT"));
     DCHECK(vkDestroyDebugReportCallbackEXT);
     vkDestroyDebugReportCallbackEXT(vk_instance_, error_callback_, nullptr);
     vkDestroyDebugReportCallbackEXT(vk_instance_, warning_callback_, nullptr);
   }
 #endif
-  vkDestroyInstance(vk_instance_, nullptr);
+  vulkan_function_pointers->vkDestroyInstance(vk_instance_, nullptr);
+  base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
+  vulkan_function_pointers->vulkan_loader_library_ = nullptr;
   vk_instance_ = VK_NULL_HANDLE;
 }
 

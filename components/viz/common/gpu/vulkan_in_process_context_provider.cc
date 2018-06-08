@@ -6,6 +6,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkInterface.h"
@@ -62,8 +63,11 @@ bool VulkanInProcessContextProvider::Initialize() {
   backend_context->fExtensions = extension_flags;
   backend_context->fFeatures = feature_flags;
 
+  gpu::VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
   auto interface = sk_make_sp<GrVkInterface>(
-      make_unified_getter(vkGetInstanceProcAddr, vkGetDeviceProcAddr),
+      make_unified_getter(vulkan_function_pointers->vkGetInstanceProcAddr,
+                          vulkan_function_pointers->vkGetDeviceProcAddr),
       backend_context->fInstance, backend_context->fDevice,
       backend_context->fExtensions);
   backend_context->fInterface.reset(interface.release());

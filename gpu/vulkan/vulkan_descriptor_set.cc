@@ -8,6 +8,7 @@
 #include "gpu/vulkan/vulkan_descriptor_layout.h"
 #include "gpu/vulkan/vulkan_descriptor_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
 
@@ -19,6 +20,8 @@ VulkanDescriptorSet::~VulkanDescriptorSet() {
 bool VulkanDescriptorSet::Initialize(const VulkanDescriptorLayout* layout) {
   VkResult result = VK_SUCCESS;
   VkDevice device = device_queue_->GetVulkanDevice();
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
 
   VkDescriptorSetLayout layout_handle = layout->handle();
 
@@ -28,7 +31,8 @@ bool VulkanDescriptorSet::Initialize(const VulkanDescriptorLayout* layout) {
   set_allocate_info.descriptorSetCount = 1;
   set_allocate_info.pSetLayouts = &layout_handle;
 
-  result = vkAllocateDescriptorSets(device, &set_allocate_info, &handle_);
+  result = vulkan_function_pointers->vkAllocateDescriptorSets(
+      device, &set_allocate_info, &handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkAllocateDescriptorSets() failed: " << result;
     return false;
@@ -40,7 +44,11 @@ bool VulkanDescriptorSet::Initialize(const VulkanDescriptorLayout* layout) {
 void VulkanDescriptorSet::Destroy() {
   VkDevice device = device_queue_->GetVulkanDevice();
   if (VK_NULL_HANDLE != handle_) {
-    vkFreeDescriptorSets(device, descriptor_pool_->handle(), 1, &handle_);
+    VulkanFunctionPointers* vulkan_function_pointers =
+        gpu::GetVulkanFunctionPointers();
+
+    vulkan_function_pointers->vkFreeDescriptorSets(
+        device, descriptor_pool_->handle(), 1, &handle_);
     handle_ = VK_NULL_HANDLE;
   }
 }
@@ -53,6 +61,9 @@ void VulkanDescriptorSet::WriteToDescriptorSet(
     const VkDescriptorImageInfo* image_info,
     const VkDescriptorBufferInfo* buffer_info,
     const VkBufferView* texel_buffer_view) {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   VkWriteDescriptorSet write_descriptor_set = {};
   write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
   write_descriptor_set.dstSet = handle_;
@@ -64,8 +75,8 @@ void VulkanDescriptorSet::WriteToDescriptorSet(
   write_descriptor_set.pBufferInfo = buffer_info;
   write_descriptor_set.pTexelBufferView = texel_buffer_view;
 
-  vkUpdateDescriptorSets(device_queue_->GetVulkanDevice(), 1,
-                         &write_descriptor_set, 0, nullptr);
+  vulkan_function_pointers->vkUpdateDescriptorSets(
+      device_queue_->GetVulkanDevice(), 1, &write_descriptor_set, 0, nullptr);
 }
 
 void VulkanDescriptorSet::CopyFromDescriptorSet(
@@ -75,6 +86,9 @@ void VulkanDescriptorSet::CopyFromDescriptorSet(
     uint32_t dst_binding,
     uint32_t dst_array_element,
     uint32_t descriptor_count) {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   VkCopyDescriptorSet copy_descriptor_set = {};
   copy_descriptor_set.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
   copy_descriptor_set.srcSet = source_set->handle();
@@ -85,8 +99,8 @@ void VulkanDescriptorSet::CopyFromDescriptorSet(
   copy_descriptor_set.dstArrayElement = dst_array_element;
   copy_descriptor_set.descriptorCount = descriptor_count;
 
-  vkUpdateDescriptorSets(device_queue_->GetVulkanDevice(), 0, nullptr, 1,
-                         &copy_descriptor_set);
+  vulkan_function_pointers->vkUpdateDescriptorSets(
+      device_queue_->GetVulkanDevice(), 0, nullptr, 1, &copy_descriptor_set);
 }
 
 VulkanDescriptorSet::VulkanDescriptorSet(VulkanDeviceQueue* device_queue,

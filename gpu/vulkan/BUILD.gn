@@ -33,6 +33,8 @@ if (enable_vulkan) {
         "vulkan_device_queue.cc",
         "vulkan_device_queue.h",
         "vulkan_export.h",
+        "vulkan_function_pointers.cc",
+        "vulkan_function_pointers.h",
         "vulkan_image_view.cc",
         "vulkan_image_view.h",
         "vulkan_implementation.cc",

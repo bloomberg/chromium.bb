@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define VK_USE_PLATFORM_ANDROID_KHR
+
 #include "gpu/vulkan/vulkan_implementation_android.h"
 
+#include "base/files/file_path.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
 
@@ -13,30 +17,56 @@ VulkanImplementationAndroid::VulkanImplementationAndroid() {}
 
 VulkanImplementationAndroid::~VulkanImplementationAndroid() {}
 
-bool VulkanImplementationX11::InitializeVulkanInstance() {
+bool VulkanImplementationAndroid::InitializeVulkanInstance() {
   std::vector<const char*> required_extensions;
   required_extensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
 
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
+  base::NativeLibraryLoadError native_library_load_error;
+  vulkan_function_pointers->vulkan_loader_library_ = base::LoadNativeLibrary(
+      base::FilePath("libvulkan.so"), &native_library_load_error);
+  if (!vulkan_function_pointers->vulkan_loader_library_)
+    return false;
+
   if (!vulkan_instance_.Initialize(required_extensions)) {
     vulkan_instance_.Destroy();
+    base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
+    vulkan_function_pointers->vulkan_loader_library_ = nullptr;
+    return false;
+  }
+
+  // Initialize platform function pointers
+  vulkan_function_pointers->vkCreateAndroidSurfaceKHR =
+      reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
+          vulkan_function_pointers->vkGetInstanceProcAddr(
+              vulkan_instance_.vk_instance(), "vkCreateAndroidSurfaceKHR"));
+  if (!vulkan_function_pointers->vkCreateAndroidSurfaceKHR) {
+    vulkan_instance_.Destroy();
+    base::UnloadNativeLibrary(vulkan_function_pointers->vulkan_loader_library_);
+    vulkan_function_pointers->vulkan_loader_library_ = nullptr;
     return false;
   }
 
   return true;
 }
 
-VkInstance VulkanImplementationX11::GetVulkanInstance() {
+VkInstance VulkanImplementationAndroid::GetVulkanInstance() {
   return vulkan_instance_.vk_instance();
 }
 
 std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
     gfx::AcceleratedWidget window) {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   VkSurfaceKHR surface;
   VkAndroidSurfaceCreateInfoKHR surface_create_info = {};
   surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
   surface_create_info.window = window;
-  result = vkCreateAndroidSurfaceKHR(GetVulkanInstance(), &surface_create_info,
-                                     nullptr, &surface);
+  result = vulkan_function_pointers->vkCreateAndroidSurfaceKHR(
+      GetVulkanInstance(), &surface_create_info, nullptr, &surface);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateAndroidSurfaceKHR() failed: " << result;
     return nullptr;

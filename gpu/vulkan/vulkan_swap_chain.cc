@@ -7,6 +7,7 @@
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image_view.h"
 
 namespace gpu {
@@ -35,6 +36,8 @@ void VulkanSwapChain::Destroy() {
 }
 
 gfx::SwapResult VulkanSwapChain::SwapBuffers() {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
   VkResult result = VK_SUCCESS;
 
   VkDevice device = device_queue_->GetVulkanDevice();
@@ -58,15 +61,15 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
   present_info.pSwapchains = &swap_chain_;
   present_info.pImageIndices = &current_image_;
 
-  result = vkQueuePresentKHR(queue, &present_info);
+  result = vulkan_function_pointers->vkQueuePresentKHR(queue, &present_info);
   if (VK_SUCCESS != result) {
     return gfx::SwapResult::SWAP_FAILED;
   }
 
   // Acquire then next image.
-  result = vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX,
-                                 next_present_semaphore_, VK_NULL_HANDLE,
-                                 &current_image_);
+  result = vulkan_function_pointers->vkAcquireNextImageKHR(
+      device, swap_chain_, UINT64_MAX, next_present_semaphore_, VK_NULL_HANDLE,
+      &current_image_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkAcquireNextImageKHR() failed: " << result;
     return gfx::SwapResult::SWAP_FAILED;
@@ -85,6 +88,8 @@ bool VulkanSwapChain::InitializeSwapChain(
     VkSurfaceKHR surface,
     const VkSurfaceCapabilitiesKHR& surface_caps,
     const VkSurfaceFormatKHR& surface_format) {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
@@ -106,8 +111,8 @@ bool VulkanSwapChain::InitializeSwapChain(
   swap_chain_create_info.oldSwapchain = swap_chain_;
 
   VkSwapchainKHR new_swap_chain = VK_NULL_HANDLE;
-  result = vkCreateSwapchainKHR(device, &swap_chain_create_info, nullptr,
-                                &new_swap_chain);
+  result = vulkan_function_pointers->vkCreateSwapchainKHR(
+      device, &swap_chain_create_info, nullptr, &new_swap_chain);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateSwapchainKHR() failed: " << result;
     return false;
@@ -123,10 +128,13 @@ bool VulkanSwapChain::InitializeSwapChain(
 }
 
 void VulkanSwapChain::DestroySwapChain() {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
   VkDevice device = device_queue_->GetVulkanDevice();
 
   if (swap_chain_ != VK_NULL_HANDLE) {
-    vkDestroySwapchainKHR(device, swap_chain_, nullptr);
+    vulkan_function_pointers->vkDestroySwapchainKHR(device, swap_chain_,
+                                                    nullptr);
     swap_chain_ = VK_NULL_HANDLE;
   }
 }
@@ -134,19 +142,22 @@ void VulkanSwapChain::DestroySwapChain() {
 bool VulkanSwapChain::InitializeSwapImages(
     const VkSurfaceCapabilitiesKHR& surface_caps,
     const VkSurfaceFormatKHR& surface_format) {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
   uint32_t image_count = 0;
-  result = vkGetSwapchainImagesKHR(device, swap_chain_, &image_count, nullptr);
+  result = vulkan_function_pointers->vkGetSwapchainImagesKHR(
+      device, swap_chain_, &image_count, nullptr);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkGetSwapchainImagesKHR(NULL) failed: " << result;
     return false;
   }
 
   std::vector<VkImage> images(image_count);
-  result =
-      vkGetSwapchainImagesKHR(device, swap_chain_, &image_count, images.data());
+  result = vulkan_function_pointers->vkGetSwapchainImagesKHR(
+      device, swap_chain_, &image_count, images.data());
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkGetSwapchainImagesKHR(images) failed: " << result;
     return false;
@@ -185,15 +196,16 @@ bool VulkanSwapChain::InitializeSwapImages(
     image_data->image = images[i];
 
     // Setup semaphores.
-    result = vkCreateSemaphore(device, &semaphore_create_info, nullptr,
-                               &image_data->render_semaphore);
+    result = vulkan_function_pointers->vkCreateSemaphore(
+        device, &semaphore_create_info, nullptr, &image_data->render_semaphore);
     if (VK_SUCCESS != result) {
       DLOG(ERROR) << "vkCreateSemaphore(render) failed: " << result;
       return false;
     }
 
-    result = vkCreateSemaphore(device, &semaphore_create_info, nullptr,
-                               &image_data->present_semaphore);
+    result = vulkan_function_pointers->vkCreateSemaphore(
+        device, &semaphore_create_info, nullptr,
+        &image_data->present_semaphore);
     if (VK_SUCCESS != result) {
       DLOG(ERROR) << "vkCreateSemaphore(present) failed: " << result;
       return false;
@@ -206,9 +218,10 @@ bool VulkanSwapChain::InitializeSwapImages(
     // command buffer.
     ScopedSingleUseCommandBufferRecorder recorder(*image_data->command_buffer);
     image_memory_barrier.image = images[i];
-    vkCmdPipelineBarrier(recorder.handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0,
-                         nullptr, 1, &image_memory_barrier);
+    vulkan_function_pointers->vkCmdPipelineBarrier(
+        recorder.handle(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1,
+        &image_memory_barrier);
 
     // Create the image view.
     image_data->image_view.reset(new VulkanImageView(device_queue_));
@@ -219,17 +232,17 @@ bool VulkanSwapChain::InitializeSwapImages(
     }
   }
 
-  result = vkCreateSemaphore(device, &semaphore_create_info, nullptr,
-                             &next_present_semaphore_);
+  result = vulkan_function_pointers->vkCreateSemaphore(
+      device, &semaphore_create_info, nullptr, &next_present_semaphore_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateSemaphore(next_present) failed: " << result;
     return false;
   }
 
   // Acquire the initial buffer.
-  result = vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX,
-                                 next_present_semaphore_, VK_NULL_HANDLE,
-                                 &current_image_);
+  result = vulkan_function_pointers->vkAcquireNextImageKHR(
+      device, swap_chain_, UINT64_MAX, next_present_semaphore_, VK_NULL_HANDLE,
+      &current_image_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkAcquireNextImageKHR() failed: " << result;
     return false;
@@ -242,10 +255,13 @@ bool VulkanSwapChain::InitializeSwapImages(
 }
 
 void VulkanSwapChain::DestroySwapImages() {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
   VkDevice device = device_queue_->GetVulkanDevice();
 
   if (VK_NULL_HANDLE != next_present_semaphore_) {
-    vkDestroySemaphore(device, next_present_semaphore_, nullptr);
+    vulkan_function_pointers->vkDestroySemaphore(
+        device, next_present_semaphore_, nullptr);
     next_present_semaphore_ = VK_NULL_HANDLE;
   }
 
@@ -266,12 +282,14 @@ void VulkanSwapChain::DestroySwapImages() {
 
     // Destroy Semaphores.
     if (VK_NULL_HANDLE != image_data->present_semaphore) {
-      vkDestroySemaphore(device, image_data->present_semaphore, nullptr);
+      vulkan_function_pointers->vkDestroySemaphore(
+          device, image_data->present_semaphore, nullptr);
       image_data->present_semaphore = VK_NULL_HANDLE;
     }
 
     if (VK_NULL_HANDLE != image_data->render_semaphore) {
-      vkDestroySemaphore(device, image_data->render_semaphore, nullptr);
+      vulkan_function_pointers->vkDestroySemaphore(
+          device, image_data->render_semaphore, nullptr);
       image_data->render_semaphore = VK_NULL_HANDLE;
     }
 

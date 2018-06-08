@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
@@ -1031,6 +1032,7 @@ GpuProcessTransportFactory::SharedVulkanContextProvider() {
   if (!shared_vulkan_context_provider_initialized_) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableVulkan)) {
+      base::ScopedAllowBlocking allow_blocking;
       vulkan_implementation_ = gpu::CreateVulkanImplementation();
       if (vulkan_implementation_ &&
           vulkan_implementation_->InitializeVulkanInstance()) {
