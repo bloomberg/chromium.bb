@@ -210,3 +210,9 @@ QUIC_FLAG(int32_t, FLAGS_quic_pace_time_into_future_ms, 10)
 
 // If true, enable QUIC v44.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_44, false)
+
+// If true, export packet write results in QuicConnection.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_export_connection_write_packet_results,
+    false)
