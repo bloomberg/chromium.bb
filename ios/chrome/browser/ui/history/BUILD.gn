@@ -108,6 +108,7 @@ source_set("history_ui") {
     "history_util.mm",
   ]
   deps = [
+    "public",
     "//base",
     "//base:i18n",
     "//components/browsing_data/core",

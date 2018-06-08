@@ -9,14 +9,12 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 
 @protocol GridConsumer;
 @class TabModel;
 
 // Mediates between model layer and tab grid UI layer.
-@interface TabGridMediator
-    : NSObject<GridCommands, GridImageDataSource, UrlLoader>
+@interface TabGridMediator : NSObject<GridCommands, GridImageDataSource>
 
 // The source tab model.
 @property(nonatomic, weak) TabModel* tabModel;

@@ -9,6 +9,8 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/history/history_coordinator.h"
+#import "ios/chrome/browser/ui/history/public/history_tab_presentation_delegate.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
@@ -17,6 +19,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_transition_handler.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_url_loader.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,6 +27,7 @@
 #endif
 
 @interface TabGridCoordinator ()<TabPresentationDelegate,
+                                 HistoryTabPresentationDelegate,
                                  RecentTabsHandsetViewControllerCommand>
 // Superclass property specialized for the class that this coordinator uses.
 @property(nonatomic, weak) TabGridViewController* mainViewController;
@@ -43,6 +47,11 @@
 @property(nonatomic, strong) TabGridMediator* incognitoTabsMediator;
 // Mediator for remote Tabs.
 @property(nonatomic, strong) RecentTabsMediator* remoteTabsMediator;
+// Coordinator for history, which can be started from recent tabs.
+@property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
+// Specialized URL loader for tab grid, since tab grid has a different use case
+// than BVC.
+@property(nonatomic, strong) TabGridURLLoader* URLLoader;
 @end
 
 @implementation TabGridCoordinator
@@ -60,6 +69,8 @@
 @synthesize regularTabsMediator = _regularTabsMediator;
 @synthesize incognitoTabsMediator = _incognitoTabsMediator;
 @synthesize remoteTabsMediator = _remoteTabsMediator;
+@synthesize historyCoordinator = _historyCoordinator;
+@synthesize URLLoader = _URLLoader;
 
 - (instancetype)initWithWindow:(nullable UIWindow*)window
     applicationCommandEndpoint:
@@ -169,7 +180,12 @@
       self.remoteTabsMediator;
   mainViewController.remoteTabsViewController.dispatcher =
       static_cast<id<ApplicationCommands>>(self.dispatcher);
-  mainViewController.remoteTabsViewController.loader = self.regularTabsMediator;
+  self.URLLoader = [[TabGridURLLoader alloc]
+      initWithRegularWebStateList:self.regularTabModel.webStateList
+            incognitoWebStateList:self.incognitoTabModel.webStateList
+              regularBrowserState:self.regularTabModel.browserState
+            incognitoBrowserState:self.incognitoTabModel.browserState];
+  mainViewController.remoteTabsViewController.loader = self.URLLoader;
   mainViewController.remoteTabsViewController.handsetCommandHandler = self;
 
   // TODO(crbug.com/850387) : Currently, consumer calls from the mediator
@@ -315,21 +331,38 @@
                              transition:ui::PAGE_TRANSITION_TYPED];
 }
 
-- (void)closeAllTabs {
-}
-
-- (void)closeAllIncognitoTabs {
-}
-
 #pragma mark - RecentTabsHandsetViewControllerCommand
 
 // Normally, recent tabs is dismissed to reveal the tab view beneath it. In tab
 // grid, the tab view is presented above the recent tabs panel.
 - (void)dismissRecentTabsWithCompletion:(void (^)())completion {
-  // Trigger the transition through the TabSwitcher delegate. This will in turn
-  // call back into this coordinator via the ViewControllerSwapping protocol.
+  if (completion) {
+    // TODO(crbug.com/845192) : Don't use the completion block as an implicit
+    // signal to show history.
+    // A history coordinator from main_controller won't work properly from the
+    // tab grid. Using a local coordinator works better when hooked up with a
+    // specialized URL loader and tab presentation delegate.
+    self.historyCoordinator = [[HistoryCoordinator alloc]
+        initWithBaseViewController:self.mainViewController
+                      browserState:self.regularTabModel.browserState];
+    self.historyCoordinator.loader = self.URLLoader;
+    self.historyCoordinator.tabPresentationDelegate = self;
+    [self.historyCoordinator start];
+    return;
+  }
+  [self showActiveRegularTab];
+}
+
+#pragma mark - HistoryTabPresentationDelegate
+
+- (void)showActiveRegularTab {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
              shouldFinishWithActiveModel:self.regularTabModel];
+}
+
+- (void)showActiveIncognitoTab {
+  [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
+             shouldFinishWithActiveModel:self.incognitoTabModel];
 }
 
 @end

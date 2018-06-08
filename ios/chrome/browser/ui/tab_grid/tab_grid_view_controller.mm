@@ -109,8 +109,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (self = [super init]) {
     _regularTabsViewController = [[GridViewController alloc] init];
     _incognitoTabsViewController = [[GridViewController alloc] init];
-    _remoteTabsViewController = [[RecentTabsTableViewController alloc]
-        initWithoutRecentlyClosedSection];
+    _remoteTabsViewController = [[RecentTabsTableViewController alloc] init];
   }
   return self;
 }
