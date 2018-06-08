@@ -63,6 +63,15 @@ void LayoutNGListItem::OrdinalValueChanged() {
 }
 
 void LayoutNGListItem::SubtreeDidChange() {
+  if (!marker_)
+    return;
+
+  // Make sure marker is the direct child of ListItem.
+  if (marker_->Parent() && marker_->Parent() != this) {
+    marker_->Remove();
+    AddChild(marker_, FirstChild());
+  }
+
   UpdateMarkerContentIfNeeded();
 }
 
@@ -239,8 +248,7 @@ String LayoutNGListItem::MarkerTextWithoutSuffix() const {
 }
 
 void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
-  if (!marker_)
-    return;
+  DCHECK(marker_);
 
   LayoutObject* child = marker_->SlowFirstChild();
   if (IsMarkerImage()) {
