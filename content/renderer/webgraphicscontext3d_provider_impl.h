@@ -36,8 +36,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
       public viz::ContextLostObserver {
  public:
   WebGraphicsContext3DProviderImpl(
-      scoped_refptr<ui::ContextProviderCommandBuffer> provider,
-      bool software_rendering);
+      scoped_refptr<ui::ContextProviderCommandBuffer> provider);
   ~WebGraphicsContext3DProviderImpl() override;
 
   // WebGraphicsContext3DProvider implementation.
@@ -47,7 +46,6 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   const gpu::Capabilities& GetCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   viz::GLHelper* GetGLHelper() override;
-  bool IsSoftwareRendering() const override;
   void SetLostContextCallback(base::RepeatingClosure) override;
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)>) override;
@@ -63,7 +61,6 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
 
   scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
-  const bool software_rendering_;
   base::RepeatingClosure context_lost_callback_;
   std::unique_ptr<cc::ImageDecodeCache> image_decode_cache_;
 

@@ -1022,8 +1022,6 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
   }
   Collect3DContextInformation(gl_info, gpu_channel_host->gpu_info());
 
-  bool is_software_rendering = gpu_channel_host->gpu_info().software_rendering;
-
   // This is an offscreen context. Generally it won't use the default
   // frame buffer, in that case don't request any alpha, depth, stencil,
   // antialiasing. But we do need those attributes for the "own
@@ -1061,7 +1059,7 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
           gpu::SharedMemoryLimits(), attributes,
           ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
-      std::move(provider), is_software_rendering);
+      std::move(provider));
 }
 
 //------------------------------------------------------------------------------
@@ -1080,15 +1078,12 @@ RendererBlinkPlatformImpl::CreateSharedOffscreenGraphicsContext3DProvider() {
   // channel can become lost on the IO thread since then. It is important that
   // this happens after getting |provider|. In the case that this GpuChannelHost
   // is not the same one backing |provider|, the context behind the |provider|
-  // will be already lost/dead on arrival, so the value we get for
-  // |is_software_rendering| will never be wrong.
+  // will be already lost/dead on arrival.
   if (!host)
     return nullptr;
 
-  bool is_software_rendering = host->gpu_info().software_rendering;
-
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
-      std::move(provider), is_software_rendering);
+      std::move(provider));
 }
 
 //------------------------------------------------------------------------------
