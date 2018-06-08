@@ -106,6 +106,15 @@ interface GpuService {
   // Called by the browser immediately after the application is foregrounded.
   OnForegrounded();
 
+  // Begin a batch of layer tree changes.
+  [EnableIf=is_mac]
+  BeginCATransaction();
+
+  // Commit a batch of layer tree changes atomically. Returns after the commit
+  // completes.
+  [EnableIf=is_mac]
+  CommitCATransaction() => ();
+
   Crash();
   Hang();
   ThrowJavaException();

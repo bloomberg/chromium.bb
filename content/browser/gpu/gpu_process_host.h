@@ -55,6 +55,10 @@ struct SyncToken;
 namespace content {
 class BrowserChildProcessHostImpl;
 
+#if defined(OS_MACOSX)
+class CATransactionGPUCoordinator;
+#endif
+
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,
                        public viz::mojom::GpuHost {
@@ -309,6 +313,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // it could crash as it fails to find a message pipe to the host.
   std::unique_ptr<BrowserChildProcessHostImpl> process_;
   std::unique_ptr<base::Thread> in_process_gpu_thread_;
+
+#if defined(OS_MACOSX)
+  scoped_refptr<CATransactionGPUCoordinator> ca_transaction_gpu_coordinator_;
+#endif
 
   // Track the URLs of the pages which have live offscreen contexts,
   // assumed to be associated with untrusted content such as WebGL.

@@ -129,6 +129,12 @@ class TestGpuService : public mojom::GpuService {
 
   void OnForegrounded() override {}
 
+#if defined(OS_MACOSX)
+  void BeginCATransaction() override {}
+
+  void CommitCATransaction(CommitCATransactionCallback callback) override {}
+#endif
+
   void Crash() override {}
 
   void Hang() override {}

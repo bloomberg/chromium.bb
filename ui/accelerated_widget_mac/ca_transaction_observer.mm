@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event.h"
 
 #import <AppKit/AppKit.h>
+#import <CoreFoundation/CoreFoundation.h>
 #import <QuartzCore/QuartzCore.h>
 
 typedef enum {
@@ -25,6 +26,7 @@ API_AVAILABLE(macos(10.11))
 namespace ui {
 
 namespace {
+NSString* kRunLoopMode = @"Chrome CATransactionCoordinator commit handler";
 constexpr auto kPostCommitTimeout = base::TimeDelta::FromMilliseconds(50);
 }  // namespace
 
@@ -34,6 +36,12 @@ CATransactionCoordinator& CATransactionCoordinator::Get() {
 }
 
 void CATransactionCoordinator::SynchronizeImpl() {
+  static bool registeredRunLoopMode = false;
+  if (!registeredRunLoopMode) {
+    CFRunLoopAddCommonMode(CFRunLoopGetCurrent(),
+                           static_cast<CFStringRef>(kRunLoopMode));
+    registeredRunLoopMode = true;
+  }
   if (active_)
     return;
   active_ = true;
@@ -55,8 +63,7 @@ void CATransactionCoordinator::SynchronizeImpl() {
           [start_date dateByAddingTimeInterval:timeout.InSecondsF()];
       if ([deadline isLessThanOrEqualTo:[NSDate date]])
         break;
-      [NSRunLoop.currentRunLoop runMode:NSDefaultRunLoopMode
-                             beforeDate:deadline];
+      [NSRunLoop.currentRunLoop runMode:kRunLoopMode beforeDate:deadline];
     }
   }
                          forPhase:kCATransactionPhasePreCommit];
@@ -76,8 +83,7 @@ void CATransactionCoordinator::SynchronizeImpl() {
         break;
       if ([deadline isLessThanOrEqualTo:[NSDate date]])
         break;
-      [NSRunLoop.currentRunLoop runMode:NSDefaultRunLoopMode
-                             beforeDate:deadline];
+      [NSRunLoop.currentRunLoop runMode:kRunLoopMode beforeDate:deadline];
     }
     active_ = false;
   }
@@ -86,6 +92,11 @@ void CATransactionCoordinator::SynchronizeImpl() {
 
 CATransactionCoordinator::CATransactionCoordinator() = default;
 CATransactionCoordinator::~CATransactionCoordinator() = default;
+
+void CATransactionCoordinator::Synchronize() {
+  if (@available(macos 10.11, *))
+    SynchronizeImpl();
+}
 
 void CATransactionCoordinator::AddPreCommitObserver(
     PreCommitObserver* observer) {
