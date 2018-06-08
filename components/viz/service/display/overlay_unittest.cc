@@ -527,7 +527,8 @@ class OverlayTest : public testing::Test {
 
     shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        provider_.get(), shared_bitmap_manager_.get());
+        DisplayResourceProvider::kGpu, provider_.get(),
+        shared_bitmap_manager_.get());
 
     child_provider_ = TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
@@ -588,7 +589,8 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
 
   auto shared_bitmap_manager = std::make_unique<TestSharedBitmapManager>();
   std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(provider.get(),
+      std::make_unique<DisplayResourceProvider>(DisplayResourceProvider::kGpu,
+                                                provider.get(),
                                                 shared_bitmap_manager.get());
 
   auto overlay_processor =
@@ -2595,8 +2597,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
     provider_->BindToCurrentThread();
     output_surface_ = std::make_unique<OutputSurfaceType>(provider_);
     output_surface_->BindToClient(&output_surface_client_);
-    resource_provider_ =
-        std::make_unique<DisplayResourceProvider>(provider_.get(), nullptr);
+    resource_provider_ = std::make_unique<DisplayResourceProvider>(
+        DisplayResourceProvider::kGpu, provider_.get(), nullptr);
 
     provider_->support()->SetScheduleOverlayPlaneCallback(base::Bind(
         &MockOverlayScheduler::Schedule, base::Unretained(&scheduler_)));

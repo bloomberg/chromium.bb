@@ -6,9 +6,7 @@
 
 namespace viz {
 
-SkiaOutputSurface::SkiaOutputSurface(
-    scoped_refptr<ContextProvider> context_provider)
-    : OutputSurface(std::move(context_provider)) {}
+SkiaOutputSurface::SkiaOutputSurface() = default;
 
 SkiaOutputSurface::~SkiaOutputSurface() = default;
 

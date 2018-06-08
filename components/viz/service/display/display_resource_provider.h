@@ -59,11 +59,16 @@ class SharedBitmapManager;
 class VIZ_SERVICE_EXPORT DisplayResourceProvider
     : public base::trace_event::MemoryDumpProvider {
  public:
-  DisplayResourceProvider(ContextProvider* compositor_context_provider,
+  enum Mode {
+    kGpu,
+    kSoftware,
+  };
+  DisplayResourceProvider(Mode mode,
+                          ContextProvider* compositor_context_provider,
                           SharedBitmapManager* shared_bitmap_manager);
   ~DisplayResourceProvider() override;
 
-  bool IsSoftware() const { return !compositor_context_provider_; }
+  bool IsSoftware() const { return mode_ == kSoftware; }
   void DidLoseContextProvider() { lost_context_provider_ = true; }
   size_t num_resources() const { return resources_.size(); }
 
@@ -450,6 +455,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   void SetBatchReturnResources(bool aggregate);
 
   THREAD_CHECKER(thread_checker_);
+  const Mode mode_;
   ContextProvider* const compositor_context_provider_;
   SharedBitmapManager* const shared_bitmap_manager_;
 

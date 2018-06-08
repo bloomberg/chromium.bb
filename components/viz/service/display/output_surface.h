@@ -56,6 +56,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool supports_stencil = false;
   };
 
+  // Constructor for skia-based compositing.
+  OutputSurface();
   // Constructor for GL-based compositing.
   explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
   // Constructor for software compositing.

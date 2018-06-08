@@ -22,7 +22,6 @@ class WaitableEvent;
 namespace viz {
 
 class GpuServiceImpl;
-class VizProcessContextProvider;
 class SkiaOutputSurfaceImplOnGpu;
 class SyntheticBeginFrameSource;
 
@@ -43,7 +42,6 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   SkiaOutputSurfaceImpl(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
-      scoped_refptr<VizProcessContextProvider> context_provider,
       SyntheticBeginFrameSource* synthetic_begin_frame_source);
   ~SkiaOutputSurfaceImpl() override;
 

@@ -35,7 +35,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     context_provider_->BindToCurrentThread();
 
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        context_provider_.get(), &shared_bitmap_manager_);
+        DisplayResourceProvider::kGpu, context_provider_.get(),
+        &shared_bitmap_manager_);
   }
 
   void RunTest(int num_surfaces,

@@ -49,7 +49,8 @@ class SoftwareRendererTest : public testing::Test {
 
     shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        nullptr, shared_bitmap_manager_.get());
+        DisplayResourceProvider::kSoftware, nullptr,
+        shared_bitmap_manager_.get());
     renderer_ = std::make_unique<SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider());
     renderer_->Initialize();

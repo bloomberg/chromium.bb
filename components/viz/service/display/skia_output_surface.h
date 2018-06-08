@@ -22,7 +22,7 @@ struct ResourceMetadata;
 // OutputSurface's methods which are not useful for SkiaRenderer.
 class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
  public:
-  explicit SkiaOutputSurface(scoped_refptr<ContextProvider> context_provider);
+  SkiaOutputSurface();
   ~SkiaOutputSurface() override;
 
   // Get a SkCanvas for the current frame. The SkiaRenderer will use this
