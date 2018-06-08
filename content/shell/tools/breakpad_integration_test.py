@@ -22,10 +22,12 @@ import time
 
 
 CONCURRENT_TASKS=4
+BREAKPAD_TOOLS_DIR = os.path.join(
+  os.path.dirname(__file__), '..', '..', '..',
+  'components', 'crash', 'content', 'tools')
 
-def run_test(options, crash_dir, additional_arguments = []):
+def run_test(options, crash_dir, symbols_dir, additional_arguments = []):
   global failure
-  global breakpad_tools_dir
 
   print "# Run content_shell and make it crash."
   cmd = [options.binary,
@@ -61,7 +63,7 @@ def run_test(options, crash_dir, additional_arguments = []):
 
   if sys.platform not in ('darwin', 'win32'):
     minidump = os.path.join(crash_dir, 'minidump')
-    dmp_to_minidump = os.path.join(breakpad_tools_dir, 'dmp2minidump.py')
+    dmp_to_minidump = os.path.join(BREAKPAD_TOOLS_DIR, 'dmp2minidump.py')
     cmd = [dmp_to_minidump, dmp_file, minidump]
     if options.verbose:
       print ' '.join(cmd)
@@ -83,7 +85,6 @@ def run_test(options, crash_dir, additional_arguments = []):
     stack = proc.communicate()[0]
   else:
     minidump_stackwalk = os.path.join(options.build_dir, 'minidump_stackwalk')
-    global symbols_dir
     cmd = [minidump_stackwalk, minidump, symbols_dir]
     if options.verbose:
       print ' '.join(cmd)
@@ -112,7 +113,6 @@ def run_test(options, crash_dir, additional_arguments = []):
 
 def main():
   global failure
-  global breakpad_tools_dir
 
   parser = optparse.OptionParser()
   parser.add_option('', '--build-dir', default='',
@@ -146,19 +146,15 @@ def main():
 
   # Create a temporary directory to store the crash dumps and symbols in.
   crash_dir = tempfile.mkdtemp()
+  symbols_dir = os.path.join(crash_dir, 'symbols')
 
   crash_service = None
 
   try:
     if sys.platform != 'win32':
       print "# Generate symbols."
-      global symbols_dir
-      breakpad_tools_dir = os.path.join(
-          os.path.dirname(__file__), '..', '..', '..',
-          'components', 'crash', 'content', 'tools')
       generate_symbols = os.path.join(
-          breakpad_tools_dir, 'generate_breakpad_symbols.py')
-      symbols_dir = os.path.join(crash_dir, 'symbols')
+          BREAKPAD_TOOLS_DIR, 'generate_breakpad_symbols.py')
       cmd = [generate_symbols,
              '--build-dir=%s' % options.build_dir,
              '--binary=%s' % options.binary,
@@ -171,11 +167,11 @@ def main():
       subprocess.check_call(cmd)
 
     print "# Running test without trap handler."
-    run_test(options, crash_dir);
+    run_test(options, crash_dir, symbols_dir)
     print "# Running test with trap handler."
-    run_test(options, crash_dir,
+    run_test(options, crash_dir, symbols_dir,
              additional_arguments =
-               ['--enable-features=WebAssemblyTrapHandler']);
+               ['--enable-features=WebAssemblyTrapHandler'])
 
   except:
     print "FAIL: %s" % failure

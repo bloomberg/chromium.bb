@@ -29,24 +29,6 @@ BINARY_INFO = collections.namedtuple('BINARY_INFO',
                                      ['platform', 'arch', 'hash', 'name'])
 
 
-def GetCommandOutput(command, env=None):
-  """Runs the command list, returning its output (stdout).
-
-  Args:
-    command: (list of strings) a command with arguments
-
-    env: (dict or None) optional environment for the command. If None,
-      inherits the existing environment, otherwise completely overrides it.
-
-  From chromium_utils.
-  """
-  devnull = open(os.devnull, 'w')
-  proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=devnull,
-                          bufsize=1, env=env)
-  output = proc.communicate()[0]
-  return output
-
-
 def GetDumpSymsBinary(build_dir=None):
   """Returns the path to the dump_syms binary."""
   DUMP_SYMS = 'dump_syms'
@@ -82,7 +64,10 @@ def GetSharedLibraryDependenciesLinux(binary):
   """Return absolute paths to all shared library dependecies of the binary.
 
   This implementation assumes that we're running on a Linux system."""
-  ldd = GetCommandOutput(['ldd', binary])
+  # TODO(thakis): Figure out how to make this work for android
+  # (https://crbug.com/849904) and use check_output().
+  p = subprocess.Popen(['ldd', binary], stdout=subprocess.PIPE)
+  ldd = p.communicate()[0]
   lib_re = re.compile('\t.* => (.+) \(.*\)$')
   result = []
   for line in ldd.splitlines():
@@ -106,7 +91,7 @@ def GetDeveloperDirMac():
   if 'DEVELOPER_DIR' in os.environ:
     candidate_paths.append(os.environ['DEVELOPER_DIR'])
   candidate_paths.extend([
-    GetCommandOutput(['xcode-select', '-p']).strip(),
+    subprocess.check_output(['xcode-select', '-p']).strip(),
     # Most Mac 10.1[0-2] bots have at least one Xcode installed.
     '/Applications/Xcode.app',
     '/Applications/Xcode9.0.app',
@@ -130,7 +115,7 @@ def GetSharedLibraryDependenciesMac(binary, loader_path):
   developer_dir = GetDeveloperDirMac()
   if developer_dir:
     env['DEVELOPER_DIR'] = developer_dir
-  otool = GetCommandOutput(['otool', '-l', binary], env=env).splitlines()
+  otool = subprocess.check_output(['otool', '-l', binary], env=env).splitlines()
   rpaths = []
   dylib_id = None
   for idx, line in enumerate(otool):
@@ -141,7 +126,7 @@ def GetSharedLibraryDependenciesMac(binary, loader_path):
       m = re.match(' *name (.*) \(offset .*\)$', otool[idx+2])
       dylib_id = m.group(1)
 
-  otool = GetCommandOutput(['otool', '-L', binary], env=env).splitlines()
+  otool = subprocess.check_output(['otool', '-L', binary], env=env).splitlines()
   lib_re = re.compile('\t(.*) \(compatibility .*\)$')
   deps = []
   for line in otool:
@@ -224,7 +209,7 @@ def GenerateSymbols(options, binaries):
           break
 
         binary_info = GetBinaryInfoFromHeaderInfo(
-            GetCommandOutput([dump_syms, '-i', binary]).splitlines()[0])
+            subprocess.check_output([dump_syms, '-i', binary]).splitlines()[0])
         if not binary_info:
           should_dump_syms = False
           reason = "Could not obtain binary information."
