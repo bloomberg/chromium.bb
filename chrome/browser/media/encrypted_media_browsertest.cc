@@ -758,13 +758,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
                        kUnitTestSuccess);
 }
 
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-// Flaky with ASan enabled: crbug.com/798563.
-#define MAYBE_MessageTypeTest DISABLED_MessageTypeTest
-#else
-#define MAYBE_MessageTypeTest MessageTypeTest
-#endif
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MessageTypeTest) {
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MessageTypeTest) {
   TestPlaybackCase(kExternalClearKeyMessageTypeTestKeySystem, kNoSessionToLoad,
                    media::kEnded);
 
