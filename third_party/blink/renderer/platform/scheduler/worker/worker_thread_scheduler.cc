@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {
@@ -109,25 +110,25 @@ WorkerThreadScheduler::WorkerThreadScheduler(
           std::move(task_queue_manager),
           this,
           TaskType::kWorkerThreadTaskQueueDefault)),
-      idle_helper_(helper_.get(),
+      idle_helper_(helper(),
                    this,
                    "WorkerSchedulerIdlePeriod",
                    base::TimeDelta::FromMilliseconds(300),
-                   helper_->NewTaskQueue(TaskQueue::Spec("worker_idle_tq"))),
-      idle_canceled_delayed_task_sweeper_(helper_.get(),
+                   helper()->NewTaskQueue(TaskQueue::Spec("worker_idle_tq"))),
+      idle_canceled_delayed_task_sweeper_(helper(),
                                           idle_helper_.IdleTaskRunner()),
-      load_tracker_(helper_->NowTicks(),
+      load_tracker_(helper()->NowTicks(),
                     base::BindRepeating(&ReportWorkerTaskLoad),
                     kUnspecifiedWorkerThreadLoadTrackerReportingInterval),
       lifecycle_state_(proxy ? proxy->lifecycle_state()
                              : SchedulingLifecycleState::kNotThrottled),
       worker_metrics_helper_(thread_type),
       default_task_runner_(TaskQueueWithTaskType::Create(
-          helper_->DefaultNonMainThreadTaskQueue(),
+          helper()->DefaultNonMainThreadTaskQueue(),
           TaskType::kWorkerThreadTaskQueueDefault)) {
-  thread_start_time_ = helper_->NowTicks();
+  thread_start_time_ = helper()->NowTicks();
   load_tracker_.Resume(thread_start_time_);
-  helper_->AddTaskTimeObserver(this);
+  helper()->AddTaskTimeObserver(this);
 
   if (proxy && proxy->parent_frame_type())
     worker_metrics_helper_.SetParentFrameType(*proxy->parent_frame_type());
@@ -145,7 +146,9 @@ WorkerThreadScheduler::~WorkerThreadScheduler() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 
-  helper_->RemoveTaskTimeObserver(this);
+  helper()->RemoveTaskTimeObserver(this);
+
+  DCHECK(worker_schedulers_.empty());
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -189,19 +192,19 @@ bool WorkerThreadScheduler::ShouldYieldForHighPriorityWork() {
 void WorkerThreadScheduler::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   DCHECK(initialized_);
-  helper_->AddTaskObserver(task_observer);
+  helper()->AddTaskObserver(task_observer);
 }
 
 void WorkerThreadScheduler::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   DCHECK(initialized_);
-  helper_->RemoveTaskObserver(task_observer);
+  helper()->RemoveTaskObserver(task_observer);
 }
 
 void WorkerThreadScheduler::Shutdown() {
   DCHECK(initialized_);
-  load_tracker_.RecordIdle(helper_->NowTicks());
-  base::TimeTicks end_time = helper_->NowTicks();
+  load_tracker_.RecordIdle(helper()->NowTicks());
+  base::TimeTicks end_time = helper()->NowTicks();
   base::TimeDelta delta = end_time - thread_start_time_;
 
   // The lifetime could be radically different for different workers,
@@ -211,13 +214,13 @@ void WorkerThreadScheduler::Shutdown() {
       "WorkerThread.Runtime", delta, base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(1), 50 /* bucket count */);
   task_queue_throttler_.reset();
-  helper_->Shutdown();
+  helper()->Shutdown();
 }
 
 scoped_refptr<NonMainThreadTaskQueue>
 WorkerThreadScheduler::DefaultTaskQueue() {
   DCHECK(initialized_);
-  return helper_->DefaultNonMainThreadTaskQueue();
+  return helper()->DefaultNonMainThreadTaskQueue();
 }
 
 void WorkerThreadScheduler::InitImpl() {
@@ -245,7 +248,7 @@ void WorkerThreadScheduler::OnTaskCompleted(
 }
 
 SchedulerHelper* WorkerThreadScheduler::GetSchedulerHelperForTesting() {
-  return helper_.get();
+  return helper();
 }
 
 bool WorkerThreadScheduler::CanEnterLongIdlePeriod(base::TimeTicks,
@@ -280,13 +283,19 @@ void WorkerThreadScheduler::OnLifecycleStateChanged(
 
 void WorkerThreadScheduler::RegisterWorkerScheduler(
     WorkerScheduler* worker_scheduler) {
-  NonMainThreadSchedulerImpl::RegisterWorkerScheduler(worker_scheduler);
+  worker_schedulers_.insert(worker_scheduler);
   worker_scheduler->OnLifecycleStateChanged(lifecycle_state_);
+}
+
+void WorkerThreadScheduler::UnregisterWorkerScheduler(
+    WorkerScheduler* worker_scheduler) {
+  DCHECK(worker_schedulers_.find(worker_scheduler) != worker_schedulers_.end());
+  worker_schedulers_.erase(worker_scheduler);
 }
 
 scoped_refptr<NonMainThreadTaskQueue>
 WorkerThreadScheduler::ControlTaskQueue() {
-  return helper_->ControlNonMainThreadTaskQueue();
+  return helper()->ControlNonMainThreadTaskQueue();
 }
 
 void WorkerThreadScheduler::CreateTaskQueueThrottler() {
@@ -309,6 +318,11 @@ void WorkerThreadScheduler::CreateTaskQueueThrottler() {
 void WorkerThreadScheduler::SetCPUTimeBudgetPoolForTesting(
     CPUTimeBudgetPool* cpu_time_budget_pool) {
   cpu_time_budget_pool_ = cpu_time_budget_pool;
+}
+
+std::unordered_set<WorkerScheduler*>&
+WorkerThreadScheduler::GetWorkerSchedulersForTesting() {
+  return worker_schedulers_;
 }
 
 }  // namespace scheduler

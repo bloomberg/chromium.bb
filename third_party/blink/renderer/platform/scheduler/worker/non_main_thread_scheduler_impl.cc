@@ -8,8 +8,6 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
-#include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
-#include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
@@ -19,9 +17,7 @@ NonMainThreadSchedulerImpl::NonMainThreadSchedulerImpl(
     std::unique_ptr<NonMainThreadSchedulerHelper> helper)
     : helper_(std::move(helper)) {}
 
-NonMainThreadSchedulerImpl::~NonMainThreadSchedulerImpl() {
-  DCHECK(worker_schedulers_.empty());
-}
+NonMainThreadSchedulerImpl::~NonMainThreadSchedulerImpl() = default;
 
 // static
 std::unique_ptr<NonMainThreadSchedulerImpl> NonMainThreadSchedulerImpl::Create(
@@ -80,17 +76,6 @@ NonMainThreadSchedulerImpl::PauseScheduler() {
 base::TimeTicks
 NonMainThreadSchedulerImpl::MonotonicallyIncreasingVirtualTime() {
   return base::TimeTicks::Now();
-}
-
-void NonMainThreadSchedulerImpl::RegisterWorkerScheduler(
-    WorkerScheduler* worker_scheduler) {
-  worker_schedulers_.insert(worker_scheduler);
-}
-
-void NonMainThreadSchedulerImpl::UnregisterWorkerScheduler(
-    WorkerScheduler* worker_scheduler) {
-  DCHECK(worker_schedulers_.find(worker_scheduler) != worker_schedulers_.end());
-  worker_schedulers_.erase(worker_scheduler);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

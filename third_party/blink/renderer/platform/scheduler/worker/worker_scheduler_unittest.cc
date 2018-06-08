@@ -58,7 +58,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
       : WorkerThreadScheduler(thread_type, std::move(manager), proxy) {}
 
   const std::unordered_set<WorkerScheduler*>& worker_schedulers() {
-    return worker_schedulers_;
+    return GetWorkerSchedulersForTesting();
   }
 
   using WorkerThreadScheduler::CreateTaskQueueThrottler;
