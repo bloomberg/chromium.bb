@@ -10,18 +10,15 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.google.android.libraries.feed.api.common.ThreadUtils;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Stream;
-import com.google.android.libraries.feed.common.time.SystemClockImpl;
 import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
 import com.google.android.libraries.feed.host.config.DebugBehavior;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
 import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
-import com.google.android.libraries.feed.hostimpl.scheduler.TimeoutScheduler;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -131,9 +128,7 @@ public class FeedNewTabPage extends BasicNativePage {
                     new FeedProcessScope
                             .Builder(configHostApi, Executors.newSingleThreadExecutor(),
                                     new LoggingApiImpl(), new FeedNetworkBridge(profile),
-                                    new TimeoutScheduler(new ThreadUtils(), new SystemClockImpl(),
-                                            configHostApi),
-                                    DebugBehavior.SILENT)
+                                    new FeedSchedulerBridge(profile), DebugBehavior.SILENT)
                             .build();
         }
 
