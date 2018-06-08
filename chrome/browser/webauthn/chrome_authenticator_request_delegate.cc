@@ -17,12 +17,17 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
+#include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -49,8 +54,30 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
     content::RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host), weak_ptr_factory_(this) {}
-ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {}
+    : render_frame_host_(render_frame_host), weak_ptr_factory_(this) {
+#if !defined(OS_ANDROID)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebAuthenticationUI)) {
+    return;
+  }
+  auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
+  weak_dialog_model_ = dialog_model.get();
+  weak_dialog_model_->AddObserver(this);
+  ShowAuthenticatorRequestDialog(
+      content::WebContents::FromRenderFrameHost(render_frame_host),
+      std::move(dialog_model));
+#endif
+}
+
+ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
+  // Currently, completion of the request is indicated by //content destroying
+  // this delegate.
+  if (weak_dialog_model_) {
+    // The dialog model may be destroyed after the OnRequestComplete call.
+    weak_dialog_model_->RemoveObserver(this);
+    weak_dialog_model_->OnRequestComplete();
+  }
+}
 
 base::WeakPtr<ChromeAuthenticatorRequestDelegate>
 ChromeAuthenticatorRequestDelegate::AsWeakPtr() {
@@ -129,4 +156,9 @@ bool ChromeAuthenticatorRequestDelegate::IsFocused() {
 
   return false;
 #endif
+}
+
+void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {
+  DCHECK(weak_dialog_model_);
+  weak_dialog_model_ = nullptr;
 }
