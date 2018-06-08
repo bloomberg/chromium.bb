@@ -14,11 +14,8 @@ import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Stream;
 import com.google.android.libraries.feed.host.config.Configuration;
-import com.google.android.libraries.feed.host.config.Configuration.ConfigKey;
-import com.google.android.libraries.feed.host.config.DebugBehavior;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
-import com.google.android.libraries.feed.hostimpl.logging.LoggingApiImpl;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -31,14 +28,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
-import java.util.concurrent.Executors;
-
 /**
  * Provides a new tab page that displays an interest feed rendered list of content suggestions.
  */
 public class FeedNewTabPage extends BasicNativePage {
-    private static FeedProcessScope sFeedProcessScope;
-
     private FrameLayout mRootView;
     private String mTitle;
     private FeedImageLoader mImageLoader;
@@ -115,33 +108,18 @@ public class FeedNewTabPage extends BasicNativePage {
         super(activity, nativePageHost);
 
         Profile profile = nativePageHost.getActiveTab().getProfile();
-        Configuration configHostApi =
-                new Configuration.Builder()
-                        .put(ConfigKey.FEED_SERVER_HOST, "https://www.google.com")
-                        .put(ConfigKey.FEED_SERVER_PATH_AND_PARAMS,
-                                "/httpservice/noretry/NowStreamService/FeedQuery")
-                        .put(ConfigKey.SESSION_LIFETIME_MS, 300000L)
-                        .build();
-
-        if (sFeedProcessScope == null) {
-            sFeedProcessScope =
-                    new FeedProcessScope
-                            .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                    new LoggingApiImpl(), new FeedNetworkBridge(profile),
-                                    new FeedSchedulerBridge(profile), DebugBehavior.SILENT)
-                            .build();
-        }
-
+        FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
         mImageLoader = new FeedImageLoader(profile, activity);
         SuggestionsNavigationDelegateImpl navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(
                         activity, profile, nativePageHost, tabModelSelector);
         FeedStreamScope streamScope =
-                sFeedProcessScope
+                feedProcessScope
                         .createFeedStreamScopeBuilder(activity, mImageLoader,
                                 new FeedActionHandler(navigationDelegate),
                                 new BasicStreamConfiguration(activity.getResources()),
-                                new BasicCardConfiguration(activity.getResources()), configHostApi)
+                                new BasicCardConfiguration(activity.getResources()),
+                                new Configuration.Builder().build())
                         .build();
 
         Stream stream = streamScope.getStream();
