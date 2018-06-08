@@ -83,7 +83,7 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
     return !IsShrinking() ||
            (width() >
             (image()->GetPreferredSize().width() +
-             2 * GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING) +
+             GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).width() +
              2 * GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING)));
   }
 
@@ -194,7 +194,7 @@ class IconLabelBubbleViewTest : public views::ViewsTestBase {
     minimum_size_reached_ = false;
     previous_width_ = 0;
     initial_image_x_ = GetImageBounds().x();
-    EXPECT_EQ(GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING),
+    EXPECT_EQ(GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left(),
               initial_image_x_);
   }
 

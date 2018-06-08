@@ -44,7 +44,7 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
       active_(false),
       suppress_mouse_released_action_(false) {
   SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING))));
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
   if (ui::MaterialDesignController::IsNewerMaterialUi()) {
     // Ink drop ripple opacity.
     set_ink_drop_visible_opacity(

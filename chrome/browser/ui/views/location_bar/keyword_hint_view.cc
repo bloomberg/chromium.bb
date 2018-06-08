@@ -161,9 +161,10 @@ void KeywordHintView::SetKeyword(const base::string16& keyword,
 }
 
 gfx::Insets KeywordHintView::GetInsets() const {
-  if (!LocationBarView::IsRounded())
-    return gfx::Insets(0,
-                       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING));
+  if (!LocationBarView::IsRounded()) {
+    return gfx::Insets(
+        0, GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left());
+  }
 
   // The location bar and keyword hint view chip have rounded ends. Ensure the
   // chip label's corner with the furthest extent from its midpoint is still at
@@ -183,7 +184,8 @@ gfx::Insets KeywordHintView::GetInsets() const {
   // omnibox, but the padding should be symmetrical, so use it on both sides,
   // collapsing into the horizontal padding used by the previous View.
   const int left_margin =
-      horizontal_margin - GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
+      horizontal_margin -
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
   return gfx::Insets(0, std::max(0, left_margin), 0, horizontal_margin);
 }
 
