@@ -223,6 +223,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY" desc="The accessibility string used for an item in user chooser that tells the user name and the mail address.">
         <ph name="USERNAME">$1<ex>Jane Doe</ex></ph> <ph name="MAIL">$2<ex>janedoe@example.com</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_FEATURE_POD_BUTTON_TOOLTIP" desc="The tooltip string used for a feature button in system tray that combines the label and the sub-label.">
+        <ph name="LABEL">$1<ex>VPN</ex></ph> <ph name="SUBLABEL">$2<ex>Off</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_SIGN_OUT" desc="The label used for the button in the status tray to sign out of the system. Should not exceed about 20 latin characters. Overflowed text is truncated with ellipsis.">
         Sign out
       </message>
@@ -270,6 +273,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST" desc="The label used as the header in the cast popup.">
         Cast screen
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_SHORT" desc="The label used for Cast button in system tray bubble.">
+        Cast
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_NOTIFICATION_TITLE" desc="The notification title to tell the user we are casting to a cast device.">
         Casting to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
@@ -350,6 +356,9 @@ This file contains the strings for ash.
         Mute
       </message>
 
+      <message name="IDS_ASH_STATUS_TRAY_IME_SHORT" desc="The short label used for IME button in system tray bubble.">
+        Keyboard
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_IME" desc="The label used as the header in the IME popup.">
         Input methods
       </message>
@@ -1033,6 +1042,15 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
         VPN disconnected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_SHORT" desc="The short label used for VPN button in system tray bubble.">
+        VPN
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED_SHORT" desc="The short label used in system tray bubble to display vpn is disconnected.">
+        Off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN_CONNECTED_SHORT" desc="The short label used in system tray bubble to display vpn is connected.">
+        On
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned on.">
         Wi-Fi is turned on.

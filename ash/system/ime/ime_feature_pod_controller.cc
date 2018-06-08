@@ -29,7 +29,7 @@ base::string16 GetLabelString() {
   ImeController* ime_controller = Shell::Get()->ime_controller();
   size_t ime_count = ime_controller->available_imes().size();
   if (ime_count > 1) {
-    return ime_controller->current_ime().name;
+    return ime_controller->current_ime().short_name;
   } else {
     return l10n_util::GetStringUTF16(
         keyboard::IsKeyboardEnabled() ? IDS_ASH_STATUS_TRAY_KEYBOARD_ENABLED
@@ -48,6 +48,7 @@ IMEFeaturePodController::~IMEFeaturePodController() = default;
 FeaturePodButton* IMEFeaturePodController::CreateButton() {
   button_ = new FeaturePodButton(this);
   button_->SetVectorIcon(kSystemMenuKeyboardIcon);
+  button_->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_SHORT));
   Update();
   return button_;
 }
@@ -57,7 +58,7 @@ void IMEFeaturePodController::OnIconPressed() {
 }
 
 void IMEFeaturePodController::Update() {
-  button_->SetLabel(GetLabelString());
+  button_->SetSubLabel(GetLabelString());
   button_->SetVisible(IsButtonVisible());
 }
 

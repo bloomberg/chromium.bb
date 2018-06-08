@@ -4,10 +4,12 @@
 
 #include "ash/system/unified/feature_pod_button.h"
 
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -24,9 +26,6 @@ namespace {
 
 void ConfigureFeaturePodLabel(views::Label* label) {
   label->SetAutoColorReadabilityEnabled(false);
-  label->SetEnabledColor(kUnifiedMenuTextColor);
-  label->SetMultiLine(true);
-  label->SizeToFit(kUnifiedFeaturePodSize.width());
   label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   label->SetSubpixelRenderingEnabled(false);
 }
@@ -98,9 +97,12 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
     : Button(listener), label_(new views::Label), sub_label_(new views::Label) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kUnifiedFeaturePodHoverPadding));
+
   SetPreferredSize(kUnifiedFeaturePodHoverSize);
   ConfigureFeaturePodLabel(label_);
   ConfigureFeaturePodLabel(sub_label_);
+  label_->SetEnabledColor(kUnifiedMenuTextColor);
+  sub_label_->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
   AddChildView(label_);
   AddChildView(sub_label_);
 
@@ -138,16 +140,23 @@ std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
 }
 
 void FeaturePodLabelButton::SetLabel(const base::string16& label) {
-  SetTooltipText(label);
   label_->SetText(label);
+  SetTooltipTextFromLabels();
   Layout();
   SchedulePaint();
 }
 
 void FeaturePodLabelButton::SetSubLabel(const base::string16& sub_label) {
   sub_label_->SetText(sub_label);
+  SetTooltipTextFromLabels();
   Layout();
   SchedulePaint();
+}
+
+void FeaturePodLabelButton::SetTooltipTextFromLabels() {
+  SetTooltipText(
+      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_FEATURE_POD_BUTTON_TOOLTIP,
+                                 label_->text(), sub_label_->text()));
 }
 
 FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
