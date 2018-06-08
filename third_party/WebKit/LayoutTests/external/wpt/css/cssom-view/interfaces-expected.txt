@@ -1,6 +1,12 @@
 This is a testharness.js-based test.
-Found 385 tests; 310 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 391 tests; 316 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
+PASS Partial interface Window: original interface defined
+PASS Partial interface Document: original interface defined
+PASS Partial interface Element: original interface defined
+PASS Partial interface HTMLElement: original interface defined
+PASS Partial interface HTMLImageElement: original interface defined
+PASS Partial interface Range: original interface defined
 PASS HTMLElement interface: attribute offsetParent
 PASS Unscopable handled correctly for offsetParent property on HTMLElement
 PASS HTMLElement interface: attribute offsetTop

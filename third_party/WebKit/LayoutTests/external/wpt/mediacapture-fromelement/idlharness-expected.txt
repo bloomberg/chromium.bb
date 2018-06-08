@@ -1,4 +1,6 @@
 This is a testharness.js-based test.
+PASS Partial interface HTMLMediaElement: original interface defined
+PASS Partial interface HTMLCanvasElement: original interface defined
 PASS HTMLCanvasElement interface: operation captureStream(double)
 PASS Unscopable handled correctly for captureStream(double) on HTMLCanvasElement
 PASS HTMLCanvasElement interface: [object HTMLCanvasElement] must inherit property "captureStream(double)" with the proper type

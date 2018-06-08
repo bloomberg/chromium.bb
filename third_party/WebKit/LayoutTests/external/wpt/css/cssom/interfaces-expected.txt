@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
-Found 442 tests; 386 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 444 tests; 388 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
+PASS Partial interface Document: original interface defined
+PASS Partial interface Window: original interface defined
 PASS HTMLElement interface: attribute style
 PASS Unscopable handled correctly for style property on HTMLElement
 PASS HTMLElement interface: style_element must inherit property "style" with the proper type

@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
-Found 51 tests; 19 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 53 tests; 21 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test IDL implementation of css-fonts API
+PASS Partial interface CSSRule: original interface defined
+PASS Partial interface CSSRule[2]: original interface defined
 PASS CSSFontFaceRule interface: existence and properties of interface object
 PASS CSSFontFaceRule interface object length
 PASS CSSFontFaceRule interface object name
