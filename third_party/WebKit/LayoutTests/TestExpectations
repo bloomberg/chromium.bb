@@ -2349,7 +2349,6 @@ crbug.com/839038 [ Mac ] external/wpt/pointerevents/pointerevent_lostpointercapt
 
 # These tests are skipped as there is no touch support on Mac.
 crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/picture-in-picture/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/unified-autoplay/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Skip ]
@@ -2365,6 +2364,9 @@ crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html [ Skip ]
+# In addition to having no support on Mac, the following test times out
+# regularly on Windows.
+crbug.com/613672 [ Mac Win ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 
 crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic-manual.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Failure ]
