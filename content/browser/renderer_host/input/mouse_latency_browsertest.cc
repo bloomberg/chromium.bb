@@ -83,11 +83,18 @@ class TracingRenderWidgetHost : public RenderWidgetHostImpl {
                              process,
                              routing_id,
                              std::move(widget),
-                             hidden) {}
-  void OnGpuSwapBuffersCompletedInternal(
-      const ui::LatencyInfo& latency_info) override {
-    RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(latency_info);
-    RunClosureIfNecessary(latency_info);
+                             hidden) {
+    SetLatencyInfoProcessorForTesting(base::BindRepeating(
+        &TracingRenderWidgetHost::HandleLatencyInfoAfterGpuSwap,
+        base::Unretained(this)));
+  }
+
+  void HandleLatencyInfoAfterGpuSwap(
+      const std::vector<ui::LatencyInfo>& latency_infos) {
+    for (const auto& latency_info : latency_infos) {
+      if (latency_info.terminated())
+        RunClosureIfNecessary(latency_info);
+    }
   }
 
   void OnMouseEventAck(const MouseEventWithLatencyInfo& event,

@@ -180,8 +180,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
       now + base::TimeDelta::FromMilliseconds(30), 1);
 
   latency_info.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-      tracker()->latency_component_id(),
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
       now + base::TimeDelta::FromMilliseconds(20), 1);
 
   latency_info.AddLatencyNumberWithTimestamp(
@@ -234,8 +233,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
       AddRenderingScheduledComponent(&wheel_latency, rendering_on_main, now);
       tracker()->OnInputEvent(wheel, &wheel_latency);
       EXPECT_TRUE(wheel_latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(), nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(wheel_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(wheel, &wheel_latency,
@@ -346,8 +344,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
       AddRenderingScheduledComponent(&wheel_latency, rendering_on_main, now);
       tracker()->OnInputEvent(wheel, &wheel_latency);
       EXPECT_TRUE(wheel_latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(), nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(wheel_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(wheel, &wheel_latency,
@@ -458,8 +455,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
       AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
       tracker()->OnInputEvent(scroll, &scroll_latency);
       EXPECT_TRUE(scroll_latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(), nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(scroll, &scroll_latency,
@@ -518,8 +514,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
       AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
       tracker()->OnInputEvent(scroll, &scroll_latency);
       EXPECT_TRUE(scroll_latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(), nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(scroll, &scroll_latency,
@@ -539,8 +534,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
       AddRenderingScheduledComponent(&touch_latency, rendering_on_main, now);
       tracker()->OnInputEvent(touch, &touch_latency);
       EXPECT_TRUE(touch_latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(), nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(touch_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(touch, &touch_latency,
@@ -632,8 +626,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
       AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
       tracker()->OnInputEvent(scroll, &scroll_latency);
       EXPECT_TRUE(scroll_latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(), nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(scroll, &scroll_latency,
@@ -653,8 +646,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
       AddRenderingScheduledComponent(&touch_latency, rendering_on_main, now);
       tracker()->OnInputEvent(touch, &touch_latency);
       EXPECT_TRUE(touch_latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(), nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
       EXPECT_TRUE(touch_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       tracker()->OnInputEventAck(touch, &touch_latency,
@@ -836,9 +828,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                   0);
   tracker()->OnInputEvent(scroll_begin, &scroll_latency);
-  EXPECT_TRUE(
-      scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                                 tracker()->latency_component_id(), nullptr));
+  EXPECT_TRUE(scroll_latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   EXPECT_EQ(2U, scroll_latency.latency_components().size());
 
   // The first GestureScrollUpdate should be provided with
@@ -849,9 +840,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                   0);
   tracker()->OnInputEvent(first_scroll_update, &scroll_latency);
-  EXPECT_TRUE(
-      scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                                 tracker()->latency_component_id(), nullptr));
+  EXPECT_TRUE(scroll_latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   EXPECT_TRUE(scroll_latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
       tracker()->latency_component_id(), nullptr));
@@ -868,9 +858,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                   0);
   tracker()->OnInputEvent(scroll_update, &scroll_latency);
-  EXPECT_TRUE(
-      scroll_latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                                 tracker()->latency_component_id(), nullptr));
+  EXPECT_TRUE(scroll_latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   EXPECT_FALSE(scroll_latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
       tracker()->latency_component_id(), nullptr));
@@ -901,8 +890,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       fake_latency.set_trace_id(kTraceEventId);
       fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(),
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
           base::TimeTicks() +
               base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[0]),
           1);
@@ -921,9 +909,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
 
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
-      tracker()->ComputeInputLatencyHistograms(
-          event.GetType(), tracker()->latency_component_id(), fake_latency,
-          blocking);
+      tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
+                                               blocking);
 
       tracker()->OnInputEventAck(event, &latency,
                                  blocking);
@@ -938,9 +925,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
 
       EXPECT_TRUE(latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-      EXPECT_TRUE(
-          latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                                   tracker()->latency_component_id(), nullptr));
+      EXPECT_TRUE(latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
 
       EXPECT_EQ(2U, latency.latency_components().size());
 
@@ -948,8 +934,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       fake_latency.set_trace_id(kTraceEventId);
       fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(),
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
           base::TimeTicks() +
               base::TimeDelta::FromMilliseconds(touchmove_timestamps_ms[0]),
           1);
@@ -968,9 +953,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
 
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
-      tracker()->ComputeInputLatencyHistograms(
-          event.GetType(), tracker()->latency_component_id(), fake_latency,
-          blocking);
+      tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
+                                               blocking);
     }
 
     {
@@ -982,9 +966,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
 
       EXPECT_TRUE(latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
-      EXPECT_TRUE(
-          latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                                   tracker()->latency_component_id(), nullptr));
+      EXPECT_TRUE(latency.FindLatency(
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
 
       EXPECT_EQ(2U, latency.latency_components().size());
 
@@ -992,8 +975,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       fake_latency.set_trace_id(kTraceEventId);
       fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(),
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
           base::TimeTicks() +
               base::TimeDelta::FromMilliseconds(touchend_timestamps_ms[0]),
           1);
@@ -1012,9 +994,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
 
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
-      tracker()->ComputeInputLatencyHistograms(
-          event.GetType(), tracker()->latency_component_id(), fake_latency,
-          blocking);
+      tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
+                                               blocking);
     }
   }
 
@@ -1095,8 +1076,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyBlockingAndQueueingTime) {
       fake_latency.set_trace_id(kTraceEventId);
       fake_latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
       fake_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-          tracker()->latency_component_id(),
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
           base::TimeTicks() +
               base::TimeDelta::FromMilliseconds(event_timestamps_ms[0]),
           1);
@@ -1115,9 +1095,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyBlockingAndQueueingTime) {
 
       // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
       // overwriting components.
-      tracker()->ComputeInputLatencyHistograms(
-          event.GetType(), tracker()->latency_component_id(), fake_latency,
-          blocking);
+      tracker()->ComputeInputLatencyHistograms(event.GetType(), fake_latency,
+                                               blocking);
 
       tracker()->OnInputEventAck(event, &latency_info, blocking);
     }
@@ -1155,8 +1134,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {
       1);
 
   latency_info.AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-      tracker()->latency_component_id(),
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
       base::TimeTicks() +
           base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[0]),
       1);
@@ -1208,8 +1186,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     ui::LatencyInfo fake_latency;
     fake_latency.set_trace_id(kTraceEventId);
     fake_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-        tracker()->latency_component_id(),
+        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
         base::TimeTicks() +
             base::TimeDelta::FromMilliseconds(touchstart_timestamps_ms[0]),
         1);
@@ -1229,7 +1206,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
     // overwriting components.
     tracker()->ComputeInputLatencyHistograms(event.GetType(),
-                                             tracker()->latency_component_id(),
                                              fake_latency, ack_state);
 
     tracker()->OnInputEventAck(event, &latency, ack_state);
@@ -1279,8 +1255,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
     fake_latency.set_trace_id(kTraceEventId);
     fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
     fake_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-        tracker()->latency_component_id(),
+        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(timestamps_ms[0]),
         1);
 
@@ -1297,7 +1272,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
     // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
     // overwriting components.
     tracker()->ComputeInputLatencyHistograms(wheel_event.GetType(),
-                                             tracker()->latency_component_id(),
                                              fake_latency, ack_state);
 
     tracker()->OnInputEventAck(wheel_event, &latency, ack_state);
