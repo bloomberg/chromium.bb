@@ -362,9 +362,6 @@ const CGFloat kShadowRadius = 12.0f;
   if (experimental_flags::IsBookmarksUIRebootEnabled()) {
     self.navigationController.navigationBarHidden = NO;
     self.navigationController.toolbar.translucent = YES;
-    // If the NavigationBar is not translucent, set
-    // |self.extendedLayoutIncludesOpaqueBars| to YES.
-    self.extendedLayoutIncludesOpaqueBars = YES;
   } else {
     self.navigationController.navigationBarHidden = YES;
     self.navigationController.toolbar.translucent = NO;

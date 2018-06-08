@@ -28,16 +28,22 @@
 #pragma mark - View Lifecycle
 
 - (void)viewDidLoad {
-  [self.navigationBar setBackgroundImage:[UIImage new]
-                           forBarMetrics:UIBarMetricsDefault];
-  if (self.tableViewController.styler.tableViewBackgroundColor !=
-      [UIColor clearColor]) {
-    self.navigationBar.translucent = NO;
-  }
+  [super viewDidLoad];
 
-  if (@available(iOS 11, *)) {
+  UIVisualEffectView* visualEffectView = [[UIVisualEffectView alloc]
+      initWithEffect:[UIBlurEffect
+                         effectWithStyle:UIBlurEffectStyleExtraLight]];
+
+  self.navigationBar.translucent = YES;
+  self.navigationController.navigationBar.backgroundColor =
+      [UIColor clearColor];
+  [self.navigationController.navigationBar addSubview:visualEffectView];
+  if (@available(iOS 11, *))
     self.navigationBar.prefersLargeTitles = YES;
-  }
+
+  self.toolbar.clipsToBounds = YES;
+  self.toolbar.translucent = YES;
+  [self.toolbar addSubview:visualEffectView];
 }
 
 @end

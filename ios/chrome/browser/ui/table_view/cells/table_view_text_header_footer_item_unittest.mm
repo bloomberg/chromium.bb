@@ -39,19 +39,3 @@ TEST_F(TableViewTextHeaderFooterItemTest, HeaderFooterTextLabels) {
   [item configureHeaderFooterView:textHeaderFooter withStyler:styler];
   EXPECT_NSEQ(text, textHeaderFooter.textLabel.text);
 }
-
-TEST_F(TableViewTextHeaderFooterItemTest, Styler) {
-  TableViewTextHeaderFooterItem* item =
-      [[TableViewTextHeaderFooterItem alloc] initWithType:0];
-  id headerFooter = [[[item cellClass] alloc] init];
-  ASSERT_TRUE(
-      [headerFooter isMemberOfClass:[TableViewTextHeaderFooterView class]]);
-  TableViewTextHeaderFooterView* textHeaderFooter =
-      base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
-
-  ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
-  UIColor* testColor = [UIColor redColor];
-  styler.tableViewBackgroundColor = testColor;
-  [item configureHeaderFooterView:textHeaderFooter withStyler:styler];
-  EXPECT_NSEQ(testColor, textHeaderFooter.contentView.backgroundColor);
-}

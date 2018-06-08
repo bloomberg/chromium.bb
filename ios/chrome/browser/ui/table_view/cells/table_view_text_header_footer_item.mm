@@ -6,7 +6,6 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,10 +30,6 @@
 - (void)configureHeaderFooterView:(UITableViewHeaderFooterView*)headerFooter
                        withStyler:(ChromeTableViewStyler*)styler {
   [super configureHeaderFooterView:headerFooter withStyler:styler];
-
-  // Set the contentView backgroundColor, not the header's.
-  headerFooter.contentView.backgroundColor = styler.tableViewBackgroundColor;
-
   TableViewTextHeaderFooterView* header =
       base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerFooter);
   header.textLabel.text = self.text;

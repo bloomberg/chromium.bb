@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -24,6 +25,9 @@
   DCHECK([headerFooter class] == self.cellClass);
   headerFooter.accessibilityTraits = self.accessibilityTraits;
   headerFooter.accessibilityIdentifier = self.accessibilityIdentifier;
+  UIVisualEffectView* visualEffect = [[UIVisualEffectView alloc]
+      initWithEffect:styler.tableViewSectionHeaderBlurEffect];
+  headerFooter.backgroundView = visualEffect;
 }
 
 @end

@@ -141,11 +141,6 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
               action:@selector(displayContextMenuInvokedByGestureRecognizer:)];
   [self.tableView addGestureRecognizer:longPressRecognizer];
 
-  // If the NavigationBar is not translucent, set
-  // |self.extendedLayoutIncludesOpaqueBars| to YES in order to avoid a top
-  // margin inset on the |_tableViewController| subview.
-  self.extendedLayoutIncludesOpaqueBars = YES;
-
   // NavigationController configuration.
   self.title = l10n_util::GetNSString(IDS_HISTORY_TITLE);
   // Configures NavigationController Toolbar buttons.
@@ -167,7 +162,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   self.searchController.dimsBackgroundDuringPresentation = NO;
   self.searchController.searchBar.delegate = self;
   self.searchController.searchResultsUpdater = self;
-  self.searchController.searchBar.backgroundColor = [UIColor whiteColor];
+  self.searchController.searchBar.backgroundColor = [UIColor clearColor];
   self.searchController.searchBar.accessibilityIdentifier =
       kHistorySearchControllerSearchBarIdentifier;
   // UIKit needs to know which controller will be presenting the
