@@ -187,14 +187,6 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  ///////////////////////////////////////
-  // The following task types are DEPRECATED! Use kInternal* instead.
-  ///////////////////////////////////////
-
-  // Tasks that must not be throttled should be posted here, but the usage
-  // should be very limited.
-  kUnthrottled = 25,
-
   kCount = 49,
 };
 

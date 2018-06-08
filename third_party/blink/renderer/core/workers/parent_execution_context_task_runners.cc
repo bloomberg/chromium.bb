@@ -31,8 +31,7 @@ ParentExecutionContextTaskRunners::ParentExecutionContextTaskRunners(
   for (auto type : {TaskType::kNetworking, TaskType::kPostedMessage,
                     TaskType::kInternalDefault, TaskType::kInternalLoading,
                     TaskType::kInternalTest, TaskType::kInternalMedia,
-                    TaskType::kInternalInspector, TaskType::kInternalWorker,
-                    TaskType::kUnthrottled}) {
+                    TaskType::kInternalInspector, TaskType::kInternalWorker}) {
     auto task_runner =
         context ? context->GetTaskRunner(type)
                 : Platform::Current()->CurrentThread()->GetTaskRunner();

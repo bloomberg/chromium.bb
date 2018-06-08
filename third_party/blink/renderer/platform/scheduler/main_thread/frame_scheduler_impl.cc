@@ -320,7 +320,6 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
-    case TaskType::kUnthrottled:
       return TaskQueueWithTaskType::Create(PausableTaskQueue(), type);
     case TaskType::kInternalIPC:
     // The TaskType of Inspector tasks needs to be unpausable because they need
