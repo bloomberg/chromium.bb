@@ -4797,6 +4797,7 @@ crbug.com/850206 virtual/stable/webexposed/global-interface-listing.html [ Pass 
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure ]
 
 # Sheriff 2018-06-08
+crbug.com/850170 [ Mac ] virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Pass Timeout ]
 crbug.com/850892 http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Failure ]
 crbug.com/850892 http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
 crbug.com/850892 http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
