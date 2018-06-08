@@ -97,7 +97,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
     base::test::ios::WaitUntilCondition(
         ^{
           base::AutoLock auto_lock(lock_);
-          return terminated_.load(std::memory_order_release);
+          return terminated_.load(std::memory_order_acquire);
         },
         false, base::TimeDelta::FromSeconds(10));
   }
@@ -120,7 +120,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
       *response_body = base::StringPrintf("<p>%s</p>", kPageText);
       {
         base::AutoLock auto_lock(lock_);
-        while (!aborted_.load(std::memory_order_release))
+        while (!aborted_.load(std::memory_order_acquire))
           condition_variable_.Wait();
         terminated_.store(true, std::memory_order_release);
       }
