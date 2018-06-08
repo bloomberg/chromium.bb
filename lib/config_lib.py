@@ -1789,7 +1789,7 @@ class ObjectJSONEncoder(json.JSONEncoder):
 def PrettyJsonDict(dictionary):
   """Returns a pretty-ified json dump of a dictionary."""
   return json.dumps(dictionary, cls=ObjectJSONEncoder,
-                    sort_keys=True, indent=4, separators=(',', ': '))
+                    sort_keys=True, indent=4, separators=(',', ': ')) + '\n'
 
 
 def LoadConfigFromFile(config_file=constants.CHROMEOS_CONFIG_FILE):

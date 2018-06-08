@@ -51,7 +51,7 @@ class ConfigDumpTest(ChromeosConfigTestBase):
     """Ensure generated files are up to date."""
     # config_dump.json
     new_dump = self.site_config.SaveConfigToString()
-    old_dump = osutils.ReadFile(constants.CHROMEOS_CONFIG_FILE).rstrip()
+    old_dump = osutils.ReadFile(constants.CHROMEOS_CONFIG_FILE)
 
     if new_dump != old_dump:
       if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
