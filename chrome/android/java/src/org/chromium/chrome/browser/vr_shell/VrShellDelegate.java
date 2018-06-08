@@ -150,7 +150,6 @@ public class VrShellDelegate
     private static VrCoreVersionChecker sVrCoreVersionChecker;
     private static Set<Activity> sVrModeEnabledActivitys = new HashSet<>();
     private static boolean sRegisteredDaydreamHook;
-    private static boolean sAddedBlackOverlayView;
     private static boolean sRegisteredVrAssetsComponent;
     private static Boolean sIconComponentEnabled;
 
@@ -962,22 +961,20 @@ public class VrShellDelegate
     }
 
     private static void addBlackOverlayViewForActivity(ChromeActivity activity) {
-        if (sAddedBlackOverlayView) return;
+        View overlay = activity.getWindow().findViewById(R.id.vr_overlay_view);
+        if (overlay != null) return;
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
         View v = new View(activity);
         v.setId(R.id.vr_overlay_view);
         v.setBackgroundColor(Color.BLACK);
         activity.getWindow().addContentView(v, params);
-        sAddedBlackOverlayView = true;
     }
 
     private static void removeBlackOverlayView(ChromeActivity activity) {
-        if (!sAddedBlackOverlayView) return;
-        View v = activity.getWindow().findViewById(R.id.vr_overlay_view);
-        assert v != null;
-        UiUtils.removeViewFromParent(v);
-        sAddedBlackOverlayView = false;
+        View overlay = activity.getWindow().findViewById(R.id.vr_overlay_view);
+        if (overlay == null) return;
+        UiUtils.removeViewFromParent(overlay);
     }
 
     private static boolean isVrCoreCompatible(final Tab tabToShowInfobarIn) {
