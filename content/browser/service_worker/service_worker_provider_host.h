@@ -352,10 +352,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Returns a ServiceWorkerHandle instance for |version| for this provider
   // host. A new instance is created if one does not already exist.
-  // TODO(leonhsl): Make |version| be a scoped_refptr because we'll take its
-  // ownership.
+  // ServiceWorkerHandle will have an ownership of the |version|.
   base::WeakPtr<ServiceWorkerHandle> GetOrCreateServiceWorkerHandle(
-      ServiceWorkerVersion* version);
+      scoped_refptr<ServiceWorkerVersion> version);
 
   // Returns true if |registration| can be associated with this provider.
   bool CanAssociateRegistration(ServiceWorkerRegistration* registration);
