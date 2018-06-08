@@ -158,6 +158,7 @@ vs-chromium-project.txt
 /chrome_elf/chrome_elf_resources.xml
 /chromecast/internal
 /chromeos/assistant/internal
+/cipd_cache/
 /clank
 /cloud_print/cloud_print_version_resources.xml
 /components/chrome_settings_proto_generated_compile.xml
