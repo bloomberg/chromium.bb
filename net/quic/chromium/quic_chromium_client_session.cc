@@ -687,6 +687,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     bool migrate_sessions_on_network_change,
     bool migrate_session_early_v2,
     bool migrate_sessions_on_network_change_v2,
+    NetworkChangeNotifier::NetworkHandle default_network,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_path_degrading,
     int yield_after_packets,
@@ -750,7 +751,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
           headers_include_h2_stream_dependency &&
           this->connection()->transport_version() > quic::QUIC_VERSION_42),
       weak_factory_(this) {
-  default_network_ = socket->GetBoundNetwork();
+  default_network_ = default_network;
   sockets_.push_back(std::move(socket));
   packet_readers_.push_back(std::make_unique<QuicChromiumPacketReader>(
       sockets_.back().get(), clock, this, yield_after_packets,
