@@ -254,10 +254,6 @@ GetStaticSiteCharacteristicsDatabaseParams();
 // Gets parameters for the infinite session restore feature.
 InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams();
 
-// Returns a static InfiniteSessionRestoreParams object that can be used by all
-// instances of TabLoader.
-const InfiniteSessionRestoreParams& GetStaticInfiniteSessionRestoreParams();
-
 }  // namespace resource_coordinator
 
 #endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_FEATURES_H_

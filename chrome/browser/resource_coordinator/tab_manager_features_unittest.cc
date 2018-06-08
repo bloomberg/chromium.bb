@@ -110,6 +110,8 @@ class TabManagerFeaturesTest : public testing::Test {
     EXPECT_EQ(max_tabs_to_restore, params.max_tabs_to_restore);
     EXPECT_EQ(mb_free_memory_per_tab_to_restore,
               params.mb_free_memory_per_tab_to_restore);
+    EXPECT_EQ(max_time_since_last_use_to_restore,
+              params.max_time_since_last_use_to_restore);
     EXPECT_EQ(min_site_engagement_to_restore,
               params.min_site_engagement_to_restore);
   }

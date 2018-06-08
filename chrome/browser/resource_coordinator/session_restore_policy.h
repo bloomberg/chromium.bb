@@ -45,7 +45,8 @@ class SessionRestorePolicy {
   // Protected so can be exposed for unittesting.
 
   // Full constructor for testing.
-  SessionRestorePolicy(const Delegate* delegate,
+  SessionRestorePolicy(bool policy_enabled,
+                       const Delegate* delegate,
                        const InfiniteSessionRestoreParams* params);
 
   // Helper function for computing the number of loading slots to use. All
@@ -69,9 +70,13 @@ class SessionRestorePolicy {
   // the logic in this class.
   const Delegate* const delegate_;
 
-  // The parameters being used by this policy engine. These default to the
-  // static parameters from tab_manager_features.h, but can be injected for
-  // testing.
+  // A container for storing parsed parameters. Unless parameters are injected
+  // externally this will be populated with parsed parameters.
+  const InfiniteSessionRestoreParams parsed_params_;
+
+  // The parameters being used by this policy engine. By default this is simply
+  // a pointer to |parsed_params_|, but it can also point to externally
+  // injected parameters for testing.
   const InfiniteSessionRestoreParams* const params_;
 
   // The number of simultaneous tab loads that are permitted by policy. This
