@@ -12,6 +12,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -863,6 +864,12 @@ public class InfoBarContainerLayout extends FrameLayout {
         widthMeasureSpec = mFloatingBehavior.beforeOnMeasure(widthMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mFloatingBehavior.afterOnMeasure(getMeasuredHeight());
+    }
+
+    @Override
+    public void announceForAccessibility(CharSequence text) {
+        if (TextUtils.isEmpty(text)) return;
+        super.announceForAccessibility(text);
     }
 
     @Override
