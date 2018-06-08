@@ -530,9 +530,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void DidReceiveRendererFrame();
 
-  // Returns the ID that uniquely describes this component to the latency
-  // subsystem.
-  int64_t GetLatencyComponentId() const;
+  // Returns an identifier for this RenderWidgetHostImpl instance. This is used
+  // for snapshot requests made to the compositor.
+  int64_t GetFrameSinkIdForSnapshot() const;
 
   static void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info);

@@ -764,8 +764,6 @@ class RenderWidgetHostTest : public testing::Test {
   virtual void ConfigureView(TestView* view) {
   }
 
-  int64_t GetLatencyComponentId() { return host_->GetLatencyComponentId(); }
-
   base::TimeTicks GetNextSimulatedEventTime() {
     last_simulated_event_time_ += simulated_event_time_delta_;
     return last_simulated_event_time_;
@@ -2045,7 +2043,6 @@ TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
 
 void CheckLatencyInfoComponentInMessage(
     MockWidgetInputHandler::MessageVector& dispatched_events,
-    int64_t component_id,
     WebInputEvent::Type expected_type) {
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
@@ -2059,8 +2056,7 @@ void CheckLatencyInfoComponentInMessage(
 }
 
 void CheckLatencyInfoComponentInGestureScrollUpdate(
-    MockWidgetInputHandler::MessageVector& dispatched_events,
-    int64_t component_id) {
+    MockWidgetInputHandler::MessageVector& dispatched_events) {
   ASSERT_EQ(2u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   ASSERT_TRUE(dispatched_events[1]->ToEvent());
@@ -2087,7 +2083,7 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
                                            WebMouseWheelEvent::kPhaseBegan);
   MockWidgetInputHandler::MessageVector dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInMessage(dispatched_events, GetLatencyComponentId(),
+  CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kMouseWheel);
 
   // Tests RWHI::ForwardWheelEventWithLatencyInfo().
@@ -2095,14 +2091,14 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
       -5, 0, 0, true, ui::LatencyInfo(), WebMouseWheelEvent::kPhaseChanged);
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInMessage(dispatched_events, GetLatencyComponentId(),
+  CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kMouseWheel);
 
   // Tests RWHI::ForwardMouseEvent().
   SimulateMouseEvent(WebInputEvent::kMouseMove);
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInMessage(dispatched_events, GetLatencyComponentId(),
+  CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kMouseMove);
 
   // Tests RWHI::ForwardMouseEventWithLatencyInfo().
@@ -2110,7 +2106,7 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
                                     ui::LatencyInfo());
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInMessage(dispatched_events, GetLatencyComponentId(),
+  CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kMouseMove);
 
   // Tests RWHI::ForwardGestureEvent().
@@ -2119,14 +2115,14 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
   host_->input_router()->OnSetTouchAction(cc::kTouchActionAuto);
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInMessage(dispatched_events, GetLatencyComponentId(),
+  CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kTouchStart);
 
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInMessage(dispatched_events, GetLatencyComponentId(),
+  CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kGestureScrollBegin);
 
   // Tests RWHI::ForwardGestureEventWithLatencyInfo().
@@ -2135,8 +2131,7 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
                                       ui::LatencyInfo());
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInGestureScrollUpdate(dispatched_events,
-                                                 GetLatencyComponentId());
+  CheckLatencyInfoComponentInGestureScrollUpdate(dispatched_events);
 
   ReleaseTouchPoint(0);
   SendTouchEvent();
@@ -2148,7 +2143,7 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
   SendTouchEvent();
   dispatched_events =
       host_->mock_widget_input_handler_.GetAndResetDispatchedMessages();
-  CheckLatencyInfoComponentInMessage(dispatched_events, GetLatencyComponentId(),
+  CheckLatencyInfoComponentInMessage(dispatched_events,
                                      WebInputEvent::kTouchStart);
 }
 TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {

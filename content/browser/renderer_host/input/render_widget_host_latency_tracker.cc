@@ -39,21 +39,12 @@ RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
     RenderWidgetHostDelegate* delegate)
     : ukm_source_id_(GenerateUkmSourceId()),
       last_event_id_(0),
-      latency_component_id_(0),
       has_seen_first_gesture_scroll_update_(false),
       active_multi_finger_gesture_(false),
       touch_start_default_prevented_(false),
       render_widget_host_delegate_(delegate) {}
 
 RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {}
-
-void RenderWidgetHostLatencyTracker::Initialize(int routing_id,
-                                                int process_id) {
-  DCHECK_EQ(0, last_event_id_);
-  DCHECK_EQ(0, latency_component_id_);
-  last_event_id_ = static_cast<int64_t>(process_id) << 32;
-  latency_component_id_ = routing_id | last_event_id_;
-}
 
 void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     WebInputEvent::Type type,
@@ -149,7 +140,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   // This is the only place to add the BEGIN_RWH component. So this component
   // should not already be present in the latency info.
   bool found_component = latency->FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, nullptr);
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr);
   DCHECK(!found_component);
 
   if (!event.TimeStamp().is_null() &&
@@ -189,8 +180,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
           has_seen_first_gesture_scroll_update_
               ? ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT
               : ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          latency_component_id_, original_component.event_time,
-          original_component.event_count);
+          0, original_component.event_time, original_component.event_count);
     }
 
     has_seen_first_gesture_scroll_update_ = true;

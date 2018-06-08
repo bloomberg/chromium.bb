@@ -51,16 +51,11 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
 
   void reset_delegate() { render_widget_host_delegate_ = nullptr; }
 
-  // Returns the ID that uniquely describes this component to the latency
-  // subsystem.
-  int64_t latency_component_id() const { return latency_component_id_; }
-
  private:
   void OnEventStart(ui::LatencyInfo* latency);
 
   ukm::SourceId ukm_source_id_;
   int64_t last_event_id_;
-  int64_t latency_component_id_;
   bool has_seen_first_gesture_scroll_update_;
   bool set_url_for_ukm_ = false;
   // Whether the current stream of touch events includes more than one active
