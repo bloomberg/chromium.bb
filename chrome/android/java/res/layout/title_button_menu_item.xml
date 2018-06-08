@@ -11,7 +11,7 @@
      * A text label with an icon
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="?android:attr/listPreferredItemHeightSmall">
     <TextView
@@ -39,7 +39,7 @@
         android:paddingBottom="8dp"
         android:scaleType="fitCenter"
         android:src="?android:attr/listChoiceIndicatorMultiple"
-        chrome:chrometint="@null" />
+        app:chrometint="@null" />
 
     <!-- Displays an icon. -->
     <org.chromium.chrome.browser.widget.TintedImageButton
@@ -52,5 +52,5 @@
         android:paddingTop="12dp"
         android:paddingBottom="12dp"
         android:scaleType="fitCenter"
-        chrome:chrometint="@null" />
+        app:chrometint="@null" />
 </LinearLayout>

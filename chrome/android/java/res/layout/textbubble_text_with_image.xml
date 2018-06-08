@@ -8,7 +8,7 @@
      why and switch this to use TextViewWithCompoundDrawable. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -22,7 +22,7 @@
         android:layout_marginEnd="12dp"
         android:contentDescription="@null"
         android:scaleType="centerInside"
-        chrome:chrometint="@color/white_mode_tint" />
+        app:chrometint="@color/white_mode_tint" />
 
     <TextView
         android:id="@+id/message"

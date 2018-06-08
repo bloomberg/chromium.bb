@@ -5,13 +5,13 @@
 
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <org.chromium.chrome.browser.preferences.SpinnerPreference
         android:key="time_period_spinner"
         android:persistent="false"
         android:title="@string/clear_browsing_data_tab_period_title"
-        chrome:singleLine="true" />
+        app:singleLine="true" />
 
     <org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference
         android:key="clear_history_checkbox"

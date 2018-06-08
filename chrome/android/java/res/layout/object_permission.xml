@@ -5,7 +5,6 @@
 
 <ImageView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:contentDescription="@string/website_settings_revoke_device_permission"

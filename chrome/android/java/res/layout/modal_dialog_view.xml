@@ -6,12 +6,12 @@
 <!-- TODO(huayinz): rename menu_bg or change the dialog background to the desired one. -->
 <org.chromium.chrome.browser.widget.BoundedLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    chrome:maxWidthLandscape="@dimen/abc_dialog_min_width_major"
-    chrome:maxWidthPortrait="@dimen/abc_dialog_min_width_minor" >
+    app:maxWidthLandscape="@dimen/abc_dialog_min_width_major"
+    app:maxWidthPortrait="@dimen/abc_dialog_min_width_minor" >
 
     <android.support.v7.widget.DialogTitle
         android:id="@+id/title"
@@ -40,7 +40,7 @@
             <org.chromium.ui.widget.TextViewWithLeading
                 android:id="@+id/message"
                 android:textAppearance="@style/BlackBody"
-                chrome:leading="20sp"
+                app:leading="20sp"
                 style="@style/AlertDialogContent" />
 
         </LinearLayout>

@@ -5,10 +5,10 @@
 
 <org.chromium.chrome.browser.widget.BoundedLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:padding="24dp"
-    chrome:maxWidth="312dp"
+    app:maxWidth="312dp"
     style="@style/AlertDialogContent" >
 
     <ProgressBar

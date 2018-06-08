@@ -6,7 +6,6 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -31,7 +30,7 @@
             android:layout_weight="1"
             android:ellipsize="end"
             android:textAppearance="@style/BlackTitle1"
-            chrome:leading="22sp" />
+            app:leading="22sp" />
 
         <LinearLayout
             tools:ignore="UseCompoundDrawables"
@@ -83,7 +82,7 @@
                 android:src="@drawable/offline_pin_round"
                 android:contentDescription="@string/accessibility_ntp_offline_badge"
                 android:visibility="gone"
-                chrome:chrometint="#000" />
+                app:chrometint="@android:color/black" />
 
         </LinearLayout>
 
