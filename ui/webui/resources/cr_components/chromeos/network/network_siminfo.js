@@ -90,8 +90,15 @@ Polymer({
 
   /** @override */
   detached: function() {
-    if (this.$.enterPinDialog.open)
+    this.closeDialogs_();
+  },
+
+  /** @private */
+  closeDialogs_: function() {
+    if (this.$.enterPinDialog.open) {
+      this.onEnterPinDialogCancel_();
       this.$.enterPinDialog.close();
+    }
     if (this.$.changePinDialog.open)
       this.$.changePinDialog.close();
     if (this.$.unlockPinDialog.open)
@@ -215,7 +222,7 @@ Polymer({
       this.inProgress_ = false;
       if (chrome.runtime.lastError) {
         this.error_ = ErrorType.INCORRECT_PIN;
-        this.$.enterPin.inputElement.select();
+        this.$.enterPin.focus();
       } else {
         this.error_ = ErrorType.NONE;
         this.$.enterPinDialog.close();
@@ -265,7 +272,7 @@ Polymer({
       this.inProgress_ = false;
       if (chrome.runtime.lastError) {
         this.error_ = ErrorType.INCORRECT_PIN;
-        this.$.changePinOld.inputElement.select();
+        this.$.changePinOld.focus();
       } else {
         this.error_ = ErrorType.NONE;
         this.$.changePinDialog.close();
@@ -305,7 +312,7 @@ Polymer({
       this.inProgress_ = false;
       if (chrome.runtime.lastError) {
         this.error_ = ErrorType.INCORRECT_PIN;
-        this.$.unlockPin.inputElement.select();
+        this.$.unlockPin.focus();
       } else {
         this.error_ = ErrorType.NONE;
         this.$.unlockPinDialog.close();
@@ -356,7 +363,7 @@ Polymer({
       this.inProgress_ = false;
       if (chrome.runtime.lastError) {
         this.error_ = ErrorType.INCORRECT_PUK;
-        this.$.unlockPuk.inputElement.select();
+        this.$.unlockPuk.focus();
       } else {
         this.error_ = ErrorType.NONE;
         this.$.unlockPukDialog.close();

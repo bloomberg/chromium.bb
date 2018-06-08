@@ -12,7 +12,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="network_config_input.html">
+<link rel="import" href="network_password_input.html">
 <link rel="import" href="network_shared_css.html">
 
 <dom-module id="network-siminfo">
@@ -95,16 +95,19 @@
         on-close="onEnterPinDialogClose_">
       <div slot="title">[[i18n('networkSimEnterPinTitle')]]</div>
       <div slot="body">
-        <network-config-input id="enterPin" password
+        <network-password-input id="enterPin"
             label="[[i18n('networkSimEnterPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendEnterPin_">
           </iron-a11y-keys>
-        </network-config-input>
+        </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
         </div>
       </div>
       <div slot="button-container">
+        <paper-button class="cancel-button" on-tap="closeDialogs_">
+          [[i18n('cancel')]]
+        </paper-button>
         <paper-button on-tap="sendEnterPin_" disabled="[[inProgress_]]">
           [[i18n('networkSimEnter')]]
         </paper-button>
@@ -116,22 +119,25 @@
         on-close="onChangePinDialogClose_">
       <div slot="title">[[i18n('networkSimChangePinTitle')]]</div>
       <div slot="body">
-        <network-config-input id="changePinOld" password
+        <network-password-input id="changePinOld"
             label="[[i18n('networkSimEnterOldPin')]]">
-        </network-config-input>
-        <network-config-input id="changePinNew1" password
+        </network-password-input>
+        <network-password-input id="changePinNew1"
             label="[[i18n('networkSimEnterNewPin')]]">
-        </network-config-input>
-        <network-config-input id="changePinNew2" password
+        </network-password-input>
+        <network-password-input id="changePinNew2"
             label="[[i18n('networkSimReEnterNewPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendChangePin_">
           </iron-a11y-keys>
-        </network-config-input>
+        </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
         </div>
       </div>
       <div slot="button-container">
+        <paper-button class="cancel-button" on-tap="closeDialogs_">
+          [[i18n('cancel')]]
+        </paper-button>
         <paper-button class="action-button" on-tap="sendChangePin_"
             disabled="[[inProgress_]]">
           [[i18n('networkSimChange')]]
@@ -144,16 +150,19 @@
         on-close="onUnlockPinDialogClose_">
       <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
-        <network-config-input id="unlockPin" password
+        <network-password-input id="unlockPin"
             label="[[i18n('networkSimEnterPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPin_">
           </iron-a11y-keys>
-        </network-config-input>
+        </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
         </div>
       </div>
       <div slot="button-container">
+        <paper-button class="cancel-button" on-tap="closeDialogs_">
+          [[i18n('cancel')]]
+        </paper-button>
         <paper-button on-tap="sendUnlockPin_" disabled="[[inProgress_]]">
           [[i18n('networkSimUnlock')]]
         </paper-button>
@@ -168,17 +177,17 @@
         <div>
           Enter the 8-digit PIN Unblocking Key provided by your carrier
         </div>
-        <network-config-input id="unlockPuk" password
+        <network-password-input id="unlockPuk"
             label="[[i18n('networkSimEnterPuk')]]">
-        </network-config-input>
-        <network-config-input id="unlockPin1" password
+        </network-password-input>
+        <network-password-input id="unlockPin1"
             label="[[i18n('networkSimEnterNewPin')]]">
-        </network-config-input>
-        <network-config-input id="unlockPin2" password
+        </network-password-input>
+        <network-password-input id="unlockPin2"
             label="[[i18n('networkSimReEnterNewPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPuk_">
           </iron-a11y-keys>
-        </network-config-input>
+        </network-password-input>
         <div class="dialog-error">
           [[i18n('networkSimLockedWarning')]]
         </div>
@@ -187,6 +196,9 @@
         </div>
       </div>
       <div slot="button-container">
+        <paper-button class="cancel-button" on-tap="closeDialogs_">
+          [[i18n('cancel')]]
+        </paper-button>
         <paper-button on-tap="sendUnlockPuk_" disabled="[[inProgress_]]">
           [[i18n('networkSimUnlock')]]
         </paper-button>

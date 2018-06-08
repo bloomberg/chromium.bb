@@ -20,7 +20,7 @@
     </div>
     <template is="dom-if" if="[[hasIpConfigFields_(ipConfig_)]]">
       <div class="property-box single-column indented stretch">
-        <network-property-list
+        <network-property-list editable
             fields="[[ipConfigFields_]]" property-dict="[[ipConfig_]]"
             edit-field-types="[[getIPEditFields_(editable, automatic_)]]"
             on-property-change="onIPChange_">

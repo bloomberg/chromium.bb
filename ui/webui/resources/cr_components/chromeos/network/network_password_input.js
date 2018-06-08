@@ -3,15 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Polymer element for network configuration input fields.
+ * @fileoverview Polymer element for network password input fields.
  */
 Polymer({
-  is: 'network-config-input',
+  is: 'network-password-input',
 
   behaviors: [I18nBehavior],
 
   properties: {
-    label: String,
+    label: {
+      type: String,
+      reflectToAttribute: true,
+    },
 
     disabled: {
       type: Boolean,
@@ -23,8 +26,6 @@ Polymer({
       notify: true,
     },
 
-    password: Boolean,
-
     showPassword: {
       type: Boolean,
       value: false,
@@ -32,7 +33,7 @@ Polymer({
   },
 
   focus: function() {
-    this.$$('input').focus();
+    this.$$('cr-input').focus();
   },
 
   /**
@@ -40,7 +41,7 @@ Polymer({
    * @private
    */
   getInputType_: function() {
-    return (this.password && !this.showPassword) ? 'password' : 'text';
+    return this.showPassword ? 'text' : 'password';
   },
 
   /**

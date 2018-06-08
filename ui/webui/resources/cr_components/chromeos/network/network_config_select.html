@@ -5,25 +5,26 @@
 <dom-module id="network-config-select">
   <template>
     <style include="network-shared md-select">
-      #label {
-        color: var(--secondary-text-color);
-      }
-
       .md-select {
         color: var(--primary-text-color);
         width: 100%;
       }
 
-      .control-box {
-        -webkit-padding-end: calc(var(--network-control-margin) +
-            var(--cr-icon-button-margin-start));
+      #label {
+        @apply --cr-form-field-label;
+      }
+
+      #outer {
         align-items: stretch;
+        display: flex;
         flex-direction: column;
         justify-content: center;
+        margin-bottom: var(--cr-form-field-bottom-spacing);
+        padding: 0;
       }
     </style>
 
-    <div class="control-box">
+    <div id="outer">
       <div id="label">[[label]]</div>
       <select class="md-select" disabled="[[disabled]]"
           value="{{value::change}}" aria-label$="[[label]]">

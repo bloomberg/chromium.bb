@@ -1,15 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="network_shared_css.html">
 
 <dom-module id="network-proxy-input">
   <template>
     <style include="network-shared">
-      paper-input-container {
-        -webkit-margin-start: 10px;
+      cr-input {
+        margin: 0 var(--cr-button-edge-spacing);
       }
 
       #container {
@@ -33,17 +32,13 @@
     </style>
     <div id="container">
       <div id="label">[[label]]</div>
-      <paper-input-container id="host" no-label-float disabled$="[[!editable]]">
-        <iron-input slot="input" bind-value="{{value.Host}}">
-          <input disabled$="[[!editable]]" on-change="onValueChange_">
-        </iron-input>
-      </paper-input-container>
+      <cr-input id="host" readonly="[[!editable]]" value="{{value.Host}}"
+          on-change="onValueChange_">
+      </cr-input>
       <div>[[i18n('networkProxyPort')]]</div>
-      <paper-input-container id="port" no-label-float disabled$="[[!editable]]">
-        <iron-input slot="input" bind-value="{{value.Port}}">
-          <input disabled$="[[!editable]]" on-change="onValueChange_">
-        </iron-input>
-      </paper-input-container>
+      <cr-input id="port" readonly="[[!editable]]" value="{{value.Port}}"
+          on-change="onValueChange_">
+      </cr-input>
     </div>
   </template>
   <script src="network_proxy_input.js"></script>

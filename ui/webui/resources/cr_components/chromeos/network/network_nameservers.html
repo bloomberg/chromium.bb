@@ -1,12 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="network_shared_css.html">
 
@@ -17,10 +16,10 @@
         -webkit-margin-start: 4px;
       }
 
-      paper-input-container {
+      cr-input {
         /* Aligns with the start of cr-radio-button's text. */
         -webkit-margin-start: 38px;
-        height: 36px;
+        margin-bottom: 4px;
       }
 
       paper-radio-group {
@@ -85,12 +84,10 @@
             'custom')]]">
           <div class="property-box single-column two-line">
             <template is="dom-repeat" items="[[nameservers_]]">
-              <paper-input-container no-label-float>
-                <iron-input slot="input" bind-value="[[item]]">
-                  <input id="nameserver[[index]]" on-change="onValueChange_"
-                      disabled="[[!canEdit_(editable, nameserversType_)]]">
-                </iron-input>
-              </paper-input-container>
+              <cr-input id="nameserver[[index]]" value="[[item]]"
+                  on-change="onValueChange_"
+                  disabled="[[!canEdit_(editable, nameserversType_)]]">
+              </cr-input>
             </template>
           </div>
         </template>
