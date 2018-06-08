@@ -43,6 +43,8 @@ class TeamDriveChangeListLoader : public DriveChangeListLoader,
 
   ~TeamDriveChangeListLoader() override;
 
+  const base::FilePath& root_entry_path() const { return root_entry_path_; }
+
   // DriveChangeListLoader overrides
   void AddChangeListLoaderObserver(ChangeListLoaderObserver* observer) override;
   void RemoveChangeListLoaderObserver(

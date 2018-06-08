@@ -103,6 +103,8 @@ class MockDirectoryChangeObserver : public FileSystemObserver {
 class FileSystemTest : public testing::Test {
  protected:
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        google_apis::kEnableTeamDrives);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     pref_service_.reset(new TestingPrefServiceSimple);
     test_util::RegisterDrivePrefs(pref_service_->registry());
@@ -308,6 +310,81 @@ class FileSystemTest : public testing::Test {
 
     // Recreate resource metadata.
     SetUpResourceMetadataAndFileSystem();
+  }
+
+  // Sets up two team drives, team_drive_a and team_drive_b and creates the
+  // following:
+  // - Directories:
+  // -- team_drive_a/dir1
+  // -- team_drive_a/dir1/nested_1
+  // -- team_drive_b/dir2
+  //
+  // - Files:
+  // -- team_drive_a/dir1/file1
+  // -- team_drive_a/dir1/nested_1/file1
+  // -- team_drive_b/dir2/file2
+  bool SetupTeamDrives() {
+    fake_drive_service_->AddTeamDrive("td_id_1", "team_drive_1", "");
+    fake_drive_service_->AddTeamDrive("td_id_2", "team_drive_2", "");
+
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
+    std::unique_ptr<google_apis::FileResource> entry;
+
+    fake_drive_service_->AddNewFileWithResourceId(
+        "td_1_dir_1_resource_id", util::kDriveFolderMimeType, std::string(),
+        "td_id_1", "dir1",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    if (error != google_apis::HTTP_CREATED)
+      return false;
+
+    fake_drive_service_->AddNewFileWithResourceId(
+        "td_1_dir_nested_1_resource_id", util::kDriveFolderMimeType,
+        std::string(), "td_1_dir_1_resource_id", "nested_1",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    if (error != google_apis::HTTP_CREATED)
+      return false;
+
+    fake_drive_service_->AddNewFileWithResourceId(
+        "td_2_dir_2_resource_id", util::kDriveFolderMimeType, std::string(),
+        "td_id_2", "dir2",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    if (error != google_apis::HTTP_CREATED)
+      return false;
+
+    fake_drive_service_->AddNewFileWithResourceId(
+        "dir1_file_1_resource_id", "audio/mpeg", "dir 1 file 1 content.",
+        "td_1_dir_1_resource_id", "File 1.txt",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    if (error != google_apis::HTTP_CREATED)
+      return false;
+
+    fake_drive_service_->AddNewFileWithResourceId(
+        "nested_1_file_1_resource_id", "audio/mpeg", "nested 1 file 1 content.",
+        "td_1_dir_nested_1_resource_id", "Nested File 1.txt",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    if (error != google_apis::HTTP_CREATED)
+      return false;
+
+    fake_drive_service_->AddNewFileWithResourceId(
+        "dir_2_file_1_resource_id", "audio/mpeg", "dir2 file1 content.",
+        "td_2_dir_2_resource_id", "File 2.txt",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    if (error != google_apis::HTTP_CREATED)
+      return false;
+
+    return true;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -629,6 +706,16 @@ TEST_F(FileSystemTest, GetMyDriveRoot) {
   EXPECT_EQ(1, fake_drive_service_->file_list_load_count());
 }
 
+TEST_F(FileSystemTest, GetTeamDriveRoot) {
+  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/team_drives"));
+  std::unique_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(util::kDriveTeamDrivesDirLocalId, entry->local_id());
+
+  // After "fast fetch" is done, full resource list is fetched.
+  EXPECT_EQ(1, fake_drive_service_->file_list_load_count());
+}
+
 TEST_F(FileSystemTest, GetExistingFile) {
   // Simulate the situation that full feed fetching takes very long time,
   // to test the recursive "fast fetch" feature is properly working.
@@ -686,20 +773,47 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
       ReadDirectorySync(base::FilePath::FromUTF8Unsafe("drive")));
   // The root directory should be read correctly.
   ASSERT_TRUE(entries);
-  ASSERT_EQ(3U, entries->size());
+  ASSERT_EQ(4U, entries->size());
 
-  // The found three directories should be /drive/root, /drive/other and
-  // /drive/trash.
+  // The found three directories should be /drive/root, /drive/other,
+  // /drive/trash and /drive/team_drives.
   std::set<base::FilePath> found;
   for (size_t i = 0; i < entries->size(); ++i)
     found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
-  EXPECT_EQ(3U, found.size());
+  EXPECT_EQ(4U, found.size());
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
                     util::kDriveMyDriveRootDirName)));
   EXPECT_EQ(1U, found.count(
                     base::FilePath::FromUTF8Unsafe(util::kDriveOtherDirName)));
   EXPECT_EQ(1U, found.count(
                     base::FilePath::FromUTF8Unsafe(util::kDriveTrashDirName)));
+  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe(
+                    util::kDriveTeamDrivesDirName)));
+}
+
+// TODO(slamgley): Add more tests for team drives.
+TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
+  ASSERT_TRUE(SetupTeamDrives());
+
+  // The first load trigger the loading of team drives.
+  ReadDirectorySync(base::FilePath::FromUTF8Unsafe("."));
+
+  // After the first load team drive data should be available for reading.
+  std::unique_ptr<ResourceEntryVector> entries(
+      ReadDirectorySync(base::FilePath::FromUTF8Unsafe("drive/team_drives")));
+  // The root directory should be read correctly.
+  ASSERT_TRUE(entries);
+  ASSERT_EQ(2U, entries->size());
+
+  // The found three directories should be /drive/root, /drive/other,
+  // /drive/trash and /drive/team_drives.
+  std::set<base::FilePath> found;
+  for (size_t i = 0; i < entries->size(); ++i) {
+    found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
+  }
+  EXPECT_EQ(2U, found.size());
+  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("team_drive_1")));
+  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("team_drive_2")));
 }
 
 TEST_F(FileSystemTest, ReadDirectory_NonRootDirectory) {
