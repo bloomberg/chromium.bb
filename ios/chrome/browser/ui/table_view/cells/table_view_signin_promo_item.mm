@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,6 +42,8 @@ const CGFloat kMargin = 16;
   cell.signinPromoView.textLabel.text = self.text;
   [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
   [self.configurator configureSigninPromoView:cell.signinPromoView];
+  if (styler.cellTitleColor)
+    cell.signinPromoView.textLabel.textColor = styler.cellTitleColor;
 }
 
 @end

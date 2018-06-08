@@ -22,6 +22,8 @@ typedef NS_ENUM(UInt32, TextItemColor) {
 @property(nonatomic, assign) NSTextAlignment textAlignment;
 
 // Hex color for the cell's textLabel. Default is TextItemColorLightGrey.
+// ChromeTableViewStyler's |cellTitleColor| takes precedence over the default
+// color, but not over |textColor|.
 @property(nonatomic, assign) TextItemColor textColor;
 
 @property(nonatomic, readwrite, strong) NSString* text;

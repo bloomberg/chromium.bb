@@ -11,6 +11,8 @@
 @implementation ChromeTableViewStyler
 
 @synthesize tableViewBackgroundColor = _tableViewBackgroundColor;
+@synthesize cellTitleColor = _cellTitleColor;
+@synthesize headerFooterTitleColor = _headerFooterTitleColor;
 
 - (instancetype)init {
   if ((self = [super init])) {

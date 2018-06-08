@@ -13,6 +13,9 @@
 // opaque color, cells can choose to make themselves opaque and draw their own
 // background as a performance optimization.
 @property(nonatomic, readwrite, strong) UIColor* tableViewBackgroundColor;
+// Text colors.
+@property(nonatomic, readwrite, strong) UIColor* cellTitleColor;
+@property(nonatomic, readwrite, strong) UIColor* headerFooterTitleColor;
 
 @end
 
