@@ -1219,11 +1219,6 @@
       # chromium.clang
       'CFI Linux (icall)',
       'CFI Linux ToT',
-      'ToTLinuxThinLTO',
-      'ToTLinuxUBSanVptr',
-      'UBSanVptr Linux',
-      # chromium.fyi
-      'Out of Process Profiling Linux',
       # chromium.gpu
       # On Android, these are already run on the main waterfall.
       # Run them on the one-off Android FYI bots, though.
@@ -1321,8 +1316,6 @@
   },
   'gl_unittests': {
     'remove_from': [
-      # chromium.fyi
-      'Out of Process Profiling Linux',
       # chromium.gpu.fyi
       # On Android, these are already run on the main waterfall.
       # Run them on the one-off Android FYI bots, though.
@@ -1464,8 +1457,8 @@
   'interactive_ui_tests': {
     'remove_from': [
       # chromium.clang
-      'ToTLinuxUBSanVptr',
-      'UBSanVptr Linux',
+      'ToTLinuxUBSanVptr',  # https://crbug.com/815190
+      'UBSanVptr Linux',  # https://crbug.com/815190
       # chromium.memory
       'Linux TSan Tests',
     ],

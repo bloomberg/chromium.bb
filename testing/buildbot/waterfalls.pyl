@@ -672,7 +672,7 @@
       },
       'ToTLinuxThinLTO': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'ToTLinuxUBSanVptr': {
@@ -681,7 +681,7 @@
         ],
         'test_suites': {
           # no "_and_gl":gl_unittests doesn't pass yet,
-          # crbug.com/https://crbug.com/815183
+          # https://crbug.com/815183
           'gtest_tests': 'chromium_linux_gtests',
         },
       },
@@ -761,7 +761,7 @@
       'UBSanVptr Linux': {
         'test_suites': {
           # no "_and_gl":gl_unittests doesn't pass yet,
-          # crbug.com/https://crbug.com/815183
+          # https://crbug.com/815183
           'gtest_tests': 'chromium_linux_gtests',
         },
       },
@@ -2338,7 +2338,7 @@
       },
       'Out of Process Profiling Linux': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'Out of Process Profiling Mac': {
