@@ -38,10 +38,12 @@ const char kPersistBookmarkURL[] = "http://www.cnn.com/";
 const char kPersistBookmarkTitle[] = "CNN";
 } // namespace
 
-class TestBookmarkTabHelperObserver : public BookmarkTabHelperObserver {
+class TestBookmarkTabHelperDelegate : public BookmarkTabHelperDelegate {
  public:
-  TestBookmarkTabHelperObserver() : starred_(false) {}
-  ~TestBookmarkTabHelperObserver() override {}
+  TestBookmarkTabHelperDelegate()
+      : starred_(false) {
+  }
+  ~TestBookmarkTabHelperDelegate() override {}
 
   void URLStarredChanged(content::WebContents*, bool starred) override {
     starred_ = starred;
@@ -51,7 +53,7 @@ class TestBookmarkTabHelperObserver : public BookmarkTabHelperObserver {
  private:
   bool starred_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestBookmarkTabHelperObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestBookmarkTabHelperDelegate);
 };
 
 class BookmarkBrowsertest : public InProcessBrowserTest {
@@ -185,17 +187,17 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
                                 bookmark_url,
                                 base::ASCIIToUTF16("Bookmark"));
 
-  TestBookmarkTabHelperObserver bookmark_observer;
+  TestBookmarkTabHelperDelegate bookmark_delegate;
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   BookmarkTabHelper* tab_helper =
       BookmarkTabHelper::FromWebContents(web_contents);
-  tab_helper->AddObserver(&bookmark_observer);
+  tab_helper->set_delegate(&bookmark_delegate);
 
   // Go to a bookmarked url. Bookmark star should show.
   ui_test_utils::NavigateToURL(browser(), bookmark_url);
   EXPECT_FALSE(web_contents->ShowingInterstitialPage());
-  EXPECT_TRUE(bookmark_observer.is_starred());
+  EXPECT_TRUE(bookmark_delegate.is_starred());
 
   // Now go to a non-bookmarked url which triggers an SSL warning. Bookmark
   // star should disappear.
@@ -204,7 +206,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
   web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForInterstitialAttach(web_contents);
   EXPECT_TRUE(web_contents->ShowingInterstitialPage());
-  EXPECT_FALSE(bookmark_observer.is_starred());
+  EXPECT_FALSE(bookmark_delegate.is_starred());
 
-  tab_helper->RemoveObserver(&bookmark_observer);
+  // The delegate is required to outlive the tab helper.
+  tab_helper->set_delegate(nullptr);
 }

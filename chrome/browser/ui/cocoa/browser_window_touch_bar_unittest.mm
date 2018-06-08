@@ -16,7 +16,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_touch_bar.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -53,11 +52,19 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
 
     feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
 
+    BOOL yes = YES;
+    bwc_ = [OCMockObject mockForClass:[BrowserWindowController class]];
+    [[[bwc_ stub] andReturnValue:OCMOCK_VALUE(yes)]
+        isKindOfClass:[BrowserWindowController class]];
+    [[bwc_ stub] invalidateTouchBar];
+
     command_updater_ = browser()->command_controller();
 
-    touch_bar_.reset(
-        [[BrowserWindowTouchBar alloc] initWithBrowser:browser() window:nil]);
+    touch_bar_.reset([[BrowserWindowTouchBar alloc] initWithBrowser:browser()
+                                            browserWindowController:bwc_]);
   }
+
+  id bwc() const { return bwc_; }
 
   NSString* GetFullscreenTouchBarItemId(NSString* id) {
     return ui::GetTouchBarItemId(kTabFullscreenTouchBarId, id);
@@ -71,10 +78,10 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
     command_updater_->UpdateCommandEnabled(id, enabled);
   }
 
-  void TearDown() override {
-    touch_bar_.reset();
-    CocoaProfileTest::TearDown();
-  }
+  void TearDown() override { CocoaProfileTest::TearDown(); }
+
+  // A mock BrowserWindowController object.
+  id bwc_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
 
@@ -87,28 +94,26 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
 // Tests to check if the touch bar contains the correct items.
 TEST_F(BrowserWindowTouchBarUnitTest, TouchBarItems) {
   if (@available(macOS 10.12.2, *)) {
-    // Set to tab fullscreen.
-    FullscreenController* fullscreen_controller =
-        browser()->exclusive_access_manager()->fullscreen_controller();
-    fullscreen_controller->set_is_tab_fullscreen_for_testing(true);
-    EXPECT_TRUE(fullscreen_controller->IsTabFullscreen());
+    BOOL yes = YES;
+    [[[bwc() expect] andReturnValue:OCMOCK_VALUE(yes)]
+        isFullscreenForTabContentOrExtension];
 
-    // The touch bar should only contain an item that displays the origin of the
-    // tab content fullscreen.
+    PrefService* prefs = profile()->GetPrefs();
+    DCHECK(prefs);
+    prefs->SetBoolean(prefs::kShowHomeButton, true);
+
+    // The touch bar should be empty since the toolbar is hidden when the
+    // browser is in tab fullscreen.
     NSTouchBar* touch_bar = [touch_bar_ makeTouchBar];
     NSArray* touch_bar_items = [touch_bar itemIdentifiers];
     EXPECT_TRUE(
         [touch_bar_items containsObject:GetFullscreenTouchBarItemId(
                                             kFullscreenOriginLabelTouchId)]);
-    EXPECT_EQ(1u, [touch_bar_items count]);
 
-    // Exit fullscreen.
-    fullscreen_controller->set_is_tab_fullscreen_for_testing(false);
-    EXPECT_FALSE(fullscreen_controller->IsTabFullscreen());
+    BOOL no = NO;
+    [[[bwc() stub] andReturnValue:OCMOCK_VALUE(no)]
+        isFullscreenForTabContentOrExtension];
 
-    PrefService* prefs = profile()->GetPrefs();
-    DCHECK(prefs);
-    prefs->SetBoolean(prefs::kShowHomeButton, true);
     touch_bar_items = [[touch_bar_ makeTouchBar] itemIdentifiers];
     EXPECT_TRUE([touch_bar_items
         containsObject:GetBrowserTouchBarItemId(kBackForwardTouchId)]);
@@ -122,12 +127,29 @@ TEST_F(BrowserWindowTouchBarUnitTest, TouchBarItems) {
         containsObject:GetBrowserTouchBarItemId(kStarTouchId)]);
     EXPECT_TRUE([touch_bar_items
         containsObject:GetBrowserTouchBarItemId(kNewTabTouchId)]);
+
+    prefs->SetBoolean(prefs::kShowHomeButton, false);
+    touch_bar_items = [[touch_bar_ makeTouchBar] itemIdentifiers];
+    EXPECT_TRUE([touch_bar_items
+        containsObject:GetBrowserTouchBarItemId(kBackForwardTouchId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:GetBrowserTouchBarItemId(kReloadOrStopTouchId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:GetBrowserTouchBarItemId(kSearchTouchId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:GetBrowserTouchBarItemId(kStarTouchId)]);
+    EXPECT_TRUE([touch_bar_items
+        containsObject:GetBrowserTouchBarItemId(kNewTabTouchId)]);
   }
 }
 
 // Tests the reload or stop touch bar item.
 TEST_F(BrowserWindowTouchBarUnitTest, ReloadOrStopTouchBarItem) {
   if (@available(macOS 10.12.2, *)) {
+    BOOL no = NO;
+    [[[bwc() stub] andReturnValue:OCMOCK_VALUE(no)]
+        isFullscreenForTabContentOrExtension];
+
     NSTouchBar* touch_bar = [touch_bar_ makeTouchBar];
     [touch_bar_ setIsPageLoading:NO];
 
