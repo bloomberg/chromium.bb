@@ -43,6 +43,18 @@ void ThreadHeapStatsCollector::DecreaseAllocatedSpace(size_t bytes) {
   allocated_space_bytes_ -= bytes;
 }
 
+void ThreadHeapStatsCollector::IncreaseWrapperCount(size_t count) {
+  wrapper_count_ += count;
+}
+
+void ThreadHeapStatsCollector::DecreaseWrapperCount(size_t count) {
+  wrapper_count_ -= count;
+}
+
+void ThreadHeapStatsCollector::IncreaseCollectedWrapperCount(size_t count) {
+  collected_wrapper_count_ += count;
+}
+
 void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
   DCHECK(!is_started_);
   DCHECK_EQ(0.0, current_.marking_time_in_ms());
@@ -55,7 +67,9 @@ void ThreadHeapStatsCollector::NotifyMarkingCompleted() {
   current_.allocated_space_in_bytes_before_sweeping = allocated_space_bytes();
   current_.partition_alloc_bytes_before_sweeping =
       WTF::Partitions::TotalSizeOfCommittedPages();
+  current_.wrapper_count_before_sweeping = wrapper_count_;
   allocated_bytes_since_prev_gc_ = 0;
+  collected_wrapper_count_ = 0;
 }
 
 void ThreadHeapStatsCollector::NotifySweepingCompleted() {
@@ -114,6 +128,14 @@ size_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
 
 size_t ThreadHeapStatsCollector::allocated_space_bytes() const {
   return allocated_space_bytes_;
+}
+
+size_t ThreadHeapStatsCollector::collected_wrapper_count() const {
+  return collected_wrapper_count_;
+}
+
+size_t ThreadHeapStatsCollector::wrapper_count() const {
+  return wrapper_count_;
 }
 
 }  // namespace blink

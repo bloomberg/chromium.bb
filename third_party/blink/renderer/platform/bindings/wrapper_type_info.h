@@ -34,6 +34,7 @@
 #include "gin/public/wrapper_info.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
@@ -100,13 +101,14 @@ struct WrapperTypeInfo {
   }
 
   static void WrapperCreated() {
-    ThreadState::Current()->Heap().HeapStats().IncreaseWrapperCount(1);
+    ThreadState::Current()->Heap().stats_collector()->IncreaseWrapperCount(1);
   }
 
   static void WrapperDestroyed() {
-    ThreadHeapStats& heap_stats = ThreadState::Current()->Heap().HeapStats();
-    heap_stats.DecreaseWrapperCount(1);
-    heap_stats.IncreaseCollectedWrapperCount(1);
+    ThreadHeapStatsCollector* stats_collector =
+        ThreadState::Current()->Heap().stats_collector();
+    stats_collector->DecreaseWrapperCount(1);
+    stats_collector->IncreaseCollectedWrapperCount(1);
   }
 
   bool Equals(const WrapperTypeInfo* that) const { return this == that; }

@@ -191,10 +191,11 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
 namespace {
 
 void UpdateCollectedPhantomHandles(v8::Isolate* isolate) {
-  ThreadHeapStats& heap_stats = ThreadState::Current()->Heap().HeapStats();
-  size_t count = isolate->NumberOfPhantomHandleResetsSinceLastCall();
-  heap_stats.DecreaseWrapperCount(count);
-  heap_stats.IncreaseCollectedWrapperCount(count);
+  ThreadHeapStatsCollector* stats_collector =
+      ThreadState::Current()->Heap().stats_collector();
+  const size_t count = isolate->NumberOfPhantomHandleResetsSinceLastCall();
+  stats_collector->DecreaseWrapperCount(count);
+  stats_collector->IncreaseCollectedWrapperCount(count);
 }
 
 }  // namespace

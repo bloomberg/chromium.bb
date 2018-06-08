@@ -148,31 +148,6 @@ class ObjectAliveTrait<T, true> {
   }
 };
 
-// Stats for the heap.
-class ThreadHeapStats {
-  USING_FAST_MALLOC(ThreadHeapStats);
-
- public:
-  ThreadHeapStats();
-
-  void IncreaseWrapperCount(size_t delta) { wrapper_count_ += delta; }
-  void DecreaseWrapperCount(size_t delta) { wrapper_count_ -= delta; }
-  size_t WrapperCount() { return AcquireLoad(&wrapper_count_); }
-  size_t WrapperCountAtLastGC() { return wrapper_count_at_last_gc_; }
-  void IncreaseCollectedWrapperCount(size_t delta) {
-    collected_wrapper_count_ += delta;
-  }
-  size_t CollectedWrapperCount() { return collected_wrapper_count_; }
-
-  void Reset();
-
- private:
-  size_t wrapper_count_;
-  size_t wrapper_count_at_last_gc_;
-  size_t collected_wrapper_count_;
-  double estimated_marking_time_per_byte_;
-};
-
 class PLATFORM_EXPORT ThreadHeap {
  public:
   explicit ThreadHeap(ThreadState*);
@@ -215,8 +190,6 @@ class PLATFORM_EXPORT ThreadHeap {
   }
 
   StackFrameDepth& GetStackFrameDepth() { return stack_frame_depth_; }
-
-  ThreadHeapStats& HeapStats() { return stats_; }
 
   MarkingWorklist* GetMarkingWorklist() const {
     return marking_worklist_.get();
@@ -340,8 +313,6 @@ class PLATFORM_EXPORT ThreadHeap {
   // heap-page if one exists.
   BasePage* LookupPageForAddress(Address);
 
-  static void ReportMemoryUsageForTracing();
-
   HeapCompact* Compaction();
 
   // Get one of the heap structures for this thread.
@@ -452,9 +423,6 @@ class PLATFORM_EXPORT ThreadHeap {
 #endif
 
  private:
-  // Reset counters that track live and allocated-since-last-GC sizes.
-  void ResetHeapCounters();
-
   static int ArenaIndexForObjectSize(size_t);
 
   void CommitCallbackStacks();
@@ -467,7 +435,6 @@ class PLATFORM_EXPORT ThreadHeap {
   void WriteBarrier(void* value);
 
   ThreadState* thread_state_;
-  ThreadHeapStats stats_;
   std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;
   std::unique_ptr<RegionTree> region_tree_;
   std::unique_ptr<AddressCache> address_cache_;

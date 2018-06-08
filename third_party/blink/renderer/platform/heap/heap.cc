@@ -60,16 +60,6 @@ namespace blink {
 HeapAllocHooks::AllocationHook* HeapAllocHooks::allocation_hook_ = nullptr;
 HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
 
-ThreadHeapStats::ThreadHeapStats()
-    : wrapper_count_(0),
-      wrapper_count_at_last_gc_(0),
-      collected_wrapper_count_(0),
-      estimated_marking_time_per_byte_(0.0) {}
-
-void ThreadHeapStats::Reset() {
-  wrapper_count_at_last_gc_ = wrapper_count_;
-  collected_wrapper_count_ = 0;
-}
 
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
@@ -322,30 +312,6 @@ void ThreadHeap::VerifyMarking() {
   }
 }
 
-void ThreadHeap::ReportMemoryUsageForTracing() {
-  bool gc_tracing_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                                     &gc_tracing_enabled);
-  if (!gc_tracing_enabled)
-    return;
-
-  ThreadHeap& heap = ThreadState::Current()->Heap();
-  // These values are divided by 1024 to avoid overflow in practical cases
-  // (TRACE_COUNTER values are 32-bit ints).
-  // They are capped to INT_MAX just in case.
-  TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadHeap::wrapperCount",
-      std::min(heap.HeapStats().WrapperCount(), static_cast<size_t>(INT_MAX)));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadHeap::wrapperCountAtLastGC",
-                 std::min(heap.HeapStats().WrapperCountAtLastGC(),
-                          static_cast<size_t>(INT_MAX)));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadHeap::collectedWrapperCount",
-                 std::min(heap.HeapStats().CollectedWrapperCount(),
-                          static_cast<size_t>(INT_MAX)));
-}
-
 size_t ThreadHeap::ObjectPayloadSizeForTesting() {
   ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
   size_t object_payload_size = 0;
@@ -383,14 +349,6 @@ BasePage* ThreadHeap::LookupPageForAddress(Address address) {
     return region->PageFromAddress(address);
   }
   return nullptr;
-}
-
-void ThreadHeap::ResetHeapCounters() {
-  DCHECK(thread_state_->InAtomicMarkingPause());
-
-  ThreadHeap::ReportMemoryUsageForTracing();
-
-  stats_.Reset();
 }
 
 void ThreadHeap::MakeConsistentForGC() {
