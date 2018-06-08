@@ -2055,7 +2055,7 @@ Browser::GetWebContentsModalDialogHost() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, BookmarkTabHelperDelegate implementation:
+// Browser, BookmarkTabHelperObserver implementation:
 
 void Browser::URLStarredChanged(content::WebContents* web_contents,
                                 bool starred) {
@@ -2406,7 +2406,6 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   web_contents->SetDelegate(delegate);
 
   // ...and all the helpers.
-  BookmarkTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   WebContentsModalDialogManager::FromWebContents(web_contents)->
       SetDelegate(delegate);
   CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
@@ -2415,9 +2414,11 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   if (delegate) {
     zoom::ZoomController::FromWebContents(web_contents)->AddObserver(this);
     content_translate_driver.AddObserver(this);
+    BookmarkTabHelper::FromWebContents(web_contents)->AddObserver(this);
   } else {
     zoom::ZoomController::FromWebContents(web_contents)->RemoveObserver(this);
     content_translate_driver.RemoveObserver(this);
+    BookmarkTabHelper::FromWebContents(web_contents)->RemoveObserver(this);
   }
 }
 

@@ -21,7 +21,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_bubble_manager.h"
@@ -110,7 +110,7 @@ class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public CoreTabHelperDelegate,
                 public ChromeWebModalDialogManagerDelegate,
-                public BookmarkTabHelperDelegate,
+                public BookmarkTabHelperObserver,
 #if !defined(OS_ANDROID)
                 public zoom::ZoomObserver,
 #endif  // !defined(OS_ANDROID)
@@ -715,7 +715,7 @@ class Browser : public TabStripModelObserver,
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
 
-  // Overridden from BookmarkTabHelperDelegate:
+  // Overridden from BookmarkTabHelperObserver:
   void URLStarredChanged(content::WebContents* web_contents,
                          bool starred) override;
 

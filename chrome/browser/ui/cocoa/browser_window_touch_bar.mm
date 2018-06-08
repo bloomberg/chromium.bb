@@ -17,14 +17,14 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -35,6 +35,8 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -45,7 +47,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace {
-
 
 // Touch bar identifiers.
 NSString* const kBrowserWindowTouchBarId = @"browser-window";
@@ -67,6 +68,8 @@ const int kForwardSegmentIndex = 1;
 // Touch bar icon colors values.
 const SkColor kTouchBarDefaultIconColor = SK_ColorWHITE;
 const SkColor kTouchBarStarActiveColor = gfx::kGoogleBlue500;
+
+const SkColor kTouchBarUrlPathColor = SkColorSetA(SK_ColorWHITE, 0x7F);
 
 // The size of the touch bar icons.
 const int kTouchBarIconSize = 16;
@@ -123,26 +126,99 @@ ui::TouchBarAction TouchBarActionFromCommand(int command) {
 
 // A class registered for C++ notifications. This is used to detect changes in
 // the profile preferences and the back/forward commands.
-class BrowserTouchBarNotificationBridge : public CommandObserver {
+class BrowserTouchBarNotificationBridge : public CommandObserver,
+                                          public BookmarkTabHelperObserver,
+                                          public TabStripModelObserver,
+                                          public content::WebContentsObserver {
  public:
-  BrowserTouchBarNotificationBridge(BrowserWindowTouchBar* observer,
-                                    BrowserWindowController* bwc)
-      : observer_(observer), bwc_(bwc) {}
+  BrowserTouchBarNotificationBridge(BrowserWindowTouchBar* owner,
+                                    Browser* browser)
+      : owner_(owner), browser_(browser), contents_(nullptr) {
+    TabStripModel* model = browser_->tab_strip_model();
 
-  ~BrowserTouchBarNotificationBridge() override {}
+    DCHECK(model);
+    model->AddObserver(this);
 
-  void UpdateTouchBar() { [bwc_ invalidateTouchBar]; }
+    UpdateWebContents(model->GetActiveWebContents());
+  }
+
+  ~BrowserTouchBarNotificationBridge() override {
+    TabStripModel* model = browser_->tab_strip_model();
+    if (model)
+      model->RemoveObserver(this);
+
+    UpdateWebContents(nullptr);
+  }
+
+  void UpdateTouchBar() { [owner_ invalidateTouchBar]; }
+
+  // BookmarkTabHelperObserver:
+  void URLStarredChanged(content::WebContents* web_contents,
+                         bool starred) override {
+    DCHECK(web_contents == contents_);
+    [owner_ setIsStarred:starred];
+  }
+
+  // TabStripModelObserver:
+  void ActiveTabChanged(content::WebContents* old_contents,
+                        content::WebContents* new_contents,
+                        int index,
+                        int reason) override {
+    UpdateWebContents(new_contents);
+    UpdateTouchBar();
+  }
 
  protected:
   // CommandObserver:
   void EnabledStateChangedForCommand(int command, bool enabled) override {
     DCHECK(command == IDC_BACK || command == IDC_FORWARD);
-    [observer_ updateBackForwardControl];
+    [owner_ updateBackForwardControl];
+  }
+
+  // WebContentsObserver:
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override {
+    UpdateTouchBar();
+  }
+
+  void DidStartLoading() override {
+    DCHECK(contents_ && contents_->IsLoading());
+    [owner_ setIsPageLoading:YES];
+  }
+
+  void DidStopLoading() override {
+    DCHECK(contents_ && !contents_->IsLoading());
+    [owner_ setIsPageLoading:NO];
+  }
+
+  void WebContentsDestroyed() override {
+    // Clean up if the web contents is being destroyed.
+    UpdateWebContents(nullptr);
   }
 
  private:
-  BrowserWindowTouchBar* observer_;  // Weak.
-  BrowserWindowController* bwc_;  // Weak.
+  void UpdateWebContents(content::WebContents* new_contents) {
+    if (contents_) {
+      BookmarkTabHelper::FromWebContents(contents_)->RemoveObserver(this);
+    }
+
+    contents_ = new_contents;
+    Observe(contents_);
+
+    bool is_starred = false;
+    if (contents_) {
+      BookmarkTabHelper* helper = BookmarkTabHelper::FromWebContents(contents_);
+      helper->AddObserver(this);
+      is_starred = helper->is_starred();
+    }
+
+    [owner_ setIsPageLoading:contents_ && contents_->IsLoading()];
+    [owner_ setIsStarred:is_starred];
+  }
+
+  BrowserWindowTouchBar* owner_;    // Weak.
+  Browser* browser_;                // Weak.
+  content::WebContents* contents_;  // Weak.
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTouchBarNotificationBridge);
 };
@@ -156,7 +232,7 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
   // The browser associated with the touch bar.
   Browser* browser_;  // Weak.
 
-  BrowserWindowController* bwc_;  // Weak, own us.
+  NSWindow* window_;
 
   // Used to monitor the optional home button pref.
   BooleanPrefMember showHomeButton_;
@@ -195,15 +271,14 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
 @synthesize isPageLoading = isPageLoading_;
 @synthesize isStarred = isStarred_;
 
-- (instancetype)initWithBrowser:(Browser*)browser
-        browserWindowController:(BrowserWindowController*)bwc {
-  if ((self = [self init])) {
+- (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window {
+  if ((self = [super init])) {
     DCHECK(browser);
     browser_ = browser;
-    bwc_ = bwc;
+    window_ = window;
 
     notificationBridge_.reset(
-        new BrowserTouchBarNotificationBridge(self, bwc_));
+        new BrowserTouchBarNotificationBridge(self, browser));
 
     commandUpdater_ = browser->command_controller();
     commandUpdater_->AddCommandObserver(IDC_BACK, notificationBridge_.get());
@@ -212,28 +287,29 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
     PrefService* prefs = browser->profile()->GetPrefs();
     showHomeButton_.Init(
         prefs::kShowHomeButton, prefs,
-        base::Bind(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
-                   base::Unretained(notificationBridge_.get())));
+        base::BindRepeating(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
+                            base::Unretained(notificationBridge_.get())));
 
     profilePrefRegistrar_.Init(prefs);
     profilePrefRegistrar_.Add(
         DefaultSearchManager::kDefaultSearchProviderDataPrefName,
-        base::Bind(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
-                   base::Unretained(notificationBridge_.get())));
+        base::BindRepeating(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
+                            base::Unretained(notificationBridge_.get())));
   }
 
   return self;
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!base::FeatureList::IsEnabled(features::kBrowserTouchBar))
-    return nil;
-
-  // When in tab fullscreen, we should show a touch bar containing only
-  // items associated with that mode. Since the toolbar is hidden, only
+  // When in tab or extension fullscreen, we should show a touch bar containing
+  // only items associated with that mode. Since the toolbar is hidden, only
   // the option to exit fullscreen should show up.
-  if ([bwc_ isFullscreenForTabContentOrExtension])
+  FullscreenController* controller =
+      browser_->exclusive_access_manager()->fullscreen_controller();
+  if (controller->IsWindowFullscreenForTabOrPending() ||
+      controller->IsExtensionFullscreenOrPending()) {
     return [self createTabFullscreenTouchBar];
+  }
 
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
   [touchBar
@@ -335,7 +411,7 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
       size_t pathIndex = parsed.path.begin;
       [attributedString
           addAttribute:NSForegroundColorAttributeName
-                 value:OmniboxViewMac::BaseTextColor(true)
+                 value:skia::SkColorToSRGBNSColor(kTouchBarUrlPathColor)
                  range:NSMakeRange(pathIndex,
                                    [attributedString length] - pathIndex)];
     }
@@ -398,6 +474,11 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
                        forAttribute:NSAccessibilityTitleAttribute];
 
   backForwardControl_.reset([control retain]);
+}
+
+- (void)invalidateTouchBar {
+  if ([window_ respondsToSelector:@selector(setTouchBar:)])
+    [window_ performSelector:@selector(setTouchBar:) withObject:nil];
 }
 
 - (void)updateBackForwardControl {
@@ -486,6 +567,11 @@ class BrowserTouchBarNotificationBridge : public CommandObserver {
 - (void)setIsPageLoading:(BOOL)isPageLoading {
   isPageLoading_ = isPageLoading;
   [self updateReloadStopButton];
+}
+
+- (void)setIsStarred:(BOOL)isStarred {
+  isStarred_ = isStarred;
+  [self updateStarredButton];
 }
 
 @end

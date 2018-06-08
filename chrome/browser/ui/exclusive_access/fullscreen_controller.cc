@@ -57,8 +57,8 @@ FullscreenController::FullscreenController(ExclusiveAccessManager* manager)
       tab_fullscreen_(false),
       toggled_into_fullscreen_(false),
       is_privileged_fullscreen_for_testing_(false),
-      ptr_factory_(this) {
-}
+      is_tab_fullscreen_for_testing_(false),
+      ptr_factory_(this) {}
 
 FullscreenController::~FullscreenController() {
 }
@@ -82,7 +82,7 @@ void FullscreenController::ToggleBrowserFullscreenModeWithExtension(
 }
 
 bool FullscreenController::IsWindowFullscreenForTabOrPending() const {
-  return exclusive_access_tab() != nullptr;
+  return exclusive_access_tab() != nullptr || is_tab_fullscreen_for_testing_;
 }
 
 bool FullscreenController::IsExtensionFullscreenOrPending() const {
@@ -94,7 +94,7 @@ bool FullscreenController::IsControllerInitiatedFullscreen() const {
 }
 
 bool FullscreenController::IsTabFullscreen() const {
-  return tab_fullscreen_;
+  return tab_fullscreen_ || is_tab_fullscreen_for_testing_;
 }
 
 bool FullscreenController::IsFullscreenForTabOrPending(
@@ -445,6 +445,9 @@ bool FullscreenController::MaybeToggleFullscreenWithinTab(
 
 bool FullscreenController::IsFullscreenWithinTab(
     const WebContents* web_contents) const {
+  if (is_tab_fullscreen_for_testing_)
+    return true;
+
   // Note: On Mac, some of the OnTabXXX() methods get called with a nullptr
   // value
   // for web_contents. Check for that here.
