@@ -328,10 +328,6 @@ const char kEnableLCDText[]                 = "enable-lcd-text";
 const char kEnablePreferCompositingToLCDText[] =
     "enable-prefer-compositing-to-lcd-text";
 
-// Enable work-in-progress persistent storage for the Background Fetch API.
-const char kEnableBackgroundFetchPersistence[] =
-    "enable-background-fetch-persistence";
-
 // Enable one or more Blink runtime-enabled features.
 // Use names from runtime_enabled_features.json5, separated by commas.
 // Applied before kDisableBlinkFeatures, and after other flags that change these
