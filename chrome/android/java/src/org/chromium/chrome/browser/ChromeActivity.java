@@ -131,7 +131,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
-import org.chromium.chrome.browser.toolbar.BottomToolbarController;
 import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -264,7 +263,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private ToolbarManager mToolbarManager;
     private FindToolbarManager mFindToolbarManager;
     private BottomSheetController mBottomSheetController;
-    private BottomToolbarController mBottomToolbarController;
     private BottomSheet mBottomSheet;
     private ContextualSuggestionsCoordinator mContextualSuggestionsCoordinator;
     private FadingBackgroundView mFadingBackgroundView;
@@ -1238,11 +1236,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mBottomSheet = null;
         }
 
-        if (mBottomToolbarController != null) {
-            mBottomToolbarController.destroy();
-            mBottomToolbarController = null;
-        }
-
         if (mContextualSuggestionsCoordinator != null) {
             mContextualSuggestionsCoordinator.destroy();
             mContextualSuggestionsCoordinator = null;
@@ -1369,13 +1362,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
         VrShellDelegate.onNativeLibraryAvailable();
         super.finishNativeInitialization();
-
-        if (FeatureUtilities.isChromeDuplexEnabled()) {
-            ViewGroup coordinator = findViewById(R.id.coordinator);
-            mBottomToolbarController = new BottomToolbarController(mFullscreenManager,
-                    mCompositorViewHolder.getResourceManager(),
-                    mCompositorViewHolder.getLayoutManager(), coordinator);
-        }
 
         ViewGroup coordinator = findViewById(R.id.coordinator);
         mFadingBackgroundView = new FadingBackgroundView(this, (fraction) -> {

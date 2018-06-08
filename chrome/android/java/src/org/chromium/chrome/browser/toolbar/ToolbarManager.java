@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -126,6 +127,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private final ToolbarLayout mToolbar;
     private final ToolbarControlContainer mControlContainer;
 
+    private BottomToolbarController mBottomToolbarController;
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private TabModelObserver mTabModelObserver;
@@ -696,6 +698,16 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mLayoutManager.addSceneChangeObserver(mSceneChangeObserver);
         }
 
+        if (FeatureUtilities.isChromeDuplexEnabled()) {
+            ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
+            OnClickListener searchAcceleratorListener = v -> setUrlBarFocus(true);
+            mBottomToolbarController = new BottomToolbarController(mActivity.getFullscreenManager(),
+                    mActivity.getCompositorViewHolder().getResourceManager(),
+                    mActivity.getCompositorViewHolder().getLayoutManager(), coordinator,
+                    tabSwitcherClickHandler, searchAcceleratorListener, mAppMenuButtonHelper,
+                    mTabModelSelector);
+        }
+
         onNativeLibraryReady();
         mInitializedWithNative = true;
     }
@@ -796,6 +808,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         if (mLayoutManager != null) {
             mLayoutManager.removeSceneChangeObserver(mSceneChangeObserver);
             mLayoutManager = null;
+        }
+
+        if (mBottomToolbarController != null) {
+            mBottomToolbarController.destroy();
+            mBottomToolbarController = null;
         }
 
         mLocationBar.removeUrlFocusChangeListener(this);
@@ -1161,7 +1178,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     private void updateTabCount() {
         if (!mTabRestoreCompleted) return;
-        mToolbar.updateTabCountVisuals(mTabModelSelector.getCurrentModel().getCount());
+        final int numberOfTabs = mTabModelSelector.getCurrentModel().getCount();
+        mToolbar.updateTabCountVisuals(numberOfTabs);
     }
 
     /**
