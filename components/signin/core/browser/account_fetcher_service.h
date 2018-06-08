@@ -51,9 +51,6 @@ class AccountFetcherService : public KeyedService,
   // time the AccountTrackerService was updated.
   static const char kLastUpdatePref[];
 
-  // Size used for downloading account pictures. Exposed for tests.
-  static const int kAccountImageDownloadSize;
-
   AccountFetcherService();
   ~AccountFetcherService() override;
 

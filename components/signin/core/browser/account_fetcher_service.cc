@@ -21,12 +21,13 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
 const base::TimeDelta kRefreshFromTokenServiceDelay =
     base::TimeDelta::FromHours(24);
+
+constexpr int kAccountImageDownloadSize = 64;
 
 bool AccountSupportsUserInfo(const std::string& account_id) {
   // Supervised users use a specially scoped token which when used for general
@@ -41,8 +42,6 @@ bool AccountSupportsUserInfo(const std::string& account_id) {
 // This pref used to be in the AccountTrackerService, hence its string value.
 const char AccountFetcherService::kLastUpdatePref[] =
     "account_tracker_service_last_update";
-
-const int AccountFetcherService::kAccountImageDownloadSize = 64;
 
 // AccountFetcherService implementation
 AccountFetcherService::AccountFetcherService()
@@ -267,7 +266,7 @@ AccountFetcherService::GetOrCreateImageFetcher() {
   // not be available yet when |Initialize| is called.
   if (!image_fetcher_) {
     image_fetcher_ = std::make_unique<image_fetcher::ImageFetcherImpl>(
-        std::move(image_decoder_), signin_client_->GetURLLoaderFactory());
+        std::move(image_decoder_), signin_client_->GetURLRequestContext());
   }
   return image_fetcher_.get();
 }

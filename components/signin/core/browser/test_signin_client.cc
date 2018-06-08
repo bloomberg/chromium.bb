@@ -11,14 +11,10 @@
 #include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestSigninClient::TestSigninClient(PrefService* pref_service)
-    : shared_factory_(
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)),
-      pref_service_(pref_service),
+    : pref_service_(pref_service),
       are_signin_cookies_allowed_(true),
       network_calls_delayed_(false) {}
 
@@ -50,11 +46,6 @@ void TestSigninClient::PostSignedIn(const std::string& account_id,
 
 net::URLRequestContextGetter* TestSigninClient::GetURLRequestContext() {
   return request_context_.get();
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-TestSigninClient::GetURLLoaderFactory() {
-  return shared_factory_;
 }
 
 void TestSigninClient::SetURLRequestContext(

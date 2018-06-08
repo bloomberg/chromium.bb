@@ -24,8 +24,8 @@ namespace gfx {
 class Image;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
+namespace net {
+class URLRequestContextGetter;
 }
 
 namespace image_fetcher {
@@ -33,9 +33,8 @@ namespace image_fetcher {
 // The standard (non-test) implementation of ImageFetcher.
 class ImageFetcherImpl : public ImageFetcher {
  public:
-  ImageFetcherImpl(
-      std::unique_ptr<ImageDecoder> image_decoder,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  ImageFetcherImpl(std::unique_ptr<ImageDecoder> image_decoder,
+                   net::URLRequestContextGetter* url_request_context);
   ~ImageFetcherImpl() override;
 
   // Sets a service name against which to track data usage.
@@ -90,7 +89,7 @@ class ImageFetcherImpl : public ImageFetcher {
 
   gfx::Size desired_image_frame_size_;
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
 
   std::unique_ptr<ImageDecoder> image_decoder_;
 

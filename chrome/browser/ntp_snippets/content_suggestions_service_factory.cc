@@ -345,7 +345,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
       service->category_ranker(), service->remote_suggestions_scheduler(),
       std::move(suggestions_fetcher),
       std::make_unique<ImageFetcherImpl>(std::make_unique<ImageDecoderImpl>(),
-                                         url_loader_factory),
+                                         request_context.get()),
       std::make_unique<RemoteSuggestionsDatabase>(database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), pref_service,
