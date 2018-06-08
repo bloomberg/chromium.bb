@@ -29,8 +29,8 @@ static void get_mv_projection(MV *output, MV ref, int num, int den) {
                 : AOMMAX(num, -MAX_FRAME_DISTANCE);
   int mv_row = ROUND_POWER_OF_TWO_SIGNED(ref.row * num * div_mult[den], 14);
   int mv_col = ROUND_POWER_OF_TWO_SIGNED(ref.col * num * div_mult[den], 14);
-  const int clamp_max = (1 << 14) - 1;
-  const int clamp_min = -(1 << 14);
+  const int clamp_max = MV_UPP - 1;
+  const int clamp_min = MV_LOW + 1;
   output->row = (int16_t)clamp(mv_row, clamp_min, clamp_max);
   output->col = (int16_t)clamp(mv_col, clamp_min, clamp_max);
 }
