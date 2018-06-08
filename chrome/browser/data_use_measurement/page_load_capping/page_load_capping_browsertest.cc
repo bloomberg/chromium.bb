@@ -356,3 +356,31 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
 
   https_test_server_.reset();
 }
+
+IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
+                       PageLoadCappingInfobarShownAfterSamePageNavigation) {
+  https_test_server_->RegisterRequestHandler(base::BindRepeating(
+      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
+  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+
+  ASSERT_TRUE(https_test_server_->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // Load a page.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html"));
+
+  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+  infobars::InfoBar* infobar =
+      InfoBarService::FromWebContents(contents)->infobar_at(0);
+
+  // Navigate on the page to an anchor.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html#anchor"));
+
+  EXPECT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+  EXPECT_EQ(infobar, InfoBarService::FromWebContents(contents)->infobar_at(0));
+
+  https_test_server_.reset();
+}
