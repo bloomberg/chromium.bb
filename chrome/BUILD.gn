@@ -33,7 +33,6 @@ if (is_android) {
   import("//build/linux/extract_symbols.gni")
 } else if (is_mac) {
   import("//build/compiled_action.gni")
-  import("//build/config/mac/base_rules.gni")
   import("//build/config/mac/rules.gni")
   import("//build/config/mac/symbols.gni")
   import("//build/mac/tweak_info_plist.gni")
@@ -795,16 +794,6 @@ if (is_win) {
       "--keystone=0",
       "--scm=0",
     ]
-  }
-
-  compile_entitlements("entitlements") {
-    entitlements_templates = [ "app/entitlements.plist" ]
-    output_name = "$target_gen_dir/entitlements.plist"
-    substitutions = [
-      "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
-      "CHROMIUM_TEAM_ID=$chrome_mac_team_id",
-    ]
-    visibility = [ "//chrome/installer/mac:copies" ]
   }
 
   mac_app_bundle("chrome_helper_app") {
