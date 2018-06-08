@@ -9,7 +9,7 @@
 # verified. Inner bundle components are expected to be signed before this
 # script is called. See sign_versioned_dir.sh.in.
 
-set -eu
+set -eux
 
 # Environment sanitization. Set a known-safe PATH. Clear environment variables
 # that might impact the interpreter's operation. The |bash -p| invocation
@@ -59,7 +59,7 @@ app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
 app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
 
 # Embed the supplied provisioning profile.
-cp ${provisioning_profile} "${contents_dir}/embedded.mobileprovision"
+cp "${provisioning_profile}" "${contents_dir}/embedded.mobileprovision"
 
 requirement="\
 designated => \
