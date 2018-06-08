@@ -605,6 +605,7 @@ source_set("unit_tests") {
   if (is_win && enable_library_cdms) {
     sources += [
       "windows/d3d11_cdm_proxy_unittest.cc",
+      "windows/d3d11_decryptor_unittest.cc",
       "windows/d3d11_mocks.cc",
       "windows/d3d11_mocks.h",
       "windows/d3d11_video_decoder_unittest.cc",

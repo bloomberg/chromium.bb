@@ -13,6 +13,7 @@
 #include "media/gpu/windows/d3d11_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::Invoke;
@@ -22,19 +23,10 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::WithArgs;
-using ::testing::_;
 
 namespace media {
 
 namespace {
-
-// Use this function to create a mock so that they are ref-counted correctly.
-template <typename Interface>
-Microsoft::WRL::ComPtr<Interface> CreateMock() {
-  Interface* mock = new Interface();
-  mock->AddRef();
-  return mock;
-}
 
 // The values doesn't matter as long as this is consistently used thruout the
 // test.
@@ -75,13 +67,13 @@ class D3D11CdmProxyTest : public ::testing::Test {
     proxy_ = std::make_unique<D3D11CdmProxy>(CRYPTO_TYPE_GUID, kTestProtocol,
                                              function_id_map);
 
-    device_mock_ = CreateMock<D3D11DeviceMock>();
-    video_device_mock_ = CreateMock<D3D11VideoDeviceMock>();
-    video_device1_mock_ = CreateMock<D3D11VideoDevice1Mock>();
-    crypto_session_mock_ = CreateMock<D3D11CryptoSessionMock>();
-    device_context_mock_ = CreateMock<D3D11DeviceContextMock>();
-    video_context_mock_ = CreateMock<D3D11VideoContextMock>();
-    video_context1_mock_ = CreateMock<D3D11VideoContext1Mock>();
+    device_mock_ = CreateD3D11Mock<D3D11DeviceMock>();
+    video_device_mock_ = CreateD3D11Mock<D3D11VideoDeviceMock>();
+    video_device1_mock_ = CreateD3D11Mock<D3D11VideoDevice1Mock>();
+    crypto_session_mock_ = CreateD3D11Mock<D3D11CryptoSessionMock>();
+    device_context_mock_ = CreateD3D11Mock<D3D11DeviceContextMock>();
+    video_context_mock_ = CreateD3D11Mock<D3D11VideoContextMock>();
+    video_context1_mock_ = CreateD3D11Mock<D3D11VideoContext1Mock>();
 
     proxy_->SetCreateDeviceCallbackForTesting(
         base::BindRepeating(&D3D11CreateDeviceMock::Create,
@@ -374,7 +366,7 @@ TEST_F(D3D11CdmProxyTest, CreateMediaCryptoSessionNoExtraData) {
   EXPECT_CALL(callback_mock_, CreateMediaCryptoSessionCallback(
                                   CdmProxy::Status::kOk,
                                   Ne(crypto_session_id_from_initialize), _));
-  auto media_crypto_session_mock = CreateMock<D3D11CryptoSessionMock>();
+  auto media_crypto_session_mock = CreateD3D11Mock<D3D11CryptoSessionMock>();
   EXPECT_CALL(*video_device_mock_.Get(),
               CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
                                   Pointee(CRYPTO_TYPE_GUID), _))
@@ -422,7 +414,7 @@ TEST_F(D3D11CdmProxyTest, CreateMediaCryptoSessionWithExtraData) {
                                   CdmProxy::Status::kOk,
                                   Ne(crypto_session_id_from_initialize), _));
 
-  auto media_crypto_session_mock = CreateMock<D3D11CryptoSessionMock>();
+  auto media_crypto_session_mock = CreateD3D11Mock<D3D11CryptoSessionMock>();
   EXPECT_CALL(*video_device_mock_.Get(),
               CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
                                   Pointee(CRYPTO_TYPE_GUID), _))
