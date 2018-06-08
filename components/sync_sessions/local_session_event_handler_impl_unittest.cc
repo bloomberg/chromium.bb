@@ -451,25 +451,14 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateCustomTab) {
   AddTab(kWindowId3, kFoo1, kTabId3)->SetSyncId(kCustomTabNodeId);
 
   auto mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
-
-  {
-    testing::InSequence seq;
-    EXPECT_CALL(*mock_batch,
-                Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
-                                       kRegularTabNodeId, /*urls=*/{}))));
-    // Overriden by the Put() below, so we don't care about the args.
-    EXPECT_CALL(*mock_batch,
-                Put(Pointee(MatchesTab(kSessionTag, _, _, kCustomTabNodeId,
-                                       /*urls=*/_))));
-    EXPECT_CALL(*mock_batch, Put(Pointee(MatchesTab(kSessionTag, kWindowId3,
-                                                    kTabId3, kCustomTabNodeId,
-                                                    /*urls=*/{kFoo1}))));
-    EXPECT_CALL(*mock_batch,
-                Put(Pointee(MatchesHeader(kSessionTag,
-                                          {kWindowId1, kWindowId2, kWindowId3},
-                                          {kTabId1, kTabId3}))));
-    EXPECT_CALL(*mock_batch, Commit());
-  }
+  EXPECT_CALL(*mock_batch, Put(Pointee(MatchesTab(kSessionTag, kWindowId3,
+                                                  kTabId3, kCustomTabNodeId,
+                                                  /*urls=*/{kFoo1}))));
+  EXPECT_CALL(*mock_batch,
+              Put(Pointee(MatchesHeader(kSessionTag,
+                                        {kWindowId1, kWindowId2, kWindowId3},
+                                        {kTabId1, kTabId3}))));
+  EXPECT_CALL(*mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
       .WillOnce(Return(ByMove(std::move(mock_batch))));
@@ -654,12 +643,7 @@ TEST_F(LocalSessionEventHandlerImplTest,
   EXPECT_CALL(
       *update_mock_batch,
       Put(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1, kTabNodeId1,
-                             /*urls=*/{kFoo1, kBaz1}))))
-      .Times(2);
-  EXPECT_CALL(
-      *update_mock_batch,
-      Put(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId2, kTabNodeId2,
-                             /*urls=*/{kBar1}))));
+                             /*urls=*/{kFoo1, kBaz1}))));
   EXPECT_CALL(*update_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())

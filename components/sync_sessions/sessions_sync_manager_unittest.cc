@@ -444,21 +444,14 @@ TEST_F(SessionsSyncManagerTest, PreserveTabbedDataNoWindows) {
   ResetWindows();
   InitWithSyncDataTakeOutput(ConvertToRemote(in), &out);
 
-  // There should be two changes: the rewritten tab (to update the tab id), and
-  // the rewritten header.
-  ASSERT_TRUE(ChangeTypeMatches(
-      out, {SyncChange::ACTION_UPDATE, SyncChange::ACTION_UPDATE}));
-  VerifyLocalTabChange(out[0], 2, kFoo2);
-  VerifyLocalHeaderChange(out[1], 1, 1);
+  // There should be one change to the rewritten header.
+  ASSERT_TRUE(ChangeTypeMatches(out, {SyncChange::ACTION_UPDATE}));
+  VerifyLocalHeaderChange(out[0], 1, 1);
 
-  // Verify the tab id of the restored tab is updated and consistent.
+  // SessionId should not be rewritten on restore.
   int restored_tab_id =
-      out[0].sync_data().GetSpecifics().session().tab().tab_id();
-  // SessionId should be rewritten on restore.
-  ASSERT_NE(tab->GetSessionId().id(), restored_tab_id);
-  ASSERT_EQ(
-      restored_tab_id,
-      out[1].sync_data().GetSpecifics().session().header().window(0).tab(0));
+      out[0].sync_data().GetSpecifics().session().header().window(0).tab(0);
+  EXPECT_EQ(tab->GetSessionId().id(), restored_tab_id);
   out.clear();
 
   // Now actually resurrect the native data, which will end up having different
@@ -500,10 +493,8 @@ TEST_F(SessionsSyncManagerTest, PreserveTabbedDataCustomTab) {
   // synced because we do not have enough local data to ensure that we wouldn't
   // vend the same sync id if our persistent storage didn't match upon the last
   // shutdown.
-  ASSERT_TRUE(ChangeTypeMatches(
-      out, {SyncChange::ACTION_UPDATE, SyncChange::ACTION_UPDATE}));
-  VerifyLocalTabChange(out[0], 2, kFoo2);
-  VerifyLocalHeaderChange(out[1], 1, 1);
+  ASSERT_TRUE(ChangeTypeMatches(out, {SyncChange::ACTION_UPDATE}));
+  VerifyLocalHeaderChange(out[0], 1, 1);
   out.clear();
 
   // Now re-create local data and modify it.
@@ -2055,24 +2046,18 @@ TEST_F(SessionsSyncManagerTest, PlaceholderConflictAcrossWindows) {
   InitWithSyncDataTakeOutput(in, &out);
 
   // The two tabs have the same sync id, which is not allowed. One will have
-  // its ID stripped and re-generated, which manifests as a newly created sync
-  // entity.
-  ASSERT_TRUE(
-      ChangeTypeMatches(out, {SyncChange::ACTION_ADD, SyncChange::ACTION_UPDATE,
-                              SyncChange::ACTION_UPDATE}));
+  // its id stripped, but being a placeholder tab it won't be vended a new sync
+  // ID so it won't get updated.
+  ASSERT_TRUE(ChangeTypeMatches(
+      out, {SyncChange::ACTION_UPDATE, SyncChange::ACTION_UPDATE}));
   VerifyLocalTabChange(out[0], 1, kFoo1);
-  VerifyLocalTabChange(out[1], 1, kFoo1);
-  VerifyLocalHeaderChange(out[2], 2, 2);
+  VerifyLocalHeaderChange(out[1], 1, 1);
 
-  EXPECT_NE(tab1->GetSessionId(), tab2.GetSessionId());
+  EXPECT_NE(tab1->GetSyncId(), tab2.GetSyncId());
   EXPECT_EQ(tab1->GetSessionId().id(),
             out[0].sync_data().GetSpecifics().session().tab().tab_id());
   EXPECT_EQ(tab1->GetSyncId(),
             out[0].sync_data().GetSpecifics().session().tab_node_id());
-  EXPECT_EQ(tab2.GetSessionId().id(),
-            out[1].sync_data().GetSpecifics().session().tab().tab_id());
-  EXPECT_EQ(tab2.GetSyncId(),
-            out[1].sync_data().GetSpecifics().session().tab_node_id());
 }
 
 // Tests that task ids are generated for navigations on local tabs.

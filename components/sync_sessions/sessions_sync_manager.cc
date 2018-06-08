@@ -417,12 +417,6 @@ syncer::SyncChange SessionsSyncManager::TombstoneTab(
 bool SessionsSyncManager::InitFromSyncModel(
     const syncer::SyncDataList& sync_data,
     syncer::SyncChangeList* new_changes) {
-  // Map of all rewritten local ids. Because ids are reset on each restart,
-  // and id generation happens outside of Sync, all ids from a previous local
-  // session must be rewritten in order to be valid.
-  // Key: previous session id. Value: new session id.
-  std::map<int32_t, SessionID> session_id_map;
-
   bool found_current_header = false;
   int bad_foreign_hash_count = 0;
   for (syncer::SyncDataList::const_iterator it = sync_data.begin();
@@ -464,37 +458,9 @@ bool SessionsSyncManager::InitFromSyncModel(
         // This is our previous header node, reuse it.
         found_current_header = true;
 
-        // The specifics from the SyncData are immutable. Create a mutable copy
-        // to hold the rewritten ids.
-        sync_pb::SessionSpecifics rewritten_specifics(specifics);
-
-        // Go through and generate new tab and window ids as necessary, updating
-        // the specifics in place.
-        for (auto& window :
-             *rewritten_specifics.mutable_header()->mutable_window()) {
-          session_id_map.emplace(window.window_id(), SessionID::NewUnique());
-          window.set_window_id(session_id_map.at(window.window_id()).id());
-
-          google::protobuf::RepeatedField<int>* tab_ids = window.mutable_tab();
-          for (int i = 0; i < tab_ids->size(); i++) {
-            auto tab_iter = session_id_map.find(tab_ids->Get(i));
-            if (tab_iter == session_id_map.end()) {
-              // SessionID::SessionID() automatically increments a static
-              // variable, forcing a new id to be generated each time.
-              session_id_map.emplace(tab_ids->Get(i), SessionID::NewUnique());
-            }
-            *(tab_ids->Mutable(i)) = session_id_map.at(tab_ids->Get(i)).id();
-            // Note: the tab id of the SessionTab will be updated when the tab
-            // node itself is processed.
-          }
-        }
-
-        UpdateTrackerWithSpecifics(rewritten_specifics,
-                                   remote.GetModifiedTime(), &session_tracker_);
-
-        DVLOG(1) << "Loaded local header and rewrote " << session_id_map.size()
-                 << " ids.";
-
+        UpdateTrackerWithSpecifics(specifics, remote.GetModifiedTime(),
+                                   &session_tracker_);
+        DVLOG(1) << "Loaded local header.";
       } else {
         if (specifics.has_header() || !specifics.has_tab()) {
           LOG(WARNING) << "Found more than one session header node with local "
@@ -513,26 +479,11 @@ bool SessionsSyncManager::InitFromSyncModel(
           DVLOG(1) << "Associating local tab " << specifics.tab().tab_id()
                    << " with node " << specifics.tab_node_id();
 
-          // Now file the tab under the new tab id.
-          SessionID new_tab_id = SessionID::InvalidValue();
-          auto iter = session_id_map.find(specifics.tab().tab_id());
-          if (iter != session_id_map.end()) {
-            new_tab_id = iter->second;
-          } else {
-            new_tab_id = SessionID::NewUnique();
-            session_id_map.emplace(specifics.tab().tab_id(), new_tab_id);
-          }
-          DVLOG(1) << "Remapping tab " << specifics.tab().tab_id() << " to "
-                   << new_tab_id;
-
-          // The specifics from the SyncData are immutable. Create a mutable
-          // copy to hold the rewritten ids.
-          sync_pb::SessionSpecifics rewritten_specifics(specifics);
-          rewritten_specifics.mutable_tab()->set_tab_id(new_tab_id.id());
           session_tracker_.ReassociateLocalTab(
-              rewritten_specifics.tab_node_id(), new_tab_id);
-          UpdateTrackerWithSpecifics(
-              rewritten_specifics, remote.GetModifiedTime(), &session_tracker_);
+              specifics.tab_node_id(),
+              SessionID::FromSerializedValue(specifics.tab().tab_id()));
+          UpdateTrackerWithSpecifics(specifics, remote.GetModifiedTime(),
+                                     &session_tracker_);
         }
       }
     }
