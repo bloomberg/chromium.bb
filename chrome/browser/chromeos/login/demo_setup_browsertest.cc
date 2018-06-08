@@ -25,48 +25,24 @@ class DemoSetupTest : public LoginManagerTest {
     command_line->AppendSwitch(chromeos::switches::kEnableDemoMode);
   }
 
-  void SetUpOnMainThread() override {
-    LoginManagerTest::SetUpOnMainThread();
-    DisableConfirmationDialogAnimations();
-  }
-
-  bool IsDemoSetupShown() {
-    return js_checker().GetBool(
-        "!!document.querySelector('#demo-setup') && "
-        "!document.querySelector('#demo-setup').hidden");
-  }
-
-  bool IsConfirmationDialogShown() {
-    return js_checker().GetBool(
-        "!!document.querySelector('.cr-dialog-container') && "
-        "!document.querySelector('.cr-dialog-container').hidden");
-  }
-
-  void InvokeDemoMode() {
-    EXPECT_TRUE(JSExecute("cr.ui.Oobe.handleAccelerator('demo_mode');"));
-  }
-
-  void ClickOkOnConfirmationDialog() {
-    EXPECT_TRUE(JSExecute("document.querySelector('.cr-dialog-ok').click();"));
-  }
-
-  void ClickCancelOnConfirmationDialog() {
-    EXPECT_TRUE(
-        JSExecute("document.querySelector('.cr-dialog-cancel').click();"));
+  void ShowDemoSetupScreen() {
+    ASSERT_TRUE(JSExecute("cr.ui.Oobe.handleAccelerator('demo_mode');"));
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+    ASSERT_NE(nullptr, GetDemoSetupScreen());
   }
 
   DemoSetupScreen* GetDemoSetupScreen() {
     return static_cast<DemoSetupScreen*>(
         WizardController::default_controller()->screen_manager()->GetScreen(
-            OobeScreen::SCREEN_OOBE_DEMO_SETUP));
+            OobeScreen::SCREEN_OOBE_ENROLLMENT));
+  }
+
+  bool IsDemoSetupShown() {
+    return js_checker().GetBool(
+        "!document.querySelector('#demo-setup').hidden");
   }
 
  private:
-  void DisableConfirmationDialogAnimations() {
-    EXPECT_TRUE(
-        JSExecute("cr.ui.dialogs.BaseDialog.ANIMATE_STABLE_DURATION = 0;"));
-  }
-
   bool JSExecute(const std::string& script) {
     return content::ExecuteScript(web_contents(), script);
   }
@@ -74,27 +50,10 @@ class DemoSetupTest : public LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
 };
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
-  EXPECT_FALSE(IsConfirmationDialogShown());
-
-  InvokeDemoMode();
-  EXPECT_TRUE(IsConfirmationDialogShown());
-
-  ClickOkOnConfirmationDialog();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
-  EXPECT_FALSE(IsConfirmationDialogShown());
-  EXPECT_TRUE(IsDemoSetupShown());
-}
-
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndCancel) {
-  EXPECT_FALSE(IsConfirmationDialogShown());
-
-  InvokeDemoMode();
-  EXPECT_TRUE(IsConfirmationDialogShown());
-
-  ClickCancelOnConfirmationDialog();
-  EXPECT_FALSE(IsConfirmationDialogShown());
+IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowDemoSetupScreen) {
   EXPECT_FALSE(IsDemoSetupShown());
+  ASSERT_NO_FATAL_FAILURE(ShowDemoSetupScreen());
+  EXPECT_TRUE(IsDemoSetupShown());
 }
 
 }  // namespace chromeos
