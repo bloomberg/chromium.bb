@@ -2327,6 +2327,17 @@ public class CustomTabActivityTest {
         ApplicationStatus.unregisterActivityStateListener(listener);
     }
 
+    @Test
+    @MediumTest
+    public void testLaunchIncognitoCustomTabForPaymentRequest() throws Exception {
+        Intent intent = createMinimalCustomTabIntent();
+        intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
+        CustomTabIntentDataProvider.addPaymentRequestUIExtras(intent);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        Assert.assertTrue(mCustomTabActivityTestRule.getActivity().getActivityTab().isIncognito());
+    }
+
     /**
      * Tests that a Weblite URL from an external app uses the lite_url param when Data Reduction
      * Proxy previews are being used.

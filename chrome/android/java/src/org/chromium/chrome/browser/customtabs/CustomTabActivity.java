@@ -409,7 +409,9 @@ public class CustomTabActivity extends ChromeActivity {
             mConnection.cancelSpeculation(mSession);
         }
 
-        getTabModelSelector().getModel(false).addObserver(mTabModelObserver);
+        getTabModelSelector()
+                .getModel(mIntentDataProvider.isIncognito())
+                .addObserver(mTabModelObserver);
 
         boolean successfulStateRestore = false;
         // Attempt to restore the previous tab state if applicable.
@@ -431,7 +433,9 @@ public class CustomTabActivity extends ChromeActivity {
             } else {
                 mMainTab = createMainTab();
             }
-            getTabModelSelector().getModel(false).addTab(mMainTab, 0, mMainTab.getLaunchType());
+            getTabModelSelector()
+                    .getModel(mIntentDataProvider.isIncognito())
+                    .addTab(mMainTab, 0, mMainTab.getLaunchType());
         }
 
         // This cannot be done before because we want to do the reparenting only
@@ -587,8 +591,8 @@ public class CustomTabActivity extends ChromeActivity {
                 getIntent(), IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
         int parentTabId = IntentUtils.safeGetIntExtra(
                 getIntent(), IntentHandler.EXTRA_PARENT_TAB_ID, Tab.INVALID_TAB_ID);
-        Tab tab = new Tab(assignedTabId, parentTabId, false, getWindowAndroid(),
-                TabLaunchType.FROM_EXTERNAL_APP, null, null);
+        Tab tab = new Tab(assignedTabId, parentTabId, mIntentDataProvider.isIncognito(),
+                getWindowAndroid(), TabLaunchType.FROM_EXTERNAL_APP, null, null);
         if (getIntent().getIntExtra(
                     CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, ACTIVITY_TYPE_OTHER)
                 == ACTIVITY_TYPE_WEBAPK) {
@@ -621,11 +625,13 @@ public class CustomTabActivity extends ChromeActivity {
             webContentsStateOnLaunch = WEBCONTENTS_STATE_TRANSFERRED_WEBCONTENTS;
             webContents.resumeLoadingCreatedWebContents();
         } else {
-            webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
+            webContents = WarmupManager.getInstance().takeSpareWebContents(
+                    mIntentDataProvider.isIncognito(), false);
             if (webContents != null) {
                 webContentsStateOnLaunch = WEBCONTENTS_STATE_SPARE_WEBCONTENTS;
             } else {
-                webContents = WebContentsFactory.createWebContentsWithWarmRenderer(false, false);
+                webContents = WebContentsFactory.createWebContentsWithWarmRenderer(
+                        mIntentDataProvider.isIncognito(), false);
                 webContentsStateOnLaunch = WEBCONTENTS_STATE_NO_WEBCONTENTS;
             }
         }
