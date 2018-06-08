@@ -109,6 +109,16 @@ id<GREYAction> ScrollDown() {
       performAction:grey_tap()];
 }
 
++ (void)focusOmniboxAndType:(NSString*)text {
+  if (IsRefreshLocationBarEnabled()) {
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+        performAction:grey_tap()];
+  }
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_typeText(text)];
+}
+
 + (void)openNewTab {
   [ChromeEarlGreyUI openToolsMenu];
   id<GREYMatcher> newTabButtonMatcher =

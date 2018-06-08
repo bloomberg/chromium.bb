@@ -96,6 +96,40 @@ id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id) {
       l10n_util::GetNSStringWithFixup(message_id));
 }
 
+id<GREYMatcher> ImageViewWithImageNamed(NSString* imageName) {
+  UIImage* expected_image = [UIImage imageNamed:imageName];
+  MatchesBlock matches = ^BOOL(UIImageView* imageView) {
+    return ui::test::uiimage_utils::UIImagesAreEqual(expected_image,
+                                                     imageView.image);
+  };
+  NSString* description_string =
+      [NSString stringWithFormat:@"Images matching image named %@", imageName];
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:description_string];
+  };
+  id<GREYMatcher> image_matcher =
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe];
+  return image_matcher;
+}
+
+id<GREYMatcher> ImageViewWithImage(int image_id) {
+  UIImage* expected_image = NativeImage(image_id);
+  MatchesBlock matches = ^BOOL(UIImageView* imageView) {
+    return ui::test::uiimage_utils::UIImagesAreEqual(expected_image,
+                                                     imageView.image);
+  };
+  NSString* description_string =
+      [NSString stringWithFormat:@"Images matching %i", image_id];
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:description_string];
+  };
+  id<GREYMatcher> image_matcher =
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe];
+  return image_matcher;
+}
+
 id<GREYMatcher> ButtonWithImage(int image_id) {
   UIImage* expected_image = NativeImage(image_id);
   MatchesBlock matches = ^BOOL(UIButton* button) {
@@ -158,6 +192,10 @@ id<GREYMatcher> DefocusedLocationView() {
 }
 
 id<GREYMatcher> PageSecurityInfoButton() {
+  return grey_accessibilityLabel(@"Page Security Info");
+}
+
+id<GREYMatcher> PageSecurityInfoIndicator() {
   return grey_accessibilityLabel(@"Page Security Info");
 }
 

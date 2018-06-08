@@ -15,10 +15,12 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button.h"
+#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -370,6 +372,21 @@ std::map<GURL, std::string> ResponsesForDistillationServer() {
   return responses;
 }
 
+// Opens the page security info bubble.
+void OpenPageSecurityInfoBubble() {
+  if (IsUIRefreshPhase1Enabled()) {
+    // In UI Refresh, the security info is accessed through the tools menu.
+    [ChromeEarlGreyUI openToolsMenu];
+    // Tap on the Page Info button.
+    [ChromeEarlGreyUI
+        tapToolsMenuButton:grey_accessibilityID(kToolsMenuSiteInformation)];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::PageSecurityInfoIndicator()]
+        performAction:grey_tap()];
+  }
+}
+
 // Tests that the correct version of kDistillableURL is displayed.
 void AssertIsShowingDistillablePage(bool online) {
   NSString* contentToKeep = base::SysUTF8ToNSString(kContentToKeep);
@@ -407,13 +424,22 @@ void AssertIsShowingDistillablePage(bool online) {
   }
 
   // Test the presence of the omnibox offline chip.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   chrome_test_util::PageSecurityInfoButton(),
-                                   chrome_test_util::ButtonWithImage(
-                                       IDR_IOS_OMNIBOX_OFFLINE),
-                                   nil)]
-      assertWithMatcher:online ? grey_nil() : grey_notNil()];
+  if (IsRefreshLocationBarEnabled()) {
+    [[EarlGrey selectElementWithMatcher:
+                   grey_allOf(chrome_test_util::PageSecurityInfoIndicator(),
+                              chrome_test_util::ImageViewWithImageNamed(
+                                  @"location_bar_offline"),
+                              nil)]
+        assertWithMatcher:online ? grey_nil() : grey_notNil()];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     chrome_test_util::PageSecurityInfoButton(),
+                                     chrome_test_util::ButtonWithImage(
+                                         IDR_IOS_OMNIBOX_OFFLINE),
+                                     nil)]
+        assertWithMatcher:online ? grey_nil() : grey_notNil()];
+  }
 }
 
 }  // namespace
@@ -493,9 +519,7 @@ void AssertIsShowingDistillablePage(bool online) {
   AssertIsShowingDistillablePage(false);
 
   // Tap the Omnibox' Info Bubble to open the Page Info.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::PageSecurityInfoButton()]
-      performAction:grey_tap()];
+  OpenPageSecurityInfoBubble();
   // Verify that the Page Info is about offline pages.
   id<GREYMatcher> pageInfoTitleMatcher =
       chrome_test_util::StaticTextWithAccessibilityLabelId(

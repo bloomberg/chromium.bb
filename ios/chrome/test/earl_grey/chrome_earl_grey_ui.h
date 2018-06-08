@@ -48,6 +48,10 @@
 // accounts menu is not open when this is called there will be a GREYAssert.
 + (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher;
 
+// Focuses the omnibox by tapping and types |text| into it. The '\n' symbol can
+// be passed in order to commit the string.
++ (void)focusOmniboxAndType:(NSString*)text;
+
 // Open a new tab via the tools menu.
 + (void)openNewTab;
 

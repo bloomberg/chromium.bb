@@ -19,6 +19,12 @@ id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id);
 // accessibility trait UIAccessibilityTraitButton.
 id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label);
 
+// Matcher for element with an image corresponding to |image_id|.
+id<GREYMatcher> ImageViewWithImage(int image_id);
+
+// Matcher for element with an image defined by its name in the main bundle.
+id<GREYMatcher> ImageViewWithImageNamed(NSString* imageName);
+
 // Matcher for element with an image corresponding to |image_id| and
 // accessibility trait UIAccessibilityTraitButton.
 id<GREYMatcher> ButtonWithImage(int image_id);
@@ -57,6 +63,8 @@ id<GREYMatcher> DefocusedLocationView();
 
 // Returns a matcher for the page security info button.
 id<GREYMatcher> PageSecurityInfoButton();
+// Returns a matcher for the page security info indicator.
+id<GREYMatcher> PageSecurityInfoIndicator();
 
 // Returns matcher for omnibox containing |text|. Performs an exact match of the
 // omnibox contents.

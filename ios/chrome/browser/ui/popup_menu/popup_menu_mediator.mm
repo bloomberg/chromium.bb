@@ -9,6 +9,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
@@ -451,7 +452,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   self.readLaterItem.enabled = [self isCurrentURLWebURL];
   [self updateBookmarkItem];
   self.findInPageItem.enabled = [self isFindInPageEnabled];
-  self.siteInformationItem.enabled = [self isCurrentURLWebURL];
+  self.siteInformationItem.enabled = [self currentWebPageSupportsSiteInfo];
   self.requestDesktopSiteItem.enabled =
       [self userAgentType] == web::UserAgentType::MOBILE;
   self.requestMobileSiteItem.enabled =
@@ -504,6 +505,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     self.reloadStopItem.image = [[UIImage imageNamed:@"popup_menu_reload"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   }
+}
+
+// Whether the current web page has available site info.
+- (BOOL)currentWebPageSupportsSiteInfo {
+  if (!self.webState)
+    return NO;
+  web::NavigationItem* navItem =
+      self.webState->GetNavigationManager()->GetVisibleItem();
+  if (!navItem) {
+    return NO;
+  }
+  const GURL& URL = navItem->GetURL();
+  // Show site info for offline pages.
+  if (URL.SchemeIs(kChromeUIScheme) && URL.host() == kChromeUIOfflineHost) {
+    return YES;
+  }
+  return URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
 }
 
 // Whether the current page is a web page.

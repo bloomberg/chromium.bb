@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 
 #import "ios/chrome/browser/ui/location_bar/extended_touch_target_button.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -82,6 +84,11 @@ const CGFloat kButtonTrailingSpacing = 10;
         setContentCompressionResistancePriority:UILayoutPriorityRequired
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
+    SetA11yLabelAndUiAutomationName(
+        _locationIconImageView,
+        IDS_IOS_PAGE_INFO_SECURITY_BUTTON_ACCESSIBILITY_LABEL,
+        @"Page Security Info");
+    _locationIconImageView.isAccessibilityElement = YES;
 
     // Setup trailing button.
     _trailingButton =

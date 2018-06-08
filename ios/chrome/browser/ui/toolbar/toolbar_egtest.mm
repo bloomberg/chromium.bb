@@ -96,6 +96,11 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
   [ChromeEarlGrey loadURL:URL];
 
+  if (IsRefreshLocationBarEnabled()) {
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+        performAction:grey_tap()];
+  }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -279,6 +284,11 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 // Verifies that copying and pasting a URL includes the hidden protocol prefix.
 - (void)testCopyPasteURL {
+  if (IsRefreshLocationBarEnabled()) {
+    // TODO(crbug.com/834345): Enable this test when long press on the steady
+    // location bar is supported.
+    EARL_GREY_TEST_SKIPPED(@"Test not supported yet in UI Refresh.");
+  }
   // TODO(crbug.com/849932): re-enable this test on iOS 10 once the share button
   // is implemented.
   if (!base::ios::IsRunningOnIOS11OrLater()) {
@@ -344,13 +354,6 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   }
 
   [ChromeEarlGrey loadURL:secondURL];
-
-  if (IsRefreshLocationBarEnabled()) {
-    // Tap on the steady location view to expose omnibox for pasting.
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
-        performAction:grey_tap()];
-  }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_longPress()];
 
@@ -387,7 +390,13 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText("foo")];
 
-  id<GREYMatcher> cancelButton = grey_accessibilityLabel(@"Clear Text");
+  id<GREYMatcher> cancelButton = nil;
+  if (IsRefreshLocationBarEnabled()) {
+    cancelButton = grey_accessibilityLabel(@"Clear text");
+  } else {
+    cancelButton = grey_accessibilityLabel(@"Clear Text");
+  }
+
   [[EarlGrey selectElementWithMatcher:cancelButton] performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -407,11 +416,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   web::test::SetUpSimpleHttpServer(responses);
   [ChromeEarlGrey loadURL:GURL(URL)];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(@"javascript:alert('Hello');")];
-
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('Hello');\n"];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Hello")]
       assertWithMatcher:grey_notNil()];
@@ -426,11 +431,12 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a typing bug.");
   }
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(@"javascript:alert('Hello');")];
-
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
-      performAction:grey_tap()];
+  if (IsRefreshLocationBarEnabled()) {
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+        performAction:grey_tap()];
+  }
+  [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('Hello');\n"];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Hello")]
       assertWithMatcher:grey_nil()];
