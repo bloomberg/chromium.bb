@@ -245,6 +245,68 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
   }
 }
 
+// Test two requests to fetch the same shard before the network responded.
+// In this case, only one network request should be sent.
+TEST(PasswordRequirementsSpecFetcherTest, FetchDataInterleaved) {
+  for (bool simulate_timeout : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "Simulate timeout? " << simulate_timeout);
+
+    // Set up the data that will be served.
+    std::string serialized_shard;
+    PasswordRequirementsShard shard;
+    (*shard.mutable_specs())["a.com"].set_min_length(17);
+    (*shard.mutable_specs())["b.com"].set_min_length(18);
+    shard.SerializeToString(&serialized_shard);
+
+    base::test::ScopedTaskEnvironment environment(
+        base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+    network::TestURLLoaderFactory loader_factory;
+
+    // Target into which data will be written by the callback.
+    PasswordRequirementsSpec spec_for_a;
+    PasswordRequirementsSpec spec_for_b;
+    // Set some values to see whether they get overridden by the callback.
+    spec_for_a.set_min_length(1);
+    spec_for_b.set_min_length(1);
+
+    const int kVersion = 1;
+    // With a prefix length of 0, we guarantee that only one shard exists
+    // and therefore that the requests go to the same endpoint and can be
+    // unified into one network request.
+    const size_t kPrefixLength = 0;
+    const int kTimeout = 1000;
+    PasswordRequirementsSpecFetcherImpl fetcher(kVersion, kPrefixLength,
+                                                kTimeout);
+
+    fetcher.Fetch(
+        &loader_factory, GURL("http://a.com"),
+        base::BindLambdaForTesting(
+            [&](const PasswordRequirementsSpec& spec) { spec_for_a = spec; }));
+    fetcher.Fetch(
+        &loader_factory, GURL("http://b.com"),
+        base::BindLambdaForTesting(
+            [&](const PasswordRequirementsSpec& spec) { spec_for_b = spec; }));
+
+    EXPECT_EQ(1, loader_factory.NumPending());
+
+    if (simulate_timeout) {
+      environment.FastForwardBy(
+          base::TimeDelta::FromMilliseconds(2 * kTimeout));
+      environment.RunUntilIdle();
+      EXPECT_FALSE(spec_for_a.has_min_length());
+      EXPECT_FALSE(spec_for_b.has_min_length());
+    } else {
+      loader_factory.AddResponse(SERVER_URL "1/0000", serialized_shard,
+                                 net::HTTP_OK);
+      environment.RunUntilIdle();
+
+      EXPECT_EQ(17u, spec_for_a.min_length());
+      EXPECT_EQ(18u, spec_for_b.min_length());
+    }
+  }
+}
+
 #undef SERVER_URL
 
 }  // namespace

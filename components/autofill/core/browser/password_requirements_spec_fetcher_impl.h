@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_REQUIREMENTS_SPEC_FETCHER_IMPL_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PASSWORD_REQUIREMENTS_SPEC_FETCHER_IMPL_H_
 
+#include <list>
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -25,13 +28,11 @@ namespace autofill {
 
 class PasswordRequirementsSpec;
 
-// Fetches PasswordRequirementsSpec for a specific origin.
+// A concrete implementation for PasswordRequirementsSpecFetcher that talks
+// to the network.
 class PasswordRequirementsSpecFetcherImpl
     : public PasswordRequirementsSpecFetcher {
  public:
-  using FetchCallback =
-      base::OnceCallback<void(const PasswordRequirementsSpec&)>;
-
   // This enum is used in histograms. Do not change or reuse values.
   enum class ResultCode {
     // Fetched spec file, parsed it, but found no entry for the origin.
@@ -57,13 +58,51 @@ class PasswordRequirementsSpecFetcherImpl
 
   // Implementation for PasswordRequirementsSpecFetcher:
   void Fetch(network::mojom::URLLoaderFactory* loader_factory,
-             const GURL& origin,
+             GURL origin,
              FetchCallback callback) override;
 
  private:
-  void OnFetchComplete(std::unique_ptr<std::string> response_body);
-  void OnFetchTimeout();
-  void TriggerCallback(ResultCode result, const PasswordRequirementsSpec& spec);
+  // This structure bundles all data that are associated to a network request
+  // for a file with a specific hash prefix.
+  struct LookupInFlight {
+    LookupInFlight();
+    ~LookupInFlight();
+
+    // Callbacks to be called if the network request resolves or is aborted.
+    // The GURL represents the origin due to which a spec was fetched.
+    // Used a std::list instead of std::vector to grow this cheaply.
+    std::list<std::pair<GURL, FetchCallback>> callbacks;
+
+    // Timer to kill pending downloads after |timeout_|.
+    base::OneShotTimer download_timer;
+
+    std::unique_ptr<network::SimpleURLLoader> url_loader;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(LookupInFlight);
+  };
+
+  // These are the two ways how a network request can end. The functions remove
+  // the entry corresponding to |hash_prefix| out of |lookups_in_flight_| as
+  // their first order of business.
+  void OnFetchComplete(const std::string& hash_prefix,
+                       std::unique_ptr<std::string> response_body);
+  void OnFetchTimeout(const std::string& hash_prefix);
+
+  // Calls all |callbacks| in order. Note that these callbacks are OnceCallback
+  // instances. Therefore, entries are reset after this function returns.
+  void TriggerCallbackToAll(
+      std::list<std::pair<GURL, FetchCallback>>* callbacks,
+      ResultCode result,
+      const PasswordRequirementsSpec& spec);
+
+  // Calls the |callback| with the specific data and records some metrics.
+  void TriggerCallback(FetchCallback callback,
+                       ResultCode result,
+                       const PasswordRequirementsSpec& spec);
+
+  std::unique_ptr<LookupInFlight> RemoveLookupInFlight(
+      const std::string& hash_prefix);
 
   // A version counter for requirements specs. If data changes on the server,
   // a new version number is pushed out to prevent that clients continue
@@ -82,17 +121,14 @@ class PasswordRequirementsSpecFetcherImpl
   // canceled.
   int timeout_;
 
-  // Origin for which a spec is fetched. Only set while fetching is in progress
-  // and the callback has not been called.
-  GURL origin_;
-
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
-
-  // Callback to be called if the network request resolves or is aborted.
-  FetchCallback callback_;
-
-  // Timer to kill pending downloads after |timeout_|.
-  base::OneShotTimer download_timer_;
+  // Data about network requests in flight.
+  // The key is the name of the file being fetched without the common URL prefix
+  // (e.g. "0000"). The value contains callbacks that should process the result
+  // and a timer to cancel the lookup after some time.
+  // The invariant of |lookups_in_flight_| is that entries exist from the
+  // time of starting the network request until receiving the response or a
+  // timeout.
+  std::map<std::string, std::unique_ptr<LookupInFlight>> lookups_in_flight_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordRequirementsSpecFetcherImpl);
 };

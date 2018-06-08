@@ -33,6 +33,10 @@ PasswordRequirementsSpecFetcherImpl::PasswordRequirementsSpecFetcherImpl(
 PasswordRequirementsSpecFetcherImpl::~PasswordRequirementsSpecFetcherImpl() =
     default;
 
+PasswordRequirementsSpecFetcherImpl::LookupInFlight::LookupInFlight() = default;
+PasswordRequirementsSpecFetcherImpl::LookupInFlight::~LookupInFlight() =
+    default;
+
 namespace {
 
 // Hashes the eTLD+1 of |origin| via MD5 and returns a filename with the first
@@ -70,11 +74,8 @@ std::string GetHashPrefix(const GURL& origin, size_t prefix_length) {
 }
 
 // Returns the URL on gstatic.com where the passwords spec file can be found
-// that contains data for |origin|.
-GURL GetUrlForRequirementsSpec(const GURL& origin,
-                               int version,
-                               size_t prefix_length) {
-  std::string hash_prefix = GetHashPrefix(origin, prefix_length);
+// that contains data for |hash_prefix|.
+GURL GetUrlForRequirementsSpec(int version, const std::string& hash_prefix) {
   return GURL(base::StringPrintf(
       "https://www.gstatic.com/chrome/autofill/password_generation_specs/%d/%s",
       version, hash_prefix.c_str()));
@@ -84,29 +85,39 @@ GURL GetUrlForRequirementsSpec(const GURL& origin,
 
 void PasswordRequirementsSpecFetcherImpl::Fetch(
     network::mojom::URLLoaderFactory* loader_factory,
-    const GURL& origin,
+    GURL origin,
     FetchCallback callback) {
   DCHECK(origin.is_valid());
-  DCHECK(origin_.is_empty());
-  DCHECK(callback_.is_null());
-  origin_ = origin;
-  callback_ = std::move(callback);
 
   if (!origin.is_valid() || origin.HostIsIPAddress() ||
       !origin.SchemeIsHTTPOrHTTPS()) {
-    TriggerCallback(ResultCode::kErrorInvalidOrigin,
+    TriggerCallback(std::move(callback), ResultCode::kErrorInvalidOrigin,
                     PasswordRequirementsSpec());
     return;
   }
+
   // Canonicalize away trailing periods in hostname.
-  while (!origin_.host().empty() && origin_.host().back() == '.') {
-    std::string new_host =
-        origin_.host().substr(0, origin_.host().length() - 1);
+  while (!origin.host().empty() && origin.host().back() == '.') {
+    std::string new_host = origin.host().substr(0, origin.host().length() - 1);
     url::Replacements<char> replacements;
     replacements.SetHost(new_host.c_str(),
                          url::Component(0, new_host.length()));
-    origin_ = origin_.ReplaceComponents(replacements);
+    origin = origin.ReplaceComponents(replacements);
   }
+
+  std::string hash_prefix = GetHashPrefix(origin, prefix_length_);
+
+  // If a lookup is happening already, just register another callback.
+  auto iter = lookups_in_flight_.find(hash_prefix);
+  if (iter != lookups_in_flight_.end()) {
+    iter->second->callbacks.push_back(
+        std::make_pair(origin, std::move(callback)));
+    return;
+  }
+
+  // Start another lookup otherwise.
+  auto lookup = std::make_unique<LookupInFlight>();
+  lookup->callbacks.push_back(std::make_pair(origin, std::move(callback)));
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("password_requirements_spec_fetch",
@@ -131,89 +142,126 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(
           "Not implemented, considered not useful."
       })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url =
-      GetUrlForRequirementsSpec(origin_, version_, prefix_length_);
+  resource_request->url = GetUrlForRequirementsSpec(version_, hash_prefix);
   resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
                                  net::LOAD_DO_NOT_SEND_COOKIES |
                                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation);
-  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+  lookup->url_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  lookup->url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory,
       base::BindOnce(&PasswordRequirementsSpecFetcherImpl::OnFetchComplete,
-                     base::Unretained(this)));
+                     base::Unretained(this), hash_prefix));
 
-  download_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),
-                        this,
-                        &PasswordRequirementsSpecFetcherImpl::OnFetchTimeout);
+  lookup->download_timer.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_),
+      base::BindRepeating(&PasswordRequirementsSpecFetcherImpl::OnFetchTimeout,
+                          base::Unretained(this), hash_prefix));
+
+  lookups_in_flight_[hash_prefix] = std::move(lookup);
 }
 
 void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
+    const std::string& hash_prefix,
     std::unique_ptr<std::string> response_body) {
-  download_timer_.Stop();
+  std::unique_ptr<LookupInFlight> lookup = RemoveLookupInFlight(hash_prefix);
 
-  // Destroy the fetcher when this method returns.
-  std::unique_ptr<network::SimpleURLLoader> loader(std::move(url_loader_));
+  lookup->download_timer.Stop();
 
-  if (!response_body || loader->NetError() != net::Error::OK) {
-    TriggerCallback(ResultCode::kErrorFailedToFetch,
-                    PasswordRequirementsSpec());
+  if (!response_body || lookup->url_loader->NetError() != net::Error::OK) {
+    TriggerCallbackToAll(&lookup->callbacks, ResultCode::kErrorFailedToFetch,
+                         PasswordRequirementsSpec());
     return;
   }
 
   PasswordRequirementsShard shard;
   if (!shard.ParseFromString(*response_body)) {
-    TriggerCallback(ResultCode::kErrorFailedToParse,
-                    PasswordRequirementsSpec());
+    TriggerCallbackToAll(&lookup->callbacks, ResultCode::kErrorFailedToParse,
+                         PasswordRequirementsSpec());
     return;
   }
+  for (auto& callback_pair : lookup->callbacks) {
+    const GURL& origin = callback_pair.first;
+    FetchCallback& callback_function = callback_pair.second;
 
-  // Search shard for matches for origin_ by looking up the (canonicalized)
-  // host name and then stripping domain prefixes until the eTLD+1 is reached.
-  DCHECK(!origin_.HostIsIPAddress());
-  // |host| is a std::string instead of StringPiece as the protbuf::Map
-  // implementation does not support StringPieces as parameters for find.
-  std::string host = origin_.host();
-  auto it = shard.specs().find(host);
-  if (it != shard.specs().end()) {
-    TriggerCallback(ResultCode::kFoundSpec, it->second);
-    return;
-  }
-
-  const std::string domain_and_registry =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          origin_,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  while (host.length() > 0 && host != domain_and_registry) {
-    size_t pos = host.find('.');
-    if (pos != std::string::npos) {  // strip prefix
-      host = host.substr(pos + 1);
-    } else {
-      break;
+    // Search shard for matches for origin by looking up the (canonicalized)
+    // host name and then stripping domain prefixes until the eTLD+1 is reached.
+    DCHECK(!origin.HostIsIPAddress());
+    // |host| is a std::string instead of StringPiece as the protbuf::Map
+    // implementation does not support StringPieces as parameters for find.
+    std::string host = origin.host();
+    auto host_iter = shard.specs().find(host);
+    if (host_iter != shard.specs().end()) {
+      const PasswordRequirementsSpec& spec = host_iter->second;
+      TriggerCallback(std::move(callback_function), ResultCode::kFoundSpec,
+                      spec);
+      continue;
     }
-    // If an entry has ben found exit with that.
-    auto it = shard.specs().find(host);
-    if (it != shard.specs().end()) {
-      TriggerCallback(ResultCode::kFoundSpec, it->second);
-      return;
+
+    bool found_entry = false;
+    const std::string domain_and_registry =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            origin,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    while (host.length() > 0 && host != domain_and_registry) {
+      size_t pos = host.find('.');
+      if (pos != std::string::npos) {  // strip prefix
+        host = host.substr(pos + 1);
+      } else {
+        break;
+      }
+      // If an entry has ben found, exit with that.
+      auto it = shard.specs().find(host);
+      if (it != shard.specs().end()) {
+        const PasswordRequirementsSpec& spec = it->second;
+        found_entry = true;
+        TriggerCallback(std::move(callback_function), ResultCode::kFoundSpec,
+                        spec);
+        break;
+      }
+    }
+
+    if (!found_entry) {
+      TriggerCallback(std::move(callback_function), ResultCode::kFoundNoSpec,
+                      PasswordRequirementsSpec());
     }
   }
-
-  TriggerCallback(ResultCode::kFoundNoSpec, PasswordRequirementsSpec());
 }
 
-void PasswordRequirementsSpecFetcherImpl::OnFetchTimeout() {
-  url_loader_.reset();
-  TriggerCallback(ResultCode::kErrorTimeout, PasswordRequirementsSpec());
+void PasswordRequirementsSpecFetcherImpl::OnFetchTimeout(
+    const std::string& hash_prefix) {
+  std::unique_ptr<LookupInFlight> lookup = RemoveLookupInFlight(hash_prefix);
+  TriggerCallbackToAll(&lookup->callbacks, ResultCode::kErrorTimeout,
+                       PasswordRequirementsSpec());
+}
+
+void PasswordRequirementsSpecFetcherImpl::TriggerCallbackToAll(
+    std::list<std::pair<GURL, FetchCallback>>* callbacks,
+    ResultCode result,
+    const PasswordRequirementsSpec& spec) {
+  for (auto& callback_pair : *callbacks) {
+    TriggerCallback(std::move(callback_pair.second), result, spec);
+  }
 }
 
 void PasswordRequirementsSpecFetcherImpl::TriggerCallback(
+    FetchCallback callback,
     ResultCode result,
     const PasswordRequirementsSpec& spec) {
-  // TODO(crbug.com/846694) Return latencies.
+  // TODO(crbug.com/846694) Record latencies.
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.RequirementsSpecFetcher.Result",
                             result);
-  std::move(callback_).Run(spec);
+  std::move(callback).Run(spec);
+}
+
+std::unique_ptr<PasswordRequirementsSpecFetcherImpl::LookupInFlight>
+PasswordRequirementsSpecFetcherImpl::RemoveLookupInFlight(
+    const std::string& hash_prefix) {
+  DCHECK(lookups_in_flight_.find(hash_prefix) != lookups_in_flight_.end());
+  std::unique_ptr<LookupInFlight> lookup;
+  std::swap(lookup, lookups_in_flight_[hash_prefix]);
+  lookups_in_flight_.erase(hash_prefix);
+  return lookup;
 }
 
 }  // namespace autofill
