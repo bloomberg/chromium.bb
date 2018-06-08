@@ -14,6 +14,16 @@ Polymer({
 
   properties: {
     /**
+     * If true, all fields are shown as editable. Fields without an edit type
+     * or that are policy enforced will be shown as 'readonly'. Used for lists
+     * with dynamic edit types (e.g. network-ip-config).
+     */
+    editable: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The dictionary containing the properties to display.
      * @type {!Object|undefined}
      */
@@ -38,7 +48,6 @@ Polymer({
      *       separated list of strings.
      *   'Password' - A string with input type = password.
      *   TODO(stevenjb): Support types with custom validation, e.g. IPAddress.
-     *   TODO(stevenjb): Support 'Number'.
      * When a field changes, the 'property-change' event will be fired with
      * the field name and the new value provided in the event detail.
      */
@@ -140,36 +149,13 @@ Polymer({
   /**
    * @param {string} key The property key.
    * @param {!Object} editFieldTypes
-   * @return {boolean}
+   * @return {boolean} True if the edit type for the key is a valid type.
    * @private
    */
-  isEditTypeAny_: function(key, editFieldTypes) {
-    return editFieldTypes[key] !== undefined;
-  },
-
-  /**
-   * @param {string} key The property key.
-   * @param {!Object} propertyDict
-   * @param {!Object} editFieldTypes
-   * @return {boolean}
-   * @private
-   */
-  isEditTypeInput_: function(key, propertyDict, editFieldTypes) {
-    if (!this.isPropertyEditable_(key, propertyDict))
-      return false;
+  isEditType_: function(key, editFieldTypes) {
     var editType = editFieldTypes[key];
     return editType == 'String' || editType == 'StringArray' ||
         editType == 'Password';
-  },
-
-  /**
-   * @param {string} key The property key.
-   * @param {!Object} editFieldTypes
-   * @return {string}
-   * @private
-   */
-  getEditInputType_: function(key, editFieldTypes) {
-    return editFieldTypes[key] == 'Password' ? 'password' : 'text';
   },
 
   /**
@@ -180,9 +166,29 @@ Polymer({
    * @private
    */
   isEditable_: function(key, propertyDict, editFieldTypes) {
-    if (!this.isPropertyEditable_(key, propertyDict))
-      return false;
-    return this.isEditTypeAny_(key, editFieldTypes);
+    return this.isEditType_(key, editFieldTypes) &&
+        this.isPropertyEditable_(key, propertyDict);
+  },
+
+  /**
+   * @param {string} key The property key.
+   * @param {!Object} propertyDict
+   * @param {!Object} editFieldTypes
+   * @return {boolean}
+   * @private
+   */
+  showEditable_: function(key, propertyDict, editFieldTypes) {
+    return this.isEditable_(key, propertyDict, editFieldTypes) || this.editable;
+  },
+
+  /**
+   * @param {string} key The property key.
+   * @param {!Object} editFieldTypes
+   * @return {string}
+   * @private
+   */
+  getEditInputType_: function(key, editFieldTypes) {
+    return editFieldTypes[key] == 'Password' ? 'password' : 'text';
   },
 
   /**

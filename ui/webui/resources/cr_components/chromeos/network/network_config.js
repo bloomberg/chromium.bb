@@ -405,7 +405,8 @@ Polymer({
   focusFirstInput_: function() {
     Polymer.dom.flush();
     var e = this.$$(
-        'network-config-input:not([disabled]),' +
+        'cr-input:not([disabled]),' +
+        'network-password-input:not([disabled]),' +
         'network-config-select:not([disabled])');
     if (e)
       e.focus();

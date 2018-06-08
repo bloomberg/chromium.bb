@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
@@ -11,8 +12,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="network_proxy_exclusions.html">
 <link rel="import" href="network_proxy_input.html">
 <link rel="import" href="network_shared_css.html">
@@ -26,6 +25,14 @@
 
       network-proxy-exclusions {
         margin: 10px 0;
+      }
+
+      #addException {
+        margin-top: 8px;
+      }
+
+      #addException cr-input {
+        margin-bottom: 0;
       }
 
       #manualProxy {
@@ -50,12 +57,12 @@
     <!-- Autoconfiguration (PAC) -->
     <div class="property-box indented"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.PAC)]]">
-      <div>[[i18n('networkProxyAutoConfig')]]</div>
-      <paper-input id="pacInput" no-label-float class="middle"
+      <cr-input id="pacInput" class="flex"
+          label="[[i18n('networkProxyAutoConfig')]]"
           value="{{proxy_.PAC}}" on-change="onPACChange_"
           disabled="[[!isEditable_('PAC', networkProperties, editable,
               useSharedProxies)]]">
-      </paper-input>
+      </cr-input>
     </div>
 
     <!-- Web Proxy Auto Discovery (WPAD) -->
@@ -128,15 +135,12 @@
             editable="[[isEditable_('ExcludeDomains', networkProperties,
                 editable, useSharedProxies)]]">
         </network-proxy-exclusions>
-        <div class="layout horizontal">
-          <paper-input-container no-label-float class="flex">
-            <iron-input slot="input">
-              <input id="proxyExclusion">
-            </iron-input>
-            <iron-a11y-keys keys="enter" slot="add-on"
+        <div id="addException" class="layout horizontal center">
+          <cr-input id="proxyExclusion" class="flex">
+            <iron-a11y-keys keys="enter"
                 on-keys-pressed="onAddProxyExclusionTap_">
             </iron-a11y-keys>
-          </paper-input-container>
+          </cr-input>
           <paper-button on-tap="onAddProxyExclusionTap_">
             [[i18n('networkProxyAddException')]]
           </paper-button>

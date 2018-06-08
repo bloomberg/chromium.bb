@@ -44,7 +44,7 @@ Polymer({
   },
 
   focus: function() {
-    this.$$('input').focus();
+    this.$$('cr-input').focus();
   },
 
   /**
