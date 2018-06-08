@@ -12,9 +12,11 @@ cr.define('settings_people_page', function() {
     let syncBrowserProxy = null;
 
     suiteSetup(function() {
-      // Force easy unlock off. Those have their own ChromeOS-only tests.
       loadTimeData.overrideValues({
+        // Force easy unlock off. Those have their own ChromeOS-only tests.
         easyUnlockAllowed: false,
+        // Force Dice off. Dice is tested in the DiceUITest suite.
+        diceEnabled: false,
       });
     });
 
