@@ -16,10 +16,9 @@ class FontVariantEastAsianParser {
 
  public:
   FontVariantEastAsianParser()
-      : saw_east_asian_form_value_(false),
-        saw_east_asian_width_value_(false),
-        saw_ruby_value_(false),
-        result_(CSSValueList::CreateSpaceSeparated()) {}
+      : east_asian_form_value_(nullptr),
+        east_asian_width_value_(nullptr),
+        ruby_value_(nullptr) {}
 
   enum class ParseResult { kConsumedValue, kDisallowedValue, kUnknownValue };
 
@@ -32,39 +31,44 @@ class FontVariantEastAsianParser {
       case CSSValueJis04:
       case CSSValueSimplified:
       case CSSValueTraditional:
-        if (saw_east_asian_form_value_)
+        if (east_asian_form_value_)
           return ParseResult::kDisallowedValue;
-        saw_east_asian_form_value_ = true;
-        break;
+        east_asian_form_value_ = CSSPropertyParserHelpers::ConsumeIdent(range);
+        return ParseResult::kConsumedValue;
       case CSSValueFullWidth:
       case CSSValueProportionalWidth:
-        if (saw_east_asian_width_value_)
+        if (east_asian_width_value_)
           return ParseResult::kDisallowedValue;
-        saw_east_asian_width_value_ = true;
-        break;
+        east_asian_width_value_ = CSSPropertyParserHelpers::ConsumeIdent(range);
+        return ParseResult::kConsumedValue;
       case CSSValueRuby:
-        if (saw_ruby_value_)
+        if (ruby_value_)
           return ParseResult::kDisallowedValue;
-        saw_ruby_value_ = true;
-        break;
+        ruby_value_ = CSSPropertyParserHelpers::ConsumeIdent(range);
+        return ParseResult::kConsumedValue;
       default:
         return ParseResult::kUnknownValue;
     }
-    result_->Append(*CSSPropertyParserHelpers::ConsumeIdent(range));
-    return ParseResult::kConsumedValue;
   }
 
   CSSValue* FinalizeValue() {
-    if (!result_->length())
+    CSSValueList* result = CSSValueList::CreateSpaceSeparated();
+    if (east_asian_form_value_)
+      result->Append(*east_asian_form_value_.Release());
+    if (east_asian_width_value_)
+      result->Append(*east_asian_width_value_.Release());
+    if (ruby_value_)
+      result->Append(*ruby_value_.Release());
+
+    if (!result->length())
       return CSSIdentifierValue::Create(CSSValueNormal);
-    return result_.Release();
+    return result;
   }
 
  private:
-  bool saw_east_asian_form_value_;
-  bool saw_east_asian_width_value_;
-  bool saw_ruby_value_;
-  Member<CSSValueList> result_;
+  Member<CSSIdentifierValue> east_asian_form_value_;
+  Member<CSSIdentifierValue> east_asian_width_value_;
+  Member<CSSIdentifierValue> ruby_value_;
 };
 
 }  // namespace blink
