@@ -8,9 +8,9 @@ m4_define([wayland_version],
 
 AC_INIT([wayland],
         [wayland_version],
-        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=wayland&version=wayland_version],
+	[https://gitlab.freedesktop.org/wayland/wayland/issues/],
         [wayland],
-        [http://wayland.freedesktop.org/])
+        [https://wayland.freedesktop.org/])
 
 AC_SUBST([WAYLAND_VERSION_MAJOR], [wayland_major_version])
 AC_SUBST([WAYLAND_VERSION_MINOR], [wayland_minor_version])
