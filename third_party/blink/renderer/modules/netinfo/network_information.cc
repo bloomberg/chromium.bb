@@ -26,8 +26,8 @@ Settings* GetSettings(ExecutionContext* execution_context) {
     return nullptr;
 
   Document* document = ToDocument(execution_context);
-  if (!document)
-    return nullptr;
+  // |document| is guaranteed to be non-null since |execution_context| is
+  // non-null.
   return document->GetSettings();
 }
 
