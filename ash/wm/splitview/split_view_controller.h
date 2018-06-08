@@ -152,7 +152,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   void AddObserver(mojom::SplitViewObserverPtr observer) override;
 
   // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
