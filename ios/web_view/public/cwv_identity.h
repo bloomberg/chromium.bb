@@ -12,6 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 CWV_EXPORT
+// Represents a user in ChromeWebView.
 @interface CWVIdentity : NSObject
 
 - (instancetype)initWithEmail:(NSString*)email
@@ -20,17 +21,13 @@ CWV_EXPORT
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Identity/account email address. This can be shown to the user, but is not a
-// unique identifier (@see gaiaID).
+// The user's email address. e.g. john.doe@chromium.org.
 @property(nonatomic, copy, readonly) NSString* email;
 
-// Returns the full name of the identity.
-// Could be nil if no full name has been fetched for this account yet.
+// The user's full name. e.g. John Doe.
 @property(nonatomic, copy, readonly, nullable) NSString* fullName;
 
-// The unique GAIA user identifier for this identity/account.
-// Use this as a unique identifier to remember a particular identity.
-// Use SSOIdentity's |userID| property. See go/ios-sso-library for more info.
+// The unique GAIA (Google Accounts ID Administration) ID for this user.
 @property(nonatomic, copy, readonly) NSString* gaiaID;
 
 @end
