@@ -49,6 +49,7 @@
 @synthesize historyTransitioningDelegate = _historyTransitioningDelegate;
 @synthesize loader = _loader;
 @synthesize clearBrowsingDataCoordinator = _clearBrowsingDataCoordinator;
+@synthesize tabPresentationDelegate = _tabPresentationDelegate;
 
 - (void)start {
   // Initialize and configure HistoryTableViewController.
@@ -72,6 +73,8 @@
       initWithTable:historyTableViewController];
   self.historyNavigationController.toolbarHidden = NO;
   historyTableViewController.localDispatcher = self;
+  historyTableViewController.tabPresentationDelegate =
+      self.tabPresentationDelegate;
   self.historyTransitioningDelegate =
       [[HistoryTransitioningDelegate alloc] init];
   self.historyNavigationController.transitioningDelegate =

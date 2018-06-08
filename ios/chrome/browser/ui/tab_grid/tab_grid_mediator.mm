@@ -9,10 +9,8 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
-#include "components/sessions/core/session_types.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/sessions/session_util.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -83,15 +81,6 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
       return web_state;
   }
   return nullptr;
-}
-
-// Appends and activates |web_state| to the end of |web_state_list|.
-void AppendAndActivateWebState(WebStateList* web_state_list,
-                               std::unique_ptr<web::WebState> web_state) {
-  web_state_list->InsertWebState(
-      web_state_list->count(), std::move(web_state),
-      (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
-      WebStateOpener());
 }
 
 }  // namespace
@@ -306,54 +295,6 @@ void AppendAndActivateWebState(WebStateList* web_state_list,
   DCHECK(self.tabModel.browserState);
   ios::ChromeBrowserState* browserState = self.tabModel.browserState;
   [SnapshotCacheFactory::GetForBrowserState(browserState) removeMarkedImages];
-}
-
-#pragma mark - UrlLoader
-
-// Loading a |sessionTab| normally means navigating on the currently visible tab
-// view. This is not the case while in the tab grid. A new WebState is appended
-// and activated instead of replacing the current active WebState.
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-  DCHECK(self.tabModel.browserState);
-  std::unique_ptr<web::WebState> webState =
-      session_util::CreateWebStateWithNavigationEntries(
-          self.tabModel.browserState, sessionTab->current_navigation_index,
-          sessionTab->navigations);
-  AppendAndActivateWebState(self.webStateList, std::move(webState));
-}
-
-// In tab grid, |inBackground| is ignored, which means that the new WebState is
-// activated. |appendTo| is also ignored, so the new WebState is always appended
-// at the end of the list. The page transition type is explicit rather than
-// linked.
-- (void)webPageOrderedOpen:(const GURL&)URL
-                  referrer:(const web::Referrer&)referrer
-              inBackground:(BOOL)inBackground
-                  appendTo:(OpenPosition)appendTo {
-  DCHECK(self.tabModel.browserState);
-  web::WebState::CreateParams params(self.tabModel.browserState);
-  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
-  web::NavigationManager::WebLoadParams loadParams(URL);
-  loadParams.referrer = referrer;
-  loadParams.transition_type = ui::PAGE_TRANSITION_TYPED;
-  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
-  AppendAndActivateWebState(self.webStateList, std::move(webState));
-}
-
-- (void)webPageOrderedOpen:(const GURL&)URL
-                  referrer:(const web::Referrer&)referrer
-               inIncognito:(BOOL)inIncognito
-              inBackground:(BOOL)inBackground
-                  appendTo:(OpenPosition)appendTo {
-  NOTREACHED() << "This is intentionally NO-OP in TabGridMediator.";
-}
-
-- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
-  NOTREACHED() << "This is intentionally NO-OP in TabGridMediator.";
-}
-
-- (void)loadJavaScriptFromLocationBar:(NSString*)script {
-  NOTREACHED() << "This is intentionally NO-OP in TabGridMediator.";
 }
 
 #pragma mark - GridImageDataSource
