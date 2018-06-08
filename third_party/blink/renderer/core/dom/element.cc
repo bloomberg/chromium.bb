@@ -3990,13 +3990,22 @@ scoped_refptr<ComputedStyle> Element::GetUncachedPseudoStyle(
   return GetDocument().EnsureStyleResolver().PseudoStyleForElement(
       this, request, parent_style, parent_style);
 }
-// For display: contents elements, we still need to generate ::before and
-// ::after, but the rest of the pseudo-elements should only be used for elements
-// with an actual layout object.
+
 bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
-  if (HasDisplayContentsStyle())
-    return pseudo_id == kPseudoIdBefore || pseudo_id == kPseudoIdAfter;
-  return !!GetLayoutObject();
+  if (pseudo_id == kPseudoIdBackdrop && !IsInTopLayer())
+    return false;
+  if (const ComputedStyle* style = GetComputedStyle()) {
+    if (style->Display() == EDisplay::kNone)
+      return false;
+    if (style->Display() == EDisplay::kContents) {
+      // For display: contents elements, we still need to generate ::before and
+      // ::after, but the rest of the pseudo-elements should only be used for
+      // elements with an actual layout object.
+      return pseudo_id == kPseudoIdBefore || pseudo_id == kPseudoIdAfter;
+    }
+    return true;
+  }
+  return false;
 }
 
 bool Element::MayTriggerVirtualKeyboard() const {

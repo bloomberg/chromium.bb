@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -122,6 +123,10 @@ bool LayoutTreeBuilderForElement::ShouldCreateLayoutObject() const {
     return false;
   if (!parent_layout_object->CanHaveChildren())
     return false;
+  if (node_->IsPseudoElement() &&
+      !CanHaveGeneratedChildren(*parent_layout_object)) {
+    return false;
+  }
   return node_->LayoutObjectIsNeeded(Style());
 }
 

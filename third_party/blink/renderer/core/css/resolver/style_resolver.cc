@@ -86,7 +86,6 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
@@ -810,16 +809,6 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
   if (!parent.CanGeneratePseudoElement(pseudo_id))
     return nullptr;
 
-  LayoutObject* parent_layout_object = parent.GetLayoutObject();
-  if (!parent_layout_object) {
-    DCHECK(parent.HasDisplayContentsStyle());
-    parent_layout_object =
-        LayoutTreeBuilderTraversal::ParentLayoutObject(parent);
-  }
-
-  if (!parent_layout_object)
-    return nullptr;
-
   ComputedStyle* parent_style = parent.MutableComputedStyle();
   DCHECK(parent_style);
 
@@ -830,21 +819,10 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
     return nullptr;
   }
 
-  if (pseudo_id == kPseudoIdBackdrop && !parent.IsInTopLayer())
-    return nullptr;
-
   if (pseudo_id == kPseudoIdFirstLetter &&
       (parent.IsSVGElement() ||
        !FirstLetterPseudoElement::FirstLetterTextLayoutObject(parent)))
     return nullptr;
-
-  // The backdrop pseudo element generates a new stacking context and its
-  // layout object does not become a child of |parentLayoutObject|. The
-  // exemption is needed so that replaced content also gets a backdrop.
-  if (pseudo_id != kPseudoIdBackdrop &&
-      !CanHaveGeneratedChildren(*parent_layout_object)) {
-    return nullptr;
-  }
 
   if (ComputedStyle* cached_style =
           parent_style->GetCachedPseudoStyle(pseudo_id)) {
@@ -853,8 +831,16 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
     return PseudoElement::Create(&parent, pseudo_id);
   }
 
+  const ComputedStyle* layout_parent_style = parent_style;
+  if (parent.HasDisplayContentsStyle()) {
+    ContainerNode* layout_parent =
+        LayoutTreeBuilderTraversal::LayoutParent(parent);
+    DCHECK(layout_parent);
+    layout_parent_style = layout_parent->GetComputedStyle();
+  }
+
   StyleResolverState state(GetDocument(), &parent, parent_style,
-                           parent_layout_object->Style());
+                           layout_parent_style);
   if (!PseudoStyleForElementInternal(parent, pseudo_id, parent_style, state))
     return nullptr;
   scoped_refptr<ComputedStyle> style = state.TakeStyle();
