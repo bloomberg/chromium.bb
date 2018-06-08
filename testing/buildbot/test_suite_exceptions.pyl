@@ -70,8 +70,6 @@
     'remove_from': [
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       # chromium.gpu and chromium.gpu.fyi
       # On Android, these are already run on the main waterfall.
@@ -367,8 +365,6 @@
     'remove_from': [
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
     ],
@@ -615,8 +611,6 @@
       'linux-chromeos-rel',
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Linux',
       'Out of Process Profiling Mac',
@@ -883,7 +877,6 @@
   'content_shell_crash_test': {
     'remove_from': [
       # chromium.fyi
-      'Chromium Mac 10.11',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
       # On chromium.linux, unclear why these only run on "Linux Tests".
@@ -1066,8 +1059,6 @@
     'remove_from': [
       # chromium.clang
       'linux-win_cross-rel', # https://crbug.com/762167
-      # chromium.fyi
-      'Chromium Win 10 GCE Tests',
     ],
   },
   'cronet_test_instrumentation_apk': {
@@ -1096,8 +1087,6 @@
     'remove_from': [
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
       # chromium.win
@@ -1143,7 +1132,6 @@
     'remove_from': [
       # chromium.fyi, unclear why these aren't run.
       'mac-views-rel',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -1171,8 +1159,6 @@
     'remove_from': [
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Linux',
       'Out of Process Profiling Mac',
@@ -1204,10 +1190,7 @@
       'ToTLinuxASan',  # https://crbug.com/831667
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
-      'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Linux',
       'Out of Process Profiling Mac',
       # On chromium.linux, unclear why these aren't run on Cast.
@@ -1426,8 +1409,6 @@
     'remove_from': [
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Linux',
       'Out of Process Profiling Mac',
@@ -1485,8 +1466,6 @@
       # chromium.clang
       'ToTLinuxUBSanVptr',
       'UBSanVptr Linux',
-      # chromium.fyi
-      'Chromium Win 10 GCE Tests',
       # chromium.memory
       'Linux TSan Tests',
     ],
@@ -1664,8 +1643,6 @@
     'remove_from': [
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
     ],
@@ -1704,8 +1681,6 @@
 
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
 
@@ -1720,7 +1695,6 @@
   'metrics_python_tests': {
     'remove_from': [
       # chromium.fyi
-      'Chromium Mac 10.11',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
     ],
@@ -1766,8 +1740,6 @@
     'remove_from': [
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
       # chromium.clang
@@ -1908,8 +1880,6 @@
       # chromium.chromiumos
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
-      # chromium.fyi
-      'Chromium Win 10 GCE Tests',
       # chromium.linux
       'Cast Audio Linux',
       'Cast Linux',
@@ -1935,8 +1905,6 @@
       'Mac Pro FYI Release (AMD)',
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Win 10 Fast Ring',
       # On chromium.linux, unclear why these aren't run on Cast.
@@ -2079,8 +2047,6 @@
       'linux-chromeos-rel',
       # chromium.fyi
       'mac-views-rel',
-      'Chromium Mac 10.11',
-      'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
       # On chromium.win, unclear why these aren't run.
@@ -2530,7 +2496,6 @@
   'viz_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
       'Out of Process Profiling Linux',
       # chromium.win
@@ -2561,8 +2526,6 @@
   },
   'vr_common_unittests': {
     'remove_from': [
-      # chromium.fyi
-      'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
       # chromium.win
       'Win 7 Tests x64 (1)',
@@ -2606,7 +2569,6 @@
   'vr_pixeltests': {
     'remove_from': [
       # chromium.fyi
-      'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
       'VR Linux',
       # chromium.win
@@ -2672,7 +2634,6 @@
   'webkit_layout_tests': {
     'remove_from': [
       # chromium.fyi
-      'Chromium Mac 10.11',
       'Out of Process Profiling Mac',
       # chromium.linux
       'Linux Tests (dbg)(1)',
@@ -3044,8 +3005,6 @@
   },
   'zucchini_unittests': {
     'remove_from': [
-      # chromium.fyi
-      'Chromium Win 10 GCE Tests',
       # chromium.win
       'Win10 Tests x64',
     ],
