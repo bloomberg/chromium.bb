@@ -44,7 +44,7 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // TODO(crbug.com/806249): Check element is a video element.
+  DCHECK(IsHTMLVideoElement(picture_in_picture_element));
   document.GetTaskRunner(TaskType::kMediaElementEvent)
       ->PostTask(
           FROM_HERE,
