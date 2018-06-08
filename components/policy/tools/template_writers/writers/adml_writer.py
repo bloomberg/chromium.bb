@@ -76,9 +76,8 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     policy_caption = policy.get('caption', policy_name)
     policy_label = policy.get('label', policy_name)
 
-    policy_example = policy.get('example_value')
     policy_desc = policy.get('desc')
-    example_value_text = self._GetExampleValueText(policy_example)
+    example_value_text = self._GetExampleValueText(policy)
 
     if policy_desc is not None and example_value_text is not None:
       policy_explain = policy_desc + '\n\n' + example_value_text
@@ -168,20 +167,57 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
                         strings[category])
         self._AddString(category, string)
 
-  def _GetExampleValueText(self, example_value):
+  def _GetExampleValueText(self, policy):
     '''Generates a string that describes the example value, if needed.
     Returns None if no string is needed. For instance, if the setting is a
     boolean, the user can only select true or false, so example text is not
     useful.'''
+    example_value = policy.get('example_value')
+    # If there is no example_value, we show nothing.
+    if not example_value:
+      return None
+
+    # Strings are simple - just return them as-is, on the same line.
     if isinstance(example_value, str):
       return self._GetLocalizedMessage('example_value') + ' ' + example_value
-    if isinstance(example_value, list):
-      value_as_text = '\n'.join([str(v) for v in example_value])
-      return self._GetLocalizedMessage('example_value') + '\n\n' + value_as_text
+
+    # Dicts are pretty simple - json.dumps them onto multiple lines.
     if isinstance(example_value, dict):
-      value_as_text = json.dumps(example_value)
+      value_as_text = json.dumps(example_value, indent = 2)
       return self._GetLocalizedMessage('example_value') + '\n\n' + value_as_text
+
+    # Lists are the more complicated - the example value we show the user
+    # depends on if they need to enter the list into a textbox (using JSON
+    # array syntax) or into a listbox (which doesn't need JSON array syntax,
+    # but does need exactly one entry per line).
+    if isinstance(example_value, list):
+      policy_type = policy.get('type')
+      if policy_type == 'dict':
+        # If the policy type is dict, that means they get to enter in the
+        # whole policy as JSON, including the JSON array square brackets:
+        value_as_text = json.dumps(example_value, indent = 2)
+
+      elif policy_type is not None and 'list' in policy_type:
+        # But if the policy type is list, then they get to enter each item
+        # into a listbox, one item per line.
+        if isinstance(example_value[0], str):
+          # Items are strings. These don't need quotes when in a listbox.
+          value_as_text = '\n'.join([str(v) for v in example_value])
+        else:
+          # Items are dicts. We dump each item onto a single line, since the
+          # user has to enter one item per line into the listbox.
+          value_as_text = '\n'.join([json.dumps(v) for v in example_value])
+
+      else:
+        # Lists should be type 'dict', 'list', or something like '...enum-list'
+        raise Exception(
+            'Unexpected policy type with list example value: %s' % policy_type)
+
+      return self._GetLocalizedMessage('example_value') + '\n\n' + value_as_text
+
+    # Other types - mostly booleans - we don't show example values.
     return None
+
 
   def _GetLegacySingleLineLabel(self, policy_label):
     '''Generates a label for a legacy single-line textbox.'''
