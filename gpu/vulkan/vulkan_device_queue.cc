@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "gpu/vulkan/vulkan_command_pool.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_platform.h"
 
 namespace gpu {
@@ -24,19 +25,23 @@ VulkanDeviceQueue::~VulkanDeviceQueue() {
 bool VulkanDeviceQueue::Initialize(
     uint32_t options,
     const GetPresentationSupportCallback& get_presentation_support) {
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   if (VK_NULL_HANDLE == vk_instance_)
     return false;
 
   VkResult result = VK_SUCCESS;
 
   uint32_t device_count = 0;
-  result = vkEnumeratePhysicalDevices(vk_instance_, &device_count, nullptr);
+  result = vulkan_function_pointers->vkEnumeratePhysicalDevices(
+      vk_instance_, &device_count, nullptr);
   if (VK_SUCCESS != result || device_count == 0)
     return false;
 
   std::vector<VkPhysicalDevice> devices(device_count);
-  result =
-      vkEnumeratePhysicalDevices(vk_instance_, &device_count, devices.data());
+  result = vulkan_function_pointers->vkEnumeratePhysicalDevices(
+      vk_instance_, &device_count, devices.data());
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << result;
     return false;
@@ -51,11 +56,12 @@ bool VulkanDeviceQueue::Initialize(
   for (size_t i = 0; i < devices.size(); ++i) {
     const VkPhysicalDevice& device = devices[i];
     uint32_t queue_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_count, nullptr);
+    vulkan_function_pointers->vkGetPhysicalDeviceQueueFamilyProperties(
+        device, &queue_count, nullptr);
     if (queue_count) {
       std::vector<VkQueueFamilyProperties> queue_properties(queue_count);
-      vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_count,
-                                               queue_properties.data());
+      vulkan_function_pointers->vkGetPhysicalDeviceQueueFamilyProperties(
+          device, &queue_count, queue_properties.data());
       for (size_t n = 0; n < queue_properties.size(); ++n) {
         if ((queue_properties[n].queueFlags & queue_flags) != queue_flags)
           continue;
@@ -94,8 +100,8 @@ bool VulkanDeviceQueue::Initialize(
   std::vector<const char*> enabled_layer_names;
 #if DCHECK_IS_ON()
   uint32_t num_device_layers = 0;
-  result = vkEnumerateDeviceLayerProperties(vk_physical_device_,
-                                            &num_device_layers, nullptr);
+  result = vulkan_function_pointers->vkEnumerateDeviceLayerProperties(
+      vk_physical_device_, &num_device_layers, nullptr);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumerateDeviceLayerProperties(NULL) failed: "
                 << result;
@@ -103,9 +109,8 @@ bool VulkanDeviceQueue::Initialize(
   }
 
   std::vector<VkLayerProperties> device_layers(num_device_layers);
-  result = vkEnumerateDeviceLayerProperties(vk_physical_device_,
-                                            &num_device_layers,
-                                            device_layers.data());
+  result = vulkan_function_pointers->vkEnumerateDeviceLayerProperties(
+      vk_physical_device_, &num_device_layers, device_layers.data());
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEnumerateDeviceLayerProperties() failed: " << result;
     return false;
@@ -130,19 +135,25 @@ bool VulkanDeviceQueue::Initialize(
   device_create_info.enabledExtensionCount = arraysize(device_extensions);
   device_create_info.ppEnabledExtensionNames = device_extensions;
 
-  result = vkCreateDevice(vk_physical_device_, &device_create_info, nullptr,
-                          &vk_device_);
+  result = vulkan_function_pointers->vkCreateDevice(
+      vk_physical_device_, &device_create_info, nullptr, &vk_device_);
   if (VK_SUCCESS != result)
     return false;
 
-  vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
+  vulkan_function_pointers->BindDeviceFunctionPointers(vk_device_);
+
+  vulkan_function_pointers->vkGetDeviceQueue(vk_device_, queue_index, 0,
+                                             &vk_queue_);
 
   return true;
 }
 
 void VulkanDeviceQueue::Destroy() {
   if (VK_NULL_HANDLE != vk_device_) {
-    vkDestroyDevice(vk_device_, nullptr);
+    VulkanFunctionPointers* vulkan_function_pointers =
+        gpu::GetVulkanFunctionPointers();
+
+    vulkan_function_pointers->vkDestroyDevice(vk_device_, nullptr);
     vk_device_ = VK_NULL_HANDLE;
   }
 

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
 
@@ -21,6 +22,8 @@ VulkanSampler::~VulkanSampler() {
 
 bool VulkanSampler::Initialize(const SamplerOptions& options) {
   DCHECK_EQ(static_cast<VkSampler>(VK_NULL_HANDLE), handle_);
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
 
   VkSamplerCreateInfo sampler_create_info = {};
   sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -40,8 +43,9 @@ bool VulkanSampler::Initialize(const SamplerOptions& options) {
   sampler_create_info.unnormalizedCoordinates =
       options.unnormalized_coordinates;
 
-  VkResult result = vkCreateSampler(device_queue_->GetVulkanDevice(),
-                                    &sampler_create_info, nullptr, &handle_);
+  VkResult result = vulkan_function_pointers->vkCreateSampler(
+      device_queue_->GetVulkanDevice(), &sampler_create_info, nullptr,
+      &handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateSampler() failed: " << result;
     return false;
@@ -52,7 +56,10 @@ bool VulkanSampler::Initialize(const SamplerOptions& options) {
 
 void VulkanSampler::Destroy() {
   if (VK_NULL_HANDLE != handle_) {
-    vkDestroySampler(device_queue_->GetVulkanDevice(), handle_, nullptr);
+    VulkanFunctionPointers* vulkan_function_pointers =
+        gpu::GetVulkanFunctionPointers();
+    vulkan_function_pointers->vkDestroySampler(device_queue_->GetVulkanDevice(),
+                                               handle_, nullptr);
     handle_ = VK_NULL_HANDLE;
   }
 }

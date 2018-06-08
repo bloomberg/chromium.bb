@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_descriptor_set.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
 
@@ -22,6 +23,8 @@ bool VulkanDescriptorPool::Initialize(
     uint32_t max_descriptor_sets,
     const std::vector<VkDescriptorPoolSize>& pool_sizes) {
   DCHECK_EQ(static_cast<VkDescriptorPool>(VK_NULL_HANDLE), handle_);
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
   max_descriptor_sets_ = max_descriptor_sets;
 
   VkDescriptorPoolCreateInfo descriptor_pool_create_info = {};
@@ -34,9 +37,9 @@ bool VulkanDescriptorPool::Initialize(
       static_cast<uint32_t>(pool_sizes.size());
   descriptor_pool_create_info.pPoolSizes = pool_sizes.data();
 
-  VkResult result =
-      vkCreateDescriptorPool(device_queue_->GetVulkanDevice(),
-                             &descriptor_pool_create_info, nullptr, &handle_);
+  VkResult result = vulkan_function_pointers->vkCreateDescriptorPool(
+      device_queue_->GetVulkanDevice(), &descriptor_pool_create_info, nullptr,
+      &handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateDescriptorPool() failed: " << result;
     return false;
@@ -48,7 +51,10 @@ bool VulkanDescriptorPool::Initialize(
 void VulkanDescriptorPool::Destroy() {
   DCHECK_EQ(0u, descriptor_count_);
   if (VK_NULL_HANDLE != handle_) {
-    vkDestroyDescriptorPool(device_queue_->GetVulkanDevice(), handle_, nullptr);
+    VulkanFunctionPointers* vulkan_function_pointers =
+        gpu::GetVulkanFunctionPointers();
+    vulkan_function_pointers->vkDestroyDescriptorPool(
+        device_queue_->GetVulkanDevice(), handle_, nullptr);
     handle_ = VK_NULL_HANDLE;
   }
 

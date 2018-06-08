@@ -43,6 +43,7 @@ class BrowserShutdownProfileDumper;
 class BrowserSurfaceViewManager;
 class BrowserTestBase;
 class CategorizedWorkerPool;
+class GpuProcessTransportFactory;
 class NestedMessagePumpAndroid;
 class ScopedAllowWaitForAndroidLayoutTests;
 class ScopedAllowWaitForDebugURL;
@@ -220,6 +221,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
   friend class android_webview::ScopedAllowInitGLBindings;
   friend class content::BrowserProcessSubThread;
+  friend class content::GpuProcessTransportFactory;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
   friend class media::AudioInputDevice;

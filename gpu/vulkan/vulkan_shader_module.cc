@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace {
 
@@ -106,6 +107,8 @@ bool VulkanShaderModule::InitializeSPIRV(ShaderType type,
                                          std::string entry_point,
                                          std::string source) {
   DCHECK_EQ(static_cast<VkShaderModule>(VK_NULL_HANDLE), handle_);
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
   shader_type_ = type;
   name_ = std::move(name);
   entry_point_ = std::move(entry_point);
@@ -125,9 +128,9 @@ bool VulkanShaderModule::InitializeSPIRV(ShaderType type,
   shader_module_create_info.codeSize = source.length();
 
   VkShaderModule shader_module = VK_NULL_HANDLE;
-  VkResult result =
-      vkCreateShaderModule(device_queue_->GetVulkanDevice(),
-                           &shader_module_create_info, nullptr, &shader_module);
+  VkResult result = vulkan_function_pointers->vkCreateShaderModule(
+      device_queue_->GetVulkanDevice(), &shader_module_create_info, nullptr,
+      &shader_module);
   if (VK_SUCCESS != result) {
     std::stringstream ss;
     ss << "vkCreateShaderModule() failed: " << result;
@@ -142,7 +145,10 @@ bool VulkanShaderModule::InitializeSPIRV(ShaderType type,
 
 void VulkanShaderModule::Destroy() {
   if (handle_ != VK_NULL_HANDLE) {
-    vkDestroyShaderModule(device_queue_->GetVulkanDevice(), handle_, nullptr);
+    VulkanFunctionPointers* vulkan_function_pointers =
+        gpu::GetVulkanFunctionPointers();
+    vulkan_function_pointers->vkDestroyShaderModule(
+        device_queue_->GetVulkanDevice(), handle_, nullptr);
     handle_ = VK_NULL_HANDLE;
   }
 

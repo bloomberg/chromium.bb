@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
 
@@ -48,6 +49,9 @@ bool VulkanImageView::Initialize(VkImage image,
   format_ = format;
   DCHECK_GT(image_type, IMAGE_TYPE_INVALID);
   DCHECK_LT(image_type, NUM_IMAGE_TYPES);
+  VulkanFunctionPointers* vulkan_function_pointers =
+      gpu::GetVulkanFunctionPointers();
+
   VkImageSubresourceRange image_subresource_range = {};
   image_subresource_range.aspectMask = kAspectFlags[image_type];
   image_subresource_range.baseMipLevel = base_mip_level;
@@ -65,9 +69,9 @@ bool VulkanImageView::Initialize(VkImage image,
       VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
   image_view_create_info.subresourceRange = image_subresource_range;
 
-  VkResult result =
-      vkCreateImageView(device_queue_->GetVulkanDevice(),
-                        &image_view_create_info, nullptr, &handle_);
+  VkResult result = vulkan_function_pointers->vkCreateImageView(
+      device_queue_->GetVulkanDevice(), &image_view_create_info, nullptr,
+      &handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateImageView() failed: " << result;
     return false;
@@ -83,7 +87,11 @@ bool VulkanImageView::Initialize(VkImage image,
 
 void VulkanImageView::Destroy() {
   if (VK_NULL_HANDLE != handle_) {
-    vkDestroyImageView(device_queue_->GetVulkanDevice(), handle_, nullptr);
+    VulkanFunctionPointers* vulkan_function_pointers =
+        gpu::GetVulkanFunctionPointers();
+
+    vulkan_function_pointers->vkDestroyImageView(
+        device_queue_->GetVulkanDevice(), handle_, nullptr);
     image_type_ = IMAGE_TYPE_INVALID;
     handle_ = VK_NULL_HANDLE;
   }
