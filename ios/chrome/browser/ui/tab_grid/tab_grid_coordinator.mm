@@ -4,14 +4,13 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 
-#include "components/sessions/core/session_types.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/sessions/session_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_adaptor.h"
@@ -19,16 +18,13 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_transition_handler.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
-#import "ios/chrome/browser/ui/url_loader.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator ()<TabPresentationDelegate, UrlLoader>
+@interface TabGridCoordinator ()<TabPresentationDelegate,
+                                 RecentTabsHandsetViewControllerCommand>
 // Superclass property specialized for the class that this coordinator uses.
 @property(nonatomic, weak) TabGridViewController* mainViewController;
 // Commad dispatcher used while this coordinator's view controller is active.
@@ -173,7 +169,8 @@
       self.remoteTabsMediator;
   mainViewController.remoteTabsViewController.dispatcher =
       static_cast<id<ApplicationCommands>>(self.dispatcher);
-  mainViewController.remoteTabsViewController.loader = self;
+  mainViewController.remoteTabsViewController.loader = self.regularTabsMediator;
+  mainViewController.remoteTabsViewController.handsetCommandHandler = self;
 
   // TODO(crbug.com/850387) : Currently, consumer calls from the mediator
   // prematurely loads the view in |RecentTabsTableViewController|. Fix this so
@@ -324,57 +321,15 @@
 - (void)closeAllIncognitoTabs {
 }
 
-#pragma mark - UrlLoader
+#pragma mark - RecentTabsHandsetViewControllerCommand
 
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-  WebStateList* webStateList = self.regularTabModel.webStateList;
-  std::unique_ptr<web::WebState> webState =
-      session_util::CreateWebStateWithNavigationEntries(
-          self.regularTabModel.browserState,
-          sessionTab->current_navigation_index, sessionTab->navigations);
-  webStateList->InsertWebState(webStateList->count(), std::move(webState),
-                               WebStateList::INSERT_ACTIVATE, WebStateOpener());
+// Normally, recent tabs is dismissed to reveal the tab view beneath it. In tab
+// grid, the tab view is presented above the recent tabs panel.
+- (void)dismissRecentTabsWithCompletion:(void (^)())completion {
   // Trigger the transition through the TabSwitcher delegate. This will in turn
   // call back into this coordinator via the ViewControllerSwapping protocol.
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
              shouldFinishWithActiveModel:self.regularTabModel];
-}
-
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-              inBackground:(BOOL)inBackground
-                  appendTo:(OpenPosition)appendTo {
-  // TODO(crbug.com/850240) : Hook up open all tabs in session.
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Not Yet Implemented"
-                       message:
-                           @"We are still working on this feature. In the "
-                           @"meantime, you can access this feature through the "
-                           @"overflow menu and the new tab page."
-                preferredStyle:UIAlertControllerStyleAlert];
-  [alertController
-      addAction:[UIAlertAction actionWithTitle:@"OK"
-                                         style:UIAlertActionStyleCancel
-                                       handler:nil]];
-  [self.mainViewController presentViewController:alertController
-                                        animated:YES
-                                      completion:nil];
-}
-
-- (void)webPageOrderedOpen:(const GURL&)url
-                  referrer:(const web::Referrer&)referrer
-               inIncognito:(BOOL)inIncognito
-              inBackground:(BOOL)inBackground
-                  appendTo:(OpenPosition)appendTo {
-  // This is intentionally NO-OP.
-}
-
-- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
-  // This is intentionally NO-OP.
-}
-
-- (void)loadJavaScriptFromLocationBar:(NSString*)script {
-  // This is intentionally NO-OP.
 }
 
 @end

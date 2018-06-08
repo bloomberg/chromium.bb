@@ -801,7 +801,6 @@ const int kRelativeTimeMaxHours = 4;
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState)
           ->GetOpenTabsUIDelegate();
   const sessions::SessionTab* toLoad = nullptr;
-  [self dismissRecentTabsModal];
   if (openTabs->GetForeignTab(distantTab->session_tag, distantTab->tab_id,
                               &toLoad)) {
     base::RecordAction(base::UserMetricsAction(
@@ -810,6 +809,7 @@ const int kRelativeTimeMaxHours = 4;
         self.browserState, new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
     [self.loader loadSessionTab:toLoad];
   }
+  [self dismissRecentTabsModal];
 }
 
 - (void)openTabWithTabRestoreEntry:
@@ -980,13 +980,13 @@ const int kRelativeTimeMaxHours = 4;
       [self.tableViewModel sectionForSectionIdentifier:sectionIdentifier];
   synced_sessions::DistantSession const* session =
       [self sessionForSection:section];
-  [self dismissRecentTabsModal];
   for (auto const& tab : session->tabs) {
     [self.loader webPageOrderedOpen:tab->virtual_url
                            referrer:web::Referrer()
                        inBackground:YES
                            appendTo:kLastTab];
   }
+  [self dismissRecentTabsModal];
 }
 
 - (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier {
