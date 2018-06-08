@@ -286,9 +286,9 @@ using bookmarks::BookmarkNode;
           [self shouldShowDefaultSection]) {
         NSInteger itemType =
             [self.tableViewModel itemTypeForIndexPath:indexPath];
-        if (itemType == BookmarkFolderStyleNewFolder) {
+        if (itemType == ItemTypeCreateNewFolder) {
           [self pushFolderAddViewController];
-          break;
+          return;
         }
         // If |shouldShowDefaultSection| is YES we need to offset by 1 to get
         // the right BookmarkNode from |self.folders|.
@@ -428,7 +428,7 @@ using bookmarks::BookmarkNode;
   // Adds default "Add Folder" item if needed.
   if ([self shouldShowDefaultSection]) {
     BookmarkFolderItem* createFolderItem =
-        [[BookmarkFolderItem alloc] initWithType:ItemTypeBookmarkFolder
+        [[BookmarkFolderItem alloc] initWithType:ItemTypeCreateNewFolder
                                            style:BookmarkFolderStyleNewFolder];
     // On UIRefresh we add the "Add Folder" Item to the same section as the rest
     // of the folder entries.
