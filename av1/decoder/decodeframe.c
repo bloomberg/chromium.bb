@@ -3824,13 +3824,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->delta_q_res = 1 << aom_rb_read_literal(rb, 2);
     if (!cm->allow_intrabc) cm->delta_lf_present_flag = aom_rb_read_bit(rb);
     if (cm->delta_lf_present_flag) {
-      xd->delta_lf_from_base = 0;
       cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
       cm->delta_lf_multi = aom_rb_read_bit(rb);
-      const int frame_lf_count =
-          av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-      for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-        xd->delta_lf[lf_id] = 0;
+      av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
   }
 

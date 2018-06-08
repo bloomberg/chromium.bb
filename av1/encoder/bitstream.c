@@ -1713,11 +1713,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   if (cpi->common.delta_q_present_flag) {
     xd->current_qindex = cpi->common.base_qindex;
     if (cpi->common.delta_lf_present_flag) {
-      const int frame_lf_count =
-          av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-      for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-        xd->delta_lf[lf_id] = 0;
-      xd->delta_lf_from_base = 0;
+      av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
   }
 
@@ -3277,12 +3273,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         aom_wb_write_bit(wb, cm->delta_lf_present_flag);
       if (cm->delta_lf_present_flag) {
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
-        xd->delta_lf_from_base = 0;
         aom_wb_write_bit(wb, cm->delta_lf_multi);
-        const int frame_lf_count =
-            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-        for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-          xd->delta_lf[lf_id] = 0;
+        av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
       }
     }
   }

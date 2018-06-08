@@ -136,6 +136,13 @@ void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
   }
 }
 
+void av1_reset_loop_filter_delta(MACROBLOCKD *xd, int num_planes) {
+  xd->delta_lf_from_base = 0;
+  const int frame_lf_count =
+      num_planes > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+  for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) xd->delta_lf[lf_id] = 0;
+}
+
 void av1_reset_loop_restoration(MACROBLOCKD *xd, const int num_planes) {
   for (int p = 0; p < num_planes; ++p) {
     set_default_wiener(xd->wiener_info + p);

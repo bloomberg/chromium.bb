@@ -913,6 +913,8 @@ static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
                             BLOCK_SIZE bsize, const int num_planes);
 
+void av1_reset_loop_filter_delta(MACROBLOCKD *xd, int num_planes);
+
 void av1_reset_loop_restoration(MACROBLOCKD *xd, const int num_planes);
 
 typedef void (*foreach_transformed_block_visitor)(int plane, int block,

@@ -3736,11 +3736,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
   if (mi_row == tile_info->mi_row_start) {
     if (cm->delta_q_present_flag) xd->current_qindex = cm->base_qindex;
     if (cm->delta_lf_present_flag) {
-      const int frame_lf_count =
-          av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-      for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-        xd->delta_lf[lf_id] = 0;
-      xd->delta_lf_from_base = 0;
+      av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
   }
 
