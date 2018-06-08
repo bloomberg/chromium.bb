@@ -141,14 +141,6 @@ void CoreOobeHandler::DeclareLocalizedValues(
   builder->Add("deviceRequisitionSharkPromptText",
                IDS_ENTERPRISE_DEVICE_REQUISITION_SHARK_PROMPT_TEXT);
 
-  // Strings for enable demo mode dialog.
-  builder->Add("enableDemoModeDialogTitle", IDS_ENABLE_DEMO_MODE_DIALOG_TITLE);
-  builder->Add("enableDemoModeDialogText", IDS_ENABLE_DEMO_MODE_DIALOG_TEXT);
-  builder->Add("enableDemoModeDialogConfirm",
-               IDS_ENABLE_DEMO_MODE_DIALOG_CONFIRM);
-  builder->Add("enableDemoModeDialogCancel",
-               IDS_ENABLE_DEMO_MODE_DIALOG_CANCEL);
-
   // Strings for Asset Identifier shown in version string.
   builder->Add("assetIdLabel", IDS_OOBE_ASSET_ID_LABEL);
 
@@ -596,6 +588,12 @@ void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
 }
 
 void CoreOobeHandler::HandleSetupDemoMode() {
+  const bool is_demo_mode_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableDemoMode);
+  if (!is_demo_mode_enabled)
+    return;
+
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);

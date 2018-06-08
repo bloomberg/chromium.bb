@@ -474,8 +474,8 @@ cr.define('cr.ui.login', function() {
         chrome.send('setOobeBootstrappingSlave');
       } else if (name == ACCELERATOR_DEMO_MODE) {
         if (DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) !=
-          -1 && this.isOobeUI()) {
-          this.showEnableDemoModeDialog_();
+            -1) {
+          chrome.send('setupDemoMode');
         }
       } else if (name == ACCELERATOR_SEND_FEEDBACK) {
         chrome.send('sendFeedback');
@@ -932,28 +932,6 @@ cr.define('cr.ui.login', function() {
           function() {  // onCancel
             chrome.send('setDeviceRequisition', ['none']);
           });
-    },
-
-    /**
-     * Shows the enable demo mode dialog.
-     * @private
-     */
-    showEnableDemoModeDialog_: function (promptText, requisition) {
-      if (!this.enableDemoModeDialog_) {
-        this.enableDemoModeDialog_ =
-          new cr.ui.dialogs.ConfirmDialog(document.body);
-        this.enableDemoModeDialog_.setOkLabel(
-          loadTimeData.getString('enableDemoModeDialogConfirm'));
-        this.enableDemoModeDialog_.setCancelLabel(
-          loadTimeData.getString('enableDemoModeDialogCancel'));
-      }
-      this.enableDemoModeDialog_.showWithTitle(
-        loadTimeData.getString('enableDemoModeDialogTitle'),
-        loadTimeData.getString('enableDemoModeDialogText'),
-        function () {  // onOk
-          chrome.send('setupDemoMode');
-        },
-      );
     },
 
     /**
