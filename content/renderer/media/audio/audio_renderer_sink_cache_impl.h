@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_SINK_CACHE_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_SINK_CACHE_IMPL_H_
+#ifndef CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_RENDERER_SINK_CACHE_IMPL_H_
+#define CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_RENDERER_SINK_CACHE_IMPL_H_
 
-#include "content/renderer/media/audio_renderer_sink_cache.h"
+#include "content/renderer/media/audio/audio_renderer_sink_cache.h"
 
 #include <string>
 #include <vector>
@@ -118,4 +118,4 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_SINK_CACHE_IMPL_H_
+#endif  // CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_RENDERER_SINK_CACHE_IMPL_H_

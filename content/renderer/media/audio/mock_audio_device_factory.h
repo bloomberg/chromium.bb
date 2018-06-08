@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MOCK_AUDIO_DEVICE_FACTORY_H_
-#define CONTENT_RENDERER_MEDIA_MOCK_AUDIO_DEVICE_FACTORY_H_
+#ifndef CONTENT_RENDERER_MEDIA_AUDIO_MOCK_AUDIO_DEVICE_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_AUDIO_MOCK_AUDIO_DEVICE_FACTORY_H_
 
 #include <string>
 
-#include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/audio/audio_device_factory.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_renderer_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -78,4 +78,4 @@ class MockAudioDeviceFactory : public AudioDeviceFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MOCK_AUDIO_DEVICE_FACTORY_H_
+#endif  // CONTENT_RENDERER_MEDIA_AUDIO_MOCK_AUDIO_DEVICE_FACTORY_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_MIXER_MANAGER_H_
-#define CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_MIXER_MANAGER_H_
+#ifndef CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_RENDERER_MIXER_MANAGER_H_
+#define CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_RENDERER_MIXER_MANAGER_H_
 
 #include <bitset>
 #include <map>
@@ -157,4 +157,4 @@ class CONTENT_EXPORT AudioRendererMixerManager
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_MIXER_MANAGER_H_
+#endif  // CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_RENDERER_MIXER_MANAGER_H_

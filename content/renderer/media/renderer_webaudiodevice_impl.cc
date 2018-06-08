@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_timestamp_helper.h"

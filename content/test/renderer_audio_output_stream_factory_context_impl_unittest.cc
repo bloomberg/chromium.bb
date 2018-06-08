@@ -19,7 +19,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/renderer/media/mojo_audio_output_ipc.h"
+#include "content/renderer/media/audio/mojo_audio_output_ipc.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_output_device.h"

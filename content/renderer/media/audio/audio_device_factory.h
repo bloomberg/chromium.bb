@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_FACTORY_H_
-#define CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_FACTORY_H_
+#ifndef CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_DEVICE_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_DEVICE_FACTORY_H_
 
 #include <string>
 
@@ -142,4 +142,4 @@ class CONTENT_EXPORT AudioDeviceFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_AUDIO_DEVICE_FACTORY_H_
+#endif  // CONTENT_RENDERER_MEDIA_AUDIO_AUDIO_DEVICE_FACTORY_H_
