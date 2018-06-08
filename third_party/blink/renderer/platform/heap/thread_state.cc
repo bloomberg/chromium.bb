@@ -574,6 +574,12 @@ void ThreadState::SchedulePageNavigationGC() {
   SetGCState(kPageNavigationGCScheduled);
 }
 
+void ThreadState::ScheduleFullGC() {
+  DCHECK(CheckThread());
+  CompleteSweep();
+  SetGCState(kFullGCScheduled);
+}
+
 void ThreadState::ScheduleGCIfNeeded() {
   VLOG(2) << "[state:" << this << "] ScheduleGCIfNeeded";
   DCHECK(CheckThread());
@@ -766,6 +772,7 @@ void ThreadState::ScheduleIdleLazySweep() {
 
 void ThreadState::SchedulePreciseGC() {
   DCHECK(CheckThread());
+  CompleteSweep();
   SetGCState(kPreciseGCScheduled);
 }
 
@@ -819,21 +826,20 @@ void ThreadState::SetGCState(GCState gc_state) {
       break;
     case kFullGCScheduled:
     case kPageNavigationGCScheduled:
-      // These GCs should not be scheduled while sweeping is in progress.
-      DCHECK(!IsSweepingInProgress());
-      FALLTHROUGH;
     case kPreciseGCScheduled:
       DCHECK(CheckThread());
+      DCHECK(!IsSweepingInProgress());
       VERIFY_STATE_TRANSITION(
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
           gc_state_ == kIncrementalMarkingStepScheduled ||
           gc_state_ == kIncrementalMarkingFinalizeScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
           gc_state_ == kPageNavigationGCScheduled);
-      CompleteSweep();
       break;
     case kIdleGCScheduled:
       DCHECK(CheckThread());
+      DCHECK(!IsMarkingInProgress());
+      DCHECK(!IsSweepingInProgress());
       VERIFY_STATE_TRANSITION(gc_state_ == kNoGCScheduled);
       break;
     default:

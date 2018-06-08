@@ -274,6 +274,7 @@ class PLATFORM_EXPORT ThreadState {
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
   void SchedulePageNavigationGCIfNeeded(float estimated_removal_ratio);
   void SchedulePageNavigationGC();
+  void ScheduleFullGC();
   void ScheduleGCIfNeeded();
   void PostIdleGCTask();
   void WillStartV8GC(BlinkGC::V8GCType);
