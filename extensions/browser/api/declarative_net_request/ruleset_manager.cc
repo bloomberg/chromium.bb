@@ -30,6 +30,19 @@ namespace {
 
 namespace flat_rule = url_pattern_index::flat;
 
+// Describes the different cases pertaining to initiator checks to find the main
+// frame url for a main frame subresource.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PageWhitelistingInitiatorCheck {
+  kInitiatorAbsent = 0,
+  kNeitherCandidateMatchesInitiator = 1,
+  kCommittedCandidateMatchesInitiator = 2,
+  kPendingCandidateMatchesInitiator = 3,
+  kBothCandidatesMatchInitiator = 4,
+  kMaxValue = kBothCandidatesMatchInitiator,
+};
+
 // Maps content::ResourceType to flat_rule::ElementType.
 flat_rule::ElementType GetElementType(content::ResourceType type) {
   switch (type) {
@@ -160,6 +173,12 @@ bool IsRequestPageWhitelisted(const WebRequestInfo& request,
   // loads.
   DCHECK_EQ(ExtensionApiFrameIdMap::kTopFrameId, request.frame_data->frame_id);
 
+  auto log_uma = [](PageWhitelistingInitiatorCheck value) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.DeclarativeNetRequest.PageWhitelistingInitiatorCheck",
+        value);
+  };
+
   // At this point, we are evaluating a main-frame subresource. There are two
   // candidate main frame urls - |pending_main_frame_url| and
   // |last_committed_main_frame_url|. To predict the correct main frame url,
@@ -167,7 +186,9 @@ bool IsRequestPageWhitelisted(const WebRequestInfo& request,
   // of the main frame in this case) with the candidate urls' origins. If only
   // one of the candidate url's origin matches the request initiator, we can be
   // reasonably sure that it is the correct main frame url.
-  if (request.initiator) {
+  if (!request.initiator) {
+    log_uma(PageWhitelistingInitiatorCheck::kInitiatorAbsent);
+  } else {
     const bool initiator_matches_pending_url =
         url::Origin::Create(*request.frame_data->pending_main_frame_url) ==
         *request.initiator;
@@ -178,6 +199,8 @@ bool IsRequestPageWhitelisted(const WebRequestInfo& request,
 
     if (initiator_matches_pending_url && !initiator_matches_committed_url) {
       // We predict that |pending_main_frame_url| is the actual main frame url.
+      log_uma(
+          PageWhitelistingInitiatorCheck::kPendingCandidateMatchesInitiator);
       return whitelisted_pages.MatchesURL(
           *request.frame_data->pending_main_frame_url);
     }
@@ -185,8 +208,19 @@ bool IsRequestPageWhitelisted(const WebRequestInfo& request,
     if (initiator_matches_committed_url && !initiator_matches_pending_url) {
       // We predict that |last_committed_main_frame_url| is the actual main
       // frame url.
+      log_uma(
+          PageWhitelistingInitiatorCheck::kCommittedCandidateMatchesInitiator);
       return whitelisted_pages.MatchesURL(
           request.frame_data->last_committed_main_frame_url);
+    }
+
+    if (initiator_matches_pending_url && initiator_matches_committed_url) {
+      log_uma(PageWhitelistingInitiatorCheck::kBothCandidatesMatchInitiator);
+    } else {
+      DCHECK(!initiator_matches_pending_url);
+      DCHECK(!initiator_matches_committed_url);
+      log_uma(
+          PageWhitelistingInitiatorCheck::kNeitherCandidateMatchesInitiator);
     }
   }
 
@@ -194,7 +228,6 @@ bool IsRequestPageWhitelisted(const WebRequestInfo& request,
   // against both the possible URLs. This means a small proportion of main frame
   // subresource requests might be incorrectly whitelisted by the page
   // whitelisting API.
-  // TODO(karandeepb): Add UMA to see how often this happens.
   return whitelisted_pages.MatchesURL(
              request.frame_data->last_committed_main_frame_url) ||
          whitelisted_pages.MatchesURL(
