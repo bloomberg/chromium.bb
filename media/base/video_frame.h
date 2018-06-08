@@ -16,7 +16,10 @@
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_handle.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -147,7 +150,38 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       size_t data_size,
       base::TimeDelta timestamp);
 
-  // Same as WrapExternalData() with SharedMemoryHandle and its offset.
+  // Same as WrapExternalData() with a ReadOnlySharedMemoryRegion and its
+  // offset. Neither |region| nor |data| are owned by this VideoFrame. The
+  // region and mapping which back |data| must outlive this instance; a
+  // destruction observer can be used in this case.
+  static scoped_refptr<VideoFrame> WrapExternalReadOnlySharedMemory(
+      VideoPixelFormat format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8_t* data,
+      size_t data_size,
+      base::ReadOnlySharedMemoryRegion* region,
+      size_t shared_memory_offset,
+      base::TimeDelta timestamp);
+
+  // Same as WrapExternalData() with a UnsafeSharedMemoryRegion and its
+  // offset. Neither |region| nor |data| are owned by this VideoFrame. The owner
+  // of the region and mapping which back |data| must outlive this instance; a
+  // destruction observer can be used in this case.
+  static scoped_refptr<VideoFrame> WrapExternalUnsafeSharedMemory(
+      VideoPixelFormat format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8_t* data,
+      size_t data_size,
+      base::UnsafeSharedMemoryRegion* region,
+      size_t shared_memory_offset,
+      base::TimeDelta timestamp);
+
+  // Legacy wrapping of old SharedMemoryHandle objects. Deprecated, use one of
+  // the shared memory region wrappers above instead.
   static scoped_refptr<VideoFrame> WrapExternalSharedMemory(
       VideoPixelFormat format,
       const gfx::Size& coded_size,
@@ -341,7 +375,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // mailbox, the caller must wait for the included sync point.
   const gpu::MailboxHolder& mailbox_holder(size_t texture_index) const;
 
-  // Returns the shared-memory handle, if present
+  // Returns a pointer to the read-only shared-memory region, if present.
+  base::ReadOnlySharedMemoryRegion* read_only_shared_memory_region() const;
+
+  // Returns a pointer to the unsafe shared memory handle, if present.
+  base::UnsafeSharedMemoryRegion* unsafe_shared_memory_region() const;
+
+  // Retuns the legacy SharedMemoryHandle, if present.
   base::SharedMemoryHandle shared_memory_handle() const;
 
   // Returns the offset into the shared memory where the frame data begins.
@@ -357,6 +397,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   bool DuplicateFileDescriptors(const std::vector<int>& fds_in);
 #endif
 
+  void AddReadOnlySharedMemoryRegion(base::ReadOnlySharedMemoryRegion* region);
+  void AddUnsafeSharedMemoryRegion(base::UnsafeSharedMemoryRegion* region);
+
+  // Legacy, use one of the Add*SharedMemoryRegion methods above instead.
   void AddSharedMemoryHandle(base::SharedMemoryHandle handle);
 
 #if defined(OS_MACOSX)
@@ -457,6 +501,15 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
              base::TimeDelta timestamp,
+             base::ReadOnlySharedMemoryRegion* read_only_region,
+             base::UnsafeSharedMemoryRegion* unsafe_region,
+             size_t shared_memory_offset);
+  VideoFrame(VideoPixelFormat format,
+             StorageType storage_type,
+             const gfx::Size& coded_size,
+             const gfx::Rect& visible_rect,
+             const gfx::Size& natural_size,
+             base::TimeDelta timestamp,
              base::SharedMemoryHandle handle,
              size_t shared_memory_offset);
   VideoFrame(VideoPixelFormat format,
@@ -477,6 +530,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8_t* data,
       size_t data_size,
       base::TimeDelta timestamp,
+      base::ReadOnlySharedMemoryRegion* read_only_region,
+      base::UnsafeSharedMemoryRegion* unsafe_region,
       base::SharedMemoryHandle handle,
       size_t data_offset);
 
@@ -487,6 +542,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& natural_size,
       base::TimeDelta timestamp,
       bool zero_initialize_memory);
+
+  bool SharedMemoryUninitialized();
 
   // Returns the pixel size of each subsample for a given |plane| and |format|.
   // E.g. 2x2 for the U-plane in PIXEL_FORMAT_I420.
@@ -535,9 +592,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   gpu::MailboxHolder mailbox_holders_[kMaxPlanes];
   ReleaseMailboxCB mailbox_holders_release_cb_;
 
-  // Shared memory handle and associated offset inside it, if this frame is
-  // a STORAGE_SHMEM one.
+  // Shared memory handle and associated offset inside it, if this frame is a
+  // STORAGE_SHMEM one.  Pointers to unowned shared memory regions. At most one
+  // of the memory regions will be set.
+  base::ReadOnlySharedMemoryRegion* read_only_shared_memory_region_ = nullptr;
+  base::UnsafeSharedMemoryRegion* unsafe_shared_memory_region_ = nullptr;
+
+  // Legacy handle.
   base::SharedMemoryHandle shared_memory_handle_;
+
+  // If this is a STORAGE_SHMEM frame, the offset of the data within the shared
+  // memory.
   size_t shared_memory_offset_;
 
 #if defined(OS_LINUX)
