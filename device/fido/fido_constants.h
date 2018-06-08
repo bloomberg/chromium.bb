@@ -277,6 +277,10 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kU2fParameterLength;
 // Maximum wait time before client error outs on device.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;
 
+// Wait time before polling device for U2F register/sign operation again when
+// device times out waiting for user presence.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kU2fRetryDelay;
+
 // Interval wait time before retrying reading on HID connection when
 // CTAPHID_KEEPALIVE message has been received.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#ctaphid_keepalive-0x3b

@@ -35,6 +35,16 @@ class DeviceOperation {
   virtual void Start() = 0;
 
  protected:
+  void DispatchDeviceRequest(base::Optional<std::vector<uint8_t>> command,
+                             FidoDevice::DeviceCallback callback) {
+    if (!command) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    device_->DeviceTransact(std::move(*command), std::move(callback));
+  }
+
   FidoDevice* const device_ = nullptr;
   DeviceResponseCallback callback_;
 

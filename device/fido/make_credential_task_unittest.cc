@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "device/base/features.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
@@ -36,9 +38,10 @@ using TestMakeCredentialTaskCallback =
 
 class FidoMakeCredentialTaskTest : public testing::Test {
  public:
-  FidoMakeCredentialTaskTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  FidoMakeCredentialTaskTest() {
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndEnableFeature(kNewCtap2Device);
+  }
 
   std::unique_ptr<MakeCredentialTask> CreateMakeCredentialTask(
       FidoDevice* device) {
@@ -72,16 +75,26 @@ class FidoMakeCredentialTaskTest : public testing::Test {
         std::move(criteria), callback_receiver_.callback());
   }
 
+  void RemoveCtapFlag() {
+    scoped_feature_list_.reset(new base::test::ScopedFeatureList());
+    scoped_feature_list_->InitAndDisableFeature(kNewCtap2Device);
+  }
+
   TestMakeCredentialTaskCallback& make_credential_callback_receiver() {
     return callback_receiver_;
   }
 
  protected:
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestMakeCredentialTaskCallback callback_receiver_;
 };
 
-TEST_F(FidoMakeCredentialTaskTest, TestMakeCredentialSuccess) {
+MATCHER_P(IsCommand, command, "") {
+  return base::make_span(arg) == command;
+}
+
+TEST_F(FidoMakeCredentialTaskTest, MakeCredentialSuccess) {
   auto device = std::make_unique<MockFidoDevice>();
 
   device->ExpectCtap2CommandAndRespondWith(
@@ -101,20 +114,6 @@ TEST_F(FidoMakeCredentialTaskTest, TestMakeCredentialSuccess) {
   EXPECT_TRUE(device->device_info());
 }
 
-TEST_F(FidoMakeCredentialTaskTest, TestIncorrectAuthenticatorGetInfoResponse) {
-  auto device = std::make_unique<MockFidoDevice>();
-
-  device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
-
-  const auto task = CreateMakeCredentialTask(device.get());
-  make_credential_callback_receiver().WaitForCallback();
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
-            make_credential_callback_receiver().status());
-  EXPECT_EQ(ProtocolVersion::kU2f, device->supported_protocol());
-  EXPECT_FALSE(device->device_info());
-}
-
 TEST_F(FidoMakeCredentialTaskTest, TestMakeCredentialWithIncorrectRpIdHash) {
   auto device = std::make_unique<MockFidoDevice>();
 
@@ -132,8 +131,100 @@ TEST_F(FidoMakeCredentialTaskTest, TestMakeCredentialWithIncorrectRpIdHash) {
             make_credential_callback_receiver().status());
 }
 
+TEST_F(FidoMakeCredentialTaskTest, FallbackToU2fRegisterSuccess) {
+  auto device = std::make_unique<MockFidoDevice>();
+
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+  EXPECT_CALL(
+      *device,
+      DeviceTransactPtr(
+          IsCommand(base::make_span(test_data::kU2fRegisterCommandApdu)), _))
+      .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
+
+  const auto task = CreateMakeCredentialTask(device.get());
+  make_credential_callback_receiver().WaitForCallback();
+
+  EXPECT_EQ(ProtocolVersion::kU2f, device->supported_protocol());
+  EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
+            make_credential_callback_receiver().status());
+}
+
+TEST_F(FidoMakeCredentialTaskTest, TestDefaultU2fRegisterOperationWithoutFlag) {
+  RemoveCtapFlag();
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(
+      *device,
+      DeviceTransactPtr(
+          IsCommand(base::make_span(test_data::kU2fRegisterCommandApdu)), _))
+      .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
+
+  const auto task = CreateMakeCredentialTask(device.get());
+  make_credential_callback_receiver().WaitForCallback();
+
+  EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
+            make_credential_callback_receiver().status());
+}
+
+TEST_F(FidoMakeCredentialTaskTest, U2fRegisterWithUserVerificationRequired) {
+  auto device = std::make_unique<MockFidoDevice>();
+
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+
+  const auto task = CreateMakeCredentialTaskWithAuthenticatorSelectionCriteria(
+      device.get(),
+      AuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+          false /* require_resident_key */,
+          UserVerificationRequirement::kRequired));
+  make_credential_callback_receiver().WaitForCallback();
+
+  EXPECT_EQ(ProtocolVersion::kU2f, device->supported_protocol());
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
+            make_credential_callback_receiver().status());
+}
+
+TEST_F(FidoMakeCredentialTaskTest, U2fRegisterWithPlatformDeviceRequirement) {
+  auto device = std::make_unique<MockFidoDevice>();
+
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+
+  const auto task = CreateMakeCredentialTaskWithAuthenticatorSelectionCriteria(
+      device.get(),
+      AuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria::AuthenticatorAttachment::kPlatform,
+          false /* require_resident_key */,
+          UserVerificationRequirement::kPreferred));
+  make_credential_callback_receiver().WaitForCallback();
+
+  EXPECT_EQ(ProtocolVersion::kU2f, device->supported_protocol());
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
+            make_credential_callback_receiver().status());
+}
+
+TEST_F(FidoMakeCredentialTaskTest, U2fRegisterWithResidentKeyRequirement) {
+  auto device = std::make_unique<MockFidoDevice>();
+
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+
+  const auto task = CreateMakeCredentialTaskWithAuthenticatorSelectionCriteria(
+      device.get(),
+      AuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+          true /* require_resident_key */,
+          UserVerificationRequirement::kPreferred));
+  make_credential_callback_receiver().WaitForCallback();
+
+  EXPECT_EQ(ProtocolVersion::kU2f, device->supported_protocol());
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
+            make_credential_callback_receiver().status());
+}
+
 TEST_F(FidoMakeCredentialTaskTest,
-       TestUserVerificationAuthenticatorSelectionCriteria) {
+       UserVerificationAuthenticatorSelectionCriteria) {
   auto device = std::make_unique<MockFidoDevice>();
 
   device->ExpectCtap2CommandAndRespondWith(
@@ -158,7 +249,7 @@ TEST_F(FidoMakeCredentialTaskTest,
 }
 
 TEST_F(FidoMakeCredentialTaskTest,
-       TestPlatformDeviceAuthenticatorSelectionCriteria) {
+       PlatformDeviceAuthenticatorSelectionCriteria) {
   auto device = std::make_unique<MockFidoDevice>();
 
   device->ExpectCtap2CommandAndRespondWith(
@@ -180,8 +271,7 @@ TEST_F(FidoMakeCredentialTaskTest,
   EXPECT_FALSE(device->device_info()->options().is_platform_device());
 }
 
-TEST_F(FidoMakeCredentialTaskTest,
-       TestResidentKeyAuthenticatorSelectionCriteria) {
+TEST_F(FidoMakeCredentialTaskTest, ResidentKeyAuthenticatorSelectionCriteria) {
   auto device = std::make_unique<MockFidoDevice>();
 
   device->ExpectCtap2CommandAndRespondWith(
@@ -203,8 +293,7 @@ TEST_F(FidoMakeCredentialTaskTest,
   EXPECT_FALSE(device->device_info()->options().supports_resident_key());
 }
 
-TEST_F(FidoMakeCredentialTaskTest,
-       TestSatisfyAllAuthenticatorSelectionCriteria) {
+TEST_F(FidoMakeCredentialTaskTest, SatisfyAllAuthenticatorSelectionCriteria) {
   auto device = std::make_unique<MockFidoDevice>();
 
   device->ExpectCtap2CommandAndRespondWith(
@@ -235,7 +324,7 @@ TEST_F(FidoMakeCredentialTaskTest,
             device_options.user_verification_availability());
 }
 
-TEST_F(FidoMakeCredentialTaskTest, TestIncompatibleUserVerificationSetting) {
+TEST_F(FidoMakeCredentialTaskTest, IncompatibleUserVerificationSetting) {
   auto device = std::make_unique<MockFidoDevice>();
 
   device->ExpectCtap2CommandAndRespondWith(

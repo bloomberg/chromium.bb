@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "components/apdu/apdu_command.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
@@ -41,7 +42,7 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
 
   return ConstructU2fRegisterCommand(
       fido_parsing_utils::CreateSHA256Hash(request.rp().rp_id()),
-      request.client_data_hash());
+      request.client_data_hash(), request.is_individual_attestation());
 }
 
 base::Optional<std::vector<uint8_t>> ConvertToU2fCheckOnlySignCommand(
@@ -123,8 +124,11 @@ base::Optional<std::vector<uint8_t>> ConstructU2fSignCommand(
   return command.GetEncodedCommand();
 }
 
-base::Optional<std::vector<uint8_t>> ConstructBogusU2fRegistrationCommand() {
-  return ConstructU2fRegisterCommand(kBogusAppParam, kBogusChallenge);
+std::vector<uint8_t> ConstructBogusU2fRegistrationCommand() {
+  auto bogus_register_cmd =
+      ConstructU2fRegisterCommand(kBogusAppParam, kBogusChallenge);
+  DCHECK(bogus_register_cmd);
+  return *bogus_register_cmd;
 }
 
 }  // namespace device

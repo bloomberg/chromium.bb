@@ -84,6 +84,7 @@ jumbo_source_set("browser") {
     "//content/common:mojo_bindings",
     "//content/public/common:common_sources",
     "//crypto",
+    "//device/base",
     "//device/bluetooth",
     "//device/fido",
     "//device/gamepad",

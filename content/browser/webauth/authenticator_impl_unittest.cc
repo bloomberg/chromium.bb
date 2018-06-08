@@ -24,6 +24,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
+#include "device/base/features.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/scoped_virtual_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
@@ -393,14 +394,18 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
   }
 
-  // These instances pass the origin and relying party checks and return at
-  // the algorithm check.
+  // These instances time out with NOT_ALLOWED_ERROR due to unsupported
+  // algorithm.
   for (auto test_case : kValidRelyingPartyTestCases) {
     SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
                  std::string(test_case.origin));
 
     NavigateAndCommit(GURL(test_case.origin));
-    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+        base::Time::Now(), base::TimeTicks::Now());
+    auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+
     PublicKeyCredentialCreationOptionsPtr options =
         GetTestPublicKeyCredentialCreationOptions();
     options->relying_party->id = test_case.claimed_authority;
@@ -409,17 +414,23 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     TestMakeCredentialCallback callback_receiver;
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
+    // Trigger timer.
+    base::RunLoop().RunUntilIdle();
+    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
     callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::ALGORITHM_UNSUPPORTED,
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
               callback_receiver.status());
   }
 }
 
-// Test that service returns ALGORITHM_UNSUPPORTED if no parameters contain
-// a supported algorithm.
+// Test that MakeCredential request times out with NOT_ALLOWED_ERROR if no
+// parameters contain a supported algorithm.
 TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   SimulateNavigation(GURL(kTestOrigin1));
-  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
 
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
@@ -428,9 +439,11 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   TestMakeCredentialCallback callback_receiver;
   authenticator->MakeCredential(std::move(options),
                                 callback_receiver.callback());
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::ALGORITHM_UNSUPPORTED,
-            callback_receiver.status());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
 // Test that service returns USER_VERIFICATION_UNSUPPORTED if user verification
@@ -450,11 +463,14 @@ TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
             callback_receiver.status());
 }
 
-// Test that service returns AUTHENTICATOR_CRITERIA_UNSUPPORTED if user
-// verification is REQUIRED for create().
+// Test that MakeCredential request times out with NOT_ALLOWED_ERROR if user
+// verification is required for U2F devices.
 TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   SimulateNavigation(GURL(kTestOrigin1));
-  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
 
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
@@ -464,16 +480,21 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   TestMakeCredentialCallback callback_receiver;
   authenticator->MakeCredential(std::move(options),
                                 callback_receiver.callback());
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
-            callback_receiver.status());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
-// Test that service returns AUTHENTICATOR_CRITERIA_UNSUPPORTED if resident key
-// is requested for create().
+// Test that MakeCredential request times out with NOT_ALLOWED_ERROR if resident
+// key is requested for U2F devices on create().
 TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   SimulateNavigation(GURL(kTestOrigin1));
-  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
 
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
@@ -482,16 +503,20 @@ TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   TestMakeCredentialCallback callback_receiver;
   authenticator->MakeCredential(std::move(options),
                                 callback_receiver.callback());
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
-            callback_receiver.status());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
-// Test that service returns AUTHENTICATOR_CRITERIA_UNSUPPORTED if a platform
-// authenticator is requested for U2F.
+// Test that MakeCredential request times out with NOT_ALLOWED_ERROR if a
+// platform authenticator is requested for U2F devices.
 TEST_F(AuthenticatorImplTest, MakeCredentialPlatformAuthenticator) {
   SimulateNavigation(GURL(kTestOrigin1));
-  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
 
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
@@ -501,9 +526,11 @@ TEST_F(AuthenticatorImplTest, MakeCredentialPlatformAuthenticator) {
   TestMakeCredentialCallback callback_receiver;
   authenticator->MakeCredential(std::move(options),
                                 callback_receiver.callback());
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
-            callback_receiver.status());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
 // Parses its arguments as JSON and expects that all the keys in the first are
@@ -723,7 +750,7 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithSwitch) {
   TestServiceManagerContext service_manager_context;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      std::vector<base::Feature>{features::kWebAuthCtap2,
+      std::vector<base::Feature>{device::kNewCtap2Device,
                                  features::kWebAuthCable},
       std::vector<base::Feature>{});
 
@@ -750,7 +777,7 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithSwitch) {
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      std::vector<base::Feature>{features::kWebAuthCtap2,
+      std::vector<base::Feature>{device::kNewCtap2Device,
                                  features::kWebAuthCable},
       std::vector<base::Feature>{});
 
@@ -777,7 +804,7 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutSwitch) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCtap2);
+  scoped_feature_list.InitAndEnableFeature(device::kNewCtap2Device);
 
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
@@ -799,32 +826,9 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutSwitch) {
       device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
 
-TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportMakeCredential) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCtap2);
-
-  SimulateNavigation(GURL(kTestOrigin1));
-  PublicKeyCredentialCreationOptionsPtr options =
-      GetTestPublicKeyCredentialCreationOptions();
-  TestMakeCredentialCallback callback_receiver;
-
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-      base::Time::Now(), base::TimeTicks::Now());
-  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-  device::test::ScopedVirtualFidoDevice virtual_device;
-  authenticator->MakeCredential(std::move(options),
-                                callback_receiver.callback());
-
-  // Trigger timer.
-  base::RunLoop().RunUntilIdle();
-  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-}
-
 TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportGetAssertion) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCtap2);
+  scoped_feature_list.InitAndEnableFeature(device::kNewCtap2Device);
 
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
@@ -846,7 +850,7 @@ TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportGetAssertion) {
 
 TEST_F(AuthenticatorImplTest, Ctap2AcceptsEmptyAllowCredentials) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCtap2);
+  scoped_feature_list.InitAndEnableFeature(device::kNewCtap2Device);
 
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
@@ -968,9 +972,11 @@ TEST_F(AuthenticatorImplTest, InvalidResponse) {
   TestServiceManagerContext service_manager_context;
 
   scoped_virtual_device.mutable_state()->simulate_invalid_response = true;
-
   SimulateNavigation(GURL(kTestOrigin1));
-  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
 
   {
     PublicKeyCredentialRequestOptionsPtr options =
@@ -978,8 +984,10 @@ TEST_F(AuthenticatorImplTest, InvalidResponse) {
     TestGetAssertionCallback callback_receiver;
     authenticator->GetAssertion(std::move(options),
                                 callback_receiver.callback());
+    // Trigger timer.
+    base::RunLoop().RunUntilIdle();
+    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
     callback_receiver.WaitForCallback();
-
     EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
               callback_receiver.status());
   }
@@ -990,8 +998,10 @@ TEST_F(AuthenticatorImplTest, InvalidResponse) {
     TestMakeCredentialCallback callback_receiver;
     authenticator->MakeCredential(std::move(options),
                                   callback_receiver.callback());
+    // Trigger timer.
+    base::RunLoop().RunUntilIdle();
+    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
     callback_receiver.WaitForCallback();
-
     EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
               callback_receiver.status());
   }

@@ -48,6 +48,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
       std::vector<PublicKeyCredentialDescriptor> exclude_list);
   CtapMakeCredentialRequest& SetPinAuth(std::vector<uint8_t> pin_auth);
   CtapMakeCredentialRequest& SetPinProtocol(uint8_t pin_protocol);
+  CtapMakeCredentialRequest& SetIsIndividualAttestation(
+      bool is_individual_attestation);
 
   const std::vector<uint8_t>& client_data_hash() const {
     return client_data_hash_;
@@ -61,6 +63,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
     return user_verification_required_;
   }
   bool resident_key_supported() const { return resident_key_supported_; }
+  bool is_individual_attestation() const { return is_individual_attestation_; }
   const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
   exclude_list() const {
     return exclude_list_;
@@ -73,6 +76,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   PublicKeyCredentialParams public_key_credential_params_;
   bool user_verification_required_ = false;
   bool resident_key_supported_ = false;
+  bool is_individual_attestation_ = false;
 
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list_;
   base::Optional<std::vector<uint8_t>> pin_auth_;

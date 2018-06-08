@@ -118,4 +118,11 @@ CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetPinProtocol(
   return *this;
 }
 
+CtapMakeCredentialRequest&
+CtapMakeCredentialRequest::SetIsIndividualAttestation(
+    bool is_individual_attestation) {
+  is_individual_attestation_ = is_individual_attestation;
+  return *this;
+}
+
 }  // namespace device

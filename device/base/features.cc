@@ -21,4 +21,7 @@ const base::Feature kNewblueDaemon{"Newblue",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
+const base::Feature kNewCtap2Device{"WebAuthenticationCtap2",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace device

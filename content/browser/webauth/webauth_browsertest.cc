@@ -26,6 +26,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/did_commit_provisional_load_interceptor.h"
+#include "device/base/features.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/fido_test_data.h"
@@ -57,21 +58,13 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
 
+constexpr char kTimeoutErrorMessage[] =
+    "NotAllowedError: The operation either timed out or was not allowed. See: "
+    "https://w3c.github.io/webauthn/#sec-assertion-privacy.";
+
 constexpr char kRelyingPartySecurityErrorMessage[] =
     "SecurityError: The relying party ID 'localhost' is not a registrable "
     "domain suffix of, nor equal to 'https://www.acme.com";
-
-constexpr char kAlgorithmUnsupportedErrorMessage[] =
-    "NotSupportedError: None of the algorithms specified in "
-    "`pubKeyCredParams` are compatible with "
-    "CTAP1/U2F authenticators, and CTAP2 "
-    "authenticators are not yet supported.";
-
-constexpr char kAuthenticatorCriteriaErrorMessage[] =
-    "NotSupportedError: The specified `authenticatorSelection` "
-    "criteria cannot be fulfilled by CTAP1/U2F "
-    "authenticators, and CTAP2 authenticators "
-    "are not yet supported.";
 
 constexpr char kUserVerificationErrorMessage[] =
     "NotSupportedError: The specified `userVerification` "
@@ -99,7 +92,7 @@ constexpr char kCreatePublicKeyTemplate[] =
     "    displayName: 'Avery A. Jones', "
     "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
     "  pubKeyCredParams: [{ type: 'public-key', alg: '$4'}],"
-    "  timeout: 60000,"
+    "  timeout: 1000,"
     "  excludeCredentials: [],"
     "  authenticatorSelection : {"
     "     requireResidentKey: $1,"
@@ -532,33 +525,6 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(WebAuthJavascriptClientBrowserTest);
 };
 
-// Tests that when navigator.credentials.create() is called with user
-// verification required we get a NotSupportedError.
-IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
-                       CreatePublicKeyCredentialWithUserVerification) {
-  CreateParameters parameters;
-  parameters.user_verification = kRequiredVerification;
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(),
-      BuildCreateCallWithParameters(parameters), &result));
-  ASSERT_EQ(kAuthenticatorCriteriaErrorMessage, result);
-}
-
-// Tests that when navigator.credentials.create() is called with resident key
-// required, we get a NotSupportedError.
-IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
-                       CreatePublicKeyCredentialWithResidentKeyRequired) {
-  CreateParameters parameters;
-  parameters.require_resident_key = true;
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(),
-      BuildCreateCallWithParameters(parameters), &result));
-
-  ASSERT_EQ(kAuthenticatorCriteriaErrorMessage, result);
-}
-
 // Tests that when navigator.credentials.create() is called with an invalid
 // relying party id, we get a SecurityError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
@@ -574,8 +540,35 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
             result.substr(0, strlen(kRelyingPartySecurityErrorMessage)));
 }
 
+// Tests that when navigator.credentials.create() is called with user
+// verification required, request times out.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialWithUserVerification) {
+  CreateParameters parameters;
+  parameters.user_verification = kRequiredVerification;
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+  ASSERT_EQ(kTimeoutErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.create() is called with resident key
+// required, request times out.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyCredentialWithResidentKeyRequired) {
+  CreateParameters parameters;
+  parameters.require_resident_key = true;
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+
+  ASSERT_EQ(kTimeoutErrorMessage, result);
+}
+
 // Tests that when navigator.credentials.create() is called with an
-// unsupported algorithm, we get a NotSupportedError.
+// unsupported algorithm, request times out.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialAlgorithmNotSupported) {
   CreateParameters parameters;
@@ -585,11 +578,11 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents()->GetMainFrame(),
       BuildCreateCallWithParameters(parameters), &result));
 
-  ASSERT_EQ(kAlgorithmUnsupportedErrorMessage, result);
+  ASSERT_EQ(kTimeoutErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.create() is called with a
-// platform authenticator requested, we get a NotSupportedError.
+// platform authenticator requested, request times out.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialPlatformAuthenticator) {
   CreateParameters parameters;
@@ -599,7 +592,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents()->GetMainFrame(),
       BuildCreateCallWithParameters(parameters), &result));
 
-  ASSERT_EQ(kAuthenticatorCriteriaErrorMessage, result);
+  ASSERT_EQ(kTimeoutErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.get() is called with user verification
@@ -671,11 +664,12 @@ class WebAuthBrowserCtapTest : public WebAuthLocalClientBrowserTest {
 
  protected:
   std::vector<base::Feature> GetFeaturesToEnable() override {
-    return {features::kWebAuth, features::kWebAuthCtap2};
+    return {features::kWebAuth, device::kNewCtap2Device};
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserCtapTest);
 };
 

@@ -18,7 +18,7 @@
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
-#include "device/fido/ctap_register_operation.h"
+#include "device/fido/device_operation.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_task.h"
 
@@ -31,6 +31,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
   using MakeCredentialTaskCallback = base::OnceCallback<void(
       CtapDeviceResponseCode,
       base::Optional<AuthenticatorMakeCredentialResponse>)>;
+  using RegisterOperationPtr =
+      std::unique_ptr<DeviceOperation<CtapMakeCredentialRequest,
+                                      AuthenticatorMakeCredentialResponse>>;
 
   MakeCredentialTask(FidoDevice* device,
                      CtapMakeCredentialRequest request_parameter,
@@ -56,7 +59,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
 
   CtapMakeCredentialRequest request_parameter_;
   AuthenticatorSelectionCriteria authenticator_selection_criteria_;
-  std::unique_ptr<CtapRegisterOperation> register_operation_;
+  RegisterOperationPtr register_operation_;
   MakeCredentialTaskCallback callback_;
   base::WeakPtrFactory<MakeCredentialTask> weak_factory_;
 

@@ -5,7 +5,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "device/base/features.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -59,10 +61,15 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         cb_.callback());
   }
 
+  void InitFeatureListWithCtapFlag() {
+    scoped_feature_list_.InitAndEnableFeature(kNewCtap2Device);
+  }
+
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
   TestMakeCredentialRequestCallback& callback() { return cb_; }
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
@@ -70,7 +77,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   TestMakeCredentialRequestCallback cb_;
 };
 
-TEST_F(FidoMakeCredentialHandlerTest, TestMakeCredentialRequestHandler) {
+TEST_F(FidoMakeCredentialHandlerTest, TestCtap2MakeCredentialWithFlagEnabled) {
+  InitFeatureListWithCtapFlag();
   auto request_handler = CreateMakeCredentialHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -89,10 +97,9 @@ TEST_F(FidoMakeCredentialHandlerTest, TestMakeCredentialRequestHandler) {
   EXPECT_TRUE(request_handler->is_complete());
 }
 
-// Test a scenario where the connected authenticator is a U2F device. Request
-// be silently dropped and request should remain in incomplete state.
-TEST_F(FidoMakeCredentialHandlerTest,
-       TestMakeCredentialIncorrectGetInfoResponse) {
+// Test a scenario where the connected authenticator is a U2F device.
+TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegisterWithFlagEnabled) {
+  InitFeatureListWithCtapFlag();
   auto request_handler = CreateMakeCredentialHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
@@ -100,10 +107,36 @@ TEST_F(FidoMakeCredentialHandlerTest,
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
+  EXPECT_CALL(*device,
+              DeviceTransactPtr(fido_parsing_utils::Materialize(
+                                    test_data::kU2fRegisterCommandApdu),
+                                _))
+      .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
 
   discovery()->AddDevice(std::move(device));
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(request_handler->is_complete());
+  callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_TRUE(request_handler->is_complete());
+}
+
+// Test a scenario where the connected authenticator is a U2F device using a
+// logic that defaults to handling U2F devices.
+TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegisterWithoutFlagEnabled) {
+  auto request_handler = CreateMakeCredentialHandler();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  EXPECT_CALL(*device,
+              DeviceTransactPtr(fido_parsing_utils::Materialize(
+                                    test_data::kU2fRegisterCommandApdu),
+                                _))
+      .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
+
+  discovery()->AddDevice(std::move(device));
+  callback().WaitForCallback();
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_TRUE(request_handler->is_complete());
 }
 
 }  // namespace device
