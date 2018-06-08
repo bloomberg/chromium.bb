@@ -29,6 +29,7 @@
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_select_element.h"
 
 using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
@@ -5331,6 +5332,40 @@ TEST_F(FormAutofillTest, FormCache_ExtractNewForms) {
       EXPECT_EQ(test_case.is_formless_checkout, forms[0].is_formless_checkout);
     }
   }
+}
+
+TEST_F(FormAutofillTest, WebFormElementNotFoundInForm) {
+  LoadHTML(
+      "<form id='form'>"
+      "  <input type='text' id='firstname' value='John'>"
+      "  <input type='text' id='lastname' value='John'>"
+      "</form>");
+
+  WebLocalFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormElement web_form =
+      frame->GetDocument().GetElementById("form").To<WebFormElement>();
+  ASSERT_FALSE(web_form.IsNull());
+
+  WebFormControlElement control_element = frame->GetDocument()
+                                              .GetElementById("firstname")
+                                              .To<WebFormControlElement>();
+  ASSERT_FALSE(control_element.IsNull());
+  FormData form;
+  FormFieldData field;
+  EXPECT_TRUE(WebFormElementToFormData(web_form, control_element, nullptr,
+                                       EXTRACT_NONE, &form, &field));
+
+  const std::vector<FormFieldData>& fields = form.fields;
+  ASSERT_EQ(2U, fields.size());
+  EXPECT_EQ(ASCIIToUTF16("firstname"), fields[0].name);
+  EXPECT_EQ(ASCIIToUTF16("firstname"), field.name);
+
+  frame->ExecuteScript(
+      WebString("document.getElementById('firstname').remove();"));
+  EXPECT_FALSE(WebFormElementToFormData(web_form, control_element, nullptr,
+                                        EXTRACT_NONE, &form, &field));
 }
 
 }  // namespace form_util
