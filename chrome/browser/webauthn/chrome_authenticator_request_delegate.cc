@@ -73,9 +73,13 @@ ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
   // Currently, completion of the request is indicated by //content destroying
   // this delegate.
   if (weak_dialog_model_) {
-    // The dialog model may be destroyed after the OnRequestComplete call.
-    weak_dialog_model_->RemoveObserver(this);
     weak_dialog_model_->OnRequestComplete();
+  }
+
+  // The dialog model may be destroyed after the OnRequestComplete call.
+  if (weak_dialog_model_) {
+    weak_dialog_model_->RemoveObserver(this);
+    weak_dialog_model_ = nullptr;
   }
 }
 
