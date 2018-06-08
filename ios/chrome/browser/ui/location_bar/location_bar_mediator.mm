@@ -200,9 +200,8 @@
 }
 
 - (UIImage*)imageForSecurityLevel:(security_state::SecurityLevel)level {
-  int iconID = GetIconForSecurityState(level);
-  return [NativeImage(iconID)
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  base::string16 iconName = GetUIRefreshIconNameForSecurityState(level);
+  return [UIImage imageNamed:base::SysUTF16ToNSString(iconName)];
 }
 
 // Returns a location icon for offline pages.
