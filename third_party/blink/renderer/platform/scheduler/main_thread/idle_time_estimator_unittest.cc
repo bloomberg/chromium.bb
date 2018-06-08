@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
-#include "base/test/simple_test_tick_clock.h"
-#include "components/viz/test/ordered_simple_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
@@ -36,21 +36,25 @@ class IdleTimeEstimatorForTest : public IdleTimeEstimator {
 class IdleTimeEstimatorTest : public testing::Test {
  public:
   IdleTimeEstimatorTest()
-      : frame_length_(base::TimeDelta::FromMilliseconds(16)) {}
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+        frame_length_(base::TimeDelta::FromMilliseconds(16)) {
+    // Null clock might trigger some assertions.
+    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
+  }
 
   ~IdleTimeEstimatorTest() override = default;
 
   void SetUp() override {
-    clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
-    mock_task_runner_ =
-        base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
     manager_ = base::sequence_manager::TaskQueueManagerForTest::Create(
-        nullptr, mock_task_runner_, &clock_);
+        nullptr, task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMockTickClock());
     compositor_task_queue_ =
         manager_->CreateTaskQueue<base::sequence_manager::TestTaskQueue>(
             base::sequence_manager::TaskQueue::Spec("test_tq"));
-    estimator_.reset(
-        new IdleTimeEstimatorForTest(compositor_task_queue_, &clock_, 10, 50));
+    estimator_.reset(new IdleTimeEstimatorForTest(
+        compositor_task_queue_, task_environment_.GetMockTickClock(), 10, 50));
   }
 
   void SimulateFrameWithOneCompositorTask(int compositor_time) {
@@ -58,11 +62,11 @@ class IdleTimeEstimatorTest : public testing::Test {
         base::TimeDelta::FromMilliseconds(compositor_time);
     base::PendingTask task(FROM_HERE, base::Closure());
     estimator_->WillProcessTask(task);
-    clock_.Advance(non_idle_time);
+    task_environment_.FastForwardBy(non_idle_time);
     estimator_->DidCommitFrameToCompositor();
     estimator_->DidProcessTask(task);
     if (non_idle_time < frame_length_)
-      clock_.Advance(frame_length_ - non_idle_time);
+      task_environment_.FastForwardBy(frame_length_ - non_idle_time);
   }
 
   void SimulateFrameWithTwoCompositorTasks(int compositor_time1,
@@ -73,20 +77,19 @@ class IdleTimeEstimatorTest : public testing::Test {
         base::TimeDelta::FromMilliseconds(compositor_time2);
     base::PendingTask task(FROM_HERE, base::Closure());
     estimator_->WillProcessTask(task);
-    clock_.Advance(non_idle_time1);
+    task_environment_.FastForwardBy(non_idle_time1);
     estimator_->DidProcessTask(task);
 
     estimator_->WillProcessTask(task);
-    clock_.Advance(non_idle_time2);
+    task_environment_.FastForwardBy(non_idle_time2);
     estimator_->DidCommitFrameToCompositor();
     estimator_->DidProcessTask(task);
 
     base::TimeDelta idle_time = frame_length_ - non_idle_time1 - non_idle_time2;
-    clock_.Advance(idle_time);
+    task_environment_.FastForwardBy(idle_time);
   }
 
-  base::SimpleTestTickClock clock_;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<base::sequence_manager::TaskQueueManager> manager_;
   scoped_refptr<base::sequence_manager::TaskQueue> compositor_task_queue_;
   std::unique_ptr<IdleTimeEstimatorForTest> estimator_;
