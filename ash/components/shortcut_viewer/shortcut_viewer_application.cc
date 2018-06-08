@@ -6,12 +6,15 @@
 
 #include "ash/components/shortcut_viewer/last_window_closed_observer.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
+#include "ash/public/cpp/mus_property_mirror_ash.h"
+#include "ash/public/cpp/window_properties.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/mus_client.h"
 
 namespace keyboard_shortcut_viewer {
 
@@ -37,6 +40,16 @@ void ShortcutViewerApplication::OnStart() {
     context()->QuitNow();
     return;
   }
+
+  views::MusClient* mus_client = views::MusClient::Get();
+  aura::WindowTreeClientDelegate* delegate = mus_client;
+
+  // Registers ash specific window properties to be transported.
+  ash::RegisterWindowProperties(delegate->GetPropertyConverter());
+
+  // Setup property mirror between window and host.
+  mus_client->SetMusPropertyMirror(
+      std::make_unique<ash::MusPropertyMirrorAsh>());
 
   // Quit the application when the window is closed.
   last_window_closed_observer_ = std::make_unique<LastWindowClosedObserver>(

@@ -44,8 +44,8 @@ void InternalAppWindowShelfController::OnWindowInitialized(
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   if (!widget || !widget->is_top_level())
     return;
-  observed_windows_.push_back(window);
 
+  observed_windows_.push_back(window);
   window->AddObserver(this);
 }
 
@@ -71,6 +71,12 @@ void InternalAppWindowShelfController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
   if (!visible)
+    return;
+
+  // Skip OnWindowVisibilityChanged for ancestors/descendants.
+  auto it =
+      std::find(observed_windows_.begin(), observed_windows_.end(), window);
+  if (it == observed_windows_.end())
     return;
 
   ash::ShelfID shelf_id =
