@@ -23,7 +23,8 @@ Polymer({
 
     /**
      * Available languages.
-     * @type {Array<{language: string, code: string, voice: TtsHandlerVoice}>}
+     * @type {Array<{language: string, code: string, preferred: boolean,
+     *     voice: TtsHandlerVoice}>}
      */
     languagesToVoices: {
       type: Array,
@@ -48,13 +49,16 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * Whether any voices are loaded.
-     * @type {Boolean}
-     */
+    /** Whether any voices are loaded. */
     hasVoices: {
       type: Boolean,
       computed: 'hasVoices_(allVoices)',
+    },
+
+    /** Whether the additional languages section has been opened. */
+    languagesOpened: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -141,11 +145,14 @@ Polymer({
     // Build a map of language code to human-readable language and voice.
     let result = {};
     let languageCodeMap = {};
+    let pref = this.prefs.settings['language']['preferred_languages'];
+    let preferredLangs = pref.value.split(',');
     voices.forEach(voice => {
       if (!result[voice.languageCode]) {
         result[voice.languageCode] = {
           language: voice.displayLanguage,
           code: voice.languageCode,
+          preferred: false,
           voices: []
         };
       }
@@ -155,12 +162,40 @@ Polymer({
       // TODO(katie): Make voices a map rather than an array to enforce
       // uniqueness, then convert back to an array for polymer repeat.
       result[voice.languageCode].voices.push(voice);
+
+      // A language is "preferred" if it has a voice that uses the default
+      // locale of the device.
+      result[voice.languageCode].preferred =
+          result[voice.languageCode].preferred ||
+          preferredLangs.indexOf(voice.fullLanguageCode) != -1;
       languageCodeMap[voice.fullLanguageCode] = voice.languageCode;
     });
     this.updateLangToVoicePrefs_(result);
     this.set('languagesToVoices', Object.values(result));
     this.set('allVoices', voices);
     this.setDefaultPreviewVoiceForLocale_(voices, languageCodeMap);
+  },
+
+  /**
+   * Returns true if the language is a primary language and should be shown by
+   * default, false if it should be hidden by default.
+   * @param {{language: string, code: string, preferred: boolean,
+   *     voice: TtsHandlerVoice}} language
+   * @return {boolean} true if it's a primary language.
+   */
+  isPrimaryLanguage_: function(language) {
+    return language.preferred;
+  },
+
+  /**
+   * Returns true if the language is a secondary language and should be hidden
+   * by default, true if it should be shown by default.
+   * @param {{language: string, code: string, preferred: boolean,
+   *     voice: TtsHandlerVoice}} language
+   * @return {boolean} true if it's a secondary language.
+   */
+  isSecondaryLanguage_: function(language) {
+    return !language.preferred;
   },
 
   /**
@@ -208,7 +243,7 @@ Polymer({
 
   /**
    * Updates the preferences given the current list of voices.
-   * @param {Object<string, {language: string, code: string,
+   * @param {Object<string, {language: string, code: string, preferred: boolean,
    *     voices: Array<TtsHandlerVoice>}>} langToVoices
    * @private
    */

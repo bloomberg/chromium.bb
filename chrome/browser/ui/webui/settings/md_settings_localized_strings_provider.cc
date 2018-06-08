@@ -248,6 +248,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"textToSpeechVoices", IDS_SETTINGS_TEXT_TO_SPEECH_VOICES},
     {"textToSpeechNoVoicesMessage",
      IDS_SETTINGS_TEXT_TO_SPEECH_NO_VOICES_MESSAGE},
+    {"textToSpeechMoreLanguages", IDS_SETTINGS_TEXT_TO_SPEECH_MORE_LANGUAGES},
     {"textToSpeechProperties", IDS_SETTINGS_TEXT_TO_SPEECH_PROPERTIES},
     {"textToSpeechRate", IDS_SETTINGS_TEXT_TO_SPEECH_RATE},
     {"textToSpeechRateMinimumLabel",
