@@ -17,6 +17,8 @@ FakeTimerFactory::FakeTimerFactory() : weak_ptr_factory_(this) {}
 FakeTimerFactory::~FakeTimerFactory() = default;
 
 std::unique_ptr<base::Timer> FakeTimerFactory::CreateOneShotTimer() {
+  ++num_instances_created_;
+
   auto fake_one_shot_timer = std::make_unique<FakeOneShotTimer>(
       base::BindOnce(&FakeTimerFactory::OnOneShotTimerDeleted,
                      weak_ptr_factory_.GetWeakPtr()));
