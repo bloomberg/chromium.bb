@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_SEARCH_API_SAFE_SEARCH_URL_CHECKER_H_
-#define CHROME_BROWSER_SAFE_SEARCH_API_SAFE_SEARCH_URL_CHECKER_H_
+#ifndef COMPONENTS_SAFE_SEARCH_API_URL_CHECKER_H_
+#define COMPONENTS_SAFE_SEARCH_API_URL_CHECKER_H_
 
 #include <stddef.h>
 
@@ -22,25 +22,26 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
+namespace safe_search_api {
+
+// The SafeSearch API classification of a URL.
+enum class Classification { SAFE, UNSAFE };
+
 // This class uses the SafeSearch API to check the SafeSearch classification
 // of the content on a given URL and returns the result asynchronously
 // via a callback.
-class SafeSearchURLChecker {
+class URLChecker {
  public:
-  enum class Classification { SAFE, UNSAFE };
-
   // Returns whether |url| should be blocked. Called from CheckURL.
   using CheckCallback = base::OnceCallback<
       void(const GURL&, Classification classification, bool /* uncertain */)>;
 
-  explicit SafeSearchURLChecker(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
-  SafeSearchURLChecker(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      size_t cache_size);
-  ~SafeSearchURLChecker();
+  URLChecker(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+             const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  URLChecker(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+             const net::NetworkTrafficAnnotationTag& traffic_annotation,
+             size_t cache_size);
+  ~URLChecker();
 
   // Returns whether |callback| was run synchronously.
   bool CheckURL(const GURL& url, CheckCallback callback);
@@ -70,7 +71,9 @@ class SafeSearchURLChecker {
   base::MRUCache<GURL, CheckResult> cache_;
   base::TimeDelta cache_timeout_;
 
-  DISALLOW_COPY_AND_ASSIGN(SafeSearchURLChecker);
+  DISALLOW_COPY_AND_ASSIGN(URLChecker);
 };
 
-#endif  // CHROME_BROWSER_SAFE_SEARCH_API_SAFE_SEARCH_URL_CHECKER_H_
+}  // namespace safe_search_api
+
+#endif  // COMPONENTS_SAFE_SEARCH_API_URL_CHECKER_H_
