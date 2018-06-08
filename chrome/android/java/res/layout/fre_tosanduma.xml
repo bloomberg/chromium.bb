@@ -6,7 +6,7 @@
 -->
 <org.chromium.chrome.browser.firstrun.FirstRunView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -88,8 +88,8 @@
         android:text="@string/fre_accept_continue"
         android:textAllCaps="true"
         style="@style/WhiteBody"
-        chrome:buttonColor="@color/light_active_color"
-        chrome:buttonRaised="false"/>
+        app:buttonColor="@color/light_active_color"
+        app:buttonRaised="false"/>
 
     <!-- Same location as the button; marginButtom is adjusted for the different size. -->
     <ProgressBar

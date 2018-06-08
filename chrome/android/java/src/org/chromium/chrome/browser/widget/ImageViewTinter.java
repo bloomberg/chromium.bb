@@ -20,11 +20,11 @@ import org.chromium.chrome.R;
  * Example usage in XML:
  * <ImageViewTinterInstanceOwner
  *     xmlns:android="http://schemas.android.com/apk/res/android"
- *     xmlns:chrome="http://schemas.android.com/apk/res-auto"
- *     chrome:chrometint="@color/light_active_color" />
+ *     xmlns:app="http://schemas.android.com/apk/res-auto"
+ *     app:chrometint="@color/light_active_color" />
  *
  * The default style used by the Application will likely cause your Drawable to be automatically
- * tinted.  To prevent this, set the value of chrome:chrometint to "@null".
+ * tinted.  To prevent this, set the value of app:chrometint to "@null".
  */
 public class ImageViewTinter {
     /** Classes that own an ImageViewTinter must implement these functions. */

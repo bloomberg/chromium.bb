@@ -5,7 +5,7 @@
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
 
@@ -31,7 +31,7 @@
             <org.chromium.chrome.browser.widget.TintedImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:srcCompat="@drawable/ic_drive_file_24dp"
+                app:srcCompat="@drawable/ic_drive_file_24dp"
                 android:tint="@color/black_alpha_87"
                 style="@style/ListItemStartIcon" />
 

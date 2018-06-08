@@ -19,11 +19,11 @@ import org.chromium.chrome.R;
  * Example:
  *   <org.chromium.chrome.browser.widget.BoundedLinearLayout
  *       xmlns:android="http://schemas.android.com/apk/res/android"
- *       xmlns:chrome="http://schemas.android.com/apk/res-auto"
+ *       xmlns:app="http://schemas.android.com/apk/res-auto"
  *       android:layout_width="match_parent"
  *       android:layout_height="match_parent"
- *       chrome:maxWidthLandscape="@dimen/modal_dialog_landscape_max_width"
-         chrome:maxWidthPortrait="@dimen/modal_dialog_portrait_max_width">
+ *       app:maxWidthLandscape="@dimen/modal_dialog_landscape_max_width"
+         app:maxWidthPortrait="@dimen/modal_dialog_portrait_max_width">
  *     ...
  */
 public class BoundedLinearLayout extends LinearLayout {

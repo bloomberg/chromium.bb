@@ -10,11 +10,11 @@
 -->
 <org.chromium.chrome.browser.payments.ui.PaymentRequestUiErrorView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center"
     android:background="@drawable/menu_bg"
-    chrome:maxWidth="@dimen/payments_ui_max_dialog_width" >
+    app:maxWidth="@dimen/payments_ui_max_dialog_width" >
 
     <include layout="@layout/payment_request_header" />
 

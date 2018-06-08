@@ -8,7 +8,7 @@
 
 <org.chromium.chrome.browser.tab.SadTabView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="Overdraw"
     android:background="#f7f7f7"
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:textColor="#fff"
             android:minWidth="222dp"
-            chrome:buttonColor="@color/light_active_color"
+            app:buttonColor="@color/light_active_color"
             android:layout_gravity="end" />
     </LinearLayout>
 </org.chromium.chrome.browser.tab.SadTabView>

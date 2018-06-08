@@ -5,7 +5,7 @@
 
 <org.chromium.ui.widget.ButtonCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:layout_height="@dimen/keyboard_accessory_action_height"
     android:layout_width="wrap_content"
@@ -18,5 +18,5 @@
     android:textAlignment="center"
     android:textColor="@color/white_alpha_90"
     android:textSize="@dimen/keyboard_accessory_text_size"
-    chrome:buttonColor="@color/google_blue_500"
-    chrome:buttonRaised="false"/>
+    app:buttonColor="@color/google_blue_500"
+    app:buttonRaised="false"/>

@@ -5,8 +5,7 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/shortcuts"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -34,9 +33,9 @@
             android:drawableStart="@drawable/btn_star_filled"
             android:text="@string/menu_bookmarks"
             android:textAppearance="@style/BlackCaption"
-            chrome:drawableHeight="20sp"
-            chrome:drawableWidth="20sp"
-            chrome:chromeDrawableTint="@color/black_alpha_54"  />
+            app:drawableHeight="20sp"
+            app:drawableWidth="20sp"
+            app:chromeDrawableTint="@color/black_alpha_54"  />
     </FrameLayout>
 
     <FrameLayout
@@ -57,8 +56,8 @@
             android:drawableStart="@drawable/ic_file_download_white_24dp"
             android:text="@string/menu_downloads"
             android:textAppearance="@style/BlackCaption"
-            chrome:drawableHeight="20sp"
-            chrome:drawableWidth="20sp"
-            chrome:chromeDrawableTint="@color/black_alpha_54"  />
+            app:drawableHeight="20sp"
+            app:drawableWidth="20sp"
+            app:chromeDrawableTint="@color/black_alpha_54"  />
     </FrameLayout>
 </LinearLayout>

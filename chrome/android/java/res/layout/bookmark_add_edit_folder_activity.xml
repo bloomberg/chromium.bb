@@ -5,7 +5,7 @@
 
 <merge
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:minHeight="@dimen/bookmark_minimum_dialog_size_tablet" >
 
     <ScrollView
@@ -32,7 +32,7 @@
                 android:imeOptions="flagNoExtractUi"
                 android:inputType="textCapSentences|textAutoCorrect"
                 android:textAppearance="@style/BlackHeadline1"
-                chrome:alertMessage="@string/bookmark_missing_title"  />
+                app:alertMessage="@string/bookmark_missing_title"  />
 
             <TextView
                 android:layout_width="wrap_content"

@@ -5,7 +5,7 @@
 
 <org.chromium.chrome.browser.contextual_suggestions.ToolbarView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
@@ -21,7 +21,7 @@
         android:src="@drawable/ic_expand_less_black_24dp"
         android:scaleType="center"
         android:visibility="gone"
-        chrome:chrometint="@color/dark_mode_tint" />
+        app:chrometint="@color/dark_mode_tint" />
 
     <LinearLayout
         android:id="@+id/main_content"
@@ -56,7 +56,7 @@
             android:layout_height="match_parent"
             android:background="?attr/selectableItemBackground"
             android:src="@drawable/ic_more_vert_black_24dp"
-            chrome:chrometint="@color/dark_mode_tint"
+            app:chrometint="@color/dark_mode_tint"
             tools:ignore="ContentDescription" />
 
         <org.chromium.chrome.browser.widget.TintedImageButton

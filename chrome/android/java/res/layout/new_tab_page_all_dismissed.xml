@@ -5,7 +5,7 @@
 
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/snippets_padding">
@@ -34,7 +34,7 @@
         android:gravity="center_horizontal"
         android:text="@string/ntp_title_no_suggestions"
         android:textAppearance="@style/BlackTitle1"
-        chrome:leading="24dp" />
+        app:leading="24dp" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/body_text"
@@ -46,7 +46,7 @@
         android:text="@string/ntp_all_dismissed_body_text_morning"
         android:textSize="14sp"
         android:textColor="@color/snippets_text_color"
-        chrome:leading="20dp" />
+        app:leading="20dp" />
 
     <Button
         android:id="@+id/action_button"

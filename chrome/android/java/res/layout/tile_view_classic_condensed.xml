@@ -6,7 +6,7 @@
 <!-- A site suggestion tile. -->
 <org.chromium.chrome.browser.suggestions.TileView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="@dimen/tile_view_width_condensed"
     android:layout_height="wrap_content" >
 
@@ -37,7 +37,7 @@
         android:visibility="gone"
         android:background="@drawable/offline_badge_background"
         android:contentDescription="@string/accessibility_ntp_offline_badge"
-        chrome:chrometint="@color/suggestions_offline_badge_tint"
+        app:chrometint="@color/suggestions_offline_badge_tint"
         android:src="@drawable/offline_pin_round" />
 
     <!-- The title. -->
