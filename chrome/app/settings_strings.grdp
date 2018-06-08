@@ -364,6 +364,9 @@
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_NO_VOICES_MESSAGE" desc="Message when no text-to-speech voices are found on the Chrome OS device.">
       No voices found
     </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_MORE_LANGUAGES" desc="Label for a toggle button letting users know they can pick default voices for more languages which are not shown by default">
+      More languages
+    </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PROPERTIES" desc="Heading describing a collection of input controls for a section of text-to-speech settings on speech properties, including speech pitch and rate">
       Speech Properties
     </message>
