@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
@@ -19,6 +20,24 @@ namespace resource_coordinator {
   receivers.ForAllPtrs([&](mojom::PageSignalReceiver* receiver) { \
     receiver->METHOD(__VA_ARGS__);                                \
   });
+
+namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class BloatedRendererHandlingInResourceCoordinator {
+  kForwardedToBrowser = 0,
+  kIgnoredDueToMultiplePages = 1,
+  kMaxValue = kIgnoredDueToMultiplePages
+};
+
+void RecordBloatedRendererHandling(
+    BloatedRendererHandlingInResourceCoordinator handling) {
+  UMA_HISTOGRAM_ENUMERATION("BloatedRenderer.HandlingInResourceCoordinator",
+                            handling);
+}
+
+}  // anonymous namespace
 
 // static
 constexpr base::TimeDelta PageSignalGeneratorImpl::kLoadedAndIdlingTimeout =
@@ -55,6 +74,7 @@ void PageSignalGeneratorImpl::AddReceiver(
 // Process CUs should be observed for:
 // 1- kExpectedTaskQueueingDuration property for reporting EQT
 // 2- kMainThreadTaskLoadIsLow property changes for PageAlmostIdle detection
+// 3- kRendererIsBloated event for reloading bloated pages.
 bool PageSignalGeneratorImpl::ShouldObserve(
     const CoordinationUnitBase* coordination_unit) {
   auto cu_type = coordination_unit->id().type;
@@ -173,6 +193,26 @@ void PageSignalGeneratorImpl::OnPageEventReceived(
   auto* page_data = GetPageData(page_cu);
   page_data->load_idle_state = kLoadingNotStarted;
   page_data->idling_timer.Stop();
+}
+
+void PageSignalGeneratorImpl::OnProcessEventReceived(
+    const ProcessCoordinationUnitImpl* process_cu,
+    const mojom::Event event) {
+  if (event == mojom::Event::kRendererIsBloated) {
+    std::set<PageCoordinationUnitImpl*> page_cus =
+        process_cu->GetAssociatedPageCoordinationUnits();
+    // Currently bloated renderer handling supports only a single page.
+    if (page_cus.size() == 1u) {
+      auto* page_cu = *page_cus.begin();
+      DISPATCH_PAGE_SIGNAL(receivers_, NotifyRendererIsBloated, page_cu->id());
+      RecordBloatedRendererHandling(
+          BloatedRendererHandlingInResourceCoordinator::kForwardedToBrowser);
+    } else {
+      RecordBloatedRendererHandling(
+          BloatedRendererHandlingInResourceCoordinator::
+              kIgnoredDueToMultiplePages);
+    }
+  }
 }
 
 void PageSignalGeneratorImpl::BindToInterface(

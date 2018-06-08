@@ -28,7 +28,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_importance_signals.h"
 #include "url/gurl.h"
 
 namespace resource_coordinator {
@@ -45,7 +44,20 @@ bool IsFrozenOrPendingFreeze(LifecycleUnitState state) {
          state == LifecycleUnitState::PENDING_FREEZE;
 }
 
-}  // namespace
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class BloatedRendererHandlingInBrowser {
+  kReloaded = 0,
+  kCannotReload = 1,
+  kCannotShutdown = 2,
+  kMaxValue = kCannotShutdown
+};
+
+void RecordBloatedRendererHandling(BloatedRendererHandlingInBrowser handling) {
+  UMA_HISTOGRAM_ENUMERATION("BloatedRenderer.HandlingInBrowser", handling);
+}
+
+}  // anonymous namespace
 
 TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     base::ObserverList<TabLifecycleObserver>* observers,
@@ -522,6 +534,54 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetAutoDiscardable(
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::DiscardTab() {
   return Discard(DiscardReason::kExternal);
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::CanReloadBloatedTab() {
+  // Can't reload a tab that isn't in a TabStripModel, which is needed for
+  // showing an infobar.
+  if (!tab_strip_model_)
+    return false;
+
+  if (GetWebContents()->IsCrashed())
+    return false;
+
+  // Do not reload tabs that don't have a valid URL (most probably they have
+  // just been opened and discarding them would lose the URL).
+  if (!GetWebContents()->GetLastCommittedURL().is_valid() ||
+      GetWebContents()->GetLastCommittedURL().is_empty()) {
+    return false;
+  }
+
+  // Do not reload tabs in which the user has entered text in a form.
+  if (GetWebContents()->GetPageImportanceSignals().had_form_interaction)
+    return false;
+
+  // TODO(ulan): Check if the navigation controller has POST data.
+
+  return true;
+}
+
+void TabLifecycleUnitSource::TabLifecycleUnit::ReloadBloatedTab() {
+  if (CanReloadBloatedTab()) {
+    const size_t expected_page_count = 1u;
+    const bool skip_unload_handlers = true;
+    if (GetRenderProcessHost()->FastShutdownIfPossible(expected_page_count,
+                                                       skip_unload_handlers)) {
+      // TODO(ulan): Notify the WebContents that the page is bloated to give
+      // it a chance to show the infobar after the reload.
+      const bool check_for_repost = true;
+      GetWebContents()->GetController().Reload(content::ReloadType::NORMAL,
+                                               check_for_repost);
+      RecordBloatedRendererHandling(
+          BloatedRendererHandlingInBrowser::kReloaded);
+    } else {
+      RecordBloatedRendererHandling(
+          BloatedRendererHandlingInBrowser::kCannotShutdown);
+    }
+  } else {
+    RecordBloatedRendererHandling(
+        BloatedRendererHandlingInBrowser::kCannotReload);
+  }
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::FreezeTab() {

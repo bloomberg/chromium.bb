@@ -108,6 +108,12 @@ interface ProcessCoordinationUnit {
   SetLaunchTime(mojo_base.mojom.Time launch_time);
   SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low);
   SetPID(int64 pid);
+
+  // Event signals.
+
+  // Fired when one of the renderer heaps is about to exceed its limit.
+  // If nothing is done, then the renderer is likely to crash with OOM.
+  OnRendererIsBloated();
 };
 
 // There is exactly one SystemCoordinationUnit at all times.

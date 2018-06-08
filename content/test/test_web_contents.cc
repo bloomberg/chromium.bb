@@ -449,4 +449,8 @@ void TestWebContents::ResetPauseSubresourceLoadingCalled() {
   pause_subresource_loading_called_ = false;
 }
 
+void TestWebContents::SetPageImportanceSignals(PageImportanceSignals signals) {
+  page_importance_signals_ = signals;
+}
+
 }  // namespace content
