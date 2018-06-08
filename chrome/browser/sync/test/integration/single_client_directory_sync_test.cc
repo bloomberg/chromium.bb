@@ -13,6 +13,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -101,10 +102,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 // Verify that when the sync directory's backing store becomes corrupted, we
 // trigger an unrecoverable error and delete the database.
 //
+// TODO(treib): Update the below comment; it refers to something that does
+// not exist.
 // If this test fails, see the definition of kNumEntriesRequiredForCorruption
 // for one possible cause.
+#if defined(OS_MACOSX)
+#define MAYBE_DeleteDirectoryWhenCorrupted DISABLED_DeleteDirectoryWhenCorrupted
+#else
+#define MAYBE_DeleteDirectoryWhenCorrupted DeleteDirectoryWhenCorrupted
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
-                       DeleteDirectoryWhenCorrupted) {
+                       MAYBE_DeleteDirectoryWhenCorrupted) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   // Sync and wait for syncing to complete.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
