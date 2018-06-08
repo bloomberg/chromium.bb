@@ -229,6 +229,9 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   void set_skip_restart_for_testing() { skip_restart_for_testing_ = true; }
   bool skip_restart_for_testing() { return skip_restart_for_testing_; }
 
+  void set_is_testing(bool is_testing) { is_testing_ = is_testing; }
+  bool is_testing() { return is_testing_; }
+
   // Adds a callback to receive notification of container shutdown.
   void AddShutdownContainerCallback(
       Profile* profile,
@@ -340,6 +343,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       start_container_callbacks_;
 
   bool skip_restart_for_testing_ = false;
+  bool is_testing_ = false;
 
   // Pending ShutdownContainer callbacks are keyed by <owner_id, vm_name,
   // container_name> string tuples.

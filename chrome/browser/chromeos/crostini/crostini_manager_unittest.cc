@@ -120,6 +120,7 @@ class CrostiniManagerTest : public testing::Test {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
         base::WrapUnique(fake_concierge_client_));
     chromeos::DBusThreadManager::Initialize();
+    crostini::CrostiniManager::GetInstance()->set_is_testing(true);
   }
 
   ~CrostiniManagerTest() override { chromeos::DBusThreadManager::Shutdown(); }
