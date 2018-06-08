@@ -1,7 +1,7 @@
 # Generic Sensor
 
 `third_party/blink/renderer/modules/sensor` implements the following concrete
-sensor intrefaces based on the [Generic Sensor API]
+sensor interfaces based on the [Generic Sensor API]
 (https://w3c.github.io/sensors):
 1. [Ambient Light Sensor] (https://w3c.github.io/ambient-light)
 1. [Accelerometer] (https://w3c.github.io/accelerometer)
@@ -10,7 +10,7 @@ sensor intrefaces based on the [Generic Sensor API]
 1. [Absolute Orientation Sensor] (https://w3c.github.io/orientation-sensor)
 
 The platform-specific parts of the implementation are located in
-`device/generic_sensor`.
+`services/device/generic_sensor`.
 
 
 ## Testing
