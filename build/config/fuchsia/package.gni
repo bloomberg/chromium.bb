@@ -24,7 +24,8 @@ template("package") {
 
   _pkg_out_dir = "$root_out_dir/gen/" + get_label_info(pkg.package_name, "dir")
   _runtime_deps_file = "$_pkg_out_dir/${pkg.package_name}.runtime_deps"
-  _manifest_file = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
+  _archive_manifest = "$_pkg_out_dir/${pkg.package_name}.archive_manifest"
+  _component_manifest = "$_pkg_out_dir/${pkg.package_name}.cmx"
   _key_file = "$_pkg_out_dir/signing-key"
   _meta_far_file = "$_pkg_out_dir/meta.far"
   _combined_far_file = "$_pkg_out_dir/${pkg.package_name}-0.far"
@@ -55,7 +56,8 @@ template("package") {
     ]
 
     outputs = [
-      _manifest_file,
+      _archive_manifest,
+      _component_manifest,
     ]
 
     data_deps = pkg.deps
@@ -73,7 +75,7 @@ template("package") {
       rebase_path(_runtime_deps_file),
       rebase_path(_depfile),
       rebase_path(dist_libroot) + "," + rebase_path("${sysroot}/dist"),
-      rebase_path(_manifest_file),
+      rebase_path(_archive_manifest),
     ]
 
     write_runtime_deps = _runtime_deps_file
@@ -123,7 +125,7 @@ template("package") {
       "-k",
       rebase_path(_key_file),
       "-m",
-      rebase_path(_manifest_file),
+      rebase_path(_archive_manifest),
       "build",
     ]
   }
@@ -141,7 +143,7 @@ template("package") {
 
     inputs = [
       _meta_far_file,
-      _manifest_file,
+      _archive_manifest,
     ]
 
     outputs = [
@@ -153,7 +155,7 @@ template("package") {
       "-o",
       rebase_path(_pkg_out_dir),
       "-m",
-      rebase_path(_manifest_file),
+      rebase_path(_archive_manifest),
       "archive",
     ]
   }
