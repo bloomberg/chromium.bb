@@ -31,15 +31,18 @@ class PasswordRequirementsSpecFetcher {
   // |origin| references the origin in the PasswordForm for which rules need to
   // be fetched.
   //
-  // The |callback| must remain valid thoughout the life-cycle of this class,
-  // but the class may be destroyed before the |callback| has been triggered.
+  // The |callback| must remain valid until called back, but this class may be
+  // destroyed before the |callback| has been triggered.
   //
-  // Fetch() must be called only once per fetcher.
+  // Fetch() may be called multiple times concurrently. Requests are batched
+  // if possible.
   //
   // If the network request fails or times out, the callback receives an empty
   // spec.
+  //
+  // |origin| passed by value because it may need to be normalized.
   virtual void Fetch(network::mojom::URLLoaderFactory* loader_factory,
-                     const GURL& origin,
+                     GURL origin,
                      FetchCallback callback) = 0;
 };
 
