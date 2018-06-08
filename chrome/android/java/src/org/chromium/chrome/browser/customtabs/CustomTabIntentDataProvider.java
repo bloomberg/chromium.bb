@@ -139,6 +139,9 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
     /** Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private boolean mIsOpenedByChrome;
+
+    private boolean mIsIncognito;
+
     /**
      * Add extras to customize menu items for opening payment request UI custom tab from Chrome.
      */
@@ -202,6 +205,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
         mIsOpenedByChrome =
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OPENED_BY_CHROME, false);
+        mIsIncognito = IntentUtils.safeGetBooleanExtra(
+                intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
 
         final int requestedUiType =
                 IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CUSTOM_TABS_UI_TYPE_DEFAULT);
@@ -579,5 +584,13 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      */
     boolean isForPaymentRequest() {
         return mUiType == CUSTOM_TABS_UI_TYPE_PAYMENT_REQUEST;
+    }
+
+    /**
+     * @return Whether the custom Tab should be opened in incognito mode.
+     */
+    boolean isIncognito() {
+        // Only open custom tab in incognito mode for payment request.
+        return isTrustedIntent() && mIsOpenedByChrome && isForPaymentRequest() && mIsIncognito;
     }
 }
