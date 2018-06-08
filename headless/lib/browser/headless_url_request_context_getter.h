@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_context.h"
 #include "headless/public/headless_browser.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -74,6 +75,7 @@ class HeadlessURLRequestContextGetter
   content::URLRequestInterceptorScopedVector request_interceptors_;
   net::NetLog* net_log_;  // Not owned
   bool capture_resource_metadata_;
+  net::HttpAuthPreferences prefs_;
 
   base::Lock lock_;  // Protects |headless_browser_context_|.
   HeadlessBrowserContextImpl* headless_browser_context_;  // Not owned.

@@ -22,7 +22,6 @@
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -65,6 +64,10 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
   for (auto& pair : context_protocol_handlers) {
     protocol_handlers_[pair.first] = std::move(pair.second);
   }
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  prefs_.SetServerWhitelist(
+      command_line->GetSwitchValueASCII(switches::kAuthServerWhitelist));
 
   // We must create the proxy config service on the UI loop on Linux because it
   // must synchronously run on the glib message loop. This will be passed to
@@ -192,14 +195,9 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
       host_resolver = std::move(mapped_host_resolver);
     }
 
-    net::HttpAuthPreferences* prefs(new net::HttpAuthPreferences());
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    prefs->SetServerWhitelist(
-        command_line->GetSwitchValueASCII(switches::kAuthServerWhitelist));
     std::unique_ptr<net::HttpAuthHandlerRegistryFactory> factory =
         net::HttpAuthHandlerRegistryFactory::CreateDefault(host_resolver.get());
-    factory->SetHttpAuthPreferences(net::kNegotiateAuthScheme,
-                                    std::move(prefs));
+    factory->SetHttpAuthPreferences(net::kNegotiateAuthScheme, &prefs_);
     builder.SetHttpAuthHandlerFactory(std::move(factory));
     builder.set_host_resolver(std::move(host_resolver));
 
