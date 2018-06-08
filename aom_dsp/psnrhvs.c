@@ -24,11 +24,6 @@
 #include "aom_dsp/ssim.h"
 #include "aom_ports/system_state.h"
 
-#if !defined(M_PI)
-#define M_PI (3.141592653589793238462643)
-#endif
-#include <string.h>
-
 static void od_bin_fdct8x8(tran_low_t *y, int ystride, const int16_t *x,
                            int xstride) {
   int i, j;
