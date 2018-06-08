@@ -166,7 +166,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
-  'libfuzzer_revision': 'fda403cf93ecb8792cb1d061564d89a6553ca020',
+  'libfuzzer_revision': '873dc11d9a5281034e2cb74d0e87e9149a0e1045',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-node-modules
   # and whatever else without interference from each other.
