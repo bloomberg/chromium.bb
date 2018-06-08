@@ -379,9 +379,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // <spec step="23.2">If src is the empty string, queue a task to fire an
     // event named error at the element, and return.</spec>
     if (src.IsEmpty()) {
-      // TODO(hiroshige): Make this asynchronous. Currently we fire the error
-      // event synchronously to keep the existing behavior.
-      element_->DispatchErrorEvent();
+      element_document.GetTaskRunner(TaskType::kDOMManipulation)
+          ->PostTask(FROM_HERE,
+                     WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
+                               WrapPersistent(element_.Get())));
       return false;
     }
 
@@ -396,9 +397,10 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // event named error at the element, and return. Otherwise, let url be the
     // resulting URL record.</spec>
     if (!url.IsValid()) {
-      // TODO(hiroshige): Make this asynchronous. Currently we fire the error
-      // event synchronously to keep the existing behavior.
-      element_->DispatchErrorEvent();
+      element_document.GetTaskRunner(TaskType::kDOMManipulation)
+          ->PostTask(FROM_HERE,
+                     WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
+                               WrapPersistent(element_.Get())));
       return false;
     }
 
