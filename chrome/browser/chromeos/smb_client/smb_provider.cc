@@ -27,11 +27,10 @@ SmbProvider::SmbProvider(UnmountCallback unmount_callback)
       // languages. See l10n_util::GetStringUTF8.
       name_("SMB Shares"),
       unmount_callback_(std::move(unmount_callback)) {
-  // TODO(baileyberro): Fill out with proper icons.
   icon_set_.SetIcon(IconSet::IconSize::SIZE_16x16,
-                    GURL("chrome://resources/images/apps/button.png"));
+                    GURL("chrome://theme/IDR_SMB_ICON"));
   icon_set_.SetIcon(IconSet::IconSize::SIZE_32x32,
-                    GURL("chrome://resources/images/2x/apps/button.png"));
+                    GURL("chrome://theme/IDR_SMB_ICON@2x"));
 }
 
 SmbProvider::~SmbProvider() = default;
