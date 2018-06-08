@@ -50,10 +50,50 @@ namespace {
 
 // During test, the test extensions can send a list of entries (directories
 // or files) to add to a target volume using an AddEntriesMessage command.
-
-enum TargetVolume { LOCAL_VOLUME, DRIVE_VOLUME, USB_VOLUME };
-
+//
+// During a files app browser test, the "addEntries" message (see onCommand()
+// below when name is "addEntries"). This adds them to the fake file system that
+// is being used for testing.
+//
+// Here, we define some useful types to help parse the JSON from the addEntries
+// format. The RegisterJSONConverter() method defines the expected types of each
+// field from the message and which member variables to save them in.
+//
+// The "addEntries" message contains a vector of TestEntryInfo, which contains
+// various nested subtypes:
+//
+//   * EntryType, which represents the type of entry (defined as an enum and
+//     converted from the JSON string representation in MapStringToEntryType)
+//
+//   * SharedOption, representing whether the file is shared and appears in the
+//     Shared with Me section of the app (similarly converted from the JSON
+//     string representation to an enum for storing in MapStringToSharedOption)
+//
+//   * EntryCapabilities, which represents the capabilities (permissions) for
+//     the new entry
+//
+//   * TestEntryInfo, which stores all of the above information, plus more
+//     metadata about the entry.
+//
+// AddEntriesMessage contains an array of TestEntryInfo (one for each entry to
+// add), plus the volume to add the entries to. It is constructed from JSON-
+// parseable format as described in RegisterJSONConverter.
 struct AddEntriesMessage {
+  // Utility types.
+  struct EntryCapabilities;
+  struct TestEntryInfo;
+
+  // Represents the various volumes available for adding entries.
+  enum TargetVolume { LOCAL_VOLUME, DRIVE_VOLUME, USB_VOLUME };
+
+  // Represents the different types of entries (e.g. file, folder).
+  enum EntryType { FILE, DIRECTORY };
+
+  // Represents whether an entry appears in 'Share with Me' or not.
+  enum SharedOption { NONE, SHARED };
+
+  // The actual AddEntriesMessage contents.
+
   // The volume to add |entries| to.
   TargetVolume volume;
 
@@ -89,82 +129,124 @@ struct AddEntriesMessage {
       return false;
     return true;
   }
-};
 
-// The AddEntriesMessage contains a vector of TestEntryInfo: the elements of
-// the vector provide the file or directory entry details.
+  // A message that specifies the capabilities (permissions) for the entry, in
+  // a dictionary in JSON-parseable format.
+  struct EntryCapabilities {
+    EntryCapabilities()
+        : can_copy(true),
+          can_delete(true),
+          can_rename(true),
+          can_add_children(true),
+          can_share(true) {}
 
-enum EntryType { FILE, DIRECTORY };
+    EntryCapabilities(bool can_copy,
+                      bool can_delete,
+                      bool can_rename,
+                      bool can_add_children,
+                      bool can_share)
+        : can_copy(can_copy),
+          can_delete(can_delete),
+          can_rename(can_rename),
+          can_add_children(can_add_children),
+          can_share(can_share) {}
 
-enum SharedOption { NONE, SHARED };
+    bool can_copy;    // Whether the user can copy this file or directory.
+    bool can_delete;  // Whether the user can delete this file or directory.
+    bool can_rename;  // Whether the user can rename thie file or directory.
+    bool can_add_children;  // For directories, whether the user can add
+                            // children to this directory.
+    bool can_share;  // Whether the user can share this file or directory.
 
-struct TestEntryInfo {
-  TestEntryInfo() : type(FILE), shared_option(NONE) {}
+    static void RegisterJSONConverter(
+        base::JSONValueConverter<EntryCapabilities>* converter) {
+      converter->RegisterBoolField("canCopy", &EntryCapabilities::can_copy);
+      converter->RegisterBoolField("canDelete", &EntryCapabilities::can_delete);
+      converter->RegisterBoolField("canRename", &EntryCapabilities::can_rename);
+      converter->RegisterBoolField("canAddChildren",
+                                   &EntryCapabilities::can_add_children);
+      converter->RegisterBoolField("canShare", &EntryCapabilities::can_share);
+    }
+  };
 
-  TestEntryInfo(EntryType type,
-                const std::string& source_file_name,
-                const std::string& target_path,
-                const std::string& mime_type,
-                SharedOption shared_option,
-                const base::Time& last_modified_time)
-      : type(type),
-        shared_option(shared_option),
-        source_file_name(source_file_name),
-        target_path(target_path),
-        mime_type(mime_type),
-        last_modified_time(last_modified_time) {}
+  // A message that specifies the metadata (name, shared options, capabilities
+  // etc) for an entry, in a dictionary in JSON-parseable format.
+  // This object must match TestEntryInfo in
+  // ui/file_manager/integration_tests/test_util.js, which generates the message
+  // that contains this object.
+  struct TestEntryInfo {
+    TestEntryInfo() : type(FILE), shared_option(NONE) {}
 
-  EntryType type;                 // Entry type: file or directory.
-  SharedOption shared_option;     // File entry sharing option.
-  std::string source_file_name;   // Source file name prototype.
-  std::string target_path;        // Target file or directory path.
-  std::string mime_type;          // File entry content mime type.
-  base::Time last_modified_time;  // Entry last modified time.
+    TestEntryInfo(EntryType type,
+                  const std::string& source_file_name,
+                  const std::string& target_path,
+                  const std::string& mime_type,
+                  SharedOption shared_option,
+                  const base::Time& last_modified_time,
+                  const EntryCapabilities& capabilities)
+        : type(type),
+          shared_option(shared_option),
+          source_file_name(source_file_name),
+          target_path(target_path),
+          mime_type(mime_type),
+          last_modified_time(last_modified_time),
+          capabilities(capabilities) {}
 
-  // Registers the member information to the given converter.
-  static void RegisterJSONConverter(
-      base::JSONValueConverter<TestEntryInfo>* converter) {
-    converter->RegisterCustomField("type", &TestEntryInfo::type,
-                                   &MapStringToEntryType);
-    converter->RegisterStringField("sourceFileName",
-                                   &TestEntryInfo::source_file_name);
-    converter->RegisterStringField("targetPath", &TestEntryInfo::target_path);
-    converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
-    converter->RegisterCustomField("sharedOption",
-                                   &TestEntryInfo::shared_option,
-                                   &MapStringToSharedOption);
-    converter->RegisterCustomField("lastModifiedTime",
-                                   &TestEntryInfo::last_modified_time,
-                                   &MapStringToTime);
-  }
+    EntryType type;                  // Entry type: file or directory.
+    SharedOption shared_option;      // File entry sharing option.
+    std::string source_file_name;    // Source file name prototype.
+    std::string target_path;         // Target file or directory path.
+    std::string mime_type;           // File entry content mime type.
+    base::Time last_modified_time;   // Entry last modified time.
+    EntryCapabilities capabilities;  // Permissions of this file or directory.
 
-  // Maps |value| to an EntryType. Returns true on success.
-  static bool MapStringToEntryType(base::StringPiece value, EntryType* type) {
-    if (value == "file")
-      *type = FILE;
-    else if (value == "directory")
-      *type = DIRECTORY;
-    else
-      return false;
-    return true;
-  }
+    // Registers the member information to the given converter.
+    static void RegisterJSONConverter(
+        base::JSONValueConverter<TestEntryInfo>* converter) {
+      converter->RegisterCustomField("type", &TestEntryInfo::type,
+                                     &MapStringToEntryType);
+      converter->RegisterStringField("sourceFileName",
+                                     &TestEntryInfo::source_file_name);
+      converter->RegisterStringField("targetPath", &TestEntryInfo::target_path);
+      converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
+      converter->RegisterCustomField("sharedOption",
+                                     &TestEntryInfo::shared_option,
+                                     &MapStringToSharedOption);
+      converter->RegisterCustomField("lastModifiedTime",
+                                     &TestEntryInfo::last_modified_time,
+                                     &MapStringToTime);
+      converter->RegisterNestedField("capabilities",
+                                     &TestEntryInfo::capabilities);
+    }
 
-  // Maps |value| to SharedOption. Returns true on success.
-  static bool MapStringToSharedOption(base::StringPiece value,
-                                      SharedOption* option) {
-    if (value == "shared")
-      *option = SHARED;
-    else if (value == "none")
-      *option = NONE;
-    else
-      return false;
-    return true;
-  }
+    // Maps |value| to an EntryType. Returns true on success.
+    static bool MapStringToEntryType(base::StringPiece value, EntryType* type) {
+      if (value == "file")
+        *type = FILE;
+      else if (value == "directory")
+        *type = DIRECTORY;
+      else
+        return false;
+      return true;
+    }
 
-  // Maps |value| to base::Time. Returns true on success.
-  static bool MapStringToTime(base::StringPiece value, base::Time* time) {
-    return base::Time::FromString(value.as_string().c_str(), time);
-  }
+    // Maps |value| to SharedOption. Returns true on success.
+    static bool MapStringToSharedOption(base::StringPiece value,
+                                        SharedOption* option) {
+      if (value == "shared")
+        *option = SHARED;
+      else if (value == "none")
+        *option = NONE;
+      else
+        return false;
+      return true;
+    }
+
+    // Maps |value| to base::Time. Returns true on success.
+    static bool MapStringToTime(base::StringPiece value, base::Time* time) {
+      return base::Time::FromString(value.as_string().c_str(), time);
+    }
+  };
 };
 
 // Listens for chrome.test messages: PASS, FAIL, and SendMessage.
@@ -283,13 +365,13 @@ class LocalTestVolume : public TestVolume {
   // Adds this local volume. Returns true on success.
   virtual bool Mount(Profile* profile) = 0;
 
-  void CreateEntry(const TestEntryInfo& entry) {
+  void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
     const base::FilePath target_path =
         root_path().AppendASCII(entry.target_path);
 
     entries_.insert(std::make_pair(target_path, entry));
     switch (entry.type) {
-      case FILE: {
+      case AddEntriesMessage::FILE: {
         const base::FilePath source_path =
             TestVolume::GetTestDataFilePath(entry.source_file_name);
         ASSERT_TRUE(base::CopyFile(source_path, target_path))
@@ -297,7 +379,7 @@ class LocalTestVolume : public TestVolume {
             << target_path.value() << " failed.";
         break;
       }
-      case DIRECTORY:
+      case AddEntriesMessage::DIRECTORY:
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a directory: " << target_path.value();
         break;
@@ -309,7 +391,7 @@ class LocalTestVolume : public TestVolume {
  private:
   // Updates ModifiedTime of the entry and its parents by referring
   // TestEntryInfo. Returns true on success.
-  bool UpdateModifiedTime(const TestEntryInfo& entry) {
+  bool UpdateModifiedTime(const AddEntriesMessage::TestEntryInfo& entry) {
     const base::FilePath path = root_path().AppendASCII(entry.target_path);
     if (!base::TouchFile(path, entry.last_modified_time,
                          entry.last_modified_time))
@@ -318,8 +400,7 @@ class LocalTestVolume : public TestVolume {
     // Update the modified time of parent directories because it may be also
     // affected by the update of child items.
     if (path.DirName() != root_path()) {
-      const std::map<base::FilePath, const TestEntryInfo>::iterator it =
-          entries_.find(path.DirName());
+      const auto& it = entries_.find(path.DirName());
       if (it == entries_.end())
         return false;
       return UpdateModifiedTime(it->second);
@@ -328,7 +409,7 @@ class LocalTestVolume : public TestVolume {
     return true;
   }
 
-  std::map<base::FilePath, const TestEntryInfo> entries_;
+  std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalTestVolume);
 };
@@ -368,10 +449,14 @@ class FakeTestVolume : public LocalTestVolume {
 
     // Note: must be kept in sync with BASIC_FAKE_ENTRY_SET defined in the
     // integration_tests/file_manager JS code.
-    CreateEntry(TestEntryInfo(FILE, "text.txt", "hello.txt", "text/plain",
-                              SharedOption::NONE, base::Time::Now()));
-    CreateEntry(TestEntryInfo(DIRECTORY, std::string(), "A", std::string(),
-                              SharedOption::NONE, base::Time::Now()));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(
+        AddEntriesMessage::FILE, "text.txt", "hello.txt", "text/plain",
+        AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        AddEntriesMessage::EntryCapabilities()));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(
+        AddEntriesMessage::DIRECTORY, std::string(), "A", std::string(),
+        AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        AddEntriesMessage::EntryCapabilities()));
     base::RunLoop().RunUntilIdle();
     return true;
   }
@@ -413,7 +498,7 @@ class DriveTestVolume : public TestVolume {
   DriveTestVolume() : TestVolume("drive") {}
   ~DriveTestVolume() override = default;
 
-  void CreateEntry(const TestEntryInfo& entry) {
+  void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
     const base::FilePath path =
         base::FilePath::FromUTF8Unsafe(entry.target_path);
     const std::string target_name = path.BaseName().AsUTF8Unsafe();
@@ -431,12 +516,13 @@ class DriveTestVolume : public TestVolume {
     ASSERT_TRUE(parent_entry);
 
     switch (entry.type) {
-      case FILE:
+      case AddEntriesMessage::FILE:
         CreateFile(entry.source_file_name, parent_entry->resource_id(),
-                   target_name, entry.mime_type, entry.shared_option == SHARED,
+                   target_name, entry.mime_type,
+                   entry.shared_option == AddEntriesMessage::SHARED,
                    entry.last_modified_time);
         break;
-      case DIRECTORY:
+      case AddEntriesMessage::DIRECTORY:
         CreateDirectory(parent_entry->resource_id(), target_name,
                         entry.last_modified_time);
         break;
@@ -757,17 +843,17 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
     for (size_t i = 0; i < message.entries.size(); ++i) {
       switch (message.volume) {
-        case LOCAL_VOLUME:
+        case AddEntriesMessage::LOCAL_VOLUME:
           local_volume_->CreateEntry(*message.entries[i]);
           break;
-        case DRIVE_VOLUME:
+        case AddEntriesMessage::DRIVE_VOLUME:
           if (drive_volume_) {
             drive_volume_->CreateEntry(*message.entries[i]);
           } else if (!IsGuestModeTest()) {
             LOG(FATAL) << "Add entry: but no Drive volume.";
           }
           break;
-        case USB_VOLUME:
+        case AddEntriesMessage::USB_VOLUME:
           if (usb_volume_) {
             usb_volume_->CreateEntry(*message.entries[i]);
           } else {

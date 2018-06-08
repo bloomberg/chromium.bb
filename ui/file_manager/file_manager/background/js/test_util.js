@@ -39,6 +39,9 @@ test.util.sync.getSelectedFiles = function(contentWindow) {
 /**
  * Returns an array with the files on the file manager's file list.
  *
+ * TODO(sashab): Since we recycle DOM elements, this only returns the first ~11
+ * visible elements. crbug.com/850834.
+ *
  * @param {Window} contentWindow Window to be tested.
  * @return {Array<Array<string>>} Array of rows.
  */
