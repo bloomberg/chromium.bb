@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/ctap2_device_operation.h"
 #include "device/fido/ctap_empty_authenticator_request.h"
 #include "device/fido/device_response_converter.h"
 
@@ -52,10 +53,14 @@ void GetAssertionTask::GetAssertion() {
     return;
   }
 
-  device()->DeviceTransact(
-      request_.EncodeAsCBOR(),
-      base::BindOnce(&GetAssertionTask::OnCtapGetAssertionResponseReceived,
-                     weak_factory_.GetWeakPtr()));
+  sign_operation_ =
+      std::make_unique<Ctap2DeviceOperation<CtapGetAssertionRequest,
+                                            AuthenticatorGetAssertionResponse>>(
+          device(), request_,
+          base::BindOnce(&GetAssertionTask::OnCtapGetAssertionResponseReceived,
+                         weak_factory_.GetWeakPtr()),
+          base::BindOnce(&ReadCTAPGetAssertionResponse));
+  sign_operation_->Start();
 }
 
 void GetAssertionTask::U2fSign() {
@@ -107,29 +112,22 @@ bool GetAssertionTask::CheckRequirementsOnReturnedCredentialId(
 }
 
 void GetAssertionTask::OnCtapGetAssertionResponseReceived(
-    base::Optional<std::vector<uint8_t>> device_response) {
-  if (!device_response) {
-    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                             base::nullopt);
-    return;
-  }
-
-  auto response_code = GetResponseCode(*device_response);
+    CtapDeviceResponseCode response_code,
+    base::Optional<AuthenticatorGetAssertionResponse> device_response) {
   if (response_code != CtapDeviceResponseCode::kSuccess) {
     std::move(callback_).Run(response_code, base::nullopt);
     return;
   }
 
-  auto parsed_response = ReadCTAPGetAssertionResponse(*device_response);
-  if (!parsed_response || !parsed_response->CheckRpIdHash(request_.rp_id()) ||
-      !CheckRequirementsOnReturnedCredentialId(*parsed_response) ||
-      !CheckRequirementsOnReturnedUserEntities(*parsed_response)) {
+  if (!device_response || !device_response->CheckRpIdHash(request_.rp_id()) ||
+      !CheckRequirementsOnReturnedCredentialId(*device_response) ||
+      !CheckRequirementsOnReturnedUserEntities(*device_response)) {
     std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
                              base::nullopt);
     return;
   }
 
-  std::move(callback_).Run(response_code, std::move(parsed_response));
+  std::move(callback_).Run(response_code, std::move(device_response));
 }
 
 bool GetAssertionTask::CheckUserVerificationCompatible() {

@@ -9,6 +9,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
@@ -76,8 +77,8 @@ TEST_F(U2fRegisterOperationTest, TestRegisterSuccess) {
       test_data::kApduEncodedNoErrorRegisterResponse);
 
   auto u2f_register = std::make_unique<U2fRegisterOperation>(
-      device.get(), register_callback_receiver().callback(),
-      std::move(request));
+      device.get(), std::move(request),
+      register_callback_receiver().callback());
   u2f_register->Start();
   register_callback_receiver().WaitForCallback();
 
@@ -93,8 +94,8 @@ TEST_F(U2fRegisterOperationTest, TestRegisterSuccessWithFake) {
 
   auto device = std::make_unique<VirtualU2fDevice>();
   auto u2f_register = std::make_unique<U2fRegisterOperation>(
-      device.get(), register_callback_receiver().callback(),
-      std::move(request));
+      device.get(), std::move(request),
+      register_callback_receiver().callback());
   u2f_register->Start();
   register_callback_receiver().WaitForCallback();
 
@@ -123,8 +124,8 @@ TEST_F(U2fRegisterOperationTest, TestDelayedSuccess) {
       test_data::kApduEncodedNoErrorRegisterResponse);
 
   auto u2f_register = std::make_unique<U2fRegisterOperation>(
-      device.get(), register_callback_receiver().callback(),
-      std::move(request));
+      device.get(), std::move(request),
+      register_callback_receiver().callback());
   u2f_register->Start();
   register_callback_receiver().WaitForCallback();
 
@@ -166,8 +167,8 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithExclusionList) {
       test_data::kApduEncodedNoErrorRegisterResponse);
 
   auto u2f_register = std::make_unique<U2fRegisterOperation>(
-      device.get(), register_callback_receiver().callback(),
-      std::move(request));
+      device.get(), std::move(request),
+      register_callback_receiver().callback());
   u2f_register->Start();
   register_callback_receiver().WaitForCallback();
 
@@ -218,8 +219,8 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithDuplicateHandle) {
       test_data::kApduEncodedNoErrorRegisterResponse);
 
   auto u2f_register = std::make_unique<U2fRegisterOperation>(
-      device.get(), register_callback_receiver().callback(),
-      std::move(request));
+      device.get(), std::move(request),
+      register_callback_receiver().callback());
   u2f_register->Start();
   register_callback_receiver().WaitForCallback();
 
@@ -250,7 +251,7 @@ TEST_F(U2fRegisterOperationTest, TestIndividualAttestation) {
         test_data::kApduEncodedNoErrorRegisterResponse);
 
     auto u2f_register = std::make_unique<U2fRegisterOperation>(
-        device.get(), cb.callback(), std::move(request));
+        device.get(), std::move(request), cb.callback());
     u2f_register->Start();
     cb.WaitForCallback();
 
