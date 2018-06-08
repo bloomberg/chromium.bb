@@ -598,11 +598,13 @@ void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck(
 void RenderWidgetHostViewChildFrame::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {
-  NOTIMPLEMENTED();
+  renderer_compositor_frame_sink_->DidPresentCompositorFrame(presentation_token,
+                                                             feedback);
 }
 void RenderWidgetHostViewChildFrame::DidDiscardCompositorFrame(
     uint32_t presentation_token) {
-  NOTIMPLEMENTED();
+  renderer_compositor_frame_sink_->DidDiscardCompositorFrame(
+      presentation_token);
 }
 void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
