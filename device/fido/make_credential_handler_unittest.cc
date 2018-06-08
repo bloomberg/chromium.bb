@@ -107,11 +107,9 @@ TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegisterWithFlagEnabled) {
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
-  EXPECT_CALL(*device,
-              DeviceTransactPtr(fido_parsing_utils::Materialize(
-                                    test_data::kU2fRegisterCommandApdu),
-                                _))
-      .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fRegisterCommandApdu,
+      test_data::kApduEncodedNoErrorRegisterResponse);
 
   discovery()->AddDevice(std::move(device));
   callback().WaitForCallback();
@@ -127,11 +125,9 @@ TEST_F(FidoMakeCredentialHandlerTest, TestU2fRegisterWithoutFlagEnabled) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
-  EXPECT_CALL(*device,
-              DeviceTransactPtr(fido_parsing_utils::Materialize(
-                                    test_data::kU2fRegisterCommandApdu),
-                                _))
-      .WillOnce(::testing::Invoke(MockFidoDevice::NoErrorRegister));
+  device->ExpectRequestAndRespondWith(
+      test_data::kU2fRegisterCommandApdu,
+      test_data::kApduEncodedNoErrorRegisterResponse);
 
   discovery()->AddDevice(std::move(device));
   callback().WaitForCallback();
