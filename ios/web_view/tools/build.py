@@ -189,8 +189,8 @@ def main():
                       help='Additional gn args to pass through to ninja.')
   parser.add_argument('--include_cronet', action='store_true',
                       help='Combines Cronet and ChromeWebView as 1 framework.')
-  parser.add_argument('--enable_signin', action='store_true',
-                      help='Enables public API for signin.')
+  parser.add_argument('--enable_sync', action='store_true',
+                      help='Enables public API for sync.')
   parser.add_argument('--enable_autofill', action='store_true',
                       help='Enables public API for autofill.')
   build_configs = ['Debug', 'Release']
@@ -224,10 +224,10 @@ def main():
     output_name = 'CronetChromeWebView'
   else:
     extra_gn_options += 'ios_web_view_include_cronet=false '
-  if options.enable_signin:
-    extra_gn_options += 'ios_web_view_enable_signin=true '
+  if options.enable_sync:
+    extra_gn_options += 'ios_web_view_enable_sync=true '
   else:
-    extra_gn_options += 'ios_web_view_enable_signin=false '
+    extra_gn_options += 'ios_web_view_enable_sync=false '
   if options.enable_autofill:
     extra_gn_options += 'ios_web_view_enable_autofill=true '
   else:
