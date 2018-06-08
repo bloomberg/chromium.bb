@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -73,6 +74,13 @@ class RenderWidgetHostViewChildFrameTest : public ContentBrowserTest {
     EXPECT_NE(base::checked_cast<uint32_t>(
                   child_view->GetRenderWidgetHost()->GetRoutingID()),
               actual_frame_sink_id_.sink_id());
+  }
+
+  void GiveItSomeTime() {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
   }
 
   void set_expected_frame_sink_id(viz::FrameSinkId frame_sink_id) {
@@ -180,6 +188,37 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, ChildFrameSinkId) {
   shell()->web_contents()->ForEachFrame(
       base::BindRepeating(&RenderWidgetHostViewChildFrameTest::CheckFrameSinkId,
                           base::Unretained(this)));
+}
+
+// Validate that OOPIFs receive presentation feedbacks.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
+                       PresentationFeedback) {
+  base::HistogramTester histogram_tester;
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  // Load cross-site page into iframe.
+  GURL cross_site_url(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  NavigateFrameToURL(root->child_at(0), cross_site_url);
+
+  auto* child_rwh_impl =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
+  // Hide the frame and make it visible again, to force it to record the
+  // tab-switch time, which is generated from presentation-feedback.
+  child_rwh_impl->WasHidden();
+  child_rwh_impl->WasShown(true /* record_presentation_time */);
+  // Force the child to submit a new frame.
+  ASSERT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            "document.write('Force a new frame.');"));
+  do {
+    FetchHistogramsFromChildProcesses();
+    GiveItSomeTime();
+  } while (histogram_tester.GetAllSamples("MPArch.RWH_TabSwitchPaintDuration")
+               .size() != 1);
 }
 
 }  // namespace content
