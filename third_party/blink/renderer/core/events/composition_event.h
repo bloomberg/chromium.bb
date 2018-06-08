@@ -61,6 +61,8 @@ class CompositionEvent final : public UIEvent {
 
   const AtomicString& InterfaceName() const override;
 
+  bool IsCompositionEvent() const override;
+
   void Trace(blink::Visitor*) override;
 
  private:

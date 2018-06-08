@@ -72,6 +72,10 @@ const AtomicString& CompositionEvent::InterfaceName() const {
   return EventNames::CompositionEvent;
 }
 
+bool CompositionEvent::IsCompositionEvent() const {
+  return true;
+}
+
 void CompositionEvent::Trace(blink::Visitor* visitor) {
   UIEvent::Trace(visitor);
 }
