@@ -12,11 +12,11 @@ shell.  Finally, weston also provides integration with the Xorg server
 and can pull X clients into the Wayland desktop and act as an X window
 manager.
 
-Refer to http://wayland.freedesktop.org/building.html for building
+Refer to https://wayland.freedesktop.org/building.html for building
 weston and its dependencies.
 
 The test suite can be invoked via `make check`; see
-http://wayland.freedesktop.org/testing.html for additional details.
+https://wayland.freedesktop.org/testing.html for additional details.
 
 Developer documentation can be built via `make doc`. Output will be in
 the build root under

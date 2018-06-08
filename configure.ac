@@ -10,9 +10,9 @@ m4_define([libweston_patch_version], [0])
 AC_PREREQ([2.64])
 AC_INIT([weston],
         [weston_version],
-        [https://bugs.freedesktop.org/enter_bug.cgi?product=Wayland&component=weston&version=weston_version],
+        [https://gitlab.freedesktop.org/wayland/weston/issues/],
         [weston],
-        [http://wayland.freedesktop.org])
+        [https://wayland.freedesktop.org])
 
 WAYLAND_PREREQ_VERSION="1.12.0"
 
