@@ -25,6 +25,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -1543,7 +1544,11 @@ public class DownloadManagerService
         String[] downloadDirs = DownloadUtils.getAllDownloadDirectories();
         if (downloadDirs.length > 1) return;
 
-        String externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        String externalStorageDir = null;
+        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+            externalStorageDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        }
+
         for (DownloadItem item : list) {
             boolean missingOnSDCard = isFilePathOnMissingExternalDrive(
                     item.getDownloadInfo().getFilePath(), externalStorageDir, downloadDirs);
