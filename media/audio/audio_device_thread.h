@@ -67,7 +67,8 @@ class MEDIA_EXPORT AudioDeviceThread : public base::PlatformThread::Delegate {
   // Creates and automatically starts the audio thread.
   AudioDeviceThread(Callback* callback,
                     base::SyncSocket::Handle socket,
-                    const char* thread_name);
+                    const char* thread_name,
+                    base::ThreadPriority thread_priority);
 
   // This tells the audio thread to stop and clean up the data; this is a
   // synchronous process and the thread will stop before the method returns.

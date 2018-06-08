@@ -86,8 +86,10 @@ class AudioInputDevice::AudioThreadCallback
   DISALLOW_COPY_AND_ASSIGN(AudioThreadCallback);
 };
 
-AudioInputDevice::AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc)
-    : callback_(nullptr),
+AudioInputDevice::AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc,
+                                   base::ThreadPriority thread_priority)
+    : thread_priority_(thread_priority),
+      callback_(nullptr),
       ipc_(std::move(ipc)),
       state_(IDLE),
       agc_is_enabled_(false) {
@@ -247,8 +249,9 @@ void AudioInputDevice::OnStreamCreated(
       kRequestedSharedMemoryCount, callback_,
       base::BindRepeating(&AliveChecker::NotifyAlive,
                           base::Unretained(alive_checker_.get())));
-  audio_thread_ = std::make_unique<AudioDeviceThread>(
-      audio_callback_.get(), socket_handle, "AudioInputDevice");
+  audio_thread_ =
+      std::make_unique<AudioDeviceThread>(audio_callback_.get(), socket_handle,
+                                          "AudioInputDevice", thread_priority_);
 
   state_ = RECORDING;
   ipc_->RecordStream();

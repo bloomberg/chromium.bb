@@ -66,8 +66,8 @@ class MockCaptureCallback : public AudioCapturerSource::CaptureCallback {
 TEST(AudioInputDeviceTest, Noop) {
   base::MessageLoopForIO io_loop;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
-  scoped_refptr<AudioInputDevice> device(
-      new AudioInputDevice(base::WrapUnique(input_ipc)));
+  scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
+      base::WrapUnique(input_ipc), base::ThreadPriority::REALTIME_AUDIO));
 }
 
 ACTION_P(ReportStateChange, device) {
@@ -81,8 +81,8 @@ TEST(AudioInputDeviceTest, FailToCreateStream) {
 
   MockCaptureCallback callback;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
-  scoped_refptr<AudioInputDevice> device(
-      new AudioInputDevice(base::WrapUnique(input_ipc)));
+  scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
+      base::WrapUnique(input_ipc), base::ThreadPriority::REALTIME_AUDIO));
   device->Initialize(params, &callback);
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))
       .WillOnce(ReportStateChange(device.get()));
@@ -117,8 +117,8 @@ TEST(AudioInputDeviceTest, CreateStream) {
   base::test::ScopedTaskEnvironment ste;
   MockCaptureCallback callback;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
-  scoped_refptr<AudioInputDevice> device(
-      new AudioInputDevice(base::WrapUnique(input_ipc)));
+  scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
+      base::WrapUnique(input_ipc), base::ThreadPriority::REALTIME_AUDIO));
   device->Initialize(params, &callback);
 
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))

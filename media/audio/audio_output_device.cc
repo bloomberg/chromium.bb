@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -402,7 +403,8 @@ void AudioOutputDevice::OnStreamCreated(
     if (playing_automatically)
       audio_callback_->InitializePlayStartTime();
     audio_thread_.reset(new AudioDeviceThread(
-        audio_callback_.get(), socket_handle, "AudioOutputDevice"));
+        audio_callback_.get(), socket_handle, "AudioOutputDevice",
+        base::ThreadPriority::REALTIME_AUDIO));
   }
 }
 
