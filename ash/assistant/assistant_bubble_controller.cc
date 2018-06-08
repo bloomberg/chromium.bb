@@ -77,9 +77,15 @@ void AssistantBubbleController::OnMicStateChanged(MicState mic_state) {
 }
 
 bool AssistantBubbleController::OnCaptionButtonPressed(CaptionButtonId id) {
-  if (id == CaptionButtonId::kMinimize) {
-    UpdateUiMode(AssistantUiMode::kMiniUi);
-    return true;
+  switch (id) {
+    case CaptionButtonId::kMinimize:
+      UpdateUiMode(AssistantUiMode::kMiniUi);
+      return true;
+    case CaptionButtonId::kSettings:
+      UpdateUiMode(AssistantUiMode::kWebUi);
+      return true;
+    case CaptionButtonId::kClose:
+      return false;
   }
   return false;
 }

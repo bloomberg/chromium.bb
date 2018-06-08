@@ -16,6 +16,7 @@ namespace ash {
 enum CaptionButtonId {
   kClose = 1,
   kMinimize,
+  kSettings,  // TODO(dmblack): Remove.
 };
 
 // CaptionBarDelegate ----------------------------------------------------------

@@ -11,6 +11,7 @@
 namespace ash {
 
 // Appearance.
+constexpr int kMaxHeightDip = 640;
 constexpr int kPaddingDip = 14;
 constexpr int kPreferredWidthDip = 640;
 constexpr int kSpacingDip = 8;

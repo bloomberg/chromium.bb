@@ -16,6 +16,7 @@ namespace ash {
 class AssistantController;
 class AssistantMainView;
 class AssistantMiniView;
+class AssistantWebView;
 
 class AssistantBubbleView : public views::BubbleDialogDelegateView,
                             public AssistantBubbleModelObserver {
@@ -42,6 +43,7 @@ class AssistantBubbleView : public views::BubbleDialogDelegateView,
 
   std::unique_ptr<AssistantMainView> assistant_main_view_;
   std::unique_ptr<AssistantMiniView> assistant_mini_view_;
+  std::unique_ptr<AssistantWebView> assistant_web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantBubbleView);
 };
