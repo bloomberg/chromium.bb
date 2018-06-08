@@ -172,7 +172,7 @@ void CrostiniInstallerView::OnConciergeStarted(ConciergeClientResult result) {
 }
 
 void CrostiniInstallerView::OnDiskImageCreated(ConciergeClientResult result) {
-  DCHECK_EQ(state_, State::INSTALL_IMAGE_LOADER);
+  DCHECK_EQ(state_, State::START_CONCIERGE);
   state_ = State::CREATE_DISK_IMAGE;
   if (result != ConciergeClientResult::SUCCESS) {
     LOG(ERROR) << "Failed to create disk imagewith error code: "
@@ -246,6 +246,7 @@ void CrostiniInstallerView::HandleError(const base::string16& error_message,
     return;
 
   RecordSetupResultHistogram(result);
+  restart_id_ = crostini::CrostiniManager::kUninitializedRestartId;
   state_ = State::ERROR;
   message_label_->SetVisible(true);
   message_label_->SetText(error_message);
