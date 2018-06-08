@@ -1099,6 +1099,8 @@ constexpr char kMlServicePath[] = "/org/chromium/Ml";
 constexpr char kMlInterfaceName[] = "org.chromium.Ml";
 // Methods
 constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
+// Token identifying the primordial Mojo pipe passed to BootstrapMojoConnection.
+constexpr char kBootstrapMojoConnectionChannelToken[] = "ml-service-bootstrap";
 }  // namespace ml
 
 namespace virtual_file_provider {
