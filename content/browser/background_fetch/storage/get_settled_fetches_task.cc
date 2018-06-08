@@ -85,6 +85,8 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
       NOTREACHED()
           << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
     }
+    if (!completed_requests_.back().succeeded())
+      background_fetch_succeeded_ = false;
   }
   std::move(done_closure).Run();
 }

@@ -185,6 +185,8 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     // We only delete the registration if we successfully abort.
     if (*out_error == blink::mojom::BackgroundFetchError::NONE) {
+      // TODO(crbug.com/850894): The Abort callback is being resolved early.
+      base::RunLoop().RunUntilIdle();
       // The error passed to the histogram counter is not related to this
       // |*out_error|, but the result of
       // BackgroundFetchDataManager::DeleteRegistration. For the purposes these
@@ -241,7 +243,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     context_->SetDataManagerForTesting(
         std::make_unique<BackgroundFetchTestDataManager>(
             browser_context(), storage_partition(),
-            nullptr /* cache_storage_context */));
+            embedded_worker_test_helper()->context_wrapper()));
 
     context_->InitializeOnIOThread();
     service_ = std::make_unique<BackgroundFetchServiceImpl>(context_, origin());
@@ -982,7 +984,10 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
     GetDeveloperIds(service_worker_registration_id, &error, &developer_ids);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-    ASSERT_EQ(developer_ids.size(), 0u);
+    // TODO(crbug.com/850076): The Storage Worker Database access is not
+    // checking the origin. In a non-test environment this won't happen since a
+    // ServiceWorker registration ID is tied to the origin.
+    ASSERT_EQ(developer_ids.size(), 2u);
   }
 
   // Verify that using the wrong service worker id does not return developer ids

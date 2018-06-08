@@ -25,7 +25,6 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/content_switches.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -34,8 +33,6 @@ namespace {
 
 using ::testing::UnorderedElementsAre;
 using ::testing::IsEmpty;
-
-enum class BackgroundFetchRegistrationStorage { kPersistent, kNonPersistent };
 
 const char kUserDataPrefix[] = "bgfetch_";
 
@@ -115,32 +112,16 @@ bool operator==(const ResponseStateStats& s1, const ResponseStateStats& s2) {
 
 }  // namespace
 
-class BackgroundFetchDataManagerTest
-    : public BackgroundFetchTestBase,
-      public ::testing::WithParamInterface<BackgroundFetchRegistrationStorage> {
+class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
  public:
   BackgroundFetchDataManagerTest() {
-    registration_storage_ = GetParam();
-    if (registration_storage_ ==
-        BackgroundFetchRegistrationStorage::kPersistent) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableBackgroundFetchPersistence);
-    }
     RestartDataManagerFromPersistentStorage();
   }
 
   ~BackgroundFetchDataManagerTest() override = default;
 
   // Re-creates the data manager. Useful for testing that data was persisted.
-  // If the test is non-persistent mode (e.g. testing the old code path), then
-  // this does nothing after the first call.
   void RestartDataManagerFromPersistentStorage() {
-    if (registration_storage_ ==
-            BackgroundFetchRegistrationStorage::kNonPersistent &&
-        background_fetch_data_manager_) {
-      return;
-    }
-
     background_fetch_data_manager_ =
         std::make_unique<BackgroundFetchTestDataManager>(
             browser_context(), storage_partition(),
@@ -539,22 +520,11 @@ class BackgroundFetchDataManagerTest
     std::move(quit_closure).Run();
   }
 
-  BackgroundFetchRegistrationStorage registration_storage_;
   std::unique_ptr<BackgroundFetchTestDataManager>
       background_fetch_data_manager_;
 };
 
-INSTANTIATE_TEST_CASE_P(
-    Persistent,
-    BackgroundFetchDataManagerTest,
-    ::testing::Values(BackgroundFetchRegistrationStorage::kPersistent));
-
-INSTANTIATE_TEST_CASE_P(
-    NonPersistent,
-    BackgroundFetchDataManagerTest,
-    ::testing::Values(BackgroundFetchRegistrationStorage::kNonPersistent));
-
-TEST_P(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
+TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   // Tests that the BackgroundFetchDataManager correctly rejects creating a
   // registration with a |developer_id| for which there is already an active
   // registration.
@@ -606,7 +576,7 @@ TEST_P(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 
-TEST_P(BackgroundFetchDataManagerTest, GetDeveloperIds) {
+TEST_F(BackgroundFetchDataManagerTest, GetDeveloperIds) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -657,7 +627,7 @@ TEST_P(BackgroundFetchDataManagerTest, GetDeveloperIds) {
                                                   kAlternativeDeveloperId));
 }
 
-TEST_P(BackgroundFetchDataManagerTest, GetRegistration) {
+TEST_F(BackgroundFetchDataManagerTest, GetRegistration) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -696,12 +666,7 @@ TEST_P(BackgroundFetchDataManagerTest, GetRegistration) {
   EXPECT_EQ(kExampleDeveloperId, registration->developer_id);
 }
 
-TEST_P(BackgroundFetchDataManagerTest, GetMetadata) {
-  // This test only applies to persistent storage.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kNonPersistent)
-    return;
-
+TEST_F(BackgroundFetchDataManagerTest, GetMetadata) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -740,12 +705,7 @@ TEST_P(BackgroundFetchDataManagerTest, GetMetadata) {
   EXPECT_EQ(metadata->num_fetches(), static_cast<int>(requests.size()));
 }
 
-TEST_P(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
-  // This test only applies to persistent storage.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kNonPersistent)
-    return;
-
+TEST_F(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -784,7 +744,7 @@ TEST_P(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
   ASSERT_EQ(title.front(), kUpdatedTitle);
 }
 
-TEST_P(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
+TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -850,12 +810,7 @@ TEST_P(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 }
 
-TEST_P(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
-  // This test only applies to persistent storage.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kNonPersistent)
-    return;
-
+TEST_F(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -930,12 +885,7 @@ TEST_P(BackgroundFetchDataManagerTest, PopNextRequestAndMarkAsComplete) {
                           2 /* completed_requests */}));
 }
 
-TEST_P(BackgroundFetchDataManagerTest, WriteToCache) {
-  // This test only applies to persistent storage.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kNonPersistent)
-    return;
-
+TEST_F(BackgroundFetchDataManagerTest, WriteToCache) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -980,12 +930,7 @@ TEST_P(BackgroundFetchDataManagerTest, WriteToCache) {
   EXPECT_TRUE(MatchCache(request2));
 }
 
-TEST_P(BackgroundFetchDataManagerTest, CacheDeleted) {
-  // This test only applies to persistent storage.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kNonPersistent)
-    return;
-
+TEST_F(BackgroundFetchDataManagerTest, CacheDeleted) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1020,12 +965,7 @@ TEST_P(BackgroundFetchDataManagerTest, CacheDeleted) {
   EXPECT_FALSE(HasCache(kExampleUniqueId));
 }
 
-TEST_P(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
-  // This test only applies to persistent storage.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kNonPersistent)
-    return;
-
+TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1075,12 +1015,7 @@ TEST_P(BackgroundFetchDataManagerTest, GetSettledFetchesForRegistration) {
   EXPECT_EQ(settled_fetches.size(), requests.size());
 }
 
-TEST_P(BackgroundFetchDataManagerTest, GetSettledFetchesFromCache) {
-  // This test only applies to persistent storage.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kNonPersistent)
-    return;
-
+TEST_F(BackgroundFetchDataManagerTest, GetSettledFetchesFromCache) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1147,7 +1082,7 @@ TEST_P(BackgroundFetchDataManagerTest, GetSettledFetchesFromCache) {
   EXPECT_EQ(settled_fetches.size(), 2u);
 }
 
-TEST_P(BackgroundFetchDataManagerTest, GetNumCompletedRequests) {
+TEST_F(BackgroundFetchDataManagerTest, GetNumCompletedRequests) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1191,12 +1126,7 @@ TEST_P(BackgroundFetchDataManagerTest, GetNumCompletedRequests) {
   EXPECT_EQ(num_completed, 2u);
 }
 
-TEST_P(BackgroundFetchDataManagerTest, GetNumRequestsTask) {
-  // This test only applies to persistent storage.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kNonPersistent)
-    return;
-
+TEST_F(BackgroundFetchDataManagerTest, GetNumRequestsTask) {
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1260,13 +1190,9 @@ TEST_P(BackgroundFetchDataManagerTest, GetNumRequestsTask) {
   EXPECT_EQ(size, 1u);  // Total requests is still 1.
 }
 
-TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
+TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
   // Tests that the BackgroundFetchDataManager cleans up registrations
   // marked for deletion.
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableBackgroundFetchPersistence);
-
   int64_t sw_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
 
@@ -1278,24 +1204,17 @@ TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
   BackgroundFetchOptions options;
   blink::mojom::BackgroundFetchError error;
 
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kPersistent) {
-    EXPECT_EQ(
-        0u, GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
-  }
-
+  EXPECT_EQ(0u,
+            GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
   // Create a registration.
   CreateRegistration(registration_id, requests, options, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kPersistent) {
-    // We expect as many pending entries as there are requests.
-    EXPECT_EQ(requests.size(),
-              GetRegistrationUserDataByKeyPrefix(
-                  sw_id, background_fetch::kPendingRequestKeyPrefix)
-                  .size());
-  }
+  // We expect as many pending entries as there are requests.
+  EXPECT_EQ(requests.size(),
+            GetRegistrationUserDataByKeyPrefix(
+                sw_id, background_fetch::kPendingRequestKeyPrefix)
+                .size());
 
   // And deactivate it.
   MarkRegistrationForDeletion(registration_id, &error);
@@ -1303,45 +1222,31 @@ TEST_P(BackgroundFetchDataManagerTest, Cleanup) {
 
   RestartDataManagerFromPersistentStorage();
 
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kPersistent) {
-    // Pending Requests should be deleted after marking a registration for
-    // deletion.
-    EXPECT_EQ(0u, GetRegistrationUserDataByKeyPrefix(
-                      sw_id, background_fetch::kPendingRequestKeyPrefix)
-                      .size());
-    EXPECT_EQ(
-        2u,  // Metadata proto + title.
-        GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
-  }
+  // Pending Requests should be deleted after marking a registration for
+  // deletion.
+  EXPECT_EQ(0u, GetRegistrationUserDataByKeyPrefix(
+                    sw_id, background_fetch::kPendingRequestKeyPrefix)
+                    .size());
+  EXPECT_EQ(2u,  // Metadata proto + title.
+            GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
 
   // Cleanup should delete the registration.
   background_fetch_data_manager_->Cleanup();
   base::RunLoop().RunUntilIdle();
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kPersistent) {
-    EXPECT_EQ(
-        0u, GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
-  }
+  EXPECT_EQ(0u,
+            GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
 
   RestartDataManagerFromPersistentStorage();
 
   // The deletion should have been persisted.
-  if (registration_storage_ ==
-      BackgroundFetchRegistrationStorage::kPersistent) {
-    EXPECT_EQ(
-        0u, GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
-  }
+  EXPECT_EQ(0u,
+            GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
 }
 
-TEST_P(BackgroundFetchDataManagerTest, CreateInParallel) {
+TEST_F(BackgroundFetchDataManagerTest, CreateInParallel) {
   // Tests that multiple parallel calls to the BackgroundFetchDataManager are
   // linearized and handled one at a time, rather than producing inconsistent
   // results due to interleaving.
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableBackgroundFetchPersistence);
-
   int64_t service_worker_registration_id = RegisterServiceWorker();
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);

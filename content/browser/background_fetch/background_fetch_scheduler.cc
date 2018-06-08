@@ -48,8 +48,8 @@ void BackgroundFetchScheduler::AddJobController(
     BackgroundFetchScheduler::Controller* controller) {
   controller_queue_.push_back(controller);
 
-  while (!controller_queue_.empty() &&
-         download_controller_map_.size() < max_concurrent_downloads_) {
+  if (!controller_queue_.empty() &&
+      download_controller_map_.size() < max_concurrent_downloads_) {
     ScheduleDownload();
   }
 }
@@ -57,12 +57,14 @@ void BackgroundFetchScheduler::AddJobController(
 void BackgroundFetchScheduler::ScheduleDownload() {
   DCHECK(download_controller_map_.size() < max_concurrent_downloads_);
 
-  if (controller_queue_.empty())
+  if (lock_scheduler_ || controller_queue_.empty())
     return;
 
   auto* controller = controller_queue_.front();
   controller_queue_.pop_front();
 
+  // Making an async call, `ScheduleDownload` shouldn't be called anymore.
+  lock_scheduler_ = true;
   request_provider_->PopNextRequest(
       controller->registration_id(),
       base::BindOnce(&BackgroundFetchScheduler::DidPopNextRequest,
@@ -73,10 +75,19 @@ void BackgroundFetchScheduler::DidPopNextRequest(
     BackgroundFetchScheduler::Controller* controller,
     scoped_refptr<BackgroundFetchRequestInfo> request_info) {
   DCHECK(controller);
-  if (!request_info)
-    return;  // Storage error, fetch might have been aborted.
+  lock_scheduler_ = false;  // Can schedule downloads again.
+
+  // Storage error, fetch might have been aborted.
+  if (!request_info) {
+    ScheduleDownload();
+    return;
+  }
+
   download_controller_map_[request_info->download_guid()] = controller;
   controller->StartRequest(request_info);
+
+  if (download_controller_map_.size() < max_concurrent_downloads_)
+    ScheduleDownload();
 }
 
 void BackgroundFetchScheduler::MarkRequestAsComplete(

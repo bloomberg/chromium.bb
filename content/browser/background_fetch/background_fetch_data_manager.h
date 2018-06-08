@@ -165,8 +165,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   friend class BackgroundFetchTestDataManager;
   friend class background_fetch::DatabaseTask;
 
-  class RegistrationData;
-
   void AddStartNextPendingRequestTask(
       int64_t service_worker_registration_id,
       NextRequestCallback callback,
@@ -180,9 +178,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // Virtual for testing.
   virtual CacheStorageManager* GetCacheStorageManager();
 
-  // Returns true if not aborted/completed/failed.
-  bool IsActive(const BackgroundFetchRegistrationId& registration_id);
-
   void Cleanup();
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
@@ -191,17 +186,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   // The blob storage request with which response information will be stored.
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-
-  // Map from {service_worker_registration_id, origin, developer_id} tuples to
-  // the |unique_id|s of active background fetch registrations (not
-  // completed/failed/aborted, so there will never be more than one entry for a
-  // given key).
-  std::map<std::tuple<int64_t, url::Origin, std::string>, std::string>
-      active_registration_unique_ids_;
-
-  // Map from the |unique_id|s of known (but possibly inactive) background fetch
-  // registrations to their associated data.
-  std::map<std::string, std::unique_ptr<RegistrationData>> registrations_;
 
   // Pending database operations, serialized to ensure consistency.
   // Invariant: the frontmost task, if any, has already been started.
