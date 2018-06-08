@@ -575,32 +575,32 @@ class OPTIONAL_DECLSPEC_EMPTY_BASES Optional
   }
 
   constexpr const T* operator->() const {
-    CHECK(storage_.is_populated_);
+    DCHECK(storage_.is_populated_);
     return &storage_.value_;
   }
 
   constexpr T* operator->() {
-    CHECK(storage_.is_populated_);
+    DCHECK(storage_.is_populated_);
     return &storage_.value_;
   }
 
   constexpr const T& operator*() const & {
-    CHECK(storage_.is_populated_);
+    DCHECK(storage_.is_populated_);
     return storage_.value_;
   }
 
   constexpr T& operator*() & {
-    CHECK(storage_.is_populated_);
+    DCHECK(storage_.is_populated_);
     return storage_.value_;
   }
 
   constexpr const T&& operator*() const && {
-    CHECK(storage_.is_populated_);
+    DCHECK(storage_.is_populated_);
     return std::move(storage_.value_);
   }
 
   constexpr T&& operator*() && {
-    CHECK(storage_.is_populated_);
+    DCHECK(storage_.is_populated_);
     return std::move(storage_.value_);
   }
 
