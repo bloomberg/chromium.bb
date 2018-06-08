@@ -201,10 +201,10 @@ struct InfiniteSessionRestoreParams {
 
   // Parameters directly retrieved from the experiment configuration.
 
-  // The maximum number of tabs to ever load simultaneously. This can be
+  // The minimum number of tabs to ever load simultaneously. This can be
   // exceeded by user actions or load timeouts. See TabLoader for details.
   uint32_t min_simultaneous_tab_loads;
-  // The minimum number of simultaneous tab loads that should be permitted.
+  // The maximum number of simultaneous tab loads that should be permitted.
   // Setting to zero means no maximum is applied.
   uint32_t max_simultaneous_tab_loads;
   // The number of CPU cores required before per permitted simultaneous tab
@@ -225,9 +225,6 @@ struct InfiniteSessionRestoreParams {
   // Setting this to zero means all tabs will be restored regardless of the
   // site engagement score.
   uint32_t min_site_engagement_to_restore;
-
-  // Calculated parameters.
-  uint32_t simultaneous_tab_loads;
 };
 
 // Gets parameters for the proactive tab discarding feature. This does no
@@ -260,18 +257,6 @@ InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams();
 // Returns a static InfiniteSessionRestoreParams object that can be used by all
 // instances of TabLoader.
 const InfiniteSessionRestoreParams& GetStaticInfiniteSessionRestoreParams();
-
-// Returns the number of simultaneous tab loads to use given the provided
-// parameters. If |num_cores| is zero it will be automatically determined.
-size_t CalculateSimultaneousTabLoads(size_t min_loads,
-                                     size_t max_loads,
-                                     size_t cores_per_load,
-                                     size_t num_cores);
-
-// Testing seam. This allows setting the number of system cores used in the
-// calculation of the InfiniteSessionRestore params. Setting this to zero means
-// the actual system values will be used.
-void SetCoresForTesting(size_t num_cores);
 
 }  // namespace resource_coordinator
 
