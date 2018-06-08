@@ -1435,6 +1435,9 @@
   },
   'headless_browsertests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',  # https://crbug.com/843732
+      # chromium.linux
       'Linux Tests (dbg)(1)(32)',
       # On chromium.mac, unclear why these aren't run on "Mac10.11 Tests".
       'Mac10.11 Tests',
@@ -1446,6 +1449,9 @@
   },
   'headless_unittests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxASan',  # https://crbug.com/843732
+      # chromium.linux
       'Linux Tests (dbg)(1)(32)',
       # On chromium.mac, unclear why these aren't run on "Mac10.11 Tests".
       'Mac10.11 Tests',
