@@ -121,6 +121,8 @@ function touchPoint(x, y, radiusX, radiusY)
 
 function offsetTouchPoint(bounds, relativePosition, touchOffset, touchRadiusX, touchRadiusY)
 {
+    if (!touchRadiusX)
+        touchRadiusX = 1;
     if (!touchRadiusY)
         touchRadiusY = touchRadiusX;
 

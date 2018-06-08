@@ -50,38 +50,38 @@
 
             window.scrollTo(0, 0);
             debug('Check unscaled area-testing for sanity');
-            check(150, 150, 30, 30, 30, 30, [e.sandbox]);
-            check(220, 220, 10, 10, 10, 10, [e.fleft]);
-            check(370, 220, 10, 10, 10, 10, [e.fright]);
-            check(270, 220, 10, 10, 10, 10, [e.box1]);
-            check(270, 320, 10, 10, 10, 10, [e.box2]);
-            check(240, 290, 30, 30, 30, 30, [e.fleft, e.box2, e.box1, e.layer]);
-            check(180, 220, 10, 30, 10, 0, [e.fleft, e.layer, e.sandbox]);
-            check(270, 280, 0, 10, 30, 10, [e.box2, e.box1, e.layer]);
-            check(180, 220, 10, 0, 10, 30, [e.sandbox]);
+            check(120, 120, 61, 61, [e.sandbox]);
+            check(210, 210, 21, 21, [e.fleft]);
+            check(360, 210, 21, 21, [e.fright]);
+            check(260, 210, 21, 21, [e.box1]);
+            check(260, 310, 21, 21, [e.box2]);
+            check(210, 260, 61, 61, [e.fleft, e.box2, e.box1, e.layer]);
+            check(180, 210, 31, 21, [e.fleft, e.layer, e.sandbox]);
+            check(260, 280, 21, 31, [e.box2, e.box1, e.layer]);
+            check(150, 210, 31, 21, [e.sandbox]);
 
             debug('Check scaling 2X');
             e['layer'].setAttribute('class', 'scaleup');
-            check(150, 150, 30, 30, 30, 30, [e.fleft]);
-            check(450, 150, 30, 30, 30, 30, [e.fright]);
-            check(350, 220, 10, 10, 10, 10, [e.box1]);
-            check(350, 420, 10, 10, 10, 10, [e.box2]);
-            check(180, 280, 60, 60, 60, 60, [e.fleft, e.box2, e.box1, e.layer]);
-            check(60, 140, 20, 60, 20, 0, [e.fleft, e.layer, e.sandbox]);
-            check(240, 260, 0, 20, 60, 20, [e.box2, e.box1, e.layer]);
-            check(60, 140, 20, 0, 20, 60, [e.sandbox]);
+            check(120, 120, 61, 61, [e.fleft]);
+            check(420, 120, 61, 61, [e.fright]);
+            check(340, 210, 21, 21, [e.box1]);
+            check(340, 410, 21, 21, [e.box2]);
+            check(120, 220, 121, 121, [e.fleft, e.box2, e.box1, e.layer]);
+            check(60, 120, 61, 41, [e.fleft, e.layer, e.sandbox]);
+            check(220, 260, 41, 61, [e.box2, e.box1, e.layer]);
+            check(0, 120, 61, 41, [e.sandbox]);
 
             debug('Check scaling 0.5X');
             e['layer'].setAttribute('class', 'scaledown');
-            check(225, 225, 15, 15, 15, 15, [e.sandbox]);
-            check(260, 260, 5, 5, 5, 5, [e.fleft]);
-            check(335, 260, 5, 5, 5, 5, [e.fright]);
-            check(285, 260, 5, 5, 5, 5, [e.box1]);
-            check(285, 310, 5, 5, 5, 5, [e.box2]);
-            check(270, 295, 15, 15, 15, 15, [e.fleft, e.box2, e.box1, e.layer]);
-            check(240, 260, 5, 15, 5, 0, [e.fleft, e.layer, e.sandbox]);
-            check(285, 290, 0, 5, 15, 5, [e.box2, e.box1, e.layer]);
-            check(240, 260, 5, 0, 5, 15, [e.sandbox]);
+            check(210, 210, 31, 31, [e.sandbox]);
+            check(255, 255, 11, 11, [e.fleft]);
+            check(330, 255, 11, 11, [e.fright]);
+            check(280, 255, 11, 11, [e.box1]);
+            check(280, 305, 11, 11, [e.box2]);
+            check(255, 280, 31, 31, [e.fleft, e.box2, e.box1, e.layer]);
+            check(240, 255, 16, 11, [e.fleft, e.layer, e.sandbox]);
+            check(280, 290, 11, 16, [e.box2, e.box1, e.layer]);
+            check(225, 255, 16, 11, [e.sandbox]);
 
         }
 
@@ -92,4 +92,3 @@
     <span id="console"></span>
 </body>
 </html>
-

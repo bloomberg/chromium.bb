@@ -44,7 +44,7 @@ namespace blink {
 namespace TouchAdjustment {
 
 const float kZeroTolerance = 1e-6f;
-constexpr float kMaxAdjustmentRadiusDips = 16.f;
+constexpr float kMaxAdjustmentSizeDips = 32.f;
 
 // Class for remembering absolute quads of a target node and what node they
 // represent.
@@ -532,8 +532,8 @@ bool FindBestContextMenuCandidate(Node*& target_node,
 }
 
 LayoutSize GetHitTestRectForAdjustment(const LayoutSize& touch_area) {
-  const LayoutSize max_size(TouchAdjustment::kMaxAdjustmentRadiusDips,
-                            TouchAdjustment::kMaxAdjustmentRadiusDips);
+  const LayoutSize max_size(TouchAdjustment::kMaxAdjustmentSizeDips,
+                            TouchAdjustment::kMaxAdjustmentSizeDips);
   return touch_area.ShrunkTo(max_size);
 }
 

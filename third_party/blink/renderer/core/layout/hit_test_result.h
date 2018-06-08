@@ -60,10 +60,7 @@ class CORE_EXPORT HitTestResult {
 
   HitTestResult();
   HitTestResult(const HitTestRequest&, const LayoutPoint&);
-  // Pass positive padding values to perform a rect-based hit test.
-  HitTestResult(const HitTestRequest&,
-                const LayoutPoint& center_point,
-                const LayoutRectOutsets& padding);
+  HitTestResult(const HitTestRequest&, const LayoutRect&);
   HitTestResult(const HitTestRequest&, const HitTestLocation&);
   HitTestResult(const HitTestResult&);
   ~HitTestResult();

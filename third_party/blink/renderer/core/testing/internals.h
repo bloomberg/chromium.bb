@@ -57,6 +57,7 @@ class Element;
 class ExceptionState;
 class ExecutionContext;
 class GCObservation;
+class HitTestResult;
 class HTMLInputElement;
 class HTMLMediaElement;
 class HTMLSelectElement;
@@ -300,10 +301,8 @@ class Internals final : public ScriptWrappable {
   StaticNodeList* nodesFromRect(Document*,
                                 int x,
                                 int y,
-                                unsigned top_padding,
-                                unsigned right_padding,
-                                unsigned bottom_padding,
-                                unsigned left_padding,
+                                int width,
+                                int height,
                                 bool ignore_clipping,
                                 bool allow_child_frame_content,
                                 ExceptionState&) const;
@@ -594,6 +593,12 @@ class Internals final : public ScriptWrappable {
   LocalFrame* GetFrame() const;
   Vector<String> IconURLs(Document*, int icon_types_mask) const;
   DOMRectList* AnnotatedRegions(Document*, bool draggable, ExceptionState&);
+  void HitTestRect(HitTestResult&,
+                   long x,
+                   long y,
+                   long width,
+                   long height,
+                   Document*);
 
   DocumentMarker* MarkerAt(Node*,
                            const String& marker_type,

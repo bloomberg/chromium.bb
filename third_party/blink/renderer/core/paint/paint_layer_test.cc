@@ -1319,8 +1319,7 @@ TEST_P(PaintLayerTest, HitTestWithStopNode) {
   request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                                HitTestRequest::kListBased,
                            hit->GetLayoutObject());
-  result = HitTestResult(request, LayoutPoint(50, 25),
-                         LayoutRectOutsets(10, 10, 10, 10));
+  result = HitTestResult(request, LayoutRect(40, 15, 20, 20));
   GetDocument().GetLayoutView()->Layer()->HitTest(result);
   EXPECT_EQ(1u, result.ListBasedTestResult().size());
   EXPECT_EQ(hit, *result.ListBasedTestResult().begin());

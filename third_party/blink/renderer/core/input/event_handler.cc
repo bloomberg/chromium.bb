@@ -232,37 +232,7 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   mouse_event_manager_->InvalidateClick();
 }
 
-HitTestResult EventHandler::HitTestResultAtPoint(
-    const LayoutPoint& point,
-    HitTestRequest::HitTestRequestType hit_type,
-    const LayoutRectOutsets& padding,
-    const LayoutObject* stop_node) {
-  TRACE_EVENT0("blink", "EventHandler::hitTestResultAtPoint");
-
-  DCHECK((hit_type & HitTestRequest::kListBased) || padding.IsZero());
-
-  // We always send hitTestResultAtPoint to the main frame if we have one,
-  // otherwise we might hit areas that are obscured by higher frames.
-  if (frame_->GetPage()) {
-    LocalFrame& main_frame = frame_->LocalFrameRoot();
-    if (frame_ != &main_frame) {
-      LocalFrameView* frame_view = frame_->View();
-      LocalFrameView* main_view = main_frame.View();
-      if (frame_view && main_view) {
-        LayoutPoint main_content_point = main_view->RootFrameToContents(
-            frame_view->ContentsToRootFrame(point));
-        return main_frame.GetEventHandler().HitTestResultAtPoint(
-            main_content_point, hit_type, padding);
-      }
-    }
-  }
-
-  // hitTestResultAtPoint is specifically used to hitTest into all frames, thus
-  // it always allows child frame content.
-  HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent,
-                         stop_node);
-  HitTestResult result(request, point, padding);
-
+void EventHandler::PerformHitTest(HitTestResult& result) const {
   // LayoutView::hitTest causes a layout, and we don't want to hit that until
   // the first layout because until then, there is nothing shown on the screen -
   // the user can't have intentionally clicked on something belonging to this
@@ -276,13 +246,76 @@ HitTestResult EventHandler::HitTestResultAtPoint(
   if (!frame_->ContentLayoutObject() || !frame_->View() ||
       !frame_->View()->DidFirstLayout() ||
       !frame_->View()->LifecycleUpdatesActive())
-    return result;
+    return;
 
   frame_->ContentLayoutObject()->HitTest(result);
-  if (!request.ReadOnly())
+  const HitTestRequest& request = result.GetHitTestRequest();
+  if (!request.ReadOnly()) {
     frame_->GetDocument()->UpdateHoverActiveState(request,
                                                   result.InnerElement());
+  }
+}
 
+HitTestResult EventHandler::HitTestResultAtPoint(
+    const LayoutPoint& point,
+    HitTestRequest::HitTestRequestType hit_type,
+    const LayoutObject* stop_node) {
+  TRACE_EVENT0("blink", "EventHandler::hitTestResultAtPoint");
+
+  // We always send hitTestResultAtPoint to the main frame if we have one,
+  // otherwise we might hit areas that are obscured by higher frames.
+  if (frame_->GetPage()) {
+    LocalFrame& main_frame = frame_->LocalFrameRoot();
+    if (frame_ != &main_frame) {
+      LocalFrameView* frame_view = frame_->View();
+      LocalFrameView* main_view = main_frame.View();
+      if (frame_view && main_view) {
+        LayoutPoint main_content_point = main_view->RootFrameToContents(
+            frame_view->ContentsToRootFrame(point));
+        return main_frame.GetEventHandler().HitTestResultAtPoint(
+            main_content_point, hit_type, stop_node);
+      }
+    }
+  }
+
+  // hitTestResultAtPoint is specifically used to hitTest into all frames, thus
+  // it always allows child frame content.
+  HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent,
+                         stop_node);
+  HitTestResult result(request, point);
+  PerformHitTest(result);
+  return result;
+}
+
+HitTestResult EventHandler::HitTestResultAtRect(
+    const LayoutRect& rect,
+    HitTestRequest::HitTestRequestType hit_type,
+    const LayoutObject* stop_node) {
+  TRACE_EVENT0("blink", "EventHandler::hitTestResultAtRect");
+
+  DCHECK(hit_type & HitTestRequest::kListBased);
+  DCHECK(!rect.IsEmpty());
+
+  if (frame_->GetPage()) {
+    LocalFrame& main_frame = frame_->LocalFrameRoot();
+    if (frame_ != &main_frame) {
+      LocalFrameView* frame_view = frame_->View();
+      LocalFrameView* main_view = main_frame.View();
+      if (frame_view && main_view) {
+        LayoutPoint main_content_point = main_view->RootFrameToContents(
+            frame_view->ContentsToRootFrame(rect.Location()));
+        return main_frame.GetEventHandler().HitTestResultAtRect(
+            LayoutRect(main_content_point, rect.Size()), hit_type, stop_node);
+      }
+    }
+  }
+
+  // hitTestResultAtPoint is specifically used to hitTest into all frames, thus
+  // it always allows child frame content.
+  HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent,
+                         stop_node);
+  HitTestResult result(request, rect);
+  PerformHitTest(result);
   return result;
 }
 
@@ -1687,9 +1720,9 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   // disabled). Note that we don't yet apply hover/active state here because
   // we need to resolve touch adjustment first so that we apply hover/active
   // it to the final adjusted node.
+  hit_type |= HitTestRequest::kReadOnly;
   WebGestureEvent adjusted_event = gesture_event;
-  LayoutSize padding;
-
+  LayoutSize hit_rect_size;
   if (ShouldApplyTouchAdjustment(gesture_event)) {
     // If gesture_event unique id matches the stored touch event result, do
     // point-base hit test. Otherwise add padding and do rect-based hit test.
@@ -1697,18 +1730,27 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
       adjusted_event.ApplyTouchAdjustment(
           touch_adjustment_result_.adjusted_point);
     } else {
-      padding = GetHitTestRectForAdjustment(
-          LayoutSize(adjusted_event.TapAreaInRootFrame()) * 0.5f);
-      if (!padding.IsEmpty())
+      hit_rect_size = GetHitTestRectForAdjustment(
+          LayoutSize(adjusted_event.TapAreaInRootFrame()));
+      if (!hit_rect_size.IsEmpty())
         hit_type |= HitTestRequest::kListBased;
     }
   }
-  LayoutPoint hit_test_point(frame_->View()->RootFrameToContents(
-      adjusted_event.PositionInRootFrame()));
-  HitTestResult hit_test_result = HitTestResultAtPoint(
-      hit_test_point, hit_type | HitTestRequest::kReadOnly,
-      LayoutRectOutsets(padding.Height(), padding.Width(), padding.Height(),
-                        padding.Width()));
+
+  LocalFrame& root_frame = frame_->LocalFrameRoot();
+  HitTestResult hit_test_result;
+  if (hit_rect_size.IsEmpty()) {
+    hit_test_result = root_frame.GetEventHandler().HitTestResultAtPoint(
+        root_frame.View()->FrameToContents(
+            LayoutPoint(adjusted_event.PositionInRootFrame())),
+        hit_type);
+  } else {
+    LayoutPoint top_left(adjusted_event.PositionInRootFrame());
+    top_left.Move(-hit_rect_size * 0.5f);
+    hit_test_result = root_frame.GetEventHandler().HitTestResultAtRect(
+        LayoutRect(root_frame.View()->FrameToContents(top_left), hit_rect_size),
+        hit_type);
+  }
 
   if (hit_test_result.IsRectBasedTest()) {
     // Adjust the location of the gesture to the most likely nearby node, as

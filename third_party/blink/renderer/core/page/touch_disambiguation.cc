@@ -62,20 +62,17 @@ static IntRect BoundingBoxForEventNodes(Node* event_node) {
   return event_node->GetDocument().View()->ContentsToRootFrame(result);
 }
 
-static float ScoreTouchTarget(IntPoint touch_point,
-                              int padding,
-                              IntRect bounding_box) {
+static float ScoreTouchTarget(const IntRect& touch_rect, IntRect bounding_box) {
   if (bounding_box.IsEmpty())
     return 0;
 
-  float reciprocal_padding = 1.f / padding;
+  float touch_radius =
+      ceil(std::max(touch_rect.Width(), touch_rect.Height()) * 0.5f);
   float score = 1;
 
-  IntSize distance = bounding_box.DifferenceToPoint(touch_point);
-  score *=
-      std::max((padding - abs(distance.Width())) * reciprocal_padding, 0.f);
-  score *=
-      std::max((padding - abs(distance.Height())) * reciprocal_padding, 0.f);
+  IntSize distance = bounding_box.DifferenceToPoint(touch_rect.Center());
+  score *= std::max(1 - (abs(distance.Width()) / touch_radius), 0.f);
+  score *= std::max(1 - (abs(distance.Height()) / touch_radius), 0.f);
 
   return score;
 }
@@ -90,21 +87,12 @@ void FindGoodTouchTargets(const IntRect& touch_box_in_root_frame,
                           Vector<IntRect>& good_targets,
                           HeapVector<Member<Node>>& highlight_nodes) {
   good_targets.clear();
-
-  int touch_point_padding = ceil(std::max(touch_box_in_root_frame.Width(),
-                                          touch_box_in_root_frame.Height()) *
-                                 0.5);
-
-  IntPoint touch_point = touch_box_in_root_frame.Center();
-  IntPoint contents_point =
-      main_frame->View()->RootFrameToContents(touch_point);
-
-  HitTestResult result = main_frame->GetEventHandler().HitTestResultAtPoint(
-      contents_point,
-      HitTestRequest::kReadOnly | HitTestRequest::kActive |
-          HitTestRequest::kListBased,
-      LayoutRectOutsets(touch_point_padding, touch_point_padding,
-                        touch_point_padding, touch_point_padding));
+  LayoutPoint hit_point(main_frame->View()->RootFrameToContents(
+      touch_box_in_root_frame.Location()));
+  LayoutRect hit_rect(hit_point, LayoutSize(touch_box_in_root_frame.Size()));
+  HitTestResult result = main_frame->GetEventHandler().HitTestResultAtRect(
+      hit_rect, HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                    HitTestRequest::kListBased);
   const HeapListHashSet<Member<Node>>& hit_results =
       result.ListBasedTestResult();
 
@@ -144,7 +132,7 @@ void FindGoodTouchTargets(const IntRect& touch_box_in_root_frame,
         TouchTargetData& target_data =
             touch_targets.insert(&node, TouchTargetData()).stored_value->value;
         target_data.window_bounding_box = BoundingBoxForEventNodes(&node);
-        target_data.score = ScoreTouchTarget(touch_point, touch_point_padding,
+        target_data.score = ScoreTouchTarget(touch_box_in_root_frame,
                                              target_data.window_bounding_box);
         best_score = std::max(best_score, target_data.score);
         break;
