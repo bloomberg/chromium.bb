@@ -21,6 +21,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
+#include "ui/ozone/platform/drm/gpu/scanout_buffer_generator.h"
 
 namespace ui {
 
@@ -356,7 +357,7 @@ OverlayPlane ScreenManager::GetModesetBuffer(
     const OverlayPlane* primary = window->GetLastModesetBuffer();
     const DrmDevice* drm = controller->GetAllocationDrmDevice().get();
     if (primary && primary->buffer->GetSize() == bounds.size() &&
-        primary->buffer->GetDrmDevice() == drm) {
+        primary->buffer->GetGbmDeviceLinux() == drm->AsGbmDeviceLinux()) {
       // If the controller doesn't advertise modifiers, wont have a
       // modifier either and we can reuse the buffer. Otherwise, check
       // to see if the controller supports the buffers format

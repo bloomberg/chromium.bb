@@ -119,7 +119,8 @@ bool DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
   if (controller_) {
     const DrmDevice* drm = controller_->GetAllocationDrmDevice().get();
     for (const auto& plane : planes) {
-      if (plane.buffer && plane.buffer->GetDrmDevice() != drm) {
+      if (plane.buffer &&
+          plane.buffer->GetGbmDeviceLinux() != drm->AsGbmDeviceLinux()) {
         // Although |force_buffer_reallocation_| is set to true during window
         // bounds update, this may still be needed because of in-flight buffers.
         force_buffer_reallocation_ = true;

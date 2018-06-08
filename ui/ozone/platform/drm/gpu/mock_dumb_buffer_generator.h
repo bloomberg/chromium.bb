@@ -7,9 +7,11 @@
 
 #include "base/macros.h"
 
-#include "ui/ozone/common/linux/scanout_buffer.h"
+#include "ui/ozone/platform/drm/gpu/scanout_buffer_generator.h"
 
 namespace ui {
+
+class ScanoutBuffer;
 
 class MockDumbBufferGenerator : public ScanoutBufferGenerator {
  public:
