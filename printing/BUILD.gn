@@ -112,6 +112,7 @@ component("printing") {
     }
     libs = [
       "AppKit.framework",
+      "QuartzCore.framework",
       "ApplicationServices.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
