@@ -215,7 +215,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
         input_element->SetActivatedSubmit(true);
       if (with_user_input) {
         const base::string16 element_value = input_element->Value().Utf16();
-        user_input[control_elements[i]] =
+        user_input[control_elements[i].UniqueRendererFormControlId()] =
             std::make_pair(std::make_unique<base::string16>(element_value),
                            FieldPropertiesFlags::USER_TYPED);
       }
@@ -736,12 +736,14 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   // "email" field should be ignored despite it is more reliable than prediction
   // for "id" field.
   FieldValueAndPropertiesMaskMap user_input;
-  user_input[control_elements[2]] = std::make_pair(  // id
-      std::make_unique<base::string16>(control_elements[2].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
-  user_input[control_elements[3]] = std::make_pair(  // password
-      std::make_unique<base::string16>(control_elements[3].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[2].UniqueRendererFormControlId()] =
+      std::make_pair(  // id
+          std::make_unique<base::string16>(control_elements[2].Value().Utf16()),
+          FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[3].UniqueRendererFormControlId()] =
+      std::make_pair(  // password
+          std::make_unique<base::string16>(control_elements[3].Value().Utf16()),
+          FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form = CreatePasswordFormFromWebForm(
       form, &user_input, nullptr, &username_detector_cache);
@@ -1575,14 +1577,16 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, UserInput) {
   WebVector<WebFormControlElement> control_elements;
   form.GetFormControlElements(control_elements);
   ASSERT_EQ("nonvisible_text", control_elements[0].NameForAutofill().Utf8());
-  user_input[control_elements[0]] = std::make_pair(
-      std::make_unique<base::string16>(control_elements[0].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[0].UniqueRendererFormControlId()] =
+      std::make_pair(
+          std::make_unique<base::string16>(control_elements[0].Value().Utf16()),
+          FieldPropertiesFlags::USER_TYPED);
   ASSERT_EQ("nonvisible_password",
             control_elements[2].NameForAutofill().Utf8());
-  user_input[control_elements[2]] = std::make_pair(
-      std::make_unique<base::string16>(control_elements[2].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[2].UniqueRendererFormControlId()] =
+      std::make_pair(
+          std::make_unique<base::string16>(control_elements[2].Value().Utf16()),
+          FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form =
       CreatePasswordFormFromWebForm(form, &user_input, nullptr, nullptr);
@@ -1633,14 +1637,16 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   form.GetFormControlElements(control_elements);
   ASSERT_EQ("password_with_user_input1",
             control_elements[9].NameForAutofill().Utf8());
-  user_input[control_elements[9]] = std::make_pair(
-      std::make_unique<base::string16>(control_elements[9].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[9].UniqueRendererFormControlId()] =
+      std::make_pair(
+          std::make_unique<base::string16>(control_elements[9].Value().Utf16()),
+          FieldPropertiesFlags::USER_TYPED);
   ASSERT_EQ("password_with_user_input2",
             control_elements[10].NameForAutofill().Utf8());
-  user_input[control_elements[10]] = std::make_pair(
-      std::make_unique<base::string16>(control_elements[10].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[10].UniqueRendererFormControlId()] =
+      std::make_pair(std::make_unique<base::string16>(
+                         control_elements[10].Value().Utf16()),
+                     FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form =
       CreatePasswordFormFromWebForm(form, &user_input, nullptr, nullptr);
@@ -1691,14 +1697,16 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   form.GetFormControlElements(control_elements);
   ASSERT_EQ("password_with_user_input1",
             control_elements[7].NameForAutofill().Utf8());
-  user_input[control_elements[7]] = std::make_pair(
-      std::make_unique<base::string16>(control_elements[7].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[7].UniqueRendererFormControlId()] =
+      std::make_pair(
+          std::make_unique<base::string16>(control_elements[7].Value().Utf16()),
+          FieldPropertiesFlags::USER_TYPED);
   ASSERT_EQ("password_with_user_input2",
             control_elements[9].NameForAutofill().Utf8());
-  user_input[control_elements[9]] = std::make_pair(
-      std::make_unique<base::string16>(control_elements[9].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[9].UniqueRendererFormControlId()] =
+      std::make_pair(
+          std::make_unique<base::string16>(control_elements[9].Value().Utf16()),
+          FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form =
       CreatePasswordFormFromWebForm(form, &user_input, nullptr, nullptr);
@@ -1854,13 +1862,14 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     FieldPropertiesMask mask = FieldPropertiesFlags::AUTOFILLED;
     if (autofilled_value_was_modified_by_user)
       mask |= FieldPropertiesFlags::USER_TYPED;
-    user_input[control_elements[1]] =
+    user_input[control_elements[1].UniqueRendererFormControlId()] =
         std::make_pair(std::make_unique<base::string16>(
                            base::ASCIIToUTF16("autofilled_value")),
                        mask);
-    user_input[control_elements[2]] = std::make_pair(
-        std::make_unique<base::string16>(base::ASCIIToUTF16("user_value")),
-        FieldPropertiesFlags::USER_TYPED);
+    user_input[control_elements[2].UniqueRendererFormControlId()] =
+        std::make_pair(
+            std::make_unique<base::string16>(base::ASCIIToUTF16("user_value")),
+            FieldPropertiesFlags::USER_TYPED);
 
     std::unique_ptr<PasswordForm> password_form(
         CreatePasswordFormFromWebForm(form, &user_input, nullptr, nullptr));
@@ -2041,7 +2050,7 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   FieldValueAndPropertiesMaskMap user_input;
   WebInputElement* input_element = ToWebInputElement(&control_elements[3]);
   const base::string16 element_value = input_element->Value().Utf16();
-  user_input[control_elements[3]] =
+  user_input[control_elements[3].UniqueRendererFormControlId()] =
       std::make_pair(std::make_unique<base::string16>(element_value),
                      FieldPropertiesFlags::USER_TYPED);
 
@@ -2462,21 +2471,24 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, TypedValuePreserved) {
   ASSERT_EQ(3u, control_elements.size());
   ASSERT_EQ("fine", control_elements[0].NameForAutofill().Utf8());
   control_elements[0].SetAutofillValue("same_value");
-  user_input[control_elements[0]] = std::make_pair(
-      std::make_unique<base::string16>(control_elements[0].Value().Utf16()),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[0].UniqueRendererFormControlId()] =
+      std::make_pair(
+          std::make_unique<base::string16>(control_elements[0].Value().Utf16()),
+          FieldPropertiesFlags::USER_TYPED);
 
   ASSERT_EQ("mangled", control_elements[1].NameForAutofill().Utf8());
   control_elements[1].SetAutofillValue("mangled_value");
-  user_input[control_elements[1]] = std::make_pair(
-      std::make_unique<base::string16>(base::UTF8ToUTF16("original_value")),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[1].UniqueRendererFormControlId()] =
+      std::make_pair(
+          std::make_unique<base::string16>(base::UTF8ToUTF16("original_value")),
+          FieldPropertiesFlags::USER_TYPED);
 
   ASSERT_EQ("completed_for_user", control_elements[2].NameForAutofill().Utf8());
   control_elements[2].SetAutofillValue("email@gmail.com");
-  user_input[control_elements[2]] = std::make_pair(
-      std::make_unique<base::string16>(base::UTF8ToUTF16("email")),
-      FieldPropertiesFlags::USER_TYPED);
+  user_input[control_elements[2].UniqueRendererFormControlId()] =
+      std::make_pair(
+          std::make_unique<base::string16>(base::UTF8ToUTF16("email")),
+          FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form =
       CreatePasswordFormFromWebForm(form, &user_input, nullptr, nullptr);

@@ -188,11 +188,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
     // The key under which PasswordAutofillManager can find info for filling.
     int key = -1;
   };
-  typedef std::map<blink::WebInputElement, PasswordInfo>
-      WebInputToPasswordInfoMap;
-  typedef std::map<blink::WebElement, int> WebElementToPasswordInfoKeyMap;
-  typedef std::map<blink::WebInputElement, blink::WebInputElement>
-      PasswordToLoginMap;
+  using WebInputToPasswordInfoMap =
+      std::map<blink::WebInputElement, PasswordInfo>;
+  using PasswordToLoginMap =
+      std::map<blink::WebInputElement, blink::WebInputElement>;
 
   // This class keeps track of autofilled password input elements and makes sure
   // the autofilled password value is not accessible to JavaScript code until
