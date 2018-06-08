@@ -10,6 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,7 +19,6 @@ import android.widget.Checkable;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -56,7 +56,7 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
     public SelectableItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mIconColorList =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_mode_tint);
+                AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
         mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);
         mSelectedLevel = getResources().getInteger(R.integer.list_item_level_selected);
         mCheckDrawable = AnimatedVectorDrawableCompat.create(
@@ -260,7 +260,7 @@ public abstract class SelectableItemView<E> extends FrameLayout implements Check
             TintedImageView imageView, Drawable defaultIcon, boolean isSelected) {
         imageView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
         imageView.setImageDrawable(isSelected
-                        ? TintedDrawable.constructTintedDrawable(imageView.getResources(),
+                        ? TintedDrawable.constructTintedDrawable(imageView.getContext(),
                                   R.drawable.ic_check_googblue_24dp, R.color.white_mode_tint)
                         : defaultIcon);
         imageView.getBackground().setLevel(isSelected

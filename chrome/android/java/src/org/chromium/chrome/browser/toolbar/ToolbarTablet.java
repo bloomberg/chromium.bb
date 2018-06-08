@@ -10,6 +10,7 @@ import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -103,9 +104,9 @@ public class ToolbarTablet
         mShowTabStack = AccessibilityUtil.isAccessibilityEnabled();
 
         mTabSwitcherButtonDrawable =
-                TabSwitcherDrawable.createTabSwitcherDrawable(getResources(), false);
+                TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
         mTabSwitcherButtonDrawableLight =
-                TabSwitcherDrawable.createTabSwitcherDrawable(getResources(), true);
+                TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), true);
 
         mAccessibilitySwitcherButton = (ImageButton) findViewById(R.id.tab_switcher_button);
         mAccessibilitySwitcherButton.setImageDrawable(mTabSwitcherButtonDrawable);
@@ -476,10 +477,9 @@ public class ToolbarTablet
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             // Non-incognito mode shows a blue filled star.
-            mBookmarkButton.setTint(isIncognito()
-                    ? mLightModeTint
-                    : ApiCompatibilityUtils.getColorStateList(
-                            getResources(), R.color.blue_mode_tint));
+            mBookmarkButton.setTint(isIncognito() ? mLightModeTint
+                                                  : AppCompatResources.getColorStateList(
+                                                            getContext(), R.color.blue_mode_tint));
             mBookmarkButton.setContentDescription(getContext().getString(
                     R.string.edit_bookmark));
         } else {

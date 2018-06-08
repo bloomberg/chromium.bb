@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -1080,8 +1081,7 @@ public class DownloadUtils {
      * @return a foreground color list.
      */
     public static ColorStateList getIconForegroundColorList(Context context) {
-        return ApiCompatibilityUtils.getColorStateList(
-                context.getResources(), R.color.white_mode_tint);
+        return AppCompatResources.getColorStateList(context, R.color.white_mode_tint);
     }
 
     /**

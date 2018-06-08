@@ -409,9 +409,8 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
     }
 
     private ImageView createAndAddChevron(ViewGroup parent) {
-        Resources resources = parent.getResources();
-        TintedDrawable chevron = TintedDrawable.constructTintedDrawable(
-                resources, R.drawable.ic_expand_more_black_24dp, R.color.payments_section_chevron);
+        TintedDrawable chevron = TintedDrawable.constructTintedDrawable(parent.getContext(),
+                R.drawable.ic_expand_more_black_24dp, R.color.payments_section_chevron);
 
         ImageView view = new ImageView(parent.getContext());
         view.setImageDrawable(chevron);
@@ -895,7 +894,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     }
 
                     TintedDrawable tintedDrawable = TintedDrawable.constructTintedDrawable(
-                            context.getResources(), drawableId, drawableTint);
+                            context, drawableId, drawableTint);
                     ImageButton button = new ImageButton(context);
                     button.setBackground(null);
                     button.setImageDrawable(tintedDrawable);

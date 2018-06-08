@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
@@ -29,9 +28,8 @@ public class TabSwitcherButtonView extends ImageView {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        Resources resources = getResources();
         mTabSwitcherButtonButtonDrawable =
-                TabSwitcherDrawable.createTabSwitcherDrawable(resources, false);
+                TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
         setImageDrawable(mTabSwitcherButtonButtonDrawable);
     }
 

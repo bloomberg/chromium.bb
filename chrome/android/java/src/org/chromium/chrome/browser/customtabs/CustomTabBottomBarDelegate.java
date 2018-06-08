@@ -110,7 +110,7 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
     public void updateBottomBarButtons(CustomButtonParams params) {
         ImageButton button = (ImageButton) getBottomBarView().findViewById(params.getId());
         button.setContentDescription(params.getDescription());
-        button.setImageDrawable(params.getIcon(mActivity.getResources()));
+        button.setImageDrawable(params.getIcon(mActivity));
     }
 
     /**

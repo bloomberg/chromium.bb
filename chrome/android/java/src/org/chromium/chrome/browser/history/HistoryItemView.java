@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.VisibleForTesting;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -52,8 +53,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
         mEndPadding = context.getResources().getDimensionPixelSize(
                 R.dimen.selectable_list_layout_row_padding);
 
-        mIconColorList = ApiCompatibilityUtils.getColorStateList(
-                context.getResources(), R.color.white_mode_tint);
+        mIconColorList = AppCompatResources.getColorStateList(context, R.color.white_mode_tint);
     }
 
     @Override

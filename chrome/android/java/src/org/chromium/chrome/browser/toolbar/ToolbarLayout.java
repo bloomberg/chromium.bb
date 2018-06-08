@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.InputDevice;
@@ -98,10 +99,9 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     public ToolbarLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mDarkModeTint =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+        mDarkModeTint = AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint);
         mLightModeTint =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
+                AppCompatResources.getColorStateList(getContext(), R.color.light_mode_tint);
         mProgressBar = createProgressBar();
 
         addOnLayoutChangeListener(new OnLayoutChangeListener() {

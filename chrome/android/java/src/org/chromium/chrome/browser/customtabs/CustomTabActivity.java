@@ -500,7 +500,7 @@ public class CustomTabActivity extends ChromeActivity {
                     int index = mIntentDataProvider.getCustomToolbarButtonIndexForId(id);
                     assert index != -1;
                     getToolbarManager().updateCustomActionButton(
-                            index, params.getIcon(getResources()), description);
+                            index, params.getIcon(CustomTabActivity.this), description);
                 } else {
                     if (mBottomBarDelegate != null) {
                         mBottomBarDelegate.updateBottomBarButtons(params);
@@ -971,7 +971,7 @@ public class CustomTabActivity extends ChromeActivity {
         final List<CustomButtonParams> paramList = mIntentDataProvider.getCustomButtonsOnToolbar();
         for (CustomButtonParams params : paramList) {
             getToolbarManager().addCustomActionButton(
-                    params.getIcon(getResources()), params.getDescription(), v -> {
+                    params.getIcon(this), params.getDescription(), v -> {
                         if (getActivityTab() == null) return;
                         mIntentDataProvider.sendButtonPendingIntentWithUrlAndTitle(
                                 getApplicationContext(), params, getActivityTab().getUrl(),

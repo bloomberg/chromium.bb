@@ -20,6 +20,7 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -1109,7 +1110,7 @@ public class LocationBarLayout
         if (!mIsTablet) return;
         switch (buttonType) {
             case PAGE:
-                Drawable page = TintedDrawable.constructTintedDrawable(getResources(),
+                Drawable page = TintedDrawable.constructTintedDrawable(getContext(),
                         R.drawable.ic_omnibox_page,
                         mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
                 mNavigationButton.setImageDrawable(page);
@@ -2107,8 +2108,8 @@ public class LocationBarLayout
         if (updateUseDarkColors() || mIsEmphasizingHttpsScheme != shouldEmphasizeHttpsScheme()) {
             updateSecurityIcon();
         }
-        ColorStateList colorStateList = ApiCompatibilityUtils.getColorStateList(getResources(),
-                mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
+        int id = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
+        ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
         mMicButton.setTint(colorStateList);
         mDeleteButton.setTint(colorStateList);
 

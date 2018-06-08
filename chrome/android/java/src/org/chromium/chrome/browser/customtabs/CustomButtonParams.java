@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -89,11 +88,11 @@ public class CustomButtonParams {
     /**
      * @return The drawable for the customized button.
      */
-    Drawable getIcon(Resources res) {
+    Drawable getIcon(Context context) {
         if (mShouldTint) {
-            return new TintedDrawable(res, mIcon);
+            return new TintedDrawable(context, mIcon);
         } else {
-            return new BitmapDrawable(res, mIcon);
+            return new BitmapDrawable(context.getResources(), mIcon);
         }
     }
 

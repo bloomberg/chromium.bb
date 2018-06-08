@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.LayoutRes;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -79,8 +80,8 @@ class FilterAdapter
         VectorDrawableCompat iconDrawable =
                 VectorDrawableCompat.create(mManagerUi.getActivity().getResources(), iconId,
                         mManagerUi.getActivity().getTheme());
-        iconDrawable.setTintList(ApiCompatibilityUtils.getColorStateList(
-                mManagerUi.getActivity().getResources(), R.color.dark_mode_tint));
+        iconDrawable.setTintList(AppCompatResources.getColorStateList(
+                mManagerUi.getActivity(), R.color.dark_mode_tint));
         labelView.setCompoundDrawablesWithIntrinsicBounds(iconDrawable, null, null, null);
 
         return labelView;

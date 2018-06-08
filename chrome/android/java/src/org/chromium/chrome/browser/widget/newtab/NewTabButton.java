@@ -12,6 +12,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.widget.Button;
 
@@ -55,9 +56,8 @@ public class NewTabButton extends Button implements Drawable.Callback {
         mIncognitoDrawable.setCallback(this);
         mIsIncognito = false;
         mLightModeTint =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
-        mDarkModeTint =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+                AppCompatResources.getColorStateList(getContext(), R.color.light_mode_tint);
+        mDarkModeTint = AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint);
     }
 
     @Override

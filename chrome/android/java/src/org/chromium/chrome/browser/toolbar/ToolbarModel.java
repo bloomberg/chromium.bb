@@ -6,12 +6,11 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -353,31 +352,30 @@ public class ToolbarModel implements ToolbarDataProvider {
     public ColorStateList getSecurityIconColorStateList() {
         int securityLevel = getSecurityLevel();
 
-        Resources resources = mContext.getResources();
         ColorStateList list = null;
         int color = getPrimaryColor();
         boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
         if (isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
-            list = ApiCompatibilityUtils.getColorStateList(resources, R.color.light_mode_tint);
+            list = AppCompatResources.getColorStateList(mContext, R.color.light_mode_tint);
         } else if (!hasTab() || isUsingBrandColor()
                 || ChromeFeatureList.isEnabled(
                            ChromeFeatureList.OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE)) {
             // For theme colors which are not dark and are also not
             // light enough to warrant an opaque URL bar, use dark
             // icons.
-            list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
+            list = AppCompatResources.getColorStateList(mContext, R.color.dark_mode_tint);
         } else {
             // For the default toolbar color, use a green or red icon.
             if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
                 assert !shouldDisplaySearchTerms();
-                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_red_700);
+                list = AppCompatResources.getColorStateList(mContext, R.color.google_red_700);
             } else if (!shouldDisplaySearchTerms()
                     && (securityLevel == ConnectionSecurityLevel.SECURE
                                || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
-                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_green_700);
+                list = AppCompatResources.getColorStateList(mContext, R.color.google_green_700);
             } else {
-                list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
+                list = AppCompatResources.getColorStateList(mContext, R.color.dark_mode_tint);
             }
         }
         assert list != null : "Missing ColorStateList for Security Button.";

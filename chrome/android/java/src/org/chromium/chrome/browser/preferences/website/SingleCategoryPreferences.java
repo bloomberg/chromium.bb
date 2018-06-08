@@ -206,7 +206,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         // Set the title and arrow icons for the header.
         allowedGroup.setGroupTitle(resourceId, numAllowed);
-        TintedDrawable icon = TintedDrawable.constructTintedDrawable(getResources(),
+        TintedDrawable icon = TintedDrawable.constructTintedDrawable(getActivity(),
                 mAllowListExpanded ? R.drawable.ic_expand_more_black_24dp
                                    : R.drawable.ic_expand_less_black_24dp);
         allowedGroup.setExpanded(mAllowListExpanded);
@@ -227,7 +227,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 ? R.string.website_settings_blocked_group_heading_sound
                 : R.string.website_settings_blocked_group_heading;
         blockedGroup.setGroupTitle(resourceId, numBlocked);
-        TintedDrawable icon = TintedDrawable.constructTintedDrawable(getResources(),
+        TintedDrawable icon = TintedDrawable.constructTintedDrawable(getActivity(),
                 mBlockListExpanded ? R.drawable.ic_expand_more_black_24dp
                                    : R.drawable.ic_expand_less_black_24dp);
         blockedGroup.setExpanded(mBlockListExpanded);

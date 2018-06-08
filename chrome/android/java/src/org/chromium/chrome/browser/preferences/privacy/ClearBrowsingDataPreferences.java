@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.privacy;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -57,18 +58,17 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
     private static class Item implements BrowsingDataCounterCallback,
                                          Preference.OnPreferenceClickListener {
         private static final int MIN_DP_FOR_ICON = 360;
+        private final Context mContext;
         private final ClearBrowsingDataPreferences mParent;
         private final DialogOption mOption;
         private final ClearBrowsingDataCheckBoxPreference mCheckbox;
         private BrowsingDataCounterBridge mCounter;
         private boolean mShouldAnnounceCounterResult;
 
-        public Item(ClearBrowsingDataPreferences parent,
-                    DialogOption option,
-                    ClearBrowsingDataCheckBoxPreference checkbox,
-                    boolean selected,
-                    boolean enabled) {
+        public Item(Context context, ClearBrowsingDataPreferences parent, DialogOption option,
+                ClearBrowsingDataCheckBoxPreference checkbox, boolean selected, boolean enabled) {
             super();
+            mContext = context;
             mParent = parent;
             mOption = option;
             mCheckbox = checkbox;
@@ -83,7 +83,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
             if (dp >= MIN_DP_FOR_ICON) {
                 if (option.iconIsBitmap()) {
                     Drawable icon = TintedDrawable.constructTintedDrawable(
-                            mParent.getResources(), option.getIcon(), R.color.google_grey_600);
+                            mContext, option.getIcon(), R.color.google_grey_600);
                     mCheckbox.setIcon(icon);
                 } else {
                     Drawable icon = VectorDrawableCompat.create(mParent.getResources(),
@@ -525,12 +525,10 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
                         false);
             }
 
-            mItems[i] = new Item(
-                this,
-                options[i],
-                (ClearBrowsingDataCheckBoxPreference) findPreference(options[i].getPreferenceKey()),
-                isOptionSelectedByDefault(options[i]),
-                enabled);
+            mItems[i] = new Item(getActivity(), this, options[i],
+                    (ClearBrowsingDataCheckBoxPreference) findPreference(
+                            options[i].getPreferenceKey()),
+                    isOptionSelectedByDefault(options[i]), enabled);
         }
 
         // Not all checkboxes defined in the layout are necessarily handled by this class
