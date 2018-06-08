@@ -234,8 +234,8 @@ fi
 # Run-time libraries required by chromeos only
 chromeos_lib_list="libpulse0 libbz2-1.0"
 
-# Full list of required run-time libraries
-lib_list="\
+# List of required run-time libraries
+common_lib_list="\
   libappindicator1
   libappindicator3-1
   libasound2
@@ -277,106 +277,46 @@ lib_list="\
   libxrender1
   libxtst6
   zlib1g
+"
+
+# Full list of required run-time libraries
+lib_list="\
+  $common_lib_list
   $chromeos_lib_list
 "
 
-# Debugging symbols for all of the run-time libraries
-dbg_list="\
-  libc6-dbg
-  libffi6-dbg
-  libgtk2.0-0-dbg
-  libpcre3-dbg
-  libxau6-dbg
-  libxcb1-dbg
-  libxcomposite1-dbg
-  libxdmcp6-dbg
-  libxext6-dbg
-  libxinerama1-dbg
-  zlib1g-dbg
-"
+# *-dbg packages are deprecated in favor of *-dbgsym
+# (cf https://wiki.debian.org/AutomaticDebugPackages)
+# So we should try *-dbgsym first.
+dbg_package_name() {
+  if package_exists "$1-dbgsym"; then
+    echo "$1-dbgsym"
+  elif package_exists "$1-dbg"; then
+    echo "$1-dbg"
+  fi
+}
 
-if package_exists libpixman-1-0-dbgsym; then
-  dbg_list="${dbg_list} libpixman-1-0-dbgsym"
-elif package_exists libpixman-1-0-dbg; then
-  dbg_list="${dbg_list} libpixman-1-0-dbg"
+# Debugging symbols for all of the run-time libraries
+dbg_list=""
+for p in $common_lib_list; do
+  dbg_list="$dbg_list $(dbg_package_name $p)"
+done
+
+# Debugging symbols packages not following common naming scheme
+if test "$(dbg_package_name libstdc++6)" == ""; then
+  if package_exists libstdc++6-6-dbg; then
+    dbg_list="${dbg_list} libstdc++6-6-dbg"
+  elif package_exists libstdc++6-4.9-dbg; then
+    dbg_list="${dbg_list} libstdc++6-4.9-dbg"
+  else
+    dbg_list="${dbg_list} libstdc++6-4.8-dbg"
+  fi
 fi
-if package_exists libstdc++6-6-dbg; then
-  dbg_list="${dbg_list} libstdc++6-6-dbg"
-elif package_exists libstdc++6-4.9-dbg; then
-  dbg_list="${dbg_list} libstdc++6-4.9-dbg"
-else
-  dbg_list="${dbg_list} libstdc++6-4.8-dbg"
+if test "$(dbg_package_name libatk1.0-0)" == ""; then
+  dbg_list="$dbg_list $(dbg_package_name libatk1.0)"
 fi
-if package_exists libgtk-3-0-dbgsym; then
-  dbg_list="${dbg_list} libgtk-3-0-dbgsym"
-elif package_exists libgtk-3-0-dbg; then
-  dbg_list="${dbg_list} libgtk-3-0-dbg"
-fi
-if package_exists libatk1.0-0-dbgsym; then
-  dbg_list="${dbg_list} libatk1.0-0-dbgsym"
-elif package_exists libatk1.0-dbg; then
-  dbg_list="${dbg_list} libatk1.0-dbg"
-fi
-if package_exists libcairo2-dbgsym; then
-  dbg_list="${dbg_list} libcairo2-dbgsym"
-elif package_exists libcairo2-dbg; then
-  dbg_list="${dbg_list} libcairo2-dbg"
-fi
-if package_exists libfontconfig1-dbgsym; then
-  dbg_list="${dbg_list} libfontconfig1-dbgsym"
-else
-  dbg_list="${dbg_list} libfontconfig1-dbg"
-fi
-if package_exists libxdamage1-dbgsym; then
-  dbg_list="${dbg_list} libxdamage1-dbgsym"
-elif package_exists libxdamage1-dbg; then
-  dbg_list="${dbg_list} libxdamage1-dbg"
-fi
-if package_exists libpango1.0-dev-dbgsym; then
-  dbg_list="${dbg_list} libpango1.0-dev-dbgsym"
-elif package_exists libpango1.0-0-dbg; then
-  dbg_list="${dbg_list} libpango1.0-0-dbg"
-fi
-if package_exists libx11-6-dbg; then
-  dbg_list="${dbg_list} libx11-6-dbg"
-fi
-if package_exists libx11-xcb1-dbg; then
-  dbg_list="${dbg_list} libx11-xcb1-dbg"
-fi
-if package_exists libxfixes3-dbg; then
-  dbg_list="${dbg_list} libxfixes3-dbg"
-fi
-if package_exists libxi6-dbg; then
-  dbg_list="${dbg_list} libxi6-dbg"
-fi
-if package_exists libxrandr2-dbg; then
-  dbg_list="${dbg_list} libxrandr2-dbg"
-fi
-if package_exists libxrender1-dbg; then
-  dbg_list="${dbg_list} libxrender1-dbg"
-fi
-if package_exists libxtst6-dbg; then
-  dbg_list="${dbg_list} libxtst6-dbg"
-fi
-if package_exists libglib2.0-0-dbgsym; then
-  dbg_list="${dbg_list} libglib2.0-0-dbgsym"
-elif package_exists libglib2.0-0-dbg; then
-  dbg_list="${dbg_list} libglib2.0-0-dbg"
-fi
-if package_exists libxcursor1-dbgsym; then
-  dbg_list="${dbg_list} libxcursor1-dbgsym"
-elif package_exists libxcursor1-dbg; then
-  dbg_list="${dbg_list} libxcursor1-dbg"
-fi
-if package_exists libsqlite3-0-dbgsym; then
-  dbg_list="${dbg_list} libsqlite3-0-dbgsym"
-else
-  dbg_list="${dbg_list} libsqlite3-0-dbg"
-fi
-if package_exists libpixman-1-0-dbgsym; then
-  dbg_list="${dbg_list} libpixman-1-0-dbgsym"
-else
-  dbg_list="${dbg_list} libpixman-1-0-dbg"
+if test "$(dbg_package_name libpango1.0-0)" == ""; then
+  dbg_list="$dbg_list $(dbg_package_name libpango1.0-dev)"
 fi
 
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
