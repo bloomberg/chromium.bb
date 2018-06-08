@@ -61,6 +61,10 @@ TestOmniboxClient::CreateOmniboxNavigationObserver(
   return nullptr;
 }
 
+bool TestOmniboxClient::IsPasteAndGoEnabled() const {
+  return true;
+}
+
 const SessionID& TestOmniboxClient::GetSessionID() const {
   return session_id_;
 }

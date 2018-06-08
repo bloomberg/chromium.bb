@@ -34,6 +34,7 @@ class TestOmniboxClient : public OmniboxClient {
       const base::string16& text,
       const AutocompleteMatch& match,
       const AutocompleteMatch& alternate_nav_match) override;
+  bool IsPasteAndGoEnabled() const override;
   const SessionID& GetSessionID() const override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;

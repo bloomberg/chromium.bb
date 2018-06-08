@@ -81,6 +81,11 @@ class OmniboxEditModel {
     const AutocompleteInput autocomplete_input;
   };
 
+  // This is a mirror of content::kMaxURLDisplayChars because ios cannot depend
+  // on content. If clipboard contains more than kMaxPasteAndGoTextLength
+  // characters, then the paste & go option will be disabled.
+  static const size_t kMaxPasteAndGoTextLength = 32 * 1024;
+
   OmniboxEditModel(OmniboxView* view,
                    OmniboxEditController* controller,
                    std::unique_ptr<OmniboxClient> client);
