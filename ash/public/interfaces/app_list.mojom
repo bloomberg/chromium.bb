@@ -306,8 +306,8 @@ interface AppListClient {
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces on searching:
   // Triggers a search query.
-  // |raw_query|: the unmodified input texts in the search text field.
-  StartSearch(mojo_base.mojom.String16 raw_query);
+  // |trimmed_query|: the trimmed input texts from the search text field.
+  StartSearch(mojo_base.mojom.String16 trimmed_query);
   // Opens a search result when its view is clicked or pressed.
   // |result_id|: the id of the search result the user wants to open.
   OpenSearchResult(string result_id, int32 event_flags);

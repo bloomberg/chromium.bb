@@ -24,12 +24,7 @@ SearchController::SearchController(AppListModelUpdater* model_updater)
 
 SearchController::~SearchController() {}
 
-void SearchController::Start(const base::string16& raw_query) {
-  last_raw_query_ = raw_query;
-
-  base::string16 query;
-  base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
-
+void SearchController::Start(const base::string16& query) {
   dispatching_query_ = true;
   for (const auto& provider : providers_)
     provider->Start(query);
