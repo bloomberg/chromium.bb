@@ -534,8 +534,10 @@ SelectorQuery* SelectorQueryCache::Add(const AtomicString& selectors,
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
       CSSParserContext::Create(
-          document, document.BaseURL(), document.GetReferrerPolicy(),
-          WTF::TextEncoding(), CSSParserContext::kSnapshotProfile),
+          document, document.BaseURL(),
+          false /* is_opaque_response_from_service_worker */,
+          document.GetReferrerPolicy(), WTF::TextEncoding(),
+          CSSParserContext::kSnapshotProfile),
       nullptr, selectors);
 
   if (!selector_list.First()) {
