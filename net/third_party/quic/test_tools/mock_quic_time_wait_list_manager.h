@@ -19,11 +19,10 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
                           QuicAlarmFactory* alarm_factory);
   ~MockTimeWaitListManager() override;
 
-  MOCK_METHOD5(AddConnectionIdToTimeWait,
+  MOCK_METHOD4(AddConnectionIdToTimeWait,
                void(QuicConnectionId connection_id,
                     ParsedQuicVersion version,
                     bool ietf_quic,
-                    bool connection_rejected_statelessly,
                     std::vector<std::unique_ptr<QuicEncryptedPacket>>*
                         termination_packets));
 
@@ -31,11 +30,9 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
       QuicConnectionId connection_id,
       ParsedQuicVersion version,
       bool ietf_quic,
-      bool connection_rejected_statelessly,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets) {
     QuicTimeWaitListManager::AddConnectionIdToTimeWait(
-        connection_id, version, ietf_quic, connection_rejected_statelessly,
-        termination_packets);
+        connection_id, version, ietf_quic, termination_packets);
   }
 
   MOCK_METHOD3(ProcessPacket,

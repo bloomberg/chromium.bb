@@ -13,9 +13,8 @@
 
 namespace quic {
 
-// Size of the entire IETF Quic Path Response frame, including
-// type byte.
-const size_t kQuicPathResponseFrameSize = (kQuicPathFrameBufferSize + 1);
+// Size of the entire IETF Quic Path Response frame.
+const size_t kQuicPathResponseFrameSize = kQuicPathFrameBufferSize;
 
 struct QUIC_EXPORT_PRIVATE QuicPathResponseFrame : public QuicControlFrame {
   QuicPathResponseFrame();
@@ -28,9 +27,6 @@ struct QUIC_EXPORT_PRIVATE QuicPathResponseFrame : public QuicControlFrame {
       const QuicPathResponseFrame& frame);
 
   QuicPathFrameBuffer data_buffer;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicPathResponseFrame);
 };
 }  // namespace quic
 

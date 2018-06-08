@@ -203,6 +203,16 @@ void QuicMemoryCacheBackend::AddSpecialResponse(
                   SpdyHeaderBlock());
 }
 
+void QuicMemoryCacheBackend::AddSpecialResponse(
+    QuicStringPiece host,
+    QuicStringPiece path,
+    spdy::SpdyHeaderBlock response_headers,
+    QuicStringPiece response_body,
+    SpecialResponseType response_type) {
+  AddResponseImpl(host, path, response_type, std::move(response_headers),
+                  response_body, SpdyHeaderBlock());
+}
+
 QuicMemoryCacheBackend::QuicMemoryCacheBackend() : cache_initialized_(false) {}
 
 bool QuicMemoryCacheBackend::InitializeBackend(

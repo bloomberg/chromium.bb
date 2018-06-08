@@ -260,6 +260,32 @@ const struct QuicErrorMapping {
     {quic::QUIC_DECOMPRESSION_FAILURE, "quic.decompression_failure"},
     // Receive a RST_STREAM with offset larger than kMaxStreamLength.
     {quic::QUIC_STREAM_LENGTH_OVERFLOW, "quic.stream_length_overflow"},
+    // APPLICATION_CLOSE frame data is malformed.
+    {quic::QUIC_INVALID_APPLICATION_CLOSE_DATA,
+     "quic.invalid.application_close_data"},
+    // Received a MAX DATA frame with errors.
+    {quic::QUIC_INVALID_MAX_DATA_FRAME_DATA,
+     "quic.invalid.max_data_frame_data"},
+    // Received a MAX STREAM DATA frame with errors.
+    {quic::QUIC_INVALID_MAX_STREAM_DATA_FRAME_DATA,
+     "quic.invalid.max_stream_data_frame_data"},
+    // Received a MAX STREAM ID frame with bad data
+    {quic::QUIC_MAX_STREAM_ID_DATA, "quic.max_stream_id_data"},
+    // Received a STREAM ID BLOCKED frame with bad data
+    {quic::QUIC_STREAM_ID_BLOCKED_DATA, "quic.stream_id_blocked_data"},
+    // Error deframing a STREAM BLOCKED frame.
+    {quic::QUIC_INVALID_STREAM_BLOCKED_DATA,
+     "quic.invalid.stream_blocked_data"},
+    // NEW CONNECTION ID frame data is malformed.
+    {quic::QUIC_INVALID_NEW_CONNECTION_ID_DATA,
+     "quic.invalid.new_connection_id_data"},
+    // Received a MAX STREAM DATA frame with errors.
+    {quic::QUIC_INVALID_STOP_SENDING_FRAME_DATA,
+     "quic.invalid.stop_sending_frame_data"},
+    // Error deframing PATH CHALLENGE or PATH RESPONSE frames.
+    {quic::QUIC_INVALID_PATH_CHALLENGE_DATA,
+     "quic.invalid.path_challenge_data"},
+    {quic::QUIC_INVALID_PATH_RESPONSE_DATA, "quic.invalid.path_response_data"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};

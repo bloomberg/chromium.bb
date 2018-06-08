@@ -106,6 +106,8 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // Clears any outstanding state and sends a simple GET of 'uri' to the
   // server.  Returns 0 if the request failed and no bytes were written.
   ssize_t SendRequest(const std::string& uri);
+  // Send a request R and a RST_FRAME which resets R, in the same packet.
+  ssize_t SendRequestAndRstTogether(const std::string& uri);
   // Sends requests for all the urls and waits for the responses.  To process
   // the individual responses as they are returned, the caller should use the
   // set the response_listener on the client().
@@ -121,6 +123,14 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   ssize_t SendMessage(const spdy::SpdyHeaderBlock& headers,
                       QuicStringPiece body,
                       bool fin);
+  // Sends a request containing |headers| and |body| with the fin bit set to
+  // |fin| and returns the number of bytes sent (the size of the serialized
+  // request headers and body). If |flush| is true, will wait for the message to
+  // be flushed before returning.
+  ssize_t SendMessage(const spdy::SpdyHeaderBlock& headers,
+                      QuicStringPiece body,
+                      bool fin,
+                      bool flush);
   // Sends a request containing |headers| and |body|, waits for the response,
   // and returns the response body.
   std::string SendCustomSynchronousRequest(const spdy::SpdyHeaderBlock& headers,

@@ -110,8 +110,43 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnApplicationCloseFrame(
+      const QuicApplicationCloseFrame& frame) override {
+    application_close_frames_.push_back(frame);
+    return true;
+  }
+
+  bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override {
+    new_connection_id_frames_.push_back(frame);
+    return true;
+  }
+
+  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
+    stop_sending_frames_.push_back(frame);
+    return true;
+  }
+
+  bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override {
+    path_challenge_frames_.push_back(frame);
+    return true;
+  }
+
+  bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override {
+    path_response_frames_.push_back(frame);
+    return true;
+  }
+
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override {
     goaway_frames_.push_back(frame);
+    return true;
+  }
+  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override {
+    max_stream_id_frames_.push_back(frame);
+    return true;
+  }
+
+  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
+    stream_id_blocked_frames_.push_back(frame);
     return true;
   }
 
@@ -142,8 +177,19 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const std::vector<QuicConnectionCloseFrame>& connection_close_frames() const {
     return connection_close_frames_;
   }
+  const std::vector<QuicApplicationCloseFrame>& application_close_frames()
+      const {
+    return application_close_frames_;
+  }
   const std::vector<QuicGoAwayFrame>& goaway_frames() const {
     return goaway_frames_;
+  }
+  const std::vector<QuicMaxStreamIdFrame>& max_stream_id_frames() const {
+    return max_stream_id_frames_;
+  }
+  const std::vector<QuicStreamIdBlockedFrame>& stream_id_blocked_frames()
+      const {
+    return stream_id_blocked_frames_;
   }
   const std::vector<QuicRstStreamFrame>& rst_stream_frames() const {
     return rst_stream_frames_;
@@ -179,9 +225,16 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   std::vector<std::unique_ptr<QuicStreamFrame>> stream_frames_;
   std::vector<QuicRstStreamFrame> rst_stream_frames_;
   std::vector<QuicGoAwayFrame> goaway_frames_;
+  std::vector<QuicStreamIdBlockedFrame> stream_id_blocked_frames_;
+  std::vector<QuicMaxStreamIdFrame> max_stream_id_frames_;
   std::vector<QuicConnectionCloseFrame> connection_close_frames_;
+  std::vector<QuicApplicationCloseFrame> application_close_frames_;
+  std::vector<QuicStopSendingFrame> stop_sending_frames_;
+  std::vector<QuicPathChallengeFrame> path_challenge_frames_;
+  std::vector<QuicPathResponseFrame> path_response_frames_;
   std::vector<QuicWindowUpdateFrame> window_update_frames_;
   std::vector<QuicBlockedFrame> blocked_frames_;
+  std::vector<QuicNewConnectionIdFrame> new_connection_id_frames_;
   std::vector<std::unique_ptr<string>> stream_data_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFramerVisitor);

@@ -103,13 +103,7 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     QuicConnectionId connection_id,
     ParsedQuicVersion version,
     bool ietf_quic,
-    bool connection_rejected_statelessly,
     std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets) {
-  if (connection_rejected_statelessly) {
-    DCHECK(termination_packets != nullptr && !termination_packets->empty())
-        << "Connections that were rejected statelessly must "
-        << "have a close packet.  connection_id = " << connection_id;
-  }
   int num_packets = 0;
   ConnectionIdMap::iterator it = connection_id_map_.find(connection_id);
   const bool new_connection_id = it == connection_id_map_.end();
@@ -121,8 +115,7 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
   DCHECK_LT(num_connections(),
             static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
   ConnectionIdData data(num_packets, version, ietf_quic,
-                        clock_->ApproximateNow(),
-                        connection_rejected_statelessly);
+                        clock_->ApproximateNow());
   if (termination_packets != nullptr) {
     data.termination_packets.swap(*termination_packets);
   }
@@ -173,11 +166,6 @@ void QuicTimeWaitListManager::ProcessPacket(
   }
 
   if (!connection_data->termination_packets.empty()) {
-    if (connection_data->connection_rejected_statelessly) {
-      QUIC_DVLOG(3)
-          << "Time wait list sending previous stateless reject response "
-          << "for connection " << connection_id;
-    }
     for (const auto& packet : connection_data->termination_packets) {
       SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
           server_address, client_address, packet->Clone()));
@@ -336,13 +324,11 @@ QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
     int num_packets,
     ParsedQuicVersion version,
     bool ietf_quic,
-    QuicTime time_added,
-    bool connection_rejected_statelessly)
+    QuicTime time_added)
     : num_packets(num_packets),
       version(version),
       ietf_quic(ietf_quic),
-      time_added(time_added),
-      connection_rejected_statelessly(connection_rejected_statelessly) {}
+      time_added(time_added) {}
 
 QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
     ConnectionIdData&& other) = default;

@@ -143,6 +143,19 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual bool OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) = 0;
 
+  // Called when an IETF ApplicationCloseFrame has been parsed.
+  virtual bool OnApplicationCloseFrame(
+      const QuicApplicationCloseFrame& frame) = 0;
+
+  // Called when a StopSendingFrame has been parsed.
+  virtual bool OnStopSendingFrame(const QuicStopSendingFrame& frame) = 0;
+
+  // Called when a PathChallengeFrame has been parsed.
+  virtual bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) = 0;
+
+  // Called when a PathResponseFrame has been parsed.
+  virtual bool OnPathResponseFrame(const QuicPathResponseFrame& frame) = 0;
+
   // Called when a GoAwayFrame has been parsed.
   virtual bool OnGoAwayFrame(const QuicGoAwayFrame& frame) = 0;
 
@@ -151,6 +164,10 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
 
   // Called when a BlockedFrame has been parsed.
   virtual bool OnBlockedFrame(const QuicBlockedFrame& frame) = 0;
+
+  // Called when a NewConnectionIdFrame has been parsed.
+  virtual bool OnNewConnectionIdFrame(
+      const QuicNewConnectionIdFrame& frame) = 0;
 
   // Called when a packet has been completely processed.
   virtual void OnPacketComplete() = 0;
@@ -162,6 +179,13 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // with the stateless reset token.
   virtual void OnAuthenticatedIetfStatelessResetPacket(
       const QuicIetfStatelessResetPacket& packet) = 0;
+
+  // Called when an IETF MaxStreamId frame has been parsed.
+  virtual bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) = 0;
+
+  // Called when an IETF StreamIdBlocked frame has been parsed.
+  virtual bool OnStreamIdBlockedFrame(
+      const QuicStreamIdBlockedFrame& frame) = 0;
 };
 
 // Class for parsing and constructing QUIC packets.  It has a
@@ -244,20 +268,44 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   static size_t GetMinConnectionCloseFrameSize(
       QuicTransportVersion version,
       const QuicConnectionCloseFrame& frame);
+  static size_t GetMinApplicationCloseFrameSize(
+      QuicTransportVersion version,
+      const QuicApplicationCloseFrame& frame);
   // Size in bytes of all GoAway frame fields without the reason phrase.
   static size_t GetMinGoAwayFrameSize();
   // Size in bytes of all WindowUpdate frame fields.
-  static size_t GetWindowUpdateFrameSize();
+  // For version 99, determines whether a MAX DATA or MAX STREAM DATA frame will
+  // be generated and calculates the appropriate size.
+  static size_t GetWindowUpdateFrameSize(QuicTransportVersion version,
+                                         const QuicWindowUpdateFrame& frame);
+  // Size in bytes of all MaxStreamId frame fields.
+  static size_t GetMaxStreamIdFrameSize(QuicTransportVersion version,
+                                        const QuicMaxStreamIdFrame& frame);
+  // Size in bytes of all StreamIdBlocked frame fields.
+  static size_t GetStreamIdBlockedFrameSize(
+      QuicTransportVersion version,
+      const QuicStreamIdBlockedFrame& frame);
   // Size in bytes of all Blocked frame fields.
   static size_t GetBlockedFrameSize(QuicTransportVersion version,
                                     const QuicBlockedFrame& frame);
+  // Size in bytes of PathChallenge frame.
+  static size_t GetPathChallengeFrameSize(const QuicPathChallengeFrame& frame);
+  // Size in bytes of PathResponse frame.
+  static size_t GetPathResponseFrameSize(const QuicPathResponseFrame& frame);
   // Size in bytes required to serialize the stream id.
   static size_t GetStreamIdSize(QuicStreamId stream_id);
   // Size in bytes required to serialize the stream offset.
   static size_t GetStreamOffsetSize(QuicTransportVersion version,
                                     QuicStreamOffset offset);
+  // Size in bytes for a serialized new connection id frame
+  static size_t GetNewConnectionIdFrameSize(
+      const QuicNewConnectionIdFrame& frame);
+
   // Size in bytes required for a serialized version negotiation packet
   static size_t GetVersionNegotiationPacketSize(size_t number_versions);
+
+  // Size in bytes required for a serialized stop sending frame.
+  static size_t GetStopSendingFrameSize(const QuicStopSendingFrame& frame);
 
   // Returns the number of bytes added to the packet for the specified frame,
   // and 0 if the frame doesn't fit.  Includes the header size for the first
@@ -609,7 +657,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessIetfConnectionCloseFrame(QuicDataReader* reader,
                                        QuicConnectionCloseFrame* frame);
   bool ProcessApplicationCloseFrame(QuicDataReader* reader,
-                                    const uint8_t frame_type,
                                     QuicApplicationCloseFrame* frame);
   bool ProcessPathChallengeFrame(QuicDataReader* reader,
                                  QuicPathChallengeFrame* frame);

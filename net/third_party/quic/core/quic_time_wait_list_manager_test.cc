@@ -101,8 +101,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
   }
 
   void AddConnectionId(QuicConnectionId connection_id) {
-    AddConnectionId(connection_id, QuicVersionMax(),
-                    /*connection_rejected_statelessly=*/false, nullptr);
+    AddConnectionId(connection_id, QuicVersionMax(), nullptr);
   }
 
   void AddStatelessConnectionId(QuicConnectionId connection_id) {
@@ -110,18 +109,16 @@ class QuicTimeWaitListManagerTest : public QuicTest {
     termination_packets.push_back(std::unique_ptr<QuicEncryptedPacket>(
         new QuicEncryptedPacket(nullptr, 0, false)));
     time_wait_list_manager_.AddConnectionIdToTimeWait(
-        connection_id, QuicVersionMax(), false,
-        /*connection_rejected_statelessly=*/true, &termination_packets);
+        connection_id, QuicVersionMax(), false, &termination_packets);
   }
 
   void AddConnectionId(
       QuicConnectionId connection_id,
       ParsedQuicVersion version,
-      bool connection_rejected_statelessly,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets) {
     time_wait_list_manager_.AddConnectionIdToTimeWait(
         connection_id, version, version.transport_version == QUIC_VERSION_99,
-        connection_rejected_statelessly, packets);
+        packets);
   }
 
   bool IsConnectionIdInTimeWait(QuicConnectionId connection_id) {
@@ -225,9 +222,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendConnectionClose) {
   termination_packets.push_back(
       std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
           new char[kConnectionCloseLength], kConnectionCloseLength, true)));
-  AddConnectionId(connection_id_, QuicVersionMax(),
-                  /*connection_rejected_statelessly=*/false,
-                  &termination_packets);
+  AddConnectionId(connection_id_, QuicVersionMax(), &termination_packets);
   EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
                                    server_address_.host(), client_address_, _))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
@@ -245,9 +240,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendTwoConnectionCloses) {
   termination_packets.push_back(
       std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
           new char[kConnectionCloseLength], kConnectionCloseLength, true)));
-  AddConnectionId(connection_id_, QuicVersionMax(),
-                  /*connection_rejected_statelessly=*/false,
-                  &termination_packets);
+  AddConnectionId(connection_id_, QuicVersionMax(), &termination_packets);
   EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
                                    server_address_.host(), client_address_, _))
       .Times(2)
@@ -404,12 +397,9 @@ TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(kConnectionId1));
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(kConnectionId2));
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(kConnectionId3));
-  AddConnectionId(kConnectionId1, QuicVersionMin(),
-                  /*connection_rejected_statelessly=*/false, nullptr);
-  AddConnectionId(kConnectionId2, QuicVersionMax(),
-                  /*connection_rejected_statelessly=*/false, nullptr);
-  AddConnectionId(kConnectionId3, QuicVersionMax(),
-                  /*connection_rejected_statelessly=*/false, nullptr);
+  AddConnectionId(kConnectionId1, QuicVersionMin(), nullptr);
+  AddConnectionId(kConnectionId2, QuicVersionMax(), nullptr);
+  AddConnectionId(kConnectionId3, QuicVersionMax(), nullptr);
 
   EXPECT_EQ(QuicTransportVersionMin(),
             QuicTimeWaitListManagerPeer::GetQuicVersionFromConnectionId(
@@ -433,9 +423,7 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
   termination_packets.push_back(
       std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
           new char[kConnectionCloseLength], kConnectionCloseLength, true)));
-  AddConnectionId(connection_id_, QuicVersionMax(),
-                  /*connection_rejected_statelessly=*/false,
-                  &termination_packets);
+  AddConnectionId(connection_id_, QuicVersionMax(), &termination_packets);
   EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id_));
   EXPECT_EQ(1u, time_wait_list_manager_.num_connections());
 

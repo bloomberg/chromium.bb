@@ -505,9 +505,15 @@ void QuicStream::OnClose() {
     // written on this stream before termination. Done here if needed, using a
     // RST_STREAM frame.
     QUIC_DLOG(INFO) << ENDPOINT << "Sending RST_STREAM in OnClose: " << id();
-    session_->OnStreamDoneWaitingForAcks(id_);
-    session_->SendRstStream(id(), QUIC_RST_ACKNOWLEDGEMENT,
-                            stream_bytes_written());
+    if (session_->connection()->deprecate_scheduler()) {
+      session_->SendRstStream(id(), QUIC_RST_ACKNOWLEDGEMENT,
+                              stream_bytes_written());
+      session_->OnStreamDoneWaitingForAcks(id_);
+    } else {
+      session_->OnStreamDoneWaitingForAcks(id_);
+      session_->SendRstStream(id(), QUIC_RST_ACKNOWLEDGEMENT,
+                              stream_bytes_written());
+    }
     rst_sent_ = true;
   }
 

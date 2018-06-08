@@ -258,9 +258,7 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
     QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_less_probe_rtt, 3, 3);
     probe_rtt_disabled_if_app_limited_ = true;
   }
-  if (GetQuicReloadableFlag(quic_one_tlp) &&
-      config.HasClientRequestedIndependentOption(kMIN1, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_one_tlp, 2, 2);
+  if (config.HasClientRequestedIndependentOption(kMIN1, perspective)) {
     min_congestion_window_ = kMaxSegmentSize;
   }
 }

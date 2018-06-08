@@ -36,6 +36,9 @@ class QuicBackendResponse {
     BACKEND_ERR_RESPONSE,  // There was an error fetching the response from
                            // the backend, for example as a TCP connection
                            // error.
+    INCOMPLETE_RESPONSE,   // The server will act as if there is a non-empty
+                           // trailer but it will not be sent, as a result, FIN
+                           // will not be sent too.
   };
   QuicBackendResponse();
 

@@ -261,8 +261,39 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnApplicationCloseFrame(
+      const QuicApplicationCloseFrame& frame) override {
+    application_close_frame_ = frame;
+    return true;
+  }
+
+  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
+    stop_sending_frame_ = frame;
+    return true;
+  }
+
+  bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override {
+    path_challenge_frame_ = frame;
+    return true;
+  }
+
+  bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override {
+    path_response_frame_ = frame;
+    return true;
+  }
+
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override {
     goaway_frame_ = frame;
+    return true;
+  }
+
+  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override {
+    max_stream_id_frame_ = frame;
+    return true;
+  }
+
+  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
+    stream_id_blocked_frame_ = frame;
     return true;
   }
 
@@ -273,6 +304,11 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override {
     blocked_frame_ = frame;
+    return true;
+  }
+
+  bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override {
+    new_connection_id_ = frame;
     return true;
   }
 
@@ -306,9 +342,16 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   std::vector<std::unique_ptr<QuicPingFrame>> ping_frames_;
   QuicRstStreamFrame rst_stream_frame_;
   QuicConnectionCloseFrame connection_close_frame_;
+  QuicApplicationCloseFrame application_close_frame_;
+  QuicStopSendingFrame stop_sending_frame_;
   QuicGoAwayFrame goaway_frame_;
+  QuicPathChallengeFrame path_challenge_frame_;
+  QuicPathResponseFrame path_response_frame_;
   QuicWindowUpdateFrame window_update_frame_;
   QuicBlockedFrame blocked_frame_;
+  QuicStreamIdBlockedFrame stream_id_blocked_frame_;
+  QuicMaxStreamIdFrame max_stream_id_frame_;
+  QuicNewConnectionIdFrame new_connection_id_;
   std::vector<std::unique_ptr<QuicString>> stream_data_;
 };
 
@@ -3743,6 +3786,62 @@ TEST_P(QuicFramerTest, ConnectionCloseFrame) {
   CheckFramingBoundaries(fragments, QUIC_INVALID_CONNECTION_CLOSE_DATA);
 }
 
+TEST_P(QuicFramerTest, ApplicationCloseFrame) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame does not exist in versions other than 99.
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+      // frame type (application close frame)
+      {"",
+       {0x03}},
+      // error code
+      {"Unable to read application close error code.",
+       {0x00, 0x11}},
+      {"Unable to read application close error details.",
+       {
+         // error details length
+         kVarInt62OneByte + 0x0d,
+         // error details
+         'b',  'e',  'c',  'a',
+         'u',  's',  'e',  ' ',
+         'I',  ' ',  'c',  'a',
+         'n'}
+      }
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(0u, visitor_.stream_frames_.size());
+
+  EXPECT_EQ(0x11, visitor_.application_close_frame_.error_code);
+  EXPECT_EQ("because I can", visitor_.application_close_frame_.error_details);
+
+  ASSERT_EQ(0u, visitor_.ack_frames_.size());
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_APPLICATION_CLOSE_DATA);
+}
+
 TEST_P(QuicFramerTest, GoAwayFrame) {
   // clang-format off
   PacketFragments packet = {
@@ -3951,6 +4050,93 @@ TEST_P(QuicFramerTest, WindowUpdateFrame) {
   CheckFramingBoundaries(fragments, QUIC_INVALID_WINDOW_UPDATE_DATA);
 }
 
+TEST_P(QuicFramerTest, MaxDataFrame) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame is available only in version 99.
+    return;
+  }
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+      // frame type (IETF max data frame)
+      {"",
+       {0x04}},
+      // byte offset
+      {"Can not read MAX_DATA byte-offset",
+       {kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+        0x32, 0x10, 0x76, 0x54}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(0u, visitor_.window_update_frame_.stream_id);
+  EXPECT_EQ(kStreamOffset, visitor_.window_update_frame_.byte_offset);
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_MAX_DATA_FRAME_DATA);
+}
+
+TEST_P(QuicFramerTest, MaxStreamDataFrame) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame available only in version 99.
+    return;
+  }
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+      // frame type (ietf max stream data frame)
+      {"",
+       {0x05}},
+      // stream id
+      {"Can not read MAX_STREAM_DATA stream id",
+       {kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04}},
+      // byte offset
+      {"Can not read MAX_STREAM_DATA byte-count",
+       {kVarInt62EightBytes + 0x3A, 0x98, 0xFE, 0xDC,
+        0x32, 0x10, 0x76, 0x54}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(kStreamId, visitor_.window_update_frame_.stream_id);
+  EXPECT_EQ(kStreamOffset, visitor_.window_update_frame_.byte_offset);
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_MAX_STREAM_DATA_FRAME_DATA);
+}
+
 TEST_P(QuicFramerTest, BlockedFrame) {
   // clang-format off
   PacketFragments packet = {
@@ -3999,14 +4185,14 @@ TEST_P(QuicFramerTest, BlockedFrame) {
       // packet number
       {"",
        {0x12, 0x34, 0x56, 0x78}},
-      // frame type
+      // frame type (IETF stream blocked frame)
       {"",
        {0x09}},
       // stream id
-      {"Can not read stream blocked stream id",
+      {"Can not read stream blocked stream id.",
        {kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04}},
       // Offset
-      {"Can not read stream blocked offset",
+      {"Can not read stream blocked offset.",
        {kVarInt62EightBytes + 0x3a, 0x98, 0xFE, 0xDC, 0x32, 0x10, 0x76, 0x54}},
   };
   // clang-format on
@@ -4032,7 +4218,11 @@ TEST_P(QuicFramerTest, BlockedFrame) {
   }
   EXPECT_EQ(kStreamId, visitor_.blocked_frame_.stream_id);
 
-  CheckFramingBoundaries(fragments, QUIC_INVALID_BLOCKED_DATA);
+  if (framer_.transport_version() == QUIC_VERSION_99) {
+    CheckFramingBoundaries(fragments, QUIC_INVALID_STREAM_BLOCKED_DATA);
+  } else {
+    CheckFramingBoundaries(fragments, QUIC_INVALID_BLOCKED_DATA);
+  }
 }
 
 TEST_P(QuicFramerTest, PingFrame) {
@@ -6430,6 +6620,133 @@ TEST_P(QuicFramerTest, BuildTruncatedCloseFramePacket) {
                                       data->length(), AsChars(p), packet_size);
 }
 
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildApplicationCloseFramePacket) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // Versions other than 99 do not have ApplicationClose
+    return;
+  }
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicApplicationCloseFrame app_close_frame;
+  app_close_frame.error_code = static_cast<QuicErrorCode>(0x11);
+  app_close_frame.error_details = "because I can";
+
+  QuicFrames frames = {QuicFrame(&app_close_frame)};
+
+  // clang-format off
+
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (application close frame)
+    0x03,
+    // error code
+    0x00, 0x11,
+    // error details length
+    kVarInt62OneByte + 0x0d,
+    // error details
+    'b',  'e',  'c',  'a',
+    'u',  's',  'e',  ' ',
+    'I',  ' ',  'c',  'a',
+    'n',
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildTruncatedApplicationCloseFramePacket) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // Versions other than 99 do not have this frame.
+    return;
+  }
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicApplicationCloseFrame app_close_frame;
+  app_close_frame.error_code = static_cast<QuicErrorCode>(0x11);
+  app_close_frame.error_details = QuicString(2048, 'A');
+
+  QuicFrames frames = {QuicFrame(&app_close_frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type
+    0x03,
+    // error code
+    0x00, 0x11,
+    // error details length
+    kVarInt62TwoBytes + 0x01, 0x00,
+    // error details (truncated to 256 bytes)
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+    'A',  'A',  'A',  'A',  'A',  'A',  'A',  'A',
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
 TEST_P(QuicFramerTest, BuildGoAwayPacket) {
   QuicPacketHeader header;
   header.destination_connection_id = kConnectionId;
@@ -6772,12 +7089,12 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
     // packet number
     0x12, 0x34, 0x56, 0x78,
 
-    // frame type (window update frame)
-    0xf1,
+    // frame type (max stream data frame)
+    0x05,
     // stream id
-    0x01, 0x02, 0x03, 0x04,
+    kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04,
     // byte offset
-    0x11, 0x22, 0x33, 0x44,
+    kVarInt62EightBytes + 0x11, 0x22, 0x33, 0x44,
     0x55, 0x66, 0x77, 0x88,
   };
   // clang-format on
@@ -6796,6 +7113,94 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
       "constructed packet", data->data(), data->length(), AsChars(p),
       framer_.transport_version() == QUIC_VERSION_99 ? QUIC_ARRAYSIZE(packet99)
                                                      : QUIC_ARRAYSIZE(packet));
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildMaxStreamDataPacket) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame is available only in this version.
+    return;
+  }
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicWindowUpdateFrame window_update_frame;
+  window_update_frame.stream_id = kStreamId;
+  window_update_frame.byte_offset = 0x1122334455667788;
+
+  QuicFrames frames = {QuicFrame(&window_update_frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (max stream data frame)
+    0x05,
+    // stream id
+    kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04,
+    // byte offset
+    kVarInt62EightBytes + 0x11, 0x22, 0x33, 0x44,
+    0x55, 0x66, 0x77, 0x88,
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildMaxDataPacket) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame is available only in this version.
+    return;
+  }
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicWindowUpdateFrame window_update_frame;
+  window_update_frame.stream_id = 0;
+  window_update_frame.byte_offset = 0x1122334455667788;
+
+  QuicFrames frames = {QuicFrame(&window_update_frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (max data frame)
+    0x04,
+    // byte offset
+    kVarInt62EightBytes + 0x11, 0x22, 0x33, 0x44,
+    0x55, 0x66, 0x77, 0x88,
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
 }
 
 TEST_P(QuicFramerTest, BuildBlockedPacket) {
@@ -6849,7 +7254,7 @@ TEST_P(QuicFramerTest, BuildBlockedPacket) {
     0x12, 0x34, 0x56, 0x78,
 
     // frame type
-    0xf3,
+    0x09,
     // stream id
     kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04,
     // Offset
@@ -7878,6 +8283,695 @@ TEST_P(QuicFramerTest, StartsWithChlo) {
       EXPECT_FALSE(framer_.StartsWithChlo(kCryptoStreamId, offset));
     }
   }
+}
+
+TEST_P(QuicFramerTest, IetfBlockedFrame) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x9A, 0xBC}},
+      // frame type (blocked)
+      {"",
+       {0x08}},
+      // blocked offset
+      {"Can not read blocked offset.",
+       {kVarInt62EightBytes + 0x3a, 0x98, 0xFE, 0xDC, 0x32, 0x10, 0x76, 0x54}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(kStreamOffset, visitor_.blocked_frame_.offset);
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_BLOCKED_DATA);
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildIetfBlockedPacket) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicBlockedFrame frame;
+  frame.stream_id = 0;
+  frame.offset = kStreamOffset;
+  QuicFrames frames = {QuicFrame(&frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (blocked)
+    0x08,
+    // Offset
+    kVarInt62EightBytes + 0x3a, 0x98, 0xFE, 0xDC, 0x32, 0x10, 0x76, 0x54
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+TEST_P(QuicFramerTest, IetfStreamBlockedFrame) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x9A, 0xBC}},
+      // frame type (blocked)
+      {"",
+       {0x09}},
+      // blocked offset
+      {"Can not read stream blocked stream id.",
+       {kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04}},
+      {"Can not read stream blocked offset.",
+       {kVarInt62EightBytes + 0x3a, 0x98, 0xFE, 0xDC, 0x32, 0x10, 0x76, 0x54}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(kStreamId, visitor_.blocked_frame_.stream_id);
+  EXPECT_EQ(kStreamOffset, visitor_.blocked_frame_.offset);
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_STREAM_BLOCKED_DATA);
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildIetfStreamBlockedPacket) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicBlockedFrame frame;
+  frame.stream_id = kStreamId;
+  frame.offset = kStreamOffset;
+  QuicFrames frames = {QuicFrame(&frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (blocked)
+    0x09,
+    // Stream ID
+    kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04,
+    // Offset
+    kVarInt62EightBytes + 0x3a, 0x98, 0xFE, 0xDC, 0x32, 0x10, 0x76, 0x54
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+TEST_P(QuicFramerTest, MaxStreamIdFrame) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x9A, 0xBC}},
+      // frame type (max stream id)
+      {"",
+       {0x06}},
+      // max. stream id
+      {"Can not read MAX_STREAM_ID stream id.",
+       {kVarInt62OneByte + 0x01}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(0x1u, visitor_.max_stream_id_frame_.max_stream_id);
+
+  CheckFramingBoundaries(packet99, QUIC_MAX_STREAM_ID_DATA);
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildMaxStreamIdPacket) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicMaxStreamIdFrame frame;
+  frame.max_stream_id = kTestQuicStreamId;
+  QuicFrames frames = {QuicFrame(frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (max stream id frame)
+    0x06,
+    // Max stream id
+    kVarInt62OneByte + 0x01
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+TEST_P(QuicFramerTest, StreamIdBlockedFrame) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x9A, 0xBC}},
+      // frame type (stream id blocked)
+      {"",
+       {0x0a}},
+      // stream id
+      {"Can not read STREAM_ID_BLOCKED stream id.",
+       {kVarInt62OneByte + 0x01}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(0x1u, visitor_.stream_id_blocked_frame_.stream_id);
+
+  CheckFramingBoundaries(packet99, QUIC_STREAM_ID_BLOCKED_DATA);
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildStreamIdBlockedPacket) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicStreamIdBlockedFrame frame;
+  frame.stream_id = kTestQuicStreamId;
+  QuicFrames frames = {QuicFrame(frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (stream id blocked frame)
+    0x0a,
+    // Max stream id
+    kVarInt62OneByte + 0x01
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+TEST_P(QuicFramerTest, NewConnectionIdFrame) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame is only for version 99.
+    return;
+  }
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x56, 0x78}},
+      // frame type (new connection id frame)
+      {"",
+       {0x0b}},
+      // error code
+      {"Unable to read new connection ID frame sequence number.",
+       {kVarInt62OneByte + 0x11}},
+      {"Unable to read new connection ID frame connection id.",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x11}},
+      {"Can not read new connection ID frame reset token.",
+       {0xb5, 0x69, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(0u, visitor_.stream_frames_.size());
+
+  EXPECT_EQ(kConnectionId + 1, visitor_.new_connection_id_.connection_id);
+  EXPECT_EQ(0x11u, visitor_.new_connection_id_.sequence_number);
+  EXPECT_EQ(kTestStatelessResetToken,
+            visitor_.new_connection_id_.stateless_reset_token);
+
+  ASSERT_EQ(0u, visitor_.ack_frames_.size());
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_NEW_CONNECTION_ID_DATA);
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildNewConnectionIdFramePacket) {
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    // This frame is only for version 99.
+    return;
+  }
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicNewConnectionIdFrame frame;
+  frame.sequence_number = 0x11;
+  frame.connection_id = kConnectionId + 1;
+  frame.stateless_reset_token = kTestStatelessResetToken;
+
+  QuicFrames frames = {QuicFrame(&frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (new connection id frame)
+    0x0b,
+    // sequence number
+    kVarInt62OneByte + 0x11,
+    // new connection id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x11,
+    // stateless reset token
+    0xb5, 0x69, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+TEST_P(QuicFramerTest, IetfStopSendingFrame) {
+  // This test is only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x9A, 0xBC}},
+      // frame type (stop sending)
+      {"",
+       {0x0c}},
+      // stream id
+      {"Unable to read stop sending stream id.",
+       {kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04}},
+      {"Unable to read stop sending application error code.",
+       {0x76, 0x54}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(kStreamId, visitor_.stop_sending_frame_.stream_id);
+  EXPECT_EQ(0x7654, visitor_.stop_sending_frame_.application_error_code);
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_STOP_SENDING_FRAME_DATA);
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildIetfStopSendingPacket) {
+  // This test is only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicStopSendingFrame frame;
+  frame.stream_id = kStreamId;
+  frame.application_error_code = 0xffff;
+  QuicFrames frames = {QuicFrame(&frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (stop sending)
+    0x0c,
+    // Stream ID
+    kVarInt62FourBytes + 0x01, 0x02, 0x03, 0x04,
+    // Application error code
+    0xff, 0xff
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+TEST_P(QuicFramerTest, IetfPathChallengeFrame) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x9A, 0xBC}},
+      // frame type (path challenge)
+      {"",
+       {0x0e}},
+      // data
+      {"Can not read path challenge data.",
+       {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(QuicPathFrameBuffer({{0, 1, 2, 3, 4, 5, 6, 7}}),
+            visitor_.path_challenge_frame_.data_buffer);
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_PATH_CHALLENGE_DATA);
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildIetfPathChallengePacket) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicPathChallengeFrame frame;
+  frame.data_buffer = QuicPathFrameBuffer({{0, 1, 2, 3, 4, 5, 6, 7}});
+  QuicFrames frames = {QuicFrame(&frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (path challenge)
+    0x0e,
+    // Data
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
+}
+
+TEST_P(QuicFramerTest, IetfPathResponseFrame) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  // clang-format off
+  PacketFragments packet99 = {
+      // type (short header, 4 byte packet number)
+      {"",
+       {0x32}},
+      // connection_id
+      {"",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
+      // packet number
+      {"",
+       {0x12, 0x34, 0x9A, 0xBC}},
+      // frame type (path response)
+      {"",
+       {0x0f}},
+      // data
+      {"Can not read path response data.",
+       {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet99));
+  EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_TRUE(CheckDecryption(
+      *encrypted, !kIncludeVersion, !kIncludeDiversificationNonce,
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
+
+  EXPECT_EQ(QuicPathFrameBuffer({{0, 1, 2, 3, 4, 5, 6, 7}}),
+            visitor_.path_response_frame_.data_buffer);
+
+  CheckFramingBoundaries(packet99, QUIC_INVALID_PATH_RESPONSE_DATA);
+}
+
+// TODO(b/109878472): Re-enable after it is fixed in Chromium.
+TEST_P(QuicFramerTest, DISABLED_BuildIetfPathResponsePacket) {
+  // This test only for version 99.
+  if (framer_.transport_version() != QUIC_VERSION_99) {
+    return;
+  }
+
+  QuicPacketHeader header;
+  header.destination_connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number = kPacketNumber;
+
+  QuicPathResponseFrame frame;
+  frame.data_buffer = QuicPathFrameBuffer({{0, 1, 2, 3, 4, 5, 6, 7}});
+  QuicFrames frames = {QuicFrame(&frame)};
+
+  // clang-format off
+  unsigned char packet99[] = {
+    // type (short header, 4 byte packet number)
+    0x32,
+    // connection_id
+    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
+    // packet number
+    0x12, 0x34, 0x56, 0x78,
+
+    // frame type (path response)
+    0x0f,
+    // Data
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet99),
+                                      QUIC_ARRAYSIZE(packet99));
 }
 
 }  // namespace

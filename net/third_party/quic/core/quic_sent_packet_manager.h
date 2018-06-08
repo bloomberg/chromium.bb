@@ -175,7 +175,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // TimeUntilSend again until we receive an OnIncomingAckFrame event.
   // Note 2: Send algorithms may or may not use |retransmit| in their
   // calculations.
-  QuicTime::Delta TimeUntilSend(QuicTime now);
+  QuicTime::Delta TimeUntilSend(QuicTime now) const;
 
   // Returns the current delay for the retransmission timer, which may send
   // either a tail loss probe or do a full RTO.  Returns QuicTime::Zero() if

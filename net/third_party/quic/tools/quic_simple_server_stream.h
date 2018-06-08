@@ -74,6 +74,10 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   // for the body.
   void SendNotFoundResponse();
 
+  // Sends the response header and body, but not the fin.
+  void SendIncompleteResponse(spdy::SpdyHeaderBlock response_headers,
+                              QuicStringPiece body);
+
   void SendHeadersAndBody(spdy::SpdyHeaderBlock response_headers,
                           QuicStringPiece body);
   void SendHeadersAndBodyAndTrailers(spdy::SpdyHeaderBlock response_headers,

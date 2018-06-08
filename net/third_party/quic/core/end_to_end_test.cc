@@ -1143,8 +1143,7 @@ TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {
   VerifyCleanConnection(true);
 }
 
-TEST_P(EndToEndTestWithTls,
-       DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
+TEST_P(EndToEndTestWithTls, DoNotSetSendAlarmIfConnectionFlowControlBlocked) {
   // Regression test for b/14677858.
   // Test that the resume write alarm is not set in QuicConnection::OnCanWrite
   // if currently connection level flow control blocked. If set, this results in
@@ -1176,13 +1175,13 @@ TEST_P(EndToEndTestWithTls,
 
   // Prior to fixing b/14677858 this call would result in an infinite loop in
   // Chromium. As a proxy for detecting this, we now check whether the
-  // resume_writes_alarm is set after OnCanWrite. It should not be, as the
+  // send alarm is set after OnCanWrite. It should not be, as the
   // connection is still flow control blocked.
   session->connection()->OnCanWrite();
 
-  QuicAlarm* resume_writes_alarm =
-      QuicConnectionPeer::GetResumeWritesAlarm(session->connection());
-  EXPECT_FALSE(resume_writes_alarm->IsSet());
+  QuicAlarm* send_alarm =
+      QuicConnectionPeer::GetSendAlarm(session->connection());
+  EXPECT_FALSE(send_alarm->IsSet());
 }
 
 // TODO(nharper): Needs to get turned back to EndToEndTestWithTls
@@ -3035,6 +3034,41 @@ TEST_P(EndToEndTest, PreSharedKeyNoServer) {
 
   EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ(QUIC_HANDSHAKE_TIMEOUT, client_->connection_error());
+}
+
+TEST_P(EndToEndTest, RequestAndStreamRstInOnePacket) {
+  // Regression test for b/80234898.
+  ASSERT_TRUE(Initialize());
+
+  // INCOMPLETE_RESPONSE will cause the server to not to send the trailer
+  // (and the FIN) after the response body.
+  QuicString response_body(1305, 'a');
+  spdy::SpdyHeaderBlock response_headers;
+  response_headers[":status"] = QuicTextUtils::Uint64ToString(200);
+  response_headers["content-length"] =
+      QuicTextUtils::Uint64ToString(response_body.length());
+  memory_cache_backend_.AddSpecialResponse(
+      server_hostname_, "/test_url", std::move(response_headers), response_body,
+      QuicBackendResponse::INCOMPLETE_RESPONSE);
+
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  client_->WaitForDelayedAcks();
+
+  QuicSession* session = client_->client()->client_session();
+  const QuicPacketCount packets_sent_before =
+      session->connection()->GetStats().packets_sent;
+
+  client_->SendRequestAndRstTogether("/test_url");
+
+  // Expect exactly one packet is sent from the block above.
+  ASSERT_EQ(packets_sent_before + 1,
+            session->connection()->GetStats().packets_sent);
+
+  // Wait for the connection to become idle.
+  client_->WaitForDelayedAcks();
+
+  // The real expectation is the test does not crash or timeout.
+  EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
 }
 
 class EndToEndPacketReorderingTest : public EndToEndTest {

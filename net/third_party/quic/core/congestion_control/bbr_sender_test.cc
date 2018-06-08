@@ -1046,7 +1046,6 @@ TEST_F(BbrSenderTest, ResumeConnectionState) {
 
 // Test with a min CWND of 1 instead of 4 packets.
 TEST_F(BbrSenderTest, ProbeRTTMinCWND1) {
-  SetQuicReloadableFlag(quic_one_tlp, true);
   CreateDefaultSetup();
   SetConnectionOption(kMIN1);
   DriveOutOfStartup();

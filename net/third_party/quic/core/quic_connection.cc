@@ -208,6 +208,7 @@ QuicConnection::QuicConnection(
               helper->GetClock()->ApproximateNow(),
               perspective),
       current_packet_content_(NO_FRAMES_RECEIVED),
+      is_current_packet_connectivity_probing_(false),
       current_peer_migration_type_(NO_CHANGE),
       current_effective_peer_migration_type_(NO_CHANGE),
       helper_(helper),
@@ -267,9 +268,6 @@ QuicConnection::QuicConnection(
       send_alarm_(
           alarm_factory_->CreateAlarm(arena_.New<SendAlarmDelegate>(this),
                                       &arena_)),
-      resume_writes_alarm_(
-          alarm_factory_->CreateAlarm(arena_.New<SendAlarmDelegate>(this),
-                                      &arena_)),
       timeout_alarm_(
           alarm_factory_->CreateAlarm(arena_.New<TimeoutAlarmDelegate>(this),
                                       &arena_)),
@@ -321,18 +319,16 @@ QuicConnection::QuicConnection(
       supports_release_time_(writer->SupportsReleaseTime()),
       pace_time_into_future_(QuicTime::Delta::FromMilliseconds(
           GetQuicFlag(FLAGS_quic_pace_time_into_future_ms))),
-      handle_write_results_for_connectivity_probe_(GetQuicReloadableFlag(
-          quic_handle_write_results_for_connectivity_probe)),
       use_path_degrading_alarm_(
           GetQuicReloadableFlag(quic_path_degrading_alarm2)),
       enable_server_proxy_(GetQuicReloadableFlag(quic_enable_server_proxy2)),
       deprecate_scheduler_(
-          GetQuicReloadableFlag(quic_deprecate_scoped_scheduler)) {
+          GetQuicReloadableFlag(quic_deprecate_scoped_scheduler2)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
   }
   if (deprecate_scheduler_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_deprecate_scoped_scheduler);
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_deprecate_scoped_scheduler2);
   }
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
@@ -691,7 +687,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
     const QuicString error_details =
         "Pending frames must be serialized before incoming packets are "
         "processed.";
-    QUIC_BUG << error_details;
+    QUIC_BUG << error_details << ", received header: " << header;
     CloseConnection(QUIC_INTERNAL_ERROR, error_details,
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     RecordInternalErrorLocation(QUIC_CONNECTION_UNAUTHENTICATED_HEADER);
@@ -1152,6 +1148,27 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
   return connected_;
 }
 
+bool QuicConnection::OnApplicationCloseFrame(
+    const QuicApplicationCloseFrame& frame) {
+  // TODO(fkastenholz): Need to figure out what the right thing is to do with
+  // this when we get one. Most likely, the correct action is to mimic the
+  // OnConnectionCloseFrame actions, with possibly an indication to the
+  // application of the ApplicationClose information.
+  return true;
+}
+
+bool QuicConnection::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
+  return true;
+}
+
+bool QuicConnection::OnPathChallengeFrame(const QuicPathChallengeFrame& frame) {
+  return true;
+}
+
+bool QuicConnection::OnPathResponseFrame(const QuicPathResponseFrame& frame) {
+  return true;
+}
+
 bool QuicConnection::OnConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame) {
   DCHECK(connected_);
@@ -1175,6 +1192,15 @@ bool QuicConnection::OnConnectionCloseFrame(
   TearDownLocalConnectionState(frame.error_code, frame.error_details,
                                ConnectionCloseSource::FROM_PEER);
   return connected_;
+}
+
+bool QuicConnection::OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) {
+  return true;
+}
+
+bool QuicConnection::OnStreamIdBlockedFrame(
+    const QuicStreamIdBlockedFrame& frame) {
+  return true;
 }
 
 bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
@@ -1215,6 +1241,11 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   visitor_->PostProcessAfterData();
   should_last_packet_instigate_acks_ = true;
   return connected_;
+}
+
+bool QuicConnection::OnNewConnectionIdFrame(
+    const QuicNewConnectionIdFrame& frame) {
+  return true;
 }
 
 bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
@@ -1726,27 +1757,14 @@ void QuicConnection::OnCanWrite() {
     visitor_->PostProcessAfterData();
   }
 
-  if (GetQuicReloadableFlag(quic_unified_send_alarm)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_unified_send_alarm);
-    // After the visitor writes, it may have caused the socket to become write
-    // blocked or the congestion manager to prohibit sending, so check again.
-    if (visitor_->WillingAndAbleToWrite() && !send_alarm_->IsSet() &&
-        CanWrite(HAS_RETRANSMITTABLE_DATA)) {
-      // We're not write blocked, but some stream didn't write out all of its
-      // bytes. Register for 'immediate' resumption so we'll keep writing after
-      // other connections and events have had a chance to use the thread.
-      send_alarm_->Set(clock_->ApproximateNow());
-    }
-  } else {
-    // After the visitor writes, it may have caused the socket to become write
-    // blocked or the congestion manager to prohibit sending, so check again.
-    if (visitor_->WillingAndAbleToWrite() && !resume_writes_alarm_->IsSet() &&
-        CanWrite(HAS_RETRANSMITTABLE_DATA)) {
-      // We're not write blocked, but some stream didn't write out all of its
-      // bytes. Register for 'immediate' resumption so we'll keep writing after
-      // other connections and events have had a chance to use the thread.
-      resume_writes_alarm_->Set(clock_->ApproximateNow());
-    }
+  // After the visitor writes, it may have caused the socket to become write
+  // blocked or the congestion manager to prohibit sending, so check again.
+  if (visitor_->WillingAndAbleToWrite() && !send_alarm_->IsSet() &&
+      CanWrite(HAS_RETRANSMITTABLE_DATA)) {
+    // We're not write blocked, but some stream didn't write out all of its
+    // bytes. Register for 'immediate' resumption so we'll keep writing after
+    // other connections and events have had a chance to use the thread.
+    send_alarm_->Set(clock_->ApproximateNow());
   }
 }
 
@@ -2559,7 +2577,6 @@ void QuicConnection::CancelAllAlarms() {
 
   ack_alarm_->Cancel();
   ping_alarm_->Cancel();
-  resume_writes_alarm_->Cancel();
   retransmission_alarm_->Cancel();
   send_alarm_->Cancel();
   timeout_alarm_->Cancel();
@@ -2943,17 +2960,10 @@ bool QuicConnection::SendConnectivityProbingPacket(
   if (probing_writer->IsWriteBlocked()) {
     QUIC_DLOG(INFO) << ENDPOINT
                     << "Writer blocked when send connectivity probing packet.";
-    if (!handle_write_results_for_connectivity_probe_) {
+    if (probing_writer == writer_) {
+      // Visitor should not be write blocked if the probing writer is not the
+      // default packet writer.
       visitor_->OnWriteBlocked();
-    } else {
-      QUIC_FLAG_COUNT_N(
-          quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
-          1, 3);
-      if (probing_writer == writer_) {
-        // Visitor should not be write blocked if the probing writer is not the
-        // default packet writer.
-        visitor_->OnWriteBlocked();
-      }
     }
     return true;
   }
@@ -2978,15 +2988,8 @@ bool QuicConnection::SendConnectivityProbingPacket(
       self_address().host(), peer_address, per_packet_options_);
 
   if (IsWriteError(result.status)) {
-    if (!handle_write_results_for_connectivity_probe_) {
-      OnWriteError(result.error_code);
-    } else {
-      QUIC_FLAG_COUNT_N(
-          quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
-          2, 3);
-      // Write error for any connectivity probe should not affect the connection
-      // as it is sent on a different path.
-    }
+    // Write error for any connectivity probe should not affect the connection
+    // as it is sent on a different path.
     QUIC_DLOG(INFO) << ENDPOINT << "Write probing packet failed with error = "
                     << result.error_code;
     return false;
@@ -2999,17 +3002,10 @@ bool QuicConnection::SendConnectivityProbingPacket(
       NO_RETRANSMITTABLE_DATA);
 
   if (result.status == WRITE_STATUS_BLOCKED) {
-    if (!handle_write_results_for_connectivity_probe_) {
+    if (probing_writer == writer_) {
+      // Visitor should not be write blocked if the probing writer is not the
+      // default packet writer.
       visitor_->OnWriteBlocked();
-    } else {
-      QUIC_FLAG_COUNT_N(
-          quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
-          3, 3);
-      if (probing_writer == writer_) {
-        // Visitor should not be write blocked if the probing writer is not the
-        // default packet writer.
-        visitor_->OnWriteBlocked();
-      }
     }
     if (probing_writer->IsWriteBlockedDataBuffered()) {
       QUIC_DLOG(INFO) << ENDPOINT << "Write probing packet blocked";

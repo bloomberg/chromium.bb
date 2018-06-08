@@ -323,6 +323,23 @@ ssize_t QuicTestClient::SendRequest(const string& uri) {
   return SendMessage(headers, "");
 }
 
+ssize_t QuicTestClient::SendRequestAndRstTogether(const string& uri) {
+  spdy::SpdyHeaderBlock headers;
+  if (!PopulateHeaderBlockFromUrl(uri, &headers)) {
+    return 0;
+  }
+
+  QuicSpdyClientSession* session = client()->client_session();
+  QuicConnection::ScopedPacketFlusher flusher(
+      session->connection(), QuicConnection::SEND_ACK_IF_PENDING);
+  ssize_t ret = SendMessage(headers, "", /*fin=*/true, /*flush=*/false);
+
+  QuicStreamId stream_id =
+      QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session, 0);
+  session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED, 0);
+  return ret;
+}
+
 void QuicTestClient::SendRequestsAndWaitForResponses(
     const std::vector<string>& url_list) {
   for (const string& url : url_list) {
@@ -395,11 +412,21 @@ ssize_t QuicTestClient::SendMessage(const spdy::SpdyHeaderBlock& headers,
 ssize_t QuicTestClient::SendMessage(const spdy::SpdyHeaderBlock& headers,
                                     QuicStringPiece body,
                                     bool fin) {
+  return SendMessage(headers, body, fin, /*flush=*/true);
+}
+
+ssize_t QuicTestClient::SendMessage(const spdy::SpdyHeaderBlock& headers,
+                                    QuicStringPiece body,
+                                    bool fin,
+                                    bool flush) {
   // Always force creation of a stream for SendMessage.
   latest_created_stream_ = nullptr;
 
   ssize_t ret = GetOrCreateStreamAndSendRequest(&headers, body, fin, nullptr);
-  WaitForWriteToFlush();
+
+  if (flush) {
+    WaitForWriteToFlush();
+  }
   return ret;
 }
 

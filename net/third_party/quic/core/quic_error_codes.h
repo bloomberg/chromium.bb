@@ -281,9 +281,28 @@ enum QuicErrorCode {
 
   // Receive a RST_STREAM with offset larger than kMaxStreamLength.
   QUIC_STREAM_LENGTH_OVERFLOW = 98,
+  // APPLICATION_CLOSE frame data is malformed.
+  QUIC_INVALID_APPLICATION_CLOSE_DATA = 101,
+  // Received a MAX DATA frame with errors.
+  QUIC_INVALID_MAX_DATA_FRAME_DATA = 102,
+  // Received a MAX STREAM DATA frame with errors.
+  QUIC_INVALID_MAX_STREAM_DATA_FRAME_DATA = 103,
+  // Received a MAX STREAM ID frame with bad data
+  QUIC_MAX_STREAM_ID_DATA = 104,
+  // Received a STREAM ID BLOCKED frame with bad data
+  QUIC_STREAM_ID_BLOCKED_DATA = 105,
+  // Error deframing a STREAM BLOCKED frame.
+  QUIC_INVALID_STREAM_BLOCKED_DATA = 106,
+  // NEW CONNECTION ID frame data is malformed.
+  QUIC_INVALID_NEW_CONNECTION_ID_DATA = 107,
+  // Received a MAX STREAM DATA frame with errors.
+  QUIC_INVALID_STOP_SENDING_FRAME_DATA = 108,
+  // Error deframing PATH CHALLENGE or PATH RESPONSE frames.
+  QUIC_INVALID_PATH_CHALLENGE_DATA = 109,
+  QUIC_INVALID_PATH_RESPONSE_DATA = 110,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 101,
+  QUIC_LAST_ERROR = 111,
 };
 // QuicErrorCodes is encoded as a single octet on-the-wire.
 static_assert(static_cast<int>(QUIC_LAST_ERROR) <=

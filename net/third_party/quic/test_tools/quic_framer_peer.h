@@ -59,7 +59,6 @@ class QuicFramerPeer {
                                               QuicConnectionCloseFrame* frame);
   static bool ProcessApplicationCloseFrame(QuicFramer* framer,
                                            QuicDataReader* reader,
-                                           const uint8_t frame_type,
                                            QuicApplicationCloseFrame* frame);
   static bool ProcessIetfAckFrame(QuicFramer* framer,
                                   QuicDataReader* reader,
