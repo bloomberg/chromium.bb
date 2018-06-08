@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -39,13 +40,12 @@
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
 
 namespace {
-
-SkColor kGreyTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
 SkColor const kWarningColor = gfx::kGoogleRed700;
 
@@ -200,6 +200,9 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
   storage_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
   storage_checkbox_->SetChecked(controller_->GetStoreLocallyStartState());
+  storage_checkbox_->SetEnabledTextColors(views::style::GetColor(
+      *storage_checkbox_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      STYLE_SECONDARY));
   storage_row_->AddChildView(storage_checkbox_);
   storage_row_layout->SetFlexForView(storage_checkbox_, 1);
 
@@ -363,7 +366,9 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   // Instruction text of the dialog.
   instructions_ = new views::Label(controller_->GetInstructionsMessage());
-  instructions_->SetEnabledColor(kGreyTextColor);
+  instructions_->SetEnabledColor(views::style::GetColor(
+      *instructions_, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+      STYLE_SECONDARY));
   instructions_->SetMultiLine(true);
   instructions_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   controls_container_->AddChildView(instructions_);
@@ -419,7 +424,8 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  error_label_->SetEnabledColor(kWarningColor);
+  error_label_->SetEnabledColor(views::style::GetColor(
+      *instructions_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED));
   temporary_error->AddChildView(error_label_);
   temporary_error_layout->SetFlexForView(error_label_, 1);
   controls_container_->AddChildView(temporary_error);
