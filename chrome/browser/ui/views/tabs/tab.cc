@@ -867,6 +867,12 @@ void Tab::Layout() {
     close_button_->SetBorder(
         views::CreateEmptyBorder(top, left, bottom, right));
     close_button_->SizeToPreferredSize();
+    // Re-layout the close button so it can recompute its focus ring if needed:
+    // SizeToPreferredSize() will not necessarily re-Layout the View if only its
+    // interior margins have changed (which this logic does), but the focus ring
+    // still needs to be updated because it doesn't want to encompass the
+    // interior margins.
+    close_button_->Layout();
   }
   close_button_->SetVisible(showing_close_button_);
 

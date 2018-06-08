@@ -464,6 +464,12 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   tabs_.Add(tab, model_index);
   selected_tabs_.IncrementFrom(model_index);
 
+  // If the new tab button is visually after the tabs, make sure it is logically
+  // afterwards as well so that the focus traversal order is correct.
+  NewTabButtonPosition position = controller_->GetNewTabButtonPosition();
+  if (position == AFTER_TABS || position == TRAILING)
+    ReorderChildView(new_tab_button_, -1);
+
   if (touch_layout_) {
     GenerateIdealBoundsForPinnedTabs(NULL);
     int add_types = 0;

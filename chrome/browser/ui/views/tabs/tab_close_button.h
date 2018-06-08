@@ -47,6 +47,7 @@ class TabCloseButton : public views::ImageButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   const char* GetClassName() const override;
+  void Layout() override;
 
  protected:
   void PaintButtonContents(gfx::Canvas* canvas) override;

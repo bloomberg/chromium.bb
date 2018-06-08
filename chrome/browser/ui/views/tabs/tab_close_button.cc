@@ -24,6 +24,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/style/platform_style.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -40,6 +41,10 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
   // Disable animation so that the red danger sign shows up immediately
   // to help avoid mis-clicks.
   SetAnimationDuration(0);
+  SetInstallFocusRingOnFocus(views::PlatformStyle::kPreferFocusRings);
+
+  if (focus_ring())
+    SetFocusPainter(nullptr);
 }
 
 TabCloseButton::~TabCloseButton() {}
@@ -104,6 +109,16 @@ void TabCloseButton::OnGestureEvent(ui::GestureEvent* event) {
 
 const char* TabCloseButton::GetClassName() const {
   return "TabCloseButton";
+}
+
+void TabCloseButton::Layout() {
+  ImageButton::Layout();
+  if (focus_ring()) {
+    focus_ring()->Layout();
+    SkPath path;
+    path.addOval(gfx::RectToSkRect(GetContentsBounds()));
+    focus_ring()->SetPath(path);
+  }
 }
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {
