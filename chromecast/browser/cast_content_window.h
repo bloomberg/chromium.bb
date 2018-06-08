@@ -83,8 +83,12 @@ class CastContentWindow {
     // called prior to ConsumeGesture().
     virtual bool CanHandleGesture(GestureType gesture_type) = 0;
 
-    // Consume and handle a UI gesture. Returns whether the gesture was
-    // handled or not.
+    // Called while a system UI gesture is in progress.
+    virtual void GestureProgress(GestureType gesture_type,
+                                 const gfx::Point& touch_location){};
+
+    // Consume and handle a completed UI gesture. Returns whether the gesture
+    // was handled or not.
     virtual bool ConsumeGesture(GestureType gesture_type) = 0;
 
     // Notify visibility change for this window.

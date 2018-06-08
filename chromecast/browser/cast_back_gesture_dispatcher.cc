@@ -39,8 +39,12 @@ void CastBackGestureDispatcher::HandleSideSwipeBegin(
 void CastBackGestureDispatcher::HandleSideSwipeContinue(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
-  if (!dispatched_back_ && swipe_origin == CastSideSwipeOrigin::LEFT &&
-      touch_location.x() >= horizontal_threshold_) {
+  if (swipe_origin != CastSideSwipeOrigin::LEFT) {
+    return;
+  }
+
+  delegate_->GestureProgress(GestureType::GO_BACK, touch_location);
+  if (!dispatched_back_ && touch_location.x() >= horizontal_threshold_) {
     dispatched_back_ = true;
     delegate_->ConsumeGesture(GestureType::GO_BACK);
   }
