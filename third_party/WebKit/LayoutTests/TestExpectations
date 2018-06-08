@@ -4287,7 +4287,8 @@ crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.
 crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 
 crbug.com/799619 [ Debug ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
-crbug.com/760543 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
+# The following test is flaky since 2018-06-08 (see section below) fix crbug.com/850892 before reintroducing this expectation
+# crbug.com/760543 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
 
 crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 
@@ -4786,3 +4787,9 @@ crbug.com/850395 virtual/gpu/fast/canvas/canvas-filter-stroke-paint-pattern.html
 crbug.com/850358 http/tests/devtools/editor/text-editor-enter-behaviour.js [ Pass Failure ]
 crbug.com/850206 virtual/stable/webexposed/global-interface-listing.html [ Pass Failure ]
 crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-comment.js [ Pass Failure ]
+
+# Sheriff 2018-06-08
+crbug.com/850892 http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Failure ]
+crbug.com/850892 http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
+# The following test is known to timeout due to crbug.com/760543.
+crbug.com/850892 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout Failure ]
