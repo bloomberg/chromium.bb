@@ -266,10 +266,6 @@ class CORE_EXPORT FrameLoader final {
                                      NavigationPolicy,
                                      NavigationType,
                                      bool check_with_client);
-  void LoadInternal(const FrameLoadRequest&,
-                    FrameLoadType,
-                    HistoryItem*,
-                    bool check_with_client);
   void StartLoad(FrameLoadRequest&,
                  FrameLoadType,
                  NavigationPolicy,
