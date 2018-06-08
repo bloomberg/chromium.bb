@@ -169,6 +169,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     double scope_data[kNumScopeIds] = {0};
     BlinkGC::GCReason reason;
     size_t object_size_in_bytes_before_sweeping = 0;
+    size_t allocated_space_in_bytes_before_sweeping = 0;
     double live_object_rate = 0;
   };
 
@@ -194,6 +195,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   void IncreaseCompactionFreedPages(size_t);
   void IncreaseAllocatedObjectSize(size_t);
   void DecreaseAllocatedObjectSize(size_t);
+  void IncreaseAllocatedSpace(size_t);
+  void DecreaseAllocatedSpace(size_t);
 
   // Size of objects on the heap. Based on marked bytes in the previous cycle
   // and newly allocated bytes since the previous cycle.
@@ -205,6 +208,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   double estimated_marking_time_in_seconds() const;
 
   size_t allocated_bytes_since_prev_gc() const;
+
+  size_t allocated_space_bytes() const;
 
   bool is_started() const { return is_started_; }
 
@@ -223,6 +228,9 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // after marking as they should be accounted in marked_bytes then (which are
   // only available after sweeping though).
   size_t allocated_bytes_since_prev_gc_ = 0;
+
+  // Allocated space in bytes for all arenas.
+  size_t allocated_space_bytes_ = 0;
 
   bool is_started_ = false;
 

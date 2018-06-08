@@ -190,7 +190,7 @@ ThreadState::ThreadState()
 ThreadState::~ThreadState() {
   DCHECK(CheckThread());
   if (IsMainThread())
-    DCHECK_EQ(Heap().HeapStats().AllocatedSpace(), 0u);
+    DCHECK_EQ(0u, Heap().stats_collector()->allocated_space_bytes());
   CHECK(GetGCState() == ThreadState::kNoGCScheduled);
 
   **thread_specific_ = nullptr;
@@ -1005,7 +1005,46 @@ BlinkGCObserver::~BlinkGCObserver() {
 
 namespace {
 
-void UpdateHistogramsAndCounters(const ThreadHeapStatsCollector::Event& event) {
+// Update trace counters with statistics from the current and previous garbage
+// collection cycle. We allow emitting current values here since these values
+// can be useful for inspecting traces.
+void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
+  bool gc_tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                                     &gc_tracing_enabled);
+  if (!gc_tracing_enabled)
+    return;
+
+  // Previous garbage collection cycle values.
+  const ThreadHeapStatsCollector::Event& event = stats_collector.previous();
+  const int collection_rate_percent =
+      static_cast<int>(100 * (1.0 - event.live_object_rate));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.CollectionRate", collection_rate_percent);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.MarkedObjectSizeAtLastCompleteSweepKB",
+                 CappedSizeInKB(event.marked_bytes));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.ObjectSizeAtLastGCKB",
+                 CappedSizeInKB(event.object_size_in_bytes_before_sweeping));
+  TRACE_COUNTER1(
+      TRACE_DISABLED_BY_DEFAULT("blink_gc"), "BlinkGC.AllocatedSpaceAtLastGCKB",
+      CappedSizeInKB(event.allocated_space_in_bytes_before_sweeping));
+
+  // Current values.
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+                 "BlinkGC.AllocatedSpaceKB",
+                 CappedSizeInKB(stats_collector.allocated_space_bytes()));
+  TRACE_COUNTER1(
+      TRACE_DISABLED_BY_DEFAULT("blink_gc"),
+      "BlinkGC.AllocatedObjectSizeSincePreviousGCKB",
+      CappedSizeInKB(stats_collector.allocated_bytes_since_prev_gc()));
+}
+
+// Update histograms with statistics from the previous garbage collection cycle.
+// Anything that is part of a histogram should have a well-defined lifetime wrt.
+// to a garbage collection cycle.
+void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, gc_reason_histogram,
                       ("BlinkGC.GCReason", BlinkGC::kLastGCReason + 1));
   gc_reason_histogram.Count(event.reason);
@@ -1095,20 +1134,21 @@ void UpdateHistogramsAndCounters(const ThreadHeapStatsCollector::Event& event) {
 #undef COUNT_BY_GC_REASON
   }
 
-  bool gc_tracing_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                                     &gc_tracing_enabled);
-  if (!gc_tracing_enabled)
-    return;
+  static constexpr size_t kSupportedMaxSizeInMB = 4 * 1024;
+  static size_t max_committed_size_in_mb = 0;
 
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "BlinkGC.CollectionRate", collection_rate_percent);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "BlinkGC.MarkedObjectSizeAtLastCompleteSweepKB",
-                 CappedSizeInKB(event.marked_bytes));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "BlinkGC.ObjectSizeAtLastGCKB",
-                 CappedSizeInKB(event.object_size_in_bytes_before_sweeping));
+  // +1 for rounding up the size to the next MB.
+  size_t size_in_mb =
+      event.allocated_space_in_bytes_before_sweeping / 1024 / 1024 + 1;
+  if (size_in_mb >= kSupportedMaxSizeInMB)
+    size_in_mb = kSupportedMaxSizeInMB - 1;
+  if (size_in_mb > max_committed_size_in_mb) {
+    // Only update the counter for the maximum value.
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, commited_size_histogram,
+                        ("BlinkGC.CommittedSize", kSupportedMaxSizeInMB));
+    commited_size_histogram.Count(size_in_mb);
+    max_committed_size_in_mb = size_in_mb;
+  }
 }
 
 }  // namespace
@@ -1128,7 +1168,9 @@ void ThreadState::PostSweep() {
 
   Heap().stats_collector()->NotifySweepingCompleted();
   if (IsMainThread())
-    UpdateHistogramsAndCounters(Heap().stats_collector()->previous());
+    UpdateHistograms(Heap().stats_collector()->previous());
+  // Emit trace counters for all threads.
+  UpdateTraceCounters(*Heap().stats_collector());
 }
 
 void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
@@ -1656,7 +1698,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   ProcessHeap::DecreaseTotalMarkedObjectSize(
       Heap().stats_collector()->previous().marked_bytes);
   Heap().stats_collector()->NotifyMarkingCompleted();
-  ThreadHeap::ReportMemoryUsageHistogram();
   WTF::Partitions::ReportMemoryUsageHistogram();
 
   if (invalidate_dead_objects_in_wrappers_marking_deque_)

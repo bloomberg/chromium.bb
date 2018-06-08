@@ -168,6 +168,30 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedMarkingTime2) {
   stats_collector.NotifySweepingCompleted();
 }
 
+TEST(ThreadHeapStatsCollectorTest, AllocatedSpaceInBytesInitialZero) {
+  ThreadHeapStatsCollector stats_collector;
+  EXPECT_EQ(0u, stats_collector.allocated_space_bytes());
+  stats_collector.NotifyMarkingStarted(BlinkGC::kTesting);
+  EXPECT_EQ(0u, stats_collector.allocated_space_bytes());
+  stats_collector.NotifyMarkingCompleted();
+  EXPECT_EQ(0u, stats_collector.allocated_space_bytes());
+  stats_collector.NotifySweepingCompleted();
+  EXPECT_EQ(0u, stats_collector.allocated_space_bytes());
+}
+
+TEST(ThreadHeapStatsCollectorTest, AllocatedSpaceInBytesIncrease) {
+  ThreadHeapStatsCollector stats_collector;
+  stats_collector.IncreaseAllocatedSpace(1024);
+  EXPECT_EQ(1024u, stats_collector.allocated_space_bytes());
+}
+
+TEST(ThreadHeapStatsCollectorTest, AllocatedSpaceInBytesDecrease) {
+  ThreadHeapStatsCollector stats_collector;
+  stats_collector.IncreaseAllocatedSpace(1024);
+  stats_collector.DecreaseAllocatedSpace(1024);
+  EXPECT_EQ(0u, stats_collector.allocated_space_bytes());
+}
+
 // =============================================================================
 // ThreadHeapStatsCollector::Event. ============================================
 // =============================================================================
@@ -352,6 +376,30 @@ TEST(ThreadHeapStatsCollectorTest,
   stats_collector.NotifyMarkingCompleted();
   stats_collector.NotifySweepingCompleted();
   EXPECT_DOUBLE_EQ(0, stats_collector.previous().live_object_rate);
+}
+
+TEST(ThreadHeapStatsCollectorTest, EventAllocatedSpaceBeforeSweeping1) {
+  ThreadHeapStatsCollector stats_collector;
+  stats_collector.NotifyMarkingStarted(BlinkGC::kTesting);
+  stats_collector.IncreaseAllocatedSpace(1024);
+  stats_collector.NotifyMarkingCompleted();
+  stats_collector.IncreaseAllocatedSpace(2048);
+  stats_collector.NotifySweepingCompleted();
+  EXPECT_EQ(
+      1024u,
+      stats_collector.previous().allocated_space_in_bytes_before_sweeping);
+}
+
+TEST(ThreadHeapStatsCollectorTest, EventAllocatedSpaceBeforeSweeping2) {
+  ThreadHeapStatsCollector stats_collector;
+  stats_collector.NotifyMarkingStarted(BlinkGC::kTesting);
+  stats_collector.IncreaseAllocatedSpace(1024);
+  stats_collector.NotifyMarkingCompleted();
+  stats_collector.DecreaseAllocatedSpace(1024);
+  stats_collector.NotifySweepingCompleted();
+  EXPECT_EQ(
+      1024u,
+      stats_collector.previous().allocated_space_in_bytes_before_sweeping);
 }
 
 }  // namespace blink

@@ -61,8 +61,7 @@ HeapAllocHooks::AllocationHook* HeapAllocHooks::allocation_hook_ = nullptr;
 HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
 
 ThreadHeapStats::ThreadHeapStats()
-    : allocated_space_(0),
-      wrapper_count_(0),
+    : wrapper_count_(0),
       wrapper_count_at_last_gc_(0),
       collected_wrapper_count_(0),
       partition_alloc_size_at_last_gc_(
@@ -74,16 +73,6 @@ void ThreadHeapStats::Reset() {
       WTF::Partitions::TotalSizeOfCommittedPages();
   wrapper_count_at_last_gc_ = wrapper_count_;
   collected_wrapper_count_ = 0;
-}
-
-void ThreadHeapStats::IncreaseAllocatedSpace(size_t delta) {
-  allocated_space_ += delta;
-  ProcessHeap::IncreaseTotalAllocatedSpace(delta);
-}
-
-void ThreadHeapStats::DecreaseAllocatedSpace(size_t delta) {
-  allocated_space_ -= delta;
-  ProcessHeap::DecreaseTotalAllocatedSpace(delta);
 }
 
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
@@ -129,6 +118,16 @@ void ThreadHeap::DecreaseAllocatedObjectSize(size_t bytes) {
 void ThreadHeap::IncreaseMarkedObjectSize(size_t bytes) {
   stats_collector()->IncreaseMarkedObjectSize(bytes);
   ProcessHeap::IncreaseTotalMarkedObjectSize(bytes);
+}
+
+void ThreadHeap::IncreaseAllocatedSpace(size_t bytes) {
+  stats_collector()->IncreaseAllocatedSpace(bytes);
+  ProcessHeap::IncreaseTotalAllocatedSpace(bytes);
+}
+
+void ThreadHeap::DecreaseAllocatedSpace(size_t bytes) {
+  stats_collector()->DecreaseAllocatedSpace(bytes);
+  ProcessHeap::DecreaseTotalAllocatedSpace(bytes);
 }
 
 Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
@@ -327,31 +326,6 @@ void ThreadHeap::VerifyMarking() {
   }
 }
 
-void ThreadHeap::ReportMemoryUsageHistogram() {
-  static size_t supported_max_size_in_mb = 4 * 1024;
-  static size_t observed_max_size_in_mb = 0;
-
-  // We only report the memory in the main thread.
-  if (!IsMainThread())
-    return;
-  // +1 is for rounding up the sizeInMB.
-  size_t size_in_mb =
-      ThreadState::Current()->Heap().HeapStats().AllocatedSpace() / 1024 /
-          1024 +
-      1;
-  if (size_in_mb >= supported_max_size_in_mb)
-    size_in_mb = supported_max_size_in_mb - 1;
-  if (size_in_mb > observed_max_size_in_mb) {
-    // Send a UseCounter only when we see the highest memory usage
-    // we've ever seen.
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, commited_size_histogram,
-        ("BlinkGC.CommittedSize", supported_max_size_in_mb));
-    commited_size_histogram.Count(size_in_mb);
-    observed_max_size_in_mb = size_in_mb;
-  }
-}
-
 void ThreadHeap::ReportMemoryUsageForTracing() {
   bool gc_tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
@@ -363,13 +337,6 @@ void ThreadHeap::ReportMemoryUsageForTracing() {
   // These values are divided by 1024 to avoid overflow in practical cases
   // (TRACE_COUNTER values are 32-bit ints).
   // They are capped to INT_MAX just in case.
-  TRACE_COUNTER1(
-      TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-      "ThreadHeap::allocatedObjectSizeKB",
-      CappedSizeInKB(heap.stats_collector()->allocated_bytes_since_prev_gc()));
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                 "ThreadHeap::allocatedSpaceKB",
-                 CappedSizeInKB(heap.HeapStats().AllocatedSpace()));
   TRACE_COUNTER1(
       TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadHeap::wrapperCount",
       std::min(heap.HeapStats().WrapperCount(), static_cast<size_t>(INT_MAX)));

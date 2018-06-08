@@ -698,7 +698,7 @@ void NormalPageArena::AllocatePage() {
       new (page_memory->WritableStart()) NormalPage(page_memory, this);
   page->Link(&first_page_);
 
-  GetThreadState()->Heap().HeapStats().IncreaseAllocatedSpace(page->size());
+  GetThreadState()->Heap().IncreaseAllocatedSpace(page->size());
 #if DCHECK_IS_ON() || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
   // Allow the following addToFreeList() to add the newly allocated memory
   // to the free list.
@@ -712,7 +712,7 @@ void NormalPageArena::AllocatePage() {
 }
 
 void NormalPageArena::FreePage(NormalPage* page) {
-  GetThreadState()->Heap().HeapStats().DecreaseAllocatedSpace(page->size());
+  GetThreadState()->Heap().DecreaseAllocatedSpace(page->size());
 
   PageMemory* memory = page->Storage();
   page->~NormalPage();
@@ -1043,8 +1043,7 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
 
   large_object->Link(&first_page_);
 
-  GetThreadState()->Heap().HeapStats().IncreaseAllocatedSpace(
-      large_object->size());
+  GetThreadState()->Heap().IncreaseAllocatedSpace(large_object->size());
   GetThreadState()->Heap().IncreaseAllocatedObjectSize(large_object->size());
   return result;
 }
@@ -1053,7 +1052,7 @@ void LargeObjectArena::FreeLargeObjectPage(LargeObjectPage* object) {
   ASAN_UNPOISON_MEMORY_REGION(object->Payload(), object->PayloadSize());
   object->GetHeapObjectHeader()->Finalize(object->Payload(),
                                           object->PayloadSize());
-  GetThreadState()->Heap().HeapStats().DecreaseAllocatedSpace(object->size());
+  GetThreadState()->Heap().DecreaseAllocatedSpace(object->size());
 
   // Unpoison the object header and allocationGranularity bytes after the
   // object before freeing.
