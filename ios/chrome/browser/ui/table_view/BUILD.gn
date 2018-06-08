@@ -36,6 +36,9 @@ source_set("styler") {
     "chrome_table_view_styler.h",
     "chrome_table_view_styler.mm",
   ]
+  public_deps = [
+    "//ios/chrome/browser/ui:ui_util",
+  ]
 }
 
 source_set("presentation") {
