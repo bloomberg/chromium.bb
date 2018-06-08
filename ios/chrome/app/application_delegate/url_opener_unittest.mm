@@ -144,8 +144,7 @@ class URLOpenerTest : public PlatformTest {
   MainController* GetMainController() {
     if (!main_controller_) {
       main_controller_ = [[MainController alloc] init];
-      [main_controller_
-          setUpAsForegroundedWithBrowserState:GetChromeBrowserState()];
+
       id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
       [[mainTabModel stub] resetSessionMetrics];
       [[mainTabModel stub] browserStateDestroyed];
@@ -159,6 +158,8 @@ class URLOpenerTest : public PlatformTest {
       [[otrTabModel stub] addObserver:[OCMArg any]];
       [[otrTabModel stub] removeObserver:[OCMArg any]];
       [[main_controller_ browserViewInformation] setOtrTabModel:otrTabModel];
+      [main_controller_
+          setUpAsForegroundedWithBrowserState:GetChromeBrowserState()];
     }
     return main_controller_;
   }
