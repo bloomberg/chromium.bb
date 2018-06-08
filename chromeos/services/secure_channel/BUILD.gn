@@ -82,6 +82,9 @@ static_library("secure_channel") {
     "single_client_message_proxy.h",
     "single_client_message_proxy_impl.cc",
     "single_client_message_proxy_impl.h",
+    "timer_factory.h",
+    "timer_factory_impl.cc",
+    "timer_factory_impl.h",
   ]
 
   deps = [
@@ -133,6 +136,8 @@ static_library("test_support") {
     "fake_message_receiver.h",
     "fake_multiplexed_channel.cc",
     "fake_multiplexed_channel.h",
+    "fake_one_shot_timer.cc",
+    "fake_one_shot_timer.h",
     "fake_pending_connection_manager.cc",
     "fake_pending_connection_manager.h",
     "fake_pending_connection_request.cc",
@@ -141,6 +146,8 @@ static_library("test_support") {
     "fake_pending_connection_request_delegate.h",
     "fake_single_client_message_proxy.cc",
     "fake_single_client_message_proxy.h",
+    "fake_timer_factory.cc",
+    "fake_timer_factory.h",
   ]
 
   deps = [
