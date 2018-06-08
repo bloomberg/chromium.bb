@@ -541,12 +541,10 @@ INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-#if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(MSE_Widevine,
                         EncryptedMediaTest,
                         Combine(Values(kWidevineKeySystem),
                                 Values(SrcType::MSE)));
-#endif  // !defined(OS_CHROMEOS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
