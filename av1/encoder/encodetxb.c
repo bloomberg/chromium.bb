@@ -1014,12 +1014,6 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   return update;
 }
 
-// These numbers are empirically obtained.
-static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
-  { 17, 13 },
-  { 16, 10 },
-};
-
 void hbt_init() {
   hbt_hash_table =
       aom_malloc(sizeof(OptTxbQcoeff) * HBT_TABLE_SIZE * HBT_ARRAY_LENGTH);

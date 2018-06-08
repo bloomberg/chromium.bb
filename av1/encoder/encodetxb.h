@@ -80,6 +80,13 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                          int block, TX_SIZE tx_size, TX_TYPE tx_type,
                          const TXB_CTX *const txb_ctx, int *rate_cost,
                          int sharpness);
+
+// These numbers are empirically obtained.
+static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
+  { 17, 13 },
+  { 16, 10 },
+};
+
 #ifdef __cplusplus
 }
 #endif

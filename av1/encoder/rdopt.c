@@ -5717,6 +5717,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
 }
 
+#define FAVOR_CHROMA_SKIP 1
 static void tx_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                           int blk_col, int plane, int block, TX_SIZE tx_size,
                           BLOCK_SIZE plane_bsize, ENTROPY_CONTEXT *above_ctx,
@@ -5742,18 +5743,26 @@ static void tx_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   const int blk_idx = blk_row * mi_width + blk_col;
-
+  const int64_t rdmult = x->rdmult * plane_rd_mult[1][PLANE_TYPE_UV] /
+                         plane_rd_mult[1][PLANE_TYPE_Y];
   av1_set_txb_context(x, plane, block, tx_size, ta, tl);
-  if ((RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
-           RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse) ||
+  if ((RDCOST(rdmult, rd_stats->rate, rd_stats->dist) >=
+           RDCOST(rdmult, zero_blk_rate, rd_stats->sse) ||
        rd_stats->skip == 1) &&
       !xd->lossless[mbmi->segment_id]) {
     rd_stats->rate = zero_blk_rate;
     rd_stats->dist = rd_stats->sse;
+    rd_stats->skip = 1;
+#if FAVOR_CHROMA_SKIP
+    x->plane[plane].eobs[block] = 0;
+    x->plane[plane].txb_entropy_ctx[block] = 0;
+    set_blk_skip(x, plane, blk_idx, 1);
+#else
+    set_blk_skip(x, plane, blk_idx, 0);
+#endif
+  } else {
+    set_blk_skip(x, plane, blk_idx, 0);
   }
-
-  // Set chroma blk_skip to 0
-  set_blk_skip(x, plane, blk_idx, 0);
 }
 
 // Return value 0: early termination triggered, no valid rd cost available;
