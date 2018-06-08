@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 
+#include "base/sys_byteorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
 
 namespace blink {
 
@@ -144,7 +144,7 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
       src_color_format =
           SkColorSpaceXform::ColorFormat::kRGBA_U16_BE_ColorFormat;
       for (int i = 0; i < num_elements; i++)
-        *(u16_buffer + i) = WTF::Bswap16(*(u16_buffer + i));
+        u16_buffer[i] = base::ByteSwap(u16_buffer[i]);
       break;
 
     case kFloat32ArrayStorageFormat:
@@ -186,7 +186,7 @@ bool ColorCorrectionTestUtils::ConvertPixelsToColorSpaceAndPixelFormatForTest(
 
   if (src_storage_format == kUint16ArrayStorageFormat) {
     for (int i = 0; i < num_elements; i++)
-      *(u16_buffer + i) = WTF::Bswap16(*(u16_buffer + i));
+      u16_buffer[i] = base::ByteSwap(u16_buffer[i]);
   }
   return conversion_result;
 }

@@ -28,12 +28,12 @@
 
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 
+#include "base/sys_byteorder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_uint8_clamped_array.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
-#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "v8/include/v8.h"
@@ -826,13 +826,13 @@ void ImageData::SwapU16EndiannessForSkColorSpaceXform(
     int start_index = (crop_rect->X() + crop_rect->Y() * width()) * 4;
     for (int i = 0; i < crop_rect->Height(); i++) {
       for (int j = 0; j < crop_rect->Width(); j++)
-        *(buffer + start_index + j) = WTF::Bswap16(*(buffer + start_index + j));
+        buffer[start_index + j] = base::ByteSwap(buffer[start_index + j]);
       start_index += width() * 4;
     }
     return;
   }
   for (unsigned i = 0; i < size_.Area() * 4; i++)
-    *(buffer + i) = WTF::Bswap16(*(buffer + i));
+    buffer[i] = base::ByteSwap(buffer[i]);
 };
 
 void ImageData::SwizzleIfNeeded(DataU8ColorType u8_color_type,

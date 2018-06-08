@@ -60,7 +60,6 @@ jumbo_component("wtf") {
     "bit_vector.h",
     "bloom_filter.h",
     "byte_order.h",
-    "byte_swap.h",
     "checked_numeric.h",
     "compiler.h",
     "conditional_destructor.h",
