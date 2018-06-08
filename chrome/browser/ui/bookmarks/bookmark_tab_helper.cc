@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/sad_tab.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -71,11 +72,18 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
   return IsNTP(web_contents());
 }
 
+void BookmarkTabHelper::AddObserver(BookmarkTabHelperObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void BookmarkTabHelper::RemoveObserver(BookmarkTabHelperObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       is_starred_(false),
       bookmark_model_(NULL),
-      delegate_(NULL),
       bookmark_drag_(NULL) {
   bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(
       web_contents->GetBrowserContext());
@@ -89,8 +97,10 @@ void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
       (bookmark_model_ &&
        bookmark_model_->IsBookmarked(chrome::GetURLToBookmark(web_contents())));
 
-  if (is_starred_ != old_state && delegate_)
-    delegate_->URLStarredChanged(web_contents(), is_starred_);
+  if (is_starred_ != old_state) {
+    for (auto& observer : observers_)
+      observer.URLStarredChanged(web_contents(), is_starred_);
+  }
 }
 
 void BookmarkTabHelper::BookmarkModelChanged() {

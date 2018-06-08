@@ -625,8 +625,6 @@ willPositionSheet:(NSWindow*)sheet
   [[tabStripController_ activeTabContentsController]
       updateFullscreenWidgetFrame];
 
-  [self invalidateTouchBar];
-
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
 
@@ -713,8 +711,6 @@ willPositionSheet:(NSWindow*)sheet
   [self releaseToolbarVisibilityForOwner:self withAnimation:NO];
 
   [self resetCustomAppKitFullscreenVariables];
-
-  [self invalidateTouchBar];
 
   // Ensures that the permission bubble shows up properly at the front.
   PermissionRequestManager* manager = [self permissionRequestManager];

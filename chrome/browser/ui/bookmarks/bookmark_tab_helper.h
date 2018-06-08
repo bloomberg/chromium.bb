@@ -11,7 +11,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class BookmarkTabHelperDelegate;
+class BookmarkTabHelperObserver;
 
 namespace bookmarks {
 struct BookmarkNodeData;
@@ -41,10 +41,6 @@ class BookmarkTabHelper
 
   ~BookmarkTabHelper() override;
 
-  void set_delegate(BookmarkTabHelperDelegate* delegate) {
-    delegate_ = delegate;
-  }
-
   // It is up to callers to call set_bookmark_drag_delegate(NULL) when
   // |bookmark_drag| is deleted since this class does not take ownership of
   // |bookmark_drag|.
@@ -57,6 +53,9 @@ class BookmarkTabHelper
 
   // Returns true if the bookmark bar should be shown detached.
   bool ShouldShowBookmarkBar() const;
+
+  void AddObserver(BookmarkTabHelperObserver* observer);
+  void RemoveObserver(BookmarkTabHelperObserver* observer);
 
  private:
   friend class content::WebContentsUserData<BookmarkTabHelper>;
@@ -97,8 +96,8 @@ class BookmarkTabHelper
 
   bookmarks::BookmarkModel* bookmark_model_;
 
-  // Our delegate, to notify when the url starred changed.
-  BookmarkTabHelperDelegate* delegate_;
+  // A list of observers notified when when the url starred changed.
+  base::ObserverList<BookmarkTabHelperObserver> observers_;
 
   // The BookmarkDrag is used to forward bookmark drag and drop events to
   // extensions.
