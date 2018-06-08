@@ -111,12 +111,6 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
                                        SessionID new_window_id,
                                        WriteBatch* batch);
 
-  // Appends an ACTION_UPDATE for a sync tab entity onto |batch| to
-  // reflect the contents of |tab|, given the tab node id |sync_id|.
-  void AppendChangeForExistingTab(int sync_id,
-                                  const sessions::SessionTab& tab,
-                                  WriteBatch* batch) const;
-
   // Set |session_tab| from |tab_delegate|.
   sync_pb::SessionTab GetTabSpecificsFromDelegate(
       const SyncedTabDelegate& tab_delegate) const;

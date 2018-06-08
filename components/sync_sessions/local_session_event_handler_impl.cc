@@ -220,32 +220,6 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
     DVLOG(1) << "Found no tabbed windows. Reloading "
              << current_session->windows.size()
              << " windows from previous session.";
-
-    // A copy of the specifics must be made because |current_session| will be
-    // updated in place and therefore can't be relied on as the source of truth.
-    sync_pb::SessionSpecifics specifics;
-    specifics.set_session_tag(current_session_tag_);
-    current_session->ToSessionHeaderProto().Swap(specifics.mutable_header());
-    UpdateTrackerWithSpecifics(specifics, base::Time::Now(), session_tracker_);
-
-    // The tab entities stored in sync have outdated SessionId values. Go
-    // through and update them to the new SessionIds.
-    for (auto& win_iter : current_session->windows) {
-      for (auto& tab : win_iter.second->wrapped_window.tabs) {
-        int sync_id = session_tracker_->LookupTabNodeFromTabId(
-            current_session_tag_, tab->tab_id);
-        // In rare cases, the local model could contain a tab that doesn't
-        // have a sync ID, if the restored header referenced a tab ID but the
-        // tab entity didn't exist (e.g. was unsyncable).
-        if (sync_id == TabNodePool::kInvalidTabNodeID) {
-          continue;
-        }
-
-        DVLOG(1) << "Rewriting tab node " << sync_id << " with tab id "
-                 << tab->tab_id.id();
-        AppendChangeForExistingTab(sync_id, *tab, batch);
-      }
-    }
   }
 
   for (auto& window_iter_pair : windows) {
@@ -537,19 +511,12 @@ void LocalSessionEventHandlerImpl::AssociateRestoredPlaceholderTab(
     return;
   }
 
-  AppendChangeForExistingTab(tab_node_id, *local_tab, batch);
-}
-
-void LocalSessionEventHandlerImpl::AppendChangeForExistingTab(
-    int sync_id,
-    const sessions::SessionTab& tab,
-    WriteBatch* batch) const {
   // Rewrite the specifics based on the reassociated SessionTab to preserve
   // the new tab and window ids.
   auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
-  tab.ToSyncData().Swap(specifics->mutable_tab());
+  local_tab->ToSyncData().Swap(specifics->mutable_tab());
   specifics->set_session_tag(current_session_tag_);
-  specifics->set_tab_node_id(sync_id);
+  specifics->set_tab_node_id(tab_node_id);
   batch->Put(std::move(specifics));
 }
 

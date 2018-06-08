@@ -449,13 +449,6 @@ SessionStore::SessionStore(
                                     local_session_info.client_name,
                                     local_session_info.device_type);
 
-  // Map of all rewritten local ids. Because ids are reset on each restart,
-  // and id generation happens outside of Sync, all ids from a previous local
-  // session must be rewritten in order to be valid (i.e not collide with
-  // newly assigned IDs). Otherwise, SyncedSessionTracker could mix up IDs.
-  // Key: previous session id. Value: new session id.
-  std::map<SessionID::id_type, SessionID> session_id_map;
-
   bool found_local_header = false;
 
   for (auto& storage_key_and_specifics : initial_data) {
@@ -498,26 +491,8 @@ SessionStore::SessionStore(
       DCHECK(!found_local_header);
       found_local_header = true;
 
-      // Go through and generate new tab and window ids as necessary, updating
-      // the specifics in place.
-      for (auto& window : *specifics.mutable_header()->mutable_window()) {
-        session_id_map.emplace(window.window_id(), SessionID::NewUnique());
-        window.set_window_id(session_id_map.at(window.window_id()).id());
-
-        for (int& tab_id : *window.mutable_tab()) {
-          if (session_id_map.count(tab_id) == 0) {
-            session_id_map.emplace(tab_id, SessionID::NewUnique());
-          }
-          tab_id = session_id_map.at(tab_id).id();
-          // Note: the tab id of the SessionTab will be updated when the tab
-          // node itself is processed.
-        }
-      }
-
       UpdateTrackerWithSpecifics(specifics, mtime, &session_tracker_);
-
-      DVLOG(1) << "Loaded local header and rewrote " << session_id_map.size()
-               << " ids.";
+      DVLOG(1) << "Loaded local header.";
     } else {
       DCHECK(specifics.has_tab());
 
@@ -526,20 +501,12 @@ SessionStore::SessionStore(
       DVLOG(1) << "Associating local tab " << specifics.tab().tab_id()
                << " with node " << specifics.tab_node_id();
 
-      // Now file the tab under the new tab id.
-      SessionID new_tab_id = SessionID::InvalidValue();
-      auto iter = session_id_map.find(specifics.tab().tab_id());
-      if (iter != session_id_map.end()) {
-        new_tab_id = iter->second;
-      } else {
-        new_tab_id = SessionID::NewUnique();
-        session_id_map.emplace(specifics.tab().tab_id(), new_tab_id);
-      }
-      DVLOG(1) << "Remapping tab " << specifics.tab().tab_id() << " to "
-               << new_tab_id;
-
-      specifics.mutable_tab()->set_tab_id(new_tab_id.id());
-      session_tracker_.ReassociateLocalTab(specifics.tab_node_id(), new_tab_id);
+      // TODO(mastiz): Move call to ReassociateLocalTab() into
+      // UpdateTrackerWithSpecifics(), possibly merge with OnTabNodeSeen(). Also
+      // consider merging this branch with processing of foreign tabs above.
+      session_tracker_.ReassociateLocalTab(
+          specifics.tab_node_id(),
+          SessionID::FromSerializedValue(specifics.tab().tab_id()));
       UpdateTrackerWithSpecifics(specifics, mtime, &session_tracker_);
     }
   }
