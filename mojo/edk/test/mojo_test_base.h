@@ -43,7 +43,6 @@ class MojoTestBase : public testing::Test {
 
     MojoHandle pipe() const { return pipe_.get().value(); }
 
-    void ClosePeerConnection();
     int WaitForShutdown();
 
    private:

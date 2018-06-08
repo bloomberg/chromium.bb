@@ -14,6 +14,8 @@ namespace mojo {
 
 namespace {
 
+static constexpr base::StringPiece kIsolatedPipeName = {"\0\0\0\0", 4};
+
 void ProcessHandleToMojoProcessHandle(base::ProcessHandle target_process,
                                       MojoPlatformProcessHandle* handle) {
   handle->struct_size = sizeof(*handle);
@@ -55,7 +57,9 @@ void SendInvitation(ScopedInvitationHandle invitation,
                     base::ProcessHandle target_process,
                     PlatformHandle endpoint_handle,
                     MojoInvitationTransportType transport_type,
-                    const ProcessErrorCallback& error_callback) {
+                    MojoSendInvitationFlags flags,
+                    const ProcessErrorCallback& error_callback,
+                    base::StringPiece isolated_connection_name) {
   MojoPlatformProcessHandle process_handle;
   ProcessHandleToMojoProcessHandle(target_process, &process_handle);
 
@@ -77,9 +81,17 @@ void SendInvitation(ScopedInvitationHandle invitation,
         reinterpret_cast<uintptr_t>(new ProcessErrorCallback(error_callback));
   }
 
+  MojoSendInvitationOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
+  if (flags & MOJO_SEND_INVITATION_FLAG_ISOLATED) {
+    options.isolated_connection_name = isolated_connection_name.data();
+    options.isolated_connection_name_length =
+        static_cast<uint32_t>(isolated_connection_name.size());
+  }
   MojoResult result =
       MojoSendInvitation(invitation.get().value(), &process_handle, &endpoint,
-                         error_handler, error_handler_context, nullptr);
+                         error_handler, error_handler_context, &options);
   // If successful, the invitation handle is already closed for us.
   if (result == MOJO_RESULT_OK)
     ignore_result(invitation.release());
@@ -143,7 +155,8 @@ void OutgoingInvitation::Send(OutgoingInvitation invitation,
                               const ProcessErrorCallback& error_callback) {
   SendInvitation(std::move(invitation.handle_), target_process,
                  channel_endpoint.TakePlatformHandle(),
-                 MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL, error_callback);
+                 MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL,
+                 MOJO_SEND_INVITATION_FLAG_NONE, error_callback, "");
 }
 
 // static
@@ -153,7 +166,38 @@ void OutgoingInvitation::Send(OutgoingInvitation invitation,
                               const ProcessErrorCallback& error_callback) {
   SendInvitation(std::move(invitation.handle_), target_process,
                  server_endpoint.TakePlatformHandle(),
-                 MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER, error_callback);
+                 MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER,
+                 MOJO_SEND_INVITATION_FLAG_NONE, error_callback, "");
+}
+
+// static
+ScopedMessagePipeHandle OutgoingInvitation::SendIsolated(
+    PlatformChannelEndpoint channel_endpoint,
+    base::StringPiece connection_name) {
+  mojo::OutgoingInvitation invitation;
+  ScopedMessagePipeHandle pipe =
+      invitation.AttachMessagePipe(kIsolatedPipeName);
+  SendInvitation(std::move(invitation.handle_), base::kNullProcessHandle,
+                 channel_endpoint.TakePlatformHandle(),
+                 MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL,
+                 MOJO_SEND_INVITATION_FLAG_ISOLATED, ProcessErrorCallback(),
+                 connection_name);
+  return pipe;
+}
+
+// static
+ScopedMessagePipeHandle OutgoingInvitation::SendIsolated(
+    PlatformChannelServerEndpoint server_endpoint,
+    base::StringPiece connection_name) {
+  mojo::OutgoingInvitation invitation;
+  ScopedMessagePipeHandle pipe =
+      invitation.AttachMessagePipe(kIsolatedPipeName);
+  SendInvitation(std::move(invitation.handle_), base::kNullProcessHandle,
+                 server_endpoint.TakePlatformHandle(),
+                 MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER,
+                 MOJO_SEND_INVITATION_FLAG_ISOLATED, ProcessErrorCallback(),
+                 connection_name);
+  return pipe;
 }
 
 IncomingInvitation::IncomingInvitation() = default;
@@ -190,6 +234,35 @@ IncomingInvitation IncomingInvitation::Accept(
 
   return IncomingInvitation(
       ScopedInvitationHandle(InvitationHandle(invitation_handle)));
+}
+
+// static
+ScopedMessagePipeHandle IncomingInvitation::AcceptIsolated(
+    PlatformChannelEndpoint channel_endpoint) {
+  MojoPlatformHandle endpoint_handle;
+  PlatformHandleToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
+                                     &endpoint_handle);
+  CHECK_NE(endpoint_handle.type, MOJO_PLATFORM_HANDLE_TYPE_INVALID);
+
+  MojoInvitationTransportEndpoint transport_endpoint;
+  transport_endpoint.struct_size = sizeof(transport_endpoint);
+  transport_endpoint.type = MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL;
+  transport_endpoint.num_platform_handles = 1;
+  transport_endpoint.platform_handles = &endpoint_handle;
+
+  MojoAcceptInvitationOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = MOJO_ACCEPT_INVITATION_FLAG_ISOLATED;
+
+  MojoHandle invitation_handle;
+  MojoResult result =
+      MojoAcceptInvitation(&transport_endpoint, &options, &invitation_handle);
+  if (result != MOJO_RESULT_OK)
+    return ScopedMessagePipeHandle();
+
+  IncomingInvitation invitation{
+      ScopedInvitationHandle(InvitationHandle(invitation_handle))};
+  return invitation.ExtractMessagePipe(kIsolatedPipeName);
 }
 
 ScopedMessagePipeHandle IncomingInvitation::ExtractMessagePipe(

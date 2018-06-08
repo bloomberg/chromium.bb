@@ -247,11 +247,6 @@ int MultiprocessTestHelper::WaitForChildShutdown() {
   return rv;
 }
 
-void MultiprocessTestHelper::ClosePeerConnection() {
-  DCHECK(peer_connection_);
-  peer_connection_.reset();
-}
-
 bool MultiprocessTestHelper::WaitForChildTestShutdown() {
   return WaitForChildShutdown() == 0;
 }

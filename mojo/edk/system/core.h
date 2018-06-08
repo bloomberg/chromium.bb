@@ -102,11 +102,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // channel. |port| is a port to be merged with the remote peer's port, which
   // it will provide via the same API.
   //
-  // Returns an ID which can be later used to close the connection via
-  // ClosePeerConnection().
-  uint64_t ConnectToPeer(ConnectionParams connection_params,
-                         const ports::PortRef& port);
-  void ClosePeerConnection(uint64_t peer_connection_id);
+  // |connection_name| if non-empty guarantees that no other isolated
+  // connections exist in the calling process using the same name. This is
+  // useful for invitation endpoints that use a named server accepting multiple
+  // connections.
+  void ConnectIsolated(ConnectionParams connection_params,
+                       const ports::PortRef& port,
+                       base::StringPiece connection_name);
 
   // Sets the mach port provider for this process.
   void SetMachPortProvider(base::PortProvider* port_provider);

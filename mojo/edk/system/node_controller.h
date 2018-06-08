@@ -87,13 +87,10 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   void AcceptBrokerClientInvitation(ConnectionParams connection_params);
 
   // Connects this node to a peer node. On success, |port| will be merged with
-  // the corresponding port in the peer node. Returns an ID that can be used to
-  // later close the connection with a call to ClosePeerConnection().
-  uint64_t ConnectToPeer(ConnectionParams connection_params,
-                         const ports::PortRef& port);
-
-  // Close a connection to a peer associated with |peer_connection_id|.
-  void ClosePeerConnection(uint64_t peer_connection_id);
+  // the corresponding port in the peer node.
+  void ConnectIsolated(ConnectionParams connection_params,
+                       const ports::PortRef& port,
+                       base::StringPiece connection_name);
 
   // Sets a port's observer. If |observer| is null the port's current observer
   // is removed.
@@ -141,22 +138,22 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   using OutgoingMessageQueue = base::queue<Channel::MessagePtr>;
   using PortMap = std::map<std::string, ports::PortRef>;
 
-  struct PeerConnection {
-    PeerConnection();
-    PeerConnection(const PeerConnection& other);
-    PeerConnection(PeerConnection&& other);
-    PeerConnection(scoped_refptr<NodeChannel> channel,
-                   const ports::PortRef& local_port,
-                   uint64_t connection_id);
-    ~PeerConnection();
+  struct IsolatedConnection {
+    IsolatedConnection();
+    IsolatedConnection(const IsolatedConnection& other);
+    IsolatedConnection(IsolatedConnection&& other);
+    IsolatedConnection(scoped_refptr<NodeChannel> channel,
+                       const ports::PortRef& local_port,
+                       base::StringPiece name);
+    ~IsolatedConnection();
 
-    PeerConnection& operator=(const PeerConnection& other);
-    PeerConnection& operator=(PeerConnection&& other);
+    IsolatedConnection& operator=(const IsolatedConnection& other);
+    IsolatedConnection& operator=(IsolatedConnection&& other);
 
     // NOTE: |channel| is null once the connection is fully established.
     scoped_refptr<NodeChannel> channel;
     ports::PortRef local_port;
-    uint64_t connection_id;
+    std::string name;
   };
 
   void SendBrokerClientInvitationOnIOThread(
@@ -167,10 +164,9 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   void AcceptBrokerClientInvitationOnIOThread(
       ConnectionParams connection_params);
 
-  void ConnectToPeerOnIOThread(uint64_t peer_connection_id,
-                               ConnectionParams connection_params,
-                               ports::PortRef port);
-  void ClosePeerConnectionOnIOThread(uint64_t peer_connection_id);
+  void ConnectIsolatedOnIOThread(ConnectionParams connection_params,
+                                 ports::PortRef port,
+                                 const std::string& connection_name);
 
   scoped_refptr<NodeChannel> GetPeerChannel(const ports::NodeName& name);
   scoped_refptr<NodeChannel> GetInviterChannel();
@@ -259,14 +255,11 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   const std::unique_ptr<ports::Node> node_;
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
-  // Guards |peers_|, |pending_peer_messages_|, and |next_peer_connection_id_|.
+  // Guards |peers_| and |pending_peer_messages_|.
   base::Lock peers_lock_;
 
   // Channels to known peers, including inviter and invitees, if any.
   NodeMap peers_;
-
-  // A unique ID generator for peer connections.
-  uint64_t next_peer_connection_id_ = 1;
 
   // Outgoing message queues for peers we've heard of but can't yet talk to.
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
@@ -327,10 +320,8 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // Channels to invitees during handshake.
   NodeMap pending_invitations_;
 
-  std::map<ports::NodeName, PeerConnection> peer_connections_;
-
-  // Maps from peer token to node name, pending or not.
-  std::unordered_map<uint64_t, ports::NodeName> peer_connections_by_id_;
+  std::map<ports::NodeName, IsolatedConnection> pending_isolated_connections_;
+  std::map<std::string, ports::NodeName> named_isolated_connections_;
 
   // Indicates whether this object should delete itself on IO thread shutdown.
   // Must only be accessed from the IO thread.

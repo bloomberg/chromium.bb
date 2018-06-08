@@ -54,6 +54,10 @@ const uint32_t kMaxHandlesPerMessage = 1024 * 1024;
 // pipes too; for now we just use a constant. This only affects bootstrap pipes.
 const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
 
+// The pipe name which must be used for the sole pipe attachment on any isolated
+// invitation.
+constexpr base::StringPiece kIsolatedInvitationPipeName = {"\0\0\0\0", 4};
+
 void InvokeProcessErrorCallbackOnTaskRunner(
     scoped_refptr<base::TaskRunner> task_runner,
     MojoProcessErrorHandler handler,
@@ -201,15 +205,12 @@ void Core::AcceptBrokerClientInvitation(ConnectionParams connection_params) {
       std::move(connection_params));
 }
 
-uint64_t Core::ConnectToPeer(ConnectionParams connection_params,
-                             const ports::PortRef& port) {
+void Core::ConnectIsolated(ConnectionParams connection_params,
+                           const ports::PortRef& port,
+                           base::StringPiece connection_name) {
   RequestContext request_context;
-  return GetNodeController()->ConnectToPeer(std::move(connection_params), port);
-}
-
-void Core::ClosePeerConnection(uint64_t peer_connection_id) {
-  RequestContext request_context;
-  GetNodeController()->ClosePeerConnection(peer_connection_id);
+  GetNodeController()->ConnectIsolated(std::move(connection_params), port,
+                                       connection_name);
 }
 
 void Core::SetMachPortProvider(base::PortProvider* port_provider) {
@@ -1267,7 +1268,8 @@ MojoResult Core::ExtractMessagePipeFromInvitation(
   auto* invitation_dispatcher =
       static_cast<InvitationDispatcher*>(dispatcher.get());
   // First attempt to extract from the invitation object itself. This is for
-  // cases where this creation was created in-process.
+  // cases where this invitation was created in-process or is an accepted
+  // isolated invitation.
   MojoResult extract_result = invitation_dispatcher->ExtractMessagePipe(
       name_string, message_pipe_handle);
   if (extract_result == MOJO_RESULT_OK ||
@@ -1373,10 +1375,22 @@ MojoResult Core::SendInvitation(
   for (auto& entry : attached_port_map)
     attached_ports.emplace_back(entry.first, std::move(entry.second));
 
+  bool is_isolated =
+      options && (options->flags & MOJO_SEND_INVITATION_FLAG_ISOLATED);
   RequestContext request_context;
-  GetNodeController()->SendBrokerClientInvitation(
-      target_process, std::move(connection_params), attached_ports,
-      process_error_callback);
+  if (is_isolated) {
+    DCHECK_EQ(attached_ports.size(), 1u);
+    DCHECK_EQ(attached_ports[0].first, kIsolatedInvitationPipeName);
+    base::StringPiece connection_name(options->isolated_connection_name,
+                                      options->isolated_connection_name_length);
+    GetNodeController()->ConnectIsolated(std::move(connection_params),
+                                         attached_ports[0].second,
+                                         connection_name);
+  } else {
+    GetNodeController()->SendBrokerClientInvitation(
+        target_process, std::move(connection_params), attached_ports,
+        process_error_callback);
+  }
 
   return MOJO_RESULT_OK;
 }
@@ -1404,7 +1418,8 @@ MojoResult Core::AcceptInvitation(
 
   if (!invitation_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  *invitation_handle = AddDispatcher(new InvitationDispatcher);
+  auto dispatcher = base::MakeRefCounted<InvitationDispatcher>();
+  *invitation_handle = AddDispatcher(dispatcher);
   if (*invitation_handle == MOJO_HANDLE_INVALID)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
@@ -1422,11 +1437,28 @@ MojoResult Core::AcceptInvitation(
     endpoint_handle.get().needs_connection = true;
 #endif
 
+  bool is_isolated =
+      options && (options->flags & MOJO_ACCEPT_INVITATION_FLAG_ISOLATED);
+  NodeController* const node_controller = GetNodeController();
   RequestContext request_context;
   ConnectionParams connection_params(TransportProtocol::kLegacy,
                                      std::move(endpoint_handle));
-  GetNodeController()->AcceptBrokerClientInvitation(
-      std::move(connection_params));
+  if (is_isolated) {
+    // For an isolated invitation, we simply mint a new port pair here and send
+    // one name to the remote endpoint while stashing the other in the accepted
+    // invitation object for later extraction.
+    ports::PortRef local_port;
+    ports::PortRef remote_port;
+    node_controller->node()->CreatePortPair(&local_port, &remote_port);
+    node_controller->ConnectIsolated(std::move(connection_params), remote_port,
+                                     base::StringPiece());
+    MojoResult result =
+        dispatcher->AttachMessagePipe(kIsolatedInvitationPipeName, local_port);
+    DCHECK_EQ(MOJO_RESULT_OK, result);
+  } else {
+    node_controller->AcceptBrokerClientInvitation(std::move(connection_params));
+  }
+
   return MOJO_RESULT_OK;
 }
 

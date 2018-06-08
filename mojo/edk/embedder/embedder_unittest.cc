@@ -344,7 +344,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient,
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(sb1));
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX)
 
 enum class HandleType {
   POSIX,
@@ -437,112 +437,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient,
   WriteMessage(client_mp, "bye");
 }
 
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-// TODO(vtl): Test immediate write & close.
-// TODO(vtl): Test broken-connection cases.
-
-#endif  // !defined(OS_IOS)
-
-#if !defined(OS_FUCHSIA)
-// TODO(fuchsia): Implement NamedPlatformHandles (crbug.com/754038).
-
-NamedPlatformHandle GenerateChannelName() {
-  std::string token = base::NumberToString(base::RandUint64());
-#if defined(OS_POSIX)
-  base::FilePath temp_dir;
-  CHECK(base::PathService::Get(base::DIR_TEMP, &temp_dir));
-  return NamedPlatformHandle(temp_dir.AppendASCII(token).value());
-#else
-  return NamedPlatformHandle(token);
-#endif
-}
-
-void CreateClientHandleOnIoThread(const NamedPlatformHandle& named_handle,
-                                  ScopedInternalPlatformHandle* output) {
-  *output = CreateClientHandle(named_handle);
-}
-
-TEST_F(EmbedderTest, ClosePendingPeerConnection) {
-  NamedPlatformHandle named_handle = GenerateChannelName();
-  std::string peer_token = base::NumberToString(base::RandUint64());
-
-  auto peer_connection = std::make_unique<PeerConnection>();
-  ScopedMessagePipeHandle server_pipe =
-      peer_connection->Connect(ConnectionParams(
-          TransportProtocol::kLegacy, CreateServerHandle(named_handle)));
-  peer_connection.reset();
-  EXPECT_EQ(MOJO_RESULT_OK,
-            Wait(server_pipe.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED));
-  base::MessageLoop message_loop;
-  base::RunLoop run_loop;
-  ScopedInternalPlatformHandle client_handle;
-  // Closing the channel involves posting a task to the IO thread to do the
-  // work. By the time the local message pipe has been observerd as closed,
-  // that task will have been posted. Therefore, a task to create the client
-  // connection should be handled after the channel is closed.
-  GetIOTaskRunner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&CreateClientHandleOnIoThread, named_handle, &client_handle),
-      run_loop.QuitClosure());
-  run_loop.Run();
-  EXPECT_FALSE(client_handle.is_valid());
-}
-
-#endif  // !defined(OS_FUCHSIA)
-
-#if !defined(OS_IOS)
-
-TEST_F(EmbedderTest, ClosePipeToConnectedPeer) {
-  set_launch_type(LaunchType::PEER);
-  auto& controller = StartClient("ClosePipeToConnectedPeerClient");
-  MojoHandle server_mp = controller.pipe();
-  // 1. Write a message to |server_mp| (attaching nothing).
-  WriteMessage(server_mp, "hello");
-
-  // 2. Read a message from |server_mp|.
-  EXPECT_EQ("world!", ReadMessage(server_mp));
-
-  controller.ClosePeerConnection();
-
-  EXPECT_EQ(MOJO_RESULT_OK,
-            WaitForSignals(server_mp, MOJO_HANDLE_SIGNAL_PEER_CLOSED));
-
-  EXPECT_EQ(0, controller.WaitForShutdown());
-}
-
-DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ClosePipeToConnectedPeerClient,
-                                  EmbedderTest,
-                                  client_mp) {
-  // 1. Read the first message from |client_mp|.
-  EXPECT_EQ("hello", ReadMessage(client_mp));
-
-  // 2. Write a message to |client_mp| (attaching nothing).
-  WriteMessage(client_mp, "world!");
-
-  ASSERT_EQ(MOJO_RESULT_OK,
-            WaitForSignals(client_mp, MOJO_HANDLE_SIGNAL_PEER_CLOSED));
-}
-
-TEST_F(EmbedderTest, ClosePipeToConnectingPeer) {
-  set_launch_type(LaunchType::PEER);
-  auto& controller = StartClient("ClosePipeToConnectingPeerClient");
-  controller.ClosePeerConnection();
-
-  MojoHandle server_mp = controller.pipe();
-
-  EXPECT_EQ(MOJO_RESULT_OK,
-            WaitForSignals(server_mp, MOJO_HANDLE_SIGNAL_PEER_CLOSED));
-
-  EXPECT_EQ(0, controller.WaitForShutdown());
-}
-
-DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ClosePipeToConnectingPeerClient,
-                                  EmbedderTest,
-                                  client_mp) {
-  ASSERT_EQ(MOJO_RESULT_OK,
-            WaitForSignals(client_mp, MOJO_HANDLE_SIGNAL_PEER_CLOSED));
-}
+#endif  // defined(OS_MACOSX)
 
 #endif  // !defined(OS_IOS)
 
