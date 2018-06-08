@@ -9,5 +9,6 @@ FAIL Getting a height with a calc type containing var values returns a CSSCalcVa
 PASS Getting the value of a registered property that isn't set on the element returns the initial value for the property
 PASS Getting the value of a property that isn't registered returns null
 PASS getAll for a length type registered property returns a single value
+PASS Inherited custom property produces correct type during iteration
 Harness: the test ran to completion.
 

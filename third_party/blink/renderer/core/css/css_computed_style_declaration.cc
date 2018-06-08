@@ -316,12 +316,14 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
       StyledNode()->GetDocument().GetPropertyRegistry());
 }
 
-HashMap<AtomicString, scoped_refptr<CSSVariableData>>
+HeapHashMap<AtomicString, Member<const CSSValue>>
 CSSComputedStyleDeclaration::GetVariables() const {
   const ComputedStyle* style = ComputeComputedStyle();
   if (!style)
     return {};
-  return ComputedStyleCSSValueMapping::GetVariables(*style);
+  DCHECK(StyledNode());
+  return ComputedStyleCSSValueMapping::GetVariables(
+      *style, StyledNode()->GetDocument().GetPropertyRegistry());
 }
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
