@@ -459,8 +459,27 @@ cr.define('languages_page_tests', function() {
         assertTrue(triggerRow.classList.contains('two-line'));
         assertLT(0, triggerRow.querySelector('.secondary').textContent.length);
 
+        // Sets |browser.enable_spellchecking| to |value| as if it was set by
+        // policy.
+        const setEnableSpellcheckingViaPolicy = function(value) {
+          const newPrefValue = {
+            key: 'browser.enable_spellchecking',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: value,
+            enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+            controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY
+          };
+
+          // First set the prefValue, then override the actual preference
+          // object in languagesPage. This is necessary, to avoid a mismatch
+          // between the settings state and |languagesPage.prefs|, which would
+          // cause the value to be reset in |languagesPage.prefs|.
+          languageHelper.setPrefValue('browser.enable_spellchecking', value);
+          languagesPage.set('prefs.browser.enable_spellchecking', newPrefValue);
+        };
+
         // Force-disable spellchecking via policy.
-        languageHelper.setPrefValue('browser.enable_spellchecking', false);
+        setEnableSpellcheckingViaPolicy(false);
         Polymer.dom.flush();
 
         // The second row should not be empty.
@@ -473,7 +492,7 @@ cr.define('languages_page_tests', function() {
         // Force-enable spellchecking via policy, and ensure that the policy
         // indicator is not present. |enable_spellchecking| can be forced to
         // true by policy, but no indicator should be shown in that case.
-        languageHelper.setPrefValue('browser.enable_spellchecking', true);
+        setEnableSpellcheckingViaPolicy(true);
         Polymer.dom.flush();
         assertFalse(!!triggerRow.querySelector('cr-policy-pref-indicator'));
       });

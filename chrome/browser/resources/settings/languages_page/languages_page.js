@@ -458,7 +458,7 @@ Polymer({
    * @private
    */
   getSpellCheckSecondaryText_: function() {
-    if (this.getSpellCheckDisabled_())
+    if (this.getSpellCheckDisabledByPolicy_())
       return loadTimeData.getString('spellCheckDisabled');
     const enabledSpellCheckLanguages =
         this.getSpellCheckLanguages_().filter(function(languageState) {
@@ -496,10 +496,11 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getSpellCheckDisabled_: function() {
+  getSpellCheckDisabledByPolicy_: function() {
     const pref = /** @type {!chrome.settingsPrivate.PrefObject} */ (
         this.get('browser.enable_spellchecking', this.prefs));
-    return pref.value === false;
+    return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&
+        pref.value === false;
   },
 
   /**
@@ -534,7 +535,7 @@ Polymer({
 
   /** @private */
   updateSpellcheckEnabled_: function() {
-    this.set('spellCheckDisabled_', this.getSpellCheckDisabled_());
+    this.set('spellCheckDisabled_', this.getSpellCheckDisabledByPolicy_());
 
     // If the spellcheck section was expanded, close it.
     if (this.spellCheckDisabled_)
