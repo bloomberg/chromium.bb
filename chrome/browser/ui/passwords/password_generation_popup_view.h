@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_H_
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_VIEW_H_
 
-#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
@@ -44,12 +43,6 @@ class PasswordGenerationPopupView {
   // when Hide() is called.
   static PasswordGenerationPopupView* Create(
       PasswordGenerationPopupController* controller);
-#if defined(OS_MACOSX)
-  // Temporary shim for Polychrome. See bottom of first comment in
-  // https://crbug.com/804950 for details
-  static PasswordGenerationPopupView* CreateCocoa(
-      PasswordGenerationPopupController* controller);
-#endif
 
   static const SkColor kPasswordTextColor;
   static const SkColor kExplanatoryTextBackgroundColor;
