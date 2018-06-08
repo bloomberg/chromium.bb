@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 
 /**
@@ -14,6 +17,8 @@ public class BottomToolbarModel extends PropertyObservable<BottomToolbarModel.Pr
     public static class PropertyKey {
         public static final PropertyKey Y_OFFSET = new PropertyKey();
         public static final PropertyKey ANDROID_VIEW_VISIBILITY = new PropertyKey();
+        public static final PropertyKey SEARCH_ACCELERATOR_LISTENER = new PropertyKey();
+        public static final PropertyKey MENU_BUTTON_LISTENER = new PropertyKey();
 
         private PropertyKey() {}
     }
@@ -23,6 +28,12 @@ public class BottomToolbarModel extends PropertyObservable<BottomToolbarModel.Pr
 
     /** The visibility of the Android view version of the toolbar. */
     private int mAndroidViewVisibility;
+
+    /** The click listener for the search accelerator. */
+    private OnClickListener mSearchAcceleratorListener;
+
+    /** The touch listener for the menu button. */
+    private OnTouchListener mMenuButtonListener;
 
     /** Default constructor. */
     public BottomToolbarModel() {}
@@ -55,5 +66,35 @@ public class BottomToolbarModel extends PropertyObservable<BottomToolbarModel.Pr
      */
     public int getAndroidViewVisibility() {
         return mAndroidViewVisibility;
+    }
+
+    /**
+     * @param listener The listener for the search accelerator.
+     */
+    public void setSearchAcceleratorListener(OnClickListener listener) {
+        mSearchAcceleratorListener = listener;
+        notifyPropertyChanged(PropertyKey.SEARCH_ACCELERATOR_LISTENER);
+    }
+
+    /**
+     * @return The listener for the search accelerator.
+     */
+    public OnClickListener getSearchAcceleratorListener() {
+        return mSearchAcceleratorListener;
+    }
+
+    /**
+     * @param listener The listener for the menu button.
+     */
+    public void setMenuButtonListener(OnTouchListener listener) {
+        mMenuButtonListener = listener;
+        notifyPropertyChanged(PropertyKey.MENU_BUTTON_LISTENER);
+    }
+
+    /**
+     * @return The listener for the menu button.
+     */
+    public OnTouchListener getMenuButtonListener() {
+        return mMenuButtonListener;
     }
 }

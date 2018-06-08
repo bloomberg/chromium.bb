@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar;
 
 import android.view.ViewGroup;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.scene_layer.ScrollingBottomViewSceneLayer;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.toolbar.BottomToolbarModel.PropertyKey;
@@ -52,6 +53,12 @@ public class BottomToolbarViewBinder
             view.sceneLayer.setYOffset(model.getYOffset());
         } else if (PropertyKey.ANDROID_VIEW_VISIBILITY == propertyKey) {
             view.toolbarRoot.setVisibility(model.getAndroidViewVisibility());
+        } else if (PropertyKey.SEARCH_ACCELERATOR_LISTENER == propertyKey) {
+            view.toolbarRoot.findViewById(R.id.search_button)
+                    .setOnClickListener(model.getSearchAcceleratorListener());
+        } else if (PropertyKey.MENU_BUTTON_LISTENER == propertyKey) {
+            view.toolbarRoot.findViewById(R.id.menu_button)
+                    .setOnTouchListener(model.getMenuButtonListener());
         } else {
             assert false : "Unhandled property detected in BottomToolbarViewBinder!";
         }
