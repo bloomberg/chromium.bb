@@ -854,34 +854,12 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   FrameLoadType frame_load_type,
                                   HistoryItem* history_item) {
   CHECK(!passed_request.GetSubstituteData().IsValid());
-  CHECK(frame_load_type != kFrameLoadTypeBackForward);
+  CHECK(!IsBackForwardLoadType(frame_load_type));
   CHECK(!history_item);
-  return LoadInternal(passed_request, frame_load_type, history_item,
-                      true /* check_with_client */);
-}
 
-void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
-                                   FrameLoadType frame_load_type,
-                                   HistoryItem* history_item) {
-  CHECK(!passed_request.OriginDocument());
-  CHECK(passed_request.FrameName().IsEmpty());
-  CHECK(!passed_request.TriggeringEvent());
-  CHECK(!passed_request.Form());
-  return LoadInternal(passed_request, frame_load_type, history_item,
-                      false /* check_with_client */);
-}
-
-void FrameLoader::LoadInternal(const FrameLoadRequest& passed_request,
-                               FrameLoadType frame_load_type,
-                               HistoryItem* history_item,
-                               bool check_with_client) {
   DCHECK(frame_->GetDocument());
-
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
-
-  if (IsBackForwardLoadType(frame_load_type) && !frame_->IsNavigationAllowed())
-    return;
 
   if (in_stop_all_loaders_)
     return;
@@ -937,26 +915,63 @@ void FrameLoader::LoadInternal(const FrameLoadRequest& passed_request,
     return;
 
   const KURL& url = request.GetResourceRequest().Url();
-  FrameLoadType new_load_type = (frame_load_type == kFrameLoadTypeStandard)
-                                    ? DetermineFrameLoadType(request)
-                                    : frame_load_type;
+  if (frame_load_type == kFrameLoadTypeStandard)
+    frame_load_type = DetermineFrameLoadType(request);
 
   bool same_document_navigation =
       policy == kNavigationPolicyCurrentTab &&
       ShouldPerformFragmentNavigation(request.Form(),
                                       request.GetResourceRequest().HttpMethod(),
-                                      new_load_type, url);
+                                      frame_load_type, url);
 
   // Perform same document navigation.
   if (same_document_navigation) {
     CommitSameDocumentNavigation(
-        request.GetResourceRequest().Url(), new_load_type, history_item,
+        request.GetResourceRequest().Url(), frame_load_type, nullptr,
         request.ClientRedirect(), request.OriginDocument(),
         request.TriggeringEvent());
     return;
   }
 
-  StartLoad(request, new_load_type, policy, history_item, check_with_client);
+  StartLoad(request, frame_load_type, policy, nullptr,
+            true /* check_with_client */);
+}
+
+void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
+                                   FrameLoadType frame_load_type,
+                                   HistoryItem* history_item) {
+  CHECK(!passed_request.OriginDocument());
+  CHECK(passed_request.FrameName().IsEmpty());
+  CHECK(!passed_request.TriggeringEvent());
+  CHECK(!passed_request.Form());
+
+  DCHECK(frame_->GetDocument());
+  DCHECK(!in_stop_all_loaders_);
+  DCHECK(frame_->IsNavigationAllowed());
+
+  // TODO(dgozman): figure out the better place for this check
+  // to cancel lazy load both on start and commit. Perhaps
+  // CreateDocumentLoader() is a good one.
+  if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
+    element->CancelPendingLazyLoad();
+
+  FrameLoadRequest request(passed_request);
+  request.GetResourceRequest().SetHasUserGesture(
+      Frame::HasTransientUserActivation(frame_));
+
+  if (frame_load_type == kFrameLoadTypeStandard)
+    frame_load_type = DetermineFrameLoadType(request);
+
+  // Note: we might actually classify this navigation as same document
+  // right here in the following circumstances:
+  // - the loader has already committed a navigation and notified the browser
+  //   process which did not receive a message about that just yet;
+  // - meanwhile, the browser process sent us a command to commit this new
+  //   "cross-document" navigation, while it's actually same-document
+  //   with regards to the last commit.
+  // In this rare case, we intentionally proceed as cross-document.
+  StartLoad(request, frame_load_type, kNavigationPolicyCurrentTab, history_item,
+            false /* check_with_client */);
 }
 
 mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
