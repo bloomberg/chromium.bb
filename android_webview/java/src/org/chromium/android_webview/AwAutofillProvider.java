@@ -255,6 +255,8 @@ public class AwAutofillProvider extends AutofillProvider {
         // return.
         if (mRequest == null) return;
         mRequest.fillViewStructure(structure);
+        AwAutofillManager.log(
+                "onProvideAutoFillVirtualStructure fields:" + structure.getChildCount());
         mAutofillUMA.onVirtualStructureProvided();
     }
 
@@ -262,6 +264,7 @@ public class AwAutofillProvider extends AutofillProvider {
     public void autofill(final SparseArray<AutofillValue> values) {
         if (mNativeAutofillProvider != 0 && mRequest != null && mRequest.autofill((values))) {
             autofill(mNativeAutofillProvider, mRequest.mFormData);
+            AwAutofillManager.log("autofill values:" + values.size());
             mAutofillUMA.onAutofill();
         }
     }
