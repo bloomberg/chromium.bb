@@ -8112,10 +8112,12 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
   return 0;
 }
 
+#ifndef NDEBUG
 static INLINE int is_single_inter_mode(int this_mode) {
   return this_mode >= SINGLE_INTER_MODE_START &&
          this_mode < SINGLE_INTER_MODE_END;
 }
+#endif
 
 static INLINE int get_ref_mv_offset(int single_mode, uint8_t ref_mv_idx) {
   assert(is_single_inter_mode(single_mode));
