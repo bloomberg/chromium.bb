@@ -474,20 +474,20 @@
     },
 
     'chromium.webrtc': {
-      'Linux Builder': 'release_bot_chrome_with_codecs',
-      'Mac Builder': 'release_bot_chrome_with_codecs',
-      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
+      'Linux Builder': 'release_bot_chrome_with_codecs_dcheck_always_on',
+      'Mac Builder': 'release_bot_chrome_with_codecs_dcheck_always_on',
+      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs_dcheck_always_on',
     },
 
     'chromium.webrtc.fyi': {
-      'Android Builder': 'android_release_bot_minimal_symbols',
+      'Android Builder': 'android_release_bot_minimal_symbols_dcheck_always_on',
       'Android Builder (dbg)': 'android_debug_static_bot',
       'Android Builder ARM64 (dbg)': 'android_debug_static_bot_arm64',
-      'Linux Builder': 'release_bot_chrome_with_codecs',
+      'Linux Builder': 'release_bot_chrome_with_codecs_dcheck_always_on',
       'Linux Builder (dbg)': 'debug_bot',
-      'Mac Builder': 'release_bot_chrome_with_codecs',
+      'Mac Builder': 'release_bot_chrome_with_codecs_dcheck_always_on',
       'Mac Builder (dbg)': 'debug_bot',
-      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
+      'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs_dcheck_always_on',
       'Win Builder (dbg)': 'debug_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs',
     },
 
@@ -923,6 +923,11 @@
       'strip_debug_info',
     ],
 
+    'android_release_bot_minimal_symbols_dcheck_always_on': [
+      'android', 'release_bot', 'minimal_symbols',
+      'strip_debug_info', 'dcheck_always_on',
+    ],
+
     'android_clang_tot_release_minimal_symbols': [
       'android', 'release', 'static', 'minimal_symbols',
       'strip_debug_info', 'clang_tot',
@@ -1252,7 +1257,7 @@
     'debug_bot_x86_minimal_symbols': [ 'debug_bot', 'x86', 'minimal_symbols' ],
 
     'debug_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
-      'debug_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
+      'debug_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs',
     ],
 
     'debug_libfuzzer_asan': [
@@ -1495,8 +1500,8 @@
       'release_bot', 'arm64',
     ],
 
-    'release_bot_chrome_with_codecs': [
-      'release_bot', 'chrome_with_codecs',
+    'release_bot_chrome_with_codecs_dcheck_always_on': [
+      'release_bot', 'chrome_with_codecs', 'dcheck_always_on',
     ],
 
     'release_bot_enable_blink_heap_verification_dcheck_always_on': [
@@ -1549,8 +1554,9 @@
       'release_bot', 'x86', 'minimal_symbols', 'enable_archive_compression'
     ],
 
-    'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
-      'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
+    'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs_dcheck_always_on': [
+      'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs',
+      'dcheck_always_on',
     ],
 
     'release_libfuzzer_asan': [
