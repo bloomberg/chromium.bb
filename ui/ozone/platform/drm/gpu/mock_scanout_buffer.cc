@@ -54,8 +54,8 @@ uint64_t MockScanoutBuffer::GetFormatModifier() const {
   return modifier_;
 }
 
-const DrmDevice* MockScanoutBuffer::GetDrmDevice() const {
-  return drm_.get();
+const GbmDeviceLinux* MockScanoutBuffer::GetGbmDeviceLinux() const {
+  return drm_->AsGbmDeviceLinux();
 }
 
 bool MockScanoutBuffer::RequiresGlFinish() const {

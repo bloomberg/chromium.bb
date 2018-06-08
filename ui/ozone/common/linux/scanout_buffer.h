@@ -13,7 +13,7 @@
 
 namespace ui {
 
-class DrmDevice;
+class GbmDeviceLinux;
 
 // Abstraction for a DRM buffer that can be scanned-out of.
 class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
@@ -44,7 +44,7 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   virtual gfx::Size GetSize() const = 0;
 
   // Device on which the buffer was created.
-  virtual const DrmDevice* GetDrmDevice() const = 0;
+  virtual const GbmDeviceLinux* GetGbmDeviceLinux() const = 0;
 
   virtual bool RequiresGlFinish() const = 0;
 
@@ -52,17 +52,6 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   virtual ~ScanoutBuffer() {}
 
   friend class base::RefCountedThreadSafe<ScanoutBuffer>;
-};
-
-class ScanoutBufferGenerator {
- public:
-  virtual ~ScanoutBufferGenerator() {}
-
-  virtual scoped_refptr<ScanoutBuffer> Create(
-      const scoped_refptr<DrmDevice>& drm,
-      uint32_t format,
-      const std::vector<uint64_t>& modifiers,
-      const gfx::Size& size) = 0;
 };
 
 }  // namespace ui

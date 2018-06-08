@@ -164,8 +164,8 @@ uint64_t GbmBuffer::GetFormatModifier() const {
   return format_modifier_;
 }
 
-const DrmDevice* GbmBuffer::GetDrmDevice() const {
-  return drm_.get();
+const GbmDeviceLinux* GbmBuffer::GetGbmDeviceLinux() const {
+  return drm_->AsGbmDeviceLinux();
 }
 
 bool GbmBuffer::RequiresGlFinish() const {

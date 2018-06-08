@@ -78,6 +78,7 @@ source_set("gbm") {
     "gpu/page_flip_request.h",
     "gpu/proxy_helpers.cc",
     "gpu/proxy_helpers.h",
+    "gpu/scanout_buffer_generator.h",
     "gpu/screen_manager.cc",
     "gpu/screen_manager.h",
     "host/drm_cursor.cc",

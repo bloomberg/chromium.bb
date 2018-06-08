@@ -79,6 +79,8 @@ class DrmDevice : public GbmDeviceLinux,
 
   bool allow_addfb2_modifiers() const { return allow_addfb2_modifiers_; }
 
+  const GbmDeviceLinux* AsGbmDeviceLinux() const { return this; }
+
   // Open device.
   virtual bool Initialize();
 
