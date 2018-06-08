@@ -201,6 +201,8 @@ android_aar_prebuilt("android_support_animated_vector_drawable_java") {
 android_aar_prebuilt("android_support_v7_appcompat_java_internal") {
   deps = [
     ":android_support_v4_java",
+    ":android_support_vector_drawable_java",
+    ":android_support_animated_vector_drawable_java",
   ]
   _lib_name = "appcompat-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"

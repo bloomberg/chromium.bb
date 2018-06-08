@@ -4,6 +4,7 @@
 
 package org.chromium.bytecode;
 
+import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 
 import org.objectweb.asm.ClassReader;
@@ -60,7 +61,8 @@ class ByteCodeProcessor {
     }
 
     private static void process(String inputJarPath, String outputJarPath, boolean shouldAssert,
-            boolean shouldUseCustomResources, ClassLoader classPathJarsClassLoader) {
+            boolean shouldUseCustomResources, boolean shouldUseTraceEvent,
+            ClassLoader classPathJarsClassLoader) {
         String tempJarPath = outputJarPath + TEMPORARY_FILE_SUFFIX;
         try (ZipInputStream inputStream = new ZipInputStream(
                      new BufferedInputStream(new FileInputStream(inputJarPath)));
@@ -107,7 +109,11 @@ class ByteCodeProcessor {
                     chain = new CustomResourcesClassAdapter(chain, reader.getClassName(),
                             reader.getSuperName(), classPathJarsClassLoader);
                 }
-                reader.accept(chain, 0);
+                if (shouldUseTraceEvent) {
+                    chain = new TraceEventAnnotationClassAdapter(
+                            chain, reader.getClassName(), classPathJarsClassLoader);
+                }
+                reader.accept(chain, EXPAND_FRAMES);
                 byte[] patchedByteCode = writer.toByteArray();
                 writeZipEntry(tempStream, entry.getName(), patchedByteCode);
             }
@@ -155,16 +161,18 @@ class ByteCodeProcessor {
         String outputJarPath = args[1];
         boolean shouldAssert = args[2].equals("--enable-assert");
         boolean shouldUseCustomResources = args[3].equals("--enable-custom-resources");
+        boolean shouldUseTraceEvent = args[4].equals("--enable-trace-event");
 
         // Load all jars that are on the classpath for the input jar for analyzing class hierarchy.
         ClassLoader classPathJarsClassLoader = null;
-        if (shouldUseCustomResources) {
+        if (shouldUseCustomResources || shouldUseTraceEvent) {
             ArrayList<String> classPathJarsPaths = new ArrayList<>();
             classPathJarsPaths.add(inputJarPath);
             classPathJarsPaths.addAll(Arrays.asList(Arrays.copyOfRange(args, 4, args.length)));
             classPathJarsClassLoader = loadJars(classPathJarsPaths);
         }
+
         process(inputJarPath, outputJarPath, shouldAssert, shouldUseCustomResources,
-                classPathJarsClassLoader);
+                shouldUseTraceEvent, classPathJarsClassLoader);
     }
 }
