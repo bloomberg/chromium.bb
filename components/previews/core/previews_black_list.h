@@ -108,6 +108,7 @@ class PreviewsBlackList {
   virtual PreviewsEligibilityReason IsLoadedAndAllowed(
       const GURL& url,
       PreviewsType type,
+      bool ignore_long_term_black_list_rules,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
   // Asynchronously deletes all entries in the in-memory black list. Informs

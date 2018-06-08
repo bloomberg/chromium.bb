@@ -42,7 +42,8 @@ content::PreviewsState DetermineEnabledClientPreviewsState(
       previews_decider->ShouldAllowPreviewAtECT(
           url_request, previews::PreviewsType::LOFI,
           previews::params::EffectiveConnectionTypeThresholdForClientLoFi(),
-          previews::params::GetBlackListedHostsForClientLoFiFieldTrial())) {
+          previews::params::GetBlackListedHostsForClientLoFiFieldTrial(),
+          false)) {
     previews_state |= content::CLIENT_LOFI_ON;
     return previews_state;
   }

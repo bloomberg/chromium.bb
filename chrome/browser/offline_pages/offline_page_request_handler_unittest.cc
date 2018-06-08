@@ -260,8 +260,8 @@ class TestPreviewsDecider : public previews::PreviewsDecider {
       const net::URLRequest& request,
       previews::PreviewsType type,
       net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_server)
-      const override {
+      const std::vector<std::string>& host_blacklist_from_server,
+      bool ignore_long_term_black_list_rules) const override {
     return should_allow_preview_;
   }
 

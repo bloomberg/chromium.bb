@@ -27,6 +27,9 @@ message ClientConfig {
   optional Duration refresh_duration = 4;
   // Configuration information for reporting pageload metrics.
   optional PageloadMetricsConfig pageload_metrics_config = 5;
+  // Prevents the host base and user base blacklisting behaviors for lite pages
+  // and server LoFi.
+  optional bool ignore_long_term_black_list_rules = 7;
 }
 
 // The configuration for reporting pageload metrics.

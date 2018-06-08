@@ -91,7 +91,8 @@ ClientConfig CreateConfig(const std::string& session_key,
                           const std::string& secondary_host,
                           int secondary_port,
                           const ProxyServer_ProxyType& secondary_proxy_type,
-                          float reporting_fraction) {
+                          float reporting_fraction,
+                          bool ignore_long_term_black_list_rules) {
   ClientConfig config;
 
   config.set_session_key(session_key);
@@ -104,6 +105,8 @@ ClientConfig CreateConfig(const std::string& session_key,
     config.mutable_pageload_metrics_config()->set_reporting_fraction(
         reporting_fraction);
   }
+  config.set_ignore_long_term_black_list_rules(
+      ignore_long_term_black_list_rules);
   ProxyServer* primary_proxy =
       config.mutable_proxy_config()->add_http_proxy_servers();
   primary_proxy->set_scheme(primary_scheme);
@@ -172,11 +175,11 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
     ASSERT_NE(nullptr, context_->network_delegate());
     // Set up the various test ClientConfigs.
-    ClientConfig config =
-        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-                     ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
-                     ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
-                     "fallback.net", 80, ProxyServer::UNSPECIFIED_TYPE, 0.5f);
+    ClientConfig config = CreateConfig(
+        kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
+        ProxyServer_ProxyScheme_HTTP, "fallback.net", 80,
+        ProxyServer::UNSPECIFIED_TYPE, 0.5f, false);
     config.SerializeToString(&config_);
     encoded_config_ = EncodeConfig(config);
 
@@ -184,21 +187,21 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         kOldSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
         ProxyServer_ProxyScheme_HTTPS, "old.origin.net", 443, ProxyServer::CORE,
         ProxyServer_ProxyScheme_HTTP, "old.fallback.net", 80,
-        ProxyServer::UNSPECIFIED_TYPE, 0.0f);
+        ProxyServer::UNSPECIFIED_TYPE, 0.0f, false);
     previous_config.SerializeToString(&previous_config_);
 
-    ClientConfig persisted =
-        CreateConfig(kPersistedSessionKey, kConfigRefreshDurationSeconds, 0,
-                     ProxyServer_ProxyScheme_HTTPS, "persisted.net", 443,
-                     ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
-                     "persisted.net", 80, ProxyServer::UNSPECIFIED_TYPE, 0.0f);
+    ClientConfig persisted = CreateConfig(
+        kPersistedSessionKey, kConfigRefreshDurationSeconds, 0,
+        ProxyServer_ProxyScheme_HTTPS, "persisted.net", 443, ProxyServer::CORE,
+        ProxyServer_ProxyScheme_HTTP, "persisted.net", 80,
+        ProxyServer::UNSPECIFIED_TYPE, 0.0f, false);
     loaded_config_ = EncodeConfig(persisted);
 
-    ClientConfig zero_reporting_fraction_config =
-        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-                     ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
-                     ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
-                     "origin.net", 0, ProxyServer::UNSPECIFIED_TYPE, 0.0f);
+    ClientConfig zero_reporting_fraction_config = CreateConfig(
+        kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
+        ProxyServer_ProxyScheme_HTTP, "origin.net", 0,
+        ProxyServer::UNSPECIFIED_TYPE, 0.0f, false);
     zero_reporting_fraction_encoded_config_ =
         EncodeConfig(zero_reporting_fraction_config);
 
@@ -206,28 +209,35 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
                      ProxyServer_ProxyScheme_HTTPS, "", 443, ProxyServer::CORE,
                      ProxyServer_ProxyScheme_HTTP, "", 0,
-                     ProxyServer::UNSPECIFIED_TYPE, 1.0f);
+                     ProxyServer::UNSPECIFIED_TYPE, 1.0f, false);
     one_reporting_fraction_encoded_config_ =
         EncodeConfig(one_reporting_fraction_config);
 
     // Passing in -1.0f as the reporting fraction causes the
     // |empty_reporting_fraction_config| to have no pageload_metrics_config()
     // set.
-    ClientConfig empty_reporting_fraction_config =
-        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-                     ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
-                     ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
-                     "origin.net", 0, ProxyServer::UNSPECIFIED_TYPE, -1.0f);
+    ClientConfig empty_reporting_fraction_config = CreateConfig(
+        kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
+        ProxyServer_ProxyScheme_HTTP, "origin.net", 0,
+        ProxyServer::UNSPECIFIED_TYPE, -1.0f, false);
     empty_reporting_fraction_encoded_config_ =
         EncodeConfig(empty_reporting_fraction_config);
 
-    ClientConfig half_reporting_fraction_config =
-        CreateConfig(kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
-                     ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
-                     ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
-                     "origin.net", 0, ProxyServer::UNSPECIFIED_TYPE, 0.5f);
+    ClientConfig half_reporting_fraction_config = CreateConfig(
+        kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
+        ProxyServer_ProxyScheme_HTTP, "origin.net", 0,
+        ProxyServer::UNSPECIFIED_TYPE, 0.5f, false);
     half_reporting_fraction_encoded_config_ =
         EncodeConfig(half_reporting_fraction_config);
+
+    ClientConfig ignore_black_list_config = CreateConfig(
+        kSuccessSessionKey, kConfigRefreshDurationSeconds, 0,
+        ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
+        ProxyServer_ProxyScheme_HTTP, "origin.net", 0,
+        ProxyServer::UNSPECIFIED_TYPE, 0.5f, true);
+    ignore_black_list_encoded_config_ = EncodeConfig(ignore_black_list_config);
 
     ClientConfig no_proxies_config;
     no_proxies_config.set_session_key(kSuccessSessionKey);
@@ -454,6 +464,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   const std::string& half_reporting_fraction_encoded_config() const {
     return half_reporting_fraction_encoded_config_;
   }
+  const std::string& ignore_black_list_encoded_config() const {
+    return ignore_black_list_encoded_config_;
+  }
   const std::string& no_proxies_config() const { return no_proxies_config_; }
 
   const std::string& loaded_config() const { return loaded_config_; }
@@ -497,6 +510,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   // A configuration where the pingback reporting fraction is set to 0.5f.
   std::string half_reporting_fraction_encoded_config_;
+
+  // A configuration where the black list rules are ignored.
+  std::string ignore_black_list_encoded_config_;
 
   // A configuration where no proxies are configured.
   std::string no_proxies_config_;
@@ -1249,11 +1265,11 @@ TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplyClientConfigOverride) {
   const std::string override_key = "OverrideSecureSession";
   std::string encoded_config;
-  ClientConfig config =
-      CreateConfig(override_key, kConfigRefreshDurationSeconds, 0,
-                   ProxyServer_ProxyScheme_HTTPS, "origin.net", 443,
-                   ProxyServer::CORE, ProxyServer_ProxyScheme_HTTP,
-                   "fallback.net", 80, ProxyServer::UNSPECIFIED_TYPE, 0.5f);
+  ClientConfig config = CreateConfig(
+      override_key, kConfigRefreshDurationSeconds, 0,
+      ProxyServer_ProxyScheme_HTTPS, "origin.net", 443, ProxyServer::CORE,
+      ProxyServer_ProxyScheme_HTTP, "fallback.net", 80,
+      ProxyServer::UNSPECIFIED_TYPE, 0.5f, false);
   config.SerializeToString(&encoded_config);
   base::Base64Encode(encoded_config, &encoded_config);
 
@@ -1395,6 +1411,15 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   config_client()->ApplySerializedConfig(
       half_reporting_fraction_encoded_config());
   EXPECT_EQ(0.5f, pingback_reporting_fraction());
+  EXPECT_FALSE(config()->IgnoreBlackListLongTermRulesForTesting());
+}
+
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       ApplySerializedConfigIgnoreBlackList) {
+  Init(true);
+
+  config_client()->ApplySerializedConfig(ignore_black_list_encoded_config());
+  EXPECT_TRUE(config()->IgnoreBlackListLongTermRulesForTesting());
 }
 
 TEST_F(DataReductionProxyConfigServiceClientTest, EmptyConfigDisablesDRP) {
