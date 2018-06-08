@@ -1365,7 +1365,7 @@
     },
     {
       "id": 137,
-      "description": "GPU rasterization on CrOS is blacklisted on non-Intel GPUs for now.",
+      "description": "GPU rasterization on CrOS is blacklisted on anything but Intel or Mali GPUs for now.",
       "cr_bugs": [684094],
       "os": {
         "type": "chromeos"
@@ -1374,7 +1374,8 @@
         "gpu_rasterization"
       ],
       "exceptions": [
-        { "vendor_id": "0x8086" }
+        { "vendor_id": "0x8086" },
+        { "gl_renderer": "Mali-T.*" }
       ]
     },
     {
