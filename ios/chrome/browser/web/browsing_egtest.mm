@@ -406,10 +406,11 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   NSString* script =
       [NSString stringWithFormat:@"javascript:window.location='%s'",
                                  targetURL.spec().c_str()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(script)];
+
+  [ChromeEarlGreyUI focusOmniboxAndType:script];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
       performAction:grey_tap()];
+
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   [[EarlGrey selectElementWithMatcher:OmniboxText(targetURL.GetContent())]
@@ -441,11 +442,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   [ChromeEarlGrey loadURL:secondURL];
 
   // Execute some JavaScript in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(@"javascript:document.write('foo')")];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
-      performAction:grey_tap()];
-
+  [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:document.write('foo')\n"];
   [ChromeEarlGrey waitForWebViewContainingText:"foo"];
 
   // Verify that the JavaScript did not affect history by going back and then
