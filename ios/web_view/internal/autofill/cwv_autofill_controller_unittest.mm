@@ -143,6 +143,7 @@ TEST_F(CWVAutofillControllerTest, FillSuggestion) {
 TEST_F(CWVAutofillControllerTest, ClearForm) {
   __block BOOL clear_form_completion_was_called = NO;
   [autofill_controller_ clearFormWithName:kTestFormName
+                          fieldIdentifier:kTestFieldIdentifier
                         completionHandler:^{
                           clear_form_completion_was_called = YES;
                         }];
@@ -152,6 +153,8 @@ TEST_F(CWVAutofillControllerTest, ClearForm) {
     return clear_form_completion_was_called;
   }));
   EXPECT_NSEQ(kTestFormName, js_autofill_manager_.lastClearedFormName);
+  EXPECT_NSEQ(kTestFieldIdentifier,
+              js_autofill_manager_.lastClearedFieldIdentifier);
 }
 
 // Tests CWVAutofillController focus previous field.

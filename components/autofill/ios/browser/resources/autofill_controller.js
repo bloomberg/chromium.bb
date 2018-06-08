@@ -21,7 +21,7 @@ goog.provide('__crWeb.autofill');
  * The autofill data for a form.
  * @typedef {{
  *   formName: string,
- *   fields: !Object<string, string>,
+ *   fields: !Object<string, !Object<string, string>>,
  * }}
  */
 var FormData;
@@ -279,10 +279,10 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
     if (__gCrWeb.fill.isCheckableElement(element))
       continue;
 
-    // Skip fields if autofill data is missing.
+    // Skip fields for which autofill data is missing.
     var fieldIdentifier = __gCrWeb.form.getFieldIdentifier(element);
-    var value = data.fields[fieldIdentifier];
-    if (!value)
+    var fieldData = data.fields[fieldIdentifier];
+    if (!fieldData)
       continue;
 
     // Skip non-empty fields unless:
@@ -302,15 +302,16 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
       continue;
     }
 
-    (function(_element, _value, _delay) {
+    (function(_element, _value, _section, _delay) {
       window.setTimeout(function() {
         __gCrWeb.fill.setInputElementValue(_value, _element, function() {
           _element.setAttribute('chrome-autofilled', '');
           _element.isAutofilled = true;
+          _element.autofillSection = _section;
           _element.addEventListener('input', controlElementInputListener_);
         });
       }, _delay);
-    })(element, value, delay);
+    })(element, fieldData.value, fieldData.section, delay);
   }
 
   if (form) {
@@ -329,28 +330,43 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
   }
 };
 
-// TODO(crbug.com/816941): Clear should only clear the current section and not
-// the whole form.
 /**
  * Clear autofilled fields of the specified form section. Fields that are not
- * currently autofilled are not modified.
+ * currently autofilled or do not belong to the same section as that of the
+ * field with |fieldIdentifier| are not modified. If the field identified by
+ * |fieldIdentifier| cannot be found all autofilled form fields get cleared.
  * Field contents are cleared, and Autofill flag and styling are removed.
  * 'change' events are sent for fields whose contents changed.
  * Based on FormCache::ClearSectionWithElement().
  *
  * @param {string} formName Identifier for form element (from
  *     getFormIdentifier).
+ * @param {string} fieldIdentifier Identifier for form field initiating the
+ *     clear action.
  */
-__gCrWeb.autofill['clearAutofilledFields'] = function(formName) {
+__gCrWeb.autofill['clearAutofilledFields'] = function(
+    formName, fieldIdentifier) {
   var form = __gCrWeb.form.getFormElementFromIdentifier(formName);
   var controlElements = form ?
       __gCrWeb.form.getFormControlElements(form) :
       getUnownedAutofillableFormFieldElements_(document.all, /*fieldsets=*/[]);
 
+  var formField = null;
+  for (var i = 0; i < controlElements.length; ++i) {
+    if (__gCrWeb.form.getFieldIdentifier(controlElements[i]) ==
+        fieldIdentifier) {
+      formField = controlElements[i];
+      break;
+    }
+  }
+
   for (var i = 0, delay = 0; i < controlElements.length;
        ++i, delay += __gCrWeb.autofill.delayBetweenFieldFillingMs) {
     var element = controlElements[i];
     if (!element.isAutofilled || element.disabled)
+      continue;
+
+    if (formField && formField.autofillSection != element.autofillSection)
       continue;
 
     var value = null;

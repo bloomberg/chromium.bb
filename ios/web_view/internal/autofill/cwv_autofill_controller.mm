@@ -120,13 +120,15 @@
 #pragma mark - Public Methods
 
 - (void)clearFormWithName:(NSString*)formName
+          fieldIdentifier:(NSString*)fieldIdentifier
         completionHandler:(nullable void (^)(void))completionHandler {
-  [_JSAutofillManager clearAutofilledFieldsForFormNamed:formName
-                                      completionHandler:^{
-                                        if (completionHandler) {
-                                          completionHandler();
-                                        }
-                                      }];
+  [_JSAutofillManager clearAutofilledFieldsForFormName:formName
+                                       fieldIdentifier:fieldIdentifier
+                                     completionHandler:^{
+                                       if (completionHandler) {
+                                         completionHandler();
+                                       }
+                                     }];
 }
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName

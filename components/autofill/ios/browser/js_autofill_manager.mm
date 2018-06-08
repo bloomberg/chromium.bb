@@ -109,13 +109,18 @@
              }];
 }
 
-- (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
-                        completionHandler:(ProceduralBlock)completionHandler {
+- (void)clearAutofilledFieldsForFormName:(NSString*)formName
+                         fieldIdentifier:(NSString*)fieldIdentifier
+                       completionHandler:(ProceduralBlock)completionHandler {
   DCHECK(completionHandler);
-  NSString* script =
-      [NSString stringWithFormat:
-                    @"__gCrWeb.autofill.clearAutofilledFields(%s);",
-                    base::GetQuotedJSONString([formName UTF8String]).c_str()];
+  NSString* script = [NSString
+      stringWithFormat:@"__gCrWeb.autofill.clearAutofilledFields(%s, %s);",
+                       base::GetQuotedJSONString(
+                           base::SysNSStringToUTF8(formName))
+                           .c_str(),
+                       base::GetQuotedJSONString(
+                           base::SysNSStringToUTF8(fieldIdentifier))
+                           .c_str()];
   [_receiver executeJavaScript:script
              completionHandler:^(id, NSError*) {
                completionHandler();

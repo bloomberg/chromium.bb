@@ -478,8 +478,9 @@ void GetFormAndField(autofill::FormData* form,
               value:base::SysNSStringToUTF16(suggestion.value)];
   } else if (suggestion.identifier == autofill::POPUP_ITEM_ID_CLEAR_FORM) {
     [jsAutofillManager_
-        clearAutofilledFieldsForFormNamed:formName
-                        completionHandler:suggestionHandledCompletion_];
+        clearAutofilledFieldsForFormName:formName
+                         fieldIdentifier:fieldIdentifier
+                       completionHandler:suggestionHandledCompletion_];
     suggestionHandledCompletion_ = nil;
   } else {
     NOTREACHED() << "unknown identifier " << suggestion.identifier;
@@ -735,7 +736,10 @@ void GetFormAndField(autofill::FormData* form,
     if (field.value.empty() || !field.is_autofilled)
       continue;
 
-    fieldsData.SetKey(base::UTF16ToUTF8(field.id), base::Value(field.value));
+    base::Value fieldData(base::Value::Type::DICTIONARY);
+    fieldData.SetKey("value", base::Value(field.value));
+    fieldData.SetKey("section", base::Value(field.section));
+    fieldsData.SetKey(base::UTF16ToUTF8(field.id), std::move(fieldData));
   }
   autofillData.SetKey("fields", std::move(fieldsData));
 
