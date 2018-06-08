@@ -1049,18 +1049,22 @@ def _SkylabHWTestTriggerOrRun(swarming_cli_cmd, cmd, **kwargs):
   start_cmd = list(cmd)
   logging.info('RunSkylabHWTestSuite will run: %s',
                cros_build_lib.CmdToStr(start_cmd))
-  result = swarming_lib.RunSwarmingCommandWithRetries(
-      max_retry=_MAX_HWTEST_START_CMD_RETRY,
-      error_check=swarming_lib.SwarmingRetriableErrorCheck,
-      cmd=start_cmd, swarming_cli_cmd=swarming_cli_cmd,
-      capture_output=True, combine_stdout_stderr=True,
-      **kwargs)
-  # If the command succeeds, result.task_summary_json
-  # should have the right content.
-  # 'Outputs' only exist when swarming_cli_cmd='run'.
-  for output in result.GetValue('outputs', []):
-    sys.stdout.write(output)
-  sys.stdout.flush()
+  try:
+    result = swarming_lib.RunSwarmingCommandWithRetries(
+        max_retry=_MAX_HWTEST_START_CMD_RETRY,
+        error_check=swarming_lib.SwarmingRetriableErrorCheck,
+        cmd=start_cmd, swarming_cli_cmd=swarming_cli_cmd,
+        capture_output=True, combine_stdout_stderr=True,
+        **kwargs)
+  except cros_build_lib.RunCommandError as e:
+    result = e.result
+    raise
+  finally:
+    # 'Outputs' only exist when swarming_cli_cmd='run'.
+    # This is required to output buildbot annotations, e.g. 'STEP_LINKS'.
+    for output in result.GetValue('outputs', []):
+      sys.stdout.write(output)
+    sys.stdout.flush()
 
 
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,

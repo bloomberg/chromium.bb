@@ -341,8 +341,7 @@ class SkylabHWTestStage(HWTestStage):
 
   def PerformStage(self):
     # TODO (xixuan): Remove this hardcoded build info after testing.
-    build = 'lumpy-release/R65-10323.58.0'
-    board = 'lumpy'
+    build = 'nyan_blaze-release/R69-10763.0.0'
 
     # TODO (xixuan): Only allow to run provision & bvt-inline suite.
     if self.suite_config.suite not in [constants.HWTEST_PROVISION_SUITE,
@@ -350,7 +349,7 @@ class SkylabHWTestStage(HWTestStage):
       return
 
     cmd_result = commands.RunSkylabHWTestSuite(
-        build, self.suite_config.suite, board,
+        build, self.suite_config.suite, self._board_name,
         model=self._model,
         pool=self.suite_config.pool,
         wait_for_results=self.wait_for_results,
