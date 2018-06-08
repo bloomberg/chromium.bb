@@ -110,6 +110,10 @@
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "content/browser/gpu/ca_transaction_gpu_coordinator.h"
+#endif
+
 namespace content {
 
 // UMA histogram names.
@@ -685,6 +689,10 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       kind_(kind),
       process_launched_(false),
       status_(UNKNOWN),
+#if defined(OS_MACOSX)
+      ca_transaction_gpu_coordinator_(
+          base::MakeRefCounted<CATransactionGPUCoordinator>(this)),
+#endif
       gpu_host_binding_(this),
       weak_ptr_factory_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -710,6 +718,11 @@ GpuProcessHost::~GpuProcessHost() {
     DCHECK(process_);
 
   SendOutstandingReplies(EstablishChannelStatus::GPU_HOST_INVALID);
+
+#if defined(OS_MACOSX)
+  ca_transaction_gpu_coordinator_->HostWillBeDestroyed();
+  ca_transaction_gpu_coordinator_ = nullptr;
+#endif
 
   if (status_ == UNKNOWN) {
     RunRequestGPUInfoCallbacks(gpu::GPUInfo());

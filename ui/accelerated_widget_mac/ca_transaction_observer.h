@@ -60,10 +60,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
 
   static CATransactionCoordinator& Get();
 
-  void Synchronize() {
-    if (@available(macos 10.11, *))
-      SynchronizeImpl();
-  }
+  void Synchronize();
 
   void AddPreCommitObserver(PreCommitObserver*);
   void RemovePreCommitObserver(PreCommitObserver*);

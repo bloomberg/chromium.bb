@@ -1846,6 +1846,13 @@ jumbo_source_set("browser") {
     deps += [ "//printing" ]
   }
 
+  if (is_mac) {
+    sources += [
+      "gpu/ca_transaction_gpu_coordinator.cc",
+      "gpu/ca_transaction_gpu_coordinator.h",
+    ]
+  }
+
   if (!is_mac) {
     deps += [ "//sandbox" ]
   }

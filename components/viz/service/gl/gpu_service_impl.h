@@ -208,6 +208,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void OnBackgroundCleanup() override;
   void OnBackgrounded() override;
   void OnForegrounded() override;
+#if defined(OS_MACOSX)
+  void BeginCATransaction() override;
+  void CommitCATransaction(CommitCATransactionCallback callback) override;
+#endif
   void Crash() override;
   void Hang() override;
   void ThrowJavaException() override;

@@ -72,6 +72,10 @@
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "ui/base/cocoa/quartz_util.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -91,14 +95,16 @@ bool GpuLogMessageHandler(int severity,
 
 // Returns a callback which does a PostTask to run |callback| on the |runner|
 // task runner.
-template <typename Param>
-base::OnceCallback<void(const Param&)> WrapCallback(
+template <typename... Params>
+base::OnceCallback<void(Params&&...)> WrapCallback(
     scoped_refptr<base::SingleThreadTaskRunner> runner,
-    base::OnceCallback<void(const Param&)> callback) {
+    base::OnceCallback<void(Params...)> callback) {
   return base::BindOnce(
       [](base::SingleThreadTaskRunner* runner,
-         base::OnceCallback<void(const Param&)> callback, const Param& param) {
-        runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), param));
+         base::OnceCallback<void(Params && ...)> callback, Params&&... params) {
+        runner->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(callback),
+                                        std::forward<Params>(params)...));
       },
       base::RetainedRef(std::move(runner)), std::move(callback));
 }
@@ -764,6 +770,20 @@ void GpuServiceImpl::OnForegrounded() {
   if (watchdog_thread_)
     watchdog_thread_->OnForegrounded();
 }
+
+#if defined(OS_MACOSX)
+void GpuServiceImpl::BeginCATransaction() {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTask(FROM_HERE, base::BindOnce(&ui::BeginCATransaction));
+}
+
+void GpuServiceImpl::CommitCATransaction(CommitCATransactionCallback callback) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTaskAndReply(FROM_HERE,
+                                 base::BindOnce(&ui::CommitCATransaction),
+                                 WrapCallback(io_runner_, std::move(callback)));
+}
+#endif
 
 void GpuServiceImpl::Crash() {
   DCHECK(io_runner_->BelongsToCurrentThread());
