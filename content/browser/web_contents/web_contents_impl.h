@@ -57,7 +57,6 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom.h"
-#include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "ui/accessibility/ax_modes.h"
 #include "ui/base/page_transition_types.h"
@@ -1727,10 +1726,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Whether we should override user agent in new tabs.
   bool should_override_user_agent_in_new_tabs_ = false;
-
-  // Gets notified about changes in viewport fit events.
-  class DisplayCutoutHostImpl;
-  std::unique_ptr<DisplayCutoutHostImpl> display_cutout_host_impl_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

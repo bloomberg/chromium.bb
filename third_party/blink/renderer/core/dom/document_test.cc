@@ -1070,7 +1070,7 @@ TEST_F(ViewportFitDocumentTest, MetaCSSViewportButNoFit) {
       "<style>@viewport { min-width: 100px; }</style>"
       "<meta name='viewport' content='initial-scale=1'>");
 
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
+  EXPECT_EQ(ViewportDescription::ViewportFit::kAuto,
             GetDocument().GetViewportDescription().GetViewportFit());
 }
 
@@ -1078,7 +1078,7 @@ TEST_F(ViewportFitDocumentTest, MetaCSSViewportButNoFit) {
 TEST_F(ViewportFitDocumentTest, CSSViewportButNoFit) {
   SetHtmlInnerHTML("<style>@viewport { min-width: 100px; }</style>");
 
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
+  EXPECT_EQ(ViewportDescription::ViewportFit::kAuto,
             GetDocument().GetViewportDescription().GetViewportFit());
 }
 
@@ -1086,14 +1086,14 @@ TEST_F(ViewportFitDocumentTest, CSSViewportButNoFit) {
 TEST_F(ViewportFitDocumentTest, MetaViewportButNoFit) {
   SetHtmlInnerHTML("<meta name='viewport' content='initial-scale=1'>");
 
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
+  EXPECT_EQ(ViewportDescription::ViewportFit::kAuto,
             GetDocument().GetViewportDescription().GetViewportFit());
 }
 
 // This is a test case for testing a combination of viewport-fit meta value,
 // viewport CSS value and the expected outcome.
 using ViewportTestCase =
-    std::tuple<const char*, const char*, mojom::ViewportFit>;
+    std::tuple<const char*, const char*, ViewportDescription::ViewportFit>;
 
 class ParameterizedViewportFitDocumentTest
     : public ViewportFitDocumentTest,
@@ -1132,19 +1132,41 @@ INSTANTIATE_TEST_CASE_P(
     ParameterizedViewportFitDocumentTest,
     testing::Values(
         // Test the default case.
-        ViewportTestCase(nullptr, nullptr, mojom::ViewportFit::kAuto),
+        ViewportTestCase(nullptr,
+                         nullptr,
+                         ViewportDescription::ViewportFit::kAuto),
         // Test the different values set through CSS.
-        ViewportTestCase(nullptr, "auto", mojom::ViewportFit::kAuto),
-        ViewportTestCase(nullptr, "contain", mojom::ViewportFit::kContain),
-        ViewportTestCase(nullptr, "cover", mojom::ViewportFit::kCover),
-        ViewportTestCase(nullptr, "invalid", mojom::ViewportFit::kAuto),
+        ViewportTestCase(nullptr,
+                         "auto",
+                         ViewportDescription::ViewportFit::kAuto),
+        ViewportTestCase(nullptr,
+                         "contain",
+                         ViewportDescription::ViewportFit::kContain),
+        ViewportTestCase(nullptr,
+                         "cover",
+                         ViewportDescription::ViewportFit::kCover),
+        ViewportTestCase(nullptr,
+                         "invalid",
+                         ViewportDescription::ViewportFit::kAuto),
         // Test the different values set through the meta tag.
-        ViewportTestCase("auto", nullptr, mojom::ViewportFit::kAuto),
-        ViewportTestCase("contain", nullptr, mojom::ViewportFit::kContain),
-        ViewportTestCase("cover", nullptr, mojom::ViewportFit::kCover),
-        ViewportTestCase("invalid", nullptr, mojom::ViewportFit::kAuto),
+        ViewportTestCase("auto",
+                         nullptr,
+                         ViewportDescription::ViewportFit::kAuto),
+        ViewportTestCase("contain",
+                         nullptr,
+                         ViewportDescription::ViewportFit::kContain),
+        ViewportTestCase("cover",
+                         nullptr,
+                         ViewportDescription::ViewportFit::kCover),
+        ViewportTestCase("invalid",
+                         nullptr,
+                         ViewportDescription::ViewportFit::kAuto),
         // Test that the CSS should override the meta tag.
-        ViewportTestCase("cover", "auto", mojom::ViewportFit::kAuto),
-        ViewportTestCase("cover", "contain", mojom::ViewportFit::kContain)));
+        ViewportTestCase("cover",
+                         "auto",
+                         ViewportDescription::ViewportFit::kAuto),
+        ViewportTestCase("cover",
+                         "contain",
+                         ViewportDescription::ViewportFit::kContain)));
 
 }  // namespace blink

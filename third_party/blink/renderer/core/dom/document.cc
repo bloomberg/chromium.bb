@@ -2679,10 +2679,6 @@ void Document::Shutdown() {
   if (!IsActive())
     return;
 
-  // TODO(https://crbug.com/800641): Use InterfaceInvalidator once it works with
-  // associated interfaces.
-  display_cutout_host_.reset();
-
   // Frame navigation can cause a new Document to be attached. Don't allow that,
   // since that will cause a situation where LocalFrame still has a Document
   // attached after this finishes!  Normally, it shouldn't actually be possible
@@ -4112,31 +4108,7 @@ ViewportDescription Document::GetViewportDescription() const {
 }
 
 void Document::UpdateViewportDescription() {
-  if (!GetFrame())
-    return;
-
-  // If the viewport_fit has changed we should send this to the browser. We
-  // use the legacy viewport description which contains the viewport_fit
-  // defined from the layout meta tag.
-  mojom::ViewportFit current_viewport_fit =
-      GetViewportDescription().GetViewportFit();
-  if (viewport_fit_ != current_viewport_fit &&
-      frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
-    // Bind the mojo interface.
-    if (!display_cutout_host_.is_bound()) {
-      frame_->Client()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
-          &display_cutout_host_);
-      DCHECK(display_cutout_host_.is_bound());
-    }
-
-    // Even though we bind the mojo interface above there still may be cases
-    // where this will fail (e.g. unit tests).
-    display_cutout_host_->ViewportFitChanged(current_viewport_fit);
-
-    viewport_fit_ = current_viewport_fit;
-  }
-
-  if (GetFrame()->IsMainFrame()) {
+  if (GetFrame() && GetFrame()->IsMainFrame()) {
     GetPage()->GetChromeClient().DispatchViewportPropertiesDidChange(
         GetViewportDescription());
   }
