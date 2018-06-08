@@ -132,7 +132,6 @@ void CreateDirectoryOnUIThread(
 // |storage_name| specifies the name of the storage device.
 // |read_only| specifies the mode of the storage device.
 // |directory_id| is an id of a directory to read.
-// |max_size| is a maximum size to read. Set 0 not to specify the maximum size.
 // |success_callback| is called when the ReadDirectory request succeeds.
 // |error_callback| is called when the ReadDirectory request fails.
 // |success_callback| and |error_callback| runs on the IO thread.
@@ -140,7 +139,6 @@ void ReadDirectoryOnUIThread(
     const std::string& storage_name,
     const bool read_only,
     const uint32_t directory_id,
-    const size_t max_size,
     const MTPDeviceTaskHelper::ReadDirectorySuccessCallback& success_callback,
     const MTPDeviceTaskHelper::ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -148,8 +146,7 @@ void ReadDirectoryOnUIThread(
       GetDeviceTaskHelperForStorage(storage_name, read_only);
   if (!task_helper)
     return;
-  task_helper->ReadDirectory(directory_id, max_size, success_callback,
-                             error_callback);
+  task_helper->ReadDirectory(directory_id, success_callback, error_callback);
 }
 
 // Checks if the |directory_id| directory is empty.
@@ -1465,7 +1462,6 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory(
 
   base::Closure task_closure = base::Bind(
       &ReadDirectoryOnUIThread, storage_name_, read_only_, dir_id,
-      0 /* max_size */,
       base::Bind(&MTPDeviceDelegateImplLinux::OnDidReadDirectory,
                  weak_ptr_factory_.GetWeakPtr(), dir_id, success_callback),
       base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,

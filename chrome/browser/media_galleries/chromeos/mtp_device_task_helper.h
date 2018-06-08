@@ -106,7 +106,6 @@ class MTPDeviceTaskHelper {
   // If there is an error, |error_callback| is invoked on the IO thread to
   // notify the caller about the file error.
   void ReadDirectory(const uint32_t directory_id,
-                     const size_t max_size,
                      const ReadDirectorySuccessCallback& success_callback,
                      const ErrorCallback& error_callback);
 
@@ -194,9 +193,6 @@ class MTPDeviceTaskHelper {
 
   // Query callback for ReadDirectoryEntryIds().
   //
-  // |max_size| specifies the number of entries to read. If it is zero, then
-  // read all the entries.
-  //
   // If there is no error, |error| is set to false, and |file_ids| has the IDs
   // of the directory file entries. If |file_ids| is empty, then just run
   // |success_callback|. Otherwise, get the directories entries from |file_ids|
@@ -207,7 +203,6 @@ class MTPDeviceTaskHelper {
   void OnReadDirectoryEntryIdsToReadDirectory(
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
-      size_t max_size,
       const std::vector<uint32_t>& file_ids,
       bool error);
 
@@ -226,7 +221,6 @@ class MTPDeviceTaskHelper {
       const ErrorCallback& error_callback,
       const std::vector<uint32_t>& file_ids,
       size_t offset,
-      size_t max_size,
       const std::vector<uint32_t>& sorted_file_ids,
       std::vector<device::mojom::MtpFileEntryPtr> file_entries,
       bool error);
