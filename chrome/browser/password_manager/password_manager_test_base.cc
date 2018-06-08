@@ -470,11 +470,6 @@ content::WebContents* PasswordManagerBrowserTestBase::WebContents() const {
   return web_contents_;
 }
 
-content::RenderViewHost* PasswordManagerBrowserTestBase::RenderViewHost()
-    const {
-  return WebContents()->GetRenderViewHost();
-}
-
 content::RenderFrameHost* PasswordManagerBrowserTestBase::RenderFrameHost()
     const {
   return WebContents()->GetMainFrame();

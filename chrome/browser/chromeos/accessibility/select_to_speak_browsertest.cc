@@ -135,8 +135,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   }
 
   void ExecuteJavaScriptInForeground(const std::string& script) {
-    CHECK(
-        content::ExecuteScript(GetWebContents()->GetRenderViewHost(), script));
+    CHECK(content::ExecuteScript(GetWebContents(), script));
   }
 
  private:

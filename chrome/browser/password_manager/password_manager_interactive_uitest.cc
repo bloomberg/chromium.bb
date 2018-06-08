@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   BubbleObserver prompt_observer(WebContents());
   std::string submit =
       "document.getElementById('input_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit));
   navigation_observer.Wait();
   EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
   prompt_observer.AcceptSavePrompt();
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   FillElementWithValue("username_field", "user");
   FillElementWithValue("password_field", "1234");
   NavigationObserver observer(WebContents());
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "send_xhr()"));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_xhr()"));
   observer.Wait();
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   FillElementWithValue("signup_password_field", "1234");
   FillElementWithValue("confirmation_password_field", "1234");
   NavigationObserver observer(WebContents());
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "send_xhr()"));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_xhr()"));
   observer.Wait();
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   FillElementWithValue("password_field", "1234");
 
   NavigationObserver observer(WebContents());
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "send_fetch()"));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_fetch()"));
   observer.Wait();
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
   FillElementWithValue("signup_password_field", "1234");
   FillElementWithValue("confirmation_password_field", "1234");
   NavigationObserver observer(WebContents());
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "send_fetch()"));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_fetch()"));
   observer.Wait();
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }

@@ -76,12 +76,8 @@ class SnapshotBrowserTest : public ContentBrowserTest {
     return static_cast<content::WebContentsImpl*>(browser->web_contents());
   }
 
-  content::RenderViewHostImpl* GetRenderViewHostImpl(Shell* browser) {
-    return GetWebContents(browser)->GetRenderViewHost();
-  }
-
   content::RenderWidgetHostImpl* GetRenderWidgetHostImpl(Shell* browser) {
-    return GetRenderViewHostImpl(browser)->GetWidget();
+    return GetWebContents(browser)->GetRenderViewHost()->GetWidget();
   }
 
   void SetupTestServer() {
@@ -230,8 +226,8 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SingleWindowTest) {
         "#%02x%02x%02x", expected.color.r, expected.color.g, expected.color.b);
     std::string script = std::string("fillWithColor(\"") + colorString + "\");";
     std::string result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        GetRenderViewHostImpl(shell()), script, &result));
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(GetWebContents(shell()),
+                                                       script, &result));
     EXPECT_EQ(result, colorString);
 
     expected_snapshots_.push_back(expected);
@@ -272,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
   for (int i = 0; i < 3; ++i) {
     bool result = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        GetRenderViewHostImpl(shell()), "openNewWindow()", &result));
+        GetWebContents(shell()), "openNewWindow()", &result));
     EXPECT_TRUE(result);
   }
 
@@ -302,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
           std::string("fillWithColor(\"") + colorString + "\");";
       std::string result;
       EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-          GetRenderViewHostImpl(browser), script, &result));
+          GetWebContents(browser), script, &result));
       EXPECT_EQ(result, colorString);
       expected_snapshots_.push_back(expected);
       // Get the snapshot from the surface rather than the window. The
@@ -327,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
   for (int i = 0; i < 3; ++i) {
     bool result = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        GetRenderViewHostImpl(shell()), "openNewWindow()", &result));
+        GetWebContents(shell()), "openNewWindow()", &result));
     EXPECT_TRUE(result);
   }
 
@@ -370,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
           std::string("fillWithColor(\"") + colorString + "\");";
       std::string result;
       EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-          GetRenderViewHostImpl(browser), script, &result));
+          GetWebContents(browser), script, &result));
       EXPECT_EQ(result, colorString);
       // Get the snapshot from the surface rather than the window. The
       // on-screen display path is verified by the GPU tests, and it

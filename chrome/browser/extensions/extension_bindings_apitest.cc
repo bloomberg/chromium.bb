@@ -85,8 +85,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest, LastError) {
   extensions::ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
 
   bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      host->render_view_host(), "testLastError()", &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(host->host_contents(),
+                                                   "testLastError()", &result));
   EXPECT_TRUE(result);
 }
 

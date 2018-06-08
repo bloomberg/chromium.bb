@@ -197,7 +197,6 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   // Accessors
   // Return the first created tab with a custom ManagePasswordsUIController.
   content::WebContents* WebContents() const;
-  content::RenderViewHost* RenderViewHost() const;
   content::RenderFrameHost* RenderFrameHost() const;
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
 

@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -59,12 +58,10 @@ class MemoryTracingBrowserTest : public InProcessBrowserTest {
   // event in RenderFrameImpl::OnJavaScriptExecuteRequestForTests (from the
   // renderer process).
   void ExecuteJavascriptOnCurrentTab() {
-    content::RenderViewHost* rvh = browser()
-                                       ->tab_strip_model()
-                                       ->GetActiveWebContents()
-                                       ->GetRenderViewHost();
-    ASSERT_TRUE(rvh);
-    ASSERT_TRUE(content::ExecuteScript(rvh, ";"));
+    content::WebContents* wc =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(wc);
+    ASSERT_TRUE(content::ExecuteScript(wc, ";"));
   }
 
   void PerformDumpMemoryTestActions(

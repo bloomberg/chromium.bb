@@ -546,9 +546,9 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
   ASSERT_TRUE(content::ExecuteScript(
-      shell()->web_contents()->GetRenderViewHost(),
+      shell()->web_contents(),
       "function handleKeyEvent(event) {"
-        "domAutomationController.send(event.key);"
+      "domAutomationController.send(event.key);"
       "}"
       "document.body.addEventListener('keydown', handleKeyEvent);"
       "document.body.addEventListener('keyup', handleKeyEvent);"));
@@ -579,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyboardEventAck) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
   ASSERT_TRUE(content::ExecuteScript(
-      shell()->web_contents()->GetRenderViewHost(),
+      shell()->web_contents(),
       "document.body.addEventListener('keydown', () => {debugger;});"));
 
   auto filter = std::make_unique<InputMsgWatcher>(
@@ -605,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
   ASSERT_TRUE(content::ExecuteScript(
-      shell()->web_contents()->GetRenderViewHost(),
+      shell()->web_contents(),
       "document.body.addEventListener('mousedown', () => {debugger;});"));
 
   auto filter = std::make_unique<InputMsgWatcher>(
@@ -781,7 +781,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 
     // Draw a blue box of provided size in the horizontal center of the page.
     EXPECT_TRUE(content::ExecuteScript(
-        shell()->web_contents()->GetRenderViewHost(),
+        shell()->web_contents(),
         base::StringPrintf(
             "var style = document.body.style;                             "
             "style.overflow = 'hidden';                                   "

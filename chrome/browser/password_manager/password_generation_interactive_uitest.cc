@@ -96,9 +96,10 @@ class PasswordGenerationInteractiveTest :
   std::string GetFieldValue(const std::string& field_id) {
     std::string value;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        RenderViewHost(),
+        WebContents(),
         "window.domAutomationController.send("
-        "    document.getElementById('" + field_id + "').value);",
+        "    document.getElementById('" +
+            field_id + "').value);",
         &value));
     return value;
   }
@@ -106,7 +107,7 @@ class PasswordGenerationInteractiveTest :
   std::string GetFocusedElement() {
     std::string focused_element;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        RenderViewHost(),
+        WebContents(),
         "window.domAutomationController.send("
         "    document.activeElement.id)",
         &focused_element));
@@ -115,8 +116,7 @@ class PasswordGenerationInteractiveTest :
 
   void FocusPasswordField() {
     ASSERT_TRUE(content::ExecuteScript(
-        RenderViewHost(),
-        "document.getElementById('password_field').focus()"));
+        WebContents(), "document.getElementById('password_field').focus()"));
   }
 
   void SendKeyToPopup(ui::KeyboardCode key) {
@@ -125,7 +125,8 @@ class PasswordGenerationInteractiveTest :
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     event.windows_key_code = key;
-    RenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
+    WebContents()->GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(
+        event);
   }
 
   bool GenerationPopupShowing() {
@@ -175,8 +176,8 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
-                                     "window.scrollTo(100, 0);"));
+  ASSERT_TRUE(
+      content::ExecuteScript(WebContents(), "window.scrollTo(100, 0);"));
 
   EXPECT_FALSE(GenerationPopupShowing());
 }
@@ -225,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   NavigationObserver observer(WebContents());
   std::string submit_script =
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit_script));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit_script));
   observer.Wait();
 
   WaitForPasswordStore();

@@ -4160,10 +4160,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {
       content::InterstitialPage::GetInterstitialPage(
           browser()->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(interstitial);
-  ASSERT_TRUE(content::WaitForRenderFrameReady(interstitial->GetMainFrame()));
-  content::RenderViewHost* const rvh =
-      interstitial->GetMainFrame()->GetRenderViewHost();
-  ASSERT_TRUE(rvh);
+  content::RenderFrameHost* const rfh = interstitial->GetMainFrame();
+  ASSERT_TRUE(rfh);
+  ASSERT_TRUE(content::WaitForRenderFrameReady(rfh));
 
   // Check that the checkbox is not visible.
   int result = 0;
@@ -4180,7 +4179,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {
       security_interstitials::CMD_TEXT_FOUND,
       security_interstitials::CMD_TEXT_NOT_FOUND,
       security_interstitials::CMD_ERROR);
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(rvh, command, &result));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(rfh, command, &result));
   EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND, result);
 }
 

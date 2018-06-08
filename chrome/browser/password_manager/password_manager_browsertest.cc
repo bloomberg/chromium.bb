@@ -175,8 +175,7 @@ class ObservingAutofillClient
 };
 
 void TestPromptNotShown(const char* failure_message,
-                        content::WebContents* web_contents,
-                        content::RenderViewHost* rvh) {
+                        content::WebContents* web_contents) {
   SCOPED_TRACE(testing::Message(failure_message));
 
   NavigationObserver observer(web_contents);
@@ -185,7 +184,7 @@ void TestPromptNotShown(const char* failure_message,
       "document.getElementById('password_failed').value = 'random';"
       "document.getElementById('failed_form').submit()";
 
-  ASSERT_TRUE(content::ExecuteScript(rvh, fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(web_contents, fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(BubbleObserver(web_contents).IsSavePromptShownAutomatically());
 }
@@ -246,7 +245,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
 
   // Save the password and check the store.
@@ -261,20 +260,19 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        NoPromptIfFormReappeared) {
   NavigateToFile("/password/failed.html");
-  TestPromptNotShown("normal form", WebContents(), RenderViewHost());
+  TestPromptNotShown("normal form", WebContents());
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        NoPromptIfFormReappearedWithPartsHidden) {
   NavigateToFile("/password/failed_partly_visible.html");
-  TestPromptNotShown("partly visible form", WebContents(), RenderViewHost());
+  TestPromptNotShown("partly visible form", WebContents());
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        NoPromptIfFormReappearedInputOutsideFor) {
   NavigateToFile("/password/failed_input_outside.html");
-  TestPromptNotShown("form with input outside", WebContents(),
-                     RenderViewHost());
+  TestPromptNotShown("form with input outside", WebContents());
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
@@ -292,7 +290,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   std::unique_ptr<BubbleObserver> prompt_observer(
       new BubbleObserver(WebContents()));
@@ -312,7 +310,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -331,7 +329,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_unrelated').value = 'temp';"
       "document.getElementById('password_unrelated').value = 'random';"
       "document.getElementById('submit_unrelated').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -350,7 +348,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_failed').value = 'temp';"
       "document.getElementById('password_failed').value = 'random';"
       "document.getElementById('submit_failed').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -365,7 +363,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature, Redirects) {
       "document.getElementById('username_redirect').value = 'temp';"
       "document.getElementById('password_redirect').value = 'random';"
       "document.getElementById('submit_redirect').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer1.Wait();
   BubbleObserver bubble_observer(WebContents());
   EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
@@ -393,7 +391,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -419,8 +417,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       browser(), embedded_test_server()->GetURL(
                      "example.com", "/password/dynamic_password_form.html"));
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
-      "document.getElementById('create_form_button').click();"));
+      WebContents(), "document.getElementById('create_form_button').click();"));
 
   // Blink has a timer for 0.3 seconds before it updates the browser with the
   // new dynamic form. We wait for the form being detected by observing the UI
@@ -434,7 +431,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.dynamic_form.username.value = 'tempro';"
       "document.dynamic_form.password.value = 'random';"
       "document.dynamic_form.submit()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
 
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
@@ -473,8 +470,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "var second_iframe = document.getElementById('second_frame');"
       "second_iframe.contentWindow.location.href = 'done.html';";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill));
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), navigate_frame));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -492,7 +489,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_different_action').value = 'temp';"
       "document.getElementById('password_different_action').value = 'random';"
       "document.getElementById('submit_different_action').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -509,7 +506,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_action_mutation').value = 'temp';"
       "document.getElementById('password_action_mutation').value = 'random';"
       "document.getElementById('submit_action_mutation').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"XHR_FINISHED\"")
@@ -531,7 +528,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_contains_username').value = 'temp';"
       "document.getElementById('password_contains_username').value = 'random';"
       "document.getElementById('submit_contains_username').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -549,7 +546,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username').value = 'temp';"
       "document.getElementById('password').value = 'random';"
       "document.getElementById('submit-button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -574,8 +571,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "frame_doc.getElementById('password_field').value = 'random';"
       "frame_doc.getElementById('input_submit_button').click();";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), navigate_frame));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -603,7 +600,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "frame_doc.getElementById('username_field').value = 'Admin';"
       "frame_doc.getElementById('password_field').value = '12345';"
       "frame_doc.getElementById('input_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
 
   BubbleObserver prompt_observer(WebContents());
@@ -631,7 +628,7 @@ IN_PROC_BROWSER_TEST_P(
       "document.getElementById('password_failed').value = 'random';"
       "document.getElementById('submit_failed').click();";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -653,7 +650,7 @@ IN_PROC_BROWSER_TEST_P(
       "frame_doc.getElementById('password_failed').value = 'random';"
       "frame_doc.getElementById('submit_failed').click();";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.SetPathToWaitFor("/password/failed.html");
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
@@ -674,7 +671,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -699,7 +696,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"XHR_FINISHED\"")
@@ -730,7 +727,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('signup_password_field').value = 'random';"
       "document.getElementById('confirmation_password_field').value = 'random';"
       "document.getElementById('signup_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"XHR_FINISHED\"")
@@ -756,7 +753,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "navigate = false;"
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"XHR_FINISHED\"")
@@ -783,7 +780,7 @@ IN_PROC_BROWSER_TEST_P(
       "navigate = false;"
       "document.getElementById('signup_username_field').value = 'temp';"
       "document.getElementById('signup_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"XHR_FINISHED\"")
@@ -808,7 +805,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -833,7 +830,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
@@ -864,7 +861,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('signup_password_field').value = 'random';"
       "document.getElementById('confirmation_password_field').value = 'random';"
       "document.getElementById('signup_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
@@ -891,7 +888,7 @@ IN_PROC_BROWSER_TEST_P(
       "navigate = false;"
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
@@ -918,7 +915,7 @@ IN_PROC_BROWSER_TEST_P(
       "navigate = false;"
       "document.getElementById('signup_username_field').value = 'temp';"
       "document.getElementById('signup_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
@@ -941,7 +938,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('link').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_click_link));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_click_link));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -966,7 +963,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'my_username';"
       "document.getElementById('password_field').value = 'password';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
 
   first_observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
@@ -989,7 +986,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       new BubbleObserver(WebContents()));
   std::string submit_form =
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit_form));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit_form));
   second_observer.Wait();
   EXPECT_FALSE(second_prompt_observer->IsSavePromptShownAutomatically());
 
@@ -1026,7 +1023,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "iframe_doc.getElementById('password_field').value = 'random';"
       "iframe_doc.getElementById('submit_button').click()";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1044,7 +1041,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field_no_name').value = 'temp';"
       "document.getElementById('password_field_no_name').value = 'random';"
       "document.getElementById('input_submit_button_no_name').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1062,7 +1059,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementsByName('username_field_no_id')[0].value = 'temp';"
       "document.getElementsByName('password_field_no_id')[0].value = 'random';"
       "document.getElementsByName('input_submit_button_no_id')[0].click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1083,7 +1080,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "var password = form.children[1];"
       "password.value = 'random';"
       "form.children[2].click()";  // form.children[2] is the submit button.
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
   prompt_observer->AcceptSavePrompt();
@@ -1106,7 +1103,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('input_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1124,7 +1121,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field_http_error').value = 'temp';"
       "document.getElementById('password_field_http_error').value = 'random';"
       "document.getElementById('input_submit_button_http_error').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1150,8 +1147,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('input_submit_button').click();"
       "window.location.href = 'done.html';";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), save_and_remove));
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), save_and_remove));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), navigate_frame));
   observer.Wait();
   // The only thing we check here is that there is no use-after-free reported.
 }
@@ -1181,7 +1178,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   std::string click =
       "document.getElementById('testlink').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), click));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), click));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   browser()->tab_strip_model()->ActivateTabAt(0, false);
 
@@ -1272,7 +1269,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1289,7 +1286,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1302,7 +1299,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   std::string fill =
       "document.getElementById('username_redirect').value = 'temp';"
       "document.getElementById('password_redirect').value = 'random';";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill));
 
   NavigationObserver observer(WebContents());
   std::unique_ptr<BubbleObserver> prompt_observer(
@@ -1326,7 +1323,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username').value = 'temp';"
       "document.getElementById('password').value = 'random';"
       "document.getElementById('submit-button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit));
   observer.Wait();
 
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
@@ -1354,7 +1351,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
 
   std::string show_form =
       "document.getElementsByTagName('form')[0].style.display = 'block'";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), show_form));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), show_form));
 
   // Wait until the username is filled, to make sure autofill kicked in.
   WaitForElementValue("username", "admin");
@@ -1396,7 +1393,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   // Show the form and make sure that the password was autofilled.
   std::string show_form =
       "document.getElementsByTagName('form')[0].style.display = 'block'";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), show_form));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), show_form));
 
   CheckElementValue("username", "admin");
   CheckElementValue("password", "12345");
@@ -1480,7 +1477,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username').value = 'overwrite_me';"
       "document.getElementById('password').value = 'random';"
       "document.getElementById('non-form-button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit));
   observer.Wait();
 
   WaitForPasswordStore();
@@ -1548,8 +1545,7 @@ IN_PROC_BROWSER_TEST_P(
       "document.getElementById('username_redirect').value = 'user';"
       "document.getElementById('password_redirect').value = 'password';"
       "document.getElementById('submit_redirect').click()";
-  ASSERT_TRUE(
-      content::ExecuteScript(RenderViewHost(), fill_and_submit_redirect));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit_redirect));
 
   NavigationObserver redirect_observer(WebContents());
   redirect_observer.SetPathToWaitFor("/password/redirect.html");
@@ -1579,7 +1575,7 @@ IN_PROC_BROWSER_TEST_P(
       "document.getElementById('password_field').value = 'attacker_password';"
       "document.getElementById('input_submit_button').click()";
   ASSERT_TRUE(
-      content::ExecuteScript(RenderViewHost(), fill_and_submit_attacker_form));
+      content::ExecuteScript(WebContents(), fill_and_submit_attacker_form));
 
   NavigationObserver done_observer(WebContents());
   done_observer.SetPathToWaitFor("/password/done.html");
@@ -1705,7 +1701,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   std::string submit =
       "document.getElementById('password').value = 'password';"
       "document.getElementById('submit-button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit));
   observer.Wait();
 
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
@@ -1736,7 +1732,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   NavigateToFile("/password/dynamic_password_form.html");
   const std::string create_form =
       "document.getElementById('create_form_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), create_form));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), create_form));
   // Wait until the username is filled, to make sure autofill kicked in.
   WaitForElementValue("username_id", "temp");
 
@@ -1745,8 +1741,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   const std::string delete_form =
       "var form = document.getElementById('dynamic_form_id');"
       "form.parentNode.removeChild(form);";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), delete_form));
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), create_form));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), delete_form));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), create_form));
   WaitForElementValue("username_id", "temp");
 }
 
@@ -1769,7 +1765,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   password_store->AddLogin(signin_form);
 
   NavigateToFile("/password/recurring_dynamic_form.html");
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "addForm();"));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), "addForm();"));
   // Wait until the username is filled, to make sure autofill kicked in.
   WaitForJsElementValue("document.body.children[0].children[0]", "temp");
   WaitForJsElementValue("document.body.children[0].children[1]", "random");
@@ -1778,7 +1774,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   // the existing PasswordFormManager will manage the new form.
   password_store->Clear();
   // Add one more form.
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), "addForm();"));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), "addForm();"));
   // Wait until the username is filled, to make sure autofill kicked in.
   WaitForJsElementValue("document.body.children[1].children[0]", "temp");
   WaitForJsElementValue("document.body.children[1].children[1]", "random");
@@ -1817,8 +1813,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   // Submit the form. It shouldn't revive the credential in the store.
   NavigationObserver observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
-      "document.getElementById('input_submit_button').click()"));
+      WebContents(), "document.getElementById('input_submit_button').click()"));
   observer.Wait();
 
   WaitForPasswordStore();
@@ -1844,7 +1839,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1867,7 +1862,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1887,7 +1882,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('ea_username_field').value = 'temp';"
       "document.getElementById('ea_password_field').value = 'random';"
       "document.getElementById('ea_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1908,7 +1903,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('ea_username_field').value = 'temp';"
       "document.getElementById('ea_password_field').value = 'random';"
       "document.getElementById('ea_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1930,7 +1925,7 @@ IN_PROC_BROWSER_TEST_P(
       "document.getElementById('pa_username_field').value = 'temp';"
       "document.getElementById('pa_password_field').value = 'random';"
       "document.getElementById('pa_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1953,7 +1948,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('pa_username_field').value = 'temp';"
       "document.getElementById('pa_password_field').value = 'random';"
       "document.getElementById('pa_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -1983,7 +1978,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   ObservingAutofillClient* observing_autofill_client =
       ObservingAutofillClient::FromWebContents(WebContents());
   password_manager::ContentPasswordManagerDriver* driver =
-      driver_factory->GetDriverForFrame(RenderViewHost()->GetMainFrame());
+      driver_factory->GetDriverForFrame(WebContents()->GetMainFrame());
   DCHECK(driver);
   driver->GetPasswordAutofillManager()->set_autofill_client(
       observing_autofill_client);
@@ -2028,7 +2023,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('chg_new_password_1').value = 'random1';"
       "document.getElementById('chg_new_password_2').value = 'random1';"
       "document.getElementById('chg_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -2047,7 +2042,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('chg_new_password_1').value = 'random1';"
       "document.getElementById('chg_new_password_2').value = 'random1';"
       "document.getElementById('chg_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -2062,7 +2057,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   NavigationObserver dummy_submit_observer(WebContents());
   std::string just_submit =
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), just_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), just_submit));
   dummy_submit_observer.Wait();
 
   // Now go to a page with a form again, fill the form, and go back instead of
@@ -2080,7 +2075,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('input_submit_button').click();"
       "window.history.back();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_back));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_back));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -2101,7 +2096,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'mypass';"
       "document.getElementById('password_field').value = 'mypass';"
       "document.getElementById('testform').submit();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), change_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), change_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -2125,7 +2120,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('security_answer').value = 'hometown';"
       "document.getElementById('SSN').value = '1234';"
       "document.getElementById('testform').submit();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -2147,7 +2142,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "frame_doc.getElementById('password_field').value = 'random';"
       "frame_doc.getElementById('submit_button').click();";
 
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"SUBMISSION_FINISHED\"")
@@ -2336,7 +2331,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "ifrmDoc.getElementById('username_field').value = 'temp';"
       "ifrmDoc.getElementById('password_field').value = 'pa55w0rd';"
       "ifrmDoc.getElementById('input_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
   prompt_observer->AcceptSavePrompt();
@@ -2448,7 +2443,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('chg_new_password_wo_username_2').value = "
       "'new_pw';"
       "document.getElementById('chg_submit_wo_username_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   // No credentials stored before, so save bubble is shown.
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
@@ -2486,8 +2481,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('chg_new_password_wo_username_2').value = "
       "'new_pw';"
       "document.getElementById('chg_submit_wo_username_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
-                                     fill_and_submit_change_password));
+  ASSERT_TRUE(
+      content::ExecuteScript(WebContents(), fill_and_submit_change_password));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
@@ -2530,7 +2525,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'new_pw';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   // The stored password "pw" was overriden with "new_pw", so update prompt is
   // expected.
@@ -2566,7 +2561,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'pw';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   // The stored password "pw" was not overriden, so update prompt is not
   // expected.
@@ -2589,7 +2584,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('chg_new_password_wo_username_2').value = "
       "'pass3';"
       "document.getElementById('chg_submit_wo_username_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   // 3 possible passwords are going to be shown in a dropdown when the password
   // selection feature is enabled. The first one will be selected as the main
@@ -2647,8 +2642,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('chg_new_password_withtext_username_2').value"
       " = 'new_pw';"
       "document.getElementById('chg_submit_withtext_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
-                                     fill_and_submit_change_password));
+  ASSERT_TRUE(
+      content::ExecuteScript(WebContents(), fill_and_submit_change_password));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
 
@@ -3075,7 +3070,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   std::string fill_and_submit =
       "document.getElementById('retry_password_field').value = 'pw';"
       "document.getElementById('retry_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
   prompt_observer->AcceptSavePrompt();
@@ -3112,7 +3107,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   std::string fill_and_submit =
       "document.getElementById('retry_password_field').value = 'pw';"
       "document.getElementById('retry_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
   EXPECT_FALSE(prompt_observer->IsUpdatePromptShownAutomatically());
@@ -3142,7 +3137,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   std::string fill_and_submit =
       "document.getElementById('retry_password_field').value = 'new_pw';"
       "document.getElementById('retry_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   // The new password "new_pw" is used, so update prompt is expected.
   EXPECT_TRUE(prompt_observer->IsUpdatePromptShownAutomatically());
@@ -3176,8 +3171,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   // Call the API to trigger the notification to the client, which raises the
   // account picker dialog.
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
-      "navigator.credentials.get({password: true})"));
+      WebContents(), "navigator.credentials.get({password: true})"));
 
   // Navigate while the picker is open.
   NavigateToFile("/password/password_form.html");
@@ -3198,7 +3192,7 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username').value = 'temp';"
       "document.getElementById('password').value = 'random';"
       "document.getElementById('submit').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
@@ -3224,7 +3218,7 @@ IN_PROC_BROWSER_TEST_P(
 
   // Call the API to trigger the notification to the client.
   ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
+      WebContents(),
       "navigator.credentials.get({password: true, unmediated: true })"));
 
   NavigationObserver observer(WebContents());
@@ -3234,8 +3228,8 @@ IN_PROC_BROWSER_TEST_P(
       "document.getElementById('username_field').value = 'user';"
       "document.getElementById('password_field').value = 'password';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
-                                     fill_and_submit_change_password));
+  ASSERT_TRUE(
+      content::ExecuteScript(WebContents(), fill_and_submit_change_password));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 
@@ -3277,8 +3271,8 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
       "document.getElementById('username_field').value = 'user';"
       "document.getElementById('password_field').value = 'password';"
       "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
-                                     fill_and_submit_change_password));
+  ASSERT_TRUE(
+      content::ExecuteScript(WebContents(), fill_and_submit_change_password));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 
@@ -3394,7 +3388,7 @@ class PasswordManagerDialogBrowserTest
         "document.getElementById('username_field').value = 'temp';"
         "document.getElementById('password_field').value = 'random';"
         "document.getElementById('input_submit_button').click()";
-    ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+    ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
     observer.Wait();
   }
 

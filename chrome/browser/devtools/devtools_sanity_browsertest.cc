@@ -63,7 +63,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/storage_partition.h"
@@ -101,7 +100,6 @@ using content::DevToolsAgentHost;
 using content::DevToolsAgentHostObserver;
 using content::NavigationController;
 using content::RenderFrameHost;
-using content::RenderViewHost;
 using content::WebContents;
 using extensions::Extension;
 
@@ -143,9 +141,7 @@ template <typename... T>
 void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
                                   const char* method,
                                   T... args) {
-  RenderViewHost* rvh = DevToolsWindowTesting::Get(window)
-                            ->main_web_contents()
-                            ->GetRenderViewHost();
+  WebContents* wc = DevToolsWindowTesting::Get(window)->main_web_contents();
   std::string result;
   const char* args_array[] = {method, args...};
   std::ostringstream script;
@@ -154,7 +150,7 @@ void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
     script << (i ? "," : "") << '\"' << args_array[i] << '\"';
   script << "])";
   ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(rvh, script.str(), &result));
+      content::ExecuteScriptAndExtractString(wc, script.str(), &result));
   EXPECT_EQ("[OK]", result);
 }
 
@@ -163,18 +159,15 @@ void DispatchOnTestSuite(DevToolsWindow* window,
                          const char* method,
                          T... args) {
   std::string result;
-  RenderViewHost* rvh = DevToolsWindowTesting::Get(window)
-                            ->main_web_contents()
-                            ->GetRenderViewHost();
+  WebContents* wc = DevToolsWindowTesting::Get(window)->main_web_contents();
   // At first check that JavaScript part of the front-end is loaded by
   // checking that global variable uiTests exists(it's created after all js
   // files have been loaded) and has runTest method.
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(
-          rvh,
-          "window.domAutomationController.send("
-          "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
-          &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      wc,
+      "window.domAutomationController.send("
+      "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
+      &result));
   ASSERT_EQ("function", result) << "DevTools front-end is broken.";
   DispatchOnTestSuiteSkipCheck(window, method, args...);
 }
@@ -330,7 +323,8 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
 
  protected:
   void InjectBeforeUnloadListener(content::WebContents* web_contents) {
-    ASSERT_TRUE(content::ExecuteScript(web_contents->GetRenderViewHost(),
+    ASSERT_TRUE(content::ExecuteScript(
+        web_contents,
         "window.addEventListener('beforeunload',"
         "function(event) { event.returnValue = 'Foo'; });"));
     content::PrepContentsForBeforeUnloadTest(web_contents);
@@ -375,8 +369,7 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     ASSERT_TRUE(content::ExecuteScript(
-        DevToolsWindowTesting::Get(devtools_window)->
-            main_web_contents()->GetRenderViewHost(),
+        DevToolsWindowTesting::Get(devtools_window)->main_web_contents(),
         "window.open(\"\", \"\", \"location=0\");"));
     observer.Wait();
   }
@@ -735,8 +728,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
       runner->QuitClosure());
 
   ASSERT_TRUE(content::ExecuteScript(
-      DevToolsWindowTesting::Get(devtools_window)->main_web_contents()->
-          GetRenderViewHost(),
+      DevToolsWindowTesting::Get(devtools_window)->main_web_contents(),
       "window.addEventListener('beforeunload',"
       "function(event) { while (true); });"));
   CloseInspectedTab();
@@ -1741,12 +1733,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestReattachAfterCrash) {
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   OpenDevToolsWindow("about:blank", false);
   std::string result;
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(
-          main_web_contents()->GetRenderViewHost(),
-          "window.domAutomationController.send("
-          "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
-          &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      main_web_contents(),
+      "window.domAutomationController.send("
+      "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
+      &result));
   ASSERT_EQ("function", result) << "DevTools front-end is broken.";
   CloseDevToolsWindow();
 }

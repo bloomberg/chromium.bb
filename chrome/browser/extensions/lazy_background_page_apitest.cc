@@ -312,8 +312,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
 
   // Abort the request.
   bool result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      host->render_view_host(), "abortRequest()", &result));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(host->web_contents(),
+                                                   "abortRequest()", &result));
   EXPECT_TRUE(result);
   page_complete.Wait();
 

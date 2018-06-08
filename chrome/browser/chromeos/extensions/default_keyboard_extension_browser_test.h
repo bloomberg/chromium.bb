@@ -15,7 +15,7 @@ class FilePath;
 }  // namespace base
 
 namespace content {
-class RenderViewHost;
+class WebContents;
 }
 
 // See the .cc for default values.
@@ -46,8 +46,8 @@ class DefaultKeyboardExtensionBrowserTest : public InProcessBrowserTest {
 
   void ShowVirtualKeyboard();
 
-  // Returns the render view host that the keyboard with extension |id| is in.
-  content::RenderViewHost* GetKeyboardRenderViewHost(const std::string& id);
+  // Returns the WebContents that the keyboard with extension |id| is in.
+  content::WebContents* GetKeyboardWebContents(const std::string& id);
 
   // InProcessBrowserTest.
   // Ensure that the virtual keyboard is enabled.
