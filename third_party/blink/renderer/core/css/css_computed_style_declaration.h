@@ -33,7 +33,6 @@
 
 namespace blink {
 
-class CSSVariableData;
 class ExceptionState;
 class LayoutObject;
 class MutableCSSPropertyValueSet;
@@ -61,7 +60,7 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
 
   const CSSValue* GetPropertyCSSValue(const CSSProperty&) const;
   const CSSValue* GetPropertyCSSValue(AtomicString custom_property_name) const;
-  HashMap<AtomicString, scoped_refptr<CSSVariableData>> GetVariables() const;
+  HeapHashMap<AtomicString, Member<const CSSValue>> GetVariables() const;
 
   const CSSValue* GetFontSizeCSSValuePreferringKeyword() const;
   bool IsMonospaceFont() const;

@@ -10,7 +10,6 @@
 
 namespace blink {
 
-class CSSVariableData;
 class ComputedStyle;
 class PropertyRegistry;
 
@@ -21,8 +20,9 @@ class ComputedStyleCSSValueMapping {
   static const CSSValue* Get(const AtomicString custom_property_name,
                              const ComputedStyle&,
                              const PropertyRegistry*);
-  static HashMap<AtomicString, scoped_refptr<CSSVariableData>> GetVariables(
-      const ComputedStyle&);
+  static HeapHashMap<AtomicString, Member<const CSSValue>> GetVariables(
+      const ComputedStyle& style,
+      const PropertyRegistry*);
 };
 
 }  // namespace blink

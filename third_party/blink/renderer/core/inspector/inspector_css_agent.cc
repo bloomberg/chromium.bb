@@ -1157,11 +1157,9 @@ Response InspectorCSSAgent::getComputedStyleForNode(
   }
 
   for (const auto& it : computed_style_info->GetVariables()) {
-    if (!it.value)
-      continue;
     (*style)->addItem(protocol::CSS::CSSComputedStyleProperty::create()
                           .setName(it.key)
-                          .setValue(it.value->TokenRange().Serialize())
+                          .setValue(it.value->CssText())
                           .build());
   }
   return Response::OK();
