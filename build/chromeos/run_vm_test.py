@@ -227,6 +227,7 @@ def vm_test(args):
       child.kill()
   signal.signal(signal.SIGTERM, _kill_child_procs)
   test_proc.wait()
+  rc = test_proc.returncode
 
   # Create a simple json results file for the sanity test if needed. The results
   # will contain only one test ('cros_vm_sanity_test'), and will either be a
@@ -241,7 +242,7 @@ def vm_test(args):
     with open(args.test_launcher_summary_output, 'w') as f:
       json.dump(json_results.GenerateResultsDict([run_results]), f)
 
-  return test_proc.returncode
+  return rc
 
 
 def main():
