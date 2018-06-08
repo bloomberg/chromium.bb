@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+PASS Partial interface Window: original interface defined
 FAIL Window interface: attribute ondeviceorientation assert_true: The prototype object must have a property "ondeviceorientation" expected true got false
 PASS Unscopable handled correctly for ondeviceorientation property on Window
 FAIL Window interface: attribute ondevicemotion assert_true: The prototype object must have a property "ondevicemotion" expected true got false

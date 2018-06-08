@@ -1,6 +1,9 @@
 This is a testharness.js-based test.
-Found 68 tests; 25 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 71 tests; 28 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Entries API: IDL
+PASS Partial interface File: original interface defined
+PASS Partial interface HTMLInputElement: original interface defined
+PASS Partial interface DataTransferItem: original interface defined
 PASS File interface: attribute webkitRelativePath
 PASS Unscopable handled correctly for webkitRelativePath property on File
 PASS File interface: new File([], "example.txt") must inherit property "webkitRelativePath" with the proper type

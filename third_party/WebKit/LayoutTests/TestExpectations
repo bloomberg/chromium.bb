@@ -2795,6 +2795,9 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_parent [ Timeout ]
+crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_top [ Timeout ]
+crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_self [ Timeout ]
 crbug.com/626703 external/wpt/css/css-ui/cursor-pointer-links-001-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-ui/cursor-pointer-links-002-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-ui/cursor-pointer-links-003-manual.html [ Skip ]
@@ -2995,7 +2998,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 [ Win7 ] external/wpt/css/css-fonts/variations/font-opentype-collections.html [ Timeout ]
 crbug.com/626703 external/wpt/html/editing/focus/focus-01.html [ Timeout ]
 crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/DataTransfer-types-manual.html [ Skip ]
-crbug.com/626703 external/wpt/webvr/idlharness.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/geometry/interfaces.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-017.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-030.html [ Skip ]

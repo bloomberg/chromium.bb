@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
-Found 77 tests; 56 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 79 tests; 58 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Exposed interfaces in a Service Worker.
+PASS Partial interface ServiceWorkerGlobalScope: original interface defined
+PASS Partial interface ServiceWorkerRegistration: original interface defined
 FAIL ServiceWorkerRegistration interface: existence and properties of interface object assert_false: expected false got true
 FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetched assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
 PASS Unscopable handled correctly for onbackgroundfetched property on ServiceWorkerGlobalScope

@@ -1,4 +1,7 @@
 This is a testharness.js-based test.
+PASS Partial interface Navigator: original interface defined
+PASS Partial interface Window: original interface defined
+PASS Partial interface Gamepad: original interface defined
 FAIL Window interface: attribute onvrdisplayconnect assert_own_property: The global object must have a property "onvrdisplayconnect" expected property "onvrdisplayconnect" missing
 PASS Unscopable handled correctly for onvrdisplayconnect property on Window
 FAIL Window interface: attribute onvrdisplaydisconnect assert_own_property: The global object must have a property "onvrdisplaydisconnect" expected property "onvrdisplaydisconnect" missing

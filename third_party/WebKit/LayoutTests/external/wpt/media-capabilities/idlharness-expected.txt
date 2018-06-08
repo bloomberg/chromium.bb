@@ -1,9 +1,15 @@
 This is a testharness.js-based test.
+Found 50 tests; 36 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test IDL implementation of Media Capabilities
+PASS Partial interface Navigator: original interface defined
+PASS Partial interface Navigator: valid exposure set
+PASS Partial interface WorkerNavigator: original interface defined
+FAIL Partial interface WorkerNavigator: valid exposure set Partial WorkerNavigator interface is exposed to 'DedicatedWorker', the original interface is not.
+PASS Partial interface Screen: original interface defined
 PASS Navigator interface: attribute mediaCapabilities
 PASS Unscopable handled correctly for mediaCapabilities property on Navigator
 PASS Navigator interface: navigator must inherit property "mediaCapabilities" with the proper type
-PASS WorkerNavigator interface: existence and properties of interface object
+FAIL WorkerNavigator interface: member mediaCapabilities Cannot use 'in' operator to search for 'mediaCapabilities' in undefined
 FAIL Screen interface: attribute colorGamut assert_true: The prototype object must have a property "colorGamut" expected true got false
 PASS Unscopable handled correctly for colorGamut property on Screen
 FAIL Screen interface: attribute luminance assert_true: The prototype object must have a property "luminance" expected true got false

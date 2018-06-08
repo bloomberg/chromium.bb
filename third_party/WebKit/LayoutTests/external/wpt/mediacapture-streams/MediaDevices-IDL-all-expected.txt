@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
-Found 135 tests; 127 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 137 tests; 129 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
+PASS Partial interface NavigatorUserMedia: original interface defined
+PASS Partial interface MediaDevices: original interface defined
 PASS Navigator interface: attribute mediaDevices
 PASS Unscopable handled correctly for mediaDevices property on Navigator
 PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)

@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
-Found 70 tests; 54 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 72 tests; 56 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Exposed interfaces in a Document.
+PASS Partial interface ServiceWorkerGlobalScope: original interface defined
+PASS Partial interface ServiceWorkerRegistration: original interface defined
 PASS ServiceWorkerRegistration interface: attribute backgroundFetch
 PASS Unscopable handled correctly for backgroundFetch property on ServiceWorkerRegistration
 PASS ServiceWorkerGlobalScope interface: existence and properties of interface object
