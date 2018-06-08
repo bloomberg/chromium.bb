@@ -963,10 +963,10 @@ chrome.fileManagerPrivate.onDriveSyncError;
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onAppsUpdated;
 
-/* The two declarations below (EntryAction, installWebstoreItem) don't have any
- * corresponding entry in the file_manager_private.idl file.
+/* The declaration below (EntryAction) doesn't have any corresponding entry in
+ * the file_manager_private.idl file.
  *
- * TODO(nigeltao): delete them.
+ * TODO(nigeltao): delete it.
  */
 
 /**
@@ -976,14 +976,3 @@ chrome.fileManagerPrivate.onAppsUpdated;
  * }}
  */
 var EntryAction;
-
-/**
- * Requests to install a webstore item. |item_id| The id of the item to
- * install. |silentInstallation| False to show installation prompt. True not to
- * show. |callback|
- * @param {string} itemId
- * @param {boolean} silentInstallation
- * @param {function()} callback Callback that does not take arguments.
- */
-chrome.fileManagerPrivate.installWebstoreItem = function(
-    itemId, silentInstallation, callback) {};
