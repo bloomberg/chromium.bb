@@ -65,6 +65,9 @@
 
 // This is needed by ext_tile related unit tests.
 #define EXT_TILE_DEBUG 1
+#define MC_TEMP_BUF_PELS                       \
+  (((MAX_SB_SIZE)*2 + (AOM_INTERP_EXTEND)*2) * \
+   ((MAX_SB_SIZE)*2 + (AOM_INTERP_EXTEND)*2))
 
 // Checks that the remaining bits start with a 1 and ends with 0s.
 // It consumes an additional byte, if already byte aligned before the check.
@@ -343,11 +346,154 @@ typedef struct PadBlock {
   int y1;
 } PadBlock;
 
+static void highbd_build_mc_border(const uint8_t *src8, int src_stride,
+                                   uint8_t *dst8, int dst_stride, int x, int y,
+                                   int b_w, int b_h, int w, int h) {
+  // Get a pointer to the start of the real data for this row.
+  const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+  uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
+  const uint16_t *ref_row = src - x - y * src_stride;
+
+  if (y >= h)
+    ref_row += (h - 1) * src_stride;
+  else if (y > 0)
+    ref_row += y * src_stride;
+
+  do {
+    int right = 0, copy;
+    int left = x < 0 ? -x : 0;
+
+    if (left > b_w) left = b_w;
+
+    if (x + b_w > w) right = x + b_w - w;
+
+    if (right > b_w) right = b_w;
+
+    copy = b_w - left - right;
+
+    if (left) aom_memset16(dst, ref_row[0], left);
+
+    if (copy) memcpy(dst + left, ref_row + x + left, copy * sizeof(uint16_t));
+
+    if (right) aom_memset16(dst + left + copy, ref_row[w - 1], right);
+
+    dst += dst_stride;
+    ++y;
+
+    if (y > 0 && y < h) ref_row += src_stride;
+  } while (--b_h);
+}
+
+static void build_mc_border(const uint8_t *src, int src_stride, uint8_t *dst,
+                            int dst_stride, int x, int y, int b_w, int b_h,
+                            int w, int h) {
+  // Get a pointer to the start of the real data for this row.
+  const uint8_t *ref_row = src - x - y * src_stride;
+
+  if (y >= h)
+    ref_row += (h - 1) * src_stride;
+  else if (y > 0)
+    ref_row += y * src_stride;
+
+  do {
+    int right = 0, copy;
+    int left = x < 0 ? -x : 0;
+
+    if (left > b_w) left = b_w;
+
+    if (x + b_w > w) right = x + b_w - w;
+
+    if (right > b_w) right = b_w;
+
+    copy = b_w - left - right;
+
+    if (left) memset(dst, ref_row[0], left);
+
+    if (copy) memcpy(dst + left, ref_row + x + left, copy);
+
+    if (right) memset(dst + left + copy, ref_row[w - 1], right);
+
+    dst += dst_stride;
+    ++y;
+
+    if (y > 0 && y < h) ref_row += src_stride;
+  } while (--b_h);
+}
+
+static INLINE int update_extend_mc_border_params(
+    const struct scale_factors *const sf, struct buf_2d *const pre_buf,
+    MV32 scaled_mv, PadBlock *block, int subpel_x_mv, int subpel_y_mv,
+    int do_warp, int is_intrabc, int *x_pad, int *y_pad) {
+  const int is_scaled = av1_is_scaled(sf);
+  // Get reference width and height.
+  int frame_width = pre_buf->width;
+  int frame_height = pre_buf->height;
+
+  // Do border extension if there is motion or
+  // width/height is not a multiple of 8 pixels.
+  if ((!is_intrabc) && (!do_warp) &&
+      (is_scaled || scaled_mv.col || scaled_mv.row || (frame_width & 0x7) ||
+       (frame_height & 0x7))) {
+    if (subpel_x_mv || (sf->x_step_q4 != SUBPEL_SHIFTS)) {
+      block->x0 -= AOM_INTERP_EXTEND - 1;
+      block->x1 += AOM_INTERP_EXTEND;
+      *x_pad = 1;
+    }
+
+    if (subpel_y_mv || (sf->y_step_q4 != SUBPEL_SHIFTS)) {
+      block->y0 -= AOM_INTERP_EXTEND - 1;
+      block->y1 += AOM_INTERP_EXTEND;
+      *y_pad = 1;
+    }
+
+    // Skip border extension if block is inside the frame.
+    if (block->x0 < 0 || block->x1 > frame_width - 1 || block->y0 < 0 ||
+        block->y1 > frame_height - 1) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static INLINE void extend_mc_border(const struct scale_factors *const sf,
+                                    struct buf_2d *const pre_buf,
+                                    MV32 scaled_mv, PadBlock block,
+                                    int subpel_x_mv, int subpel_y_mv,
+                                    int do_warp, int is_intrabc, int highbd,
+                                    uint8_t *mc_buf, uint8_t **pre,
+                                    int *src_stride) {
+  int x_pad = 0, y_pad = 0;
+  if (update_extend_mc_border_params(sf, pre_buf, scaled_mv, &block,
+                                     subpel_x_mv, subpel_y_mv, do_warp,
+                                     is_intrabc, &x_pad, &y_pad)) {
+    // Get reference block pointer.
+    const uint8_t *const buf_ptr =
+        pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
+    int buf_stride = pre_buf->stride;
+    const int b_w = block.x1 - block.x0;
+    const int b_h = block.y1 - block.y0;
+
+    // Extend the border.
+    if (highbd) {
+      highbd_build_mc_border(buf_ptr, buf_stride, mc_buf, b_w, block.x0,
+                             block.y0, b_w, b_h, pre_buf->width,
+                             pre_buf->height);
+    } else {
+      build_mc_border(buf_ptr, buf_stride, mc_buf, b_w, block.x0, block.y0, b_w,
+                      b_h, pre_buf->width, pre_buf->height);
+    }
+    *src_stride = b_w;
+    *pre = mc_buf + y_pad * (AOM_INTERP_EXTEND - 1) * b_w +
+           x_pad * (AOM_INTERP_EXTEND - 1);
+  }
+}
+
 static INLINE void dec_calc_subpel_params(
     MACROBLOCKD *xd, const struct scale_factors *const sf, const MV mv,
     int plane, const int pre_x, const int pre_y, int x, int y,
     struct buf_2d *const pre_buf, SubpelParams *subpel_params, int bw, int bh,
-    PadBlock *block) {
+    PadBlock *block, int mi_x, int mi_y, MV32 *scaled_mv, int *subpel_x_mv,
+    int *subpel_y_mv) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int is_scaled = av1_is_scaled(sf);
   if (is_scaled) {
@@ -384,6 +530,16 @@ static INLINE void dec_calc_subpel_params(
         ((pos_x + (bw - 1) * subpel_params->xs) >> SCALE_SUBPEL_BITS) + 1;
     block->y1 =
         ((pos_y + (bh - 1) * subpel_params->ys) >> SCALE_SUBPEL_BITS) + 1;
+
+    MV temp_mv;
+    temp_mv = clamp_mv_to_umv_border_sb(xd, &mv, bw, bh, pd->subsampling_x,
+                                        pd->subsampling_y);
+    *scaled_mv = av1_scale_mv(&temp_mv, (mi_x + x), (mi_y + y), sf);
+    scaled_mv->row += SCALE_EXTRA_OFF;
+    scaled_mv->col += SCALE_EXTRA_OFF;
+
+    *subpel_x_mv = scaled_mv->col & SCALE_SUBPEL_MASK;
+    *subpel_y_mv = scaled_mv->row & SCALE_SUBPEL_MASK;
   } else {
     // Get block position in current frame.
     int pos_x = (pre_x + x) << SUBPEL_BITS;
@@ -404,6 +560,11 @@ static INLINE void dec_calc_subpel_params(
     // Get reference block bottom right coordinate.
     block->x1 = (pos_x >> SUBPEL_BITS) + (bw - 1) + 1;
     block->y1 = (pos_y >> SUBPEL_BITS) + (bh - 1) + 1;
+
+    scaled_mv->row = mv_q4.row;
+    scaled_mv->col = mv_q4.col;
+    *subpel_x_mv = scaled_mv->col & SUBPEL_MASK;
+    *subpel_y_mv = scaled_mv->row & SUBPEL_MASK;
   }
 }
 
@@ -503,14 +664,22 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         uint8_t *pre;
         SubpelParams subpel_params;
         PadBlock block;
+        MV32 scaled_mv;
+        int subpel_x_mv, subpel_y_mv;
+        int highbd;
         WarpTypesAllowed warp_types;
         warp_types.global_warp_allowed = is_global[ref];
         warp_types.local_warp_allowed = this_mbmi->motion_mode == WARPED_CAUSAL;
 
         dec_calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, x, y, pre_buf,
-                               &subpel_params, bw, bh, &block);
+                               &subpel_params, bw, bh, &block, mi_x, mi_y,
+                               &scaled_mv, &subpel_x_mv, &subpel_y_mv);
         pre = pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
         src_stride = pre_buf->stride;
+        highbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+        extend_mc_border(sf, pre_buf, scaled_mv, block, subpel_x_mv,
+                         subpel_y_mv, 0, is_intrabc, highbd, xd->mc_buf[ref],
+                         &pre, &src_stride);
         conv_params.ref = ref;
         conv_params.do_average = ref;
         if (is_masked_compound_type(mi->interinter_compound_type)) {
@@ -546,11 +715,30 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
       const MV mv = mi->mv[ref].as_mv;
       PadBlock block;
+      MV32 scaled_mv;
+      int subpel_x_mv, subpel_y_mv;
+      int highbd;
 
       dec_calc_subpel_params(xd, sf, mv, plane, pre_x, pre_y, 0, 0, pre_buf,
-                             &subpel_params[ref], bw, bh, &block);
+                             &subpel_params[ref], bw, bh, &block, mi_x, mi_y,
+                             &scaled_mv, &subpel_x_mv, &subpel_y_mv);
       pre[ref] = pre_buf->buf0 + block.y0 * pre_buf->stride + block.x0;
       src_stride[ref] = pre_buf->stride;
+      highbd = xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH;
+
+      WarpTypesAllowed warp_types;
+      warp_types.global_warp_allowed = is_global[ref];
+      warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
+      int do_warp = (bw >= 8 && bh >= 8 &&
+                     av1_allow_warp(mi, &warp_types,
+                                    &xd->global_motion[mi->ref_frame[ref]],
+                                    build_for_obmc, subpel_params[ref].xs,
+                                    subpel_params[ref].ys, NULL));
+      do_warp = (do_warp && xd->cur_frame_force_integer_mv == 0);
+
+      extend_mc_border(sf, pre_buf, scaled_mv, block, subpel_x_mv, subpel_y_mv,
+                       do_warp, is_intrabc, highbd, xd->mc_buf[ref], &pre[ref],
+                       &src_stride[ref]);
     }
 
     ConvolveParams conv_params = get_conv_params_no_round(
@@ -2441,6 +2629,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
       td->xd = pbi->mb;
       td->xd.corrupted = 0;
+      td->xd.mc_buf[0] = pbi->td.mc_buf[0];
+      td->xd.mc_buf[1] = pbi->td.mc_buf[1];
       td->bit_reader = &tile_data->bit_reader;
       av1_zero(td->dqcoeff);
       av1_tile_init(&td->xd.tile, cm, row, col);
@@ -2514,6 +2704,8 @@ static int tile_worker_hook(void *arg1, void *arg2) {
 
     td->xd = pbi->mb;
     td->xd.corrupted = 0;
+    td->xd.mc_buf[0] = td->mc_buf[0];
+    td->xd.mc_buf[1] = td->mc_buf[1];
     td->bit_reader = &tile_data->bit_reader;
     av1_zero(td->dqcoeff);
     av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
@@ -2548,6 +2740,36 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   } while (!td->xd.corrupted && ++tile_idx <= thread_data->tile_end);
 
   return !td->xd.corrupted;
+}
+
+void av1_free_mc_tmp_buf(void *td, int use_highbd) {
+  ThreadData *thread_data = (ThreadData *)td;
+  int ref;
+  for (ref = 0; ref < 2; ref++) {
+    if (use_highbd)
+      aom_free(CONVERT_TO_SHORTPTR(thread_data->mc_buf[ref]));
+    else
+      aom_free(thread_data->mc_buf[ref]);
+    thread_data->mc_buf[ref] = NULL;
+  }
+  aom_free(thread_data->mc_buf);
+}
+
+static void allocate_mc_tmp_buf(AV1_COMMON *const cm, void *td, int buf_size,
+                                int use_highbd) {
+  ThreadData *thread_data = (ThreadData *)td;
+
+  for (int ref = 0; ref < 2; ref++) {
+    if (use_highbd) {
+      uint16_t *hbd_mc_buf;
+      CHECK_MEM_ERROR(cm, hbd_mc_buf, (uint16_t *)aom_memalign(16, buf_size));
+      thread_data->mc_buf[ref] = CONVERT_TO_BYTEPTR(hbd_mc_buf);
+    } else {
+      CHECK_MEM_ERROR(cm, thread_data->mc_buf[ref],
+                      (uint8_t *)aom_memalign(16, buf_size));
+    }
+  }
+  thread_data->mc_buf_size = buf_size;
 }
 
 static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
@@ -2629,6 +2851,15 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
         // Main thread acts as a worker and uses the thread data in pbi
         thread_data->td = &pbi->td;
       }
+    }
+  }
+  const int use_highbd = cm->use_highbitdepth ? 1 : 0;
+  const int buf_size = MC_TEMP_BUF_PELS << use_highbd;
+  for (worker_idx = 0; worker_idx < pbi->max_threads - 1; ++worker_idx) {
+    DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
+    if (thread_data->td->mc_buf_size != buf_size) {
+      av1_free_mc_tmp_buf(thread_data->td, use_highbd);
+      allocate_mc_tmp_buf(cm, thread_data->td, buf_size, use_highbd);
     }
   }
 
@@ -4025,6 +4256,12 @@ static void setup_frame_info(AV1Decoder *pbi) {
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_alloc_restoration_buffers(cm);
+  }
+  const int use_highbd = cm->use_highbitdepth ? 1 : 0;
+  const int buf_size = MC_TEMP_BUF_PELS << use_highbd;
+  if (pbi->td.mc_buf_size != buf_size) {
+    av1_free_mc_tmp_buf(&pbi->td, use_highbd);
+    allocate_mc_tmp_buf(cm, &pbi->td, buf_size, use_highbd);
   }
 }
 

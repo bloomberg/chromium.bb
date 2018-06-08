@@ -69,6 +69,8 @@ struct aom_read_bit_buffer *av1_init_read_bit_buffer(
     struct AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
     const uint8_t *data_end);
 
+void av1_free_mc_tmp_buf(void *td, int use_highbd);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

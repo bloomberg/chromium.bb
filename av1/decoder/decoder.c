@@ -142,6 +142,8 @@ void av1_decoder_remove(AV1Decoder *pbi) {
   if (pbi->thread_data) {
     for (int worker_idx = 0; worker_idx < pbi->max_threads - 1; worker_idx++) {
       DecWorkerData *const thread_data = pbi->thread_data + worker_idx;
+      const int use_highbd = pbi->common.use_highbitdepth ? 1 : 0;
+      av1_free_mc_tmp_buf(thread_data->td, use_highbd);
       aom_free(thread_data->td);
     }
     aom_free(pbi->thread_data);
@@ -162,6 +164,8 @@ void av1_decoder_remove(AV1Decoder *pbi) {
 #if CONFIG_ACCOUNTING
   aom_accounting_clear(&pbi->accounting);
 #endif
+  const int use_highbd = pbi->common.use_highbitdepth ? 1 : 0;
+  av1_free_mc_tmp_buf(&pbi->td, use_highbd);
 
   aom_free(pbi);
 }
@@ -309,15 +313,6 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
     }
 
     unlock_buffer_pool(pool);
-
-    // For now, we only extend the frame borders when the whole frame is
-    // decoded. Later, if needed, extend the border for the decoded tile on the
-    // frame border.
-    if (pbi->dec_tile_row == -1 && pbi->dec_tile_col == -1)
-      // TODO(debargha): Fix encoder side mv range, so that we can use the
-      // inner border extension. As of now use the larger extension.
-      // aom_extend_frame_inner_borders(cur_frame, av1_num_planes(cm));
-      aom_extend_frame_borders(cur_frame, av1_num_planes(cm));
   } else {
     // Nothing was decoded, so just drop this frame buffer
     lock_buffer_pool(pool);
