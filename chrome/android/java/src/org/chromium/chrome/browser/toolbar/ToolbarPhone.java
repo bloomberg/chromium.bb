@@ -462,11 +462,10 @@ public class ToolbarPhone extends ToolbarLayout
         mNewTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
 
         mToggleTabStackButton.setClickable(false);
-        Resources resources = getResources();
         mTabSwitcherButtonDrawable =
-                TabSwitcherDrawable.createTabSwitcherDrawable(resources, false);
+                TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
         mTabSwitcherButtonDrawableLight =
-                TabSwitcherDrawable.createTabSwitcherDrawable(resources, true);
+                TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), true);
         mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
         mTabSwitcherModeViews.add(mNewTabButton);
 
@@ -2313,9 +2312,8 @@ public class ToolbarPhone extends ToolbarLayout
                 || ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
         if (mTabSwitcherAnimationTabStackDrawable == null
                 || mIsOverlayTabStackDrawableLight != useTabStackDrawableLight) {
-            mTabSwitcherAnimationTabStackDrawable =
-                    TabSwitcherDrawable.createTabSwitcherDrawable(
-                            getResources(), useTabStackDrawableLight);
+            mTabSwitcherAnimationTabStackDrawable = TabSwitcherDrawable.createTabSwitcherDrawable(
+                    getContext(), useTabStackDrawableLight);
             int[] stateSet = {android.R.attr.state_enabled};
             mTabSwitcherAnimationTabStackDrawable.setState(stateSet);
             mTabSwitcherAnimationTabStackDrawable.setBounds(

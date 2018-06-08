@@ -9,7 +9,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.provider.Browser;
 import android.text.TextUtils;
@@ -267,12 +266,12 @@ public class BookmarkUtils {
     }
 
     /**
-     * @param res {@link Resources} used to retrieve the drawable.
+     * @param context {@link Context} used to retrieve the drawable.
      * @return A {@link TintedDrawable} to use for displaying bookmark folders.
      */
-    public static TintedDrawable getFolderIcon(Resources res) {
+    public static TintedDrawable getFolderIcon(Context context) {
         return TintedDrawable.constructTintedDrawable(
-                res, R.drawable.ic_folder_blue_24dp, getFolderIconTint());
+                context, R.drawable.ic_folder_blue_24dp, getFolderIconTint());
     }
 
     /**

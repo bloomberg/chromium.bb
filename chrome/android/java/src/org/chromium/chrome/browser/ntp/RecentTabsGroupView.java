@@ -55,9 +55,9 @@ public class RecentTabsGroupView extends RelativeLayout {
         LevelListDrawable collapseIcon = new LevelListDrawable();
         collapseIcon.addLevel(DRAWABLE_LEVEL_COLLAPSED, DRAWABLE_LEVEL_COLLAPSED,
                 TintedDrawable.constructTintedDrawable(
-                        getResources(), R.drawable.ic_expand_more_black_24dp));
+                        getContext(), R.drawable.ic_expand_more_black_24dp));
         TintedDrawable collapse = TintedDrawable.constructTintedDrawable(
-                getResources(), R.drawable.ic_expand_less_black_24dp);
+                getContext(), R.drawable.ic_expand_less_black_24dp);
         collapseIcon.addLevel(DRAWABLE_LEVEL_EXPANDED, DRAWABLE_LEVEL_EXPANDED, collapse);
         mExpandCollapseIcon.setImageDrawable(collapseIcon);
     }

@@ -60,7 +60,6 @@ public class HintedDropDownAdapterWithPlusIcon<T> extends HintedDropDownAdapter<
         // The plus icon is for the last item on the list.
         if (position == getCount() - 1) {
             // Add a "+" icon and a blue tint to the last element.
-            Resources resources = getContext().getResources();
             if (mTextView == null) {
                 mTextView = (TextView) convertView.findViewById(mTextViewResourceId);
             }
@@ -68,8 +67,9 @@ public class HintedDropDownAdapterWithPlusIcon<T> extends HintedDropDownAdapter<
             // Create the "+" icon, put it left of the text and add appropriate padding.
             mTextView.setCompoundDrawablesWithIntrinsicBounds(
                     TintedDrawable.constructTintedDrawable(
-                            resources, R.drawable.plus, R.color.light_active_color),
+                            getContext(), R.drawable.plus, R.color.light_active_color),
                     null, null, null);
+            Resources resources = getContext().getResources();
             mTextView.setCompoundDrawablePadding(
                     resources.getDimensionPixelSize(R.dimen.editor_dialog_section_large_spacing));
 

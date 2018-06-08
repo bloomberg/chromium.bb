@@ -802,7 +802,7 @@ public class WebappActivity extends SingleTabActivity {
     private void updateToolbarCloseButtonVisibility() {
         if (WebappBrowserControlsDelegate.shouldShowToolbarCloseButton(this)) {
             getToolbarManager().setCloseButtonDrawable(
-                    TintedDrawable.constructTintedDrawable(getResources(), R.drawable.btn_close));
+                    TintedDrawable.constructTintedDrawable(this, R.drawable.btn_close));
             // Applies light or dark tint to icons depending on the theme color.
             getToolbarManager().getToolbarLayout().getLocationBar().updateVisualsForState();
         } else {

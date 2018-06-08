@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -126,8 +127,8 @@ public class ImageViewTinterTest {
         Assert.assertFalse(checkIfTintWasApplied(view, color));
 
         // Set the tint to one color.
-        ColorStateList colorList = ApiCompatibilityUtils.getColorStateList(
-                mContext.getResources(), R.color.light_active_color);
+        ColorStateList colorList =
+                AppCompatResources.getColorStateList(mContext, R.color.light_active_color);
         view.setTint(colorList);
         Assert.assertNotNull(imageView.getColorFilter());
         Assert.assertTrue(checkIfTintWasApplied(view, color));
@@ -140,8 +141,8 @@ public class ImageViewTinterTest {
         // Set it to another color.
         int otherColor =
                 ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.google_red_700);
-        ColorStateList otherColorList = ApiCompatibilityUtils.getColorStateList(
-                mContext.getResources(), R.color.google_red_700);
+        ColorStateList otherColorList =
+                AppCompatResources.getColorStateList(mContext, R.color.google_red_700);
         view.setTint(otherColorList);
         Assert.assertNotNull(imageView.getColorFilter());
         Assert.assertTrue(checkIfTintWasApplied(view, otherColor));

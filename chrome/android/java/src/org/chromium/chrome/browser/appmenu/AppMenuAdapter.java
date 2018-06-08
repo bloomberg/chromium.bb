@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.graphics.drawable.Drawable;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -19,7 +20,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.widget.TintedImageButton;
@@ -286,8 +286,8 @@ class AppMenuAdapter extends BaseAdapter {
 
         // The checkbox must be tinted to make Android consistently style it across OS versions.
         // http://crbug.com/571445
-        button.setTint(ApiCompatibilityUtils.getColorStateList(
-                button.getResources(), R.color.checkbox_tint));
+        button.setTint(
+                AppCompatResources.getColorStateList(button.getContext(), R.color.checkbox_tint));
 
         setupMenuButton(button, item);
     }
@@ -300,8 +300,8 @@ class AppMenuAdapter extends BaseAdapter {
         item.getIcon().setLevel(currentLevel);
 
         if (item.isChecked()) {
-            button.setTint(ApiCompatibilityUtils.getColorStateList(
-                    button.getResources(), R.color.blue_mode_tint));
+            button.setTint(AppCompatResources.getColorStateList(
+                    button.getContext(), R.color.blue_mode_tint));
         }
 
         setupMenuButton(button, item);

@@ -12,6 +12,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorRes;
 import android.support.annotation.IntDef;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
@@ -419,10 +420,10 @@ class SuggestionView extends ViewGroup {
     private void setRefineIcon(boolean invalidateIcon) {
         if (!invalidateIcon && mRefineIcon != null) return;
 
+        @ColorRes
+        int tintId = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
         mRefineIcon = TintedDrawable.constructTintedDrawable(
-                getResources(), R.drawable.btn_suggestion_refine);
-        mRefineIcon.setTint(ApiCompatibilityUtils.getColorStateList(getResources(),
-                mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint));
+                getContext(), R.drawable.btn_suggestion_refine, tintId);
         mRefineIcon.setBounds(
                 0, 0,
                 mRefineIcon.getIntrinsicWidth(),
@@ -1050,7 +1051,7 @@ class SuggestionView extends ViewGroup {
                 default:
                     break;
             }
-            mSuggestionIcon = TintedDrawable.constructTintedDrawable(getResources(), drawableId,
+            mSuggestionIcon = TintedDrawable.constructTintedDrawable(getContext(), drawableId,
                     mUseDarkColors ? R.color.dark_mode_tint : R.color.white_mode_tint);
             mSuggestionIcon.setBounds(
                     0, 0,

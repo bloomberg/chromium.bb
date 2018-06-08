@@ -303,8 +303,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         ImageView permissionIcon =
                 (ImageView) permissionRow.findViewById(R.id.page_info_permission_icon);
         if (params.iconTintColorResource == 0) {
-            permissionIcon.setImageDrawable(TintedDrawable.constructTintedDrawable(
-                    getContext().getResources(), params.iconResource));
+            permissionIcon.setImageDrawable(
+                    TintedDrawable.constructTintedDrawable(getContext(), params.iconResource));
         } else {
             permissionIcon.setImageResource(params.iconResource);
             permissionIcon.setColorFilter(ApiCompatibilityUtils.getColor(

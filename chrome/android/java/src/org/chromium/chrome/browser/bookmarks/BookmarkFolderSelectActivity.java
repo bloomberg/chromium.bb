@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -370,13 +371,13 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
 
             Drawable iconDrawable;
             if (entry.mType == FolderListEntry.TYPE_NORMAL) {
-                iconDrawable = BookmarkUtils.getFolderIcon(view.getResources());
+                iconDrawable = BookmarkUtils.getFolderIcon(view.getContext());
             } else {
                 // For new folder, start_icon is different.
                 VectorDrawableCompat vectorDrawable = VectorDrawableCompat.create(
                         view.getResources(), R.drawable.ic_add, view.getContext().getTheme());
-                vectorDrawable.setTintList(ApiCompatibilityUtils.getColorStateList(
-                        view.getResources(), R.color.dark_mode_tint));
+                vectorDrawable.setTintList(AppCompatResources.getColorStateList(
+                        view.getContext(), R.color.dark_mode_tint));
                 iconDrawable = vectorDrawable;
             }
 

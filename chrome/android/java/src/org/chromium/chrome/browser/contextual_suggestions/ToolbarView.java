@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.content.Context;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.TintedImageView;
@@ -70,7 +70,7 @@ public class ToolbarView extends FrameLayout {
     }
 
     void setArrowTintResourceId(int resourceId) {
-        mArrow.setTint(ApiCompatibilityUtils.getColorStateList(getResources(), resourceId));
+        mArrow.setTint(AppCompatResources.getColorStateList(getContext(), resourceId));
     }
 
     void setSlimPeekEnabled(boolean slimPeekEnabled) {

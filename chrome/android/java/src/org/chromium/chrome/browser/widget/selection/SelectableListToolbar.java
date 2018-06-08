@@ -14,6 +14,7 @@ import android.support.annotation.StringRes;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -200,20 +201,20 @@ public class SelectableListToolbar<E>
                 getResources(), R.color.light_active_color);
 
         mDarkIconColorList =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
+                AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint);
         mLightIconColorList =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_mode_tint);
+                AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
 
         if (mTitleResId != 0) setTitle(mTitleResId);
 
         // TODO(twellington): add the concept of normal & selected tint to apply to all toolbar
         //                    buttons.
         mNormalMenuButton = TintedDrawable.constructTintedDrawable(
-                getResources(), R.drawable.ic_more_vert_black_24dp);
+                getContext(), R.drawable.ic_more_vert_black_24dp);
         mSelectionMenuButton = TintedDrawable.constructTintedDrawable(
-                getResources(), R.drawable.ic_more_vert_black_24dp, R.color.white_mode_tint);
+                getContext(), R.drawable.ic_more_vert_black_24dp, R.color.white_mode_tint);
         mNavigationIconDrawable = TintedDrawable.constructTintedDrawable(
-                getResources(), R.drawable.ic_arrow_back_white_24dp);
+                getContext(), R.drawable.ic_arrow_back_white_24dp);
 
         if (!FeatureUtilities.isChromeModernDesignEnabled()) {
             setTitleTextAppearance(getContext(), R.style.BlackHeadline2);
@@ -231,7 +232,7 @@ public class SelectableListToolbar<E>
         MenuItem extraMenuItem = getMenu().findItem(mExtraMenuItemId);
         if (extraMenuItem != null) {
             Drawable iconDrawable = TintedDrawable.constructTintedDrawable(
-                    getResources(), R.drawable.ic_more_vert_black_24dp, R.color.dark_mode_tint);
+                    getContext(), R.drawable.ic_more_vert_black_24dp, R.color.dark_mode_tint);
             extraMenuItem.setIcon(iconDrawable);
         }
     }
@@ -707,7 +708,7 @@ public class SelectableListToolbar<E>
         if (infoMenuItem != null) {
             if (mShowInfoIcon) {
                 Drawable iconDrawable =
-                        TintedDrawable.constructTintedDrawable(getResources(), R.drawable.btn_info,
+                        TintedDrawable.constructTintedDrawable(getContext(), R.drawable.btn_info,
                                 infoShowing ? R.color.blue_mode_tint : R.color.dark_mode_tint);
 
                 infoMenuItem.setIcon(iconDrawable);

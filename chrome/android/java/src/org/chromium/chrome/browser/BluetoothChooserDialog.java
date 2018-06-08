@@ -16,11 +16,11 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.View;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -155,7 +155,8 @@ public class BluetoothChooserDialog
 
         Drawable drawable = VectorDrawableCompat.create(res, icon, mActivity.getTheme());
         DrawableCompat.setTintList(drawable,
-                ApiCompatibilityUtils.getColorStateList(res, R.color.item_chooser_row_icon_color));
+                AppCompatResources.getColorStateList(
+                        mActivity, R.color.item_chooser_row_icon_color));
         return drawable;
     }
 

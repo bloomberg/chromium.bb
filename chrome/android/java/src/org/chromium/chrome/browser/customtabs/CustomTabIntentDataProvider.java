@@ -180,8 +180,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             bitmap = null;
         }
         if (bitmap == null) {
-            mCloseButtonIcon = TintedDrawable.constructTintedDrawable(
-                    context.getResources(), R.drawable.btn_close);
+            mCloseButtonIcon =
+                    TintedDrawable.constructTintedDrawable(context, R.drawable.btn_close);
         } else {
             mCloseButtonIcon = new BitmapDrawable(context.getResources(), bitmap);
         }

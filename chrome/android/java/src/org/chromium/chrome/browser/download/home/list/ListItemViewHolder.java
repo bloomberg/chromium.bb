@@ -9,6 +9,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -19,7 +20,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.ListItem.DateListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
@@ -185,8 +185,8 @@ abstract class ListItemViewHolder extends ViewHolder {
             mThumbnail.getBackground().setLevel(
                     itemView.getResources().getInteger(R.integer.list_item_level_default));
             mThumbnail.setImageResource(mIconId);
-            mThumbnail.setTint(ApiCompatibilityUtils.getColorStateList(
-                    itemView.getResources(), R.color.google_blue_500));
+            mThumbnail.setTint(AppCompatResources.getColorStateList(
+                    itemView.getContext(), R.color.google_blue_500));
         }
     }
 

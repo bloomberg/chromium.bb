@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -215,14 +216,11 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         mDefaultHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
-        mDarkIconColor =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
-        mLightIconColor =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_mode_tint);
-        mDarkCloseIconColor =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.black_alpha_38);
+        mDarkIconColor = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
+        mLightIconColor = AppCompatResources.getColorStateList(context, R.color.white_mode_tint);
+        mDarkCloseIconColor = AppCompatResources.getColorStateList(context, R.color.black_alpha_38);
         mLightCloseIconColor =
-                ApiCompatibilityUtils.getColorStateList(getResources(), R.color.white_alpha_70);
+                AppCompatResources.getColorStateList(context, R.color.white_alpha_70);
         mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);
         mIncognitoLevel = getResources().getInteger(R.integer.list_item_level_incognito);
 
