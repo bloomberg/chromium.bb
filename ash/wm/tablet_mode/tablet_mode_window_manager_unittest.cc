@@ -1832,4 +1832,19 @@ TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForMinimizedWindow) {
   EXPECT_EQ(window->bounds(), rect);
 }
 
+// Test that if a window is currently in tab-dragging process, its window bounds
+// should not updated.
+TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForTabDraggingWindow) {
+  gfx::Rect rect(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  // Now put the window in tab-dragging process.
+  window->SetProperty(ash::kIsDraggingTabsKey, true);
+
+  TabletModeWindowManager* manager = CreateTabletModeWindowManager();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(1, manager->GetNumberOfManagedWindows());
+  EXPECT_EQ(window->bounds(), rect);
+}
+
 }  // namespace ash

@@ -17,6 +17,7 @@
 #include "ash/wm/window_animation_types.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_util.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -204,12 +205,18 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
                    true /* animated */);
       return;
     case wm::WM_EVENT_SNAP_LEFT:
+      // Set bounds_changed_by_user to true to avoid WindowPositioner to auto
+      // place the window.
+      window_state->set_bounds_changed_by_user(true);
       UpdateWindow(window_state,
                    GetSnappedWindowStateType(
                        window_state, mojom::WindowStateType::LEFT_SNAPPED),
                    false /* animated */);
       return;
     case wm::WM_EVENT_SNAP_RIGHT:
+      // Set bounds_changed_by_user to true to avoid WindowPositioner to auto
+      // place the window.
+      window_state->set_bounds_changed_by_user(true);
       UpdateWindow(window_state,
                    GetSnappedWindowStateType(
                        window_state, mojom::WindowStateType::RIGHT_SNAPPED),
@@ -227,7 +234,7 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       if (bounds_in_parent.IsEmpty())
         return;
 
-      if (window_state->is_dragged()) {
+      if (wm::IsDraggingTabs(window_state->window())) {
         window_state->SetBoundsDirect(bounds_in_parent);
       } else if (current_state_type_ == mojom::WindowStateType::MAXIMIZED) {
         // Having a maximized window, it could have been created with an empty
@@ -381,6 +388,11 @@ mojom::WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
 void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
                                          bool animated) {
   if (defer_bounds_updates_)
+    return;
+
+  // Do not update window's bounds if it's in tab-dragging process. The bounds
+  // will be updated later when the drag ends.
+  if (wm::IsDraggingTabs(window_state->window()))
     return;
 
   // Do not update minimized windows bounds until it was unminimized.
