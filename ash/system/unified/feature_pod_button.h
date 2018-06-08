@@ -66,6 +66,8 @@ class FeaturePodLabelButton : public views::Button {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
  private:
+  void SetTooltipTextFromLabels();
+
   // Owned by views hierarchy.
   views::Label* const label_;
   views::Label* const sub_label_;
