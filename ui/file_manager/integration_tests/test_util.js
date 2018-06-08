@@ -219,7 +219,45 @@ var RootPath = Object.seal({
   DRIVE: '/must-be-filled-in-test-setup',
 });
 
+
 /**
+ * The capabilities (permissions) for the Test Entry. Structure should match
+ * TestEntryCapabilities in file_manager_browsertest_base.cc. All capabilities
+ * default to true if not specified.
+ *
+ * @record
+ * @struct
+ */
+function TestEntryCapabilities() {}
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryCapabilities.prototype.canCopy = true;
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryCapabilities.prototype.canDelete = true;
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryCapabilities.prototype.canRename = true;
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryCapabilities.prototype.canAddChildren = true;
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryCapabilities.prototype.canShare = true;
+
+/**
+ * Parameters to creat a Test Entry in the file manager. Structure should match
+ * TestEntryInfo in file_manager_browsertest_base.cc.
  *
  * @record
  * @struct
@@ -267,9 +305,15 @@ TestEntryInfoOptions.prototype.sizeText;
  */
 TestEntryInfoOptions.prototype.typeText;
 
+/**
+ * @type {TestEntryCapabilities|undefined} Capabilities of this file. Defaults
+ *     to all capabilities available (read-write access).
+ */
+TestEntryInfoOptions.prototype.capabilities;
 
 /**
- * File system entry information for tests.
+ * File system entry information for tests. Structure should match TestEntryInfo
+ * in file_manager_browsertest_base.cc
  *
  * @param {TestEntryInfoOptions} options Parameters to create the TestEntryInfo.
  */
@@ -283,6 +327,7 @@ function TestEntryInfo(options) {
   this.nameText = options.nameText;
   this.sizeText = options.sizeText;
   this.typeText = options.typeText;
+  this.capabilities = options.capabilities;
   Object.freeze(this);
 }
 
@@ -299,6 +344,10 @@ TestEntryInfo.prototype.getExpectedRow = function() {
 
 /**
  * Filesystem entries used by the test cases.
+ * TODO(sashab): Rename 'nameText', 'sizeText' and 'typeText' to
+ * 'expectedNameText', 'expectedSizeText' and 'expectedTypeText' to reflect that
+ * they are the expected values for those columns in the file manager.
+ *
  * @type {Object<TestEntryInfo>}
  * @const
  */
@@ -498,5 +547,85 @@ var ENTRIES = {
     nameText: '.hiddenfile.txt',
     sizeText: '51 bytes',
     typeText: 'Plain text'
+  }),
+
+
+  // Read-only and write-restricted entries.
+  // TODO(sashab): Generate all combinations of capabilities inside the test, to
+  // ensure maximum coverage.
+
+  // A folder that can't be renamed or deleted or have children added, but can
+  // be copied and shared.
+  readOnlyFolder: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'Read-Only Folder',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'Read-Only Folder',
+    sizeText: '--',
+    typeText: 'Folder',
+    capabilities: {
+      canCopy: true,
+      canAddChildren: false,
+      canRename: false,
+      canDelete: false,
+      canShare: true
+    },
+  }),
+
+  // A google doc file that can't be renamed or deleted, but can be copied and
+  // shared.
+  readOnlyDocument: new TestEntryInfo({
+    type: EntryType.FILE,
+    targetPath: 'Read-Only Doc',
+    mimeType: 'application/vnd.google-apps.document',
+    lastModifiedTime: 'Mar 20, 2013, 10:40 PM',
+    nameText: 'Read-Only Doc.gdoc',
+    sizeText: '--',
+    typeText: 'Google document',
+    capabilities: {
+      canCopy: false,
+      canAddChildren: false,
+      canRename: false,
+      canDelete: false,
+      canShare: false
+    },
+  }),
+
+  // A google doc file that can't be renamed, deleted, copied or shared.
+  readOnlyStrictDocument: new TestEntryInfo({
+    type: EntryType.FILE,
+    targetPath: 'Read-Only (Strict) Doc',
+    mimeType: 'application/vnd.google-apps.document',
+    lastModifiedTime: 'Mar 20, 2013, 10:40 PM',
+    nameText: 'Read-Only (Strict) Doc.gdoc',
+    sizeText: '--',
+    typeText: 'Google document',
+    capabilities: {
+      canCopy: false,
+      canAddChildren: false,
+      canRename: false,
+      canDelete: false,
+      canShare: false
+    },
+  }),
+
+  // A regular file that can't be renamed or deleted, but can be copied and
+  // shared.
+  readOnlyFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'image4.jpg',
+    targetPath: 'Read-Only File.jpg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'Read-Only File.jpg',
+    sizeText: '9 KB',
+    typeText: 'JPEG image',
+    capabilities: {
+      canCopy: true,
+      canAddChildren: false,
+      canRename: false,
+      canDelete: false,
+      canShare: true
+    },
   })
 };

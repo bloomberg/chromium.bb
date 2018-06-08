@@ -115,6 +115,7 @@ StepsRunner.prototype.run_ = function(steps) {
 
 /**
  * Basic entry set for the local volume.
+ *
  * @type {Array<TestEntryInfo>}
  * @const
  */
@@ -127,10 +128,13 @@ var BASIC_LOCAL_ENTRY_SET = [
 ];
 
 /**
- * Basic entry set for the drive volume.
+ * Basic entry set for the drive volume that only includes read-write entries
+ * (no read-only or similar entries).
  *
  * TODO(hirono): Add a case for an entry cached by FileCache. For testing
  *               Drive, create more entries with Drive specific attributes.
+ * TODO(sashab): Merge items from COMPLEX_DRIVE_ENTRY_SET into here (so all
+ *               tests run with read-only files) once crbug.com/850834 is fixed.
  *
  * @type {Array<TestEntryInfo>}
  * @const
@@ -146,6 +150,24 @@ var BASIC_DRIVE_ENTRY_SET = [
   ENTRIES.testSharedDocument
 ];
 
+/**
+ * More complex entry set for Drive that includes entries with varying
+ * permissions (such as read-only entries).
+ *
+ * @type {Array<TestEntryInfo>}
+ * @const
+ */
+var COMPLEX_DRIVE_ENTRY_SET = [
+  ENTRIES.hello, ENTRIES.readOnlyFolder, ENTRIES.readOnlyDocument,
+  ENTRIES.readOnlyStrictDocument, ENTRIES.readOnlyFile
+];
+
+/**
+ * Nested entry set (directories inside each other).
+ *
+ * @type {Array<TestEntryInfo>}
+ * @const
+ */
 var NESTED_ENTRY_SET = [
   ENTRIES.directoryA,
   ENTRIES.directoryB,
@@ -153,7 +175,7 @@ var NESTED_ENTRY_SET = [
 ];
 
 /**
- * Expecetd list of preset entries in fake test volumes. This should be in sync
+ * Expeceted list of preset entries in fake test volumes. This should be in sync
  * with FakeTestVolume::PrepareTestEntries in the test harness.
  *
  * @type {Array<TestEntryInfo>}
