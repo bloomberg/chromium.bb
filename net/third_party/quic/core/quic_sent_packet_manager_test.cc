@@ -2437,7 +2437,6 @@ TEST_P(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtClient) {
 }
 
 TEST_P(QuicSentPacketManagerTest, Negotiate1TLPFromOptionsAtServer) {
-  SetQuicReloadableFlag(quic_one_tlp, true);
   QuicConfig config;
   QuicTagVector options;
 
@@ -2450,7 +2449,6 @@ TEST_P(QuicSentPacketManagerTest, Negotiate1TLPFromOptionsAtServer) {
 }
 
 TEST_P(QuicSentPacketManagerTest, Negotiate1TLPFromOptionsAtClient) {
-  SetQuicReloadableFlag(quic_one_tlp, true);
   QuicConfig client_config;
   QuicTagVector options;
 

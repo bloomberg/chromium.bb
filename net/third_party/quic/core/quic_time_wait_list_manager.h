@@ -63,14 +63,11 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // when a packet with this connection ID is processed. If no termination
   // packets are provided, then a PUBLIC_RESET will be sent with the specified
   // |version|. Any termination packets will be move from |termination_packets|
-  // and will become owned by the manager. If |connection_rejected_statelessly|
-  // is true, it means that the connection was closed due to a stateless reject,
-  // and termination packets are expected.
+  // and will become owned by the manager.
   virtual void AddConnectionIdToTimeWait(
       QuicConnectionId connection_id,
       ParsedQuicVersion version,
       bool ietf_quic,
-      bool connection_rejected_statelessly,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets);
 
   // Returns true if the connection_id is in time wait state, false otherwise.
@@ -175,8 +172,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
     ConnectionIdData(int num_packets,
                      ParsedQuicVersion version,
                      bool ietf_quic,
-                     QuicTime time_added,
-                     bool connection_rejected_statelessly);
+                     QuicTime time_added);
 
     ConnectionIdData(const ConnectionIdData& other) = delete;
     ConnectionIdData(ConnectionIdData&& other);
@@ -189,7 +185,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
     QuicTime time_added;
     // These packets may contain CONNECTION_CLOSE frames, or SREJ messages.
     std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
-    bool connection_rejected_statelessly;
   };
 
   // QuicLinkedHashMap allows lookup by ConnectionId and traversal in add order.

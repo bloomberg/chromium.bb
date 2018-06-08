@@ -100,6 +100,13 @@ void QuicTraceVisitor::OnPacketSent(const SerializedPacket& serialized_packet,
         break;
     }
   }
+
+  // Output PCC DebugState on packet sent for analysis.
+  if (connection_->sent_packet_manager()
+          .GetSendAlgorithm()
+          ->GetCongestionControlType() == kPCC) {
+    PopulateTransportState(event->mutable_transport_state());
+  }
 }
 
 void QuicTraceVisitor::PopulateFrameInfo(const QuicFrame& frame,

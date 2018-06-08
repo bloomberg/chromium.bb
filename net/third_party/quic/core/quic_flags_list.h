@@ -97,10 +97,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 // If true, limit quic stream length to be below 2^62.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, false)
 
-// When true, enables the 1TLP connection option to configure QUIC to send one
-// TLP instead of 2.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_tlp, true)
-
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
@@ -122,14 +118,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing,
     false)
 
-// If true, when a packet write for connectivity probe does not complete
-// successfully synchronously, connection will not be affected, i.e., blocked or
-// closed, if the probing packet writer is not the default writer.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe,
-    true)
-
 // If true, a separate QuicAlarm in QuicConnection is used to trigger
 // OnPathDegrading() instead of using retransmission_alarm_.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2, true)
@@ -141,15 +129,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_server_proxy2, true)
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
 
-// If true, use the send alarm instead of the resume_writes alarm in
-// QuicConnection.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_send_alarm, true)
-
 // If true, do not use QUIC's MSPC handshake tag and instead require MIDS.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_mspc, true)
-
-// If true, simplify pacing sender logic.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_pacing_sender, true)
 
 // Number of packets that the pacing sender allows in bursts during pacing.
 QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 1)
@@ -212,7 +193,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_h2_deframer, true)
 // If true, put ScopedRetransmissionScheduler's functionality to
 // ScopedPacketFlusher.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_deprecate_scoped_scheduler,
+          FLAGS_quic_reloadable_flag_quic_deprecate_scoped_scheduler2,
           false)
 
 // If it's been more than SRTT since receiving a packet, set the ack alarm for

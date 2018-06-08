@@ -137,6 +137,22 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnApplicationCloseFrame(
+      const QuicApplicationCloseFrame& frame) override {
+    return true;
+  }
+
+  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
+    return true;
+  }
+
+  bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override {
+    return true;
+  }
+  bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override {
+    return true;
+  }
+
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override { return true; }
 
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {
@@ -145,12 +161,24 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override { return true; }
 
+  bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override {
+    return true;
+  }
+
   bool IsValidStatelessResetToken(QuicUint128 token) const override {
     return true;
   }
 
   void OnAuthenticatedIetfStatelessResetPacket(
       const QuicIetfStatelessResetPacket& packet) override {}
+
+  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override {
+    return true;
+  }
+
+  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
+    return true;
+  }
 };
 
 class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
@@ -311,11 +339,6 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // now set up a reader to read in the frame.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
-    // read in the frame type
-    uint8_t received_frame_type;
-    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-    EXPECT_EQ(received_frame_type, IETF_PATH_CHALLENGE);
-
     QuicPathChallengeFrame receive_frame;
 
     EXPECT_TRUE(QuicFramerPeer::ProcessPathChallengeFrame(&framer_, &reader,
@@ -348,11 +371,6 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
 
     // Set up a reader to read in the frame.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
-
-    // Read in the frame type
-    uint8_t received_frame_type;
-    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-    EXPECT_EQ(received_frame_type, IETF_PATH_RESPONSE);
 
     QuicPathResponseFrame receive_frame;
 
@@ -625,16 +643,11 @@ TEST_F(QuicIetfFramerTest, ApplicationCloseEmptyString) {
   // now set up a reader to read in the frame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
-  // read in the frame type
-  uint8_t received_frame_type;
-  EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-  EXPECT_EQ(received_frame_type, QuicIetfFrameType::IETF_APPLICATION_CLOSE);
-
   // a QuicConnectionCloseFrame to hold the results.
   QuicApplicationCloseFrame sink_frame;
 
-  EXPECT_TRUE(QuicFramerPeer::ProcessApplicationCloseFrame(
-      &framer_, &reader, received_frame_type, &sink_frame));
+  EXPECT_TRUE(QuicFramerPeer::ProcessApplicationCloseFrame(&framer_, &reader,
+                                                           &sink_frame));
 
   // Now check that received == sent
   EXPECT_EQ(sink_frame.error_code, static_cast<QuicErrorCode>(0));
@@ -784,15 +797,10 @@ TEST_F(QuicIetfFramerTest, StopSendingFrame) {
                                                      &writer));
   // Check that the number of bytes in the buffer is in the
   // allowed range.
-  EXPECT_LE(4u, writer.length());
-  EXPECT_GE(11u, writer.length());
+  EXPECT_LE(3u, writer.length());
+  EXPECT_GE(10u, writer.length());
 
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
-
-  // Read in the frame type
-  uint8_t received_frame_type;
-  EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-  EXPECT_EQ(received_frame_type, IETF_STOP_SENDING);
 
   // A frame to hold the results
   QuicStopSendingFrame receive_frame;
@@ -826,17 +834,12 @@ TEST_F(QuicIetfFramerTest, MaxDataFrame) {
         QuicFramerPeer::AppendMaxDataFrame(&framer_, transmit_frame, &writer));
 
     // Check that the number of bytes in the buffer is in the expected range.
-    EXPECT_LE(2u, writer.length());
-    EXPECT_GE(9u, writer.length());
+    EXPECT_LE(1u, writer.length());
+    EXPECT_GE(8u, writer.length());
 
     // Set up reader and an empty QuicWindowUpdateFrame
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
     QuicWindowUpdateFrame receive_frame;
-
-    // Read in the frame type
-    uint8_t received_frame_type;
-    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-    EXPECT_EQ(received_frame_type, IETF_MAX_DATA);
 
     // Deframe it
     EXPECT_TRUE(
@@ -871,17 +874,12 @@ TEST_F(QuicIetfFramerTest, MaxStreamDataFrame) {
           &framer_, transmit_frame, &writer));
 
       // Check that number of bytes in the buffer is in the expected range.
-      EXPECT_LE(3u, writer.length());
-      EXPECT_GE(17u, writer.length());
+      EXPECT_LE(2u, writer.length());
+      EXPECT_GE(16u, writer.length());
 
       // Set up reader and empty receive QuicPaddingFrame.
       QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
       QuicWindowUpdateFrame receive_frame;
-
-      // Read in the frame type
-      uint8_t received_frame_type;
-      EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-      EXPECT_EQ(received_frame_type, IETF_MAX_STREAM_DATA);
 
       // Deframe it
       EXPECT_TRUE(QuicFramerPeer::ProcessMaxStreamDataFrame(&framer_, &reader,
@@ -914,17 +912,12 @@ TEST_F(QuicIetfFramerTest, MaxStreamIdFrame) {
                                                        &writer));
 
     // Check that buffer length is in the expected range
-    EXPECT_LE(2u, writer.length());
-    EXPECT_GE(9u, writer.length());
+    EXPECT_LE(1u, writer.length());
+    EXPECT_GE(8u, writer.length());
 
     // Set up reader and empty receive QuicPaddingFrame.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
     QuicMaxStreamIdFrame receive_frame;
-
-    // Read in the frame type
-    uint8_t received_frame_type;
-    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-    EXPECT_EQ(received_frame_type, IETF_MAX_STREAM_ID);
 
     // Deframe it
     EXPECT_TRUE(QuicFramerPeer::ProcessMaxStreamIdFrame(&framer_, &reader,
@@ -1032,17 +1025,12 @@ TEST_F(QuicIetfFramerTest, StreamIdBlockedFrame) {
         &framer_, transmit_frame, &writer));
 
     // Check that buffer length is in the expected range
-    EXPECT_LE(2u, writer.length());
-    EXPECT_GE(9u, writer.length());
+    EXPECT_LE(1u, writer.length());
+    EXPECT_GE(8u, writer.length());
 
     // Set up reader and empty receive QuicPaddingFrame.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
     QuicStreamIdBlockedFrame receive_frame;
-
-    // Read in the frame type
-    uint8_t received_frame_type;
-    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-    EXPECT_EQ(received_frame_type, IETF_STREAM_ID_BLOCKED);
 
     // Deframe it
     EXPECT_TRUE(QuicFramerPeer::ProcessStreamIdBlockedFrame(&framer_, &reader,
@@ -1082,11 +1070,9 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   EXPECT_TRUE(QuicFramerPeer::AppendNewConnectionIdFrame(
       &framer_, transmit_frame, &writer));
   // Check that buffer length is correct
-  EXPECT_EQ(29u, writer.length());
+  EXPECT_EQ(28u, writer.length());
   // clang-format off
   uint8_t packet[] = {
-    // frame type
-    0x0b,
     // sequence number, 0x80 for varint62 encoding
     0x80 + 0x01, 0x02, 0x03, 0x04,
     // new connection id, is not varint62 encoded.
@@ -1102,11 +1088,6 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   // Set up reader and empty receive QuicPaddingFrame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
   QuicNewConnectionIdFrame receive_frame;
-
-  // Read in the frame type
-  uint8_t received_frame_type;
-  EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-  EXPECT_EQ(received_frame_type, IETF_NEW_CONNECTION_ID);
 
   // Deframe it
   EXPECT_TRUE(QuicFramerPeer::ProcessNewConnectionIdFrame(&framer_, &reader,

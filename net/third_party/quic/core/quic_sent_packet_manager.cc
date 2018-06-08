@@ -181,9 +181,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(kNTLP, perspective_)) {
     max_tail_loss_probes_ = 0;
   }
-  if (GetQuicReloadableFlag(quic_one_tlp) &&
-      config.HasClientSentConnectionOption(k1TLP, perspective_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_one_tlp, 1, 2);
+  if (config.HasClientSentConnectionOption(k1TLP, perspective_)) {
     max_tail_loss_probes_ = 1;
   }
   if (GetQuicReloadableFlag(quic_one_rto) &&
@@ -880,7 +878,7 @@ bool QuicSentPacketManager::MaybeUpdateRTT(QuicPacketNumber largest_acked,
   return true;
 }
 
-QuicTime::Delta QuicSentPacketManager::TimeUntilSend(QuicTime now) {
+QuicTime::Delta QuicSentPacketManager::TimeUntilSend(QuicTime now) const {
   // The TLP logic is entirely contained within QuicSentPacketManager, so the
   // send algorithm does not need to be consulted.
   if (pending_timer_transmission_count_ > 0) {
@@ -1231,8 +1229,7 @@ size_t QuicSentPacketManager::GetConsecutiveTlpCount() const {
 }
 
 void QuicSentPacketManager::OnApplicationLimited() {
-  if (using_pacing_ && pacing_sender_.is_simplified_pacing()) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_simplify_pacing_sender, 2, 2);
+  if (using_pacing_) {
     pacing_sender_.OnApplicationLimited();
   }
   send_algorithm_->OnApplicationLimited(unacked_packets_.bytes_in_flight());

@@ -20,15 +20,11 @@ PacingSender::PacingSender()
     : sender_(nullptr),
       max_pacing_rate_(QuicBandwidth::Zero()),
       burst_tokens_(kInitialUnpacedBurst),
-      last_delayed_packet_sent_time_(QuicTime::Zero()),
       ideal_next_packet_send_time_(QuicTime::Zero()),
-      was_last_send_delayed_(false),
       initial_burst_size_(kInitialUnpacedBurst),
       lumpy_tokens_(0),
       alarm_granularity_(QuicTime::Delta::FromMilliseconds(1)),
-      pacing_limited_(false),
-      is_simplified_pacing_(
-          GetQuicReloadableFlag(quic_simplify_pacing_sender)) {}
+      pacing_limited_(false) {}
 
 PacingSender::~PacingSender() {}
 
@@ -74,8 +70,6 @@ void PacingSender::OnPacketSent(
   }
   if (burst_tokens_ > 0) {
     --burst_tokens_;
-    was_last_send_delayed_ = false;
-    last_delayed_packet_sent_time_ = QuicTime::Zero();
     ideal_next_packet_send_time_ = QuicTime::Zero();
     pacing_limited_ = false;
     return;
@@ -84,66 +78,37 @@ void PacingSender::OnPacketSent(
   // transferred.  PacingRate is based on bytes in flight including this packet.
   QuicTime::Delta delay =
       PacingRate(bytes_in_flight + bytes).TransferTime(bytes);
-  if (is_simplified_pacing_) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_simplify_pacing_sender, 1, 2);
-    if (!pacing_limited_ || lumpy_tokens_ == 0) {
-      // Reset lumpy_tokens_ if either application or cwnd throttles sending or
-      // token runs out.
-      lumpy_tokens_ = std::max(
-          1u,
-          std::min(
-              static_cast<uint32_t>(GetQuicFlag(FLAGS_quic_lumpy_pacing_size)),
-              static_cast<uint32_t>(
-                  (sender_->GetCongestionWindow() *
-                   GetQuicFlag(FLAGS_quic_lumpy_pacing_cwnd_fraction)) /
-                  kDefaultTCPMSS)));
-    }
-    --lumpy_tokens_;
-    if (pacing_limited_) {
-      // Make up for lost time since pacing throttles the sending.
-      ideal_next_packet_send_time_ = ideal_next_packet_send_time_ + delay;
-    } else {
-      ideal_next_packet_send_time_ =
-          std::max(ideal_next_packet_send_time_ + delay, sent_time + delay);
-    }
-    // Stop making up for lost time if underlying sender prevents sending.
-    pacing_limited_ = sender_->CanSend(bytes_in_flight + bytes);
-    return;
+  if (!pacing_limited_ || lumpy_tokens_ == 0) {
+    // Reset lumpy_tokens_ if either application or cwnd throttles sending or
+    // token runs out.
+    lumpy_tokens_ = std::max(
+        1u, std::min(static_cast<uint32_t>(
+                         GetQuicFlag(FLAGS_quic_lumpy_pacing_size)),
+                     static_cast<uint32_t>(
+                         (sender_->GetCongestionWindow() *
+                          GetQuicFlag(FLAGS_quic_lumpy_pacing_cwnd_fraction)) /
+                         kDefaultTCPMSS)));
   }
-  // If the last send was delayed, and the alarm took a long time to get
-  // invoked, allow the connection to make up for lost time.
-  if (was_last_send_delayed_) {
+  --lumpy_tokens_;
+  if (pacing_limited_) {
+    // Make up for lost time since pacing throttles the sending.
     ideal_next_packet_send_time_ = ideal_next_packet_send_time_ + delay;
-    // The send was application limited if it takes longer than the
-    // pacing delay between sent packets.
-    const bool application_limited =
-        last_delayed_packet_sent_time_.IsInitialized() &&
-        sent_time > last_delayed_packet_sent_time_ + delay;
-    const bool making_up_for_lost_time =
-        ideal_next_packet_send_time_ <= sent_time;
-    // As long as we're making up time and not application limited,
-    // continue to consider the packets delayed, allowing the packets to be
-    // sent immediately.
-    if (making_up_for_lost_time && !application_limited) {
-      last_delayed_packet_sent_time_ = sent_time;
-    } else {
-      was_last_send_delayed_ = false;
-      last_delayed_packet_sent_time_ = QuicTime::Zero();
-    }
   } else {
     ideal_next_packet_send_time_ =
         std::max(ideal_next_packet_send_time_ + delay, sent_time + delay);
   }
+  // Stop making up for lost time if underlying sender prevents sending.
+  pacing_limited_ = sender_->CanSend(bytes_in_flight + bytes);
 }
 
 void PacingSender::OnApplicationLimited() {
-  DCHECK(is_simplified_pacing_);
   // The send is application limited, stop making up for lost time.
   pacing_limited_ = false;
 }
 
-QuicTime::Delta PacingSender::TimeUntilSend(QuicTime now,
-                                            QuicByteCount bytes_in_flight) {
+QuicTime::Delta PacingSender::TimeUntilSend(
+    QuicTime now,
+    QuicByteCount bytes_in_flight) const {
   DCHECK(sender_ != nullptr);
 
   if (!sender_->CanSend(bytes_in_flight)) {
@@ -160,9 +125,6 @@ QuicTime::Delta PacingSender::TimeUntilSend(QuicTime now,
   if (ideal_next_packet_send_time_ > now + alarm_granularity_) {
     QUIC_DVLOG(1) << "Delaying packet: "
                   << (ideal_next_packet_send_time_ - now).ToMicroseconds();
-    if (!is_simplified_pacing_) {
-      was_last_send_delayed_ = true;
-    }
     return ideal_next_packet_send_time_ - now;
   }
 

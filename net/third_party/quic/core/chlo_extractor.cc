@@ -48,7 +48,14 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   bool OnPingFrame(const QuicPingFrame& frame) override;
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
   bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
+  bool OnApplicationCloseFrame(const QuicApplicationCloseFrame& frame) override;
+  bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
+  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override;
+  bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override;
+  bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override;
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
+  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override;
+  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
@@ -165,6 +172,25 @@ bool ChloFramerVisitor::OnConnectionCloseFrame(
   return true;
 }
 
+bool ChloFramerVisitor::OnApplicationCloseFrame(
+    const QuicApplicationCloseFrame& frame) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnPathChallengeFrame(
+    const QuicPathChallengeFrame& frame) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnPathResponseFrame(
+    const QuicPathResponseFrame& frame) {
+  return true;
+}
+
 bool ChloFramerVisitor::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
   return true;
 }
@@ -178,12 +204,26 @@ bool ChloFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
   return true;
 }
 
+bool ChloFramerVisitor::OnNewConnectionIdFrame(
+    const QuicNewConnectionIdFrame& frame) {
+  return true;
+}
+
 bool ChloFramerVisitor::OnPaddingFrame(const QuicPaddingFrame& frame) {
   return true;
 }
 
 bool ChloFramerVisitor::IsValidStatelessResetToken(QuicUint128 token) const {
   return false;
+}
+
+bool ChloFramerVisitor::OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) {
+  return true;
+}
+
+bool ChloFramerVisitor::OnStreamIdBlockedFrame(
+    const QuicStreamIdBlockedFrame& frame) {
+  return true;
 }
 
 void ChloFramerVisitor::OnError(CryptoFramer* framer) {}

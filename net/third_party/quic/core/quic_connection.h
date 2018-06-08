@@ -244,6 +244,10 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // Called when a ConnectionCloseFrame has been parsed.
   virtual void OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) {}
 
+  // Called when an ApplicationCloseFrame has been parsed.
+  virtual void OnApplicationCloseFrame(const QuicApplicationCloseFrame& frame) {
+  }
+
   // Called when a WindowUpdate has been parsed.
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
                                    const QuicTime& receive_time) {}
@@ -470,9 +474,16 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool OnPingFrame(const QuicPingFrame& frame) override;
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
   bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
+  bool OnApplicationCloseFrame(const QuicApplicationCloseFrame& frame) override;
+  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override;
+  bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override;
+  bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override;
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
+  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override;
+  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override;
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
   void OnPacketComplete() override;
   bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -681,7 +692,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     // flusher goes out of scope.
     // TODO(fayang): Consider to combine flush_on_delete_ and
     // set_retransmission_alarm_on_delete_if_pending_ when deprecating
-    // quic_reloadable_flag_quic_deprecate_scoped_scheduler.
+    // quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
     bool set_retransmission_alarm_on_delete_if_pending_;
   };
 
@@ -1184,9 +1195,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   QuicArenaScopedPtr<QuicAlarm> send_alarm_;
   // An alarm that is scheduled when the connection can still write and there
   // may be more data to send.
-  // TODO(ianswett): Remove resume_writes_alarm when deprecating
-  // FLAGS_quic_reloadable_flag_quic_unified_send_alarm
-  QuicArenaScopedPtr<QuicAlarm> resume_writes_alarm_;
   // An alarm that fires when the connection may have timed out.
   QuicArenaScopedPtr<QuicAlarm> timeout_alarm_;
   // An alarm that fires when a ping should be sent.
@@ -1333,10 +1341,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // supports_release_time_ is true.
   const QuicTime::Delta pace_time_into_future_;
 
-  // Latched valure of
-  // quic_reloadable_flag_quic_handle_write_results_for_connectivity_probe.
-  const bool handle_write_results_for_connectivity_probe_;
-
   // Latched value of
   // quic_reloadable_flag_quic_path_degrading_alarm2.
   const bool use_path_degrading_alarm_;
@@ -1344,9 +1348,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of quic_reloadable_flag_quic_enable_server_proxy2.
   const bool enable_server_proxy_;
 
-  // Latched value of quic_reloadable_flag_quic_deprecate_scoped_scheduler.
+  // Latched value of quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
   // TODO(fayang): Remove ScopedRetransmissionScheduler when deprecating
-  // quic_reloadable_flag_quic_deprecate_scoped_scheduler.
+  // quic_reloadable_flag_quic_deprecate_scoped_scheduler2.
   const bool deprecate_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);

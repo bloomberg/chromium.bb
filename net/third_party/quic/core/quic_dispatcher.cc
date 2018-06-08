@@ -139,7 +139,7 @@ class StatelessConnectionTerminator {
     DCHECK_EQ(1u, collector_.packets()->size());
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         connection_id_, framer_->version(), framer_->last_packet_is_ietf_quic(),
-        /*connection_rejected_statelessly=*/false, collector_.packets());
+        collector_.packets());
   }
 
   // Generates a series of termination packets containing the crypto handshake
@@ -167,7 +167,7 @@ class StatelessConnectionTerminator {
     }
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         connection_id_, framer_->version(), framer_->last_packet_is_ietf_quic(),
-        /*connection_rejected_statelessly=*/true, collector_.packets());
+        collector_.packets());
     DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id_));
   }
 
@@ -440,8 +440,7 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
                         << "to time-wait list.";
         time_wait_list_manager_->AddConnectionIdToTimeWait(
             connection_id, framer_.version(),
-            framer_.last_packet_is_ietf_quic(),
-            /*connection_rejected_statelessly=*/false, nullptr);
+            framer_.last_packet_is_ietf_quic(), nullptr);
       }
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
       time_wait_list_manager_->ProcessPacket(
@@ -525,7 +524,7 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
            !connection->termination_packets()->empty());
   }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      it->first, connection->version(), false, should_close_statelessly,
+      it->first, connection->version(), false,
       connection->termination_packets());
   session_map_.erase(it);
 }
@@ -725,6 +724,38 @@ bool QuicDispatcher::OnConnectionCloseFrame(
   return false;
 }
 
+bool QuicDispatcher::OnApplicationCloseFrame(
+    const QuicApplicationCloseFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) {
+  return true;
+}
+
+bool QuicDispatcher::OnStreamIdBlockedFrame(
+    const QuicStreamIdBlockedFrame& frame) {
+  return true;
+}
+
+bool QuicDispatcher::OnStopSendingFrame(const QuicStopSendingFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnPathChallengeFrame(
+    const QuicPathChallengeFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnPathResponseFrame(
+    const QuicPathResponseFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
 bool QuicDispatcher::OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) {
   DCHECK(false);
   return false;
@@ -737,6 +768,12 @@ bool QuicDispatcher::OnWindowUpdateFrame(
 }
 
 bool QuicDispatcher::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnNewConnectionIdFrame(
+    const QuicNewConnectionIdFrame& frame) {
   DCHECK(false);
   return false;
 }
@@ -759,7 +796,7 @@ void QuicDispatcher::OnExpiredPackets(
     QuicConnectionId connection_id,
     BufferedPacketList early_arrived_packets) {
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      connection_id, framer_.version(), early_arrived_packets.ietf_quic, false,
+      connection_id, framer_.version(), early_arrived_packets.ietf_quic,
       nullptr);
 }
 
@@ -838,7 +875,6 @@ void QuicDispatcher::ProcessChlo() {
     time_wait_list_manager()->AddConnectionIdToTimeWait(
         current_connection_id(), framer()->version(),
         framer()->last_packet_is_ietf_quic(),
-        /*connection_rejected_statelessly=*/false,
         /*termination_packets=*/nullptr);
     // This will trigger sending Public Reset packet.
     time_wait_list_manager()->ProcessPacket(current_self_address(),

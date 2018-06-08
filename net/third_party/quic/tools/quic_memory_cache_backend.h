@@ -117,6 +117,13 @@ class QuicMemoryCacheBackend : public QuicSimpleServerBackend {
       QuicStringPiece path,
       QuicBackendResponse::SpecialResponseType response_type);
 
+  void AddSpecialResponse(
+      QuicStringPiece host,
+      QuicStringPiece path,
+      spdy::SpdyHeaderBlock response_headers,
+      QuicStringPiece response_body,
+      QuicBackendResponse::SpecialResponseType response_type);
+
   // Sets a default response in case of cache misses.  Takes ownership of
   // 'response'.
   void AddDefaultResponse(QuicBackendResponse* response);

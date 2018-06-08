@@ -141,8 +141,37 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnConnectionCloseFrame: " << frame;
     return true;
   }
+  bool OnApplicationCloseFrame(
+      const QuicApplicationCloseFrame& frame) override {
+    std::cerr << "OnApplicationCloseFrame: " << frame;
+    return true;
+  }
+  bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override {
+    std::cerr << "OnNewConnectionIdFrame: " << frame;
+    return true;
+  }
+  bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
+    std::cerr << "OnStopSendingFrame: " << frame;
+    return true;
+  }
+  bool OnPathChallengeFrame(const QuicPathChallengeFrame& frame) override {
+    std::cerr << "OnPathChallengeFrame: " << frame;
+    return true;
+  }
+  bool OnPathResponseFrame(const QuicPathResponseFrame& frame) override {
+    std::cerr << "OnPathResponseFrame: " << frame;
+    return true;
+  }
   bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override {
     std::cerr << "OnGoAwayFrame: " << frame;
+    return true;
+  }
+  bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override {
+    std::cerr << "OnMaxStreamIdFrame: " << frame;
+    return true;
+  }
+  bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
+    std::cerr << "OnStreamIdBlockedFrame: " << frame;
     return true;
   }
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {
