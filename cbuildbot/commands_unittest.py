@@ -1263,8 +1263,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
       m.assert_called_once_with(self._buildroot, ['autotest'],
                                 os.path.join(self._tarball_dir,
                                              'autotest.tar.bz2'),
-                                cwd=self._cwd, error_code_ok=True,
-                                ignore_failed_read=True)
+                                cwd=self._cwd, error_code_ok=True)
 
   def testBuildAutotestPackagesTarball(self):
     """Tests that generating the autotest packages tarball is correct."""
@@ -1274,8 +1273,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
       m.assert_called_once_with(self._buildroot, ['autotest/packages'],
                                 os.path.join(self._tarball_dir,
                                              'autotest_packages.tar'),
-                                cwd=self._cwd, compressed=False,
-                                ignore_failed_read=True)
+                                cwd=self._cwd, compressed=False)
 
   def testBuildAutotestControlFilesTarball(self):
     """Tests that generating the autotest control files tarball is correct."""
@@ -1289,8 +1287,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
         tar_mock.assert_called_once_with(self._buildroot, control_file_list,
                                          os.path.join(self._tarball_dir,
                                                       'control_files.tar'),
-                                         cwd=self._cwd, compressed=False,
-                                         ignore_failed_read=True)
+                                         cwd=self._cwd, compressed=False)
 
   def testBuildAutotestServerPackageTarball(self):
     """Tests that generating the autotest server package tarball is correct."""
@@ -1317,11 +1314,9 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
                                                self._tarball_dir)
 
     tar_mock.assert_called_once_with(
-        buildroot=self._buildroot, input_list=expected_files,
-        tarball_output=os.path.join(self._tarball_dir,
-                                    commands.AUTOTEST_SERVER_PACKAGE),
-        cwd=self._cwd, ignore_failed_read=True, extra_args=mock.ANY,
-        error_code_ok=True)
+        self._buildroot, expected_files,
+        os.path.join(self._tarball_dir, commands.AUTOTEST_SERVER_PACKAGE),
+        cwd=self._cwd, extra_args=mock.ANY, error_code_ok=True)
 
   def testBuildStrippedPackagesArchive(self):
     """Test generation of stripped package tarball using globs."""

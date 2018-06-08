@@ -814,8 +814,7 @@ class PaygenBuild(object):
     cmd_result = cros_build_lib.CreateTarball(
         tarball_path, control_dir,
         compression=cros_build_lib.COMP_BZIP2,
-        inputs=[self.CONTROL_FILE_SUBDIR],
-        ignore_failed_read=True)
+        inputs=[self.CONTROL_FILE_SUBDIR])
     if cmd_result.returncode != 0:
       logging.error('Error (%d) when tarring control files',
                     cmd_result.returncode)

@@ -959,8 +959,7 @@ class CreateTarballError(RunCommandError):
 
 
 def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
-                  inputs=None, ignore_failed_read=False,
-                  extra_args=None, **kwargs):
+                  inputs=None, extra_args=None, **kwargs):
   """Create a tarball.  Executes 'tar' on the commandline.
 
   Args:
@@ -972,7 +971,6 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     chroot: See FindCompressor().
     inputs: A list of files or directories to add to the tarball.  If unset,
       defaults to ".".
-    ignore_failed_read: disabling error for low-priority tar ops.
     extra_args: A list of extra args to pass to "tar".
     kwargs: Any RunCommand options/overrides to use.
 
@@ -987,8 +985,6 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
 
   if extra_args is None:
     extra_args = []
-  if ignore_failed_read:
-    extra_args.append('--ignore-failed-read')
   kwargs.setdefault('debug_level', logging.INFO)
 
   comp = FindCompressor(compression, chroot=chroot)
