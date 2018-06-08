@@ -9,8 +9,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -132,13 +132,13 @@ void GetStringAtPointForRenderWidget(
         result_callback) {
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       rwh, point,
-      base::BindBlock(
+      base::BindOnce(base::RetainBlock(
           ^(const mac::AttributedStringCoder::EncodedString& encoded_string,
             gfx::Point baseline_point) {
             std::string string = base::SysNSStringToUTF8(
                 [mac::AttributedStringCoder::Decode(&encoded_string) string]);
             result_callback.Run(string, baseline_point);
-          }));
+          })));
 }
 
 void GetStringFromRangeForRenderWidget(
@@ -148,13 +148,13 @@ void GetStringFromRangeForRenderWidget(
         result_callback) {
   TextInputClientMac::GetInstance()->GetStringFromRange(
       rwh, range,
-      base::BindBlock(
+      base::BindOnce(base::RetainBlock(
           ^(const mac::AttributedStringCoder::EncodedString& encoded_string,
             gfx::Point baseline_point) {
             std::string string = base::SysNSStringToUTF8(
                 [mac::AttributedStringCoder::Decode(&encoded_string) string]);
             result_callback.Run(string, baseline_point);
-          }));
+          })));
 }
 
 }  // namespace content
