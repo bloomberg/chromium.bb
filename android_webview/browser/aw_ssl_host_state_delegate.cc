@@ -21,8 +21,7 @@ CertPolicy::~CertPolicy() {
 // For an allowance, we consider a given |cert| to be a match to a saved
 // allowed cert if the |error| is an exact match to or subset of the errors
 // in the saved CertStatus.
-bool CertPolicy::Check(const net::X509Certificate& cert,
-                       net::CertStatus error) const {
+bool CertPolicy::Check(const net::X509Certificate& cert, int error) const {
   net::SHA256HashValue fingerprint = cert.CalculateChainFingerprint256();
   auto allowed_iter = allowed_.find(fingerprint);
   if ((allowed_iter != allowed_.end()) && (allowed_iter->second & error) &&
@@ -32,8 +31,7 @@ bool CertPolicy::Check(const net::X509Certificate& cert,
   return false;
 }
 
-void CertPolicy::Allow(const net::X509Certificate& cert,
-                       net::CertStatus error) {
+void CertPolicy::Allow(const net::X509Certificate& cert, int error) {
   // If this same cert had already been saved with a different error status,
   // this will replace it with the new error status.
   net::SHA256HashValue fingerprint = cert.CalculateChainFingerprint256();
@@ -65,7 +63,7 @@ bool AwSSLHostStateDelegate::DidHostRunInsecureContent(
 
 void AwSSLHostStateDelegate::AllowCert(const std::string& host,
                                        const net::X509Certificate& cert,
-                                       net::CertStatus error) {
+                                       int error) {
   cert_policy_for_host_[host].Allow(cert, error);
 }
 
@@ -90,7 +88,7 @@ void AwSSLHostStateDelegate::Clear(
 SSLHostStateDelegate::CertJudgment AwSSLHostStateDelegate::QueryPolicy(
     const std::string& host,
     const net::X509Certificate& cert,
-    net::CertStatus error,
+    int error,
     bool* expired_previous_decision) {
   return cert_policy_for_host_[host].Check(cert, error)
              ? SSLHostStateDelegate::ALLOWED

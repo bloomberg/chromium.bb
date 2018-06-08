@@ -16,14 +16,14 @@ class MockSSLHostStateDelegate : public SSLHostStateDelegate {
 
   void AllowCert(const std::string& host,
                  const net::X509Certificate& cert,
-                 net::CertStatus error) override;
+                 int error) override;
 
   void Clear(
       const base::Callback<bool(const std::string&)>& host_filter) override;
 
   CertJudgment QueryPolicy(const std::string& host,
                            const net::X509Certificate& cert,
-                           net::CertStatus error,
+                           int error,
                            bool* expired_previous_decision) override;
 
   void HostRanInsecureContent(const std::string& host,
