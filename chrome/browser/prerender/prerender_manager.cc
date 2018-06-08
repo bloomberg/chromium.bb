@@ -318,7 +318,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
   }
 
   DeleteOldEntries();
-  to_delete_prerenders_.clear();
+  DeleteToDeletePrerenders();
 
   // First, try to find prerender data with the correct session storage
   // namespace.
@@ -946,7 +946,7 @@ void PrerenderManager::PeriodicCleanup() {
   if (active_prerenders_.empty())
     StopSchedulingPeriodicCleanups();
 
-  to_delete_prerenders_.clear();
+  DeleteToDeletePrerenders();
 
   CleanUpOldNavigations(&prefetches_, base::TimeDelta::FromMinutes(30));
 
@@ -982,6 +982,18 @@ void PrerenderManager::DeleteOldEntries() {
     if (prerender_data->expiry_time() > GetCurrentTimeTicks())
       return;
     prerender_data->contents()->Destroy(FINAL_STATUS_TIMED_OUT);
+  }
+}
+
+void PrerenderManager::DeleteToDeletePrerenders() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Delete the items one by one (after removing from the vector) as deleting
+  // the WebContents may trigger a call to GetPrerenderContents(), which
+  // iterates over |to_delete_prerenders_|.
+  while (!to_delete_prerenders_.empty()) {
+    std::unique_ptr<PrerenderData> prerender_data =
+        std::move(to_delete_prerenders_.back());
+    to_delete_prerenders_.pop_back();
   }
 }
 
@@ -1159,7 +1171,7 @@ void PrerenderManager::DestroyAllContents(FinalStatus final_status) {
     PrerenderContents* contents = active_prerenders_.front()->contents();
     contents->Destroy(final_status);
   }
-  to_delete_prerenders_.clear();
+  DeleteToDeletePrerenders();
 }
 
 void PrerenderManager::RecordFinalStatusWithoutCreatingPrerenderContents(
