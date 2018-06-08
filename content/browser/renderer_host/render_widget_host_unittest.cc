@@ -2054,7 +2054,7 @@ void CheckLatencyInfoComponentInMessage(
               expected_type);
   EXPECT_TRUE(
       dispatched_events[0]->ToEvent()->Event()->latency_info.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 
@@ -2071,7 +2071,7 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
             dispatched_events[1]->ToEvent()->Event()->web_event->GetType());
   EXPECT_TRUE(
       dispatched_events[1]->ToEvent()->Event()->latency_info.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, nullptr));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   dispatched_events[1]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 

@@ -57,7 +57,6 @@ void RenderWidgetHostLatencyTracker::Initialize(int routing_id,
 
 void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     WebInputEvent::Type type,
-    int64_t latency_component_id,
     const LatencyInfo& latency,
     InputEventAckState ack_result) {
   // If this event was coalesced into another event, ignore it, as the event it
@@ -73,9 +72,8 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   // The event will have gone through OnInputEvent(). So the BEGIN_RWH component
   // should always be available here.
   LatencyInfo::LatencyComponent rwh_component;
-  bool found_component =
-      latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                          latency_component_id, &rwh_component);
+  bool found_component = latency.FindLatency(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, &rwh_component);
   DCHECK(found_component);
   DCHECK_EQ(rwh_component.event_count, 1u);
 
@@ -150,9 +148,8 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
 
   // This is the only place to add the BEGIN_RWH component. So this component
   // should not already be present in the latency info.
-  bool found_component =
-      latency->FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                           latency_component_id_, nullptr);
+  bool found_component = latency->FindLatency(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, nullptr);
   DCHECK(!found_component);
 
   if (!event.TimeStamp().is_null() &&
@@ -176,7 +173,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   }
 
   latency->AddLatencyNumberWithTraceName(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, latency_component_id_,
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
       WebInputEvent::GetName(event.GetType()));
 
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
@@ -234,8 +231,7 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
     latency->Terminate();
   }
 
-  ComputeInputLatencyHistograms(event.GetType(), latency_component_id_,
-                                *latency, ack_result);
+  ComputeInputLatencyHistograms(event.GetType(), *latency, ack_result);
 }
 
 void RenderWidgetHostLatencyTracker::OnEventStart(ui::LatencyInfo* latency) {

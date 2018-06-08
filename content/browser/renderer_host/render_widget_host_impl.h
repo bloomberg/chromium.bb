@@ -722,6 +722,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);
 
+  using LatencyInfoProcessor =
+      base::RepeatingCallback<void(const std::vector<ui::LatencyInfo>&)>;
+  static void SetLatencyInfoProcessorForTesting(
+      const LatencyInfoProcessor& processor);
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -731,9 +736,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // from a newly loaded page. Used for testing.
   virtual void NotifyNewContentRenderingTimeoutForTesting() {}
 
-  // Can be overriden for subclass based testing.
-  virtual void OnGpuSwapBuffersCompletedInternal(
-      const ui::LatencyInfo& latency_info);
+  void ProcessSnapshotResponses(const ui::LatencyInfo& latency_info);
 
   // InputAckHandler
   void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,

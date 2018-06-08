@@ -24,6 +24,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -183,6 +184,12 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostIteratorImpl);
 };
+
+RenderWidgetHostImpl::LatencyInfoProcessor& GetLatencyInfoProcessor() {
+  static base::NoDestructor<RenderWidgetHostImpl::LatencyInfoProcessor>
+      processor;
+  return *processor;
+}
 
 inline blink::WebGestureEvent CreateScrollBeginForWrapping(
     const blink::WebGestureEvent& gesture_event) {
@@ -1974,6 +1981,11 @@ bool RenderWidgetHostImpl::IsMouseLocked() const {
   return view_ ? view_->IsMouseLocked() : false;
 }
 
+void RenderWidgetHostImpl::SetLatencyInfoProcessorForTesting(
+    const LatencyInfoProcessor& processor) {
+  GetLatencyInfoProcessor() = processor;
+}
+
 void RenderWidgetHostImpl::SetAutoResize(bool enable,
                                          const gfx::Size& min_size,
                                          const gfx::Size& max_size) {
@@ -2056,7 +2068,7 @@ void RenderWidgetHostImpl::ClearDisplayedGraphics() {
     view_->ClearCompositorFrame();
 }
 
-void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
+void RenderWidgetHostImpl::ProcessSnapshotResponses(
     const ui::LatencyInfo& latency_info) {
   // Note that a compromised renderer can send LatencyInfo to a
   // RenderWidgetHostImpl other than its own. Be mindful of security
@@ -2745,20 +2757,17 @@ void RenderWidgetHostImpl::NotifyCorrespondingRenderWidgetHost(
     return;
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   if (notified_hosts.insert(rwhi).second)
-    rwhi->OnGpuSwapBuffersCompletedInternal(latency_info);
+    rwhi->ProcessSnapshotResponses(latency_info);
 }
 
 // static
 void RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
+  auto& callback = GetLatencyInfoProcessor();
+  if (!callback.is_null())
+    callback.Run(latency_info);
   for (size_t i = 0; i < latency_info.size(); i++) {
     std::set<RenderWidgetHostImpl*> rwhi_set;
-    for (const auto& lc : latency_info[i].latency_components()) {
-      if (lc.first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT) {
-        NotifyCorrespondingRenderWidgetHost(lc.first.second, rwhi_set,
-                                            latency_info[i]);
-      }
-    }
     for (const auto& snapshot : latency_info[i].Snapshots())
       NotifyCorrespondingRenderWidgetHost(snapshot.first, rwhi_set,
                                           latency_info[i]);

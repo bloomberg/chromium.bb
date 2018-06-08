@@ -32,7 +32,6 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   void Initialize(int routing_id, int process_id);
 
   void ComputeInputLatencyHistograms(blink::WebInputEvent::Type type,
-                                     int64_t latency_component_id,
                                      const ui::LatencyInfo& latency,
                                      InputEventAckState ack_result);
 
