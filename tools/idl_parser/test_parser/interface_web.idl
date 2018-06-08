@@ -685,7 +685,7 @@ Foo includes Bar;
  *      PrimitiveType(void)
  */
 interface IFaceWithKeyword {
-  // '_' prefix is needed because "includes" is a keyword of Web IDL and our
-  // parser cannot handle a keyword as an identifier. (https://crbug.com/820353)
+  // '_' prefix needs to be removed in tokenization.
+  // https://heycam.github.io/webidl/#idl-names
   void _includes(DOMString val);
 };

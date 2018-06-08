@@ -41,7 +41,5 @@
                                                                                 optional boolean lowerOpen = false,
                                                                                 optional boolean upperOpen = false);
 
-    // '_' prefix is needed because "includes" is a keyword of Web IDL and our
-    // parser cannot handle a keyword as an identifier. (https://crbug.com/820353)
     [CallWith=ScriptState, RaisesException] boolean _includes(any key);
 };
