@@ -48,8 +48,7 @@ def main(host, bot_test_expectations_factory, argv):
                         default='all',
                         help='type of expectations to update (default: %(default)s)')
     parser.add_argument('--verbose', '-v', action='store_true', default=False, help='enable more verbose logging')
-    parser.add_argument('--show-results',
-                        '-s',
+    parser.add_argument('--show-results', '-s',
                         action='store_true',
                         default=False,
                         help='Open results dashboard for all removed lines')
@@ -388,9 +387,9 @@ class ExpectationsRemover(object):
 
     def _bug_numbers(self):
         """Returns the list of all bug numbers affected by this change."""
-        numbers = []
+        numbers = set()
         for line in self._expectations_to_remove():
             for bug in line.bugs:
                 if bug.startswith(CHROMIUM_BUG_PREFIX):
-                    numbers.append(bug[len(CHROMIUM_BUG_PREFIX):])
+                    numbers.add(bug[len(CHROMIUM_BUG_PREFIX):])
         return sorted(numbers)

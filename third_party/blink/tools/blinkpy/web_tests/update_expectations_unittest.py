@@ -1411,13 +1411,13 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """
         test_expectations_before = (
             """# Remove this since it's passing all runs.
-            crbug.com/2222 test/a.html [ Failure Pass ]
+            crbug.com/1111 test/a.html [ Failure Pass ]
             # Remove this since, although there's a failure, it's not a timeout.
             crbug.com/1111 test/b.html [ Pass Timeout ]
             # Keep since we have both crashes and passes.
-            crbug.com/3333 test/c.html [ Crash Pass ]
+            crbug.com/2222 test/c.html [ Crash Pass ]
             # Remove since it's passing all runs.
-            crbug.com/4444 test/d.html [ Failure ]""")
+            crbug.com/3333 test/d.html [ Failure ]""")
 
         self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
@@ -1440,14 +1440,14 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         }
         self._expectations_remover.print_suggested_commit_description()
         self.assertLog([
-            'INFO: Deleting line "crbug.com/2222 test/a.html [ Failure Pass ]"\n',
+            'INFO: Deleting line "crbug.com/1111 test/a.html [ Failure Pass ]"\n',
             'INFO: Deleting line "crbug.com/1111 test/b.html [ Pass Timeout ]"\n',
-            'INFO: Deleting line "crbug.com/4444 test/d.html [ Failure ]"\n',
+            'INFO: Deleting line "crbug.com/3333 test/d.html [ Failure ]"\n',
             'INFO: Suggested commit description:\n'
             'Remove TestExpectations which are not failing in the specified way.\n\n'
             'This change was made by the update_expectations.py script.\n\n'
             'Recent test results history:\n'
             'https://test-results.appspot.com/dashboards/flakiness_dashboard.html'
             '#testType=webkit_layout_tests&tests=test/a.html,test/b.html,test/d.html\n\n'
-            'Bug: 1111, 2222, 4444\n'
+            'Bug: 1111, 3333\n'
         ])
