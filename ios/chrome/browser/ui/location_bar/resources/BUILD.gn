@@ -75,3 +75,30 @@ imageset("location_bar_offline") {
     "location_bar_offline.imageset/location_bar_offline@3x.png",
   ]
 }
+
+imageset("location_bar_secure") {
+  sources = [
+    "location_bar_secure.imageset/Contents.json",
+    "location_bar_secure.imageset/location_bar_secure.png",
+    "location_bar_secure.imageset/location_bar_secure@2x.png",
+    "location_bar_secure.imageset/location_bar_secure@3x.png",
+  ]
+}
+
+imageset("location_bar_dangerous") {
+  sources = [
+    "location_bar_dangerous.imageset/Contents.json",
+    "location_bar_dangerous.imageset/location_bar_dangerous.png",
+    "location_bar_dangerous.imageset/location_bar_dangerous@2x.png",
+    "location_bar_dangerous.imageset/location_bar_dangerous@3x.png",
+  ]
+}
+
+imageset("location_bar_insecure") {
+  sources = [
+    "location_bar_insecure.imageset/Contents.json",
+    "location_bar_insecure.imageset/location_bar_insecure.png",
+    "location_bar_insecure.imageset/location_bar_insecure@2x.png",
+    "location_bar_insecure.imageset/location_bar_insecure@3x.png",
+  ]
+}

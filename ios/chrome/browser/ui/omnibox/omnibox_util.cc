@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
 int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
@@ -69,5 +70,25 @@ int GetIconForSecurityState(security_state::SecurityLevel security_level) {
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return IDR_IOS_OMNIBOX_HTTP;
+  }
+}
+
+base::string16 GetUIRefreshIconNameForSecurityState(
+    security_state::SecurityLevel security_level) {
+  switch (security_level) {
+    case security_state::NONE:
+    case security_state::HTTP_SHOW_WARNING:
+      return base::ASCIIToUTF16("location_bar_insecure");
+    case security_state::EV_SECURE:
+    case security_state::SECURE:
+      return base::ASCIIToUTF16("location_bar_secure");
+    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
+      // TODO(crbug.com/848732): update this icon.
+      return base::ASCIIToUTF16("location_bar_secure");
+    case security_state::DANGEROUS:
+      return base::ASCIIToUTF16("location_bar_dangerous");
+    case security_state::SECURITY_LEVEL_COUNT:
+      NOTREACHED();
+      return base::ASCIIToUTF16("location_bar_insecure");
   }
 }
