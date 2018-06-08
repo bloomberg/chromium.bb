@@ -521,12 +521,12 @@
     'machines': {
       'CFI Linux (icall)': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'CFI Linux ToT': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'CrWinAsan': {
@@ -648,7 +648,7 @@
       },
       'ToTLinux': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
           'scripts': 'check_gn_headers_script',
         },
       },
@@ -662,17 +662,17 @@
           'all',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'ToTLinuxMSan': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'ToTLinuxThinLTO': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'ToTLinuxUBSanVptr': {
@@ -682,7 +682,7 @@
         'test_suites': {
           # no "_and_gl":gl_unittests doesn't pass yet,
           # crbug.com/https://crbug.com/815183
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
       'ToTMac': {
@@ -762,7 +762,7 @@
         'test_suites': {
           # no "_and_gl":gl_unittests doesn't pass yet,
           # crbug.com/https://crbug.com/815183
-          'gtest_tests': 'chromium_linux_clang_gtests',
+          'gtest_tests': 'chromium_linux_gtests',
         },
       },
     },
@@ -2042,12 +2042,12 @@
       },
       'CFI Linux (icall)': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'CFI Linux ToT': {
         'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'Chromium Mac 10.11': {
@@ -2366,9 +2366,7 @@
       },
       'Out of Process Profiling Linux': {
         'test_suites': {
-          # TODO(kbr): it's weird that this has the most in common with the
-          # clang testers' test suites.
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
         },
       },
       'Out of Process Profiling Mac': {
