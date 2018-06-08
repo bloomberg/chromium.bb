@@ -1742,7 +1742,7 @@ TEST(HeapTest, BasicFunctionality) {
     size_t base_level = initial_object_payload_size;
     bool test_pages_allocated = !base_level;
     if (test_pages_allocated)
-      EXPECT_EQ(heap.HeapStats().AllocatedSpace(), 0ul);
+      EXPECT_EQ(0ul, heap.stats_collector()->allocated_space_bytes());
 
     // This allocates objects on the general heap which should add a page of
     // memory.
@@ -1757,8 +1757,10 @@ TEST(HeapTest, BasicFunctionality) {
 
     CheckWithSlack(base_level + total, heap.ObjectPayloadSizeForTesting(),
                    slack);
-    if (test_pages_allocated)
-      EXPECT_EQ(heap.HeapStats().AllocatedSpace(), kBlinkPageSize * 2);
+    if (test_pages_allocated) {
+      EXPECT_EQ(kBlinkPageSize * 2,
+                heap.stats_collector()->allocated_space_bytes());
+    }
 
     EXPECT_EQ(alloc32->Get(0), 40);
     EXPECT_EQ(alloc32->Get(31), 40);
@@ -1779,7 +1781,7 @@ TEST(HeapTest, BasicFunctionality) {
   size_t base_level = heap.ObjectPayloadSizeForTesting();
   bool test_pages_allocated = !base_level;
   if (test_pages_allocated)
-    EXPECT_EQ(heap.HeapStats().AllocatedSpace(), 0ul);
+    EXPECT_EQ(0ul, heap.stats_collector()->allocated_space_bytes());
 
   size_t big = 1008;
   Persistent<DynamicallySizedObject> big_area =
@@ -1799,8 +1801,10 @@ TEST(HeapTest, BasicFunctionality) {
     slack += 4;
     CheckWithSlack(base_level + total, heap.ObjectPayloadSizeForTesting(),
                    slack);
-    if (test_pages_allocated)
-      EXPECT_EQ(0ul, heap.HeapStats().AllocatedSpace() & (kBlinkPageSize - 1));
+    if (test_pages_allocated) {
+      EXPECT_EQ(0ul, heap.stats_collector()->allocated_space_bytes() &
+                         (kBlinkPageSize - 1));
+    }
   }
 
   {
@@ -1815,15 +1819,19 @@ TEST(HeapTest, BasicFunctionality) {
     total += 96;
     CheckWithSlack(base_level + total, heap.ObjectPayloadSizeForTesting(),
                    slack);
-    if (test_pages_allocated)
-      EXPECT_EQ(0ul, heap.HeapStats().AllocatedSpace() & (kBlinkPageSize - 1));
+    if (test_pages_allocated) {
+      EXPECT_EQ(0ul, heap.stats_collector()->allocated_space_bytes() &
+                         (kBlinkPageSize - 1));
+    }
   }
 
   ClearOutOldGarbage();
   total -= 96;
   slack -= 8;
-  if (test_pages_allocated)
-    EXPECT_EQ(0ul, heap.HeapStats().AllocatedSpace() & (kBlinkPageSize - 1));
+  if (test_pages_allocated) {
+    EXPECT_EQ(0ul, heap.stats_collector()->allocated_space_bytes() &
+                       (kBlinkPageSize - 1));
+  }
 
   // Clear the persistent, so that the big area will be garbage collected.
   big_area.Release();
@@ -1832,12 +1840,16 @@ TEST(HeapTest, BasicFunctionality) {
   total -= big;
   slack -= 4;
   CheckWithSlack(base_level + total, heap.ObjectPayloadSizeForTesting(), slack);
-  if (test_pages_allocated)
-    EXPECT_EQ(0ul, heap.HeapStats().AllocatedSpace() & (kBlinkPageSize - 1));
+  if (test_pages_allocated) {
+    EXPECT_EQ(0ul, heap.stats_collector()->allocated_space_bytes() &
+                       (kBlinkPageSize - 1));
+  }
 
   CheckWithSlack(base_level + total, heap.ObjectPayloadSizeForTesting(), slack);
-  if (test_pages_allocated)
-    EXPECT_EQ(0ul, heap.HeapStats().AllocatedSpace() & (kBlinkPageSize - 1));
+  if (test_pages_allocated) {
+    EXPECT_EQ(0ul, heap.stats_collector()->allocated_space_bytes() &
+                       (kBlinkPageSize - 1));
+  }
 
   for (size_t i = 0; i < persistent_count; i++) {
     delete persistents[i];
@@ -2311,7 +2323,8 @@ TEST(HeapTest, LargeHeapObjects) {
   ThreadHeap& heap = ThreadState::Current()->Heap();
   ClearOutOldGarbage();
   size_t initial_object_payload_size = heap.ObjectPayloadSizeForTesting();
-  size_t initial_allocated_space = heap.HeapStats().AllocatedSpace();
+  size_t initial_allocated_space =
+      heap.stats_collector()->allocated_space_bytes();
   IntWrapper::destructor_calls_ = 0;
   LargeHeapObject::destructor_calls_ = 0;
   {
@@ -2324,7 +2337,7 @@ TEST(HeapTest, LargeHeapObjects) {
         reinterpret_cast<char*>(object.Get()) + sizeof(LargeHeapObject) - 1));
 #endif
     ClearOutOldGarbage();
-    size_t after_allocation = heap.HeapStats().AllocatedSpace();
+    size_t after_allocation = heap.stats_collector()->allocated_space_bytes();
     {
       object->Set(0, 'a');
       EXPECT_EQ('a', object->Get(0));
@@ -2355,14 +2368,16 @@ TEST(HeapTest, LargeHeapObjects) {
         object = LargeHeapObject::Create();
     }
     ClearOutOldGarbage();
-    EXPECT_TRUE(heap.HeapStats().AllocatedSpace() == after_allocation);
+    EXPECT_EQ(after_allocation,
+              heap.stats_collector()->allocated_space_bytes());
     EXPECT_EQ(10, IntWrapper::destructor_calls_);
     EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   }
   ClearOutOldGarbage();
   EXPECT_TRUE(initial_object_payload_size ==
               heap.ObjectPayloadSizeForTesting());
-  EXPECT_TRUE(initial_allocated_space == heap.HeapStats().AllocatedSpace());
+  EXPECT_EQ(initial_allocated_space,
+            heap.stats_collector()->allocated_space_bytes());
   EXPECT_EQ(11, IntWrapper::destructor_calls_);
   EXPECT_EQ(11, LargeHeapObject::destructor_calls_);
   PreciselyCollectGarbage();

@@ -34,6 +34,14 @@ void ThreadHeapStatsCollector::DecreaseAllocatedObjectSize(size_t bytes) {
   allocated_bytes_since_prev_gc_ -= bytes;
 }
 
+void ThreadHeapStatsCollector::IncreaseAllocatedSpace(size_t bytes) {
+  allocated_space_bytes_ += bytes;
+}
+
+void ThreadHeapStatsCollector::DecreaseAllocatedSpace(size_t bytes) {
+  allocated_space_bytes_ -= bytes;
+}
+
 void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
   DCHECK(!is_started_);
   DCHECK_EQ(0.0, current_.marking_time_in_ms());
@@ -43,6 +51,7 @@ void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
 
 void ThreadHeapStatsCollector::NotifyMarkingCompleted() {
   current_.object_size_in_bytes_before_sweeping = object_size_in_bytes();
+  current_.allocated_space_in_bytes_before_sweeping = allocated_space_bytes();
   allocated_bytes_since_prev_gc_ = 0;
 }
 
@@ -54,14 +63,10 @@ void ThreadHeapStatsCollector::NotifySweepingCompleted() {
                 current_.object_size_in_bytes_before_sweeping
           : 0.0;
   previous_ = std::move(current_);
-
   // Reset the current state.
-  current_.compaction_freed_pages = 0;
-  current_.compaction_freed_bytes = 0;
-  current_.marked_bytes = 0;
-  current_.live_object_rate = 0.0;
-  memset(current_.scope_data, 0, sizeof(current_.scope_data));
-  current_.reason = BlinkGC::kTesting;
+  static_assert(!std::is_polymorphic<Event>::value,
+                "Event should not be polymorphic");
+  memset(&current_, 0, sizeof(current_));
 }
 
 void ThreadHeapStatsCollector::UpdateReason(BlinkGC::GCReason reason) {
@@ -102,6 +107,10 @@ double ThreadHeapStatsCollector::Event::sweeping_time_in_ms() const {
 
 size_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {
   return allocated_bytes_since_prev_gc_;
+}
+
+size_t ThreadHeapStatsCollector::allocated_space_bytes() const {
+  return allocated_space_bytes_;
 }
 
 }  // namespace blink

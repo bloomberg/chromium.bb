@@ -155,9 +155,6 @@ class ThreadHeapStats {
  public:
   ThreadHeapStats();
 
-  void IncreaseAllocatedSpace(size_t delta);
-  void DecreaseAllocatedSpace(size_t delta);
-  size_t AllocatedSpace() { return allocated_space_; }
   void IncreaseWrapperCount(size_t delta) { wrapper_count_ += delta; }
   void DecreaseWrapperCount(size_t delta) { wrapper_count_ -= delta; }
   size_t WrapperCount() { return AcquireLoad(&wrapper_count_); }
@@ -173,7 +170,6 @@ class ThreadHeapStats {
   void Reset();
 
  private:
-  size_t allocated_space_;
   size_t wrapper_count_;
   size_t wrapper_count_at_last_gc_;
   size_t collected_wrapper_count_;
@@ -348,7 +344,6 @@ class PLATFORM_EXPORT ThreadHeap {
   // heap-page if one exists.
   BasePage* LookupPageForAddress(Address);
 
-  static void ReportMemoryUsageHistogram();
   static void ReportMemoryUsageForTracing();
 
   HeapCompact* Compaction();
@@ -441,6 +436,8 @@ class PLATFORM_EXPORT ThreadHeap {
   void IncreaseAllocatedObjectSize(size_t);
   void DecreaseAllocatedObjectSize(size_t);
   void IncreaseMarkedObjectSize(size_t);
+  void IncreaseAllocatedSpace(size_t);
+  void DecreaseAllocatedSpace(size_t);
 
 #if defined(ADDRESS_SANITIZER)
   void PoisonEagerArena();
