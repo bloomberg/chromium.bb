@@ -258,9 +258,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
   // rejection reasons. These aren't worth reporting about, as they have nothing
   // to do with the content itself.
 
-  // Can't freeze a tab that is already frozen.
-  if (IsFrozenOrPendingFreeze(GetState()))
+  // Can't freeze a tab that is already frozen or discarded.
+  if (IsFrozenOrPendingFreeze(GetState()) ||
+      IsDiscardedOrPendingDiscard(GetState())) {
     return false;
+  }
 
   // Allow a page to load fully before freezing it.
   if (TabLoadTracker::Get()->GetLoadingState(GetWebContents()) !=
