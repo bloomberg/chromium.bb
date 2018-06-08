@@ -7,10 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/memory/scoped_refptr.h"
-
-namespace network {
-class SharedURLLoaderFactory;
+namespace net {
+class URLRequestContextGetter;
 }  // namespace net
 
 class GURL;
@@ -20,9 +18,8 @@ class GURL;
 
 - (instancetype)initWithUsername:(NSString*)username
                          iconURL:(GURL)iconURL
-                URLLoaderFactory:
-                    (scoped_refptr<network::SharedURLLoaderFactory>)
-                        URLLoaderFactory NS_DESIGNATED_INITIALIZER;
+                   contextGetter:(net::URLRequestContextGetter*)contextGetter
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
