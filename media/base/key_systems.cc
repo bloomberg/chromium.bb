@@ -200,8 +200,6 @@ class KeySystemsImpl : public KeySystems {
 
   std::string GetKeySystemNameForUMA(const std::string& key_system) const;
 
-  bool UseAesDecryptor(const std::string& key_system) const;
-
   // These two functions are for testing purpose only.
   void AddCodecMask(EmeMediaType media_type,
                     const std::string& codec,
@@ -210,6 +208,8 @@ class KeySystemsImpl : public KeySystems {
 
   // Implementation of KeySystems interface.
   bool IsSupportedKeySystem(const std::string& key_system) const override;
+
+  bool CanUseAesDecryptor(const std::string& key_system) const override;
 
   bool IsSupportedInitDataType(const std::string& key_system,
                                EmeInitDataType init_data_type) const override;
@@ -531,18 +531,6 @@ std::string KeySystemsImpl::GetKeySystemNameForUMA(
   return kUnknownKeySystemNameForUMA;
 }
 
-bool KeySystemsImpl::UseAesDecryptor(const std::string& key_system) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
-  if (key_system_iter == key_system_properties_map_.end()) {
-    DLOG(ERROR) << key_system << " is not a known key system";
-    return false;
-  }
-  return key_system_iter->second->UseAesDecryptor();
-}
-
 void KeySystemsImpl::AddCodecMask(EmeMediaType media_type,
                                   const std::string& codec,
                                   uint32_t mask) {
@@ -568,6 +556,18 @@ bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
     return false;
 
   return true;
+}
+
+bool KeySystemsImpl::CanUseAesDecryptor(const std::string& key_system) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  KeySystemPropertiesMap::const_iterator key_system_iter =
+      key_system_properties_map_.find(key_system);
+  if (key_system_iter == key_system_properties_map_.end()) {
+    DLOG(ERROR) << key_system << " is not a known key system";
+    return false;
+  }
+  return key_system_iter->second->UseAesDecryptor();
 }
 
 EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
@@ -727,7 +727,7 @@ std::string GetKeySystemNameForUMA(const std::string& key_system) {
 }
 
 bool CanUseAesDecryptor(const std::string& key_system) {
-  return KeySystemsImpl::GetInstance()->UseAesDecryptor(key_system);
+  return KeySystemsImpl::GetInstance()->CanUseAesDecryptor(key_system);
 }
 
 // These two functions are for testing purpose only. The declaration in the

@@ -158,9 +158,12 @@ class FakeKeySystems : public KeySystems {
 
   bool IsSupportedKeySystem(const std::string& key_system) const override {
     // Based on EME spec, Clear Key key system is always supported.
-    if (key_system == kSupportedKeySystem || key_system == kClearKeyKeySystem)
-      return true;
-    return false;
+    return key_system == kSupportedKeySystem ||
+           key_system == kClearKeyKeySystem;
+  }
+
+  bool CanUseAesDecryptor(const std::string& key_system) const override {
+    return key_system == kClearKeyKeySystem;
   }
 
   // TODO(sandersd): Move implementation into KeySystemConfigSelector?

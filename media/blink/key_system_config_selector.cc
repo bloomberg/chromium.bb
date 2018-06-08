@@ -337,8 +337,9 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   // is done primarily to validate extended codecs, but it also ensures that the
   // CDM cannot support codecs that Chrome does not (which could complicate the
   // robustness algorithm).
-  if (!is_supported_media_type_cb_.Run(container_lower, codecs,
-                                       CanUseAesDecryptor(key_system))) {
+  if (!is_supported_media_type_cb_.Run(
+          container_lower, codecs,
+          key_systems_->CanUseAesDecryptor(key_system))) {
     DVLOG(3) << "Container mime type and codecs are not supported";
     return false;
   }

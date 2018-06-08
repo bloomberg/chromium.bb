@@ -31,6 +31,9 @@ class MEDIA_EXPORT KeySystems {
   // Returns whether |key_system| is a supported key system.
   virtual bool IsSupportedKeySystem(const std::string& key_system) const = 0;
 
+  // Returns whether AesDecryptor can be used for the given |key_system|.
+  virtual bool CanUseAesDecryptor(const std::string& key_system) const = 0;
+
   // Returns whether |init_data_type| is supported by |key_system|.
   virtual bool IsSupportedInitDataType(
       const std::string& key_system,
