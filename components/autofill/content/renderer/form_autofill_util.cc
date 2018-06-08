@@ -1116,7 +1116,7 @@ void MatchLabelsAndFields(
 // or
 // 2) a NULL |form_element|.
 //
-// If |field| is not NULL, then |form_control_element| should be not NULL.
+// If |field| is not NULL, then |form_control_element| should not be NULL.
 bool FormOrFieldsetsToFormData(
     const blink::WebFormElement* form_element,
     const blink::WebFormControlElement* form_control_element,
@@ -1186,6 +1186,7 @@ bool FormOrFieldsetsToFormData(
   // the DOM.  We use the |fields_extracted| vector to make sure we assign the
   // extracted label to the correct field, as it's possible |form_fields| will
   // not contain all of the elements in |control_elements|.
+  bool found_field = false;
   for (size_t i = 0, field_idx = 0;
        i < control_elements.size() && field_idx < form_fields.size(); ++i) {
     // This field didn't meet the requirements, so don't try to find a label
@@ -1201,11 +1202,19 @@ bool FormOrFieldsetsToFormData(
     }
     TruncateString(&form_fields[field_idx]->label, kMaxDataLength);
 
-    if (field && *form_control_element == control_element)
+    if (field && *form_control_element == control_element) {
       *field = *form_fields[field_idx];
+      found_field = true;
+    }
 
     ++field_idx;
   }
+
+  // The form_control_element was not found in control_elements. This can
+  // happen if elements are dynamically removed from the form while it is
+  // being processed. See http://crbug.com/849870
+  if (field && !found_field)
+    return false;
 
   // Copy the created FormFields into the resulting FormData object.
   for (const auto& field : form_fields)
