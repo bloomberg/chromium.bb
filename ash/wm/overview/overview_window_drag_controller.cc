@@ -168,6 +168,9 @@ void OverviewWindowDragController::Fling(const gfx::Point& location_in_screen,
     if (std::abs(velocity_y) > kFlingToCloseVelocityThreshold) {
       item_->AnimateAndCloseWindow(
           (location_in_screen - initial_event_location_).y() < 0);
+      did_move_ = false;
+      item_ = nullptr;
+      current_drag_behavior_ = DragBehavior::kNoDrag;
       return;
     }
   }
