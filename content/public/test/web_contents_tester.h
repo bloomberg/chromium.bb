@@ -156,6 +156,9 @@ class WebContentsTester {
 
   // Resets the state around PauseSubresourceLoadingCalled.
   virtual void ResetPauseSubresourceLoadingCalled() = 0;
+
+  // Sets the return value of GetPageImportanceSignals().
+  virtual void SetPageImportanceSignals(PageImportanceSignals signals) = 0;
 };
 
 }  // namespace content

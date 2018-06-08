@@ -35,6 +35,7 @@ class ProcessCoordinationUnitImpl
   void SetLaunchTime(base::Time launch_time) override;
   void SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low) override;
   void SetPID(int64_t pid) override;
+  void OnRendererIsBloated() override;
 
   // Private implementation properties.
   void set_private_footprint_kb(uint64_t private_footprint_kb) {
@@ -54,6 +55,7 @@ class ProcessCoordinationUnitImpl
   friend class FrameCoordinationUnitImpl;
 
   // CoordinationUnitInterface implementation.
+  void OnEventReceived(mojom::Event event) override;
   void OnPropertyChanged(mojom::PropertyType property_type,
                          int64_t value) override;
 

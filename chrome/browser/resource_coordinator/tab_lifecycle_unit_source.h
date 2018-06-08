@@ -114,6 +114,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // PageSignalObserver:
   void OnLifecycleStateChanged(content::WebContents* web_contents,
                                mojom::LifecycleState state) override;
+  void OnRendererIsBloated(content::WebContents* web_contents) override;
 
   // Tracks the BrowserList and all TabStripModels.
   BrowserTabStripTracker browser_tab_strip_tracker_;

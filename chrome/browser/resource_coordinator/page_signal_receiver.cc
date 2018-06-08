@@ -46,6 +46,15 @@ void PageSignalReceiver::NotifyPageAlmostIdle(
     observer.OnPageAlmostIdle(web_contents_iter->second);
 }
 
+void PageSignalReceiver::NotifyRendererIsBloated(
+    const CoordinationUnitID& page_cu_id) {
+  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
+  if (web_contents_iter == cu_id_web_contents_map_.end())
+    return;
+  for (auto& observer : observers_)
+    observer.OnRendererIsBloated(web_contents_iter->second);
+}
+
 void PageSignalReceiver::SetExpectedTaskQueueingDuration(
     const CoordinationUnitID& page_cu_id,
     base::TimeDelta duration) {

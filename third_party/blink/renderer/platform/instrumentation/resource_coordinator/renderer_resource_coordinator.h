@@ -30,6 +30,7 @@ class PLATFORM_EXPORT RendererResourceCoordinator
 
   void SetExpectedTaskQueueingDuration(base::TimeDelta);
   void SetMainThreadTaskLoadIsLow(bool);
+  void OnRendererIsBloated();
 
  protected:
   RendererResourceCoordinator();

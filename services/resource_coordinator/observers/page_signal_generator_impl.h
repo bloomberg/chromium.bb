@@ -64,6 +64,8 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
                             const mojom::Event event) override;
   void OnPageEventReceived(const PageCoordinationUnitImpl* page_cu,
                            const mojom::Event event) override;
+  void OnProcessEventReceived(const ProcessCoordinationUnitImpl* page_cu,
+                              const mojom::Event event) override;
 
   void BindToInterface(
       resource_coordinator::mojom::PageSignalGeneratorRequest request,

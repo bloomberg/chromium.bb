@@ -332,4 +332,39 @@ TEST_F(TabLifecycleUnitTest, NotifiedOfWebContentsVisibilityChanges) {
   tab_lifecycle_unit.RemoveObserver(&observer);
 }
 
+TEST_F(TabLifecycleUnitTest, CanReloadBloatedTab) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
+  EXPECT_TRUE(tab_lifecycle_unit.CanReloadBloatedTab());
+}
+
+TEST_F(TabLifecycleUnitTest, CannotReloadBloatedTabCrashed) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
+
+  web_contents_->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
+
+  EXPECT_FALSE(tab_lifecycle_unit.CanReloadBloatedTab());
+}
+
+TEST_F(TabLifecycleUnitTest, CannotReloadBloatedTabInvalidURL) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
+
+  content::WebContentsTester::For(web_contents_)
+      ->SetLastCommittedURL(GURL("invalid :)"));
+
+  EXPECT_FALSE(tab_lifecycle_unit.CanReloadBloatedTab());
+}
+
+TEST_F(TabLifecycleUnitTest, CannotReloadBloatedTabPendingUserInteraction) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_,
+                                      tab_strip_model_.get());
+  content::PageImportanceSignals signals;
+  signals.had_form_interaction = true;
+  content::WebContentsTester::For(web_contents_)
+      ->SetPageImportanceSignals(signals);
+  EXPECT_FALSE(tab_lifecycle_unit.CanReloadBloatedTab());
+}
+
 }  // namespace resource_coordinator

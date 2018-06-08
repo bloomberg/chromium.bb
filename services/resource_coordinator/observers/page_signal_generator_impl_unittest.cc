@@ -7,6 +7,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
@@ -17,6 +19,8 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
 
 namespace resource_coordinator {
 
@@ -50,6 +54,7 @@ class MockPageSignalReceiver : public mojom::PageSignalReceiver {
                          mojom::LifecycleState) override {}
   MOCK_METHOD1(NotifyNonPersistentNotificationCreated,
                void(const CoordinationUnitID& page_cu_id));
+  MOCK_METHOD1(NotifyRendererIsBloated, void(const CoordinationUnitID& cu_id));
 
  private:
   mojo::Binding<mojom::PageSignalReceiver> binding_;
@@ -306,6 +311,42 @@ TEST_F(PageSignalGeneratorImplTest, NonPersistentNotificationCreatedEvent) {
       frame_cu, mojom::Event::kNonPersistentNotificationCreated);
   run_loop.Run();
 
+  ::testing::Mock::VerifyAndClear(&mock_receiver);
+}
+
+TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedSinglePage) {
+  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
+      coordination_unit_graph());
+  auto* process = cu_graph.process.get();
+  auto* psg = page_signal_generator();
+
+  // Create a mock receiver and register it against the psg.
+  mojom::PageSignalReceiverPtr mock_receiver_ptr;
+  MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
+  psg->AddReceiver(std::move(mock_receiver_ptr));
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_receiver, NotifyRendererIsBloated(_));
+  process->OnRendererIsBloated();
+  run_loop.RunUntilIdle();
+  ::testing::Mock::VerifyAndClear(&mock_receiver);
+}
+
+TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedMultiplePages) {
+  MockMultiplePagesInSingleProcessCoordinationUnitGraph cu_graph(
+      coordination_unit_graph());
+  auto* process = cu_graph.process.get();
+  auto* psg = page_signal_generator();
+
+  // Create a mock receiver and register it against the psg.
+  mojom::PageSignalReceiverPtr mock_receiver_ptr;
+  MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
+  psg->AddReceiver(std::move(mock_receiver_ptr));
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_receiver, NotifyRendererIsBloated(_)).Times(0);
+  process->OnRendererIsBloated();
+  run_loop.RunUntilIdle();
   ::testing::Mock::VerifyAndClear(&mock_receiver);
 }
 

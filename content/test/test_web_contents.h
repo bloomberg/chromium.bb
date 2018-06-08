@@ -150,6 +150,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   void TestDidFinishLoad(const GURL& url);
 
+  void SetPageImportanceSignals(PageImportanceSignals signals) override;
+
  protected:
   // The deprecated WebContentsTester still needs to subclass this.
   explicit TestWebContents(BrowserContext* browser_context);

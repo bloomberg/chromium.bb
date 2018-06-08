@@ -16,6 +16,7 @@ import "mojo/public/mojom/base/time.mojom";
 // PageSignalGenerator::AddReceiver.
 interface PageSignalReceiver {
   NotifyPageAlmostIdle(CoordinationUnitID page_cu_id);
+  NotifyRendererIsBloated(CoordinationUnitID page_cu_id);
   SetExpectedTaskQueueingDuration(CoordinationUnitID page_cu_id,
                                   mojo_base.mojom.TimeDelta duration);
   SetLifecycleState(CoordinationUnitID page_cu_id,

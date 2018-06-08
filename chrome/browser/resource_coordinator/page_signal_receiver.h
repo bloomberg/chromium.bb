@@ -25,6 +25,7 @@ class PageSignalObserver {
   // managed by the client. Thus the clients are responsible for checking the
   // passed |web_contents| by themselves.
   virtual void OnPageAlmostIdle(content::WebContents* web_contents) {}
+  virtual void OnRendererIsBloated(content::WebContents* web_contents) {}
   virtual void OnExpectedTaskQueueingDurationSet(
       content::WebContents* web_contents,
       base::TimeDelta duration) {}
@@ -52,6 +53,7 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
 
   // mojom::PageSignalReceiver implementation.
   void NotifyPageAlmostIdle(const CoordinationUnitID& page_cu_id) override;
+  void NotifyRendererIsBloated(const CoordinationUnitID& page_cu_id) override;
   void SetExpectedTaskQueueingDuration(const CoordinationUnitID& page_cu_id,
                                        base::TimeDelta duration) override;
   void SetLifecycleState(const CoordinationUnitID& page_cu_id,

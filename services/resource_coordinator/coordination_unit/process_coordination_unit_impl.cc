@@ -67,6 +67,10 @@ void ProcessCoordinationUnitImpl::SetPID(int64_t pid) {
   SetProperty(mojom::PropertyType::kPID, pid);
 }
 
+void ProcessCoordinationUnitImpl::OnRendererIsBloated() {
+  SendEvent(mojom::Event::kRendererIsBloated);
+}
+
 const std::set<FrameCoordinationUnitImpl*>&
 ProcessCoordinationUnitImpl::GetFrameCoordinationUnits() const {
   return frame_coordination_units_;
@@ -84,6 +88,11 @@ ProcessCoordinationUnitImpl::GetAssociatedPageCoordinationUnits() const {
       page_cus.insert(page_cu);
   }
   return page_cus;
+}
+
+void ProcessCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
+  for (auto& observer : observers())
+    observer.OnProcessEventReceived(this, event);
 }
 
 void ProcessCoordinationUnitImpl::OnPropertyChanged(
