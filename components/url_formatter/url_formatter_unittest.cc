@@ -449,7 +449,10 @@ const IDNTestCase idn_cases[] = {
     // phĸtb.com
     {"xn--phtb-m0a.com", L"ph\x0138tb.com", false},
     // phkŧb.com
-    {"xn--phkb-d7a.com", L"phk\x0167" L"b.com", false},
+    {"xn--phkb-d7a.com",
+     L"phk\x0167"
+     L"b.com",
+     false},
     // phktƅ.com
     {"xn--phkt-ocb.com", L"phkt\x0185.com", false},
     // ҏнкть.com
@@ -522,37 +525,82 @@ const IDNTestCase idn_cases[] = {
     {"xn--s5a8h3a.com", L"\x04cf\x050d\x0503.com", false},
 
     // ꓲ2345б7890.com
-    {"xn--23457890-e7g93622b.com", L"\xa4f2" L"2345\x0431" L"7890.com", false},
+    {"xn--23457890-e7g93622b.com",
+     L"\xa4f2"
+     L"2345\x0431"
+     L"7890.com",
+     false},
     // 1ᒿ345б7890.com
-    {"xn--13457890-e7g0943b.com", L"1\x14bf" L"345\x0431" L"7890.com", false},
+    {"xn--13457890-e7g0943b.com",
+     L"1\x14bf"
+     L"345\x0431"
+     L"7890.com",
+     false},
     // 12з4567890.com
-    {"xn--124567890-10h.com", L"12\x0437" L"4567890.com", false},
+    {"xn--124567890-10h.com",
+     L"12\x0437"
+     L"4567890.com",
+     false},
     // 12ҙ4567890.com
-    {"xn--124567890-1ti.com", L"12\x0499" L"4567890.com", false},
+    {"xn--124567890-1ti.com",
+     L"12\x0499"
+     L"4567890.com",
+     false},
     // 12ӡ4567890.com
-    {"xn--124567890-mfj.com", L"12\x04e1" L"4567890.com", false},
+    {"xn--124567890-mfj.com",
+     L"12\x04e1"
+     L"4567890.com",
+     false},
+    // 12ვ4567890.com
+    {"xn--124567890-we8a.com",
+     L"12\x10D5"
+     L"4567890.com",
+     false},
+    // 12ဒ4567890.com
+    {"xn--124567890-6s6a.com",
+     L"12\x1012"
+     L"4567890.com",
+     false},
     // 123Ꮞ567890.com
-    {"xn--123567890-dm4b.com", L"123\x13ce" L"567890.com", false},
+    {"xn--123567890-dm4b.com",
+     L"123\x13ce"
+     L"567890.com",
+     false},
     // 12345б7890.com
-    {"xn--123457890-fzh.com", L"12345\x0431" L"7890.com", false},
+    {"xn--123457890-fzh.com",
+     L"12345\x0431"
+     L"7890.com",
+     false},
     // 1234567ȣ90.com
-    {"xn--123456790-6od.com", L"1234567\x0223" L"90.com", false},
+    {"xn--123456790-6od.com",
+     L"1234567\x0223"
+     L"90.com",
+     false},
     // 12345678୨0.com
-    {"xn--123456780-71w.com", L"12345678\x0b68" L"0.com", false},
+    {"xn--123456780-71w.com",
+     L"12345678\x0b68"
+     L"0.com",
+     false},
     // 123456789ꓳ.com
     {"xn--123456789-tx75a.com", L"123456789\xa4f3.com", false},
 
     // aeœ.com
     {"xn--ae-fsa.com", L"ae\x0153.com", false},
     // æce.com
-    {"xn--ce-0ia.com", L"\x00e6" L"ce.com", false},
+    {"xn--ce-0ia.com",
+     L"\x00e6"
+     L"ce.com",
+     false},
     // æœ.com
     {"xn--6ca2t.com", L"\x00e6\x0153.com", false},
     // ӕԥ.com
     {"xn--y5a4n.com", L"\x04d5\x0525.com", false},
 
     // ငၔဌ၂ဝ.com (entirely made of Myanmar characters)
-    {"xn--ridq5c9hnd.com", L"\x1004\x1054\x100c" L"\x1042\x101d.com", false},
+    {"xn--ridq5c9hnd.com",
+     L"\x1004\x1054\x100c"
+     L"\x1042\x101d.com",
+     false},
 
     // ฟรฟร.com (made of two Thai characters. similar to wsws.com in
     // some fonts)
@@ -570,7 +618,10 @@ const IDNTestCase idn_cases[] = {
     // ຟຮບ.com
     {"xn--f7cj9b.com", L"\x0e9f\x0eae\x0e9a.com", false},
     // ຟຮ໐ບ.com
-    {"xn--f7cj9b5h.com", L"\x0e9f\x0eae" L"\x0ed0\x0e9a.com", false},
+    {"xn--f7cj9b5h.com",
+     L"\x0e9f\x0eae"
+     L"\x0ed0\x0e9a.com",
+     false},
 
     // At one point the skeleton of 'w' was 'vv', ensure that
     // that it's treated as 'w'.
