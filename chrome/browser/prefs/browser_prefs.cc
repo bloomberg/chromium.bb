@@ -191,6 +191,7 @@
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
+#include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
@@ -285,10 +286,6 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/search/instant_service.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
