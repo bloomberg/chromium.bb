@@ -52,6 +52,8 @@ public class ChromePreferenceManager {
 
     private static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
 
+    private static final String BOTTOM_TOOLBAR_ENABLED_KEY = "bottom_toolbar_enabled";
+
     private static final String CONTENT_SUGGESTIONS_SHOWN_KEY = "content_suggestions_shown";
 
     private static final String SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
@@ -389,6 +391,22 @@ public class ChromePreferenceManager {
      */
     public boolean isNewTabPageButtonEnabled() {
         return mSharedPreferences.getBoolean(NTP_BUTTON_ENABLED_KEY, false);
+    }
+
+    /**
+     * Set whether or not the bottom toolbar is enabled.
+     * @param isEnabled If the bottom toolbar is enabled.
+     */
+    public void setBottomToolbarEnabled(boolean isEnabled) {
+        writeBoolean(BOTTOM_TOOLBAR_ENABLED_KEY, isEnabled);
+    }
+
+    /**
+     * Get whether or not the bottom toolbar is enabled.
+     * @return True if the bottom toolbar is enabled.
+     */
+    public boolean isBottomToolbarEnabled() {
+        return mSharedPreferences.getBoolean(BOTTOM_TOOLBAR_ENABLED_KEY, false);
     }
 
     /**
