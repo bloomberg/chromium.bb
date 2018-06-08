@@ -769,10 +769,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarDangerous) {
   }
 
   ASSERT_TRUE(https_server()->Start());
+  cert_verifier()->set_default_result(net::ERR_CERT_DATE_INVALID);
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
   SetupAppWithURL(app_url);
-  cert_verifier()->set_default_result(net::ERR_CERT_DATE_INVALID);
 
   // When DesktopPWAWindowing is enabled, proceeding through an interstitial
   // results in the navigation being redirected to a regular tab. So we need

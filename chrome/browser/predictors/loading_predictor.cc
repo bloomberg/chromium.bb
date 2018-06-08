@@ -145,47 +145,27 @@ void LoadingPredictor::Shutdown() {
   shutdown_ = true;
 }
 
-void LoadingPredictor::OnMainFrameRequest(const URLRequestSummary& summary) {
-  DCHECK(summary.resource_type == content::RESOURCE_TYPE_MAIN_FRAME);
+void LoadingPredictor::OnNavigationStarted(const NavigationID& navigation_id) {
   if (shutdown_)
     return;
 
-  const NavigationID& navigation_id = summary.navigation_id;
+  loading_data_collector()->RecordStartNavigation(navigation_id);
   CleanupAbandonedHintsAndNavigations(navigation_id);
-  active_navigations_.emplace(navigation_id, navigation_id.main_frame_url);
+  active_navigations_.emplace(navigation_id);
   PrepareForPageLoad(navigation_id.main_frame_url, HintOrigin::NAVIGATION);
 }
 
-void LoadingPredictor::OnMainFrameRedirect(const URLRequestSummary& summary) {
-  DCHECK(summary.resource_type == content::RESOURCE_TYPE_MAIN_FRAME);
+void LoadingPredictor::OnNavigationFinished(
+    const NavigationID& old_navigation_id,
+    const NavigationID& new_navigation_id,
+    bool is_error_page) {
   if (shutdown_)
     return;
 
-  auto it = active_navigations_.find(summary.navigation_id);
-  if (it != active_navigations_.end()) {
-    if (summary.navigation_id.main_frame_url == summary.redirect_url)
-      return;
-    NavigationID navigation_id = summary.navigation_id;
-    navigation_id.main_frame_url = summary.redirect_url;
-    active_navigations_.emplace(navigation_id, it->second);
-    active_navigations_.erase(it);
-  }
-}
-
-void LoadingPredictor::OnMainFrameResponse(const URLRequestSummary& summary) {
-  DCHECK(summary.resource_type == content::RESOURCE_TYPE_MAIN_FRAME);
-  if (shutdown_)
-    return;
-
-  const NavigationID& navigation_id = summary.navigation_id;
-  auto it = active_navigations_.find(navigation_id);
-  if (it != active_navigations_.end()) {
-    const GURL& initial_url = it->second;
-    CancelPageLoadHint(initial_url);
-    active_navigations_.erase(it);
-  } else {
-    CancelPageLoadHint(navigation_id.main_frame_url);
-  }
+  loading_data_collector()->RecordFinishNavigation(
+      old_navigation_id, new_navigation_id, is_error_page);
+  active_navigations_.erase(old_navigation_id);
+  CancelPageLoadHint(old_navigation_id.main_frame_url);
 }
 
 std::map<GURL, base::TimeTicks>::iterator LoadingPredictor::CancelActiveHint(
@@ -222,10 +202,9 @@ void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
   // Navigations.
   for (auto it = active_navigations_.begin();
        it != active_navigations_.end();) {
-    if ((it->first.tab_id == navigation_id.tab_id) ||
-        (time_now - it->first.creation_time > max_navigation_age)) {
-      const GURL& initial_url = it->second;
-      CancelActiveHint(active_hints_.find(initial_url));
+    if ((it->tab_id == navigation_id.tab_id) ||
+        (time_now - it->creation_time > max_navigation_age)) {
+      CancelActiveHint(active_hints_.find(it->main_frame_url));
       it = active_navigations_.erase(it);
     } else {
       ++it;

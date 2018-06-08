@@ -25,7 +25,6 @@
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/loader/predictor_resource_throttle.h"
 #include "chrome/browser/loader/safe_browsing_resource_throttle.h"
-#include "chrome/browser/net/loading_predictor_observer.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -375,7 +374,9 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   client_hints::RequestBeginning(request, io_data->GetCookieSettings());
 
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES) || BUILDFLAG(ENABLE_NACL)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+#endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // TODO(petewil): Unify the safe browsing request and the metrics observer
@@ -440,11 +441,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   AppendComponentUpdaterThrottles(request, *info, resource_context,
                                   resource_type, throttles);
 #endif  // BUILDFLAG(ENABLE_NACL)
-
-  if (io_data->loading_predictor_observer()) {
-    io_data->loading_predictor_observer()->OnRequestStarted(
-        request, resource_type, info->GetWebContentsGetterForRequest());
-  }
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(
@@ -622,10 +618,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   }
 #endif
 
-  if (io_data->loading_predictor_observer())
-    io_data->loading_predictor_observer()->OnResponseStarted(
-        request, info->GetWebContentsGetterForRequest());
-
   // Update the PreviewsState for main frame response if needed.
   if (previews::HasEnabledPreviews(response->head.previews_state) &&
       info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
@@ -687,12 +679,6 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   signin::FixAccountConsistencyRequestHeader(request, redirect_url, io_data);
   signin::ProcessAccountConsistencyResponseHeaders(request, redirect_url,
                                                    io_data->IsOffTheRecord());
-
-  if (io_data->loading_predictor_observer()) {
-    const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-    io_data->loading_predictor_observer()->OnRequestRedirected(
-        request, redirect_url, info->GetWebContentsGetterForRequest());
-  }
 
   if (io_data->policy_header_helper())
     io_data->policy_header_helper()->AddPolicyHeaders(redirect_url, request);
