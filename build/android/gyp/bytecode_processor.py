@@ -6,6 +6,7 @@
 """Wraps bin/helper/java_bytecode_rewriter and expands @FileArgs."""
 
 import argparse
+import os
 import sys
 
 from util import build_utils
@@ -29,15 +30,13 @@ def main(argv):
                       help='Extra inputs, passed last to the binary script.')
   _AddSwitch(parser, '--enable-custom-resources')
   _AddSwitch(parser, '--enable-assert')
-  _AddSwitch(parser, '--enable-trace-event')
   args = parser.parse_args(argv)
   extra_classpath_jars = []
   for a in args.extra_jars:
     extra_classpath_jars.extend(build_utils.ParseGnList(a))
 
   cmd = [args.script, args.input_jar, args.output_jar, args.enable_assert,
-         args.enable_custom_resources,
-         args.enable_trace_event] + extra_classpath_jars
+         args.enable_custom_resources] + extra_classpath_jars
   build_utils.CheckOutput(cmd)
 
   if args.depfile:
