@@ -96,7 +96,6 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
       resolver->Reject(
           DOMException::Create(DOMExceptionCode::kInvalidStateError, ""));
     }
-    // TODO(crbug.com/806249): Test that WMPI sends the message.
     element->exitPictureInPicture(base::DoNothing());
     return;
   }

@@ -480,4 +480,31 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
+// Checks setting disablePictureInPicture on video just after requesting
+// Picture-in-Picture doesn't result in a window opened.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       RequestPictureInPictureAfterDisablePictureInPicture) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents != nullptr);
+
+  SetUpWindowController(active_web_contents);
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "requestPictureInPictureAndDisable();"));
+
+  // Wait for promise to reject.
+  base::string16 expected_title = base::ASCIIToUTF16("rejected");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+}
 #endif  // !defined(OS_LINUX)
