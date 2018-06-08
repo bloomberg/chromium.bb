@@ -6,5 +6,4 @@ stevenjb@chromium.org
 xiyuan@chromium.org
 zelidrag@chromium.org
 
-per-file drive_internals*=hashimoto@chromium.org
-per-file drive_internals*=kinaba@chromium.org
+per-file drive_internals*=file://ui/file_manager/OWNERS
