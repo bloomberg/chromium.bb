@@ -9,8 +9,10 @@
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
+#include "components/sessions/core/session_types.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/sessions/session_util.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -31,40 +33,65 @@
 #endif
 
 namespace {
-// Constructs a GridItem from a |webState|.
-GridItem* CreateItem(web::WebState* webState) {
-  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-  GridItem* item = [[GridItem alloc] initWithIdentifier:tabHelper->tab_id()];
-  item.title = base::SysUTF16ToNSString(webState->GetTitle());
+// Constructs a GridItem from a |web_state|.
+GridItem* CreateItem(web::WebState* web_state) {
+  TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
+  GridItem* item = [[GridItem alloc] initWithIdentifier:tab_helper->tab_id()];
+  item.title = base::SysUTF16ToNSString(web_state->GetTitle());
   return item;
 }
 
-// Constructs an array of GridItems from a |webStateList|.
-NSArray* CreateItems(WebStateList* webStateList) {
+// Constructs an array of GridItems from a |web_state_list|.
+NSArray* CreateItems(WebStateList* web_state_list) {
   NSMutableArray* items = [[NSMutableArray alloc] init];
-  for (int i = 0; i < webStateList->count(); i++) {
-    web::WebState* webState = webStateList->GetWebStateAt(i);
-    [items addObject:CreateItem(webState)];
+  for (int i = 0; i < web_state_list->count(); i++) {
+    web::WebState* web_state = web_state_list->GetWebStateAt(i);
+    [items addObject:CreateItem(web_state)];
   }
   return [items copy];
 }
 
-NSString* GetActiveTabId(WebStateList* webStateList) {
-  web::WebState* webState = webStateList->GetActiveWebState();
-  if (!webState)
+// Returns the ID of the active tab in |web_state_list|.
+NSString* GetActiveTabId(WebStateList* web_state_list) {
+  web::WebState* web_state = web_state_list->GetActiveWebState();
+  if (!web_state)
     return nil;
-  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-  return tabHelper->tab_id();
+  TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
+  return tab_helper->tab_id();
 }
 
-int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
-  for (int i = 0; i < webStateList->count(); i++) {
-    web::WebState* webState = webStateList->GetWebStateAt(i);
-    TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-    if ([tabHelper->tab_id() isEqualToString:identifier])
+// Returns the index of the tab with |identifier| in |web_state_list|. Returns
+// -1 if not found.
+int GetIndexOfTabWithId(WebStateList* web_state_list, NSString* identifier) {
+  for (int i = 0; i < web_state_list->count(); i++) {
+    web::WebState* web_state = web_state_list->GetWebStateAt(i);
+    TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
+    if ([identifier isEqualToString:tab_helper->tab_id()])
       return i;
   }
   return -1;
+}
+
+// Returns the WebState with |identifier| in |web_state_list|. Returns |nullptr|
+// if not found.
+web::WebState* GetWebStateWithId(WebStateList* web_state_list,
+                                 NSString* identifier) {
+  for (int i = 0; i < web_state_list->count(); i++) {
+    web::WebState* web_state = web_state_list->GetWebStateAt(i);
+    TabIdTabHelper* tab_helper = TabIdTabHelper::FromWebState(web_state);
+    if ([identifier isEqualToString:tab_helper->tab_id()])
+      return web_state;
+  }
+  return nullptr;
+}
+
+// Appends and activates |web_state| to the end of |web_state_list|.
+void AppendAndActivateWebState(WebStateList* web_state_list,
+                               std::unique_ptr<web::WebState> web_state) {
+  web_state_list->InsertWebState(
+      web_state_list->count(), std::move(web_state),
+      (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
+      WebStateOpener());
 }
 
 }  // namespace
@@ -281,11 +308,59 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
   [SnapshotCacheFactory::GetForBrowserState(browserState) removeMarkedImages];
 }
 
+#pragma mark - UrlLoader
+
+// Loading a |sessionTab| normally means navigating on the currently visible tab
+// view. This is not the case while in the tab grid. A new WebState is appended
+// and activated instead of replacing the current active WebState.
+- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
+  DCHECK(self.tabModel.browserState);
+  std::unique_ptr<web::WebState> webState =
+      session_util::CreateWebStateWithNavigationEntries(
+          self.tabModel.browserState, sessionTab->current_navigation_index,
+          sessionTab->navigations);
+  AppendAndActivateWebState(self.webStateList, std::move(webState));
+}
+
+// In tab grid, |inBackground| is ignored, which means that the new WebState is
+// activated. |appendTo| is also ignored, so the new WebState is always appended
+// at the end of the list. The page transition type is explicit rather than
+// linked.
+- (void)webPageOrderedOpen:(const GURL&)URL
+                  referrer:(const web::Referrer&)referrer
+              inBackground:(BOOL)inBackground
+                  appendTo:(OpenPosition)appendTo {
+  DCHECK(self.tabModel.browserState);
+  web::WebState::CreateParams params(self.tabModel.browserState);
+  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
+  web::NavigationManager::WebLoadParams loadParams(URL);
+  loadParams.referrer = referrer;
+  loadParams.transition_type = ui::PAGE_TRANSITION_TYPED;
+  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+  AppendAndActivateWebState(self.webStateList, std::move(webState));
+}
+
+- (void)webPageOrderedOpen:(const GURL&)URL
+                  referrer:(const web::Referrer&)referrer
+               inIncognito:(BOOL)inIncognito
+              inBackground:(BOOL)inBackground
+                  appendTo:(OpenPosition)appendTo {
+  NOTREACHED() << "This is intentionally NO-OP in TabGridMediator.";
+}
+
+- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
+  NOTREACHED() << "This is intentionally NO-OP in TabGridMediator.";
+}
+
+- (void)loadJavaScriptFromLocationBar:(NSString*)script {
+  NOTREACHED() << "This is intentionally NO-OP in TabGridMediator.";
+}
+
 #pragma mark - GridImageDataSource
 
 - (void)snapshotForIdentifier:(NSString*)identifier
                    completion:(void (^)(UIImage*))completion {
-  web::WebState* webState = [self webStateForIdentifier:identifier];
+  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
   if (webState) {
     SnapshotTabHelper::FromWebState(webState)->RetrieveColorSnapshot(
         ^(UIImage* image) {
@@ -297,7 +372,7 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
 
 - (void)faviconForIdentifier:(NSString*)identifier
                   completion:(void (^)(UIImage*))completion {
-  web::WebState* webState = [self webStateForIdentifier:identifier];
+  web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
   if (webState) {
     favicon::FaviconDriver* faviconDriver =
         favicon::WebFaviconDriver::FromWebState(webState);
@@ -311,17 +386,7 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
 
 #pragma mark - Private
 
-- (web::WebState*)webStateForIdentifier:(NSString*)identifier {
-  for (int i = 0; i < self.webStateList->count(); i++) {
-    web::WebState* webState = self.webStateList->GetWebStateAt(i);
-    TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-    if ([identifier isEqualToString:tabHelper->tab_id()]) {
-      return webState;
-    }
-  }
-  return nullptr;
-}
-
+// Calls |-populateItems:selectedItemID:| on the consumer.
 - (void)populateConsumerItems {
   if (self.webStateList->count() > 0) {
     [self.consumer populateItems:CreateItems(self.webStateList)
