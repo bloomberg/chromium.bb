@@ -119,9 +119,6 @@ class PDFiumEngine : public PDFEngine,
   bool GetPageSizeAndUniformity(pp::Size* size) override;
   void AppendBlankPages(int num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
-#if defined(PDF_ENABLE_XFA)
-  void SetScrollPosition(const pp::Point& position) override;
-#endif
   std::string GetMetadata(const std::string& key) override;
   void SetCaretPosition(const pp::Point& position) override;
   void MoveRangeSelectionExtent(const pp::Point& extent) override;
