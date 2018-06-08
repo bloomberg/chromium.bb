@@ -5,11 +5,14 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import android.content.Context;
+import android.support.annotation.DrawableRes;
 import android.text.format.DateUtils;
+import android.text.format.Formatter;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
@@ -87,10 +90,23 @@ public final class UiUtils {
      */
     public static CharSequence generatePrefetchCaption(OfflineItem item) {
         Context context = ContextUtils.getApplicationContext();
-        String displaySize = DownloadUtils.getStringForBytes(context, item.totalSizeBytes);
+        String displaySize = Formatter.formatFileSize(context, item.totalSizeBytes);
         String displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
         return context.getString(
                 R.string.download_manager_prefetch_caption, displayUrl, displaySize);
+    }
+
+    /**
+     * Generates a caption for a generic item.
+     * @param item The {@link OfflineItem} to generate a caption for.
+     * @return     The {@link CharSequence} representing the caption.
+     */
+    public static CharSequence generateGenericCaption(OfflineItem item) {
+        Context context = ContextUtils.getApplicationContext();
+        String displaySize = Formatter.formatFileSize(context, item.totalSizeBytes);
+        String displayUrl = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(item.pageUrl);
+        return context.getString(
+                R.string.download_manager_list_item_description, displaySize, displayUrl);
     }
 
     /** @return Whether or not {@code item} can show a thumbnail in the UI. */
@@ -103,5 +119,11 @@ public final class UiUtils {
             default:
                 return false;
         }
+    }
+
+    /** @return A drawable resource id representing an icon for {@code item}. */
+    public static @DrawableRes int getIconForItem(OfflineItem item) {
+        return DownloadUtils.getIconResId(Filters.offlineItemFilterToDownloadFilter(item.filter),
+                DownloadUtils.ICON_SIZE_24_DP);
     }
 }

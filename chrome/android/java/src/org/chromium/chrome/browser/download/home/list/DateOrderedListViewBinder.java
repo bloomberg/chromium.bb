@@ -19,7 +19,7 @@ class DateOrderedListViewBinder implements ViewBinder<DecoratedListItemModel, Li
     public ListItemViewHolder onCreateViewHolder(ViewGroup parent, @ViewType int viewType) {
         switch (viewType) {
             case ListUtils.DATE:
-                return new ListItemViewHolder.DateViewHolder(parent);
+                return ListItemViewHolder.DateViewHolder.create(parent);
             case ListUtils.IN_PROGRESS:
                 return new ListItemViewHolder.InProgressViewHolder(parent);
             case ListUtils.GENERIC:
