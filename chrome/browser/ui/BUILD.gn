@@ -645,8 +645,6 @@ split_static_library("ui") {
     "find_bar/find_tab_helper.cc",
     "find_bar/find_tab_helper.h",
     "forced_reauthentication_dialog.h",
-    "history_ui.cc",
-    "history_ui.h",
     "interventions/framebust_block_message_delegate.cc",
     "interventions/framebust_block_message_delegate.h",
     "interventions/intervention_delegate.h",
