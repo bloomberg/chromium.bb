@@ -118,7 +118,6 @@ void MTPDeviceTaskHelper::CreateDirectory(
 
 void MTPDeviceTaskHelper::ReadDirectory(
     const uint32_t directory_id,
-    const size_t max_size,
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -129,8 +128,7 @@ void MTPDeviceTaskHelper::ReadDirectory(
       device_handle_, directory_id,
       base::BindOnce(
           &MTPDeviceTaskHelper::OnReadDirectoryEntryIdsToReadDirectory,
-          weak_ptr_factory_.GetWeakPtr(), success_callback, error_callback,
-          max_size));
+          weak_ptr_factory_.GetWeakPtr(), success_callback, error_callback));
 }
 
 void MTPDeviceTaskHelper::CheckDirectoryEmpty(
@@ -278,7 +276,6 @@ void MTPDeviceTaskHelper::OnCreateDirectory(
 void MTPDeviceTaskHelper::OnReadDirectoryEntryIdsToReadDirectory(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    size_t max_size,
     const std::vector<uint32_t>& file_ids,
     bool error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -295,19 +292,16 @@ void MTPDeviceTaskHelper::OnReadDirectoryEntryIdsToReadDirectory(
 
   std::vector<uint32_t> sorted_file_ids = file_ids;
   std::sort(sorted_file_ids.begin(), sorted_file_ids.end());
-  const size_t chunk_size = max_size == 0
-                                ? kFileInfoToFetchChunkSize
-                                : std::min(max_size, kFileInfoToFetchChunkSize);
 
   // This is the first GetFileInfo() call for a read directory operation. Start
   // at offset 0.
   static constexpr size_t kInitialOffset = 0;
 
   GetMediaTransferProtocolManager()->GetFileInfo(
-      device_handle_, file_ids, kInitialOffset, chunk_size,
+      device_handle_, file_ids, kInitialOffset, kFileInfoToFetchChunkSize,
       base::BindOnce(&MTPDeviceTaskHelper::OnGotDirectoryEntries,
                      weak_ptr_factory_.GetWeakPtr(), success_callback,
-                     error_callback, file_ids, kInitialOffset, max_size,
+                     error_callback, file_ids, kInitialOffset,
                      sorted_file_ids));
 }
 
@@ -316,7 +310,6 @@ void MTPDeviceTaskHelper::OnGotDirectoryEntries(
     const ErrorCallback& error_callback,
     const std::vector<uint32_t>& file_ids,
     size_t offset,
-    size_t max_size,
     const std::vector<uint32_t>& sorted_file_ids,
     std::vector<device::mojom::MtpFileEntryPtr> file_entries,
     bool error) {
@@ -350,8 +343,7 @@ void MTPDeviceTaskHelper::OnGotDirectoryEntries(
     entries.push_back(entry);
   }
 
-  const size_t directory_size =
-      max_size == 0 ? file_ids.size() : std::min(file_ids.size(), max_size);
+  const size_t directory_size = file_ids.size();
   size_t next_offset = directory_size;
   if (offset < SIZE_MAX - kFileInfoToFetchChunkSize)
     next_offset = std::min(next_offset, offset + kFileInfoToFetchChunkSize);
@@ -370,8 +362,7 @@ void MTPDeviceTaskHelper::OnGotDirectoryEntries(
       device_handle_, file_ids, next_offset, chunk_size,
       base::BindOnce(&MTPDeviceTaskHelper::OnGotDirectoryEntries,
                      weak_ptr_factory_.GetWeakPtr(), success_callback,
-                     error_callback, file_ids, next_offset, max_size,
-                     sorted_file_ids));
+                     error_callback, file_ids, next_offset, sorted_file_ids));
 }
 
 void MTPDeviceTaskHelper::OnCheckedDirectoryEmpty(
