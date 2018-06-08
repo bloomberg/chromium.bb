@@ -116,6 +116,14 @@
 
 namespace content {
 
+base::subtle::Atomic32 GpuProcessHost::gpu_crash_count_ = 0;
+bool GpuProcessHost::crashed_before_ = false;
+int GpuProcessHost::hardware_accelerated_recent_crash_count_ = 0;
+int GpuProcessHost::swiftshader_recent_crash_count_ = 0;
+int GpuProcessHost::display_compositor_recent_crash_count_ = 0;
+
+namespace {
+
 // UMA histogram names.
 constexpr char kProcessLifetimeEventsHardwareAccelerated[] =
     "GPU.ProcessLifetimeEvents.HardwareAccelerated";
@@ -124,13 +132,12 @@ constexpr char kProcessLifetimeEventsSwiftShader[] =
 constexpr char kProcessLifetimeEventsDisplayCompositor[] =
     "GPU.ProcessLifetimeEvents.DisplayCompositor";
 
-base::subtle::Atomic32 GpuProcessHost::gpu_crash_count_ = 0;
-bool GpuProcessHost::crashed_before_ = false;
-int GpuProcessHost::hardware_accelerated_recent_crash_count_ = 0;
-int GpuProcessHost::swiftshader_recent_crash_count_ = 0;
-int GpuProcessHost::display_compositor_recent_crash_count_ = 0;
+// Forgive one GPU process crash after this many minutes.
+constexpr int kForgiveGpuCrashMinutes = 60;
 
-namespace {
+// Forgive one GPU process crash, when the GPU process is launched to run only
+// the display compositor, after this many minutes.
+constexpr int kForgiveDisplayCompositorCrashMinutes = 10;
 
 // This matches base::TerminationStatus.
 // These values are persisted to logs. Entries (except MAX_ENUM) should not be
@@ -664,17 +671,20 @@ int GpuProcessHost::GetGpuCrashCount() {
 }
 
 // static
-void GpuProcessHost::IncrementCrashCount(int* crash_count) {
-  // Last time the process crashed.
-  static base::Time last_crash_time;
+void GpuProcessHost::IncrementCrashCount(int forgive_minutes,
+                                         int* crash_count) {
+  DCHECK_GT(forgive_minutes, 0);
 
-  // Allow about 1 crash per hour to be removed from the crash count, so very
-  // occasional crashes won't eventually add up and prevent the process from
-  // launching.
-  base::Time current_time = base::Time::Now();
+  // Last time the process crashed.
+  static base::TimeTicks last_crash_time;
+
+  // Remove one crash per |forgive_minutes| from the crash count, so occasional
+  // crashes won't add up and eventually prevent using the GPU process.
+  base::TimeTicks current_time = base::TimeTicks::Now();
   if (crashed_before_) {
-    int hours_different = (current_time - last_crash_time).InHours();
-    *crash_count = std::max(0, *crash_count - hours_different);
+    int minutes_delta = (current_time - last_crash_time).InMinutes();
+    int crashes_to_forgive = minutes_delta / forgive_minutes;
+    *crash_count = std::max(0, *crash_count - crashes_to_forgive);
   }
   ++(*crash_count);
 
@@ -1505,7 +1515,8 @@ void GpuProcessHost::RecordProcessCrash() {
     base::subtle::NoBarrier_AtomicIncrement(&gpu_crash_count_, 1);
 
     if (GpuDataManagerImpl::GetInstance()->HardwareAccelerationEnabled()) {
-      IncrementCrashCount(&hardware_accelerated_recent_crash_count_);
+      IncrementCrashCount(kForgiveGpuCrashMinutes,
+                          &hardware_accelerated_recent_crash_count_);
       UMA_HISTOGRAM_EXACT_LINEAR(
           kProcessLifetimeEventsHardwareAccelerated,
           DIED_FIRST_TIME + hardware_accelerated_recent_crash_count_ - 1,
@@ -1530,7 +1541,8 @@ void GpuProcessHost::RecordProcessCrash() {
 #endif
       }
     } else if (GpuDataManagerImpl::GetInstance()->SwiftShaderAllowed()) {
-      IncrementCrashCount(&swiftshader_recent_crash_count_);
+      IncrementCrashCount(kForgiveGpuCrashMinutes,
+                          &swiftshader_recent_crash_count_);
       UMA_HISTOGRAM_EXACT_LINEAR(
           kProcessLifetimeEventsSwiftShader,
           DIED_FIRST_TIME + swiftshader_recent_crash_count_ - 1,
@@ -1542,7 +1554,8 @@ void GpuProcessHost::RecordProcessCrash() {
         GpuDataManagerImpl::GetInstance()->BlockSwiftShader();
       }
     } else {
-      IncrementCrashCount(&display_compositor_recent_crash_count_);
+      IncrementCrashCount(kForgiveDisplayCompositorCrashMinutes,
+                          &display_compositor_recent_crash_count_);
       UMA_HISTOGRAM_EXACT_LINEAR(
           kProcessLifetimeEventsDisplayCompositor,
           DIED_FIRST_TIME + display_compositor_recent_crash_count_ - 1,
@@ -1550,9 +1563,10 @@ void GpuProcessHost::RecordProcessCrash() {
 
       if (display_compositor_recent_crash_count_ >= kGpuMaxCrashCount &&
           !disable_crash_limit) {
-        // Viz display compositor is too unstable. Crash chrome to reset
-        // everything.
-        LOG(FATAL) << "Unable to start viz process, giving up.";
+        // Something is very wrong and the GPU process keeps crashing with only
+        // the display compositor running. Kill the browser process to reset
+        // everything and attempt to improve stability.
+        LOG(FATAL) << "The display compositor is frequently crashing. Goodbye.";
       }
     }
   }
