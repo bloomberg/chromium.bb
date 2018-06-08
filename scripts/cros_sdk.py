@@ -218,6 +218,11 @@ def DeleteChroot(chroot_path):
     raise SystemExit('Running %r failed!' % cmd)
 
 
+def CleanupChroot(chroot_path):
+  """Unmounts a chroot and cleans up any associated devices."""
+  cros_sdk_lib.CleanupChrootMount(chroot_path, delete_image=False)
+
+
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
                 workspace, goma_dir, goma_client_json, working_dir,
                 additional_args):
@@ -764,6 +769,15 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
       '--delete', action='store_true', default=False,
       help='Delete the current SDK chroot if it exists.')
   group.add_argument(
+      '--unmount', action='store_true', default=False,
+      help='Unmount and clean up devices associated with the '
+      'SDK chroot if it exists.  This does not delete the '
+      'backing image file, so the same chroot can be later '
+      're-mounted for reuse.  To fully delete the chroot, use '
+      '--delete.  This is primarily useful for working on '
+      'cros_sdk or the chroot setup; you should not need it '
+      'under normal circumstances.')
+  group.add_argument(
       '--download', action='store_true', default=False,
       help='Download the sdk.')
   group.add_argument(
@@ -873,13 +887,17 @@ def main(argv):
     parser.error("Trying to enter or snapshot the chroot when --delete "
                  "was specified makes no sense.")
 
+  if (options.unmount and
+      (options.create or options.enter or any_snapshot_operation)):
+    parser.error('--unmount cannot be specified with other chroot actions.')
+
   if options.working_dir is not None and not os.path.isabs(options.working_dir):
     options.working_dir = path_util.ToChrootPath(options.working_dir)
 
   # Discern if we need to create the chroot.
   chroot_exists = cros_sdk_lib.IsChrootReady(options.chroot)
   if (options.use_image and not chroot_exists and not options.delete and
-      not missing_image_tools and
+      not options.unmount and not missing_image_tools and
       os.path.exists(_ImageFileForChroot(options.chroot))):
     # Try to re-mount an existing image in case the user has rebooted.
     with cgroups.SimpleContainChildren('cros_sdk'):
@@ -919,6 +937,16 @@ def main(argv):
           cros_sdk_lib.CleanupChrootMount(options.chroot, delete_image=True)
           osutils.RmDir(options.chroot, ignore_missing=True)
           chroot_deleted = True
+
+  # If cleanup was requested, we have to do it while we're still in the original
+  # namespace.  Since cleaning up the mount will interfere with any other
+  # commands, we exit here.  The check above should have made sure that no other
+  # action was requested, anyway.
+  if options.unmount:
+    with locking.FileLock(lock_path, 'chroot lock') as lock:
+      lock.write_lock()
+      CleanupChroot(options.chroot)
+      sys.exit(0)
 
   # Make sure the main chroot mount is visible.  Contents will be filled in
   # below if needed.
