@@ -784,7 +784,7 @@ class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
   RenderProcessHost* host_ = nullptr;
 };
 
-void CreateMemoryCoordinatorHandle(
+void CreateMemoryCoordinatorHandleForRenderProcess(
     int render_process_id,
     mojom::MemoryCoordinatorHandleRequest request) {
   MemoryCoordinatorImpl::GetInstance()->CreateHandle(render_process_id,
@@ -1920,7 +1920,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                      storage_partition_impl_->GetBroadcastChannelProvider())));
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     AddUIThreadInterface(
-        registry.get(), base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
+        registry.get(),
+        base::Bind(&CreateMemoryCoordinatorHandleForRenderProcess, GetID()));
   }
   if (resource_coordinator::IsResourceCoordinatorEnabled()) {
     AddUIThreadInterface(

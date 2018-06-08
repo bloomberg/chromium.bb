@@ -481,7 +481,7 @@ FontRenderParamsOnIO& GetFontRenderParamsOnIO() {
   return *instance;
 }
 
-void CreateMemoryCoordinatorHandle(
+void CreateMemoryCoordinatorHandleForGpuProcess(
     int gpu_process_id,
     mojom::MemoryCoordinatorHandleRequest request) {
   MemoryCoordinatorImpl::GetInstance()->CreateHandle(gpu_process_id,
@@ -503,7 +503,8 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
 #endif
 
     registry_.AddInterface(
-        base::BindRepeating(&CreateMemoryCoordinatorHandle, gpu_process_id),
+        base::BindRepeating(&CreateMemoryCoordinatorHandleForGpuProcess,
+                            gpu_process_id),
         task_runner);
   }
 
