@@ -240,8 +240,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                      arch, cpv.version_no_rev.split('_')[0])
         return
 
-    if self.suite_config.suite in [constants.HWTEST_CTS_FOLLOWER_SUITE,
-                                   constants.HWTEST_CTS_QUAL_SUITE,
+    if self.suite_config.suite in [constants.HWTEST_CTS_QUAL_SUITE,
                                    constants.HWTEST_GTS_QUAL_SUITE]:
       # Increase the priority for CTS/GTS qualification suite as we want stable
       # build to have higher priority than beta build (again higher than dev).

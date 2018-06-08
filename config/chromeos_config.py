@@ -374,9 +374,7 @@ class HWTestList(object):
         async=True)
     gts_config.update(kwargs)
 
-    return [config_lib.HWTestConfig(constants.HWTEST_CTS_FOLLOWER_SUITE,
-                                    **cts_config),
-            config_lib.HWTestConfig(constants.HWTEST_CTS_QUAL_SUITE,
+    return [config_lib.HWTestConfig(constants.HWTEST_CTS_QUAL_SUITE,
                                     **cts_config),
             config_lib.HWTestConfig(constants.HWTEST_GTS_QUAL_SUITE,
                                     **gts_config)]
@@ -3578,7 +3576,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
           # was never fully implemented and we shouldn't have tied to it in
           # the first place.
           # Once test planning is properly implemented, this will fall out.
-          test_suites.append('arc-cts-follower')
           test_suites.append('arc-cts-qual')
           test_suites.append('arc-gts-qual')
         models.append(config_lib.ModelTestConfig(
