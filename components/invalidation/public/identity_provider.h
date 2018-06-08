@@ -66,11 +66,6 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   // a refresh token.
   virtual bool IsActiveAccountAvailable() = 0;
 
-  // DEPRECATED: Do not add further usage of this API, as it is in the process
-  // of being removed. See https://crbug.com/809452.
-  // Gets the token service vending OAuth tokens for all logged-in accounts.
-  virtual OAuth2TokenService* GetTokenService() = 0;
-
   // Starts an access token request for |oauth_consumer_name| and |scopes|. When
   // the request completes, |callback| will be invoked with the access token
   // or error. To cancel the request, destroy the returned TokenFetcher.
@@ -79,6 +74,11 @@ class IdentityProvider : public OAuth2TokenService::Observer {
       const OAuth2TokenService::ScopeSet& scopes,
 
       ActiveAccountAccessTokenCallback callback);
+
+  // Marks an OAuth2 |access_token| issued for the active account and |scopes|
+  // as invalid.
+  void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
+                             const std::string& access_token);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -89,6 +89,11 @@ class IdentityProvider : public OAuth2TokenService::Observer {
 
  protected:
   IdentityProvider();
+
+  // DEPRECATED: Do not add further usage of this API, as it is in the process
+  // of being removed. See https://crbug.com/809452.
+  // Gets the token service vending OAuth tokens for all logged-in accounts.
+  virtual OAuth2TokenService* GetTokenService() = 0;
 
   // Fires an OnActiveAccountLogin notification.
   void FireOnActiveAccountLogin();

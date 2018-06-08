@@ -240,8 +240,7 @@ void GCMInvalidationBridge::InvalidateToken(const std::string& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  identity_provider_->GetTokenService()->InvalidateAccessToken(
-      identity_provider_->GetActiveAccountId(), scopes, token);
+  identity_provider_->InvalidateAccessToken(scopes, token);
 }
 
 void GCMInvalidationBridge::Register(

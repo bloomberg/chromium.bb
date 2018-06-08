@@ -21,7 +21,6 @@
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 
 namespace gcm {
@@ -131,7 +130,7 @@ class TiclInvalidationService : public InvalidationService,
   std::unique_ptr<syncer::Invalidator> invalidator_;
 
   // TiclInvalidationService needs to remember access token in order to
-  // invalidate it with OAuth2TokenService.
+  // invalidate it with IdentityProvider.
   std::string access_token_;
 
   // TiclInvalidationService needs to hold reference to access_token_fetcher_
