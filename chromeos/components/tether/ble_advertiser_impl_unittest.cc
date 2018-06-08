@@ -56,24 +56,26 @@ class FakeErrorTolerantBleAdvertisementFactory
       const secure_channel::DeviceIdPair& device_id_pair,
       std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
       secure_channel::BleSynchronizerBase* ble_synchronizer) override {
-    secure_channel::FakeErrorTolerantBleAdvertisement* fake_advertisement =
-        new secure_channel::FakeErrorTolerantBleAdvertisement(
+    auto fake_advertisement =
+        std::make_unique<secure_channel::FakeErrorTolerantBleAdvertisement>(
             device_id_pair,
-            base::Bind(&FakeErrorTolerantBleAdvertisementFactory::
-                           OnFakeAdvertisementDeleted,
-                       base::Unretained(this)));
-    active_advertisements_.push_back(fake_advertisement);
+            base::BindOnce(&FakeErrorTolerantBleAdvertisementFactory::
+                               OnFakeAdvertisementDeleted,
+                           base::Unretained(this)));
+    active_advertisements_.push_back(fake_advertisement.get());
     ++num_created_;
-    return base::WrapUnique(fake_advertisement);
+    return fake_advertisement;
   }
 
  protected:
   void OnFakeAdvertisementDeleted(
-      secure_channel::FakeErrorTolerantBleAdvertisement* fake_advertisement) {
-    EXPECT_TRUE(std::find(active_advertisements_.begin(),
-                          active_advertisements_.end(),
-                          fake_advertisement) != active_advertisements_.end());
-    base::Erase(active_advertisements_, fake_advertisement);
+      const secure_channel::DeviceIdPair& device_id_pair) {
+    auto it = std::find_if(
+        active_advertisements_.begin(), active_advertisements_.end(),
+        [&device_id_pair](const auto* advertisement) {
+          return advertisement->device_id_pair() == device_id_pair;
+        });
+    active_advertisements_.erase(it);
   }
 
  private:
