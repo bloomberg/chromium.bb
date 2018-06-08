@@ -1434,8 +1434,12 @@ void RenderViewContextMenu::AppendEditableItems() {
                                   IDS_CONTENT_CONTEXT_REDO);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 #else
-  if (!IsDevToolsURL(params_.page_url) && !menu_model_.GetItemCount() &&
-      !content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT)) {
+  // Also want to show 'Undo' and 'Redo' if 'Emoji' is the only item in the menu
+  // so far.
+  if (!IsDevToolsURL(params_.page_url) &&
+      !content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT) &&
+      (!menu_model_.GetItemCount() ||
+       menu_model_.GetIndexOfCommandId(IDC_CONTENT_CONTEXT_EMOJI) != -1)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_UNDO,
                                     IDS_CONTENT_CONTEXT_UNDO);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
