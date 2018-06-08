@@ -163,9 +163,6 @@ class ThreadHeapStats {
     collected_wrapper_count_ += delta;
   }
   size_t CollectedWrapperCount() { return collected_wrapper_count_; }
-  size_t PartitionAllocSizeAtLastGC() {
-    return partition_alloc_size_at_last_gc_;
-  }
 
   void Reset();
 
@@ -173,7 +170,6 @@ class ThreadHeapStats {
   size_t wrapper_count_;
   size_t wrapper_count_at_last_gc_;
   size_t collected_wrapper_count_;
-  size_t partition_alloc_size_at_last_gc_;
   double estimated_marking_time_per_byte_;
 };
 
