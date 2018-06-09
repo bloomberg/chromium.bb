@@ -64,11 +64,10 @@ class CONTENT_EXPORT TouchActionFilter {
   void SetForceEnableZoom(bool enabled) { force_enable_zoom_ = enabled; }
 
   void OnHasTouchEventHandlers(bool has_handlers);
-  // TODO(https://crbug.com/850337): remove this testing specific function.
-  base::Optional<cc::TouchAction> ScrollingTouchActionForTesting() const;
 
  private:
   friend class MockRenderWidgetHost;
+  friend class TouchActionFilterTest;
 
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
   bool FilterManipulationEventAndResetState();
