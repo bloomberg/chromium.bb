@@ -192,6 +192,7 @@ NSArray* BuildAllAttributesArray() {
       @"AXRequired",
       NSAccessibilityRowHeaderUIElementsAttribute,
       NSAccessibilityRowIndexRangeAttribute,
+      NSAccessibilitySelectedAttribute,
       NSAccessibilitySelectedChildrenAttribute,
       NSAccessibilityTitleUIElementAttribute,
       NSAccessibilityURLAttribute,

@@ -1877,8 +1877,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)selected {
   if (![self instanceActive])
     return nil;
-  // TODO(nektar): Implement.
-  return [NSNumber numberWithBool:NO];
+  return [NSNumber numberWithBool:browserAccessibility_->GetBoolAttribute(
+                                      ax::mojom::BoolAttribute::kSelected)];
 }
 
 - (NSArray*)selectedChildren {
@@ -3073,6 +3073,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   if (browserAccessibility_->HasState(ax::mojom::State::kHasPopup)) {
     [ret addObjectsFromArray:@[ NSAccessibilityHasPopupAttribute ]];
+  }
+
+  if (browserAccessibility_->HasBoolAttribute(
+          ax::mojom::BoolAttribute::kSelected)) {
+    [ret addObjectsFromArray:@[ NSAccessibilitySelectedAttribute ]];
   }
 
   // Add expanded attribute only if it has expanded or collapsed state.
