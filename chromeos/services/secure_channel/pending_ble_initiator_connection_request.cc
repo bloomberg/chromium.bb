@@ -103,12 +103,11 @@ void PendingBleInitiatorConnectionRequest::HandleConnectionFailure(
             mojom::ConnectionAttemptFailureReason::TIMEOUT_FINDING_DEVICE);
       }
       break;
-    case BleInitiatorFailureType::kInvalidBeaconSeeds:
+    case BleInitiatorFailureType::kCouldNotGenerateAdvertisement:
       // Valid BeaconSeeds are required for generating BLE advertisements and
       // scan filters.
-      StopRequestDueToConnectionFailures(
-          mojom::ConnectionAttemptFailureReason::
-              REMOTE_DEVICE_INVALID_BEACON_SEEDS);
+      StopRequestDueToConnectionFailures(mojom::ConnectionAttemptFailureReason::
+                                             COULD_NOT_GENERATE_ADVERTISEMENT);
       break;
   }
 }

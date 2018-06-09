@@ -7,14 +7,33 @@ module chromeos.secure_channel.mojom;
 import "chromeos/services/device_sync/public/mojom/device_sync.mojom";
 
 enum ConnectionAttemptFailureReason {
+  // The local device could not authenticate with the remote device. This likely
+  // means that one (or both) devices have not synced their keys recently.
   AUTHENTICATION_ERROR,
+
+  // An advertisement could not be generated for this connection. This likely
+  // means that one (or both) devices have not synced ntheir BeaconSeeds
+  // recently.
+  COULD_NOT_GENERATE_ADVERTISEMENT,
+
+  // GATT connections were attempted, but they failed. This could be caused by
+  // errors creating GATT connections, dropped GATT connections, or an issue
+  // relating to GATT services being unavailable.
   GATT_CONNECTION_ERROR,
+
+  // The provided local device does not have a public key set.
   LOCAL_DEVICE_INVALID_PUBLIC_KEY,
-  LOCAL_DEVICE_INVALID_BEACON_SEEDS,
+
+  // The provided local device does not have a persistent symmetric key set.
   LOCAL_DEVICE_INVALID_PSK,
+
+  // The provided remote device does not have a public key set.
   REMOTE_DEVICE_INVALID_PUBLIC_KEY,
-  REMOTE_DEVICE_INVALID_BEACON_SEEDS,
+
+  // The provided remote device does not have a persistent symmetric key set.
   REMOTE_DEVICE_INVALID_PSK,
+
+  // Timeouts occurred trying to contact the remote device.
   TIMEOUT_FINDING_DEVICE
 };
 

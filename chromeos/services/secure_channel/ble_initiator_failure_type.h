@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_INITIATOR_FAILURE_TYPE_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_INITIATOR_FAILURE_TYPE_H_
 
+#include <ostream>
+
 namespace chromeos {
 
 namespace secure_channel {
@@ -25,9 +27,12 @@ enum class BleInitiatorFailureType {
   // No scan result was ever discovered for the remote device.
   kTimeoutContactingRemoteDevice,
 
-  // BeaconSeeds for the remote device were either unavailable or stale.
-  kInvalidBeaconSeeds
+  // An advertisement could not be generated.
+  kCouldNotGenerateAdvertisement
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const BleInitiatorFailureType& failure_type);
 
 }  // namespace secure_channel
 

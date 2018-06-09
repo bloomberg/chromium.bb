@@ -84,13 +84,14 @@ TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
 }
 
 TEST_F(SecureChannelPendingBleInitiatorConnectionRequestTest,
-       HandleInvalidBeaconSeeds) {
-  HandleConnectionFailure(BleInitiatorFailureType::kInvalidBeaconSeeds);
+       HandleCouldNotGenerateAdvertisement) {
+  HandleConnectionFailure(
+      BleInitiatorFailureType::kCouldNotGenerateAdvertisement);
   EXPECT_EQ(
       PendingConnectionRequestDelegate::FailedConnectionReason::kRequestFailed,
       *GetFailedConnectionReason());
   EXPECT_EQ(
-      mojom::ConnectionAttemptFailureReason::REMOTE_DEVICE_INVALID_BEACON_SEEDS,
+      mojom::ConnectionAttemptFailureReason::COULD_NOT_GENERATE_ADVERTISEMENT,
       *GetConnectionAttemptFailureReason());
 }
 
