@@ -322,7 +322,7 @@ class TabDragController : public views::WidgetObserver,
   void RunMoveLoop(const gfx::Vector2d& drag_offset);
 
   // Determines the index to insert tabs at. |dragged_bounds| is the bounds of
-  // the tabs being dragged, |start| the index of the tab to start looking from.
+  // the tab being dragged, |start| the index of the tab to start looking from.
   // The search proceeds to the end of the strip.
   int GetInsertionIndexFrom(const gfx::Rect& dragged_bounds, int start) const;
 
@@ -352,13 +352,12 @@ class TabDragController : public views::WidgetObserver,
   int GetInsertionIndexForDraggedBoundsStacked(
       const gfx::Rect& dragged_bounds) const;
 
-  // Retrieve the bounds of the DraggedTabView relative to the attached
-  // TabStrip. |tab_strip_point| is in the attached TabStrip's coordinate
-  // system.
+  // Retrieves the bounds of the dragged tabs relative to the attached TabStrip.
+  // |tab_strip_point| is in the attached TabStrip's coordinate system.
   gfx::Rect GetDraggedViewTabStripBounds(const gfx::Point& tab_strip_point);
 
-  // Get the position of the dragged tab view relative to the attached tab
-  // strip with the mirroring transform applied.
+  // Gets the position of the dragged tabs relative to the attached tab strip
+  // with the mirroring transform applied.
   gfx::Point GetAttachedDragPoint(const gfx::Point& point_in_screen);
 
   // Finds the Tabs within the specified TabStrip that corresponds to the
@@ -442,8 +441,8 @@ class TabDragController : public views::WidgetObserver,
   // Calculates scaled |drag_bounds| for dragged tabs and sets the tabs bounds.
   // Layout of the tabstrip is performed and a new tabstrip width calculated.
   // When |last_tabstrip_width| is larger than the new tabstrip width the tabs
-  // in attached tabstrip are scaled and the attached browser is positioned such
-  // that the tab that was dragged remains under the |point_in_screen|.
+  // in the attached tabstrip are scaled and the attached browser is positioned
+  // such that the tab that was dragged remains under the |point_in_screen|.
   void AdjustBrowserAndTabBoundsForDrag(int last_tabstrip_width,
                                         const gfx::Point& point_in_screen,
                                         std::vector<gfx::Rect>* drag_bounds);

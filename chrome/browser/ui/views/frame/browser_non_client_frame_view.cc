@@ -310,8 +310,7 @@ void BrowserNonClientFrameView::PaintToolbarBackground(
     gfx::Rect tabstrip_bounds =
         GetMirroredRect(GetBoundsForTabStrip(browser_view()->tabstrip()));
     canvas->ClipRect(tabstrip_bounds, SkClipOp::kDifference);
-    gfx::Rect separator_rect(x, y, w, 0);
-    separator_rect.set_y(tabstrip_bounds.bottom());
+    const gfx::Rect separator_rect(x, tabstrip_bounds.bottom(), w, 0);
     BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
                                         separator_rect, true);
   }

@@ -25,29 +25,26 @@ void CalculateNormalTabWidths(const TabSizeInfo& tab_size_info,
                               int* inactive_width) {
   DCHECK_NE(0, num_normal_tabs);
 
-  const int min_inactive_width = tab_size_info.min_inactive_width;
-  *inactive_width = min_inactive_width;
-  *active_width = tab_size_info.min_active_width;
-
-  // Calculate the desired tab widths by dividing the available space into equal
-  // portions.  Don't let tabs get larger than the "standard width" or smaller
-  // than the minimum width for each type, respectively.
+  // Calculate the desired tab width by dividing the available space into equal
+  // portions, bounded by the standard width.
   const int total_overlap = tab_size_info.tab_overlap * (num_normal_tabs - 1);
-  const int desired_tab_width =
+  int desired_tab_width =
       std::min((normal_width + total_overlap) / num_normal_tabs,
                tab_size_info.max_size.width());
-  *inactive_width = std::max(desired_tab_width, min_inactive_width);
+
   *active_width = std::max(desired_tab_width, tab_size_info.min_active_width);
 
-  // |desired_tab_width| was calculated assuming the active and inactive tabs
-  // get the same width. If this isn't the case, then we need to recalculate
-  // the size for inactive tabs based on how big the active tab is.
-  if (*inactive_width != *active_width && is_active_tab_normal &&
-      num_normal_tabs > 1) {
-    *inactive_width = std::max(
-        (normal_width + total_overlap - *active_width) / (num_normal_tabs - 1),
-        min_inactive_width);
+  // If |desired_tab_width| is smaller than the minimum active tab width, then
+  // we need to recalculate it having accounted for the active tab, since that
+  // may further shrink inactive tabs.
+  if ((*active_width > desired_tab_width) && is_active_tab_normal &&
+      (num_normal_tabs > 1)) {
+    desired_tab_width =
+        (normal_width + total_overlap - *active_width) / (num_normal_tabs - 1);
   }
+
+  *inactive_width =
+      std::max(desired_tab_width, tab_size_info.min_inactive_width);
 }
 
 }  // namespace
@@ -58,11 +55,11 @@ int CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
                                  int start_x,
                                  std::vector<gfx::Rect>* tabs_bounds) {
   DCHECK_EQ(static_cast<size_t>(num_tabs), tabs_bounds->size());
-  int index = 0;
   int next_x = start_x;
-  for (; index < num_pinned_tabs; ++index) {
+  const int tab_height = tab_size_info.max_size.height();
+  for (int index = 0; index < num_pinned_tabs; ++index) {
     (*tabs_bounds)[index].SetRect(next_x, 0, tab_size_info.pinned_tab_width,
-                                  tab_size_info.max_size.height());
+                                  tab_height);
     next_x += tab_size_info.pinned_tab_width - tab_size_info.tab_overlap;
   }
   if (num_pinned_tabs)
@@ -100,27 +97,26 @@ std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
   // multiple of these sizes). Give the extra space to the first tabs, and only
   // give extra space to the active tab if it is the same size as the inactive
   // tabs (the active tab may already be bigger).
-  int expand_width_count = 0;
-  bool give_extra_space_to_active = false;
+  int extra_space = 0;
+  bool widen_active = false;
   if (*inactive_width != tab_size_info.max_size.width()) {
-    give_extra_space_to_active = *active_width == *inactive_width;
-    expand_width_count =
-        width -
-        ((*inactive_width - tab_size_info.tab_overlap) * (num_normal_tabs - 1));
-    expand_width_count -=
+    widen_active = *active_width == *inactive_width;
+    const int tab_width =
+        (*inactive_width - tab_size_info.tab_overlap) * (num_normal_tabs - 1) +
         (is_active_tab_normal ? *active_width : *inactive_width);
+    extra_space = width - tab_width;
   }
 
-  // Set the ideal bounds of the normal tabs.
-  // GenerateIdealBoundsForPinnedTabs() set the ideal bounds of the pinned tabs.
+  // Convert the widths to bounds.
+  const int tab_height = tab_size_info.max_size.height();
   for (int i = num_pinned_tabs; i < num_tabs; ++i) {
     const bool is_active = i == active_index;
     int width = is_active ? *active_width : *inactive_width;
-    if (expand_width_count > 0 && (!is_active || give_extra_space_to_active)) {
+    if (extra_space > 0 && (!is_active || widen_active)) {
       ++width;
-      --expand_width_count;
+      --extra_space;
     }
-    tabs_bounds[i].SetRect(next_x, 0, width, tab_size_info.max_size.height());
+    tabs_bounds[i].SetRect(next_x, 0, width, tab_height);
     next_x += tabs_bounds[i].width() - tab_size_info.tab_overlap;
   }
 

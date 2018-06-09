@@ -180,7 +180,7 @@ void ResetDraggingStateDelegate::AnimationCanceled(
 }
 
 // If |dest| contains the point |point_in_source| the event handler from |dest|
-// is returned. Otherwise NULL is returned.
+// is returned. Otherwise returns null.
 views::View* ConvertPointToViewAndGetEventHandler(
     views::View* source,
     views::View* dest,
@@ -189,11 +189,11 @@ views::View* ConvertPointToViewAndGetEventHandler(
   views::View::ConvertPointToTarget(source, dest, &dest_point);
   return dest->HitTestPoint(dest_point)
              ? dest->GetEventHandlerForPoint(dest_point)
-             : NULL;
+             : nullptr;
 }
 
 // Gets a tooltip handler for |point_in_source| from |dest|. Note that |dest|
-// should return NULL if it does not contain the point.
+// should return null if it does not contain the point.
 views::View* ConvertPointToViewAndGetTooltipHandler(
     views::View* source,
     views::View* dest,
@@ -273,11 +273,7 @@ void TabStrip::RemoveTabDelegate::AnimationCanceled(
 // TabStrip, public:
 
 TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
-    : controller_(std::move(controller)),
-      current_inactive_width_(Tab::GetStandardSize().width()),
-      current_active_width_(Tab::GetStandardSize().width()),
-      animation_container_(new gfx::AnimationContainer()),
-      bounds_animator_(this) {
+    : controller_(std::move(controller)) {
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
@@ -413,19 +409,14 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
   if (stacked_layout == stacked_layout_)
     return;
 
-  const int active_index = controller_->GetActiveIndex();
-  int active_center = 0;
-  if (active_index != -1) {
-    active_center =
-        ideal_bounds(active_index).x() + ideal_bounds(active_index).width() / 2;
-  }
   stacked_layout_ = stacked_layout;
   SetResetToShrinkOnExit(false);
   SwapLayoutIfNecessary();
-  // When transitioning to stacked try to keep the active tab centered.
+
+  // When transitioning to stacked try to keep the active tab from moving.
+  const int active_index = controller_->GetActiveIndex();
   if (touch_layout_ && active_index != -1) {
-    touch_layout_->SetActiveTabLocation(active_center -
-                                        ideal_bounds(active_index).width() / 2);
+    touch_layout_->SetActiveTabLocation(ideal_bounds(active_index).x());
     AnimateToIdealBounds();
   }
 
@@ -471,13 +462,13 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
     ReorderChildView(new_tab_button_, -1);
 
   if (touch_layout_) {
-    GenerateIdealBoundsForPinnedTabs(NULL);
     int add_types = 0;
     if (pinned)
       add_types |= StackedTabStripLayout::kAddTypePinned;
     if (is_active)
       add_types |= StackedTabStripLayout::kAddTypeActive;
-    touch_layout_->AddTab(model_index, add_types, GetStartXForNormalTabs());
+    touch_layout_->AddTab(model_index, add_types,
+                          GenerateIdealBoundsForPinnedTabs(nullptr));
   }
 
   // Don't animate the first tab, it looks weird, and don't animate anything
@@ -519,10 +510,10 @@ void TabStrip::MoveTab(int from_model_index,
   if (touch_layout_) {
     tabs_.MoveViewOnly(from_model_index, to_model_index);
     int pinned_count = 0;
-    GenerateIdealBoundsForPinnedTabs(&pinned_count);
+    const int start_x = GenerateIdealBoundsForPinnedTabs(&pinned_count);
     touch_layout_->MoveTab(from_model_index, to_model_index,
-                           controller_->GetActiveIndex(),
-                           GetStartXForNormalTabs(), pinned_count);
+                           controller_->GetActiveIndex(), start_x,
+                           pinned_count);
   } else {
     tabs_.Move(from_model_index, to_model_index);
   }
@@ -549,7 +540,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
     // tabs_closing_map_ so we can find it.
     RemoveTabFromViewModel(model_index);
     touch_layout_->RemoveTab(model_index,
-                             GenerateIdealBoundsForPinnedTabs(NULL), old_x);
+                             GenerateIdealBoundsForPinnedTabs(nullptr), old_x);
     ScheduleRemoveTabAnimation(tab);
   } else if (in_tab_close_ && model_index != GetModelCount()) {
     StartMouseInitiatedRemoveTabAnimation(model_index);
@@ -671,10 +662,10 @@ void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
     // available_width_for_tabs_ so that if we do a layout we don't position a
     // tab past the end of the second to last tab. We do this so that as the
     // user closes tabs with the mouse a tab continues to fall under the mouse.
-    Tab* last_tab = tab_at(model_count - 1);
     Tab* tab_being_removed = tab_at(model_index);
-    available_width_for_tabs_ = last_tab->bounds().right() - TabStartX() -
-                                tab_being_removed->width() + Tab::GetOverlap();
+    available_width_for_tabs_ = ideal_bounds(model_count - 1).right() -
+                                TabStartX() - tab_being_removed->width() +
+                                Tab::GetOverlap();
     if (model_index == 0 && tab_being_removed->data().pinned &&
         !tab_at(1)->data().pinned) {
       available_width_for_tabs_ -= GetPinnedToNonPinnedOffset();
@@ -768,7 +759,7 @@ bool TabStrip::IsValidModelIndex(int model_index) const {
 }
 
 bool TabStrip::IsDragSessionActive() const {
-  return drag_controller_.get() != NULL;
+  return drag_controller_ != nullptr;
 }
 
 bool TabStrip::IsActiveDropTarget() const {
@@ -931,7 +922,6 @@ void TabStrip::MaybeStartDrag(
     return;
   }
   Tabs tabs;
-  int size_to_selected = 0;
   int x = tab->GetMirroredXInView(event.x());
   int y = event.y();
   // Build the set of selected tabs to drag and calculate the offset from the
@@ -940,10 +930,8 @@ void TabStrip::MaybeStartDrag(
     Tab* other_tab = tab_at(i);
     if (IsTabSelected(other_tab)) {
       tabs.push_back(other_tab);
-      if (other_tab == tab) {
-        size_to_selected = GetSizeNeededForTabs(tabs);
-        x += size_to_selected - tab->width();
-      }
+      if (other_tab == tab)
+        x += GetSizeNeededForTabs(tabs) - tab->width();
     }
   }
   DCHECK(!tabs.empty());
@@ -1002,13 +990,13 @@ Tab* TabStrip::GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) {
 
   views::View* view = GetEventHandlerForPoint(local_point);
   if (!view)
-    return NULL;  // No tab contains the point.
+    return nullptr;  // No tab contains the point.
 
   // Walk up the view hierarchy until we find a tab, or the TabStrip.
   while (view && view != this && view->id() != VIEW_ID_TAB)
     view = view->parent();
 
-  return view && view->id() == VIEW_ID_TAB ? static_cast<Tab*>(view) : NULL;
+  return view && view->id() == VIEW_ID_TAB ? static_cast<Tab*>(view) : nullptr;
 }
 
 Tab* TabStrip::GetAdjacentTab(Tab* tab, TabController::Direction direction) {
@@ -1041,29 +1029,28 @@ bool TabStrip::ShouldPaintTab(
   if (active_index == tab_count())
     active_index--;
 
-  const int current_x = tab_at(index)->x();
+  const gfx::Rect& current_bounds = tab_at(index)->bounds();
   if (index < active_index) {
-    const int next_x = tab_at(index + 1)->x();
-    if (current_x == next_x)
+    const gfx::Rect& next_bounds = tab_at(index + 1)->bounds();
+    if (current_bounds.x() == next_bounds.x())
       return false;
 
-    if (current_x > next_x)
+    if (current_bounds.x() > next_bounds.x())
       return true;  // Can happen during dragging.
 
-    *clip = border_callback.Run(tab_at(index + 1)->bounds());
-    clip->offset(SkIntToScalar(next_x - current_x), 0);
+    *clip = border_callback.Run(next_bounds);
+    clip->offset(SkIntToScalar(next_bounds.x() - current_bounds.x()), 0);
   } else if (index > active_index && index > 0) {
-    const gfx::Rect& previous_bounds(tab_at(index - 1)->bounds());
-    const int previous_x = previous_bounds.x();
-    if (current_x == previous_x)
+    const gfx::Rect& previous_bounds = tab_at(index - 1)->bounds();
+    if (current_bounds.x() == previous_bounds.x())
       return false;
 
-    if (current_x < previous_x)
+    if (current_bounds.x() < previous_bounds.x())
       return true;  // Can happen during dragging.
 
-    if (previous_bounds.right() - Tab::GetOverlap() != current_x) {
-      *clip = border_callback.Run(tab_at(index - 1)->bounds());
-      clip->offset(SkIntToScalar(previous_x - current_x), 0);
+    if (previous_bounds.right() - Tab::GetOverlap() != current_bounds.x()) {
+      *clip = border_callback.Run(previous_bounds);
+      clip->offset(SkIntToScalar(previous_bounds.x() - current_bounds.x()), 0);
     }
   }
   return true;
@@ -1248,14 +1235,13 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   if (active_tab && is_dragging)
     active_tab->Paint(paint_info);
 
-  // Keep the recording scales consistent for the tab strip and its children.
-  // See crbug/753911
-  ui::PaintRecorder recorder(paint_info.context(),
-                             paint_info.paint_recording_size(),
-                             paint_info.paint_recording_scale_x(),
-                             paint_info.paint_recording_scale_y(), nullptr);
-
   if (ShouldDrawStrokes()) {
+    // Keep the recording scales consistent for the tab strip and its children.
+    // See https://crbug.com/753911
+    ui::PaintRecorder recorder(paint_info.context(),
+                               paint_info.paint_recording_size(),
+                               paint_info.paint_recording_scale_x(),
+                               paint_info.paint_recording_scale_y(), nullptr);
     gfx::Canvas* canvas = recorder.canvas();
     if (active_tab && active_tab->visible()) {
       canvas->sk_canvas()->clipRect(
@@ -1313,7 +1299,7 @@ void TabStrip::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (!HitTestPoint(point))
-    return NULL;
+    return nullptr;
 
   if (!touch_layout_) {
     // Return any view that isn't a Tab or this TabStrip immediately. We don't
@@ -1415,16 +1401,9 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
   GenerateIdealBounds();
 
   // Set the current bounds to be the correct place but 0 width.
-  Tab* tab = tab_at(model_index);
-  if (model_index == 0) {
-    tab->SetBounds(TabStartX(), ideal_bounds(model_index).y(), 0,
-                   ideal_bounds(model_index).height());
-  } else {
-    Tab* prev_tab = tab_at(model_index - 1);
-    tab->SetBounds(prev_tab->bounds().right() - Tab::GetOverlap(),
-                   ideal_bounds(model_index).y(), 0,
-                   ideal_bounds(model_index).height());
-  }
+  gfx::Rect bounds = ideal_bounds(model_index);
+  bounds.set_width(0);
+  tab_at(model_index)->SetBoundsRect(bounds);
 
   // Animate in to the full width.
   AnimateToIdealBounds();
@@ -1594,13 +1573,10 @@ void TabStrip::SetTabVisibility() {
   }
 }
 
-void TabStrip::DragActiveTab(const std::vector<int>& initial_positions,
-                             int delta) {
+void TabStrip::DragActiveTabStacked(const std::vector<int>& initial_positions,
+                                    int delta) {
   DCHECK_EQ(tab_count(), static_cast<int>(initial_positions.size()));
-  if (!touch_layout_) {
-    StackDraggedTabs(delta);
-    return;
-  }
+  DCHECK(touch_layout_);
   SetIdealBoundsFromPositions(initial_positions);
   touch_layout_->DragActiveTab(delta);
   DoLayout();
@@ -1615,81 +1591,6 @@ void TabStrip::SetIdealBoundsFromPositions(const std::vector<int>& positions) {
     bounds.set_x(positions[i]);
     tabs_.set_ideal_bounds(i, bounds);
   }
-}
-
-void TabStrip::StackDraggedTabs(int delta) {
-  DCHECK(!touch_layout_);
-  GenerateIdealBounds();
-  const int active_index = controller_->GetActiveIndex();
-  DCHECK_NE(-1, active_index);
-  if (delta < 0) {
-    // Drag the tabs to the left, stacking tabs before the active tab.
-    const int adjusted_delta =
-        std::min(ideal_bounds(active_index).x() -
-                     kStackedPadding * std::min(active_index, kMaxStackedCount),
-                 -delta);
-    for (int i = 0; i <= active_index; ++i) {
-      const int min_x = std::min(i, kMaxStackedCount) * kStackedPadding;
-      gfx::Rect new_bounds(ideal_bounds(i));
-      new_bounds.set_x(std::max(min_x, new_bounds.x() - adjusted_delta));
-      tabs_.set_ideal_bounds(i, new_bounds);
-    }
-    const bool is_active_pinned = tab_at(active_index)->data().pinned;
-    const int active_width = ideal_bounds(active_index).width();
-    for (int i = active_index + 1; i < tab_count(); ++i) {
-      const int max_x =
-          ideal_bounds(active_index).x() +
-          (kStackedPadding * std::min(i - active_index, kMaxStackedCount));
-      gfx::Rect new_bounds(ideal_bounds(i));
-      int new_x = std::max(new_bounds.x() + delta, max_x);
-      if (new_x == max_x && !tab_at(i)->data().pinned && !is_active_pinned &&
-          new_bounds.width() != active_width)
-        new_x += (active_width - new_bounds.width());
-      new_bounds.set_x(new_x);
-      tabs_.set_ideal_bounds(i, new_bounds);
-    }
-  } else {
-    // Drag the tabs to the right, stacking tabs after the active tab.
-    const int last_tab_width = ideal_bounds(tab_count() - 1).width();
-    const int last_tab_x = GetTabAreaWidth() - last_tab_width;
-    if (active_index == tab_count() - 1 &&
-        ideal_bounds(tab_count() - 1).x() == last_tab_x)
-      return;
-    const int adjusted_delta =
-        std::min(last_tab_x -
-                     kStackedPadding * std::min(tab_count() - active_index - 1,
-                                                kMaxStackedCount) -
-                     ideal_bounds(active_index).x(),
-                 delta);
-    for (int last_index = tab_count() - 1, i = last_index; i >= active_index;
-         --i) {
-      const int max_x =
-          last_tab_x -
-          std::min(tab_count() - i - 1, kMaxStackedCount) * kStackedPadding;
-      gfx::Rect new_bounds(ideal_bounds(i));
-      int new_x = std::min(max_x, new_bounds.x() + adjusted_delta);
-      // Because of rounding not all tabs are the same width. Adjust the
-      // position to accommodate this, otherwise the stacking is off.
-      if (new_x == max_x && !tab_at(i)->data().pinned &&
-          new_bounds.width() != last_tab_width)
-        new_x += (last_tab_width - new_bounds.width());
-      new_bounds.set_x(new_x);
-      tabs_.set_ideal_bounds(i, new_bounds);
-    }
-    for (int i = active_index - 1; i >= 0; --i) {
-      const int min_x =
-          ideal_bounds(active_index).x() -
-          std::min(active_index - i, kMaxStackedCount) * kStackedPadding;
-      gfx::Rect new_bounds(ideal_bounds(i));
-      new_bounds.set_x(std::min(min_x, new_bounds.x() + delta));
-      tabs_.set_ideal_bounds(i, new_bounds);
-    }
-    if ((controller_->GetNewTabButtonPosition() == AFTER_TABS) &&
-        (ideal_bounds(tab_count() - 1).right() >= new_tab_button_->x()))
-      new_tab_button_->SetVisible(false);
-  }
-  views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
-  SchedulePaint();
 }
 
 bool TabStrip::IsStackingDraggedTabs() const {
@@ -1707,8 +1608,7 @@ void TabStrip::LayoutDraggedTabsAt(const Tabs& tabs,
   if (MayHideNewTabButtonWhileDragging() && last_visible_tab &&
       last_visible_tab->dragging())
     new_tab_button_->SetVisible(false);
-  std::vector<gfx::Rect> bounds;
-  CalculateBoundsForDraggedTabs(tabs, &bounds);
+  std::vector<gfx::Rect> bounds = CalculateBoundsForDraggedTabs(tabs);
   DCHECK_EQ(tabs.size(), bounds.size());
   int active_tab_model_index = GetModelIndexOfTab(active_tab);
   int active_tab_index = static_cast<int>(
@@ -1732,19 +1632,24 @@ void TabStrip::LayoutDraggedTabsAt(const Tabs& tabs,
   SetTabVisibility();
 }
 
-void TabStrip::CalculateBoundsForDraggedTabs(const Tabs& tabs,
-                                             std::vector<gfx::Rect>* bounds) {
+// static
+std::vector<gfx::Rect> TabStrip::CalculateBoundsForDraggedTabs(
+    const Tabs& tabs) {
+  DCHECK(!tabs.empty());
+
+  std::vector<gfx::Rect> bounds;
   const int overlap = Tab::GetOverlap();
   int x = 0;
   for (size_t i = 0; i < tabs.size(); ++i) {
-    Tab* tab = tabs[i];
+    const Tab* tab = tabs[i];
     if (i > 0 && tab->data().pinned != tabs[i - 1]->data().pinned)
       x += GetPinnedToNonPinnedOffset();
-    gfx::Rect new_bounds = tab->bounds();
-    new_bounds.set_origin(gfx::Point(x, 0));
-    bounds->push_back(new_bounds);
-    x += tab->width() - overlap;
+    const int width = tab->width();
+    bounds.push_back(gfx::Rect(x, 0, width, tab->height()));
+    x += width - overlap;
   }
+
+  return bounds;
 }
 
 int TabStrip::TabStartX() const {
@@ -1764,12 +1669,12 @@ int TabStrip::NewTabButtonX() const {
   if (position == TRAILING)
     return tab_area_width;
 
+  const int trailing_x = tabs_.ideal_bounds(tab_count() - 1).right();
   // For non-stacked tabs the ideal bounds may go outside the bounds of the
   // tabstrip. Constrain the x-coordinate of the new tab button so that it is
   // always visible.
-  return std::min(tab_area_width,
-                  tabs_.ideal_bounds(tabs_.view_size() - 1).right() +
-                      GetNewTabButtonSpacing());
+  return std::min(tab_area_width - GetFrameGrabWidth(),
+                  trailing_x + GetNewTabButtonSpacing());
 }
 
 int TabStrip::GetSizeNeededForTabs(const Tabs& tabs) {
@@ -1800,7 +1705,7 @@ const Tab* TabStrip::GetLastVisibleTab() const {
   }
   // While in normal use the tabstrip should always be wide enough to have at
   // least one visible tab, it can be zero-width in tests, meaning we get here.
-  return NULL;
+  return nullptr;
 }
 
 void TabStrip::RemoveTabFromViewModel(int index) {
@@ -2104,7 +2009,7 @@ void TabStrip::AddMessageLoopObserver() {
 }
 
 void TabStrip::RemoveMessageLoopObserver() {
-  mouse_watcher_.reset(NULL);
+  mouse_watcher_ = nullptr;
 }
 
 gfx::Rect TabStrip::GetDropBounds(int drop_index,
@@ -2112,15 +2017,14 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
                                   bool* is_beneath) {
   DCHECK_NE(drop_index, -1);
 
+  Tab* tab = tab_at(std::min(drop_index, tab_count() - 1));
+  int center_x = tab->x();
+  const int width = tab->width();
   const int overlap = Tab::GetOverlap();
-  int center_x;
-  if (drop_index < tab_count()) {
-    Tab* tab = tab_at(drop_index);
-    center_x = tab->x() + ((drop_before ? overlap : tab->width()) / 2);
-  } else {
-    Tab* last_tab = tab_at(drop_index - 1);
-    center_x = last_tab->x() + last_tab->width() - (overlap / 2);
-  }
+  if (drop_index < tab_count())
+    center_x += drop_before ? (overlap / 2) : (width / 2);
+  else
+    center_x += width - (overlap / 2);
 
   // Mirror the center point if necessary.
   center_x = GetMirroredXInView(center_x);
@@ -2313,16 +2217,6 @@ bool TabStrip::IsPointInTab(Tab* tab,
   return tab->HitTestPoint(point_in_tab_coords);
 }
 
-int TabStrip::GetStartXForNormalTabs() const {
-  const int start_x = TabStartX();
-  const int pinned_tab_count = GetPinnedTabCount();
-  if (pinned_tab_count == 0)
-    return start_x;
-  return start_x +
-         pinned_tab_count * (Tab::GetPinnedWidth() - Tab::GetOverlap()) +
-         kPinnedToNonPinnedOffset;
-}
-
 // static
 void TabStrip::ResetTabSizeInfoForTesting() {
   if (g_tab_size_info) {
@@ -2348,7 +2242,7 @@ Tab* TabStrip::FindTabForEventFrom(const gfx::Point& point,
     if (IsPointInTab(tab_at(i), point))
       return tab_at(i);
   }
-  return NULL;
+  return nullptr;
 }
 
 Tab* TabStrip::FindTabHitByPoint(const gfx::Point& point) {
@@ -2388,7 +2282,7 @@ std::vector<int> TabStrip::GetTabXCoordinates() {
 
 void TabStrip::SwapLayoutIfNecessary() {
   bool needs_touch = NeedsTouchLayout();
-  bool using_touch = touch_layout_ != NULL;
+  bool using_touch = touch_layout_ != nullptr;
   if (needs_touch == using_touch)
     return;
 
@@ -2403,8 +2297,7 @@ void TabStrip::SwapLayoutIfNecessary() {
     // This has to be after SetWidth() as SetWidth() is going to reset the
     // bounds of the pinned tabs (since StackedTabStripLayout doesn't yet know
     // how many pinned tabs there are).
-    GenerateIdealBoundsForPinnedTabs(NULL);
-    touch_layout_->SetXAndPinnedCount(GetStartXForNormalTabs(),
+    touch_layout_->SetXAndPinnedCount(GenerateIdealBoundsForPinnedTabs(nullptr),
                                       GetPinnedTabCount());
     touch_layout_->SetActiveIndex(controller_->GetActiveIndex());
 
@@ -2422,13 +2315,20 @@ bool TabStrip::NeedsTouchLayout() const {
   if (!stacked_layout_)
     return false;
 
-  int pinned_tab_count = GetPinnedTabCount();
-  int normal_count = tab_count() - pinned_tab_count;
+  const int pinned_tab_count = GetPinnedTabCount();
+  const int normal_count = tab_count() - pinned_tab_count;
   if (normal_count <= 1 || normal_count == pinned_tab_count)
     return false;
-  return (GetLayoutConstant(TAB_STACK_TAB_WIDTH) * normal_count -
-          Tab::GetOverlap() * (normal_count - 1)) >
-         GetTabAreaWidth() - GetStartXForNormalTabs();
+
+  const int normal_width =
+      GetLayoutConstant(TAB_STACK_TAB_WIDTH) * normal_count -
+      Tab::GetOverlap() * (normal_count - 1);
+  const int available_width = GetTabAreaWidth();
+  const int pinned_width =
+      pinned_tab_count ? (pinned_tab_count * Tab::GetPinnedWidth() -
+                          Tab::GetOverlap() + GetPinnedToNonPinnedOffset())
+                       : 0;
+  return normal_width > (available_width - pinned_width - TabStartX());
 }
 
 void TabStrip::SetResetToShrinkOnExit(bool value) {
@@ -2489,7 +2389,7 @@ const views::View* TabStrip::GetViewByID(int view_id) const {
       return tab_at(tab_count() - 1);
     if ((view_id >= VIEW_ID_TAB_0) && (view_id < VIEW_ID_TAB_LAST)) {
       int index = view_id - VIEW_ID_TAB_0;
-      return (index >= 0 && index < tab_count()) ? tab_at(index) : NULL;
+      return (index >= 0 && index < tab_count()) ? tab_at(index) : nullptr;
     }
   }
 
