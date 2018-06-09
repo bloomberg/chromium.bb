@@ -1,18 +1,18 @@
 rootWebArea
 ++genericContainer
-++++textFieldWithComboBox haspopup autoComplete='inline' haspopup=menu
+++++textFieldWithComboBox haspopup autoComplete='inline' haspopup=listbox
 ++++++genericContainer
 ++++++++staticText name='autocomplete=inline'
 ++++++++++inlineTextBox name='autocomplete=inline'
-++++textFieldWithComboBox haspopup autoComplete='list' haspopup=menu
+++++textFieldWithComboBox haspopup autoComplete='list' haspopup=listbox
 ++++++genericContainer
 ++++++++staticText name='autocomplete=list'
 ++++++++++inlineTextBox name='autocomplete=list'
-++++textFieldWithComboBox haspopup autoComplete='both' haspopup=menu
+++++textFieldWithComboBox haspopup autoComplete='both' haspopup=listbox
 ++++++genericContainer
 ++++++++staticText name='autocomplete=both'
 ++++++++++inlineTextBox name='autocomplete=both'
-++++textFieldWithComboBox haspopup haspopup=menu
+++++textFieldWithComboBox haspopup haspopup=listbox
 ++++++genericContainer
 ++++++++staticText name='autocomplete=none'
 ++++++++++inlineTextBox name='autocomplete=none'

@@ -1449,9 +1449,10 @@ AXHasPopup AXLayoutObject::HasPopup() const {
       return kAXHasPopupMenu;
   }
 
+  // ARIA 1.1 default value of haspopup for combobox is "listbox".
   if (RoleValue() == kComboBoxMenuButtonRole ||
       RoleValue() == kTextFieldWithComboBoxRole)
-    return kAXHasPopupMenu;
+    return kAXHasPopupListbox;
 
   return AXObject::HasPopup();
 }
