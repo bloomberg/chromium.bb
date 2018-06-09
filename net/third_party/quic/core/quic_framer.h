@@ -443,6 +443,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns byte order to read/write integers and floating numbers.
   Endianness endianness() const;
 
+  // Returns true if |header| is considered as an stateless reset packet.
+  bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
+
   void set_validate_flags(bool value) { validate_flags_ = value; }
 
   Perspective perspective() const { return perspective_; }
@@ -502,8 +505,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   bool ProcessPublicResetPacket(QuicDataReader* reader,
                                 const QuicPacketHeader& header);
-
-  bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
 
   bool ProcessVersionNegotiationPacket(QuicDataReader* reader,
                                        const QuicPacketHeader& header);
@@ -607,6 +608,14 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicPacketNumberLength packet_number_length);
 
   static AckFrameInfo GetAckFrameInfo(const QuicAckFrame& frame);
+
+  static bool AppendIetfConnectionId(
+      bool version_flag,
+      QuicConnectionId destination_connection_id,
+      QuicConnectionIdLength destination_connection_id_length,
+      QuicConnectionId source_connection_id,
+      QuicConnectionIdLength source_connection_id_length,
+      QuicDataWriter* writer);
 
   // The Append* methods attempt to write the provided header or frame using the
   // |writer|, and return true if successful.

@@ -698,6 +698,12 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   // If this packet has already been seen, or the sender has told us that it
   // will not be retransmitted, then stop processing the packet.
   if (!received_packet_manager_.IsAwaitingPacket(header.packet_number)) {
+    if (framer_.IsIetfStatelessResetPacket(header)) {
+      QuicIetfStatelessResetPacket packet(
+          header, header.possible_stateless_reset_token);
+      OnAuthenticatedIetfStatelessResetPacket(packet);
+      return false;
+    }
     QUIC_DLOG(INFO) << ENDPOINT << "Packet " << header.packet_number
                     << " no longer being waited for.  Discarding.";
     if (debug_visitor_ != nullptr) {

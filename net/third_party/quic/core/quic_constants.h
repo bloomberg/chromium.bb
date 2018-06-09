@@ -212,6 +212,9 @@ const QuicStreamId kMaxQuicStreamId = 0xffffffff;
 // Number of bytes reserved for packet header type.
 const size_t kPacketHeaderTypeSize = 1;
 
+// Number of bytes reserved for connection ID length.
+const size_t kConnectionIdLengthSize = 1;
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONSTANTS_H_

@@ -20,6 +20,7 @@
 #include "net/third_party/quic/test_tools/mock_quic_spdy_client_stream.h"
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 #include "net/third_party/quic/test_tools/quic_connection_peer.h"
+#include "net/third_party/quic/test_tools/quic_framer_peer.h"
 #include "net/third_party/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
@@ -346,15 +347,23 @@ TEST_P(QuicSpdyClientSessionTest, InvalidPacketReceived) {
 
   // Verifiy that small, invalid packets don't close the connection.
   char buf[2] = {0x00, 0x01};
+  QuicConnectionId connection_id = session_->connection()->connection_id();
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    QuicFramerPeer::SetLastSerializedConnectionId(
+        QuicConnectionPeer::GetFramer(connection_), connection_id);
+  }
   QuicReceivedPacket valid_packet(buf, 2, QuicTime::Zero(), false);
   // Close connection shouldn't be called.
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   session_->ProcessUdpPacket(client_address, server_address, valid_packet);
 
   // Verify that a non-decryptable packet doesn't close the connection.
-  QuicConnectionId connection_id = session_->connection()->connection_id();
+  if (connection_->transport_version() < QUIC_VERSION_99) {
+    QuicFramerPeer::SetLastSerializedConnectionId(
+        QuicConnectionPeer::GetFramer(connection_), connection_id);
+  }
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      connection_id, 0, false, false, 100, "data", PACKET_8BYTE_CONNECTION_ID,
+      connection_id, 0, false, false, 100, "data", PACKET_0BYTE_CONNECTION_ID,
       PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, nullptr,
       Perspective::IS_SERVER));
   std::unique_ptr<QuicReceivedPacket> received(
@@ -382,9 +391,11 @@ TEST_P(QuicSpdyClientSessionTest, InvalidFramedPacketReceived) {
 
   // Verify that a decryptable packet with bad frames does close the connection.
   QuicConnectionId connection_id = session_->connection()->connection_id();
+  QuicFramerPeer::SetLastSerializedConnectionId(
+      QuicConnectionPeer::GetFramer(connection_), connection_id);
   ParsedQuicVersionVector versions = {GetParam()};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
-      connection_id, 0, false, false, 100, "data", PACKET_8BYTE_CONNECTION_ID,
+      connection_id, 0, false, false, 100, "data", PACKET_0BYTE_CONNECTION_ID,
       PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, &versions,
       Perspective::IS_SERVER));
   std::unique_ptr<QuicReceivedPacket> received(
