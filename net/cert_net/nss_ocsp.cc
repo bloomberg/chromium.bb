@@ -31,7 +31,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -71,18 +70,12 @@ class OCSPIOLoop {
 
   void StartUsing() {
     base::AutoLock autolock(lock_);
-    used_ = true;
     DCHECK(base::MessageLoopForIO::IsCurrent());
     io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   // Called on IO loop.
   void Shutdown();
-
-  bool used() const {
-    base::AutoLock autolock(lock_);
-    return used_;
-  }
 
   // Called from worker thread.
   void PostTaskToIOLoop(const base::Location& from_here,
@@ -94,19 +87,14 @@ class OCSPIOLoop {
  private:
   friend struct base::LazyInstanceTraitsBase<OCSPIOLoop>;
 
-  OCSPIOLoop();
+  OCSPIOLoop() = default;
 
   void CancelAllRequests();
 
   // Protects all members below.
   mutable base::Lock lock_;
-  bool shutdown_;
   std::set<OCSPRequestSession*> requests_;
-  bool used_;
-  // This should not be modified after |used_|.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(OCSPIOLoop);
 };
@@ -504,21 +492,14 @@ class OCSPServerSession {
   DISALLOW_COPY_AND_ASSIGN(OCSPServerSession);
 };
 
-OCSPIOLoop::OCSPIOLoop()
-    : shutdown_(false),
-      used_(false) {
-}
-
 void OCSPIOLoop::Shutdown() {
   // Safe to read outside lock since we only write on IO thread anyway.
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   // Prevent the worker thread from trying to access |io_task_runner_|.
   {
     base::AutoLock autolock(lock_);
     io_task_runner_ = nullptr;
-    used_ = false;
-    shutdown_ = true;
   }
 
   CancelAllRequests();
