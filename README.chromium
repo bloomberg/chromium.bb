@@ -290,3 +290,11 @@ D. Local Modifications
   - patches/msvc_numgroup.patch  (fixed in 62-to-be)
   - upstream bug:
     https://ssl.icu-project.org/trac/ticket/13752
+
+11. Fix the Windows timezone detection on Japanese/Korean Windows
+
+  - patches/wintz.patch
+  - upstream bug:
+    https://ssl.icu-project.org/trac/ticket/13826
+
+
