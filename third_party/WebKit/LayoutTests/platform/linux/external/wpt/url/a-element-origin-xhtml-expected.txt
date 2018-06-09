@@ -229,7 +229,7 @@ PASS Parsing origin: <https://@test@test@example:800/> against <http://doesnotma
 PASS Parsing origin: <https://@@@example> against <http://doesnotmatter/>
 PASS Parsing origin: <http://`{}:`{}@h/`{}?`{}> against <http://doesnotmatter/>
 PASS Parsing origin: <http://host/?'> against <about:blank>
-FAIL Parsing origin: <notspecial://host/?'> against <about:blank> assert_equals: origin expected "notspecial://host" but got "notspecial://"
+FAIL Parsing origin: <notspecial://host/?'> against <about:blank> assert_equals: origin expected "null" but got "notspecial://"
 PASS Parsing origin: </some/path> against <http://user@example.org/smth>
 PASS Parsing origin: <> against <http://user:pass@example.org:21/smth>
 PASS Parsing origin: </some/path> against <http://user:pass@example.org:21/smth>
