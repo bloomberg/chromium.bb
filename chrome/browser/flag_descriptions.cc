@@ -35,6 +35,10 @@ const char kAllowNaclSocketApiDescription[] =
     "Allows applications to use NaCl Socket API. Use only to test NaCl "
     "plugins.";
 
+const char kAndroidMessagesIntegrationName[] = "Android Messages integration";
+const char kAndroidMessagesIntegrationDescription[] =
+    "Enables Chrome OS integration with Android messages.";
+
 const char kAppBannersName[] = "App Banners";
 const char kAppBannersDescription[] =
     "Enable the display of Progressive Web App banners, which prompt a user to "

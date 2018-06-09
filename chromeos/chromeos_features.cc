@@ -8,6 +8,10 @@ namespace chromeos {
 
 namespace features {
 
+// Enables or disables integration with Android Messages on Chrome OS.
+const base::Feature kAndroidMessagesIntegration{
+    "AndroidMessagesIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the Chrome OS Settings UI will include a menu for the unified
 // MultiDevice settings.
 const base::Feature kEnableUnifiedMultiDeviceSettings{

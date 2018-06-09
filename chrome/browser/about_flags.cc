@@ -1491,6 +1491,10 @@ const FeatureEntry kFeatureEntries[] = {
         SINGLE_DISABLE_VALUE_TYPE(
             chromeos::switches::kDisableOfficeEditingComponentApp),
     },
+    {"enable_android_messages_integration",
+     flag_descriptions::kAndroidMessagesIntegrationName,
+     flag_descriptions::kAndroidMessagesIntegrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kAndroidMessagesIntegration)},
     {
         "enable-background-blur", flag_descriptions::kEnableBackgroundBlurName,
         flag_descriptions::kEnableBackgroundBlurDescription, kOsCrOS,
