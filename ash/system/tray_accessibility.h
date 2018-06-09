@@ -35,7 +35,7 @@ class TrayAccessibilityTest;
 namespace tray {
 
 // Create the detailed view of accessibility tray.
-class AccessibilityDetailedView : public TrayDetailedView {
+class ASH_EXPORT AccessibilityDetailedView : public TrayDetailedView {
  public:
   explicit AccessibilityDetailedView(DetailedViewDelegate* delegate);
   ~AccessibilityDetailedView() override {}

@@ -10,6 +10,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -42,8 +43,6 @@ class TrayAccessibilityTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    // TODO(tetsui): Remove after UnifiedSystemTray launch.
-    // https://crbug.com/847104
     if (features::IsSystemTrayUnifiedEnabled())
       return;
 
@@ -51,83 +50,86 @@ class TrayAccessibilityTest : public AshTestBase {
                      .tray_accessibility();
   }
 
-  // These functions are members so TrayAccessibility can friend the test.
-  bool CreateDetailedMenu() {
-    tray_item_->ShowDetailedView(0);
-    return tray_item_->detailed_menu_ != nullptr;
+  void CreateDetailedMenu() {
+    // TODO(tetsui): Use UnifiedDetailedViewDelegate, or create a delegate for
+    // unit testing, when removing SystemTrayItemDetailedViewDelegate.
+    delegate_ = std::make_unique<SystemTrayItemDetailedViewDelegate>(nullptr);
+    detailed_menu_ =
+        std::make_unique<tray::AccessibilityDetailedView>(delegate_.get());
   }
 
   void CloseDetailMenu() {
-    ASSERT_TRUE(tray_item_->detailed_menu_);
-    tray_item_->OnDetailedViewDestroyed();
-    ASSERT_FALSE(tray_item_->detailed_menu_);
+    detailed_menu_.reset();
+    delegate_.reset();
   }
 
   bool IsSpokenFeedbackMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->spoken_feedback_view_;
+    return detailed_menu_->spoken_feedback_view_;
   }
 
   bool IsSelectToSpeakShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->select_to_speak_view_;
+    return detailed_menu_->select_to_speak_view_;
   }
 
   bool IsHighContrastMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->high_contrast_view_;
+    return detailed_menu_->high_contrast_view_;
   }
 
   bool IsScreenMagnifierMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->screen_magnifier_view_;
+    return detailed_menu_->screen_magnifier_view_;
   }
 
   bool IsLargeCursorMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->large_cursor_view_;
+    return detailed_menu_->large_cursor_view_;
   }
 
   bool IsAutoclickMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->autoclick_view_;
+    return detailed_menu_->autoclick_view_;
   }
 
   bool IsVirtualKeyboardMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->virtual_keyboard_view_;
+    return detailed_menu_->virtual_keyboard_view_;
   }
 
   bool IsMonoAudioMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->mono_audio_view_;
+    return detailed_menu_->mono_audio_view_;
   }
 
   bool IsCaretHighlightMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->caret_highlight_view_;
+    return detailed_menu_->caret_highlight_view_;
   }
 
   bool IsHighlightMouseCursorMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->highlight_mouse_cursor_view_;
+    return detailed_menu_->highlight_mouse_cursor_view_;
   }
 
   bool IsHighlightKeyboardFocusMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->highlight_keyboard_focus_view_;
+    return detailed_menu_->highlight_keyboard_focus_view_;
   }
 
   bool IsStickyKeysMenuShownOnDetailMenu() const {
-    return tray_item_->detailed_menu_->sticky_keys_view_;
+    return detailed_menu_->sticky_keys_view_;
   }
 
   // In material design we show the help button but theme it as disabled if
   // it is not possible to load the help page.
   bool IsHelpAvailableOnDetailMenu() {
-    return tray_item_->detailed_menu_->help_view_->state() ==
-           views::Button::STATE_NORMAL;
+    return detailed_menu_->help_view_->state() == views::Button::STATE_NORMAL;
   }
 
   // In material design we show the settings button but theme it as disabled if
   // it is not possible to load the settings page.
   bool IsSettingsAvailableOnDetailMenu() {
-    return tray_item_->detailed_menu_->settings_view_->state() ==
+    return detailed_menu_->settings_view_->state() ==
            views::Button::STATE_NORMAL;
   }
 
   TrayAccessibility* tray_item_;  // Not owned.
 
  private:
+  std::unique_ptr<DetailedViewDelegate> delegate_;
+  std::unique_ptr<tray::AccessibilityDetailedView> detailed_menu_;
+
   DISALLOW_COPY_AND_ASSIGN(TrayAccessibilityTest);
 };
 
@@ -170,14 +172,9 @@ TEST_F(TrayAccessibilityTest, VisibilityFromSettings) {
 }
 
 TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
-  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
-  // https://crbug.com/847104
-  if (features::IsSystemTrayUnifiedEnabled())
-    return;
-
   // Except help & settings, others should be kept the same
   // in LOGIN | NOT LOGIN | LOCKED. https://crbug.com/632107.
-  EXPECT_TRUE(CreateDetailedMenu());
+  CreateDetailedMenu();
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsSelectToSpeakShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
@@ -196,7 +193,7 @@ TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
 
   // Simulate screen lock.
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
-  EXPECT_TRUE(CreateDetailedMenu());
+  CreateDetailedMenu();
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsSelectToSpeakShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
@@ -216,7 +213,7 @@ TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
 
   // Simulate adding multiprofile user.
   BlockUserSession(BLOCKED_BY_USER_ADDING_SCREEN);
-  EXPECT_TRUE(CreateDetailedMenu());
+  CreateDetailedMenu();
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsSelectToSpeakShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
