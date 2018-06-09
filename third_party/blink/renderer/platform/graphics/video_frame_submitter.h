@@ -99,6 +99,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
   WebFrameSinkDestroyedCallback frame_sink_destroyed_callback_;
   viz::FrameSinkId frame_sink_id_;
+  bool waiting_for_compositor_ack_ = false;
 
   bool is_rendering_;
   media::VideoRotation rotation_;

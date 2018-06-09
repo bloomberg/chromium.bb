@@ -231,6 +231,8 @@ void VideoFrameSubmitter::SubmitFrame(
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
       std::move(compositor_frame), nullptr, 0);
   resource_provider_->ReleaseFrameResources();
+
+  waiting_for_compositor_ack_ = true;
 }
 
 void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
@@ -243,15 +245,21 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
     return;
   }
 
-  current_begin_frame_ack.has_damage = true;
-
-  if (!provider_ ||
-      !provider_->UpdateCurrentFrame(args.frame_time + args.interval,
-                                     args.frame_time + 2 * args.interval) ||
-      !is_rendering_) {
+  // This block is separate from the one below to avoid updating the frame by
+  // mistake.
+  if (!is_rendering_ || waiting_for_compositor_ack_) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;
   }
+
+  if (!provider_ ||
+      !provider_->UpdateCurrentFrame(args.frame_time + args.interval,
+                                     args.frame_time + 2 * args.interval)) {
+    compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
+    return;
+  }
+
+  current_begin_frame_ack.has_damage = true;
 
   scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
 
@@ -272,6 +280,7 @@ void VideoFrameSubmitter::OnContextLost() {
   compositor_frame_sink_.reset();
   context_provider_->RemoveObserver(this);
   context_provider_ = nullptr;
+  waiting_for_compositor_ack_ = false;
 
   resource_provider_->OnContextLost();
   context_provider_callback_.Run(
@@ -283,6 +292,8 @@ void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
     const WTF::Vector<viz::ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   ReclaimResources(resources);
+
+  waiting_for_compositor_ack_ = false;
 }
 
 void VideoFrameSubmitter::ReclaimResources(

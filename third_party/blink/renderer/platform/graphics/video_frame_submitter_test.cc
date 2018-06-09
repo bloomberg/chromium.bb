@@ -284,6 +284,12 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   submitter_->DidReceiveFrame();
   scoped_task_environment_.RunUntilIdle();
 
+  {
+    WTF::Vector<viz::ReturnedResource> resources;
+    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
+    submitter_->DidReceiveCompositorFrameAck(resources);
+  }
+
   // Check to see if an update to rotation just before rendering is
   // communicated.
   submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_180);
@@ -291,6 +297,12 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
   scoped_task_environment_.RunUntilIdle();
+
+  {
+    WTF::Vector<viz::ReturnedResource> resources;
+    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
+    submitter_->DidReceiveCompositorFrameAck(resources);
+  }
 
   EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).WillOnce(Return(true));
   EXPECT_CALL(*provider_, GetCurrentFrame())
@@ -308,6 +320,12 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args);
   scoped_task_environment_.RunUntilIdle();
+
+  {
+    WTF::Vector<viz::ReturnedResource> resources;
+    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
+    submitter_->DidReceiveCompositorFrameAck(resources);
+  }
 
   // Check to see if changing rotation while rendering is handled.
   submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_270);
@@ -385,6 +403,9 @@ TEST_F(VideoFrameSubmitterTest, NoUpdateOnFrameDoesNotProduceFrame) {
   MakeSubmitter();
   scoped_task_environment_.RunUntilIdle();
 
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+  submitter_->StartRendering();
+
   EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).WillOnce(Return(false));
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
 
@@ -398,7 +419,7 @@ TEST_F(VideoFrameSubmitterTest, NotRenderingDoesNotProduceFrame) {
   MakeSubmitter();
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).Times(0);
   EXPECT_CALL(*sink_, DidNotProduceFrame(_));
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
@@ -414,6 +435,50 @@ TEST_F(VideoFrameSubmitterTest, ReturnsResourceOnCompositorAck) {
   WTF::Vector<viz::ReturnedResource> resources;
   EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
   submitter_->DidReceiveCompositorFrameAck(resources);
+  scoped_task_environment_.RunUntilIdle();
+}
+
+// Tests that after submitting a frame, no frame will be submitted until an ACK
+// was received. This is tested by simulating another BeginFrame message.
+TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
+  MakeSubmitter();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+
+  submitter_->StartRendering();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .Times(1)
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+
+  viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
+      BEGINFRAME_FROM_HERE, now_src_.get());
+  submitter_->OnBeginFrame(args);
+  scoped_task_environment_.RunUntilIdle();
+
+  // DidNotProduceFrame should be called because no frame will be submitted
+  // given that the ACK is still pending.
+  EXPECT_CALL(*sink_, DidNotProduceFrame(_)).Times(1);
+
+  std::unique_ptr<base::SimpleTestTickClock> new_time =
+      std::make_unique<base::SimpleTestTickClock>();
+  args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                                   new_time.get());
+  submitter_->OnBeginFrame(args);
   scoped_task_environment_.RunUntilIdle();
 }
 
