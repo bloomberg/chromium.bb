@@ -365,16 +365,13 @@ class TabStrip : public views::View,
   void SetTabVisibility();
 
   // Drags the active tab by |delta|. |initial_positions| is the x-coordinates
-  // of the tabs when the drag started.
-  void DragActiveTab(const std::vector<int>& initial_positions, int delta);
+  // of the tabs when the drag started.  This is only called when
+  // |touch_layout_| is non-null.
+  void DragActiveTabStacked(const std::vector<int>& initial_positions,
+                            int delta);
 
   // Sets the ideal bounds x-coordinates to |positions|.
   void SetIdealBoundsFromPositions(const std::vector<int>& positions);
-
-  // Stacks the dragged tabs. This is used if the drag operation is
-  // MOVE_VISIBLE_TABS and the tabs don't fill the tabstrip. When this happens
-  // the active tab follows the mouse and the other tabs stack around it.
-  void StackDraggedTabs(int delta);
 
   // Returns true if dragging has resulted in temporarily stacking the tabs.
   bool IsStackingDraggedTabs() const;
@@ -387,10 +384,9 @@ class TabStrip : public views::View,
                            const gfx::Point& location,
                            bool initial_drag);
 
-  // Calculates the bounds needed for each of the tabs, placing the result in
-  // |bounds|.
-  void CalculateBoundsForDraggedTabs(const Tabs& tabs,
-                                     std::vector<gfx::Rect>* bounds);
+  // Returns the bounds needed for each of the tabs, relative to a leading
+  // coordinate of 0 for the left edge of the first tab's bounds.
+  static std::vector<gfx::Rect> CalculateBoundsForDraggedTabs(const Tabs& tabs);
 
   // Returns the X coordinate the first tab should start at.
   int TabStartX() const;
@@ -537,9 +533,6 @@ class TabStrip : public views::View,
 
   // -- Touch Layout ----------------------------------------------------------
 
-  // Returns the position normal tabs start at.
-  int GetStartXForNormalTabs() const;
-
   // Returns the tab to use for event handling. This uses FindTabForEventFrom()
   // to do the actual searching.  This method should be called when
   // |touch_layout_| is set.
@@ -614,8 +607,8 @@ class TabStrip : public views::View,
   // Returns the current widths of each type of tab.  If the tabstrip width is
   // not evenly divisible into these widths, the initial tabs in the strip will
   // be 1 px larger.
-  int current_inactive_width_;
-  int current_active_width_;
+  int current_inactive_width_ = Tab::GetStandardSize().width();
+  int current_active_width_ = Tab::GetStandardSize().width();
 
   // If this value is nonnegative, it is used as the width to lay out tabs
   // (instead of tab_area_width()). Most of the time this will be -1, but while
@@ -634,7 +627,8 @@ class TabStrip : public views::View,
 
   // To ensure all tabs pulse at the same time they share the same animation
   // container. This is that animation container.
-  scoped_refptr<gfx::AnimationContainer> animation_container_;
+  scoped_refptr<gfx::AnimationContainer> animation_container_{
+      new gfx::AnimationContainer()};
 
   // MouseWatcher is used for two things:
   // . When a tab is closed to reset the layout.
@@ -646,7 +640,7 @@ class TabStrip : public views::View,
   // the drag session.
   std::unique_ptr<TabDragController> drag_controller_;
 
-  views::BoundsAnimator bounds_animator_;
+  views::BoundsAnimator bounds_animator_{this};
 
   // Size we last layed out at.
   gfx::Size last_layout_size_;

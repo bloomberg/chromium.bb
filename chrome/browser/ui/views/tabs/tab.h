@@ -54,9 +54,6 @@ class Tab : public gfx::AnimationDelegate,
   // The Tab's class name.
   static const char kViewClassName[];
 
-  // The combined width of the curves at the top and bottom of the endcap.
-  static constexpr float kMinimumEndcapWidth = 4;
-
   Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;
 
@@ -161,6 +158,7 @@ class Tab : public gfx::AnimationDelegate,
   // always show a close button and have a larger minimum size than unselected
   // tabs.
   static gfx::Size GetMinimumActiveSize();
+
   // Returns the preferred size of a single Tab, assuming space is
   // available.
   static gfx::Size GetStandardSize();
@@ -258,10 +256,10 @@ class Tab : public gfx::AnimationDelegate,
   // pinned tab.
   bool ShouldRenderAsNormalTab() const;
 
-  // Gets the throb value for the tab. When a tab is not selected the
-  // active background is drawn at |GetThrobValue()|%. This is used for hover,
-  // mini tab title change and pulsing.
-  double GetThrobValue();
+  // Gets the throb value for the tab. When a tab is not selected the active
+  // background is drawn at GetThrobValue() * 100%. This is used for hover, mini
+  // tab title change and pulsing.
+  float GetThrobValue() const;
 
   // Recalculates the correct |button_color_| and resets the title, alert
   // indicator, and close button colors if necessary.  This should be called any

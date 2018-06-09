@@ -713,7 +713,7 @@ void TabDragController::DragActiveTabStacked(
     return;  // TODO: should cancel drag if this happens.
 
   int delta = point_in_screen.x() - start_point_in_screen_.x();
-  attached_tabstrip_->DragActiveTab(initial_tab_positions_, delta);
+  attached_tabstrip_->DragActiveTabStacked(initial_tab_positions_, delta);
 }
 
 void TabDragController::MoveAttachedToNextStackedIndex(
@@ -1220,8 +1220,7 @@ int TabDragController::GetInsertionIndexFrom(const gfx::Rect& dragged_bounds,
     return -1;
 
   for (int i = start; i <= last_tab; ++i) {
-    const gfx::Rect& ideal_bounds = attached_tabstrip_->ideal_bounds(i);
-    if (dragged_x < (ideal_bounds.x() + (ideal_bounds.width() / 2)))
+    if (dragged_x < attached_tabstrip_->ideal_bounds(i).CenterPoint().x())
       return i;
   }
 
@@ -1241,8 +1240,7 @@ int TabDragController::GetInsertionIndexFromReversed(
     return -1;
 
   for (int i = start; i >= 0; --i) {
-    const gfx::Rect& ideal_bounds = attached_tabstrip_->ideal_bounds(i);
-    if (dragged_x >= (ideal_bounds.x() + (ideal_bounds.width() / 2)))
+    if (dragged_x >= attached_tabstrip_->ideal_bounds(i).CenterPoint().x())
       return i + 1;
   }
 
@@ -1360,6 +1358,8 @@ int TabDragController::GetInsertionIndexForDraggedBoundsStacked(
 gfx::Rect TabDragController::GetDraggedViewTabStripBounds(
     const gfx::Point& tab_strip_point) {
   // attached_tab is NULL when inserting into a new tabstrip.
+  // TODO(pkasting): This assumes there is just one tab being dragged, which is
+  // wrong when dragging multiple tabs; need to check all of |drag_data_|.
   if (source_tab_drag_data()->attached_tab) {
     return gfx::Rect(tab_strip_point.x(), tab_strip_point.y(),
                      source_tab_drag_data()->attached_tab->width(),
@@ -1403,13 +1403,10 @@ std::vector<Tab*> TabDragController::GetTabsMatchingDraggedContents(
 }
 
 std::vector<gfx::Rect> TabDragController::CalculateBoundsForDraggedTabs() {
-  std::vector<gfx::Rect> drag_bounds;
   std::vector<Tab*> attached_tabs;
   for (size_t i = 0; i < drag_data_.size(); ++i)
     attached_tabs.push_back(drag_data_[i].attached_tab);
-  attached_tabstrip_->CalculateBoundsForDraggedTabs(attached_tabs,
-                                                    &drag_bounds);
-  return drag_bounds;
+  return attached_tabstrip_->CalculateBoundsForDraggedTabs(attached_tabs);
 }
 
 void TabDragController::EndDragImpl(EndDragType type) {
@@ -1864,10 +1861,11 @@ void TabDragController::AdjustBrowserAndTabBoundsForDrag(
 
     // Reposition the restored window such that the tab that was dragged remains
     // under the mouse cursor.
+    gfx::Rect tab_bounds = (*drag_bounds)[source_tab_index_];
     gfx::Point offset(
-        static_cast<int>((*drag_bounds)[source_tab_index_].width() *
-                         offset_to_width_ratio_) +
-        (*drag_bounds)[source_tab_index_].x(), 0);
+        static_cast<int>(tab_bounds.width() * offset_to_width_ratio_) +
+            tab_bounds.x(),
+        0);
     views::View::ConvertPointToWidget(attached_tabstrip_, &offset);
     gfx::Rect bounds = GetAttachedBrowserWidget()->GetWindowBoundsInScreen();
     bounds.set_x(point_in_screen.x() - offset.x());

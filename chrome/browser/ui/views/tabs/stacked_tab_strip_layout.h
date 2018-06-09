@@ -44,8 +44,6 @@ class StackedTabStripLayout {
   // Sets the width available for sizing the tabs to.
   void SetWidth(int width);
 
-  int width() const { return width_; }
-
   // Sets the index of the active tab.
   void SetActiveIndex(int index);
 
@@ -61,8 +59,8 @@ class StackedTabStripLayout {
   void AddTab(int index, int add_types, int start_x);
 
   // Removes the tab at the specified index. |start_x| is the new x-coordinate
-  // normal tabs start at, and |old_x| the old x-coordinate of the tab. It is
-  // expected that the ViewModel hash been updated at the time this is invoked.
+  // normal tabs start at, and |old_x| the old x-coordinate of the tab.
+  // ViewModel should already have been updated before calling this.
   void RemoveTab(int index, int start_x, int old_x);
 
   // Moves the tab from |from| to |to|. |new_active_index| is the index of the
@@ -86,7 +84,7 @@ class StackedTabStripLayout {
   // Returns true if the tab at index is stacked.
   bool IsStacked(int index) const;
 
-  // Sets the location of the active tab as close to |x| as possible.
+  // Sets the X coordinate of the active tab as close to |x| as possible.
   void SetActiveTabLocation(int x);
 
 #if !defined(NDEBUG)
@@ -96,8 +94,8 @@ class StackedTabStripLayout {
  private:
   friend class StackedTabStripLayoutTest;
 
-  // Sets the x-coordinate normal tabs start at, width pinned tab count and
-  // active index at once.
+  // Sets the x-coordinate normal tabs start at, width, pinned tab count, and
+  // active index.
   void Reset(int x, int width, int pinned_tab_count, int active_index);
 
   // Resets to an ideal layout state.
@@ -110,7 +108,7 @@ class StackedTabStripLayout {
   void MakeVisible(int index);
 
   // Returns the x-coordinate for the active tab constrained by the current tab
-  // counts.
+  // count.
   int ConstrainActiveX(int x) const;
 
   // Reset the bounds of the active tab (based on ConstrainActiveX()) and resets
@@ -118,7 +116,7 @@ class StackedTabStripLayout {
   void SetActiveBoundsAndLayoutFromActiveTab();
 
   // Sets the bounds of the tabs after |index| relative to the position of the
-  // tab at |index|. Each tab is placed |tab_offset()| pixels after the previous
+  // tab at |index|. Each tab is placed tab_offset() pixels after the previous
   // tab, stacking as necessary.
   void LayoutByTabOffsetAfter(int index);
 
@@ -202,7 +200,7 @@ class StackedTabStripLayout {
   // Number of normal (non-pinned) tabs.
   int normal_tab_count() const { return tab_count() - pinned_tab_count_; }
 
-  // Distance between one tab to the next.
+  // Distance from the start of one tab to the next.
   int tab_offset() const { return size_.width() - overlap_; }
 
   // Size of tabs.
@@ -222,24 +220,24 @@ class StackedTabStripLayout {
   // not populate the model with Tab views.)
   views::ViewModelBase* view_model_;
 
-  // x-coordinate normal tabs start at.
-  int x_;
+  // X coordinate of the first tab.
+  int first_tab_x_ = 0;
+
+  // X coordinate normal tabs start at.  If there are no pinned tabs, this is
+  // equal to |first_tab_x_|.
+  int x_ = 0;
 
   // Available width.
-  int width_;
+  int width_ = 0;
 
   // Number of pinned tabs.
-  int pinned_tab_count_;
+  int pinned_tab_count_ = 0;
 
   // Distance from the last pinned tab to the first non-pinned tab.
-  int pinned_tab_to_non_pinned_tab_;
+  int pinned_tab_to_non_pinned_tab_ = 0;
 
   // Index of the active tab.
-  int active_index_;
-
-  // X-coordinate of the first tab. This is either |x_| if there are no
-  // pinned tabs, or the x-coordinate of the first pinned tab.
-  int first_tab_x_;
+  int active_index_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(StackedTabStripLayout);
 };

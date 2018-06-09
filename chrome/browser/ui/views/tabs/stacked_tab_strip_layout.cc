@@ -21,14 +21,7 @@ StackedTabStripLayout::StackedTabStripLayout(const gfx::Size& size,
       overlap_(overlap),
       stacked_padding_(stacked_padding),
       max_stacked_count_(max_stacked_count),
-      view_model_(view_model),
-      x_(0),
-      width_(0),
-      pinned_tab_count_(0),
-      pinned_tab_to_non_pinned_tab_(0),
-      active_index_(-1),
-      first_tab_x_(0) {
-}
+      view_model_(view_model) {}
 
 StackedTabStripLayout::~StackedTabStripLayout() {
 }
@@ -566,11 +559,9 @@ int StackedTabStripLayout::GetMinX(int index) const {
 }
 
 int StackedTabStripLayout::GetMaxX(int index) const {
-  int leading_count = index - pinned_tab_count_;
-  int trailing_count = tab_count() - index - 1;
-  int trailing_offset = stacked_padding_for_count(trailing_count);
-  int leading_size = width_for_count(leading_count) + x_;
-  if (leading_count > 0)
+  int trailing_offset = stacked_padding_for_count(tab_count() - index - 1);
+  int leading_size = width_for_count(index - pinned_tab_count_) + x_;
+  if (index > pinned_tab_count_)
     leading_size -= overlap_;
   return std::min(width_ - trailing_offset - size_.width(), leading_size);
 }
