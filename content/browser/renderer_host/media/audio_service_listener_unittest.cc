@@ -60,17 +60,18 @@ TEST_F(AudioServiceListenerMetricsTest,
   test_clock.Advance(base::TimeDelta::FromHours(5));
   metrics.ServiceCreated();
   metrics.ServiceStarted();
-  histogram_tester.ExpectTimeBucketCount("Media.AudioService.ObservedDowntime",
+  histogram_tester.ExpectTimeBucketCount("Media.AudioService.ObservedDowntime2",
                                          base::TimeDelta::FromHours(5), 1);
 }
 
 TEST_F(AudioServiceListenerMetricsTest,
-       CreateMetricsStartService_LogsDowntime) {
+       CreateMetricsStartService_LogsInitialDowntime) {
   AudioServiceListener::Metrics metrics(&test_clock);
   test_clock.Advance(base::TimeDelta::FromHours(12));
   metrics.ServiceStarted();
-  histogram_tester.ExpectTimeBucketCount("Media.AudioService.ObservedDowntime",
-                                         base::TimeDelta::FromHours(12), 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "Media.AudioService.ObservedInitialDowntime",
+      base::TimeDelta::FromHours(12), 1);
 }
 
 TEST_F(AudioServiceListenerMetricsTest,
@@ -97,8 +98,8 @@ TEST_F(AudioServiceListenerMetricsTest,
 }
 
 // Check that if service was already started and ServiceStarted() is called,
-// ObservedStartupTime and ObservedDowntime are not logged and start time is
-// reset.
+// ObservedStartupTime and ObservedInitialDowntime are not logged and start time
+// is reset.
 TEST_F(AudioServiceListenerMetricsTest,
        ServiceAlreadyRunningStartService_ResetStartTime) {
   AudioServiceListener::Metrics metrics(&test_clock);
@@ -107,7 +108,8 @@ TEST_F(AudioServiceListenerMetricsTest,
   metrics.ServiceStarted();
   histogram_tester.ExpectTotalCount("Media.AudioService.ObservedStartupTime",
                                     0);
-  histogram_tester.ExpectTotalCount("Media.AudioService.ObservedDowntime", 0);
+  histogram_tester.ExpectTotalCount(
+      "Media.AudioService.ObservedInitialDowntime", 0);
   test_clock.Advance(base::TimeDelta::FromMilliseconds(200));
   metrics.ServiceStopped();
   histogram_tester.ExpectTimeBucketCount("Media.AudioService.ObservedUptime",
@@ -181,9 +183,8 @@ TEST(AudioServiceListenerTest, OnAudioServiceCreated_ProcessIdNotNull) {
   EXPECT_EQ(pid, audio_service_listener.GetProcessId());
 }
 
-TEST(
-    AudioServiceListenerTest,
-    AudioServiceProcessDisconnected_LogProcessTerminationStatus_ProcessIdNull) {
+TEST(AudioServiceListenerTest,
+     AudioProcessDisconnected_LogProcessTerminationStatus_ProcessIdNull) {
   base::HistogramTester histogram_tester;
   AudioServiceListener audio_service_listener(nullptr);
   service_manager::Identity audio_service_identity(audio::mojom::kServiceName);
@@ -204,7 +205,7 @@ TEST(
 }
 
 TEST(AudioServiceListenerTest,
-     AudioServiceProcessCrashed_LogProcessTerminationStatus_ProcessIdNull) {
+     AudioProcessCrashed_LogProcessTerminationStatus_ProcessIdNull) {
   base::HistogramTester histogram_tester;
   AudioServiceListener audio_service_listener(nullptr);
   service_manager::Identity audio_service_identity(audio::mojom::kServiceName);
@@ -225,7 +226,7 @@ TEST(AudioServiceListenerTest,
 }
 
 TEST(AudioServiceListenerTest,
-     AudioServiceProcessKilled_LogProcessTerminationStatus_ProcessIdNull) {
+     AudioProcessKilled_LogProcessTerminationStatus_ProcessIdNull) {
   base::HistogramTester histogram_tester;
   AudioServiceListener audio_service_listener(nullptr);
   service_manager::Identity audio_service_identity(audio::mojom::kServiceName);

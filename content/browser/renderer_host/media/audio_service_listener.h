@@ -63,6 +63,7 @@ class CONTENT_EXPORT AudioServiceListener
     void LogServiceStartStatus(ServiceStartStatus status);
 
     const base::TickClock* clock_;
+    base::TimeTicks initial_downtime_start_;
     base::TimeTicks created_;
     base::TimeTicks started_;
     base::TimeTicks stopped_;
@@ -84,13 +85,13 @@ class CONTENT_EXPORT AudioServiceListener
                            OnAudioServiceCreated_ProcessIdNotNull);
   FRIEND_TEST_ALL_PREFIXES(
       AudioServiceListenerTest,
-      AudioServiceProcessDisconnected_LogProcessTerminationStatus_ProcessIdNull);
+      AudioProcessDisconnected_LogProcessTerminationStatus_ProcessIdNull);
   FRIEND_TEST_ALL_PREFIXES(
       AudioServiceListenerTest,
-      AudioServiceProcessCrashed_LogProcessTerminationStatus_ProcessIdNull);
+      AudioProcessCrashed_LogProcessTerminationStatus_ProcessIdNull);
   FRIEND_TEST_ALL_PREFIXES(
       AudioServiceListenerTest,
-      AudioServiceProcessKilled_LogProcessTerminationStatus_ProcessIdNull);
+      AudioProcessKilled_LogProcessTerminationStatus_ProcessIdNull);
   FRIEND_TEST_ALL_PREFIXES(AudioServiceListenerTest,
                            StartService_LogStartStatus);
 

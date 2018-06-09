@@ -16,14 +16,14 @@
 namespace content {
 
 AudioServiceListener::Metrics::Metrics(const base::TickClock* clock)
-    : clock_(clock), stopped_(clock_->NowTicks()) {}
+    : clock_(clock), initial_downtime_start_(clock_->NowTicks()) {}
 
 AudioServiceListener::Metrics::~Metrics() = default;
 
 void AudioServiceListener::Metrics::ServiceAlreadyRunning() {
   LogServiceStartStatus(ServiceStartStatus::kAlreadyStarted);
   started_ = clock_->NowTicks();
-  stopped_ = base::TimeTicks();
+  initial_downtime_start_ = base::TimeTicks();
 }
 
 void AudioServiceListener::Metrics::ServiceCreated() {
@@ -43,10 +43,16 @@ void AudioServiceListener::Metrics::ServiceStarted() {
     created_ = base::TimeTicks();
   }
 
-  // |stopped_| is unitialized if the service was present when the listener
-  // received OnInit() event.
+  if (!initial_downtime_start_.is_null()) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.ObservedInitialDowntime",
+                               started_ - initial_downtime_start_,
+                               base::TimeDelta(), base::TimeDelta::FromDays(7),
+                               50);
+    initial_downtime_start_ = base::TimeTicks();
+  }
+
   if (!stopped_.is_null()) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.ObservedDowntime",
+    UMA_HISTOGRAM_CUSTOM_TIMES("Media.AudioService.ObservedDowntime2",
                                started_ - stopped_, base::TimeDelta(),
                                base::TimeDelta::FromDays(7), 50);
     stopped_ = base::TimeTicks();
