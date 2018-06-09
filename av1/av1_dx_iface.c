@@ -59,9 +59,10 @@ struct aom_codec_alg_priv {
   int decode_tile_row;
   int decode_tile_col;
   unsigned int tile_mode;
+  unsigned int ext_tile_debug;
+  EXTERNAL_REFERENCES ext_refs;
   unsigned int is_annexb;
   int operating_point;
-  unsigned int ext_tile_debug;
 
   AVxWorker *frame_workers;
   int num_frame_workers;
@@ -480,6 +481,8 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
   frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
   frame_worker_data->pbi->ext_tile_debug = ctx->ext_tile_debug;
+  frame_worker_data->pbi->ext_refs = ctx->ext_refs;
+
   frame_worker_data->pbi->common.is_annexb = ctx->is_annexb;
 
   worker->had_error = 0;
@@ -896,6 +899,22 @@ static aom_codec_err_t ctrl_get_tile_data(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_INVALID_PARAM;
 }
 
+static aom_codec_err_t ctrl_set_ext_ref_ptr(aom_codec_alg_priv_t *ctx,
+                                            va_list args) {
+  av1_ext_ref_frame_t *const data = va_arg(args, av1_ext_ref_frame_t *);
+
+  if (data) {
+    av1_ext_ref_frame_t *const ext_frames = data;
+    ctx->ext_refs.num = ext_frames->num;
+    for (int i = 0; i < ctx->ext_refs.num; i++) {
+      image2yuvconfig(ext_frames->img++, &ctx->ext_refs.refs[i]);
+    }
+    return AOM_CODEC_OK;
+  } else {
+    return AOM_CODEC_INVALID_PARAM;
+  }
+}
+
 static aom_codec_err_t ctrl_get_render_size(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   int *const render_size = va_arg(args, int *);
@@ -1066,6 +1085,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1D_SET_OPERATING_POINT, ctrl_set_operating_point },
   { AV1_SET_INSPECTION_CALLBACK, ctrl_set_inspection_callback },
   { AV1D_EXT_TILE_DEBUG, ctrl_ext_tile_debug },
+  { AV1D_SET_EXT_REF_PTR, ctrl_set_ext_ref_ptr },
 
   // Getters
   { AOMD_GET_FRAME_CORRUPTED, ctrl_get_frame_corrupted },

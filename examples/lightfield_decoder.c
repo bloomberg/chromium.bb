@@ -32,6 +32,7 @@
 #include "common/tools_common.h"
 #include "common/video_reader.h"
 
+#define MAX_EXTERNAL_REFERENCES 128
 #define AOM_BORDER_IN_PIXELS 288
 
 static const char *exec_name;
@@ -63,7 +64,7 @@ int main(int argc, char **argv) {
   int lf_blocksize;
   int u_blocks;
   int v_blocks;
-  aom_image_t reference_images[128];
+  aom_image_t reference_images[MAX_EXTERNAL_REFERENCES];
   size_t frame_size = 0;
   const unsigned char *frame = NULL;
   int i;

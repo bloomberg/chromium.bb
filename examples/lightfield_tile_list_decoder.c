@@ -33,6 +33,7 @@
 #include "common/tools_common.h"
 #include "common/video_reader.h"
 
+#define MAX_EXTERNAL_REFERENCES 128
 #define AOM_BORDER_IN_PIXELS 288
 
 static const char *exec_name;
@@ -58,7 +59,7 @@ int main(int argc, char **argv) {
   int lf_width, lf_height, lf_blocksize;
   int u_blocks, v_blocks;
   int num_tile_lists;
-  aom_image_t reference_images[128];
+  aom_image_t reference_images[MAX_EXTERNAL_REFERENCES];
   size_t frame_size = 0;
   const unsigned char *frame = NULL;
   int i, n;
@@ -138,26 +139,20 @@ int main(int argc, char **argv) {
   // Decode the lightfield.
   aom_codec_control_(&codec, AV1_SET_TILE_MODE, 1);
 
+  // Set external references.
+  av1_ext_ref_frame_t set_ext_ref = { &reference_images[0], num_references };
+  aom_codec_control_(&codec, AV1D_SET_EXT_REF_PTR, &set_ext_ref);
+
   // Must decode the camera frame header first.
   aom_video_reader_read_frame(reader);
   frame = aom_video_reader_get_frame(reader, &frame_size);
   if (aom_codec_decode(&codec, frame, frame_size, NULL))
     die_codec(&codec, "Failed to decode the frame.");
 
-  printf("\nCamera frame header is decoded.\n");
-
   // Decode tile lists one by one.
   for (n = 0; n < num_tile_lists; n++) {
     aom_video_reader_read_frame(reader);
     frame = aom_video_reader_get_frame(reader, &frame_size);
-
-    // TODO(yunqing): need to implement this at tile level.
-    av1_ref_frame_t ref;
-    ref.idx = 0;
-    ref.use_external_ref = 1;
-    ref.img = reference_images[0];  // hard-coded for now.
-    if (aom_codec_control(&codec, AV1_SET_REFERENCE, &ref))
-      die_codec(&codec, "Failed to set reference frame");
 
     if (aom_codec_decode(&codec, frame, frame_size, NULL))
       die_codec(&codec, "Failed to decode the tile list.");

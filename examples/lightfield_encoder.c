@@ -42,6 +42,7 @@
 #include "common/tools_common.h"
 #include "common/video_writer.h"
 
+#define MAX_EXTERNAL_REFERENCES 128
 #define AOM_BORDER_IN_PIXELS 288
 
 static const char *exec_name;
@@ -247,7 +248,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   int bu, bv;
   int u_blocks, v_blocks;
   aom_image_t *frame_to_encode;
-  aom_image_t reference_images[128];
+  aom_image_t reference_images[MAX_EXTERNAL_REFERENCES];
   int reference_image_num = 0;
   int i;
 

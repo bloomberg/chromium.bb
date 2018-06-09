@@ -259,7 +259,7 @@ int main(int argc, char **argv) {
       aom_wb_write_literal(&wb, tr, 8);
       aom_wb_write_literal(&wb, tc, 8);
       aom_wb_write_literal(&wb, tile_data.coded_tile_data_size - 1, 16);
-      tl += 5;
+      tl += tile_info_bytes;
 
       memcpy(tl, (uint8_t *)tile_data.coded_tile_data,
              tile_data.coded_tile_data_size);
@@ -269,13 +269,10 @@ int main(int argc, char **argv) {
           tile_info_bytes + (uint32_t)tile_data.coded_tile_data_size;
     }
 
-    printf("\n tile_list_obu_size: %d\n", tile_list_obu_size);
-
     // Write tile list OBU size.
     size_t bytes_written = 0;
-    aom_uleb_encode_fixed_size(tile_list_obu_size, 4, 4, saved_obu_size_loc,
-                               &bytes_written);
-    if (bytes_written != 4)
+    if (aom_uleb_encode_fixed_size(tile_list_obu_size, 4, 4, saved_obu_size_loc,
+                                   &bytes_written))
       die_codec(&codec, "Failed to encode the tile list obu size.");
 
     // Copy camera frame bitstream directly to get the header.

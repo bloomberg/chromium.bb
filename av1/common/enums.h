@@ -606,6 +606,9 @@ typedef enum ATTRIBUTE_PACKED {
 #define SUPERRES_SCALE_BITS 3
 #define SUPERRES_SCALE_DENOMINATOR_MIN (SCALE_NUMERATOR + 1)
 
+// In large_scale_tile coding, external references are used.
+#define MAX_EXTERNAL_REFERENCES 128
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

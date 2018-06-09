@@ -394,13 +394,13 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
 
     // Read out the tile info.
     uint32_t tile_info_bytes = 5;
-    // TODO(yunqing): set reference here.
+    // Set reference for each tile.
     int ref_idx = aom_rb_read_literal(rb, 8);
     if (ref_idx > 127) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return 0;
     }
-    (void)ref_idx;
+    av1_set_reference_dec(cm, 0, 1, &pbi->ext_refs.refs[ref_idx]);
 
     pbi->dec_tile_row = aom_rb_read_literal(rb, 8);
     pbi->dec_tile_col = aom_rb_read_literal(rb, 8);

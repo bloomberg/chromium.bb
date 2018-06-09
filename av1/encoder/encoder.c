@@ -6036,8 +6036,9 @@ static int equal_dimensions_and_border(const YV12_BUFFER_CONFIG *a,
              (b->flags & YV12_FLAG_HIGHBITDEPTH);
 }
 
-int av1_copy_new_frame_enc(AV1_COMMON *cm, YV12_BUFFER_CONFIG *new_frame,
-                           YV12_BUFFER_CONFIG *sd) {
+aom_codec_err_t av1_copy_new_frame_enc(AV1_COMMON *cm,
+                                       YV12_BUFFER_CONFIG *new_frame,
+                                       YV12_BUFFER_CONFIG *sd) {
   const int num_planes = av1_num_planes(cm);
   if (!equal_dimensions_and_border(new_frame, sd))
     aom_internal_error(&cm->error, AOM_CODEC_ERROR,

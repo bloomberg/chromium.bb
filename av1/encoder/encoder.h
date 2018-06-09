@@ -712,8 +712,9 @@ int av1_get_preview_raw_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *dest);
 
 int av1_get_last_show_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *frame);
 
-int av1_copy_new_frame_enc(AV1_COMMON *cm, YV12_BUFFER_CONFIG *new_frame,
-                           YV12_BUFFER_CONFIG *sd);
+aom_codec_err_t av1_copy_new_frame_enc(AV1_COMMON *cm,
+                                       YV12_BUFFER_CONFIG *new_frame,
+                                       YV12_BUFFER_CONFIG *sd);
 
 int av1_use_as_reference(AV1_COMP *cpi, int ref_frame_flags);
 

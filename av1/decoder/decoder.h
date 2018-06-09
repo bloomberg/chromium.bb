@@ -52,6 +52,11 @@ typedef struct TileBufferDec {
   size_t size;
 } TileBufferDec;
 
+typedef struct EXTERNAL_REFERENCES {
+  YV12_BUFFER_CONFIG refs[MAX_EXTERNAL_REFERENCES];
+  int num;
+} EXTERNAL_REFERENCES;
+
 typedef struct AV1Decoder {
   DECLARE_ALIGNED(32, MACROBLOCKD, mb);
 
@@ -115,7 +120,8 @@ typedef struct AV1Decoder {
   int output_frame_height_in_tiles_minus_1;
   int tile_count_minus_1;
   uint32_t coded_tile_data_size;
-  int ext_tile_debug;  // for ext-tile software debug & testing
+  unsigned int ext_tile_debug;  // for ext-tile software debug & testing
+  EXTERNAL_REFERENCES ext_refs;
 } AV1Decoder;
 
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
