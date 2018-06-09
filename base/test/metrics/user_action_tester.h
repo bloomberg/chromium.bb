@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_TEST_USER_ACTION_TESTER_H_
-#define BASE_TEST_USER_ACTION_TESTER_H_
+#ifndef BASE_TEST_METRICS_USER_ACTION_TESTER_H_
+#define BASE_TEST_METRICS_USER_ACTION_TESTER_H_
 
 #include <map>
 #include <string>
@@ -47,4 +47,4 @@ class UserActionTester {
 
 }  // namespace base
 
-#endif  // BASE_TEST_USER_ACTION_TESTER_H_
+#endif  // BASE_TEST_METRICS_USER_ACTION_TESTER_H_

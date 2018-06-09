@@ -10,7 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/test/user_action_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/variations/variations_associated_data.h"
 

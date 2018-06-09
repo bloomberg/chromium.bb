@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/user_action_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #include "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"

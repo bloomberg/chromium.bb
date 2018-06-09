@@ -4,7 +4,7 @@
 
 #include "chrome/browser/notifications/metrics/notification_metrics_logger.h"
 
-#include "base/test/user_action_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

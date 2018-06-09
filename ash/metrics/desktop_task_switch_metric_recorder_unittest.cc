@@ -8,7 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/test/user_action_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"

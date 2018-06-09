@@ -5,7 +5,7 @@
 #include "chrome/browser/signin/dice_tab_helper.h"
 
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/user_action_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "content/public/test/test_browser_thread_bundle.h"
