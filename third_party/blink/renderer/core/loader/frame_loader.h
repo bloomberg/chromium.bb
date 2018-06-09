@@ -261,11 +261,6 @@ class CORE_EXPORT FrameLoader final {
                                        const KURL&);
   void ProcessFragment(const KURL&, FrameLoadType, LoadStartType);
 
-  NavigationPolicy CheckLoadCanStart(FrameLoadRequest&,
-                                     FrameLoadType,
-                                     NavigationPolicy,
-                                     NavigationType,
-                                     bool check_with_client);
   void StartLoad(FrameLoadRequest&,
                  FrameLoadType,
                  NavigationPolicy,

@@ -127,31 +127,6 @@ static bool NeedsHistoryItemRestore(FrameLoadType type) {
   return type == kFrameLoadTypeBackForward || IsReloadLoadType(type);
 }
 
-static NavigationPolicy MaybeCheckCSP(
-    const ResourceRequest& request,
-    NavigationType type,
-    LocalFrame* frame,
-    NavigationPolicy policy,
-    bool should_check_main_world_content_security_policy,
-    ContentSecurityPolicy::CheckHeaderType check_header_type) {
-  // TODO(arthursonzogni): 'frame-src' check is disabled on the
-  // renderer side, but is enforced on the browser side.
-  // See http://crbug.com/692595 for understanding why it
-  // can't be enforced on both sides instead.
-
-  // 'form-action' check in the frame that is navigating is disabled on the
-  // renderer side, but is enforced on the browser side instead.
-  // N.B. check in the frame that initiates the navigation stills occurs in
-  // blink and is not enforced on the browser-side.
-  // TODO(arthursonzogni) The 'form-action' check should be fully disabled
-  // in blink, except when the form submission doesn't trigger a navigation
-  // (i.e. javascript urls). Please see https://crbug.com/701749.
-
-  // TODO(dgozman): find better place for the comments above and
-  // remove this method entirely.
-  return policy;
-}
-
 static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
     SameDocumentNavigationSource same_document_navigation_source,
     FrameLoadType frame_load_type) {
@@ -911,8 +886,12 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     }
   }
 
-  if (!frame_->IsNavigationAllowed())
+  // TODO(dgozman): merge page dismissal check and FrameNavigationDisabler.
+  if (!frame_->IsNavigationAllowed() ||
+      frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
+          Document::kNoDismissal) {
     return;
+  }
 
   const KURL& url = request.GetResourceRequest().Url();
   if (frame_load_type == kFrameLoadTypeStandard)
@@ -948,6 +927,8 @@ void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
   DCHECK(frame_->GetDocument());
   DCHECK(!in_stop_all_loaders_);
   DCHECK(frame_->IsNavigationAllowed());
+  DCHECK_EQ(Document::kNoDismissal,
+            frame_->GetDocument()->PageDismissalEventBeingDispatched());
 
   // TODO(dgozman): figure out the better place for this check
   // to cancel lazy load both on start and commit. Perhaps
@@ -1446,14 +1427,6 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
       return kNavigationPolicyIgnore;
   }
 
-  if (MaybeCheckCSP(request, type, frame_, policy,
-                    should_check_main_world_content_security_policy ==
-                        kCheckContentSecurityPolicy,
-                    ContentSecurityPolicy::CheckHeaderType::kCheckEnforce) ==
-      kNavigationPolicyIgnore) {
-    return kNavigationPolicyIgnore;
-  }
-
   bool replaces_current_history_item =
       frame_load_type == kFrameLoadTypeReplaceCurrentItem;
   policy = Client()->DecidePolicyForNavigation(
@@ -1482,13 +1455,6 @@ NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
     FrameLoadType frame_load_type,
     bool is_client_redirect,
     HTMLFormElement* form) {
-  // Check report-only CSP policies, which are not checked by
-  // ShouldContinueForNavigationPolicy.
-  MaybeCheckCSP(request, type, frame_, policy,
-                should_check_main_world_content_security_policy ==
-                    kCheckContentSecurityPolicy,
-                ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
-
   return ShouldContinueForNavigationPolicy(
       request,
       // |origin_document| is not set. It doesn't really matter here. It is
@@ -1506,48 +1472,6 @@ void FrameLoader::ClientDroppedNavigation() {
     return;
 
   DetachProvisionalDocumentLoader(provisional_document_loader_);
-}
-
-NavigationPolicy FrameLoader::CheckLoadCanStart(
-    FrameLoadRequest& frame_load_request,
-    FrameLoadType type,
-    NavigationPolicy navigation_policy,
-    NavigationType navigation_type,
-    bool check_with_client) {
-  if (frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
-      Document::kNoDismissal) {
-    return kNavigationPolicyIgnore;
-  }
-
-  // Record the latest requiredCSP value that will be used when sending this
-  // request.
-  ResourceRequest& resource_request = frame_load_request.GetResourceRequest();
-  RecordLatestRequiredCSP();
-  // Before modifying the request, check report-only CSP headers to give the
-  // site owner a chance to learn about requests that need to be modified.
-  MaybeCheckCSP(
-      resource_request, navigation_type, frame_, navigation_policy,
-      frame_load_request.ShouldCheckMainWorldContentSecurityPolicy() ==
-          kCheckContentSecurityPolicy,
-      ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly);
-  ModifyRequestForCSP(resource_request, frame_load_request.OriginDocument());
-
-  WebTriggeringEventInfo triggering_event_info =
-      WebTriggeringEventInfo::kNotFromEvent;
-  if (frame_load_request.TriggeringEvent()) {
-    triggering_event_info = frame_load_request.TriggeringEvent()->isTrusted()
-                                ? WebTriggeringEventInfo::kFromTrustedEvent
-                                : WebTriggeringEventInfo::kFromUntrustedEvent;
-  }
-  return ShouldContinueForNavigationPolicy(
-      resource_request, frame_load_request.OriginDocument(),
-      frame_load_request.GetSubstituteData(), nullptr,
-      frame_load_request.ShouldCheckMainWorldContentSecurityPolicy(),
-      navigation_type, navigation_policy, type,
-      frame_load_request.ClientRedirect() ==
-          ClientRedirectPolicy::kClientRedirect,
-      triggering_event_info, frame_load_request.Form(),
-      frame_load_request.GetBlobURLToken(), check_with_client);
 }
 
 void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
@@ -1577,9 +1501,44 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
 
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();
-  navigation_policy =
-      CheckLoadCanStart(frame_load_request, type, navigation_policy,
-                        navigation_type, check_with_client);
+
+  // Record the latest requiredCSP value that will be used when sending this
+  // request.
+  RecordLatestRequiredCSP();
+
+  // TODO(arthursonzogni): 'frame-src' check is disabled on the
+  // renderer side, but is enforced on the browser side.
+  // See http://crbug.com/692595 for understanding why it
+  // can't be enforced on both sides instead.
+
+  // 'form-action' check in the frame that is navigating is disabled on the
+  // renderer side, but is enforced on the browser side instead.
+  // N.B. check in the frame that initiates the navigation stills occurs in
+  // blink and is not enforced on the browser-side.
+  // TODO(arthursonzogni) The 'form-action' check should be fully disabled
+  // in blink, except when the form submission doesn't trigger a navigation
+  // (i.e. javascript urls). Please see https://crbug.com/701749.
+
+  // Report-only CSP headers are checked in browser.
+  ModifyRequestForCSP(resource_request, origin_document);
+
+  WebTriggeringEventInfo triggering_event_info =
+      WebTriggeringEventInfo::kNotFromEvent;
+  if (frame_load_request.TriggeringEvent()) {
+    triggering_event_info = frame_load_request.TriggeringEvent()->isTrusted()
+                                ? WebTriggeringEventInfo::kFromTrustedEvent
+                                : WebTriggeringEventInfo::kFromUntrustedEvent;
+  }
+
+  navigation_policy = ShouldContinueForNavigationPolicy(
+      resource_request, origin_document, frame_load_request.GetSubstituteData(),
+      nullptr, frame_load_request.ShouldCheckMainWorldContentSecurityPolicy(),
+      navigation_type, navigation_policy, type,
+      frame_load_request.ClientRedirect() ==
+          ClientRedirectPolicy::kClientRedirect,
+      triggering_event_info, frame_load_request.Form(),
+      frame_load_request.GetBlobURLToken(), check_with_client);
+
   if (navigation_policy == kNavigationPolicyIgnore) {
     if (had_placeholder_client_document_loader &&
         !resource_request.CheckForBrowserSideNavigation()) {
