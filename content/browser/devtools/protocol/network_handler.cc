@@ -708,15 +708,21 @@ bool AddInterceptedResourceType(
     intercepted_resource_types->insert(RESOURCE_TYPE_PREFETCH);
     return true;
   }
+  if (resource_type == protocol::Page::ResourceTypeEnum::CSPViolationReport) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_CSP_REPORT);
+    return true;
+  }
+  if (resource_type == protocol::Page::ResourceTypeEnum::Ping) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_PING);
+    return true;
+  }
   if (resource_type == protocol::Page::ResourceTypeEnum::Other) {
     intercepted_resource_types->insert(RESOURCE_TYPE_SUB_RESOURCE);
     intercepted_resource_types->insert(RESOURCE_TYPE_OBJECT);
     intercepted_resource_types->insert(RESOURCE_TYPE_WORKER);
     intercepted_resource_types->insert(RESOURCE_TYPE_SHARED_WORKER);
     intercepted_resource_types->insert(RESOURCE_TYPE_FAVICON);
-    intercepted_resource_types->insert(RESOURCE_TYPE_PING);
     intercepted_resource_types->insert(RESOURCE_TYPE_SERVICE_WORKER);
-    intercepted_resource_types->insert(RESOURCE_TYPE_CSP_REPORT);
     intercepted_resource_types->insert(RESOURCE_TYPE_PLUGIN_RESOURCE);
     return true;
   }
@@ -2079,11 +2085,11 @@ const char* ResourceTypeToString(ResourceType resource_type) {
     case RESOURCE_TYPE_XHR:
       return protocol::Page::ResourceTypeEnum::XHR;
     case RESOURCE_TYPE_PING:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Page::ResourceTypeEnum::Ping;
     case RESOURCE_TYPE_SERVICE_WORKER:
       return protocol::Page::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_CSP_REPORT:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Page::ResourceTypeEnum::CSPViolationReport;
     case RESOURCE_TYPE_PLUGIN_RESOURCE:
       return protocol::Page::ResourceTypeEnum::Other;
     default:
