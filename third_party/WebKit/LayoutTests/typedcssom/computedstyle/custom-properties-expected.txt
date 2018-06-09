@@ -10,5 +10,6 @@ PASS Getting the value of a registered property that isn't set on the element re
 PASS Getting the value of a property that isn't registered returns null
 PASS getAll for a length type registered property returns a single value
 PASS Inherited custom property produces correct type during iteration
+PASS Non-inherited custom property produces correct type during iteration
 Harness: the test ran to completion.
 

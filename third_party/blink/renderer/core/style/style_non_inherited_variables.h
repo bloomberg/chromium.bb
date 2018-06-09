@@ -44,6 +44,8 @@ class StyleNonInheritedVariables {
     return registered_data_.at(name);
   }
 
+  HashSet<AtomicString> GetCustomPropertyNames() const;
+
  private:
   StyleNonInheritedVariables() = default;
   StyleNonInheritedVariables(StyleNonInheritedVariables&);
