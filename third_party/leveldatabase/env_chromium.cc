@@ -28,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -544,7 +545,12 @@ Options::Options() {
   // https://crbug.com/460568
   reuse_logs = false;
 #else
-  reuse_logs = true;
+  // Low end devices have limited RAM. Reusing logs will prevent the database
+  // from being compacted on open and instead load the log file back into the
+  // memory buffer which won't be written until it hits the maximum size
+  // (leveldb::Options::write_buffer_size - 4MB by default). The downside here
+  // is that databases opens take longer as the open is blocked on compaction.
+  reuse_logs = !base::SysInfo::IsLowEndDevice();
 #endif
   // By default use a single shared block cache to conserve memory. The owner of
   // this object can create their own, or set to NULL to have leveldb create a
