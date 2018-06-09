@@ -1254,6 +1254,26 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, GestureScrollToDismiss) {
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
+// Tests that the mouse-scroll cannot dismiss the app list.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseScrollToDismiss) {
+  // Show app list in non-tablet mode. Mouse-scroll up.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(GetPointOutsideSearchbox());
+  generator.MoveMouseWheel(0, 1);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Show app list in tablet mode. Mouse-scroll up.
+  EnableTabletMode(true);
+  GetAppListTestHelper()->CheckVisibility(true);
+  generator.MoveMouseTo(GetPointOutsideSearchbox());
+  generator.MoveMouseWheel(0, 1);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+}
+
 // Tests the app list visibility in overview mode.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, VisibilityInOverviewMode) {
   // Show app list in tablet mode.
