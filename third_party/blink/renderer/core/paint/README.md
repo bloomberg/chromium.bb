@@ -113,52 +113,49 @@ and associated display items).
 At the time of writing, there are three operation modes that are switched by
 `RuntimeEnabledFeatures`.
 
-### SlimmingPaintV1 (a.k.a. SPv1, SPv1.5, old-world compositing)
 
-This is the default operation mode. In this mode, layerization runs before
-pre-paint and paint. `PaintLayerCompositor` and `CompositedLayerMapping` use
-layout and style information to determine which subtrees of the `PaintLayer`
-tree should be pulled out to paint in its own layer, this is also known as
-'being composited'. Transforms, clips, and effects enclosing the subtree are
-applied as `GraphicsLayer` parameters.
+### SlimmingPaintV175 (a.k.a. SPv1.75)
 
-Then during pre-paint, a property tree is generated for fast calculating
-paint location and visual rects of each `LayoutObject` on their backing layer,
-for invalidation purposes.
+This mode is for incrementally shipping completed features from SPv2. SPv1.75
+reuses layerization from SPv1, but will cherrypick property-tree-based paint
+from SPv2. Meta display items are abandoned in favor of property tree. Each
+drawable GraphicsLayer's layer state will be computed by the property tree
+builder. During paint, each display item will be associated with a property
+tree state. At the end of paint, meta display items will be generated from
+the state differences between the chunk and the layer.
 
-During paint, the paint function of each `GraphicsLayer` created by
-`CompositedLayerMapping` will be invoked, which then calls into the painter
-of each `PaintLayer` subtree. The painter then outputs a list of display
-items which may be drawing, or meta display items that represents non-composited
-transforms, clips and effects.
-
+```
+from layout
   |
-  | from layout
   v
 +------------------------------+
-| LayoutObject/PaintLayer tree |
-+------------------------------+
-  |
-  | PaintLayerCompositor::UpdateIfNeeded()
-  |   CompositingInputsUpdater::Update()
-  |   CompositingLayerAssigner::Assign()
-  |   GraphicsLayerUpdater::Update()
-  |   GraphicsLayerTreeBuilder::Rebuild()
-  v
-+--------------------+
-| GraphicsLayer tree |
-+--------------------+
-  |   |
-  |   | LocalFrameView::PaintTree()
-  |   |   LocalFrameView::PaintGraphicsLayerRecursively()
-  |   |     GraphicsLayer::Paint()
-  |   |       CompositedLayerMapping::PaintContents()
-  |   |         PaintLayerPainter::PaintLayerContents()
-  |   |           ObjectPainter::Paint()
-  |   v
-  | +-----------------+
-  | | DisplayItemList |
-  | +-----------------+
+| LayoutObject/PaintLayer tree |-----------+
++------------------------------+           |
+  |                                        |
+  | PaintLayerCompositor::UpdateIfNeeded() |
+  |   CompositingInputsUpdater::Update()   |
+  |   CompositingLayerAssigner::Assign()   |
+  |   GraphicsLayerUpdater::Update()       | PrePaintTreeWalk::Walk()
+  |   GraphicsLayerTreeBuilder::Rebuild()  |   PaintPropertyTreeBuider::UpdatePropertiesForSelf()
+  v                                        |
++--------------------+                   +------------------+
+| GraphicsLayer tree |<------------------|  Property trees  |
++--------------------+                   +------------------+
+  |   |                                    |              |
+  |   |<-----------------------------------+              |
+  |   | LocalFrameView::PaintTree()                       |
+  |   |   LocalFrameView::PaintGraphicsLayerRecursively() |
+  |   |     GraphicsLayer::Paint()                        |
+  |   |       CompositedLayerMapping::PaintContents()     |
+  |   |         PaintLayerPainter::PaintLayerContents()   |
+  |   |           ObjectPainter::Paint()                  |
+  |   v                                                   |
+  | +---------------------------------+                   |
+  | | DisplayItemList/PaintChunk list |                   |
+  | +---------------------------------+                   |
+  |   |                                                   |
+  |   |<--------------------------------------------------+
+  |   | PaintChunksToCcLayer::Convert()
   |   |
   |   | WebContentLayer shim
   v   v
@@ -168,6 +165,66 @@ transforms, clips and effects.
   |
   | to compositor
   v
+```
+
+### BlinkGenPropertyTrees
+
+This mode is for incrementally shipping completed features from SPv2. It is
+based on SPv1.75 and starts sending a layer list and property trees directly to
+the compositor. BlinkGenPropertyTrees still uses the GraphicsLayers from SPv1.75
+and plugs them in as foreign layers to the SPv2 compositor
+(PaintArtifactCompositor).
+
+```
+from layout
+  |
+  v
++------------------------------+
+| LayoutObject/PaintLayer tree |-----------+
++------------------------------+           |
+  |                                        |
+  | PaintLayerCompositor::UpdateIfNeeded() |
+  |   CompositingInputsUpdater::Update()   |
+  |   CompositingLayerAssigner::Assign()   |
+  |   GraphicsLayerUpdater::Update()       | PrePaintTreeWalk::Walk()
+  |   GraphicsLayerTreeBuilder::Rebuild()  |   PaintPropertyTreeBuider::UpdatePropertiesForSelf()
+  v                                        |
++--------------------+                   +------------------+
+| GraphicsLayer tree |<------------------|  Property trees  |
++--------------------+                   +------------------+
+      |                                    |              |
+      |<-----------------------------------+              |
+      | LocalFrameView::PaintTree()                       |
+      |   LocalFrameView::PaintGraphicsLayerRecursively() |
+      |     GraphicsLayer::Paint()                        |
+      |       CompositedLayerMapping::PaintContents()     |
+      |         PaintLayerPainter::PaintLayerContents()   |
+      |           ObjectPainter::Paint()                  |
+      v                                                   |
+    +---------------------------------+                   |
+    | DisplayItemList/PaintChunk list |                   |
+    +---------------------------------+                   |
+      |                                                   |
+      |<--------------------------------------------------+
+      | PaintChunksToCcLayer::Convert()                   |
+      v                                                   |
++----------------+                                        |
+| Foreign layers |                                        |
++----------------+                                        |
+  |                                                       |
+  |    LocalFrameView::PushPaintArtifactToCompositor()    |
+  |         PaintArtifactCompositor::Update()             |
+  +--------------------+       +--------------------------+
+                       |       |
+                       v       v
+        +----------------+  +-----------------------+
+        | cc::Layer list |  |   cc property trees   |
+        +----------------+  +-----------------------+
+                |              |
+  +-------------+--------------+
+  | to compositor
+  v
+```
 
 ### SlimmingPaintV2 (a.k.a. SPv2)
 
@@ -183,8 +240,9 @@ Adjacent display items having the same property tree state will be grouped as
 composited are converted into cc property nodes, while non-composited property
 nodes are converted into meta display items by `PaintChunksToCcLayer`.
 
+```
+from layout
   |
-  | from layout
   v
 +------------------------------+
 | LayoutObject/PaintLayer tree |
@@ -225,72 +283,18 @@ nodes are converted into meta display items by `PaintChunksToCcLayer`.
   +------------------+
   | to compositor
   v
-
-### SlimmingPaintV175 (a.k.a. SPv1.75)
-
-This mode is for incrementally shipping completed features from SPv2. It is
-numbered 1.75 because invalidation using property trees was called SPv1.5,
-which is now a part of SPv1. SPv1.75 will again replace SPv1 once completed.
-
-SPv1.75 reuses layerization from SPv1, but will cherrypick property-tree-based
-paint from SPv2. Meta display items are abandoned in favor of property tree.
-Each drawable GraphicsLayer's layer state will be computed by the property tree
-builder. During paint, each display item will be associated with a property
-tree state. At the end of paint, meta display items will be generated from
-the state differences between the chunk and the layer.
-
-  |
-  | from layout
-  v
-+------------------------------+
-| LayoutObject/PaintLayer tree |-----------+
-+------------------------------+           |
-  |                                        |
-  | PaintLayerCompositor::UpdateIfNeeded() |
-  |   CompositingInputsUpdater::Update()   |
-  |   CompositingLayerAssigner::Assign()   |
-  |   GraphicsLayerUpdater::Update()       | PrePaintTreeWalk::Walk()
-  |   GraphicsLayerTreeBuilder::Rebuild()  |   PaintPropertyTreeBuider::UpdatePropertiesForSelf()
-  v                                        |
-+--------------------+                   +------------------+
-| GraphicsLayer tree |<------------------|  Property trees  |
-+--------------------+                   +------------------+
-  |   |                                    |              |
-  |   |<-----------------------------------+              |
-  |   | LocalFrameView::PaintTree()                       |
-  |   |   LocalFrameView::PaintGraphicsLayerRecursively() |
-  |   |     GraphicsLayer::Paint()                        |
-  |   |       CompositedLayerMapping::PaintContents()     |
-  |   |         PaintLayerPainter::PaintLayerContents()   |
-  |   |           ObjectPainter::Paint()                  |
-  |   v                                                   |
-  | +---------------------------------+                   |
-  | | DisplayItemList/PaintChunk list |                   |
-  | +---------------------------------+                   |
-  |   |                                                   |
-  |   |<--------------------------------------------------+
-  |   | PaintChunksToCcLayer::Convert()
-  |   |
-  |   | WebContentLayer shim
-  v   v
-+----------------+
-| cc::Layer tree |
-+----------------+
-  |
-  | to compositor
-  v
+```
 
 ### Comparison of the three modes
 
-                          | SPv1               | SPv175             | SPv2
---------------------------+--------------------+--------------------+-------------
-REF::SPv175Enabled        | false              | true               | true
-REF::SPv2Enabled          | false              | false              | true
-Property tree             | without effects    | full               | full
-Paint chunks              | no                 | yes                | yes
-Layerization              | PLC/CLM            | PLC/CLM            | PAC
-Non-composited properties | meta items         | PC2CL              | PC2CL
-Raster invalidation       | LayoutObject-based | LayoutObject-based | chunk-based
+```
+                                 | SPv175             | BlinkGenPropertyTrees | SPv2
+---------------------------------+--------------------+-----------------------+-------
+REF::BlinkGenPropertyTreesEnabled| false              | true                  | false
+REF::SPv2Enabled                 | false              | false                 | true
+Layerization                     | PLC/CLM            | PLC/CLM               | PAC
+cc property tree builder         | on                 | off                   | off
+```
 
 ## PaintInvalidation (Deprecated by [PrePaint](#PrePaint))
 
