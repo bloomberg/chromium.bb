@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/user_action_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

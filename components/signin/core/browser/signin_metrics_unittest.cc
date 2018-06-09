@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/test/user_action_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace signin_metrics {

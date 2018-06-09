@@ -14,7 +14,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
-#include "base/test/user_action_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "chromeos/network/network_handler.h"
 #include "ui/base/test/ui_controls.h"
 
