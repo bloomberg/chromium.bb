@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <cmath>
 #include <tuple>
 
@@ -98,7 +99,7 @@ TEST(ColorSpace, RasterAndBlend) {
   EXPECT_EQ(display_color_space, display_color_space.GetRasterColorSpace());
 }
 
-TEST(ColorSpace, ToSkColorSpace) {
+TEST(ColorSpace, ConversionToAndFromSkColorSpace) {
   const size_t kNumTests = 5;
   SkMatrix44 primary_matrix;
   primary_matrix.set3x3(0.205276f, 0.149185f, 0.609741f, 0.625671f, 0.063217f,
@@ -125,6 +126,10 @@ TEST(ColorSpace, ToSkColorSpace) {
                             SkColorSpace::kRec2020_Gamut),
       SkColorSpace::MakeRGB(transfer_fn, primary_matrix),
   };
+
+  // Test that converting from ColorSpace to SkColorSpace is producing an
+  // equivalent representation, and that the SkColorSpace ref-pointers are being
+  // globally cached.
   sk_sp<SkColorSpace> got_sk_color_spaces[kNumTests];
   for (size_t i = 0; i < kNumTests; ++i)
     got_sk_color_spaces[i] = color_spaces[i].ToSkColorSpace();
@@ -142,6 +147,17 @@ TEST(ColorSpace, ToSkColorSpace) {
       EXPECT_NE(got_sk_color_spaces[i].get(), sk_color_spaces[i].get())
           << " on iteration i = " << i;
     }
+  }
+
+  // Invariant test: Test that converting a SkColorSpace to a ColorSpace is
+  // producing an equivalent representation; and then converting the converted
+  // ColorSpace back to SkColorSpace is also producing an equivalent
+  // representation.
+  for (size_t i = 0; i < kNumTests; ++i) {
+    const ColorSpace from_sk_color_space(*sk_color_spaces[i]);
+    EXPECT_EQ(color_spaces[i], from_sk_color_space);
+    EXPECT_TRUE(SkColorSpace::Equals(
+        sk_color_spaces[i].get(), from_sk_color_space.ToSkColorSpace().get()));
   }
 }
 

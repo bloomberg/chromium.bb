@@ -6,7 +6,9 @@
 #define UI_GFX_COLOR_SPACE_H_
 
 #include <stdint.h>
+
 #include <ostream>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -127,6 +129,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
              const SkColorSpaceTransferFn& fn,
              MatrixID matrix,
              RangeID full_range);
+  explicit ColorSpace(const SkColorSpace& sk_color_space);
   ColorSpace(const ColorSpace& other);
   ColorSpace(ColorSpace&& other);
   ColorSpace& operator=(const ColorSpace& other);
@@ -151,7 +154,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // for all real values.
   static ColorSpace CreateSCRGBLinear();
 
-  // TODO: Remove these, and replace with more generic constructors.
+  // TODO(ccameron): Remove these, and replace with more generic constructors.
   static ColorSpace CreateJpeg();
   static ColorSpace CreateREC601();
   static ColorSpace CreateREC709();
