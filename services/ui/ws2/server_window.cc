@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/server_window.h"
 
 #include "base/containers/flat_map.h"
 #include "components/viz/host/host_frame_sink_manager.h"

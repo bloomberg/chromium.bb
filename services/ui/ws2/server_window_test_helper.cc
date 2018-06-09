@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws2/client_window_test_helper.h"
+#include "services/ui/ws2/server_window_test_helper.h"
 
-#include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/server_window.h"
 
 namespace ui {
 namespace ws2 {
