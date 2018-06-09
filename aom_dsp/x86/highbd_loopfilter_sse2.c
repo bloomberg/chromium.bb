@@ -14,8 +14,6 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "aom_dsp/x86/lpf_common_sse2.h"
-#include "aom_ports/emmintrin_compat.h"
-#include "aom_ports/mem.h"
 
 static AOM_FORCE_INLINE void pixel_clamp(const __m128i *min, const __m128i *max,
                                          __m128i *pixel) {
@@ -648,7 +646,7 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_6_sse2(
   const __m128i zero = _mm_setzero_si128();
   __m128i blimit, limit, thresh;
   __m128i mask, hev, flat;
-  __m128i q2p2, q1p1, q0p0, p1q1, p0q0;
+  __m128i q2p2, q1p1, q0p0;
   __m128i p1p0, q1q0, ps1ps0, qs1qs0;
   __m128i flat_p1p0, flat_q0q1;
 
@@ -656,8 +654,8 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_6_sse2(
   q1p1 = _mm_unpacklo_epi64(*p1, *q1);
   q0p0 = _mm_unpacklo_epi64(*p0, *q0);
 
-  p1q1 = _mm_shuffle_epi32(q1p1, _MM_SHUFFLE(1, 0, 3, 2));
-  p0q0 = _mm_shuffle_epi32(q0p0, _MM_SHUFFLE(1, 0, 3, 2));
+  p1p0 = _mm_unpacklo_epi64(q0p0, q1p1);
+  q1q0 = _mm_unpackhi_epi64(q0p0, q1p1);
 
   __m128i abs_p1q1, abs_p0q0, abs_p1p0, work;
 
@@ -669,10 +667,11 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_6_sse2(
   get_limit(_blimit, _limit, _thresh, bd, &blimit, &limit, &thresh, &t80);
 
   // filter_mask and hev_mask
-  highbd_hev_mask(&p0q0, &p1q1, &thresh, &abs_p1p0, &hev);
+  highbd_hev_mask(&q0p0, &q1p1, &thresh, &abs_p1p0, &hev);
 
-  abs_p0q0 = abs_diff16(q0p0, p0q0);
-  abs_p1q1 = abs_diff16(q1p1, p1q1);
+  abs_p0q0 = abs_diff16(p1p0, q1q0);
+  abs_p1q1 = _mm_srli_si128(abs_p0q0, 8);
+  abs_p0q0 = _mm_unpacklo_epi64(abs_p0q0, abs_p0q0);
 
   abs_p0q0 = _mm_adds_epu16(abs_p0q0, abs_p0q0);
   abs_p1q1 = _mm_srli_epi16(abs_p1q1, 1);
@@ -747,12 +746,7 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_6_sse2(
     flat_q0q1 = _mm_srli_epi16(_mm_unpacklo_epi64(workp_shft0, workp_shft1), 3);
   }
   // lp filter
-  {
-    p1p0 = _mm_unpacklo_epi64(q0p0, q1p1);
-    q1q0 = _mm_unpackhi_epi64(q0p0, q1p1);
-
-    highbd_filter4_sse2(&p1p0, &q1q0, &hev, &mask, &qs1qs0, &ps1ps0, &t80, bd);
-  }
+  highbd_filter4_sse2(&p1p0, &q1q0, &hev, &mask, &qs1qs0, &ps1ps0, &t80, bd);
 
   qs1qs0 = _mm_andnot_si128(flat, qs1qs0);
   q1q0 = _mm_and_si128(flat, flat_q0q1);
@@ -761,6 +755,126 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_6_sse2(
   ps1ps0 = _mm_andnot_si128(flat, ps1ps0);
   p1p0 = _mm_and_si128(flat, flat_p1p0);
   *p1p0_out = _mm_or_si128(ps1ps0, p1p0);
+}
+
+static AOM_FORCE_INLINE void highbd_lpf_internal_6_dual_sse2(
+    __m128i *p2, __m128i *p1, __m128i *p0, __m128i *q0, __m128i *q1,
+    __m128i *q2, const unsigned char *_blimit0, const unsigned char *_limit0,
+    const unsigned char *_thresh0, const unsigned char *_blimit1,
+    const unsigned char *_limit1, const unsigned char *_thresh1, int bd) {
+  const __m128i zero = _mm_setzero_si128();
+  __m128i blimit0, limit0, thresh0;
+  __m128i t80;
+  __m128i mask, flat, work;
+  __m128i abs_p1q1, abs_p0q0, abs_p1p0, abs_p2p1, abs_q1q0, abs_q2q1;
+  __m128i op1, op0, oq0, oq1;
+  const __m128i four = _mm_set1_epi16(4);
+  const __m128i one = _mm_set1_epi16(0x1);
+  const __m128i ffff = _mm_cmpeq_epi16(one, one);
+
+  get_limit_dual(_blimit0, _limit0, _thresh0, _blimit1, _limit1, _thresh1, bd,
+                 &blimit0, &limit0, &thresh0, &t80);
+
+  abs_p2p1 = abs_diff16(*p2, *p1);
+  abs_p1p0 = abs_diff16(*p1, *p0);
+  abs_q1q0 = abs_diff16(*q1, *q0);
+  abs_q2q1 = abs_diff16(*q2, *q1);
+
+  abs_p0q0 = abs_diff16(*p0, *q0);
+  abs_p1q1 = abs_diff16(*p1, *q1);
+
+  abs_p0q0 = _mm_adds_epu16(abs_p0q0, abs_p0q0);
+  abs_p1q1 = _mm_srli_epi16(abs_p1q1, 1);
+  mask = _mm_subs_epu16(_mm_adds_epu16(abs_p0q0, abs_p1q1), blimit0);
+  mask = _mm_xor_si128(_mm_cmpeq_epi16(mask, zero), ffff);
+  // mask |= (abs(*p0 - *q0) * 2 + abs(*p1 - *q1) / 2  > blimit) * -1;
+  // So taking maximums continues to work:
+  mask = _mm_and_si128(mask, _mm_adds_epu16(limit0, one));
+
+  mask = _mm_max_epi16(abs_q2q1, mask);
+  work = _mm_max_epi16(abs_p1p0, abs_q1q0);
+  mask = _mm_max_epi16(work, mask);
+  mask = _mm_max_epi16(mask, abs_p2p1);
+  mask = _mm_subs_epu16(mask, limit0);
+  mask = _mm_cmpeq_epi16(mask, zero);
+
+  // flat_mask
+  flat = _mm_max_epi16(abs_diff16(*q2, *q0), abs_diff16(*p2, *p0));
+  flat = _mm_max_epi16(flat, work);
+
+  if (bd == 8)
+    flat = _mm_subs_epu16(flat, one);
+  else if (bd == 10)
+    flat = _mm_subs_epu16(flat, _mm_slli_epi16(one, 2));
+  else  // bd == 12
+    flat = _mm_subs_epu16(flat, _mm_slli_epi16(one, 4));
+
+  flat = _mm_cmpeq_epi16(flat, zero);
+  flat = _mm_and_si128(flat, mask);  // flat & mask
+
+  {
+    __m128i workp_a, workp_b, workp_shft0, workp_shft1;
+
+    // op1
+    workp_a = _mm_add_epi16(_mm_add_epi16(*p0, *p0),
+                            _mm_add_epi16(*p1, *p1));  // *p0 *2 + *p1 * 2
+    workp_a = _mm_add_epi16(_mm_add_epi16(workp_a, four),
+                            *p2);  // *p2 + *p0 * 2 + *p1 * 2 + 4
+
+    workp_b = _mm_add_epi16(_mm_add_epi16(*p2, *p2), *q0);
+    workp_shft0 = _mm_add_epi16(
+        workp_a, workp_b);  // *p2 * 3 + *p1 * 2 + *p0 * 2 + *q0 + 4
+    op1 = _mm_srli_epi16(workp_shft0, 3);
+
+    // op0
+    workp_b = _mm_add_epi16(_mm_add_epi16(*q0, *q0), *q1);  // *q0 * 2 + *q1
+    workp_a =
+        _mm_add_epi16(workp_a,
+                      workp_b);  // *p2 + *p0 * 2 + *p1 * 2 + *q0 * 2 + *q1 + 4
+    op0 = _mm_srli_epi16(workp_a, 3);
+
+    // oq0
+    workp_a = _mm_sub_epi16(_mm_sub_epi16(workp_a, *p2),
+                            *p1);  // *p0 * 2 + *p1  + *q0 * 2 + *q1 + 4
+    workp_b = _mm_add_epi16(*q1, *q2);
+    workp_shft0 = _mm_add_epi16(
+        workp_a, workp_b);  // *p0 * 2 + *p1  + *q0 * 2 + *q1 * 2 + *q2 + 4
+    oq0 = _mm_srli_epi16(workp_shft0, 3);
+
+    // oq1
+    workp_a = _mm_sub_epi16(_mm_sub_epi16(workp_shft0, *p1),
+                            *p0);  // *p0   + *q0 * 2 + *q1 * 2 + *q2 + 4
+    workp_b = _mm_add_epi16(*q2, *q2);
+    workp_shft1 = _mm_add_epi16(
+        workp_a, workp_b);  // *p0  + *q0 * 2 + *q1 * 2 + *q2 * 3 + 4
+    oq1 = _mm_srli_epi16(workp_shft1, 3);
+  }
+  // lp filter
+  __m128i ps[2], qs[2], p[2], q[2];
+  {
+    p[0] = *p0;
+    p[1] = *p1;
+    q[0] = *q0;
+    q[1] = *q1;
+    // filter_mask and hev_mask
+    highbd_filter4_dual_sse2(p, q, ps, qs, &mask, &thresh0, bd, &t80);
+  }
+
+  qs[0] = _mm_andnot_si128(flat, qs[0]);
+  oq0 = _mm_and_si128(flat, oq0);
+  *q0 = _mm_or_si128(qs[0], oq0);
+
+  qs[1] = _mm_andnot_si128(flat, qs[1]);
+  oq1 = _mm_and_si128(flat, oq1);
+  *q1 = _mm_or_si128(qs[1], oq1);
+
+  ps[0] = _mm_andnot_si128(flat, ps[0]);
+  op0 = _mm_and_si128(flat, op0);
+  *p0 = _mm_or_si128(ps[0], op0);
+
+  ps[1] = _mm_andnot_si128(flat, ps[1]);
+  op1 = _mm_and_si128(flat, op1);
+  *p1 = _mm_or_si128(ps[1], op1);
 }
 
 void aom_highbd_lpf_horizontal_6_sse2(uint16_t *s, int p,
@@ -785,6 +899,29 @@ void aom_highbd_lpf_horizontal_6_sse2(uint16_t *s, int p,
   _mm_storel_epi64((__m128i *)(s + 1 * p), _mm_srli_si128(q1q0_out, 8));
 }
 
+void aom_highbd_lpf_horizontal_6_dual_sse2(
+    uint16_t *s, int p, const uint8_t *_blimit0, const uint8_t *_limit0,
+    const uint8_t *_thresh0, const uint8_t *_blimit1, const uint8_t *_limit1,
+    const uint8_t *_thresh1, int bd) {
+  __m128i p2, p1, p0, q0, q1, q2;
+
+  p2 = _mm_loadu_si128((__m128i *)(s - 3 * p));
+  p1 = _mm_loadu_si128((__m128i *)(s - 2 * p));
+  p0 = _mm_loadu_si128((__m128i *)(s - 1 * p));
+  q0 = _mm_loadu_si128((__m128i *)(s + 0 * p));
+  q1 = _mm_loadu_si128((__m128i *)(s + 1 * p));
+  q2 = _mm_loadu_si128((__m128i *)(s + 2 * p));
+
+  highbd_lpf_internal_6_dual_sse2(&p2, &p1, &p0, &q0, &q1, &q2, _blimit0,
+                                  _limit0, _thresh0, _blimit1, _limit1,
+                                  _thresh1, bd);
+
+  _mm_storeu_si128((__m128i *)(s - 2 * p), p1);
+  _mm_storeu_si128((__m128i *)(s - 1 * p), p0);
+  _mm_storeu_si128((__m128i *)(s + 0 * p), q0);
+  _mm_storeu_si128((__m128i *)(s + 1 * p), q1);
+}
+
 static AOM_FORCE_INLINE void highbd_lpf_internal_8_sse2(
     __m128i *p3, __m128i *q3, __m128i *p2, __m128i *q2, __m128i *p1,
     __m128i *q1, __m128i *p0, __m128i *q0, __m128i *q1q0_out, __m128i *p1p0_out,
@@ -793,7 +930,7 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_8_sse2(
   const __m128i zero = _mm_setzero_si128();
   __m128i blimit, limit, thresh;
   __m128i mask, hev, flat;
-  __m128i q2p2, q1p1, q0p0, p1q1, p0q0, q3p3;
+  __m128i q2p2, q1p1, q0p0, q3p3;
   __m128i p1p0, q1q0, ps1ps0, qs1qs0;
   __m128i work_a, op2, oq2, flat_p1p0, flat_q0q1;
 
@@ -802,8 +939,8 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_8_sse2(
   q1p1 = _mm_unpacklo_epi64(*p1, *q1);
   q0p0 = _mm_unpacklo_epi64(*p0, *q0);
 
-  p1q1 = _mm_shuffle_epi32(q1p1, _MM_SHUFFLE(1, 0, 3, 2));
-  p0q0 = _mm_shuffle_epi32(q0p0, _MM_SHUFFLE(1, 0, 3, 2));
+  p1p0 = _mm_unpacklo_epi64(q0p0, q1p1);
+  q1q0 = _mm_unpackhi_epi64(q0p0, q1p1);
 
   __m128i abs_p1q1, abs_p0q0, abs_p1p0, work;
 
@@ -815,10 +952,11 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_8_sse2(
   get_limit(_blimit, _limit, _thresh, bd, &blimit, &limit, &thresh, &t80);
 
   // filter_mask and hev_mask
-  highbd_hev_mask(&p0q0, &p1q1, &thresh, &abs_p1p0, &hev);
+  highbd_hev_mask(&q0p0, &q1p1, &thresh, &abs_p1p0, &hev);
 
-  abs_p0q0 = abs_diff16(q0p0, p0q0);
-  abs_p1q1 = abs_diff16(q1p1, p1q1);
+  abs_p0q0 = abs_diff16(p1p0, q1q0);
+  abs_p1q1 = _mm_srli_si128(abs_p0q0, 8);
+  abs_p0q0 = _mm_unpacklo_epi64(abs_p0q0, abs_p0q0);
 
   abs_p0q0 = _mm_adds_epu16(abs_p0q0, abs_p0q0);
   abs_p1q1 = _mm_srli_epi16(abs_p1q1, 1);
@@ -895,12 +1033,7 @@ static AOM_FORCE_INLINE void highbd_lpf_internal_8_sse2(
   }
 
   // lp filter
-  {
-    p1p0 = _mm_unpacklo_epi64(q0p0, q1p1);
-    q1q0 = _mm_unpackhi_epi64(q0p0, q1p1);
-
-    highbd_filter4_sse2(&p1p0, &q1q0, &hev, &mask, &qs1qs0, &ps1ps0, &t80, bd);
-  }
+  highbd_filter4_sse2(&p1p0, &q1q0, &hev, &mask, &qs1qs0, &ps1ps0, &t80, bd);
 
   qs1qs0 = _mm_andnot_si128(flat, qs1qs0);
   q1q0 = _mm_and_si128(flat, flat_q0q1);
@@ -1306,19 +1439,17 @@ void aom_highbd_lpf_vertical_4_dual_sse2(
 void aom_highbd_lpf_vertical_6_sse2(uint16_t *s, int p, const uint8_t *blimit,
                                     const uint8_t *limit, const uint8_t *thresh,
                                     int bd) {
-  __m128i d0, d1, d2, d3, d4, d5;
-  __m128i p2, p1, p0, q0, q1, q2;
+  __m128i d0, d1, d2, d3, d4, d5, d6, d7;
+  __m128i x3, x2, x1, x0, p0, q0;
   __m128i p1p0, q1q0;
 
-  p2 = _mm_loadu_si128((__m128i *)((s - 3) + 0 * p));
-  p1 = _mm_loadu_si128((__m128i *)((s - 3) + 1 * p));
-  p0 = _mm_loadu_si128((__m128i *)((s - 3) + 2 * p));
-  q0 = _mm_loadu_si128((__m128i *)((s - 3) + 3 * p));
-  q1 = _mm_setzero_si128();
-  q2 = _mm_setzero_si128();
+  x3 = _mm_loadu_si128((__m128i *)((s - 3) + 0 * p));
+  x2 = _mm_loadu_si128((__m128i *)((s - 3) + 1 * p));
+  x1 = _mm_loadu_si128((__m128i *)((s - 3) + 2 * p));
+  x0 = _mm_loadu_si128((__m128i *)((s - 3) + 3 * p));
 
-  highbd_transpose6x6_sse2(&p2, &p1, &p0, &q0, &q1, &q2, &d0, &d1, &d2, &d3,
-                           &d4, &d5);
+  highbd_transpose4x8_8x4_sse2(&x3, &x2, &x1, &x0, &d0, &d1, &d2, &d3, &d4, &d5,
+                               &d6, &d7);
 
   highbd_lpf_internal_6_sse2(&d0, &d1, &d2, &d3, &d4, &d5, &p1p0, &q1q0, blimit,
                              limit, thresh, bd);
@@ -1326,17 +1457,49 @@ void aom_highbd_lpf_vertical_6_sse2(uint16_t *s, int p, const uint8_t *blimit,
   p0 = _mm_srli_si128(p1p0, 8);
   q0 = _mm_srli_si128(q1q0, 8);
 
-  highbd_transpose6x6_sse2(&d0, &p0, &p1p0, &q1q0, &q0, &d5, &d0, &d1, &d2, &d3,
-                           &d4, &d5);
+  highbd_transpose4x8_8x4_low_sse2(&p0, &p1p0, &q1q0, &q0, &d0, &d1, &d2, &d3);
 
-  _mm_storel_epi64((__m128i *)((s - 3) + 0 * p), d0);
-  *(int *)((s - 3) + 0 * p + 4) = _mm_cvtsi128_si32(_mm_srli_si128(d0, 8));
-  _mm_storel_epi64((__m128i *)((s - 3) + 1 * p), d1);
-  *(int *)((s - 3) + 1 * p + 4) = _mm_cvtsi128_si32(_mm_srli_si128(d0, 12));
-  _mm_storel_epi64((__m128i *)((s - 3) + 2 * p), d2);
-  *(int *)((s - 3) + 2 * p + 4) = _mm_cvtsi128_si32(_mm_srli_si128(d2, 8));
-  _mm_storel_epi64((__m128i *)((s - 3) + 3 * p), d3);
-  *(int *)((s - 3) + 3 * p + 4) = _mm_cvtsi128_si32(_mm_srli_si128(d3, 8));
+  _mm_storel_epi64((__m128i *)(s - 2 + 0 * p), d0);
+  _mm_storel_epi64((__m128i *)(s - 2 + 1 * p), d1);
+  _mm_storel_epi64((__m128i *)(s - 2 + 2 * p), d2);
+  _mm_storel_epi64((__m128i *)(s - 2 + 3 * p), d3);
+}
+
+void aom_highbd_lpf_vertical_6_dual_sse2(
+    uint16_t *s, int p, const uint8_t *_blimit0, const uint8_t *_limit0,
+    const uint8_t *_thresh0, const uint8_t *_blimit1, const uint8_t *_limit1,
+    const uint8_t *_thresh1, int bd) {
+  __m128i d0, d1, d2, d3, d4, d5, d6, d7;
+  __m128i x0, x1, x2, x3, x4, x5, x6, x7;
+  __m128i p0, q0, p1, q1, p2, q2;
+
+  x0 = _mm_loadu_si128((__m128i *)((s - 3) + 0 * p));
+  x1 = _mm_loadu_si128((__m128i *)((s - 3) + 1 * p));
+  x2 = _mm_loadu_si128((__m128i *)((s - 3) + 2 * p));
+  x3 = _mm_loadu_si128((__m128i *)((s - 3) + 3 * p));
+  x4 = _mm_loadu_si128((__m128i *)((s - 3) + 4 * p));
+  x5 = _mm_loadu_si128((__m128i *)((s - 3) + 5 * p));
+  x6 = _mm_loadu_si128((__m128i *)((s - 3) + 6 * p));
+  x7 = _mm_loadu_si128((__m128i *)((s - 3) + 7 * p));
+
+  highbd_transpose8x8_sse2(&x0, &x1, &x2, &x3, &x4, &x5, &x6, &x7, &p2, &p1,
+                           &p0, &q0, &q1, &q2, &d6, &d7);
+
+  highbd_lpf_internal_6_dual_sse2(&p2, &p1, &p0, &q0, &q1, &q2, _blimit0,
+                                  _limit0, _thresh0, _blimit1, _limit1,
+                                  _thresh1, bd);
+
+  highbd_transpose4x8_8x4_sse2(&p1, &p0, &q0, &q1, &d0, &d1, &d2, &d3, &d4, &d5,
+                               &d6, &d7);
+
+  _mm_storel_epi64((__m128i *)(s - 2 + 0 * p), d0);
+  _mm_storel_epi64((__m128i *)(s - 2 + 1 * p), d1);
+  _mm_storel_epi64((__m128i *)(s - 2 + 2 * p), d2);
+  _mm_storel_epi64((__m128i *)(s - 2 + 3 * p), d3);
+  _mm_storel_epi64((__m128i *)(s - 2 + 4 * p), d4);
+  _mm_storel_epi64((__m128i *)(s - 2 + 5 * p), d5);
+  _mm_storel_epi64((__m128i *)(s - 2 + 6 * p), d6);
+  _mm_storel_epi64((__m128i *)(s - 2 + 7 * p), d7);
 }
 
 void aom_highbd_lpf_vertical_8_sse2(uint16_t *s, int p, const uint8_t *blimit,
