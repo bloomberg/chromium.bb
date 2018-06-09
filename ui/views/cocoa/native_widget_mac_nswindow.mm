@@ -210,6 +210,9 @@
 // NSWindow overrides (NSAccessibility informal protocol implementation).
 
 - (id)accessibilityFocusedUIElement {
+  if (![self delegate])
+    return [super accessibilityFocusedUIElement];
+
   // The SDK documents this as "The deepest descendant of the accessibility
   // hierarchy that has the focus" and says "if a child element does not have
   // the focus, either return self or, if available, invoke the superclass's
