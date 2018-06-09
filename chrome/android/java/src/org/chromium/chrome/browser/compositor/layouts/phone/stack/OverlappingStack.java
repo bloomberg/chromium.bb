@@ -489,6 +489,20 @@ public class OverlappingStack extends Stack {
     }
 
     @Override
+    protected float getMinScroll(boolean allowUnderScroll) {
+        float maxOffset = 0;
+        if (mStackTabs != null) {
+            // The tabs are not always ordered so we need to browse them all.
+            for (int i = 0; i < mStackTabs.length; i++) {
+                if (!mStackTabs[i].isDying() && mStackTabs[i].getLayoutTab().isVisible()) {
+                    maxOffset = Math.max(mStackTabs[i].getScrollOffset(), maxOffset);
+                }
+            }
+        }
+        return (allowUnderScroll ? -mMaxUnderScroll : 0) - maxOffset;
+    }
+
+    @Override
     protected int computeSpacing(int layoutTabCount) {
         int spacing = 0;
         if (layoutTabCount > 1) {

@@ -158,7 +158,7 @@ public abstract class Stack {
     private int mOverScrollDerivative;
     private int mOverScrollCounter;
     private float mMaxOverScroll; // This will be updated from dimens.xml
-    private float mMaxUnderScroll;
+    protected float mMaxUnderScroll;
     protected float mMaxOverScrollAngle; // This will be updated from values.xml
     private float mMaxOverScrollSlide;
     private final Interpolator mOverScrollAngleInterpolator =
@@ -1729,18 +1729,12 @@ public abstract class Stack {
         mCurrentScrollDirection = Math.signum(mScrollTarget - mScrollOffset);
     }
 
-    protected float getMinScroll(boolean allowUnderScroll) {
-        float maxOffset = 0;
-        if (mStackTabs != null) {
-            // The tabs are not always ordered so we need to browse them all.
-            for (int i = 0; i < mStackTabs.length; i++) {
-                if (!mStackTabs[i].isDying()) {
-                    maxOffset = Math.max(mStackTabs[i].getScrollOffset(), maxOffset);
-                }
-            }
-        }
-        return (allowUnderScroll ? -mMaxUnderScroll : 0) - maxOffset;
-    }
+    /**
+     * Gets the min scroll value.
+     *
+     * @param allowUnderScroll True if underscroll is allowed.
+     */
+    protected abstract float getMinScroll(boolean allowUnderScroll);
 
     /**
      * Gets the max scroll value.
