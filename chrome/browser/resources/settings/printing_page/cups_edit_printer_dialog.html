@@ -81,24 +81,16 @@
           </cr-input>
         </div>
         <div class="settings-box two-line">
-          <div class="start">
-            <div class="label">$i18n{printerManufacturer}</div>
-            <div class="secondary">
-              <drop-down-search-box items="[[manufacturerList]]"
-                  selected-item="{{activePrinter.ppdManufacturer}}">
-              </drop-down-search-box>
-            </div>
-          </div>
+          <drop-down-search-box items="[[manufacturerList]]"
+              label="$i18n{printerManufacturer}"
+              value="{{activePrinter.ppdManufacturer}}">
+          </drop-down-search-box>
         </div>
         <div class="settings-box two-line">
-          <div class="start">
-            <div class="label">$i18n{printerModel}</div>
-            <div class="secondary">
-              <drop-down-search-box items="[[modelList]]"
-                  selected-item="{{activePrinter.ppdModel}}">
-              </drop-down-search-box>
-            </div>
-          </div>
+          <drop-down-search-box items="[[modelList]]"
+              label="$i18n{printerModel}"
+              value="{{activePrinter.ppdModel}}">
+          </drop-down-search-box>
         </div>
         <div class="settings-box two-line last">
           <cr-input class="browse-file-input" readonly
