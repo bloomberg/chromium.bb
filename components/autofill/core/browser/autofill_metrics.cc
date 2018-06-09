@@ -244,6 +244,8 @@ namespace {
 
 // A version of the UMA_HISTOGRAM_ENUMERATION macro that allows the |name|
 // to vary over the program's runtime.
+// TODO(crbug.com/850520): Remove this function when the remaining logs use the
+// histogram_functions instead.
 void LogUMAHistogramEnumeration(const std::string& name,
                                 int sample,
                                 int boundary_value) {
@@ -254,17 +256,6 @@ void LogUMAHistogramEnumeration(const std::string& name,
       name, 1, boundary_value, boundary_value + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(sample);
-}
-
-// A version of the UMA_HISTOGRAM_LONG_TIMES macro that allows the |name|
-// to vary over the program's runtime.
-void LogUMAHistogramLongTimes(const std::string& name,
-                              const base::TimeDelta& duration) {
-  // Note: This leaks memory, which is expected behavior.
-  base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
-      name, base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
-      50, base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddTime(duration);
 }
 
 const char* GetQualityMetricPredictionSource(
@@ -371,14 +362,14 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
     // Only log aggregate true negative; do not log type specific metrics
     // for UNKNOWN/EMPTY.
     DVLOG(2) << "TRUE NEGATIVE";
-    LogUMAHistogramEnumeration(
+    base::UmaHistogramEnumeration(
         aggregate_histogram,
         (is_empty ? AutofillMetrics::TRUE_NEGATIVE_EMPTY
                   : (is_ambiguous ? AutofillMetrics::TRUE_NEGATIVE_AMBIGUOUS
                                   : AutofillMetrics::TRUE_NEGATIVE_UNKNOWN)),
         AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
     if (log_rationalization_metrics) {
-      LogUMAHistogramEnumeration(
+      base::UmaHistogramEnumeration(
           rationalization_quality_histogram,
           (is_empty ? AutofillMetrics::RATIONALIZATION_GOOD
                     : AutofillMetrics::RATIONALIZATION_OK),
@@ -393,16 +384,16 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
   // automatically if there has been no rationalization.
   if (predicted_type == actual_type) {
     DVLOG(2) << "TRUE POSITIVE";
-    LogUMAHistogramEnumeration(aggregate_histogram,
-                               AutofillMetrics::TRUE_POSITIVE,
-                               AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+    base::UmaHistogramEnumeration(
+        aggregate_histogram, AutofillMetrics::TRUE_POSITIVE,
+        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
     LogUMAHistogramEnumeration(
         type_specific_histogram,
         GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE),
         KMaxFieldTypeGroupMetric);
     if (log_rationalization_metrics) {
       bool duplicated_filling = DuplicatedFilling(form, field);
-      LogUMAHistogramEnumeration(
+      base::UmaHistogramEnumeration(
           rationalization_quality_histogram,
           (duplicated_filling ? AutofillMetrics::RATIONALIZATION_BAD
                               : AutofillMetrics::RATIONALIZATION_OK),
@@ -414,9 +405,9 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
   DVLOG(2) << "MISMATCH";
   // Here the prediction is wrong, but user has to provide some value still.
   // This should be a false negative.
-  LogUMAHistogramEnumeration(aggregate_histogram,
-                             AutofillMetrics::FALSE_NEGATIVE_MISMATCH,
-                             AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+  base::UmaHistogramEnumeration(
+      aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH,
+      AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
   // Log FALSE_NEGATIVE_MISMATCH for predicted type if it did predicted
   // something but actual type is different.
   if (predicted_type != UNKNOWN_TYPE)
@@ -429,7 +420,7 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
     // Logging RATIONALIZATION_OK despite of type mismatch here because autofill
     // would have got it wrong with or without rationalization. Rationalization
     // here does not help, neither does it do any harm.
-    LogUMAHistogramEnumeration(
+    base::UmaHistogramEnumeration(
         rationalization_quality_histogram, AutofillMetrics::RATIONALIZATION_OK,
         AutofillMetrics::NUM_RATIONALIZATION_QUALITY_METRICS);
   }
@@ -451,7 +442,7 @@ void LogPredictionQualityMetricsForCommonFields(
       // Only log aggregate true negative; do not log type specific metrics
       // for UNKNOWN/EMPTY.
       DVLOG(2) << "TRUE NEGATIVE";
-      LogUMAHistogramEnumeration(
+      base::UmaHistogramEnumeration(
           aggregate_histogram,
           (is_empty ? AutofillMetrics::TRUE_NEGATIVE_EMPTY
                     : (is_ambiguous ? AutofillMetrics::TRUE_NEGATIVE_AMBIGUOUS
@@ -463,9 +454,9 @@ void LogPredictionQualityMetricsForCommonFields(
     DVLOG(2) << "TRUE POSITIVE";
     // Log both aggregate and type specific true positive if we correctly
     // predict that type with which the field was filled.
-    LogUMAHistogramEnumeration(aggregate_histogram,
-                               AutofillMetrics::TRUE_POSITIVE,
-                               AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+    base::UmaHistogramEnumeration(
+        aggregate_histogram, AutofillMetrics::TRUE_POSITIVE,
+        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
     LogUMAHistogramEnumeration(
         type_specific_histogram,
         GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE),
@@ -483,8 +474,9 @@ void LogPredictionQualityMetricsForCommonFields(
         (is_empty ? AutofillMetrics::FALSE_POSITIVE_EMPTY
                   : (is_ambiguous ? AutofillMetrics::FALSE_POSITIVE_AMBIGUOUS
                                   : AutofillMetrics::FALSE_POSITIVE_UNKNOWN));
-    LogUMAHistogramEnumeration(aggregate_histogram, metric,
-                               AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+    base::UmaHistogramEnumeration(
+        aggregate_histogram, metric,
+        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
     LogUMAHistogramEnumeration(type_specific_histogram,
                                GetFieldTypeGroupMetric(predicted_type, metric),
                                KMaxFieldTypeGroupMetric);
@@ -496,9 +488,9 @@ void LogPredictionQualityMetricsForCommonFields(
   // unknown.
   if (predicted_type == UNKNOWN_TYPE) {
     DVLOG(2) << "FALSE NEGATIVE";
-    LogUMAHistogramEnumeration(aggregate_histogram,
-                               AutofillMetrics::FALSE_NEGATIVE_UNKNOWN,
-                               AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+    base::UmaHistogramEnumeration(
+        aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN,
+        AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
     LogUMAHistogramEnumeration(
         type_specific_histogram,
         GetFieldTypeGroupMetric(actual_type,
@@ -514,9 +506,9 @@ void LogPredictionQualityMetricsForCommonFields(
   // This is a mismatch. From the reference of the actual type, this is a false
   // negative (it was T, but predicted U). From the reference of the prediction,
   // this is a false positive (predicted it was T, but it was U).
-  LogUMAHistogramEnumeration(aggregate_histogram,
-                             AutofillMetrics::FALSE_NEGATIVE_MISMATCH,
-                             AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
+  base::UmaHistogramEnumeration(
+      aggregate_histogram, AutofillMetrics::FALSE_NEGATIVE_MISMATCH,
+      AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
   LogUMAHistogramEnumeration(
       type_specific_histogram,
       GetFieldTypeGroupMetric(actual_type,
@@ -693,9 +685,9 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
 
   std::string destination = is_uploading ? ".Server" : ".Local";
-  LogUMAHistogramEnumeration("Autofill.CreditCardInfoBar" + destination, metric,
-                             NUM_INFO_BAR_METRICS);
-  LogUMAHistogramEnumeration(
+  base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination,
+                                metric, NUM_INFO_BAR_METRICS);
+  base::UmaHistogramEnumeration(
       "Autofill.CreditCardInfoBar" + destination +
           PreviousSaveCreditCardPromptUserDecisionToString(
               previous_save_credit_card_prompt_user_decision),
@@ -718,10 +710,10 @@ void AutofillMetrics::LogSaveCardPromptMetric(
   DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_METRICS);
   std::string destination = is_uploading ? ".Upload" : ".Local";
   std::string show = is_reshow ? ".Reshows" : ".FirstShow";
-  LogUMAHistogramEnumeration(
+  base::UmaHistogramEnumeration(
       "Autofill.SaveCreditCardPrompt" + destination + show, metric,
       NUM_SAVE_CARD_PROMPT_METRICS);
-  LogUMAHistogramEnumeration(
+  base::UmaHistogramEnumeration(
       "Autofill.SaveCreditCardPrompt" + destination + show +
           PreviousSaveCreditCardPromptUserDecisionToString(
               previous_save_credit_card_prompt_user_decision),
@@ -741,9 +733,23 @@ void AutofillMetrics::LogScanCreditCardCompleted(
     const base::TimeDelta& duration,
     bool completed) {
   std::string suffix = completed ? "Completed" : "Cancelled";
-  LogUMAHistogramLongTimes("Autofill.ScanCreditCard.Duration_" + suffix,
-                           duration);
+  base::UmaHistogramLongTimes("Autofill.ScanCreditCard.Duration_" + suffix,
+                              duration);
   UMA_HISTOGRAM_BOOLEAN("Autofill.ScanCreditCard.Completed", completed);
+}
+
+// static
+void AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(bool is_local) {
+  std::string histogram_name = "Autofill.SaveCardWithFirstAndLastNameOffered.";
+  histogram_name += is_local ? "Local" : "Server";
+  base::UmaHistogramBoolean(histogram_name, true);
+}
+
+// static
+void AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(bool is_local) {
+  std::string histogram_name = "Autofill.SaveCardWithFirstAndLastNameComplete.";
+  histogram_name += is_local ? "Local" : "Server";
+  base::UmaHistogramBoolean(histogram_name, true);
 }
 
 // static
@@ -776,9 +782,9 @@ void AutofillMetrics::LogUnmaskPromptEventDuration(
       NOTREACHED();
       return;
   }
-  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.Duration", duration);
-  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.Duration." + suffix,
-                           duration);
+  base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration", duration);
+  base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.Duration." + suffix,
+                              duration);
 }
 
 // static
@@ -833,10 +839,10 @@ void AutofillMetrics::LogRealPanDuration(
       NOTREACHED();
       return;
   }
-  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.GetRealPanDuration",
-                           duration);
-  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.GetRealPanDuration." + suffix,
-                           duration);
+  base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.GetRealPanDuration",
+                              duration);
+  base::UmaHistogramLongTimes(
+      "Autofill.UnmaskPrompt.GetRealPanDuration." + suffix, duration);
 }
 
 // static
@@ -859,9 +865,10 @@ void AutofillMetrics::LogUnmaskingDuration(
       NOTREACHED();
       return;
   }
-  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.UnmaskingDuration", duration);
-  LogUMAHistogramLongTimes("Autofill.UnmaskPrompt.UnmaskingDuration." + suffix,
-                           duration);
+  base::UmaHistogramLongTimes("Autofill.UnmaskPrompt.UnmaskingDuration",
+                              duration);
+  base::UmaHistogramLongTimes(
+      "Autofill.UnmaskPrompt.UnmaskingDuration." + suffix, duration);
 }
 
 // static
@@ -1602,14 +1609,14 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
     name += "CreditCard";
   else
     name += "Address";
-  LogUMAHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+  base::UmaHistogramEnumeration(name, event, NUM_FORM_EVENTS);
 
   // Log again in a different histogram for credit card forms on nonsecure
   // pages, so that form interactions on nonsecure pages can be analyzed on
   // their own.
   if (is_for_credit_card_ && !is_context_secure_) {
-    LogUMAHistogramEnumeration(name + ".OnNonsecurePage", event,
-                               NUM_FORM_EVENTS);
+    base::UmaHistogramEnumeration(name + ".OnNonsecurePage", event,
+                                  NUM_FORM_EVENTS);
   }
 
   // Logging again in a different histogram for segmentation purposes.
@@ -1621,14 +1628,14 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
     name += ".WithOnlyLocalData";
   else
     name += ".WithBothServerAndLocalData";
-  LogUMAHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+  base::UmaHistogramEnumeration(name, event, NUM_FORM_EVENTS);
 }
 
 void AutofillMetrics::FormEventLogger::Log(
     BankNameDisplayedFormEvent event) const {
   DCHECK_LT(event, BANK_NAME_NUM_FORM_EVENTS);
   std::string name("Autofill.FormEvents.CreditCard.BankNameDisplayed");
-  LogUMAHistogramEnumeration(name, event, BANK_NAME_NUM_FORM_EVENTS);
+  base::UmaHistogramEnumeration(name, event, BANK_NAME_NUM_FORM_EVENTS);
 }
 
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(

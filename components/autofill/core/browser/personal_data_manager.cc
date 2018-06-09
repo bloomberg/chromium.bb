@@ -1524,12 +1524,20 @@ void PersonalDataManager::NotifyPersonalDataChanged() {
   }
 }
 
-std::string PersonalDataManager::SaveImportedCreditCard(
+std::string PersonalDataManager::OnAcceptedLocalCreditCardSave(
     const CreditCard& imported_card) {
   DCHECK(!imported_card.number().empty());
   if (is_off_the_record_)
     return std::string();
 
+  if (imported_card.HasFirstAndLastName())
+    AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(/*is_local=*/true);
+
+  return SaveImportedCreditCard(imported_card);
+}
+
+std::string PersonalDataManager::SaveImportedCreditCard(
+    const CreditCard& imported_card) {
   // Set to true if |imported_card| is merged into the credit card list.
   bool merged = false;
 

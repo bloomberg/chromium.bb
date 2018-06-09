@@ -783,6 +783,9 @@ class AutofillMetrics {
   static void LogScanCreditCardCompleted(const base::TimeDelta& duration,
                                          bool completed);
 
+  static void LogSaveCardWithFirstAndLastNameOffered(bool is_local);
+  static void LogSaveCardWithFirstAndLastNameComplete(bool is_local);
+
   static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
   static void LogHeuristicPredictionQualityMetrics(

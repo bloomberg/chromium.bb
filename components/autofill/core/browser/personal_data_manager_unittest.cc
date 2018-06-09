@@ -1281,8 +1281,9 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
       << "result = {" << *results[0] << "} | expected = {" << expected << "}";
 }
 
-// Ensure that verified credit cards can be saved via SaveImportedCreditCard.
-TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
+// Ensure that verified credit cards can be saved via
+// OnAcceptedLocalCreditCardSave.
+TEST_F(PersonalDataManagerTest, OnAcceptedLocalCreditCardSaveWithVerifiedData) {
   // Start with a verified credit card.
   CreditCard credit_card(base::GenerateGUID(), kSettingsOrigin);
   test::SetCreditCardInfo(&credit_card, "Biggie Smalls",
@@ -1302,7 +1303,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
                                base::ASCIIToUTF16("B. Small"));
   EXPECT_TRUE(new_verified_card.IsVerified());
 
-  personal_data_->SaveImportedCreditCard(new_verified_card);
+  personal_data_->OnAcceptedLocalCreditCardSave(new_verified_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -1472,7 +1473,7 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
 
   bill_gates.SetRawInfo(CREDIT_CARD_NAME_FULL,
                         base::ASCIIToUTF16("Bill Gates"));
-  personal_data_->SaveImportedCreditCard(bill_gates);
+  personal_data_->OnAcceptedLocalCreditCardSave(bill_gates);
 
   ResetPersonalDataManager(USER_MODE_INCOGNITO);
   EXPECT_EQ(base::ASCIIToUTF16("Steven"),

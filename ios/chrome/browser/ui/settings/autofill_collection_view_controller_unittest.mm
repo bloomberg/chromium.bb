@@ -101,7 +101,7 @@ TEST_F(AutofillCollectionViewControllerTest, TestOneCreditCard) {
                          base::ASCIIToUTF16("Alan Smithee"));
   credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
                          base::ASCIIToUTF16("378282246310005"));
-  personal_data_manager->SaveImportedCreditCard(credit_card);
+  personal_data_manager->OnAcceptedLocalCreditCardSave(credit_card);
   observer.Wait();  // Wait for completion of the asynchronous operation.
 
   CreateController();

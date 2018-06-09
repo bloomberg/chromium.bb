@@ -186,7 +186,8 @@ class FormDataImporterTestBase {
     std::unique_ptr<CreditCard> imported_credit_card;
     EXPECT_TRUE(ImportCreditCard(form_structure, false, &imported_credit_card));
     ASSERT_TRUE(imported_credit_card);
-    personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+    personal_data_manager_->OnAcceptedLocalCreditCardSave(
+        *imported_credit_card);
 
     base::RunLoop run_loop;
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
@@ -1366,7 +1367,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_Valid) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.SubmittedCardState",
       AutofillMetrics::HAS_CARD_NUMBER_AND_EXPIRATION_DATE, 1);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -1453,7 +1454,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MonthSelectInvalidText) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.SubmittedCardState",
       AutofillMetrics::HAS_CARD_NUMBER_AND_EXPIRATION_DATE, 1);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -1478,7 +1479,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TwoValidCards) {
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -1499,7 +1500,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_TwoValidCards) {
   std::unique_ptr<CreditCard> imported_credit_card2;
   EXPECT_TRUE(ImportCreditCard(form_structure2, false, &imported_credit_card2));
   ASSERT_TRUE(imported_credit_card2);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card2);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card2);
 
   WaitForOnPersonalDataChanged();
 
@@ -1659,7 +1660,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_SameCreditCardWithConflict) {
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -1707,7 +1708,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_ShouldReturnLocalCard) {
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -1758,7 +1759,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_EmptyCardWithConflict) {
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -1807,7 +1808,7 @@ TEST_F(FormDataImporterTest, ImportCreditCard_MissingInfoInNew) {
   std::unique_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(ImportCreditCard(form_structure1, false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -2076,7 +2077,7 @@ TEST_F(FormDataImporterTest, ImportFormData_OneAddressOneCreditCard) {
       /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 
@@ -2154,7 +2155,7 @@ TEST_F(FormDataImporterTest, ImportFormData_TwoAddressesOneCreditCard) {
       form_structure, /*credit_card_autofill_enabled=*/true,
       /*should_return_local_card=*/false, &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
-  personal_data_manager_->SaveImportedCreditCard(*imported_credit_card);
+  personal_data_manager_->OnAcceptedLocalCreditCardSave(*imported_credit_card);
 
   WaitForOnPersonalDataChanged();
 

@@ -373,6 +373,20 @@ void CreditCard::SetRawInfo(ServerFieldType type,
       name_on_card_ = value;
       break;
 
+    case CREDIT_CARD_NAME_FIRST:
+      temp_card_first_name_ = value;
+      if (!temp_card_last_name_.empty()) {
+        SetNameOnCardFromSeparateParts();
+      }
+      break;
+
+    case CREDIT_CARD_NAME_LAST:
+      temp_card_last_name_ = value;
+      if (!temp_card_first_name_.empty()) {
+        SetNameOnCardFromSeparateParts();
+      }
+      break;
+
     case CREDIT_CARD_EXP_MONTH:
       SetExpirationMonthFromString(value, std::string());
       break;
@@ -499,6 +513,8 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   server_status_ = credit_card.server_status_;
   billing_address_id_ = credit_card.billing_address_id_;
   bank_name_ = credit_card.bank_name_;
+  temp_card_first_name_ = credit_card.temp_card_first_name_;
+  temp_card_last_name_ = credit_card.temp_card_last_name_;
 
   set_guid(credit_card.guid());
   set_origin(credit_card.origin());
@@ -868,6 +884,11 @@ base::string16 CreditCard::Expiration4DigitYearAsString() const {
   return base::IntToString16(Expiration4DigitYear());
 }
 
+bool CreditCard::HasFirstAndLastName() const {
+  return !temp_card_first_name_.empty() && !temp_card_last_name_.empty() &&
+         !name_on_card_.empty();
+}
+
 base::string16 CreditCard::Expiration2DigitYearAsString() const {
   if (expiration_year_ == 0)
     return base::string16();
@@ -1013,6 +1034,13 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
             << base::UTF16ToUTF8(credit_card.GetRawInfo(CREDIT_CARD_EXP_MONTH))
             << " " << base::UTF16ToUTF8(
                           credit_card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+}
+
+void CreditCard::SetNameOnCardFromSeparateParts() {
+  DCHECK(name_on_card_.empty() && !temp_card_first_name_.empty() &&
+         !temp_card_last_name_.empty());
+  name_on_card_ =
+      temp_card_first_name_ + base::UTF8ToUTF16(" ") + temp_card_last_name_;
 }
 
 const char kAmericanExpressCard[] = "americanExpressCC";

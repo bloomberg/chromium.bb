@@ -86,11 +86,13 @@ CreditCardSaveManager::CreditCardSaveManager(
 CreditCardSaveManager::~CreditCardSaveManager() {}
 
 void CreditCardSaveManager::OfferCardLocalSave(const CreditCard& card) {
+  if (card.HasFirstAndLastName())
+    AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(/*is_local=*/true);
   if (observer_for_testing_)
     observer_for_testing_->OnOfferLocalSave();
   client_->ConfirmSaveCreditCardLocally(
       card, base::Bind(base::IgnoreResult(
-                           &PersonalDataManager::SaveImportedCreditCard),
+                           &PersonalDataManager::OnAcceptedLocalCreditCardSave),
                        base::Unretained(personal_data_manager_), card));
 }
 
@@ -201,6 +203,12 @@ bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
 void CreditCardSaveManager::OnDidUploadCard(
     AutofillClient::PaymentsRpcResult result,
     const std::string& server_id) {
+  if (result == AutofillClient::SUCCESS &&
+      upload_request_.card.HasFirstAndLastName()) {
+    AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(
+        /*is_local=*/false);
+  }
+
   // We don't do anything user-visible if the upload attempt fails. If the
   // upload succeeds and we can store unmasked cards on this OS, we will keep a
   // copy of the card as a full server card on the device.
@@ -237,6 +245,10 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     AutofillMetrics::LogUploadOfferedCardOriginMetric(
         uploading_local_card_ ? AutofillMetrics::OFFERING_UPLOAD_OF_LOCAL_CARD
                               : AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD);
+    if (upload_request_.card.HasFirstAndLastName()) {
+      AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(
+          /*is_local=*/false);
+    }
   } else {
     // If the upload details request failed, fall back to a local save. The
     // reasoning here is as follows:
@@ -270,13 +282,7 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
         detected_values & DetectedValue::CVC;
     if (!IsAutofillUpstreamSendDetectedValuesExperimentEnabled() ||
         found_name_and_postal_code_and_cvc) {
-      if (observer_for_testing_)
-        observer_for_testing_->OnOfferLocalSave();
-      client_->ConfirmSaveCreditCardLocally(
-          upload_request_.card,
-          base::BindRepeating(
-              base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
-              base::Unretained(personal_data_manager_), upload_request_.card));
+      OfferCardLocalSave(upload_request_.card);
     }
     upload_decision_metrics_ |=
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED;

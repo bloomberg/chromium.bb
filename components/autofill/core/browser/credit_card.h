@@ -256,6 +256,10 @@ class CreditCard : public AutofillDataModel {
   base::string16 ExpirationMonthAsString() const;
   base::string16 Expiration4DigitYearAsString() const;
 
+  // Whether the cardholder name was created from separate first name and last
+  // name fields.
+  bool HasFirstAndLastName() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
@@ -280,6 +284,9 @@ class CreditCard : public AutofillDataModel {
 
   // A label for this card formatted as 'BankName - 2345'.
   base::string16 BankNameAndLastFourDigits() const;
+
+  // Sets the name_on_card_ value based on the saved name parts.
+  void SetNameOnCardFromSeparateParts();
 
   // See enum definition above.
   RecordType record_type_;
@@ -313,6 +320,12 @@ class CreditCard : public AutofillDataModel {
 
   // The identifier of the billing address for this card.
   std::string billing_address_id_;
+
+  // The credit card holder's name parts. Used when creating a new card to hold
+  // on to the value until the credit card holder's other name part is set,
+  // since we only store the full name.
+  base::string16 temp_card_first_name_;
+  base::string16 temp_card_last_name_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().
