@@ -414,22 +414,25 @@ class VM(object):
     if not self.enable_kvm:
       self._WaitForProcs()
 
-  def RemoteCommand(self, cmd, **kwargs):
+  def RemoteCommand(self, cmd, stream_output=False, **kwargs):
     """Run a remote command in the VM.
 
     Args:
       cmd: command to run.
+      stream_output: Stream output of long-running commands.
       kwargs: additional args (see documentation for RemoteDevice.RunCommand).
 
     Returns:
       cros_build_lib.CommandResult object.
     """
     if not self.dry_run:
-      return self.remote.RunCommand(cmd, debug_level=logging.INFO,
-                                    combine_stdout_stderr=True,
-                                    log_output=True,
-                                    error_code_ok=True,
-                                    **kwargs)
+      kwargs.setdefault('error_code_ok', True)
+      if stream_output:
+        kwargs.setdefault('capture_output', False)
+      else:
+        kwargs.setdefault('combine_stdout_stderr', True)
+        kwargs.setdefault('log_output', True)
+      return self.remote.RunCommand(cmd, debug_level=logging.INFO, **kwargs)
 
   @staticmethod
   def GetParser():
