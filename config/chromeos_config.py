@@ -2310,8 +2310,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.mst_android_pfq,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                            test_suite='smoke'),
-                    config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+                                            test_suite='smoke')],
       )
   )
 
@@ -2356,8 +2355,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.pi_android_pfq,
           active_waterfall=waterfall.WATERFALL_INTERNAL,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                            test_suite='smoke'),
-                    config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+                                            test_suite='smoke')],
       ) +
       site_config.AddForBoards(
           'pi-android-pfq',
@@ -2367,12 +2365,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           important=False,
           active_waterfall=waterfall.WATERFALL_INTERNAL,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                            test_suite='smoke'),
-                    config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+                                            test_suite='smoke')],
       )
   )
-
-
 
   # Android NYC slaves.
   nyc_master_config.AddSlaves(
@@ -2405,8 +2400,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           board_configs,
           site_config.templates.nyc_android_pfq,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                            test_suite='smoke'),
-                    config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+                                            test_suite='smoke'),],
           active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
