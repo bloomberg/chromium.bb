@@ -81,14 +81,15 @@ PlayerUtils.registerEMEEventListeners = function(player) {
           return true;
         }
 
-        throw new Error(
-            'keyStatus ' + keyStatus + ' does not match ' + expectedResult);
+        return Promise.reject(
+            'For HDCP version "' + hdcpVersion + '", keyStatus "' + keyStatus +
+            '" does not match "' + expectedResult + '"');
       } catch (e) {
         if (expectedResult == 'rejected') {
           return true;
         }
 
-        throw new Error('Promise rejected unexpectedly: ' + e);
+        return Promise.reject('Promise rejected unexpectedly: ' + e);
       }
     }
 
