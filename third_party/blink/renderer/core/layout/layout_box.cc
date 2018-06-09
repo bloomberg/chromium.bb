@@ -3699,9 +3699,11 @@ LayoutUnit LayoutBox::AvailableLogicalHeight(
   // http://www.w3.org/TR/CSS2/visudet.html#propdef-height - We are interested
   // in the content height.
   // FIXME: Should we pass intrinsicContentLogicalHeight() instead of -1 here?
-  return ConstrainContentBoxLogicalHeightByMinMax(
-      AvailableLogicalHeightUsing(Style()->LogicalHeight(), height_type),
-      LayoutUnit(-1));
+  LayoutUnit height =
+      AvailableLogicalHeightUsing(Style()->LogicalHeight(), height_type);
+  if (height != -1)
+    height = ConstrainContentBoxLogicalHeightByMinMax(height, LayoutUnit(-1));
+  return height;
 }
 
 LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
