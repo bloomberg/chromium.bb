@@ -796,6 +796,8 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     SetQuicReloadableFlag(quic_respect_ietf_header, true);
     connection_.set_defer_send_in_response_to_packets(GetParam().ack_response ==
                                                       AckResponse::kDefer);
+    QuicFramerPeer::SetLastSerializedConnectionId(
+        QuicConnectionPeer::GetFramer(&connection_), connection_id_);
     if (version().transport_version > QUIC_VERSION_43) {
       EXPECT_TRUE(QuicConnectionPeer::GetNoStopWaitingFrames(&connection_));
     } else {
@@ -950,6 +952,10 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     header.destination_connection_id = connection_id_;
     header.packet_number_length = packet_number_length_;
     header.destination_connection_id_length = connection_id_length_;
+    if (peer_framer_.transport_version() == QUIC_VERSION_99 &&
+        peer_framer_.perspective() == Perspective::IS_SERVER) {
+      header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+    }
     header.packet_number = number;
     QuicFrames frames;
     frames.push_back(frame);
@@ -1081,6 +1087,10 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     header.destination_connection_id = connection_id_;
     header.packet_number_length = packet_number_length_;
     header.destination_connection_id_length = connection_id_length_;
+    if (peer_framer_.transport_version() == QUIC_VERSION_99 &&
+        peer_framer_.perspective() == Perspective::IS_SERVER) {
+      header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+    }
     header.packet_number = number;
 
     QuicFrames frames;
@@ -1097,6 +1107,10 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     // close packet is created by peer_framer.
     header.destination_connection_id = connection_id_;
     header.packet_number = number;
+    if (peer_framer_.transport_version() == QUIC_VERSION_99 &&
+        peer_framer_.perspective() == Perspective::IS_SERVER) {
+      header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+    }
 
     QuicConnectionCloseFrame qccf;
     qccf.error_code = QUIC_PEER_GOING_AWAY;
@@ -4526,6 +4540,7 @@ TEST_P(QuicConnectionTest, TimeoutAfter3ClientRTOs) {
 
 TEST_P(QuicConnectionTest, SendScheduler) {
   // Test that if we send a packet without delay, it is not queued.
+  QuicFramerPeer::SetPerspective(&peer_framer_, Perspective::IS_CLIENT);
   QuicPacket* packet = ConstructDataPacket(1, !kHasStopWaiting);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   connection_.SendPacket(ENCRYPTION_NONE, 1, packet, HAS_RETRANSMITTABLE_DATA,
@@ -4536,6 +4551,7 @@ TEST_P(QuicConnectionTest, SendScheduler) {
 TEST_P(QuicConnectionTest, FailToSendFirstPacket) {
   // Test that the connection does not crash when it fails to send the first
   // packet at which point self_address_ might be uninitialized.
+  QuicFramerPeer::SetPerspective(&peer_framer_, Perspective::IS_CLIENT);
   EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(1);
   QuicPacket* packet = ConstructDataPacket(1, !kHasStopWaiting);
   writer_->SetShouldWriteFail();
@@ -4544,6 +4560,7 @@ TEST_P(QuicConnectionTest, FailToSendFirstPacket) {
 }
 
 TEST_P(QuicConnectionTest, SendSchedulerEAGAIN) {
+  QuicFramerPeer::SetPerspective(&peer_framer_, Perspective::IS_CLIENT);
   QuicPacket* packet = ConstructDataPacket(1, !kHasStopWaiting);
   BlockOnNextWrite();
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
@@ -4656,9 +4673,16 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPacketsWithTruncation) {
   EXPECT_EQ(payload.size(),
             connection_.SendStreamDataWithString(3, payload, 1350, NO_FIN)
                 .bytes_consumed);
-  // Just like above, we save 8 bytes on payload, and 8 on truncation. -2
-  // because stream offset size is 2 instead of 0.
-  EXPECT_EQ(non_truncated_packet_size, writer_->last_packet_size() + 8 * 2 - 2);
+  if (connection_.transport_version() == QUIC_VERSION_99) {
+    // Short header packets sent from server omit connection ID already, and
+    // stream offset size increases from 0 to 2.
+    EXPECT_EQ(non_truncated_packet_size, writer_->last_packet_size() - 2);
+  } else {
+    // Just like above, we save 8 bytes on payload, and 8 on truncation. -2
+    // because stream offset size is 2 instead of 0.
+    EXPECT_EQ(non_truncated_packet_size,
+              writer_->last_packet_size() + 8 * 2 - 2);
+  }
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAck) {
@@ -5723,8 +5747,8 @@ TEST_P(QuicConnectionTest, IetfStatelessReset) {
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   connection_.SetFromConfig(config);
   std::unique_ptr<QuicEncryptedPacket> packet(
-      framer_.BuildIetfStatelessResetPacket(connection_id_,
-                                            kTestStatelessResetToken));
+      QuicFramer::BuildIetfStatelessResetPacket(connection_id_,
+                                                kTestStatelessResetToken));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*packet, QuicTime::Zero()));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PUBLIC_RESET, _,
@@ -5948,6 +5972,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   // NEGOTIATED_VERSION state and tell the packet creator to StopSendingVersion.
   QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
   header.packet_number = 12;
   header.version_flag = false;
   QuicFrames frames;
@@ -6044,6 +6069,9 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   // Construct a packet with stream frame and connection close frame.
   QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  if (peer_framer_.transport_version() == QUIC_VERSION_99) {
+    header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+  }
   header.packet_number = 1;
   header.version_flag = false;
 

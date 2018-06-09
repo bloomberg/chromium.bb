@@ -356,6 +356,10 @@ class QuicTestPacketMaker {
 
   quic::QuicPacketNumberLength GetPacketNumberLength() const;
 
+  quic::QuicConnectionIdLength GetDestinationConnectionIdLength() const;
+
+  quic::QuicConnectionIdLength GetSourceConnectionIdLength() const;
+
   quic::QuicTransportVersion version_;
   quic::QuicConnectionId connection_id_;
   quic::MockClock* clock_;  // Owned by QuicStreamFactory.

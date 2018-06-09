@@ -450,15 +450,18 @@ enum QuicShortHeaderType : uint8_t {
 };
 
 enum QuicPacketHeaderTypeFlags : uint8_t {
+  // Bit 2: Reserved for experimentation for short header.
+  FLAGS_EXPERIMENTATION_BIT = 1 << 2,
   // Bit 3: Google QUIC Demultiplexing bit, the short header always sets this
   // bit to 0, allowing to distinguish Google QUIC packets from short header
   // packets.
   FLAGS_DEMULTIPLEXING_BIT = 1 << 3,
-  // Bit 5: Indicates the key phase, which allows the receipt of the packet to
+  // Bits 4 and 5: Reserved bits for short header.
+  FLAGS_SHORT_HEADER_RESERVED_1 = 1 << 4,
+  FLAGS_SHORT_HEADER_RESERVED_2 = 1 << 5,
+  // Bit 6: Indicates the key phase, which allows the receipt of the packet to
   // identify the packet protection keys that are used to protect the packet.
-  FLAGS_KEY_PHASE_BIT = 1 << 5,
-  // Bit 6: Indicates the connection ID is omitted in short header.
-  FLAGS_OMIT_CONNECTION_ID = 1 << 6,
+  FLAGS_KEY_PHASE_BIT = 1 << 6,
   // Bit 7: Indicates the header is long or short header.
   FLAGS_LONG_HEADER = 1 << 7,
 };

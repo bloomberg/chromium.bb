@@ -60,6 +60,9 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(
     quic::QuicByteCount packet_length) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(include_version);
   header.long_packet_type = long_header_type_;
@@ -88,6 +91,9 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
     bool include_version) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(include_version);
   header.long_packet_type = long_header_type_;
@@ -107,6 +113,9 @@ QuicTestPacketMaker::MakeAckAndPingPacket(
     quic::QuicPacketNumber least_unacked) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(include_version);
   header.long_packet_type = long_header_type_;
@@ -167,6 +176,9 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
     size_t bytes_written) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(include_version);
   header.long_packet_type = long_header_type_;
@@ -206,6 +218,9 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     size_t bytes_written) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(include_version);
   header.long_packet_type = long_header_type_;
@@ -264,6 +279,9 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
     const std::string& quic_error_details) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(include_version);
   header.long_packet_type = long_header_type_;
@@ -321,6 +339,9 @@ QuicTestPacketMaker::MakeConnectionClosePacket(
     const std::string& quic_error_details) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(include_version);
   header.long_packet_type = long_header_type_;
@@ -339,6 +360,9 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeGoAwayPacket(
     std::string reason_phrase) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(false);
   header.long_packet_type = long_header_type_;
@@ -396,6 +420,9 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     quic::QuicTime::Delta ack_delay_time) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
+  header.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header.source_connection_id = connection_id_;
+  header.source_connection_id_length = GetSourceConnectionIdLength();
   header.reset_flag = false;
   header.version_flag = ShouldIncludeVersion(false);
   header.long_packet_type = long_header_type_;
@@ -902,6 +929,9 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
 void QuicTestPacketMaker::InitializeHeader(quic::QuicPacketNumber packet_number,
                                            bool should_include_version) {
   header_.destination_connection_id = connection_id_;
+  header_.destination_connection_id_length = GetDestinationConnectionIdLength();
+  header_.source_connection_id = connection_id_;
+  header_.source_connection_id_length = GetSourceConnectionIdLength();
   header_.reset_flag = false;
   header_.version_flag = ShouldIncludeVersion(should_include_version);
   header_.long_packet_type = long_header_type_;
@@ -1055,6 +1085,25 @@ quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
     return quic::PACKET_4BYTE_PACKET_NUMBER;
   }
   return quic::PACKET_1BYTE_PACKET_NUMBER;
+}
+
+quic::QuicConnectionIdLength
+QuicTestPacketMaker::GetDestinationConnectionIdLength() const {
+  if (perspective_ == quic::Perspective::IS_SERVER &&
+      version_ == quic::QUIC_VERSION_99) {
+    return quic::PACKET_0BYTE_CONNECTION_ID;
+  }
+  return quic::PACKET_8BYTE_CONNECTION_ID;
+}
+
+quic::QuicConnectionIdLength QuicTestPacketMaker::GetSourceConnectionIdLength()
+    const {
+  if (perspective_ == quic::Perspective::IS_SERVER &&
+      version_ == quic::QUIC_VERSION_99 &&
+      encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE) {
+    return quic::PACKET_8BYTE_CONNECTION_ID;
+  }
+  return quic::PACKET_0BYTE_CONNECTION_ID;
 }
 
 }  // namespace test

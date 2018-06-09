@@ -170,8 +170,6 @@ bool ValidPublicResetPacketPredicate(
   QuicIetfStatelessResetPacket stateless_reset =
       visitor.stateless_reset_packet();
   bool stateless_reset_is_valid =
-      expected_connection_id ==
-          stateless_reset.header.destination_connection_id &&
       stateless_reset.stateless_reset_token == kTestStatelessResetToken;
 
   return public_reset_is_valid || stateless_reset_is_valid;
@@ -381,11 +379,8 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   EXPECT_CALL(writer_,
               WritePacket(_, _, server_address_.host(), client_address_, _))
       .With(Args<0, 1>(PublicResetPacketEq(connection_id)))
-      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
-  EXPECT_CALL(writer_,
-              WritePacket(_, _, server_address_.host(), client_address_, _))
-      .With(Args<0, 1>(PublicResetPacketEq(other_connection_id)))
-      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, other_packet->length())));
+      .Times(2)
+      .WillRepeatedly(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
   time_wait_list_manager_.OnBlockedWriterCanWrite();
 }
 

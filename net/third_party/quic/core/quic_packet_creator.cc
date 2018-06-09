@@ -551,13 +551,21 @@ SerializedPacket QuicPacketCreator::NoPacket() {
 
 QuicConnectionIdLength QuicPacketCreator::GetDestinationConnectionIdLength()
     const {
-  if (HasIetfLongHeader()) {
-    return PACKET_8BYTE_CONNECTION_ID;
+  if (framer_->transport_version() == QUIC_VERSION_99) {
+    // Packets sent by client always include destination connection ID, and
+    // those sent by the server do not include destination connection ID.
+    return framer_->perspective() == Perspective::IS_CLIENT
+               ? PACKET_8BYTE_CONNECTION_ID
+               : PACKET_0BYTE_CONNECTION_ID;
   }
   return connection_id_length_;
 }
 
 QuicConnectionIdLength QuicPacketCreator::GetSourceConnectionIdLength() const {
+  // Long header packets sent by server include source connection ID.
+  if (HasIetfLongHeader() && framer_->perspective() == Perspective::IS_SERVER) {
+    return PACKET_8BYTE_CONNECTION_ID;
+  }
   return PACKET_0BYTE_CONNECTION_ID;
 }
 
@@ -571,7 +579,7 @@ QuicPacketNumberLength QuicPacketCreator::GetPacketNumberLength() const {
 void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   header->destination_connection_id = connection_id_;
   header->destination_connection_id_length = GetDestinationConnectionIdLength();
-  header->source_connection_id = 0;
+  header->source_connection_id = connection_id_;
   header->source_connection_id_length = GetSourceConnectionIdLength();
   header->reset_flag = false;
   header->version_flag = IncludeVersionInHeader();

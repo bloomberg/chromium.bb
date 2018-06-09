@@ -15,6 +15,7 @@
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_data_reader.h"
 #include "net/third_party/quic/core/quic_data_writer.h"
 #include "net/third_party/quic/core/quic_socket_address_coder.h"
@@ -134,6 +135,10 @@ const int kMaxErrorStringLength = 256;
 const uint8_t kQuicLongHeaderTypeMask = 0x7F;
 const uint8_t kQuicShortHeaderTypeMask = 0x07;
 
+const uint8_t kConnectionIdLengthAdjustment = 3;
+const uint8_t kDestinationConnectionIdLengthMask = 0xF0;
+const uint8_t kSourceConnectionIdLengthMask = 0x0F;
+
 // Returns the absolute value of the difference between |a| and |b|.
 QuicPacketNumber Delta(QuicPacketNumber a, QuicPacketNumber b) {
   // Since these are unsigned numbers, we can't just return abs(a - b)
@@ -225,6 +230,13 @@ size_t TruncatedErrorStringSize(const QuicStringPiece& error) {
     return error.length();
   }
   return kMaxErrorStringLength;
+}
+
+uint8_t GetConnectionIdLengthValue(QuicConnectionIdLength length) {
+  if (length == 0) {
+    return 0;
+  }
+  return static_cast<uint8_t>(length - kConnectionIdLengthAdjustment);
 }
 
 }  // namespace
@@ -887,25 +899,29 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
     QuicConnectionId connection_id,
     QuicUint128 stateless_reset_token) {
   QUIC_DVLOG(1) << "Building IETF stateless reset packet.";
-  size_t len = kPacketHeaderTypeSize + PACKET_8BYTE_CONNECTION_ID +
+  size_t len = kPacketHeaderTypeSize + PACKET_1BYTE_PACKET_NUMBER +
                sizeof(stateless_reset_token);
   std::unique_ptr<char[]> buffer(new char[len]);
   QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
 
   uint8_t type = 0;
+  type |= FLAGS_SHORT_HEADER_RESERVED_1;
+  type |= FLAGS_SHORT_HEADER_RESERVED_2;
   type |= PacketNumberLengthToShortHeaderType(PACKET_1BYTE_PACKET_NUMBER);
 
   // Append type byte.
   if (!writer.WriteUInt8(type)) {
     return nullptr;
   }
-
-  // Append connection ID.
-  if (!writer.WriteConnectionId(connection_id)) {
+  // Append an random packet number.
+  QuicPacketNumber random_packet_number =
+      QuicRandom::GetInstance()->RandUint64() % 255 + 1;
+  if (!AppendPacketNumber(PACKET_1BYTE_PACKET_NUMBER, random_packet_number,
+                          &writer)) {
     return nullptr;
   }
 
-  // TODO(fayang): Append random number of random bytes after connection ID.
+  // TODO(fayang): Append random number of random bytes after packet number.
 
   // Append stateless reset token.
   if (!writer.WriteBytes(&stateless_reset_token,
@@ -961,7 +977,8 @@ QuicFramer::BuildIetfVersionNegotiationPacket(
     const ParsedQuicVersionVector& versions) {
   QUIC_DVLOG(1) << "Building IETF version negotiation packet.";
   DCHECK(!versions.empty());
-  size_t len = kPacketHeaderTypeSize + PACKET_8BYTE_CONNECTION_ID +
+  size_t len = kPacketHeaderTypeSize + kConnectionIdLengthSize +
+               PACKET_8BYTE_CONNECTION_ID +
                (versions.size() + 1) * kQuicVersionSize;
   std::unique_ptr<char[]> buffer(new char[len]);
   QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
@@ -972,11 +989,13 @@ QuicFramer::BuildIetfVersionNegotiationPacket(
     return nullptr;
   }
 
-  if (!writer.WriteConnectionId(connection_id)) {
+  if (!writer.WriteUInt32(0)) {
     return nullptr;
   }
 
-  if (!writer.WriteUInt32(0)) {
+  if (!AppendIetfConnectionId(true, 0, PACKET_0BYTE_CONNECTION_ID,
+                              connection_id, PACKET_8BYTE_CONNECTION_ID,
+                              &writer)) {
     return nullptr;
   }
 
@@ -1259,7 +1278,6 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
     DCHECK_EQ(Perspective::IS_SERVER, perspective_);
     public_flags |= PACKET_PUBLIC_FLAGS_NONCE;
   }
-  DCHECK_EQ(0u, header.source_connection_id);
   DCHECK_EQ(PACKET_0BYTE_CONNECTION_ID, header.source_connection_id_length);
   switch (header.destination_connection_id_length) {
     case PACKET_0BYTE_CONNECTION_ID:
@@ -1316,10 +1334,8 @@ bool QuicFramer::AppendIetfPacketHeader(const QuicPacketHeader& header,
     type = static_cast<uint8_t>(FLAGS_LONG_HEADER | header.long_packet_type);
     DCHECK_EQ(PACKET_4BYTE_PACKET_NUMBER, header.packet_number_length);
   } else {
-    if (header.destination_connection_id_length == PACKET_0BYTE_CONNECTION_ID) {
-      type |= FLAGS_OMIT_CONNECTION_ID;
-    }
-    type |= 0x10;
+    type |= FLAGS_SHORT_HEADER_RESERVED_1;
+    type |= FLAGS_SHORT_HEADER_RESERVED_2;
     DCHECK_GE(PACKET_4BYTE_PACKET_NUMBER, header.packet_number_length);
     type |= PacketNumberLengthToShortHeaderType(header.packet_number_length);
   }
@@ -1327,14 +1343,6 @@ bool QuicFramer::AppendIetfPacketHeader(const QuicPacketHeader& header,
   if (!writer->WriteUInt8(type)) {
     return false;
   }
-
-  // Append connection ID.
-  if (header.destination_connection_id_length == PACKET_8BYTE_CONNECTION_ID &&
-      !writer->WriteConnectionId(header.destination_connection_id)) {
-    return false;
-  }
-
-  last_serialized_connection_id_ = header.destination_connection_id;
 
   if (header.version_flag) {
     // Append version for long header.
@@ -1345,6 +1353,15 @@ bool QuicFramer::AppendIetfPacketHeader(const QuicPacketHeader& header,
       return false;
     }
   }
+
+  // Append connection ID.
+  if (!AppendIetfConnectionId(
+          header.version_flag, header.destination_connection_id,
+          header.destination_connection_id_length, header.source_connection_id,
+          header.source_connection_id_length, writer)) {
+    return false;
+  }
+  last_serialized_connection_id_ = header.destination_connection_id;
 
   // Append packet number.
   if (!AppendPacketNumber(header.packet_number_length, header.packet_number,
@@ -1614,8 +1631,6 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
                          header->long_packet_type);
     // Version is always present in long headers.
     header->version_flag = true;
-    // Connection ID is 8 bytes in long headers.
-    header->destination_connection_id_length = PACKET_8BYTE_CONNECTION_ID;
     // Packet number is 4 bytes in long headers.
     header->packet_number_length = PACKET_4BYTE_PACKET_NUMBER;
   } else {
@@ -1630,10 +1645,11 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     }
     // Version is not present in short headers.
     header->version_flag = false;
-    // Connection ID length depends on omit connection ID flag.
-    header->destination_connection_id_length = type & FLAGS_OMIT_CONNECTION_ID
-                                                   ? PACKET_0BYTE_CONNECTION_ID
-                                                   : PACKET_8BYTE_CONNECTION_ID;
+    // Connection ID length depends on the perspective. Client does not expect
+    // destination connection ID, and server expects destination connection ID.
+    header->destination_connection_id_length =
+        perspective_ == Perspective::IS_CLIENT ? PACKET_0BYTE_CONNECTION_ID
+                                               : PACKET_8BYTE_CONNECTION_ID;
     if (header->destination_connection_id_length ==
         PACKET_0BYTE_CONNECTION_ID) {
       header->destination_connection_id = last_serialized_connection_id_;
@@ -1642,25 +1658,6 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     header->packet_number_length =
         ShortHeaderTypeToPacketNumberLength(short_type);
     QUIC_DVLOG(1) << "packet_number_length = " << header->packet_number_length;
-  }
-
-  // Read connection ID.
-  if (header->destination_connection_id_length == PACKET_8BYTE_CONNECTION_ID &&
-      !reader->ReadConnectionId(&header->destination_connection_id)) {
-    set_detailed_error("Unable to read ConnectionId.");
-    return false;
-  }
-
-  if (header->form == SHORT_HEADER) {
-    // Peak possible stateless reset token. Will only be used on decryption
-    // failure.
-    QuicStringPiece remaining = reader->PeekRemainingPayload();
-    if (remaining.length() >= sizeof(header->possible_stateless_reset_token)) {
-      remaining.copy(
-          reinterpret_cast<char*>(&header->possible_stateless_reset_token),
-          sizeof(header->possible_stateless_reset_token),
-          remaining.length() - sizeof(header->possible_stateless_reset_token));
-    }
   }
 
   QuicVersionLabel version_label;
@@ -1679,6 +1676,55 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
       return false;
     }
     header->version = ParseQuicVersionLabel(version_label);
+
+    // Read and validate connection ID length.
+    uint8_t connection_id_length;
+    if (!reader->ReadBytes(&connection_id_length, 1)) {
+      set_detailed_error("Unable to read ConnectionId length.");
+      return false;
+    }
+    uint8_t dcil =
+        (connection_id_length & kDestinationConnectionIdLengthMask) >> 4;
+    uint8_t scil = connection_id_length & kSourceConnectionIdLengthMask;
+    if ((dcil != 0 &&
+         dcil != PACKET_8BYTE_CONNECTION_ID - kConnectionIdLengthAdjustment) ||
+        (scil != 0 &&
+         scil != PACKET_8BYTE_CONNECTION_ID - kConnectionIdLengthAdjustment) ||
+        dcil == scil || (perspective_ == Perspective::IS_CLIENT && scil == 0) ||
+        (perspective_ == Perspective::IS_SERVER && dcil == 0)) {
+      // Long header packets received by client must include 8-byte source
+      // connection ID, and those received by server must include 8-byte
+      // destination connection ID.
+      QUIC_DVLOG(1) << "dcil: " << static_cast<uint32_t>(dcil)
+                    << ", scil: " << static_cast<uint32_t>(scil);
+      set_detailed_error("Invalid ConnectionId length.");
+      return false;
+    }
+  }
+
+  // Read connection ID.
+  if (header->destination_connection_id_length == PACKET_8BYTE_CONNECTION_ID &&
+      !reader->ReadConnectionId(&header->destination_connection_id)) {
+    set_detailed_error("Unable to read Destination ConnectionId.");
+    return false;
+  }
+
+  if (header->source_connection_id_length == PACKET_8BYTE_CONNECTION_ID &&
+      !reader->ReadConnectionId(&header->source_connection_id)) {
+    set_detailed_error("Unable to read Source ConnectionId.");
+    return false;
+  }
+
+  if (header->form == SHORT_HEADER) {
+    // Peak possible stateless reset token. Will only be used on decryption
+    // failure.
+    QuicStringPiece remaining = reader->PeekRemainingPayload();
+    if (remaining.length() >= sizeof(header->possible_stateless_reset_token)) {
+      remaining.copy(
+          reinterpret_cast<char*>(&header->possible_stateless_reset_token),
+          sizeof(header->possible_stateless_reset_token),
+          remaining.length() - sizeof(header->possible_stateless_reset_token));
+    }
   }
 
   if (header->form == SHORT_HEADER ||
@@ -1694,6 +1740,13 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     }
 
     if (header->packet_number == 0u) {
+      if (IsIetfStatelessResetPacket(*header)) {
+        // This is a stateless reset packet.
+        QuicIetfStatelessResetPacket packet(
+            *header, header->possible_stateless_reset_token);
+        visitor_->OnAuthenticatedIetfStatelessResetPacket(packet);
+        return true;
+      }
       set_detailed_error("packet numbers cannot be 0.");
       return false;
     }
@@ -3512,6 +3565,34 @@ bool QuicFramer::AppendStreamFrame(const QuicStreamFrame& frame,
 
   if (!writer->WriteBytes(frame.data_buffer, frame.data_length)) {
     QUIC_BUG << "Writing frame data failed.";
+    return false;
+  }
+  return true;
+}
+
+// static
+bool QuicFramer::AppendIetfConnectionId(
+    bool version_flag,
+    QuicConnectionId destination_connection_id,
+    QuicConnectionIdLength destination_connection_id_length,
+    QuicConnectionId source_connection_id,
+    QuicConnectionIdLength source_connection_id_length,
+    QuicDataWriter* writer) {
+  if (version_flag) {
+    // Append connection ID length byte.
+    uint8_t dcil = GetConnectionIdLengthValue(destination_connection_id_length);
+    uint8_t scil = GetConnectionIdLengthValue(source_connection_id_length);
+    uint8_t connection_id_length = dcil << 4 | scil;
+    if (!writer->WriteBytes(&connection_id_length, 1)) {
+      return false;
+    }
+  }
+  if (destination_connection_id_length == PACKET_8BYTE_CONNECTION_ID &&
+      !writer->WriteConnectionId(destination_connection_id)) {
+    return false;
+  }
+  if (source_connection_id_length == PACKET_8BYTE_CONNECTION_ID &&
+      !writer->WriteConnectionId(source_connection_id)) {
     return false;
   }
   return true;
