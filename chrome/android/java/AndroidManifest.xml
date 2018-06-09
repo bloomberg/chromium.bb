@@ -311,6 +311,7 @@ by a child template that "extends" this file.
             android:persistableMode="persistAcrossReboots"
             android:autoRemoveFromRecents="false"
             {{ self.chrome_activity_common() }}>
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.document.DocumentActivity"
             android:targetActivity="org.chromium.chrome.browser.document.DocumentActivity"
@@ -323,6 +324,7 @@ by a child template that "extends" this file.
             android:persistableMode="persistNever"
             android:autoRemoveFromRecents="false"
             {{ self.chrome_activity_common() }}>
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
             android:targetActivity="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
@@ -348,6 +350,7 @@ by a child template that "extends" this file.
             {{ self.supports_video_persistence() }}
         >
             {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         {% for i in range(10) %}
         <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity{{ i }}"
@@ -361,6 +364,7 @@ by a child template that "extends" this file.
             {{ self.supports_video_persistence() }}
         >
             {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         {% endfor %}
         {% if enable_vr == "true" %}
@@ -514,6 +518,7 @@ by a child template that "extends" this file.
             android:theme="@style/TabbedModeTheme"
             android:exported="false"
             {{ self.chrome_activity_common() }}>
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
         <activity android:name="org.chromium.chrome.browser.FullscreenActivity"
             android:theme="@style/MainTheme"
@@ -521,6 +526,7 @@ by a child template that "extends" this file.
             android:noHistory="true"
             {{ self.chrome_activity_common() }}
             {{ self.supports_video_persistence() }} >
+            {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
 
         <activity android:name="org.chromium.chrome.browser.sync.ui.PassphraseActivity"
