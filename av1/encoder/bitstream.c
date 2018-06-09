@@ -3535,11 +3535,20 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   aom_wb_write_bit(&wb, cm->seq_params.reduced_still_picture_hdr);
 
   if (cm->seq_params.reduced_still_picture_hdr) {
+    assert(cm->timing_info_present == 0);
+    assert(cm->seq_params.decoder_model_info_present_flag == 0);
+    assert(cm->seq_params.display_model_info_present_flag == 0);
     write_bitstream_level(cm->seq_params.level[0], &wb);
   } else {
-    aom_wb_write_bit(&wb, cm->seq_params.decoder_model_info_present_flag);
-    if (cm->seq_params.decoder_model_info_present_flag) {
-      write_decoder_model_info(cm, &wb);
+    aom_wb_write_bit(&wb, cm->timing_info_present);  // timing info present flag
+
+    if (cm->timing_info_present) {
+      // timing_info
+      write_timing_info_header(cm, &wb);
+      aom_wb_write_bit(&wb, cm->seq_params.decoder_model_info_present_flag);
+      if (cm->seq_params.decoder_model_info_present_flag) {
+        write_decoder_model_info(cm, &wb);
+      }
     }
     aom_wb_write_bit(&wb, cm->seq_params.display_model_info_present_flag);
     aom_wb_write_literal(&wb, cm->seq_params.operating_points_cnt_minus_1,
@@ -3571,16 +3580,6 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   write_sequence_header(cpi, &wb);
 
   write_color_config(cm, &wb);
-
-  if (!cm->seq_params.reduced_still_picture_hdr)
-    aom_wb_write_bit(&wb, cm->timing_info_present);  // timing info present flag
-  else
-    assert(cm->timing_info_present == 0);
-
-  if (cm->timing_info_present) {
-    // timing_info
-    write_timing_info_header(cm, &wb);
-  }
 
   aom_wb_write_bit(&wb, cm->film_grain_params_present);
 

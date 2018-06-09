@@ -201,8 +201,9 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   }
 
   if (seq_params->reduced_still_picture_hdr) {
-    seq_params->display_model_info_present_flag = 0;
+    cm->timing_info_present = 0;
     seq_params->decoder_model_info_present_flag = 0;
+    seq_params->display_model_info_present_flag = 0;
     seq_params->operating_points_cnt_minus_1 = 0;
     seq_params->operating_point_idc[0] = 0;
     if (!read_bitstream_level(&seq_params->level[0], rb)) {
@@ -213,9 +214,16 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     cm->op_params[0].decoder_model_param_present_flag = 0;
     cm->op_params[0].display_model_param_present_flag = 0;
   } else {
-    seq_params->decoder_model_info_present_flag = aom_rb_read_bit(rb);
-    if (seq_params->decoder_model_info_present_flag)
-      av1_read_decoder_model_info(cm, rb);
+    cm->timing_info_present = aom_rb_read_bit(rb);  // timing_info_present_flag
+    if (cm->timing_info_present) {
+      av1_read_timing_info_header(cm, rb);
+
+      seq_params->decoder_model_info_present_flag = aom_rb_read_bit(rb);
+      if (seq_params->decoder_model_info_present_flag)
+        av1_read_decoder_model_info(cm, rb);
+    } else {
+      seq_params->decoder_model_info_present_flag = 0;
+    }
     seq_params->display_model_info_present_flag = aom_rb_read_bit(rb);
     seq_params->operating_points_cnt_minus_1 =
         aom_rb_read_literal(rb, OP_POINTS_CNT_MINUS_1_BITS);
@@ -272,13 +280,6 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   read_sequence_header(cm, rb);
 
   av1_read_color_config(cm, rb, pbi->allow_lowbitdepth);
-
-  if (!seq_params->reduced_still_picture_hdr)
-    cm->timing_info_present = aom_rb_read_bit(rb);  // timing_info_present_flag
-  else
-    cm->timing_info_present = 0;
-
-  if (cm->timing_info_present) av1_read_timing_info_header(cm, rb);
 
   cm->film_grain_params_present = aom_rb_read_bit(rb);
 
