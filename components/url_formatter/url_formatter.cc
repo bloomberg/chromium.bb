@@ -70,6 +70,11 @@ class HostComponentTransform : public AppendComponentTransform {
             component_text,
             net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 
+    // If there is no domain and registry, we may be looking at an intranet
+    // or otherwise non-standard host. Leave those alone.
+    if (domain_and_registry.empty())
+      return IDNToUnicodeWithAdjustments(component_text, adjustments);
+
     base::OffsetAdjuster::Adjustments trivial_subdomains_adjustments;
     base::StringTokenizer tokenizer(
         component_text.begin(),

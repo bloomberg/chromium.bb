@@ -1265,6 +1265,13 @@ TEST(UrlFormatterTest, FormatUrl) {
        "http://m.co.uk/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://m.co.uk/", 7},
 
+      {"omit trivial subdomains but leave intranet hostnames alone",
+       "http://router/", kFormatUrlOmitTrivialSubdomains,
+       net::UnescapeRule::NORMAL, L"http://router/", 7},
+      {"omit trivial subdomains but leave alone if host itself is a registry",
+       "http://co.uk/", kFormatUrlOmitTrivialSubdomains,
+       net::UnescapeRule::NORMAL, L"http://co.uk/", 7},
+
       // -------- trim after host --------
       {"omit the trailing slash when ommitting the path", "http://google.com/",
        kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
