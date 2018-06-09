@@ -180,7 +180,8 @@ class NetworkHandler : public DevToolsDomainHandler,
   static std::unique_ptr<Network::Request> CreateRequestFromResourceRequest(
       const network::ResourceRequest& request);
   static std::unique_ptr<Network::Request> CreateRequestFromURLRequest(
-      const net::URLRequest* request);
+      const net::URLRequest* request,
+      const std::string& cookie);
 
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);

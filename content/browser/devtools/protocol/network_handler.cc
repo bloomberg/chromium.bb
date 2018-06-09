@@ -1964,12 +1964,15 @@ NetworkHandler::CreateRequestFromResourceRequest(
 
 // static
 std::unique_ptr<Network::Request> NetworkHandler::CreateRequestFromURLRequest(
-    const net::URLRequest* request) {
+    const net::URLRequest* request,
+    const std::string& cookie) {
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (net::HttpRequestHeaders::Iterator it(request->extra_request_headers());
        it.GetNext();) {
     headers_dict->setString(it.name(), it.value());
   }
+  if (!cookie.empty())
+    headers_dict->setString(net::HttpRequestHeaders::kCookie, cookie);
   if (!request->referrer().empty()) {
     headers_dict->setString(net::HttpRequestHeaders::kReferer,
                             request->referrer());

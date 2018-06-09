@@ -12,6 +12,7 @@
 #include "content/browser/devtools/protocol/network.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/http/http_raw_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -104,12 +105,15 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
     GURL url;
     std::string method;
     std::unique_ptr<net::UploadDataStream> post_data;
+    std::string cookie_line;
     net::HttpRequestHeaders extra_request_headers;
     std::string referrer;
     net::URLRequest::ReferrerPolicy referrer_policy;
     net::RequestPriority priority;
     const net::URLRequestContext* url_request_context;
   };
+
+  void StartWithCookies(const net::CookieList& cookies);
 
   // Callbacks from SubRequest.
   void OnSubRequestAuthRequired(net::AuthChallengeInfo* auth_info);
