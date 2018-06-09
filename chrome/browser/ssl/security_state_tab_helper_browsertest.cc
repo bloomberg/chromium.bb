@@ -470,7 +470,7 @@ void GetFilePathWithHostAndPortReplacement(
 GURL GetURLWithNonLocalHostname(net::EmbeddedTestServer* server,
                                 const std::string& path) {
   GURL::Replacements replace_host;
-  replace_host.SetHostStr("example.test");
+  replace_host.SetHostStr("example1.test");
   return server->GetURL(path).ReplaceComponents(replace_host);
 }
 
