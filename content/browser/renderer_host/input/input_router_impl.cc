@@ -144,10 +144,9 @@ void InputRouterImpl::SendGestureEvent(
     return;
   }
 
-  // We reset TouchActionFilter::allowed_touch_action_ at GestureScrollEnd. If
-  // a gesture scroll event is bubbled from iframe to main frame after a
-  // GestureScrollEnd, then the main frame won't have allowed_touch_action_ set,
-  // so we set it to auto here.
+  // If a gesture event is bubbled from a child frame to the main frame, then
+  // the main frame may not have |allowed_touch_action_| set, in this case we
+  // set it to Auto.
   // TODO(https://crbug.com/841270): Correct the behavior of scroll bubbling
   // across an iframe.
   if (gesture_event.event.is_bubbled_from_child_frame)
