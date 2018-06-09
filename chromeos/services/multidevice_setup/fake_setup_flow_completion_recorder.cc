@@ -10,6 +10,8 @@ namespace multidevice_setup {
 
 FakeSetupFlowCompletionRecorder::FakeSetupFlowCompletionRecorder() = default;
 
+FakeSetupFlowCompletionRecorder::~FakeSetupFlowCompletionRecorder() = default;
+
 base::Optional<base::Time>
 FakeSetupFlowCompletionRecorder::GetCompletionTimestamp() {
   return completion_time_;
