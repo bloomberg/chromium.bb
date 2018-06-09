@@ -51,6 +51,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -1058,6 +1059,11 @@ void RenderWidgetHostViewMac::UnlockKeyboard() {
 
 bool RenderWidgetHostViewMac::IsKeyboardLocked() {
   return is_keyboard_locked_;
+}
+
+base::flat_map<std::string, std::string>
+RenderWidgetHostViewMac::GetKeyboardLayoutMap() {
+  return ui::GenerateDomKeyboardLayoutMap();
 }
 
 void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
