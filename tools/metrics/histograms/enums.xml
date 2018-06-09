@@ -24725,6 +24725,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Subframe navigation start before main frame navigation start"/>
   <int value="16"
       label="IPC received from subframe while not tracking a committed load"/>
+  <int value="17"
+      label="PageLoadFeatures received from browser process while not
+             tracking a relevant committed load"/>
 </enum>
 
 <enum name="InterruptReason">

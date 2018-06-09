@@ -63,6 +63,18 @@ UserInitiatedInfo CreateUserInitiatedInfo(
 
 }  // namespace
 
+// static
+void MetricsWebContentsObserver::RecordFeatureUsage(
+    content::RenderFrameHost* render_frame_host,
+    const mojom::PageLoadFeatures& new_features) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  MetricsWebContentsObserver* observer =
+      MetricsWebContentsObserver::FromWebContents(web_contents);
+  if (observer)
+    observer->OnBrowserFeatureUsage(render_frame_host, new_features);
+}
+
 MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents,
     std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
@@ -644,6 +656,22 @@ bool MetricsWebContentsObserver::ShouldTrackNavigation(
 
   return BrowserPageTrackDecider(embedder_interface_.get(), navigation_handle)
       .ShouldTrack();
+}
+
+void MetricsWebContentsObserver::OnBrowserFeatureUsage(
+    content::RenderFrameHost* render_frame_host,
+    const mojom::PageLoadFeatures& new_features) {
+  // Since this call is coming directly from the browser, it should not pass us
+  // data from frames that have already been navigated away from.
+  DCHECK_EQ(GetMainFrame(render_frame_host), web_contents()->GetMainFrame());
+
+  if (!committed_load_) {
+    RecordInternalError(ERR_BROWSER_USAGE_WITH_NO_RELEVANT_LOAD);
+    return;
+  }
+
+  committed_load_->metrics_update_dispatcher()->UpdateFeatures(
+      render_frame_host, new_features);
 }
 
 void MetricsWebContentsObserver::AddTestingObserver(TestingObserver* observer) {
