@@ -78,6 +78,15 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // Updates the controls view::Views to reflect |is_visible|.
   void UpdateControlsVisibility(bool is_visible);
 
+  // Update the size of |close_controls_view_| as the size of the window
+  // changes. This will scale to one of three sizes, based off the current width
+  // of the window.
+  void UpdateCloseControlsSize();
+
+  // Update the size of |play_pause_controls_view_| as the size of the window
+  // changes.
+  void UpdatePlayPauseControlsSize();
+
   // Toggles the play/pause control through the |controller_| and updates the
   // |play_pause_controls_view_| toggled state to reflect the current playing
   // state.
@@ -101,6 +110,10 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // changes. http://crbug.com/819673
   gfx::Size min_size_;
   gfx::Size max_size_;
+
+  // Current sizes of |close_controls_view_| and |play_pause_controls_view_|.
+  gfx::Size close_button_size_;
+  gfx::Size play_pause_button_size_;
 
   // Current bounds of the Picture-in-Picture window.
   gfx::Rect window_bounds_;

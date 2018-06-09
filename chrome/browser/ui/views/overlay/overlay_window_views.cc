@@ -35,10 +35,13 @@ constexpr gfx::Size kMinWindowSize = gfx::Size(144, 100);
 const int kBorderThickness = 5;
 const int kResizeAreaCornerSize = 16;
 
-constexpr gfx::Size kCloseButtonSize = gfx::Size(36, 36);
-constexpr gfx::Size kPlayPauseButtonSize = gfx::Size(90, 90);
+// |play_pause_controls_view_| scales at 30% the size of the smaller of the
+// screen's width and height.
+const float kPlayPauseControlRatioToWindow = 0.3;
 
 const int kCloseButtonMargin = 8;
+
+const int kMinPlayPauseButtonSize = 48;
 
 // Colors for the control buttons.
 SkColor kBgColor = SK_ColorWHITE;
@@ -124,6 +127,8 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
 OverlayWindowViews::OverlayWindowViews(
     content::PictureInPictureWindowController* controller)
     : controller_(controller),
+      close_button_size_(gfx::Size()),
+      play_pause_button_size_(gfx::Size()),
       video_view_(new views::View()),
       controls_background_view_(new views::View()),
       close_controls_view_(new views::ImageButton(nullptr)),
@@ -214,21 +219,11 @@ void OverlayWindowViews::SetUpViews() {
   GetControlsBackgroundLayer()->SetOpacity(0.4f);
 
   // views::View that closes the window. --------------------------------------
-  close_controls_view_->SetSize(kCloseButtonSize);
   close_controls_view_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                           views::ImageButton::ALIGN_MIDDLE);
-  close_controls_view_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(views::kIcCloseIcon,
-                            kCloseButtonSize.width() * 2 / 3,
-                            kControlIconColor));
   close_controls_view_->SetBackgroundImageAlignment(
       views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_TOP);
-  const gfx::ImageSkia close_background =
-      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
-                            kCloseButtonSize.width(), kBgColor);
-  close_controls_view_->SetBackgroundImage(kBgColor, &close_background,
-                                           &close_background);
+  UpdateCloseControlsSize();
 
   // Accessibility.
   close_controls_view_->SetFocusForPlatform();  // Make button focusable.
@@ -239,25 +234,12 @@ void OverlayWindowViews::SetUpViews() {
   close_controls_view_->SetInstallFocusRingOnFocus(true);
 
   // views::View that toggles play/pause. -------------------------------------
-  play_pause_controls_view_->SetSize(kPlayPauseButtonSize);
   play_pause_controls_view_->SetImageAlignment(
       views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
-  play_pause_controls_view_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kPlayArrowIcon, kPlayPauseButtonSize.width() / 2,
-                            kControlIconColor));
-  gfx::ImageSkia pause_icon = gfx::CreateVectorIcon(
-      kPauseIcon, kPlayPauseButtonSize.width() / 2, kControlIconColor);
-  play_pause_controls_view_->SetToggledImage(views::Button::STATE_NORMAL,
-                                             &pause_icon);
   play_pause_controls_view_->SetToggled(!controller_->IsPlayerActive());
   play_pause_controls_view_->SetBackgroundImageAlignment(
       views::ImageButton::ALIGN_LEFT, views::ImageButton::ALIGN_TOP);
-  const gfx::ImageSkia play_pause_background =
-      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
-                            kPlayPauseButtonSize.width(), kBgColor);
-  play_pause_controls_view_->SetBackgroundImage(
-      kBgColor, &play_pause_background, &play_pause_background);
+  UpdatePlayPauseControlsSize();
 
   // Accessibility.
   play_pause_controls_view_->SetFocusForPlatform();  // Make button focusable.
@@ -311,6 +293,62 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   GetControlsBackgroundLayer()->SetVisible(is_visible);
   GetCloseControlsLayer()->SetVisible(is_visible);
   GetPlayPauseControlsLayer()->SetVisible(is_visible);
+}
+
+void OverlayWindowViews::UpdateCloseControlsSize() {
+  const gfx::Size window_size = GetBounds().size();
+
+  // |close_button_size_| can only be three sizes, dependent on the width of
+  // |this|.
+  int new_close_button_dimension = 24;
+  if (window_size.width() > 640 && window_size.width() <= 1440) {
+    new_close_button_dimension = 48;
+  } else if (window_size.width() > 1440) {
+    new_close_button_dimension = 72;
+  }
+
+  close_button_size_.SetSize(new_close_button_dimension,
+                             new_close_button_dimension);
+  close_controls_view_->SetSize(close_button_size_);
+  close_controls_view_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(views::kIcCloseIcon,
+                            close_button_size_.width() * 2 / 3,
+                            kControlIconColor));
+  const gfx::ImageSkia close_background =
+      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
+                            close_button_size_.width(), kBgColor);
+  close_controls_view_->SetBackgroundImage(kBgColor, &close_background,
+                                           &close_background);
+}
+
+void OverlayWindowViews::UpdatePlayPauseControlsSize() {
+  const gfx::Size window_size = GetBounds().size();
+
+  int scaled_button_dimension =
+      window_size.width() < window_size.height()
+          ? window_size.width() * kPlayPauseControlRatioToWindow
+          : window_size.height() * kPlayPauseControlRatioToWindow;
+
+  int new_play_pause_button_dimension =
+      std::max(kMinPlayPauseButtonSize, scaled_button_dimension);
+
+  play_pause_button_size_.SetSize(new_play_pause_button_dimension,
+                                  new_play_pause_button_dimension);
+  play_pause_controls_view_->SetSize(play_pause_button_size_);
+  play_pause_controls_view_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(kPlayArrowIcon, play_pause_button_size_.width() / 2,
+                            kControlIconColor));
+  gfx::ImageSkia pause_icon = gfx::CreateVectorIcon(
+      kPauseIcon, play_pause_button_size_.width() / 2, kControlIconColor);
+  play_pause_controls_view_->SetToggledImage(views::Button::STATE_NORMAL,
+                                             &pause_icon);
+  const gfx::ImageSkia play_pause_background =
+      gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
+                            play_pause_button_size_.width(), kBgColor);
+  play_pause_controls_view_->SetBackgroundImage(
+      kBgColor, &play_pause_background, &play_pause_background);
 }
 
 bool OverlayWindowViews::IsActive() const {
@@ -381,18 +419,19 @@ gfx::Rect OverlayWindowViews::GetVideoBounds() {
 }
 
 gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
-  return gfx::Rect(gfx::Point(GetBounds().size().width() -
-                                  kCloseButtonSize.width() - kCloseButtonMargin,
-                              kCloseButtonMargin),
-                   kCloseButtonSize);
+  return gfx::Rect(
+      gfx::Point(GetBounds().size().width() - close_button_size_.width() -
+                     kCloseButtonMargin,
+                 kCloseButtonMargin),
+      close_button_size_);
 }
 
 gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
   return gfx::Rect(
       gfx::Point(
-          (GetBounds().size().width() - kPlayPauseButtonSize.width()) / 2,
-          (GetBounds().size().height() - kPlayPauseButtonSize.height()) / 2),
-      kPlayPauseButtonSize);
+          (GetBounds().size().width() - play_pause_button_size_.width()) / 2,
+          (GetBounds().size().height() - play_pause_button_size_.height()) / 2),
+      play_pause_button_size_);
 }
 
 gfx::Size OverlayWindowViews::GetMinimumSize() const {
@@ -508,7 +547,9 @@ void OverlayWindowViews::OnNativeBlur() {
 }
 
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
-  // Update the video layer size to respect aspect ratio.
+  // Update the view layers to scale to |new_size|.
+  UpdateCloseControlsSize();
+  UpdatePlayPauseControlsSize();
   UpdateVideoLayerSizeWithAspectRatio(new_size);
 
   views::Widget::OnNativeWidgetSizeChanged(new_size);
