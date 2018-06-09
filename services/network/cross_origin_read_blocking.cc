@@ -826,6 +826,12 @@ bool CrossOriginReadBlocking::ResponseAnalyzer::ShouldReportBlockedResponse()
   if (http_response_code() == 204)
     return false;
 
+  // Don't bother showing a warning message when blocking responses that are
+  // associated with error responses (e.g. it is quite common to serve a
+  // text/html 404 error page for an <img> tag pointing to a wrong URL).
+  if (400 <= http_response_code() && http_response_code() <= 599)
+    return false;
+
   return true;
 }
 
