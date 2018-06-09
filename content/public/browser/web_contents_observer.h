@@ -26,6 +26,12 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
+namespace blink {
+namespace mojom {
+enum class ViewportFit;
+}  // namespace mojom
+}  // namespace blink
+
 namespace gfx {
 class Size;
 }  // namespace gfx
@@ -352,6 +358,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // in the DOM.
   virtual void PepperInstanceCreated() {}
   virtual void PepperInstanceDeleted() {}
+
+  // This method is called when the viewport fit of a WebContents changes.
+  virtual void ViewportFitChanged(blink::mojom::ViewportFit value) {}
 
   // Notification that a plugin has crashed.
   // |plugin_pid| is the process ID identifying the plugin process. Note that
