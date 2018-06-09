@@ -903,17 +903,8 @@ void Mp2tStreamParser::RegisterNewKeyIdAndIv(const std::string& key_id,
         decrypt_config_ = DecryptConfig::CreateCencConfig(key_id, iv, {});
         break;
       case EncryptionScheme::CIPHER_MODE_AES_CBC:
-        // MP2 Transport Streams don't always specify the encryption pattern up
-        // front. Instead it is determined later by the stream type. So if the
-        // pattern is unknown, leave it out.
-        EncryptionPattern pattern = initial_scheme_.pattern();
-        if (pattern.IsInEffect()) {
-          decrypt_config_ =
-              DecryptConfig::CreateCbcsConfig(key_id, iv, {}, pattern);
-        } else {
-          decrypt_config_ =
-              DecryptConfig::CreateCbcsConfig(key_id, iv, {}, base::nullopt);
-        }
+        decrypt_config_ = DecryptConfig::CreateCbcsConfig(
+            key_id, iv, {}, initial_scheme_.pattern());
         break;
     }
   }
