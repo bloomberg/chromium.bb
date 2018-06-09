@@ -112,6 +112,11 @@ RemoteDeviceList CreateRemoteDeviceListForTest(size_t num_to_create) {
   return generated_devices;
 }
 
+RemoteDevice* GetMutableRemoteDevice(const RemoteDeviceRef& remote_device_ref) {
+  const RemoteDevice* remote_device = remote_device_ref.remote_device_.get();
+  return const_cast<RemoteDevice*>(remote_device);
+}
+
 bool IsSameDevice(const cryptauth::RemoteDevice& remote_device,
                   cryptauth::RemoteDeviceRef remote_device_ref) {
   if (!remote_device_ref.remote_device_)
