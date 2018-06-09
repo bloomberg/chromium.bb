@@ -218,6 +218,9 @@ void AssistantController::OnInputModalityChanged(InputModality input_modality) {
       AssistantQueryType::kVoice) {
     has_active_interaction_ = false;
     assistant_->StopActiveInteraction();
+
+    // Clear the interaction to reset the UI.
+    assistant_interaction_model_.ClearInteraction();
   }
 }
 
@@ -348,6 +351,9 @@ void AssistantController::OnDialogPlateActionPressed(const std::string& text) {
     case MicState::kOpen:
       has_active_interaction_ = false;
       assistant_->StopActiveInteraction();
+
+      // Clear the interaction to reset the UI.
+      assistant_interaction_model_.ClearInteraction();
       break;
   }
 }
