@@ -66,6 +66,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool is_prerendering,
       ResourceContext* context,
       bool report_raw_headers,
+      bool report_security_info,
       bool is_async,
       PreviewsState previews_state,
       const scoped_refptr<network::ResourceRequestBody> body,
@@ -96,6 +97,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // Returns a bitmask of potentially several Previews optimizations.
   PreviewsState GetPreviewsState() const override;
   bool ShouldReportRawHeaders() const;
+  bool ShouldReportSecurityInfo() const;
   NavigationUIData* GetNavigationUIData() const override;
   DevToolsStatus GetDevToolsStatus() const override;
 
@@ -237,6 +239,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool is_prerendering_;
   ResourceContext* context_;
   bool report_raw_headers_;
+  bool report_security_info_;
   bool is_async_;
   DevToolsStatus devtools_status_;
   base::Optional<blink::ResourceRequestBlockedReason>

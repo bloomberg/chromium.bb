@@ -914,6 +914,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   storage::BlobStorageContext* blob_context = nullptr;
   bool do_not_prompt_for_login = false;
   bool report_raw_headers = false;
+  bool report_security_info = false;
   int load_flags = request_data.load_flags;
 
   ResourceContext* resource_context = nullptr;
@@ -985,6 +986,10 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   report_raw_headers = request_data.report_raw_headers;
+  // Security info is less sensitive than raw headers (does not include cookie
+  // values), so |report_security_info| is not subject to the extra security
+  // checks that are applied to |report_raw_headers|.
+  report_security_info = request_data.report_raw_headers;
   if (report_raw_headers && !policy->CanReadRawCookies(child_id) &&
       !requester_info->IsNavigationPreload()) {
     // For navigation preload, the child_id is -1 so CanReadRawCookies would
@@ -1056,8 +1061,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
           request_data.referrer_policy),
       request_data.is_prerendering, resource_context, report_raw_headers,
-      !is_sync_load, request_data.previews_state, request_data.request_body,
-      request_data.initiated_in_secure_context);
+      report_security_info, !is_sync_load, request_data.previews_state,
+      request_data.request_body, request_data.initiated_in_secure_context);
   extra_info->SetBlobHandles(std::move(blob_handles));
 
   // Request takes ownership.
@@ -1313,6 +1318,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,  // is_prerendering
       context,
       false,           // report_raw_headers
+      false,           // report_security_info
       true,            // is_async
       previews_state,  // previews_state
       nullptr,         // body
@@ -1691,6 +1697,10 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       false,  // keepalive
       info.common_params.referrer.policy, info.is_prerendering,
       resource_context, info.report_raw_headers,
+      // For navigation requests, security info is reported whenever raw headers
+      // are. This behavior is different for subresources; see
+      // ContinuePendingBeginRequest.
+      info.report_raw_headers,
       true,  // is_async
       previews_state, info.common_params.post_data,
       // TODO(mek): Currently initiated_in_secure_context is only used for
