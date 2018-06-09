@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <body style="margin: 0px">
 <div id="target" style="-webkit-writing-mode: vertical-rl; border: solid 1px black; font-family: Ahem">
 <br />
 <span style="display: inline-block"><a>b</a></span>
 </div>
-<p id="description"></p>
-<div id="console"></div>
-<script src='../../resources/js-test.js'></script>
 <script>
-function runTests() {
-    description("Test that we can click 2nd line inside inline-block in vertical writing mode.");
+test(() => {
     elementInsideInlineBlockInSecondLine = document.querySelector("a");
-    shouldBe("document.elementFromPoint(5, 5)", "elementInsideInlineBlockInSecondLine");
-    document.getElementById("target").style.display = "none";
-}
-runTests();
+    assert_equals(document.elementFromPoint(5, 5), elementInsideInlineBlockInSecondLine);
+}, 'Click 2nd line inside inline-block in vertical writing mode');
 </script>
 </body>
 </html>
