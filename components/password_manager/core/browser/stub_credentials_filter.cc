@@ -22,13 +22,23 @@ bool StubCredentialsFilter::ShouldSave(
   return true;
 }
 
-bool StubCredentialsFilter::ShouldSavePasswordHash(
+bool StubCredentialsFilter::ShouldSaveGaiaPasswordHash(
+    const autofill::PasswordForm& form) const {
+  return false;
+}
+
+bool StubCredentialsFilter::ShouldSaveEnterprisePasswordHash(
     const autofill::PasswordForm& form) const {
   return false;
 }
 
 void StubCredentialsFilter::ReportFormLoginSuccess(
     const PasswordFormManager& form_manager) const {}
+
+bool StubCredentialsFilter::IsSyncAccountEmail(
+    const std::string& username) const {
+  return false;
+}
 
 void StubCredentialsFilter::FilterResultsPtr(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* results) const {}

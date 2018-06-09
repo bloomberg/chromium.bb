@@ -40062,6 +40062,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Cached StyleSheetContents was reused"/>
 </enum>
 
+<enum name="ReusedPasswordType">
+  <int value="0" label="Saved password"/>
+  <int value="1" label="Sync password"/>
+  <int value="2" label="Other Gaia password"/>
+  <int value="3" label="Enterprise password"/>
+</enum>
+
 <enum name="ReusePendingOrCommittedSiteEnum">
   <int value="0" label="Had to create a new RenderProcessHost"/>
   <int value="1" label="Could reuse an existing RenderProcessHost"/>
@@ -44707,6 +44714,7 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Saved in the content area"/>
   <int value="2" label="Cleared on Chrome sign-out"/>
   <int value="3" label="Changed in the content area"/>
+  <int value="4" label="Not sync password hash change event"/>
 </enum>
 
 <enum name="SyncPromoAction">

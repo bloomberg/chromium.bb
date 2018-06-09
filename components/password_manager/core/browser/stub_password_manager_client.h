@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_log_manager.h"
 
@@ -56,7 +57,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
   void CheckProtectedPasswordEntry(
-      bool matches_sync_password,
+      metrics_util::PasswordType reused_password_type,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) override;
   void LogPasswordReuseDetectedEvent() override;

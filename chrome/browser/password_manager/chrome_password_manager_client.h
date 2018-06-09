@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 #include "components/password_manager/sync/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
@@ -131,7 +132,7 @@ class ChromePasswordManagerClient
                                    const GURL& frame_url) override;
 
   void CheckProtectedPasswordEntry(
-      bool matches_sync_password,
+      password_manager::metrics_util::PasswordType reused_password_type,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) override;
 

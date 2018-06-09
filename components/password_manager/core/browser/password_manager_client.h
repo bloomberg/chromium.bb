@@ -226,11 +226,11 @@ class PasswordManagerClient {
                                            const GURL& frame_url) = 0;
 
   // Checks the safe browsing reputation of the webpage where password reuse
-  // happens. This is called by the PasswordReuseDetectionManager when either
-  // the sync password or a saved password is typed on the wrong domain.
-  // This may trigger a warning dialog if it looks like the page is phishy.
+  // happens. This is called by the PasswordReuseDetectionManager when a
+  // protected password is typed on the wrong domain. This may trigger a
+  // warning dialog if it looks like the page is phishy.
   virtual void CheckProtectedPasswordEntry(
-      bool matches_sync_password,
+      metrics_util::PasswordType reused_password_type,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) = 0;
 

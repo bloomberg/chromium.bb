@@ -676,11 +676,50 @@ TEST_F(ChromePasswordManagerClientTest,
           web_contents()->GetBrowserContext(), nullptr));
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(test_web_contents.get()));
+
+  // |MaybeStartProtectedPasswordEntryRequest| should be triggered for saved
+  // password.
   EXPECT_CALL(*client->password_protection_service(),
-              MaybeStartProtectedPasswordEntryRequest(_, _, false, _, true))
+              MaybeStartProtectedPasswordEntryRequest(
+                  _, _, /*matches_sync_password=*/false, _, true))
       .Times(1);
   client->CheckProtectedPasswordEntry(
-      false, std::vector<std::string>({"saved_domain.com"}), true);
+      password_manager::metrics_util::PasswordType::SAVED_PASSWORD,
+      std::vector<std::string>({"saved_domain.com"}), true);
+  testing::Mock::VerifyAndClearExpectations(
+      client->password_protection_service());
+
+  // |MaybeStartProtectedPasswordEntryRequest| should be triggered for sync
+  // password.
+  EXPECT_CALL(*client->password_protection_service(),
+              MaybeStartProtectedPasswordEntryRequest(
+                  _, _, /*matches_sync_password=*/true, _, true))
+      .Times(1);
+  client->CheckProtectedPasswordEntry(
+      password_manager::metrics_util::PasswordType::SYNC_PASSWORD,
+      std::vector<std::string>({"saved_domain.com"}), true);
+  testing::Mock::VerifyAndClearExpectations(
+      client->password_protection_service());
+
+  // |MaybeStartProtectedPasswordEntryRequest| should NOT be triggered for other
+  // Gaia password.
+  EXPECT_CALL(*client->password_protection_service(),
+              MaybeStartProtectedPasswordEntryRequest(_, _, _, _, _))
+      .Times(0);
+  client->CheckProtectedPasswordEntry(
+      password_manager::metrics_util::PasswordType::OTHER_GAIA_PASSWORD,
+      std::vector<std::string>({"saved_domain.com"}), true);
+  testing::Mock::VerifyAndClearExpectations(
+      client->password_protection_service());
+
+  // |MaybeStartProtectedPasswordEntryRequest| should NOT be triggered for
+  // enterprise password.
+  EXPECT_CALL(*client->password_protection_service(),
+              MaybeStartProtectedPasswordEntryRequest(_, _, _, _, _))
+      .Times(0);
+  client->CheckProtectedPasswordEntry(
+      password_manager::metrics_util::PasswordType::ENTERPRISE_PASSWORD,
+      std::vector<std::string>({"saved_domain.com"}), true);
 }
 
 TEST_F(ChromePasswordManagerClientTest, VerifyLogPasswordReuseDetectedEvent) {

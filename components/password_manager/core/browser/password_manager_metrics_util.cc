@@ -149,7 +149,8 @@ void LogCredentialManagerGetResult(CredentialManagerGetResult result,
 void LogPasswordReuse(int password_length,
                       int saved_passwords,
                       int number_matches,
-                      bool password_field_detected) {
+                      bool password_field_detected,
+                      PasswordType reused_password_type) {
   UMA_HISTOGRAM_COUNTS_100("PasswordManager.PasswordReuse.PasswordLength",
                            password_length);
   UMA_HISTOGRAM_COUNTS_1000("PasswordManager.PasswordReuse.TotalPasswords",
@@ -160,6 +161,9 @@ void LogPasswordReuse(int password_length,
       "PasswordManager.PasswordReuse.PasswordFieldDetected",
       password_field_detected ? HAS_PASSWORD_FIELD : NO_PASSWORD_FIELD,
       PASSWORD_REUSE_PASSWORD_FIELD_DETECTED_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ReusedPasswordType",
+                            reused_password_type,
+                            PasswordType::PASSWORD_TYPE_COUNT);
 }
 
 void LogContextOfShowAllSavedPasswordsShown(
@@ -208,6 +212,16 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state) {
       "PasswordManager.IsSyncPasswordHashSaved", state,
       IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
 }
+
+void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
+                                    size_t enterprise_hash_count) {
+  UMA_HISTOGRAM_COUNTS_100("PasswordManager.SavedGaiaPasswordHashCount",
+                           static_cast<int>(gaia_hash_count));
+  UMA_HISTOGRAM_COUNTS_100("PasswordManager.SavedEnterprisePasswordHashCount",
+                           static_cast<int>(enterprise_hash_count));
+}
+
+void LogProtectedPasswordReuse(PasswordType reused_password_type) {}
 #endif
 
 }  // namespace metrics_util

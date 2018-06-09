@@ -46,6 +46,9 @@
 
 using autofill::FormData;
 using autofill::PasswordForm;
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+using password_manager::metrics_util::SyncPasswordHashChange;
+#endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
 
 namespace password_manager {
 
@@ -935,37 +938,53 @@ void PasswordManager::OnLoginSuccessful() {
 
 void PasswordManager::MaybeSavePasswordHash() {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  if (client_->GetStoreResultFilter()->ShouldSavePasswordHash(
-          *provisional_save_manager_->submitted_form())) {
-    // When |username_value| is empty, it's not clear whether the submitted
-    // credentials are really sync credentials. Don't save sync password hash
-    // in that case.
-    std::string username = base::UTF16ToUTF8(
-        provisional_save_manager_->submitted_form()->username_value);
-    if (username.empty())
-      return;
+  // When |username_value| is empty, it's not clear whether the submitted
+  // credentials are really Gaia or enterprise credentials. Don't save
+  // password hash in that case.
+  std::string username = base::UTF16ToUTF8(
+      provisional_save_manager_->submitted_form()->username_value);
+  if (username.empty())
+    return;
 
-    password_manager::PasswordStore* store = client_->GetPasswordStore();
-    // May be null in tests.
-    if (!store)
-      return;
-    bool is_sync_password_change = !provisional_save_manager_->submitted_form()
-                                        ->new_password_element.empty();
-    // Canonicalizes username if it is an email.
-    if (username.find('@') != std::string::npos)
-      username = gaia::CanonicalizeEmail(username);
+  password_manager::PasswordStore* store = client_->GetPasswordStore();
+  // May be null in tests.
+  if (!store)
+    return;
 
-    if (is_sync_password_change) {
-      store->SaveSyncPasswordHash(
-          username,
-          provisional_save_manager_->submitted_form()->new_password_value,
-          metrics_util::SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA);
-    } else {
-      store->SaveSyncPasswordHash(
-          username, provisional_save_manager_->submitted_form()->password_value,
-          metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA);
-    }
+  const autofill::PasswordForm* password_form =
+      provisional_save_manager_->submitted_form();
+
+  bool should_save_enterprise_pw =
+      client_->GetStoreResultFilter()->ShouldSaveEnterprisePasswordHash(
+          *password_form);
+  bool should_save_gaia_pw =
+      client_->GetStoreResultFilter()->ShouldSaveGaiaPasswordHash(
+          *password_form);
+
+  if (!should_save_enterprise_pw && !should_save_gaia_pw)
+    return;
+
+  // Canonicalizes username if it is an email.
+  if (username.find('@') != std::string::npos)
+    username = gaia::CanonicalizeEmail(username);
+  bool is_password_change = !password_form->new_password_element.empty();
+  const base::string16 password = is_password_change
+                                      ? password_form->new_password_value
+                                      : password_form->password_value;
+
+  if (should_save_enterprise_pw) {
+    store->SaveEnterprisePasswordHash(username, password);
+    return;
   }
+
+  DCHECK(should_save_gaia_pw);
+  SyncPasswordHashChange event =
+      client_->GetStoreResultFilter()->IsSyncAccountEmail(username)
+          ? (is_password_change
+                 ? SyncPasswordHashChange::CHANGED_IN_CONTENT_AREA
+                 : SyncPasswordHashChange::SAVED_IN_CONTENT_AREA)
+          : SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE;
+  store->SaveGaiaPasswordHash(username, password, event);
 #endif
 }
 
