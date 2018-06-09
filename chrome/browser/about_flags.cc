@@ -27,6 +27,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
@@ -908,6 +909,14 @@ const FeatureEntry::FeatureVariation kDataReductionMainMenuFeatureVariations[] =
     {{"(persistent)", kPersistentMenuItemEnabled,
       arraysize(kPersistentMenuItemEnabled), nullptr}};
 #endif  // OS_ANDROID
+
+const FeatureEntry::FeatureParam kDetectingHeavyPagesLowThresholdEnabled[] = {
+    {"PageCapMiB", "1"},
+    {"MediaPageCapMiB", "1"}};
+
+const FeatureEntry::FeatureVariation kDetectingHeavyPagesFeatureVariations[] = {
+    {"(Low)", kDetectingHeavyPagesLowThresholdEnabled,
+     base::size(kDetectingHeavyPagesLowThresholdEnabled), nullptr}};
 
 const FeatureEntry::Choice kEnableOutOfProcessHeapProfilingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
@@ -2056,6 +2065,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOptimizationHintsName,
      flag_descriptions::kEnableOptimizationHintsDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kOptimizationHints)},
+    {"enable-heavy-page-capping",
+     flag_descriptions::kEnableHeavyPageCappingName,
+     flag_descriptions::kEnableHeavyPageCappingDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(data_use_measurement::page_load_capping::
+                                        features::kDetectingHeavyPages,
+                                    kDetectingHeavyPagesFeatureVariations,
+                                    "DetectingHeavyPages")},
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
