@@ -65,6 +65,7 @@ enum class CaretVisibility;
 
 enum class HandleVisibility { kNotVisible, kVisible };
 
+// TODO(yoichio): Rename this to SelectSoftLineBreak
 enum class SelectLineBreak { kNotSelected, kSelected };
 
 // This is return type of ComputeLayoutSelectionStatus(paintfragment).
@@ -74,7 +75,7 @@ enum class SelectLineBreak { kNotSelected, kSelected };
 //   |fragemnt.StartOffset <= start <= end <= fragment.EndOffset|.
 // |start| == |end| means this fragment is not selected.
 // |line_break| : This value represents If this fragment is selected and
-// selection wraps line break.
+// selection wraps soft line break.
 struct LayoutSelectionStatus {
   STACK_ALLOCATED();
 

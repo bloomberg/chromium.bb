@@ -604,26 +604,70 @@ static NewPaintRangeAndSelectedLayoutObjects MarkStartAndEndInTwoNodes(
           std::move(selected_objects)};
 }
 
-static base::Optional<unsigned> GetTextContentOffset(
-    LayoutObject* layout_object,
-    base::Optional<unsigned> node_offset) {
-  DCHECK(layout_object->EnclosingNGBlockFlow());
-  // |layout_object| is start or end of selection and offset is only valid
-  // if it is LayoutText.
-  if (!layout_object->IsText())
+#if DCHECK_IS_ON()
+// Position should be offset on text or before/after a break element.
+static bool IsPositionValidText(const Position& position) {
+  if (position.AnchorNode()->IsTextNode() && position.IsOffsetInAnchor())
+    return true;
+  if ((IsHTMLBRElement(position.AnchorNode()) ||
+       IsHTMLWBRElement(position.AnchorNode())) &&
+      (position.IsBeforeAnchor() || position.IsAfterAnchor()))
+    return true;
+  return false;
+}
+#endif
+
+static base::Optional<unsigned> GetTextContentOffset(const Position& position) {
+  if (position.IsNull())
     return base::nullopt;
-  // There are LayoutText that selection can't be inside it(BR, WBR,
-  // LayoutCounter).
-  if (!node_offset.has_value())
-    return base::nullopt;
-  const Position position_in_dom(*layout_object->GetNode(),
-                                 node_offset.value());
+#if DCHECK_IS_ON()
+  DCHECK(IsPositionValidText(position));
+#endif
+  DCHECK(position.AnchorNode()->GetLayoutObject()->EnclosingNGBlockFlow());
   const NGOffsetMapping* const offset_mapping =
-      NGOffsetMapping::GetFor(position_in_dom);
+      NGOffsetMapping::GetFor(position);
   DCHECK(offset_mapping);
   const base::Optional<unsigned>& ng_offset =
-      offset_mapping->GetTextContentOffset(position_in_dom);
+      offset_mapping->GetTextContentOffset(position);
   return ng_offset;
+}
+
+// Computes text content offset of selection start if |layout_object| is
+// LayoutText.
+static base::Optional<unsigned> GetTextContentOffsetStart(
+    LayoutObject* layout_object,
+    base::Optional<unsigned> node_offset) {
+  if (!layout_object->IsText())
+    return base::nullopt;
+  const Node* node = layout_object->GetNode();
+  DCHECK(node) << layout_object;
+  if (node->IsTextNode()) {
+    DCHECK(node_offset.has_value()) << node;
+    return GetTextContentOffset(Position(*node, node_offset.value()));
+  }
+
+  DCHECK(IsHTMLWBRElement(node) || IsHTMLBRElement(node)) << node;
+  DCHECK(!node_offset.has_value()) << node;
+  return GetTextContentOffset(Position::BeforeNode(*node));
+}
+
+// Computes text content offset of selection end if |layout_object| is
+// LayoutText.
+static base::Optional<unsigned> GetTextContentOffsetEnd(
+    LayoutObject* layout_object,
+    base::Optional<unsigned> node_offset) {
+  if (!layout_object->IsText())
+    return {};
+  const Node* node = layout_object->GetNode();
+  DCHECK(node) << layout_object;
+  if (node->IsTextNode()) {
+    DCHECK(node_offset.has_value()) << node;
+    return GetTextContentOffset(Position(*node, node_offset.value()));
+  }
+
+  DCHECK(IsHTMLWBRElement(node) || IsHTMLBRElement(node)) << node;
+  DCHECK(!node_offset.has_value()) << node;
+  return GetTextContentOffset(Position::AfterNode(*node));
 }
 
 static NewPaintRangeAndSelectedLayoutObjects ComputeNewPaintRange(
@@ -638,13 +682,13 @@ static NewPaintRangeAndSelectedLayoutObjects ComputeNewPaintRange(
   // If LayoutObject is not in NG, use legacy offset.
   const base::Optional<unsigned> start_offset =
       start->EnclosingNGBlockFlow()
-          ? GetTextContentOffset(start_layout_object, start_node_offset)
+          ? GetTextContentOffsetStart(start_layout_object, start_node_offset)
           : new_range.PaintRange().StartOffset();
 
   LayoutObject* const end = new_range.PaintRange().EndLayoutObject();
   const base::Optional<unsigned> end_offset =
       end->EnclosingNGBlockFlow()
-          ? GetTextContentOffset(end_layout_object, end_node_offset)
+          ? GetTextContentOffsetEnd(end_layout_object, end_node_offset)
           : new_range.PaintRange().EndOffset();
 
   return {{start, start_offset, end, end_offset},
@@ -659,17 +703,19 @@ static unsigned ClampOffset(unsigned offset,
                   text_fragment.EndOffset());
 }
 
-static bool IsBeforeLineBreak(const NGPaintFragment& fragment) {
+static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
+  if (ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment()).IsLineBreak())
+    return false;
+
   // TODO(yoichio): InlineBlock should not be container line box.
   // See paint/selection/text-selection-inline-block.html.
   const NGPaintFragment* container_line_box = fragment.ContainerLineBox();
   DCHECK(container_line_box);
   const NGPhysicalLineBoxFragment& physical_line_box =
       ToNGPhysicalLineBoxFragment(container_line_box->PhysicalFragment());
-  const NGPhysicalFragment* last_leaf_not_linebreak =
-      physical_line_box.LastLogicalLeafIgnoringLineBreak();
-  DCHECK(last_leaf_not_linebreak);
-  if (&fragment.PhysicalFragment() != last_leaf_not_linebreak)
+  const NGPhysicalFragment* last_leaf = physical_line_box.LastLogicalLeaf();
+  DCHECK(last_leaf);
+  if (&fragment.PhysicalFragment() != last_leaf)
     return false;
   // Even If |fragment| is before linebreak, if its direction differs to line
   // direction, we don't paint line break. See
@@ -688,12 +734,6 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const NGPaintFragment& fragment) const {
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment());
-  // For BR, WBR, no selection painting.
-  if (fragment.GetNode() && !fragment.GetNode()->IsTextNode())
-    return {0, 0, SelectLineBreak::kNotSelected};
-  if (text_fragment.IsLineBreak())
-    return {0, 0, SelectLineBreak::kNotSelected};
-
   switch (text_fragment.GetLayoutObject()->GetSelectionState()) {
     case SelectionState::kStart: {
       DCHECK(SelectionStart().has_value());
@@ -701,7 +741,7 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
       const bool is_continuous = start_in_block <= text_fragment.EndOffset();
       return {ClampOffset(start_in_block, text_fragment),
               text_fragment.EndOffset(),
-              (is_continuous && IsBeforeLineBreak(fragment))
+              (is_continuous && IsBeforeSoftLineBreak(fragment))
                   ? SelectLineBreak::kSelected
                   : SelectLineBreak::kNotSelected};
     }
@@ -712,7 +752,7 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
       const unsigned end_in_fragment = ClampOffset(end_in_block, text_fragment);
       const bool is_continuous = text_fragment.EndOffset() < end_in_block;
       return {text_fragment.StartOffset(), end_in_fragment,
-              (is_continuous && IsBeforeLineBreak(fragment))
+              (is_continuous && IsBeforeSoftLineBreak(fragment))
                   ? SelectLineBreak::kSelected
                   : SelectLineBreak::kNotSelected};
     }
@@ -726,14 +766,14 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
       const bool is_continuous = start_in_block <= text_fragment.EndOffset() &&
                                  text_fragment.EndOffset() < end_in_block;
       return {ClampOffset(start_in_block, text_fragment), end_in_fragment,
-              (is_continuous && IsBeforeLineBreak(fragment))
+              (is_continuous && IsBeforeSoftLineBreak(fragment))
                   ? SelectLineBreak::kSelected
                   : SelectLineBreak::kNotSelected};
     }
     case SelectionState::kInside: {
       return {text_fragment.StartOffset(), text_fragment.EndOffset(),
-              IsBeforeLineBreak(fragment) ? SelectLineBreak::kSelected
-                                          : SelectLineBreak::kNotSelected};
+              IsBeforeSoftLineBreak(fragment) ? SelectLineBreak::kSelected
+                                              : SelectLineBreak::kNotSelected};
     }
     default:
       // This block is not included in selection.

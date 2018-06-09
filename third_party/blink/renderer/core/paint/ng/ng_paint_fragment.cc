@@ -59,7 +59,7 @@ NGPhysicalOffsetRect ComputePhysicalRectFor(
   return {physical_offset, physical_size};
 }
 
-NGLogicalRect ExpandedSelectionRectForLineBreakIfNeeded(
+NGLogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
     const NGLogicalRect& rect,
     const NGPaintFragment& paint_fragment,
     const LayoutSelectionStatus& selection_status) {
@@ -140,6 +140,11 @@ bool CanBeHitTestTargetPseudoNode(const Node& node) {
     default:
       return false;
   }
+}
+
+bool IsLastBRInPage(const NGPhysicalTextFragment& text_fragment) {
+  return text_fragment.GetLayoutObject()->IsBR() &&
+         !text_fragment.GetLayoutObject()->NextInPreOrder();
 }
 
 }  // namespace
@@ -371,14 +376,25 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() {
 
 NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRect(
     const LayoutSelectionStatus& selection_status) const {
-  const NGPhysicalOffsetRect& selection_rect =
-      ToNGPhysicalTextFragmentOrDie(PhysicalFragment())
-          .LocalRect(selection_status.start, selection_status.end);
-  const NGLogicalRect logical_rect =
-      ComputeLogicalRectFor(selection_rect, *this);
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragmentOrDie(PhysicalFragment());
+  NGPhysicalOffsetRect selection_rect =
+      text_fragment.LocalRect(selection_status.start, selection_status.end);
+  NGLogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, *this);
+  // Let LocalRect for line break have a space width to paint line break
+  // when it is only character in a line or only selected in a line.
+  if (text_fragment.IsLineBreak() &&
+      selection_status.start != selection_status.end &&
+      // This is for old compatible that old doesn't paint last br in a page.
+      !IsLastBRInPage(text_fragment)) {
+    DCHECK(!logical_rect.size.inline_size);
+    logical_rect.size.inline_size = LayoutUnit(Style().GetFont().SpaceWidth());
+  }
   const NGLogicalRect line_break_extended_rect =
-      ExpandedSelectionRectForLineBreakIfNeeded(logical_rect, *this,
-                                                selection_status);
+      text_fragment.IsLineBreak()
+          ? logical_rect
+          : ExpandedSelectionRectForSoftLineBreakIfNeeded(logical_rect, *this,
+                                                          selection_status);
   const NGLogicalRect line_height_expanded_rect =
       ExpandSelectionRectToLineHeight(line_break_extended_rect, *this);
   const NGPhysicalOffsetRect physical_rect =
