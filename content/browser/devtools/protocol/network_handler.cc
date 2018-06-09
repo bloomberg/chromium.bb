@@ -871,12 +871,6 @@ bool GetPostData(const network::ResourceRequestBody& request_body,
   return true;
 }
 
-std::string StripFragment(const GURL& url) {
-  url::Replacements<char> replacements;
-  replacements.ClearRef();
-  return url.ReplaceComponents(replacements).spec();
-}
-
 String SignedExchangeErrorErrorFieldToString(SignedExchangeError::Field field) {
   switch (field) {
     case SignedExchangeError::Field::kSignatureSig:
@@ -1474,9 +1468,10 @@ std::unique_ptr<Network::Response> BuildResponse(
     status_text = "OK";
   }
 
+  std::string url_fragment;
   auto response =
       Network::Response::Create()
-          .SetUrl(StripFragment(url))
+          .SetUrl(NetworkHandler::ExtractFragment(url, &url_fragment))
           .SetStatus(status)
           .SetStatusText(status_text)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
@@ -1572,14 +1567,19 @@ void NetworkHandler::NavigationRequestWillBeSent(
     redirect_response = BuildResponse(request_params.redirects.back(),
                                       request_params.redirect_response.back());
   }
+  std::string url_fragment;
+  std::string url_without_fragment =
+      ExtractFragment(common_params.url, &url_fragment);
   auto request =
       Network::Request::Create()
-          .SetUrl(StripFragment(common_params.url))
+          .SetUrl(url_without_fragment)
           .SetMethod(common_params.method)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           .SetInitialPriority(resourcePriority(net::HIGHEST))
           .SetReferrerPolicy(referrerPolicy(common_params.referrer.policy))
           .Build();
+  if (!url_fragment.empty())
+    request->SetUrlFragment(url_fragment);
 
   std::string post_data;
   if (common_params.post_data &&
@@ -1610,9 +1610,8 @@ void NetworkHandler::NavigationRequestWillBeSent(
   std::string frame_token =
       nav_request.frame_tree_node()->devtools_frame_token().ToString();
   frontend_->RequestWillBeSent(
-      id, id, StripFragment(common_params.url), std::move(request),
-      current_ticks, current_wall_time, std::move(initiator),
-      std::move(redirect_response),
+      id, id, url_without_fragment, std::move(request), current_ticks,
+      current_wall_time, std::move(initiator), std::move(redirect_response),
       std::string(Page::ResourceTypeEnum::Document), std::move(frame_token),
       common_params.has_user_gesture);
 }
@@ -1631,15 +1630,21 @@ void NetworkHandler::RequestSent(const std::string& request_id,
       Network::Initiator::Create().SetType(initiator_type).Build();
   if (initiator_url)
     initiator->SetUrl(initiator_url->spec());
-  frontend_->RequestWillBeSent(
-      request_id, loader_id, StripFragment(request.url),
+  std::string url_fragment;
+  std::string url_without_fragment =
+      ExtractFragment(request.url, &url_fragment);
+  auto request_object =
       Network::Request::Create()
-          .SetUrl(StripFragment(request.url))
+          .SetUrl(url_without_fragment)
           .SetMethod(request.method)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           .SetInitialPriority(resourcePriority(request.priority))
           .SetReferrerPolicy(referrerPolicy(request.referrer_policy))
-          .Build(),
+          .Build();
+  if (!url_fragment.empty())
+    request_object->SetUrlFragment(url_fragment);
+  frontend_->RequestWillBeSent(
+      request_id, loader_id, url_without_fragment, std::move(request_object),
       base::TimeTicks::Now().ToInternalValue() /
           static_cast<double>(base::Time::kMicrosecondsPerSecond),
       base::Time::Now().ToDoubleT(), std::move(initiator),
@@ -1929,12 +1934,16 @@ void NetworkHandler::OnResponseBodyPipeTaken(
 }
 
 // static
-GURL NetworkHandler::ClearUrlRef(const GURL& url) {
-  if (!url.has_ref())
-    return url;
+std::string NetworkHandler::ExtractFragment(const GURL& url,
+                                            std::string* fragment) {
+  if (!url.has_ref()) {
+    *fragment = "#";
+    return url.spec();
+  }
+  *fragment = "#" + url.ref();
   GURL::Replacements replacements;
   replacements.ClearRef();
-  return url.ReplaceComponents(replacements);
+  return url.ReplaceComponents(replacements).spec();
 }
 
 // static
@@ -1948,14 +1957,17 @@ NetworkHandler::CreateRequestFromResourceRequest(
     headers_dict->setString(net::HttpRequestHeaders::kReferer,
                             request.referrer.spec());
   }
+  std::string url_fragment;
   std::unique_ptr<protocol::Network::Request> request_object =
       Network::Request::Create()
-          .SetUrl(ClearUrlRef(request.url).spec())
+          .SetUrl(ExtractFragment(request.url, &url_fragment))
           .SetMethod(request.method)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           .SetInitialPriority(resourcePriority(request.priority))
           .SetReferrerPolicy(referrerPolicy(request.referrer_policy))
           .Build();
+  if (!url_fragment.empty())
+    request_object->SetUrlFragment(url_fragment);
   std::string post_data;
   if (request.request_body && GetPostData(*request.request_body, &post_data))
     request_object->SetPostData(std::move(post_data));
@@ -1977,14 +1989,17 @@ std::unique_ptr<Network::Request> NetworkHandler::CreateRequestFromURLRequest(
     headers_dict->setString(net::HttpRequestHeaders::kReferer,
                             request->referrer());
   }
+  std::string url_fragment;
   std::unique_ptr<protocol::Network::Request> request_object =
       Network::Request::Create()
-          .SetUrl(ClearUrlRef(request->url()).spec())
+          .SetUrl(ExtractFragment(request->url(), &url_fragment))
           .SetMethod(request->method())
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           .SetInitialPriority(resourcePriority(request->priority()))
           .SetReferrerPolicy(referrerPolicy(request->referrer_policy()))
           .Build();
+  if (!url_fragment.empty())
+    request_object->SetUrlFragment(url_fragment);
   std::string post_data;
   if (GetPostData(request, &post_data))
     request_object->SetPostData(std::move(post_data));

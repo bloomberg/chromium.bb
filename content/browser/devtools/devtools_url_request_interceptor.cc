@@ -219,7 +219,9 @@ DevToolsURLRequestInterceptor::FilterEntryForRequest(
     return nullptr;
 
   const std::vector<std::unique_ptr<FilterEntry>>& entries = it->second;
-  const std::string url_str = protocol::NetworkHandler::ClearUrlRef(url).spec();
+  std::string unused;
+  const std::string url_str =
+      protocol::NetworkHandler::ExtractFragment(url, &unused);
   for (const auto& entry : entries) {
     for (const Pattern& pattern : entry->patterns) {
       if (!pattern.resource_types.empty() &&

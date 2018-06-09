@@ -176,7 +176,7 @@ class NetworkHandler : public DevToolsDomainHandler,
 
   Network::Frontend* frontend() const { return frontend_.get(); }
 
-  static GURL ClearUrlRef(const GURL& url);
+  static std::string ExtractFragment(const GURL& url, std::string* fragment);
   static std::unique_ptr<Network::Request> CreateRequestFromResourceRequest(
       const network::ResourceRequest& request);
   static std::unique_ptr<Network::Request> CreateRequestFromURLRequest(

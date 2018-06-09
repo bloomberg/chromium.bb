@@ -336,7 +336,9 @@ class DevToolsURLLoaderInterceptor::Impl
   InterceptionStage GetInterceptionStage(const GURL& url,
                                          ResourceType resource_type) const {
     InterceptionStage stage = InterceptionStage::DONT_INTERCEPT;
-    std::string url_str = protocol::NetworkHandler::ClearUrlRef(url).spec();
+    std::string unused;
+    std::string url_str =
+        protocol::NetworkHandler::ExtractFragment(url, &unused);
     for (const auto& pattern : patterns_) {
       if (pattern.Matches(url_str, resource_type))
         stage |= pattern.interception_stage;
