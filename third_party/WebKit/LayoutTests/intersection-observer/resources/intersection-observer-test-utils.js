@@ -91,6 +91,11 @@ function checkLastEntry(entries, i, expected) {
           entries[i].isIntersecting, expected[12],
           'entries[' + i + '].isIntersecting');
     }
+    if (expected.length > 13) {
+      assert_equals(
+          entries[i].isVisible, expected[13],
+          'entries[' + i + '].isVisible');
+    }
   }
 }
 

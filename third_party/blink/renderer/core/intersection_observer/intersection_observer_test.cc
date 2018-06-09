@@ -24,32 +24,34 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
  public:
   TestIntersectionObserverDelegate(Document& document)
       : document_(document), call_count_(0) {}
-  void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entry,
+  void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entries,
                IntersectionObserver&) override {
     call_count_++;
-
-    if (!entry.back()->intersectionRect()) {
-      last_intersection_rect_ = FloatRect();
-    } else {
-      last_intersection_rect_ =
-          FloatRect(entry.back()->intersectionRect()->x(),
-                    entry.back()->intersectionRect()->y(),
-                    entry.back()->intersectionRect()->width(),
-                    entry.back()->intersectionRect()->height());
-    }
+    entries_.AppendVector(entries);
   }
   ExecutionContext* GetExecutionContext() const override { return document_; }
   int CallCount() const { return call_count_; }
-  FloatRect LastIntersectionRect() const { return last_intersection_rect_; }
+  int EntryCount() const { return entries_.size(); }
+  const IntersectionObserverEntry* LastEntry() const { return entries_.back(); }
+  FloatRect LastIntersectionRect() const {
+    if (entries_.IsEmpty())
+      return FloatRect();
+    const IntersectionObserverEntry* entry = entries_.back();
+    return FloatRect(entry->intersectionRect()->x(),
+                     entry->intersectionRect()->y(),
+                     entry->intersectionRect()->width(),
+                     entry->intersectionRect()->height());
+  }
 
   void Trace(blink::Visitor* visitor) override {
     IntersectionObserverDelegate::Trace(visitor);
     visitor->Trace(document_);
+    visitor->Trace(entries_);
   }
 
  private:
-  FloatRect last_intersection_rect_;
   Member<Document> document_;
+  HeapVector<Member<IntersectionObserverEntry>> entries_;
   int call_count_;
 };
 
@@ -64,7 +66,15 @@ class IntersectionObserverTest
       : ScopedIntersectionObserverGeometryMapperForTest(GetParam()) {}
 };
 
+class IntersectionObserverV2Test : public IntersectionObserverTest,
+                                   public ScopedIntersectionObserverV2ForTest {
+ public:
+  IntersectionObserverV2Test()
+      : IntersectionObserverTest(), ScopedIntersectionObserverV2ForTest(true) {}
+};
+
 INSTANTIATE_TEST_CASE_P(All, IntersectionObserverTest, testing::Bool());
+INSTANTIATE_TEST_CASE_P(All, IntersectionObserverV2Test, testing::Bool());
 
 TEST_P(IntersectionObserverTest, ObserveSchedulesFrame) {
   SimRequest main_resource("https://example.com/", "text/html");
@@ -244,8 +254,7 @@ TEST_P(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
 }
 
-TEST_P(IntersectionObserverTest, TrackVisibilityInit) {
-  ScopedIntersectionObserverV2ForTest iov2_enabled(true);
+TEST_P(IntersectionObserverV2Test, TrackVisibilityInit) {
   IntersectionObserverInit observer_init;
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
@@ -257,6 +266,160 @@ TEST_P(IntersectionObserverTest, TrackVisibilityInit) {
   observer = IntersectionObserver::Create(observer_init, *observer_delegate,
                                           exception_state);
   EXPECT_TRUE(observer->trackVisibility());
+}
+
+TEST_P(IntersectionObserverV2Test, BasicOcclusion) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id='target'>
+      <div id='child'></div>
+    </div>
+    <div id='occluder'></div>
+  )HTML");
+
+  IntersectionObserverInit observer_init;
+  observer_init.setTrackVisibility(true);
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      new TestIntersectionObserverDelegate(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  Element* target = GetDocument().getElementById("target");
+  Element* occluder = GetDocument().getElementById("occluder");
+  ASSERT_TRUE(target);
+  observer->observe(target);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+  EXPECT_EQ(observer_delegate->EntryCount(), 1);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+  EXPECT_TRUE(observer_delegate->LastEntry()->isVisible());
+
+  occluder->SetInlineStyleProperty(CSSPropertyMarginTop, "-10px");
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 2);
+  EXPECT_EQ(observer_delegate->EntryCount(), 2);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+  EXPECT_FALSE(observer_delegate->LastEntry()->isVisible());
+}
+
+TEST_P(IntersectionObserverV2Test, BasicOpacity) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id='transparent'>
+      <div id='target'></div>
+    </div>
+  )HTML");
+
+  IntersectionObserverInit observer_init;
+  observer_init.setTrackVisibility(true);
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      new TestIntersectionObserverDelegate(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  Element* target = GetDocument().getElementById("target");
+  Element* transparent = GetDocument().getElementById("transparent");
+  ASSERT_TRUE(target);
+  ASSERT_TRUE(transparent);
+  observer->observe(target);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+  EXPECT_EQ(observer_delegate->EntryCount(), 1);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+  EXPECT_TRUE(observer_delegate->LastEntry()->isVisible());
+
+  transparent->SetInlineStyleProperty(CSSPropertyOpacity, "0.99");
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 2);
+  EXPECT_EQ(observer_delegate->EntryCount(), 2);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+  EXPECT_FALSE(observer_delegate->LastEntry()->isVisible());
+}
+
+TEST_P(IntersectionObserverV2Test, BasicTransform) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id='transformed'>
+      <div id='target'></div>
+    </div>
+  )HTML");
+
+  IntersectionObserverInit observer_init;
+  observer_init.setTrackVisibility(true);
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      new TestIntersectionObserverDelegate(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  Element* target = GetDocument().getElementById("target");
+  Element* transformed = GetDocument().getElementById("transformed");
+  ASSERT_TRUE(target);
+  ASSERT_TRUE(transformed);
+  observer->observe(target);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+  EXPECT_EQ(observer_delegate->EntryCount(), 1);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+  EXPECT_TRUE(observer_delegate->LastEntry()->isVisible());
+
+  // 2D translations and proportional upscaling is permitted.
+  transformed->SetInlineStyleProperty(
+      CSSPropertyTransform, "translateX(10px) translateY(20px) scale(2)");
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+  EXPECT_EQ(observer_delegate->EntryCount(), 1);
+
+  // Any other transform is not permitted.
+  transformed->SetInlineStyleProperty(CSSPropertyTransform, "skewX(10deg)");
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 2);
+  EXPECT_EQ(observer_delegate->EntryCount(), 2);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+  EXPECT_FALSE(observer_delegate->LastEntry()->isVisible());
 }
 
 }  // namespace blink

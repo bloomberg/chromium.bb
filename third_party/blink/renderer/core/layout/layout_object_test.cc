@@ -728,6 +728,46 @@ TEST_F(LayoutObjectTest, DisplayContentsSVGGElementInHTML) {
   ASSERT_FALSE(text->GetLayoutObject());
 }
 
+TEST_F(LayoutObjectTest, HasDistortingVisualEffects) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=opaque style='opacity:1'><div class=inner></div></div>
+    <div id=transparent style='opacity:0.99'><div class=inner></div></div>
+    <div id=blurred style='filter:blur(5px)'><div class=inner></div></div>
+    <div id=blended style='mix-blend-mode:hue'><div class=inner></div></div>
+    <div id=good-transform style='transform:translateX(10px) scale(1.6)'>
+      <div class=inner></div>
+    </div>
+    <div id=bad-transform style='transform:rotate(45deg)'>
+      <div class=inner></div>
+    </div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* outer = GetDocument().getElementById("opaque");
+  Element* inner = outer->QuerySelector(".inner");
+  ASSERT_FALSE(inner->GetLayoutObject()->HasDistortingVisualEffects());
+
+  outer = GetDocument().getElementById("transparent");
+  inner = outer->QuerySelector(".inner");
+  ASSERT_TRUE(inner->GetLayoutObject()->HasDistortingVisualEffects());
+
+  outer = GetDocument().getElementById("blurred");
+  inner = outer->QuerySelector(".inner");
+  ASSERT_TRUE(inner->GetLayoutObject()->HasDistortingVisualEffects());
+
+  outer = GetDocument().getElementById("blended");
+  inner = outer->QuerySelector(".inner");
+  ASSERT_TRUE(inner->GetLayoutObject()->HasDistortingVisualEffects());
+
+  outer = GetDocument().getElementById("good-transform");
+  inner = outer->QuerySelector(".inner");
+  ASSERT_FALSE(inner->GetLayoutObject()->HasDistortingVisualEffects());
+
+  outer = GetDocument().getElementById("bad-transform");
+  inner = outer->QuerySelector(".inner");
+  ASSERT_TRUE(inner->GetLayoutObject()->HasDistortingVisualEffects());
+}
+
 class LayoutObjectSimTest : public SimTest {
  public:
   bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
