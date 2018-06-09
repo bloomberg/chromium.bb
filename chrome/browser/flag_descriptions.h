@@ -317,6 +317,9 @@ extern const char kEnableGenericSensorExtraClassesDescription[];
 extern const char kEnableHDRName[];
 extern const char kEnableHDRDescription[];
 
+extern const char kEnableHeavyPageCappingName[];
+extern const char kEnableHeavyPageCappingDescription[];
+
 extern const char kEnableHttpFormWarningName[];
 extern const char kEnableHttpFormWarningDescription[];
 
