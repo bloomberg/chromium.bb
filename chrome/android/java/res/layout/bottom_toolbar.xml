@@ -8,7 +8,7 @@
     android:id="@+id/bottom_toolbar_control_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="@dimen/control_container_height" >
+    android:minHeight="@dimen/bottom_toolbar_height" >
 
     <ImageView
         android:id="@+id/bottom_toolbar_top_shadow"
@@ -22,7 +22,7 @@
     <org.chromium.chrome.browser.widget.bottomsheet.TouchRestrictingFrameLayout
         android:id="@+id/bottom_toolbar_container"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/control_container_height"
+        android:layout_height="@dimen/bottom_toolbar_height"
         android:layout_marginTop="@dimen/toolbar_shadow_height" >
 
         <LinearLayout

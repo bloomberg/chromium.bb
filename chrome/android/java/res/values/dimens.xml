@@ -216,6 +216,7 @@
     <!-- Full Screen Dimensions -->
     <!-- Should match toolbar_height_no_shadow -->
     <dimen name="control_container_height">56dp</dimen>
+    <dimen name="bottom_toolbar_height">@dimen/min_touch_target_size</dimen>
     <dimen name="bottom_control_container_peek_height">48dp</dimen>
     <dimen name="bottom_control_container_slim_peek_height">40dp</dimen>
     <dimen name="bottom_control_container_slim_expanded_height">56dp</dimen>

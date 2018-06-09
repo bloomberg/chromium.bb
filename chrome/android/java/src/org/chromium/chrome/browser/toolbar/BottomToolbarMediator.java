@@ -40,7 +40,7 @@ class BottomToolbarMediator implements FullscreenListener {
 
         // Notify the fullscreen manager that the bottom controls now have a height.
         fullscreenManager.setBottomControlsHeight(
-                resources.getDimensionPixelOffset(R.dimen.control_container_height));
+                resources.getDimensionPixelOffset(R.dimen.bottom_toolbar_height));
         fullscreenManager.updateViewportSize();
     }
 
