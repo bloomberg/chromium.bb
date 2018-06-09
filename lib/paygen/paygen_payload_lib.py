@@ -707,15 +707,13 @@ def FindCacheDir():
   return os.path.join(path_util.GetCacheDir(), 'paygen_cache')
 
 
-def CreateAndUploadPayload(payload, cache, work_dir, sign=True, verify=True,
+def CreateAndUploadPayload(payload, cache, sign=True, verify=True,
                            dry_run=False):
   """Helper to create a PaygenPayloadLib instance and use it.
 
   Args:
     payload: An instance of utils.Payload describing the payload to generate.
     cache: An instance of DownloadCache for retrieving files.
-    work_dir: A working directory that can hold scratch files. Will be cleaned
-              up when done, and won't interfere with other users. None for /tmp.
     sign: Boolean saying if the payload should be signed (normally, you do).
     verify: whether the payload should be verified (default: True)
     dry_run: don't perform actual work
@@ -727,11 +725,12 @@ def CreateAndUploadPayload(payload, cache, work_dir, sign=True, verify=True,
       capture_output=True,
       enter_chroot=True).output.strip())
 
-  with osutils.TempDir(prefix='paygen_payload.', base_dir=temp_dir) as gen_dir:
+  with osutils.TempDir(prefix='paygen_payload.', base_dir=temp_dir) as work_dir:
     logging.info('* Starting payload generation')
     start_time = datetime.datetime.now()
 
-    _PaygenPayload(payload, cache, gen_dir, sign, verify, dry_run=dry_run).Run()
+    _PaygenPayload(payload, cache, work_dir, sign, verify,
+                   dry_run=dry_run).Run()
 
     end_time = datetime.datetime.now()
     logging.info('* Finished payload generation in %s', end_time - start_time)

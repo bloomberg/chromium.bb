@@ -219,14 +219,13 @@ def _FilterForTest(artifacts):
           if i.image_type == 'test']
 
 
-def _GenerateSinglePayload(payload, work_dir, sign, dry_run):
+def _GenerateSinglePayload(payload, sign, dry_run):
   """Generate a single payload.
 
   This is intended to be safe to call inside a new process.
 
   Args:
     payload: gspath.Payload object defining the payloads to generate.
-    work_dir: Working directory for payload generation.
     sign: boolean to decide if payload should be signed.
     dry_run: boolean saying if this is a dry run.
   """
@@ -239,7 +238,6 @@ def _GenerateSinglePayload(payload, work_dir, sign, dry_run):
     paygen_payload_lib.CreateAndUploadPayload(
         payload,
         cache,
-        work_dir=work_dir,
         sign=sign,
         dry_run=dry_run)
 
@@ -683,7 +681,6 @@ class PaygenBuild(object):
       Any arbitrary exception raised by CreateAndUploadPayload.
     """
     payloads_args = [(payload,
-                      self._work_dir,
                       isinstance(payload.tgt_image, gspaths.Image),
                       bool(self._drm))
                      for payload in payloads]

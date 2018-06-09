@@ -748,7 +748,6 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
     paygen_payload_lib.CreateAndUploadPayload(
         payload=payload,
         cache=self.cache,
-        work_dir=self.tempdir,
         sign=sign)
 
     self.assertExists(output_uri)

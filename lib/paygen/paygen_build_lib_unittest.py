@@ -768,9 +768,9 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
     self.assertEqual(
         poolMock.call_args_list,
         [mock.call(paygen_build_lib._GenerateSinglePayload,
-                   [(self.mp_full_payload, self.tempdir, True, False),
-                    (self.mp_delta_payload, self.tempdir, True, False),
-                    (self.test_delta_payload, self.tempdir, False, False)])])
+                   [(self.mp_full_payload, True, False),
+                    (self.mp_delta_payload, True, False),
+                    (self.test_delta_payload, False, False)])])
 
   def testGeneratePayloadsDryrun(self):
     """Ensure we correctly pass along the dryrun flag."""
@@ -784,9 +784,9 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
     self.assertEqual(
         poolMock.call_args_list,
         [mock.call(paygen_build_lib._GenerateSinglePayload,
-                   [(self.mp_full_payload, self.tempdir, True, True),
-                    (self.mp_delta_payload, self.tempdir, True, True),
-                    (self.test_delta_payload, self.tempdir, False, True)])])
+                   [(self.mp_full_payload, True, True),
+                    (self.mp_delta_payload, True, True),
+                    (self.test_delta_payload, False, True)])])
 
   def testGeneratePayloadInProcess(self):
     """Make sure the _GenerateSinglePayload calls into paygen_payload_lib."""
@@ -794,13 +794,12 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
         paygen_payload_lib, 'CreateAndUploadPayload')
 
     paygen_build_lib._GenerateSinglePayload(
-        self.test_delta_payload, self.tempdir, False, False)
+        self.test_delta_payload, False, False)
 
     self.assertEqual(
         createMock.call_args_list,
         [mock.call(self.test_delta_payload,
                    mock.ANY,
-                   work_dir=self.tempdir,
                    sign=False,
                    dry_run=False)])
 
