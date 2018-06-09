@@ -35,6 +35,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
@@ -1841,6 +1842,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(layout-dev): Once everything are LayoutNG, we can get rid of this.
   // Used for legacy layout tree fallback
   ReattachLegacyLayoutObjectList* reattach_legacy_object_list_;
+
+  // Stores the current value viewport-fit value.
+  mojom::ViewportFit viewport_fit_ = blink::mojom::ViewportFit::kAuto;
+
+  mojom::blink::DisplayCutoutHostAssociatedPtr display_cutout_host_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
