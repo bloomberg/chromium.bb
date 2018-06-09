@@ -14,8 +14,6 @@ namespace {
 const char kTestOfflinePagesSuggestionsServerEndpoint[] =
     "https://test-offlinepages-pa.sandbox.googleapis.com/";
 const char kInvalidServerEndpoint[] = "^__^";
-const char kInvalidSchemeServerEndpoint[] =
-    "http://test-offlinepages-pa.sandbox.googleapis.com/";
 }  // namespace
 
 class PrefetchServerURLsTest : public testing::Test {
@@ -53,12 +51,6 @@ TEST_F(PrefetchServerURLsTest, TestVariationsConfig) {
   // Test other variations of invalid URLS.
   // First, a completely bogus endpoint.
   SetTestingServerEndpoint(kInvalidServerEndpoint);
-  request_url = GeneratePageBundleRequestURL(version_info::Channel::UNKNOWN);
-  EXPECT_EQ(default_server.host(), request_url.host());
-  EXPECT_TRUE(request_url.SchemeIsCryptographic());
-
-  // Then a valid URL with a non-cryptographic scheme.
-  SetTestingServerEndpoint(kInvalidSchemeServerEndpoint);
   request_url = GeneratePageBundleRequestURL(version_info::Channel::UNKNOWN);
   EXPECT_EQ(default_server.host(), request_url.host());
   EXPECT_TRUE(request_url.SchemeIsCryptographic());

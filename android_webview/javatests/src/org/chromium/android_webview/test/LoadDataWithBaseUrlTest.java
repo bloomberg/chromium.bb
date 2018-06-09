@@ -56,9 +56,9 @@ public class LoadDataWithBaseUrlTest {
         mCookieManager.setAcceptCookie(true);
     }
 
-    protected void loadDataWithBaseUrlSync(
-            final String data, final String mimeType, final boolean isBase64Encoded,
-            final String baseUrl, final String historyUrl) throws Throwable {
+    protected void loadDataWithBaseUrlSync(final String data, final String mimeType,
+            final boolean isBase64Encoded, final String baseUrl, final String historyUrl)
+            throws Throwable {
         mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
                 mContentsClient.getOnPageFinishedHelper(), data, mimeType, isBase64Encoded, baseUrl,
                 historyUrl);
@@ -129,8 +129,8 @@ public class LoadDataWithBaseUrlTest {
     public void testScriptLoad() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         try {
-            final String scriptUrl = webServer.setResponse(SCRIPT_FILE, SCRIPT_JS,
-                    CommonResources.getTextJavascriptHeaders(true));
+            final String scriptUrl = webServer.setResponse(
+                    SCRIPT_FILE, SCRIPT_JS, CommonResources.getTextJavascriptHeaders(true));
             final String pageHtml = getScriptFileTestPageHtml(scriptUrl);
 
             mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
@@ -230,9 +230,9 @@ public class LoadDataWithBaseUrlTest {
             final String html = getCrossOriginAccessTestPageHtml(frameUrl);
             final String baseUrl = "http://www.google.com/"; // Treat the iframe as 3P.
             loadDataWithBaseUrlSync(html, "text/html", false, baseUrl, null);
-            List<String> request = webServer.getLastRequest("/" + CommonResources.ABOUT_FILENAME);
-            Assert.assertTrue("Should send 3P cookies, expected '" + expectedCookieHeader + "'",
-                    request.contains(expectedCookieHeader));
+            TestWebServer.HTTPRequest request =
+                    webServer.getLastRequest("/" + CommonResources.ABOUT_FILENAME);
+            Assert.assertEquals("Should send 3P cookies", cookie, request.headerValue("Cookie"));
         } finally {
             webServer.shutdown();
         }
@@ -262,9 +262,8 @@ public class LoadDataWithBaseUrlTest {
                 mContentsClient.getOnPageFinishedHelper();
         final int pageStartedCount = onPageStartedHelper.getCallCount();
         final int pageFinishedCount = onPageFinishedHelper.getCallCount();
-        mActivityTestRule.loadDataWithBaseUrlAsync(
-                mAwContents, CommonResources.ABOUT_HTML, "text/html", false,
-                baseUrl, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        mActivityTestRule.loadDataWithBaseUrlAsync(mAwContents, CommonResources.ABOUT_HTML,
+                "text/html", false, baseUrl, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         onPageStartedHelper.waitForCallback(pageStartedCount);
         Assert.assertEquals(baseUrl, onPageStartedHelper.getUrl());
 

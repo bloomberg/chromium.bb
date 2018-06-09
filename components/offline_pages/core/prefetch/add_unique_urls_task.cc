@@ -133,7 +133,7 @@ Result AddUrlsAndCleanupZombiesSync(
                            added_row_count);
   return added_row_count > 0 ? Result::URLS_ADDED : Result::NOTHING_ADDED;
 }
-}
+}  // namespace
 
 AddUniqueUrlsTask::AddUniqueUrlsTask(
     PrefetchDispatcher* prefetch_dispatcher,

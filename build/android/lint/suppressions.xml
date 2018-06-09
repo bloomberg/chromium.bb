@@ -33,8 +33,6 @@ Still reading?
     <ignore regexp="chrome/android/javatests"/>
   </issue>
   <issue id="BadHostnameVerifier" severity="Error">
-    <!-- Safe, used in test only. -->
-    <ignore regexp="net/test/android/javatests/src/org/chromium/net/test/util/TestWebServer.java"/>
   </issue>
   <issue id="ButtonOrder" severity="Error">
     <ignore regexp="chrome/android/java/res/layout/homepage_editor.xml"/>

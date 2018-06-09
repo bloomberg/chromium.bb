@@ -62,6 +62,9 @@ bool IsOfflinePagesPrefetchingUIEnabled();
 // usage limits.
 bool IsLimitlessPrefetchingEnabled();
 
+// Enables or disabled limitless prefetching. Provided for testing only.
+void SetLimitlessPrefetchingEnabledForTesting(bool enabled);
+
 // Returns true if we enable load timing signals to be collected.
 bool IsOfflinePagesLoadSignalCollectingEnabled();
 
