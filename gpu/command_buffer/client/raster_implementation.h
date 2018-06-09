@@ -310,6 +310,9 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   ClientTransferCache transfer_cache_;
 
+  // Tracing helpers.
+  int raster_chromium_id_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(RasterImplementation);
 };
 

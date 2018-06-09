@@ -757,8 +757,12 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<SkCanvas> raster_canvas_;
   uint32_t raster_color_space_id_;
   std::vector<SkDiscardableHandleId> locked_handles_;
+  size_t glyph_cache_max_texture_bytes_;
 
   bool need_context_state_reset_ = false;
+
+  // Tracing helpers.
+  int raster_chromium_id_ = 0;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
 
@@ -980,6 +984,7 @@ ContextResult RasterDecoderImpl::Initialize(
       GrContextOptions options;
       options.fDriverBugWorkarounds =
           GrDriverBugWorkarounds(workarounds().ToIntSet());
+      glyph_cache_max_texture_bytes_ = options.fGlyphCacheTextureMaximumBytes;
       gr_context_ = GrContext::MakeGL(std::move(interface), options);
 
       if (gr_context_) {
@@ -1143,9 +1148,11 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   // junk, which is a bug (https://crbug.com/828578).
   caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
 
-  if (gr_context_)
+  if (gr_context_) {
     caps.context_supports_distance_field_text =
         gr_context_->supportsDistanceFieldText();
+    caps.glyph_cache_max_texture_bytes = glyph_cache_max_texture_bytes_;
+  }
   return caps;
 }
 
@@ -3036,7 +3043,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
                                          GLuint font_shm_id,
                                          GLuint font_shm_offset,
                                          GLsizeiptr font_shm_size) {
-  TRACE_EVENT0("gpu", "RasterDecoderImpl::DoRasterCHROMIUM");
+  TRACE_EVENT1("gpu", "RasterDecoderImpl::DoRasterCHROMIUM", "raster_id",
+               ++raster_chromium_id_);
 
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM",

@@ -1183,6 +1183,9 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
                                           const gfx::Vector2dF& post_translate,
                                           GLfloat post_scale,
                                           bool requires_clear) {
+  TRACE_EVENT1("gpu", "RasterImplementation::RasterCHROMIUM",
+               "raster_chromium_id", ++raster_chromium_id_);
+
   if (std::abs(post_scale) < std::numeric_limits<float>::epsilon())
     return;
 
@@ -1224,7 +1227,9 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
       serialize_cb, &stashing_image_provider, &transfer_cache_serialize_helper,
       font_manager_.strike_server(), raster_properties_->color_space.get(),
       raster_properties_->can_use_lcd_text,
-      capabilities().context_supports_distance_field_text);
+      capabilities().context_supports_distance_field_text,
+      capabilities().max_texture_size,
+      capabilities().glyph_cache_max_texture_bytes);
   serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
   // TODO(piman): raise error if !serializer.valid()?
   op_serializer.SendSerializedData();

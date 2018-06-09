@@ -147,7 +147,11 @@ class CC_PAINT_EXPORT PaintOp {
                      SkColorSpace* color_space,
                      bool can_use_lcd_text,
                      bool context_supports_distance_field_text,
+                     int max_texture_size,
+                     size_t max_texture_bytes,
                      const SkMatrix& original_ctm);
+    SerializeOptions(const SerializeOptions&);
+    SerializeOptions& operator=(const SerializeOptions&);
 
     // Required.
     ImageProvider* image_provider = nullptr;
@@ -157,9 +161,11 @@ class CC_PAINT_EXPORT PaintOp {
     SkColorSpace* color_space = nullptr;
     bool can_use_lcd_text = false;
     bool context_supports_distance_field_text = true;
+    int max_texture_size = 0;
+    size_t max_texture_bytes = 0.f;
+    SkMatrix original_ctm = SkMatrix::I();
 
     // Optional.
-    SkMatrix original_ctm = SkMatrix::I();
     // The flags to use when serializing this op. This can be used to override
     // the flags serialized with the op. Valid only for PaintOpWithFlags.
     const PaintFlags* flags_to_serialize = nullptr;
