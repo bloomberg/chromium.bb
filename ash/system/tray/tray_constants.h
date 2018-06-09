@@ -160,7 +160,6 @@ constexpr int kUnifiedSystemInfoSpacing = 8;
 constexpr gfx::Size kUnifiedFeaturePodIconSize(48, 48);
 constexpr gfx::Size kUnifiedFeaturePodSize(80, 88);
 constexpr gfx::Size kUnifiedFeaturePodCollapsedSize(48, 48);
-constexpr gfx::Size kUnifiedFeaturePodHoverSize(80, 36);
 constexpr gfx::Insets kUnifiedFeaturePodIconPadding(4);
 constexpr gfx::Insets kUnifiedFeaturePodHoverPadding(2);
 constexpr int kUnifiedFeaturePodSpacing = 6;

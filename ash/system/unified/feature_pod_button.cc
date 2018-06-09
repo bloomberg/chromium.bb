@@ -95,10 +95,10 @@ void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
     : Button(listener), label_(new views::Label), sub_label_(new views::Label) {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kUnifiedFeaturePodHoverPadding));
+  layout->set_minimum_cross_axis_size(kUnifiedFeaturePodSize.width());
 
-  SetPreferredSize(kUnifiedFeaturePodHoverSize);
   ConfigureFeaturePodLabel(label_);
   ConfigureFeaturePodLabel(sub_label_);
   label_->SetEnabledColor(kUnifiedMenuTextColor);
@@ -163,14 +163,15 @@ FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
     : controller_(controller),
       icon_button_(new FeaturePodIconButton(this)),
       label_button_(new FeaturePodLabelButton(this)) {
-  auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(), kUnifiedFeaturePodSpacing);
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(), kUnifiedFeaturePodSpacing));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  SetLayoutManager(std::move(layout));
 
   AddChildView(icon_button_);
   AddChildView(label_button_);
+
+  layout->SetFlexForView(label_button_, 1);
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);

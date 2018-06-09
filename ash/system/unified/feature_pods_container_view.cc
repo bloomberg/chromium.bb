@@ -91,10 +91,20 @@ void FeaturePodsContainerView::Layout() {
     if (!child->visible())
       continue;
 
-    child->SetBoundsRect(gfx::Rect(GetButtonPosition(visible_count++),
-                                   expanded_amount_ > 0.0
-                                       ? kUnifiedFeaturePodSize
-                                       : kUnifiedFeaturePodCollapsedSize));
+    gfx::Size child_size;
+    if (expanded_amount_ > 0.0) {
+      child_size = kUnifiedFeaturePodSize;
+
+      // Flexibly give more height if the child view doesn't fit into the
+      // default height, so that label texts won't be broken up in the middle.
+      child_size.set_height(std::max(
+          child_size.height(), child->GetHeightForWidth(child_size.height())));
+    } else {
+      child_size = kUnifiedFeaturePodCollapsedSize;
+    }
+
+    child->SetBoundsRect(
+        gfx::Rect(GetButtonPosition(visible_count++), child_size));
     child->Layout();
   }
 }
