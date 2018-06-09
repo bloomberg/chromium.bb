@@ -24,6 +24,9 @@ declare_args() {
   # Compile the 'headless' platform.
   ozone_platform_headless = false
 
+  # Compile the 'scenic' platform.
+  ozone_platform_scenic = false
+
   # Compile the 'x11' platform.
   ozone_platform_x11 = false
 
@@ -65,6 +68,12 @@ declare_args() {
     } else if (is_win) {
       ozone_platform = "windows"
       ozone_platform_windows = true
+    } else if (is_fuchsia) {
+      # TODO(crbug.com/829980): Uncomment this line to set scenic as default
+      # on fuchsia. Currently this breaks content_unittests on test bots.
+      #
+      # ozone_platform = "scenic"
+      ozone_platform_scenic = true
     }
   }
 }
