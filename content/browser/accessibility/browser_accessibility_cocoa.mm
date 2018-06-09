@@ -30,6 +30,7 @@
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 
@@ -65,12 +66,15 @@ NSString* const NSAccessibilityARIARowCountAttribute = @"AXARIARowCount";
 NSString* const NSAccessibilityARIARowIndexAttribute = @"AXARIARowIndex";
 NSString* const NSAccessibilityARIASetSizeAttribute = @"AXARIASetSize";
 NSString* const NSAccessibilityAccessKeyAttribute = @"AXAccessKey";
+NSString* const NSAccessibilityAutocompleteValueAttribute =
+    @"AXAutocompleteValue";
 NSString* const NSAccessibilityDOMIdentifierAttribute = @"AXDOMIdentifier";
 NSString* const NSAccessibilityDropEffectsAttribute = @"AXDropEffects";
 NSString* const NSAccessibilityEditableAncestorAttribute =
     @"AXEditableAncestor";
 NSString* const NSAccessibilityGrabbedAttribute = @"AXGrabbed";
 NSString* const NSAccessibilityHasPopupAttribute = @"AXHasPopup";
+NSString* const NSAccessibilityHasPopupValueAttribute = @"AXHasPopupValue";
 NSString* const NSAccessibilityHighestEditableAncestorAttribute =
     @"AXHighestEditableAncestor";
 NSString* const NSAccessibilityInvalidAttribute = @"AXInvalid";
@@ -112,6 +116,13 @@ NSString* const NSAccessibilityTextMarkerRangeForUnorderedTextMarkersParameteriz
     @"AXTextMarkerRangeForUnorderedTextMarkers";
 NSString* const NSAccessibilityIndexForChildUIElementParameterizedAttribute =
     @"AXIndexForChildUIElement";
+NSString* const NSAccessibilityValueAutofillAvailableAttribute =
+    @"AXValueAutofillAvailable";
+// Not currently supported by Chrome -- information not stored:
+// NSString* const NSAccessibilityValueAutofilledAttribute =
+// @"AXValueAutofilled"; Not currently supported by Chrome -- mismatch of types
+// supported: NSString* const NSAccessibilityValueAutofillTypeAttribute =
+// @"AXValueAutofillType";
 
 // Actions.
 NSString* const NSAccessibilityScrollToVisibleAction = @"AXScrollToVisible";
@@ -567,6 +578,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityARIARowIndexAttribute, @"ariaRowIndex"},
       {NSAccessibilityARIASetSizeAttribute, @"ariaSetSize"},
       {NSAccessibilityAccessKeyAttribute, @"accessKey"},
+      {NSAccessibilityAutocompleteValueAttribute, @"autocompleteValue"},
       {NSAccessibilityChildrenAttribute, @"children"},
       {NSAccessibilityColumnsAttribute, @"columns"},
       {NSAccessibilityColumnHeaderUIElementsAttribute, @"columnHeaders"},
@@ -587,6 +599,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityGrabbedAttribute, @"grabbed"},
       {NSAccessibilityHeaderAttribute, @"header"},
       {NSAccessibilityHasPopupAttribute, @"hasPopup"},
+      {NSAccessibilityHasPopupValueAttribute, @"hasPopupValue"},
       {NSAccessibilityHelpAttribute, @"help"},
       {NSAccessibilityHighestEditableAncestorAttribute,
        @"highestEditableAncestor"},
@@ -630,6 +643,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityTopLevelUIElementAttribute, @"window"},
       {NSAccessibilityURLAttribute, @"url"},
       {NSAccessibilityValueAttribute, @"value"},
+      {NSAccessibilityValueAutofillAvailableAttribute,
+       @"valueAutofillAvailable"},
+      // Not currently supported by Chrome -- information not stored:
+      // {NSAccessibilityValueAutofilledAttribute, @"valueAutofilled"},
+      // Not currently supported by Chrome -- mismatch of types supported:
+      // {NSAccessibilityValueAutofillTypeAttribute, @"valueAutofillType"},
       {NSAccessibilityValueDescriptionAttribute, @"valueDescription"},
       {NSAccessibilityVisibleCharacterRangeAttribute, @"visibleCharacterRange"},
       {NSAccessibilityVisibleCellsAttribute, @"visibleCells"},
@@ -758,6 +777,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   return [NSNumber numberWithInt:browserAccessibility_->GetIntAttribute(
                                      ax::mojom::IntAttribute::kSetSize)];
+}
+
+- (NSString*)autocompleteValue {
+  if (![self instanceActive])
+    return nil;
+  return NSStringForStringAttribute(browserAccessibility_,
+                                    ax::mojom::StringAttribute::kAutoComplete);
 }
 
 // Returns an array of BrowserAccessibilityCocoa objects, representing the
@@ -1133,8 +1159,31 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)hasPopup {
   if (![self instanceActive])
     return nil;
-  return browserAccessibility_->HasState(ax::mojom::State::kHasPopup) ? @YES
-                                                                      : @NO;
+  return @(browserAccessibility_->HasIntAttribute(
+      ax::mojom::IntAttribute::kHasPopup));
+}
+
+- (NSString*)hasPopupValue {
+  if (![self instanceActive])
+    return nil;
+  int hasPopup = browserAccessibility_->GetIntAttribute(
+      ax::mojom::IntAttribute::kHasPopup);
+  switch (static_cast<ax::mojom::HasPopup>(hasPopup)) {
+    case ax::mojom::HasPopup::kFalse:
+      return @"false";
+    case ax::mojom::HasPopup::kTrue:
+      return @"true";
+    case ax::mojom::HasPopup::kMenu:
+      return @"menu";
+    case ax::mojom::HasPopup::kListbox:
+      return @"listbox";
+    case ax::mojom::HasPopup::kTree:
+      return @"tree";
+    case ax::mojom::HasPopup::kGrid:
+      return @"grid";
+    case ax::mojom::HasPopup::kDialog:
+      return @"dialog";
+  }
 }
 
 - (id)header {
@@ -2228,6 +2277,32 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return base::SysUTF16ToNSString(browserAccessibility_->GetValue());
 }
 
+- (BOOL)isFocusedInputWithSuggestions {
+  if (!browserAccessibility_->IsPlainTextField())
+    return false;
+  BrowserAccessibilityManager* manager = browserAccessibility_->manager();
+  if (manager->GetFocus() != browserAccessibility_)
+    return false;
+  return ui::AXPlatformNode::HasInputSuggestions();
+}
+
+- (NSNumber*)valueAutofillAvailable {
+  if (![self instanceActive])
+    return nil;
+  return [self isFocusedInputWithSuggestions] ? @YES : @NO;
+}
+
+// Not currently supported, as Chrome does not store whether an autofill
+// occurred. We could have autofill fire an event, however, and set an
+// "is_autofilled" flag until the next edit. - (NSNumber*)valueAutofilled {
+//  return @NO;
+// }
+
+// Not currently supported, as Chrome's autofill types aren't like Safari's.
+// - (NSString*)valueAutofillType {
+//  return @"none";
+//}
+
 - (NSString*)valueDescription {
   if (![self instanceActive])
     return nil;
@@ -3020,11 +3095,17 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   // Caret navigation and text selection attributes.
   if (browserAccessibility_->HasState(ax::mojom::State::kEditable)) {
     [ret addObjectsFromArray:@[
+      NSAccessibilityAutocompleteValueAttribute,
       NSAccessibilityInsertionPointLineNumberAttribute,
       NSAccessibilityNumberOfCharactersAttribute,
       NSAccessibilitySelectedTextAttribute,
       NSAccessibilitySelectedTextRangeAttribute,
-      NSAccessibilityVisibleCharacterRangeAttribute
+      NSAccessibilityVisibleCharacterRangeAttribute,
+      NSAccessibilityValueAutofillAvailableAttribute,
+      // Not currently supported by Chrome:
+      // NSAccessibilityValueAutofilledAttribute,
+      // Not currently supported by Chrome:
+      // NSAccessibilityValueAutofillTypeAttribute
     ]];
   }
 
@@ -3071,8 +3152,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     [ret addObjectsFromArray:@[ NSAccessibilityGrabbedAttribute ]];
   }
 
-  if (browserAccessibility_->HasState(ax::mojom::State::kHasPopup)) {
-    [ret addObjectsFromArray:@[ NSAccessibilityHasPopupAttribute ]];
+  if (browserAccessibility_->HasIntAttribute(
+          ax::mojom::IntAttribute::kHasPopup)) {
+    [ret addObjectsFromArray:@[
+      NSAccessibilityHasPopupAttribute, NSAccessibilityHasPopupValueAttribute
+    ]];
   }
 
   if (browserAccessibility_->HasBoolAttribute(

@@ -1,11 +1,10 @@
-#<skip -- aria-haspopup not exposed crbug.com/423651>
 AXWebArea
-++AXComboBox
-++AXComboBox
-++AXComboBox
-++AXComboBox
-++AXComboBox
-++AXComboBox
-++AXComboBox
-++AXComboBox
-++AXComboBox
+++AXButton AXHasPopup='1' AXHasPopupValue='menu'
+++AXButton
+++AXButton AXHasPopup='1' AXHasPopupValue='menu'
+++AXButton AXHasPopup='1' AXHasPopupValue='listbox'
+++AXButton AXHasPopup='1' AXHasPopupValue='grid'
+++AXButton AXHasPopup='1' AXHasPopupValue='dialog'
+++AXButton AXHasPopup='1' AXHasPopupValue='menu'
+++AXButton AXHasPopup='1' AXHasPopupValue='listbox'
+++AXButton AXHasPopup='1' AXHasPopupValue='listbox'

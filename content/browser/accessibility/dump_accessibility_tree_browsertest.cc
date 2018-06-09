@@ -235,12 +235,14 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "invalidState=*");
   AddFilter(filters, "invalidState=false",
             Filter::DENY);  // Don't show false value
+  AddFilter(filters, "roleDescription=*");
 
   //
   // OS X
   //
 
-  AddFilter(filters, "roleDescription=*");
+  AddFilter(filters, "AXValueAutofill*");
+  AddFilter(filters, "AXAutocomplete*");
 
   //
   // Android
