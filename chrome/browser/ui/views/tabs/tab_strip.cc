@@ -827,7 +827,7 @@ bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
 }
 
 bool TabStrip::ShouldShowCloseButtonOnHover() {
-  return MD::IsRefreshUi();
+  return !touch_layout_ && MD::IsRefreshUi();
 }
 
 bool TabStrip::MaySetClip() {
