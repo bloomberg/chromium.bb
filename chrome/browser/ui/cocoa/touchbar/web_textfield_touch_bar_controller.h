@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_WEB_TEXTFIELD_TOUCH_BAR_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_WEB_TEXTFIELD_TOUCH_BAR_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TOUCHBAR_WEB_TEXTFIELD_TOUCH_BAR_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_TOUCHBAR_WEB_TEXTFIELD_TOUCH_BAR_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -13,6 +13,7 @@
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
 @class CreditCardAutofillTouchBarController;
+@class SuggestedTextTouchBarController;
 @class TabContentsController;
 
 namespace autofill {
@@ -22,9 +23,11 @@ class AutofillPopupController;
 // Provides a touch bar for the textfields in the WebContents. This class
 // implements the NSTouchBarDelegate and handles the items in the touch bar.
 @interface WebTextfieldTouchBarController : NSObject<NSTouchBarDelegate> {
-  TabContentsController* owner_;       // weak.
+  TabContentsController* owner_;  // weak.
   base::scoped_nsobject<CreditCardAutofillTouchBarController>
-      autofillTouchBarController_;  // weak.
+      autofillTouchBarController_;
+  base::scoped_nsobject<SuggestedTextTouchBarController>
+      suggestedTextTouchBarController_;
 }
 
 // Designated initializer.
@@ -42,4 +45,4 @@ class AutofillPopupController;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_WEB_TEXTFIELD_TOUCH_BAR_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TOUCHBAR_WEB_TEXTFIELD_TOUCH_BAR_CONTROLLER_H_
