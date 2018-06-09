@@ -99,6 +99,7 @@ std::string DecryptSampleAES(const std::string& key,
   while (bytes_remaining) {
     int unused;
     size_t amount_to_decrypt = has_pattern ? 16UL : bytes_remaining;
+    EXPECT_EQ(amount_to_decrypt % 16UL, 0UL);
     EXPECT_EQ(EVP_CipherUpdate(ctx.get(), out_ptr, &unused, in_ptr,
                                amount_to_decrypt),
               1);
@@ -106,7 +107,7 @@ std::string DecryptSampleAES(const std::string& key,
     if (bytes_remaining) {
       out_ptr += amount_to_decrypt;
       in_ptr += amount_to_decrypt;
-      size_t amount_to_skip = 144UL;
+      size_t amount_to_skip = 144UL;  // Skip 9 blocks.
       if (amount_to_skip > bytes_remaining)
         amount_to_skip = bytes_remaining;
       memcpy(out_ptr, in_ptr, amount_to_skip);
@@ -126,8 +127,12 @@ std::string DecryptBuffer(const StreamParserBuffer& buffer,
                           const EncryptionScheme& scheme) {
   EXPECT_TRUE(scheme.is_encrypted());
   EXPECT_TRUE(scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC);
-  bool has_pattern = scheme.pattern().IsInEffect();
-  EXPECT_TRUE(!has_pattern || scheme.pattern() == EncryptionPattern(1, 9));
+
+  // Audio streams use whole block full sample encryption (so pattern = {0,0}),
+  // so only the video stream uses pattern decryption. |has_pattern| is only
+  // used by DecryptSampleAES(), which assumes a {1,9} pattern if
+  // |has_pattern| = true.
+  bool has_pattern = scheme.pattern() == EncryptionPattern(1, 9);
 
   std::string key;
   EXPECT_TRUE(

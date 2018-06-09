@@ -318,11 +318,8 @@ cdm::EncryptionScheme ToCdmEncryptionScheme(const EncryptionScheme& scheme) {
     case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
       return cdm::EncryptionScheme::kUnencrypted;
     case EncryptionScheme::CIPHER_MODE_AES_CTR:
-      if (!scheme.pattern().IsInEffect())
-        return cdm::EncryptionScheme::kCenc;
-      break;
+      return cdm::EncryptionScheme::kCenc;
     case EncryptionScheme::CIPHER_MODE_AES_CBC:
-      // Pattern should be required for 'cbcs' but is currently optional.
       return cdm::EncryptionScheme::kCbcs;
   }
 

@@ -19,14 +19,6 @@ EncryptionPattern& EncryptionPattern::operator=(const EncryptionPattern& rhs) =
 
 EncryptionPattern::~EncryptionPattern() = default;
 
-bool EncryptionPattern::IsInEffect() const {
-  // ISO/IEC 23001-7(2016), section 10.3, discussing 'cens' pattern encryption
-  // scheme, states "Tracks other than video are protected using whole-block
-  // full-sample encryption as specified in 9.7 and hence skip_byte_block
-  // SHALL be 0." So pattern is in effect as long as |crypt_byte_block_| is set.
-  return crypt_byte_block_ != 0;
-}
-
 bool EncryptionPattern::operator==(const EncryptionPattern& other) const {
   return crypt_byte_block_ == other.crypt_byte_block_ &&
          skip_byte_block_ == other.skip_byte_block_;

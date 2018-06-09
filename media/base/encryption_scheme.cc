@@ -39,21 +39,17 @@ std::ostream& operator<<(std::ostream& os,
   if (!encryption_scheme.is_encrypted())
     return os << "Unencrypted";
 
-  bool pattern_in_effect = encryption_scheme.pattern().IsInEffect();
-
-  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CTR &&
-      !pattern_in_effect) {
+  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CTR)
     return os << "CENC";
-  }
 
-  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC &&
-      pattern_in_effect) {
-    return os << "CBCS";
+  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC) {
+    return os << "CBCS with pattern ("
+              << encryption_scheme.pattern().crypt_byte_block() << ","
+              << encryption_scheme.pattern().skip_byte_block() << ")";
   }
 
   NOTREACHED();
-  return os << "Unknown (mode = " << encryption_scheme.mode()
-            << ", pattern_in_effect = " << pattern_in_effect << ")";
+  return os << "Unknown EncryptionScheme, mode = " << encryption_scheme.mode();
 }
 
 }  // namespace media
