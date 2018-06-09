@@ -621,6 +621,7 @@ public class ContextualSuggestionsTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/850117")
     @MediumTest
     @Feature({"ContextualSuggestions"})
     public void testPeekWithPageScrollPercentage() throws Exception {
