@@ -13,14 +13,16 @@
 <span id='elt'>&nbsp;</span>
 
 <script>
-  if (window.internals)
+  if (window.internals) {
     internals.runtimeFlags.overlayScrollbarsEnabled = true;
+    internals.settings.setScrollAnimatorEnabled(false);
+  }
 
   window.onload = async () => {
     await waitForCompositorCommit();
 
-		internals.setScrollbarVisibilityInScrollableArea(
-			internals.effectiveRootScroller(document), true);
+    internals.setScrollbarVisibilityInScrollableArea(
+      internals.effectiveRootScroller(document), true);
     let range = document.createRange();
     let elt = document.getElementById('elt');
     range.selectNodeContents(elt);

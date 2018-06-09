@@ -21,6 +21,9 @@
 <div id='f'></div>
 
 <script>
+  if (window.internals)
+    internals.settings.setScrollAnimatorEnabled(false);
+
   window.onload = async () => {
     // Give rAFs ensure layer information has gone from Blink to CC's active tree.
     await waitForCompositorCommit();
