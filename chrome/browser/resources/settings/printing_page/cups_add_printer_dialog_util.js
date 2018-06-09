@@ -40,35 +40,28 @@ Polymer({
     },
 
     /** @type {string} */
-    selectedItem: {
+    value: {
       type: String,
       notify: true,
     },
 
     /** @private {string} */
     searchTerm_: String,
-  },
 
-  /** @private */
-  ready: function() {
-    this.$$('input').value = this.selectedItem;
+    label: String,
   },
 
   /**
    * @param {!Event} event
    * @private
    */
-  onTap_: function(event) {
+  onClick_: function(event) {
     this.$$('iron-dropdown').open();
-    this.$.searchIcon.hidden = false;
-    this.$.dropdownIcon.hidden = true;
-    // Prevent the closing of the dropdown menu.
-    event.stopPropagation();
   },
 
   /** @private */
   onInputValueChanged_: function() {
-    this.searchTerm_ = this.$$('input').value;
+    this.searchTerm_ = this.value;
   },
 
   /**
@@ -77,18 +70,9 @@ Polymer({
    */
   onSelect_: function(event) {
     this.$$('iron-dropdown').close();
-    this.$.searchIcon.hidden = true;
-    this.$.dropdownIcon.hidden = false;
 
-    this.selectedItem = event.model.item;
+    this.value = event.model.item;
     this.searchTerm_ = '';
-    this.$$('input').value = this.selectedItem;
-  },
-
-  /** @private */
-  onChange_: function() {
-    this.$.searchIcon.hidden = true;
-    this.$.dropdownIcon.hidden = false;
   },
 
   /** @private */
