@@ -55,6 +55,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
 
   // Advances |m_clock| by |seconds|.
   void AdvanceClockSeconds(double seconds);
+  void AdvanceClock(base::TimeDelta duration);
 
   scheduler::MainThreadSchedulerImpl* GetMainThreadScheduler() const;
 

@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/format_macros.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/add_event_listener_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/event_listener_options_or_boolean.h"
@@ -107,12 +108,12 @@ bool IsInstrumentedForAsyncStack(const AtomicString& event_type) {
          event_type == EventTypeNames::error;
 }
 
-double BlockedEventsWarningThreshold(ExecutionContext* context,
-                                     const Event* event) {
+base::TimeDelta BlockedEventsWarningThreshold(ExecutionContext* context,
+                                              const Event* event) {
   if (!event->cancelable())
-    return 0.0;
+    return base::TimeDelta();
   if (!IsScrollBlockingEvent(event->type()))
-    return 0.0;
+    return base::TimeDelta();
   return PerformanceMonitor::Threshold(context,
                                        PerformanceMonitor::kBlockedEvent);
 }
@@ -120,20 +121,20 @@ double BlockedEventsWarningThreshold(ExecutionContext* context,
 void ReportBlockedEvent(ExecutionContext* context,
                         const Event* event,
                         RegisteredEventListener* registered_listener,
-                        double delayed_seconds) {
+                        base::TimeDelta delayed) {
   if (registered_listener->Callback()->GetType() !=
       EventListener::kJSEventListenerType)
     return;
 
   String message_text = String::Format(
-      "Handling of '%s' input event was delayed for %ld ms due to main thread "
-      "being busy. "
+      "Handling of '%s' input event was delayed for %" PRId64
+      " ms due to main thread being busy. "
       "Consider marking event handler as 'passive' to make the page more "
       "responsive.",
-      event->type().GetString().Utf8().data(), lround(delayed_seconds * 1000));
+      event->type().GetString().Utf8().data(), delayed.InMilliseconds());
 
   PerformanceMonitor::ReportGenericViolation(
-      context, PerformanceMonitor::kBlockedEvent, message_text, delayed_seconds,
+      context, PerformanceMonitor::kBlockedEvent, message_text, delayed,
       GetFunctionLocation(context, registered_listener->Callback()));
   registered_listener->SetBlockedEventWarningEmitted();
 }
@@ -311,7 +312,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
 
     PerformanceMonitor::ReportGenericViolation(
         GetExecutionContext(), PerformanceMonitor::kDiscouragedAPIUse,
-        message_text, 0, nullptr);
+        message_text, base::TimeDelta(), nullptr);
   }
 }
 
@@ -397,8 +398,8 @@ void EventTarget::AddedEventListener(
           "Consider using MutationObserver to make the page more responsive.",
           event_type.GetString().Utf8().data());
       PerformanceMonitor::ReportGenericViolation(
-          context, PerformanceMonitor::kDiscouragedAPIUse, message_text, 0,
-          nullptr);
+          context, PerformanceMonitor::kDiscouragedAPIUse, message_text,
+          base::TimeDelta(), nullptr);
     }
   }
 }
@@ -751,15 +752,14 @@ bool EventTarget::FireEventListeners(Event* event,
   d->firing_event_iterators->push_back(
       FiringEventIterator(event->type(), i, size));
 
-  double blocked_event_threshold =
+  base::TimeDelta blocked_event_threshold =
       BlockedEventsWarningThreshold(context, event);
-  TimeTicks now;
+  base::TimeTicks now;
   bool should_report_blocked_event = false;
-  if (blocked_event_threshold) {
+  if (!blocked_event_threshold.is_zero()) {
     now = CurrentTimeTicks();
     should_report_blocked_event =
-        (now - event->PlatformTimeStamp()).InSecondsF() >
-        blocked_event_threshold;
+        now - event->PlatformTimeStamp() > blocked_event_threshold;
   }
   bool fired_listener = false;
 
@@ -811,7 +811,7 @@ bool EventTarget::FireEventListeners(Event* event,
         !entry[i - 1].BlockedEventWarningEmitted() &&
         !event->defaultPrevented()) {
       ReportBlockedEvent(context, event, &entry[i - 1],
-                         (now - event->PlatformTimeStamp()).InSecondsF());
+                         now - event->PlatformTimeStamp());
     }
 
     if (passive_forced) {

@@ -443,14 +443,11 @@ void TaskQueueManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
          executing_task->task_queue->RequiresTaskTiming());
     if (notify_time_observers) {
       executing_task->task_start_time = time_before_task->Now();
-      double task_start_time_sec =
-          MonotonicTimeInSeconds(executing_task->task_start_time);
-
       {
         TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                      "TaskQueueManager.WillProcessTaskTimeObservers");
         for (auto& observer : main_thread_only().task_time_observers)
-          observer.WillProcessTask(task_start_time_sec);
+          observer.WillProcessTask(executing_task->task_start_time);
       }
 
       {
@@ -491,8 +488,10 @@ void TaskQueueManagerImpl::NotifyDidProcessTask(
 
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "TaskQueueManager.DidProcessTaskTimeObservers");
-    for (auto& observer : main_thread_only().task_time_observers)
-      observer.DidProcessTask(task_start_time_sec, task_end_time_sec);
+    for (auto& observer : main_thread_only().task_time_observers) {
+      observer.DidProcessTask(executing_task.task_start_time,
+                              time_after_task->Now());
+    }
   }
 
   {

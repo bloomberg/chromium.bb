@@ -39,14 +39,16 @@ class PLATFORM_EXPORT LongTaskDetector final
 
   void Trace(blink::Visitor*);
 
-  static constexpr double kLongTaskThresholdSeconds = 0.05;
+  static constexpr base::TimeDelta kLongTaskThreshold =
+      base::TimeDelta::FromMilliseconds(50);
 
  private:
   LongTaskDetector();
 
   // scheduler::TaskTimeObserver implementation
-  void WillProcessTask(double start_time) override {}
-  void DidProcessTask(double start_time, double end_time) override;
+  void WillProcessTask(base::TimeTicks start_time) override {}
+  void DidProcessTask(base::TimeTicks start_time,
+                      base::TimeTicks end_time) override;
 
   HeapHashSet<Member<LongTaskObserver>> observers_;
 };

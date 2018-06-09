@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 
+#include "base/format_macros.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
@@ -30,11 +31,11 @@ void PerformanceMonitor::BypassLongCompileThresholdOnceForTesting() {
 };
 
 // static
-double PerformanceMonitor::Threshold(ExecutionContext* context,
-                                     Violation violation) {
+base::TimeDelta PerformanceMonitor::Threshold(ExecutionContext* context,
+                                              Violation violation) {
   PerformanceMonitor* monitor =
       PerformanceMonitor::InstrumentingMonitor(context);
-  return monitor ? monitor->thresholds_[violation] : 0;
+  return monitor ? monitor->thresholds_[violation] : base::TimeDelta();
 }
 
 // static
@@ -42,7 +43,7 @@ void PerformanceMonitor::ReportGenericViolation(
     ExecutionContext* context,
     Violation violation,
     const String& text,
-    double time,
+    base::TimeDelta time,
     std::unique_ptr<SourceLocation> location) {
   PerformanceMonitor* monitor =
       PerformanceMonitor::InstrumentingMonitor(context);
@@ -72,7 +73,7 @@ PerformanceMonitor* PerformanceMonitor::InstrumentingMonitor(
 
 PerformanceMonitor::PerformanceMonitor(LocalFrame* local_root)
     : local_root_(local_root) {
-  std::fill(std::begin(thresholds_), std::end(thresholds_), 0);
+  std::fill(std::begin(thresholds_), std::end(thresholds_), base::TimeDelta());
   Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
   local_root_->GetProbeSink()->addPerformanceMonitor(this);
 }
@@ -82,7 +83,7 @@ PerformanceMonitor::~PerformanceMonitor() {
 }
 
 void PerformanceMonitor::Subscribe(Violation violation,
-                                   double threshold,
+                                   base::TimeDelta threshold,
                                    Client* client) {
   DCHECK(violation < kAfterLast);
   ClientThresholds* client_thresholds = subscriptions_.at(violation);
@@ -111,20 +112,20 @@ void PerformanceMonitor::Shutdown() {
 }
 
 void PerformanceMonitor::UpdateInstrumentation() {
-  std::fill(std::begin(thresholds_), std::end(thresholds_), 0);
+  std::fill(std::begin(thresholds_), std::end(thresholds_), base::TimeDelta());
 
   for (const auto& it : subscriptions_) {
     Violation violation = static_cast<Violation>(it.key);
     ClientThresholds* client_thresholds = it.value;
     for (const auto& client_threshold : *client_thresholds) {
-      if (!thresholds_[violation] ||
+      if (thresholds_[violation].is_zero() ||
           thresholds_[violation] > client_threshold.value)
         thresholds_[violation] = client_threshold.value;
     }
   }
 
-  enabled_ = std::count(std::begin(thresholds_), std::end(thresholds_), 0) <
-             static_cast<int>(kAfterLast);
+  enabled_ = std::count(std::begin(thresholds_), std::end(thresholds_),
+                        base::TimeDelta()) < static_cast<int>(kAfterLast);
 }
 
 void PerformanceMonitor::WillExecuteScript(ExecutionContext* context) {
@@ -163,12 +164,12 @@ void PerformanceMonitor::UpdateTaskShouldBeReported(LocalFrame* frame) {
 void PerformanceMonitor::Will(const probe::RecalculateStyle& probe) {
   UpdateTaskShouldBeReported(probe.document ? probe.document->GetFrame()
                                             : nullptr);
-  if (enabled_ && thresholds_[kLongLayout] && script_depth_)
+  if (enabled_ && !thresholds_[kLongLayout].is_zero() && script_depth_)
     probe.CaptureStartTime();
 }
 
 void PerformanceMonitor::Did(const probe::RecalculateStyle& probe) {
-  if (enabled_ && script_depth_ && thresholds_[kLongLayout])
+  if (enabled_ && script_depth_ && !thresholds_[kLongLayout].is_zero())
     per_task_style_and_layout_time_ += probe.Duration();
 }
 
@@ -178,7 +179,7 @@ void PerformanceMonitor::Will(const probe::UpdateLayout& probe) {
   ++layout_depth_;
   if (!enabled_)
     return;
-  if (layout_depth_ > 1 || !script_depth_ || !thresholds_[kLongLayout])
+  if (layout_depth_ > 1 || !script_depth_ || thresholds_[kLongLayout].is_zero())
     return;
 
   probe.CaptureStartTime();
@@ -188,7 +189,7 @@ void PerformanceMonitor::Did(const probe::UpdateLayout& probe) {
   --layout_depth_;
   if (!enabled_)
     return;
-  if (thresholds_[kLongLayout] && script_depth_ && !layout_depth_)
+  if (!thresholds_[kLongLayout].is_zero() && script_depth_ && !layout_depth_)
     per_task_style_and_layout_time_ += probe.Duration();
 }
 
@@ -201,7 +202,7 @@ void PerformanceMonitor::Will(const probe::ExecuteScript& probe) {
 void PerformanceMonitor::Did(const probe::ExecuteScript& probe) {
   DidExecuteScript();
 
-  if (!enabled_ || !thresholds_[kLongTask])
+  if (!enabled_ || thresholds_[kLongTask].is_zero())
     return;
 
   if (probe.Duration() <= kLongTaskSubTaskThreshold)
@@ -229,29 +230,29 @@ void PerformanceMonitor::Did(const probe::CallFunction& probe) {
       static_cast<const probe::UserCallback*>(user_callback_);
   Violation handler_type =
       user_callback->recurring ? kRecurringHandler : kHandler;
-  double threshold = thresholds_[handler_type];
-  double duration = probe.Duration().InSecondsF();
-  if (!threshold || duration < threshold)
+  base::TimeDelta threshold = thresholds_[handler_type];
+  base::TimeDelta duration = probe.Duration();
+  if (threshold.is_zero() || duration < threshold)
     return;
 
   String name = user_callback->name ? String(user_callback->name)
                                     : String(user_callback->atomicName);
-  String text = String::Format("'%s' handler took %ldms", name.Utf8().data(),
-                               lround(duration * 1000));
+  String text = String::Format("'%s' handler took %" PRId64 "ms",
+                               name.Utf8().data(), duration.InMilliseconds());
   InnerReportGenericViolation(probe.context, handler_type, text, duration,
                               SourceLocation::FromFunction(probe.function));
 }
 
 void PerformanceMonitor::Will(const probe::V8Compile& probe) {
   UpdateTaskAttribution(probe.context);
-  if (!enabled_ || !thresholds_[kLongTask])
+  if (!enabled_ || thresholds_[kLongTask].is_zero())
     return;
 
   v8_compile_start_time_ = probe.CaptureStartTime();
 }
 
 void PerformanceMonitor::Did(const probe::V8Compile& probe) {
-  if (!enabled_ || !thresholds_[kLongTask])
+  if (!enabled_ || thresholds_[kLongTask].is_zero())
     return;
 
   TimeDelta v8_compile_duration = probe.Duration();
@@ -276,7 +277,7 @@ void PerformanceMonitor::Will(const probe::UserCallback& probe) {
   ++user_callback_depth_;
   UpdateTaskAttribution(probe.context);
   if (!enabled_ || user_callback_depth_ != 1 ||
-      !thresholds_[probe.recurring ? kRecurringHandler : kHandler])
+      thresholds_[probe.recurring ? kRecurringHandler : kHandler].is_zero())
     return;
 
   DCHECK(!user_callback_);
@@ -294,10 +295,11 @@ void PerformanceMonitor::DocumentWriteFetchScript(Document* document) {
   if (!enabled_)
     return;
   String text = "Parser was blocked due to document.write(<script>)";
-  InnerReportGenericViolation(document, kBlockedParser, text, 0, nullptr);
+  InnerReportGenericViolation(document, kBlockedParser, text, base::TimeDelta(),
+                              nullptr);
 }
 
-void PerformanceMonitor::WillProcessTask(double start_time) {
+void PerformanceMonitor::WillProcessTask(base::TimeTicks start_time) {
   // Reset m_taskExecutionContext. We don't clear this in didProcessTask
   // as it is needed in ReportTaskTime which occurs after didProcessTask.
   task_execution_context_ = nullptr;
@@ -316,12 +318,13 @@ void PerformanceMonitor::WillProcessTask(double start_time) {
   sub_task_attributions_.clear();
 }
 
-void PerformanceMonitor::DidProcessTask(double start_time, double end_time) {
+void PerformanceMonitor::DidProcessTask(base::TimeTicks start_time,
+                                        base::TimeTicks end_time) {
   if (!enabled_ || !task_should_be_reported_)
     return;
-  double layout_threshold = thresholds_[kLongLayout];
-  double layout_time = per_task_style_and_layout_time_.InSecondsF();
-  if (layout_threshold && layout_time > layout_threshold) {
+  base::TimeDelta layout_threshold = thresholds_[kLongLayout];
+  base::TimeDelta layout_time = per_task_style_and_layout_time_;
+  if (!layout_threshold.is_zero() && layout_time > layout_threshold) {
     ClientThresholds* client_thresholds = subscriptions_.at(kLongLayout);
     DCHECK(client_thresholds);
     for (const auto& it : *client_thresholds) {
@@ -330,8 +333,8 @@ void PerformanceMonitor::DidProcessTask(double start_time, double end_time) {
     }
   }
 
-  double task_time = end_time - start_time;
-  if (thresholds_[kLongTask] && task_time > thresholds_[kLongTask]) {
+  base::TimeDelta task_time = end_time - start_time;
+  if (!thresholds_[kLongTask].is_zero() && task_time > thresholds_[kLongTask]) {
     ClientThresholds* client_thresholds = subscriptions_.at(kLongTask);
     for (const auto& it : *client_thresholds) {
       if (it.value < task_time) {
@@ -348,7 +351,7 @@ void PerformanceMonitor::InnerReportGenericViolation(
     ExecutionContext* context,
     Violation violation,
     const String& text,
-    double time,
+    base::TimeDelta time,
     std::unique_ptr<SourceLocation> location) {
   ClientThresholds* client_thresholds = subscriptions_.at(violation);
   if (!client_thresholds)

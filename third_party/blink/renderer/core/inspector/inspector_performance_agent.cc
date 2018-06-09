@@ -207,14 +207,14 @@ void InspectorPerformanceAgent::Did(const probe::UpdateLayout& probe) {
   layout_count_++;
 }
 
-void InspectorPerformanceAgent::WillProcessTask(double start_time) {
-  task_start_ticks_ = TimeTicksFromSeconds(start_time);
+void InspectorPerformanceAgent::WillProcessTask(base::TimeTicks start_time) {
+  task_start_ticks_ = start_time;
 }
 
-void InspectorPerformanceAgent::DidProcessTask(double start_time,
-                                               double end_time) {
-  if (task_start_ticks_ == TimeTicksFromSeconds(start_time))
-    task_duration_ += TimeDelta::FromSecondsD(end_time - start_time);
+void InspectorPerformanceAgent::DidProcessTask(base::TimeTicks start_time,
+                                               base::TimeTicks end_time) {
+  if (task_start_ticks_ == start_time)
+    task_duration_ += end_time - start_time;
   task_start_ticks_ = TimeTicks();
 }
 

@@ -13,8 +13,9 @@ namespace sequence_manager {
 
 class TestTaskTimeObserver : public TaskTimeObserver {
  public:
-  void WillProcessTask(double start_time) override {}
-  void DidProcessTask(double start_time, double end_time) override {}
+  void WillProcessTask(base::TimeTicks start_time) override {}
+  void DidProcessTask(base::TimeTicks start_time,
+                      base::TimeTicks end_time) override {}
 };
 
 }  // namespace sequence_manager

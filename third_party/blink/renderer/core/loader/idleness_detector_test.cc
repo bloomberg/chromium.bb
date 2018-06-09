@@ -9,12 +9,19 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
+namespace {
+
+base::TimeTicks SecondsToTimeTicks(double seconds) {
+  return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
+}
+
+}  // namespace
 
 class IdlenessDetectorTest : public PageTestBase {
  protected:
   void SetUp() override {
-    platform_time_ = 1;
-    platform_->AdvanceClockSeconds(platform_time_);
+    platform_time_ = SecondsToTimeTicks(1);
+    platform_->AdvanceClock(platform_time_ - base::TimeTicks());
     PageTestBase::SetUp();
   }
 
@@ -29,16 +36,16 @@ class IdlenessDetectorTest : public PageTestBase {
            !Detector()->in_network_0_quiet_period_;
   }
 
-  void WillProcessTask(double start_time) {
+  void WillProcessTask(base::TimeTicks start_time) {
     DCHECK(start_time >= platform_time_);
-    platform_->AdvanceClockSeconds(start_time - platform_time_);
+    platform_->AdvanceClock(start_time - platform_time_);
     platform_time_ = start_time;
     Detector()->WillProcessTask(start_time);
   }
 
-  void DidProcessTask(double start_time, double end_time) {
+  void DidProcessTask(base::TimeTicks start_time, base::TimeTicks end_time) {
     DCHECK(start_time < end_time);
-    platform_->AdvanceClockSeconds(end_time - start_time);
+    platform_->AdvanceClock(end_time - start_time);
     platform_time_ = end_time;
     Detector()->DidProcessTask(start_time, end_time);
   }
@@ -48,40 +55,40 @@ class IdlenessDetectorTest : public PageTestBase {
       platform_;
 
  private:
-  double platform_time_;
+  base::TimeTicks platform_time_;
 };
 
 TEST_F(IdlenessDetectorTest, NetworkQuietBasic) {
   EXPECT_TRUE(IsNetworkQuietTimerActive());
 
-  WillProcessTask(1);
-  DidProcessTask(1, 1.01);
+  WillProcessTask(SecondsToTimeTicks(1));
+  DidProcessTask(SecondsToTimeTicks(1), SecondsToTimeTicks(1.01));
 
-  WillProcessTask(1.52);
+  WillProcessTask(SecondsToTimeTicks(1.52));
   EXPECT_TRUE(HadNetworkQuiet());
-  DidProcessTask(1.52, 1.53);
+  DidProcessTask(SecondsToTimeTicks(1.52), SecondsToTimeTicks(1.53));
 }
 
 TEST_F(IdlenessDetectorTest, NetworkQuietWithLongTask) {
   EXPECT_TRUE(IsNetworkQuietTimerActive());
 
-  WillProcessTask(1);
-  DidProcessTask(1, 1.01);
+  WillProcessTask(SecondsToTimeTicks(1));
+  DidProcessTask(SecondsToTimeTicks(1), SecondsToTimeTicks(1.01));
 
-  WillProcessTask(1.02);
-  DidProcessTask(1.02, 1.6);
+  WillProcessTask(SecondsToTimeTicks(1.02));
+  DidProcessTask(SecondsToTimeTicks(1.02), SecondsToTimeTicks(1.6));
   EXPECT_FALSE(HadNetworkQuiet());
 
-  WillProcessTask(2.11);
+  WillProcessTask(SecondsToTimeTicks(2.11));
   EXPECT_TRUE(HadNetworkQuiet());
-  DidProcessTask(2.11, 2.12);
+  DidProcessTask(SecondsToTimeTicks(2.11), SecondsToTimeTicks(2.12));
 }
 
 TEST_F(IdlenessDetectorTest, NetworkQuietWatchdogTimerFired) {
   EXPECT_TRUE(IsNetworkQuietTimerActive());
 
-  WillProcessTask(1);
-  DidProcessTask(1, 1.01);
+  WillProcessTask(SecondsToTimeTicks(1));
+  DidProcessTask(SecondsToTimeTicks(1), SecondsToTimeTicks(1.01));
 
   platform_->RunForPeriodSeconds(3);
   EXPECT_FALSE(IsNetworkQuietTimerActive());

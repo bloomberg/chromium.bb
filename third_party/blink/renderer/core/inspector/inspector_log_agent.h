@@ -48,10 +48,10 @@ class CORE_EXPORT InspectorLogAgent
 
  private:
   // PerformanceMonitor::Client implementation.
-  void ReportLongLayout(double duration) override;
+  void ReportLongLayout(base::TimeDelta duration) override;
   void ReportGenericViolation(PerformanceMonitor::Violation,
                               const String& text,
-                              double time,
+                              base::TimeDelta time,
                               SourceLocation*) override;
 
   bool enabled_;

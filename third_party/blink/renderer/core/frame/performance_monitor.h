@@ -56,15 +56,15 @@ class CORE_EXPORT PerformanceMonitor final
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual void ReportLongTask(
-        double start_time,
-        double end_time,
+        base::TimeTicks start_time,
+        base::TimeTicks end_time,
         ExecutionContext* task_context,
         bool has_multiple_contexts,
         const SubTaskAttribution::EntriesVector& sub_task_attributions) {}
-    virtual void ReportLongLayout(double duration) {}
+    virtual void ReportLongLayout(base::TimeDelta duration) {}
     virtual void ReportGenericViolation(Violation,
                                         const String& text,
-                                        double time,
+                                        base::TimeDelta time,
                                         SourceLocation*) {}
     void Trace(blink::Visitor* visitor) override {}
   };
@@ -72,9 +72,9 @@ class CORE_EXPORT PerformanceMonitor final
   static void ReportGenericViolation(ExecutionContext*,
                                      Violation,
                                      const String& text,
-                                     double time,
+                                     base::TimeDelta time,
                                      std::unique_ptr<SourceLocation>);
-  static double Threshold(ExecutionContext*, Violation);
+  static base::TimeDelta Threshold(ExecutionContext*, Violation);
 
   void BypassLongCompileThresholdOnceForTesting();
 
@@ -102,7 +102,7 @@ class CORE_EXPORT PerformanceMonitor final
   void DocumentWriteFetchScript(Document*);
 
   // Direct API for core.
-  void Subscribe(Violation, double threshold, Client*);
+  void Subscribe(Violation, base::TimeDelta threshold, Client*);
   void UnsubscribeAll(Client*);
   void Shutdown();
 
@@ -123,12 +123,13 @@ class CORE_EXPORT PerformanceMonitor final
   void InnerReportGenericViolation(ExecutionContext*,
                                    Violation,
                                    const String& text,
-                                   double time,
+                                   base::TimeDelta time,
                                    std::unique_ptr<SourceLocation>);
 
   // TaskTimeObserver implementation
-  void WillProcessTask(double start_time) override;
-  void DidProcessTask(double start_time, double end_time) override;
+  void WillProcessTask(base::TimeTicks start_time) override;
+  void DidProcessTask(base::TimeTicks start_time,
+                      base::TimeTicks end_time) override;
 
   void WillExecuteScript(ExecutionContext*);
   void DidExecuteScript();
@@ -150,13 +151,13 @@ class CORE_EXPORT PerformanceMonitor final
 
   SubTaskAttribution::EntriesVector sub_task_attributions_;
 
-  double thresholds_[kAfterLast];
+  base::TimeDelta thresholds_[kAfterLast];
 
   Member<LocalFrame> local_root_;
   Member<ExecutionContext> task_execution_context_;
   bool task_has_multiple_contexts_ = false;
   bool task_should_be_reported_ = false;
-  using ClientThresholds = HeapHashMap<WeakMember<Client>, double>;
+  using ClientThresholds = HeapHashMap<WeakMember<Client>, base::TimeDelta>;
   HeapHashMap<Violation,
               Member<ClientThresholds>,
               typename DefaultHash<size_t>::Hash,

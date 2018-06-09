@@ -54,14 +54,6 @@ void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
   UMA_HISTOGRAM_PERCENTAGE("WorkerScheduler.WorkerThreadLoad", load_percentage);
 }
 
-// TODO(scheduler-dev): Remove conversions when Blink starts using
-// base::TimeTicks instead of doubles for time.
-base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
-    double monotonic_time_in_seconds) {
-  return base::TimeTicks() +
-         base::TimeDelta::FromSecondsD(monotonic_time_in_seconds);
-}
-
 base::Optional<base::TimeDelta> GetMaxBudgetLevel() {
   int max_budget_level_ms;
   if (!base::StringToInt(
@@ -261,14 +253,11 @@ base::TimeTicks WorkerThreadScheduler::CurrentIdleTaskDeadlineForTesting()
   return idle_helper_.CurrentIdleTaskDeadline();
 }
 
-void WorkerThreadScheduler::WillProcessTask(double start_time) {}
+void WorkerThreadScheduler::WillProcessTask(base::TimeTicks start_time) {}
 
-void WorkerThreadScheduler::DidProcessTask(double start_time, double end_time) {
-  base::TimeTicks start_time_ticks =
-      MonotonicTimeInSecondsToTimeTicks(start_time);
-  base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);
-
-  load_tracker_.RecordTaskTime(start_time_ticks, end_time_ticks);
+void WorkerThreadScheduler::DidProcessTask(base::TimeTicks start_time,
+                                           base::TimeTicks end_time) {
+  load_tracker_.RecordTaskTime(start_time, end_time);
 }
 
 void WorkerThreadScheduler::OnLifecycleStateChanged(

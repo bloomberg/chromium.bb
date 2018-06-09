@@ -35,9 +35,9 @@ class TestLongTaskObserver :
 class LongTaskDetectorTest : public testing::Test {
  public:
   // Public because it's executed on a task queue.
-  void DummyTaskWithDuration(double duration_seconds) {
+  void DummyTaskWithDuration(base::TimeDelta duration) {
     dummy_task_start_time_ = CurrentTimeTicks();
-    platform_->AdvanceClockSeconds(duration_seconds);
+    platform_->AdvanceClock(duration);
     dummy_task_end_time_ = CurrentTimeTicks();
   }
 
@@ -52,11 +52,11 @@ class LongTaskDetectorTest : public testing::Test {
 
   TimeTicks DummyTaskEndTime() { return dummy_task_end_time_; }
 
-  void SimulateTask(double duration_seconds) {
+  void SimulateTask(base::TimeDelta duration) {
     PostCrossThreadTask(
         *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&LongTaskDetectorTest::DummyTaskWithDuration,
-                        CrossThreadUnretained(this), duration_seconds));
+                        CrossThreadUnretained(this), duration));
     platform_->RunUntilIdle();
   }
 
@@ -70,18 +70,21 @@ class LongTaskDetectorTest : public testing::Test {
 
 TEST_F(LongTaskDetectorTest, DeliversLongTaskNotificationOnlyWhenRegistered) {
   TestLongTaskObserver* long_task_observer = new TestLongTaskObserver();
-  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
+  SimulateTask(LongTaskDetector::kLongTaskThreshold +
+               base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(long_task_observer->last_long_task_end, TimeTicks());
 
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
-  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
+  SimulateTask(LongTaskDetector::kLongTaskThreshold +
+               base::TimeDelta::FromMilliseconds(10));
   TimeTicks long_task_end_when_registered = DummyTaskEndTime();
   EXPECT_EQ(long_task_observer->last_long_task_start, DummyTaskStartTime());
   EXPECT_EQ(long_task_observer->last_long_task_end,
             long_task_end_when_registered);
 
   LongTaskDetector::Instance().UnregisterObserver(long_task_observer);
-  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
+  SimulateTask(LongTaskDetector::kLongTaskThreshold +
+               base::TimeDelta::FromMilliseconds(10));
   // Check that we have a long task after unregistering observer.
   ASSERT_FALSE(long_task_end_when_registered == DummyTaskEndTime());
   EXPECT_EQ(long_task_observer->last_long_task_end,
@@ -91,10 +94,12 @@ TEST_F(LongTaskDetectorTest, DeliversLongTaskNotificationOnlyWhenRegistered) {
 TEST_F(LongTaskDetectorTest, DoesNotGetNotifiedOfShortTasks) {
   TestLongTaskObserver* long_task_observer = new TestLongTaskObserver();
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
-  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds - 0.01);
+  SimulateTask(LongTaskDetector::kLongTaskThreshold -
+               base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(long_task_observer->last_long_task_end, TimeTicks());
 
-  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
+  SimulateTask(LongTaskDetector::kLongTaskThreshold +
+               base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(long_task_observer->last_long_task_end, DummyTaskEndTime());
   LongTaskDetector::Instance().UnregisterObserver(long_task_observer);
 }
@@ -104,7 +109,8 @@ TEST_F(LongTaskDetectorTest, RegisterSameObserverTwice) {
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
 
-  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
+  SimulateTask(LongTaskDetector::kLongTaskThreshold +
+               base::TimeDelta::FromMilliseconds(10));
   TimeTicks long_task_end_when_registered = DummyTaskEndTime();
   EXPECT_EQ(long_task_observer->last_long_task_start, DummyTaskStartTime());
   EXPECT_EQ(long_task_observer->last_long_task_end,
@@ -113,7 +119,8 @@ TEST_F(LongTaskDetectorTest, RegisterSameObserverTwice) {
   LongTaskDetector::Instance().UnregisterObserver(long_task_observer);
   // Should only need to unregister once even after we called RegisterObserver
   // twice.
-  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
+  SimulateTask(LongTaskDetector::kLongTaskThreshold +
+               base::TimeDelta::FromMilliseconds(10));
   ASSERT_FALSE(long_task_end_when_registered == DummyTaskEndTime());
   EXPECT_EQ(long_task_observer->last_long_task_end,
             long_task_end_when_registered);
