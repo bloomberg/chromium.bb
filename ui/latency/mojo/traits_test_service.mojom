@@ -11,8 +11,5 @@ interface TraitsTestService {
   EchoLatencyComponent(LatencyComponent l) => (LatencyComponent pass);
 
   [Sync]
-  EchoLatencyComponentId(LatencyComponentId l) => (LatencyComponentId pass);
-
-  [Sync]
   EchoLatencyInfo(LatencyInfo l) => (LatencyInfo pass);
 };

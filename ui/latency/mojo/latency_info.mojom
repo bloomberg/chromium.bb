@@ -72,11 +72,6 @@ enum SourceEventType {
   SOURCE_EVENT_TYPE_LAST = OTHER,
 };
 
-struct LatencyComponentId {
-  LatencyComponentType type;
-  int64 id;
-};
-
 struct LatencyComponent {
   // Average time of events that happened in this component.
   mojo_base.mojom.TimeTicks event_time;
@@ -89,7 +84,7 @@ struct LatencyComponent {
 };
 
 struct LatencyComponentPair {
-  LatencyComponentId key;
+  LatencyComponentType key;
   LatencyComponent value;
 };
 

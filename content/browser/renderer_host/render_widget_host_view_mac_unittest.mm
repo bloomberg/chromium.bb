@@ -847,7 +847,7 @@ TEST_F(RenderWidgetHostViewMacTest, LastWheelEventLatencyInfoExists) {
   [rwhv_mac_->cocoa_view() scrollWheel:wheelEvent1];
   ui::LatencyInfo::LatencyComponent ui_component1;
   ASSERT_TRUE(host_->lastWheelEventLatencyInfo.FindLatency(
-      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &ui_component1));
+      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, &ui_component1));
 
   // Send a wheel event with phaseEnded.
   // Verifies that ui::INPUT_EVENT_LATENCY_UI_COMPONENT is added
@@ -857,7 +857,7 @@ TEST_F(RenderWidgetHostViewMacTest, LastWheelEventLatencyInfoExists) {
   [rwhv_mac_->cocoa_view() scrollWheel:wheelEvent2];
   ui::LatencyInfo::LatencyComponent ui_component2;
   ASSERT_TRUE(host_->lastWheelEventLatencyInfo.FindLatency(
-      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &ui_component2));
+      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, &ui_component2));
 }
 
 TEST_F(RenderWidgetHostViewMacTest, SourceEventTypeExistsInLatencyInfo) {

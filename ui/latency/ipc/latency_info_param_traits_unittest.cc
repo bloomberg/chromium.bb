@@ -19,9 +19,9 @@ TEST(LatencyInfoParamTraitsTest, Basic) {
   latency.AddSnapshot(7, 15);
   latency.set_ukm_source_id(10);
   ASSERT_FALSE(latency.terminated());
-  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1234);
-  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1234);
-  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 1234);
+  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
+  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
+  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT);
 
   EXPECT_EQ(5, latency.trace_id());
   EXPECT_EQ(1u, latency.Snapshots().size());
@@ -41,17 +41,15 @@ TEST(LatencyInfoParamTraitsTest, Basic) {
   EXPECT_EQ(latency.terminated(), output.terminated());
 
   EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-                                 1234,
                                  nullptr));
 
   LatencyInfo::LatencyComponent rwh_comp;
   EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                                 1234,
                                  &rwh_comp));
   EXPECT_EQ(1u, rwh_comp.event_count);
 
-  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 1234,
-                                 nullptr));
+  EXPECT_TRUE(
+      output.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, nullptr));
 }
 
 TEST(LatencyInfoParamTraitsTest, InvalidData) {

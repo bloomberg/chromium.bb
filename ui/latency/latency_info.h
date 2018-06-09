@@ -122,8 +122,7 @@ class LatencyInfo {
 
   // Map a Latency Component (with a component-specific int64_t id) to a
   // component info.
-  using LatencyMap = base::flat_map<std::pair<LatencyComponentType, int64_t>,
-                                    LatencyComponent>;
+  using LatencyMap = base::flat_map<LatencyComponentType, LatencyComponent>;
 
   // Map a frame sink id to the snapshot id.
   using SnapshotMap = std::map<int64_t, int64_t>;
@@ -159,28 +158,19 @@ class LatencyInfo {
 
   // Modifies the current sequence number for a component, and adds a new
   // sequence number with the current timestamp.
-  void AddLatencyNumber(LatencyComponentType component, int64_t id);
+  void AddLatencyNumber(LatencyComponentType component);
 
   // Similar to |AddLatencyNumber|, and also appends |trace_name_str| to
   // the trace event's name.
   // This function should only be called when adding a BEGIN component.
   void AddLatencyNumberWithTraceName(LatencyComponentType component,
-                                     int64_t id,
                                      const char* trace_name_str);
 
   // Modifies the current sequence number and adds a certain number of events
   // for a specific component.
   void AddLatencyNumberWithTimestamp(LatencyComponentType component,
-                                     int64_t id,
                                      base::TimeTicks time,
                                      uint32_t event_count);
-
-  // Returns true if the a component with |type| and |id| is found in
-  // the latency_components and the component is stored to |output| if
-  // |output| is not NULL. Returns false if no such component is found.
-  bool FindLatency(LatencyComponentType type,
-                   int64_t id,
-                   LatencyComponent* output) const;
 
   // Returns true if a component with |type| is found in the latency component.
   // The first such component (when iterating over latency_components_) is
@@ -218,7 +208,6 @@ class LatencyInfo {
 
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
-                                         int64_t id,
                                          base::TimeTicks time,
                                          uint32_t event_count,
                                          const char* trace_name_str);

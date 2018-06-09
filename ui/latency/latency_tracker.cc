@@ -69,14 +69,14 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(
 
 void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
   LatencyInfo::LatencyComponent gpu_swap_end_component;
-  if (!latency.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 0,
+  if (!latency.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
                            &gpu_swap_end_component)) {
     return;
   }
 
   LatencyInfo::LatencyComponent gpu_swap_begin_component;
   bool found_component = latency.FindLatency(
-      ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, &gpu_swap_begin_component);
+      ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, &gpu_swap_begin_component);
   DCHECK_AND_RETURN_ON_FAIL(found_component);
 
   if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
@@ -238,7 +238,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
           original_component, gpu_swap_begin_component);
     }
 
-  } else if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
+  } else if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                  &original_component)) {
     if (latency.source_event_type() == SourceEventType::KEY_PRESS) {
       UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
@@ -260,11 +260,11 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
          (IsInertialScroll(latency) && scroll_name == "ScrollInertial"));
   LatencyInfo::LatencyComponent rendering_scheduled_component;
   bool rendering_scheduled_on_main = latency.FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT, 0,
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT,
       &rendering_scheduled_component);
   if (!rendering_scheduled_on_main) {
     bool found_component = latency.FindLatency(
-        ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, 0,
+        ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT,
         &rendering_scheduled_component);
     DCHECK_AND_RETURN_ON_FAIL(found_component);
   }
@@ -304,7 +304,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
   LatencyInfo::LatencyComponent renderer_swap_component;
   bool found_component =
-      latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0,
+      latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
                           &renderer_swap_component);
   DCHECK_AND_RETURN_ON_FAIL(found_component);
 
@@ -315,7 +315,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
   LatencyInfo::LatencyComponent browser_received_swap_component;
   found_component =
-      latency.FindLatency(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, 0,
+      latency.FindLatency(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT,
                           &browser_received_swap_component);
   DCHECK_AND_RETURN_ON_FAIL(found_component);
 

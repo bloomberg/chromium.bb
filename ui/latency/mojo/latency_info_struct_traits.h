@@ -64,7 +64,7 @@ struct StructTraits<ui::mojom::LatencyComponentDataView,
 template <>
 struct StructTraits<ui::mojom::LatencyComponentPairDataView,
                     ui::LatencyInfo::LatencyMap::value_type> {
-  static const std::pair<ui::LatencyComponentType, int64_t>& key(
+  static ui::LatencyComponentType key(
       const ui::LatencyInfo::LatencyMap::value_type& input) {
     return input.first;
   }
@@ -75,16 +75,6 @@ struct StructTraits<ui::mojom::LatencyComponentPairDataView,
   }
 
   // TODO(fsamuel): Figure out how to optimize deserialization.
-};
-
-template <>
-struct StructTraits<ui::mojom::LatencyComponentIdDataView,
-                    std::pair<ui::LatencyComponentType, int64_t>> {
-  static ui::mojom::LatencyComponentType type(
-      const std::pair<ui::LatencyComponentType, int64_t>& id);
-  static int64_t id(const std::pair<ui::LatencyComponentType, int64_t>& id);
-  static bool Read(ui::mojom::LatencyComponentIdDataView data,
-                   std::pair<ui::LatencyComponentType, int64_t>* out);
 };
 
 template <>
@@ -102,6 +92,13 @@ struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
   static ui::mojom::SourceEventType source_event_type(
       const ui::LatencyInfo& info);
   static bool Read(ui::mojom::LatencyInfoDataView data, ui::LatencyInfo* out);
+};
+
+template <>
+struct EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType> {
+  static ui::mojom::LatencyComponentType ToMojom(ui::LatencyComponentType type);
+  static bool FromMojom(ui::mojom::LatencyComponentType input,
+                        ui::LatencyComponentType* output);
 };
 
 }  // namespace mojo
