@@ -8,7 +8,6 @@
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
@@ -79,14 +78,22 @@ void PasswordReuseDetectionManager::OnReuseFound(
     int saved_passwords) {
   reuse_on_this_page_was_found_ = true;
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  bool matches_sync_password = reused_protected_password_hash &&
-                               reused_protected_password_hash->is_gaia_password;
+  metrics_util::PasswordType reused_password_type = GetReusedPasswordType(
+      reused_protected_password_hash, matching_domains.size());
+
   if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
     std::vector<std::string> domains_to_log(matching_domains);
-    if (matches_sync_password)
+    if (reused_password_type == metrics_util::PasswordType::SYNC_PASSWORD) {
       domains_to_log.push_back("CHROME SYNC PASSWORD");
+    } else if (reused_password_type ==
+               metrics_util::PasswordType::OTHER_GAIA_PASSWORD) {
+      domains_to_log.push_back("OTHER GAIA PASSWORD");
+    } else if (reused_password_type ==
+               metrics_util::PasswordType::ENTERPRISE_PASSWORD) {
+      domains_to_log.push_back("ENTERPRISE PASSWORD");
+    }
     // TODO(nparker): Implement LogList() to log all domains in one call.
     for (const auto& domain : domains_to_log) {
       logger->LogString(BrowserSavePasswordProgressLogger::STRING_REUSE_FOUND,
@@ -102,21 +109,38 @@ void PasswordReuseDetectionManager::OnReuseFound(
 
   metrics_util::LogPasswordReuse(password_length, saved_passwords,
                                  matching_domains.size(),
-                                 password_field_detected);
+                                 password_field_detected, reused_password_type);
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // TODO(jialiul): After CSD whitelist being added to Android, we should gate
   // this by either SAFE_BROWSING_DB_LOCAL or SAFE_BROWSING_DB_REMOTE.
-  if (matches_sync_password) {
+  if (reused_password_type == metrics_util::PasswordType::SYNC_PASSWORD)
     client_->LogPasswordReuseDetectedEvent();
-  }
 
-  client_->CheckProtectedPasswordEntry(matches_sync_password, matching_domains,
+  client_->CheckProtectedPasswordEntry(reused_password_type, matching_domains,
                                        password_field_detected);
 #endif
 }
 
 void PasswordReuseDetectionManager::SetClockForTesting(base::Clock* clock) {
   clock_ = clock;
+}
+
+metrics_util::PasswordType PasswordReuseDetectionManager::GetReusedPasswordType(
+    base::Optional<PasswordHashData> reused_protected_password_hash,
+    size_t matching_domain_count) {
+  if (!reused_protected_password_hash.has_value()) {
+    DCHECK_GT(matching_domain_count, 0u);
+    return metrics_util::PasswordType::SAVED_PASSWORD;
+  }
+
+  if (!reused_protected_password_hash->is_gaia_password) {
+    return metrics_util::PasswordType::ENTERPRISE_PASSWORD;
+  } else if (client_->GetStoreResultFilter()->IsSyncAccountEmail(
+                 reused_protected_password_hash->username)) {
+    return metrics_util::PasswordType::SYNC_PASSWORD;
+  } else {
+    return metrics_util::PasswordType::OTHER_GAIA_PASSWORD;
+  }
 }
 
 }  // namespace password_manager

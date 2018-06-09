@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "url/gurl.h"
 
@@ -39,6 +40,10 @@ class PasswordReuseDetectionManager : public PasswordReuseDetectorConsumer {
   void SetClockForTesting(base::Clock* clock);
 
  private:
+  // Determines the type of password being reused.
+  metrics_util::PasswordType GetReusedPasswordType(
+      base::Optional<PasswordHashData> reused_protected_password_hash,
+      size_t match_domain_count);
   PasswordManagerClient* client_;
   base::string16 input_characters_;
   GURL main_frame_url_;

@@ -35,21 +35,28 @@ bool IsSuffix(const base::string16& str,
                     str.rbegin());
 }
 
-// Helper function to returns matching PasswordHashData from a list.
+// Helper function to returns matching PasswordHashData from a list that has
+// the longest password length.
 base::Optional<PasswordHashData> FindPasswordReuse(
     const base::string16& input,
     const std::vector<PasswordHashData>& password_hash_list) {
+  base::Optional<PasswordHashData> longest_match = base::nullopt;
+  size_t longest_match_size = 0;
   for (const PasswordHashData& hash_data : password_hash_list) {
     if (input.size() < hash_data.length)
       continue;
     size_t offset = input.size() - hash_data.length;
     base::string16 reuse_candidate = input.substr(offset);
+    // It is possible that input matches multiple passwords in the list,
+    // we only return the first match due to simplicity.
     if (HashPasswordManager::CalculatePasswordHash(
-            reuse_candidate, hash_data.salt) == hash_data.hash) {
-      return hash_data;
+            reuse_candidate, hash_data.salt) == hash_data.hash &&
+        hash_data.length > longest_match_size) {
+      longest_match_size = hash_data.length;
+      longest_match = hash_data;
     }
   }
-  return base::nullopt;
+  return longest_match;
 }
 
 }  // namespace
@@ -111,19 +118,16 @@ void PasswordReuseDetector::CheckReuse(
   if (max_reused_password_length == 0)
     return;
 
-  if (gaia_reused_password_length == 0 &&
-      enterprise_reused_password_length == 0) {
-    consumer->OnReuseFound(max_reused_password_length, base::nullopt,
-                           matching_domains, saved_passwords_);
-  } else if (gaia_reused_password_length > enterprise_reused_password_length) {
-    consumer->OnReuseFound(max_reused_password_length,
-                           reused_gaia_password_hash, matching_domains,
-                           saved_passwords_);
-  } else {
-    consumer->OnReuseFound(max_reused_password_length,
-                           reused_enterprise_password_hash, matching_domains,
-                           saved_passwords_);
+  base::Optional<PasswordHashData> reused_protected_password_hash =
+      base::nullopt;
+  if (gaia_reused_password_length > enterprise_reused_password_length) {
+    reused_protected_password_hash = std::move(reused_gaia_password_hash);
+  } else if (enterprise_reused_password_length != 0) {
+    reused_protected_password_hash = std::move(reused_enterprise_password_hash);
   }
+  consumer->OnReuseFound(max_reused_password_length,
+                         reused_protected_password_hash, matching_domains,
+                         saved_passwords_);
 }
 
 base::Optional<PasswordHashData> PasswordReuseDetector::CheckGaiaPasswordReuse(

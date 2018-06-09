@@ -268,6 +268,24 @@ void HashPasswordManager::ClearSavedPasswordHash(const std::string& username,
   }
 }
 
+void HashPasswordManager::ClearAllGaiaPasswordHash() {
+  if (!prefs_)
+    return;
+
+  ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
+  for (auto it = update->GetList().begin(); it != update->GetList().end();) {
+    // For a very tiny portion of Canary users, |is_gaia_password| field might
+    // be not set for sync password. Therefore, when clearing Gaia passwords,
+    // we remove the password hash as long as |is_gaia_password| is not set to
+    // false.
+    if (GetAndDecryptField(*it, kIsGaiaFieldKey) != "false") {
+      it = update->GetList().erase(it);
+    } else {
+      it++;
+    }
+  }
+}
+
 base::Optional<SyncPasswordData> HashPasswordManager::RetrievePasswordHash() {
   if (!prefs_ || !prefs_->HasPrefPath(prefs::kSyncPasswordHash))
     return base::nullopt;

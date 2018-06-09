@@ -65,6 +65,7 @@ class HashPasswordManager {
   void ClearSavedPasswordHash();
   void ClearSavedPasswordHash(const std::string& username,
                               bool is_gaia_password);
+  void ClearAllGaiaPasswordHash();
 
   // Returns empty if no hash is available.
   base::Optional<SyncPasswordData> RetrievePasswordHash();

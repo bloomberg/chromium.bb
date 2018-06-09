@@ -83,7 +83,7 @@ void StubPasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& frame_url) {}
 
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
-    bool matches_sync_password,
+    metrics_util::PasswordType reused_password_type,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {}
 

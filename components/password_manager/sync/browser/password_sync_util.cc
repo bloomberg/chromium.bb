@@ -47,12 +47,8 @@ std::string GetSyncUsernameIfSyncingPasswords(
 bool IsSyncAccountCredential(const autofill::PasswordForm& form,
                              const syncer::SyncService* sync_service,
                              const SigninManagerBase* signin_manager) {
-  const Origin gaia_origin =
-      Origin::Create(GaiaUrls::GetInstance()->gaia_url().GetOrigin());
-  if (!Origin::Create(GURL(form.signon_realm)).IsSameOriginWith(gaia_origin) &&
-      form.signon_realm != kGoogleChangePasswordSignonRealm) {
+  if (!IsGaiaCredentialPage(form.signon_realm))
     return false;
-  }
 
   // The empty username can mean that Chrome did not detect it correctly. For
   // reasons described in http://crbug.com/636292#c1, the username is suspected
@@ -92,6 +88,35 @@ bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
                       : std::string());
 
   return email == sync_email;
+#else
+  return false;
+#endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
+}
+
+bool IsSyncAccountEmail(const std::string& username,
+                        const SigninManagerBase* signin_manager) {
+  std::string sync_email = signin_manager->GetAuthenticatedAccountInfo().email;
+
+  if (sync_email.empty() || username.empty())
+    return false;
+
+  if (username.find('@') == std::string::npos)
+    return false;
+
+  return gaia::AreEmailsSame(username, sync_email);
+}
+
+bool IsGaiaCredentialPage(const std::string& signon_realm) {
+  return gaia::IsGaiaSignonRealm(GURL(signon_realm)) ||
+         signon_realm == kGoogleChangePasswordSignonRealm;
+}
+
+bool ShouldSaveEnterprisePasswordHash(const autofill::PasswordForm& form,
+                                      const PrefService& prefs) {
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  return safe_browsing::MatchesPasswordProtectionLoginURL(form.origin, prefs) ||
+         safe_browsing::MatchesPasswordProtectionChangePasswordURL(form.origin,
+                                                                   prefs);
 #else
   return false;
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED

@@ -139,14 +139,14 @@ class PasswordStoreTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };
 
-base::Optional<PasswordHashData> GetSyncPasswordFromPref(
+base::Optional<PasswordHashData> GetPasswordFromPref(
     const std::string& username,
+    bool is_gaia_password,
     PrefService* prefs) {
   HashPasswordManager hash_password_manager;
   hash_password_manager.set_prefs(prefs);
 
-  return hash_password_manager.RetrievePasswordHash(username,
-                                                    /*is_gaia_password=*/true);
+  return hash_password_manager.RetrievePasswordHash(username, is_gaia_password);
 }
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
@@ -921,7 +921,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
 #endif
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
+TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       std::make_unique<LoginDatabase>(test_login_db_file_path())));
 
@@ -933,13 +933,14 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
 
   const base::string16 sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
-  store->SaveSyncPasswordHash(
+  store->SaveGaiaPasswordHash(
       "sync_username", sync_password,
       metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
   base::Optional<PasswordHashData> sync_password_hash =
-      GetSyncPasswordFromPref("sync_username", &prefs);
+      GetPasswordFromPref("sync_username", /*is_gaia_password=*/true, &prefs);
+  ASSERT_TRUE(sync_password_hash.has_value());
 
   // Check that sync password reuse is found.
   MockPasswordReuseDetectorConsumer mock_consumer;
@@ -950,13 +951,47 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
-  // Check that no sync password reuse is found after clearing the saved sync
-  // password hash.
+  // Save a non-sync Gaia password this time.
+  const base::string16 gaia_password = base::ASCIIToUTF16("3password");
+  store->SaveGaiaPasswordHash(
+      "other_gaia_username", gaia_password,
+      metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  base::Optional<PasswordHashData> gaia_password_hash = GetPasswordFromPref(
+      "other_gaia_username", /*is_gaia_password=*/true, &prefs);
+  ASSERT_TRUE(gaia_password_hash.has_value());
+
+  // Check that Gaia password reuse is found.
+  EXPECT_CALL(mock_consumer,
+              OnReuseFound(gaia_password.size(), Matches(gaia_password_hash),
+                           std::vector<std::string>(), 0));
+  store->CheckReuse(input, "https://example.com", &mock_consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+
+  // Check that no Gaia password reuse is found after clearing the password
+  // hash.
   store->ClearPasswordHash("sync_username");
   EXPECT_EQ(0u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
   EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
   store->CheckReuse(input, "https://facebook.com", &mock_consumer);
   WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+
+  // Save a enterprise password this time.
+  const base::string16 enterprise_password = base::ASCIIToUTF16("23password");
+  store->SaveEnterprisePasswordHash("enterprise_username", enterprise_password);
+  base::Optional<PasswordHashData> enterprise_password_hash =
+      GetPasswordFromPref("enterprise_username", /*is_gaia_password=*/false,
+                          &prefs);
+  ASSERT_TRUE(enterprise_password_hash.has_value());
+
+  // Check that enterprise password reuse is found.
+  EXPECT_CALL(mock_consumer, OnReuseFound(enterprise_password.size(),
+                                          Matches(enterprise_password_hash),
+                                          std::vector<std::string>(), 0));
+  store->CheckReuse(input, "https://example.com", &mock_consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
   store->ShutdownOnUIThread();
 }

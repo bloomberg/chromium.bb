@@ -82,10 +82,25 @@ bool SyncCredentialsFilter::ShouldSave(
       signin_manager_factory_function_.Run());
 }
 
-bool SyncCredentialsFilter::ShouldSavePasswordHash(
+bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(
     const autofill::PasswordForm& form) const {
-  return sync_util::ShouldSavePasswordHash(
-      form, signin_manager_factory_function_.Run(), client_->GetPrefs());
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  return sync_util::IsGaiaCredentialPage(form.signon_realm);
+#else
+  return false;
+#endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
+}
+
+bool SyncCredentialsFilter::ShouldSaveEnterprisePasswordHash(
+    const autofill::PasswordForm& form) const {
+  return sync_util::ShouldSaveEnterprisePasswordHash(form,
+                                                     *client_->GetPrefs());
+}
+
+bool SyncCredentialsFilter::IsSyncAccountEmail(
+    const std::string& username) const {
+  return sync_util::IsSyncAccountEmail(username,
+                                       signin_manager_factory_function_.Run());
 }
 
 void SyncCredentialsFilter::ReportFormLoginSuccess(

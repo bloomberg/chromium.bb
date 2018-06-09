@@ -44,10 +44,13 @@ class SyncCredentialsFilter : public CredentialsFilter {
       std::vector<std::unique_ptr<autofill::PasswordForm>> results)
       const override;
   bool ShouldSave(const autofill::PasswordForm& form) const override;
-  bool ShouldSavePasswordHash(
+  bool ShouldSaveGaiaPasswordHash(
+      const autofill::PasswordForm& form) const override;
+  bool ShouldSaveEnterprisePasswordHash(
       const autofill::PasswordForm& form) const override;
   void ReportFormLoginSuccess(
       const PasswordFormManager& form_manager) const override;
+  bool IsSyncAccountEmail(const std::string& username) const override;
 
  private:
   enum AutofillForSyncCredentialsState {

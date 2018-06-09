@@ -94,6 +94,7 @@
 #include "extensions/common/constants.h"
 #endif
 
+using password_manager::metrics_util::PasswordType;
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerClientHelper;
 using password_manager::PasswordManagerInternalsService;
@@ -490,15 +491,20 @@ void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
 }
 
 void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
-    bool matches_sync_password,
+    PasswordType reused_password_type,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
-  if (pps) {
+  if (pps && (reused_password_type == PasswordType::SYNC_PASSWORD ||
+              reused_password_type == PasswordType::SAVED_PASSWORD)) {
+    // TODO(jialiul): Pass in the |reuqed_password_type| directly to
+    // |MaybeStartProtectedPasswordEntryRequest(..)| and move the above checking
+    // code to PasswordProtectionService too.
     pps->MaybeStartProtectedPasswordEntryRequest(
-        web_contents(), GetMainFrameURL(), matches_sync_password,
-        matching_domains, password_field_exists);
+        web_contents(), GetMainFrameURL(),
+        reused_password_type == PasswordType::SYNC_PASSWORD, matching_domains,
+        password_field_exists);
   }
 }
 
