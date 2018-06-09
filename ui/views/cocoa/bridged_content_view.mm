@@ -303,22 +303,54 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)dealloc {
-  // Update and cache the new input context. Otherwise,
-  // [NSTextInputContext currentInputContext] might still hold on to this
-  // view's NSTextInputContext even after it's deallocated.
-  // See http://crbug.com/846386.
-  [[self window] makeFirstResponder:nil];
-  [NSApp updateWindows];
-
+  // By the time |self| is dealloc'd, it should never be in an NSWindow, and it
+  // should never be the current input context.
+  DCHECK_EQ(nil, [self window]);
+  // Sanity check: NSView always provides an -inputContext.
+  DCHECK_NE(nil, [super inputContext]);
+  DCHECK_NE([NSTextInputContext currentInputContext], [super inputContext]);
   [super dealloc];
 }
 
 - (void)clearView {
-  textInputClient_ = nullptr;
+  [self setTextInputClient:nullptr];
   hostedView_ = nullptr;
   [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
   [cursorTrackingArea_.get() clearOwner];
   [self removeTrackingArea:cursorTrackingArea_.get()];
+}
+
+- (void)setTextInputClient:(ui::TextInputClient*)textInputClient {
+  if (textInputClient_ == textInputClient)
+    return;
+
+  textInputClient_ = textInputClient;
+
+  // If |self| was being used for the input context, and would now report a
+  // different input context, manually invoke [NSApp updateWindows]. This is
+  // necessary because AppKit holds on to a raw pointer to a NSTextInputContext
+  // (which may have been the one returned by [self inputContext]) that is only
+  // updated by -updateWindows. And although AppKit invokes that on each
+  // iteration through most runloop modes, it does not call it when running
+  // NSEventTrackingRunLoopMode, and not _within_ a run loop iteration, where
+  // the inputContext may change before further event processing.
+  NSTextInputContext* current = [NSTextInputContext currentInputContext];
+  if (!current)
+    return;
+
+  NSTextInputContext* newContext = [self inputContext];
+  // If the newContext is non-nil, then it can only be [super inputContext]. So
+  // the input context is either not changing, or it was not from |self|. In
+  // both cases, there's no need to call -updateWindows.
+  if (newContext) {
+    DCHECK_EQ(newContext, [super inputContext]);
+    return;
+  }
+
+  if (current == [super inputContext]) {
+    [NSApp updateWindows];
+    DCHECK_EQ(nil, [NSTextInputContext currentInputContext]);
+  }
 }
 
 // If the point is classified as HTCAPTION (background, draggable), return nil

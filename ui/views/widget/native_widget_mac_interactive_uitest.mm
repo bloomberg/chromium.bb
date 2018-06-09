@@ -13,6 +13,7 @@
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/test/widget_test.h"
@@ -280,6 +281,40 @@ TEST_F(NativeWidgetMacInteractiveUITest, BubbleDismiss) {
   EXPECT_FALSE(bubble_widget->IsClosed());
 
   parent_widget->CloseNow();
+}
+
+// Ensure BridgedContentView's inputContext can handle its window being torn
+// away mid-way through event processing. Toolkit-views guarantees to move focus
+// away from any Widget when the window is torn down. This test ensures that
+// global references AppKit may have held on to are also updated.
+TEST_F(NativeWidgetMacInteractiveUITest, GlobalNSTextInputContextUpdates) {
+  Widget* widget = CreateNativeDesktopWidget();
+  Textfield* textfield = new Textfield;
+  textfield->SetBounds(0, 0, 100, 100);
+  widget->GetContentsView()->AddChildView(textfield);
+  textfield->RequestFocus();
+  {
+    WidgetActivationWaiter wait_for_first_active(widget, true);
+    widget->Show();
+    wait_for_first_active.Wait();
+  }
+  EXPECT_TRUE([widget->GetNativeView() inputContext]);
+  EXPECT_EQ([widget->GetNativeView() inputContext],
+            [NSTextInputContext currentInputContext]);
+
+  widget->GetContentsView()->RemoveChildView(textfield);
+
+  // NSTextInputContext usually only updates at the end of an AppKit event loop
+  // iteration. We just tore out the inputContext, so ensure the raw, weak
+  // global pointer that AppKit likes to keep around has been updated manually.
+  EXPECT_EQ(nil, [NSTextInputContext currentInputContext]);
+  EXPECT_FALSE([widget->GetNativeView() inputContext]);
+
+  // RemoveChildView() doesn't delete the view.
+  delete textfield;
+
+  widget->Close();
+  base::RunLoop().RunUntilIdle();
 }
 
 INSTANTIATE_TEST_CASE_P(NativeWidgetMacInteractiveUITestInstance,

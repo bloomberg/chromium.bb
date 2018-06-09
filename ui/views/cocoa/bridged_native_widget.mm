@@ -384,13 +384,21 @@ void BridgedNativeWidget::SetFocusManager(FocusManager* focus_manager) {
   if (focus_manager_ == focus_manager)
     return;
 
-  if (focus_manager_)
+  if (focus_manager_) {
+    // Only the destructor can replace the focus manager (and it passes null).
+    DCHECK(![window_ delegate]);
+    DCHECK(!focus_manager);
+    if (View* old_focus = focus_manager_->GetFocusedView())
+      OnDidChangeFocus(old_focus, nullptr);
     focus_manager_->RemoveFocusChangeListener(this);
-
-  if (focus_manager)
-    focus_manager->AddFocusChangeListener(this);
+    focus_manager_ = nullptr;
+    return;
+  }
 
   focus_manager_ = focus_manager;
+  focus_manager_->AddFocusChangeListener(this);
+  if (View* new_focus = focus_manager_->GetFocusedView())
+    OnDidChangeFocus(nullptr, new_focus);
 }
 
 void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
@@ -1033,6 +1041,9 @@ void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
       native_widget_mac_->GetWidget()->GetInputMethod();
   if (input_method) {
     ui::TextInputClient* input_client = input_method->GetTextInputClient();
+    // Sanity check: When focus moves away from the widget (i.e. |focused_now|
+    // is nil), then the textInputClient will be cleared.
+    DCHECK(!!focused_now || !input_client);
     [bridged_view_ setTextInputClient:input_client];
   }
 }
