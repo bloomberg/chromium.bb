@@ -8,10 +8,24 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
+
+namespace {
+
+constexpr char kKeyboardMapFrameDetachedErrorMsg[] =
+    "Current frame is detached.";
+
+constexpr char kKeyboardMapChildFrameErrorMsg[] =
+    "getLayoutMap() must be called from a top-level browsing context.";
+
+constexpr char kKeyboardMapRequestFailedErrorMsg[] =
+    "getLayoutMap() request could not be completed.";
+
+}  // namespace
 
 using mojom::PageVisibilityState;
 
@@ -21,16 +35,39 @@ KeyboardLayout::KeyboardLayout(ExecutionContext* context)
 ScriptPromise KeyboardLayout::GetKeyboardLayoutMap(ScriptState* script_state) {
   DCHECK(script_state);
 
-  script_promise_resolver_ = ScriptPromiseResolver::Create(script_state);
-  if (EnsureServiceConnected()) {
-    service_->GetKeyboardLayoutMap(
-        WTF::Bind(&KeyboardLayout::GotKeyboardLayoutMap, WrapPersistent(this),
-                  WrapPersistent(script_promise_resolver_.Get())));
+  if (script_promise_resolver_) {
     return script_promise_resolver_->Promise();
   }
 
-  script_promise_resolver_->Reject();
+  if (!IsLocalFrameAttached()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kKeyboardMapFrameDetachedErrorMsg));
+  }
+
+  if (!CalledFromSupportedContext(ExecutionContext::From(script_state))) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kKeyboardMapChildFrameErrorMsg));
+  }
+
+  if (!EnsureServiceConnected()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                           kKeyboardMapRequestFailedErrorMsg));
+  }
+
+  script_promise_resolver_ = ScriptPromiseResolver::Create(script_state);
+  service_->GetKeyboardLayoutMap(
+      WTF::Bind(&KeyboardLayout::GotKeyboardLayoutMap, WrapPersistent(this),
+                WrapPersistent(script_promise_resolver_.Get())));
   return script_promise_resolver_->Promise();
+}
+
+bool KeyboardLayout::IsLocalFrameAttached() {
+  if (GetFrame())
+    return true;
+  return false;
 }
 
 bool KeyboardLayout::EnsureServiceConnected() {
@@ -40,9 +77,16 @@ bool KeyboardLayout::EnsureServiceConnected() {
       return false;
     }
     frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+    DCHECK(service_);
   }
-  DCHECK(service_);
   return true;
+}
+
+bool KeyboardLayout::CalledFromSupportedContext(ExecutionContext* context) {
+  DCHECK(context);
+  // This API is only accessible from a top level, secure browsing context.
+  LocalFrame* frame = GetFrame();
+  return frame && frame->IsMainFrame() && context->IsSecureContext();
 }
 
 void KeyboardLayout::GotKeyboardLayoutMap(
@@ -50,13 +94,19 @@ void KeyboardLayout::GotKeyboardLayoutMap(
     mojom::blink::GetKeyboardLayoutMapResultPtr result) {
   DCHECK(script_promise_resolver_);
 
-  if (result->status == mojom::blink::GetKeyboardLayoutMapStatus::kSuccess) {
-    script_promise_resolver_->Resolve(
-        new KeyboardLayoutMap(result->layout_map));
-    return;
+  switch (result->status) {
+    case mojom::blink::GetKeyboardLayoutMapStatus::kSuccess:
+      script_promise_resolver_->Resolve(
+          new KeyboardLayoutMap(result->layout_map));
+      break;
+    case mojom::blink::GetKeyboardLayoutMapStatus::kFail:
+      script_promise_resolver_->Reject(
+          DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                               kKeyboardMapRequestFailedErrorMsg));
+      break;
   }
 
-  script_promise_resolver_->Reject();
+  script_promise_resolver_ = nullptr;
 }
 
 void KeyboardLayout::Trace(blink::Visitor* visitor) {
