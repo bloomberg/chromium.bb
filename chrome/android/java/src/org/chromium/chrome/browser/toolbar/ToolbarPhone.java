@@ -863,6 +863,14 @@ public class ToolbarPhone extends ToolbarLayout
         updateToolbarBackground(getToolbarColorForVisualState(visualState));
     }
 
+    private boolean usingHorizontalTabSwitcher() {
+        // The horizontal tab switcher flag does not affect the accessibiilty switcher. We do the
+        // enableAccessibilityLayout() check first here to avoid logging an experiment exposure for
+        // these users.
+        return !DeviceClassManager.enableAccessibilityLayout()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
+    }
+
     protected int getToolbarColorForVisualState(final VisualState visualState) {
         Resources res = getResources();
         switch (visualState) {
@@ -885,10 +893,7 @@ public class ToolbarPhone extends ToolbarLayout
                 return getToolbarDataProvider().getPrimaryColor();
             case TAB_SWITCHER_NORMAL:
             case TAB_SWITCHER_INCOGNITO:
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                        && !DeviceClassManager.enableAccessibilityLayout()) {
-                    return Color.TRANSPARENT;
-                }
+                if (usingHorizontalTabSwitcher()) return Color.TRANSPARENT;
 
                 if (mLocationBar.useModernDesign()) {
                     if (!DeviceClassManager.enableAccessibilityLayout()) return Color.TRANSPARENT;
@@ -1858,7 +1863,7 @@ public class ToolbarPhone extends ToolbarLayout
         // Don't inflate the incognito toggle button unless the horizontal tab switcher experiment
         // is enabled and the user actually enters the tab switcher.
         if (mIncognitoToggleButton == null && mTabSwitcherState != STATIC_TAB
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+                && usingHorizontalTabSwitcher()) {
             ViewStub incognitoToggleButtonStub = findViewById(R.id.incognito_button_stub);
             mIncognitoToggleButton = (IncognitoToggleButton) incognitoToggleButtonStub.inflate();
             mIncognitoToggleButton.setOnClickListener(this);
@@ -2621,9 +2626,7 @@ public class ToolbarPhone extends ToolbarLayout
             mUseLightToolbarDrawables =
                     (ColorUtils.shouldUseLightForegroundOnBackground(colorForVisualState)
                             && colorForVisualState != Color.TRANSPARENT);
-            mUseLightToolbarDrawables |=
-                    (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                            && isIncognito());
+            mUseLightToolbarDrawables |= (usingHorizontalTabSwitcher() && isIncognito());
             mLocationBarBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
             getProgressBar().setBackgroundColor(mProgressBackBackgroundColorWhite);
             getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(getResources(),
