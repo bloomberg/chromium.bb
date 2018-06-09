@@ -1934,7 +1934,9 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
       options_provider.transfer_cache_helper(),
       options_provider.strike_server(), options_provider.color_space(),
       options_provider.can_use_lcd_text(),
-      options_provider.context_supports_distance_field_text());
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
@@ -2012,7 +2014,9 @@ TEST(PaintOpSerializationTest, Preamble) {
       options_provider.transfer_cache_helper(),
       options_provider.strike_server(), options_provider.color_space(),
       options_provider.can_use_lcd_text(),
-      options_provider.context_supports_distance_field_text());
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
@@ -2113,7 +2117,9 @@ TEST(PaintOpSerializationTest, SerializesNestedRecords) {
       options_provider.transfer_cache_helper(),
       options_provider.strike_server(), options_provider.color_space(),
       options_provider.can_use_lcd_text(),
-      options_provider.context_supports_distance_field_text());
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
   PaintOpBufferSerializer::Preamble preamble;
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
@@ -2188,7 +2194,9 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
         options_provider.transfer_cache_helper(),
         options_provider.strike_server(), options_provider.color_space(),
         options_provider.can_use_lcd_text(),
-        options_provider.context_supports_distance_field_text());
+        options_provider.context_supports_distance_field_text(),
+        options_provider.max_texture_size(),
+        options_provider.max_texture_bytes());
     PaintOpBufferSerializer::Preamble preamble;
     preamble.playback_rect = test_case.clip_rect;
     preamble.full_raster_rect = gfx::Rect(0, 0, test_case.clip_rect.right(),
@@ -2252,7 +2260,9 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
       options_provider.transfer_cache_helper(),
       options_provider.strike_server(), options_provider.color_space(),
       options_provider.can_use_lcd_text(),
-      options_provider.context_supports_distance_field_text());
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
@@ -2872,7 +2882,9 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProviderOOP) {
       options_provider.transfer_cache_helper(),
       options_provider.strike_server(), options_provider.color_space(),
       options_provider.can_use_lcd_text(),
-      options_provider.context_supports_distance_field_text());
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
   serializer.Serialize(&buffer);
   ASSERT_NE(serializer.written(), 0u);
 
@@ -3019,7 +3031,9 @@ TEST(PaintOpBufferTest, PaintRecordShaderSerialization) {
       options_provider.transfer_cache_helper(),
       options_provider.strike_server(), options_provider.color_space(),
       options_provider.can_use_lcd_text(),
-      options_provider.context_supports_distance_field_text());
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
   serializer.Serialize(&buffer);
   ASSERT_TRUE(serializer.valid());
   ASSERT_GT(serializer.written(), 0u);
@@ -3142,7 +3156,9 @@ TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
       options_provider.transfer_cache_helper(),
       options_provider.strike_server(), options_provider.color_space(),
       options_provider.can_use_lcd_text(),
-      options_provider.context_supports_distance_field_text());
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
   serializer.Serialize(buffer.get());
 
   ASSERT_EQ(options_provider.decoded_images().size(), 1u);
@@ -3180,7 +3196,9 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
         options_provider.image_provider(), transfer_cache,
         options_provider.strike_server(), options_provider.color_space(),
         options_provider.can_use_lcd_text(),
-        options_provider.context_supports_distance_field_text());
+        options_provider.context_supports_distance_field_text(),
+        options_provider.max_texture_size(),
+        options_provider.max_texture_bytes());
     serializer.Serialize(buffer.get());
     memory_written = serializer.written();
   }
@@ -3204,7 +3222,9 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
         options_provider.image_provider(), transfer_cache,
         options_provider.strike_server(), options_provider.color_space(),
         options_provider.can_use_lcd_text(),
-        options_provider.context_supports_distance_field_text());
+        options_provider.context_supports_distance_field_text(),
+        options_provider.max_texture_size(),
+        options_provider.max_texture_bytes());
     serializer.Serialize(buffer.get());
     memory_scaled_written = serializer.written();
   }
@@ -3303,10 +3323,14 @@ TEST(PaintOpBufferTest, RecordShadersCachedSize) {
 
   SimpleBufferSerializer serializer(
       memory.get(), PaintOpBuffer::kInitialBufferSize,
-      options_provider.image_provider(), transfer_cache,
+      options_provider.image_provider(),
+      options_provider.transfer_cache_helper(),
       options_provider.strike_server(), options_provider.color_space(),
       options_provider.can_use_lcd_text(),
-      options_provider.context_supports_distance_field_text());
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
+  options_provider.context_supports_distance_field_text();
   serializer.Serialize(buffer.get());
 
   PaintOp::DeserializeOptions deserialize_options(

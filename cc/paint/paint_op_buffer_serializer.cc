@@ -45,10 +45,14 @@ PlaybackParams MakeParams(const SkCanvas* canvas) {
 }
 
 SkTextBlobCacheDiffCanvas::Settings MakeCanvasSettings(
-    bool context_supports_distance_field_text) {
+    bool context_supports_distance_field_text,
+    int max_texture_size,
+    size_t max_texture_bytes) {
   SkTextBlobCacheDiffCanvas::Settings settings;
   settings.fContextSupportsDistanceFieldText =
       context_supports_distance_field_text;
+  settings.fMaxTextureSize = max_texture_size;
+  settings.fMaxTextureBytes = max_texture_bytes;
   return settings;
 }
 
@@ -65,7 +69,9 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
     SkStrikeServer* strike_server,
     SkColorSpace* color_space,
     bool can_use_lcd_text,
-    bool context_supports_distance_field_text)
+    bool context_supports_distance_field_text,
+    int max_texture_size,
+    size_t max_texture_bytes)
     : serialize_cb_(std::move(serialize_cb)),
       image_provider_(image_provider),
       transfer_cache_(transfer_cache),
@@ -74,13 +80,14 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
       can_use_lcd_text_(can_use_lcd_text),
       context_supports_distance_field_text_(
           context_supports_distance_field_text),
-      text_blob_canvas_(
-          kMaxExtent,
-          kMaxExtent,
-          SkMatrix::I(),
-          ComputeSurfaceProps(can_use_lcd_text),
-          strike_server,
-          MakeCanvasSettings(context_supports_distance_field_text)) {
+      text_blob_canvas_(kMaxExtent,
+                        kMaxExtent,
+                        SkMatrix::I(),
+                        ComputeSurfaceProps(can_use_lcd_text),
+                        strike_server,
+                        MakeCanvasSettings(context_supports_distance_field_text,
+                                           max_texture_size,
+                                           max_texture_bytes)) {
   DCHECK(serialize_cb_);
   canvas_ = SkCreateColorSpaceXformCanvas(&text_blob_canvas_,
                                           sk_ref_sp<SkColorSpace>(color_space));
@@ -99,10 +106,7 @@ void PaintOpBufferSerializer::Serialize(const PaintOpBuffer* buffer,
   // matrix, as they are only used for serializing the preamble and the initial
   // save / final restore. SerializeBuffer will create its own SerializeOptions
   // and PlaybackParams based on the post-preamble canvas.
-  PaintOp::SerializeOptions options(
-      image_provider_, transfer_cache_, canvas_.get(), strike_server_,
-      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
-      canvas_->getTotalMatrix());
+  PaintOp::SerializeOptions options = MakeSerializeOptions();
   PlaybackParams params = MakeParams(canvas_.get());
 
   Save(options, params);
@@ -124,10 +128,7 @@ void PaintOpBufferSerializer::Serialize(
     const SkMatrix& post_matrix_for_analysis) {
   DCHECK(canvas_->getTotalMatrix().isIdentity());
 
-  PaintOp::SerializeOptions options(
-      image_provider_, transfer_cache_, canvas_.get(), strike_server_,
-      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
-      canvas_->getTotalMatrix());
+  PaintOp::SerializeOptions options = MakeSerializeOptions();
   PlaybackParams params = MakeParams(canvas_.get());
 
   // TODO(khushalsagar): remove this clip rect if it's not needed.
@@ -245,10 +246,7 @@ void PaintOpBufferSerializer::SerializeBuffer(
     const PaintOpBuffer* buffer,
     const std::vector<size_t>* offsets) {
   DCHECK(buffer);
-  PaintOp::SerializeOptions options(
-      image_provider_, transfer_cache_, canvas_.get(), strike_server_,
-      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
-      canvas_->getTotalMatrix());
+  PaintOp::SerializeOptions options = MakeSerializeOptions();
   PlaybackParams params = MakeParams(canvas_.get());
 
   for (PaintOpBuffer::PlaybackFoldingIterator iter(buffer, offsets); iter;
@@ -343,6 +341,13 @@ void PaintOpBufferSerializer::RestoreToCount(
   }
 }
 
+PaintOp::SerializeOptions PaintOpBufferSerializer::MakeSerializeOptions() {
+  return PaintOp::SerializeOptions(
+      image_provider_, transfer_cache_, canvas_.get(), strike_server_,
+      color_space_, can_use_lcd_text_, context_supports_distance_field_text_,
+      max_texture_size_, max_texture_bytes_, canvas_->getTotalMatrix());
+}
+
 SimpleBufferSerializer::SimpleBufferSerializer(
     void* memory,
     size_t size,
@@ -351,7 +356,9 @@ SimpleBufferSerializer::SimpleBufferSerializer(
     SkStrikeServer* strike_server,
     SkColorSpace* color_space,
     bool can_use_lcd_text,
-    bool context_supports_distance_field_text)
+    bool context_supports_distance_field_text,
+    int max_texture_size,
+    size_t max_texture_bytes)
     : PaintOpBufferSerializer(
           base::Bind(&SimpleBufferSerializer::SerializeToMemory,
                      base::Unretained(this)),
@@ -360,7 +367,9 @@ SimpleBufferSerializer::SimpleBufferSerializer(
           strike_server,
           color_space,
           can_use_lcd_text,
-          context_supports_distance_field_text),
+          context_supports_distance_field_text,
+          max_texture_size,
+          max_texture_bytes),
       memory_(memory),
       total_(size) {}
 

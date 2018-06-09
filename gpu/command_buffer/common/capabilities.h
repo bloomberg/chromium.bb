@@ -196,6 +196,7 @@ struct GPU_EXPORT Capabilities {
 
   // Used by OOP raster.
   bool context_supports_distance_field_text = true;
+  uint64_t glyph_cache_max_texture_bytes = 0.f;
 
   std::vector<gfx::BufferUsageAndFormat> texture_target_exception_list;
 };
