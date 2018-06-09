@@ -68,7 +68,9 @@ class SecureChannelImpl : public SecureChannelBase,
         ConnectionRole connection_role,
         ConnectionPriority connection_priority);
     ConnectionRequestWaitingForDisconnection(
-        const ConnectionRequestWaitingForDisconnection& other);
+        ConnectionRequestWaitingForDisconnection&& other) noexcept;
+    ConnectionRequestWaitingForDisconnection& operator=(
+        ConnectionRequestWaitingForDisconnection&& other) noexcept;
     ~ConnectionRequestWaitingForDisconnection();
 
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters;

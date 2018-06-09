@@ -20,11 +20,10 @@ FakeActiveConnectionManager::~FakeActiveConnectionManager() = default;
 
 void FakeActiveConnectionManager::SetDisconnecting(
     const ConnectionDetails& connection_details) {
-  DCHECK(base::ContainsKey(connection_details_to_active_metadata_map_,
-                           connection_details));
+  auto it = connection_details_to_active_metadata_map_.find(connection_details);
+  DCHECK(it != connection_details_to_active_metadata_map_.end());
 
-  ConnectionState& state = std::get<0>(
-      connection_details_to_active_metadata_map_[connection_details]);
+  ConnectionState& state = std::get<0>(it->second);
   DCHECK_EQ(ConnectionState::kActiveConnectionExists, state);
 
   state = ConnectionState::kDisconnectingConnectionExists;
@@ -32,16 +31,10 @@ void FakeActiveConnectionManager::SetDisconnecting(
 
 void FakeActiveConnectionManager::SetDisconnected(
     const ConnectionDetails& connection_details) {
-  DCHECK(base::ContainsKey(connection_details_to_active_metadata_map_,
-                           connection_details));
-  DCHECK_NE(
-      ConnectionState::kNoConnectionExists,
-      std::get<0>(
-          connection_details_to_active_metadata_map_[connection_details]));
-
-  size_t num_erased =
-      connection_details_to_active_metadata_map_.erase(connection_details);
-  DCHECK_EQ(1u, num_erased);
+  auto it = connection_details_to_active_metadata_map_.find(connection_details);
+  DCHECK(it != connection_details_to_active_metadata_map_.end());
+  DCHECK_NE(ConnectionState::kNoConnectionExists, std::get<0>(it->second));
+  connection_details_to_active_metadata_map_.erase(it);
 
   OnChannelDisconnected(connection_details);
 }
@@ -49,34 +42,33 @@ void FakeActiveConnectionManager::SetDisconnected(
 ActiveConnectionManager::ConnectionState
 FakeActiveConnectionManager::GetConnectionState(
     const ConnectionDetails& connection_details) const {
-  if (!base::ContainsKey(connection_details_to_active_metadata_map_,
-                         connection_details)) {
+  auto it = connection_details_to_active_metadata_map_.find(connection_details);
+  if (it == connection_details_to_active_metadata_map_.end())
     return ConnectionState::kNoConnectionExists;
-  }
 
-  return std::get<0>(
-      connection_details_to_active_metadata_map_.at(connection_details));
+  return std::get<0>(it->second);
 }
 
 void FakeActiveConnectionManager::PerformAddActiveConnection(
     std::unique_ptr<AuthenticatedChannel> authenticated_channel,
     std::vector<std::unique_ptr<ClientConnectionParameters>> initial_clients,
     const ConnectionDetails& connection_details) {
-  DCHECK(!base::ContainsKey(connection_details_to_active_metadata_map_,
-                            connection_details));
-  connection_details_to_active_metadata_map_[connection_details] =
-      std::make_tuple(ConnectionState::kActiveConnectionExists,
-                      std::move(authenticated_channel),
-                      std::move(initial_clients));
+  bool inserted;
+  std::tie(std::ignore, inserted) =
+      connection_details_to_active_metadata_map_.emplace(
+          connection_details,
+          std::make_tuple(ConnectionState::kActiveConnectionExists,
+                          std::move(authenticated_channel),
+                          std::move(initial_clients)));
+  DCHECK(inserted);
 }
 
 void FakeActiveConnectionManager::PerformAddClientToChannel(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     const ConnectionDetails& connection_details) {
-  DCHECK(base::ContainsKey(connection_details_to_active_metadata_map_,
-                           connection_details));
-  std::get<2>(connection_details_to_active_metadata_map_[connection_details])
-      .push_back(std::move(client_connection_parameters));
+  auto it = connection_details_to_active_metadata_map_.find(connection_details);
+  DCHECK(it != connection_details_to_active_metadata_map_.end());
+  std::get<2>(it->second).push_back(std::move(client_connection_parameters));
 }
 
 FakeActiveConnectionManagerDelegate::FakeActiveConnectionManagerDelegate() =
@@ -87,11 +79,6 @@ FakeActiveConnectionManagerDelegate::~FakeActiveConnectionManagerDelegate() =
 
 void FakeActiveConnectionManagerDelegate::OnDisconnected(
     const ConnectionDetails& connection_details) {
-  if (!base::ContainsKey(connection_details_to_num_disconnections_map_,
-                         connection_details)) {
-    connection_details_to_num_disconnections_map_[connection_details] = 0u;
-  }
-
   ++connection_details_to_num_disconnections_map_[connection_details];
 }
 

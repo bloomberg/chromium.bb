@@ -50,11 +50,11 @@ ActiveConnectionManagerImpl::~ActiveConnectionManagerImpl() = default;
 ActiveConnectionManager::ConnectionState
 ActiveConnectionManagerImpl::GetConnectionState(
     const ConnectionDetails& connection_details) const {
-  if (!base::ContainsKey(details_to_channel_map_, connection_details))
+  auto it = details_to_channel_map_.find(connection_details);
+  if (it == details_to_channel_map_.end())
     return ConnectionState::kNoConnectionExists;
 
-  const MultiplexedChannel* channel =
-      details_to_channel_map_.at(connection_details).get();
+  const MultiplexedChannel* channel = it->second.get();
   DCHECK(channel);
   DCHECK(!channel->IsDisconnected());
 

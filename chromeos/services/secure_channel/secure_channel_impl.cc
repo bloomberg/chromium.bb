@@ -57,12 +57,10 @@ SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
 
 SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
     ConnectionRequestWaitingForDisconnection(
-        const ConnectionRequestWaitingForDisconnection& other) {
-  // Copy constructor should never be used. Only needed so that compiler will
-  // allow adding a std::vector<ConnectionRequestWaitingForDisconnection as a
-  // value for a map.
-  NOTREACHED();
-}
+        ConnectionRequestWaitingForDisconnection&&) noexcept = default;
+SecureChannelImpl::ConnectionRequestWaitingForDisconnection&
+SecureChannelImpl::ConnectionRequestWaitingForDisconnection::operator=(
+    ConnectionRequestWaitingForDisconnection&&) noexcept = default;
 
 SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
     ~ConnectionRequestWaitingForDisconnection() = default;

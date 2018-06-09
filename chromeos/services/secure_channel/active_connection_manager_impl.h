@@ -6,8 +6,8 @@
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_ACTIVE_CONNECTION_MANAGER_IMPL_H_
 
 #include <string>
-#include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/active_connection_manager.h"
 #include "chromeos/services/secure_channel/connection_details.h"
@@ -56,9 +56,7 @@ class ActiveConnectionManagerImpl : public ActiveConnectionManager,
   // MultiplexedChannel::Delegate:
   void OnDisconnected(const ConnectionDetails& connection_details) override;
 
-  std::unordered_map<ConnectionDetails,
-                     std::unique_ptr<MultiplexedChannel>,
-                     ConnectionDetailsHash>
+  base::flat_map<ConnectionDetails, std::unique_ptr<MultiplexedChannel>>
       details_to_channel_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveConnectionManagerImpl);

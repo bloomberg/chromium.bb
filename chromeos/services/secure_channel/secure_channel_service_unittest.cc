@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -307,7 +308,8 @@ class SecureChannelServiceTest : public testing::Test {
     // Now, verify that ActiveConnectionManager has received the moved data.
     const auto& metadata = fake_active_connection_manager()
                                ->connection_details_to_active_metadata_map()
-                               .at(connection_details);
+                               .find(connection_details)
+                               ->second;
     EXPECT_EQ(ActiveConnectionManager::ConnectionState::kActiveConnectionExists,
               std::get<0>(metadata));
     EXPECT_EQ(fake_authenticated_channel_raw, std::get<1>(metadata).get());
@@ -331,11 +333,10 @@ class SecureChannelServiceTest : public testing::Test {
                            ConnectionPriority>>
         pending_metadata_list;
 
-    if (base::ContainsKey(disconnecting_details_to_requests_map_,
-                          connection_details)) {
-      pending_metadata_list =
-          disconnecting_details_to_requests_map_.at(connection_details);
-      disconnecting_details_to_requests_map_.erase(connection_details);
+    auto it = disconnecting_details_to_requests_map_.find(connection_details);
+    if (it != disconnecting_details_to_requests_map_.end()) {
+      pending_metadata_list = it->second;
+      disconnecting_details_to_requests_map_.erase(it);
     }
 
     fake_active_connection_manager()->SetDisconnected(
@@ -409,7 +410,8 @@ class SecureChannelServiceTest : public testing::Test {
         clients_for_active_connection =
             std::get<2>(fake_active_connection_manager()
                             ->connection_details_to_active_metadata_map()
-                            .at(connection_details));
+                            .find(connection_details)
+                            ->second);
     size_t num_clients_before_call = clients_for_active_connection.size();
 
     auto id = AttemptConnectionWithoutRejection(device_to_connect, local_device,
@@ -574,12 +576,11 @@ class SecureChannelServiceTest : public testing::Test {
 
   // Stores metadata which is expected to be pending when a connection attempt
   // is made while an ongoing connection is in the process of disconnecting.
-  std::unordered_map<ConnectionDetails,
-                     std::vector<std::tuple<base::UnguessableToken,
-                                            std::string,  // Local device ID.
-                                            ConnectionRole,
-                                            ConnectionPriority>>,
-                     ConnectionDetailsHash>
+  base::flat_map<ConnectionDetails,
+                 std::vector<std::tuple<base::UnguessableToken,
+                                        std::string,  // Local device ID.
+                                        ConnectionRole,
+                                        ConnectionPriority>>>
       disconnecting_details_to_requests_map_;
 
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;

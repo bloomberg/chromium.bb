@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -30,9 +31,7 @@ class FakeMultiplexedChannelFactory : public MultiplexedChannelImpl::Factory {
       : expected_delegate_(expected_delegate) {}
   ~FakeMultiplexedChannelFactory() override = default;
 
-  std::unordered_map<ConnectionDetails,
-                     FakeMultiplexedChannel*,
-                     ConnectionDetailsHash>&
+  base::flat_map<ConnectionDetails, FakeMultiplexedChannel*>&
   connection_details_to_active_channel_map() {
     return connection_details_to_active_channel_map_;
   }
@@ -79,9 +78,7 @@ class FakeMultiplexedChannelFactory : public MultiplexedChannelImpl::Factory {
 
   AuthenticatedChannel* next_expected_authenticated_channel_ = nullptr;
 
-  std::unordered_map<ConnectionDetails,
-                     FakeMultiplexedChannel*,
-                     ConnectionDetailsHash>
+  base::flat_map<ConnectionDetails, FakeMultiplexedChannel*>
       connection_details_to_active_channel_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMultiplexedChannelFactory);
@@ -209,9 +206,9 @@ class SecureChannelActiveConnectionManagerImplTest : public testing::Test {
 
     const auto& map =
         fake_delegate_->connection_details_to_num_disconnections_map();
-    EXPECT_TRUE(base::ContainsKey(map, connection_details));
-
-    return map.at(connection_details);
+    auto it = map.find(connection_details);
+    EXPECT_NE(it, map.end());
+    return it->second;
   }
 
   ActiveConnectionManager* active_connection_manager() {
