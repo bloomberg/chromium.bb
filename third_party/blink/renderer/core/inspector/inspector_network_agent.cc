@@ -487,14 +487,17 @@ BuildObjectForResourceRequest(const ResourceRequest& request,
   String postData;
   bool hasPostData =
       FormDataToString(request.HttpBody(), max_body_size, &postData);
+  KURL url = request.Url();
   std::unique_ptr<protocol::Network::Request> result =
       protocol::Network::Request::create()
-          .setUrl(UrlWithoutFragment(request.Url()).GetString())
+          .setUrl(UrlWithoutFragment(url).GetString())
           .setMethod(request.HttpMethod())
           .setHeaders(BuildObjectForHeaders(request.HttpHeaderFields()))
           .setInitialPriority(ResourcePriorityJSON(request.Priority()))
           .setReferrerPolicy(GetReferrerPolicy(request.GetReferrerPolicy()))
           .build();
+  if (url.FragmentIdentifier())
+    result->setUrlFragment("#" + url.FragmentIdentifier());
   if (!postData.IsEmpty())
     result->setPostData(postData);
   if (hasPostData)
