@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 #include <tuple>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/active_connection_manager.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
@@ -29,12 +29,11 @@ class FakeActiveConnectionManager : public ActiveConnectionManager {
   FakeActiveConnectionManager(ActiveConnectionManager::Delegate* delegate);
   ~FakeActiveConnectionManager() override;
 
-  using DetailsToMetadataMap = std::unordered_map<
+  using DetailsToMetadataMap = base::flat_map<
       ConnectionDetails,
       std::tuple<ConnectionState,
                  std::unique_ptr<AuthenticatedChannel>,
-                 std::vector<std::unique_ptr<ClientConnectionParameters>>>,
-      ConnectionDetailsHash>;
+                 std::vector<std::unique_ptr<ClientConnectionParameters>>>>;
 
   DetailsToMetadataMap& connection_details_to_active_metadata_map() {
     return connection_details_to_active_metadata_map_;
@@ -67,15 +66,15 @@ class FakeActiveConnectionManagerDelegate
   FakeActiveConnectionManagerDelegate();
   ~FakeActiveConnectionManagerDelegate() override;
 
-  const std::unordered_map<ConnectionDetails, size_t, ConnectionDetailsHash>&
-  connection_details_to_num_disconnections_map() {
+  const base::flat_map<ConnectionDetails, size_t>&
+  connection_details_to_num_disconnections_map() const {
     return connection_details_to_num_disconnections_map_;
   }
 
  private:
   void OnDisconnected(const ConnectionDetails& connection_details) override;
 
-  std::unordered_map<ConnectionDetails, size_t, ConnectionDetailsHash>
+  base::flat_map<ConnectionDetails, size_t>
       connection_details_to_num_disconnections_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeActiveConnectionManagerDelegate);
