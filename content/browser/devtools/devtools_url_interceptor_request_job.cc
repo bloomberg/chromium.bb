@@ -18,7 +18,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_element_reader.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
@@ -606,6 +605,30 @@ void DevToolsURLInterceptorRequestJob::SetExtraRequestHeaders(
 
 void DevToolsURLInterceptorRequestJob::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto* store = request_details_.url_request_context->cookie_store();
+  if (!store || (request()->load_flags() & net::LOAD_DO_NOT_SEND_COOKIES)) {
+    StartWithCookies(net::CookieList());
+    return;
+  }
+
+  net::CookieOptions options;
+  options.set_include_httponly();
+  if (request()->attach_same_site_cookies()) {
+    options.set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  }
+  store->GetCookieListWithOptionsAsync(
+      request_details_.url, options,
+      base::BindOnce(&DevToolsURLInterceptorRequestJob::StartWithCookies,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DevToolsURLInterceptorRequestJob::StartWithCookies(
+    const net::CookieList& cookie_list) {
+  request_details_.cookie_line =
+      net::CanonicalCookie::BuildCookieLine(cookie_list);
+
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (stage_to_intercept_ == InterceptionStage::DONT_INTERCEPT) {
     sub_request_.reset(new SubRequest(request_details_, this, interceptor_));
     return;
@@ -1058,7 +1081,8 @@ DevToolsURLInterceptorRequestJob::BuildRequestInfo() {
   auto result = std::make_unique<InterceptedRequestInfo>();
   result->interception_id = interception_id_;
   result->network_request =
-      protocol::NetworkHandler::CreateRequestFromURLRequest(request());
+      protocol::NetworkHandler::CreateRequestFromURLRequest(
+          request(), request_details_.cookie_line);
   result->frame_id = devtools_token_;
   result->resource_type = resource_type_;
   result->is_navigation =

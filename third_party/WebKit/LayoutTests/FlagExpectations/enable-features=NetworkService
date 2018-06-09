@@ -24,4 +24,6 @@ crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass 
 
 # Flaky on non-NetworkService (disabled), consistent failing on NetworkService. Probably due to DCHECK.
 crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure ]
+crbug.com/850689 http/tests/inspector-protocol/network/interception-cookie.js [ Failure ]
 crbug.com/850689 http/tests/inspector-protocol/network/interception-set-cookie.js [ Failure ]
+
