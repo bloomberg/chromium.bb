@@ -394,7 +394,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     const mojom::PageLoadFeatures& new_features) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
-    // Ignore updates from Chrome extensions.
+    // Extensions can inject child frames into a page. We don't want to track
+    // these as they could skew metrics. See http://crbug.com/761037
     return;
   }
 
@@ -404,6 +405,18 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
   } else {
     UpdateSubFrameMetadata(new_metadata);
     UpdateSubFrameTiming(render_frame_host, new_timing);
+  }
+  client_->UpdateFeaturesUsage(new_features);
+}
+
+void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
+    content::RenderFrameHost* render_frame_host,
+    const mojom::PageLoadFeatures& new_features) {
+  if (render_frame_host->GetLastCommittedURL().SchemeIs(
+          extensions::kExtensionScheme)) {
+    // Extensions can inject child frames into a page. We don't want to track
+    // these as they could skew metrics. See http://crbug.com/761037
+    return;
   }
   client_->UpdateFeaturesUsage(new_features);
 }

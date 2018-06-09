@@ -25,9 +25,18 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
+#include "extensions/common/value_builder.h"
+#endif
 
 using content::NavigationSimulator;
 
@@ -50,11 +59,13 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
       std::vector<mojom::PageLoadTimingPtr>* updated_subframe_timings,
       std::vector<mojom::PageLoadTimingPtr>* complete_timings,
       std::vector<ExtraRequestCompleteInfo>* loaded_resources,
-      std::vector<GURL>* observed_committed_urls)
+      std::vector<GURL>* observed_committed_urls,
+      std::vector<mojom::PageLoadFeatures>* observed_features)
       : updated_timings_(updated_timings),
         updated_subframe_timings_(updated_subframe_timings),
         complete_timings_(complete_timings),
         loaded_resources_(loaded_resources),
+        observed_features_(observed_features),
         observed_committed_urls_(observed_committed_urls) {}
 
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
@@ -91,11 +102,17 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     loaded_resources_->emplace_back(extra_request_complete_info);
   }
 
+  void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
+                               const PageLoadExtraInfo& extra_info) override {
+    observed_features_->push_back(features);
+  }
+
  private:
   std::vector<mojom::PageLoadTimingPtr>* const updated_timings_;
   std::vector<mojom::PageLoadTimingPtr>* const updated_subframe_timings_;
   std::vector<mojom::PageLoadTimingPtr>* const complete_timings_;
   std::vector<ExtraRequestCompleteInfo>* const loaded_resources_;
+  std::vector<mojom::PageLoadFeatures>* const observed_features_;
   std::vector<GURL>* const observed_committed_urls_;
 };
 
@@ -142,7 +159,7 @@ class TestPageLoadMetricsEmbedderInterface
   void RegisterObservers(PageLoadTracker* tracker) override {
     tracker->AddObserver(std::make_unique<TestPageLoadMetricsObserver>(
         &updated_timings_, &updated_subframe_timings_, &complete_timings_,
-        &loaded_resources_, &observed_committed_urls_));
+        &loaded_resources_, &observed_committed_urls_, &observed_features_));
     tracker->AddObserver(std::make_unique<FilteringPageLoadMetricsObserver>(
         &completed_filtered_urls_));
   }
@@ -167,6 +184,10 @@ class TestPageLoadMetricsEmbedderInterface
     return observed_committed_urls_;
   }
 
+  const std::vector<mojom::PageLoadFeatures>& observed_features() const {
+    return observed_features_;
+  }
+
   const std::vector<ExtraRequestCompleteInfo>& loaded_resources() const {
     return loaded_resources_;
   }
@@ -183,6 +204,7 @@ class TestPageLoadMetricsEmbedderInterface
   std::vector<GURL> observed_committed_urls_;
   std::vector<ExtraRequestCompleteInfo> loaded_resources_;
   std::vector<GURL> completed_filtered_urls_;
+  std::vector<mojom::PageLoadFeatures> observed_features_;
   bool is_ntp_;
 };
 
@@ -289,6 +311,10 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   const std::vector<GURL>& observed_committed_urls_from_on_start() const {
     return embedder_interface_->observed_committed_urls_from_on_start();
+  }
+
+  const std::vector<mojom::PageLoadFeatures>& observed_features() const {
+    return embedder_interface_->observed_features();
   }
 
   const std::vector<GURL>& completed_filtered_urls() const {
@@ -1217,5 +1243,80 @@ TEST_F(MetricsWebContentsObserverTest,
 
   EXPECT_TRUE(loaded_resources().empty());
 }
+
+TEST_F(MetricsWebContentsObserverTest, RecordFeatureUsage) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl));
+
+  std::vector<blink::mojom::WebFeature> web_features;
+  web_features.push_back(blink::mojom::WebFeature::kHTMLMarqueeElement);
+  web_features.push_back(blink::mojom::WebFeature::kFormAttribute);
+  mojom::PageLoadFeatures features(web_features, {}, {});
+  MetricsWebContentsObserver::RecordFeatureUsage(main_rfh(), features);
+
+  ASSERT_EQ(observed_features().size(), 1ul);
+  ASSERT_EQ(observed_features()[0].features.size(), 2ul);
+  EXPECT_EQ(observed_features()[0].features[0],
+            blink::mojom::WebFeature::kHTMLMarqueeElement);
+  EXPECT_EQ(observed_features()[0].features[1],
+            blink::mojom::WebFeature::kFormAttribute);
+}
+
+TEST_F(MetricsWebContentsObserverTest, RecordFeatureUsageNoObserver) {
+  // Reset the state of the tests, and don't add an observer.
+  DeleteContents();
+  SetContents(CreateTestWebContents());
+
+  // This call should just do nothing, and should not crash - if that happens,
+  // we are good.
+  std::vector<blink::mojom::WebFeature> web_features;
+  web_features.push_back(blink::mojom::WebFeature::kHTMLMarqueeElement);
+  web_features.push_back(blink::mojom::WebFeature::kFormAttribute);
+  mojom::PageLoadFeatures features(web_features, {}, {});
+  MetricsWebContentsObserver::RecordFeatureUsage(main_rfh(), features);
+}
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+TEST_F(MetricsWebContentsObserverTest,
+       RecordFeatureUsageIgnoresChromeExtensionUpdates) {
+  // Register our fake extension. The URL we access must be part of the
+  // 'web_accessible_resources' for the network commit to work.
+  base::DictionaryValue manifest;
+  manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
+  manifest.SetString(extensions::manifest_keys::kName, "TestExtension");
+  manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
+  manifest.Set("web_accessible_resources",
+               extensions::ListBuilder().Append("main.html").Build());
+  std::string error;
+  scoped_refptr<extensions::Extension> extension =
+      extensions::Extension::Create(
+          base::FilePath(FILE_PATH_LITERAL("//no-such-file")),
+          extensions::Manifest::INVALID_LOCATION, manifest,
+          extensions::Extension::NO_FLAGS, "mbflcebpggnecokmikipoihdbecnjfoj",
+          &error);
+  ASSERT_TRUE(error.empty());
+  extensions::ExtensionRegistry::Get(web_contents()->GetBrowserContext())
+      ->AddEnabled(extension);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  const GURL chrome_extension_url(
+      "chrome-extension://mbflcebpggnecokmikipoihdbecnjfoj/main.html");
+  web_contents_tester->NavigateAndCommit(GURL(chrome_extension_url));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(),
+            GURL(chrome_extension_url));
+
+  std::vector<blink::mojom::WebFeature> web_features;
+  web_features.push_back(blink::mojom::WebFeature::kHTMLMarqueeElement);
+  web_features.push_back(blink::mojom::WebFeature::kFormAttribute);
+  mojom::PageLoadFeatures features(web_features, {}, {});
+  MetricsWebContentsObserver::RecordFeatureUsage(main_rfh(), features);
+
+  // The features come from an extension source, so shouldn't be counted.
+  EXPECT_EQ(observed_features().size(), 0ul);
+}
+#endif
 
 }  // namespace page_load_metrics

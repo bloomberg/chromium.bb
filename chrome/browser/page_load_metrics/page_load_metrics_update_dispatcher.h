@@ -112,6 +112,12 @@ class PageLoadMetricsUpdateDispatcher {
                      const mojom::PageLoadMetadata& new_metadata,
                      const mojom::PageLoadFeatures& new_features);
 
+  // This method is only intended to be called for PageLoadFeatures being
+  // recorded directly from the browser process. Features coming from the
+  // renderer process should use the main flow into |UpdateMetrics|.
+  void UpdateFeatures(content::RenderFrameHost* render_frame_host,
+                      const mojom::PageLoadFeatures& new_features);
+
   void DidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);
 
