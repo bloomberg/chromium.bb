@@ -83,7 +83,9 @@ void PaginationModel::SelectPageRelative(int delta, bool animate) {
 }
 
 bool PaginationModel::IsValidPageRelative(int delta) const {
-  DCHECK_GT(total_pages_, 0);
+  if (total_pages_ <= 0)
+    return false;
+
   const int target_page = SelectedTargetPage() + delta;
 
   return target_page >= 0 && target_page <= (total_pages_ - 1);

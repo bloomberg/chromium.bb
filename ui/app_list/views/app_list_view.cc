@@ -1094,7 +1094,7 @@ bool AppListView::HandleScroll(int offset, ui::EventType type) {
   // otherwise the offset must be larger than the scroll threshold.
   if (type == ui::ET_MOUSEWHEEL ||
       abs(offset) > kAppListMinScrollToSwitchStates) {
-    if (offset > 0) {
+    if (offset > 0 && !IsHomeLauncherEnabledInTabletMode()) {
       Dismiss();
     } else {
       if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS)
