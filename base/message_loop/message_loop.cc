@@ -420,6 +420,8 @@ bool MessageLoop::DoIdleWork() {
   if (ShouldQuitWhenIdle())
     pump_->Quit();
 
+  incoming_task_queue_->ReportMetricsOnIdle();
+
   // When we return we will do a kernel wait for more tasks.
 #if defined(OS_WIN)
   // On Windows we activate the high resolution timer so that the wait

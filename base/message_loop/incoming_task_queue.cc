@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -84,6 +85,10 @@ bool IncomingTaskQueue::AddToIncomingQueue(const Location& from_here,
     pending_task.is_high_res = true;
   }
 #endif
+
+  if (!delay.is_zero())
+    UMA_HISTOGRAM_LONG_TIMES("MessageLoop.DelayedTaskQueue.PostedDelay", delay);
+
   return PostPendingTask(&pending_task);
 }
 
@@ -124,6 +129,12 @@ IncomingTaskQueue::~IncomingTaskQueue() {
 void IncomingTaskQueue::RunTask(PendingTask* pending_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_annotator_.RunTask("MessageLoop::PostTask", pending_task);
+}
+
+void IncomingTaskQueue::ReportMetricsOnIdle() const {
+  UMA_HISTOGRAM_COUNTS_1M(
+      "MessageLoop.DelayedTaskQueue.PendingTasksCountOnIdle",
+      delayed_tasks_.Size());
 }
 
 IncomingTaskQueue::TriageQueue::TriageQueue(IncomingTaskQueue* outer)
@@ -248,6 +259,11 @@ void IncomingTaskQueue::DelayedQueue::Clear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
   while (!queue_.empty())
     Pop();
+}
+
+size_t IncomingTaskQueue::DelayedQueue::Size() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  return queue_.size();
 }
 
 IncomingTaskQueue::DeferredQueue::DeferredQueue(IncomingTaskQueue* outer)
