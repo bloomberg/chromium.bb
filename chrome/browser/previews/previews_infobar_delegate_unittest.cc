@@ -56,6 +56,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -348,9 +349,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
   // Navigate to test URL as a reload to dismiss the infobar.
-  controller().LoadURL(GURL(kTestUrl), content::Referrer(),
-                       ui::PAGE_TRANSITION_RELOAD, std::string());
-  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+  content::NavigationSimulator::Reload(web_contents());
 
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   EXPECT_FALSE(user_opt_out_.value());
@@ -412,10 +411,8 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
           "DataReductionProxyPreviewsBlackListTransition", "Enabled_");
     }
 
-    // Call Reload and CommitPendingNavigation to force DidFinishNavigation.
-    web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
-    content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
-
+    // Call Reload to force DidFinishNavigation.
+    content::NavigationSimulator::Reload(web_contents());
     ConfirmInfoBarDelegate* infobar =
         CreateInfoBar(previews::PreviewsType::LOFI, base::Time(),
                       true /* is_data_saver_user */, false /* is_reload */);
@@ -450,7 +447,10 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
       kUMAPreviewsInfoBarActionLitePage,
       PreviewsInfoBarDelegate::INFOBAR_LOAD_ORIGINAL_CLICKED, 1);
 
-  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateFromPendingBrowserInitiated(
+          web_contents());
+  simulator->Commit();
 
   EXPECT_EQ(content::ReloadType::DISABLE_PREVIEWS,
             TestPreviewsWebContentsObserver::FromWebContents(web_contents())
@@ -591,7 +591,10 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
     infobar_service()->infobar_at(0)->RemoveSelf();
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 
-  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateFromPendingBrowserInitiated(
+          web_contents());
+  simulator->Commit();
 
   EXPECT_EQ(content::ReloadType::DISABLE_PREVIEWS,
             TestPreviewsWebContentsObserver::FromWebContents(web_contents())

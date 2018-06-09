@@ -28,6 +28,7 @@ class FrameTreeNode;
 class MockNavigationClientImpl;
 class NavigationHandle;
 class NavigationHandleImpl;
+class NavigationRequest;
 class RenderFrameHost;
 class TestRenderFrameHost;
 struct Referrer;
@@ -133,6 +134,12 @@ class NavigationSimulator : public WebContentsObserver {
   static std::unique_ptr<NavigationSimulator> CreateRendererInitiated(
       const GURL& original_url,
       RenderFrameHost* render_frame_host);
+
+  // Creates a NavigationSimulator for an already-started browser initiated
+  // navigation via LoadURL / Reload / GoToOffset. Can be used to drive the
+  // navigation to completion.
+  static std::unique_ptr<NavigationSimulator> CreateFromPendingBrowserInitiated(
+      WebContents* contents);
 
   ~NavigationSimulator() override;
 
@@ -290,6 +297,15 @@ class NavigationSimulator : public WebContentsObserver {
                       WebContentsImpl* web_contents,
                       TestRenderFrameHost* render_frame_host);
 
+  // Adds a test navigation throttle to |handle| which sanity checks various
+  // callbacks have been properly called.
+  void RegisterTestThrottle(NavigationHandle* handle);
+
+  // Initializes a NavigationSimulator from an existing NavigationRequest. This
+  // should only be needed if a navigation was started without a valid
+  // NavigationSimulator.
+  void InitializeFromStartedRequest(NavigationRequest* request);
+
   // WebContentsObserver:
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(NavigationHandle* navigation_handle) override;
@@ -368,6 +384,8 @@ class NavigationSimulator : public WebContentsObserver {
   // The NavigationHandle associated with this navigation.
   NavigationHandleImpl* handle_;
 
+  // Note: additional parameters to modify the navigation should be properly
+  // initialized (if needed) in InitializeFromStartedRequest.
   GURL navigation_url_;
   net::HostPortPair socket_address_;
   std::string initial_method_;
