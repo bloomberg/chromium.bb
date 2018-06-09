@@ -34,7 +34,8 @@ std::unique_ptr<views::Background> CreateUnifiedBackground() {
 
 class DetailedViewContainer : public views::View {
  public:
-  DetailedViewContainer() = default;
+  DetailedViewContainer() { SetBackground(CreateUnifiedBackground()); }
+
   ~DetailedViewContainer() override = default;
 
   void Layout() override {
