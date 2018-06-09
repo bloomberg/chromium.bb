@@ -43,9 +43,7 @@ void VerifyTableDoesntHaveDuplicates(
 
       EXPECT_FALSE(modifiers == accelerator_entry.modifiers &&
                    e.chrome_command == accelerator_entry.command_id &&
-                   (e.vkey_code ? (e.vkey_code == vkey_code)
-                                : (e.key_char == character ||
-                                   e.key_char == shifted_character)))
+                   e.vkey_code == vkey_code)
           << "Duplicate command: " << accelerator_entry.command_id
           << " in table " << table_name;
     }

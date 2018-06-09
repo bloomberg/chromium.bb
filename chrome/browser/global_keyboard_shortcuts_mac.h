@@ -24,19 +24,7 @@ struct KeyboardShortcutData {
   bool shift_key;
   bool cntrl_key;
   bool opt_key;
-  // Either one of vkey_code or key_char must be specified.  For keys
-  // whose virtual key code is hardware-dependent (kVK_ANSI_*) key_char
-  // should be specified instead.
-  // Set 0 for the one you do not want to specify.
   int vkey_code;  // Virtual Key code for the command.
-
-  // Key event characters for the command as reported by
-  // [NSEvent charactersIgnoringModifiers].
-  // This should be a unichar, but the type is defined in
-  // Foundation.framework/.../NSString.h, which is an ObjC header. This header
-  // is included in non-ObjC translation units, so we cannot rely on that
-  // include.
-  unsigned short key_char;
 
   int chrome_command;  // The chrome command # to execute for this shortcut.
 };
