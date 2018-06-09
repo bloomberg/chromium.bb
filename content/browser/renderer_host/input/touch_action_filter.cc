@@ -292,9 +292,4 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
   ResetTouchAction();
 }
 
-base::Optional<cc::TouchAction>
-TouchActionFilter::ScrollingTouchActionForTesting() const {
-  return scrolling_touch_action_;
-}
-
 }  // namespace content
