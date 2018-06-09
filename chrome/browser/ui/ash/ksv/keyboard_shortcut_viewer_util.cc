@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 
-#include "ash/components/shortcut_viewer/public/mojom/constants.mojom.h"
+#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_view.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
@@ -18,10 +18,12 @@ void ShowKeyboardShortcutViewer() {
   base::TimeTicks user_gesture_time = base::TimeTicks::Now();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kKeyboardShortcutViewerApp)) {
+    shortcut_viewer::mojom::ShortcutViewerPtr shortcut_viewer_ptr;
     service_manager::Connector* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    // TODO(jamescook): Pass |user_gesture_time| via a mojo Show() method.
-    connector->StartService(shortcut_viewer::mojom::kServiceName);
+    connector->BindInterface(shortcut_viewer::mojom::kServiceName,
+                             &shortcut_viewer_ptr);
+    shortcut_viewer_ptr->Toggle(user_gesture_time);
   } else {
     keyboard_shortcut_viewer::KeyboardShortcutView::Toggle(user_gesture_time);
   }

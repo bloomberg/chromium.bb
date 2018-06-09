@@ -18,7 +18,13 @@
 
 namespace keyboard_shortcut_viewer {
 
-ShortcutViewerApplication::ShortcutViewerApplication() = default;
+ShortcutViewerApplication::ShortcutViewerApplication()
+    : shortcut_viewer_binding_(this) {
+  registry_.AddInterface<shortcut_viewer::mojom::ShortcutViewer>(
+      base::BindRepeating(&ShortcutViewerApplication::AddBinding,
+                          base::Unretained(this)));
+}
+
 ShortcutViewerApplication::~ShortcutViewerApplication() = default;
 
 // static
@@ -27,11 +33,6 @@ void ShortcutViewerApplication::RegisterForTraceEvents() {
 }
 
 void ShortcutViewerApplication::OnStart() {
-  // TODO(jamescook): Pass the time of the accelerator keypress via a mojo
-  // Show() method so this time can be used to measure end-to-end startup time.
-  // https://crbug.com/847615
-  user_gesture_time_ = base::TimeTicks::Now();
-
   aura_init_ = views::AuraInit::Create(
       context()->connector(), context()->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS2,
@@ -54,6 +55,22 @@ void ShortcutViewerApplication::OnStart() {
   // Quit the application when the window is closed.
   last_window_closed_observer_ = std::make_unique<LastWindowClosedObserver>(
       context()->CreateQuitClosure());
+}
+
+void ShortcutViewerApplication::OnBindInterface(
+    const service_manager::BindSourceInfo& remote_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void ShortcutViewerApplication::OnDeviceListsComplete() {
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  KeyboardShortcutView::Toggle(user_gesture_time_);
+}
+
+void ShortcutViewerApplication::Toggle(base::TimeTicks user_gesture_time) {
+  user_gesture_time_ = user_gesture_time;
 
   // This app needs InputDeviceManager information that loads asynchronously via
   // InputDeviceClient. If the device list is incomplete, wait for it to load.
@@ -65,9 +82,10 @@ void ShortcutViewerApplication::OnStart() {
   }
 }
 
-void ShortcutViewerApplication::OnDeviceListsComplete() {
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  KeyboardShortcutView::Toggle(user_gesture_time_);
+void ShortcutViewerApplication::AddBinding(
+    shortcut_viewer::mojom::ShortcutViewerRequest request) {
+  shortcut_viewer_binding_.Close();
+  shortcut_viewer_binding_.Bind(std::move(request));
 }
 
 }  // namespace keyboard_shortcut_viewer

@@ -6,6 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
-    "constants.mojom",
+    "shortcut_viewer.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
   ]
 }
