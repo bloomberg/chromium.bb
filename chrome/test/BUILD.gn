@@ -1906,6 +1906,7 @@ test("browser_tests") {
         "../browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm",
         "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
         "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
+        "../browser/ui/cocoa/touchbar/suggested_text_touch_bar_controller_browsertest.mm",
         "../browser/ui/cocoa/view_id_util_browsertest.mm",
         "../browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm",
 
@@ -4009,7 +4010,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/app_menu/menu_tracked_root_view_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/autofill/autofill_tooltip_controller_unittest.mm",
-        "../browser/ui/cocoa/autofill/credit_card_autofill_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/background_gradient_view_unittest.mm",
         "../browser/ui/cocoa/base_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller_unittest.mm",
@@ -4154,6 +4154,7 @@ test("unit_tests") {
         "../browser/ui/cocoa/toolbar/toolbar_button_unittest.mm",
         "../browser/ui/cocoa/toolbar/toolbar_controller_unittest.mm",
         "../browser/ui/cocoa/toolbar/toolbar_view_unittest.mm",
+        "../browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller_unittest.mm",
         "../browser/ui/cocoa/translate/translate_bubble_controller_unittest.mm",
         "../browser/ui/cocoa/url_drop_target_unittest.mm",
         "../browser/ui/cocoa/vertical_gradient_view_unittest.mm",
