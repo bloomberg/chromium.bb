@@ -45,6 +45,11 @@ namespace {
 // Default test image file.
 const base::FilePath::CharType* kDefaultJpegFilename =
     FILE_PATH_LITERAL("peach_pi-1280x720.jpg");
+// Images with at least one odd dimension.
+const base::FilePath::CharType* kOddJpegFilenames[] = {
+    FILE_PATH_LITERAL("peach_pi-40x23.jpg"),
+    FILE_PATH_LITERAL("peach_pi-41x22.jpg"),
+    FILE_PATH_LITERAL("peach_pi-41x23.jpg")};
 int kDefaultPerfDecodeTimes = 600;
 // Decide to save decode results to files or not. Output files will be saved
 // in the same directory with unittest. File name is like input file but
@@ -70,6 +75,7 @@ struct TestImageFile {
 
   JpegParseResult parse_result;
   gfx::Size visible_size;
+  gfx::Size coded_size;
   size_t output_size;
 };
 
@@ -108,7 +114,8 @@ class JpegClient : public JpegDecodeAccelerator::Client {
   // Save a video frame that contains a decoded JPEG. The output is a PNG file.
   // The suffix will be added before the .png extension.
   void SaveToFile(int32_t bitstream_buffer_id,
-                  const scoped_refptr<VideoFrame>& in_frame);
+                  const scoped_refptr<VideoFrame>& in_frame,
+                  const std::string& suffix = "");
 
   // Calculate mean absolute difference of hardware and software decode results
   // to check the similarity.
@@ -211,7 +218,8 @@ void JpegClient::VideoFrameReady(int32_t bitstream_buffer_id) {
     return;
   }
   if (g_save_to_file) {
-    SaveToFile(bitstream_buffer_id, hw_out_frame_);
+    SaveToFile(bitstream_buffer_id, hw_out_frame_, "_hw");
+    SaveToFile(bitstream_buffer_id, sw_out_frame_, "_sw");
   }
 
   double difference = GetMeanAbsoluteDifference();
@@ -263,7 +271,8 @@ void JpegClient::SetState(ClientState new_state) {
 }
 
 void JpegClient::SaveToFile(int32_t bitstream_buffer_id,
-                            const scoped_refptr<VideoFrame>& in_frame) {
+                            const scoped_refptr<VideoFrame>& in_frame,
+                            const std::string& suffix) {
   LOG_ASSERT(in_frame.get());
   TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
 
@@ -301,7 +310,8 @@ void JpegClient::SaveToFile(int32_t bitstream_buffer_id,
       std::vector<gfx::PNGCodec::Comment>(), &png_output);
   LOG_ASSERT(png_encode_status);
   const base::FilePath in_filename(image_file->filename);
-  const base::FilePath out_filename = in_filename.ReplaceExtension(".png");
+  const base::FilePath out_filename =
+      in_filename.ReplaceExtension(".png").InsertBeforeExtension(suffix);
   const int size = base::checked_cast<int>(png_output.size());
   const int file_written_bytes = base::WriteFile(
       out_filename, reinterpret_cast<char*>(png_output.data()), size);
@@ -351,7 +361,7 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
   BitstreamBuffer bitstream_buffer(bitstream_buffer_id, dup_handle,
                                    image_file->data_str.size());
   hw_out_frame_ = VideoFrame::WrapExternalSharedMemory(
-      PIXEL_FORMAT_I420, image_file->visible_size,
+      PIXEL_FORMAT_I420, image_file->coded_size,
       gfx::Rect(image_file->visible_size), image_file->visible_size,
       static_cast<uint8_t*>(hw_out_shm_->memory()), image_file->output_size,
       hw_out_shm_->handle(), 0, base::TimeDelta());
@@ -362,7 +372,7 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
 bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
   TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
   sw_out_frame_ = VideoFrame::WrapExternalSharedMemory(
-      PIXEL_FORMAT_I420, image_file->visible_size,
+      PIXEL_FORMAT_I420, image_file->coded_size,
       gfx::Rect(image_file->visible_size), image_file->visible_size,
       static_cast<uint8_t*>(sw_out_shm_->memory()), image_file->output_size,
       sw_out_shm_->handle(), 0, base::TimeDelta());
@@ -420,6 +430,8 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   std::unique_ptr<TestImageFile> image_data_1280x720_default_;
   // Parsed data of failure image.
   std::unique_ptr<TestImageFile> image_data_invalid_;
+  // Parsed data for images with at least one odd dimension.
+  std::vector<std::unique_ptr<TestImageFile>> image_data_odd_;
   // Parsed data from command line.
   std::vector<std::unique_ptr<TestImageFile>> image_data_user_;
   // Decode times for performance measurement.
@@ -467,8 +479,17 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
   image_data_invalid_.reset(new TestImageFile("failure.jpg"));
   image_data_invalid_->data_str.resize(100, 0);
   image_data_invalid_->visible_size.SetSize(1280, 720);
+  image_data_invalid_->coded_size = image_data_invalid_->visible_size;
   image_data_invalid_->output_size = VideoFrame::AllocationSize(
-      PIXEL_FORMAT_I420, image_data_invalid_->visible_size);
+      PIXEL_FORMAT_I420, image_data_invalid_->coded_size);
+
+  // Load test images with at least one odd dimension.
+  for (const auto* filename : kOddJpegFilenames) {
+    base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
+    auto image_data = std::make_unique<TestImageFile>(filename);
+    ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(input_file, image_data.get()));
+    image_data_odd_.push_back(std::move(image_data));
+  }
 
   // |user_jpeg_filenames_| may include many files and use ';' as delimiter.
   std::vector<base::FilePath::StringType> filenames = base::SplitString(
@@ -520,8 +541,17 @@ void JpegDecodeAcceleratorTestEnvironment::ReadTestJpegImage(
   image_data->visible_size.SetSize(
       image_data->parse_result.frame_header.visible_width,
       image_data->parse_result.frame_header.visible_height);
+  // The parse result yields a coded size that rounds up to a whole MCU.
+  // However, we can use a smaller coded size for the decode result. Here, we
+  // simply round up to the next even dimension. That way, when we are building
+  // the video frame to hold the result of the decoding, the strides and
+  // pointers for the UV planes are computed correctly for JPEGs that require
+  // even-sized allocation (see VideoFrame::RequiresEvenSizeAllocation()) and
+  // whose visible size has at least one odd dimension.
+  image_data->coded_size.SetSize((image_data->visible_size.width() + 1) & ~1,
+                                 (image_data->visible_size.height() + 1) & ~1);
   image_data->output_size =
-      VideoFrame::AllocationSize(PIXEL_FORMAT_I420, image_data->visible_size);
+      VideoFrame::AllocationSize(PIXEL_FORMAT_I420, image_data->coded_size);
 }
 
 base::FilePath
@@ -720,7 +750,7 @@ TEST_F(JpegDecodeAcceleratorTest, SimpleDecode) {
     test_image_files_.push_back(image.get());
     expected_status_.push_back(CS_DECODE_PASS);
   }
-  TestDecode(1);
+  TestDecode(1 /* num_concurrent_decoders */);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, MultipleDecoders) {
@@ -728,7 +758,15 @@ TEST_F(JpegDecodeAcceleratorTest, MultipleDecoders) {
     test_image_files_.push_back(image.get());
     expected_status_.push_back(CS_DECODE_PASS);
   }
-  TestDecode(3);
+  TestDecode(3 /* num_concurrent_decoders */);
+}
+
+TEST_F(JpegDecodeAcceleratorTest, OddDimensions) {
+  for (auto& image : g_env->image_data_odd_) {
+    test_image_files_.push_back(image.get());
+    expected_status_.push_back(CS_DECODE_PASS);
+  }
+  TestDecode(1 /* num_concurrent_decoders */);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, InputSizeChange) {
@@ -739,7 +777,7 @@ TEST_F(JpegDecodeAcceleratorTest, InputSizeChange) {
   test_image_files_.push_back(g_env->image_data_1280x720_black_.get());
   for (size_t i = 0; i < test_image_files_.size(); i++)
     expected_status_.push_back(CS_DECODE_PASS);
-  TestDecode(1);
+  TestDecode(1 /* num_concurrent_decoders */);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, ResolutionChange) {
@@ -748,19 +786,19 @@ TEST_F(JpegDecodeAcceleratorTest, ResolutionChange) {
   test_image_files_.push_back(g_env->image_data_640x368_black_.get());
   for (size_t i = 0; i < test_image_files_.size(); i++)
     expected_status_.push_back(CS_DECODE_PASS);
-  TestDecode(1);
+  TestDecode(1 /* num_concurrent_decoders */);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, CodedSizeAlignment) {
   test_image_files_.push_back(g_env->image_data_640x360_black_.get());
   expected_status_.push_back(CS_DECODE_PASS);
-  TestDecode(1);
+  TestDecode(1 /* num_concurrent_decoders */);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, FailureJpeg) {
   test_image_files_.push_back(g_env->image_data_invalid_.get());
   expected_status_.push_back(CS_ERROR);
-  TestDecode(1);
+  TestDecode(1 /* num_concurrent_decoders */);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, KeepDecodeAfterFailure) {
@@ -768,7 +806,7 @@ TEST_F(JpegDecodeAcceleratorTest, KeepDecodeAfterFailure) {
   test_image_files_.push_back(g_env->image_data_1280x720_default_.get());
   expected_status_.push_back(CS_ERROR);
   expected_status_.push_back(CS_DECODE_PASS);
-  TestDecode(1);
+  TestDecode(1 /* num_concurrent_decoders */);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, Abort) {
@@ -779,7 +817,7 @@ TEST_F(JpegDecodeAcceleratorTest, Abort) {
   // decoding. Then destroy the first decoder when it is still decoding. The
   // kernel should not crash during this test.
   expected_status_.push_back(CS_DECODE_PASS);
-  TestDecode(2);
+  TestDecode(2 /* num_concurrent_decoders */);
 }
 
 TEST_F(JpegDecodeAcceleratorTest, PerfJDA) {
