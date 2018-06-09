@@ -486,6 +486,409 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
 Tab::~Tab() {
 }
 
+void Tab::AnimationEnded(const gfx::Animation* animation) {
+  if (animation == &title_animation_)
+    title_->SetBoundsRect(target_title_bounds_);
+  else
+    SchedulePaint();
+}
+
+void Tab::AnimationProgressed(const gfx::Animation* animation) {
+  if (animation == &title_animation_) {
+    title_->SetBoundsRect(gfx::Tween::RectValueBetween(
+        gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
+                                   animation->GetCurrentValue()),
+        start_title_bounds_, target_title_bounds_));
+    return;
+  }
+
+  // Ignore if the pulse animation is being performed on active tab because
+  // it repaints the same image. See PaintTab().
+  if (animation == &pulse_animation_ && IsActive())
+    return;
+
+  SchedulePaint();
+}
+
+void Tab::AnimationCanceled(const gfx::Animation* animation) {
+  SchedulePaint();
+}
+
+void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  if (!alert_indicator_button_ || !alert_indicator_button_->visible())
+    base::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
+  else if (alert_indicator_button_->enabled())
+    base::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
+  else if (data_.alert_state == TabAlertState::AUDIO_PLAYING)
+    base::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
+  else
+    base::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
+
+  const CloseTabSource source =
+      (event.type() == ui::ET_MOUSE_RELEASED &&
+       !(event.flags() & ui::EF_FROM_TOUCH)) ? CLOSE_TAB_FROM_MOUSE
+                                             : CLOSE_TAB_FROM_TOUCH;
+  DCHECK_EQ(close_button_, sender);
+  controller_->CloseTab(this, source);
+  if (event.type() == ui::ET_GESTURE_TAP)
+    TouchUMA::RecordGestureAction(TouchUMA::GESTURE_TABCLOSE_TAP);
+}
+
+void Tab::ShowContextMenuForView(views::View* source,
+                                 const gfx::Point& point,
+                                 ui::MenuSourceType source_type) {
+  if (!closing())
+    controller_->ShowContextMenuForTab(this, point, source_type);
+}
+
+bool Tab::GetHitTestMask(gfx::Path* mask) const {
+  // When the window is maximized we don't want to shave off the edges or top
+  // shadow of the tab, such that the user can click anywhere along the top
+  // edge of the screen to select a tab. Ditto for immersive fullscreen.
+  const views::Widget* widget = GetWidget();
+  *mask =
+      GetBorderPath(GetWidget()->GetCompositor()->device_scale_factor(), true,
+                    widget && (widget->IsMaximized() || widget->IsFullscreen()),
+                    GetTabEndcapWidth(), bounds());
+  return true;
+}
+
+void Tab::Layout() {
+  const gfx::Rect contents_rect = GetContentsBounds();
+
+  const bool was_showing_icon = showing_icon_;
+  UpdateIconVisibility();
+
+  int extra_padding = 0;
+
+  if (MD::IsRefreshUi())
+    extra_padding = kRefreshExtraLeftFavIconPadding;
+  else if (extra_padding_before_content_)
+    extra_padding = kExtraLeftPaddingToBalanceCloseButtonPadding;
+
+  const int start = contents_rect.x() + extra_padding;
+
+  // The bounds for the favicon will include extra width for the attention
+  // indicator, but visually it will be smaller at kFaviconSize wide.
+  gfx::Rect favicon_bounds(start, contents_rect.y(), 0, 0);
+  if (showing_icon_) {
+    // Height should go to the bottom of the tab for the crashed tab animation
+    // to pop out of the bottom.
+    favicon_bounds.set_y(contents_rect.y() +
+                         Center(contents_rect.height(), gfx::kFaviconSize));
+    favicon_bounds.set_size(
+        gfx::Size(icon_->GetPreferredSize().width(),
+                  contents_rect.height() - favicon_bounds.y()));
+    if (center_favicon_) {
+      favicon_bounds.set_x(contents_rect.CenterPoint().x() -
+                           gfx::kFaviconSize / 2);
+    } else {
+      MaybeAdjustLeftForPinnedTab(&favicon_bounds, gfx::kFaviconSize);
+    }
+  }
+  icon_->SetBoundsRect(favicon_bounds);
+  icon_->SetVisible(showing_icon_);
+
+  const int after_title_padding = GetLayoutConstant(TAB_AFTER_TITLE_PADDING);
+
+  int close_x = contents_rect.right();
+  if (showing_close_button_) {
+    // If the ratio of the close button size to tab width exceeds the maximum.
+    // The close button should be as large as possible so that there is a larger
+    // hit-target for touch events. So the close button bounds extends to the
+    // edges of the tab. However, the larger hit-target should be active only
+    // for touch events, and the close-image should show up in the right place.
+    // So a border is added to the button with necessary padding. The close
+    // button (Tab::TabCloseButton) makes sure the padding is a hit-target only
+    // for touch events.
+    // TODO(pkasting): The padding should maybe be removed, see comments in
+    // TabCloseButton::TargetForRect().
+    close_button_->SetBorder(views::NullBorder());
+    const gfx::Size close_button_size(close_button_->GetPreferredSize());
+    const int top = contents_rect.y() +
+                    Center(contents_rect.height(), close_button_size.height());
+    close_x = contents_rect.right() - close_button_size.width();
+    const int left = after_title_padding;
+    close_button_->SetPosition(gfx::Point(close_x - left, 0));
+    const int bottom = height() - close_button_size.height() - top;
+    const int right = width() - contents_rect.right();
+    close_button_->SetBorder(
+        views::CreateEmptyBorder(top, left, bottom, right));
+    close_button_->SizeToPreferredSize();
+    // Re-layout the close button so it can recompute its focus ring if needed:
+    // SizeToPreferredSize() will not necessarily re-Layout the View if only its
+    // interior margins have changed (which this logic does), but the focus ring
+    // still needs to be updated because it doesn't want to encompass the
+    // interior margins.
+    close_button_->Layout();
+  }
+  close_button_->SetVisible(showing_close_button_);
+
+  if (showing_alert_indicator_) {
+    const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
+    const gfx::Size image_size(alert_indicator_button_->GetPreferredSize());
+    const int alert_to_close_spacing =
+        is_touch_optimized ? after_title_padding : 0;
+    const int right = showing_close_button_ ? (close_x - alert_to_close_spacing)
+                                            : contents_rect.right();
+    gfx::Rect bounds(
+        std::max(contents_rect.x(), right - image_size.width()),
+        contents_rect.y() + Center(contents_rect.height(), image_size.height()),
+        image_size.width(), image_size.height());
+    MaybeAdjustLeftForPinnedTab(&bounds, bounds.width());
+    alert_indicator_button_->SetBoundsRect(bounds);
+  }
+  alert_indicator_button_->SetVisible(showing_alert_indicator_);
+
+  // Size the title to fill the remaining width and use all available height.
+  bool show_title = ShouldRenderAsNormalTab();
+  if (show_title) {
+    // When computing the spacing from the favicon, don't count the actual
+    // icon view width (which will include extra room for the alert indicator),
+    // but rather the normal favicon width which is what it will look like.
+    const int title_left = showing_icon_
+                               ? (favicon_bounds.x() + gfx::kFaviconSize +
+                                  GetLayoutConstant(TAB_PRE_TITLE_PADDING))
+                               : start;
+    int title_right = contents_rect.right();
+    if (showing_alert_indicator_) {
+      title_right = alert_indicator_button_->x() - after_title_padding;
+    } else if (showing_close_button_) {
+      // Allow the title to overlay the close button's empty border padding.
+      title_right = close_x - after_title_padding;
+    }
+    const int title_width = std::max(title_right - title_left, 0);
+    // The Label will automatically center the font's cap height within the
+    // provided vertical space.
+    const gfx::Rect title_bounds(title_left, contents_rect.y(), title_width,
+                                 contents_rect.height());
+    show_title = title_width > 0;
+
+    if (title_bounds != target_title_bounds_) {
+      target_title_bounds_ = title_bounds;
+      if (was_showing_icon == showing_icon_ || title_->bounds().IsEmpty() ||
+          title_bounds.IsEmpty()) {
+        title_animation_.Stop();
+        title_->SetBoundsRect(title_bounds);
+      } else if (!title_animation_.is_animating()) {
+        start_title_bounds_ = title_->bounds();
+        title_animation_.Start();
+      }
+    }
+  }
+  title_->SetVisible(show_title);
+}
+
+const char* Tab::GetClassName() const {
+  return kViewClassName;
+}
+
+bool Tab::OnMousePressed(const ui::MouseEvent& event) {
+  controller_->OnMouseEventInTab(this, event);
+
+  // Allow a right click from touch to drag, which corresponds to a long click.
+  if (event.IsOnlyLeftMouseButton() ||
+      (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
+    ui::ListSelectionModel original_selection;
+    original_selection = controller_->GetSelectionModel();
+    // Changing the selection may cause our bounds to change. If that happens
+    // the location of the event may no longer be valid. Create a copy of the
+    // event in the parents coordinate, which won't change, and recreate an
+    // event after changing so the coordinates are correct.
+    ui::MouseEvent event_in_parent(event, static_cast<View*>(this), parent());
+    if (controller_->SupportsMultipleSelection()) {
+      if (event.IsShiftDown() && event.IsControlDown()) {
+        controller_->AddSelectionFromAnchorTo(this);
+      } else if (event.IsShiftDown()) {
+        controller_->ExtendSelectionTo(this);
+      } else if (event.IsControlDown()) {
+        controller_->ToggleSelected(this);
+        if (!IsSelected()) {
+          // Don't allow dragging non-selected tabs.
+          return false;
+        }
+      } else if (!IsSelected()) {
+        controller_->SelectTab(this);
+        base::RecordAction(UserMetricsAction("SwitchTab_Click"));
+      }
+    } else if (!IsSelected()) {
+      controller_->SelectTab(this);
+      base::RecordAction(UserMetricsAction("SwitchTab_Click"));
+    }
+    ui::MouseEvent cloned_event(event_in_parent, parent(),
+                                static_cast<View*>(this));
+    controller_->MaybeStartDrag(this, cloned_event, original_selection);
+  }
+  return true;
+}
+
+bool Tab::OnMouseDragged(const ui::MouseEvent& event) {
+  controller_->ContinueDrag(this, event);
+  return true;
+}
+
+void Tab::OnMouseReleased(const ui::MouseEvent& event) {
+  controller_->OnMouseEventInTab(this, event);
+
+  // Notify the drag helper that we're done with any potential drag operations.
+  // Clean up the drag helper, which is re-created on the next mouse press.
+  // In some cases, ending the drag will schedule the tab for destruction; if
+  // so, bail immediately, since our members are already dead and we shouldn't
+  // do anything else except drop the tab where it is.
+  if (controller_->EndDrag(END_DRAG_COMPLETE))
+    return;
+
+  // Close tab on middle click, but only if the button is released over the tab
+  // (normal windows behavior is to discard presses of a UI element where the
+  // releases happen off the element).
+  if (event.IsMiddleMouseButton()) {
+    if (HitTestPoint(event.location())) {
+      controller_->CloseTab(this, CLOSE_TAB_FROM_MOUSE);
+    } else if (closing_) {
+      // We're animating closed and a middle mouse button was pushed on us but
+      // we don't contain the mouse anymore. We assume the user is clicking
+      // quicker than the animation and we should close the tab that falls under
+      // the mouse.
+      Tab* closest_tab = controller_->GetTabAt(this, event.location());
+      if (closest_tab)
+        controller_->CloseTab(closest_tab, CLOSE_TAB_FROM_MOUSE);
+    }
+  } else if (event.IsOnlyLeftMouseButton() && !event.IsShiftDown() &&
+             !event.IsControlDown()) {
+    // If the tab was already selected mouse pressed doesn't change the
+    // selection. Reset it now to handle the case where multiple tabs were
+    // selected.
+    controller_->SelectTab(this);
+
+    if (alert_indicator_button_ && alert_indicator_button_->visible() &&
+        alert_indicator_button_->bounds().Contains(event.location())) {
+      base::RecordAction(UserMetricsAction("TabAlertIndicator_Clicked"));
+    }
+  }
+}
+
+void Tab::OnMouseCaptureLost() {
+  controller_->EndDrag(END_DRAG_CAPTURE_LOST);
+}
+
+void Tab::OnMouseMoved(const ui::MouseEvent& event) {
+  hover_controller_.SetLocation(event.location());
+  controller_->OnMouseEventInTab(this, event);
+}
+
+void Tab::OnMouseEntered(const ui::MouseEvent& event) {
+  hover_controller_.Show(GlowHoverController::SUBTLE);
+  if (MD::IsRefreshUi())
+    RepaintSubsequentTab();
+  Layout();
+}
+
+void Tab::OnMouseExited(const ui::MouseEvent& event) {
+  hover_controller_.Hide();
+  if (MD::IsRefreshUi())
+    RepaintSubsequentTab();
+  Layout();
+}
+
+void Tab::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN: {
+      // TAP_DOWN is only dispatched for the first touch point.
+      DCHECK_EQ(1, event->details().touch_points());
+
+      // See comment in OnMousePressed() as to why we copy the event.
+      ui::GestureEvent event_in_parent(*event, static_cast<View*>(this),
+                                       parent());
+      ui::ListSelectionModel original_selection;
+      original_selection = controller_->GetSelectionModel();
+      tab_activated_with_last_tap_down_ = !IsActive();
+      if (!IsSelected())
+        controller_->SelectTab(this);
+      gfx::Point loc(event->location());
+      views::View::ConvertPointToScreen(this, &loc);
+      ui::GestureEvent cloned_event(event_in_parent, parent(),
+                                    static_cast<View*>(this));
+      controller_->MaybeStartDrag(this, cloned_event, original_selection);
+      break;
+    }
+
+    case ui::ET_GESTURE_END:
+      controller_->EndDrag(END_DRAG_COMPLETE);
+      break;
+
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      controller_->ContinueDrag(this, *event);
+      break;
+
+    default:
+      break;
+  }
+  event->SetHandled();
+}
+
+bool Tab::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
+  // Note: Anything that affects the tooltip text should be accounted for when
+  // calling TooltipTextChanged() from Tab::SetData().
+  *tooltip = chrome::AssembleTabTooltipText(data_.title, data_.alert_state);
+  return !tooltip->empty();
+}
+
+bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
+  origin->set_x(title_->x() + 10);
+  origin->set_y(-4);
+  return true;
+}
+
+void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kTab;
+  node_data->SetName(controller_->GetAccessibleTabName(this));
+  node_data->AddState(ax::mojom::State::kMultiselectable);
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                              IsSelected());
+}
+
+void Tab::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
+  // If this hierarchy changed has resulted in us being part of a widget
+  // hierarchy for the first time, we can now get at the theme provider, and
+  // should recalculate the button color.
+  if (details.is_add)
+    OnButtonColorMaybeChanged();
+}
+
+void Tab::PaintChildren(const views::PaintInfo& info) {
+  // Clip children to 1 dp inside the tab's fill path.  This has no effect
+  // except when the tab is too narrow to completely show even one icon, at
+  // which point this serves to clip the favicon.
+  ui::ClipRecorder clip_recorder(info.context());
+  // The paint recording scale for tabs is consistent along the x and y axis.
+  const float paint_recording_scale = info.paint_recording_scale_x();
+  constexpr int kFaviconPadding = 1;
+  clip_recorder.ClipPathWithAntiAliasing(GetInteriorPath(
+      paint_recording_scale, bounds(), GetTabEndcapWidth(), kFaviconPadding));
+  View::PaintChildren(info);
+}
+
+void Tab::OnPaint(gfx::Canvas* canvas) {
+  // Don't paint if we're narrower than we can render correctly. (This should
+  // only happen during animations).
+  if (width() < GetMinimumInactiveSize().width() && !data().pinned)
+    return;
+
+  gfx::Path clip;
+  if (!controller_->ShouldPaintTab(
+          this,
+          base::BindRepeating(&GetBorderPath, canvas->image_scale(), true,
+                              false, GetTabEndcapWidth()),
+          &clip))
+    return;
+
+  PaintTab(canvas, clip);
+}
+
+void Tab::OnThemeChanged() {
+  OnButtonColorMaybeChanged();
+}
+
 int Tab::GetCornerRadius() const {
   // TODO(pkasting): This should vary as the tab width decreases.
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
@@ -653,8 +1056,8 @@ int Tab::GetWidthOfLargestSelectableRegion() const {
   // entire tab region is available.
   const int indicator_left =
       showing_alert_indicator_ ? alert_indicator_button_->x() : width();
-  const int close_button_left = showing_close_button_ ?
-      close_button_->x() : width();
+  const int close_button_left =
+      showing_close_button_ ? close_button_->x() : width();
   return std::min(indicator_left, close_button_left);
 }
 
@@ -703,409 +1106,6 @@ float Tab::GetInverseDiagonalSlope() {
 int Tab::GetOverlap() {
   // We want to overlap the endcap portions entirely.
   return gfx::ToCeiledInt(GetTabEndcapWidth());
-}
-
-void Tab::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation == &title_animation_) {
-    title_->SetBoundsRect(gfx::Tween::RectValueBetween(
-        gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
-                                   animation->GetCurrentValue()),
-        start_title_bounds_, target_title_bounds_));
-    return;
-  }
-
-  // Ignore if the pulse animation is being performed on active tab because
-  // it repaints the same image. See PaintTab().
-  if (animation == &pulse_animation_ && IsActive())
-    return;
-
-  SchedulePaint();
-}
-
-void Tab::AnimationCanceled(const gfx::Animation* animation) {
-  SchedulePaint();
-}
-
-void Tab::AnimationEnded(const gfx::Animation* animation) {
-  if (animation == &title_animation_)
-    title_->SetBoundsRect(target_title_bounds_);
-  else
-    SchedulePaint();
-}
-
-void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (!alert_indicator_button_ || !alert_indicator_button_->visible())
-    base::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
-  else if (alert_indicator_button_->enabled())
-    base::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
-  else if (data_.alert_state == TabAlertState::AUDIO_PLAYING)
-    base::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
-  else
-    base::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
-
-  const CloseTabSource source =
-      (event.type() == ui::ET_MOUSE_RELEASED &&
-       !(event.flags() & ui::EF_FROM_TOUCH)) ? CLOSE_TAB_FROM_MOUSE
-                                             : CLOSE_TAB_FROM_TOUCH;
-  DCHECK_EQ(close_button_, sender);
-  controller_->CloseTab(this, source);
-  if (event.type() == ui::ET_GESTURE_TAP)
-    TouchUMA::RecordGestureAction(TouchUMA::GESTURE_TABCLOSE_TAP);
-}
-
-void Tab::ShowContextMenuForView(views::View* source,
-                                 const gfx::Point& point,
-                                 ui::MenuSourceType source_type) {
-  if (!closing())
-    controller_->ShowContextMenuForTab(this, point, source_type);
-}
-
-bool Tab::GetHitTestMask(gfx::Path* mask) const {
-  // When the window is maximized we don't want to shave off the edges or top
-  // shadow of the tab, such that the user can click anywhere along the top
-  // edge of the screen to select a tab. Ditto for immersive fullscreen.
-  const views::Widget* widget = GetWidget();
-  *mask =
-      GetBorderPath(GetWidget()->GetCompositor()->device_scale_factor(), true,
-                    widget && (widget->IsMaximized() || widget->IsFullscreen()),
-                    GetTabEndcapWidth(), bounds());
-  return true;
-}
-
-void Tab::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
-  // If this hierarchy changed has resulted in us being part of a widget
-  // hierarchy for the first time, we can now get at the theme provider, and
-  // should recalculate the button color.
-  if (details.is_add)
-    OnButtonColorMaybeChanged();
-}
-
-void Tab::OnPaint(gfx::Canvas* canvas) {
-  // Don't paint if we're narrower than we can render correctly. (This should
-  // only happen during animations).
-  if (width() < GetMinimumInactiveSize().width() && !data().pinned)
-    return;
-
-  gfx::Path clip;
-  if (!controller_->ShouldPaintTab(
-          this,
-          base::BindRepeating(&GetBorderPath, canvas->image_scale(), true,
-                              false, GetTabEndcapWidth()),
-          &clip))
-    return;
-
-  PaintTab(canvas, clip);
-}
-
-void Tab::PaintChildren(const views::PaintInfo& info) {
-  // Clip children to 1 dp inside the tab's fill path.  This has no effect
-  // except when the tab is too narrow to completely show even one icon, at
-  // which point this serves to clip the favicon.
-  ui::ClipRecorder clip_recorder(info.context());
-  // The paint recording scale for tabs is consistent along the x and y axis.
-  const float paint_recording_scale = info.paint_recording_scale_x();
-  constexpr int kFaviconPadding = 1;
-  clip_recorder.ClipPathWithAntiAliasing(GetInteriorPath(
-      paint_recording_scale, bounds(), GetTabEndcapWidth(), kFaviconPadding));
-  View::PaintChildren(info);
-}
-
-void Tab::Layout() {
-  const gfx::Rect contents_rect = GetContentsBounds();
-
-  const bool was_showing_icon = showing_icon_;
-  UpdateIconVisibility();
-
-  int extra_padding = 0;
-
-  if (MD::IsRefreshUi())
-    extra_padding = kRefreshExtraLeftFavIconPadding;
-  else if (extra_padding_before_content_)
-    extra_padding = kExtraLeftPaddingToBalanceCloseButtonPadding;
-
-  const int start = contents_rect.x() + extra_padding;
-
-  // The bounds for the favicon will include extra width for the attention
-  // indicator, but visually it will be smaller at kFaviconSize wide.
-  gfx::Rect favicon_bounds(start, contents_rect.y(), 0, 0);
-  if (showing_icon_) {
-    // Height should go to the bottom of the tab for the crashed tab animation
-    // to pop out of the bottom.
-    favicon_bounds.set_y(contents_rect.y() +
-                         Center(contents_rect.height(), gfx::kFaviconSize));
-    favicon_bounds.set_size(
-        gfx::Size(icon_->GetPreferredSize().width(),
-                  contents_rect.height() - favicon_bounds.y()));
-    if (center_favicon_) {
-      favicon_bounds.set_x(contents_rect.CenterPoint().x() -
-                           gfx::kFaviconSize / 2);
-    } else {
-      MaybeAdjustLeftForPinnedTab(&favicon_bounds, gfx::kFaviconSize);
-    }
-  }
-  icon_->SetBoundsRect(favicon_bounds);
-  icon_->SetVisible(showing_icon_);
-
-  const int after_title_padding = GetLayoutConstant(TAB_AFTER_TITLE_PADDING);
-
-  int close_x = contents_rect.right();
-  if (showing_close_button_) {
-    // If the ratio of the close button size to tab width exceeds the maximum.
-    // The close button should be as large as possible so that there is a larger
-    // hit-target for touch events. So the close button bounds extends to the
-    // edges of the tab. However, the larger hit-target should be active only
-    // for touch events, and the close-image should show up in the right place.
-    // So a border is added to the button with necessary padding. The close
-    // button (Tab::TabCloseButton) makes sure the padding is a hit-target only
-    // for touch events.
-    // TODO(pkasting): The padding should maybe be removed, see comments in
-    // TabCloseButton::TargetForRect().
-    close_button_->SetBorder(views::NullBorder());
-    const gfx::Size close_button_size(close_button_->GetPreferredSize());
-    const int top = contents_rect.y() +
-                    Center(contents_rect.height(), close_button_size.height());
-    close_x = contents_rect.right() - close_button_size.width();
-    const int left = after_title_padding;
-    close_button_->SetPosition(gfx::Point(close_x - left, 0));
-    const int bottom = height() - close_button_size.height() - top;
-    const int right = width() - contents_rect.right();
-    close_button_->SetBorder(
-        views::CreateEmptyBorder(top, left, bottom, right));
-    close_button_->SizeToPreferredSize();
-    // Re-layout the close button so it can recompute its focus ring if needed:
-    // SizeToPreferredSize() will not necessarily re-Layout the View if only its
-    // interior margins have changed (which this logic does), but the focus ring
-    // still needs to be updated because it doesn't want to encompass the
-    // interior margins.
-    close_button_->Layout();
-  }
-  close_button_->SetVisible(showing_close_button_);
-
-  if (showing_alert_indicator_) {
-    const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
-    const gfx::Size image_size(alert_indicator_button_->GetPreferredSize());
-    const int alert_to_close_spacing =
-        is_touch_optimized ? after_title_padding : 0;
-    const int right = showing_close_button_ ? (close_x - alert_to_close_spacing)
-                                            : contents_rect.right();
-    gfx::Rect bounds(
-        std::max(contents_rect.x(), right - image_size.width()),
-        contents_rect.y() + Center(contents_rect.height(), image_size.height()),
-        image_size.width(), image_size.height());
-    MaybeAdjustLeftForPinnedTab(&bounds, bounds.width());
-    alert_indicator_button_->SetBoundsRect(bounds);
-  }
-  alert_indicator_button_->SetVisible(showing_alert_indicator_);
-
-  // Size the title to fill the remaining width and use all available height.
-  bool show_title = ShouldRenderAsNormalTab();
-  if (show_title) {
-    // When computing the spacing from the favicon, don't count the actual
-    // icon view width (which will include extra room for the alert indicator),
-    // but rather the normal favicon width which is what it will look like.
-    const int title_left = showing_icon_
-                               ? (favicon_bounds.x() + gfx::kFaviconSize +
-                                  GetLayoutConstant(TAB_PRE_TITLE_PADDING))
-                               : start;
-    int title_right = contents_rect.right();
-    if (showing_alert_indicator_) {
-      title_right = alert_indicator_button_->x() - after_title_padding;
-    } else if (showing_close_button_) {
-      // Allow the title to overlay the close button's empty border padding.
-      title_right = close_x - after_title_padding;
-    }
-    const int title_width = std::max(title_right - title_left, 0);
-    // The Label will automatically center the font's cap height within the
-    // provided vertical space.
-    const gfx::Rect title_bounds(title_left, contents_rect.y(), title_width,
-                                 contents_rect.height());
-    show_title = title_width > 0;
-
-    if (title_bounds != target_title_bounds_) {
-      target_title_bounds_ = title_bounds;
-      if (was_showing_icon == showing_icon_ || title_->bounds().IsEmpty() ||
-          title_bounds.IsEmpty()) {
-        title_animation_.Stop();
-        title_->SetBoundsRect(title_bounds);
-      } else if (!title_animation_.is_animating()) {
-        start_title_bounds_ = title_->bounds();
-        title_animation_.Start();
-      }
-    }
-  }
-  title_->SetVisible(show_title);
-}
-
-void Tab::OnThemeChanged() {
-  OnButtonColorMaybeChanged();
-}
-
-const char* Tab::GetClassName() const {
-  return kViewClassName;
-}
-
-bool Tab::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
-  // Note: Anything that affects the tooltip text should be accounted for when
-  // calling TooltipTextChanged() from Tab::SetData().
-  *tooltip = chrome::AssembleTabTooltipText(data_.title, data_.alert_state);
-  return !tooltip->empty();
-}
-
-bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
-  origin->set_x(title_->x() + 10);
-  origin->set_y(-4);
-  return true;
-}
-
-bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  controller_->OnMouseEventInTab(this, event);
-
-  // Allow a right click from touch to drag, which corresponds to a long click.
-  if (event.IsOnlyLeftMouseButton() ||
-      (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
-    ui::ListSelectionModel original_selection;
-    original_selection = controller_->GetSelectionModel();
-    // Changing the selection may cause our bounds to change. If that happens
-    // the location of the event may no longer be valid. Create a copy of the
-    // event in the parents coordinate, which won't change, and recreate an
-    // event after changing so the coordinates are correct.
-    ui::MouseEvent event_in_parent(event, static_cast<View*>(this), parent());
-    if (controller_->SupportsMultipleSelection()) {
-      if (event.IsShiftDown() && event.IsControlDown()) {
-        controller_->AddSelectionFromAnchorTo(this);
-      } else if (event.IsShiftDown()) {
-        controller_->ExtendSelectionTo(this);
-      } else if (event.IsControlDown()) {
-        controller_->ToggleSelected(this);
-        if (!IsSelected()) {
-          // Don't allow dragging non-selected tabs.
-          return false;
-        }
-      } else if (!IsSelected()) {
-        controller_->SelectTab(this);
-        base::RecordAction(UserMetricsAction("SwitchTab_Click"));
-      }
-    } else if (!IsSelected()) {
-      controller_->SelectTab(this);
-      base::RecordAction(UserMetricsAction("SwitchTab_Click"));
-    }
-    ui::MouseEvent cloned_event(event_in_parent, parent(),
-                                static_cast<View*>(this));
-    controller_->MaybeStartDrag(this, cloned_event, original_selection);
-  }
-  return true;
-}
-
-bool Tab::OnMouseDragged(const ui::MouseEvent& event) {
-  controller_->ContinueDrag(this, event);
-  return true;
-}
-
-void Tab::OnMouseReleased(const ui::MouseEvent& event) {
-  controller_->OnMouseEventInTab(this, event);
-
-  // Notify the drag helper that we're done with any potential drag operations.
-  // Clean up the drag helper, which is re-created on the next mouse press.
-  // In some cases, ending the drag will schedule the tab for destruction; if
-  // so, bail immediately, since our members are already dead and we shouldn't
-  // do anything else except drop the tab where it is.
-  if (controller_->EndDrag(END_DRAG_COMPLETE))
-    return;
-
-  // Close tab on middle click, but only if the button is released over the tab
-  // (normal windows behavior is to discard presses of a UI element where the
-  // releases happen off the element).
-  if (event.IsMiddleMouseButton()) {
-    if (HitTestPoint(event.location())) {
-      controller_->CloseTab(this, CLOSE_TAB_FROM_MOUSE);
-    } else if (closing_) {
-      // We're animating closed and a middle mouse button was pushed on us but
-      // we don't contain the mouse anymore. We assume the user is clicking
-      // quicker than the animation and we should close the tab that falls under
-      // the mouse.
-      Tab* closest_tab = controller_->GetTabAt(this, event.location());
-      if (closest_tab)
-        controller_->CloseTab(closest_tab, CLOSE_TAB_FROM_MOUSE);
-    }
-  } else if (event.IsOnlyLeftMouseButton() && !event.IsShiftDown() &&
-             !event.IsControlDown()) {
-    // If the tab was already selected mouse pressed doesn't change the
-    // selection. Reset it now to handle the case where multiple tabs were
-    // selected.
-    controller_->SelectTab(this);
-
-    if (alert_indicator_button_ && alert_indicator_button_->visible() &&
-        alert_indicator_button_->bounds().Contains(event.location())) {
-      base::RecordAction(UserMetricsAction("TabAlertIndicator_Clicked"));
-    }
-  }
-}
-
-void Tab::OnMouseCaptureLost() {
-  controller_->EndDrag(END_DRAG_CAPTURE_LOST);
-}
-
-void Tab::OnMouseEntered(const ui::MouseEvent& event) {
-  hover_controller_.Show(GlowHoverController::SUBTLE);
-  if (MD::IsRefreshUi())
-    RepaintSubsequentTab();
-  Layout();
-}
-
-void Tab::OnMouseMoved(const ui::MouseEvent& event) {
-  hover_controller_.SetLocation(event.location());
-  controller_->OnMouseEventInTab(this, event);
-}
-
-void Tab::OnMouseExited(const ui::MouseEvent& event) {
-  hover_controller_.Hide();
-  if (MD::IsRefreshUi())
-    RepaintSubsequentTab();
-  Layout();
-}
-
-void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kTab;
-  node_data->SetName(controller_->GetAccessibleTabName(this));
-  node_data->AddState(ax::mojom::State::kMultiselectable);
-  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
-                              IsSelected());
-}
-
-void Tab::OnGestureEvent(ui::GestureEvent* event) {
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN: {
-      // TAP_DOWN is only dispatched for the first touch point.
-      DCHECK_EQ(1, event->details().touch_points());
-
-      // See comment in OnMousePressed() as to why we copy the event.
-      ui::GestureEvent event_in_parent(*event, static_cast<View*>(this),
-                                       parent());
-      ui::ListSelectionModel original_selection;
-      original_selection = controller_->GetSelectionModel();
-      tab_activated_with_last_tap_down_ = !IsActive();
-      if (!IsSelected())
-        controller_->SelectTab(this);
-      gfx::Point loc(event->location());
-      views::View::ConvertPointToScreen(this, &loc);
-      ui::GestureEvent cloned_event(event_in_parent, parent(),
-                                    static_cast<View*>(this));
-      controller_->MaybeStartDrag(this, cloned_event, original_selection);
-      break;
-    }
-
-    case ui::ET_GESTURE_END:
-      controller_->EndDrag(END_DRAG_COMPLETE);
-      break;
-
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      controller_->ContinueDrag(this, *event);
-      break;
-
-    default:
-      break;
-  }
-  event->SetHandled();
 }
 
 void Tab::RepaintSubsequentTab() {
