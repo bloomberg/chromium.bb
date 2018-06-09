@@ -98,6 +98,10 @@ class BASE_EXPORT IncomingTaskQueue
     return pending_high_res_tasks_ > 0;
   }
 
+  // Reports UMA metrics about its queues before the MessageLoop goes to sleep
+  // per being idle.
+  void ReportMetricsOnIdle() const;
+
  private:
   friend class base::PostTaskTest;
   friend class RefCountedThreadSafe<IncomingTaskQueue>;
@@ -159,6 +163,8 @@ class BASE_EXPORT IncomingTaskQueue
     bool HasTasks() override;
     void Clear() override;
     void Push(PendingTask pending_task) override;
+
+    size_t Size() const;
 
    private:
     IncomingTaskQueue* const outer_;
