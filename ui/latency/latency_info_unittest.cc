@@ -42,18 +42,4 @@ TEST(LatencyInfoTest, AddTwoSeparateEvent) {
   EXPECT_EQ(component.event_time, ToTestTimeTicks(1000));
 }
 
-TEST(LatencyInfoTest, RemoveLatency) {
-  LatencyInfo info;
-  info.set_trace_id(1);
-  info.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
-  info.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
-  info.AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
-
-  info.RemoveLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
-
-  EXPECT_FALSE(info.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0));
-  EXPECT_FALSE(info.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0));
-  EXPECT_TRUE(info.FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, 0));
-}
-
 }  // namespace ui
