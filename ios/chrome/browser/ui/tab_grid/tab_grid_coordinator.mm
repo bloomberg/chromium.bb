@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/history/history_coordinator.h"
-#import "ios/chrome/browser/ui/history/public/history_tab_presentation_delegate.h"
+#import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
@@ -27,7 +27,7 @@
 #endif
 
 @interface TabGridCoordinator ()<TabPresentationDelegate,
-                                 HistoryTabPresentationDelegate,
+                                 HistoryPresentationDelegate,
                                  RecentTabsHandsetViewControllerCommand>
 // Superclass property specialized for the class that this coordinator uses.
 @property(nonatomic, weak) TabGridViewController* mainViewController;
@@ -186,7 +186,7 @@
               regularBrowserState:self.regularTabModel.browserState
             incognitoBrowserState:self.incognitoTabModel.browserState];
   mainViewController.remoteTabsViewController.loader = self.URLLoader;
-  mainViewController.remoteTabsViewController.handsetCommandHandler = self;
+  mainViewController.remoteTabsViewController.presentationDelegate = self;
 
   // TODO(crbug.com/850387) : Currently, consumer calls from the mediator
   // prematurely loads the view in |RecentTabsTableViewController|. Fix this so
@@ -333,34 +333,36 @@
 
 #pragma mark - RecentTabsHandsetViewControllerCommand
 
-// Normally, recent tabs is dismissed to reveal the tab view beneath it. In tab
-// grid, the tab view is presented above the recent tabs panel.
-- (void)dismissRecentTabsWithCompletion:(void (^)())completion {
-  if (completion) {
-    // TODO(crbug.com/845192) : Don't use the completion block as an implicit
-    // signal to show history.
-    // A history coordinator from main_controller won't work properly from the
-    // tab grid. Using a local coordinator works better when hooked up with a
-    // specialized URL loader and tab presentation delegate.
-    self.historyCoordinator = [[HistoryCoordinator alloc]
-        initWithBaseViewController:self.mainViewController
-                      browserState:self.regularTabModel.browserState];
-    self.historyCoordinator.loader = self.URLLoader;
-    self.historyCoordinator.tabPresentationDelegate = self;
-    [self.historyCoordinator start];
-    return;
-  }
-  [self showActiveRegularTab];
+- (void)dismissRecentTabs {
+  // It is valid for tab grid to ignore this since recent tabs is embedded and
+  // will not be dismissed.
 }
 
-#pragma mark - HistoryTabPresentationDelegate
+- (void)showHistoryFromRecentTabs {
+  // A history coordinator from main_controller won't work properly from the
+  // tab grid. Using a local coordinator works better when hooked up with a
+  // specialized URL loader and tab presentation delegate.
+  self.historyCoordinator = [[HistoryCoordinator alloc]
+      initWithBaseViewController:self.mainViewController
+                    browserState:self.regularTabModel.browserState];
+  self.historyCoordinator.loader = self.URLLoader;
+  self.historyCoordinator.presentationDelegate = self;
+  [self.historyCoordinator start];
+}
 
-- (void)showActiveRegularTab {
+- (void)showActiveRegularTabFromRecentTabs {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
              shouldFinishWithActiveModel:self.regularTabModel];
 }
 
-- (void)showActiveIncognitoTab {
+#pragma mark - HistoryPresentationDelegate
+
+- (void)showActiveRegularTabFromHistory {
+  [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
+             shouldFinishWithActiveModel:self.regularTabModel];
+}
+
+- (void)showActiveIncognitoTabFromHistory {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
              shouldFinishWithActiveModel:self.incognitoTabModel];
 }

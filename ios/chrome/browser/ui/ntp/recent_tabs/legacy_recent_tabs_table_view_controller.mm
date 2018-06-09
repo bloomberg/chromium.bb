@@ -334,7 +334,7 @@ enum CellType {
 #pragma mark - Helpers to open tabs, or show the full history view.
 
 - (void)dismissRecentTabsModal {
-  [self.handsetCommandHandler dismissRecentTabsWithCompletion:nil];
+  [self.handsetCommandHandler dismissRecentTabs];
 }
 
 - (void)openTabWithContentOfDistantTab:
@@ -385,12 +385,8 @@ enum CellType {
 }
 
 - (void)showFullHistory {
-  __weak LegacyRecentTabsTableViewController* weakSelf = self;
-  ProceduralBlock openHistory = ^{
-    [weakSelf.dispatcher showHistory];
-  };
-  DCHECK(self.handsetCommandHandler);
-  [self.handsetCommandHandler dismissRecentTabsWithCompletion:openHistory];
+  // Dismisses recent tabs before presenting history.
+  [self.handsetCommandHandler showHistoryFromRecentTabs];
 }
 
 #pragma mark - Handling of the collapsed sections.

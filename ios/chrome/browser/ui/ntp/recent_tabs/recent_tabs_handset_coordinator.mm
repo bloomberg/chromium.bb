@@ -6,6 +6,7 @@
 
 #include "base/ios/block_types.h"
 #include "base/logging.h"
+#include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/legacy_recent_tabs_table_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 
@@ -66,8 +67,24 @@
 
 #pragma mark - RecentTabsHandsetViewControllerCommand
 
-- (void)dismissRecentTabsWithCompletion:(void (^)())completion {
-  self.completion = completion;
+- (void)dismissRecentTabs {
+  self.completion = nil;
+  [self stop];
+}
+
+- (void)showActiveRegularTabFromRecentTabs {
+  // In this implementation, stopping this coordinator will reveal the tab UI
+  // beneath it.
+  self.completion = nil;
+  [self stop];
+}
+
+- (void)showHistoryFromRecentTabs {
+  __weak RecentTabsHandsetCoordinator* weakSelf = self;
+  self.completion = ^{
+    [weakSelf.dispatcher showHistory];
+    weakSelf.completion = nil;
+  };
   [self stop];
 }
 

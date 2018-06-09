@@ -23,7 +23,7 @@
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
-#import "ios/chrome/browser/ui/history/public/history_tab_presentation_delegate.h"
+#import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
@@ -111,7 +111,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 @synthesize searchController = _searchController;
 @synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
-@synthesize tabPresentationDelegate = _tabPresentationDelegate;
+@synthesize presentationDelegate = _presentationDelegate;
 
 #pragma mark - ViewController Lifecycle.
 
@@ -808,7 +808,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
                         inIncognito:NO
                        inBackground:NO
                            appendTo:kLastTab];
-    [self.tabPresentationDelegate showActiveRegularTab];
+    [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }
 
@@ -821,7 +821,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
                         inIncognito:YES
                        inBackground:NO
                            appendTo:kLastTab];
-    [self.tabPresentationDelegate showActiveIncognitoTab];
+    [self.presentationDelegate showActiveIncognitoTabFromHistory];
   }];
 }
 
@@ -835,7 +835,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   [self.localDispatcher dismissHistoryWithCompletion:^{
     [self.loader loadURLWithParams:params];
-    [self.tabPresentationDelegate showActiveRegularTab];
+    [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }
 

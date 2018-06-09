@@ -14,7 +14,7 @@ class ChromeBrowserState;
 }
 
 @protocol HistoryLocalCommands;
-@protocol HistoryTabPresentationDelegate;
+@protocol HistoryPresentationDelegate;
 @protocol UrlLoader;
 
 // ChromeTableViewController for displaying history items.
@@ -30,8 +30,7 @@ class ChromeBrowserState;
 // Delegate for this HistoryTableView.
 @property(nonatomic, weak) id<HistoryLocalCommands> localDispatcher;
 // Delegate used to make the Tab UI visible.
-@property(nonatomic, weak) id<HistoryTabPresentationDelegate>
-    tabPresentationDelegate;
+@property(nonatomic, weak) id<HistoryPresentationDelegate> presentationDelegate;
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

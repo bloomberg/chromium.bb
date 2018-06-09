@@ -124,7 +124,7 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
 @synthesize contextMenuCoordinator = _contextMenuCoordinator;
 @synthesize delegate = delegate_;
 @synthesize dispatcher = _dispatcher;
-@synthesize handsetCommandHandler = _handsetCommandHandler;
+@synthesize presentationDelegate = _presentationDelegate;
 @synthesize imageDataSource = _imageDataSource;
 @synthesize lastTappedHeaderSectionIdentifier =
     _lastTappedHeaderSectionIdentifier;
@@ -610,7 +610,7 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
       break;
     case ItemTypeShowFullHistory:
       [tableView deselectRowAtIndexPath:indexPath animated:NO];
-      [self showFullHistory];
+      [self.presentationDelegate showHistoryFromRecentTabs];
       break;
     case ItemTypeOtherDevicesSyncOff:
     case ItemTypeOtherDevicesNoSessions:
@@ -807,10 +807,6 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
 
 #pragma mark - Navigation helpers
 
-- (void)dismissRecentTabsModal {
-  [self.handsetCommandHandler dismissRecentTabsWithCompletion:nil];
-}
-
 - (void)openTabWithContentOfDistantTab:
     (synced_sessions::DistantTab const*)distantTab {
   sync_sessions::OpenTabsUIDelegate* openTabs =
@@ -825,7 +821,7 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
         self.browserState, new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
     [self.loader loadSessionTab:toLoad];
   }
-  [self dismissRecentTabsModal];
+  [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
 - (void)openTabWithTabRestoreEntry:
@@ -839,21 +835,13 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
   TabRestoreServiceDelegateImplIOS* delegate =
       TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
           self.browserState);
-  [self dismissRecentTabsModal];
   base::RecordAction(
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
       self.browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
   self.tabRestoreService->RestoreEntryById(delegate, entry->id,
                                            WindowOpenDisposition::CURRENT_TAB);
-}
-
-- (void)showFullHistory {
-  __weak RecentTabsTableViewController* weakSelf = self;
-  ProceduralBlock openHistory = ^{
-    [weakSelf.dispatcher showHistory];
-  };
-  [self.handsetCommandHandler dismissRecentTabsWithCompletion:openHistory];
+  [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
 #pragma mark - Collapse/Expand sections
@@ -1002,7 +990,7 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
                        inBackground:YES
                            appendTo:kLastTab];
   }
-  [self dismissRecentTabsModal];
+  [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
 - (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier {

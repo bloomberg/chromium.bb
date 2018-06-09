@@ -31,9 +31,9 @@ class ChromeBrowserState;
 @property(nonatomic, weak) id<LegacyRecentTabsTableViewControllerDelegate>
     delegate;
 
-// RecentTabsHandsetViewControllerCommand delegate.
+// Delegate to present the tab UI.
 @property(nonatomic, weak) id<RecentTabsHandsetViewControllerCommand>
-    handsetCommandHandler;
+    presentationDelegate;
 
 // Data source for images.
 @property(nonatomic, weak) id<RecentTabsImageDataSource> imageDataSource;
