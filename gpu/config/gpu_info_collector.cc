@@ -120,8 +120,6 @@ bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
 
   sk_sp<const GrGLInterface> interface(gl::init::CreateGrGLInterface(gl_info));
   if (!interface) {
-    DLOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
-                   "failed.";
     return false;
   }
 
@@ -131,8 +129,6 @@ bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
     return true;
   }
 
-  DLOG(ERROR) << "OOP raster support disabled: GrContext creation "
-                 "failed.";
   return false;
 }
 
@@ -246,9 +242,9 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
   }
 #endif
 
-  if (gpu_preferences.enable_oop_rasterization) {
-    gpu_info->oop_rasterization_supported = SupportsOOPRaster(gl_info);
-  }
+  // Unconditionally check oop raster status regardless of preferences
+  // so that finch trials can turn it on.
+  gpu_info->oop_rasterization_supported = SupportsOOPRaster(gl_info);
 
   // TODO(kbr): remove once the destruction of a current context automatically
   // clears the current context.
