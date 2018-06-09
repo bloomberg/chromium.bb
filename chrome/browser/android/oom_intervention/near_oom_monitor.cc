@@ -24,7 +24,7 @@ constexpr base::TimeDelta kDefaultCooldownDelta =
 // static
 NearOomMonitor* NearOomMonitor::Create() {
   auto* config = OomInterventionConfig::GetInstance();
-  if (!config->is_intervention_enabled())
+  if (!config->is_swap_monitor_enabled())
     return nullptr;
   return new NearOomMonitor(base::ThreadTaskRunnerHandle::Get(),
                             config->swapfree_threshold());

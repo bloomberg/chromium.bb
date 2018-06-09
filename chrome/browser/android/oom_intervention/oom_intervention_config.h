@@ -15,6 +15,9 @@ class OomInterventionConfig {
   // True when field trials enables intervention and config is valid.
   bool is_intervention_enabled() const { return is_intervention_enabled_; }
 
+  // True when browser swap monitor is enabled.
+  bool is_swap_monitor_enabled() const { return is_swap_monitor_enabled_; }
+
   // True if Android memory pressure signals should be monitored.
   bool use_components_callback() const { return use_components_callback_; }
 
@@ -37,7 +40,9 @@ class OomInterventionConfig {
 
   bool is_intervention_enabled_ = false;
 
+  bool is_swap_monitor_enabled_ = false;
   bool use_components_callback_ = false;
+
   bool is_renderer_pause_enabled_ = false;
   bool should_detect_in_renderer_ = false;
 

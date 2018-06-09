@@ -273,11 +273,12 @@ void OomInterventionTabHelper::StartMonitoringIfNeeded() {
   if (near_oom_detected_time_)
     return;
 
-  if (OomInterventionConfig::GetInstance()->should_detect_in_renderer()) {
+  auto* config = OomInterventionConfig::GetInstance();
+  if (config->should_detect_in_renderer()) {
     if (binding_.is_bound())
       return;
     StartDetectionInRenderer();
-  } else {
+  } else if (config->is_swap_monitor_enabled()) {
     subscription_ = NearOomMonitor::GetInstance()->RegisterCallback(
         base::BindRepeating(&OomInterventionTabHelper::OnNearOomDetected,
                             base::Unretained(this)));

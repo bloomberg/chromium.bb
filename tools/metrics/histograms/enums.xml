@@ -34540,7 +34540,7 @@ Called by update_net_trust_anchors.py.-->
 <enum name="OomInterventionBrowserMonitorStatus">
   <int value="0" label="Enabled with a valid config"/>
   <int value="1" label="Disabled since bad config param"/>
-  <int value="2" label="Disabled since device has no swap"/>
+  <int value="2" label="Enabled on device with no swap"/>
 </enum>
 
 <enum name="OomInterventionRendererStatus">

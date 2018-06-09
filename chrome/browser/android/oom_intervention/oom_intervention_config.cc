@@ -101,8 +101,8 @@ bool GetSwapFreeThreshold(uint64_t* threshold) {
 enum class OomInterventionBrowserMonitorStatus {
   kEnabledWithValidConfig = 0,
   kDisabledWithInvalidParam = 1,
-  kDisabledWithNoSwap = 2,
-  kMaxValue = kDisabledWithNoSwap
+  kEnabledWithNoSwap = 2,
+  kMaxValue = kEnabledWithNoSwap
 };
 
 }  // namespace
@@ -127,9 +127,10 @@ OomInterventionConfig::OomInterventionConfig()
   OomInterventionBrowserMonitorStatus status =
       OomInterventionBrowserMonitorStatus::kEnabledWithValidConfig;
   if (!GetSwapFreeThreshold(&swapfree_threshold_)) {
-    is_intervention_enabled_ = false;
-    status = OomInterventionBrowserMonitorStatus::kDisabledWithNoSwap;
-  } else if (!GetRendererMemoryThresholds(&renderer_detection_args_)) {
+    is_swap_monitor_enabled_ = false;
+    status = OomInterventionBrowserMonitorStatus::kEnabledWithNoSwap;
+  }
+  if (!GetRendererMemoryThresholds(&renderer_detection_args_)) {
     is_intervention_enabled_ = false;
     status = OomInterventionBrowserMonitorStatus::kDisabledWithInvalidParam;
   }
