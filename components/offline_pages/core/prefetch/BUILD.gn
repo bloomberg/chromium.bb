@@ -176,6 +176,18 @@ proto_library("proto") {
   ]
 }
 
+if (is_android) {
+  proto_java_library("offline_prefetch_proto_java") {
+    proto_path = "proto"
+    sources = [
+      "proto/any.proto",
+      "proto/offline_pages.proto",
+      "proto/operation.proto",
+      "proto/status.proto",
+    ]
+  }
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

@@ -17,6 +17,7 @@ namespace {
 const char kOfflinePagesUseTestingSnapshotDelay[] =
     "short-offline-page-snapshot-delay-for-test";
 
+bool limitless_prefetching_enabled = false;
 }  // namespace
 
 namespace offline_pages {
@@ -113,7 +114,11 @@ bool IsOfflinePagesPrefetchingUIEnabled() {
 
 bool IsLimitlessPrefetchingEnabled() {
   // TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
-  return false;
+  return limitless_prefetching_enabled;
+}
+
+void SetLimitlessPrefetchingEnabledForTesting(bool enabled) {
+  limitless_prefetching_enabled = enabled;
 }
 
 bool IsOfflinePagesLoadSignalCollectingEnabled() {

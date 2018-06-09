@@ -517,6 +517,7 @@ android_library("chrome_test_java") {
   java_files = chrome_test_java_sources
 
   deps = [
+    ":browser_java_test_support",
     ":partner_location_descriptor_proto_java",
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
@@ -541,6 +542,7 @@ android_library("chrome_test_java") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/crash/android:javatests",
     "//components/dom_distiller/core/android:dom_distiller_core_java",
+    "//components/download/internal/background_service:internal_java",
     "//components/feature_engagement:feature_engagement_java",
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_java",
@@ -552,6 +554,7 @@ android_library("chrome_test_java") {
     "//components/minidump_uploader:minidump_uploader_javatests",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/offline_items_collection/core:core_java",
+    "//components/offline_pages/core/prefetch:offline_prefetch_proto_java",
     "//components/payments/content/android:java",
     "//components/payments/mojom:mojom_java",
     "//components/policy/android:policy_java",
@@ -593,6 +596,7 @@ android_library("chrome_test_java") {
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
+    "//third_party/protobuf:protobuf_lite_javalib",
     "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
@@ -862,6 +866,7 @@ chrome_shared_library("libchromefortest") {
     "../browser/android/chrome_entry_point_for_test.cc",
   ]
   deps = [
+    ":browser_test_support",
     ":chrome_jni_for_test_registration($default_toolchain)",
     "//base/test:test_support",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
@@ -1104,6 +1109,34 @@ template("chrome_public_apk_tmpl_shared") {
   }
 }
 
+generate_jni("test_support_jni_headers") {
+  sources = [
+    "javatests/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchTestBridge.java",
+  ]
+  jni_package = "test_support_jni_headers"
+}
+
+# Test support code that needs access to the browser.
+android_library("browser_java_test_support") {
+  testonly = true
+  java_files = [ "javatests/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchTestBridge.java" ]
+  deps = [
+    ":chrome_java",
+    "//base:base_java",
+  ]
+}
+
+static_library("browser_test_support") {
+  testonly = true
+  sources = [
+    "../browser/offline_pages/android/prefetch_test_bridge.cc",
+  ]
+  deps = [
+    ":test_support_jni_headers",
+    "//chrome/browser",
+  ]
+}
+
 # Unwind tables are added to only official builds (public_apk(s)) so that
 # developer builds are not affected.
 _add_unwind_tables_in_chrome_public_apk =
@@ -1132,6 +1165,7 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
   }
   deps = [
     "//chrome/browser/android/metrics:ukm_utils_java",
+    ":browser_java_test_support",
     "//components/heap_profiling:heap_profiling_java_test_support",
     "//content/public/test/android:content_java_test_support",
   ]

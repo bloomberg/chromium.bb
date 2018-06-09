@@ -32,9 +32,7 @@ GURL GetServerURL() {
       offline_pages::kPrefetchingOfflinePagesFeature, kOfflinePagesBackend));
 
   // |is_valid| returns false for bad URLs and also for empty URLs.
-  return endpoint.is_valid() && endpoint.SchemeIsCryptographic()
-             ? endpoint
-             : GURL(kPrefetchServer);
+  return endpoint.is_valid() ? endpoint : GURL(kPrefetchServer);
 }
 
 GURL GetServerURLForPath(const std::string& url_path) {

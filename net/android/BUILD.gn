@@ -63,6 +63,7 @@ android_library("net_java_test_support") {
     "../test/android/javatests/src/org/chromium/net/test/util/CertTestUtil.java",
     "../test/android/javatests/src/org/chromium/net/test/util/NetworkChangeNotifierTestUtil.java",
     "../test/android/javatests/src/org/chromium/net/test/util/TestWebServer.java",
+    "../test/android/javatests/src/org/chromium/net/test/util/WebServer.java",
   ]
   deps = [
     ":embedded_test_server_aidl_java",
