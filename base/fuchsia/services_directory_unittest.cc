@@ -4,7 +4,7 @@
 
 #include "base/fuchsia/services_directory.h"
 
-#include <fdio/util.h>
+#include <lib/fdio/util.h>
 
 #include "base/bind.h"
 #include "base/fuchsia/component_context.h"

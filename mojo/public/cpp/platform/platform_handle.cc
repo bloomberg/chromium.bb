@@ -10,7 +10,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(OS_FUCHSIA)
-#include <fdio/limits.h>
+#include <lib/fdio/limits.h>
 #include <unistd.h>
 #include <zircon/status.h>
 #include <zircon/syscalls.h>

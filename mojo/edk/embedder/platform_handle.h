@@ -13,7 +13,7 @@
 
 #include "base/process/process_handle.h"
 #elif defined(OS_FUCHSIA)
-#include <fdio/limits.h>
+#include <lib/fdio/limits.h>
 #include <zircon/syscalls.h>
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <mach/mach.h>

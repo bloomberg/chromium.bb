@@ -4,10 +4,10 @@
 
 #include "base/process/launch.h"
 
-#include <fdio/limits.h>
-#include <fdio/namespace.h>
-#include <fdio/spawn.h>
-#include <fdio/util.h>
+#include <lib/fdio/limits.h>
+#include <lib/fdio/namespace.h>
+#include <lib/fdio/spawn.h>
+#include <lib/fdio/util.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <zircon/process.h>

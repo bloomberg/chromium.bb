@@ -24,7 +24,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(OS_FUCHSIA)
-#include <fdio/spawn.h>
+#include <lib/fdio/spawn.h>
 #include <zircon/types.h>
 #endif
 

@@ -35,19 +35,19 @@ fuchsia_sdk_pkg("async_default") {
 
 fuchsia_sdk_pkg("fdio") {
   sources = [
-    "include/fdio/debug.h",
-    "include/fdio/io.fidl.h",
-    "include/fdio/io.h",
-    "include/fdio/limits.h",
-    "include/fdio/module.modulemap",
-    "include/fdio/namespace.h",
-    "include/fdio/private.h",
-    "include/fdio/remoteio.h",
-    "include/fdio/socket.h",
-    "include/fdio/spawn.h",
-    "include/fdio/util.h",
-    "include/fdio/vfs.h",
-    "include/fdio/watcher.h",
+    "include/lib/fdio/debug.h",
+    "include/lib/fdio/io.fidl.h",
+    "include/lib/fdio/io.h",
+    "include/lib/fdio/limits.h",
+    "include/lib/fdio/module.modulemap",
+    "include/lib/fdio/namespace.h",
+    "include/lib/fdio/private.h",
+    "include/lib/fdio/remoteio.h",
+    "include/lib/fdio/socket.h",
+    "include/lib/fdio/spawn.h",
+    "include/lib/fdio/util.h",
+    "include/lib/fdio/vfs.h",
+    "include/lib/fdio/watcher.h",
   ]
 
   libs = [ "fdio" ]

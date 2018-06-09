@@ -5,7 +5,7 @@
 #include "base/native_library.h"
 
 #include <fcntl.h>
-#include <fdio/io.h>
+#include <lib/fdio/io.h>
 #include <stdio.h>
 #include <zircon/dlfcn.h>
 #include <zircon/status.h>
