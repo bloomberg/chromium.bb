@@ -57,26 +57,43 @@ class Tab : public gfx::AnimationDelegate,
   Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;
 
+  // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::ContextMenuController:
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
+
+  // views::MaskedTargeterDelegate:
+  bool GetHitTestMask(gfx::Path* mask) const override;
+
   // views::View:
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
-  void OnPaint(gfx::Canvas* canvas) override;
-  void PaintChildren(const views::PaintInfo& info) override;
   void Layout() override;
-  void OnThemeChanged() override;
   const char* GetClassName() const override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
-  bool GetTooltipTextOrigin(const gfx::Point& p,
-                            gfx::Point* origin) const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseMoved(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
+  bool GetTooltipTextOrigin(const gfx::Point& p,
+                            gfx::Point* origin) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
+  void PaintChildren(const views::PaintInfo& info) override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnThemeChanged() override;
 
   TabController* controller() const { return controller_; }
 
@@ -185,25 +202,6 @@ class Tab : public gfx::AnimationDelegate,
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
   FRIEND_TEST_ALL_PREFIXES(TabStripTest,
                            TabCloseButtonVisibilityWhenNotStacked);
-
-  // gfx::AnimationDelegate:
-  void AnimationProgressed(const gfx::Animation* animation) override;
-  void AnimationCanceled(const gfx::Animation* animation) override;
-  void AnimationEnded(const gfx::Animation* animation) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
-
-  // views::MaskedTargeterDelegate:
-  bool GetHitTestMask(gfx::Path* mask) const override;
-
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Forces the tab to the right of this tab to repaint.
   void RepaintSubsequentTab();
