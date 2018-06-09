@@ -40840,6 +40840,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="310" label="APPLESCRIPT"/>
   <int value="311" label="SCPT"/>
   <int value="312" label="SCPTD"/>
+  <int value="313" label="SEPLUGIN"/>
+  <int value="314" label="OSAS"/>
+  <int value="315" label="OSAX"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">

@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 18
+version_id: 19
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -2667,6 +2667,36 @@ file_types {
 file_types {
   extension: "scptd"
   uma_value: 312
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: DANGEROUS
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  extension: "seplugin"
+  uma_value: 313
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: DANGEROUS
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  extension: "osas"
+  uma_value: 314
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: DANGEROUS
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  extension: "osax"
+  uma_value: 315
   ping_setting: FULL_PING
   platform_settings {
     platform: PLATFORM_MAC
