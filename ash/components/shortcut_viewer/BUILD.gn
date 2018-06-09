@@ -31,6 +31,7 @@ source_set("lib") {
   defines = [ "KSV_IMPLEMENTATION" ]
 
   deps = [
+    "//ash/components/shortcut_viewer/public/mojom",
     "//ash/components/shortcut_viewer/vector_icons",
     "//ash/components/strings",
     "//ash/public/cpp",

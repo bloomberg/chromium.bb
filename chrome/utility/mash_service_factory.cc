@@ -9,7 +9,7 @@
 #include "ash/components/autoclick/autoclick_application.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/quick_launch/quick_launch_application.h"
-#include "ash/components/shortcut_viewer/public/mojom/constants.mojom.h"
+#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/shortcut_viewer/shortcut_viewer_application.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/components/tap_visualizer/tap_visualizer_app.h"
