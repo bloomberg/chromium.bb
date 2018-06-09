@@ -118,9 +118,10 @@ class PersonalDataManager : public KeyedService,
   virtual std::string SaveImportedProfile(
       const AutofillProfile& imported_profile);
 
-  // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
-  // of the new or updated card, or the empty string if no card was saved.
-  virtual std::string SaveImportedCreditCard(
+  // Called when the user accepts the prompt to save the credit card locally.
+  // Records some metrics and attempts to save the imported card. Returns the
+  // guid of the new or updated card, or the empty string if no card was saved.
+  std::string OnAcceptedLocalCreditCardSave(
       const CreditCard& imported_credit_card);
 
   // Adds |profile| to the web database.
@@ -490,6 +491,11 @@ class PersonalDataManager : public KeyedService,
   base::ObserverList<PersonalDataManagerObserver> observers_;
 
  private:
+  // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
+  // the new or updated card, or the empty string if no card was saved.
+  virtual std::string SaveImportedCreditCard(
+      const CreditCard& imported_credit_card);
+
   // Finds the country code that occurs most frequently among all profiles.
   // Prefers verified profiles over unverified ones.
   std::string MostCommonCountryCodeFromProfiles() const;
