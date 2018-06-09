@@ -21,6 +21,6 @@ deps = [
 ]
 type_mappings = [
   "ui.mojom.LatencyComponent=ui::LatencyInfo::LatencyComponent",
-  "ui.mojom.LatencyComponentId=std::pair<ui::LatencyComponentType, int64_t>",
+  "ui.mojom.LatencyComponentType=ui::LatencyComponentType",
   "ui.mojom.LatencyInfo=ui::LatencyInfo",
 ]

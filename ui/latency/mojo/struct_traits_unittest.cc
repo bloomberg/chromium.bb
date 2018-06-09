@@ -32,12 +32,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(l);
   }
 
-  void EchoLatencyComponentId(
-      const std::pair<LatencyComponentType, int64_t>& id,
-      EchoLatencyComponentIdCallback callback) override {
-    std::move(callback).Run(id);
-  }
-
   void EchoLatencyInfo(const LatencyInfo& info,
                        EchoLatencyInfoCallback callback) override {
     std::move(callback).Run(info);
@@ -63,26 +57,14 @@ TEST_F(StructTraitsTest, LatencyComponent) {
   EXPECT_EQ(event_count, output.event_count);
 }
 
-TEST_F(StructTraitsTest, LatencyComponentId) {
-  const LatencyComponentType type =
-      INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
-  const int64_t id = 1337;
-  std::pair<LatencyComponentType, int64_t> input(type, id);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  std::pair<LatencyComponentType, int64_t> output;
-  proxy->EchoLatencyComponentId(input, &output);
-  EXPECT_EQ(type, output.first);
-  EXPECT_EQ(id, output.second);
-}
-
 TEST_F(StructTraitsTest, LatencyInfo) {
   LatencyInfo latency;
   latency.set_trace_id(5);
   latency.set_ukm_source_id(10);
   ASSERT_FALSE(latency.terminated());
-  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1234);
-  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1234);
-  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 1234);
+  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
+  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
+  latency.AddLatencyNumber(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT);
 
   EXPECT_EQ(5, latency.trace_id());
   EXPECT_EQ(10, latency.ukm_source_id());
@@ -99,16 +81,16 @@ TEST_F(StructTraitsTest, LatencyInfo) {
   EXPECT_EQ(latency.terminated(), output.terminated());
   EXPECT_EQ(latency.source_event_type(), output.source_event_type());
 
-  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1234,
-                                 nullptr));
+  EXPECT_TRUE(
+      output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
 
   LatencyInfo::LatencyComponent rwh_comp;
-  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1234,
-                                 &rwh_comp));
+  EXPECT_TRUE(
+      output.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, &rwh_comp));
   EXPECT_EQ(1u, rwh_comp.event_count);
 
-  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, 1234,
-                                 nullptr));
+  EXPECT_TRUE(
+      output.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, nullptr));
 }
 
 }  // namespace ui

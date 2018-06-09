@@ -10,143 +10,6 @@ namespace mojo {
 
 namespace {
 
-ui::mojom::LatencyComponentType UILatencyComponentTypeToMojo(
-    ui::LatencyComponentType type) {
-  switch (type) {
-    case ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
-    case ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT;
-    case ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_UI_COMPONENT:
-      return ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_UI_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
-    case ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
-    case ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT;
-  }
-  NOTREACHED();
-  return ui::mojom::LatencyComponentType::LATENCY_COMPONENT_TYPE_LAST;
-}
-
-ui::LatencyComponentType MojoLatencyComponentTypeToUI(
-    ui::mojom::LatencyComponentType type) {
-  switch (type) {
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
-      return ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT:
-      return ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT:
-      return ui::LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT:
-      return ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT;
-    case ui::mojom::LatencyComponentType::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT:
-      return ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT:
-      return ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT:
-      return ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT;
-    case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_UI_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_UI_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
-    case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT:
-      return ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
-    case ui::mojom::LatencyComponentType::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT:
-      return ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT:
-      return ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT;
-  }
-  NOTREACHED();
-  return ui::LATENCY_COMPONENT_TYPE_LAST;
-}
-
 ui::mojom::SourceEventType UISourceEventTypeToMojo(ui::SourceEventType type) {
   switch (type) {
     case ui::UNKNOWN:
@@ -239,31 +102,6 @@ bool StructTraits<ui::mojom::LatencyComponentDataView,
 }
 
 // static
-ui::mojom::LatencyComponentType
-StructTraits<ui::mojom::LatencyComponentIdDataView,
-             std::pair<ui::LatencyComponentType, int64_t>>::
-    type(const std::pair<ui::LatencyComponentType, int64_t>& id) {
-  return UILatencyComponentTypeToMojo(id.first);
-}
-
-// static
-int64_t StructTraits<ui::mojom::LatencyComponentIdDataView,
-                     std::pair<ui::LatencyComponentType, int64_t>>::
-    id(const std::pair<ui::LatencyComponentType, int64_t>& id) {
-  return id.second;
-}
-
-// static
-bool StructTraits<ui::mojom::LatencyComponentIdDataView,
-                  std::pair<ui::LatencyComponentType, int64_t>>::
-    Read(ui::mojom::LatencyComponentIdDataView data,
-         std::pair<ui::LatencyComponentType, int64_t>* out) {
-  out->first = MojoLatencyComponentTypeToUI(data.type());
-  out->second = data.id();
-  return true;
-}
-
-// static
 const std::string&
 StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::trace_name(
     const ui::LatencyInfo& info) {
@@ -352,6 +190,167 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
   out->source_event_type_ = MojoSourceEventTypeToUI(data.source_event_type());
 
   return true;
+}
+
+// static
+ui::mojom::LatencyComponentType
+EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
+    ui::LatencyComponentType type) {
+  switch (type) {
+    case ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
+    case ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT;
+    case ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_UI_COMPONENT:
+      return ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_UI_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
+    case ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
+    case ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT;
+    case ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT:
+      return ui::mojom::LatencyComponentType::
+          INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT;
+  }
+  NOTREACHED();
+  return ui::mojom::LatencyComponentType::LATENCY_COMPONENT_TYPE_LAST;
+}
+
+// static
+bool EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::
+    FromMojom(ui::mojom::LatencyComponentType input,
+              ui::LatencyComponentType* output) {
+  switch (input) {
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
+      *output = ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT:
+      *output = ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT:
+      *output = ui::LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT:
+      *output = ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT:
+      *output = ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT:
+      *output = ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT:
+      *output = ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_UI_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_UI_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT:
+      *output = ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT:
+      *output = ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT;
+      return true;
+    case ui::mojom::LatencyComponentType::
+        INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT:
+      *output = ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT;
+      return true;
+  }
+  return false;
 }
 
 }  // namespace mojo

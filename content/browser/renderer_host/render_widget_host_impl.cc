@@ -2767,9 +2767,10 @@ void RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(
     callback.Run(latency_info);
   for (size_t i = 0; i < latency_info.size(); i++) {
     std::set<RenderWidgetHostImpl*> rwhi_set;
-    for (const auto& snapshot : latency_info[i].Snapshots())
+    for (const auto& snapshot : latency_info[i].Snapshots()) {
       NotifyCorrespondingRenderWidgetHost(snapshot.first, rwhi_set,
                                           latency_info[i]);
+    }
   }
 }
 

@@ -38,7 +38,6 @@ ukm::SourceId GenerateUkmSourceId() {
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
     RenderWidgetHostDelegate* delegate)
     : ukm_source_id_(GenerateUkmSourceId()),
-      last_event_id_(0),
       has_seen_first_gesture_scroll_update_(false),
       active_multi_finger_gesture_(false),
       touch_start_default_prevented_(false),
@@ -88,7 +87,7 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
       action_prevented ? "DefaultPrevented" : "DefaultAllowed";
 
   LatencyInfo::LatencyComponent main_component;
-  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0,
+  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT,
                           &main_component)) {
     DCHECK_EQ(main_component.event_count, 1u);
     if (!multi_finger_touch_gesture) {
@@ -99,7 +98,7 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
   }
 
   LatencyInfo::LatencyComponent acked_component;
-  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0,
+  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
                           &acked_component)) {
     DCHECK_EQ(acked_component.event_count, 1u);
     if (!multi_finger_touch_gesture &&
@@ -144,7 +143,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   DCHECK(!found_component);
 
   if (!event.TimeStamp().is_null() &&
-      !latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
+      !latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                             nullptr)) {
     base::TimeTicks timestamp_now = base::TimeTicks::Now();
     base::TimeTicks timestamp_original = event.TimeStamp();
@@ -158,13 +157,12 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
 
     latency->AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-        0,
         timestamp_original,
         1);
   }
 
   latency->AddLatencyNumberWithTraceName(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0,
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
       WebInputEvent::GetName(event.GetType()));
 
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
@@ -174,13 +172,13 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     // different name INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
     // So we can track the latency specifically for scroll update events.
     LatencyInfo::LatencyComponent original_component;
-    if (latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
+    if (latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                              &original_component)) {
       latency->AddLatencyNumberWithTimestamp(
           has_seen_first_gesture_scroll_update_
               ? ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT
               : ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          0, original_component.event_time, original_component.event_count);
+          original_component.event_time, original_component.event_count);
     }
 
     has_seen_first_gesture_scroll_update_ = true;
@@ -194,9 +192,9 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
 
   // Latency ends if an event is acked but does not cause render scheduling.
   bool rendering_scheduled = latency->FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT, 0, nullptr);
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT, nullptr);
   rendering_scheduled |= latency->FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, 0, nullptr);
+      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, nullptr);
 
   if (WebInputEvent::IsTouchEventType(event.GetType())) {
     const WebTouchEvent& touch_event =
@@ -210,7 +208,7 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
     }
   }
 
-  latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0);
+  latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT);
   // If this event couldn't have caused a gesture event, and it didn't trigger
   // rendering, we're done processing it. If the event got coalesced then
   // terminate it as well. We also exclude cases where we're against the scroll

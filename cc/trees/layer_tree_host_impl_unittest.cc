@@ -2591,7 +2591,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoomWheelBubbleBetweenViewports) {
 TEST_F(LayerTreeHostImplTest, ScrollWithSwapPromises) {
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
   std::unique_ptr<SwapPromise> swap_promise(
       new LatencyInfoSwapPromise(latency_info));
 
@@ -10241,15 +10241,15 @@ TEST_F(LayerTreeHostImplLatencyInfoRendererTest,
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
   EXPECT_EQ(1u, metadata_latency_after1.size());
   EXPECT_TRUE(metadata_latency_after1[0].FindLatency(
-      ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, 0, nullptr));
+      ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, nullptr));
   EXPECT_TRUE(metadata_latency_after1[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, nullptr));
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
 
   // The second frame should have the default BeginFrame component and the
   // component attached via LatencyInfoSwapPromise.
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
   std::unique_ptr<SwapPromise> swap_promise(
       new LatencyInfoSwapPromise(latency_info));
   host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
@@ -10265,15 +10265,15 @@ TEST_F(LayerTreeHostImplLatencyInfoRendererTest,
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
   EXPECT_EQ(2u, metadata_latency_after2.size());
   EXPECT_TRUE(metadata_latency_after2[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, nullptr));
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   EXPECT_TRUE(metadata_latency_after2[1].FindLatency(
-      ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, 0, nullptr));
+      ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, nullptr));
 
   // Renderer should also record INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT.
   EXPECT_TRUE(metadata_latency_after2[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, nullptr));
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
   EXPECT_TRUE(metadata_latency_after2[1].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, nullptr));
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
 }
 
 // Make sure LatencyInfo are passed in viz::CompositorFrameMetadata properly in
@@ -10296,15 +10296,15 @@ TEST_F(LayerTreeHostImplLatencyInfoUITest,
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
   EXPECT_EQ(1u, metadata_latency_after1.size());
   EXPECT_TRUE(metadata_latency_after1[0].FindLatency(
-      ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, 0, nullptr));
+      ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, nullptr));
   EXPECT_FALSE(metadata_latency_after1[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, nullptr));
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
 
   // The second frame should have the default BeginFrame component and the
   // component attached via LatencyInfoSwapPromise.
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
   std::unique_ptr<SwapPromise> swap_promise(
       new LatencyInfoSwapPromise(latency_info));
   host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
@@ -10320,15 +10320,15 @@ TEST_F(LayerTreeHostImplLatencyInfoUITest,
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
   EXPECT_EQ(2u, metadata_latency_after2.size());
   EXPECT_TRUE(metadata_latency_after2[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, nullptr));
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   EXPECT_TRUE(metadata_latency_after2[1].FindLatency(
-      ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, 0, nullptr));
+      ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, nullptr));
 
   // UI should not record INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT.
   EXPECT_FALSE(metadata_latency_after2[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, nullptr));
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
   EXPECT_FALSE(metadata_latency_after2[1].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, 0, nullptr));
+      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
 }
 
 TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {

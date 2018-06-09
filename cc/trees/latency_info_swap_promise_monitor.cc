@@ -19,19 +19,19 @@ bool AddRenderingScheduledComponent(ui::LatencyInfo* latency_info,
   ui::LatencyComponentType type =
       on_main ? ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT
               : ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
-  if (latency_info->FindLatency(type, 0, nullptr))
+  if (latency_info->FindLatency(type, nullptr))
     return false;
-  latency_info->AddLatencyNumber(type, 0);
+  latency_info->AddLatencyNumber(type);
   return true;
 }
 
 bool AddForwardingScrollUpdateToMainComponent(ui::LatencyInfo* latency_info) {
   if (latency_info->FindLatency(
-          ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT, 0,
+          ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
           nullptr))
     return false;
   latency_info->AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT, 0);
+      ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT);
   return true;
 }
 
@@ -74,7 +74,7 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
         *latency_,
         ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT);
     new_latency.AddLatencyNumberWithTraceName(
-        ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 0,
+        ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT,
         "ScrollUpdate");
     std::unique_ptr<SwapPromise> swap_promise(
         new LatencyInfoSwapPromise(new_latency));

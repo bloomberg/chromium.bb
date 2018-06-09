@@ -368,7 +368,7 @@ bool Display::DrawAndSwap() {
     if (scheduler_) {
       frame.metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
       frame.metadata.latency_info.back().AddLatencyNumberWithTimestamp(
-          ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT, 0,
+          ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
           scheduler_->current_frame_time(), 1);
     }
 
