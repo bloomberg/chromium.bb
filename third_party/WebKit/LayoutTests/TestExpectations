@@ -4763,6 +4763,8 @@ crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pa
 crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
 crbug.com/847205 [ Mac ] http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Crash Timeout ]
 
+crbug.com/843135 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Pass Failure ]
+
 # Sheriff 2018-05-30
 crbug.com/848334 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Pass Timeout ]
 
