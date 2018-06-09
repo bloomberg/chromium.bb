@@ -617,12 +617,9 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRect) {
   EXPECT_EQ(LayoutRect(10, 0, 50, 10), GetSelectionRectFor("f^oo ba|r"));
   EXPECT_EQ(LayoutRect(0, 0, 40, 20),
             GetSelectionRectFor("<div style='width: 2em'>f^oo ba|r</div>"));
-  EXPECT_EQ(
-      LayoutNGEnabled() ? LayoutRect(0, 0, 0, 0) : LayoutRect(30, 0, 10, 10),
-      GetSelectionRectFor("foo^<br id='target'>|bar"));
-  EXPECT_EQ(
-      LayoutNGEnabled() ? LayoutRect(10, 0, 30, 10) : LayoutRect(10, 0, 20, 10),
-      GetSelectionRectFor("f^oo<br>b|ar"));
+  EXPECT_EQ(LayoutRect(30, 0, 10, 10),
+            GetSelectionRectFor("foo^<br id='target'>|bar"));
+  EXPECT_EQ(LayoutRect(10, 0, 20, 10), GetSelectionRectFor("f^oo<br>b|ar"));
   EXPECT_EQ(LayoutRect(10, 0, 30, 10),
             GetSelectionRectFor("<div>f^oo</div><div>b|ar</div>"));
   EXPECT_EQ(LayoutRect(30, 0, 10, 10), GetSelectionRectFor("foo^ |bar"));
@@ -637,6 +634,24 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRect) {
   EXPECT_EQ(
       LayoutNGEnabled() ? LayoutRect(0, 0, 0, 0) : LayoutRect(30, 0, 10, 10),
       GetSelectionRectFor("foo^ |"));
+}
+
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectLineBreak) {
+  LoadAhem();
+  EXPECT_EQ(LayoutRect(30, 0, 10, 10),
+            GetSelectionRectFor("f^oo<br id='target'><br>ba|r"));
+  EXPECT_EQ(LayoutRect(0, 10, 10, 10),
+            GetSelectionRectFor("f^oo<br><br id='target'>ba|r"));
+}
+
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectLineBreakPre) {
+  LoadAhem();
+  EXPECT_EQ(
+      LayoutRect(30, 0, 10, 10),
+      GetSelectionRectFor("<div style='white-space:pre;'>foo^\n|\nbar</div>"));
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(0, 10, 10, 10) : LayoutRect(0, 0, 50, 20),
+      GetSelectionRectFor("<div style='white-space:pre;'>foo\n^\n|bar</div>"));
 }
 
 TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectRTL) {

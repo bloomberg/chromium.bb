@@ -19,18 +19,27 @@
       "paintInvalidations": [
         {
           "object": "NGPaintFragment",
-          "rect": [8, 8, 32, 16],
-          "reason": "selection"
+          "rect": [24, 8, 16, 16],
+          "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
           "rect": [8, 24, 16, 16],
+          "reason": "selection"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [8, 8, 16, 16],
           "reason": "selection"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "NGPaintFragment",
+      "reason": "selection"
+    },
     {
       "object": "NGPaintFragment",
       "reason": "selection"

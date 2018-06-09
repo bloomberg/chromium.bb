@@ -883,8 +883,8 @@ TEST_F(NGLayoutSelectionTest, MixedBlockFlowsDecendant) {
 
 TEST_F(NGLayoutSelectionTest, LineBreakBasic) {
   LoadAhem();
-  EXPECT_TRUE(IsFirstTextLineBreak("<div>f^oo<br>ba|r</div>"));
-  EXPECT_TRUE(IsFirstTextLineBreak("<div>^foo<br><br>|</div>"));
+  EXPECT_FALSE(IsFirstTextLineBreak("<div>f^oo<br>ba|r</div>"));
+  EXPECT_FALSE(IsFirstTextLineBreak("<div>^foo<br><br>|</div>"));
   EXPECT_TRUE(IsFirstTextLineBreak(
       "<div style='font: Ahem; width: 2em'>f^oo ba|r</div>"));
   EXPECT_TRUE(IsFirstTextLineBreak("<div>f^oo</div><div>b|ar</div>"));
@@ -905,7 +905,7 @@ TEST_F(NGLayoutSelectionTest, LineBreakImage) {
       "bar<img id=img2 width=10px height=10px>|</div>");
   Node* const foo =
       GetDocument().body()->firstChild()->firstChild()->nextSibling();
-  EXPECT_EQ(SelectLineBreak::kSelected,
+  EXPECT_EQ(SelectLineBreak::kNotSelected,
             ComputeLayoutSelectionStatus(*foo).line_break);
   Node* const bar = foo->nextSibling()->nextSibling();
   EXPECT_EQ(SelectLineBreak::kNotSelected,
@@ -921,7 +921,7 @@ TEST_F(NGLayoutSelectionTest, BRStatus) {
       GetDocument().QuerySelector("br")->GetLayoutObject();
   CHECK(layout_br->IsBR());
   EXPECT_EQ(
-      LayoutSelectionStatus(0u, 0u, SelectLineBreak::kNotSelected),
+      LayoutSelectionStatus(3u, 4u, SelectLineBreak::kNotSelected),
       Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(layout_br)));
 }
 

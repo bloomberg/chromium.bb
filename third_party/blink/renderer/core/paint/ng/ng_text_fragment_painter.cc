@@ -36,6 +36,8 @@ inline bool ShouldPaintTextFragment(const NGPhysicalTextFragment& text_fragment,
   // This code path is only called in PaintPhaseForeground whereas we would
   // expect PaintPhaseSelection. The existing haveSelection logic in paint()
   // tests for != PaintPhaseTextClip.
+  if (text_fragment.IsLineBreak())
+    return true;
   if (!text_fragment.Length() || !text_fragment.TextShapeResult())
     return false;
 
@@ -161,6 +163,10 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
     PaintSelection(context, fragment_, document, style,
                    selection_style.fill_color, box_rect, selection_status);
   }
+
+  // Line break needs only selection painting.
+  if (text_fragment.IsLineBreak())
+    return;
 
   const NGLineOrientation orientation = text_fragment.LineOrientation();
   if (orientation != NGLineOrientation::kHorizontal) {
