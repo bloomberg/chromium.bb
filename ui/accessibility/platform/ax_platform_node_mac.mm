@@ -545,6 +545,11 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     default:
       break;
   }
+
+  if (node_->GetData().HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+    [axAttributes addObjectsFromArray:@[ NSAccessibilitySelectedAttribute ]];
+  }
+
   return axAttributes.autorelease();
 }
 
