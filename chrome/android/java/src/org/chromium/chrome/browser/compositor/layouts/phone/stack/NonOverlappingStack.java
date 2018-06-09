@@ -247,7 +247,13 @@ public class NonOverlappingStack extends Stack {
     @Override
     protected float getMinScroll(boolean allowUnderScroll) {
         if (mSuppressScrollClamping) return -Float.MAX_VALUE;
-        return super.getMinScroll(allowUnderScroll);
+
+        if (mStackTabs == null) return 0;
+        for (int i = mStackTabs.length - 1; i >= 0; i--) {
+            if (!mStackTabs[i].isDying()) return -mStackTabs[i].getScrollOffset();
+        }
+
+        return 0;
     }
 
     @Override
