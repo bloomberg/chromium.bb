@@ -103,13 +103,15 @@ class CORE_EXPORT EventHandler final
       const LayoutPoint&,
       HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
                                                     HitTestRequest::kActive,
-      const LayoutObject* stop_node = nullptr);
+      const LayoutObject* stop_node = nullptr,
+      bool no_lifecycle_update = false);
 
   HitTestResult HitTestResultAtRect(
       const LayoutRect&,
       HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
                                                     HitTestRequest::kActive,
-      const LayoutObject* stop_node = nullptr);
+      const LayoutObject* stop_node = nullptr,
+      bool no_lifecycle_update = false);
 
   bool MousePressed() const { return mouse_event_manager_->MousePressed(); }
   bool IsMousePositionUnknown() const {
@@ -311,7 +313,7 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandleGestureLongTap(
       const GestureEventWithHitTestResults&);
 
-  void PerformHitTest(HitTestResult&) const;
+  void PerformHitTest(HitTestResult&, bool no_lifecycle_update) const;
 
   void UpdateGestureTargetNodeForMouseEvent(
       const GestureEventWithHitTestResults&);

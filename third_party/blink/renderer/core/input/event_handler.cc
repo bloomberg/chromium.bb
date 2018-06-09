@@ -232,7 +232,8 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   mouse_event_manager_->InvalidateClick();
 }
 
-void EventHandler::PerformHitTest(HitTestResult& result) const {
+void EventHandler::PerformHitTest(HitTestResult& result,
+                                  bool no_lifecycle_update) const {
   // LayoutView::hitTest causes a layout, and we don't want to hit that until
   // the first layout because until then, there is nothing shown on the screen -
   // the user can't have intentionally clicked on something belonging to this
@@ -248,7 +249,11 @@ void EventHandler::PerformHitTest(HitTestResult& result) const {
       !frame_->View()->LifecycleUpdatesActive())
     return;
 
-  frame_->ContentLayoutObject()->HitTest(result);
+  if (no_lifecycle_update) {
+    frame_->ContentLayoutObject()->HitTestNoLifecycleUpdate(result);
+  } else {
+    frame_->ContentLayoutObject()->HitTest(result);
+  }
   const HitTestRequest& request = result.GetHitTestRequest();
   if (!request.ReadOnly()) {
     frame_->GetDocument()->UpdateHoverActiveState(request,
@@ -259,7 +264,8 @@ void EventHandler::PerformHitTest(HitTestResult& result) const {
 HitTestResult EventHandler::HitTestResultAtPoint(
     const LayoutPoint& point,
     HitTestRequest::HitTestRequestType hit_type,
-    const LayoutObject* stop_node) {
+    const LayoutObject* stop_node,
+    bool no_lifecycle_update) {
   TRACE_EVENT0("blink", "EventHandler::hitTestResultAtPoint");
 
   // We always send hitTestResultAtPoint to the main frame if we have one,
@@ -283,14 +289,15 @@ HitTestResult EventHandler::HitTestResultAtPoint(
   HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent,
                          stop_node);
   HitTestResult result(request, point);
-  PerformHitTest(result);
+  PerformHitTest(result, no_lifecycle_update);
   return result;
 }
 
 HitTestResult EventHandler::HitTestResultAtRect(
     const LayoutRect& rect,
     HitTestRequest::HitTestRequestType hit_type,
-    const LayoutObject* stop_node) {
+    const LayoutObject* stop_node,
+    bool no_lifecycle_update) {
   TRACE_EVENT0("blink", "EventHandler::hitTestResultAtRect");
 
   DCHECK(hit_type & HitTestRequest::kListBased);
@@ -315,7 +322,7 @@ HitTestResult EventHandler::HitTestResultAtRect(
   HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent,
                          stop_node);
   HitTestResult result(request, rect);
-  PerformHitTest(result);
+  PerformHitTest(result, no_lifecycle_update);
   return result;
 }
 

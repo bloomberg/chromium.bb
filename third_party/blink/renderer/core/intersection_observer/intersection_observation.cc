@@ -7,9 +7,28 @@
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/intersection_geometry.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
+
+namespace {
+
+bool IsOccluded(const Element& element, const IntersectionGeometry& geometry) {
+  HitTestResult hits(
+      element.GetLayoutObject()->HitTestForOcclusion(geometry.TargetRect()));
+  const HitTestResult::NodeSet& hit_nodes = hits.ListBasedTestResult();
+  for (const auto& node : hit_nodes) {
+    if (!node->contains(&element) &&
+        node->GetLayoutObject()->HasNonZeroEffectiveOpacity()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
                                                  Element& target)
@@ -52,6 +71,7 @@ void IntersectionObservation::ComputeIntersectionObservations(
   //       any non-zero threshold.
   unsigned new_threshold_index;
   float new_visible_ratio;
+  bool is_visible = false;
   if (geometry.DoesIntersect()) {
     if (geometry.TargetRect().IsEmpty()) {
       new_visible_ratio = 1;
@@ -65,6 +85,11 @@ void IntersectionObservation::ComputeIntersectionObservations(
     }
     new_threshold_index =
         Observer()->FirstThresholdGreaterThan(new_visible_ratio);
+    if (RuntimeEnabledFeatures::IntersectionObserverV2Enabled() &&
+        Observer()->trackVisibility()) {
+      is_visible = !Target()->GetLayoutObject()->HasDistortingVisualEffects() &&
+                   !IsOccluded(*Target(), geometry);
+    }
   } else {
     new_visible_ratio = 0;
     new_threshold_index = 0;
@@ -72,12 +97,6 @@ void IntersectionObservation::ComputeIntersectionObservations(
 
   // TODO(tkent): We can't use CHECK_LT due to a compile error.
   CHECK(new_threshold_index < kMaxThresholdIndex);
-
-  bool is_visible = false;
-  if (RuntimeEnabledFeatures::IntersectionObserverV2Enabled() &&
-      Observer()->trackVisibility()) {
-    // TODO(szager): Determine visibility.
-  }
 
   if (last_threshold_index_ != new_threshold_index ||
       last_is_visible_ != is_visible) {

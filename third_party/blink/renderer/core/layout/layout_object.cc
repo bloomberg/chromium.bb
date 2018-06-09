@@ -1403,6 +1403,58 @@ const LayoutBoxModelObject* LayoutObject::EnclosingCompositedContainer() const {
   return container;
 }
 
+bool LayoutObject::HasDistortingVisualEffects() const {
+  // TODO(szager): Check occlusion information propagated from out-of-process
+  // parent frame.
+  PropertyTreeState paint_properties = EnclosingLayer()
+                                           ->GetLayoutObject()
+                                           .FirstFragment()
+                                           .LocalBorderBoxProperties();
+
+  // No filters, no blends, no opacity < 100%.
+  const EffectPaintPropertyNode* effects = paint_properties.Effect();
+  while (effects && !effects->IsRoot()) {
+    if (!effects->Filter().IsEmpty() ||
+        effects->GetColorFilter() != kColorFilterNone ||
+        effects->BlendMode() != SkBlendMode::kSrcOver ||
+        effects->Opacity() != 1.0) {
+      return true;
+    }
+    effects = effects->Parent();
+  }
+
+  PropertyTreeState root_properties = GetDocument()
+                                          .GetFrame()
+                                          ->LocalFrameRoot()
+                                          .ContentLayoutObject()
+                                          ->FirstFragment()
+                                          .LocalBorderBoxProperties();
+
+  // The only allowed transforms are 2D translation and proportional up-scaling.
+  const TransformationMatrix& matrix =
+      GeometryMapper::SourceToDestinationProjection(
+          paint_properties.Transform(), root_properties.Transform());
+  if (!matrix.Is2DProportionalUpscaleAndOr2DTranslation())
+    return true;
+
+  return false;
+}
+
+bool LayoutObject::HasNonZeroEffectiveOpacity() const {
+  PropertyTreeState paint_properties = EnclosingLayer()
+                                           ->GetLayoutObject()
+                                           .FirstFragment()
+                                           .LocalBorderBoxProperties();
+
+  const EffectPaintPropertyNode* effects = paint_properties.Effect();
+  while (effects && !effects->IsRoot()) {
+    if (effects->Opacity() == 0.0)
+      return false;
+    effects = effects->Parent();
+  }
+  return true;
+}
+
 String LayoutObject::DecoratedName() const {
   StringBuilder name;
   name.Append(GetName());
@@ -1658,6 +1710,17 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
         ancestor, transform_state, visual_rect_flags);
   }
   return true;
+}
+
+HitTestResult LayoutObject::HitTestForOcclusion(
+    const LayoutRect& hit_rect) const {
+  LocalFrame* frame = GetDocument().GetFrame();
+  DCHECK(!frame->View()->NeedsLayout());
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kListBased | HitTestRequest::kPenetratingList |
+      HitTestRequest::kIgnorePointerEventsNone | HitTestRequest::kReadOnly;
+  return frame->GetEventHandler().HitTestResultAtRect(hit_rect, hit_type, this,
+                                                      true);
 }
 
 void LayoutObject::DirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior) {}

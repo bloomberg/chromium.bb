@@ -111,6 +111,7 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
   if (viewport_intersection == last_viewport_intersection_)
     return;
 
+  // TODO(szager): Propagate occlusion information.
   last_viewport_intersection_ = viewport_intersection;
   remote_frame_->Client()->UpdateRemoteViewportIntersection(
       viewport_intersection);

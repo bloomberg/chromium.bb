@@ -49,6 +49,40 @@ TEST(TransformationMatrixTest, IsIdentityOr2DTranslation) {
   EXPECT_FALSE(matrix.IsIdentityOr2DTranslation());
 }
 
+TEST(TransformationMatrixTest, Is2DProportionalUpscaleAndOr2DTranslation) {
+  TransformationMatrix matrix;
+  EXPECT_TRUE(matrix.Is2DProportionalUpscaleAndOr2DTranslation());
+
+  matrix.MakeIdentity();
+  matrix.Translate(10, 0);
+  EXPECT_TRUE(matrix.Is2DProportionalUpscaleAndOr2DTranslation());
+
+  matrix.MakeIdentity();
+  matrix.Scale(1.3);
+  EXPECT_TRUE(matrix.Is2DProportionalUpscaleAndOr2DTranslation());
+
+  matrix.MakeIdentity();
+  matrix.Translate(0, -20);
+  matrix.Scale(1.7);
+  EXPECT_TRUE(matrix.Is2DProportionalUpscaleAndOr2DTranslation());
+
+  matrix.MakeIdentity();
+  matrix.Scale(0.99);
+  EXPECT_FALSE(matrix.Is2DProportionalUpscaleAndOr2DTranslation());
+
+  matrix.MakeIdentity();
+  matrix.Translate3d(0, 0, 1);
+  EXPECT_FALSE(matrix.Is2DProportionalUpscaleAndOr2DTranslation());
+
+  matrix.MakeIdentity();
+  matrix.Rotate(40 /* degrees */);
+  EXPECT_FALSE(matrix.Is2DProportionalUpscaleAndOr2DTranslation());
+
+  matrix.MakeIdentity();
+  matrix.SkewX(30 /* degrees */);
+  EXPECT_FALSE(matrix.Is2DProportionalUpscaleAndOr2DTranslation());
+}
+
 TEST(TransformationMatrixTest, To2DTranslation) {
   TransformationMatrix matrix;
   EXPECT_EQ(FloatSize(), matrix.To2DTranslation());

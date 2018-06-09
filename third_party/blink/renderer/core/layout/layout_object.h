@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
 #include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
@@ -62,7 +63,6 @@ class AffineTransform;
 class Cursor;
 class HitTestLocation;
 class HitTestRequest;
-class HitTestResult;
 class InlineBox;
 class LayoutBoxModelObject;
 class LayoutBlock;
@@ -225,6 +225,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // name of the object along with extra information about the layout object
   // state (e.g. positioning).
   String DecoratedName() const;
+
+  // This is an inexact determination of whether the display of this objects is
+  // altered or obscured by CSS effects.
+  bool HasDistortingVisualEffects() const;
+
+  // Returns false iff this object or one of its ancestors has opacity:0.
+  bool HasNonZeroEffectiveOpacity() const;
 
   // DisplayItemClient methods.
 
@@ -1502,6 +1509,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       const LayoutBoxModelObject* ancestor,
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const;
+
+  // Do a rect-based hit test with this object as the stop node.
+  HitTestResult HitTestForOcclusion(const LayoutRect&) const;
+  HitTestResult HitTestForOcclusion() const {
+    return HitTestForOcclusion(AbsoluteVisualRect());
+  }
 
   // Return the offset to the column in which the specified point (in
   // flow-thread coordinates) lives. This is used to convert a flow-thread point
