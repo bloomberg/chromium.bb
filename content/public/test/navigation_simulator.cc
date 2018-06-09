@@ -7,10 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/debug_urls.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
@@ -224,6 +228,26 @@ NavigationSimulator::CreateRendererInitiated(
       static_cast<TestRenderFrameHost*>(render_frame_host)));
 }
 
+// static
+std::unique_ptr<NavigationSimulator>
+NavigationSimulator::CreateFromPendingBrowserInitiated(WebContents* contents) {
+  TestRenderFrameHost* test_frame_host =
+      static_cast<TestRenderFrameHost*>(contents->GetMainFrame());
+
+  // Simulate the BeforeUnload ACK if needed.
+  NavigationRequest* request =
+      test_frame_host->frame_tree_node()->navigation_request();
+  DCHECK(request);
+  if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE)
+    test_frame_host->SendBeforeUnloadACK(true /*proceed */);
+
+  auto simulator = base::WrapUnique(new NavigationSimulator(
+      GURL(), true /* browser_initiated */,
+      static_cast<WebContentsImpl*>(contents), test_frame_host));
+  simulator->InitializeFromStartedRequest(request);
+  return simulator;
+}
+
 NavigationSimulator::NavigationSimulator(const GURL& original_url,
                                          bool browser_initiated,
                                          WebContentsImpl* web_contents,
@@ -260,6 +284,50 @@ NavigationSimulator::NavigationSimulator(const GURL& original_url,
 }
 
 NavigationSimulator::~NavigationSimulator() {}
+
+void NavigationSimulator::InitializeFromStartedRequest(
+    NavigationRequest* request) {
+  NavigationHandle* handle = request->navigation_handle();
+  DCHECK(handle);
+  DCHECK_EQ(NavigationRequest::STARTED, request->state());
+  state_ = STARTED;
+  DCHECK_EQ(web_contents_, handle->GetWebContents());
+  DCHECK(render_frame_host_);
+  DCHECK_EQ(frame_tree_node_, request->frame_tree_node());
+  handle_ = static_cast<NavigationHandleImpl*>(handle);
+  navigation_url_ = handle->GetURL();
+  // |socket_address_| cannot be inferred from the request.
+  // |initial_method_| cannot be set after the request has started.
+  browser_initiated_ = request->browser_initiated();
+  // |same_document_| should always be false here.
+  referrer_ = request->common_params().referrer;
+  transition_ = handle->GetPageTransition();
+  // |reload_type_| cannot be set after the request has started.
+  // |session_history_offset_| cannot be set after the request has started.
+  has_user_gesture_ = handle->HasUserGesture();
+  // |contents_mime_type_| cannot be inferred from the request.
+
+  // Add a throttle to count NavigationThrottle calls count. Bump
+  // num_did_start_navigation to account for the fact that the navigation handle
+  // has already been created.
+  num_did_start_navigation_called_++;
+  RegisterTestThrottle(handle);
+  PrepareCompleteCallbackOnHandle();
+}
+
+void NavigationSimulator::RegisterTestThrottle(NavigationHandle* handle) {
+  handle->RegisterThrottleForTesting(
+      std::make_unique<NavigationThrottleCallbackRunner>(
+          handle,
+          base::BindRepeating(&NavigationSimulator::OnWillStartRequest,
+                              weak_factory_.GetWeakPtr()),
+          base::BindRepeating(&NavigationSimulator::OnWillRedirectRequest,
+                              weak_factory_.GetWeakPtr()),
+          base::BindRepeating(&NavigationSimulator::OnWillFailRequest,
+                              weak_factory_.GetWeakPtr()),
+          base::BindRepeating(&NavigationSimulator::OnWillProcessResponse,
+                              weak_factory_.GetWeakPtr())));
+}
 
 void NavigationSimulator::Start() {
   CHECK(state_ == INITIALIZATION)
@@ -745,18 +813,7 @@ void NavigationSimulator::DidStartNavigation(
   num_did_start_navigation_called_++;
 
   // Add a throttle to count NavigationThrottle calls count.
-  handle->RegisterThrottleForTesting(
-      std::make_unique<NavigationThrottleCallbackRunner>(
-          handle,
-          base::Bind(&NavigationSimulator::OnWillStartRequest,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&NavigationSimulator::OnWillRedirectRequest,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&NavigationSimulator::OnWillFailRequest,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&NavigationSimulator::OnWillProcessResponse,
-                     weak_factory_.GetWeakPtr())));
-
+  RegisterTestThrottle(handle);
   PrepareCompleteCallbackOnHandle();
 }
 
@@ -940,6 +997,7 @@ void NavigationSimulator::OnThrottleChecksComplete(
 }
 
 void NavigationSimulator::PrepareCompleteCallbackOnHandle() {
+  DCHECK(handle_);
   last_throttle_check_result_.reset();
   handle_->set_complete_callback_for_testing(
       base::Bind(&NavigationSimulator::OnThrottleChecksComplete,
