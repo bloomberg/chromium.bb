@@ -6,7 +6,7 @@
 
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
-#include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/window_properties.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"

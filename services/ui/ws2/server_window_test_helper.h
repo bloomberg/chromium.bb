@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS2_CLIENT_WINDOW_TEST_HELPER_H_
-#define SERVICES_UI_WS2_CLIENT_WINDOW_TEST_HELPER_H_
+#ifndef SERVICES_UI_WS2_SERVER_WINDOW_TEST_HELPER_H_
+#define SERVICES_UI_WS2_SERVER_WINDOW_TEST_HELPER_H_
 
 #include "base/macros.h"
 #include "ui/events/event.h"
@@ -30,4 +30,4 @@ class ClientWindowTestHelper {
 }  // namespace ws2
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS2_CLIENT_WINDOW_TEST_HELPER_H_
+#endif  // SERVICES_UI_WS2_SERVER_WINDOW_TEST_HELPER_H_

@@ -4,7 +4,7 @@
 
 #include "services/ui/ws2/window_service_client_test_helper.h"
 
-#include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_client_binding.h"
 

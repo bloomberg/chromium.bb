@@ -7,7 +7,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
-#include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/window_host_frame_sink_client.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"

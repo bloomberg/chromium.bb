@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS2_CLIENT_WINDOW_H_
-#define SERVICES_UI_WS2_CLIENT_WINDOW_H_
+#ifndef SERVICES_UI_WS2_SERVER_WINDOW_H_
+#define SERVICES_UI_WS2_SERVER_WINDOW_H_
 
 #include <vector>
 
@@ -168,4 +168,4 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
 }  // namespace ws2
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS2_CLIENT_WINDOW_H_
+#endif  // SERVICES_UI_WS2_SERVER_WINDOW_H_

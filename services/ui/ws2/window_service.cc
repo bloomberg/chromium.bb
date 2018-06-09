@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
-#include "services/ui/ws2/client_window.h"
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/screen_provider.h"
+#include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree_factory.h"
