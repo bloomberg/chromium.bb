@@ -4,8 +4,8 @@
 
 #include "mojo/edk/system/channel.h"
 
-#include <fdio/limits.h>
-#include <fdio/util.h>
+#include <lib/fdio/limits.h>
+#include <lib/fdio/util.h>
 #include <zircon/processargs.h>
 #include <zircon/status.h>
 #include <zircon/syscalls.h>

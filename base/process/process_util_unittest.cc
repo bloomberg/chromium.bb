@@ -67,7 +67,7 @@
 #include "third_party/lss/linux_syscall_support.h"
 #endif
 #if defined(OS_FUCHSIA)
-#include <fdio/limits.h>
+#include <lib/fdio/limits.h>
 #include <zircon/process.h>
 #include <zircon/processargs.h>
 #include <zircon/syscalls.h>

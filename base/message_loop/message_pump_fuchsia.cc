@@ -4,8 +4,8 @@
 
 #include "base/message_loop/message_pump_fuchsia.h"
 
-#include <fdio/io.h>
-#include <fdio/private.h>
+#include <lib/fdio/io.h>
+#include <lib/fdio/private.h>
 #include <zircon/status.h>
 #include <zircon/syscalls.h>
 

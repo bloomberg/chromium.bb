@@ -4,7 +4,7 @@
 
 #include "base/fuchsia/component_context.h"
 
-#include <fdio/util.h>
+#include <lib/fdio/util.h>
 
 #include "base/fuchsia/scoped_zx_handle.h"
 #include "base/fuchsia/services_directory.h"
