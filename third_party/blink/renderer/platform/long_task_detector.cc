@@ -9,6 +9,8 @@
 
 namespace blink {
 
+constexpr base::TimeDelta LongTaskDetector::kLongTaskThreshold;
+
 // static
 LongTaskDetector& LongTaskDetector::Instance() {
   DEFINE_STATIC_LOCAL(Persistent<LongTaskDetector>, long_task_detector,
@@ -36,13 +38,13 @@ void LongTaskDetector::UnregisterObserver(LongTaskObserver* observer) {
   }
 }
 
-void LongTaskDetector::DidProcessTask(double start_time, double end_time) {
-  if ((end_time - start_time) < LongTaskDetector::kLongTaskThresholdSeconds)
+void LongTaskDetector::DidProcessTask(base::TimeTicks start_time,
+                                      base::TimeTicks end_time) {
+  if ((end_time - start_time) < LongTaskDetector::kLongTaskThreshold)
     return;
 
   for (auto& observer : observers_) {
-    observer->OnLongTaskDetected(TimeTicksFromSeconds(start_time),
-                                 TimeTicksFromSeconds(end_time));
+    observer->OnLongTaskDetected(start_time, end_time);
   }
 }
 

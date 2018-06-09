@@ -88,8 +88,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   // PerformanceMonitor::Client implementation.
   void ReportLongTask(
-      double start_time,
-      double end_time,
+      base::TimeTicks start_time,
+      base::TimeTicks end_time,
       ExecutionContext* task_context,
       bool has_multiple_contexts,
       const SubTaskAttribution::EntriesVector& sub_task_attributions) override;

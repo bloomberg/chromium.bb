@@ -91,7 +91,7 @@ static void ReportGeolocationViolation(ExecutionContext* context) {
     PerformanceMonitor::ReportGenericViolation(
         context, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request geolocation information in response to a user gesture.",
-        0, nullptr);
+        base::TimeDelta(), nullptr);
   }
 }
 

@@ -3717,7 +3717,7 @@ void Document::write(const String& text,
   DCHECK(parser_);
   PerformanceMonitor::ReportGenericViolation(
       this, PerformanceMonitor::kDiscouragedAPIUse,
-      "Avoid using document.write().", 0, nullptr);
+      "Avoid using document.write().", base::TimeDelta(), nullptr);
   probe::breakableLocation(this, "Document.write");
   parser_->insert(text);
 }

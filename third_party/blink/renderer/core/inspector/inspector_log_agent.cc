@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_log_agent.h"
 
+#include "base/format_macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -233,7 +234,9 @@ Response InspectorLogAgent::startViolationsReport(
     if (violation == PerformanceMonitor::kAfterLast)
       continue;
     performance_monitor_->Subscribe(
-        violation, settings->get(i)->getThreshold() / 1000, this);
+        violation,
+        base::TimeDelta::FromMillisecondsD(settings->get(i)->getThreshold()),
+        this);
   }
   return Response::OK();
 }
@@ -246,10 +249,10 @@ Response InspectorLogAgent::stopViolationsReport() {
   return Response::OK();
 }
 
-void InspectorLogAgent::ReportLongLayout(double duration) {
-  String message_text =
-      String::Format("Forced reflow while executing JavaScript took %ldms",
-                     lround(duration * 1000));
+void InspectorLogAgent::ReportLongLayout(base::TimeDelta duration) {
+  String message_text = String::Format(
+      "Forced reflow while executing JavaScript took %" PRId64 "ms",
+      duration.InMilliseconds());
   ConsoleMessage* message = ConsoleMessage::Create(
       kViolationMessageSource, kVerboseMessageLevel, message_text);
   ConsoleMessageAdded(message);
@@ -257,7 +260,7 @@ void InspectorLogAgent::ReportLongLayout(double duration) {
 
 void InspectorLogAgent::ReportGenericViolation(PerformanceMonitor::Violation,
                                                const String& text,
-                                               double time,
+                                               base::TimeDelta time,
                                                SourceLocation* location) {
   ConsoleMessage* message = ConsoleMessage::Create(
       kViolationMessageSource, kVerboseMessageLevel, text, location->Clone());

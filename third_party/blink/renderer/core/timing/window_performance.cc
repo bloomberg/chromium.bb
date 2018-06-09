@@ -49,7 +49,8 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
-static const double kLongTaskObserverThreshold = 0.05;
+static constexpr base::TimeDelta kLongTaskObserverThreshold =
+    base::TimeDelta::FromMilliseconds(50);
 
 static const char kUnknownAttribution[] = "unknown";
 static const char kAmbiguousAttribution[] = "multiple-contexts";
@@ -265,8 +266,8 @@ std::pair<String, DOMWindow*> WindowPerformance::SanitizedAttribution(
 }
 
 void WindowPerformance::ReportLongTask(
-    double start_time,
-    double end_time,
+    base::TimeTicks start_time,
+    base::TimeTicks end_time,
     ExecutionContext* task_context,
     bool has_multiple_contexts,
     const SubTaskAttribution::EntriesVector& sub_task_attributions) {
@@ -280,15 +281,14 @@ void WindowPerformance::ReportLongTask(
   if (!culprit_dom_window || !culprit_dom_window->GetFrame() ||
       !culprit_dom_window->GetFrame()->DeprecatedLocalOwner()) {
     AddLongTaskTiming(
-        TimeTicksFromSeconds(start_time), TimeTicksFromSeconds(end_time),
-        attribution.first, g_empty_string, g_empty_string, g_empty_string,
+        start_time, end_time, attribution.first, g_empty_string, g_empty_string,
+        g_empty_string,
         IsSameOrigin(attribution.first) ? sub_task_attributions : empty_vector);
   } else {
     HTMLFrameOwnerElement* frame_owner =
         culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
     AddLongTaskTiming(
-        TimeTicksFromSeconds(start_time), TimeTicksFromSeconds(end_time),
-        attribution.first,
+        start_time, end_time, attribution.first,
         GetFrameAttribute(frame_owner, HTMLNames::srcAttr, false),
         GetFrameAttribute(frame_owner, HTMLNames::idAttr, false),
         GetFrameAttribute(frame_owner, HTMLNames::nameAttr, true),

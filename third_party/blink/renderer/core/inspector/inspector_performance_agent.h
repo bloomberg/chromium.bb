@@ -57,8 +57,9 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void Did(const probe::UpdateLayout&);
 
   // TaskTimeObserver implementation.
-  void WillProcessTask(double start_time) override;
-  void DidProcessTask(double start_time, double end_time) override;
+  void WillProcessTask(base::TimeTicks start_time) override;
+  void DidProcessTask(base::TimeTicks start_time,
+                      base::TimeTicks end_time) override;
 
  private:
   explicit InspectorPerformanceAgent(InspectedFrames*);

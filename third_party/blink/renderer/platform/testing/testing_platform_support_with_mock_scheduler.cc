@@ -123,7 +123,12 @@ void TestingPlatformSupportWithMockScheduler::RunForPeriodSeconds(
 
 void TestingPlatformSupportWithMockScheduler::AdvanceClockSeconds(
     double seconds) {
-  clock_.Advance(base::TimeDelta::FromSecondsD(seconds));
+  AdvanceClock(base::TimeDelta::FromSecondsD(seconds));
+}
+
+void TestingPlatformSupportWithMockScheduler::AdvanceClock(
+    base::TimeDelta duration) {
+  clock_.Advance(duration);
 }
 
 void TestingPlatformSupportWithMockScheduler::SetAutoAdvanceNowToPendingTasks(

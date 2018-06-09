@@ -124,10 +124,9 @@ TimeTicks IdlenessDetector::GetNetworkIdleTime() {
   return network_0_quiet_start_time_;
 }
 
-void IdlenessDetector::WillProcessTask(double start_time_seconds) {
+void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
   // If we have idle time and we are kNetworkQuietWindow seconds past it, emit
   // idle signals.
-  TimeTicks start_time = TimeTicksFromSeconds(start_time_seconds);
   DocumentLoader* loader = local_frame_->Loader().GetDocumentLoader();
   if (in_network_2_quiet_period_ && !network_2_quiet_.is_null() &&
       start_time - network_2_quiet_ > kNetworkQuietWindow) {
@@ -156,11 +155,8 @@ void IdlenessDetector::WillProcessTask(double start_time_seconds) {
     Stop();
 }
 
-void IdlenessDetector::DidProcessTask(double start_time_seconds,
-                                      double end_time_seconds) {
-  TimeTicks start_time = TimeTicksFromSeconds(start_time_seconds);
-  TimeTicks end_time = TimeTicksFromSeconds(end_time_seconds);
-
+void IdlenessDetector::DidProcessTask(base::TimeTicks start_time,
+                                      base::TimeTicks end_time) {
   // Shift idle timestamps with the duration of the task, we were not idle.
   if (in_network_2_quiet_period_ && !network_2_quiet_.is_null())
     network_2_quiet_ += end_time - start_time;

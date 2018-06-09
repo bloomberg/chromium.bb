@@ -410,7 +410,7 @@ ScriptPromise Notification::requestPermission(
     PerformanceMonitor::ReportGenericViolation(
         context, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request notification permission in response to a user gesture.",
-        0, nullptr);
+        base::TimeDelta(), nullptr);
   }
 
   // Sites cannot request notification permission from insecure contexts.

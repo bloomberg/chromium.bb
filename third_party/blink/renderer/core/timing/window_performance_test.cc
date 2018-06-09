@@ -77,7 +77,8 @@ class WindowPerformanceTest : public testing::Test {
     auto* monitor = GetFrame()->GetPerformanceMonitor();
     monitor->WillExecuteScript(GetDocument());
     monitor->DidExecuteScript();
-    monitor->DidProcessTask(0, 1);
+    monitor->DidProcessTask(
+        base::TimeTicks(), base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   }
 
   LocalFrame* GetFrame() const { return &page_holder_->GetFrame(); }

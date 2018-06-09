@@ -13,6 +13,13 @@
 #include <memory>
 
 namespace blink {
+namespace {
+
+base::TimeTicks SecondsToTimeTicks(double seconds) {
+  return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
+}
+
+}  // namespace
 
 class PerformanceMonitorTest : public testing::Test {
  protected:
@@ -36,11 +43,11 @@ class PerformanceMonitorTest : public testing::Test {
   }
 
   // scheduler::TaskTimeObserver implementation
-  void WillProcessTask(double start_time) {
+  void WillProcessTask(base::TimeTicks start_time) {
     monitor_->WillProcessTask(start_time);
   }
 
-  void DidProcessTask(double start_time, double end_time) {
+  void DidProcessTask(base::TimeTicks start_time, base::TimeTicks end_time) {
     monitor_->DidProcessTask(start_time, end_time);
   }
   void UpdateTaskAttribution(ExecutionContext* execution_context) {
@@ -97,17 +104,18 @@ int PerformanceMonitorTest::NumUniqueFrameContextsSeen() {
 }
 
 TEST_F(PerformanceMonitorTest, SingleScriptInTask) {
-  WillProcessTask(3719349.445172);
+  WillProcessTask(SecondsToTimeTicks(3719349.445172));
   EXPECT_EQ(0, NumUniqueFrameContextsSeen());
   WillExecuteScript(GetExecutionContext());
   EXPECT_EQ(1, NumUniqueFrameContextsSeen());
-  DidProcessTask(3719349.445172, 3719349.5561923);  // Long task
+  DidProcessTask(SecondsToTimeTicks(3719349.445172),
+                 SecondsToTimeTicks(3719349.5561923));  // Long task
   EXPECT_EQ(1, NumUniqueFrameContextsSeen());
   EXPECT_EQ("https://example.com/foo", FrameContextURL());
 }
 
 TEST_F(PerformanceMonitorTest, MultipleScriptsInTask_SingleContext) {
-  WillProcessTask(3719349.445172);
+  WillProcessTask(SecondsToTimeTicks(3719349.445172));
   EXPECT_EQ(0, NumUniqueFrameContextsSeen());
   WillExecuteScript(GetExecutionContext());
   EXPECT_EQ(1, NumUniqueFrameContextsSeen());
@@ -115,13 +123,14 @@ TEST_F(PerformanceMonitorTest, MultipleScriptsInTask_SingleContext) {
 
   WillExecuteScript(GetExecutionContext());
   EXPECT_EQ(1, NumUniqueFrameContextsSeen());
-  DidProcessTask(3719349.445172, 3719349.5561923);  // Long task
+  DidProcessTask(SecondsToTimeTicks(3719349.445172),
+                 SecondsToTimeTicks(3719349.5561923));  // Long task
   EXPECT_EQ(1, NumUniqueFrameContextsSeen());
   EXPECT_EQ("https://example.com/foo", FrameContextURL());
 }
 
 TEST_F(PerformanceMonitorTest, MultipleScriptsInTask_MultipleContexts) {
-  WillProcessTask(3719349.445172);
+  WillProcessTask(SecondsToTimeTicks(3719349.445172));
   EXPECT_EQ(0, NumUniqueFrameContextsSeen());
   WillExecuteScript(GetExecutionContext());
   EXPECT_EQ(1, NumUniqueFrameContextsSeen());
@@ -129,77 +138,80 @@ TEST_F(PerformanceMonitorTest, MultipleScriptsInTask_MultipleContexts) {
 
   WillExecuteScript(AnotherExecutionContext());
   EXPECT_EQ(2, NumUniqueFrameContextsSeen());
-  DidProcessTask(3719349.445172, 3719349.5561923);  // Long task
+  DidProcessTask(SecondsToTimeTicks(3719349.445172),
+                 SecondsToTimeTicks(3719349.5561923));  // Long task
   EXPECT_EQ(2, NumUniqueFrameContextsSeen());
   EXPECT_EQ("", FrameContextURL());
 }
 
 TEST_F(PerformanceMonitorTest, NoScriptInLongTask) {
-  WillProcessTask(3719349.445172);
+  WillProcessTask(SecondsToTimeTicks(3719349.445172));
   WillExecuteScript(GetExecutionContext());
-  DidProcessTask(3719349.445172, 3719349.445182);
+  DidProcessTask(SecondsToTimeTicks(3719349.445172),
+                 SecondsToTimeTicks(3719349.445182));
 
-  WillProcessTask(3719349.445172);
-  DidProcessTask(3719349.445172, 3719349.5561923);  // Long task
+  WillProcessTask(SecondsToTimeTicks(3719349.445172));
+  DidProcessTask(SecondsToTimeTicks(3719349.445172),
+                 SecondsToTimeTicks(3719349.5561923));  // Long task
   // Without presence of Script, FrameContext URL is not available
   EXPECT_EQ(0, NumUniqueFrameContextsSeen());
 }
 
 TEST_F(PerformanceMonitorTest, TaskWithoutLocalRoot) {
-  WillProcessTask(1234.5678);
+  WillProcessTask(SecondsToTimeTicks(1234.5678));
   UpdateTaskAttribution(AnotherExecutionContext());
-  DidProcessTask(1234.5678, 2345.6789);
+  DidProcessTask(SecondsToTimeTicks(1234.5678), SecondsToTimeTicks(2345.6789));
   EXPECT_FALSE(TaskShouldBeReported());
   EXPECT_EQ(1, NumUniqueFrameContextsSeen());
 }
 
 TEST_F(PerformanceMonitorTest, TaskWithLocalRoot) {
-  WillProcessTask(1234.5678);
+  WillProcessTask(SecondsToTimeTicks(1234.5678));
   UpdateTaskAttribution(GetExecutionContext());
   EXPECT_TRUE(TaskShouldBeReported());
   EXPECT_EQ(1, NumUniqueFrameContextsSeen());
   UpdateTaskAttribution(AnotherExecutionContext());
-  DidProcessTask(1234.5678, 2345.6789);
+  DidProcessTask(SecondsToTimeTicks(1234.5678), SecondsToTimeTicks(2345.6789));
   EXPECT_TRUE(TaskShouldBeReported());
   EXPECT_EQ(2, NumUniqueFrameContextsSeen());
 }
 
 TEST_F(PerformanceMonitorTest, RecalculateStyleWithDocument) {
-  WillProcessTask(1234.5678);
+  WillProcessTask(SecondsToTimeTicks(1234.5678));
   RecalculateStyle(&another_page_holder_->GetDocument());
-  DidProcessTask(1234.5678, 2345.6789);
+  DidProcessTask(SecondsToTimeTicks(1234.5678), SecondsToTimeTicks(2345.6789));
   // Task from unrelated context should not be reported.
   EXPECT_FALSE(TaskShouldBeReported());
 
-  WillProcessTask(3234.5678);
+  WillProcessTask(SecondsToTimeTicks(3234.5678));
   RecalculateStyle(&page_holder_->GetDocument());
-  DidProcessTask(3234.5678, 4345.6789);
+  DidProcessTask(SecondsToTimeTicks(3234.5678), SecondsToTimeTicks(4345.6789));
   EXPECT_TRUE(TaskShouldBeReported());
 
-  WillProcessTask(3234.5678);
+  WillProcessTask(SecondsToTimeTicks(3234.5678));
   RecalculateStyle(&another_page_holder_->GetDocument());
   RecalculateStyle(&page_holder_->GetDocument());
-  DidProcessTask(3234.5678, 4345.6789);
+  DidProcessTask(SecondsToTimeTicks(3234.5678), SecondsToTimeTicks(4345.6789));
   // This task involves the current context, so it should be reported.
   EXPECT_TRUE(TaskShouldBeReported());
 }
 
 TEST_F(PerformanceMonitorTest, UpdateLayoutWithDocument) {
-  WillProcessTask(1234.5678);
+  WillProcessTask(SecondsToTimeTicks(1234.5678));
   UpdateLayout(&another_page_holder_->GetDocument());
-  DidProcessTask(1234.5678, 2345.6789);
+  DidProcessTask(SecondsToTimeTicks(1234.5678), SecondsToTimeTicks(2345.6789));
   // Task from unrelated context should not be reported.
   EXPECT_FALSE(TaskShouldBeReported());
 
-  WillProcessTask(3234.5678);
+  WillProcessTask(SecondsToTimeTicks(3234.5678));
   UpdateLayout(&page_holder_->GetDocument());
-  DidProcessTask(3234.5678, 4345.6789);
+  DidProcessTask(SecondsToTimeTicks(3234.5678), SecondsToTimeTicks(4345.6789));
   EXPECT_TRUE(TaskShouldBeReported());
 
-  WillProcessTask(3234.5678);
+  WillProcessTask(SecondsToTimeTicks(3234.5678));
   UpdateLayout(&another_page_holder_->GetDocument());
   UpdateLayout(&page_holder_->GetDocument());
-  DidProcessTask(3234.5678, 4345.6789);
+  DidProcessTask(SecondsToTimeTicks(3234.5678), SecondsToTimeTicks(4345.6789));
   // This task involves the current context, so it should be reported.
   EXPECT_TRUE(TaskShouldBeReported());
 }

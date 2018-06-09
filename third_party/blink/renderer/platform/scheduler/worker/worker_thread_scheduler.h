@@ -67,8 +67,9 @@ class PLATFORM_EXPORT WorkerThreadScheduler
                        base::Optional<base::TimeDelta> thread_time) override;
 
   // TaskTimeObserver implementation:
-  void WillProcessTask(double start_time) override;
-  void DidProcessTask(double start_time, double end_time) override;
+  void WillProcessTask(base::TimeTicks start_time) override;
+  void DidProcessTask(base::TimeTicks start_time,
+                      base::TimeTicks end_time) override;
 
   SchedulerHelper* GetSchedulerHelperForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;

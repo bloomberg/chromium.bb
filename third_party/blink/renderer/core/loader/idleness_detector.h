@@ -51,8 +51,9 @@ class CORE_EXPORT IdlenessDetector
   static constexpr int kNetworkQuietMaximumConnections = 2;
 
   // TaskTimeObserver implementation.
-  void WillProcessTask(double start_time) override;
-  void DidProcessTask(double start_time, double end_time) override;
+  void WillProcessTask(base::TimeTicks start_time) override;
+  void DidProcessTask(base::TimeTicks start_time,
+                      base::TimeTicks end_time) override;
 
   void Stop();
   void NetworkQuietTimerFired(TimerBase*);
