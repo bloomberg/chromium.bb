@@ -17,10 +17,13 @@
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "extensions/common/image_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 
@@ -270,22 +273,51 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     separator_view_->SetSize(separator_view_->CalculatePreferredSize());
   }
 
-  // Set up the larger image.
   if (!is_rich_suggestion_) {
     // An entry with |is_old_style_answer_| may use the image_view_. But it's
     // set when the image arrives (later).
     image_view_->SetImage(gfx::ImageSkia());
     image_view_->SetSize(gfx::Size());
   } else {
-    SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
-    extensions::image_util::ParseHexColorString(match.image_dominant_color,
-                                                &color);
-    color = SkColorSetA(color, 0x40);  // 25% transparency (arbitrary).
-    const gfx::Size size = gfx::Size(kRichImageSize, kRichImageSize);
-    image_view_->SetImage(
-        gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(size,
-                                                                      color));
-    image_view_->SetSize(size);
+    // Set up the larger image.
+    const gfx::VectorIcon* vector_icon = nullptr;
+    if (match.answer) {
+      switch (match.answer->type()) {
+        case SuggestionAnswer::ANSWER_TYPE_CURRENCY:
+          vector_icon = &omnibox::kAnswerCurrencyIcon;
+          break;
+        case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
+          vector_icon = &omnibox::kAnswerDictionaryIcon;
+          break;
+        case SuggestionAnswer::ANSWER_TYPE_FINANCE:
+          vector_icon = &omnibox::kAnswerFinanceIcon;
+          break;
+        case SuggestionAnswer::ANSWER_TYPE_SUNRISE:
+          vector_icon = &omnibox::kAnswerSunriseIcon;
+          break;
+        case SuggestionAnswer::ANSWER_TYPE_WEATHER:
+          // Weather icons are downloaded. Do nothing.
+          break;
+        case SuggestionAnswer::ANSWER_TYPE_WHEN_IS:
+          vector_icon = &omnibox::kAnswerWhenIsIcon;
+          break;
+        default:
+          break;
+      }
+    }
+    if (vector_icon) {
+      image_view_->SetImage(gfx::CreateVectorIcon(*vector_icon, kRichImageSize,
+                                                  gfx::kGoogleBlue600));
+    } else {
+      SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
+      extensions::image_util::ParseHexColorString(match.image_dominant_color,
+                                                  &color);
+      color = SkColorSetA(color, 0x40);  // 25% transparency (arbitrary).
+      const gfx::Size size = gfx::Size(kRichImageSize, kRichImageSize);
+      image_view_->SetImage(
+          gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(size,
+                                                                        color));
+    }
   }
 }
 

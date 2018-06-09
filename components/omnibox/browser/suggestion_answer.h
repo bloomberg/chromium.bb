@@ -37,6 +37,27 @@ class SuggestionAnswer {
   typedef std::vector<TextField> TextFields;
   typedef std::vector<GURL> URLs;
 
+  // These values are based on the server-side type AnswerTriggererKey. Do not
+  // remove values from this enum (or the client/server will become out of
+  // sync).
+  enum AnswerType {
+    ANSWER_TYPE_INVALID,
+    ANSWER_TYPE_DICTIONARY,
+    ANSWER_TYPE_FINANCE,
+    ANSWER_TYPE_KNOWLEDGE_GRAPH,
+    ANSWER_TYPE_LOCAL,
+    ANSWER_TYPE_SPORTS,
+    ANSWER_TYPE_SUNRISE,
+    ANSWER_TYPE_TRANSLATION,
+    ANSWER_TYPE_WEATHER,
+    ANSWER_TYPE_WHEN_IS,
+    ANSWER_TYPE_CURRENCY,
+    ANSWER_TYPE_LOCAL_TIME,
+    ANSWER_TYPE_PLAY_INSTALL,
+  };
+  static_assert(ANSWER_TYPE_PLAY_INSTALL == 12,
+                "Do not remove enums from AnswerType");
+
   // These values are named and numbered to match a specification at go/ais_api.
   // The values are only used for answer results.
   enum TextType {

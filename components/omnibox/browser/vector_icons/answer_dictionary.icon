@@ -1,0 +1,21 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+CANVAS_DIMENSIONS, 24,
+CIRCLE, 12, 12, 12,
+ROUND_RECT, 5.1186457, 16.785303, 13.333333, 1.3333334, 0,
+ROUND_RECT, 16.451973, 6.1186457, 0.66666669, 9.333333, 0,
+MOVE_TO, 10.13f, 6.12f,
+LINE_TO, 6.46f, 15.45f,
+R_H_LINE_TO, 1.5f,
+R_LINE_TO, 0.75f, -2,
+R_H_LINE_TO, 4.17f,
+R_LINE_TO, 0.75f, 2,
+R_H_LINE_TO, 1.5f,
+R_LINE_TO, -3.66f, -9.33f,
+CLOSE,
+MOVE_TO, 9.21f, 12.12f,
+LINE_TO, 10.79f, 7.9f,
+LINE_TO, 12.38f, 12.12f,
+CLOSE,
