@@ -181,6 +181,9 @@ enum AttestationConveyancePreference {
   NONE,
   INDIRECT,
   DIRECT,
+  // A non-standard addition that we hope will become standard. This indicates
+  // that the RP desires individual attestaion from the device.
+  ENTERPRISE,
 };
 
 // https://w3c.github.io/webauthn/#enumdef-authenticatorattachment.

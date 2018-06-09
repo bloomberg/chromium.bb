@@ -1138,6 +1138,8 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
         return "indirect";
       case AttestationConveyancePreference::DIRECT:
         return "direct";
+      case AttestationConveyancePreference::ENTERPRISE:
+        return "enterprise";
       default:
         NOTREACHED();
         return "";
@@ -1219,7 +1221,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       {
           AttestationConveyancePreference::INDIRECT,
           IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
-          AuthenticatorStatus::SUCCESS, "fido-u2f", kIndividualCommonName,
+          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
       },
       {
           AttestationConveyancePreference::DIRECT,
@@ -1238,6 +1240,26 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::DIRECT,
+          IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+      },
+      {
+          AttestationConveyancePreference::ENTERPRISE,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+      },
+      {
+          AttestationConveyancePreference::ENTERPRISE,
+          IndividualAttestation::REQUESTED, AttestationConsent::DENIED,
+          AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
+      },
+      {
+          AttestationConveyancePreference::ENTERPRISE,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS, "fido-u2f", kStandardCommonName,
+      },
+      {
+          AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS, "fido-u2f", kIndividualCommonName,
       },
@@ -1260,7 +1282,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 
   const std::vector<TestCase> kTests = {
       {
-          AttestationConveyancePreference::DIRECT,
+          AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::NOT_REQUESTED, AttestationConsent::DENIED,
           AuthenticatorStatus::NOT_ALLOWED_ERROR, "", "",
       },
@@ -1274,7 +1296,17 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           "none", "",
       },
       {
-          AttestationConveyancePreference::DIRECT,
+          AttestationConveyancePreference::ENTERPRISE,
+          IndividualAttestation::NOT_REQUESTED, AttestationConsent::GRANTED,
+          AuthenticatorStatus::SUCCESS,
+          // If individual attestation was not requested then the attestation
+          // certificate will be removed, even if consent is given, because
+          // the consent isn't to be tracked.
+          "none", "",
+      },
+
+      {
+          AttestationConveyancePreference::ENTERPRISE,
           IndividualAttestation::REQUESTED, AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS, "fido-u2f", kCommonName,
       },

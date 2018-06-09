@@ -461,6 +461,8 @@ void AuthenticatorImpl::MakeCredential(
       base::nullopt);
 
   const bool individual_attestation =
+      options->attestation ==
+          webauth::mojom::AttestationConveyancePreference::ENTERPRISE &&
       request_delegate_->ShouldPermitIndividualAttestation(relying_party_id_);
 
   attestation_preference_ = options->attestation;

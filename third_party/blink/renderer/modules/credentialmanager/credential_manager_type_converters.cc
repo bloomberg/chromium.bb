@@ -223,6 +223,8 @@ TypeConverter<AttestationConveyancePreference, String>::Convert(
     return AttestationConveyancePreference::INDIRECT;
   if (preference == "direct")
     return AttestationConveyancePreference::DIRECT;
+  if (preference == "enterprise")
+    return AttestationConveyancePreference::ENTERPRISE;
   NOTREACHED();
   return AttestationConveyancePreference::NONE;
 }
@@ -385,6 +387,9 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
     } else if (attestation == "direct") {
       mojo_options->attestation =
           webauth::mojom::AttestationConveyancePreference::DIRECT;
+    } else if (attestation == "enterprise") {
+      mojo_options->attestation =
+          webauth::mojom::AttestationConveyancePreference::ENTERPRISE;
     } else {
       return nullptr;
     }
