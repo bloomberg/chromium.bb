@@ -20,6 +20,11 @@ aggregate_vector_icons("omnibox_vector_icons") {
   icon_directory = "vector_icons"
 
   icons = [
+    "answer_currency.icon",
+    "answer_dictionary.icon",
+    "answer_finance.icon",
+    "answer_sunrise.icon",
+    "answer_when_is.icon",
     "blank.icon",
     "calculator.icon",
     "extension_app.icon",
