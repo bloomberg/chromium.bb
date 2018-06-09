@@ -178,8 +178,6 @@ class LatencyInfo {
   // component is found.
   bool FindLatency(LatencyComponentType type, LatencyComponent* output) const;
 
-  void RemoveLatency(LatencyComponentType type);
-
   void Terminate();
 
   const LatencyMap& latency_components() const { return latency_components_; }

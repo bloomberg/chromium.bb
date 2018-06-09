@@ -363,14 +363,4 @@ bool LatencyInfo::FindLatency(LatencyComponentType type,
   return true;
 }
 
-void LatencyInfo::RemoveLatency(LatencyComponentType type) {
-  LatencyMap::iterator it = latency_components_.begin();
-  while (it != latency_components_.end()) {
-    if (it->first == type)
-      it = latency_components_.erase(it);
-    else
-      it++;
-  }
-}
-
 }  // namespace ui
