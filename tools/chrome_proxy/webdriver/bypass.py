@@ -188,7 +188,7 @@ class Bypass(IntegrationTest):
       self.skipTest('This test cannot be run with other experiments.')
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
-      test_driver.AddChromeArg('--data-reduction-proxy-experiment=test')
+      test_driver.AddChromeArg('--data-reduction-proxy-experiment=client_test_bypass')
 
       # Verify that loading a page other than the specific exp directive test
       # page loads through the proxy without being bypassed.
@@ -198,7 +198,7 @@ class Bypass(IntegrationTest):
       for response in responses:
         self.assertHasChromeProxyViaHeader(response)
 
-      # Verify that loading the exp directive test page with "exp=test" triggers
+      # Verify that loading the exp directive test page with "exp=client_test_bypass" triggers
       # a bypass.
       test_driver.LoadURL('http://check.googlezip.net/exp/')
       responses = test_driver.GetHTTPResponses()
@@ -206,7 +206,7 @@ class Bypass(IntegrationTest):
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
 
-    # Verify that loading the same test page without setting "exp=test" loads
+    # Verify that loading the same test page without setting "exp=client_test_bypass" loads
     # through the proxy without being bypassed.
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
