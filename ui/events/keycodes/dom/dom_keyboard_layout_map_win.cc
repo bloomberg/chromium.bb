@@ -5,7 +5,6 @@
 #include <windows.h>
 
 #include <cstdint>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,8 +12,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
-#include "ui/events/keycodes/dom/dom_keyboard_layout_manager.h"
 #include "ui/events/keycodes/dom/dom_keyboard_layout_map_base.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 

@@ -32,6 +32,7 @@ static_library("dom_keycode_converter") {
     "keycodes/dom/dom_keyboard_layout_manager.cc",
     "keycodes/dom/dom_keyboard_layout_map_base.cc",
     "keycodes/dom/dom_keyboard_layout_map_base.h",
+    "keycodes/dom/dom_keyboard_layout_map_mac.mm",
     "keycodes/dom/dom_keyboard_layout_map_win.cc",
     "keycodes/dom/keycode_converter.cc",
     "keycodes/dom/keycode_converter_data.inc",

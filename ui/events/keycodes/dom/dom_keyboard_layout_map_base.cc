@@ -9,10 +9,9 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/dom/dom_keyboard_layout.h"
 #include "ui/events/keycodes/dom/dom_keyboard_layout_manager.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace ui {
 
