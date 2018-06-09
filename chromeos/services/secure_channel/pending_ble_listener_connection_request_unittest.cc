@@ -83,17 +83,6 @@ TEST_F(SecureChannelPendingBleListenerConnectionRequestTest,
             *GetConnectionAttemptFailureReason());
 }
 
-TEST_F(SecureChannelPendingBleListenerConnectionRequestTest,
-       HandleInvalidBeaconSeeds) {
-  HandleConnectionFailure(BleListenerFailureType::kInvalidBeaconSeeds);
-  EXPECT_EQ(
-      PendingConnectionRequestDelegate::FailedConnectionReason::kRequestFailed,
-      *GetFailedConnectionReason());
-  EXPECT_EQ(
-      mojom::ConnectionAttemptFailureReason::REMOTE_DEVICE_INVALID_BEACON_SEEDS,
-      *GetConnectionAttemptFailureReason());
-}
-
 }  // namespace secure_channel
 
 }  // namespace chromeos

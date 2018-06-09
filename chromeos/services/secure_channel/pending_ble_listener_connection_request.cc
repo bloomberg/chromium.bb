@@ -60,21 +60,13 @@ PendingBleListenerConnectionRequest::~PendingBleListenerConnectionRequest() =
 
 void PendingBleListenerConnectionRequest::HandleConnectionFailure(
     BleListenerFailureType failure_detail) {
-  switch (failure_detail) {
-    case BleListenerFailureType::kAuthenticationError:
-      // Authentication errors cannot be solved via a retry. This situation
-      // likely means that the keys for this device or the remote device are out
-      // of sync.
-      StopRequestDueToConnectionFailures(
-          mojom::ConnectionAttemptFailureReason::AUTHENTICATION_ERROR);
-      break;
-    case BleListenerFailureType::kInvalidBeaconSeeds:
-      // Valid BeaconSeeds are required for generating BLE scan filters.
-      StopRequestDueToConnectionFailures(
-          mojom::ConnectionAttemptFailureReason::
-              REMOTE_DEVICE_INVALID_BEACON_SEEDS);
-      break;
-  }
+  DCHECK_EQ(BleListenerFailureType::kAuthenticationError, failure_detail);
+
+  // Authentication errors cannot be solved via a retry. This situation
+  // likely means that the keys for this device or the remote device are out
+  // of sync.
+  StopRequestDueToConnectionFailures(
+      mojom::ConnectionAttemptFailureReason::AUTHENTICATION_ERROR);
 }
 
 }  // namespace secure_channel

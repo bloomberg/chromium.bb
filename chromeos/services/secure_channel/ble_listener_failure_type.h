@@ -13,9 +13,6 @@ enum class BleListenerFailureType {
   // A connection was formed successfully, but there was an error
   // authenticating the connection.
   kAuthenticationError,
-
-  // BeaconSeeds for the remote device were either unavailable or stale.
-  kInvalidBeaconSeeds
 };
 
 }  // namespace secure_channel
