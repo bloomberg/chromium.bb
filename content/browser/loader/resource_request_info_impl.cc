@@ -81,6 +81,7 @@ void ResourceRequestInfo::AllocateForTesting(
       false,                               // is_prerendering
       context,                             // context
       false,                               // report_raw_headers
+      false,                               // report_security_info
       is_async,                            // is_async
       previews_state,                      // previews_state
       nullptr,                             // body
@@ -148,6 +149,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool is_prerendering,
     ResourceContext* context,
     bool report_raw_headers,
+    bool report_security_info,
     bool is_async,
     PreviewsState previews_state,
     const scoped_refptr<network::ResourceRequestBody> body,
@@ -176,6 +178,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       is_prerendering_(is_prerendering),
       context_(context),
       report_raw_headers_(report_raw_headers),
+      report_security_info_(report_security_info),
       is_async_(is_async),
       devtools_status_(DevToolsStatus::kNotCanceled),
       previews_state_(previews_state),
@@ -307,6 +310,10 @@ PreviewsState ResourceRequestInfoImpl::GetPreviewsState() const {
 
 bool ResourceRequestInfoImpl::ShouldReportRawHeaders() const {
   return report_raw_headers_;
+}
+
+bool ResourceRequestInfoImpl::ShouldReportSecurityInfo() const {
+  return report_security_info_;
 }
 
 NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {

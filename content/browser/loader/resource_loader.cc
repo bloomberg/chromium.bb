@@ -51,6 +51,18 @@ using base::TimeTicks;
 namespace content {
 namespace {
 
+// Copies selected fields from |in| to the returned SSLInfo. To avoid sending
+// unnecessary data into the renderer, this only copies the fields that the
+// renderer cares about.
+net::SSLInfo SelectSSLInfoFields(const net::SSLInfo& in) {
+  net::SSLInfo out;
+  out.connection_status = in.connection_status;
+  out.key_exchange_group = in.key_exchange_group;
+  out.signed_certificate_timestamps = in.signed_certificate_timestamps;
+  out.cert = in.cert;
+  return out;
+}
+
 void PopulateResourceResponse(
     ResourceRequestInfoImpl* info,
     net::URLRequest* request,
@@ -117,8 +129,8 @@ void PopulateResourceResponse(
          net::IsCertStatusMinorError(response->head.cert_status)) &&
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
 
-    if (info->ShouldReportRawHeaders())
-      response->head.ssl_info = request->ssl_info();
+    if (info->ShouldReportSecurityInfo())
+      response->head.ssl_info = SelectSSLInfoFields(request->ssl_info());
   } else {
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status);

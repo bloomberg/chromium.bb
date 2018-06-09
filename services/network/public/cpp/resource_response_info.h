@@ -167,7 +167,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
 
   // Only provided if kURLLoadOptionsSendSSLInfoWithResponse was specified to
   // the URLLoaderFactory::CreateLoaderAndStart option or
-  // if ResourceRequest::report_raw_headers is set.
+  // if ResourceRequest::report_raw_headers is set. When set via
+  // |report_raw_headers|, the SSLInfo is not guaranteed to be fully populated
+  // and may only contain certain fields of interest (namely, connection
+  // parameters and certificate information).
   base::Optional<net::SSLInfo> ssl_info;
 
   // In case this is a CORS response fetched by a ServiceWorker, this is the
