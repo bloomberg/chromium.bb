@@ -6,6 +6,7 @@
 
 #include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
+#include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
@@ -47,7 +48,7 @@
   recentTabsTableViewController.browserState = self.browserState;
   recentTabsTableViewController.loader = self.loader;
   recentTabsTableViewController.dispatcher = self.dispatcher;
-  recentTabsTableViewController.handsetCommandHandler = self;
+  recentTabsTableViewController.presentationDelegate = self;
 
   // Adds the "Done" button and hooks it up to |stop|.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
@@ -103,13 +104,28 @@
   self.recentTabsNavigationController = nil;
   self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
-  self.mediator = nil;
 }
 
 #pragma mark - RecentTabsHandsetViewControllerCommand
 
-- (void)dismissRecentTabsWithCompletion:(void (^)())completion {
-  self.completion = completion;
+- (void)dismissRecentTabs {
+  self.completion = nil;
+  [self stop];
+}
+
+- (void)showActiveRegularTabFromRecentTabs {
+  // Stopping this coordinator reveals the tab UI underneath.
+  self.completion = nil;
+  [self stop];
+}
+
+- (void)showHistoryFromRecentTabs {
+  // Dismiss recent tabs before presenting history.
+  __weak RecentTabsCoordinator* weakSelf = self;
+  self.completion = ^{
+    [weakSelf.dispatcher showHistory];
+    weakSelf.completion = nil;
+  };
   [self stop];
 }
 

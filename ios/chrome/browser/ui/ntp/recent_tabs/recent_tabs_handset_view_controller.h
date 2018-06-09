@@ -7,12 +7,19 @@
 
 #import <UIKit/UIKit.h>
 
-// Command protocol for the RecentTabsHandsetViewController.
+// Presentation commands that depend on the context from which they are
+// presented.
+// TODO(crbug.com/845192) Rename and extract this protocol to separate file.
 @protocol RecentTabsHandsetViewControllerCommand
-
-// Dismisses the recent tabs panel and calls |completion| once it is done.
-- (void)dismissRecentTabsWithCompletion:(void (^)())completion;
-
+// Tells the receiver to dismiss recent tabs. This may be used by a keyboard
+// escape shortcut. Receiver may choose to ignore this message.
+- (void)dismissRecentTabs;
+// Tells the receiver to show the tab UI for regular tabs. NO-OP if the correct
+// tab UI is already visible. Receiver may also dismiss recent tabs.
+- (void)showActiveRegularTabFromRecentTabs;
+// Tells the receiver to show the history UI. Receiver may also dismiss recent
+// tabs.
+- (void)showHistoryFromRecentTabs;
 @end
 
 // UIViewController wrapper for RecentTabTableViewController for modal display.

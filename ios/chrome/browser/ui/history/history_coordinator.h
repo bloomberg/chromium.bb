@@ -12,7 +12,7 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol UrlLoader;
-@protocol HistoryTabPresentationDelegate;
+@protocol HistoryPresentationDelegate;
 
 // Coordinator that presents History.
 @interface HistoryCoordinator : ChromeCoordinator
@@ -21,8 +21,7 @@
 // URL loader being managed by this Coordinator.
 @property(nonatomic, weak) id<UrlLoader> loader;
 // Delegate used to make the Tab UI visible.
-@property(nonatomic, weak) id<HistoryTabPresentationDelegate>
-    tabPresentationDelegate;
+@property(nonatomic, weak) id<HistoryPresentationDelegate> presentationDelegate;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_COORDINATOR_H_

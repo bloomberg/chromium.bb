@@ -5,6 +5,6 @@
 source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "history_tab_presentation_delegate.h",
+    "history_presentation_delegate.h",
   ]
 }
