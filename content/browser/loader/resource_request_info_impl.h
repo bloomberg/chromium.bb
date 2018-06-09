@@ -96,20 +96,24 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool IsDownload() const override;
   // Returns a bitmask of potentially several Previews optimizations.
   PreviewsState GetPreviewsState() const override;
-  bool ShouldReportRawHeaders() const;
-  bool ShouldReportSecurityInfo() const;
   NavigationUIData* GetNavigationUIData() const override;
   DevToolsStatus GetDevToolsStatus() const override;
-
   base::Optional<blink::ResourceRequestBlockedReason>
   GetResourceRequestBlockedReason() const override;
-
   base::StringPiece GetCustomCancelReason() const override;
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
   CONTENT_EXPORT int GetRequestID() const;
   GlobalRoutingID GetGlobalRoutingID() const;
+
+  // Returns true if raw response headers (including sensitive data such as
+  // cookies) should be included with the response.
+  bool ShouldReportRawHeaders() const;
+
+  // Returns true if security details (SSL/TLS connection parameters and
+  // certificate chain) should be included with the response.
+  bool ShouldReportSecurityInfo() const;
 
   // PlzNavigate
   // The id of the FrameTreeNode that initiated this request (for a navigation

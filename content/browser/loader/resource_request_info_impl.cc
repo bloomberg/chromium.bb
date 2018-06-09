@@ -308,14 +308,6 @@ PreviewsState ResourceRequestInfoImpl::GetPreviewsState() const {
   return previews_state_;
 }
 
-bool ResourceRequestInfoImpl::ShouldReportRawHeaders() const {
-  return report_raw_headers_;
-}
-
-bool ResourceRequestInfoImpl::ShouldReportSecurityInfo() const {
-  return report_security_info_;
-}
-
 NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
   return navigation_ui_data_.get();
 }
@@ -351,6 +343,14 @@ int ResourceRequestInfoImpl::GetRequestID() const {
 
 GlobalRoutingID ResourceRequestInfoImpl::GetGlobalRoutingID() const {
   return GlobalRoutingID(GetChildID(), route_id_);
+}
+
+bool ResourceRequestInfoImpl::ShouldReportRawHeaders() const {
+  return report_raw_headers_;
+}
+
+bool ResourceRequestInfoImpl::ShouldReportSecurityInfo() const {
+  return report_security_info_;
 }
 
 void ResourceRequestInfoImpl::ResetBody() {
