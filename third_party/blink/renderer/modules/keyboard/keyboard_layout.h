@@ -30,7 +30,14 @@ class KeyboardLayout final : public GarbageCollectedFinalized<KeyboardLayout>,
   void Trace(blink::Visitor*) override;
 
  private:
+  // Returns true if the local frame is attached to the renderer.
+  bool IsLocalFrameAttached();
+
+  // Returns true if |service_| is initialized and ready to be called.
   bool EnsureServiceConnected();
+
+  // Returns true if the current frame is a top-level browsing context.
+  bool CalledFromSupportedContext(ExecutionContext*);
 
   void GotKeyboardLayoutMap(ScriptPromiseResolver*,
                             mojom::blink::GetKeyboardLayoutMapResultPtr);
