@@ -327,6 +327,12 @@ void InProgressDownloadManager::ReportBytesWasted(DownloadItemImpl* download) {
   }
 }
 
+void InProgressDownloadManager::RemoveInProgressDownload(
+    const std::string& guid) {
+  if (download_db_cache_)
+    download_db_cache_->RemoveEntry(guid);
+}
+
 void InProgressDownloadManager::StartDownload(
     std::unique_ptr<DownloadCreateInfo> info,
     std::unique_ptr<InputStream> stream,
@@ -464,8 +470,8 @@ void InProgressDownloadManager::OnDownloadDBInitialized(
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
   for (const auto& entry : *entries)
     in_progress_downloads_.emplace_back(CreateDownloadItemImpl(this, entry));
-  // TODO(qinmin): merge the created DownloadItemImpls with those in
-  // DownloadManagerImpl.
+  if (delegate_)
+    delegate_->OnInProgressDownloadsLoaded(std::move(in_progress_downloads_));
   std::move(callback).Run();
 }
 

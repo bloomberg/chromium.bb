@@ -119,6 +119,12 @@ void DownloadDBCache::AddOrReplaceEntry(const DownloadDBEntry& entry) {
   }
 }
 
+void DownloadDBCache::RemoveEntry(const std::string& guid) {
+  entries_.erase(guid);
+  if (download_db_)
+    download_db_->Remove(guid);
+}
+
 void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
   // TODO(crbug.com/778425): Properly handle fail/resume/retry for downloads
   // that are in the INTERRUPTED state for a long time.
@@ -130,29 +136,15 @@ void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
   DownloadUrlParameters::RequestHeadersType request_header_type =
       GetRequestHeadersType(current);
   DownloadSource download_source = GetDownloadSource(current);
-  switch (download->GetState()) {
-    case DownloadItem::DownloadState::INTERRUPTED:
-      FALLTHROUGH;
-    case DownloadItem::DownloadState::IN_PROGRESS:
-      FALLTHROUGH;
-    case DownloadItem::DownloadState::COMPLETE: {
-      DownloadDBEntry entry = CreateDownloadDBEntryFromItem(
-          *download, download_source, fetch_error_body, request_header_type);
-      AddOrReplaceEntry(entry);
-      break;
-    }
-    case DownloadItem::DownloadState::CANCELLED:
-      OnDownloadRemoved(download);
-      break;
-    default:
-      break;
-  }
+  // TODO(http://crbug.com/850990): Throttle the database updates, it is very
+  // costly.
+  DownloadDBEntry entry = CreateDownloadDBEntryFromItem(
+      *download, download_source, fetch_error_body, request_header_type);
+  AddOrReplaceEntry(entry);
 }
 
 void DownloadDBCache::OnDownloadRemoved(DownloadItem* download) {
-  entries_.erase(download->GetGuid());
-  if (download_db_)
-    download_db_->Remove(download->GetGuid());
+  RemoveEntry(download->GetGuid());
 }
 
 void DownloadDBCache::OnDownloadDBInitialized(InitializeCallback callback,
@@ -172,7 +164,7 @@ void DownloadDBCache::OnDownloadDBEntriesLoaded(
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
   if (success) {
     initialized_ = true;
-    for (auto entry : *entries) {
+    for (auto& entry : *entries) {
       CleanUpInProgressEntry(entry);
       entries_.emplace(entry.download_info->guid, entry);
     }

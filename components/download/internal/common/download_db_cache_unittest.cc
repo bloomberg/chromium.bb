@@ -55,6 +55,7 @@ class DownloadDBCacheTest : public testing::Test {
   }
 
   void InitCallback(std::vector<DownloadDBEntry>* loaded_entries,
+                    bool success,
                     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
     loaded_entries->swap(*entries);
   }
@@ -74,6 +75,8 @@ class DownloadDBCacheTest : public testing::Test {
                        DownloadDBConversions::DownloadDBEntryToProto(third)));
   }
 
+  DownloadDB* GetDownloadDB() { return db_cache_->download_db_.get(); }
+
  protected:
   std::map<std::string, download_pb::DownloadDBEntry> db_entries_;
   leveldb_proto::test::FakeDB<download_pb::DownloadDBEntry>* db_;
@@ -86,8 +89,8 @@ TEST_F(DownloadDBCacheTest, InitializeAndRetrieve) {
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
   db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                       base::Unretained(this),
-                                       &loaded_entries));
+                                       base::Unretained(this), &loaded_entries,
+                                       true));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
@@ -105,8 +108,8 @@ TEST_F(DownloadDBCacheTest, AddOrReplace) {
   CreateDBCache();
   std::vector<DownloadDBEntry> loaded_entries;
   db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
-                                       base::Unretained(this),
-                                       &loaded_entries));
+                                       base::Unretained(this), &loaded_entries,
+                                       true));
   db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(loaded_entries.size(), 2u);
@@ -114,6 +117,34 @@ TEST_F(DownloadDBCacheTest, AddOrReplace) {
   DownloadDBEntry new_entry = CreateDownloadDBEntry();
   db_cache_->AddOrReplaceEntry(new_entry);
   ASSERT_EQ(new_entry, db_cache_->RetrieveEntry(new_entry.GetGuid()));
+}
+
+TEST_F(DownloadDBCacheTest, RemoveEntry) {
+  PrepopulateSampleEntries();
+  CreateDBCache();
+  std::vector<DownloadDBEntry> loaded_entries;
+  db_cache_->Initialize(base::BindOnce(&DownloadDBCacheTest::InitCallback,
+                                       base::Unretained(this), &loaded_entries,
+                                       true));
+  db_->InitCallback(true);
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 2u);
+
+  std::string guid = loaded_entries[0].GetGuid();
+  std::string guid2 = loaded_entries[1].GetGuid();
+  db_cache_->RemoveEntry(loaded_entries[0].GetGuid());
+  db_->UpdateCallback(true);
+  ASSERT_FALSE(db_cache_->RetrieveEntry(guid));
+  ASSERT_TRUE(db_cache_->RetrieveEntry(guid2));
+
+  loaded_entries.clear();
+  DownloadDB* download_db = GetDownloadDB();
+  download_db->LoadEntries(base::BindOnce(&DownloadDBCacheTest::InitCallback,
+                                          base::Unretained(this),
+                                          &loaded_entries));
+  db_->LoadCallback(true);
+  ASSERT_EQ(loaded_entries.size(), 1u);
+  ASSERT_EQ(guid2, loaded_entries[0].GetGuid());
 }
 
 }  // namespace download

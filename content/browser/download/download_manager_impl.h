@@ -203,6 +203,9 @@ class CONTENT_EXPORT DownloadManagerImpl
   net::URLRequestContextGetter* GetURLRequestContextGetter(
       const download::DownloadCreateInfo& info) override;
   void OnNewDownloadStarted(download::DownloadItem* download) override;
+  void OnInProgressDownloadsLoaded(
+      std::vector<std::unique_ptr<download::DownloadItemImpl>>
+          in_progress_downloads) override;
   void GetNextId(const DownloadIdCallback& callback) override;
 
   // Create a new active item based on the info.  Separate from

@@ -98,9 +98,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   // DownloadItem.
   virtual void DownloadRemoved(DownloadItemImpl* download);
 
-  // Assert consistent state for delgate object at various transitions.
-  virtual void AssertStateConsistent(DownloadItemImpl* download) const;
-
   // Called when the download is interrupted.
   virtual void DownloadInterrupted(DownloadItemImpl* download);
 
