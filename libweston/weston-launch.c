@@ -121,7 +121,7 @@ struct weston_launch {
 union cmsg_data { unsigned char b[4]; int fd; };
 
 static gid_t *
-read_groups(void)
+read_groups(int *ngroups)
 {
 	int n;
 	gid_t *groups;
@@ -142,6 +142,8 @@ read_groups(void)
 		free(groups);
 		return NULL;
 	}
+
+	*ngroups = n;
 	return groups;
 }
 
@@ -150,7 +152,7 @@ weston_launch_allowed(struct weston_launch *wl)
 {
 	struct group *gr;
 	gid_t *groups;
-	int i;
+	int ngroups;
 #ifdef HAVE_SYSTEMD_LOGIN
 	char *session, *seat;
 	int err;
@@ -161,10 +163,10 @@ weston_launch_allowed(struct weston_launch *wl)
 
 	gr = getgrnam("weston-launch");
 	if (gr) {
-		groups = read_groups();
-		if (groups) {
-			for (i = 0; groups[i]; ++i) {
-				if (groups[i] == gr->gr_gid) {
+		groups = read_groups(&ngroups);
+		if (groups && ngroups > 0) {
+			while (ngroups--) {
+				if (groups[ngroups] == gr->gr_gid) {
 					free(groups);
 					return true;
 				}
