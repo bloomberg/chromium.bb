@@ -554,16 +554,10 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   // ClientSideDetectionService will need to be refresh the models
   // renderers have if extended-reporting changes.
   registrar->Add(
-      prefs::kSafeBrowsingExtendedReportingEnabled,
-      base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
-  registrar->Add(
       prefs::kSafeBrowsingScoutReportingEnabled,
       base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
   prefs_map_[pref_service] = std::move(registrar);
   RefreshState();
-
-  // Initialize SafeBrowsing prefs on startup.
-  InitializeSafeBrowsingPrefs(pref_service);
 
   // Record the current pref state.
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.General",

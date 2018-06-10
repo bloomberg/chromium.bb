@@ -149,6 +149,7 @@
 #include "components/update_client/url_request_post_interceptor.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
+#include "components/variations/variations_params_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -990,6 +991,10 @@ class SSLPolicyTestCommittedInterstitials
     if (AreCommittedInterstitialsEnabled()) {
       command_line->AppendSwitch(switches::kCommittedInterstitials);
     }
+    // Ensure SSL interstitials are capable of sending reports.
+    variations::testing::VariationParamsManager::AppendVariationParams(
+        "ReportCertificateErrors", "ShowAndPossiblySend",
+        {{"sendingThreshold", "1.0"}}, command_line);
   }
 
  protected:
@@ -1020,6 +1025,33 @@ class SSLPolicyTestCommittedInterstitials
       ASSERT_TRUE(IsShowingInterstitial(tab));
       ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
     }
+  }
+
+  int IsExtendedReportingCheckboxVisibleOnInterstitial() {
+    const std::string command = base::StringPrintf(
+        "var node = document.getElementById('extended-reporting-opt-in');"
+        "if (node) {"
+        "  window.domAutomationController.send(node.offsetWidth > 0 || "
+        "      node.offsetHeight > 0 ? %d : %d);"
+        "} else {"
+        // The node should be present but not visible, so trigger an error
+        // by sending false if it's not present.
+        "  window.domAutomationController.send(%d);"
+        "}",
+        security_interstitials::CMD_TEXT_FOUND,
+        security_interstitials::CMD_TEXT_NOT_FOUND,
+        security_interstitials::CMD_ERROR);
+
+    content::WebContents* tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    WaitForInterstitial(tab);
+    int result = 0;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+        AreCommittedInterstitialsEnabled()
+            ? tab->GetMainFrame()
+            : tab->GetInterstitialPage()->GetMainFrame(),
+        command, &result));
+    return result;
   }
 
   void SendInterstitialCommand(
@@ -4085,6 +4117,12 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
   https_server_expired.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server_expired.Start());
 
+  // First, navigate to an SSL error page and make sure the checkbox appears by
+  // default.
+  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
+  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND,
+            IsExtendedReportingCheckboxVisibleOnInterstitial());
+
   // Set the enterprise policy to disallow opt-in.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
   EXPECT_TRUE(
@@ -4097,47 +4135,34 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
   EXPECT_FALSE(
       prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
 
-  // Navigate to an SSL error page.
+  // Navigate to an SSL error page, the checkbox should not appear.
   ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
-
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  WaitForInterstitial(tab);
-
-  // Check that the checkbox is not visible.
-  int result = 0;
-  const std::string command = base::StringPrintf(
-      "var node = document.getElementById('extended-reporting-opt-in');"
-      "if (node) {"
-      "  window.domAutomationController.send(node.offsetWidth > 0 || "
-      "      node.offsetHeight > 0 ? %d : %d);"
-      "} else {"
-      // The node should be present but not visible, so trigger an error
-      // by sending false if it's not present.
-      "  window.domAutomationController.send(%d);"
-      "}",
-      security_interstitials::CMD_TEXT_FOUND,
-      security_interstitials::CMD_TEXT_NOT_FOUND,
-      security_interstitials::CMD_ERROR);
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      AreCommittedInterstitialsEnabled()
-          ? tab->GetMainFrame()
-          : tab->GetInterstitialPage()->GetMainFrame(),
-      command, &result));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND, result);
+  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND,
+            IsExtendedReportingCheckboxVisibleOnInterstitial());
 }
 
 // Test that when extended reporting is managed by policy, the opt-in checkbox
 // does not appear on SSL blocking pages.
-IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {
+IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
+                       SafeBrowsingExtendedReportingPolicyManaged) {
   net::EmbeddedTestServer https_server_expired(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
   https_server_expired.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server_expired.Start());
 
+  // Set the extended reporting pref to True and ensure the enterprise policy
+  // can overwrite it.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, true);
+
+  // First, navigate to an SSL error page and make sure the checkbox appears by
+  // default.
+  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
+  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND,
+            IsExtendedReportingCheckboxVisibleOnInterstitial());
+
   // Set the enterprise policy to disable extended reporting.
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
   EXPECT_TRUE(
       prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
   PolicyMap policies;
@@ -4145,7 +4170,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                base::WrapUnique(new base::Value(false)), nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled));
+  // Policy should have overwritten the pref, and it should be managed.
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kSafeBrowsingScoutReportingEnabled));
+
+  // Also make sure the SafeBrowsing prefs helper functions agree with the
+  // policy.
   EXPECT_TRUE(safe_browsing::IsExtendedReportingPolicyManaged(*prefs));
   // Note that making SBER policy managed does NOT affect the SBEROptInAllowed
   // setting, which is intentionally kept distinct for now. When the latter is
@@ -4153,34 +4184,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {
   // is visible.
   EXPECT_TRUE(safe_browsing::IsExtendedReportingOptInAllowed(*prefs));
 
-  // Navigate to an SSL error page.
+  // Navigate to an SSL error page, the checkbox should not appear.
   ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
-
-  const content::InterstitialPage* const interstitial =
-      content::InterstitialPage::GetInterstitialPage(
-          browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_TRUE(interstitial);
-  content::RenderFrameHost* const rfh = interstitial->GetMainFrame();
-  ASSERT_TRUE(rfh);
-  ASSERT_TRUE(content::WaitForRenderFrameReady(rfh));
-
-  // Check that the checkbox is not visible.
-  int result = 0;
-  const std::string command = base::StringPrintf(
-      "var node = document.getElementById('extended-reporting-opt-in');"
-      "if (node) {"
-      "  window.domAutomationController.send(node.offsetWidth > 0 || "
-      "      node.offsetHeight > 0 ? %d : %d);"
-      "} else {"
-      // The node should be present but not visible, so trigger an error
-      // by sending false if it's not present.
-      "  window.domAutomationController.send(%d);"
-      "}",
-      security_interstitials::CMD_TEXT_FOUND,
-      security_interstitials::CMD_TEXT_NOT_FOUND,
-      security_interstitials::CMD_ERROR);
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(rfh, command, &result));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND, result);
+  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND,
+            IsExtendedReportingCheckboxVisibleOnInterstitial());
 }
 
 // Test that when SSL error overriding is allowed by policy (default), the

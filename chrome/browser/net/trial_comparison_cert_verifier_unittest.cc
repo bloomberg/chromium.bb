@@ -332,48 +332,6 @@ TEST_F(TrialComparisonCertVerifierTest, NotOptedIn) {
   histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
 }
 
-TEST_F(TrialComparisonCertVerifierTest, NotScoutOptIn) {
-  // Disable SBER pref.
-  safe_browsing::SetExtendedReportingPref(pref_service(), false);
-  // Set the old, non-Scout SBER pref.
-  pref_service()->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled,
-                             true);
-
-  net::CertVerifyResult dummy_result;
-  dummy_result.verified_cert = cert_chain_1_;
-  TrialComparisonCertVerifier verifier(
-      profile(),
-      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result),
-      base::MakeRefCounted<NotCalledCertVerifyProc>());
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
-  net::CertVerifyResult result;
-  net::TestCompletionCallback callback;
-  std::unique_ptr<net::CertVerifier::Request> request;
-  int error =
-      verifier.Verify(params, nullptr /* crl_set */, &result,
-                      callback.callback(), &request, net::NetLogWithSource());
-  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
-  EXPECT_TRUE(request);
-
-  error = callback.WaitForResult();
-  EXPECT_THAT(error, IsError(net::OK));
-
-  // Wait for CheckTrialEligibility task to finish.
-  content::RunAllTasksUntilIdle();
-
-  // Expect no report.
-  reporting_service_test_helper()->ExpectNoRequests(service());
-
-  // Primary verifier should have ran, trial verifier should not have.
-  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
-  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 0);
-  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
-                               0);
-  histograms_.ExpectTotalCount("Net.CertVerifier_TrialComparisonResult", 0);
-}
-
 TEST_F(TrialComparisonCertVerifierTest, FeatureDisabled) {
   // Disable feature.
   scoped_feature_.reset();

@@ -195,7 +195,6 @@ void NotificationImageReporterTest::SetExtendedReportingLevel(
     // Explicitly disable CanShowScoutOptIn, which is on by default.
     feature_list_->InitWithFeatures({}, {safe_browsing::kCanShowScoutOptIn});
 
-  InitializeSafeBrowsingPrefs(profile_->GetPrefs());
   SetExtendedReportingPref(profile_->GetPrefs(), level != SBER_LEVEL_OFF);
 }
 
