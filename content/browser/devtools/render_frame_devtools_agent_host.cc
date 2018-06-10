@@ -427,11 +427,6 @@ WebContents* RenderFrameDevToolsAgentHost::GetWebContents() {
 }
 
 bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate() && web_contents()) {
-    if (!manager->delegate()->AllowInspectingWebContents(web_contents()))
-      return false;
-  }
   if (session->restricted() && !IsFrameHostAllowedForRestrictedSessions())
     return false;
   session->SetRenderer(frame_host_ ? frame_host_->GetProcess()->GetID()
