@@ -211,6 +211,29 @@ TEST(ComputedStyleTest,
   EXPECT_TRUE(diff.CompositingReasonsChanged());
 }
 
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsOverflow) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  other->SetOverflowX(EOverflow::kHidden);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsContainsPaint) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  // This induces a flat used transform style.
+  other->SetContain(kContainsPaint);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
 TEST(ComputedStyleTest, HasOutlineWithCurrentColor) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   EXPECT_FALSE(style->HasOutline());

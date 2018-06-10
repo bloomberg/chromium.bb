@@ -223,6 +223,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/policy/document_policy.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -2309,6 +2310,15 @@ void Document::ViewportDefiningElementDidChange() {
     // ViewportDefiningElement changes in order to trigger an update of
     // HasOverflowClip() and the PaintLayer in StyleDidChange().
     layout_object->SetStyle(ComputedStyle::Clone(*layout_object->Style()));
+    // CompositingReason::kClipsCompositingDescendants depends on the root
+    // element having a clip-related style. Since style update due to changes of
+    // viewport-defining element don't end up as a StyleDifference, we need a
+    // special dirty bit for this situation.
+    if (layout_object->HasLayer()) {
+      ToLayoutBoxModelObject(layout_object)
+          ->Layer()
+          ->SetNeeedsCompositingReasonsUpdate();
+    }
   }
 }
 

@@ -187,13 +187,6 @@ static CompositingReasons SubtreeReasonsForCompositing(
     subtree_reasons |= CompositingReason::kIsolateCompositedDescendants;
   }
 
-  // FIXME: This should move into
-  // CompositingReasonFinder::potentialCompositingReasonsFromStyle, but theres
-  // a poor interaction with LayoutTextControlSingleLine, which sets this
-  // hasOverflowClip directly.
-  if (layer->GetLayoutObject().HasClipRelatedProperty())
-    subtree_reasons |= CompositingReason::kClipsCompositingDescendants;
-
   // We ignore LCD text here because we are required to composite
   // scroll-dependant fixed position elements with composited descendants for
   // correctness - even if we lose LCD.
