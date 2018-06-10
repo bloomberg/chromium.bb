@@ -843,7 +843,7 @@ class SimulatorTestRunner(TestRunner):
     """Removes dynamically created simulator devices."""
     if udid:
       print 'deleting simulator %s' % udid
-      subprocess.check_output(['xcrun', 'simctl', 'delete', udid])
+      subprocess.call(['xcrun', 'simctl', 'delete', udid])
 
   def get_launch_command(self, test_filter=None, invert=False, test_shard=None):
     """Returns the command that can be used to launch the test app.
