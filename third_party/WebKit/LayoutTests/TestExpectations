@@ -4779,7 +4779,6 @@ crbug.com/828962 [ Mac ] fast/webgl/webgl-composite-modes-tabswitching.html [ Pa
 
 # Flakes 2018-06-02
 crbug.com/848006 [ Mac ] virtual/threaded/animations/responsive/zoom-responsive-translate-animation.html [ Crash Failure Pass ]
-crbug.com/849040 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Crash Timeout Pass ]
 crbug.com/841567 fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
 
 # Now that upgrade-insecure-requests enforcing is fixed for redirects, this test will fail while reporting is implemented.
@@ -4806,20 +4805,4 @@ crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-com
 
 # Sheriff 2018-06-08
 crbug.com/850170 [ Mac ] virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Pass Timeout ]
-crbug.com/850892 http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
-crbug.com/850892 http/tests/devtools/tracing/timeline-js/compile-script.js [ Pass Failure ]
-crbug.com/850892 http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
-crbug.com/850892 http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Failure ]
-crbug.com/850892 http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Pass Failure ]
-crbug.com/850892 http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Pass Failure ]
-crbug.com/850892 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Failure ]
-crbug.com/850892 http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Failure ]
-crbug.com/850892 http/tests/devtools/tracing/timeline-worker-events.js [ Pass Failure ]
-crbug.com/850892 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
-crbug.com/850892 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-and-multiple-style-invalidations.js [ Pass Failure ]
-crbug.com/850892 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Failure ]
-crbug.com/850892 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Failure ]
-crbug.com/850892 virtual/threaded/http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Failure ]
-# The following test is known to timeout due to crbug.com/760543.
-crbug.com/850892 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout Failure ]
 crbug.com/851090 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
