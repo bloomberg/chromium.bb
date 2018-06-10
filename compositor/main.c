@@ -438,7 +438,7 @@ verify_xdg_runtime_dir(void)
 static int
 usage(int error_code)
 {
-	fprintf(stderr,
+	fprintf(error_code == EXIT_SUCCESS ? stdout : stderr,
 		"Usage: weston [OPTIONS]\n\n"
 		"This is weston version " VERSION ", the Wayland reference compositor.\n"
 		"Weston supports multiple backends, and depending on which backend is in use\n"
