@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -100,6 +101,10 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   paint_invalidator_.InvalidatePaint(
       frame_view, base::OptionalOrNullptr(context().tree_builder_context),
       context().paint_invalidator_context);
+  if (context().tree_builder_context) {
+    context().tree_builder_context->supports_composited_raster_invalidation =
+        frame_view.GetFrame().GetSettings()->GetAcceleratedCompositingEnabled();
+  }
 
   if (LayoutView* view = frame_view.GetLayoutView()) {
 #ifndef NDEBUG
@@ -225,6 +230,14 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
       paint_invalidator_context.subtree_flags |=
           PaintInvalidatorContext::kSubtreeVisualRectUpdate;
     }
+
+    if (property_changed &&
+        RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+        !context.tree_builder_context
+             ->supports_composited_raster_invalidation) {
+      paint_invalidator_context.subtree_flags |=
+          PaintInvalidatorContext::kSubtreeFullInvalidation;
+    }
   }
 
   paint_invalidator_.InvalidatePaint(
@@ -236,16 +249,21 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     InvalidatePaintLayerOptimizationsIfNeeded(object, context);
 
     if (property_changed &&
-        RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      const auto* paint_invalidation_layer =
-          paint_invalidator_context.paint_invalidation_container->Layer();
-      if (!paint_invalidation_layer->NeedsRepaint()) {
-        auto* mapping = paint_invalidation_layer->GetCompositedLayerMapping();
-        if (!mapping)
-          mapping = paint_invalidation_layer->GroupedMapping();
-        if (mapping)
-          mapping->SetNeedsCheckRasterInvalidation();
+        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        const auto* paint_invalidation_layer =
+            paint_invalidator_context.paint_invalidation_container->Layer();
+        if (!paint_invalidation_layer->NeedsRepaint()) {
+          auto* mapping = paint_invalidation_layer->GetCompositedLayerMapping();
+          if (!mapping)
+            mapping = paint_invalidation_layer->GroupedMapping();
+          if (mapping)
+            mapping->SetNeedsCheckRasterInvalidation();
+        }
+      } else if (!context.tree_builder_context
+                      ->supports_composited_raster_invalidation) {
+        paint_invalidator_context.subtree_flags |=
+            PaintInvalidatorContext::kSubtreeFullInvalidation;
       }
     }
   }

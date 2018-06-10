@@ -864,4 +864,57 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
 };
 
+class PaintInvalidatorTestClient : public EmptyChromeClient {
+ public:
+  void InvalidateRect(const IntRect&) override {
+    invalidation_recorded_ = true;
+  }
+
+  bool InvalidationRecorded() { return invalidation_recorded_; }
+
+  void ResetInvalidationRecorded() { invalidation_recorded_ = false; }
+
+ private:
+  bool invalidation_recorded_ = false;
+};
+
+class PaintInvalidatorCustomClientTest : public RenderingTest {
+ public:
+  PaintInvalidatorCustomClientTest()
+      : RenderingTest(EmptyLocalFrameClient::Create()),
+        chrome_client_(new PaintInvalidatorTestClient) {}
+
+  PaintInvalidatorTestClient& GetChromeClient() const override {
+    return *chrome_client_;
+  }
+
+  bool InvalidationRecorded() { return chrome_client_->InvalidationRecorded(); }
+
+  void ResetInvalidationRecorded() {
+    chrome_client_->ResetInvalidationRecorded();
+  }
+
+ private:
+  Persistent<PaintInvalidatorTestClient> chrome_client_;
+};
+
+TEST_F(PaintInvalidatorCustomClientTest,
+       NonCompositedInvalidationChangeOpacity) {
+  // This test runs in a non-composited mode, so invalidations should
+  // be issued via InvalidateChromeClient.
+  SetBodyInnerHTML(R"HTML(
+    <div id=target style="opacity: 0.99"></div>
+    )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+
+  ResetInvalidationRecorded();
+
+  target->setAttribute(HTMLNames::styleAttr, "opacity: 0.98");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(InvalidationRecorded());
+}
+
 }  // namespace blink
