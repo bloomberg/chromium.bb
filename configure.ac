@@ -113,7 +113,7 @@ AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
 
 # check for libdrm as a build-time dependency only
 # libdrm 2.4.30 introduced drm_fourcc.h.
-PKG_CHECK_MODULES(LIBDRM, [libdrm >= 2.4.30], [], [AC_MSG_ERROR([
+PKG_CHECK_MODULES(LIBDRM, [libdrm >= 2.4.68], [], [AC_MSG_ERROR([
      libdrm is a hard build-time dependency for libweston core,
      but a sufficient version was not found. However, libdrm
      is not a runtime dependency unless you have features
