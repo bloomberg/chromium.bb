@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "services/ui/ws2/window_service.h"
-#include "services/ui/ws2/window_service_client_binding.h"
+#include "services/ui/ws2/window_tree_binding.h"
 
 namespace ui {
 namespace ws2 {

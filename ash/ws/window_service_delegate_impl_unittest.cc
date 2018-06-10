@@ -6,7 +6,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "services/ui/ws2/test_window_tree_client.h"
-#include "services/ui/ws2/window_service_client_test_helper.h"
+#include "services/ui/ws2/window_tree_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 

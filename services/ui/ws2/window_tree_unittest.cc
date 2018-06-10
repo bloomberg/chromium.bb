@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_tree.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,8 +17,8 @@
 #include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/server_window_test_helper.h"
 #include "services/ui/ws2/window_service.h"
-#include "services/ui/ws2/window_service_client_test_helper.h"
 #include "services/ui/ws2/window_service_test_setup.h"
+#include "services/ui/ws2/window_tree_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"

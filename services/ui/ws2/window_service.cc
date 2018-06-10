@@ -9,8 +9,8 @@
 #include "services/ui/ws2/gpu_support.h"
 #include "services/ui/ws2/screen_provider.h"
 #include "services/ui/ws2/server_window.h"
-#include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_delegate.h"
+#include "services/ui/ws2/window_tree.h"
 #include "services/ui/ws2/window_tree_factory.h"
 #include "ui/aura/env.h"
 

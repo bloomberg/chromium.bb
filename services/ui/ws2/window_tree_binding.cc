@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws2/window_service_client_binding.h"
+#include "services/ui/ws2/window_tree_binding.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "services/ui/ws2/window_service.h"
-#include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_tree.h"
 #include "ui/aura/window.h"
 
 namespace ui {

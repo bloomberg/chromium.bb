@@ -7,7 +7,7 @@
 #include "base/containers/flat_map.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ui/ws2/embedding.h"
-#include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_tree.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

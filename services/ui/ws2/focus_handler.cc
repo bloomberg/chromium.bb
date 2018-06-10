@@ -9,8 +9,8 @@
 #include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/window_properties.h"
 #include "services/ui/ws2/window_service.h"
-#include "services/ui/ws2/window_service_client.h"
 #include "services/ui/ws2/window_service_delegate.h"
+#include "services/ui/ws2/window_tree.h"
 #include "ui/aura/client/focus_client.h"
 
 namespace ui {
