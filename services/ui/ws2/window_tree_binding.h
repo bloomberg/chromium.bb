@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_BINDING_H_
-#define SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_BINDING_H_
+#ifndef SERVICES_UI_WS2_WINDOW_TREE_BINDING_H_
+#define SERVICES_UI_WS2_WINDOW_TREE_BINDING_H_
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/ws2/window_service_client_binding.h"
+#include "services/ui/ws2/window_tree_binding.h"
 
 namespace aura {
 class Window;
@@ -64,4 +64,4 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClientBinding {
 }  // namespace ws2
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_BINDING_H_
+#endif  // SERVICES_UI_WS2_WINDOW_TREE_BINDING_H_

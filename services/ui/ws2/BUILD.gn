@@ -20,9 +20,9 @@ component("lib") {
     "window_delegate_impl.h",
     "window_properties.h",
     "window_service.h",
-    "window_service_client.h",
-    "window_service_client_binding.h",
     "window_service_delegate.h",
+    "window_tree.h",
+    "window_tree_binding.h",
     "window_tree_factory.h",
   ]
   sources = [
@@ -47,9 +47,9 @@ component("lib") {
     "window_host_frame_sink_client.h",
     "window_properties.cc",
     "window_service.cc",
-    "window_service_client.cc",
-    "window_service_client_binding.cc",
     "window_service_delegate.cc",
+    "window_tree.cc",
+    "window_tree_binding.cc",
     "window_tree_factory.cc",
   ]
 
@@ -85,10 +85,10 @@ static_library("test_support") {
     "test_window_tree_client.h",
     "window_server_service_test_base.cc",
     "window_server_service_test_base.h",
-    "window_service_client_test_helper.cc",
-    "window_service_client_test_helper.h",
     "window_service_test_setup.cc",
     "window_service_test_setup.h",
+    "window_tree_test_helper.cc",
+    "window_tree_test_helper.h",
   ]
 
   deps = [
@@ -137,8 +137,8 @@ source_set("tests") {
     "embedding_unittest.cc",
     "focus_handler_unittest.cc",
     "screen_provider_unittest.cc",
-    "window_service_client_unittest.cc",
     "window_tree_client_unittest.cc",
+    "window_tree_unittest.cc",
   ]
 
   deps = [

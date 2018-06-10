@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "services/ui/ws2/window_service_client.h"
-#include "services/ui/ws2/window_service_client_test_helper.h"
+#include "services/ui/ws2/window_tree.h"
+#include "services/ui/ws2/window_tree_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 

@@ -4,7 +4,7 @@
 
 #include "services/ui/ws2/pointer_watcher.h"
 
-#include "services/ui/ws2/window_service_client.h"
+#include "services/ui/ws2/window_tree.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"

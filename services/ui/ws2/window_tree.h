@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_H_
-#define SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_H_
+#ifndef SERVICES_UI_WS2_WINDOW_TREE_H_
+#define SERVICES_UI_WS2_WINDOW_TREE_H_
 
 #include <memory>
 #include <queue>
@@ -429,4 +429,4 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 }  // namespace ws2
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_H_
+#endif  // SERVICES_UI_WS2_WINDOW_TREE_H_

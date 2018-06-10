@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_TEST_HELPER_H_
-#define SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_TEST_HELPER_H_
+#ifndef SERVICES_UI_WS2_WINDOW_TREE_TEST_HELPER_H_
+#define SERVICES_UI_WS2_WINDOW_TREE_TEST_HELPER_H_
 
 #include <string>
 #include <vector>
@@ -114,4 +114,4 @@ class WindowServiceClientTestHelper {
 }  // namespace ws2
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS2_WINDOW_SERVICE_CLIENT_TEST_HELPER_H_
+#endif  // SERVICES_UI_WS2_WINDOW_TREE_TEST_HELPER_H_

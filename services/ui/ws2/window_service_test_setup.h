@@ -11,7 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "services/ui/ws2/test_window_service_delegate.h"
 #include "services/ui/ws2/test_window_tree_client.h"
-#include "services/ui/ws2/window_service_client_test_helper.h"
+#include "services/ui/ws2/window_tree_test_helper.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/focus_controller.h"
