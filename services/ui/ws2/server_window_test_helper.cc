@@ -9,13 +9,13 @@
 namespace ui {
 namespace ws2 {
 
-ClientWindowTestHelper::ClientWindowTestHelper(ClientWindow* client_window)
-    : client_window_(client_window) {}
+ServerWindowTestHelper::ServerWindowTestHelper(ServerWindow* server_window)
+    : server_window_(server_window) {}
 
-ClientWindowTestHelper::~ClientWindowTestHelper() = default;
+ServerWindowTestHelper::~ServerWindowTestHelper() = default;
 
-bool ClientWindowTestHelper::IsHandlingPointerPress(PointerId pointer_id) {
-  return client_window_->IsHandlingPointerPressForTesting(pointer_id);
+bool ServerWindowTestHelper::IsHandlingPointerPress(PointerId pointer_id) {
+  return server_window_->IsHandlingPointerPressForTesting(pointer_id);
 }
 
 }  // namespace ws2

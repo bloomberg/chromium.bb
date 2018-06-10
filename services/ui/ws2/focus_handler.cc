@@ -33,20 +33,20 @@ bool FocusHandler::SetFocus(aura::Window* window) {
 
   aura::client::FocusClient* focus_client =
       window_service_client_->window_service_->focus_client();
-  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   if (window == focus_client->GetFocusedWindow()) {
     if (!window)
       return true;
 
-    if (client_window->focus_owner() != window_service_client_) {
+    if (server_window->focus_owner() != window_service_client_) {
       // The focused window didn't change, but the client that owns focus did
-      // (see |ClientWindow::focus_owner_| for details on this). Notify the
+      // (see |ServerWindow::focus_owner_| for details on this). Notify the
       // current owner that it lost focus.
-      if (client_window->focus_owner()) {
-        client_window->focus_owner()->window_tree_client_->OnWindowFocused(
+      if (server_window->focus_owner()) {
+        server_window->focus_owner()->window_tree_client_->OnWindowFocused(
             kInvalidTransportId);
       }
-      client_window->set_focus_owner(window_service_client_);
+      server_window->set_focus_owner(window_service_client_);
     }
     return true;
   }
@@ -57,8 +57,8 @@ bool FocusHandler::SetFocus(aura::Window* window) {
   if (focus_client->GetFocusedWindow() != window)
     return false;
 
-  if (client_window)
-    client_window->set_focus_owner(window_service_client_);
+  if (server_window)
+    server_window->set_focus_owner(window_service_client_);
   return true;
 }
 
@@ -82,13 +82,13 @@ bool FocusHandler::IsFocusableWindow(aura::Window* window) const {
           window_service_client_->IsClientRootWindow(window));
 }
 
-bool FocusHandler::IsEmbeddedClient(ClientWindow* client_window) const {
-  return client_window->embedded_window_service_client() ==
+bool FocusHandler::IsEmbeddedClient(ServerWindow* server_window) const {
+  return server_window->embedded_window_service_client() ==
          window_service_client_;
 }
 
-bool FocusHandler::IsOwningClient(ClientWindow* client_window) const {
-  return client_window->owning_window_service_client() ==
+bool FocusHandler::IsOwningClient(ServerWindow* server_window) const {
+  return server_window->owning_window_service_client() ==
          window_service_client_;
 }
 
@@ -108,11 +108,11 @@ void FocusHandler::OnWindowFocused(aura::Window* gained_focus,
   // Prefer the embedded client over the owning client.
   bool notified_gained = false;
   if (gained_focus) {
-    ClientWindow* client_window = ClientWindow::GetMayBeNull(gained_focus);
-    if (client_window && (IsEmbeddedClient(client_window) ||
-                          (!client_window->embedded_window_service_client() &&
-                           IsOwningClient(client_window)))) {
-      client_window->set_focus_owner(window_service_client_);
+    ServerWindow* server_window = ServerWindow::GetMayBeNull(gained_focus);
+    if (server_window && (IsEmbeddedClient(server_window) ||
+                          (!server_window->embedded_window_service_client() &&
+                           IsOwningClient(server_window)))) {
+      server_window->set_focus_owner(window_service_client_);
       window_service_client_->window_tree_client_->OnWindowFocused(
           window_service_client_->TransportIdForWindow(gained_focus));
       notified_gained = true;
@@ -120,10 +120,10 @@ void FocusHandler::OnWindowFocused(aura::Window* gained_focus,
   }
 
   if (lost_focus && !notified_gained) {
-    ClientWindow* client_window = ClientWindow::GetMayBeNull(lost_focus);
-    if (client_window &&
-        client_window->focus_owner() == window_service_client_) {
-      client_window->set_focus_owner(nullptr);
+    ServerWindow* server_window = ServerWindow::GetMayBeNull(lost_focus);
+    if (server_window &&
+        server_window->focus_owner() == window_service_client_) {
+      server_window->set_focus_owner(nullptr);
       window_service_client_->window_tree_client_->OnWindowFocused(
           kInvalidTransportId);
     }

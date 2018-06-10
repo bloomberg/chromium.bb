@@ -35,17 +35,17 @@ WindowService::WindowService(WindowServiceDelegate* delegate,
 
 WindowService::~WindowService() = default;
 
-ClientWindow* WindowService::GetClientWindowForWindowCreateIfNecessary(
+ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
     aura::Window* window) {
-  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
-  if (client_window)
-    return client_window;
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  if (server_window)
+    return server_window;
 
   const viz::FrameSinkId frame_sink_id =
       ClientWindowId(kWindowServerClientId, next_window_id_++);
   CHECK_NE(0u, next_window_id_);
   const bool is_top_level = false;
-  return ClientWindow::Create(window, nullptr, frame_sink_id, is_top_level);
+  return ServerWindow::Create(window, nullptr, frame_sink_id, is_top_level);
 }
 
 std::unique_ptr<WindowServiceClient> WindowService::CreateWindowServiceClient(
@@ -65,13 +65,13 @@ void WindowService::SetFrameDecorationValues(
 
 // static
 bool WindowService::HasRemoteClient(aura::Window* window) {
-  return ClientWindow::GetMayBeNull(window);
+  return ServerWindow::GetMayBeNull(window);
 }
 
 void WindowService::RequestClose(aura::Window* window) {
-  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
-  DCHECK(window && client_window->IsTopLevel());
-  client_window->owning_window_service_client()->RequestClose(client_window);
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  DCHECK(window && server_window->IsTopLevel());
+  server_window->owning_window_service_client()->RequestClose(server_window);
 }
 
 void WindowService::OnStart() {

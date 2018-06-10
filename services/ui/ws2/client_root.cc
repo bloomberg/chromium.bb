@@ -38,7 +38,7 @@ ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
 }
 
 ClientRoot::~ClientRoot() {
-  ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
   window_->RemoveObserver(this);
 
   viz::HostFrameSinkManager* host_frame_sink_manager =
@@ -46,7 +46,7 @@ ClientRoot::~ClientRoot() {
           ->context_factory_private()
           ->GetHostFrameSinkManager();
   host_frame_sink_manager->InvalidateFrameSinkId(
-      client_window->frame_sink_id());
+      server_window->frame_sink_id());
 }
 
 void ClientRoot::RegisterVizEmbeddingSupport() {
@@ -60,7 +60,7 @@ void ClientRoot::RegisterVizEmbeddingSupport() {
           ->context_factory_private()
           ->GetHostFrameSinkManager();
   viz::FrameSinkId frame_sink_id =
-      ClientWindow::GetMayBeNull(window_)->frame_sink_id();
+      ServerWindow::GetMayBeNull(window_)->frame_sink_id();
   host_frame_sink_manager->RegisterFrameSinkId(
       frame_sink_id, window_host_frame_sink_client_.get());
   window_->SetEmbedFrameSinkId(frame_sink_id);
@@ -73,8 +73,8 @@ bool ClientRoot::ShouldAssignLocalSurfaceId() {
   // WindowService. First level embeddings have no embeddings above them.
   if (is_top_level_)
     return true;
-  ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
-  return client_window->owning_window_service_client() == nullptr;
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
+  return server_window->owning_window_service_client() == nullptr;
 }
 
 void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
@@ -83,14 +83,14 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
 
   gfx::Size size_in_pixels =
       ui::ConvertSizeToPixel(window_->layer(), window_->bounds().size());
-  ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
   // It's expected by cc code that any time the size changes a new
   // LocalSurfaceId is used.
   if (last_surface_size_in_pixels_ != size_in_pixels ||
-      !client_window->local_surface_id().has_value() ||
-      !client_window->local_surface_id()->is_valid() ||
+      !server_window->local_surface_id().has_value() ||
+      !server_window->local_surface_id()->is_valid() ||
       last_device_scale_factor_ != window_->layer()->device_scale_factor()) {
-    client_window->set_local_surface_id(
+    server_window->set_local_surface_id(
         parent_local_surface_id_allocator_.GenerateId());
     last_surface_size_in_pixels_ = size_in_pixels;
     last_device_scale_factor_ = window_->layer()->device_scale_factor();
@@ -99,10 +99,10 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
 
 void ClientRoot::UpdatePrimarySurfaceId() {
   UpdateLocalSurfaceIdIfNecessary();
-  ClientWindow* client_window = ClientWindow::GetMayBeNull(window_);
-  if (client_window->local_surface_id().has_value()) {
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
+  if (server_window->local_surface_id().has_value()) {
     client_surface_embedder_->SetPrimarySurfaceId(viz::SurfaceId(
-        window_->GetFrameSinkId(), *client_window->local_surface_id()));
+        window_->GetFrameSinkId(), *server_window->local_surface_id()));
   }
 }
 
@@ -139,7 +139,7 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
   // why this always notifies the client.
   window_service_client_->window_tree_client_->OnWindowBoundsChanged(
       window_service_client_->TransportIdForWindow(window), old_bounds,
-      new_bounds, ClientWindow::GetMayBeNull(window_)->local_surface_id());
+      new_bounds, ServerWindow::GetMayBeNull(window_)->local_surface_id());
 }
 
 }  // namespace ws2
