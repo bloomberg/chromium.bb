@@ -866,6 +866,13 @@ static void set_tile_info(AV1_COMP *cpi) {
       cm->tile_row_start_sb[i] =
           ((i * cm->tile_height - 1) >> cm->seq_params.mib_size_log2) + 1;
     }
+
+    // (Yunqing) This is needed to be compatible with max_tile. Otherwise, the
+    // decoder would crash.
+    cm->log2_tile_cols = 0;
+    while (cm->tile_cols > (1 << cm->log2_tile_cols)) ++cm->log2_tile_cols;
+    cm->log2_tile_rows = 0;
+    while (cm->tile_rows > (1 << cm->log2_tile_rows)) ++cm->log2_tile_rows;
   } else {
     set_tile_info_max_tile(cpi);
   }

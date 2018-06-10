@@ -2193,50 +2193,51 @@ static void write_tile_info_max_tile(const AV1_COMMON *const cm,
 static void write_tile_info(const AV1_COMMON *const cm,
                             struct aom_write_bit_buffer *saved_wb,
                             struct aom_write_bit_buffer *wb) {
-  if (cm->large_scale_tile) {
-    const int tile_width =
-        ALIGN_POWER_OF_TWO(cm->tile_width, cm->seq_params.mib_size_log2) >>
-        cm->seq_params.mib_size_log2;
-    const int tile_height =
-        ALIGN_POWER_OF_TWO(cm->tile_height, cm->seq_params.mib_size_log2) >>
-        cm->seq_params.mib_size_log2;
-
-    assert(tile_width > 0);
-    assert(tile_height > 0);
-
-    // Write the tile sizes
-    if (cm->seq_params.sb_size == BLOCK_128X128) {
-      assert(tile_width <= 32);
-      assert(tile_height <= 32);
-      aom_wb_write_literal(wb, tile_width - 1, 5);
-      aom_wb_write_literal(wb, tile_height - 1, 5);
-    } else {
-      assert(tile_width <= 64);
-      assert(tile_height <= 64);
-      aom_wb_write_literal(wb, tile_width - 1, 6);
-      aom_wb_write_literal(wb, tile_height - 1, 6);
-    }
-  } else {
-    write_tile_info_max_tile(cm, wb);
-  }
+  write_tile_info_max_tile(cm, wb);
 
   *saved_wb = *wb;
-  if (cm->large_scale_tile) {
-    if (cm->tile_rows * cm->tile_cols > 1) {
-      // Note that the last item in the uncompressed header is the data
-      // describing tile configuration.
-      // Number of bytes in tile column size - 1
-      aom_wb_write_literal(wb, 0, 2);
-      // Number of bytes in tile size - 1
-      aom_wb_write_literal(wb, 0, 2);
-    }
-    return;
-  }
   if (cm->tile_rows * cm->tile_cols > 1) {
     // tile id used for cdf update
     aom_wb_write_literal(wb, 0, cm->log2_tile_cols + cm->log2_tile_rows);
     // Number of bytes in tile size - 1
     aom_wb_write_literal(wb, 3, 2);
+  }
+}
+
+static void write_ext_tile_info(const AV1_COMMON *const cm,
+                                struct aom_write_bit_buffer *saved_wb,
+                                struct aom_write_bit_buffer *wb) {
+  const int tile_width =
+      ALIGN_POWER_OF_TWO(cm->tile_width, cm->seq_params.mib_size_log2) >>
+      cm->seq_params.mib_size_log2;
+  const int tile_height =
+      ALIGN_POWER_OF_TWO(cm->tile_height, cm->seq_params.mib_size_log2) >>
+      cm->seq_params.mib_size_log2;
+
+  assert(tile_width > 0);
+  assert(tile_height > 0);
+
+  // Write the tile sizes
+  if (cm->seq_params.sb_size == BLOCK_128X128) {
+    assert(tile_width <= 32);
+    assert(tile_height <= 32);
+    aom_wb_write_literal(wb, tile_width - 1, 5);
+    aom_wb_write_literal(wb, tile_height - 1, 5);
+  } else {
+    assert(tile_width <= 64);
+    assert(tile_height <= 64);
+    aom_wb_write_literal(wb, tile_width - 1, 6);
+    aom_wb_write_literal(wb, tile_height - 1, 6);
+  }
+
+  *saved_wb = *wb;
+  if (cm->tile_rows * cm->tile_cols > 1) {
+    // Note that the last item in the uncompressed header is the data
+    // describing tile configuration.
+    // Number of bytes in tile column size - 1
+    aom_wb_write_literal(wb, 0, 2);
+    // Number of bytes in tile size - 1
+    aom_wb_write_literal(wb, 0, 2);
   }
 }
 
@@ -3320,6 +3321,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     if (flip_back_update_parameters_flag)
       cm->film_grain_params.update_parameters = 0;
   }
+
+  if (cm->large_scale_tile) write_ext_tile_info(cm, saved_wb, wb);
 }
 
 static int choose_size_bytes(uint32_t size, int spare_msbs) {
