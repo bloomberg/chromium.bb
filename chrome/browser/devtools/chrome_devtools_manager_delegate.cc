@@ -14,13 +14,11 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/protocol/target_handler.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -29,7 +27,6 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/common/manifest.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::DevToolsAgentHost;
@@ -122,63 +119,6 @@ std::string ChromeDevToolsManagerDelegate::GetTargetTitle(
   if (!GetExtensionInfo(web_contents, &extension_name, &extension_type))
     return std::string();
   return extension_name;
-}
-
-bool ChromeDevToolsManagerDelegate::AllowInspectingWebContents(
-    content::WebContents* web_contents) {
-  return AllowInspection(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-      web_contents);
-}
-
-// static
-bool ChromeDevToolsManagerDelegate::AllowInspection(
-    Profile* profile,
-    content::WebContents* web_contents) {
-  const extensions::Extension* extension = nullptr;
-  if (web_contents) {
-    extension =
-        extensions::ProcessManager::Get(
-            Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-            ->GetExtensionForWebContents(web_contents);
-  }
-  return AllowInspection(profile, extension);
-}
-
-// static
-bool ChromeDevToolsManagerDelegate::AllowInspection(
-    Profile* profile,
-    const extensions::Extension* extension) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
-    return false;
-
-  using Availability = policy::DeveloperToolsPolicyHandler::Availability;
-  Availability availability =
-      policy::DeveloperToolsPolicyHandler::GetDevToolsAvailability(
-          profile->GetPrefs());
-#if defined(OS_CHROMEOS)
-  // Do not create DevTools if it's disabled for primary profile.
-  if (Profile* primary_profile = ProfileManager::GetPrimaryUserProfile()) {
-    availability =
-        policy::DeveloperToolsPolicyHandler::GetMostRestrictiveAvailability(
-            availability,
-            policy::DeveloperToolsPolicyHandler::GetDevToolsAvailability(
-                primary_profile->GetPrefs()));
-  }
-#endif
-
-  switch (availability) {
-    case Availability::kDisallowed:
-      return false;
-    case Availability::kAllowed:
-      return true;
-    case Availability::kDisallowedForForceInstalledExtensions:
-      return !extension ||
-             !extensions::Manifest::IsPolicyLocation(extension->location());
-    default:
-      NOTREACHED() << "Unknown developer tools policy";
-      return true;
-  }
 }
 
 void ChromeDevToolsManagerDelegate::ClientAttached(

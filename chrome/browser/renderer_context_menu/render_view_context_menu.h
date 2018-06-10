@@ -80,7 +80,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
       base::OnceCallback<void(RenderViewContextMenu*)> cb);
 
  protected:
-  Profile* GetProfile() const;
+  Profile* GetProfile();
   Browser* GetBrowser() const;
 
   // Returns a (possibly truncated) version of the current selection text

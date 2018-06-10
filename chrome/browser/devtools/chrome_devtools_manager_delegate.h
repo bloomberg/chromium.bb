@@ -21,10 +21,6 @@
 class ChromeDevToolsSession;
 using RemoteLocations = std::set<net::HostPortPair>;
 
-namespace extensions {
-class Extension;
-}
-
 class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
  public:
   static const char kTypeApp[];
@@ -36,16 +32,6 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   static ChromeDevToolsManagerDelegate* GetInstance();
   void UpdateDeviceDiscovery();
 
-  // |web_contents| may be null, in which case this function just checks
-  // the settings for |profile|.
-  static bool AllowInspection(Profile* profile,
-                              content::WebContents* web_contents);
-
-  // |extension| may be null, in which case this function just checks
-  // the settings for |profile|.
-  static bool AllowInspection(Profile* profile,
-                              const extensions::Extension* extension);
-
  private:
   friend class DevToolsManagerDelegateTest;
 
@@ -56,7 +42,6 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
                      base::DictionaryValue* command_dict) override;
   std::string GetTargetType(content::WebContents* web_contents) override;
   std::string GetTargetTitle(content::WebContents* web_contents) override;
-  bool AllowInspectingWebContents(content::WebContents* web_contents) override;
   void ClientAttached(content::DevToolsAgentHost* agent_host,
                       content::DevToolsAgentHostClient* client) override;
   void ClientDetached(content::DevToolsAgentHost* agent_host,
