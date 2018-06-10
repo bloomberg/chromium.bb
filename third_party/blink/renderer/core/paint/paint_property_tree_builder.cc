@@ -2447,6 +2447,10 @@ bool PaintPropertyTreeBuilder::UpdateForSelf() {
       RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     context_.painting_layer->SetNeedsRepaint();
 
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      !context_.supports_composited_raster_invalidation)
+    return property_changed || property_added_or_removed;
+
   return property_changed;
 }
 

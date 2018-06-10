@@ -154,6 +154,10 @@ struct PaintPropertyTreeBuilderContext {
   // The physical bounding box of all appearances of the repeating table section
   // in the flow thread or the paged LayoutView.
   LayoutRect repeating_table_section_bounding_box;
+
+  // Whether composited raster invalidation is supported for this object.
+  // If not, subtree invalidations occur on every property tree change.
+  bool supports_composited_raster_invalidation = true;
 };
 
 // Creates paint property tree nodes for non-local effects in the layout tree.
