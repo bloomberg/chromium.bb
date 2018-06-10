@@ -31,28 +31,28 @@ class Embedding;
 class WindowServiceClient;
 
 // Tracks any state associated with an aura::Window for the WindowService.
-// ClientWindow is created for every window created at the request of a client,
+// ServerWindow is created for every window created at the request of a client,
 // including the root window of ClientRoots.
-class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
+class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
  public:
-  ~ClientWindow();
+  ~ServerWindow();
 
-  // Creates a new ClientWindow. The lifetime of the ClientWindow is tied to
-  // that of the Window (the Window ends up owning the ClientWindow).
+  // Creates a new ServerWindow. The lifetime of the ServerWindow is tied to
+  // that of the Window (the Window ends up owning the ServerWindow).
   // |is_top_level| is true if the window represents a top-level window.
-  static ClientWindow* Create(aura::Window* window,
+  static ServerWindow* Create(aura::Window* window,
                               WindowServiceClient* client,
                               const viz::FrameSinkId& frame_sink_id,
                               bool is_top_level);
 
   aura::Window* window() { return window_; }
 
-  // Returns the ClientWindow associated with a window, null if not created yet.
-  static ClientWindow* GetMayBeNull(aura::Window* window) {
-    return const_cast<ClientWindow*>(
+  // Returns the ServerWindow associated with a window, null if not created yet.
+  static ServerWindow* GetMayBeNull(aura::Window* window) {
+    return const_cast<ServerWindow*>(
         GetMayBeNull(const_cast<const aura::Window*>(window)));
   }
-  static const ClientWindow* GetMayBeNull(const aura::Window* window);
+  static const ServerWindow* GetMayBeNull(const aura::Window* window);
 
   WindowServiceClient* owning_window_service_client() {
     return owning_window_service_client_;
@@ -110,9 +110,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   }
 
  private:
-  friend class ClientWindowTestHelper;
+  friend class ServerWindowTestHelper;
 
-  ClientWindow(aura::Window*,
+  ServerWindow(aura::Window*,
                WindowServiceClient* client,
                const viz::FrameSinkId& frame_sink_id,
                bool is_top_level);
@@ -162,7 +162,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
 
   base::Optional<viz::LocalSurfaceId> local_surface_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientWindow);
+  DISALLOW_COPY_AND_ASSIGN(ServerWindow);
 };
 
 }  // namespace ws2

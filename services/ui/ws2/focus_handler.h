@@ -15,7 +15,7 @@ class Window;
 namespace ui {
 namespace ws2 {
 
-class ClientWindow;
+class ServerWindow;
 class WindowServiceClient;
 
 // FocusHandler handles focus requests from the client, as well as notifying
@@ -35,8 +35,8 @@ class FocusHandler : public aura::client::FocusChangeObserver {
   // Returns true if |window| can be focused.
   bool IsFocusableWindow(aura::Window* window) const;
 
-  bool IsEmbeddedClient(ClientWindow* client_window) const;
-  bool IsOwningClient(ClientWindow* client_window) const;
+  bool IsEmbeddedClient(ServerWindow* server_window) const;
+  bool IsOwningClient(ServerWindow* server_window) const;
 
   // aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,

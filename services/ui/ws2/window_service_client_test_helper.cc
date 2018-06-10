@@ -122,7 +122,7 @@ Embedding* WindowServiceClientTestHelper::Embed(
                                          embed_flags)) {
     return nullptr;
   }
-  return ClientWindow::GetMayBeNull(window)->embedding();
+  return ServerWindow::GetMayBeNull(window)->embedding();
 }
 
 void WindowServiceClientTestHelper::SetEventTargetingPolicy(

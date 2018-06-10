@@ -17,13 +17,13 @@
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/capture_controller.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ui::ws2::ClientWindow*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ui::ws2::ServerWindow*);
 
 namespace ui {
 namespace ws2 {
 namespace {
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ui::ws2::ClientWindow,
-                                   kClientWindowKey,
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ui::ws2::ServerWindow,
+                                   kServerWindowKey,
                                    nullptr);
 
 // Returns true if |location| is in the non-client area (or outside the bounds
@@ -31,8 +31,8 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ui::ws2::ClientWindow,
 // area.
 bool IsLocationInNonClientArea(const aura::Window* window,
                                const gfx::Point& location) {
-  const ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
-  if (!client_window || !client_window->IsTopLevel())
+  const ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  if (!server_window || !server_window->IsTopLevel())
     return false;
 
   // Locations outside the bounds, assume it's in extended hit test area, which
@@ -41,11 +41,11 @@ bool IsLocationInNonClientArea(const aura::Window* window,
     return true;
 
   gfx::Rect client_area(window->bounds().size());
-  client_area.Inset(client_window->client_area());
+  client_area.Inset(server_window->client_area());
   if (client_area.Contains(location))
     return false;
 
-  for (const auto& rect : client_window->additional_client_areas()) {
+  for (const auto& rect : server_window->additional_client_areas()) {
     if (rect.Contains(location))
       return false;
   }
@@ -77,23 +77,23 @@ PointerId GetPointerId(const Event& event) {
   return event.AsTouchEvent()->pointer_details().id;
 }
 
-// WindowTargeter used for ClientWindows. This is used for two purposes:
+// WindowTargeter used for ServerWindows. This is used for two purposes:
 // . If the location is in the non-client area, then child Windows are not
 //   considered. This is done to ensure the delegate of the window (which is
 //   local) sees the event.
 // . To ensure |WindowServiceClient::intercepts_events_| is honored.
-class ClientWindowTargeter : public aura::WindowTargeter {
+class ServerWindowTargeter : public aura::WindowTargeter {
  public:
-  explicit ClientWindowTargeter(ClientWindow* client_window)
-      : client_window_(client_window) {}
-  ~ClientWindowTargeter() override = default;
+  explicit ServerWindowTargeter(ServerWindow* server_window)
+      : server_window_(server_window) {}
+  ~ServerWindowTargeter() override = default;
 
   // aura::WindowTargeter:
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* event_target,
                                       ui::Event* event) override {
     aura::Window* window = static_cast<aura::Window*>(event_target);
-    DCHECK_EQ(window, client_window_->window());
-    if (client_window_->DoesOwnerInterceptEvents()) {
+    DCHECK_EQ(window, server_window_->window());
+    if (server_window_->DoesOwnerInterceptEvents()) {
       // If the owner intercepts events, then don't recurse (otherwise events
       // would go to a descendant).
       return event_target->CanAcceptEvent(*event) ? window : nullptr;
@@ -110,26 +110,26 @@ class ClientWindowTargeter : public aura::WindowTargeter {
   }
 
  private:
-  ClientWindow* const client_window_;
+  ServerWindow* const server_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientWindowTargeter);
+  DISALLOW_COPY_AND_ASSIGN(ServerWindowTargeter);
 };
 
-// ClientWindowEventHandler is used to forward events to the client.
-// ClientWindowEventHandler adds itself to the pre-phase to ensure it's
+// ServerWindowEventHandler is used to forward events to the client.
+// ServerWindowEventHandler adds itself to the pre-phase to ensure it's
 // considered before the Window's delegate (or other EventHandlers).
-class ClientWindowEventHandler : public ui::EventHandler {
+class ServerWindowEventHandler : public ui::EventHandler {
  public:
-  explicit ClientWindowEventHandler(ClientWindow* client_window)
-      : client_window_(client_window) {
+  explicit ServerWindowEventHandler(ServerWindow* server_window)
+      : server_window_(server_window) {
     window()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
   }
-  ~ClientWindowEventHandler() override {
+  ~ServerWindowEventHandler() override {
     window()->RemovePreTargetHandler(this);
   }
 
-  ClientWindow* client_window() { return client_window_; }
-  aura::Window* window() { return client_window_->window(); }
+  ServerWindow* server_window() { return server_window_; }
+  aura::Window* window() { return server_window_->window(); }
 
   // ui::EventHandler:
   void OnEvent(ui::Event* event) override {
@@ -147,19 +147,19 @@ class ClientWindowEventHandler : public ui::EventHandler {
     if (HandleInterceptedEvent(event) || ShouldIgnoreEvent(*event))
       return;
 
-    auto* owning = client_window_->owning_window_service_client();
-    auto* embedded = client_window_->embedded_window_service_client();
+    auto* owning = server_window_->owning_window_service_client();
+    auto* embedded = server_window_->embedded_window_service_client();
     WindowServiceClient* target_client = nullptr;
-    if (client_window_->DoesOwnerInterceptEvents()) {
+    if (server_window_->DoesOwnerInterceptEvents()) {
       // A client that intercepts events, always gets the event regardless of
       // focus/capture.
       target_client = owning;
     } else if (event->IsKeyEvent()) {
-      if (!client_window_->focus_owner())
+      if (!server_window_->focus_owner())
         return;  // The local environment is going to process the event.
-      target_client = client_window_->focus_owner();
-    } else if (client_window()->capture_owner()) {
-      target_client = client_window()->capture_owner();
+      target_client = server_window_->focus_owner();
+    } else if (server_window()->capture_owner()) {
+      target_client = server_window()->capture_owner();
     } else {
       // Prefer embedded over owner.
       target_client = !embedded ? owning : embedded;
@@ -176,7 +176,7 @@ class ClientWindowEventHandler : public ui::EventHandler {
   // Returns true if the event should be ignored (not forwarded to the client).
   bool ShouldIgnoreEvent(const ui::Event& event) {
     if (static_cast<aura::Window*>(event.target()) != window()) {
-      // As ClientWindow is a EP_PRETARGET EventHandler it gets events *before*
+      // As ServerWindow is a EP_PRETARGET EventHandler it gets events *before*
       // descendants. Ignore all such events, and only process when
       // window() is the the target.
       return true;
@@ -208,10 +208,10 @@ class ClientWindowEventHandler : public ui::EventHandler {
       return false;
 
     // KeyEvents, and events when there is capture, do not go through through
-    // ClientWindowTargeter. As a result ClientWindowEventHandler has to check
+    // ServerWindowTargeter. As a result ServerWindowEventHandler has to check
     // for a client intercepting events.
-    if (client_window_->DoesOwnerInterceptEvents()) {
-      client_window_->owning_window_service_client()->SendEventToClient(
+    if (server_window_->DoesOwnerInterceptEvents()) {
+      server_window_->owning_window_service_client()->SendEventToClient(
           window(), *event);
       event->StopPropagation();
       return true;
@@ -220,9 +220,9 @@ class ClientWindowEventHandler : public ui::EventHandler {
   }
 
  private:
-  ClientWindow* const client_window_;
+  ServerWindow* const server_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientWindowEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(ServerWindowEventHandler);
 };
 
 class TopLevelEventHandler;
@@ -263,13 +263,13 @@ class PointerPressHandler : public aura::client::CaptureClientObserver,
 // area are not sent to the client, instead are handled locally. For example,
 // if a press occurs in the non-client area, then the event is not sent to
 // the client, it's handled locally.
-class TopLevelEventHandler : public ClientWindowEventHandler {
+class TopLevelEventHandler : public ServerWindowEventHandler {
  public:
-  explicit TopLevelEventHandler(ClientWindow* client_window)
-      : ClientWindowEventHandler(client_window) {
+  explicit TopLevelEventHandler(ServerWindow* server_window)
+      : ServerWindowEventHandler(server_window) {
     // Top-levels should always have an owning_window_service_client().
     // OnEvent() assumes this.
-    DCHECK(client_window->owning_window_service_client());
+    DCHECK(server_window->owning_window_service_client());
   }
 
   ~TopLevelEventHandler() override = default;
@@ -293,7 +293,7 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
     pointer_press_handlers_.clear();
   }
 
-  // ClientWindowEventHandler:
+  // ServerWindowEventHandler:
   void OnEvent(ui::Event* event) override {
     // This code doesn't handle PointerEvents, because they should never be
     // generated at this layer.
@@ -310,7 +310,7 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
       return;
 
     if (!event->IsLocatedEvent()) {
-      ClientWindowEventHandler::OnEvent(event);
+      ServerWindowEventHandler::OnEvent(event);
       return;
     }
 
@@ -321,8 +321,8 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
     // If there is capture, send the event to the client that owns it. A null
     // capture owner means the local environment should handle the event.
     if (wm::CaptureController::Get()->GetCaptureWindow()) {
-      if (client_window()->capture_owner()) {
-        client_window()->capture_owner()->SendEventToClient(window(), *event);
+      if (server_window()->capture_owner()) {
+        server_window()->capture_owner()->SendEventToClient(window(), *event);
         event->StopPropagation();
         return;
       }
@@ -335,7 +335,7 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
     //   local, otherwise remote client.
     // . mouse-moves (not drags) go to both targets.
     bool stop_propagation = false;
-    if (client_window()->HasNonClientArea() && IsPointerEvent(*event)) {
+    if (server_window()->HasNonClientArea() && IsPointerEvent(*event)) {
       const PointerId pointer_id = GetPointerId(*event);
       if (!pointer_press_handlers_.count(pointer_id)) {
         if (IsPointerPressedEvent(*event)) {
@@ -360,7 +360,7 @@ class TopLevelEventHandler : public ClientWindowEventHandler {
         stop_propagation = true;
       }
     }
-    client_window()->owning_window_service_client()->SendEventToClient(window(),
+    server_window()->owning_window_service_client()->SendEventToClient(window(),
                                                                        *event);
     if (stop_propagation)
       event->StopPropagation();
@@ -407,35 +407,35 @@ void PointerPressHandler::OnWindowVisibilityChanged(aura::Window* window,
 
 }  // namespace
 
-ClientWindow::~ClientWindow() = default;
+ServerWindow::~ServerWindow() = default;
 
 // static
-ClientWindow* ClientWindow::Create(aura::Window* window,
+ServerWindow* ServerWindow::Create(aura::Window* window,
                                    WindowServiceClient* client,
                                    const viz::FrameSinkId& frame_sink_id,
                                    bool is_top_level) {
   DCHECK(!GetMayBeNull(window));
   // Owned by |window|.
-  ClientWindow* client_window =
-      new ClientWindow(window, client, frame_sink_id, is_top_level);
-  return client_window;
+  ServerWindow* server_window =
+      new ServerWindow(window, client, frame_sink_id, is_top_level);
+  return server_window;
 }
 
 // static
-const ClientWindow* ClientWindow::GetMayBeNull(const aura::Window* window) {
-  return window ? window->GetProperty(kClientWindowKey) : nullptr;
+const ServerWindow* ServerWindow::GetMayBeNull(const aura::Window* window) {
+  return window ? window->GetProperty(kServerWindowKey) : nullptr;
 }
 
-WindowServiceClient* ClientWindow::embedded_window_service_client() {
+WindowServiceClient* ServerWindow::embedded_window_service_client() {
   return embedding_ ? embedding_->embedded_client() : nullptr;
 }
 
-const WindowServiceClient* ClientWindow::embedded_window_service_client()
+const WindowServiceClient* ServerWindow::embedded_window_service_client()
     const {
   return embedding_ ? embedding_->embedded_client() : nullptr;
 }
 
-void ClientWindow::SetClientArea(
+void ServerWindow::SetClientArea(
     const gfx::Insets& insets,
     const std::vector<gfx::Rect>& additional_client_areas) {
   if (client_area_ == insets &&
@@ -450,7 +450,7 @@ void ClientWindow::SetClientArea(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void ClientWindow::SetCaptureOwner(WindowServiceClient* owner) {
+void ServerWindow::SetCaptureOwner(WindowServiceClient* owner) {
   capture_owner_ = owner;
   if (!IsTopLevel())
     return;
@@ -459,26 +459,26 @@ void ClientWindow::SetCaptureOwner(WindowServiceClient* owner) {
       ->OnCaptureOwnerChanged();
 }
 
-bool ClientWindow::DoesOwnerInterceptEvents() const {
+bool ServerWindow::DoesOwnerInterceptEvents() const {
   return embedding_ && embedding_->embedding_client_intercepts_events();
 }
 
-void ClientWindow::SetEmbedding(std::unique_ptr<Embedding> embedding) {
+void ServerWindow::SetEmbedding(std::unique_ptr<Embedding> embedding) {
   embedding_ = std::move(embedding);
 }
 
-bool ClientWindow::HasNonClientArea() const {
+bool ServerWindow::HasNonClientArea() const {
   return owning_window_service_client_ &&
          owning_window_service_client_->IsTopLevel(window_) &&
          (!client_area_.IsEmpty() || !additional_client_areas_.empty());
 }
 
-bool ClientWindow::IsTopLevel() const {
+bool ServerWindow::IsTopLevel() const {
   return owning_window_service_client_ &&
          owning_window_service_client_->IsTopLevel(window_);
 }
 
-void ClientWindow::AttachCompositorFrameSink(
+void ServerWindow::AttachCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
     viz::mojom::CompositorFrameSinkClientPtr client) {
   viz::HostFrameSinkManager* host_frame_sink_manager =
@@ -489,19 +489,19 @@ void ClientWindow::AttachCompositorFrameSink(
       frame_sink_id_, std::move(compositor_frame_sink), std::move(client));
 }
 
-ClientWindow::ClientWindow(aura::Window* window,
+ServerWindow::ServerWindow(aura::Window* window,
                            WindowServiceClient* client,
                            const viz::FrameSinkId& frame_sink_id,
                            bool is_top_level)
     : window_(window),
       owning_window_service_client_(client),
       frame_sink_id_(frame_sink_id) {
-  window_->SetProperty(kClientWindowKey, this);
+  window_->SetProperty(kServerWindowKey, this);
   if (is_top_level)
     event_handler_ = std::make_unique<TopLevelEventHandler>(this);
   else
-    event_handler_ = std::make_unique<ClientWindowEventHandler>(this);
-  window_->SetEventTargeter(std::make_unique<ClientWindowTargeter>(this));
+    event_handler_ = std::make_unique<ServerWindowEventHandler>(this);
+  window_->SetEventTargeter(std::make_unique<ServerWindowTargeter>(this));
   // In order for a window to receive events it must have a target_handler()
   // (see Window::CanAcceptEvent()). Normally the delegate is the TargetHandler,
   // but if the delegate is null, then so is the target_handler(). Set
@@ -511,7 +511,7 @@ ClientWindow::ClientWindow(aura::Window* window,
     window_->SetTargetHandler(event_handler_.get());
 }
 
-bool ClientWindow::IsHandlingPointerPressForTesting(PointerId pointer_id) {
+bool ServerWindow::IsHandlingPointerPressForTesting(PointerId pointer_id) {
   DCHECK(IsTopLevel());
   return static_cast<TopLevelEventHandler*>(event_handler_.get())
       ->IsHandlingPointerPress(pointer_id);

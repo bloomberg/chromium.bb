@@ -36,6 +36,7 @@ class ClientRoot;
 class Embedding;
 class FocusHandler;
 class PointerWatcher;
+class ServerWindow;
 class WindowService;
 
 // WindowServiceClient manages a client connected to the Window Service.
@@ -86,7 +87,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   bool IsTopLevel(aura::Window* window);
 
   // Asks the client to close |window|. |window| must be a top-level window.
-  void RequestClose(ClientWindow* window);
+  void RequestClose(ServerWindow* window);
 
   WindowService* window_service() { return window_service_; }
 

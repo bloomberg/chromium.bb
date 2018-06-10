@@ -45,9 +45,9 @@ class WindowTreeClient;
 
 namespace ws2 {
 
-class ClientWindow;
 class GpuSupport;
 class ScreenProvider;
+class ServerWindow;
 class WindowServiceClient;
 class WindowServiceDelegate;
 class WindowTreeFactory;
@@ -65,8 +65,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
                 aura::client::FocusClient* focus_client);
   ~WindowService() override;
 
-  // Gets the ClientWindow for |window|, creating if necessary.
-  ClientWindow* GetClientWindowForWindowCreateIfNecessary(aura::Window* window);
+  // Gets the ServerWindow for |window|, creating if necessary.
+  ServerWindow* GetServerWindowForWindowCreateIfNecessary(aura::Window* window);
 
   // Creates a new WindowServiceClient, caller must call one of the Init()
   // functions on the returned object.

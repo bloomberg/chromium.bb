@@ -11,20 +11,20 @@
 namespace ui {
 namespace ws2 {
 
-class ClientWindow;
+class ServerWindow;
 
-// Used for accessing private members of ClientWindow in tests.
-class ClientWindowTestHelper {
+// Used for accessing private members of ServerWindow in tests.
+class ServerWindowTestHelper {
  public:
-  explicit ClientWindowTestHelper(ClientWindow* client_window);
-  ~ClientWindowTestHelper();
+  explicit ServerWindowTestHelper(ServerWindow* server_window);
+  ~ServerWindowTestHelper();
 
   bool IsHandlingPointerPress(PointerId pointer_id);
 
  private:
-  ClientWindow* client_window_;
+  ServerWindow* server_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientWindowTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(ServerWindowTestHelper);
 };
 
 }  // namespace ws2

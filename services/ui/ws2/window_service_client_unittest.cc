@@ -878,17 +878,17 @@ TEST(WindowServiceClientTest, PointerDownResetOnCaptureChange) {
   test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(5, 5);
   event_generator.PressLeftButton();
-  ClientWindow* top_level_client_window = ClientWindow::GetMayBeNull(top_level);
-  ASSERT_TRUE(top_level_client_window);
-  ClientWindowTestHelper top_level_client_window_helper(
-      top_level_client_window);
-  EXPECT_TRUE(top_level_client_window_helper.IsHandlingPointerPress(
+  ServerWindow* top_level_server_window = ServerWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_server_window);
+  ServerWindowTestHelper top_level_server_window_helper(
+      top_level_server_window);
+  EXPECT_TRUE(top_level_server_window_helper.IsHandlingPointerPress(
       MouseEvent::kMousePointerId));
 
   // Set capture on |window|, top_level should no longer be in pointer-down
   // (because capture changed).
   EXPECT_TRUE(setup.client_test_helper()->SetCapture(window));
-  EXPECT_FALSE(top_level_client_window_helper.IsHandlingPointerPress(
+  EXPECT_FALSE(top_level_server_window_helper.IsHandlingPointerPress(
       MouseEvent::kMousePointerId));
 }
 
@@ -904,16 +904,16 @@ TEST(WindowServiceClientTest, PointerDownResetOnHide) {
   test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(5, 5);
   event_generator.PressLeftButton();
-  ClientWindow* top_level_client_window = ClientWindow::GetMayBeNull(top_level);
-  ASSERT_TRUE(top_level_client_window);
-  ClientWindowTestHelper top_level_client_window_helper(
-      top_level_client_window);
-  EXPECT_TRUE(top_level_client_window_helper.IsHandlingPointerPress(
+  ServerWindow* top_level_server_window = ServerWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_server_window);
+  ServerWindowTestHelper top_level_server_window_helper(
+      top_level_server_window);
+  EXPECT_TRUE(top_level_server_window_helper.IsHandlingPointerPress(
       MouseEvent::kMousePointerId));
 
   // Hiding should implicitly cancel capture.
   top_level->Hide();
-  EXPECT_FALSE(top_level_client_window_helper.IsHandlingPointerPress(
+  EXPECT_FALSE(top_level_server_window_helper.IsHandlingPointerPress(
       MouseEvent::kMousePointerId));
 }
 
