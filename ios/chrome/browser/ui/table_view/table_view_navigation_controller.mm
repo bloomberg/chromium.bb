@@ -41,7 +41,8 @@
   if (@available(iOS 11, *))
     self.navigationBar.prefersLargeTitles = YES;
 
-  self.toolbar.clipsToBounds = YES;
+  [self.toolbar setShadowImage:[UIImage new]
+            forToolbarPosition:UIBarPositionAny];
   self.toolbar.translucent = YES;
   [self.toolbar addSubview:visualEffectView];
 }
