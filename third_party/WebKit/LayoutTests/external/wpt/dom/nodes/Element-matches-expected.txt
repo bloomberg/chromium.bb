@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 651 tests; 648 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 657 tests; 654 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selectors-API Level 2 Test Suite: HTML with Selectors Level 3
 PASS Document should not support matches
 PASS Detached Element supports matches
@@ -38,6 +38,7 @@ PASS Detached Element.matches: Invalid [att=value] selector: [*|*=test]
 PASS Detached Element.matches: Invalid [att=value] selector: [class= space unquoted ]
 PASS Detached Element.matches: Unknown pseudo-class: div:example
 PASS Detached Element.matches: Unknown pseudo-class: :example
+PASS Detached Element.matches: Unknown pseudo-class: div:linkexample
 PASS Detached Element.matches: Unknown pseudo-element: div::example
 PASS Detached Element.matches: Unknown pseudo-element: ::example
 PASS Detached Element.matches: Invalid pseudo-element: :::before
@@ -71,6 +72,7 @@ PASS In-document Element.matches: Invalid [att=value] selector: [*|*=test]
 PASS In-document Element.matches: Invalid [att=value] selector: [class= space unquoted ]
 PASS In-document Element.matches: Unknown pseudo-class: div:example
 PASS In-document Element.matches: Unknown pseudo-class: :example
+PASS In-document Element.matches: Unknown pseudo-class: div:linkexample
 PASS In-document Element.matches: Unknown pseudo-element: div::example
 PASS In-document Element.matches: Unknown pseudo-element: ::example
 PASS In-document Element.matches: Invalid pseudo-element: :::before
@@ -173,6 +175,7 @@ PASS In-document Element.matches: :enabled pseudo-class selector, matching all d
 PASS In-document Element.matches: :checked pseudo-class selector, matching checked radio buttons and checkboxes (with no refNodes): #pseudo-ui :checked
 PASS In-document Element.matches: :not pseudo-class selector, matching  (with no refNodes): #not>:not(div)
 PASS In-document Element.matches: :not pseudo-class selector, matching  (with no refNodes): #not * :not(:first-child)
+PASS In-document Element.matches: :not pseudo-class selector argument surrounded by spaces, matching  (with no refNodes): #not>:not( div )
 PASS In-document Element.matches: Class selector, matching element with specified class (with no refNodes): .class-p
 PASS In-document Element.matches: Class selector, chained, matching only elements with all specified classes (with no refNodes): #class .apple.orange.banana
 PASS In-document Element.matches: Class Selector, chained, with type selector (with no refNodes): div.apple.banana.orange
@@ -332,6 +335,7 @@ PASS Detached Element.matches: :enabled pseudo-class selector, matching all disa
 PASS Detached Element.matches: :checked pseudo-class selector, matching checked radio buttons and checkboxes (with no refNodes): #pseudo-ui :checked
 PASS Detached Element.matches: :not pseudo-class selector, matching  (with no refNodes): #not>:not(div)
 PASS Detached Element.matches: :not pseudo-class selector, matching  (with no refNodes): #not * :not(:first-child)
+PASS Detached Element.matches: :not pseudo-class selector argument surrounded by spaces, matching  (with no refNodes): #not>:not( div )
 PASS Detached Element.matches: Class selector, matching element with specified class (with no refNodes): .class-p
 PASS Detached Element.matches: Class selector, chained, matching only elements with all specified classes (with no refNodes): #class .apple.orange.banana
 PASS Detached Element.matches: Class Selector, chained, with type selector (with no refNodes): div.apple.banana.orange
@@ -490,6 +494,7 @@ PASS Fragment Element.matches: :enabled pseudo-class selector, matching all disa
 PASS Fragment Element.matches: :checked pseudo-class selector, matching checked radio buttons and checkboxes (with no refNodes): #pseudo-ui :checked
 PASS Fragment Element.matches: :not pseudo-class selector, matching  (with no refNodes): #not>:not(div)
 PASS Fragment Element.matches: :not pseudo-class selector, matching  (with no refNodes): #not * :not(:first-child)
+PASS Fragment Element.matches: :not pseudo-class selector argument surrounded by spaces, matching  (with no refNodes): #not>:not( div )
 PASS Fragment Element.matches: Class selector, matching element with specified class (with no refNodes): .class-p
 PASS Fragment Element.matches: Class selector, chained, matching only elements with all specified classes (with no refNodes): #class .apple.orange.banana
 PASS Fragment Element.matches: Class Selector, chained, with type selector (with no refNodes): div.apple.banana.orange
@@ -612,6 +617,7 @@ PASS In-document Element.matches: :nth-child selector, matching the third child 
 PASS In-document Element.matches: :nth-child selector, matching every third child element (with refNode Element): li:nth-child(3n)
 PASS In-document Element.matches: :nth-child selector, matching every second child element, starting from the fourth (with refNode Element): li:nth-child(2n+4)
 PASS In-document Element.matches: :nth-child selector, matching every fourth child element, starting from the third (with refNode Element): :nth-child(4n-1)
+PASS In-document Element.matches: :nth-child selector used twice, matching  (with refNode Element): :nth-child(1) :nth-child(1)
 PASS In-document Element.matches: :nth-last-child selector, matching the third last child element (with refNode Element): :nth-last-child(3)
 PASS In-document Element.matches: :nth-last-child selector, matching every third child element from the end (with refNode Element): li:nth-last-child(3n)
 PASS In-document Element.matches: :nth-last-child selector, matching every second child element from the end, starting from the fourth last (with refNode Element): li:nth-last-child(2n+4)

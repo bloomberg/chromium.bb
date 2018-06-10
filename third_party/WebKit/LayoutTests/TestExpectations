@@ -2799,6 +2799,7 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/idlharness.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/float-retry-push-image.html [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_parent [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_top [ Timeout ]
@@ -2940,7 +2941,6 @@ crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] virtual/outofblink-cors/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Linux Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/dom/nodes/ParentNode-querySelector-All.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/syntax/parsing/template/creating-an-element-for-the-token/template-owner-document.html [ Timeout ]
 
 # Grouped frame-policy gunk (flaky copypasta).
