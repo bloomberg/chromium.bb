@@ -19,9 +19,6 @@ namespace prefs {
 // Boolean that is true when SafeBrowsing is enabled.
 extern const char kSafeBrowsingEnabled[];
 
-// Boolean that tell us whether Safe Browsing extended reporting is enabled.
-extern const char kSafeBrowsingExtendedReportingEnabled[];
-
 // Boolean that tells us whether users are given the option to opt in to Safe
 // Browsing extended reporting. This is exposed as a preference that can be
 // overridden by enterprise policy.
@@ -158,11 +155,6 @@ ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs);
 // Returns the name of the Safe Browsing Extended Reporting pref that is
 // currently in effect. The specific pref in-use may change through experiments.
 const char* GetExtendedReportingPrefName(const PrefService& prefs);
-
-// Initializes Safe Browsing preferences based on data such as experiment state,
-// command line flags, etc.
-// TODO: this is temporary (crbug.com/662944)
-void InitializeSafeBrowsingPrefs(PrefService* prefs);
 
 // Returns whether the user is able to modify the Safe Browsing Extended
 // Reporting opt-in.

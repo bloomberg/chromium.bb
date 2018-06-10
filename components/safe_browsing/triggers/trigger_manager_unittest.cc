@@ -379,15 +379,13 @@ TEST_F(TriggerManagerTest, AdSamplerTrigger) {
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
                                             web_contents, true));
 
-  // Disabling Scout disables this trigger even if the legacy SBER is enabled.
+  // Disabling Scout disables this trigger.
   SetPref(prefs::kSafeBrowsingScoutReportingEnabled, false);
-  SetPref(prefs::kSafeBrowsingExtendedReportingEnabled, true);
   EXPECT_FALSE(
       StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
 
   // Confirm it can fire when we re-enable Scout and disable legacy SBER.
   SetPref(prefs::kSafeBrowsingScoutReportingEnabled, true);
-  SetPref(prefs::kSafeBrowsingExtendedReportingEnabled, false);
   EXPECT_TRUE(
       StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,

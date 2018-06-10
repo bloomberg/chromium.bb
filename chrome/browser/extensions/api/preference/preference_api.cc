@@ -117,7 +117,7 @@ const PrefMappingEntry kPrefMapping[] = {
     {"safeBrowsingEnabled", prefs::kSafeBrowsingEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"safeBrowsingExtendedReportingEnabled",
-     prefs::kSafeBrowsingExtendedReportingEnabled, APIPermission::kPrivacy,
+     prefs::kSafeBrowsingScoutReportingEnabled, APIPermission::kPrivacy,
      APIPermission::kPrivacy},
     {"searchSuggestEnabled", prefs::kSearchSuggestEnabled,
      APIPermission::kPrivacy, APIPermission::kPrivacy},

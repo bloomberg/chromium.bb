@@ -159,8 +159,6 @@ GURL GetSimplifiedURL(const GURL& url) {
 
 namespace prefs {
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
-const char kSafeBrowsingExtendedReportingEnabled[] =
-    "safebrowsing.extended_reporting_enabled";
 const char kSafeBrowsingExtendedReportingOptInAllowed[] =
     "safebrowsing.extended_reporting_opt_in_allowed";
 const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
@@ -219,85 +217,7 @@ ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs) {
 }
 
 const char* GetExtendedReportingPrefName(const PrefService& prefs) {
-  // The Scout pref is active if the experiment features is on, and
-  // ScoutGroupSelected is on as well.
-  if (base::FeatureList::IsEnabled(kCanShowScoutOptIn) &&
-      prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
     return prefs::kSafeBrowsingScoutReportingEnabled;
-  }
-
-  // ..otherwise, either no experiment is on (ie: the Control group) or
-  // ScoutGroupSelected is off. So we use the SBER pref instead.
-  return prefs::kSafeBrowsingExtendedReportingEnabled;
-}
-
-void InitializeSafeBrowsingPrefs(PrefService* prefs) {
-  // Handle the two possible experiment states.
-  if (base::FeatureList::IsEnabled(kCanShowScoutOptIn)) {
-    // CanShowScoutOptIn will only turn on ScoutGroupSelected pref if the legacy
-    // SBER pref is false. Otherwise the legacy SBER pref will stay on and
-    // continue to be used until the next security incident, at which point
-    // the Scout pref will become the active one.
-    if (!prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled)) {
-      prefs->SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, true);
-      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                                CAN_SHOW_SCOUT_OPT_IN_SCOUT_GROUP_ON,
-                                MAX_REASONS);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                                CAN_SHOW_SCOUT_OPT_IN_WAIT_FOR_INTERSTITIAL,
-                                MAX_REASONS);
-    }
-  } else {
-    // Experiment feature is off, so this is the Control group. We must
-    // handle the possibility that the user was previously in an experiment
-    // group (above) that was reverted. We want to restore the user to a
-    // reasonable state based on the ScoutGroup and ScoutReporting preferences.
-    UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName, CONTROL, MAX_REASONS);
-    bool transitioned = false;
-    if (prefs->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled)) {
-      // User opted-in to Scout which is broader than legacy Extended Reporting.
-      // Opt them in to Extended Reporting.
-      prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, true);
-      UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                                ROLLBACK_SBER2_IMPLIES_SBER1, MAX_REASONS);
-      transitioned = true;
-    } else if (prefs->GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
-      // User was in the Scout Group (ie: seeing the Scout opt-in text) but did
-      // NOT opt-in to Scout. Assume this was a conscious choice and remove
-      // their legacy Extended Reporting opt-in as well. The user will have a
-      // chance to evaluate their choice next time they see the opt-in text.
-
-      // We make the Extended Reporting pref mimic the state of the Scout
-      // Reporting pref. So we either Clear it or set it to False.
-      if (prefs->HasPrefPath(prefs::kSafeBrowsingScoutReportingEnabled)) {
-        // Scout Reporting pref was explicitly set to false, so set the SBER
-        // pref to false.
-        prefs->SetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled, false);
-        UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                                  ROLLBACK_NO_SBER2_SET_SBER1_FALSE,
-                                  MAX_REASONS);
-      } else {
-        // Scout Reporting pref is unset, so clear the SBER pref.
-        prefs->ClearPref(prefs::kSafeBrowsingExtendedReportingEnabled);
-        UMA_HISTOGRAM_ENUMERATION(kScoutTransitionMetricName,
-                                  ROLLBACK_NO_SBER2_CLEAR_SBER1, MAX_REASONS);
-      }
-      transitioned = true;
-    }
-
-    // Also clear both the Scout settings to start over from a clean state and
-    // avoid the above logic from triggering on next restart.
-    prefs->ClearPref(prefs::kSafeBrowsingScoutGroupSelected);
-    prefs->ClearPref(prefs::kSafeBrowsingScoutReportingEnabled);
-
-    // Also forget that the user has seen any interstitials if they're
-    // reverting back to a clean state.
-    if (transitioned) {
-      prefs->ClearPref(prefs::kSafeBrowsingSawInterstitialExtendedReporting);
-      prefs->ClearPref(prefs::kSafeBrowsingSawInterstitialScoutReporting);
-    }
-  }
 }
 
 bool IsExtendedReportingOptInAllowed(const PrefService& prefs) {
@@ -334,21 +254,11 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
 
   // These metrics track the Scout transition.
   if (prefs.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected)) {
-    // Users in the Scout group: currently seeing the Scout opt-in.
-    UMA_HISTOGRAM_ENUMERATION(
-        "SafeBrowsing.Pref.Scout.ScoutGroup.SBER1Pref",
-        GetPrefValueOrNull(prefs, prefs::kSafeBrowsingExtendedReportingEnabled),
-        MAX_NULLABLE_BOOLEAN);
     UMA_HISTOGRAM_ENUMERATION(
         "SafeBrowsing.Pref.Scout.ScoutGroup.SBER2Pref",
         GetPrefValueOrNull(prefs, prefs::kSafeBrowsingScoutReportingEnabled),
         MAX_NULLABLE_BOOLEAN);
   } else {
-    // Users not in the Scout group: currently seeing the SBER opt-in.
-    UMA_HISTOGRAM_ENUMERATION(
-        "SafeBrowsing.Pref.Scout.NoScoutGroup.SBER1Pref",
-        GetPrefValueOrNull(prefs, prefs::kSafeBrowsingExtendedReportingEnabled),
-        MAX_NULLABLE_BOOLEAN);
     // The following metric is a corner case. User was previously in the
     // Scout group and was able to opt-in to the Scout pref, but was since
     // removed from the Scout group (eg: by rolling back a Scout experiment).
@@ -360,8 +270,6 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
 }
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kSafeBrowsingExtendedReportingEnabled,
-                                false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutReportingEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingScoutGroupSelected, false);
@@ -489,7 +397,6 @@ base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
   const char* safe_browsing_preferences[] = {
       prefs::kSafeBrowsingEnabled,
       prefs::kSafeBrowsingExtendedReportingOptInAllowed,
-      prefs::kSafeBrowsingExtendedReportingEnabled,
       prefs::kSafeBrowsingScoutReportingEnabled};
 
   // Add the status of the preferences if they are Enabled or Disabled for the

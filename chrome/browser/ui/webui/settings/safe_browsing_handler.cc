@@ -47,9 +47,6 @@ void SafeBrowsingHandler::RegisterMessages() {
 void SafeBrowsingHandler::OnJavascriptAllowed() {
   profile_pref_registrar_.Init(prefs_);
   profile_pref_registrar_.Add(
-      prefs::kSafeBrowsingExtendedReportingEnabled,
-      base::Bind(&SafeBrowsingHandler::OnPrefChanged, base::Unretained(this)));
-  profile_pref_registrar_.Add(
       prefs::kSafeBrowsingScoutReportingEnabled,
       base::Bind(&SafeBrowsingHandler::OnPrefChanged, base::Unretained(this)));
 }
@@ -76,8 +73,7 @@ void SafeBrowsingHandler::HandleSetSafeBrowsingExtendedReportingEnabled(
 }
 
 void SafeBrowsingHandler::OnPrefChanged(const std::string& pref_name) {
-  DCHECK(pref_name == prefs::kSafeBrowsingExtendedReportingEnabled ||
-         pref_name == prefs::kSafeBrowsingScoutReportingEnabled);
+  DCHECK(pref_name == prefs::kSafeBrowsingScoutReportingEnabled);
 
   FireWebUIListener("safe-browsing-extended-reporting-change",
                     GetSberStateDictionaryValue(*prefs_));
