@@ -463,6 +463,23 @@ void DownloadManagerImpl::OnNewDownloadStarted(
     observer.OnDownloadCreated(this, download);
 }
 
+void DownloadManagerImpl::OnInProgressDownloadsLoaded(
+    std::vector<std::unique_ptr<download::DownloadItemImpl>>
+        in_progress_downloads) {
+  for (auto& download : in_progress_downloads) {
+    DCHECK(!base::ContainsKey(downloads_by_guid_, download->GetGuid()));
+    DCHECK(!base::ContainsKey(downloads_, download->GetId()));
+    DownloadItemUtils::AttachInfo(download.get(), GetBrowserContext(), nullptr);
+    download::DownloadItemImpl* item = download.get();
+    item->SetDelegate(this);
+    downloads_by_guid_[download->GetGuid()] = item;
+    downloads_[download->GetId()] = std::move(download);
+    for (auto& observer : observers_)
+      observer.OnDownloadCreated(this, item);
+    DVLOG(20) << __func__ << "() download = " << item->DebugString(true);
+  }
+}
+
 download::DownloadItemImpl* DownloadManagerImpl::GetDownloadItem(
     uint32_t id,
     bool new_download,
@@ -838,8 +855,14 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     bool transient,
     const std::vector<download::DownloadItem::ReceivedSlice>& received_slices) {
   if (base::ContainsKey(downloads_, id)) {
-    NOTREACHED();
-    return nullptr;
+    // If a completed or cancelled download item is already in the history db,
+    // remove it from the in-progress db.
+    if (state == download::DownloadItem::COMPLETE ||
+        state == download::DownloadItem::CANCELLED) {
+      in_progress_manager_->RemoveInProgressDownload(guid);
+    } else {
+      return downloads_[id].get();
+    }
   }
   DCHECK(!base::ContainsKey(downloads_by_guid_, guid));
   download::DownloadItemImpl* item = item_factory_->CreatePersistedItem(
@@ -869,6 +892,8 @@ void DownloadManagerImpl::PostInitialization(
       break;
     case DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE:
       in_progress_cache_initialized_ = true;
+      if (load_history_downloads_cb_)
+        std::move(load_history_downloads_cb_).Run();
       break;
     case DOWNLOAD_INITIALIZATION_DEPENDENCY_NONE:
     default:

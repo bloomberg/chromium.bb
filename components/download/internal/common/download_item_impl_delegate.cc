@@ -82,9 +82,6 @@ void DownloadItemImplDelegate::ShowDownloadInShell(DownloadItemImpl* download) {
 
 void DownloadItemImplDelegate::DownloadRemoved(DownloadItemImpl* download) {}
 
-void DownloadItemImplDelegate::AssertStateConsistent(
-    DownloadItemImpl* download) const {}
-
 void DownloadItemImplDelegate::DownloadInterrupted(DownloadItemImpl* download) {
 }
 

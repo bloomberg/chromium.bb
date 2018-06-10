@@ -450,6 +450,11 @@ class DownloadManagerTest : public testing::Test {
             base::Unretained(this)));
   }
 
+  void OnInProgressDownloadsLoaded(
+      std::vector<std::unique_ptr<download::DownloadItemImpl>> downloads) {
+    download_manager_->OnInProgressDownloadsLoaded(std::move(downloads));
+  }
+
  protected:
   // Key test variable; we'll keep it available to sub-classes.
   std::unique_ptr<DownloadManagerImpl> download_manager_;
@@ -607,6 +612,37 @@ TEST_F(DownloadManagerTest, RemoveDownloadsByURL) {
   int remove_count = download_manager_->RemoveDownloadsByURLAndTime(
       std::move(url_filter), base::Time(), base::Time::Max());
   EXPECT_EQ(remove_count, 1);
+}
+
+// Confirm that in-progress downloads will be taken and managed by
+// DownloadManager.
+TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
+  const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
+  download::InProgressDownloadManager in_progress_manager(
+      nullptr, download::InProgressDownloadManager::IsOriginSecureCallback());
+  auto in_progress_item = std::make_unique<download::DownloadItemImpl>(
+      &in_progress_manager, kGuid, 10, base::FilePath(), base::FilePath(),
+      std::vector<GURL>(), GURL("http://example.com/a"),
+      GURL("http://example.com/a"), GURL("http://example.com/a"),
+      GURL("http://example.com/a"), "application/octet-stream",
+      "application/octet-stream", base::Time::Now(), base::Time::Now(),
+      std::string(), std::string(), 10, 10, std::string(),
+      download::DownloadItem::INTERRUPTED,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
+      base::Time::Now(), true,
+      std::vector<download::DownloadItem::ReceivedSlice>());
+  std::vector<std::unique_ptr<download::DownloadItemImpl>> downloads;
+  downloads.emplace_back(std::move(in_progress_item));
+  EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _))
+      .WillOnce(Return());
+  OnInProgressDownloadsLoaded(std::move(downloads));
+  ASSERT_TRUE(download_manager_->GetDownloadByGuid(kGuid));
+
+  download::DownloadItem* download =
+      download_manager_->GetDownloadByGuid(kGuid);
+  download->Remove();
+  ASSERT_FALSE(download_manager_->GetDownloadByGuid(kGuid));
 }
 
 }  // namespace content

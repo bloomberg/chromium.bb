@@ -88,7 +88,6 @@ class MockDelegate : public DownloadItemImplDelegate {
 
   MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl*));
-  MOCK_CONST_METHOD1(AssertStateConsistent, void(DownloadItemImpl*));
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 
   void VerifyAndClearExpectations() {
@@ -98,7 +97,6 @@ class MockDelegate : public DownloadItemImplDelegate {
 
  private:
   void SetDefaultExpectations() {
-    EXPECT_CALL(*this, AssertStateConsistent(_)).WillRepeatedly(Return());
     EXPECT_CALL(*this, ShouldOpenFileBasedOnExtension(_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*this, ShouldOpenDownload(_, _)).WillRepeatedly(Return(true));
@@ -311,8 +309,6 @@ class DownloadItemTest : public testing::Test {
     // So that we don't have a function writing to a stack variable
     // lying around if the above failed.
     mock_delegate()->VerifyAndClearExpectations();
-    EXPECT_CALL(*mock_delegate(), AssertStateConsistent(_))
-        .WillRepeatedly(Return());
     EXPECT_CALL(*mock_delegate(), ShouldOpenFileBasedOnExtension(_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(_, _))

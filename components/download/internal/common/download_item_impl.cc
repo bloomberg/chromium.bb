@@ -429,7 +429,6 @@ DownloadItemImpl::~DownloadItemImpl() {
 
   for (auto& observer : observers_)
     observer.OnDownloadDestroyed(this);
-  delegate_->AssertStateConsistent(this);
   delegate_->Detach();
 }
 
@@ -594,10 +593,8 @@ void DownloadItemImpl::Remove() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   RecordDownloadDeletion(GetEndTime(), GetMimeType());
 
-  delegate_->AssertStateConsistent(this);
   InterruptAndDiscardPartialState(DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   UpdateObservers();
-  delegate_->AssertStateConsistent(this);
 
   NotifyRemoved();
   delegate_->DownloadRemoved(this);
@@ -1342,6 +1339,12 @@ void DownloadItemImpl::DestinationCompleted(
 
   OnAllDataSaved(total_bytes, std::move(secure_hash));
   MaybeCompleteDownload();
+}
+
+void DownloadItemImpl::SetDelegate(DownloadItemImplDelegate* delegate) {
+  delegate_->Detach();
+  delegate_ = delegate;
+  delegate_->Attach();
 }
 
 // **** Download progression cascade

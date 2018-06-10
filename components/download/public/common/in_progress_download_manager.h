@@ -70,6 +70,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
     // Called when a new download is started.
     virtual void OnNewDownloadStarted(DownloadItem* download) = 0;
+
+    // Called when all in-progress downloads are loaded from the database.
+    virtual void OnInProgressDownloadsLoaded(
+        std::vector<std::unique_ptr<download::DownloadItemImpl>>
+            in_progress_downloads) = 0;
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
@@ -118,6 +123,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   base::Optional<DownloadEntry> GetInProgressEntry(
       DownloadItemImpl* download) override;
   void ReportBytesWasted(DownloadItemImpl* download) override;
+
+  // Called to remove a in-progress download.
+  void RemoveInProgressDownload(const std::string& guid);
 
   void set_file_factory(std::unique_ptr<DownloadFileFactory> file_factory) {
     file_factory_ = std::move(file_factory);
@@ -173,7 +181,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // A list of in-progress download items, could be null if DownloadManagerImpl
   // is managing all downloads.
-  std::vector<std::unique_ptr<DownloadItem>> in_progress_downloads_;
+  std::vector<std::unique_ptr<DownloadItemImpl>> in_progress_downloads_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 

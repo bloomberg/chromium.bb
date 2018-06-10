@@ -344,6 +344,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       int64_t total_bytes,
       std::unique_ptr<crypto::SecureHash> hash_state) override;
 
+  void SetDelegate(DownloadItemImplDelegate* delegate);
+
  private:
   // Fine grained states of a download.
   //

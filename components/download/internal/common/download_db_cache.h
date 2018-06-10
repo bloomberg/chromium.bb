@@ -34,7 +34,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
   base::Optional<DownloadDBEntry> RetrieveEntry(const std::string& guid);
   void AddOrReplaceEntry(const DownloadDBEntry& entry);
 
+  // Remove an entry from the DownloadDB.
+  void RemoveEntry(const std::string& guid);
+
  private:
+  friend class DownloadDBCacheTest;
   friend class InProgressDownloadManager;
 
   // DownloadItem::Observer
