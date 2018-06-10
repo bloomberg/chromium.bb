@@ -258,7 +258,7 @@ int main(int argc, char **argv) {
       aom_wb_write_literal(&wb, ref_idx, 8);
       aom_wb_write_literal(&wb, tr, 8);
       aom_wb_write_literal(&wb, tc, 8);
-      aom_wb_write_literal(&wb, tile_data.coded_tile_data_size - 1, 16);
+      aom_wb_write_literal(&wb, (int)tile_data.coded_tile_data_size - 1, 16);
       tl += tile_info_bytes;
 
       memcpy(tl, (uint8_t *)tile_data.coded_tile_data,
