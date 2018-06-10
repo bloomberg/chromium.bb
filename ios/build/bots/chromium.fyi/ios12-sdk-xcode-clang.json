@@ -6,7 +6,7 @@
   "xcode build version": "10l176w",
   "use xcode build version": true,
   "gn_args": [
-    "additional_target_cpus=[\"x86\",\"arm64\",\"arm\"]",
+    "additional_target_cpus=[\"x86\"]",
     "ios_enable_code_signing=false",
     "is_component_build=false",
     "is_debug=true",
