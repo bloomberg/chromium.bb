@@ -2996,8 +2996,10 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
     const ComputedStyle* old_style) {
   CompositingReasons old_potential_compositing_reasons_from_style =
       PotentialCompositingReasonsFromStyle();
-  if (Compositor() && diff.HasDifference())
+  if (Compositor() &&
+      (diff.HasDifference() || needs_compositing_reasons_update_))
     Compositor()->UpdatePotentialCompositingReasonsFromStyle(*this);
+  needs_compositing_reasons_update_ = false;
 
   // This function implements an optimization for transforms and opacity.
   // A common pattern is for a touchmove handler to update the transform

@@ -1029,6 +1029,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // for the definition of a replaced normal-flow stacking element.
   bool IsReplacedNormalFlowStacking();
 
+  void SetNeeedsCompositingReasonsUpdate() {
+    needs_compositing_reasons_update_ = true;
+  }
+
  private:
   void SetNeedsCompositingInputsUpdateInternal();
 
@@ -1252,6 +1256,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // True if the current subtree is underneath a LayoutSVGHiddenContainer
   // ancestor.
   unsigned is_under_svg_hidden_container_ : 1;
+
+  unsigned needs_compositing_reasons_update_ : 1;
 
   LayoutBoxModelObject& layout_object_;
 
