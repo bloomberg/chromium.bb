@@ -3289,9 +3289,9 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
 
   // The inset on each side of the screen which is a snap region. Items dragged
   // to and released under this region will get snapped.
-  const int drag_offset = OverviewWindowDragController::kMinimumDragOffset;
-  const int drag_offset_snap_region =
-      OverviewWindowDragController::kMinimumDragOffsetAlreadyInSnapRegionDp;
+  const int drag_offset = 5;
+  const int drag_offset_snap_region = 48;
+  const int minimum_drag_offset = 96;
   const int screen_width =
       screen_util::GetDisplayWorkAreaBoundsInParent(left_window.get()).width();
   const int edge_inset = GetEdgeInset(screen_width);
@@ -3324,16 +3324,17 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   generator.ReleaseLeftButton();
 
   // Verify if the drag is started in the left snap region, the drag needs to
-  // move by |drag_offset_snap_region| towards the left side of the screen
+  // move by |drag_offset_snap_region| towards the right side of the screen
   // before split view acknowledges the drag (shows the preview area).
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
   generator.set_current_location(gfx::Point(
       left_selector_item->target_bounds().origin().x() + selector_item_inset,
       left_selector_item->target_bounds().CenterPoint().y()));
   generator.PressLeftButton();
-  generator.MoveMouseBy(-drag_offset_snap_region + 1, 0);
+  generator.MoveMouseBy(-drag_offset, 0);
   EXPECT_FALSE(IsPreviewAreaShowing());
-  generator.MoveMouseBy(-1, 0);
+  generator.MoveMouseBy(drag_offset_snap_region, 0);
+  generator.MoveMouseBy(-minimum_drag_offset, 0);
   EXPECT_TRUE(IsPreviewAreaShowing());
   // Drag back to the middle before releasing so that we stay in overview mode
   // on release.
@@ -3341,7 +3342,7 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
   generator.ReleaseLeftButton();
 
   // Verify if the drag is started in the right snap region, the drag needs to
-  // move by |drag_offset_snap_region| towards the right side of the screen
+  // move by |drag_offset_snap_region| towards the left side of the screen
   // before split view acknowledges the drag.
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
   generator.set_current_location(
@@ -3349,9 +3350,10 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
                      selector_item_inset,
                  right_selector_item->target_bounds().CenterPoint().y()));
   generator.PressLeftButton();
-  generator.MoveMouseBy(drag_offset_snap_region - 1, 0);
+  generator.MoveMouseBy(drag_offset, 0);
   EXPECT_FALSE(IsPreviewAreaShowing());
-  generator.MoveMouseBy(1, 0);
+  generator.MoveMouseBy(-drag_offset_snap_region, 0);
+  generator.MoveMouseBy(minimum_drag_offset, 0);
   EXPECT_TRUE(IsPreviewAreaShowing());
 }
 

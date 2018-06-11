@@ -34,12 +34,6 @@ class ASH_EXPORT OverviewWindowDragController {
                    // requirements.
   };
 
-  // The minimum offset that will be considered as a drag event.
-  static constexpr int kMinimumDragOffset = 5;
-  // The minimum offset that an item must be moved before it is considered a
-  // drag event, if the drag starts in one of the snap regions.
-  static constexpr int kMinimumDragOffsetAlreadyInSnapRegionDp = 48;
-
   explicit OverviewWindowDragController(WindowSelector* window_selector);
   ~OverviewWindowDragController();
 
@@ -96,8 +90,8 @@ class ASH_EXPORT OverviewWindowDragController {
   // The location of the initial mouse/touch/gesture event in screen.
   gfx::Point initial_event_location_;
 
-  // False if the initial drag location was not a snap region, or if the it
-  // was a snap region but the drag has since moved out.
+  // False if the initial drag location was not a snap region, or if it was in
+  // a snap region but the drag has since moved out.
   bool started_in_snap_region_ = false;
 
   // The opacity of |item_| changes if we are in drag to close mode. Store the
