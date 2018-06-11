@@ -689,9 +689,6 @@ WebContentsImpl::~WebContentsImpl() {
       GetOuterWebContents()->OnAudioStateChanged();
   }
 
-  if (GetTextInputManager())
-    GetTextInputManager()->RemoveObserver(this);
-
   for (auto& observer : observers_)
     observer.FrameDeleted(root->current_frame_host());
 
@@ -1157,18 +1154,6 @@ void WebContentsImpl::RecursiveRequestAXTreeSnapshotOnFrame(
       frame_tree_node->current_frame_host()->RequestAXTreeSnapshot(
           combiner->AddFrame(is_root), ax_mode);
     }
-  }
-}
-
-void WebContentsImpl::OnTextSelectionChanged(
-    TextInputManager* text_input_manager,
-    RenderWidgetHostViewBase* updated_view) {
-  if (delegate_) {
-    base::string16 text;
-    if (text_input_manager->GetTextSelection())
-      text = text_input_manager->GetTextSelection()->selected_text();
-    for (auto& observer : observers_)
-      observer.DidChangeTextSelection(text);
   }
 }
 
@@ -1999,10 +1984,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // happens after RenderFrameHostManager::Init.
   NotifySwappedFromRenderManager(
       nullptr, GetRenderManager()->current_frame_host(), true);
-
-  // Start observing the text input manager for text selection changes.
-  if (GetTextInputManager())
-    GetTextInputManager()->AddObserver(this);
 }
 
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {

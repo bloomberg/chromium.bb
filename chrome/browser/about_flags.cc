@@ -3919,13 +3919,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBlinkHeapIncrementalMarkingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBlinkHeapIncrementalMarking)},
 
-#if defined(OS_MACOSX)
-    {"enable-suggested-text-touch-bar",
-     flag_descriptions::kSuggestedTextTouchBarName,
-     flag_descriptions::kSuggestedTextTouchBarDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kSuggestedTextTouchBar)},
-#endif
-
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
