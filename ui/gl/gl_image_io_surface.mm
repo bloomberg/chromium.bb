@@ -6,8 +6,8 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -346,9 +346,10 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
       return false;
   }
   glGetIntegerv(target_getter, &rgb_texture);
-  base::ScopedClosureRunner destroy_resources_runner(base::BindBlock(^{
-    glBindTexture(target, rgb_texture);
-  }));
+  base::ScopedClosureRunner destroy_resources_runner(
+      base::BindOnce(base::RetainBlock(^{
+        glBindTexture(target, rgb_texture);
+      })));
 
   CGLContextObj cgl_context = CGLGetCurrentContext();
   {

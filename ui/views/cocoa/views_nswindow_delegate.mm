@@ -4,8 +4,8 @@
 
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
@@ -117,10 +117,12 @@
     // NSWindow delegate, the call to -[NSApp beginSheet:] also took a weak
     // reference to the delegate, which will be destroyed when the sheet's
     // BridgedNativeWidget is destroyed.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::BindBlock(^{
-      [sheetParent endSheet:window];
-      [[self retain] release];  // Force |self| to be retained for the block.
-    }));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(base::RetainBlock(^{
+          [sheetParent endSheet:window];
+          [[self retain]
+              release];  // Force |self| to be retained for the block.
+        })));
   }
   DCHECK([window isEqual:[notification object]]);
   parent_->OnWindowWillClose();
