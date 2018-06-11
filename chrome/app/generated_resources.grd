@@ -4357,6 +4357,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble when the user has saved a password.">
         Password saved
       </message>
+      <message name="IDS_PASSWORD_GENERATION_SUGGESTION" desc="Text shown next to a generated password describing it as a suggestion.">
+        Use suggested password
+      </message>
       <message name="IDS_SAVE_PASSWORD" desc="The title of the save password bubble when a password can be saved.">
         Do you want <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to save your password for this site?
       </message>

@@ -85,6 +85,8 @@ gfx::Size PasswordGenerationPopupViewAndroid::GetPreferredSizeOfPasswordView() {
   return gfx::Size(kUnusedSize, kUnusedSize);
 }
 
+void PasswordGenerationPopupViewAndroid::UpdateState() {}
+
 void PasswordGenerationPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
   if (java_object_.is_null())
     return;

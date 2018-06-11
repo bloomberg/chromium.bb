@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/password_generator_fips181.h"
@@ -139,7 +140,6 @@ void PasswordGenerationPopupControllerImpl::PasswordSelected(bool selected) {
 
   password_selected_ = selected;
   view_->PasswordSelectionUpdated();
-  view_->UpdateBoundsAndRedrawPopup();
 }
 
 void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
@@ -184,6 +184,7 @@ void PasswordGenerationPopupControllerImpl::Show(bool display_password) {
     CalculateBounds();
     view_->Show();
   } else {
+    view_->UpdateState();
     CalculateBounds();
     view_->UpdateBoundsAndRedrawPopup();
   }

@@ -44,6 +44,7 @@ class PasswordGenerationPopupViewAndroid : public PasswordGenerationPopupView {
   void Show() override;
   void Hide() override;
   gfx::Size GetPreferredSizeOfPasswordView() override;
+  void UpdateState() override;
   void UpdateBoundsAndRedrawPopup() override;
   void PasswordSelectionUpdated() override;
   bool IsPointInPasswordBounds(const gfx::Point& point) override;

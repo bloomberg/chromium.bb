@@ -31,7 +31,11 @@ class PasswordGenerationPopupView {
   // Get desired size of the popup.
   virtual gfx::Size GetPreferredSizeOfPasswordView() = 0;
 
-  // Updates layout information from the controller.
+  // The state of the popup has changed from editing to offering a new password.
+  // The layout should be recreated.
+  virtual void UpdateState() = 0;
+
+  // Updates layout information from the controller and performs the layout.
   virtual void UpdateBoundsAndRedrawPopup() = 0;
 
   // Called when the password selection state has changed.

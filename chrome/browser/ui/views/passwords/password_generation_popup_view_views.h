@@ -10,15 +10,11 @@
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 #include "ui/views/controls/styled_label_listener.h"
 
-namespace views {
-class StyledLabel;
-}
-
 namespace autofill {
 
 class PasswordGenerationPopupController;
 
-class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
+class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
                                          public PasswordGenerationPopupView,
                                          public views::StyledLabelListener {
  public:
@@ -30,21 +26,19 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
   void Show() override;
   void Hide() override;
   gfx::Size GetPreferredSizeOfPasswordView() override;
+  void UpdateState() override;
   void UpdateBoundsAndRedrawPopup() override;
   void PasswordSelectionUpdated() override;
   bool IsPointInPasswordBounds(const gfx::Point& point) override;
 
  private:
-  // Helper class to do layout of the password portion of the popup.
-  class PasswordBox;
-
+  class GeneratedPasswordBox;
   ~PasswordGenerationPopupViewViews() override;
 
-  // Helper function to create |password_view_|.
-  void CreatePasswordView();
+  // Creates all the children views and adds them into layout.
+  void CreateLayoutAndChildren();
 
   // views:Views implementation.
-  void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
@@ -53,12 +47,8 @@ class PasswordGenerationPopupViewViews : public AutofillPopupBaseView,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // Sub views. Used to change bounds when updating. Weak references.
-  PasswordBox* password_view_;
-  views::StyledLabel* help_label_;
-
-  // Size of the divider between the password and the help text.
-  gfx::Rect divider_bounds_;
+  // Sub view that displays the actual password to be saved.
+  GeneratedPasswordBox* password_view_ = nullptr;
 
   // Controller for this view. Weak reference.
   PasswordGenerationPopupController* controller_;
