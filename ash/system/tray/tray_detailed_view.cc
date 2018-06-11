@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
@@ -66,7 +67,38 @@ class ScrollContentsView : public views::View {
   }
 
   void PaintChildren(const views::PaintInfo& paint_info) override {
-    views::View::PaintChildren(paint_info);
+    int sticky_header_height = 0;
+    for (const auto& header : headers_) {
+      // Sticky header is at the top.
+      if (header.view->y() != header.natural_offset) {
+        sticky_header_height = header.view->bounds().height();
+        DCHECK_EQ(VIEW_ID_STICKY_HEADER, header.view->id());
+        break;
+      }
+    }
+    // Paint contents other than sticky headers. If sticky header is at the top,
+    // it clips the header's height so that nothing is shown behind the header.
+    {
+      ui::ClipRecorder clip_recorder(paint_info.context());
+      gfx::Rect clip_rect = gfx::Rect(paint_info.paint_recording_size()) -
+                            paint_info.offset_from_parent();
+      gfx::Insets clip_insets(sticky_header_height, 0, 0, 0);
+      clip_rect.Inset(clip_insets.Scale(paint_info.paint_recording_scale_x(),
+                                        paint_info.paint_recording_scale_y()));
+      clip_recorder.ClipRect(clip_rect);
+      for (int i = 0; i < child_count(); ++i) {
+        auto* child = child_at(i);
+        if (child->id() != VIEW_ID_STICKY_HEADER && !child->layer())
+          child->Paint(paint_info);
+      }
+    }
+    // Paint sticky headers.
+    for (int i = 0; i < child_count(); ++i) {
+      auto* child = child_at(i);
+      if (child->id() == VIEW_ID_STICKY_HEADER && !child->layer())
+        child->Paint(paint_info);
+    }
+
     bool did_draw_shadow = false;
     // Paint header row separators.
     for (auto& header : headers_)

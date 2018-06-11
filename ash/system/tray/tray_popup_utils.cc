@@ -226,11 +226,11 @@ void TrayPopupUtils::ConfigureTrayPopupButton(views::Button* button) {
 
 void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
   view->set_id(VIEW_ID_STICKY_HEADER);
-  view->SetBackground(
-      features::IsSystemTrayUnifiedEnabled()
-          ? views::CreateSolidBackground(kUnifiedMenuBackgroundColor)
-          : views::CreateThemedSolidBackground(
-                view, ui::NativeTheme::kColorId_BubbleBackground));
+
+  if (!features::IsSystemTrayUnifiedEnabled()) {
+    view->SetBackground(views::CreateThemedSolidBackground(
+        view, ui::NativeTheme::kColorId_BubbleBackground));
+  }
   view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
   view->SetPaintToLayer();
