@@ -26726,7 +26726,6 @@ from previous Chrome versions.
       label="enable-fill-on-account-select-no-highlighting"/>
   <int value="-2143113994" label="enable-ephemeral-apps-in-webstore"/>
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
-  <int value="-2134717874" label="Multidevice:disabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
   <int value="-2134244069" label="HttpFormWarning:enabled"/>
   <int value="-2132591642" label="enable-input-view"/>
@@ -28425,7 +28424,6 @@ from previous Chrome versions.
   <int value="1529979182" label="EnablePasswordSelection:enabled"/>
   <int value="1530113113" label="disable-pushstate-throttle"/>
   <int value="1530177325" label="LanguagesPreference:disabled"/>
-  <int value="1533111748" label="Multidevice:enabled"/>
   <int value="1536921097" label="NavigationMojoResponse:disabled"/>
   <int value="1538690515" label="OneGoogleBarOnLocalNtp:enabled"/>
   <int value="1541723759" label="ServiceWorkerNavigationPreload:disabled"/>
