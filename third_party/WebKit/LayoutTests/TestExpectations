@@ -3993,15 +3993,6 @@ crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
 crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Skip ]
 crbug.com/736732 virtual/enable_wasm/external/wpt/wasm/wasm_local_iframe_test.html [ Timeout Pass ]
 
-# These imported tests exercise tens of thousands of code points and generate large results. Marked slow, but still timeout (>30s).
-crbug.com/736056 external/wpt/encoding/legacy-mb-japanese [ Timeout Pass ]
-crbug.com/736056 external/wpt/encoding/legacy-mb-korean [ Timeout Pass ]
-crbug.com/736056 external/wpt/encoding/legacy-mb-tchinese [ Timeout Pass ]
-# These appeared bad enough that crbug.com/749070 disabled them entirely, but unclear if they are substantively different.
-crbug.com/736056 external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-href-errors-han.html [ Skip ]
-crbug.com/736056 external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBa.html [ Skip ]
-crbug.com/736056 external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBb.html [ Skip ]
-
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
