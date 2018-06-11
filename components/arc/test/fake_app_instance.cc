@@ -404,7 +404,8 @@ void FakeAppInstance::GetAppShortcutItems(
     fake_app_shortcut_items.push_back(mojom::AppShortcutItem::New(
         base::StringPrintf("ShortcutId %d", i),
         base::StringPrintf("ShortLabel %d", i), fake_icon_png_data,
-        package_name.empty() ? "FakeAppPackageName" : package_name));
+        package_name.empty() ? "FakeAppPackageName" : package_name,
+        mojom::AppShortcutItemType::kStatic, i));
   }
 
   std::move(callback).Run(std::move(fake_app_shortcut_items));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 32
+// Next MinVersion: 33
 
 module arc.mojom;
 
@@ -156,6 +156,18 @@ enum AppDataRequestState {
   FAILED_TO_CALL_GLOBALQUERY = 8,
 };
 
+// Describes the category type of app shortcut item.
+[Extensible]
+enum AppShortcutItemType {
+  // Static shortcut, which means it was published from AndroidManifest.xml.
+  kStatic = 0,
+
+  // Dynamic shortcut, which means it was published at runtime using the
+  // ShortcutManagerAPI. Dynamic shortcuts are links to specific,
+  // context-sensitive actions within the app.
+  kDynamic = 1,
+};
+
 // Describes app shortcut that is published by Android's ShortcutManager.
 struct AppShortcutItem {
   // The ID of this shortcut. Unique within each publisher app and stable across
@@ -170,6 +182,12 @@ struct AppShortcutItem {
 
   // The package name of the publisher app.
   [MinVersion=31] string? package_name;
+
+  // The category type of this shortcut.
+  [MinVersion=32] AppShortcutItemType type;
+
+  // "Rank" of a shortcut, which is a non-negative, sequential value.
+  [MinVersion=32] int32 rank;
 };
 
 // Next method ID: 18

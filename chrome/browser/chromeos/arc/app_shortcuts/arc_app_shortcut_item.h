@@ -9,12 +9,17 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "components/arc/common/app.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace arc {
 
 // Describes app shortcut that is published by Android's ShortcutManager.
 struct ArcAppShortcutItem {
+  ArcAppShortcutItem();
+  ArcAppShortcutItem(const ArcAppShortcutItem& item);
+  ~ArcAppShortcutItem();
+
   // The ID of this shortcut. Unique within each publisher app and stable across
   // devices.
   std::string shortcut_id;
@@ -24,6 +29,12 @@ struct ArcAppShortcutItem {
 
   // The icon for this shortcut.
   gfx::ImageSkia icon;
+
+  // The category type of this shortcut.
+  mojom::AppShortcutItemType type = mojom::AppShortcutItemType::kStatic;
+
+  // "Rank" of a shortcut, which is a non-negative, sequential value.
+  int rank = 0;
 };
 
 using ArcAppShortcutItems = std::vector<ArcAppShortcutItem>;
