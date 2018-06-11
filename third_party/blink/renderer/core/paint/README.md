@@ -167,6 +167,79 @@ from layout
   v
 ```
 
+#### SPv1 compositing algorithm
+
+The SPv1 compositing system chooses which `LayoutObject`s paint into their
+own composited backing texture. This is called "having a compositing trigger".
+These textures correspond to GraphicsLayers. There are also additional
+`GraphicsLayer`s which represent property tree-related effects.
+
+All elements which do not have a compositing trigger paint into the texture
+of the nearest `LayoutObject`with a compositing trigger on its
+*compositing container chain* (except for squashed layers; see below). For
+historical, practical and implementation detail reasons, only `LayoutObject`s
+with `PaintLayer`s can have a compositing trigger. See crbug.com/370604 for a
+bug tracking this limitation, which is often referred to as the "fundamental
+compositing bug".
+
+The various compositing triggers are listed
+[here](../../platform/graphics/compositing_reasons.h).
+They fall in to several categories:
+1. Direct reasons due to CSS style (see `CompositingReason::kComboAllDirectStyleDeterminedReasons`)
+2. Direct reasons due to other conditions (see `CompositingReason::kComboAllDirectNonStyleDeterminedReasons`)
+3. Composited scrolling-dependent reasons (see `CompositingReason::kComboAllCompositedScrollingDeterminedReasons`)
+4. Composited descendant-dependent reasons (see `CompositingReason::kComboCompositedDescendants`)
+5. Overlap-dependent reasons (See `CompositingReasons::kComboSquashableReasons`)
+
+The triggers have no effect unless `PaintLayerCompositor::CanBeComposited`
+returns true.
+
+Category (1) always triggers compositing of a `LayoutObject` based on its own
+style. Category (2) triggers based on the `LayoutObject`'s style, its DOM
+ancestors, and whether it is a certain kind of frame root. Category (3)
+triggers based on whether composited scrolling applies to the `LayoutObject`,
+or the `LayoutObject` moves relative to a composited scroller (position: fixed
+or position: sticky). Category (4) triggers if there are any stacking
+descendants of the `LayoutObject` that end up composited. Category 5 triggers
+if the `LayoutObject` paints after and overlaps (or may overlap) another
+composited layer.
+
+Note that composited scrolling is special. Several ways it is special:
+ * Composited descendants do _not_ necessarily cause composited scrolling of an
+ancestor.
+ * The presence of LCD text prevents composited scrolling in the
+absence of other overriding triggers.
+ * Local frame roots always use
+composited scrolling if they have overflow.
+ * Non-local frame roots use
+composited scrolling if they have overflow and any composited descendants.
+ * Composited scrolling is indicated by a bit on PaintLayerScrollableArea, not
+ a direct compositing reason. This bit is then transformed into a compositing
+ reason from category (3) during the CompositingRequirementsUpdater
+
+Note that overlap triggers have two special behaviors:
+ * Any `LayoutObject`
+which may overlap a `LayoutObject` that uses composited scrolling or a
+transform animation, paints after it, and scrolls with respect to it, receives
+an overlap trigger. In some cases this trigger is too aggressive.
+ * Inline CSS
+transform is treated as if it was a transform animation. (This is a heuristic
+to speed up the compositing step but leads to more composited layers.)
+
+The sequence of work during the `DocumentLifecycle` to compute these triggers
+is as follows:
+
+ * `kInStyleRecalc`: compute (1) and most of (4) by calling
+`CompositingReasonFinder::PotentialCompositingReasonsFromStyle` and caching
+the result on `PaintLayer`, accessible via
+`PaintLayer::PotentialCompositingReasonsFromStyle`. Dirty bits in
+`StyleDifference` determine whether this has to be re-computed on a particular
+lifecycle update.
+ * `kInCompositingUpdate`: compute (2) `CompositingInputsUpdater`. Also
+ set the composited scrolling bit on `PaintLayerScrollableArea` if applicable.
+ * `kCompositingInputsClean`: compute (3), the rest of (4), and (5), in
+`CompositingRequirementsUpdater`
+
 ### BlinkGenPropertyTrees
 
 This mode is for incrementally shipping completed features from SPv2. It is
@@ -325,7 +398,7 @@ is created for the root `LayoutView`. During the tree walk, one
 information to provide O(1) complexity access to them if possible:
 
 *   Paint invalidation container: Since as indicated by the definitions in
-    [Glossaries](#Other glossaries), the paint invalidation container for
+    [Glossaries](#other-glossaries), the paint invalidation container for
     stacked objects can differ from normal objects, we have to track both
     separately. Here is an example:
 

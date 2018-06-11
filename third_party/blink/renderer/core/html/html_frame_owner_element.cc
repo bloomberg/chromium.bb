@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -174,6 +175,10 @@ void HTMLFrameOwnerElement::SetContentFrame(Frame& frame) {
 
   content_frame_ = &frame;
 
+  // Invalidate compositing inputs, because a remote frame child can cause the
+  // owner to become composited.
+  if (auto* box = GetLayoutBox())
+    box->Layer()->SetNeedsCompositingInputsUpdate();
   SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                              StyleChangeReason::kFrame));
 

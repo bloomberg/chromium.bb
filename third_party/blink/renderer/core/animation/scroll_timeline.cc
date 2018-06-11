@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
 namespace blink {
@@ -161,6 +162,9 @@ void ScrollTimeline::AttachAnimation() {
       .GetLayoutView()
       ->Compositor()
       ->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
+  LayoutBoxModelObject* object = scroll_source_->GetLayoutBoxModelObject();
+  if (object && object->HasLayer())
+    object->Layer()->SetNeedsCompositingInputsUpdate();
 }
 
 void ScrollTimeline::DetachAnimation() {
@@ -169,6 +173,10 @@ void ScrollTimeline::DetachAnimation() {
   if (layout_view && layout_view->Compositor()) {
     layout_view->Compositor()->SetNeedsCompositingUpdate(
         kCompositingUpdateRebuildTree);
+
+    LayoutBoxModelObject* object = scroll_source_->GetLayoutBoxModelObject();
+    if (object && object->HasLayer())
+      object->Layer()->SetNeedsCompositingInputsUpdate();
   }
 }
 

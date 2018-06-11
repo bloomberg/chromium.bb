@@ -124,6 +124,8 @@ struct PaintLayerRareData {
   // compositing state of this layer.
   CompositingReasons potential_compositing_reasons_from_style;
 
+  CompositingReasons potential_compositing_reasons_from_non_style;
+
   // Once computed, indicates all that a layer needs to become composited using
   // the CompositingReasons enum bitfield.
   CompositingReasons compositing_reasons;
@@ -686,6 +688,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool ScrollsOverflow() const;
 
+  CompositingReasons DirectCompositingReasons() const {
+    return rare_data_
+               ? ((rare_data_->potential_compositing_reasons_from_style |
+                   rare_data_->potential_compositing_reasons_from_non_style) &
+                  CompositingReason::kComboAllDirectReasons)
+               : CompositingReason::kNone;
+  }
+
   CompositingReasons PotentialCompositingReasonsFromStyle() const {
     return rare_data_ ? rare_data_->potential_compositing_reasons_from_style
                       : CompositingReason::kNone;
@@ -695,6 +705,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
            (reasons & CompositingReason::kComboAllStyleDeterminedReasons));
     if (rare_data_ || reasons != CompositingReason::kNone)
       EnsureRareData().potential_compositing_reasons_from_style = reasons;
+  }
+  CompositingReasons PotentialCompositingReasonsFromNonStyle() const {
+    return rare_data_ ? rare_data_->potential_compositing_reasons_from_non_style
+                      : CompositingReason::kNone;
+  }
+  void SetPotentialCompositingReasonsFromNonStyle(CompositingReasons reasons) {
+    DCHECK(reasons ==
+           (reasons &
+            CompositingReason::kComboAllDirectNonStyleDeterminedReasons));
+    if (rare_data_ || reasons != CompositingReason::kNone)
+      EnsureRareData().potential_compositing_reasons_from_non_style = reasons;
   }
 
   bool HasStyleDeterminedDirectCompositingReasons() const {
@@ -752,7 +773,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   void UpdateAncestorDependentCompositingInputs(
       const AncestorDependentCompositingInputs&);
-  void DidUpdateCompositingInputs();
+  void ClearChildNeedsCompositingInputsUpdate();
 
   const AncestorDependentCompositingInputs&
   GetAncestorDependentCompositingInputs() const {
@@ -990,6 +1011,13 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   void SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(bool is_empty) {
     previous_paint_phase_descendant_block_backgrounds_was_empty_ = is_empty;
+  }
+
+  bool DescendantHasDirectCompositingReason() const {
+    return descendant_has_direct_compositing_reason_;
+  }
+  void SetDescendantHasDirectCompositingReason(bool value) {
+    descendant_has_direct_compositing_reason_ = value;
   }
 
   ClipRectsCache* GetClipRectsCache() const { return clip_rects_cache_.get(); }
@@ -1257,6 +1285,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // ancestor.
   unsigned is_under_svg_hidden_container_ : 1;
 
+  unsigned descendant_has_direct_compositing_reason_ : 1;
   unsigned needs_compositing_reasons_update_ : 1;
 
   LayoutBoxModelObject& layout_object_;

@@ -56,7 +56,6 @@ CompositingReasons CompositingReasonFinder::DirectReasons(
          NonStyleDeterminedDirectReasons(layer, ignore_lcd_text);
 }
 
-// This information doesn't appear to be incorporated into CompositingReasons.
 bool CompositingReasonFinder::RequiresCompositingForScrollableFrame() const {
   // Need this done first to determine overflow.
   DCHECK(!layout_view_.NeedsLayout());
@@ -164,9 +163,6 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   if (layer->ClipParent() && layer->GetLayoutObject().IsOutOfFlowPositioned())
     direct_reasons |= CompositingReason::kOutOfFlowClipping;
 
-  if (layer->NeedsCompositedScrolling())
-    direct_reasons |= CompositingReason::kOverflowScrollingTouch;
-
   if (RequiresCompositingForRootScroller(*layer))
     direct_reasons |= CompositingReason::kRootScroller;
 
@@ -187,6 +183,11 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
       ScrollTimeline::HasActiveScrollTimeline(
           layer->GetLayoutObject().GetNode())) {
     direct_reasons |= CompositingReason::kScrollTimelineTarget;
+  }
+
+  if (layer->IsRootLayer() && (RequiresCompositingForScrollableFrame() ||
+                               layout_view_.GetFrame()->IsLocalRoot())) {
+    direct_reasons |= CompositingReason::kRoot;
   }
 
   direct_reasons |= layout_object.AdditionalCompositingReasons();

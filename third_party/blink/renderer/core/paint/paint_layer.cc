@@ -123,6 +123,7 @@ using namespace HTMLNames;
 PaintLayerRareData::PaintLayerRareData()
     : enclosing_pagination_layer(nullptr),
       potential_compositing_reasons_from_style(CompositingReason::kNone),
+      potential_compositing_reasons_from_non_style(CompositingReason::kNone),
       compositing_reasons(CompositingReason::kNone),
       squashing_disallowed_reasons(SquashingDisallowedReason::kNone),
       grouped_mapping(nullptr) {}
@@ -162,6 +163,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
       is_under_svg_hidden_container_(false),
+      descendant_has_direct_compositing_reason_(false),
+      needs_compositing_reasons_update_(true),
       layout_object_(layout_object),
       parent_(nullptr),
       previous_(nullptr),
@@ -228,14 +231,11 @@ void PaintLayer::ContentChanged(ContentChangeType change_type) {
   DisableCompositingQueryAsserts disabler;
 
   if (Compositor()) {
-    if (change_type == kCanvasChanged) {
-      Compositor()->SetNeedsCompositingUpdate(
-          kCompositingUpdateAfterCompositingInputChange);
-    }
+    if (change_type == kCanvasChanged)
+      SetNeedsCompositingInputsUpdate();
 
     if (change_type == kCanvasContextChanged) {
-      Compositor()->SetNeedsCompositingUpdate(
-          kCompositingUpdateAfterCompositingInputChange);
+      SetNeedsCompositingInputsUpdate();
 
       // Although we're missing test coverage, we need to call
       // GraphicsLayer::SetContentsToCcLayer with the new cc::Layer for this
@@ -1121,11 +1121,9 @@ void PaintLayer::UpdateAncestorDependentCompositingInputs(
   needs_ancestor_dependent_compositing_inputs_update_ = false;
 }
 
-void PaintLayer::DidUpdateCompositingInputs() {
+void PaintLayer::ClearChildNeedsCompositingInputsUpdate() {
   DCHECK(!NeedsCompositingInputsUpdate());
   child_needs_compositing_inputs_update_ = false;
-  if (scrollable_area_)
-    scrollable_area_->UpdateNeedsCompositedScrolling();
 }
 
 bool PaintLayer::HasNonIsolatedDescendantWithBlendMode() const {
