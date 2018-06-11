@@ -1300,6 +1300,27 @@ STDMETHODIMP AXPlatformNodeWin::GetIAccessiblePair(IAccessible** accessible,
   return S_OK;
 }
 
+//
+// IScrollItemProvider implementation.
+//
+
+STDMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
+  COM_OBJECT_VALIDATE();
+
+  gfx::Rect r = gfx::ToEnclosingRect(GetData().location);
+  r -= r.OffsetFromOrigin();
+
+  AXActionData action_data;
+  action_data.target_node_id = GetData().id;
+  action_data.target_rect = r;
+  action_data.action = ax::mojom::Action::kScrollToMakeVisible;
+
+  if (delegate_->AccessibilityPerformAction(action_data))
+    return S_OK;
+  return E_FAIL;
+}
+
+// IAccessibleEx methods not implemented.
 STDMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RUNTIME_ID);
   return E_NOTIMPL;
@@ -2443,6 +2464,7 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
 
   switch (pattern_id) {
     // Supported by IAccessibleEx.
+    // TODO(suproteem): Implementations where applicable.
     case UIA_DockPatternId:
     case UIA_ExpandCollapsePatternId:
     case UIA_GridPatternId:
@@ -2450,14 +2472,19 @@ STDMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_MultipleViewPatternId:
     case UIA_RangeValuePatternId:
     case UIA_ScrollPatternId:
+      *result = nullptr;
+      break;
     case UIA_ScrollItemPatternId:
+      *result = static_cast<IRawElementProviderSimple*>(this);
+      AddRef();
+      break;
     case UIA_SynchronizedInputPatternId:
     case UIA_TablePatternId:
     case UIA_TableItemPatternId:
     case UIA_TransformPatternId:
-      // TODO(suproteem): Implementations where applicable.
       *result = nullptr;
       break;
+
     // TODO(suproteem): Add checks for control role.
     case UIA_InvokePatternId:
     case UIA_SelectionItemPatternId:
@@ -2496,6 +2523,7 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
   switch (property_id) {
     // Supported by IAccessibleEx.
+    // TODO(suproteem): Implementations where applicable.
     case UIA_AriaPropertiesPropertyId:
     case UIA_AriaRolePropertyId:
     case UIA_AutomationIdPropertyId:
@@ -2515,9 +2543,9 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_LabeledByPropertyId:
     case UIA_LocalizedControlTypePropertyId:
     case UIA_OrientationPropertyId:
-      // TODO(suproteem): Implementations where applicable.
       result->vt = VT_EMPTY;
       break;
+
     // Covered by MSAA.
     case UIA_BoundingRectanglePropertyId:
     case UIA_HasKeyboardFocusPropertyId:
@@ -2531,6 +2559,7 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_ProcessIdPropertyId:
       result->vt = VT_EMPTY;
       break;
+
     // Overlap with MSAA, not supported.
     case UIA_AcceleratorKeyPropertyId:
     case UIA_AccessKeyPropertyId:

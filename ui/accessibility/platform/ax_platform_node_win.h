@@ -241,6 +241,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IAccessibleTable2,
                         public IAccessibleTableCell,
                         public IRawElementProviderSimple,
+                        public IScrollItemProvider,
                         public IServiceProvider,
                         public AXPlatformNodeBase {
  public:
@@ -256,6 +257,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
+    COM_INTERFACE_ENTRY(IScrollItemProvider)
     COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()
 
@@ -416,6 +418,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   STDMETHODIMP GetIAccessiblePair(IAccessible** accessible,
                                   LONG* child_id) override;
+
+  //
+  // IScrollItemProvider methods.
+  //
+
+  STDMETHODIMP ScrollIntoView() override;
 
   // IAccessibleEx methods not implemented.
   STDMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
