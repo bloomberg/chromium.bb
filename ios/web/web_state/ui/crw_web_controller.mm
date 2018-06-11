@@ -460,8 +460,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // loaded.
 @property(nonatomic, readwrite) BOOL userInteractionRegistered;
 
-// Removes the container view from the hierarchy and resets the ivar.
-- (void)resetContainerView;
 // Called when the web page has changed document and/or URL, and so the page
 // navigation should be reported to the delegate, and internal state updated to
 // reflect the fact that the navigation has occurred. |context| contains
@@ -1067,7 +1065,6 @@ GURL URLEscapedForHistory(const GURL& url) {
       _webStateImpl->ClearTransientContent();
       _touchTrackingRecognizer.touchTrackingDelegate = nil;
       _touchTrackingRecognizer = nil;
-      [self resetContainerView];
       _currentURLLoadWasTrigerred = NO;
     }
   }
@@ -1078,11 +1075,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   // WKBasedNavigationManager.
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
     [self removeWebView];
-}
-
-- (void)resetContainerView {
-  [_containerView removeFromSuperview];
-  _containerView = nil;
 }
 
 - (BOOL)isViewAlive {
@@ -5578,7 +5570,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)resetInjectedWebViewContentView {
   _currentURLLoadWasTrigerred = NO;
   [self setWebView:nil];
-  [self resetContainerView];
+  [_containerView removeFromSuperview];
+  _containerView = nil;
 }
 
 - (NSString*)referrerFromNavigationAction:(WKNavigationAction*)action {
