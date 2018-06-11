@@ -39,11 +39,7 @@ PageSignalReceiver::~PageSignalReceiver() = default;
 void PageSignalReceiver::NotifyPageAlmostIdle(
     const CoordinationUnitID& page_cu_id) {
   DCHECK(IsPageAlmostIdleSignalEnabled());
-  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
-  if (web_contents_iter == cu_id_web_contents_map_.end())
-    return;
-  for (auto& observer : observers_)
-    observer.OnPageAlmostIdle(web_contents_iter->second);
+  NotifyObserversIfKnownCu(page_cu_id, &PageSignalObserver::OnPageAlmostIdle);
 }
 
 void PageSignalReceiver::NotifyRendererIsBloated(
@@ -58,30 +54,31 @@ void PageSignalReceiver::NotifyRendererIsBloated(
 void PageSignalReceiver::SetExpectedTaskQueueingDuration(
     const CoordinationUnitID& page_cu_id,
     base::TimeDelta duration) {
-  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
-  if (web_contents_iter == cu_id_web_contents_map_.end())
-    return;
-  for (auto& observer : observers_)
-    observer.OnExpectedTaskQueueingDurationSet(web_contents_iter->second,
-                                               duration);
+  NotifyObserversIfKnownCu(
+      page_cu_id, &PageSignalObserver::OnExpectedTaskQueueingDurationSet,
+      duration);
 }
 
 void PageSignalReceiver::SetLifecycleState(const CoordinationUnitID& page_cu_id,
                                            mojom::LifecycleState state) {
-  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
-  if (web_contents_iter == cu_id_web_contents_map_.end())
-    return;
-  for (auto& observer : observers_)
-    observer.OnLifecycleStateChanged(web_contents_iter->second, state);
+  NotifyObserversIfKnownCu(page_cu_id,
+                           &PageSignalObserver::OnLifecycleStateChanged, state);
 }
 
 void PageSignalReceiver::NotifyNonPersistentNotificationCreated(
     const CoordinationUnitID& page_cu_id) {
-  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
-  if (web_contents_iter == cu_id_web_contents_map_.end())
-    return;
-  for (auto& observer : observers_)
-    observer.OnNonPersistentNotificationCreated(web_contents_iter->second);
+  NotifyObserversIfKnownCu(
+      page_cu_id, &PageSignalObserver::OnNonPersistentNotificationCreated);
+}
+
+void PageSignalReceiver::OnLoadTimePerformanceEstimate(
+    const CoordinationUnitID& page_cu_id,
+    const std::string& origin,
+    base::TimeDelta cpu_usage_estimate,
+    uint64_t private_footprint_kb_estimate) {
+  NotifyObserversIfKnownCu(
+      page_cu_id, &PageSignalObserver::OnLoadTimePerformanceEstimate, origin,
+      cpu_usage_estimate, private_footprint_kb_estimate);
 }
 
 void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {

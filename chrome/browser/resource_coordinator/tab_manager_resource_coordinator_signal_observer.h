@@ -27,6 +27,11 @@ class TabManager::ResourceCoordinatorSignalObserver
                                          base::TimeDelta duration) override;
   void OnNonPersistentNotificationCreated(
       content::WebContents* web_contents) override;
+  void OnLoadTimePerformanceEstimate(
+      content::WebContents* web_contents,
+      const std::string& origin,
+      base::TimeDelta cpu_usage_estimate,
+      uint64_t private_footprint_kb_estimate) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorSignalObserver);

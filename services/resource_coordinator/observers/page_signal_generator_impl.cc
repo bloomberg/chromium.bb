@@ -10,6 +10,7 @@
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/system_coordination_unit_impl.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/resource_coordinator_clock.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -75,15 +76,23 @@ void PageSignalGeneratorImpl::AddReceiver(
 // 1- kExpectedTaskQueueingDuration property for reporting EQT
 // 2- kMainThreadTaskLoadIsLow property changes for PageAlmostIdle detection
 // 3- kRendererIsBloated event for reloading bloated pages.
+// The system CU is observed for the kProcessCPUUsageReady event.
 bool PageSignalGeneratorImpl::ShouldObserve(
     const CoordinationUnitBase* coordination_unit) {
   auto cu_type = coordination_unit->id().type;
-  if (cu_type == CoordinationUnitType::kProcess ||
-      cu_type == CoordinationUnitType::kPage)
-    return true;
-  if (!resource_coordinator::IsPageAlmostIdleSignalEnabled())
-    return false;
-  return cu_type == CoordinationUnitType::kFrame;
+  switch (cu_type) {
+    case CoordinationUnitType::kPage:
+    case CoordinationUnitType::kProcess:
+    case CoordinationUnitType::kSystem:
+      return true;
+
+    case CoordinationUnitType::kFrame:
+      return resource_coordinator::IsPageAlmostIdleSignalEnabled();
+
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 void PageSignalGeneratorImpl::OnCoordinationUnitCreated(
@@ -98,7 +107,8 @@ void PageSignalGeneratorImpl::OnCoordinationUnitCreated(
   // Create page data exists for this Page CU.
   auto* page_cu = PageCoordinationUnitImpl::FromCoordinationUnitBase(cu);
   DCHECK(!base::ContainsKey(page_data_, page_cu));  // No data should exist yet.
-  page_data_[page_cu].load_idle_state = kLoadingNotStarted;
+  page_data_[page_cu].SetLoadIdleState(kLoadingNotStarted,
+                                       base::TimeTicks::Now());
 }
 
 void PageSignalGeneratorImpl::OnBeforeCoordinationUnitDestroyed(
@@ -191,7 +201,7 @@ void PageSignalGeneratorImpl::OnPageEventReceived(
   // Reset the load-idle state associated with this page as a new navigation has
   // started.
   auto* page_data = GetPageData(page_cu);
-  page_data->load_idle_state = kLoadingNotStarted;
+  page_data->SetLoadIdleState(kLoadingNotStarted, base::TimeTicks::Now());
   page_data->idling_timer.Stop();
 }
 
@@ -211,6 +221,33 @@ void PageSignalGeneratorImpl::OnProcessEventReceived(
       RecordBloatedRendererHandling(
           BloatedRendererHandlingInResourceCoordinator::
               kIgnoredDueToMultiplePages);
+    }
+  }
+}
+
+void PageSignalGeneratorImpl::OnSystemEventReceived(
+    const SystemCoordinationUnitImpl* system_cu,
+    const mojom::Event event) {
+  if (event == mojom::Event::kProcessCPUUsageReady) {
+    base::TimeTicks measurement_start =
+        system_cu->last_measurement_start_time();
+
+    for (auto& entry : page_data_) {
+      const PageCoordinationUnitImpl* page = entry.first;
+      PageData* data = &entry.second;
+      // TODO(siggi): Figure "recency" here, to avoid firing a measurement event
+      //     for state transitions that happened "too long" before a
+      //     measurement started.
+      if (data->GetLoadIdleState() == kLoadedAndIdle &&
+          !data->performance_estimate_issued &&
+          data->last_state_change < measurement_start) {
+        DISPATCH_PAGE_SIGNAL(
+            receivers_, OnLoadTimePerformanceEstimate, page->id(),
+            std::string(),  // TODO(siggi): Plumb the origin here!
+            page->cumulative_cpu_usage_estimate(),
+            page->private_footprint_kb_estimate());
+        data->performance_estimate_issued = true;
+      }
     }
   }
 }
@@ -244,7 +281,7 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
 
   // Once the cycle is complete state transitions are no longer tracked for this
   // page.
-  if (page_data->load_idle_state == kLoadedAndIdle)
+  if (page_data->GetLoadIdleState() == kLoadedAndIdle)
     return;
 
   // Cancel any ongoing timers. A new timer will be set if necessary.
@@ -252,26 +289,26 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
   base::TimeTicks now = ResourceCoordinatorClock::NowTicks();
 
   // Determine if the overall timeout has fired.
-  if ((page_data->load_idle_state == kLoadedNotIdling ||
-       page_data->load_idle_state == kLoadedAndIdling) &&
+  if ((page_data->GetLoadIdleState() == kLoadedNotIdling ||
+       page_data->GetLoadIdleState() == kLoadedAndIdling) &&
       (now - page_data->loading_stopped) >= kWaitingForIdleTimeout) {
-    TransitionToLoadedAndIdle(page_cu);
+    TransitionToLoadedAndIdle(page_cu, now);
     return;
   }
 
   // Otherwise do normal state transitions.
-  switch (page_data->load_idle_state) {
+  switch (page_data->GetLoadIdleState()) {
     case kLoadingNotStarted: {
       if (!IsLoading(page_cu))
         return;
-      page_data->load_idle_state = kLoading;
+      page_data->SetLoadIdleState(kLoading, now);
       return;
     }
 
     case kLoading: {
       if (IsLoading(page_cu))
         return;
-      page_data->load_idle_state = kLoadedNotIdling;
+      page_data->SetLoadIdleState(kLoadedNotIdling, now);
       page_data->loading_stopped = now;
       // Let the kLoadedNotIdling state transition evaluate, allowing an
       // effective transition directly from kLoading to kLoadedAndIdling.
@@ -280,7 +317,7 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
 
     case kLoadedNotIdling: {
       if (IsIdling(page_cu)) {
-        page_data->load_idle_state = kLoadedAndIdling;
+        page_data->SetLoadIdleState(kLoadedAndIdling, now);
         page_data->idling_started = now;
       }
       // Break out of the switch statement and set a timer to check for the
@@ -291,12 +328,12 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
     case kLoadedAndIdling: {
       // If the page is not still idling then transition back a state.
       if (!IsIdling(page_cu)) {
-        page_data->load_idle_state = kLoadedNotIdling;
+        page_data->SetLoadIdleState(kLoadedNotIdling, now);
       } else {
         // Idling has been happening long enough so make the last state
         // transition.
         if (now - page_data->idling_started >= kLoadedAndIdlingTimeout) {
-          TransitionToLoadedAndIdle(page_cu);
+          TransitionToLoadedAndIdle(page_cu, now);
           return;
         }
       }
@@ -314,7 +351,7 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStatePage(
   // applicable timeouts.
   base::TimeDelta timeout =
       (page_data->loading_stopped + kWaitingForIdleTimeout) - now;
-  if (page_data->load_idle_state == kLoadedAndIdling) {
+  if (page_data->GetLoadIdleState() == kLoadedAndIdling) {
     timeout = std::min(
         timeout, (page_data->idling_started + kLoadedAndIdlingTimeout) - now);
   }
@@ -338,10 +375,11 @@ void PageSignalGeneratorImpl::UpdateLifecycleState(
 }
 
 void PageSignalGeneratorImpl::TransitionToLoadedAndIdle(
-    const PageCoordinationUnitImpl* page_cu) {
+    const PageCoordinationUnitImpl* page_cu,
+    base::TimeTicks now) {
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
   auto* page_data = GetPageData(page_cu);
-  page_data->load_idle_state = kLoadedAndIdle;
+  page_data->SetLoadIdleState(kLoadedAndIdle, now);
   // Notify observers that the page is loaded and idle.
   DISPATCH_PAGE_SIGNAL(receivers_, NotifyPageAlmostIdle, page_cu->id());
 }
@@ -392,6 +430,14 @@ bool PageSignalGeneratorImpl::IsIdling(
              mojom::PropertyType::kNetworkAlmostIdle, 0u) &&
          process_cu->GetPropertyOrDefault(
              mojom::PropertyType::kMainThreadTaskLoadIsLow, 0u);
+}
+
+void PageSignalGeneratorImpl::PageData::SetLoadIdleState(
+    LoadIdleState new_state,
+    base::TimeTicks now) {
+  last_state_change = now;
+  load_idle_state = new_state;
+  performance_estimate_issued = false;
 }
 
 }  // namespace resource_coordinator
