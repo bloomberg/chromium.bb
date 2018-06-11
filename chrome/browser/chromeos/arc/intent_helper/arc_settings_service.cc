@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
@@ -160,7 +158,6 @@ class ArcSettingsServiceImpl
   void SyncProxySettings() const;
   void SyncReportingConsent(bool initial_sync) const;
   void SyncSelectToSpeakEnabled() const;
-  void SyncSmsConnectEnabled() const;
   void SyncSpokenFeedbackEnabled() const;
   void SyncSwitchAccessEnabled() const;
   void SyncTimeZone() const;
@@ -262,8 +259,6 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
              pref_name == ::prefs::kWebKitDefaultFontSize ||
              pref_name == ::prefs::kWebKitMinimumFontSize) {
     SyncFontSize();
-  } else if (pref_name == prefs::kSmsConnectEnabled) {
-    SyncSmsConnectEnabled();
   } else if (pref_name == proxy_config::prefs::kProxy) {
     SyncProxySettings();
   } else {
@@ -300,7 +295,6 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(ash::prefs::kAccessibilitySpokenFeedbackEnabled);
   AddPrefToObserve(ash::prefs::kAccessibilitySwitchAccessEnabled);
   AddPrefToObserve(ash::prefs::kAccessibilityVirtualKeyboardEnabled);
-  AddPrefToObserve(prefs::kSmsConnectEnabled);
   AddPrefToObserve(::prefs::kResolveTimezoneByGeolocationMethod);
   AddPrefToObserve(::prefs::kUse24HourClock);
   AddPrefToObserve(::prefs::kWebKitDefaultFixedFontSize);
@@ -359,7 +353,6 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
   SyncProxySettings();
   SyncReportingConsent(/*initial_sync=*/false);
   SyncSelectToSpeakEnabled();
-  SyncSmsConnectEnabled();
   SyncSpokenFeedbackEnabled();
   SyncSwitchAccessEnabled();
   SyncTimeZone();
@@ -543,22 +536,6 @@ void ArcSettingsServiceImpl::SyncSelectToSpeakEnabled() const {
   SendBoolPrefSettingsBroadcast(
       ash::prefs::kAccessibilitySelectToSpeakEnabled,
       "org.chromium.arc.intent_helper.SET_SELECT_TO_SPEAK_ENABLED");
-}
-
-void ArcSettingsServiceImpl::SyncSmsConnectEnabled() const {
-  // Only sync the preferences value if the feature flag is enabled, otherwise
-  // sync a 'false' value.
-  std::string action =
-      std::string("org.chromium.arc.intent_helper.SET_SMS_CONNECT_ENABLED");
-  if (!base::FeatureList::IsEnabled(features::kMultidevice)) {
-    const PrefService::Preference* pref =
-        registrar_.prefs()->FindPreference(prefs::kSmsConnectEnabled);
-    DCHECK(pref);
-    SendBoolValueSettingsBroadcast(false, pref->IsManaged(), action);
-    return;
-  }
-
-  SendBoolPrefSettingsBroadcast(prefs::kSmsConnectEnabled, action);
 }
 
 void ArcSettingsServiceImpl::SyncSpokenFeedbackEnabled() const {

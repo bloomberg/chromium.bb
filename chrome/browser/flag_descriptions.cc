@@ -3010,10 +3010,6 @@ const char kMtpWriteSupportDescription[] =
     "MTP write support in File System API (and file manager). In-place editing "
     "operations are not supported.";
 
-const char kMultideviceName[] = "Enable multidevice features";
-const char kMultideviceDescription[] =
-    "Enables UI for controlling multidevice features.";
-
 const char kMultiDeviceApiName[] = "Enables the MultiDevice API";
 const char kMultiDeviceApiDescription[] =
     "Enable Mojo-based API which provides synced device metadata and the "

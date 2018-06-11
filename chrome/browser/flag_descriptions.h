@@ -1853,9 +1853,6 @@ extern const char kAggressiveThresholds[];
 extern const char kMtpWriteSupportName[];
 extern const char kMtpWriteSupportDescription[];
 
-extern const char kMultideviceName[];
-extern const char kMultideviceDescription[];
-
 extern const char kMultiDeviceApiName[];
 extern const char kMultiDeviceApiDescription[];
 
