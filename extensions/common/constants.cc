@@ -94,7 +94,7 @@ const int64_t kInvalidServiceWorkerVersionId = -1;
 
 namespace extension_misc {
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
 // The extension id for the built-in component extension.
 const char kChromeVoxExtensionId[] = "mndnfokpggljbaajbnioimlmbfngpief";
 #else
