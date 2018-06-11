@@ -341,6 +341,24 @@ void ClientTagBasedModelTypeProcessor::UntrackEntity(
   entities_.erase(client_tag_hash);
 }
 
+void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
+    const std::string& storage_key) {
+  // Look-up the client tag hash.
+  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  if (iter == storage_key_to_tag_hash_.end()) {
+    // TODO(jkrcal): Add metrics keyed by the model_type to see which model_type
+    // violates the proper behavior expected here (https://crbug.com/847822).
+    // That's unusual, but not necessarily a bad thing.
+    // Missing is as good as untracked as far as the model is concerned.
+    DLOG(WARNING) << "Attempted to untrack missing item with storage_key: "
+                  << storage_key;
+    return;
+  }
+
+  entities_.erase(iter->second);
+  storage_key_to_tag_hash_.erase(iter);
+}
+
 void ClientTagBasedModelTypeProcessor::NudgeForCommitIfNeeded() {
   // Don't bother sending anything if there's no one to send to.
   if (!IsConnected())
