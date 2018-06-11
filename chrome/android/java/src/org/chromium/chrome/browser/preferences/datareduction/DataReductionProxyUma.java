@@ -21,6 +21,10 @@ public class DataReductionProxyUma {
             "DataReductionProxy.UserViewedOriginalSize";
     public static final String USER_VIEWED_SAVINGS_SIZE_HISTOGRAM_NAME =
             "DataReductionProxy.UserViewedSavingsSize";
+    public static final String USER_VIEWED_USAGE_DIFFERENCE_HISTOGRAM_NAME =
+            "DataReductionProxy.UserViewedUsageDifferenceWithBreakdown";
+    public static final String USER_VIEWED_SAVINGS_DIFFERENCE_HISTOGRAM_NAME =
+            "DataReductionProxy.UserViewedSavingsDifferenceWithBreakdown";
 
     // Represent the possible user actions in the various data reduction promos and settings menu.
     // This must remain in sync with DataReductionProxy.UIAction in
@@ -98,6 +102,20 @@ public class DataReductionProxyUma {
         RecordHistogram.recordCustomCountHistogram(USER_VIEWED_SAVINGS_SIZE_HISTOGRAM_NAME,
                 (int) ConversionUtils.bytesToKilobytes(originalTotalBytes - compressedTotalBytes),
                 1, 1000 * 1000 * 1000, 100);
+    }
+
+    /**
+     * Record UMA on the difference between data savings displayed to the user and the sum of the
+     * breakdown columns. Called when the user views the data savings in the UI.
+     * @param savedDifference The percent difference of data saved in the range [0, 100].
+     * @param usedDifference The percent difference of data used in the range [0, 100].
+     */
+    public static void dataReductionProxyUserViewedSavingsDifference(
+            int savedDifference, int usedDifference) {
+        RecordHistogram.recordPercentageHistogram(
+                USER_VIEWED_USAGE_DIFFERENCE_HISTOGRAM_NAME, usedDifference);
+        RecordHistogram.recordPercentageHistogram(
+                USER_VIEWED_SAVINGS_DIFFERENCE_HISTOGRAM_NAME, savedDifference);
     }
 
     /**
