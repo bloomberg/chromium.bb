@@ -21,7 +21,8 @@ V8EmbedderGraphBuilder::V8EmbedderGraphBuilder(v8::Isolate* isolate,
 
 void V8EmbedderGraphBuilder::BuildEmbedderGraphCallback(
     v8::Isolate* isolate,
-    v8::EmbedderGraph* graph) {
+    v8::EmbedderGraph* graph,
+    void* data) {
   V8EmbedderGraphBuilder builder(isolate, graph);
   builder.BuildEmbedderGraph();
 }
