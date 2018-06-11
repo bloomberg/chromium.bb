@@ -262,7 +262,6 @@
     expanded,
     focusable,
     focused,
-    haspopup,
     horizontal,
     hovered,
     ignored,
@@ -929,7 +928,7 @@
 
     // Sets the value of a text field.
     static void setValue(DOMString value);
-    
+
     // Show the context menu for this element, as if the user right-clicked.
     static void showContextMenu();
 

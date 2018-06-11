@@ -856,8 +856,6 @@ const char* ToString(ax::mojom::State state) {
       return "expanded";
     case ax::mojom::State::kFocusable:
       return "focusable";
-    case ax::mojom::State::kHasPopup:
-      return "haspopup";
     case ax::mojom::State::kHorizontal:
       return "horizontal";
     case ax::mojom::State::kHovered:
@@ -900,8 +898,6 @@ ax::mojom::State ParseState(const char* state) {
     return ax::mojom::State::kExpanded;
   if (0 == strcmp(state, "focusable"))
     return ax::mojom::State::kFocusable;
-  if (0 == strcmp(state, "haspopup"))
-    return ax::mojom::State::kHasPopup;
   if (0 == strcmp(state, "horizontal"))
     return ax::mojom::State::kHorizontal;
   if (0 == strcmp(state, "hovered"))
