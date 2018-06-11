@@ -202,6 +202,7 @@
 <translation id="5457599981699367932">以訪客身分瀏覽</translation>
 <translation id="54609108002486618">管理</translation>
 <translation id="553675580533261935">結束工作階段</translation>
+<translation id="5537725057119320332">投放</translation>
 <translation id="5548285847212963613">「<ph name="EXTENSION_NAME" />」擴充功能可協助連線至這個網路。</translation>
 <translation id="554893713779400387">切換語音輸入</translation>
 <translation id="5571066253365925590">藍牙已啟用</translation>
@@ -310,12 +311,14 @@
 <translation id="7654687942625752712">同時按住音量調高和調低鍵五秒，即可停用互動朗讀。</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7692480393933218409">正在為連接的 USB-C 裝置充電</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">按一下即可查看更新詳細資料</translation>
 <translation id="7796353162336583443">輕觸檔案櫃的觸控筆圖示即可寫筆記、擷取螢幕畫面，以及使用 Google 助理、雷射筆和放大鏡。</translation>
 <translation id="7798302898096527229">按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="7829386189513694949">訊號穩定</translation>
 <translation id="7842569679327885685">警告：實驗功能</translation>
+<translation id="7846634333498149051">鍵盤</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
 <translation id="7933084174919150729">Google 助理僅適用於主要設定檔。</translation>
 <translation id="79341161159229895">這個帳戶是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>

@@ -176,6 +176,7 @@
 <translation id="123578888592755962">디스크가 가득 참</translation>
 <translation id="1238191093934674082">공개 VPN</translation>
 <translation id="1240892293903523606">DOM 검사기</translation>
+<translation id="124116460088058876">다른 언어</translation>
 <translation id="1241753985463165747">호출할 경우 현재 웹사이트에 있는 모든 데이터를 읽고 변경합니다.</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />에서 설정을 재설정하려 합니다.</translation>
 <translation id="1243314992276662751">업로드</translation>
@@ -209,6 +210,7 @@
 <translation id="1296497012903089238">인증서 유형</translation>
 <translation id="1297175357211070620">대상</translation>
 <translation id="1297922636971898492">현재 Google 드라이브를 사용할 수 없습니다. Google 드라이브를 다시 사용할 수 있게 되면 자동으로 업로드가 다시 시작됩니다.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" />에서 보호된 콘텐츠의 개선된 재생 기능을 사용할 수 있는지 확인하려면 Google에서 기기의 ID를 인증해야 합니다.</translation>
 <translation id="1300806585489372370">이 설정을 변경하려면 우선 <ph name="BEGIN_LINK" />식별자를 사용 설정<ph name="END_LINK" />하세요</translation>
 <translation id="1302227299132585524">Apple Events의 자바스크립트 허용</translation>
 <translation id="1303101771013849280">HTML 파일 북마크하기</translation>
@@ -1068,7 +1070,6 @@
 <translation id="2624142942574147739">카메라와 마이크에 액세스하는 페이지입니다.</translation>
 <translation id="2626799779920242286">나중에 다시 시도해 주세요.</translation>
 <translation id="2630681426381349926">Wi-Fi에 연결하여 시작</translation>
-<translation id="2631006050119455616">절약</translation>
 <translation id="2631498379019108537">실행기에 입력 옵션 표시</translation>
 <translation id="2633199387167390344"><ph name="NAME" />에서 <ph name="USAGE" />MB의 디스크 공간을 사용하고 있습니다.</translation>
 <translation id="2633212996805280240">'<ph name="EXTENSION_NAME" />'을(를) 삭제하시겠습니까?</translation>

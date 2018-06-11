@@ -75,6 +75,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
 <translation id="2799223571221894425">Znova spustiť</translation>
 <translation id="2847461019998147611">Zobrazovať Google Chrome v tomto jazyku</translation>
+<translation id="2857540653560290388">Spúšťa sa Chrome…</translation>
 <translation id="2871893339301912279">Ste prihlásený/-á do prehliadača Chrome.</translation>
 <translation id="2888126860611144412">O aplikácii Chrome</translation>
 <translation id="3037838751736561277">Google Chrome je v režime na pozadí.</translation>
@@ -216,7 +217,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7308322188646931570">Chrome potrebuje na sťahovanie súborov prístup k úložisku</translation>
 <translation id="7330164299247909639">Certifikát na overenie totožnosti zlyhal. Prihláste sa znova do prehliadača Google Chrome ako <ph name="USER_NAME" /> alebo kontaktujte správcu a požiadajte ho o ďalšie informácie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nové okno</translation>
-<translation id="7369650938475876456">Použite silné heslo vygenerované Chromom</translation>
 <translation id="7398801000654795464">Do prehliadača Chrome ste boli prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Ak sa chcete prihlásiť znova, použite rovnaký účet.</translation>
 <translation id="7408085963519505752">Zmluvné podmienky systému OS Chrome</translation>
 <translation id="7419046106786626209">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>

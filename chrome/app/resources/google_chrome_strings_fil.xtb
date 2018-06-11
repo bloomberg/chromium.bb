@@ -77,6 +77,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="2770231113462710648">Baguhin ang default na browser sa:</translation>
 <translation id="2799223571221894425">Ilunsad Muli</translation>
 <translation id="2847461019998147611">Ipakita ang Google Chrome sa wikang ito</translation>
+<translation id="2857540653560290388">Inilulunsad ang Chrome...</translation>
 <translation id="2871893339301912279">Naka-sign in ka sa Chrome!</translation>
 <translation id="2888126860611144412">Tungkol sa Chrome</translation>
 <translation id="3037838751736561277">Nasa background mode ang Google Chrome.</translation>
@@ -218,7 +219,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7308322188646931570">Kailangan ng Chrome ng access sa storage upang mag-download ng mga file</translation>
 <translation id="7330164299247909639">Hindi nagtagumpay ang certificate ng pag-authenticate. Mag-sign in muli sa Google Chrome bilang si <ph name="USER_NAME" /> o makipag-ugnayan sa iyong administrator para sa higit pang impormasyon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Bagong window</translation>
-<translation id="7369650938475876456">Gumamit ng malakas na password na binuo ng Chrome</translation>
 <translation id="7398801000654795464">Naka-sign in ka sa Chrome bilang <ph name="USER_EMAIL_ADDRESS" />. Pakigamit ang parehong account upang mag-sign in muli.</translation>
 <translation id="7408085963519505752">Mga tuntunin ng Chrome OS</translation>
 <translation id="7419046106786626209">Hindi ma-sync ng Chrome OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>

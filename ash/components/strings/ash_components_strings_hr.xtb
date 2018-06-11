@@ -5,6 +5,7 @@
 <translation id="1122869341872663659">Prikazuju se rezultati pretraživanja (<ph name="N" />) za upit <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Povlačenje veze na adresnu traku kartice</translation>
 <translation id="1204450209689312104">Otvaranje novog prozora u anonimnom načinu</translation>
+<translation id="1251638888133819822">Uključivanje ili isključivanje povećala za cijeli zaslon</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Ispis trenutačne stranice</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">Ponovno učitavanje trenutačne stranice bez upotrebe predmemoriranog sadržaja</translation>
 <translation id="526651782186312376">Odabir teksta do početka retka</translation>
 <translation id="5316716239522500219">Zrcalni monitori</translation>
+<translation id="539072479502328326">Uključivanje ili isključivanje usidrenog povećala</translation>
 <translation id="5487187679583934283">Započinje ili zaustavlja pisanje onoga što govorite</translation>
 <translation id="5541719484267030947">Dok povlačite karticu, pritisnite <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Pretraživanje trenutačne stranice</translation>

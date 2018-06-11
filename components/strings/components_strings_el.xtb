@@ -821,6 +821,7 @@
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6948701128805548767">Για να δείτε τρόπους και απαιτήσεις παραλαβής, επιλέξτε μια διεύθυνση</translation>
 <translation id="6949872517221025916">Επαναφορά κωδικού πρόσβασης</translation>
+<translation id="6950684638814147129">Σφάλμα κατά την ανάλυση της τιμής JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Το πιστοποιητικό του διακομιστή φαίνεται να είναι πλαστό.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Συσκευή</translation>
@@ -1052,6 +1053,7 @@
 <translation id="8620436878122366504">Οι γονείς σας δεν τον έχουν εγκρίνει ακόμα</translation>
 <translation id="8625384913736129811">Αποθήκευση αυτής της κάρτας στη συγκεκριμένη συσκευή</translation>
 <translation id="8639963783467694461">Ρυθμίσεις αυτόματης συμπλήρωσης</translation>
+<translation id="8663226718884576429">Σύνοψη παραγγελίας, <ph name="TOTAL_LABEL" />, Περισσότερες λεπτομέρειες</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, απάντηση, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Η σύνδεσή σας με τον τομέα <ph name="DOMAIN" /> δεν είναι κρυπτογραφημένη.</translation>
 <translation id="8718314106902482036">Η πληρωμή δεν ολοκληρώθηκε</translation>

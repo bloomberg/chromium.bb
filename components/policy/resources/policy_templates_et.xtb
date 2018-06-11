@@ -892,6 +892,11 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="3512226956150568738">Kui kliendi seadme mudel toetas ARC-d juba enne seda, kui üleminek ext4-le oli ARC käitamiseks vajalik, ja kui reegli ArcEnabled väärtuseks on määratud Tõene, siis toimib see valik sarnaselt väärtusega AskUser (väärtus 3). Kõigil muudel juhtudel (kui seadme mudel varem ARC-d ei toetanud või kui reegli ArcEnabled väärtuseks on määratud Väär) on see väärtus võrdne väärtusega DisallowArc (väärtus 0).</translation>
 <translation id="3524204464536655762">Ära luba ühelgi seadmel taotleda WebUSB API kaudu juurdepääsu USB-seadmetele</translation>
 <translation id="3528000905991875314">Luba alternatiivsed vealehed</translation>
+<translation id="3545457887306538845">Võimaldab teil juhtida, kus saab kasutada arendaja tööriistu.
+
+      Kui reegel on seatud väärtusele „DeveloperToolsDisallowedForForceInstalledExtensions” (väärtus 0, mis on vaikeseade ettevõtte kasutajate puhul), on arendaja tööriistad ja JavaScripti konsool üldiselt juurdepääsetavad, ent nendele ei pääse juurde ettevõtte reegli alusel installitud laiendite kontekstis.
+      Kui reegel on seatud väärtusele „DeveloperToolsAllowed” (väärtus 1), on arendaja tööriistad ja JavaScripti konsool juurdepääsetavad ja kasutamiseks saadaval igas kontekstis, sealhulgas ettevõtte reegli alusel installitud laiendite puhul.
+      Kui reegel on seatud väärtusele „DeveloperToolsDisallowed” (väärtus 2), ei ole arendaja tööriistad saadaval ja veebisaitide elemente ei saa enam uurida. Kõik arendaja tööriistade või JavaScripti konsooli avamiseks kasutatavad klaviatuuri otseteed ning menüü- ja kontekstimenüükirjed keelatakse.</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3556806727696701427">Lubab rakenduse <ph name="PRODUCT_NAME" /> Google'i ohutu sirvimise funktsiooni ja takistab kasutajaid seda muutmast.
 
@@ -1973,6 +1978,38 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6810445994095397827">Blokeeri JavaScript nendel saitidel</translation>
 <translation id="681446116407619279">Toetatud autentimisskeemid</translation>
 <translation id="6835883744948188639">Kuva kasutajale korduv viip, mis näitab, et taaskäivitamine on soovitatav</translation>
+<translation id="6838056959556423778">Alistatakse rakenduse <ph name="PRODUCT_NAME" /> vaikeprinteri valimise reeglid.
+
+      Selle reegliga määratakse reeglid rakenduses <ph name="PRODUCT_NAME" /> vaikeprinteri valimiseks, mis toimub esimesel korral, kui profiilil printimisfunktsiooni kasutatakse.
+
+      Kui reegel on määratud, üritab rakendus <ph name="PRODUCT_NAME" /> leida printeri, mis vastab kõigile määratud atribuutidele, ja valib selle vaikeprinteriks. Valitakse esimene printer, mis reeglitele vastab. Kui reeglitele vastavaid printereid on mitu, saab nende avastamise järjekorrast olenevalt valida mis tahes sobiva printeri.
+
+      Kui seda reeglit ei määrata või määratud aja jooksul ei leita reeglitele vastavat printerit, määratakse vaikimisi printeriks sisseehitatud PDF-printer. Kui PDF-printer pole saadaval, siis printerit ei valita.
+
+      Väärtus sõelutakse JSON-objektina, mis vastab järgmisele skeemile:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Kas piirata sobiva printeri otsing konkreetse printerite komplektiga?",
+            "type": {
+              "enum": [ "local", "cloud" ]
+            }
+          },
+          "idPattern": {
+            "description": "Regulaaravaldis, mis ühtib printeri ID-ga.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulaaravaldis, mis ühtib printeri kuvatava nimega.",
+            "type": "string"
+          }
+        }
+      }
+
+      Rakendusega <ph name="CLOUD_PRINT_NAME" /> ühendatud printerid loetakse gruppi <ph name="PRINTER_TYPE_CLOUD" /> kuuluvateks, ülejäänud printerid kuuluvad gruppi <ph name="PRINTER_TYPE_LOCAL" />.
+      Välja vahelejätmine tähendab, et kõik väärtused ühtivad. Näiteks kui ühenduvust ei määrata, käivitab printimise eelvaade igat tüüpi printerite (nii kohalike kui ka pilvepõhiste printerite) otsimise.
+      Regulaaravaldise mustrid peavad järgima atribuudi JavaScript RegExp süntaksit ja vasted on tõstutundlikud.</translation>
 <translation id="684856667300805181">Reegel eemaldati operatsioonisüsteemist <ph name="PRODUCT_NAME" /> 68 ja see asendati reegliga <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Selle reegli tugi on katkestatud ja see on versioonist M66 eemaldatud, kuna seda kasutati ainult sisetestides ja see sisaldab turvaauku.
 
@@ -2252,6 +2289,17 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7511361072385293666">Kui reegli väärtuseks määratakse Tõene või seda ei määrata, on QUIC-protokolli kasutamine teenuses <ph name="PRODUCT_NAME" /> lubatud.
       Kui reegli väärtuseks määratakse Väär, on QUIC-protokolli kasutamine keelatud.</translation>
 <translation id="7519251620064708155">Luba võtmete loomine nendel saitidel</translation>
+<translation id="7529083451528428240">Võimaldab lukustada kasutaja seansi kliendi aja või igapäevase kasutuskvoodi alusel.
+
+          Atribuut |time_window_limit| määrab igapäevase ajavahemiku, mil kasutaja seanss lukustatakse. Iga nädalapäeva puhul toetatakse ainult üht reeglit, seega võib massiivi |entries| suurus varieeruda vahemikus 0–7. Atribuudid |starts_at| ja |ends_at| määravad ajavahemiku alguse ja lõpu. Kui |ends_at| on väiksem kui |starts_at|, tähendab see, et |time_limit_window| lõpeb järgmisel päeval. Atribuut |last_updated_millis| on UTC ajatempel, mis näitab kirje viimase värskendamise aega. See saadetakse stringina, kuna ajatemplit ei saa täisarvuna esitada.
+
+          Atribuut |time_usage_limit| määrab igapäevase kasutuskvoodi, mille täitumisel kasutaja seanss lukustatakse. Iga nädalapäeva jaoks on eraldi atribuut ja see tuleks määrata ainult juhul, kui teatud päeval kehtib aktiivne kvoot. Atribuut |usage_quota_mins| määrab, kui kaua tohib hallatud seadet päeva jooksul kasutada, ja |reset_at| määrab, millal kasutuskvooti uuendatakse. Atribuudi |reset_at| vaikeväärtus on südaöö ({'hour': 0, 'minute': 0}). Atribuut |last_updated_millis| on UTC ajatempel, mis näitab kirje viimase värskendamise aega. See saadetakse stringina, kuna ajatemplit ei saa täisarvuna esitada.
+
+          Atribuut |overrides| võimaldab ühe või mitu eelmist reeglit ajutiselt tühistada.
+          * Kui atribuudid time_window_limit ja time_usage_limit ei ole aktiivsed, saab seadme lukustamiseks kasutada atribuuti |LOCK|.
+          * |LOCK| lukustab kasutaja seansi ajutiselt kuni järgmise atribuudi time_window_limit või time_usage_limit alguseni.
+          * |UNLOCK| avab kasutaja seansi, mis lukustati atribuudiga time_window_limit või time_usage_limit.
+          Atribuut |created_time_millis| on alistuse loomise UTC ajatempel. See saadetakse stringina, kuna ajatemplit ei saa täisarvuna esitada. Selle alusel määratakse, kas alistus tuleks rakendada. Kui praegune aktiivne ajapiirangu funktsioon (time_usage_limit või time_window_limit) algas pärast alistuse loomist, ei tohiks see aktiveeruda. Seda ei tohiks rakendada ka juhul, kui alistus loodi enne atribuutide time_window_limit või time_usage_window viimast muutmist.</translation>
 <translation id="7529100000224450960">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud avada hüpikaknaid.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPopupsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>

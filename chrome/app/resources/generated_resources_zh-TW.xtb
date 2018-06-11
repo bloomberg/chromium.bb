@@ -176,6 +176,7 @@
 <translation id="123578888592755962">磁碟空間已滿</translation>
 <translation id="1238191093934674082">Open VPN</translation>
 <translation id="1240892293903523606">DOM 檢查器</translation>
+<translation id="124116460088058876">更多語言</translation>
 <translation id="1241753985463165747">叫用時讀取及變更你在目前網站上的所有資料</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> 要求重設您的設定。</translation>
 <translation id="1243314992276662751">上傳</translation>
@@ -209,6 +210,7 @@
 <translation id="1296497012903089238">憑證類型</translation>
 <translation id="1297175357211070620">目的地</translation>
 <translation id="1297922636971898492">Google 雲端硬碟目前無法提供服務。一旦 Google 雲端硬碟恢復正常運作，上傳作業將會自動重新啟動。</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> 需要 Google 驗證你的裝置身分，以判定是否能針對受保護的內容提供更完善的播放體驗。</translation>
 <translation id="1300806585489372370">如要變更這項設定，請先<ph name="BEGIN_LINK" />啟用 ID<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">允許 Apple 事件的 JavaScript</translation>
 <translation id="1303101771013849280">HTML 格式的書籤檔案</translation>
@@ -1067,7 +1069,6 @@
 <translation id="2624142942574147739">這個網頁正在存取你的攝影機和麥克風。</translation>
 <translation id="2626799779920242286">請稍後再試。</translation>
 <translation id="2630681426381349926">首先請連上 Wi-Fi 網路</translation>
-<translation id="2631006050119455616">已節省</translation>
 <translation id="2631498379019108537">在檔案櫃中顯示輸入選項</translation>
 <translation id="2633199387167390344">「<ph name="NAME" />」正在使用 <ph name="USAGE" /> MB 的磁碟空間。</translation>
 <translation id="2633212996805280240">要移除「<ph name="EXTENSION_NAME" />」嗎？</translation>

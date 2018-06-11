@@ -92,6 +92,7 @@
 <translation id="17513872634828108">ትሮችን ክፈት</translation>
 <translation id="1756600373018374892">ፈጣን የትሮችዎን መዳረሻ ለማግኘት ይህን አዝራር ነካ ያድርጉ።</translation>
 <translation id="1779089405699405702">ስውር ምስል መፍቻ</translation>
+<translation id="1782483593938241562">ማብቂያ ቀን <ph name="DATE" /></translation>
 <translation id="1792959175193046959">በማንኛውም ጊዜ ነባሪውን የማውረጃ ቦታ ይቀይሩ</translation>
 <translation id="1807246157184219062">ብርሃን</translation>
 <translation id="1829244130665387512">በዚህ ገጽ ውስጥ የተገኘ</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">ገጹን አድስ</translation>
 <translation id="2709516037105925701">ራስ-ሙላ</translation>
 <translation id="271033894570825754">አዲስ</translation>
+<translation id="2728754400939377704">በጣቢያ ደርድር</translation>
 <translation id="2736391366332017384">በአሁኑ ትርዎ ላይ ወደ አዲስ ትር ገጽ ለመድረስ የመነሻ አዝራሩን መታ ያድርጉ</translation>
 <translation id="2744248271121720757">አንድ ቃል በቅጽበት ለመፈለግ ወይም ተዛማጅ እርምጃዎችን ለመመልከት አንድ ቃል መታ ያድርጉ</translation>
 <translation id="2762000892062317888">አሁን</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">በእርስዎ አስተዳዳሪ የሚቀናበር</translation>
 <translation id="4116038641877404294">ገጾችን ከመስመር ውጭ ለመጠቀም ያውርዷቸው</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d ዕልባት}one{%1$d ዕልባቶች}other{%1$d ዕልባቶች}}</translation>
+<translation id="4159800535322890630">ጣቢያዎች ዳሳሾችዎን እንዳይደርሱ ያግዱ</translation>
 <translation id="4165986682804962316">የጣቢያ ቅንብሮች</translation>
 <translation id="4170011742729630528">አገልግሎቱ አይገኝም፤ ቆይተው እንደገና ይሞክሩ።</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> ጥቅም ላይ ውሏል</translation>
 <translation id="4181841719683918333">ቋንቋዎች</translation>
 <translation id="4195643157523330669">በአዲስ ትር ክፈት</translation>
 <translation id="4198423547019359126">ምንም የማውረጃ አካባቢዎች የሉም</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">ካርዶች</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>
 <translation id="5596627076506792578">ተጨማሪ አማራጮች</translation>
+<translation id="5620299005957670886">ጣቢያዎች የእርስዎን ዳሳሾች እንዲደርሱበት ይፍቀዱ (የሚመከር)</translation>
 <translation id="5620928963363755975">ከተጨማሪ አማራጮች አዝራር ሆነው የእርስዎን ፋይሎች እና ገጾች በውርዶች ውስጥ ያግኙ</translation>
 <translation id="5626134646977739690">ስም፦</translation>
 <translation id="5639724618331995626">ሁሉንም ጣቢያዎች ፍቀድ</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google ትርጉም</translation>
 <translation id="5916664084637901428">በርቷል</translation>
 <translation id="5919204609460789179">ስምረትን ለመጀመር <ph name="PRODUCT_NAME" />ን ያዘምኑ</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> ተቀምጧል</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
 <translation id="5942872142862698679">ለፍለጋ Googleን መጠቀም</translation>
 <translation id="5956665950594638604">የChrome እገዛ ማዕከልን በአዲስ ትር ውስጥ ክፈት</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">ጥበቃ የሚደረግለት ይዘት</translation>
 <translation id="6627583120233659107">አቃፊ አርትዕ</translation>
 <translation id="6643016212128521049">አጽዳ</translation>
+<translation id="6643649862576733715">በተቆጠበው የውሂብ መጠን ደርድር</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ተጨማሪ}one{<ph name="CONTACT_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ተጨማሪ}other{<ph name="CONTACT_PREVIEW" />\u2026 እና <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ተጨማሪ}}</translation>
 <translation id="6656545060687952787">Chrome መሣሪያዎችን ለመቃኘት የአካባቢ መዳረሻ ያስፈልገዋል። <ph name="BEGIN_LINK" />ፍቃዶችን ያዘምኑ<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">የይለፍ ቃል፦</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome የመጀመሪያ አሂድ ተሞክሮ</translation>
 <translation id="741204030948306876">አዎ፣ ገብቼያለሁ</translation>
+<translation id="7413229368719586778">መጀመሪያ ቀን <ph name="DATE" /></translation>
 <translation id="7423098979219808738">መጀመሪያ ጠይቅ</translation>
 <translation id="7423538860840206698">ቅንጥብ ሰሌዳን ከማንበብ ታግዷል</translation>
 <translation id="7437998757836447326">ዘግተው ከChrome ይውጡ</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">የጅምር መነሻ ገጽን ያርትዑ</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> እና ተጨማሪ ጣቢያዎች</translation>
 <translation id="8339163506404995330">በ<ph name="LANGUAGE" /> ያሉ ገጾች አይተረጎሙም</translation>
+<translation id="8349013245300336738">ጥቅም ላይ በዋለው የውሂብ መጠን ደርድር</translation>
 <translation id="8363501664269050863">የአሰሳ ፓነል። ለመዝጋት ወደ ታች ያንሸራትቱ።</translation>
 <translation id="8372893542064058268">ለአንድ የተወሰነ ጣቢያ የጀርባ ስምረትን ይፍቀዱ።</translation>
 <translation id="8374821112118309944">TalkBackን ወደ አዲስ ስሪት ማዘመን አለብዎት።</translation>

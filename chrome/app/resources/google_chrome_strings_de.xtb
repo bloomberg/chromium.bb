@@ -73,6 +73,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
 <translation id="2799223571221894425">Neu starten</translation>
 <translation id="2847461019998147611">Google Chrome in dieser Sprache anzeigen</translation>
+<translation id="2857540653560290388">Chrome wird gestartet…</translation>
 <translation id="2871893339301912279">Sie sind in Chrome angemeldet.</translation>
 <translation id="2888126860611144412">Über Google Chrome</translation>
 <translation id="3037838751736561277">Google Chrome wird im Hintergrundmodus ausgeführt.</translation>
@@ -210,7 +211,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7308322188646931570">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können</translation>
 <translation id="7330164299247909639">Authentifizierungszertifikat fehlgeschlagen. Bitte melden Sie sich wieder als <ph name="USER_NAME" /> bei Google Chrome an oder wenden Sie sich an Ihren Administrator, um weitere Informationen zu erhalten. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Neues Fenster</translation>
-<translation id="7369650938475876456">Starkes, von Chrome generiertes Passwort verwenden</translation>
 <translation id="7398801000654795464">Sie waren in Chrome als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Melden Sie sich bitte wieder mit demselben Konto an.</translation>
 <translation id="7408085963519505752">Chrome OS-Nutzungsbedingungen</translation>
 <translation id="7419046106786626209">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht verfügbar ist.</translation>

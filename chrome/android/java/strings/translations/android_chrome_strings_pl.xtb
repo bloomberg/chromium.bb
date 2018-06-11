@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Otwarte karty</translation>
 <translation id="1756600373018374892">Kliknij ten przycisk, by uzyskać szybki dostęp do swoich kart.</translation>
 <translation id="1779089405699405702">Dekoder obrazów</translation>
+<translation id="1782483593938241562">Data zakończenia: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">W dowolnej chwili możesz zmienić domyślną lokalizację pobierania</translation>
 <translation id="1807246157184219062">Jasny</translation>
 <translation id="1829244130665387512">Znajdź na stronie</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Odśwież stronę</translation>
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="271033894570825754">Nowy</translation>
+<translation id="2728754400939377704">Sortuj według witryny</translation>
 <translation id="2736391366332017384">Dotknij przycisku ekranu głównego, by przejść do strony nowej karty na bieżącej karcie</translation>
 <translation id="2744248271121720757">Kliknij słowo, by szybko je wyszukać lub wyświetlić powiązane czynności</translation>
 <translation id="2762000892062317888">przed chwilą</translation>
@@ -353,8 +355,10 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4113030288477039509">Zarządzany przez administratora</translation>
 <translation id="4116038641877404294">Pobierz strony, by przeglądać je w trybie offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d zakładka}few{%1$d zakładki}many{%1$d zakładek}other{%1$d zakładki}}</translation>
+<translation id="4159800535322890630">Blokuj witrynom dostęp do czujników</translation>
 <translation id="4165986682804962316">Ustawienia witryn</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
+<translation id="4179980317383591987">Wykorzystano <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Języki</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="4198423547019359126">Brak dostępnych miejsc zapisu pobieranych plików</translation>
@@ -520,6 +524,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="5585019845078534178">Karty</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="5596627076506792578">Więcej opcji</translation>
+<translation id="5620299005957670886">Zezwalaj witrynom na dostęp do czujników (zalecane)</translation>
 <translation id="5620928963363755975">Znajdź pliki i strony w Pobranych plikach, używając przycisku Więcej opcji</translation>
 <translation id="5626134646977739690">Nazwa:</translation>
 <translation id="5639724618331995626">Pozwól na otwieranie wszystkich stron</translation>
@@ -563,6 +568,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5911030830365207728">Tłumacz Google</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5919204609460789179">Zaktualizuj przeglądarkę <ph name="PRODUCT_NAME" />, by rozpocząć synchronizację</translation>
+<translation id="5937580074298050696">Zaoszczędzono <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="5942872142862698679">Korzystam z wyszukiwarki Google</translation>
 <translation id="5956665950594638604">Otwórz Centrum pomocy Chrome w nowej karcie</translation>
@@ -643,6 +649,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6612358246767739896">Treść chroniona</translation>
 <translation id="6627583120233659107">Edytuj folder</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
+<translation id="6643649862576733715">Sortuj według ilości zaoszczędzonych danych</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6656545060687952787">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. <ph name="BEGIN_LINK" />Zwiększ uprawnienia<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Hasło</translation>
@@ -729,6 +736,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7400418766976504921">Adres URL</translation>
 <translation id="7403691278183511381">Pierwsze uruchomienie Chrome</translation>
 <translation id="741204030948306876">Tak</translation>
+<translation id="7413229368719586778">Data rozpoczęcia: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Najpierw zapytaj</translation>
 <translation id="7423538860840206698">Zablokowano odczytywanie schowka</translation>
 <translation id="7437998757836447326">Wyloguj się z Chrome</translation>
@@ -834,6 +842,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8313455859591948645">Zmiana strony początkowej</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i więcej stron</translation>
 <translation id="8339163506404995330">Strony, których językiem jest <ph name="LANGUAGE" />, nie będą tłumaczone</translation>
+<translation id="8349013245300336738">Sortuj według ilości wykorzystanych danych</translation>
 <translation id="8363501664269050863">Panel użytkownika. Przesuń w dół, by go zamknąć.</translation>
 <translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>

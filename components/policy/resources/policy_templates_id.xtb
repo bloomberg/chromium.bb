@@ -862,6 +862,11 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
 <translation id="3512226956150568738">Jika model perangkat klien sudah mendukung ARC sebelum migrasi ke ext4 diperlukan untuk menjalankan ARC, dan jika kebijakan ArcEnabled disetel ke true, opsi ini akan berperilaku seperti AskUser (nilai 3). Pada semua kasus lainnya (jika sebelumnya model perangkat tidak mendukung ARC, atau jika kebijakan ArcEnabled disetel ke false), nilai ini setara dengan DisallowArc (nilai 0).</translation>
 <translation id="3524204464536655762">Jangan izinkan situs apa pun meminta akses ke perangkat USB melalui WebUSB API</translation>
 <translation id="3528000905991875314">Mengaktifkan halaman kesalahan alternatif</translation>
+<translation id="3545457887306538845">Memungkinkan Anda mengontrol lokasi penggunaan Developer Tools.
+
+      Jika kebijakan ini disetel ke 'DeveloperToolsDisallowedForForceInstalledExtensions' (nilai 0, yang merupakan nilai default untuk), Developer Tools dan konsol JavaScript secara umum dapat diakses, namun tidak dapat diakses dalam konteks ekstensi yang diinstal oleh kebijakan perusahaan.
+      Jika kebijakan ini disetel ke 'DeveloperToolsAllowed' (nilai 1), Developer Tools dan konsol JavaScript dapat diakses dan digunakan dalam semua konteks, termasuk dalam konteks ekstensi yang diinstal oleh kebijakan perusahaan.
+      Jika kebijakan ini disetel ke 'DeveloperToolsDisallowed' (nilai 2), Developer Tools tidak dapat diakses dan elemen situs tidak dapat diperiksa lagi. Semua pintasan keyboard dan semua menu atau entri menu konteks untuk membuka Developer Tools atau Konsol JavaScript akan dinonaktifkan.</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3556806727696701427">Mengaktifkan fitur Safe Browsing <ph name="PRODUCT_NAME" /> dan mencegah pengguna agar tidak mengganti setelan ini.
 
@@ -1893,6 +1898,37 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
 <translation id="681446116407619279">Skema autentikasi yang didukung</translation>
 <translation id="6835883744948188639">Tampilkan permintaan berulang kepada pengguna yang menunjukkan bahwa peluncuran ulang direkomendasikan</translation>
+<translation id="6838056959556423778">Mengganti aturan pemilihan printer default <ph name="PRODUCT_NAME" />.
+
+      Kebijakan ini menentukan aturan untuk memilih printer default di <ph name="PRODUCT_NAME" /> yang terjadi saat fungsi cetak digunakan dengan profil untuk pertama kalinya.
+
+      Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan mencoba menemukan printer yang sesuai dengan semua atribut yang ditentukan dan memilihnya sebagai printer default. Printer pertama yang ditemukan dan sesuai dengan kebijakan akan dipilih, jika ada printer non unik yang cocok maka printer tersebut dapat dipilih, bergantung pada urutan printer yang ditemukan.
+
+      Jika kebijakan ini tidak disetel atau printer yang sesuai tidak ditemukan selama waktu tunggu, printer PDF yang terpasang akan dipilih sebagai printer default, atau tidak ada printer yang dipilih jika printer PDF tidak tersedia.
+
+      Nilai tersebut diuraikan sebagai objek JSON, sesuai dengan skema berikut:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Perlu tidaknya pembatasan penelusuran printer yang sesuai untuk kumpulan printer tertentu.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Ekspresi reguler untuk mencocokkan ID printer.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Ekspresi reguler untuk mencocokkan nama tampilan printer.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printer yang tersambung ke <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, printer lainnya akan diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
+      Jika Anda menghapus satu bidang berarti semua nilai yang sesuai, misalnya, tidak menentukan konektivitas akan menyebabkan Pratinjau Cetak mulai mencari semua jenis printer, lokal, dan cloud.
+      Pola ekspresi reguler harus mengikuti sintaksis JavaScript RegExp, dan hasil yang sesuai peka huruf besar/kecil.</translation>
 <translation id="684856667300805181">Kebijakan ini dihapus dalam <ph name="PRODUCT_NAME" /> 68 dan digantikan oleh <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Kebijakan ini tidak digunakan lagi dan dihapus di M66, karena hanya digunakan untuk uji coba internal dan merupakan beban keamanan.
 
@@ -2155,6 +2191,17 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="7511361072385293666">Jika kebijakan ini disetel ke True atau tidak disetel, penggunaan protokol QUIC di <ph name="PRODUCT_NAME" /> akan diizinkan.
       Jika kebijakan ini disetel ke False, penggunaan protokol QUIC tidak diizinkan.</translation>
 <translation id="7519251620064708155">Izinkan pembuatan kunci di situs ini</translation>
+<translation id="7529083451528428240">Memungkinkan Anda mengunci sesi pengguna berdasarkan waktu klien atau kuota penggunaan hari ini.
+
+          |time_window_limit| menentukan durasi harian untuk mengunci sesi pengguna. Kami hanya mendukung satu aturan untuk tiap hari dalam seminggu, oleh karena itu, deret |entries| dapat bervariasi ukurannya antara 0-7. |starts_at| dan |ends_at| adalah awal dan akhir batas durasi, jika |ends_at| lebih kecil dari |starts_at| berarti |time_limit_window| berakhir pada hari berikutnya. |last_updated_millis| adalah stempel waktu UTC untuk terakhir kali entri ini diperbarui, dikirim sebagai string karena stempel waktu tidak cocok dalam bilangan bulat.
+
+          |time_usage_limit| menentukan kuota penggunaan perangkat harian, jadi jika pengguna mencapainya, sesi pengguna dikunci. Ada properti untuk tiap hari dalam seminggun, dan hanya boleh disetel jika ada kuota yang aktif untuk hari tersebut. |usage_quota_mins| adalah jumlah waktu yang menentukan perangkat yang dikelola dapat digunakan dalam sehari dan |reset_at| adalah waktu yang menentukan kapan kuota penggunaan diperpanjang. Nilai default untuk |reset_at| adalah tengah malam ({'hour': 0, 'minute': 0}). |last_updated_millis| adalah stempel waktu UTK untuk terakhir kali entri ini diperbarui, dikirim sebagai string karena stempel waktu tidak cocok dalam bilangan bulat.
+
+          |overrides| diberikan untuk membuat tidak valid satu atau beberapa aturan sebelumnya.
+          * Jika time_window_limit atau time_usage_limit tidak aktif |LOCK| dapat digunakan untuk mengunci perangkat.
+          * |LOCK| mengunci sesi pengguna untuk sementara hingga time_window_limit atau time_usage_limit berikutnya dimulai.
+          * |UNLOCK| membuka kunci sesi pengguna yang dikunci oleh time_window_limit atau time_usage_limit.
+          |created_time_millis| adalah stempel waktu UTC untuk pembuatan opsi penggantian, dikirim sebagai String karena stempel waktu tidak cocok dalam bilangan bulat Ini digunakan untuk menentukan apakah penggantian ini harus tetap diterapkan. Jika fitur batas waktu aktif saat ini (batas penggunaan waktu atau batas durasi waktu) dimulai setelah penggantian dibuat, maka tidak akan dilakukan tindakan. Selain itu, jika penggantian dibuat sebelum perubahan terakhir time_window_limit atau time_usage_window yang aktif, maka tidak akan diterapkan.</translation>
 <translation id="7529100000224450960">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan membuka pop-up. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPopupsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="7529144158022474049">Faktor penyebaran pembaruan otomatis</translation>
 <translation id="7534199150025803530">Kebijakan ini tidak memengaruhi aplikasi Google Drive Android. Jika ingin mencegah penggunaan Google Drive melalui sambungan seluler, sebaiknya Anda tidak mengizinkan pemasangan aplikasi Google Drive Android.</translation>

@@ -75,6 +75,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="2770231113462710648">Mainīt noklusējuma pārlūkprogrammu uz:</translation>
 <translation id="2799223571221894425">Restartēt</translation>
 <translation id="2847461019998147611">Rādīt Google Chrome šajā valodā</translation>
+<translation id="2857540653560290388">Notiek Chrome palaišana...</translation>
 <translation id="2871893339301912279">Esat pierakstījies pārlūkā Chrome!</translation>
 <translation id="2888126860611144412">Par Chrome</translation>
 <translation id="3037838751736561277">Google Chrome darbojas fona režīmā.</translation>
@@ -214,7 +215,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7308322188646931570">Pārlūkam Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="7330164299247909639">Autentificēšanas sertifikāts nedarbojās. Lūdzu, vēlreiz pierakstieties pārlūkā Google Chrome kā lietotājs <ph name="USER_NAME" /> vai sazinieties ar administratoru, lai iegūtu plašāku informāciju. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Jauns logs</translation>
-<translation id="7369650938475876456">Izmantot Chrome ģenerētu drošu paroli</translation>
 <translation id="7398801000654795464">Pārlūkā Chrome iepriekš pierakstījāties kā lietotājs <ph name="USER_EMAIL_ADDRESS" />. Lai pierakstītos vēlreiz, lūdzu, izmantojiet to pašu kontu.</translation>
 <translation id="7408085963519505752">Chrome OS noteikumi</translation>
 <translation id="7419046106786626209">Chrome OS nevarēja sinhronizēt jūsu datus, jo sinhronizācija jūsu domēnā nav pieejama.</translation>

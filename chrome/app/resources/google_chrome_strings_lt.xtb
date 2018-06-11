@@ -77,6 +77,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="2770231113462710648">Pakeisti numatytąją naršyklę į:</translation>
 <translation id="2799223571221894425">Paleisti iš naujo</translation>
 <translation id="2847461019998147611">Pateikti „Google Chrome“ šia kalba</translation>
+<translation id="2857540653560290388">Pristatoma „Chrome“...</translation>
 <translation id="2871893339301912279">Esate prisijungę prie „Chrome“.</translation>
 <translation id="2888126860611144412">Apie „Chrome“</translation>
 <translation id="3037838751736561277">„Google Chrome“ veikia fono režimu.</translation>
@@ -219,7 +220,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7308322188646931570">„Chrome“ reikia prieigos prie saugyklos, kad būtų galima atsisiųsti failus</translation>
 <translation id="7330164299247909639">Nepavyko autentifikuoti sertifikato. Prisijunkite prie „Google Chrome“ dar kartą kaip <ph name="USER_NAME" /> arba susisiekite su administratoriumi, jei reikia daugiau informacijos. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Naujas langas</translation>
-<translation id="7369650938475876456">Naudokite „Chrome“ sugeneruotą sudėtingą slaptažodį</translation>
 <translation id="7398801000654795464">Buvote prisijungę prie „Chrome“ kaip <ph name="USER_EMAIL_ADDRESS" />. Prisijungdami vėl naudokite tą pačią paskyrą.</translation>
 <translation id="7408085963519505752">„Chrome“ OS sąlygos</translation>
 <translation id="7419046106786626209">„Chrome“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>

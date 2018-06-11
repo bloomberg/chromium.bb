@@ -178,6 +178,7 @@
 <translation id="123578888592755962">Levy on täynnä</translation>
 <translation id="1238191093934674082">Open VPN</translation>
 <translation id="1240892293903523606">DOM-tarkastaja</translation>
+<translation id="124116460088058876">Lisää kieliä</translation>
 <translation id="1241753985463165747">lukea ja muokata kaikkia avoimen verkkosivuston tietojasi kutsuttaessa</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> haluaa nollata asetuksesi.</translation>
 <translation id="1243314992276662751">Lähetä</translation>
@@ -1079,7 +1080,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2624142942574147739">Tämä sivu käyttää kameraasi ja mikrofoniasi.</translation>
 <translation id="2626799779920242286">Yritä myöhemmin uudelleen.</translation>
 <translation id="2630681426381349926">Aloita yhdistämällä Wi-Fi-verkkoon</translation>
-<translation id="2631006050119455616">Säästetty</translation>
 <translation id="2631498379019108537">Näytä syöttöasetukset hyllyssä</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> käyttää <ph name="USAGE" /> Mt levytilaa.</translation>
 <translation id="2633212996805280240">Poistetaanko <ph name="EXTENSION_NAME" />?</translation>

@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Отворени раздели</translation>
 <translation id="1756600373018374892">Докоснете този бутон, за да стигнете бързо до разделите си.</translation>
 <translation id="1779089405699405702">Декодиране на изображения</translation>
+<translation id="1782483593938241562">Крайна дата: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Променете стандартното местоположение за изтегляне по всяко време</translation>
 <translation id="1807246157184219062">Светло</translation>
 <translation id="1829244130665387512">Търсене в страницата</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Опресняване на страницата</translation>
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="271033894570825754">Създаване</translation>
+<translation id="2728754400939377704">Сортиране по сайт</translation>
 <translation id="2736391366332017384">Докоснете бутона „Начало“, за да отворите нов раздел в текущия</translation>
 <translation id="2744248271121720757">Докоснете дума, за да извършите незабавно търсене, или вижте свързаните действия</translation>
 <translation id="2762000892062317888">току-що</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">Управлява се от администратора ви</translation>
 <translation id="4116038641877404294">Изтеглете страниците, за да ги използвате офлайн</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d отметка}other{%1$d отметки}}</translation>
+<translation id="4159800535322890630">Блокиране на сайтовете, така че да нямат достъп до сензорите</translation>
 <translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="4170011742729630528">Няма достъп до услугата. Опитайте отново по-късно.</translation>
+<translation id="4179980317383591987">Използвани: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Езици</translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="4198423547019359126">Няма местоположения за изтегляне</translation>
@@ -520,6 +524,8 @@
 <translation id="5585019845078534178">Карти</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5596627076506792578">Още опции</translation>
+<translation id="5620299005957670886">Забраняване на достъпа на сайтовете до сензорите ви 
+(препоръчително)</translation>
 <translation id="5620928963363755975">Използвайте бутона „Още опции“, за да намерите файловете и страниците си в „Изтегляния“</translation>
 <translation id="5626134646977739690">Име:</translation>
 <translation id="5639724618331995626">Разрешаване на всички сайтове</translation>
@@ -563,6 +569,7 @@
 <translation id="5911030830365207728">Google Преводач</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="5919204609460789179">Актуализирайте <ph name="PRODUCT_NAME" />, за да стартира синхронизирането</translation>
+<translation id="5937580074298050696">Спестени: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5942872142862698679">За търсене ще се използва Google</translation>
 <translation id="5956665950594638604">Отваряне на Помощния център на Chrome в нов раздел</translation>
@@ -643,6 +650,7 @@
 <translation id="6612358246767739896">Защитено съдържание</translation>
 <translation id="6627583120233659107">Редактиране на папката</translation>
 <translation id="6643016212128521049">Изчистване</translation>
+<translation id="6643649862576733715">Сортирайте по количество спестени данни</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6656545060687952787">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK" />Актуализиране на разрешенията<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Парола</translation>
@@ -729,6 +737,7 @@
 <translation id="7400418766976504921">URL адрес</translation>
 <translation id="7403691278183511381">Представяне при първо стартиране на Chrome</translation>
 <translation id="741204030948306876">Да, ще участвам</translation>
+<translation id="7413229368719586778">Начална дата: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Първо ще се извежда запитване</translation>
 <translation id="7423538860840206698">Достъпът за четене до буферната памет е блокиран</translation>
 <translation id="7437998757836447326">Изход от Chrome</translation>
@@ -834,6 +843,7 @@
 <translation id="8313455859591948645">Редактиране на страницата при стартиране</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и още сайтове</translation>
 <translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> няма да се превеждат</translation>
+<translation id="8349013245300336738">Сортиране по количеството използвани данни</translation>
 <translation id="8363501664269050863">Навигационен панел. Прекарайте пръст надолу, за да го затворите.</translation>
 <translation id="8372893542064058268">Разрешаване на синхронизирането на заден план за конкретен сайт.</translation>
 <translation id="8374821112118309944">Трябва да актуализирате TalkBack до по-нова версия.</translation>

@@ -5,6 +5,7 @@
 <translation id="1122869341872663659">Prikaz toliko rezultatov iskanja za poizvedbo <ph name="QUERY" />: <ph name="N" /></translation>
 <translation id="1195667586424773550">Povlecite povezavo v naslovno vrstico zavihka</translation>
 <translation id="1204450209689312104">Odpiranje novega okna v načinu brez beleženja zgodovine</translation>
+<translation id="1251638888133819822">Vklop ali izklop celozaslonske lupe</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Tiskanje trenutne strani</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">Vnovično nalaganje trenutne strani brez uporabe predpomnjene vsebine</translation>
 <translation id="526651782186312376">Izbira besedila do začetka vrstice</translation>
 <translation id="5316716239522500219">Zrcaljenje monitorjev</translation>
+<translation id="539072479502328326">Vklop ali izklop zasidrane lupe</translation>
 <translation id="5487187679583934283">Začenjanje ali ustavitev vnašanja govora</translation>
 <translation id="5541719484267030947">Med vlečenjem zavihka pritisnite <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Iskanje po trenutni strani</translation>

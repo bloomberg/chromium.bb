@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">選択</translation>
 <translation id="6948701128805548767">受け取り方法と要件を確認するには、住所を選択してください</translation>
 <translation id="6949872517221025916">パスワードを再設定</translation>
+<translation id="6950684638814147129">JSON 値の解析中にエラーが発生しました: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">サーバーの証明書が偽造されたもののようです。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">デバイス</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8620436878122366504">保護者がまだサイトを開くことを許可していません</translation>
 <translation id="8625384913736129811">このカード情報をこの端末に保存する</translation>
 <translation id="8639963783467694461">自動入力の設定</translation>
+<translation id="8663226718884576429">ご注文の概要、<ph name="TOTAL_LABEL" />、その他の詳細</translation>
 <translation id="8680536109547170164">「<ph name="QUERY" />」に対する答え: 「<ph name="ANSWER" />」</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> への接続は暗号化されていません。</translation>
 <translation id="8718314106902482036">支払い処理を完了できませんでした</translation>

@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">Orientació</translation>
 <translation id="3153444934357957346">Només pots tenir <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes com a màxim en un inici de sessió múltiple.</translation>
 <translation id="3236488194889173876">No hi ha cap xarxa mòbil disponible</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="332587331255250389">Canvia la bateria</translation>
 <translation id="3351879221545518001">Estàs emetent la pantalla.</translation>
@@ -202,6 +203,7 @@
 <translation id="5457599981699367932">Navega com a convidat</translation>
 <translation id="54609108002486618">Gestionat</translation>
 <translation id="553675580533261935">S'està tancant la sessió</translation>
+<translation id="5537725057119320332">Emet</translation>
 <translation id="5548285847212963613">L'extensió "<ph name="EXTENSION_NAME" />" pot ajudar a connectar-se a aquesta xarxa.</translation>
 <translation id="554893713779400387">Activa o desactiva el dictat</translation>
 <translation id="5571066253365925590">S'ha activat el Bluetooth</translation>
@@ -310,12 +312,14 @@
 <translation id="7654687942625752712">Mantén premudes les dues tecles de volum durant cinc segons per desactivar els comentaris de veu.</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7692480393933218409">S'estan carregant els dispositius USB-C connectats</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Fes clic per veure els detalls de l'actualització</translation>
 <translation id="7796353162336583443">Toca el botó del llapis òptic al prestatge per escriure una nota, fer una captura de pantalla, utilitzar l'Assistent de Google o fer-lo servir com a punter làser o lupa.</translation>
 <translation id="7798302898096527229">Prem Cerca o Maj per cancel·lar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Senyal potent</translation>
 <translation id="7842569679327885685">Advertiment: funció experimental</translation>
+<translation id="7846634333498149051">Teclat</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="7933084174919150729">L'Assistent de Google només està disponible per al perfil principal.</translation>
 <translation id="79341161159229895">Compte gestionat per <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>

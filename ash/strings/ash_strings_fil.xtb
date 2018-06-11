@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">Oryentasyon</translation>
 <translation id="3153444934357957346">Maaari ka lang magkaroon ng hanggang <ph name="MULTI_PROFILE_USER_LIMIT" /> (na) account sa maraming pag-sign in.</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Bisita</translation>
 <translation id="332587331255250389">Pakipalitan ang baterya</translation>
 <translation id="3351879221545518001">Kasalukuyan kang nagka-cast ng screen.</translation>
@@ -202,6 +203,7 @@
 <translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
 <translation id="54609108002486618">Pinamamahalaan</translation>
 <translation id="553675580533261935">Lumalabas sa session</translation>
+<translation id="5537725057119320332">I-cast</translation>
 <translation id="5548285847212963613">Maaaring makatulong na makakonekta sa network na ito ang extension na "<ph name="EXTENSION_NAME" />."</translation>
 <translation id="554893713779400387">I-toggle ang pagdidikta</translation>
 <translation id="5571066253365925590">Pinapagana ang Bluetooth</translation>
@@ -310,12 +312,14 @@
 <translation id="7654687942625752712">Pindutin nang matagal ang parehong volume key sa loob ng limang segundo para i-disable ang pasalitang feedback.</translation>
 <translation id="7658239707568436148">Ikansela</translation>
 <translation id="7692480393933218409">China-charge ang mga nakakonektang USB-C device</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">I-click upang tingnan ang mga detalye ng update</translation>
 <translation id="7796353162336583443">I-tap ang button ng stylus sa shelf upang magsulat ng tala, mag-screenshot, gamitin ang Google Assistant, laser pointer, o magnifying glass.</translation>
 <translation id="7798302898096527229">Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> at <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Malakas ang signal</translation>
 <translation id="7842569679327885685">Babala: Pang-eskperimentong feature</translation>
+<translation id="7846634333498149051">Keyboard</translation>
 <translation id="7904094684485781019">Hindi pinayagan ng administrator para sa account na ito ang multiple na pag-sign in.</translation>
 <translation id="7933084174919150729">Available lang ang Google Assistant para sa pangunahing profile.</translation>
 <translation id="79341161159229895">Pinamamahalaan nina <ph name="FIRST_PARENT_EMAIL" /> at <ph name="SECOND_PARENT_EMAIL" /> ang account</translation>

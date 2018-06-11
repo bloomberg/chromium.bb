@@ -858,6 +858,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3512226956150568738">Si el model de dispositiu del client ja admetia ARC abans que la migració a ext4 fos necessària per executar ARC, i si la política ArcEnabled s'estableix en "true", aquesta opció es comportarà com AskUser (valor 3). En la resta de casos (si abans el model de dispositiu no admetia ARC o si la política ArcEnabled s'estableix en "false"), aquest valor és equivalent a DisallowArc (valor 0).</translation>
 <translation id="3524204464536655762">No permet que cap lloc web sol·liciti accés a dispositius USB mitjançant l'API WebUSB</translation>
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
+<translation id="3545457887306538845">Et permet controlar on es poden utilitzar les Eines per a desenvolupadors.
+
+      Si aquesta política s'estableix en "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que és el predeterminat), es podrà accedir en general a les Eines per a desenvolupadors i a la Consola de JavaScript, però no s'hi podrà accedir quan les extensions estiguin instal·lades per la política d'empresa.
+      Si aquesta política s'estableix en "DeveloperToolsAllowed" (valor 1), es podrà accedir en qualsevol context a les Eines per a desenvolupadors i a la Consola de JavaScript, i es podran utilitzar en tots els contextos, fins i tot en extensions instal·lades per la política d'empresa.
+      Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la Consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3556806727696701427">Activa Navegació segura a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
 
@@ -1882,6 +1887,37 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6810445994095397827">Bloqueja JavaScript en aquests llocs</translation>
 <translation id="681446116407619279">Esquemes d'autenticació compatibles</translation>
 <translation id="6835883744948188639">Mostra una sol·licitud periòdica a l'usuari per indicar-li que es recomana reiniciar el navegador</translation>
+<translation id="6838056959556423778">Substitueix les regles de selecció de la impressora predeterminada a <ph name="PRODUCT_NAME" />.
+
+      Aquesta política determina les regles per seleccionar la impressora predeterminada a <ph name="PRODUCT_NAME" /> la primera vegada que s'utilitza la funció d'imprimir amb un perfil.
+
+      Si aquesta política s'estableix, <ph name="PRODUCT_NAME" /> prova de trobar una impressora que compleixi tots els atributs especificats i la selecciona com a impressora predeterminada. Se selecciona la primera impressora detectada que compleixi la política, però, si n'hi ha més d'una, se'n pot seleccionar qualsevol en funció de l'ordre en què es detectin.
+
+      Si aquesta política no s'estableix o no es troba cap impressora adequada durant el temps d'espera, s'utilitza la impressora PDF integrada de manera predeterminada o, si no està disponible, no se'n selecciona cap.
+
+      El valor s'analitza com a objecte JSON, d'acord amb l'esquema següent:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Indica si la cerca de la impressora es limita a un grup específic d'impressores.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Expressió regular corresponent a l'identificador de la impressora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expressió regular corresponent al nom de visualització de la impressora.",
+            "type": "string"
+          }
+        }
+      }
+
+      Les impressores connectades a <ph name="CLOUD_PRINT_NAME" /> es consideren <ph name="PRINTER_TYPE_CLOUD" />; la resta es classifiquen com a <ph name="PRINTER_TYPE_LOCAL" />.
+      Si es deixa un camp en blanc, vol dir que tots els valors són vàlids. Si, per exemple, no s'especifica la connectivitat, la previsualització d'impressió iniciarà la detecció de tot tipus d'impressores, locals i en núvol.
+      Els patrons de les expressions regulars han de seguir la sintaxi de JavaScript RegExp i la concordança distingeix entre majúscules i minúscules.</translation>
 <translation id="684856667300805181">Aquesta política s'ha suprimit a <ph name="PRODUCT_NAME" /> 68 i s'ha substituït per <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Aquesta política està obsoleta i s'ha tret d'M66, perquè només s'utilitzava per fer proves internes i és un requisit de seguretat.
 
@@ -2136,6 +2172,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7511361072385293666">Si aquesta política s'estableix en "true" o no es configura, es permet utilitzar el protocol QUIC a <ph name="PRODUCT_NAME" />.
       Si aquesta política s'estableix en "false", no es permet utilitzar el protocol QUIC.</translation>
 <translation id="7519251620064708155">Permet que aquests llocs utilitzin la generació de claus</translation>
+<translation id="7529083451528428240">Et permet bloquejar la sessió d'usuari en funció de l'hora del client o de la quota d'ús del dia.
+
+          |time_window_limit| especifica un període de temps diari en què s'ha de bloquejar la sessió d'usuari. Com que només admetem una regla per dia de la setmana, la mida de la matriu |entries| pot variar entre 0-7. |starts_at| i |ends_at| són l'inici i el final del límit de temps. Si |ends_at| és inferior a |starts_at|, vol dir que |time_limit_window| finalitza el dia següent. |last_updated_millis| és la marca de temps en format UTC per a l'última vegada en què s'ha actualitzat aquesta entrada. S'envia com a cadena perquè la marca de temps no cap en un nombre enter.
+
+          |time_usage_limit| especifica una quota de pantalla diària. Quan l'usuari hi arriba, se'n bloqueja la sessió. Hi ha una propietat per a cada dia de la setmana i només s'ha de definir si hi ha una quota activa per al dia en qüestió. |usage_quota_mins| és el temps que es pot fer servir el dispositiu gestionat cada dia i |reset_at| és l'hora en què es reinicialitza la quota d'ús. El valor predeterminat de |reset_at| és la mitjanit ({'hour': 0, 'minute': 0}). |last_updated_millis| és la marca de temps en format UTC per a l'última vegada en què s'ha actualitzat aquesta entrada. S'envia com a cadena perquè la marca de temps no cap en un nombre enter.
+
+          |overrides| es proporciona per invalidar temporalment una de les regles anteriors o més.
+          * Si no s'activa time_window_limit ni time_usage_limit, es pot fer servir |LOCK| per bloquejar el dispositiu.
+          * |LOCK| bloqueja temporalment una sessió d'usuari fins que s'inicia la instància següent de time_window_limit o time_usage_limit starts.
+          * |UNLOCK| desbloqueja una sessió d'usuari bloquejada per time_window_limit o time_usage_limit.
+          |created_time_millis| és la marca de temps en format UTC per a la creació d'una hora de substitució. S'envia com a cadena perquè la marca de temps no cap en un nombre enter. Serveix per determinar si cal aplicar la substitució. Si la funció de límit de temps que està activa actualment (límit de temps d'ús o límit de marge de temps) ha començat després de crear la substitució, no s'activa. A més, si la substitució s'ha creat abans de canviar el valor time_window_limit o time_usage_window per última vegada, no s'aplica.</translation>
 <translation id="7529100000224450960">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès obrir finestres emergents. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPopupsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7529144158022474049">Actualitza automàticament el factor de dispersió</translation>
 <translation id="7534199150025803530">Aquesta política no té efecte a l'aplicació Google Drive per a Android. Si vols impedir que Google Drive s'utilitzi a través de connexions mòbils, has de denegar la instal·lació d'aquesta aplicació.</translation>

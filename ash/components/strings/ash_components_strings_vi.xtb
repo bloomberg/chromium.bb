@@ -5,6 +5,7 @@
 <translation id="1122869341872663659">Hiển thị <ph name="N" /> kết quả tìm kiếm cho <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Kéo liên kết vào thanh địa chỉ của tab</translation>
 <translation id="1204450209689312104">Mở cửa sổ mới ở chế độ ẩn danh</translation>
+<translation id="1251638888133819822">Bật hoặc tắt tính năng phóng to toàn bộ màn hình</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Thoát</translation>
 <translation id="1299858300159559687">In trang hiện tại</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">Tải lại trang hiện tại mà không sử dụng nội dung đã lưu vào bộ nhớ đệm</translation>
 <translation id="526651782186312376">Chọn văn bản ở đầu dòng</translation>
 <translation id="5316716239522500219">Phản chiếu màn hình</translation>
+<translation id="539072479502328326">Bật hoặc tắt tính năng phóng to ở vị trí cố định</translation>
 <translation id="5487187679583934283">Bắt đầu hoặc dừng nhập nội dung bạn nói</translation>
 <translation id="5541719484267030947">Trong khi kéo tab, hãy nhấn <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Tìm kiếm trên trang hiện tại</translation>

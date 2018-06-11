@@ -170,6 +170,7 @@
 <translation id="123578888592755962">ಡಿಸ್ಕ್ ಪೂರ್ಣವಾಗಿದೆ</translation>
 <translation id="1238191093934674082">VPN ತೆರೆಯಿರಿ</translation>
 <translation id="1240892293903523606">DOM ಪರೀಕ್ಷಕ</translation>
+<translation id="124116460088058876">ಹೆಚ್ಚಿನ ಭಾಷೆಗಳು</translation>
 <translation id="1241753985463165747">ಮನವಿ ಸಲ್ಲಿಸಿದಾಗ, ಪ್ರಸ್ತುತ ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಎಲ್ಲ ಡೇಟಾವನ್ನು ಓದಿ, ಬದಲಾಯಿಸಿ</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಲು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="1243314992276662751">ಅಪ್‌ಲೋಡ್</translation>
@@ -203,6 +204,7 @@
 <translation id="1296497012903089238">ಪ್ರಮಾಣಪತ್ರದ ಪ್ರಕಾರ</translation>
 <translation id="1297175357211070620">ಗಮ್ಯಸ್ಥಾನ</translation>
 <translation id="1297922636971898492">Google ಡ್ರೈವ್‌ ಇದೀಗ ಲಭ್ಯವಿಲ್ಲ. Google ಡ್ರೈವ್‌ ಒಮ್ಮೆ ಹಿಂತಿರುಗಿದರೆ ಅಪ್‌ಲೋಡ್‌ ಆಗುವುದು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ.</translation>
+<translation id="1300415640239881824">ಸಂರಕ್ಷಿತ ವಿಷಯದ ವರ್ಧಿತ ಪ್ಲೇಬ್ಯಾಕ್ ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಿದೆಯೇ ಎಂದು ನಿರ್ಧರಿಸಲು ನಿಮ್ಮ ಸಾಧನದ ಗುರುತನ್ನು Google ಮೂಲಕ ಪರಿಶೀಲಿಸಬೇಕೆಂದು <ph name="DOMAIN" /> ಬಯಸಿದೆ.</translation>
 <translation id="1300806585489372370">ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಬದಲಾಯಿಸಲು, ಮೊದಲು <ph name="BEGIN_LINK" />ಗುರುತಿಸುವಿಕೆಗಳನ್ನು ಆನ್ ಮಾಡಿ<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Apple ಈವೆಂಟ್‌ಗಳಿಂದ JavaScript ಗೆ ಅನುಮತಿಸಿ</translation>
 <translation id="1303101771013849280">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ HTML ಫೈಲ್‌</translation>
@@ -1056,7 +1058,6 @@
 <translation id="2624142942574147739">ಈ ಪುಟವು ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಹಾಗೂ ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ಪ್ರವೇಶಿಸುತ್ತಿದೆ.</translation>
 <translation id="2626799779920242286">ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2630681426381349926">ಪ್ರಾರಂಭಿಸಲು ವೈ-ಫೈ ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
-<translation id="2631006050119455616">ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2631498379019108537">ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಇನ್‌ಪುಟ್‌ ಆಯ್ಕೆಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="2633199387167390344">ಡಿಸ್ಕ್ ಸ್ಥಳಾವಕಾಶದಲ್ಲಿ <ph name="USAGE" /> MB ಅನ್ನು <ph name="NAME" /> ಬಳಸಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" ಅನ್ನು ತೆಗೆದುಹಾಕುವುದೇ?</translation>

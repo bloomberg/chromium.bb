@@ -202,6 +202,7 @@
 <translation id="5457599981699367932">Använd som gäst</translation>
 <translation id="54609108002486618">Hanterade</translation>
 <translation id="553675580533261935">Sessionen avslutas</translation>
+<translation id="5537725057119320332">Casta</translation>
 <translation id="5548285847212963613">Tillägget <ph name="EXTENSION_NAME" /> kan hjälpa till med att ansluta till nätverket.</translation>
 <translation id="554893713779400387">Aktivera och inaktivera diktamen</translation>
 <translation id="5571066253365925590">Bluetooth aktiverad</translation>
@@ -310,12 +311,14 @@
 <translation id="7654687942625752712">Inaktivera talad feedback genom att hålla båda volymknapparna nedtryckta i fem sekunder.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7692480393933218409">Laddar anslutna USB-C-enheter</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Klicka här om du vill se mer information om uppdateringen</translation>
 <translation id="7796353162336583443">När du har tryckt på e-pennan på hyllan kan du anteckna, ta en skärmdump eller använda Google Assistent, laserpekaren eller förstoringsglaset.</translation>
 <translation id="7798302898096527229">Avbryt genom att trycka på söktangenten eller Skift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> och <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">stark signal</translation>
 <translation id="7842569679327885685">Varning: Experimentfunktion</translation>
+<translation id="7846634333498149051">Tangentbord</translation>
 <translation id="7904094684485781019">Administratören för kontot tillåter inte multiinloggning.</translation>
 <translation id="7933084174919150729">Endast den primära profilen har tillgång till Google Assistent.</translation>
 <translation id="79341161159229895">Kontot hanteras av <ph name="FIRST_PARENT_EMAIL" /> och <ph name="SECOND_PARENT_EMAIL" /></translation>

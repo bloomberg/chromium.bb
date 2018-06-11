@@ -898,6 +898,11 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3512226956150568738">Če je model odjemalske naprave že podpiral ARC, preden je bila zaradi izvajanja ARC-a potrebna selitev na šifriranje ext4, in je omogočen pravilnik »ArcEnabled«, bo možnost delovala kot »AskUser« (vrednost 3). V vseh drugih primerih (če model naprave prej ni podpiral ARC-ja ali če je pravilnik »ArcEnabled« onemogočen) je ta vrednost enakovredna »DisallowArc« (vrednost 0).</translation>
 <translation id="3524204464536655762">Ne dovoli nobenemu spletnemu mestu zahtevanja dostopa do naprav USB prek API-ja za WebUSB</translation>
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
+<translation id="3545457887306538845">Omogoča nadzor nad tem, kje se lahko uporabijo orodja za razvijalce.
+
+      Če je ta pravilnik nastavljen na »DeveloperToolsDisallowedForForceInstalledExtensions« (vrednost 0 je privzeta vrednost), je dostop do orodij za razvijalce in konzole JavaScript na splošno mogoč, vendar ne v kontekstu razširitev, nameščenih s pravilnikom podjetja.
+      Če je ta pravilnik nastavljen na »DeveloperToolsAllowed« (vrednost 1), sta dostop do orodij za razvijalce in konzole JavaScript ter njihova uporaba mogoča v vseh kontekstih, vključno s kontekstom razširitev, nameščenih s pravilnikom podjetja.
+      Če je ta pravilnik nastavljen na »DeveloperToolsDisallowed« (vrednost 2), dostop do orodij za razvijalce ni mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3556806727696701427">Omogoči Varno brskanje v programu <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje te nastavitve.
 
@@ -1989,6 +1994,37 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6810445994095397827">Blokiraj JavaScript na teh mestih</translation>
 <translation id="681446116407619279">Podprti načini preverjanja pristnosti</translation>
 <translation id="6835883744948188639">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je priporočen vnovičen zagon</translation>
+<translation id="6838056959556423778">Preglasi pravila za izbiro privzetega tiskalnika za <ph name="PRODUCT_NAME" />.
+
+      Ta pravilnik določa pravila za izbiro privzetega tiskalnika v brskalniku <ph name="PRODUCT_NAME" />, do česar pride, ko je funkcija tiskanja prvič uporabljena s profilom.
+
+      Če je ta pravilnik nastavljen, <ph name="PRODUCT_NAME" /> poskusi poiskati tiskalnik, ki se ujema z vsemi določenimi atributi, in ga izbere kot privzetega. Izbran je prvi tiskalnik, ki se ujema s pravilnikom. V primeru neenoličnega ujemanja je lahko izbran kateri koli tiskalnik, ki se ujema, odvisno od vrstnega reda odkrivanja tiskalnikov.
+
+      Če ta pravilnik ni nastavljen ali v časovni omejitvi ni najden tiskalnik, ki se ujema, je tiskalnik privzeto vgrajeni tiskalnik PDF. Če ta ni na voljo, ni izbran noben tiskalnik.
+
+      Vrednost je razčlenjena kot predmet JSON skladno s to shemo:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Ali naj se iskanje tiskalnika, ki se ujema, omeji na določeno skupino tiskalnikov.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regularni izraz, ki se ujema z ID-jem tiskalnika.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regularni izraz, ki se ujema s prikaznim imenom tiskalnika.",
+            "type": "string"
+          }
+        }
+      }
+
+      Tiskalniki, povezani v storitev <ph name="CLOUD_PRINT_NAME" />, se obravnavajo kot »<ph name="PRINTER_TYPE_CLOUD" />«, drugi tiskalniki pa so razvrščeni kot »<ph name="PRINTER_TYPE_LOCAL" />«.
+      Če izpustite polje, se ujemajo vse vrednosti. Če na primer ne določite povezave, predogled tiskanja začne odkrivanje vseh vrst tiskalnikov – lokalnih in v oblaku.
+      Vzorci regularnega izraza morajo upoštevati sintakso JavaScript RegExp in pri ujemanjih se razlikuje med malimi in velikimi črkami.</translation>
 <translation id="684856667300805181">Ta pravilnik je bil odstranjen v izdelku <ph name="PRODUCT_NAME" /> in ga je zamenjal pravilnik <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ta pravilnik je zastarel in smo ga v M66 odstranili, ker se je uporabljal samo za interno preskušanje in predstavlja varnostno tveganje.
 
@@ -2267,6 +2303,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7511361072385293666">Če je ta pravilnik omogočen ali ni nastavljen, je uporaba protokola QUIC v brskalniku <ph name="PRODUCT_NAME" /> dovoljena.
       Če je ta pravilnik onemogočen, uporaba protokola QUIC ni dovoljena.</translation>
 <translation id="7519251620064708155">Dovoli ustvarjanje ključev na teh spletnih mestih</translation>
+<translation id="7529083451528428240">Omogoča zaklepanje uporabnikove seje glede na čas odjemalca ali omejitev uporabe v dnevu. 
+
+          |time_window_limit| določa dnevno obdobje, v katerem je uporabnikova seja zaklenjena. Podpiramo samo eno pravilo za vsak dan v tednu, zato se polje |entries| morda razlikuje v velikosti od 0 do 7. |starts_at| in |ends_at| sta na začetku in koncu omejitve obdobja; če je |ends_at| manjši od |starts_at|, se |time_limit_window| konča naslednji dan. |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
+
+          |time_usage_limit| določa omejitev dnevne uporabe. Ko jo uporabnik doseže, se uporabnikova seja zaklene. Za vsak dan v tednu je lastnost in se nastavi samo, če je za ta dan aktivna omejitev. |usage_quota_mins| določa, koliko časa v dnevu je mogoče uporabljati upravljano napravo, |reset_at| pa določa čas, ko je omejitev uporabe obnovljena. Privzeta vrednost za |reset_at| je polnoč ({'hour': 0, 'minute': 0}). |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
+
+          |overrides| je na voljo za začasno razveljavitev enega ali več prejšnjih pravil.
+          * Če nista aktivna ne time_window_limit ne time_usage_limit, je za zaklepanje naprave mogoče uporabiti |LOCK|.
+          * |LOCK| začasno zaklene uporabnikovo sejo, dokler se ne začne naslednji time_window_limit ali time_usage_limit.
+          * |UNLOCK| odklene uporabnikovo sejo, ki jo zaklene time_window_limit ali time_usage_limit.
+          |created_time_millis| je časovni žig časa UTC za ustvarjanje preglasitve. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število. Uporabi se za določitev, ali se ta preglasitev še vedno uporabi. Če se je funkcija trenutne omejitve aktivnega časa (časovna omejitev uporabe ali omejitev časovnega obdobja) začela po ustvarjanju preglasitve, se ne izvaja. Če je bila preglasitev ustvarjena pred zadnjo spremembo aktivne omejitve time_window_limit ali aktivnega obdobja time_usage_window, se ne uporablja.</translation>
 <translation id="7529100000224450960">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko odpirajo pojavna okna.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPopupsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>

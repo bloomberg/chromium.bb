@@ -866,6 +866,11 @@
 <translation id="3512226956150568738">Ha a kliens eszközmodellje már azelőtt támogatta az ARC-t, hogy az ARC futtatásához az ext4-re való migráció szükséges lett volna, valamint ha az ArcEnabled házirend igaz értékre van beállítva, akkor ez a beállítás az AskUser (3. érték) módjára viselkedik. Az érték minden egyéb esetben (ha az eszköz nem támogatta előtte az ARC-t, vagy ha az ArcEnabled házirend hamis értékre van beállítva) megegyezik a DisallowArc (0. érték) értékével.</translation>
 <translation id="3524204464536655762">Nem engedélyezi, hogy a webhelyek hozzáférést kérjenek az USB-eszközökhöz a WebUSB API-n keresztül</translation>
 <translation id="3528000905991875314">Alternatív hibaoldalak engedélyezése</translation>
+<translation id="3545457887306538845">Lehetővé teszi annak szabályozását, hogy hol használhatók a Fejlesztői eszközök.
+
+      Ha a házirend beállítása „DeveloperToolsDisallowedForForceInstalledExtensions” (az érték 0, amely az alapértelmezett érték), akkor a Fejlesztői eszközöket és a JavaScript konzolját általánosságban el lehet érni, de a vállalati házirendek által telepített bővítmények esetében egyikhez sem lehet hozzáférni.
+      Ha a házirend beállítása „DeveloperToolsAllowed” (az érték 1, amely az alapértelmezett érték nem felügyelt felhasználók esetében), akkor a Fejlesztői eszközök és a JavaScript konzolja minden esetben hozzáférhető és használható, beleértve a vállalati házirendek által telepített bővítmények esetét is.
+      Ha a házirend beállítása „DeveloperToolsDisallowed” (az érték 2), akkor a Fejlesztői eszközökhöz nem lehet hozzáférni, és a webhelyek elemeit nem lehet megvizsgálni. Minden olyan billentyűparancs, menü és helyi menü le lesz tiltva, amellyel a Fejlesztői eszközöket vagy a JavaScript-konzolt meg lehet nyitni.</translation>
 <translation id="3547954654003013442">Proxybeállítások</translation>
 <translation id="3556806727696701427">Bekapcsolja a <ph name="PRODUCT_NAME" /> Biztonságos Böngészés funkcióját, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
 
@@ -1894,6 +1899,37 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6810445994095397827">JavaScript letiltása ezeken a webhelyeken</translation>
 <translation id="681446116407619279">Támogatott hitelesítési sémák</translation>
 <translation id="6835883744948188639">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy ajánlott az újraindítás</translation>
+<translation id="6838056959556423778">Felülbírálja a <ph name="PRODUCT_NAME" /> alapértelmezett nyomtatókiválasztási szabályait.
+
+      Ez a házirend határozza meg az alapértelmezett nyomtató kiválasztására vonatkozó szabályokat a nyomtatás funkció adott profillal történő első használatakor a böngészőben (<ph name="PRODUCT_NAME" />).
+
+      Ha a házirend be van állítva, a böngésző (<ph name="PRODUCT_NAME" />) megpróbál olyan nyomtatót találni, amely megfelel a megadott tulajdonságok mindegyikének, majd kijelöli alapértelmezett nyomtatónak. A házirendnek megfelelő első nyomtatót választja ki, ha pedig nincs egyedi egyezés, akkor a nyomtatók felfedezésének sorrendjétől függően bármilyen egyező nyomtatót kiválaszthat.
+
+      Ha a házirend nincs beállítva, vagy ha az időkereten belül nem talál megfelelő nyomtatót, akkor az alapértelmezett nyomtató a beépített PDF-nyomtató lesz, illetve ha az nem áll rendelkezésre, akkor nem lesz nyomtató kiválasztva.
+
+      Az érték elemzése JSON-objektumként, a következő sémának megfelelően történik:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Kell-e korlátozni az egyező nyomtatók keresését a nyomtatók egy adott készletére.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "A nyomtató azonosítójával egyező reguláris kifejezés.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "A nyomtató megjelenített nevével egyező reguláris kifejezés.",
+            "type": "string"
+          }
+        }
+      }
+
+      A(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatáshoz tartozó nyomtatók besorolása a böngészőben <ph name="PRINTER_TYPE_CLOUD" />, míg az összes többié <ph name="PRINTER_TYPE_LOCAL" />.
+      Egy adott mező üresen hagyása azt jelenti, hogy az összes érték egyezésnek számít. Ha például nincs megadva a csatlakoztathatóság, akkor a nyomtatási előnézet az összes nyomtatófajta (helyi és felhőben lévő) felfedezését megkezdi.
+      A reguláris kifejezések mintái a JavaScript RegExp szintaxist követik, és megkülönböztetik a kis- és nagybetűket.</translation>
 <translation id="684856667300805181">Ez a házirend el lett távolítva a <ph name="PRODUCT_NAME" /> 68-os verziójában, és a következő lépett a helyébe: <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ez a házirend elavult, és eltávolítottuk az M66 verzióban, mert csak belső tesztelésre használtuk, és biztonsági kockázatot jelent.
 
@@ -2156,6 +2192,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7511361072385293666">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> termékben használható a QUIC protokoll.
       Ha a házirend értéke hamis, akkor a QUIC protokoll nem használható.</translation>
 <translation id="7519251620064708155">Kulcslétrehozás engedélyezése ezeken a webhelyeken</translation>
+<translation id="7529083451528428240">Engedélyezi a felhasználói munkamenet zárolását a kliens futási ideje és a napi használati kvóta alapján.
+
+          A |time_window_limit| meghatározza azt a napi időtartományt, amelyben zárolva van a felhasználói munkamenet. A rendszer egy-egy szabályt támogat a hét egyes napjaihoz, ezért az |entries| tömb 0–7 elemből állhat. A |starts_at| és az |ends_at| az időkorlát kezdetét és végét jelöli. Ha az |ends_at| kisebb, mint a |starts_at|, akkor a |time_limit_window| a következő napon ér véget. A |last_updated_millis| UTC-időbélyeg, amely azt jelöli, hogy mikor volt legutóbb frissítve a bejegyzés. Karakterláncként szerepel, mert az időbélyeg nem fejezhető ki egész számmal.
+
+          A |time_usage_limit| a napi képernyőhasználati kvótát határozza meg. Ha a felhasználó eléri, a munkamenete lezárul. A hét minden napjához tartozik egy-egy tulajdonság, és csak akkor kell beállítani, ha tartozik aktív kvóta az adott naphoz. A |usage_quota_mins| az az időmennyiség, amennyit a felügyelt eszköz használható naponta, és a |reset_at| az az időpont, amikor a rendszer megújítja a használati kvótát. A |reset_at| alapértelmezett értéke éjfél ({'hour': 0, 'minute': 0}). A |last_updated_millis| UTC-időbélyeg, amely azt jelöli, hogy mikor volt legutóbb frissítve a bejegyzés. Karakterláncként szerepel, mert az időbélyeg nem fejezhető ki egész számmal.
+
+          Az |overrides| megadásával átmenetileg érvényteleníteni lehet egy vagy több korábbi szabályt.
+          * Ha sem a time_window_limit, sem a time_usage_limit nem aktív, akkor a |LOCK| használható az eszköz zárolására.
+          * A |LOCK| átmenetileg zárolja a felhasználói munkamenetet, amíg el nem kezdődik a következő time_window_limit vagy time_usage_limit.
+          * Az |UNLOCK| feloldja a time_window_limit vagy time_usage_limit által lezárt felhasználói munkamenetet.
+          A |created_time_millis| a felülírás létrehozásának UTC-időbélyegje. Karakterláncként szerepel, mert az időbélyeg nem fejezhető ki egész számmal. Annak meghatározására használható, hogy továbbra is érvényesíteni kell-e a felülírást. Ha az aktuális aktív időkorlát funkció (használati időre vagy időtartományra vonatkozó korlát) a felülírás létrehozása után kezdődött meg, a rendszer nem végez műveletet. Akkor sem kerül alkalmazásra, ha a felülírás az aktív time_window_limit vagy time_usage_window legutóbbi módosítása előtt lett létrehozva.</translation>
 <translation id="7529100000224450960">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nyithatnak meg felugró ablakokat. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultPopupsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="7529144158022474049">Szórási tényező automatikus frissítése</translation>
 <translation id="7534199150025803530">Ez a házirend nem vonatkozik az androidos Google Drive alkalmazásra. Ha mobiladat-kapcsolat esetén szeretné megakadályozni a Google Drive használatát, akkor le kell tiltania az androidos Google Drive alkalmazás telepítését.</translation>

@@ -846,6 +846,11 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3512226956150568738">Se il modello del dispositivo client supportava già ARC prima che fosse necessaria la migrazione a ext4 per eseguire ARC e se la norma ArcEnabled è impostata su true, questa opzione si comporterà come AskUser (valore 3). In tutti gli altri casi (se il modello del dispositivo non supportava ARC in precedenza o se la norma ArcEnabled è impostata su false), questo valore equivale a DisallowArc (valore 0).</translation>
 <translation id="3524204464536655762">Non consentire ai siti di richiedere l'accesso ai dispositivi USB tramite l'API WebUSB</translation>
 <translation id="3528000905991875314">Attiva pagine di errore sostitutive</translation>
+<translation id="3545457887306538845">Ti consente di stabilire dove è possibile usare gli Strumenti per sviluppatori.
+
+      Se questa norma viene impostata su "DeveloperToolsDisallowedForForceInstalledExtensions" (valore 0, ossia il valore predefinito), in genere è possibile accedere agli Strumenti per sviluppatori e alla console JavaScript, ma non è possibile accedervi nel contesto delle estensioni installate in base a norme aziendali.
+      Se questa norma viene impostata su "DeveloperToolsAllowed" (valore 1), gli Strumenti per sviluppatori e la console JavaScript saranno accessibili e utilizzabili in tutti i contesti, incluso il contesto delle estensioni installate in base a norme aziendali.
+      Se questa norma viene impostata su "DeveloperToolsDisallowed" (valore 2), gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile esaminare gli elementi del sito web. Le eventuali scorciatoie da tastiera e le voci dei menu contestuali o di altri menu che consentono di aprire gli Strumenti per sviluppatori o la console JavaScript verranno disattivate.</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
 <translation id="3556806727696701427">Attiva la funzione Navigazione sicura di <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
@@ -1859,6 +1864,37 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6810445994095397827">Blocca Javascript in questi siti</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
 <translation id="6835883744948188639">Mostra un messaggio ricorrente all'utente in cui indica che è consigliato eseguire un riavvio</translation>
+<translation id="6838056959556423778">Consente di sostituire le regole di selezione della stampante predefinita di <ph name="PRODUCT_NAME" />.
+
+      Questa norma consente di stabilire le regole per la selezione della stampante predefinita in <ph name="PRODUCT_NAME" />, che viene effettuata al primo utilizzo della funzione di stampa con un profilo.
+
+      Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> cercherà di trovare una stampante corrispondente a tutti gli attributi specificati e la selezionerà come stampante predefinita. Verrà selezionata la prima stampante trovata corrispondente alla norma; in caso di corrispondenze non univoche, può essere selezionata qualsiasi stampante, a seconda dell'ordine di rilevamento delle stampanti.
+
+      Se questa norma non viene impostata o se non viene trovata una stampante corrispondente prima del timeout, viene selezionata come predefinita la stampante PDF integrata; se non è disponibile la stampante PDF, non viene selezionata alcuna stampante.
+
+      Il valore viene analizzato come oggetto JSON, in base al seguente schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Le stampanti connesse a <ph name="CLOUD_PRINT_NAME" /> vengono considerate <ph name="PRINTER_TYPE_CLOUD" />, mentre le altre stampanti vengono classificate come <ph name="PRINTER_TYPE_LOCAL" />.
+      L'omissione di un campo implica la corrispondenza di tutti i valori; ad esempio, se non viene specificata la connettività, nell'Anteprima di stampa viene avviato il rilevamento di tutti i tipi di stampanti, locali e cloud.
+      I modelli di espressioni regolari devono seguire la sintassi JavaScript RegExp e per le corrispondenze viene fatta distinzione tra maiuscole e minuscole.</translation>
 <translation id="684856667300805181">Questa norma è stata rimossa in <ph name="PRODUCT_NAME" /> 68 e sostituita da <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Questa norma è obsoleta ed è stata rimossa su M66, poiché era utilizzata solo per test interni e rappresenta un rischio per la sicurezza.
 
@@ -2111,6 +2147,17 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="7511361072385293666">Se questa norma viene impostata su true o non viene impostata, l'utilizzo del protocollo QUIC in <ph name="PRODUCT_NAME" /> è consentito.
      Se questa norma viene impostata su false, l'utilizzo del protocollo QUIC non è consentito.</translation>
 <translation id="7519251620064708155">Consenti la generazione di chiavi su questi siti</translation>
+<translation id="7529083451528428240">Questa norma consente di bloccare la sessione dell'utente in base al tempo del client o alla quota di utilizzo del giorno.
+
+         |time_window_limit| consente di specificare un periodo giornaliero in cui la sessione dell'utente deve essere bloccata. Supportiamo solo una regola per ogni giorno della settimana, quindi la matrice |entries| potrebbe variare da 0 a 7. |starts_at| ed |ends_at| corrispondono all'inizio e alla fine del limite del periodo. Quando |ends_at| è inferiore a |starts_at| significa che il periodo |time_limit_window| termina il giorno successivo. |last_updated_millis| è il timestamp UTC relativo all'ultimo aggiornamento della voce in questione, che viene inviato sotto forma di stringa perché non si adatta a un numero intero.
+
+          |time_usage_limit| consente di specificare una quota giornaliera di utilizzo dello schermo che, una volta raggiunta, blocca la sessione dell'utente. Esiste una proprietà per ogni giorno della settimana, che dovrebbe essere impostata solo se esiste una quota attiva per il giorno in questione. |usage_quota_mins| indica per quanto tempo è possibile usare il dispositivo nell'arco di una giornata, mentre |reset_at| indica il momento in cui viene rinnovata la quota di utilizzo. Il valore predefinito di |reset_at| è mezzanotte ({'hour': 0, 'minute': 0}). |last_updated_millis| è il timestamp UTC relativo all'ultimo aggiornamento della voce in questione, che viene inviato sotto forma di stringa perché non si adatta a un numero intero.
+
+          Il valore |overrides| viene fornito per invalidare temporaneamente una o più regole precedenti.
+          * Se non sono attivi né time_window_limit né time_usage_limit, è possibile usare |LOCK| per bloccare il dispositivo.
+          * |LOCK| consente di bloccare temporaneamente una sessione utente fino all'inizio dei valori time_window_limit o time_usage_limit successivi.
+          * |UNLOCK| consente di sbloccare la sessione di un utente bloccata in base a time_window_limit o time_usage_limit.
+          |created_time_millis| è il timestamp UTC per la creazione dell'override che viene inviato sotto forma di stringa perché non si adatta a un numero intero. Viene usato per stabilire se applicare ancora o meno l'override. Se la funzione del limite di tempo attivo corrente (limite di tempo di utilizzo o limite della finestra temporale) è iniziata dopo la creazione dell'override, questa non dovrebbe essere applicata. Inoltre, se l'override è stato creato prima dell'ultima modifica del valore time_window_limit o time_usage_window attivi, questo non dovrebbe essere applicato.</translation>
 <translation id="7529100000224450960">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'apertura dei popup. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPopupsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="7529144158022474049">Fattore di dispersione aggiornamento automatico</translation>
 <translation id="7534199150025803530">Questa norma non influisce sull'app Google Drive per Android. Se vuoi impedire l'utilizzo di Google Drive tramite rete cellulare, non devi consentire l'installazione dell'app Google Drive per Android.</translation>

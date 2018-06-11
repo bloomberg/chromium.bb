@@ -49,7 +49,7 @@
 <translation id="1346748346194534595">दाएं</translation>
 <translation id="135978014023467274">आपको ChromeVox 63 में अपडेट किया गया है!</translation>
 <translation id="136718599399906424">अगली तालिका पंक्ति</translation>
-<translation id="1377925789329510816">यह अंतिम शीर्षक है. पहले शीर्षक पर जाने के लिए Search+H दबाएं या इस पेज के दूसरे शीर्षक पर जाने के लिए Search+Shift+H दबाएं.</translation>
+<translation id="1377925789329510816">यह आखिरी शीर्षक है. पहले शीर्षक पर जाने के लिए Search+H दबाएं या इसी पेज के दूसरे शीर्षक पर जाने के लिए Search+Shift+H दबाएं.</translation>
 <translation id="1383876407941801731">खोज</translation>
 <translation id="1385214448885562192">स्वीकार करने के लिए enter या रद्द करने के लिए escape, अगले के लिए down और पिछले के लिए up दबाएं.</translation>
 <translation id="1396114365388024581">tablst</translation>
@@ -59,7 +59,7 @@
 <translation id="1467432559032391204">बाएं</translation>
 <translation id="1474557363159888097">कोई पिछला एंकर नहीं.</translation>
 <translation id="1480046233931937785">क्रेडिट</translation>
-<translation id="1487494366197411587">Chromebook पर Search की, बाईं Shift की के ठीक ऊपर होती है.</translation>
+<translation id="1487494366197411587">Chromebook में 'सर्च की', बाईं तरफ़ की 'शिफ़्ट की' के ठीक ऊपर होती है.</translation>
 <translation id="1499041187027566160">वॉल्‍यूम बढ़ाएं</translation>
 <translation id="1502086903961450562">पिछला ग्राफ़‍िक</translation>
 <translation id="1506187449813838456">पिच बढ़ाएं</translation>
@@ -202,7 +202,7 @@
 <translation id="2864481629947106776">पिछला लिंक</translation>
 <translation id="2867808975387772810">संदर्भ सूची</translation>
 <translation id="2873259058405069099">तालिका के प्रारंभ पर जाएं</translation>
-<translation id="288178314850623291">तत्वों के विशिष्ट प्रकारों पर सीधे पहुंचने के लिए, सीधे जाने वाले आदेश का उपयोग करें. शीर्षकों के बीच सीधे आगे की ओर जाने के लिए, Search + H दबाएं या पीछे जाने के लिए Search + Shift + H दबाएं.</translation>
+<translation id="288178314850623291">सीधे किसी खास तरह के आइटम पर पहुंचने के लिए, 'जंप कमांड' का इस्तेमाल करें. एक शीर्षक से दूसरे शीर्षक पर सीधे जाने के लिए Search + H या वापस पिछले शीर्षक पर जाने के लिए Search + Shift + H दबाएं.</translation>
 <translation id="2894654529758326923">जानकारी</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{बायां कोष्ठक}one{# बाएं कोष्ठक}other{# बाएं कोष्ठक}}</translation>
 <translation id="2909478709401302630">सुपरस्क्रिप्ट शुरू</translation>
@@ -258,7 +258,7 @@
 <translation id="3299925995433437805">बाद में देखा गया कोई लिंक नहीं.</translation>
 <translation id="3300348286427369683">रिच टेक्स्ट के साथ काम करता है. अब ChromeVox रिच टेक्स्ट वाली फ़ील्ड के साथ काम करता है जिसमें कहीं भी सीधे पहुंचाने के निर्देश, ब्रेल कर्सर की रूटिंग, चयन वगैरह शामिल हैं.</translation>
 <translation id="3307886118343381874">तालिका के अंत में जाएं</translation>
-<translation id="3311969765485641742">नोटिफ़िकेशन की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
+<translation id="3311969765485641742">अलर्ट की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
 <translation id="3312997241656799641">बाद में देखा गया लिंक</translation>
 <translation id="3313245066383501820">ChromeVox बदलने वाली की</translation>
 <translation id="3317212938060708859">स्लाइडर</translation>
@@ -409,7 +409,7 @@
 <translation id="4271521365602459209">और अधिक परिणाम नहीं.</translation>
 <translation id="4287520460805643128">कोई अगला लेख नहीं.</translation>
 <translation id="4289540628985791613">संक्षिप्त विवरण</translation>
-<translation id="4300318234632215983">किसी लिंक के पीछे का URL प्रदर्शित करें</translation>
+<translation id="4300318234632215983">किसी लिंक के पीछे का URL दिखाएं</translation>
 <translation id="4301352596632316575">सबमेनू है</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{बिंदु}=3{पदलोप चिह्न}one{# बिंदु}other{# बिंदु}}</translation>
 <translation id="4347461890115250064">कोई अगली सूची नहीं.</translation>
@@ -718,9 +718,9 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">पिछली सूची</translation>
 <translation id="7041173719775863268">चयन समाप्त करें</translation>
-<translation id="7048792632163898198">अगले कुछ शॉर्टकट ChromeVox निर्देश नहीं हैं लेकिन फिर भी Chrome का ज़्यादा से ज़्यादा फ़ायदा उठाने के लिए वे बहुत उपयोगी हैं.
-बटन और लिंक जैसे कार्रवाई आइटम से आगे जाने के लिए, Tab बटन दबाएं. पीछे जाने के लिए, Shift+Tab दबाएं.
-'Chrome ब्राउज़र पता बॉक्स' खोलने के लिए, जिसे omnibox भी कहा जाता है, Control + L दबाएं.
+<translation id="7048792632163898198">अगले कुछ शॉर्टकट ChromeVox निर्देश नहीं हैं, लेकिन Chrome का ज़्यादा से ज़्यादा फ़ायदा उठाने में वे बहुत काम आ सकते हैं.
+बटन और लिंक जैसे कार्रवाई आइटम के ज़रिये आगे जाने के लिए, Tab बटन दबाएं. पीछे जाने के लिए, Shift+Tab दबाएं.
+'Chrome ब्राउज़र पता बॉक्स' (omnibox) खोलने के लिए Control + L दबाएं.
 अपने आप नया टैब खोलने और उस पर जाने के लिए, Control+T दबाएं. आपका कर्सर omnibox में होगा.
 कोई टैब बंद करने के लिए, Control+W दबाएं.
 अगले खुले हुए टैब में जाने के लिए, Control+Tab का इस्तेमाल करें.
@@ -797,7 +797,7 @@
 <translation id="7663318257180412551">शीर्षक 2</translation>
 <translation id="7674576868851035240">अगला लिंक</translation>
 <translation id="7674768236845044097">चिह्नित करें</translation>
-<translation id="7684431668231950609">लेख, URL प्रविष्टि संपादित करें</translation>
+<translation id="7684431668231950609">लेख, URL में बदलाव करें</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">पिछला रेडियो बटन</translation>
 <translation id="7701196182766842984">autolst</translation>

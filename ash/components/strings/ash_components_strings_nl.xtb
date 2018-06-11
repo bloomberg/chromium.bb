@@ -5,6 +5,7 @@
 <translation id="1122869341872663659">Er worden <ph name="N" /> zoekresultaten voor <ph name="QUERY" /> getoond</translation>
 <translation id="1195667586424773550">Sleep de link naar de adresbalk van het tabblad</translation>
 <translation id="1204450209689312104">Een nieuw venster openen in de incognitomodus</translation>
+<translation id="1251638888133819822">'Volledig scherm vergroten' in- of uitschakelen</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">De huidige pagina afdrukken</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">De huidige pagina opnieuw laden en content in het cachegeheugen negeren</translation>
 <translation id="526651782186312376">Tekst tot het begin van de regel selecteren</translation>
 <translation id="5316716239522500219">Monitoren spiegelen</translation>
+<translation id="539072479502328326">'Gedockt vergrootglas' in- of uitschakelen</translation>
 <translation id="5487187679583934283">Hiermee start of stop je met typen wat je zegt</translation>
 <translation id="5541719484267030947">Druk op <ph name="ESC" /> tijdens het slepen van het tabblad</translation>
 <translation id="5554139136362089836">Zoeken op de huidige pagina</translation>

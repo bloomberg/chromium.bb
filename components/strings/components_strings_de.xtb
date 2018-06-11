@@ -819,6 +819,7 @@
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6948701128805548767">Wählen Sie eine Adresse aus, um Abholoptionen und -anforderungen zu sehen</translation>
 <translation id="6949872517221025916">Passwort zurücksetzen</translation>
+<translation id="6950684638814147129">Fehler beim Parsen des JSON-Werts: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Das Zertifikat des Servers ist möglicherweise eine Fälschung.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Gerät</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Deine Eltern haben die Berechtigung noch nicht erteilt</translation>
 <translation id="8625384913736129811">Diese Karte für dieses Gerät speichern</translation>
 <translation id="8639963783467694461">AutoFill-Einstellungen</translation>
+<translation id="8663226718884576429">Bestellübersicht, <ph name="TOTAL_LABEL" />, weitere Details</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, Antwort, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Die Verbindung zu <ph name="DOMAIN" /> ist nicht verschlüsselt.</translation>
 <translation id="8718314106902482036">Zahlung nicht abgeschlossen</translation>

@@ -174,6 +174,7 @@
 <translation id="123578888592755962">ডিস্ক পূর্ণ</translation>
 <translation id="1238191093934674082">VPN খুলুন</translation>
 <translation id="1240892293903523606">DOM পরিদর্শনকারী</translation>
+<translation id="124116460088058876">আরও ভাষা</translation>
 <translation id="1241753985463165747">চালু করলে বর্তমান ওয়েবসাইটের সব ডেটা পড়ে ও পরিবর্তন করে</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> আপনার সেটিংস আবার সেট করতে চায়।</translation>
 <translation id="1243314992276662751">আপলোড</translation>
@@ -207,6 +208,7 @@
 <translation id="1296497012903089238">শংসাপত্রের প্রকার</translation>
 <translation id="1297175357211070620">গন্তব্য</translation>
 <translation id="1297922636971898492">এই মুহূর্তে Google ড্রাইভ উপলব্ধ নেই৷ একবার Google ড্রাইভ উপলব্ধ হলেই আপলোড করার কাজটি স্বয়ংক্রিয়ভাবে পুনরায় চালু হবে৷</translation>
+<translation id="1300415640239881824">সুরক্ষিত কন্টেন্টের উন্নত প্লেব্যাকের জন্য যোগ্যতা নির্ধারণ করতে <ph name="DOMAIN" /> Google-এর মাধ্যমে আপনার ডিভাইসের পরিচয় যাচাই করতে চায়।</translation>
 <translation id="1300806585489372370">সেটিংসটি পরিবর্তন করার জন্য প্রথমে <ph name="BEGIN_LINK" />শনাক্তকারী চালু করুন<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Apple Events এর জাভাস্ক্রিপ্ট রান করার অনুমতি দিন</translation>
 <translation id="1303101771013849280">HTML ফাইল বুকমার্ক করে</translation>
@@ -1056,7 +1058,6 @@
 <translation id="2624142942574147739">এই পৃষ্ঠাটি আপনার ক্যামেরা এবং মাইক্রোফোন অ্যাক্সেস করছে৷</translation>
 <translation id="2626799779920242286">দয়া করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="2630681426381349926">শুরু করার জন্য ওয়াই-ফাই এর সাথে সংযুক্ত হোন</translation>
-<translation id="2631006050119455616">সংরক্ষিত হয়েছে</translation>
 <translation id="2631498379019108537">শেল্ফে ইনপুট বিকল্পগুলি দেখান</translation>
 <translation id="2633199387167390344"><ph name="NAME" />, <ph name="USAGE" /> MB ডিস্কের স্থান ব্যবহার করছে৷</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" সরাবেন?</translation>

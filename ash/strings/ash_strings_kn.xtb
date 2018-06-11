@@ -200,6 +200,7 @@
 <translation id="5457599981699367932">ಅತಿಥಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಿ</translation>
 <translation id="54609108002486618">ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="553675580533261935">ಸೆಷನ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="5537725057119320332">ಪಾತ್ರವರ್ಗ</translation>
 <translation id="5548285847212963613">ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು "<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯು ಸಹಾಯ ಮಾಡಬಹುದು.</translation>
 <translation id="554893713779400387">ಡಿಕ್ಟೇಶನ್ ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="5571066253365925590">ಬ್ಲೂಟೂತ್‌ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -304,12 +305,14 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7654687942625752712">ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು, ಎರಡೂ ವಾಲ್ಯೂಮ್ ಕೀಗಳನ್ನು ಐದು ಸೆಕೆಂಡ್‌ಗಳ ಕಾಲ ಒತ್ತಿ ಹಿಡಿದುಕೊಳ್ಳಿ.</translation>
 <translation id="7658239707568436148">ರದ್ದುಮಾಡಿ</translation>
 <translation id="7692480393933218409">ಸಂಪರ್ಕಿತ USB-C ಸಾಧನಗಳನ್ನು ಚಾರ್ಜ್ ಮಾಡುತ್ತಿದೆ</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">ಅಪ್‌ಡೇಟ್‌ ವಿವರಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="7796353162336583443">ಟಿಪ್ಪಣಿ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳುವಾಗ, Google ಸಹಾಯಕ, ಲೇಸರ್‌ ಪಾಯಿಂಟರ್ ಅಥವಾ ಭೂತಗನ್ನಡಿ ಬಳಸಲು ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಸ್ಟೈಲಸ್ ಬಟನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="7798302898096527229">ರದ್ದುಗೊಳಿಸಲು 'ಹುಡುಕಾಟ' ಅಥವಾ Shift ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ಮತ್ತು <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">ಪ್ರಬಲ ಸಿಗ್ನಲ್</translation>
 <translation id="7842569679327885685">ಎಚ್ಚರಿಕೆ: ಪ್ರಾಯೋಗಿಕ ವೈಶಿಷ್ಟ್ಯ</translation>
+<translation id="7846634333498149051">ಕೀಬೋರ್ಡ್</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
 <translation id="7933084174919150729">ಪ್ರಾಥಮಿಕ ಪ್ರೊಫೈಲ್‌ಗೆ ಮಾತ್ರ Google ಸಹಾಯಕ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> ಮತ್ತು <ph name="SECOND_PARENT_EMAIL" /> ಮೂಲಕ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>

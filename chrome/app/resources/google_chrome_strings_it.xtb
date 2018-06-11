@@ -73,6 +73,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2770231113462710648">Cambia browser predefinito con:</translation>
 <translation id="2799223571221894425">Riavvia</translation>
 <translation id="2847461019998147611">Visualizza Google Chrome in questa lingua</translation>
+<translation id="2857540653560290388">Avvio di Chrome...</translation>
 <translation id="2871893339301912279">Hai eseguito l'accesso a Chrome.</translation>
 <translation id="2888126860611144412">Informazioni su Chrome</translation>
 <translation id="3037838751736561277">Google Chrome è in modalità background.</translation>
@@ -211,7 +212,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7308322188646931570">Chrome deve avere accesso allo spazio di archiviazione per poter scaricare file</translation>
 <translation id="7330164299247909639">Errore del certificato di autenticazione. Accedi di nuovo a Google Chrome come <ph name="USER_NAME" /> o contatta il tuo amministratore per avere ulteriori informazioni. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nuova finestra</translation>
-<translation id="7369650938475876456">Usa una password sicura generata da Chrome</translation>
 <translation id="7398801000654795464">Hai eseguito l'accesso a Chrome come <ph name="USER_EMAIL_ADDRESS" />. Utilizza lo stesso account per eseguire di nuovo l'accesso.</translation>
 <translation id="7408085963519505752">Termini di Chrome OS</translation>
 <translation id="7419046106786626209">Impossibile sincronizzare i dati in Chrome OS perché la sincronizzazione non è disponibile per il tuo dominio.</translation>

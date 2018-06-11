@@ -816,6 +816,7 @@
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6948701128805548767">Seleziona un indirizzo per conoscere i requisiti e i metodi di ritiro</translation>
 <translation id="6949872517221025916">Reimposta la password</translation>
+<translation id="6950684638814147129">Errore durante l'analisi del valore JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Il certificato del server risulta essere un falso.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
@@ -1046,6 +1047,7 @@
 <translation id="8620436878122366504">I tuoi genitori non hanno ancora approvato la richiesta</translation>
 <translation id="8625384913736129811">Salva la carta su questo dispositivo</translation>
 <translation id="8639963783467694461">Impostazioni di Compilazione automatica</translation>
+<translation id="8663226718884576429">Riepilogo ordine, <ph name="TOTAL_LABEL" />, Altri dettagli</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, risposta, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN" /> non è criptata.</translation>
 <translation id="8718314106902482036">Pagamento non completato</translation>

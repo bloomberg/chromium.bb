@@ -819,6 +819,7 @@
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6948701128805548767">Lai skatītu saņemšanas veidus un prasības, atlasiet adresi.</translation>
 <translation id="6949872517221025916">Paroles atiestatīšana</translation>
+<translation id="6950684638814147129">JSON vērtības parsēšanas kļūda: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Šķiet, ka servera sertifikāts ir viltojums.</translation>
 <translation id="6965382102122355670">Labi</translation>
 <translation id="6965978654500191972">Ierīce</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Jūsu vecāki vēl nav to apstiprinājuši</translation>
 <translation id="8625384913736129811">Saglabāt šo karti šajā ierīcē</translation>
 <translation id="8639963783467694461">Automātiskās aizpildes iestatījumi</translation>
+<translation id="8663226718884576429">Pasūtījuma kopsavilkums, <ph name="TOTAL_LABEL" />, citi dati</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, atbilde, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Jūsu savienojums ar <ph name="DOMAIN" /> nav kodēts.</translation>
 <translation id="8718314106902482036">Maksājums nav pabeigts</translation>

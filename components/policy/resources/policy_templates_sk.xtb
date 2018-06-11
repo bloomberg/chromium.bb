@@ -877,6 +877,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3512226956150568738">Ak model klientskeho zariadenia podporoval ARC už predtým, ako bolo na spustenie ARC potrebné migrovať na ext4, a ak je pravidlo ArcEnabled nastavené na hodnotu True, táto možnosť sa bude správať ako parameter AskUser (hodnota 3). Vo všetkých ostatných prípadoch (ak model zariadenia predtým ARC nepodporoval alebo ak je pravidlo ArcEnabled nastavené na hodnotu False), táto hodnota sa bude zhodovať s parametrom DisallowArc (hodnota 0).</translation>
 <translation id="3524204464536655762">Nepovoliť žiadnemu webu požadovať prístup k zariadeniam USB prostredníctvom rozhrania WebUSB API</translation>
 <translation id="3528000905991875314">Povoliť alternatívne chybové stránky</translation>
+<translation id="3545457887306538845">Umožňuje ovládať, kde sa môžu nástroje pre vývojárov používať.
+
+      Ak toto pravidlo nastavíte na možnosť „DeveloperToolsDisallowedForForceInstalledExtensions“ (hodnota 0, ktorá je predvolená), nástroje pre vývojárov a konzola JavaScriptu sa budú môcť všeobecne používať, ale nie v kontexte rozšírení nainštalovaných podnikovým pravidlom.
+      Ak toto pravidlo nastavíte na hodnotu „DeveloperToolsAllowed“ (hodnota 1), nástroje pre vývojárov a konzola Javascriptu sa budú môcť používať vo všetkých kontextoch vrátane kontextu rozšírení nainštalovaných podnikovým pravidlom.
+      Ak toto pravidlo nastavíte na možnosť „DeveloperToolsDisallowed“ (hodnota 2), nástroje pre vývojárov nebude možné používať ani nebude možné kontrolovať prvky webov. Zakázané budú tiež všetky klávesové skratky a položky klasických či kontextových ponúk, pomocou ktorých je možné otvoriť nástroje pre vývojárov alebo konzolu JavaScriptu.</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="3556806727696701427">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Bezpečné prehliadanie a bráni používateľom toto nastavenie zmeniť.
 
@@ -1956,6 +1961,37 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6810445994095397827">Blokovať jazyk JavaScript na týchto webových stránkach</translation>
 <translation id="681446116407619279">Podporované schémy overenia</translation>
 <translation id="6835883744948188639">Zobrazovať používateľovi opakovanú výzvu, že sa vyžaduje opätovné spustenie</translation>
+<translation id="6838056959556423778">Umožňuje prepísať pravidlá výberu predvolenej tlačiarne v prehliadači <ph name="PRODUCT_NAME" />.
+
+      Určuje pravidlá výberu predvolenej tlačiarne v prehliadači <ph name="PRODUCT_NAME" /> pri prvom použití funkcie tlače s určitým profilom.
+
+      Keď toto pravidlo nastavíte, <ph name="PRODUCT_NAME" /> sa pokúsi nájsť tlačiareň zodpovedajúcu všetkým špecifikovaným atribútom a vyberie ju ako predvolenú. Vyberie sa prvá tlačiareň zodpovedajúca tomuto pravidlu. Ak sa nájde tlačiareň, ktorá nie je jedinečná zhoda, môžete vybrať akúkoľvek zodpovedajúcu tlačiareň (v závislosti od poradia, v ktorom boli tlačiarne objavené).
+
+      Ak toto pravidlo nenastavíte alebo sa v rámci časového limitu nenájde zodpovedajúca tlačiareň, obnoví sa predvolené nastavenie vstavanej tlačiarne PDF alebo sa nevyberie žiadna tlačiareň (ak tlačiareň PDF nie je k dispozícii).
+
+      Hodnota sa analyzuje ako objekt JSON, a to podľa nasledujúcej schémy:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Či obmedziť vyhľadávanie zodpovedajúcej tlačiarne na konkrétnu skupinu tlačiarní.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regulárny výraz na priradenie identifikátora tlačiarne.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulárny výraz na priradenie zobrazovaného názvu tlačiarne.",
+            "type": "string"
+          }
+        }
+      }
+
+      Tlačiarne pripojené do služby <ph name="CLOUD_PRINT_NAME" /> sa považujú za <ph name="PRINTER_TYPE_CLOUD" />, ostatné tlačiarne sú označené ako <ph name="PRINTER_TYPE_LOCAL" />.
+      Ak vynecháte určité pole, budú mu zodpovedať všetky príslušné hodnoty. Ak napríklad nešpecifikujete pripojenie, nástroj Print Preview spustí hľadanie všetkých druhov tlačiarní – miestnych aj v cloude.
+      Vzory bežných výrazov musia zodpovedať syntaxi JavaScript RegExp a vo všetkých zodpovedajúcich výrazoch sa rozlišujú veľké a malé písmená.</translation>
 <translation id="684856667300805181">Toto pravidlo bolo odstránené v systéme <ph name="PRODUCT_NAME" /> verzie 68 a nahradené pravidlom <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Toto pravidlo je vo verzii M66 deaktivované a odstránené, pretože sa používalo iba na interné testovanie a predstavuje bezpečnostné riziko.
 
@@ -2235,6 +2271,17 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7511361072385293666">Ak je toto pravidlo nastavené na možnosť True alebo nie je nastavené vôbec, použitie protokolu QUIC je v prehliadači <ph name="PRODUCT_NAME" /> povolené.
       Ak je toto pravidlo nastavené na možnosť False, použitie protokolu QUIC je zakázané.</translation>
 <translation id="7519251620064708155">Povoliť generovanie kľúčov na týchto webových stránkach</translation>
+<translation id="7529083451528428240">Umožňuje uzamknúť reláciu používateľa na základe času klienta alebo dennej kvóty využitia.
+
+          Možnosť |time_window_limit| určuje denné časové okno, v ktorom by mala byť relácia používateľa uzamknutá. Pre každý deň týždňa podporujeme iba jedno pravidlo, preto veľkosť poľa |entries| môže byť od 0 do 7. |starts_at| a |ends_at| sú začiatočný a konečný limit časového okna. Keď je údaj |ends_at| nižší ako |starts_at|, znamená to, že sa časové okno |time_limit_window| končí nasledujúci deň. Možnosť |last_updated_millis| je časová pečiatka UTC poslednej aktualizácie tohto záznamu. Odosiela sa ako reťazec, pretože by sa nevmestila ako celé číslo.
+
+          Možnosť |time_usage_limit| určuje dennú kvótu obrazovky a keď ju používateľ dosiahne, jeho relácia sa uzamkne. Každý deň týždňa má svoju vlastnosť a mala by byť nastavená iba v prípade, ak je pre daný deň stanovená aktívna kvóta. Možnosť |usage_quota_mins| predstavuje časovú hodnotu toho, ako dlho sa môže spravované zariadenie v určitom dni používať, a možnosť |reset_at| je čas, keď sa kvóta využitia obnoví. Predvolená hodnota možnosti |reset_at| je polnoc ({'hour': 0, 'minute': 0}). Možnosť |last_updated_millis| je časová pečiatka UTC poslednej aktualizácie tohto záznamu. Odosiela sa ako reťazec, pretože by sa nevmestila ako celé číslo.
+
+          Možnosť |overrides| sa poskytuje na dočasné zneplatnenie jedného alebo viacerých predchádzajúcich pravidiel.
+          * Ak nie je aktívna možnosť time_window_limit ani time_usage_limit, na uzamknutie zariadenia môžete použiť |LOCK|.
+          * Možnosť |LOCK| dočasne uzamkne reláciu používateľa, dokým sa nezačne najbližšia možnosť time_window_limit alebo time_usage_limit.
+          * Možnosť |UNLOCK| odomkne reláciu používateľa uzamknutú možnosťou time_window_limit alebo time_usage_limit.
+          Možnosť |created_time_millis| je časová pečiatka UTC vytvorenia prepísania. Odosiela sa ako reťazec, pretože by sa nevmestila ako celé číslo. Používa sa na učenie toho, či má toto prepísanie stále platiť. Ak sa aktuálna aktívna funkcia časového limitu (časový limit používania alebo limit časového okna) začala po vytvorení prepísania, nemala by vykonať žiadnu akciu. Ak bolo prepísanie vytvorené pred poslednou zmena aktívnej možnosti time_window_limit alebo time_usage_window, nemalo by platiť.</translation>
 <translation id="7529100000224450960">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu otvárať kontextové okná.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPopupsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>

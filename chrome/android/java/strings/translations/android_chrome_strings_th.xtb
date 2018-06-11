@@ -92,6 +92,7 @@
 <translation id="17513872634828108">แท็บที่เปิดอยู่</translation>
 <translation id="1756600373018374892">แตะปุ่มนี้เพื่อเข้าถึงแท็บอย่างรวดเร็ว</translation>
 <translation id="1779089405699405702">ตัวถอดรหัสรูปภาพ</translation>
+<translation id="1782483593938241562">วันที่สิ้นสุด <ph name="DATE" /></translation>
 <translation id="1792959175193046959">เปลี่ยนตำแหน่งเริ่มต้นในการดาวน์โหลดได้ทุกเมื่อ</translation>
 <translation id="1807246157184219062">สว่าง</translation>
 <translation id="1829244130665387512">ค้นหาในหน้าเว็บ</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">รีเฟรชหน้า</translation>
 <translation id="2709516037105925701">ป้อนอัตโนมัติ</translation>
 <translation id="271033894570825754">ใหม่</translation>
+<translation id="2728754400939377704">จัดเรียงตามเว็บไซต์</translation>
 <translation id="2736391366332017384">แตะปุ่มหน้าแรกเพื่อไปที่หน้าแท็บใหม่ในแท็บปัจจุบัน</translation>
 <translation id="2744248271121720757">แตะคำเพื่อค้นหาทันทีหรือดูการทำงานที่เกี่ยวข้อง</translation>
 <translation id="2762000892062317888">เมื่อสักครู่</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">มีการจัดการโดยผู้ดูแลระบบ</translation>
 <translation id="4116038641877404294">ดาวน์โหลดหน้าเพื่อใช้งานแบบออฟไลน์</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d บุ๊กมาร์ก}other{%1$d บุ๊กมาร์ก}}</translation>
+<translation id="4159800535322890630">บล็อกเว็บไซต์ไม่ให้เข้าถึงเซ็นเซอร์</translation>
 <translation id="4165986682804962316">การตั้งค่าไซต์</translation>
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
+<translation id="4179980317383591987">ใช้ไปแล้ว <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">ภาษา</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="4198423547019359126">ไม่มีตำแหน่งการดาวน์โหลดที่ใช้ได้</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">บัตร</translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
 <translation id="5596627076506792578">ตัวเลือกเพิ่มเติม</translation>
+<translation id="5620299005957670886">อนุญาตให้เว็บไซต์เข้าถึงเซ็นเซอร์ (แนะนำ)</translation>
 <translation id="5620928963363755975">หาไฟล์และหน้าในโฟลเดอร์ดาวน์โหลดจากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="5626134646977739690">ชื่อ:</translation>
 <translation id="5639724618331995626">อนุญาตทุกไซต์</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google แปลภาษา</translation>
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
+<translation id="5937580074298050696">ประหยัดได้ <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5942872142862698679">กำลังใช้ Google ในการค้นหา</translation>
 <translation id="5956665950594638604">เปิดศูนย์ช่วยเหลือของ Chrome ในแท็บใหม่</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="6627583120233659107">แก้ไขโฟลเดอร์</translation>
 <translation id="6643016212128521049">ล้าง</translation>
+<translation id="6643649862576733715">จัดเรียงตามปริมาณอินเทอร์เน็ตที่ประหยัดได้</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}other{<ph name="CONTACT_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}}</translation>
 <translation id="6656545060687952787">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ โปรด<ph name="BEGIN_LINK" />อัปเดตสิทธิ์<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">ประสบการณ์กับ First Run บน Chrome</translation>
 <translation id="741204030948306876">ได้สิ ตกลง</translation>
+<translation id="7413229368719586778">วันที่เริ่มต้น <ph name="DATE" /></translation>
 <translation id="7423098979219808738">ถามก่อน</translation>
 <translation id="7423538860840206698">บล็อกไม่ให้อ่านคลิปบอร์ด</translation>
 <translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">แก้ไขหน้าเริ่มต้นใช้งาน</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> และเว็บไซต์อื่นๆ</translation>
 <translation id="8339163506404995330">ระบบจะไม่แปลหน้าเว็บภาษา<ph name="LANGUAGE" /></translation>
+<translation id="8349013245300336738">จัดเรียงตามปริมาณอินเทอร์เน็ตที่ใช้</translation>
 <translation id="8363501664269050863">แผงการนำทาง เลื่อนลงเพื่อปิด</translation>
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>

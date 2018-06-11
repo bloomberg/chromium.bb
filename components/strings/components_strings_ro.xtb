@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Selectează</translation>
 <translation id="6948701128805548767">Pentru a vedea metodele de preluare și cerințele, selectează o adresă</translation>
 <translation id="6949872517221025916">Resetează parola</translation>
+<translation id="6950684638814147129">Eroare la analizarea valorii JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Certificatul serverului pare a fi un fals.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Dispozitiv</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8620436878122366504">Părinții tăi nu l-au aprobat încă</translation>
 <translation id="8625384913736129811">Salvează cardul pe acest dispozitiv</translation>
 <translation id="8639963783467694461">Setări pentru Completare automată</translation>
+<translation id="8663226718884576429">Rezumatul comenzii, <ph name="TOTAL_LABEL" />, Mai multe detalii</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, răspuns, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Conexiunea la <ph name="DOMAIN" /> nu este criptată.</translation>
 <translation id="8718314106902482036">Plata nu a fost finalizată</translation>

@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6948701128805548767">Untuk melihat persyaratan dan metode pengambilan, pilih alamat</translation>
 <translation id="6949872517221025916">Setel Ulang Sandi</translation>
+<translation id="6950684638814147129">Error saat mengurai nilai JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Sertifikat server tampaknya palsu.</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="6965978654500191972">Perangkat</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Orang tuamu belum menyetujuinya</translation>
 <translation id="8625384913736129811">Simpan Kartu Ini ke Perangkat Ini</translation>
 <translation id="8639963783467694461">Setelan Isi-otomatis</translation>
+<translation id="8663226718884576429">Ringkasan Pesanan, <ph name="TOTAL_LABEL" />, Detail Selengkapnya</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, dengan jawaban, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Sambungan ke <ph name="DOMAIN" /> tidak dienkripsi.</translation>
 <translation id="8718314106902482036">Pembayaran belum selesai</translation>

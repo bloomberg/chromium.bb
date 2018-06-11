@@ -857,6 +857,11 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3512226956150568738">Wenn das Client-Gerätemodell ARC bereits unterstützt hat, bevor die Migration zu ext4 für die ARC-Ausführung erforderlich war, verhält sich diese Option so, als ob "AskUser" (Wert 3) festgelegt wurde. Beachten Sie, dass die ArcEnabled-Richtlinie hierbei auf "true" festgelegt werden muss. In allen anderen Fällen entspricht dieser Wert "DisallowArc" (Wert 0) – beispielsweise, wenn das Gerätemodell ARC zuvor nicht unterstützt hat, oder wenn die ArcEnabled-Richtlinie auf "false" gesetzt wird.</translation>
 <translation id="3524204464536655762">Websites dürfen nie Zugriff auf USB-Geräte über die WebUSB API anfordern</translation>
 <translation id="3528000905991875314">Alternative Fehlerseiten aktivieren</translation>
+<translation id="3545457887306538845">Mit dieser Richtlinie legen Sie fest, wo Entwicklertools verwendet werden können.
+
+      Wenn diese Richtlinie auf "DeveloperToolsDisallowedForForceInstalledExtensions" (Wert 0; Standardeinstellung für Unternehmensnutzer) gesetzt ist, kann generell auf die Entwicklertools und die JavaScript-Konsole zugegriffen werden. Für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, ist der Zugriff aber nicht möglich.
+      Wenn diese Richtlinie auf "DeveloperToolsAllowed" (Wert 1), gesetzt ist, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden. Dies gilt auch für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden.
+      Wenn diese Richtlinie auf "DeveloperToolsDisallowed" (Wert 2) gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, sind deaktiviert.</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
 <translation id="3556806727696701427">Hiermit wird die Safe Browsing-Funktion von <ph name="PRODUCT_NAME" /> aktiviert. Sie verhindert, dass Nutzer diese Einstellung ändern können.
 
@@ -1889,6 +1894,37 @@ Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, ka
 <translation id="6810445994095397827">JavaScript auf diesen Websites blockieren</translation>
 <translation id="681446116407619279">Unterstützte Authentifizierungsschemas</translation>
 <translation id="6835883744948188639">Dem Nutzer eine wiederkehrende Aufforderung anzeigen, dass ein Neustart empfohlen wird</translation>
+<translation id="6838056959556423778">Überschreibt die Regeln von <ph name="PRODUCT_NAME" /> zur Auswahl des Standarddruckers.
+
+      Diese Richtlinie legt die Regeln für die Auswahl des Standarddruckers in <ph name="PRODUCT_NAME" /> fest. Diese Auswahl erfolgt, wenn in einem Profil zum ersten Mal die Druckfunktion genutzt wird.
+
+      Wenn diese Richtlinie konfiguriert ist, sucht <ph name="PRODUCT_NAME" /> einen passenden Drucker, der alle angegebenen Merkmale aufweist, und wählt diesen als Standarddrucker aus. Der erste Drucker, der die Richtlinie erfüllt, wird ausgewählt. Falls keine eindeutige Übereinstimmung gefunden wird, kann jeder übereinstimmende Drucker ausgewählt werden. Das hängt von der Reihenfolge ab, in der die Drucker gefunden werden.
+
+      Wenn diese Richtlinie nicht konfiguriert wurde oder kein passender Drucker innerhalb des Zeitlimits gefunden wird, wird als Standarddrucker der integrierte PDF-Drucker oder – falls dieser nicht verfügbar ist – gar kein Drucker ausgewählt.
+
+      Der Wert wird als JSON-Objekt gemäß des folgenden Schemas geparst:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Suche nach dem passenden Drucker auf eine bestimmte Reihe von Druckern beschränken?",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regulärer Ausdruck für Drucker-ID",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulärer Ausdruck für den angezeigten Namen des Druckers",
+            "type": "string"
+          }
+        }
+      }
+
+      Die mit <ph name="CLOUD_PRINT_NAME" /> verbundenen Drucker werden als "<ph name="PRINTER_TYPE_CLOUD" />" bezeichnet. Die anderen Drucker werden als "<ph name="PRINTER_TYPE_LOCAL" />" klassifiziert.
+      Wird ein Feld ausgelassen, bedeutet das, alle Werte stimmen überein. Beispiel: Wenn Sie keinen Wert für die Konnektivität angeben, wird die Erkennung sämtlicher Druckertypen, "local" und "cloud", über die Druckvorschau gestartet.
+      Die Muster für reguläre Ausdrücke müssen der JavaScript-RegExp-Syntax folgen und die Groß-/Kleinschreibung ist zu beachten.</translation>
 <translation id="684856667300805181">Diese Richtlinie wurde in Version 68 von <ph name="PRODUCT_NAME" /> entfernt und durch "<ph name="ARC_GLS_POLICY_NAME" />" ersetzt.</translation>
 <translation id="6856743875250214792">Diese Richtlinie ist veraltet und wurde aus M66 entfernt, da sie nur für interne Tests genutzt wurde und ein Sicherheitsrisiko darstellt.
 
@@ -2152,6 +2188,17 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7511361072385293666">Wenn diese Richtlinie auf "true" eingestellt oder nicht konfiguriert ist, ist die Verwendung des QUIC-Protokolls in <ph name="PRODUCT_NAME" /> zulässig.
       Ist die Richtlinie auf "false" eingestellt, ist die Verwendung des QUIC-Protokolls nicht zulässig.</translation>
 <translation id="7519251620064708155">Schlüsselgenerierung auf diesen Websites zulassen</translation>
+<translation id="7529083451528428240">Ermöglicht, die Sitzung des Nutzers auf Grundlage der Clientzeit oder des Nutzungskontingents für den jeweiligen Tag zu sperren.
+
+          Das |time_window_limit| gibt ein tägliches Zeitfenster vor, in dem die Sitzung des Nutzers gesperrt sein soll. Wir unterstützen nur eine Regel für jeden Wochentag, weshalb die Größe der Matrix |entries| von 0 bis 7 reichen kann. |starts_at| und |ends_at| sind Anfang und Ende des Zeitfensters. Wenn |ends_at| kleiner ist als |starts_at|, bedeutet das, dass das |time_limit_window| am darauf folgenden Tag endet. |last_updated_millis| ist der UTC-Zeitstempel für die letzte Aktualisierung des Eintrags. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde.
+
+          Das |time_usage_limit| stellt ein tägliches Nutzungslimit dar. Wenn der Nutzer es erreicht, wird seine Sitzung gesperrt. Für jeden Tag der Woche steht eine Eigenschaft zur Verfügung und diese sollte nur dann konfiguriert werden, wenn für diesen Tag ein aktives Limit vorliegt. |usage_quota_mins| ist der Zeitraum, über den das verwaltete Gerät an einem bestimmten Tag genutzt werden darf, und |reset_at| ist der Zeitpunkt, an dem das Kontingent erneuert wird. Der Standardwert für |reset_at| ist Mitternacht ({'hour': 0, 'minute': 0}). |last_updated_millis| ist der UTC-Zeitstempel für die letzte Aktualisierung des Eintrags. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde.
+
+          Mit |overrides| können die genannten Regeln vorübergehend außer Kraft gesetzt werden.
+          * Wenn weder "time_window_limit" noch "time_usage_limit" aktiv sind, kann |LOCK| zur Sperrung des Geräts verwendet werden.
+          * Mit |LOCK| wird eine Nutzersitzung vorübergehend gesperrt, bis das nächste "time_window_limit" oder "time_usage_limit beginnt.
+          * MIt |UNLOCK| wird eine durch "time_window_limit" oder "time_usage_limit" gesperrte Sitzung entsperrt.
+          |created_time_millis| ist der UTC-Zeitstempel für die Erstellung der Außerkraftsetzung. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde. Mit ihm wird festgestellt, ob diese Außerkraftsetzung weiterhin angewendet werden soll. Wenn das aktuelle aktive Zeitlimit (Nutzungszeitlimit oder Zeitfensterlimit) gestartet wurde, nachdem die Außerkraftsetzung erfolgt ist, sollte sie keine Auswirkungen haben. Entsprechend gilt: Wenn die Außerkraftsetzung vor der letzten Änderung des aktiven "time_window_limit" oder "time_usage_window" erstellt wurde, sollte sie nicht angewendet werden.</translation>
 <translation id="7529100000224450960">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Öffnen von Pop-ups gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, so kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPopupsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="7529144158022474049">Streufaktor automatisch aktualisieren</translation>
 <translation id="7534199150025803530">Diese Richtlinie hat keine Auswirkungen auf die Android Google Drive App. Wenn Sie die Nutzung von Google Drive über Mobilfunkverbindungen verhindern möchten, sollten Sie das Installieren der Android Google Drive App nicht zulassen.</translation>

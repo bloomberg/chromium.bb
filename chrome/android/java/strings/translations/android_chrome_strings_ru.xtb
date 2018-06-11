@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Открытые вкладки</translation>
 <translation id="1756600373018374892">Используйте эту кнопку для быстрого доступа к вкладкам.</translation>
 <translation id="1779089405699405702">Дешифратор изображений</translation>
+<translation id="1782483593938241562">Дата окончания: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Вы можете в любой момент изменить расположение скачиваемых файлов по умолчанию.</translation>
 <translation id="1807246157184219062">Светлый</translation>
 <translation id="1829244130665387512">Найти на странице</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Обновить страницу</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="271033894570825754">Новый</translation>
+<translation id="2728754400939377704">Сортировать по имени домена</translation>
 <translation id="2736391366332017384">Нажмите кнопку главного экрана, чтобы открыть страницу быстрого доступа в текущей вкладке</translation>
 <translation id="2744248271121720757">Нажмите на слово, чтобы увидеть связанные с ним результаты поиска и действия.</translation>
 <translation id="2762000892062317888">только что</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">Управляется администратором</translation>
 <translation id="4116038641877404294">Скачивайте страницы и открывайте их без подключения к Интернету</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d закладка}one{%1$d закладка}few{%1$d закладки}many{%1$d закладок}other{%1$d закладки}}</translation>
+<translation id="4159800535322890630">Запретить сайтам использовать датчики</translation>
 <translation id="4165986682804962316">Настройки сайтов</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
+<translation id="4179980317383591987">Использовано: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Языки</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4198423547019359126">Нет доступных мест для скачивания</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">Подсказки</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
 <translation id="5596627076506792578">Ещё</translation>
+<translation id="5620299005957670886">Разрешить сайтам использовать датчики (рекомендуется)</translation>
 <translation id="5620928963363755975">Чтобы найти скачанные файлы и веб-страницы, нажмите кнопку "Ещё" и выберите соответствующий пункт</translation>
 <translation id="5626134646977739690">Имя:</translation>
 <translation id="5639724618331995626">Разрешить доступ ко всем сайтам</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google Переводчик</translation>
 <translation id="5916664084637901428">ВКЛ</translation>
 <translation id="5919204609460789179">Обновите <ph name="PRODUCT_NAME" />, чтобы начать синхронизацию</translation>
+<translation id="5937580074298050696">Сохранено: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="5942872142862698679">Google используется как поисковая система по умолчанию</translation>
 <translation id="5956665950594638604">Открыть Справочный центр Chrome в новой вкладке</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">Защищенный контент</translation>
 <translation id="6627583120233659107">Изменить папку</translation>
 <translation id="6643016212128521049">Очистить</translation>
+<translation id="6643649862576733715">Сортировать по объему сохраненного трафика</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактное лицо}one{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактное лицо}few{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактных лица}many{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактных лиц}other{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактного лица}}</translation>
 <translation id="6656545060687952787">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Обновить разрешения<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Первый запуск Chrome</translation>
 <translation id="741204030948306876">ОК</translation>
+<translation id="7413229368719586778">Дата начала: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7423538860840206698">Доступ к данным в буфере обмена заблокирован</translation>
 <translation id="7437998757836447326">Выход из Chrome</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">Изменение стартовой страницы</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и другие сайты</translation>
 <translation id="8339163506404995330">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически</translation>
+<translation id="8349013245300336738">Сортировать по объему использованного трафика</translation>
 <translation id="8363501664269050863">Панель навигации. Чтобы закрыть ее, проведите вниз по экрану.</translation>
 <translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>

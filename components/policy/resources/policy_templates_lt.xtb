@@ -898,6 +898,11 @@
 <translation id="3512226956150568738">Jei kliento turimo modelio įrenginyje jau buvo palaikomas failų formatas ARC, kol dar perėjimas prie „ext4“ šifruotės nebuvo būtinas, kad būtų galima vykdyti ARC failus, ir jei politika „ArcEnabled“ nustatyta į „true“, ši parinktis veiks kaip „AskUser“ (3 vertė). Visais kitais atvejais (jei įrenginio modelyje nebuvo nepalaikomas failų formatas ARC arba jei politika „ArcEnabled“ nustatyta į „false“) ši vertė bus lygi „DisallowArc“ (0 vertė).</translation>
 <translation id="3524204464536655762">Neleisti jokiai svetainei pateikti užklausos pasiekti USB įrenginių naudojant „WebUSB“ API</translation>
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
+<translation id="3545457887306538845">Leidžiama valdyti, kur galima naudoti kūrėjo įrankius.
+
+      Jei ši politika nustatyta kaip „DeveloperToolsDisallowedForForceInstalledExtensions“ (0 vertė, kuri yra įmonės naudotojams taikoma numatytoji vertė), kūrėjo įrankius ir „JavaScript“ pultą galima pasiekti įprastai, bet jų negalima pasiekti naudojant pagal įmonės politiką įdiegtus plėtinius.
+      Jei ši politika nustatyta kaip „DeveloperToolsAllowed“ (1 vertė), kūrėjo įrankius ir „JavaScript“ pultą galima pasiekti ir naudoti esant bet kokiam kontekstui, įskaitant tuos atvejus, kai naudojami pagal įmonės politiką įdiegti plėtiniai.
+      Jei ši politika nustatyta kaip „DeveloperToolsDisallowed“ (2 vertė), kūrėjo įrankių negalima pasiekti ir nebegalima tikrinti svetainės elementų. Bus išjungti visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ pultui atidaryti.</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="3556806727696701427">Įgalinama „<ph name="PRODUCT_NAME" />“ saugaus naršymo funkcija. Naudotojams šio nustatymo keisti neleidžiama.
 
@@ -1985,6 +1990,36 @@
 <translation id="6810445994095397827">Blokuoti „JavaScript“ šiose svetainėse</translation>
 <translation id="681446116407619279">Palaikomos tapatumo nustatymo schemos</translation>
 <translation id="6835883744948188639">Pasikartojančio raginimo, kuriame nurodoma, kad rekomenduojama paleisti iš naujo, rodymas naudotojui</translation>
+<translation id="6838056959556423778">Nepaisoma „<ph name="PRODUCT_NAME" />“ numatytojo spausdintuvo pasirinkimo taisyklių.
+
+      Pagal šią politiką nustatomos numatytojo spausdintuvo pasirinkimo „<ph name="PRODUCT_NAME" />“ taisyklės. Spausdintuvas pasirenkamas pirmą kartą profilyje naudojant spausdinimo funkciją.
+
+      Kai ši politika nustatyta, „<ph name="PRODUCT_NAME" />“ bandys rasti visus nurodytus atributus atitinkantį spausdintuvą ir pasirinks jį kaip numatytąjį spausdintuvą. Pasirenkamas pirmas politiką atitikęs spausdintuvas. Jei atitiktis nėra unikali, gali būti pasirinktas bet koks spausdintuvas, atsižvelgiant į spausdintuvų aptikimo eilės tvarką.
+
+      Jei ši politika nenustatyta arba per skirtą laiką nerandamas atitinkantis spausdintuvas, kaip numatytasis spausdintuvas pasirenkamas įtaisytasis PDF spausdintuvas arba nepasirenkamas joks spausdintuvas, jei PDF spausdintuvas nepasiekiamas.
+
+      Vertė analizuojama kaip JSON objektas, atitinkantis toliau nurodytą schemą:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+      Prie „<ph name="CLOUD_PRINT_NAME" />“ prijungti spausdintuvai laikomi „<ph name="PRINTER_TYPE_CLOUD" />“, o kiti spausdintuvai priskiriami kategorijai „<ph name="PRINTER_TYPE_LOCAL" />“.
+      Jei laukas praleidžiamas, tai reiškia, kad atitiko visos vertės. Pvz., nenurodžius ryšio spausdinimo peržiūra inicijuos visų tipų spausdintuvų (vietinių ir iš debesies) aptikimą.
+      Reguliariųjų reiškinių šablonai turi atitikti „JavaScript“ reguliariųjų reiškinių sintaksę. Atitiktyse skiriamos didžiosios ir mažosios raidės.</translation>
 <translation id="684856667300805181">Ši politika pašalinta „<ph name="PRODUCT_NAME" />“ 68 ir pakeista „<ph name="ARC_GLS_POLICY_NAME" />“.</translation>
 <translation id="6856743875250214792">Ši politika nebenaudojama ir yra pašalinta iš M66, nes ji buvo naudojama tik vidinio testavimo tikslais ir tai yra saugos atsakomybė.
 
@@ -2263,6 +2298,17 @@
 <translation id="7511361072385293666">Jei ši politika nustatyta į „true“ arba yra nenustatyta, QUIC protokolo naudojimas sistemoje „<ph name="PRODUCT_NAME" />“ leidžiamas.
       Jei ši politika nustatyta į „false“ QUIC protokolo naudojimas neleidžiamas.</translation>
 <translation id="7519251620064708155">Leisti rakto generavimą šiose svetainėse</translation>
+<translation id="7529083451528428240">Leidžiama blokuoti naudotojo sesiją pagal kliento laiką arba išnaudotą dienos kvotą.
+
+          |time_window_limit| nurodo dienos laikotarpį, kuriuo naudotojo sesija turi būti užblokuota. Kiekvienai savaitės dienai palaikome tik po vieną taisyklę, tad masyvo |entries| dydis gali būti nuo 0 iki 7. |starts_at| ir |ends_at| yra pradžios ir pabaigos laikotarpio apribojimai. Kai |ends_at| vertė yra mažesnė nei |starts_at|, tai reiškia, kad |time_limit_window| baigsis kitą dieną. |last_updated_millis| yra UTC laiko žymė, nurodanti, kada šis įrašas buvo paskutinį kartą atnaujintas; ji siunčiama atskira eilute, nes laiko žymei nepakanka sveikųjų skaičių.
+
+          |time_usage_limit| nurodo dienos įrenginio naudojimo kvotą. Ją pasiekus, naudotojo sesija užblokuojama. Kiekvienai savaitės dienai yra skirta nuosavybė, kuri turi būti nustatyta tik jei tą dieną kvota yra aktyvi. |usage_quota_mins| – tai laikas, kurį tvarkomas įrenginys gali būti naudojamas per dieną, o |reset_at| – laikas, kada atnaujinami naudojimo kvotos duomenys. Numatytoji |reset_at| vertė yra vidurnaktis ({'hour': 0, 'minute': 0}). |last_updated_millis| yra UTC laiko žymė, nurodanti, kada šis įrašas buvo paskutinį kartą atnaujintas; ji siunčiama atskira eilute, nes laiko žymei nepakanka sveikųjų skaičių.
+
+          |overrides| teikiama siekiant laikinai padaryti, kad viena ar daugiau ankstesnių taisyklių negaliotų.
+          * Jei nei time_window_limit, nei time_usage_limit nėra aktyvus, |LOCK| gali būti naudojamas įrenginiui užrakinti.
+          * |LOCK| laikinai užblokuoja naudotojo sesiją, kol prasideda kitas time_window_limit arba time_usage_limit.
+          * |UNLOCK| atfiksuoja naudotojo sesiją atėjus time_window_limit arba time_usage_limit.
+          |created_time_millis| – tai UTC laiko žymė, skirta nepaisymams kurti, siunčiama atskira eilute, nes laiko žymei nepakanka sveikųjų skaičių. Ji naudojama siekiant nustatyti, ar šis nepaisymas vis dar turi būti taikomas. Jei dabartinio aktyvaus laiko apribojimo funkcija (naudojimo laiko arba laikotarpių apribojimas) pradėta taikyti sukūrus nepaisymą, ši žymė negalioja. Taip pat, jei nepaisymas sukurtas prieš paskutinį aktyvaus time_window_limit arba time_usage_window pakeitimą, laiko žymė nebus naudojama.</translation>
 <translation id="7529100000224450960">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama atidaryti iššokančiuosius langus, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis iššokančiųjų langų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>

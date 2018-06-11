@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="114721135501989771">Få Googles smarte funksjoner i Chrome</translation>
 <translation id="1326317727527857210">For å få fanene dine fra de andre enhetene du bruker, logg på Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Merknad om personvern for Google Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">For å lagre bilder, trykk på Innstillinger for å la Chrome bruke bildene dine</translation>
 <translation id="2576431527583832481">Chrome har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="257708665678654955">Vil du at Google Chrome skal tilby å oversette sider på <ph name="LANGUAGE_NAME" /> på dette nettstedet neste gang?</translation>
+<translation id="2943166482989655199">Gjør Chrome bedre og sikrere ved å sende systemdata og bruksdata til Google</translation>
 <translation id="3148434565183091099">Logg på Chrome for å få bokmerkene dine på alle enhetene du bruker.</translation>
 <translation id="3148688391461398285">Optimaliser Chrome-opplevelsen i henhold til hvor du befinner deg.</translation>
 <translation id="3167189358072330585">Kontoen din fungerer ikke i Google Chrome. Kontakt domeneadministratoren din, eller logg på med en vanlig Google-konto.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">Noen tillegg fører til at Chrome krasjer. Avinstaller:</translation>
 <translation id="4615174829807303908">Du logger av en konto som administreres av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Dette sletter Chrome-dataene dine fra denne enheten, men dataene blir værende i Google-kontoen din.</translation>
 <translation id="5389212809648216794">Google Chrome kan ikke bruke kameraet fordi det brukes av en annen app</translation>
+<translation id="5489543008378040943"><ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" /> kan tilpasses når som helst. Google kan bruke innhold på nettsteder du besøker, nettleserinteraksjoner og aktiviteter for å gi Chrome og Google-tjenester (som Oversetter, Søk og annonser) et personlig preg.</translation>
 <translation id="5639704535586432836">Åpne Innstillinger &gt; Personvern &gt; Kamera &gt; Google Chrome, og slå på kameraet.</translation>
 <translation id="5642200033778930880">Google Chrome kan ikke bruke kameraet i modus for delt visning</translation>
 <translation id="5703130498371792817">Liker du Chrome? <ph name="BEGIN_LINK" />Vurder denne appen<ph name="END_LINK" /></translation>
