@@ -151,6 +151,7 @@ static_library("browser") {
     "//sql",
     "//third_party/icu",
     "//third_party/re2",
+    "//ui/base",
   ]
 
   if (is_chromeos) {

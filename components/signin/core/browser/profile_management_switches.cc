@@ -19,6 +19,10 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#include "ui/base/ui_base_features.h"
+#endif
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "components/prefs/pref_service.h"
 #endif
@@ -104,11 +108,16 @@ AccountConsistencyMethod GetAccountConsistencyMethod() {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   DCHECK(!GetIsGaiaIsolatedCallback()->is_null());
+  if (!GetIsGaiaIsolatedCallback()->Run())
+    return AccountConsistencyMethod::kDiceFixAuthErrors;
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  if (base::FeatureList::IsEnabled(features::kExperimentalUi))
+    return AccountConsistencyMethod::kDiceMigration;
+#endif
+
   const AccountConsistencyMethod kDefaultMethod =
       AccountConsistencyMethod::kDiceFixAuthErrors;
-
-  if (!GetIsGaiaIsolatedCallback()->Run())
-    return kDefaultMethod;
 #else
   const AccountConsistencyMethod kDefaultMethod =
       AccountConsistencyMethod::kDisabled;
