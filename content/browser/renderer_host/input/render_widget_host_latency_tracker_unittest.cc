@@ -444,8 +444,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency(ui::SourceEventType::INERTIAL);
-      scroll_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, now, 1);
       AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
       AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
       tracker()->OnInputEvent(scroll, &scroll_latency);
@@ -502,9 +500,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
-      scroll_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT, now,
-          1);
       AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
       AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
       tracker()->OnInputEvent(scroll, &scroll_latency);
@@ -614,8 +609,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
-      scroll_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, now, 1);
       AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
       AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
       tracker()->OnInputEvent(scroll, &scroll_latency);
@@ -801,9 +794,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
           source_device == blink::kWebGestureDeviceTouchscreen
               ? ui::SourceEventType::TOUCH
               : ui::SourceEventType::WHEEL);
-      scroll_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT, now,
-          1);
       AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
       AddRenderingScheduledComponent(&scroll_latency, rendering_on_main, now);
       tracker()->OnInputEvent(scroll, &scroll_latency);

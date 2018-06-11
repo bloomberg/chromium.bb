@@ -47,37 +47,6 @@ struct ArrayTraits<ui::LatencyInfo::LatencyMap> {
 };
 
 template <>
-struct StructTraits<ui::mojom::LatencyComponentDataView,
-                    ui::LatencyInfo::LatencyComponent> {
-  static base::TimeTicks event_time(
-      const ui::LatencyInfo::LatencyComponent& component);
-  static uint32_t event_count(
-      const ui::LatencyInfo::LatencyComponent& component);
-  static base::TimeTicks first_event_time(
-      const ui::LatencyInfo::LatencyComponent& component);
-  static base::TimeTicks last_event_time(
-      const ui::LatencyInfo::LatencyComponent& component);
-  static bool Read(ui::mojom::LatencyComponentDataView data,
-                   ui::LatencyInfo::LatencyComponent* out);
-};
-
-template <>
-struct StructTraits<ui::mojom::LatencyComponentPairDataView,
-                    ui::LatencyInfo::LatencyMap::value_type> {
-  static ui::LatencyComponentType key(
-      const ui::LatencyInfo::LatencyMap::value_type& input) {
-    return input.first;
-  }
-
-  static const ui::LatencyInfo::LatencyComponent& value(
-      const ui::LatencyInfo::LatencyMap::value_type& input) {
-    return input.second;
-  }
-
-  // TODO(fsamuel): Figure out how to optimize deserialization.
-};
-
-template <>
 struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
   static const std::string& trace_name(const ui::LatencyInfo& info);
   static const ui::LatencyInfo::LatencyMap& latency_components(

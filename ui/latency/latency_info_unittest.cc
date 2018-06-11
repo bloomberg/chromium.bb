@@ -30,16 +30,14 @@ TEST(LatencyInfoTest, AddTwoSeparateEvent) {
                                      ToTestTimeTicks(1000), 2);
 
   EXPECT_EQ(info.latency_components().size(), 2u);
-  LatencyInfo::LatencyComponent component;
-  EXPECT_FALSE(info.FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, &component));
+  base::TimeTicks timestamp;
+  EXPECT_FALSE(info.FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, &timestamp));
   EXPECT_TRUE(
-      info.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, &component));
-  EXPECT_EQ(component.event_count, 1u);
-  EXPECT_EQ(component.event_time, ToTestTimeTicks(100));
+      info.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, &timestamp));
+  EXPECT_EQ(timestamp, ToTestTimeTicks(100));
   EXPECT_TRUE(
-      info.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, &component));
-  EXPECT_EQ(component.event_count, 2u);
-  EXPECT_EQ(component.event_time, ToTestTimeTicks(1000));
+      info.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, &timestamp));
+  EXPECT_EQ(timestamp, ToTestTimeTicks(1000));
 }
 
 }  // namespace ui

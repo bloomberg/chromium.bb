@@ -871,7 +871,7 @@ TEST_F(SurfaceSynchronizationTest, LimitLatencyInfo) {
   const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
   const ui::LatencyComponentType latency_type1 =
-      ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT;
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT;
   const ui::LatencyComponentType latency_type2 =
       ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT;
 
@@ -981,8 +981,7 @@ TEST_F(SurfaceSynchronizationTest,
   // submit.
   EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
 
-  ui::LatencyInfo::LatencyComponent comp1;
-  EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type1, &comp1));
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type1, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type2, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(
       ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
@@ -1053,8 +1052,7 @@ TEST_F(SurfaceSynchronizationTest,
   // submit.
   EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
 
-  ui::LatencyInfo::LatencyComponent comp1;
-  EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type1, &comp1));
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type1, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type2, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(
       ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));
@@ -1128,8 +1126,7 @@ TEST_F(SurfaceSynchronizationTest,
   // submit.
   EXPECT_EQ(3u, aggregated_latency_info.latency_components().size());
 
-  ui::LatencyInfo::LatencyComponent comp1;
-  EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type1, &comp1));
+  EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type1, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(latency_type2, nullptr));
   EXPECT_TRUE(aggregated_latency_info.FindLatency(
       ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, nullptr));

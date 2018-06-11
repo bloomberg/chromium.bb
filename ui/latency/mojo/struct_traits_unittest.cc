@@ -27,11 +27,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
-  void EchoLatencyComponent(const LatencyInfo::LatencyComponent& l,
-                            EchoLatencyComponentCallback callback) override {
-    std::move(callback).Run(l);
-  }
-
   void EchoLatencyInfo(const LatencyInfo& info,
                        EchoLatencyInfoCallback callback) override {
     std::move(callback).Run(info);
@@ -43,19 +38,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 };
 
 }  // namespace
-
-TEST_F(StructTraitsTest, LatencyComponent) {
-  const base::TimeTicks event_time = base::TimeTicks::Now();
-  const uint32_t event_count = 1234;
-  LatencyInfo::LatencyComponent input;
-  input.event_time = event_time;
-  input.event_count = event_count;
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  LatencyInfo::LatencyComponent output;
-  proxy->EchoLatencyComponent(input, &output);
-  EXPECT_EQ(event_time, output.event_time);
-  EXPECT_EQ(event_count, output.event_count);
-}
 
 TEST_F(StructTraitsTest, LatencyInfo) {
   LatencyInfo latency;
@@ -83,14 +65,6 @@ TEST_F(StructTraitsTest, LatencyInfo) {
 
   EXPECT_TRUE(
       output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
-
-  LatencyInfo::LatencyComponent rwh_comp;
-  EXPECT_TRUE(
-      output.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, &rwh_comp));
-  EXPECT_EQ(1u, rwh_comp.event_count);
-
-  EXPECT_TRUE(
-      output.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, nullptr));
 }
 
 }  // namespace ui

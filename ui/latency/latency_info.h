@@ -107,22 +107,11 @@ enum SourceEventType {
 
 class LatencyInfo {
  public:
-  struct LatencyComponent {
-    // Average time of events that happened in this component.
-    base::TimeTicks event_time;
-    // Count of events that happened in this component
-    uint32_t event_count;
-    // Time of the oldest event that happened in this component.
-    base::TimeTicks first_event_time;
-    // Time of the most recent event that happened in this component.
-    base::TimeTicks last_event_time;
-  };
-
   enum : size_t { kMaxInputCoordinates = 2 };
 
   // Map a Latency Component (with a component-specific int64_t id) to a
-  // component info.
-  using LatencyMap = base::flat_map<LatencyComponentType, LatencyComponent>;
+  // timestamp.
+  using LatencyMap = base::flat_map<LatencyComponentType, base::TimeTicks>;
 
   // Map a frame sink id to the snapshot id.
   using SnapshotMap = std::map<int64_t, int64_t>;
@@ -150,10 +139,10 @@ class LatencyInfo {
       const std::vector<LatencyInfo>& latency_info,
       const char* trace_name);
 
-  // Copy LatencyComponents with type |type| from |other| into |this|.
+  // Copy timestamp with type |type| from |other| into |this|.
   void CopyLatencyFrom(const LatencyInfo& other, LatencyComponentType type);
 
-  // Add LatencyComponents that are in |other| but not in |this|.
+  // Add timestamps for components that are in |other| but not in |this|.
   void AddNewLatencyFrom(const LatencyInfo& other);
 
   // Modifies the current sequence number for a component, and adds a new
@@ -176,7 +165,7 @@ class LatencyInfo {
   // The first such component (when iterating over latency_components_) is
   // stored to |output| if |output| is not NULL. Returns false if no such
   // component is found.
-  bool FindLatency(LatencyComponentType type, LatencyComponent* output) const;
+  bool FindLatency(LatencyComponentType type, base::TimeTicks* output) const;
 
   void Terminate();
 

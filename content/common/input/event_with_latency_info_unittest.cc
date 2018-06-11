@@ -123,15 +123,14 @@ TEST_F(EventWithLatencyInfoTest, LatencyInfoCoalescing) {
 
   ASSERT_TRUE(mouse_0.CanCoalesceWith(mouse_1));
 
-  ui::LatencyInfo::LatencyComponent component;
   EXPECT_FALSE(mouse_1.latency.FindLatency(
-      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, &component));
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
 
   mouse_0.CoalesceWith(mouse_1);
 
   // Coalescing WebMouseEvent preservers older LatencyInfo.
   EXPECT_TRUE(mouse_1.latency.FindLatency(
-      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, &component));
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, nullptr));
 }
 
 WebTouchPoint CreateTouchPoint(WebTouchPoint::State state, int id) {
