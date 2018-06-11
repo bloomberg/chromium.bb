@@ -950,19 +950,15 @@ void FeatureInfo::InitializeFeatures() {
   if (gl::HasExtension(extensions, "GL_INTEL_framebuffer_CMAA")) {
     feature_flags_.chromium_screen_space_antialiasing = true;
     AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");
-  } else if (!workarounds_.disable_framebuffer_cmaa &&
-             (gl_version_info_->IsAtLeastGLES(3, 1) ||
-              (gl_version_info_->IsAtLeastGL(3, 0) &&
-               gl::HasExtension(extensions,
-                                "GL_ARB_shading_language_420pack") &&
-               gl::HasExtension(extensions, "GL_ARB_texture_storage") &&
-               gl::HasExtension(extensions, "GL_ARB_texture_gather") &&
-               gl::HasExtension(extensions,
-                                "GL_ARB_explicit_uniform_location") &&
-               gl::HasExtension(extensions,
-                                "GL_ARB_explicit_attrib_location") &&
-               gl::HasExtension(extensions,
-                                "GL_ARB_shader_image_load_store")))) {
+  } else if (gl_version_info_->IsAtLeastGLES(3, 1) ||
+             (gl_version_info_->IsAtLeastGL(3, 0) &&
+              gl::HasExtension(extensions, "GL_ARB_shading_language_420pack") &&
+              gl::HasExtension(extensions, "GL_ARB_texture_storage") &&
+              gl::HasExtension(extensions, "GL_ARB_texture_gather") &&
+              gl::HasExtension(extensions,
+                               "GL_ARB_explicit_uniform_location") &&
+              gl::HasExtension(extensions, "GL_ARB_explicit_attrib_location") &&
+              gl::HasExtension(extensions, "GL_ARB_shader_image_load_store"))) {
     feature_flags_.chromium_screen_space_antialiasing = true;
     feature_flags_.use_chromium_screen_space_antialiasing_via_shaders = true;
     AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");

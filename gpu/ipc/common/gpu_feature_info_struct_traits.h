@@ -8,6 +8,7 @@
 #include "gpu/config/gpu_blacklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "gpu/ipc/common/gpu_feature_info.mojom.h"
 
 namespace mojo {
 
@@ -59,28 +60,70 @@ struct EnumTraits<gpu::mojom::GpuFeatureStatus, gpu::GpuFeatureStatus> {
 };
 
 template <>
+struct EnumTraits<gpu::mojom::AntialiasingMode, gpu::AntialiasingMode> {
+  static gpu::mojom::AntialiasingMode ToMojom(gpu::AntialiasingMode mode) {
+    switch (mode) {
+      case gpu::kAntialiasingModeUnspecified:
+        return gpu::mojom::AntialiasingMode::kUnspecified;
+      case gpu::kAntialiasingModeNone:
+        return gpu::mojom::AntialiasingMode::kNone;
+      case gpu::kAntialiasingModeMSAAImplicitResolve:
+        return gpu::mojom::AntialiasingMode::kMSAAImplicitResolve;
+      case gpu::kAntialiasingModeMSAAExplicitResolve:
+        return gpu::mojom::AntialiasingMode::kMSAAExplicitResolve;
+      case gpu::kAntialiasingModeScreenSpaceAntialiasing:
+        return gpu::mojom::AntialiasingMode::kScreenSpaceAntialiasing;
+    }
+    NOTREACHED();
+    return gpu::mojom::AntialiasingMode::kUnspecified;
+  }
+
+  static bool FromMojom(gpu::mojom::AntialiasingMode input,
+                        gpu::AntialiasingMode* out) {
+    switch (input) {
+      case gpu::mojom::AntialiasingMode::kUnspecified:
+        *out = gpu::kAntialiasingModeUnspecified;
+        return true;
+      case gpu::mojom::AntialiasingMode::kNone:
+        *out = gpu::kAntialiasingModeNone;
+        return true;
+      case gpu::mojom::AntialiasingMode::kMSAAImplicitResolve:
+        *out = gpu::kAntialiasingModeMSAAImplicitResolve;
+        return true;
+      case gpu::mojom::AntialiasingMode::kMSAAExplicitResolve:
+        *out = gpu::kAntialiasingModeMSAAExplicitResolve;
+        return true;
+      case gpu::mojom::AntialiasingMode::kScreenSpaceAntialiasing:
+        *out = gpu::kAntialiasingModeScreenSpaceAntialiasing;
+        return true;
+    }
+    return false;
+  }
+};
+
+template <>
+struct StructTraits<gpu::mojom::WebglPreferencesDataView,
+                    gpu::WebglPreferences> {
+  static bool Read(gpu::mojom::WebglPreferencesDataView data,
+                   gpu::WebglPreferences* out) {
+    out->msaa_sample_count = data.msaa_sample_count();
+    return data.ReadAntiAliasingMode(&out->anti_aliasing_mode);
+  }
+
+  static gpu::AntialiasingMode anti_aliasing_mode(
+      const gpu::WebglPreferences& prefs) {
+    return prefs.anti_aliasing_mode;
+  }
+
+  static uint32_t msaa_sample_count(const gpu::WebglPreferences& prefs) {
+    return prefs.msaa_sample_count;
+  }
+};
+
+template <>
 struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
   static bool Read(gpu::mojom::GpuFeatureInfoDataView data,
-                   gpu::GpuFeatureInfo* out) {
-    std::vector<gpu::GpuFeatureStatus> info_status;
-    if (!data.ReadStatusValues(&info_status))
-      return false;
-    if (info_status.size() != gpu::NUMBER_OF_GPU_FEATURE_TYPES)
-      return false;
-    std::copy(info_status.begin(), info_status.end(), out->status_values);
-    return data.ReadEnabledGpuDriverBugWorkarounds(
-               &out->enabled_gpu_driver_bug_workarounds) &&
-           data.ReadDisabledExtensions(&out->disabled_extensions) &&
-           data.ReadDisabledWebglExtensions(&out->disabled_webgl_extensions) &&
-           data.ReadAppliedGpuBlacklistEntries(
-               &out->applied_gpu_blacklist_entries) &&
-           gpu::GpuBlacklist::AreEntryIndicesValid(
-               out->applied_gpu_blacklist_entries) &&
-           data.ReadAppliedGpuDriverBugListEntries(
-               &out->applied_gpu_driver_bug_list_entries) &&
-           gpu::GpuDriverBugList::AreEntryIndicesValid(
-               out->applied_gpu_driver_bug_list_entries);
-  }
+                   gpu::GpuFeatureInfo* out);
 
   static std::vector<gpu::GpuFeatureStatus> status_values(
       const gpu::GpuFeatureInfo& info) {
@@ -101,6 +144,11 @@ struct StructTraits<gpu::mojom::GpuFeatureInfoDataView, gpu::GpuFeatureInfo> {
   static const std::string& disabled_webgl_extensions(
       const gpu::GpuFeatureInfo& info) {
     return info.disabled_webgl_extensions;
+  }
+
+  static const gpu::WebglPreferences& webgl_preferences(
+      const gpu::GpuFeatureInfo& info) {
+    return info.webgl_preferences;
   }
 
   static const std::vector<uint32_t>& applied_gpu_blacklist_entries(

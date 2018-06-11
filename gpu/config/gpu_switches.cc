@@ -37,4 +37,11 @@ const char kGpuDriverBugListTestGroup[] = "gpu-driver-bug-list-test-group";
 const char kUseGpuFencesForOverlayPlanes[] =
     "use-gpu-fences-for-overlay-planes";
 
+// Set the antialiasing method used for webgl. (none, explicit, implicit, or
+// screenspace)
+const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";
+
+// Set a default sample count for webgl if msaa is enabled.
+const char kWebglMSAASampleCount[] = "webgl-msaa-sample-count";
+
 }  // namespace switches
