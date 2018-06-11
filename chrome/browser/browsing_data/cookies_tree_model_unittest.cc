@@ -321,65 +321,6 @@ class CookiesTreeModelTest : public testing::Test {
     }
   }
 
-  std::string GetCookiesOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(node, CookieTreeNode::DetailedInfo::TYPE_COOKIE);
-  }
-
-  std::string GetDatabasesOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(node,
-                              CookieTreeNode::DetailedInfo::TYPE_DATABASE);
-  }
-
-  std::string GetLocalStoragesOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(node,
-                              CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE);
-  }
-
-  std::string GetSessionStoragesOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(
-        node, CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE);
-  }
-
-  std::string GetIndexedDBsOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(
-        node, CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB);
-  }
-
-  std::string GetFileSystemsOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(
-        node, CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM);
-  }
-
-  std::string GetFileQuotaOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(
-        node, CookieTreeNode::DetailedInfo::TYPE_QUOTA);
-  }
-
-  std::string GetServiceWorkersOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(
-        node, CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER);
-  }
-
-  std::string GetSharedWorkersOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(node,
-                              CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER);
-  }
-
-  std::string GetCacheStoragesOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(node,
-                              CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE);
-  }
-
-  std::string GetFlashLSOsOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(
-        node, CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO);
-  }
-
-  std::string GetMediaLicensesOfChildren(const CookieTreeNode* node) {
-    return GetNodesOfChildren(node,
-                              CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE);
-  }
-
   // Get the nodes names displayed in the view (if we had one) in the order
   // they are displayed, as a comma seperated string.
   // Ex: EXPECT_STREQ("X,Y", GetDisplayedNodes(cookies_view, type).c_str());
