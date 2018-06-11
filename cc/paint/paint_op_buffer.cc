@@ -22,6 +22,8 @@ namespace {
 DrawImage CreateDrawImage(const PaintImage& image,
                           const PaintFlags* flags,
                           const SkMatrix& matrix) {
+  if (!image)
+    return DrawImage();
   return DrawImage(image, SkIRect::MakeWH(image.width(), image.height()),
                    flags ? flags->getFilterQuality() : kLow_SkFilterQuality,
                    matrix);
