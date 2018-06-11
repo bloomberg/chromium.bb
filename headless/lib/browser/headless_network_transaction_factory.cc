@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
+#include "net/base/completion_once_callback.h"
 #include "net/http/http_cache_writers.h"
 #include "net/http/http_transaction.h"
 
@@ -19,7 +20,7 @@ class HeadlessCacheBackendFactory : public net::HttpCache::BackendFactory {
 
   int CreateBackend(net::NetLog* net_log,
                     std::unique_ptr<disk_cache::Backend>* backend,
-                    const net::CompletionCallback& callback) override {
+                    net::CompletionOnceCallback callback) override {
     return net::OK;
   }
 };

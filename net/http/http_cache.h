@@ -27,7 +27,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
@@ -80,7 +80,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
     // |callback| because the object can be deleted from within the callback.
     virtual int CreateBackend(NetLog* net_log,
                               std::unique_ptr<disk_cache::Backend>* backend,
-                              const CompletionCallback& callback) = 0;
+                              CompletionOnceCallback callback) = 0;
   };
 
   // A default backend factory for the common use cases.
@@ -100,7 +100,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
     // BackendFactory implementation.
     int CreateBackend(NetLog* net_log,
                       std::unique_ptr<disk_cache::Backend>* backend,
-                      const CompletionCallback& callback) override;
+                      CompletionOnceCallback callback) override;
 
    private:
     CacheType type_;
@@ -174,7 +174,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // |callback| will be notified when the operation completes. The pointer that
   // receives the |backend| must remain valid until the operation completes.
   int GetBackend(disk_cache::Backend** backend,
-                 const CompletionCallback& callback);
+                 CompletionOnceCallback callback);
 
   // Returns the current backend (can be NULL).
   disk_cache::Backend* GetCurrentBackend() const;
@@ -361,7 +361,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Creates the |backend| object and notifies the |callback| when the operation
   // completes. Returns an error code.
   int CreateBackend(disk_cache::Backend** backend,
-                    const CompletionCallback& callback);
+                    CompletionOnceCallback callback);
 
   // Makes sure that the backend creation is complete before allowing the
   // provided transaction to use the object. Returns an error code.  |trans|

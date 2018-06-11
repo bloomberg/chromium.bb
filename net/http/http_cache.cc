@@ -31,6 +31,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "net/base/cache_type.h"
+#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -75,16 +76,11 @@ std::unique_ptr<HttpCache::BackendFactory> HttpCache::DefaultBackend::InMemory(
 int HttpCache::DefaultBackend::CreateBackend(
     NetLog* net_log,
     std::unique_ptr<disk_cache::Backend>* backend,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   DCHECK_GE(max_bytes_, 0);
-  return disk_cache::CreateCacheBackend(type_,
-                                        backend_type_,
-                                        path_,
-                                        max_bytes_,
-                                        true,
-                                        net_log,
-                                        backend,
-                                        callback);
+  return disk_cache::CreateCacheBackend(type_, backend_type_, path_, max_bytes_,
+                                        true, net_log, backend,
+                                        std::move(callback));
 }
 
 //-----------------------------------------------------------------------------
@@ -165,12 +161,12 @@ class HttpCache::WorkItem {
         backend_(NULL) {}
   WorkItem(WorkItemOperation operation,
            Transaction* trans,
-           const CompletionCallback& cb,
+           CompletionOnceCallback callback,
            disk_cache::Backend** backend)
       : operation_(operation),
         trans_(trans),
         entry_(NULL),
-        callback_(cb),
+        callback_(std::move(callback)),
         backend_(backend) {}
   ~WorkItem() = default;
 
@@ -189,7 +185,7 @@ class HttpCache::WorkItem {
     if (backend_)
       *backend_ = backend;
     if (!callback_.is_null()) {
-      callback_.Run(result);
+      std::move(callback_).Run(result);
       return true;
     }
     return false;
@@ -209,7 +205,7 @@ class HttpCache::WorkItem {
   WorkItemOperation operation_;
   Transaction* trans_;
   ActiveEntry** entry_;
-  CompletionCallback callback_;  // User callback.
+  CompletionOnceCallback callback_;  // User callback.
   disk_cache::Backend** backend_;
 };
 
@@ -390,7 +386,7 @@ HttpCache::~HttpCache() {
 }
 
 int HttpCache::GetBackend(disk_cache::Backend** backend,
-                          const CompletionCallback& callback) {
+                          CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
 
   if (disk_cache_.get()) {
@@ -398,7 +394,7 @@ int HttpCache::GetBackend(disk_cache::Backend** backend,
     return OK;
   }
 
-  return CreateBackend(backend, callback);
+  return CreateBackend(backend, std::move(callback));
 }
 
 disk_cache::Backend* HttpCache::GetCurrentBackend() const {
@@ -424,7 +420,7 @@ void HttpCache::WriteMetadata(const GURL& url,
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
     // We don't care about the result.
-    CreateBackend(NULL, CompletionCallback());
+    CreateBackend(NULL, CompletionOnceCallback());
   }
 
   HttpCache::Transaction* trans =
@@ -464,7 +460,7 @@ int HttpCache::CreateTransaction(RequestPriority priority,
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
     // We don't care about the result.
-    CreateBackend(NULL, CompletionCallback());
+    CreateBackend(NULL, CompletionOnceCallback());
   }
 
    HttpCache::Transaction* transaction =
@@ -517,20 +513,21 @@ void HttpCache::DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
 //-----------------------------------------------------------------------------
 
 int HttpCache::CreateBackend(disk_cache::Backend** backend,
-                             const CompletionCallback& callback) {
+                             CompletionOnceCallback callback) {
   if (!backend_factory_.get())
     return ERR_FAILED;
 
   building_backend_ = true;
 
-  std::unique_ptr<WorkItem> item =
-      std::make_unique<WorkItem>(WI_CREATE_BACKEND, nullptr, callback, backend);
+  const bool callback_is_null = callback.is_null();
+  std::unique_ptr<WorkItem> item = std::make_unique<WorkItem>(
+      WI_CREATE_BACKEND, nullptr, std::move(callback), backend);
 
   // This is the only operation that we can do that is not related to any given
   // entry, so we use an empty key for it.
   PendingOp* pending_op = GetPendingOp(std::string());
   if (pending_op->writer) {
-    if (!callback.is_null())
+    if (!callback_is_null)
       pending_op->pending_queue.push_back(std::move(item));
     return ERR_IO_PENDING;
   }
@@ -559,7 +556,7 @@ int HttpCache::GetBackendForTransaction(Transaction* trans) {
     return ERR_FAILED;
 
   std::unique_ptr<WorkItem> item = std::make_unique<WorkItem>(
-      WI_CREATE_BACKEND, trans, CompletionCallback(), nullptr);
+      WI_CREATE_BACKEND, trans, CompletionOnceCallback(), nullptr);
   PendingOp* pending_op = GetPendingOp(std::string());
   DCHECK(pending_op->writer);
   pending_op->pending_queue.push_back(std::move(item));
