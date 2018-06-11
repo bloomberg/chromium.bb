@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -62,9 +63,20 @@ void ArcAppShortcutsMenuBuilder::OnGetAppShortcutItems(
     std::unique_ptr<ArcAppShortcutItems> app_shortcut_items) {
   app_shortcut_items_ = std::move(app_shortcut_items);
   if (app_shortcut_items_ && !app_shortcut_items_->empty()) {
+    ArcAppShortcutItems& items = *app_shortcut_items_;
+    // Sort the shortcuts based on two rules: (1) Static (declared in manifest)
+    // shortcuts and then dynamic shortcuts; (2) Within each shortcut type
+    // (static and dynamic), shortcuts are sorted in order of increasing rank.
+    std::sort(
+        items.begin(), items.end(),
+        [](const ArcAppShortcutItem& item1, const ArcAppShortcutItem& item2) {
+          return std::tie(item1.type, item1.rank) <
+                 std::tie(item2.type, item2.rank);
+        });
+
     menu_model->AddSeparator(ui::DOUBLE_SEPARATOR);
     int command_id = command_id_first_;
-    for (const auto& item : *app_shortcut_items_) {
+    for (const auto& item : items) {
       if (command_id != command_id_first_)
         menu_model->AddSeparator(ui::PADDED_SEPARATOR);
       menu_model->AddItemWithIcon(command_id++, item.short_label, item.icon);
