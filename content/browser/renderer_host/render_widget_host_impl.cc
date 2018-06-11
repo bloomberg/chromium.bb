@@ -116,6 +116,7 @@
 #include "ui/snapshot/snapshot.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/renderer_host/input/fling_scheduler_android.h"
 #include "ui/android/view_android.h"
 #endif
 
@@ -389,8 +390,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                      base::checked_cast<uint32_t>(routing_id_)),
       weak_factory_(this) {
 #if defined(OS_MACOSX)
-  auto fling_scheduler = std::make_unique<FlingSchedulerMac>(this);
-  fling_scheduler_ = std::move(fling_scheduler);
+  fling_scheduler_ = std::make_unique<FlingSchedulerMac>(this);
+#elif defined(OS_ANDROID)
+  fling_scheduler_ = std::make_unique<FlingSchedulerAndroid>(this);
 #else
   fling_scheduler_ = std::make_unique<FlingScheduler>(this);
 #endif

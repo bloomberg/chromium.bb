@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_FLING_SCHEDULER_H_
 
 #include "content/browser/renderer_host/input/fling_controller.h"
+#include "content/browser/renderer_host/input/fling_scheduler_base.h"
 #include "ui/compositor/compositor_animation_observer.h"
 
 namespace ui {
@@ -16,7 +17,7 @@ namespace content {
 
 class RenderWidgetHostImpl;
 
-class CONTENT_EXPORT FlingScheduler : public FlingControllerSchedulerClient,
+class CONTENT_EXPORT FlingScheduler : public FlingSchedulerBase,
                                       private ui::CompositorAnimationObserver {
  public:
   FlingScheduler(RenderWidgetHostImpl* host);
@@ -28,7 +29,8 @@ class CONTENT_EXPORT FlingScheduler : public FlingControllerSchedulerClient,
   void DidStopFlingingOnBrowser(
       base::WeakPtr<FlingController> fling_controller) override;
 
-  void ProgressFlingOnBeginFrameIfneeded(base::TimeTicks current_time);
+  // FlingSchedulerBase
+  void ProgressFlingOnBeginFrameIfneeded(base::TimeTicks current_time) override;
 
  protected:
   virtual ui::Compositor* GetCompositor();
