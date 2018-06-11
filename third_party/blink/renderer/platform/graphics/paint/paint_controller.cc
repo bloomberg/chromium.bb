@@ -743,9 +743,6 @@ void PaintController::AppendDebugDrawingAfterCommit(
 }
 
 void PaintController::GenerateRasterInvalidations(PaintChunk& new_chunk) {
-  if (RuntimeEnabledFeatures::DisableRasterInvalidationEnabled())
-    return;
-
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   if (new_chunk.begin_index >=
       current_cached_subsequence_begin_index_in_new_list_)
