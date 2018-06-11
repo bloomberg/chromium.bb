@@ -92,9 +92,9 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginStart="16dp"
-                    android:alpha="0.54"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_expand_more_black_24dp"/>
+                    tools:src="@drawable/ic_expand_more_black_24dp"
+                    tools:tint="@color/dark_mode_tint"/>
             </LinearLayout>
             <ImageView
                 android:id="@+id/signin_sync_icon"

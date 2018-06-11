@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -288,13 +289,15 @@ public abstract class SigninFragmentBase
         mView.getScrollView().setScrolledToBottomObserver(this::showAcceptButton);
         mView.getDetailsDescriptionView().setMovementMethod(LinkMovementMethod.getInstance());
 
+        final Drawable endImageViewDrawable;
         if (isForcedSignin()) {
-            mView.getAccountPickerEndImageView().setImageResource(
-                    R.drawable.ic_check_googblue_24dp);
-            mView.getAccountPickerEndImageView().setAlpha(1.0f);
+            endImageViewDrawable = SigninView.getCheckmarkDrawable(getContext());
             mView.getRefuseButton().setVisibility(View.GONE);
             mView.getAcceptButtonEndPadding().setVisibility(View.INVISIBLE);
+        } else {
+            endImageViewDrawable = SigninView.getExpandArrowDrawable(getContext());
         }
+        mView.getAccountPickerEndImageView().setImageDrawable(endImageViewDrawable);
 
         updateConsentText();
         setHasAccounts(true); // Assume there are accounts, updateAccounts will set the real value.
