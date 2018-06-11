@@ -40,7 +40,7 @@ typedef struct ThreadData {
   DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_PALETTE_SQUARE]);
   uint8_t *mc_buf[2];
-  uint16_t mc_buf_size;
+  int32_t mc_buf_size;
 } ThreadData;
 
 typedef struct TileDataDec {

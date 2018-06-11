@@ -2752,7 +2752,7 @@ void av1_free_mc_tmp_buf(void *td, int use_highbd) {
       aom_free(thread_data->mc_buf[ref]);
     thread_data->mc_buf[ref] = NULL;
   }
-  aom_free(thread_data->mc_buf);
+  thread_data->mc_buf_size = 0;
 }
 
 static void allocate_mc_tmp_buf(AV1_COMMON *const cm, void *td, int buf_size,
