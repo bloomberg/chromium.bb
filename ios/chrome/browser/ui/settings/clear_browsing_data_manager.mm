@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_manager.h"
 
+#include "base/bind.h"
 #include "base/ios/block_types.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -277,7 +277,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
   __weak ClearBrowsingDataManager* weakSelf = self;
   browsing_data::ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-      syncService, historyService, base::BindBlockArc(^(bool shouldShowNotice) {
+      syncService, historyService,
+      base::BindRepeating(^(bool shouldShowNotice) {
         ClearBrowsingDataManager* strongSelf = weakSelf;
         [strongSelf
             setShouldShowNoticeAboutOtherFormsOfBrowsingHistory:shouldShowNotice
@@ -286,7 +287,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       syncService, historyService, GetChannel(),
-      base::BindBlockArc(^(bool shouldShowPopup) {
+      base::BindRepeating(^(bool shouldShowPopup) {
         ClearBrowsingDataManager* strongSelf = weakSelf;
         [strongSelf setShouldPopupDialogAboutOtherFormsOfBrowsingHistory:
                         shouldShowPopup];
@@ -308,7 +309,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
     __weak ClearBrowsingDataManager* weakSelf = self;
     counter = BrowsingDataCounterWrapper::CreateCounterWrapper(
         prefName, self.browserState, prefs,
-        base::BindBlockArc(
+        base::BindRepeating(
             ^(const browsing_data::BrowsingDataCounter::Result& result) {
               [weakSelf.consumer
                   updateCounter:itemType
