@@ -130,9 +130,8 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
     if (is_aborted_)
       return;
 
-    CrostiniManager* crostini_manager = CrostiniManager::GetInstance();
     // Finish Restart immediately if testing.
-    if (crostini_manager->skip_restart_for_testing()) {
+    if (CrostiniManager::GetInstance()->skip_restart_for_testing()) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
           base::BindOnce(&CrostiniRestarter::FinishRestart,
@@ -141,8 +140,10 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       return;
     }
 
-    if (crostini_manager->is_testing()) {
-      // Running in test. We still PostTask to prevent races between
+    auto* cros_component_manager =
+        g_browser_process->platform_part()->cros_component_manager();
+    if (!cros_component_manager) {
+      // Running in unittest. We still PostTask to prevent races between
       // observers aborting.
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
@@ -153,9 +154,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
               base::FilePath()));
       return;
     }
-    auto* cros_component_manager =
-        g_browser_process->platform_part()->cros_component_manager();
-    DCHECK(cros_component_manager);
+
     cros_component_manager->Load(
         "cros-termina",
         component_updater::CrOSComponentManager::MountPolicy::kMount,
@@ -359,12 +358,9 @@ void CrostiniRestarterService::RunPendingCallbacks(
 
 void CrostiniRestarterService::Abort(CrostiniManager::RestartId restart_id) {
   auto it = restarter_map_.find(restart_id);
-  if (it == restarter_map_.end()) {
-    // This can happen if a user cancels the install flow at the exact right
-    // moment, for example.
-    LOG(ERROR) << "Aborting a restarter that already finished";
-    return;
-  }
+  DCHECK(it != restarter_map_.end())
+      << "Aborting a restarter that already finished";
+
   it->second->Abort();
   ErasePending(it->second.get());
   // Erasing |it| also invalidates |it|, so make a key from |it| now.
