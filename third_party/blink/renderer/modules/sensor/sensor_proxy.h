@@ -102,6 +102,9 @@ class SensorProxy : public GarbageCollectedFinalized<SensorProxy>,
   // FocusChangedObserver overrides.
   void FocusedFrameChanged() override;
 
+  // Returns true if conditions to suspend sensor reading updates are met.
+  bool ShouldSuspendUpdates() const;
+
   Member<SensorProviderProxy> provider_;
   bool detached_ = false;
 
