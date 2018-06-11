@@ -143,12 +143,12 @@ class LoginScreenLocalePolicyTest : public LoginScreenPolicyTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginScreenLocalePolicyTest,
-                       PRE_LoginLocaleEnforcedByPolicy) {
+                       DISABLED_PRE_LoginLocaleEnforcedByPolicy) {
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenLocalePolicyTest,
-                       LoginLocaleEnforcedByPolicy) {
+                       DISABLED_LoginLocaleEnforcedByPolicy) {
   // Verifies that the default locale can be overridden with policy.
   EXPECT_EQ("fr", g_browser_process->GetApplicationLocale());
   base::string16 french_title =

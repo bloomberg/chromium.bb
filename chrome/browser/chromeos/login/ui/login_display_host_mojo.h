@@ -53,6 +53,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
     return user_selection_screen_.get();
   }
 
+  ExistingUserController* existing_user_controller() {
+    return existing_user_controller_.get();
+  }
+
   // LoginDisplayHost:
   LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
   gfx::NativeWindow GetNativeWindow() const override;
