@@ -281,7 +281,8 @@ IN_PROC_BROWSER_TEST_F(NtpBubbleBrowserTestMac,
   TestControlledNewTabPageBubbleShown(false);
 }
 
+// Flaky crashes on Mac 10.10. See crbug.com/851655
 IN_PROC_BROWSER_TEST_F(NtpBubbleBrowserTestMac,
-                       TestBubbleClosedAfterExtensionUninstall) {
+                       DISABLED_TestBubbleClosedAfterExtensionUninstall) {
   TestBubbleClosedAfterExtensionUninstall();
 }
