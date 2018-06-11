@@ -20,6 +20,7 @@ include_rules = [
   "+components/user_prefs",
   "+components/version_info",
   "+components/viz/common/switches.h",
+  "+components/zoom",
   "+content/public/android",
   "+content/public/browser",
   "+content/public/common",

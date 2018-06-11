@@ -18,7 +18,14 @@ CastWebViewFactory::CastWebViewFactory(content::BrowserContext* browser_context)
   DCHECK(browser_context_);
 }
 
-CastWebViewFactory::~CastWebViewFactory() {}
+CastWebViewFactory::~CastWebViewFactory() = default;
+
+void CastWebViewFactory::OnPageDestroyed(CastWebView* web_view) {
+  web_view->RemoveObserver(this);
+  active_webviews_.erase(std::find_if(
+      active_webviews_.begin(), active_webviews_.end(),
+      [web_view](const ActiveWebview& w) { return w.web_view == web_view; }));
+}
 
 std::unique_ptr<CastWebView> CastWebViewFactory::CreateWebView(
     const CastWebView::CreateParams& params,
@@ -26,14 +33,21 @@ std::unique_ptr<CastWebView> CastWebViewFactory::CreateWebView(
     scoped_refptr<content::SiteInstance> site_instance,
     const extensions::Extension* extension,
     const GURL& initial_url) {
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  std::unique_ptr<CastWebView> webview;
   if (extension) {
-    return std::make_unique<CastWebViewExtension>(
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+    webview = std::make_unique<CastWebViewExtension>(
         params, browser_context_, site_instance, extension, initial_url);
-  }
 #endif
-  return std::make_unique<CastWebViewDefault>(params, web_contents_manager,
-                                              browser_context_, site_instance);
+  } else {
+    webview = std::make_unique<CastWebViewDefault>(
+        params, web_contents_manager, browser_context_, site_instance);
+  }
+  if (webview) {
+    active_webviews_.push_back({webview.get(), next_id_++});
+    webview->AddObserver(this);
+  }
+  return webview;
 }
 
 }  // namespace chromecast

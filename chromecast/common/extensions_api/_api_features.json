@@ -94,8 +94,29 @@
       "chrome://bookmarks/*"
     ]
   }],
+  "tabs": [{
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app"],
+    "contexts": ["blessed_extension", "extension_service_worker"]
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://bookmarks/*"
+    ]
+  }],
   "tts": {
     "dependencies": ["permission:tts"],
     "contexts": ["blessed_extension"]
-  }
+  },
+  "windows": [{
+    "dependencies": ["api:tabs"],
+    "contexts": ["blessed_extension"]
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://bookmarks/*"
+    ]
+  }]
 }

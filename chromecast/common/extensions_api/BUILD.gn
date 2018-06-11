@@ -3,11 +3,15 @@
 # found in the LICENSE file.
 
 import("//extensions/buildflags/buildflags.gni")
+import("//extensions/common/api/schema.gni")
 import("//tools/json_schema_compiler/json_features.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
 assert(enable_extensions,
        "Cannot depend on extensions because enable_extensions=false.")
+
+extensions_api_schema_include_rules =
+    "extensions/common/api:extensions::api::%(namespace)s"
 
 schema_sources = [
   # TODO(crbug/837773) De-dupe Automation later.
@@ -20,11 +24,13 @@ schema_sources = [
   "identity.idl",
   "i18n.json",
   "notifications.idl",
+  "tabs.json",
+  "windows.json",
 ]
 
 root_namespace = "extensions::cast::api::%(namespace)s"
 
-extensions_api_uncompiled_sources = [ "extension.json" ]
+extensions_api_uncompiled_sources += [ "extension.json" ]
 
 json_schema_api("api") {
   sources = schema_sources
@@ -33,6 +39,11 @@ json_schema_api("api") {
   bundle = true
   bundle_name = "Cast"
   uncompiled_bundle_schema_sources = [ "tts.json" ]
+  schema_include_rules = extensions_api_schema_include_rules
+
+  deps = [
+    "//extensions/common/api",
+  ]
 }
 
 json_schema_api("api_registration") {
@@ -44,6 +55,7 @@ json_schema_api("api_registration") {
   deps = [
     ":api",
     "//extensions/common",
+    "//extensions/common/api",
   ]
 }
 

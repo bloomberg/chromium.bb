@@ -122,5 +122,11 @@ void CastBrowserProcess::SetTtsController(
   tts_controller_ = std::move(tts_controller);
 }
 
+void CastBrowserProcess::SetWebViewFactory(
+    CastWebViewFactory* web_view_factory) {
+  DCHECK(!web_view_factory_);
+  web_view_factory_ = web_view_factory;
+}
+
 }  // namespace shell
 }  // namespace chromecast

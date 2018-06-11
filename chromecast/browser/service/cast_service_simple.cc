@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/time/time.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/browser/cast_web_contents_manager.h"
 #include "chromecast/browser/cast_web_view_factory.h"
@@ -48,6 +49,8 @@ CastServiceSimple::CastServiceSimple(content::BrowserContext* browser_context,
           std::make_unique<CastWebContentsManager>(browser_context,
                                                    web_view_factory_.get())) {
   DCHECK(window_manager_);
+  shell::CastBrowserProcess::GetInstance()->SetWebViewFactory(
+      web_view_factory_.get());
 }
 
 CastServiceSimple::~CastServiceSimple() {

@@ -22,6 +22,7 @@ class NetLog;
 namespace chromecast {
 class CastService;
 class CastScreen;
+class CastWebViewFactory;
 class ConnectivityChecker;
 
 namespace metrics {
@@ -70,6 +71,7 @@ class CastBrowserProcess {
       scoped_refptr<ConnectivityChecker> connectivity_checker);
   void SetNetLog(net::NetLog* net_log);
   void SetTtsController(std::unique_ptr<TtsController> tts_controller);
+  void SetWebViewFactory(CastWebViewFactory* web_view_factory);
 
   CastContentBrowserClient* browser_client() const {
     return cast_content_browser_client_;
@@ -98,6 +100,7 @@ class CastBrowserProcess {
   }
   net::NetLog* net_log() const { return net_log_; }
   TtsController* tts_controller() const { return tts_controller_.get(); }
+  CastWebViewFactory* web_view_factory() const { return web_view_factory_; }
 
  private:
   // Note: The following order should match the order they are set in
@@ -116,6 +119,7 @@ class CastBrowserProcess {
   std::unique_ptr<metrics::CastMetricsServiceClient> metrics_service_client_;
   std::unique_ptr<RemoteDebuggingServer> remote_debugging_server_;
 
+  CastWebViewFactory* web_view_factory_ = nullptr;
   CastContentBrowserClient* cast_content_browser_client_;
   net::NetLog* net_log_;
   std::unique_ptr<TtsController> tts_controller_;
