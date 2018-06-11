@@ -113,6 +113,10 @@ public class StackLayout extends StackLayoutBase {
             // Don't allow switching between normal and incognito again until the animations finish.
             mAnimatingStackSwitch = true;
 
+            // Make sure we update the tab switcher's background color even if no tabs are open and
+            // therefore neither the switch away nor switch to animations run.
+            requestUpdate();
+
             NonOverlappingStack oldStack = (NonOverlappingStack) mStacks.get(
                     toIncognitoTabModel ? NORMAL_STACK_INDEX : INCOGNITO_STACK_INDEX);
             oldStack.runSwitchAwayAnimation(toIncognitoTabModel
