@@ -1500,9 +1500,10 @@ void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   fptr ref_simd;
   fptr simd;
   int error = 0;
-  DECLARE_ALIGNED(32, uint8_t, s[sizeof(CArg)]);
-  DECLARE_ALIGNED(32, uint8_t, d[sizeof(CRet)]);
-  DECLARE_ALIGNED(32, uint8_t, ref_d[sizeof(CRet)]);
+  DECLARE_ALIGNED(32, uint8_t, s[32]);
+  DECLARE_ALIGNED(32, uint8_t, d[32]);
+  DECLARE_ALIGNED(32, uint8_t, ref_d[32]);
+  assert(sizeof(CArg) <= 32 && sizeof(CRet) <= 32);
   memset(ref_d, 0, sizeof(ref_d));
   memset(d, 0, sizeof(d));
 
@@ -1744,10 +1745,11 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   fptr ref_simd;
   fptr simd;
   int error = 0;
-  DECLARE_ALIGNED(32, uint8_t, s1[sizeof(CArg1)]);
-  DECLARE_ALIGNED(32, uint8_t, s2[sizeof(CArg2)]);
-  DECLARE_ALIGNED(32, uint8_t, d[sizeof(CRet)]);
-  DECLARE_ALIGNED(32, uint8_t, ref_d[sizeof(CRet)]);
+  DECLARE_ALIGNED(32, uint8_t, s1[32]);
+  DECLARE_ALIGNED(32, uint8_t, s2[32]);
+  DECLARE_ALIGNED(32, uint8_t, d[32]);
+  DECLARE_ALIGNED(32, uint8_t, ref_d[32]);
+  assert(sizeof(CArg1) <= 32 && sizeof(CArg2) <= 32 && sizeof(CRet) <= 32);
   memset(ref_d, 0, sizeof(ref_d));
   memset(d, 0, sizeof(d));
 
@@ -2000,11 +2002,13 @@ void TestSimd3Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   fptr ref_simd;
   fptr simd;
   int error = 0;
-  DECLARE_ALIGNED(32, uint8_t, s1[sizeof(CArg1)]);
-  DECLARE_ALIGNED(32, uint8_t, s2[sizeof(CArg2)]);
-  DECLARE_ALIGNED(32, uint8_t, s3[sizeof(CArg3)]);
-  DECLARE_ALIGNED(32, uint8_t, d[sizeof(CRet)]);
-  DECLARE_ALIGNED(32, uint8_t, ref_d[sizeof(CRet)]);
+  DECLARE_ALIGNED(32, uint8_t, s1[32]);
+  DECLARE_ALIGNED(32, uint8_t, s2[32]);
+  DECLARE_ALIGNED(32, uint8_t, s3[32]);
+  DECLARE_ALIGNED(32, uint8_t, d[32]);
+  DECLARE_ALIGNED(32, uint8_t, ref_d[32]);
+  assert(sizeof(CArg1) <= 32 && sizeof(CArg2) <= 32 && sizeof(CArg3) <= 32 &&
+         sizeof(CRet) <= 32);
   memset(ref_d, 0, sizeof(ref_d));
   memset(d, 0, sizeof(d));
 
