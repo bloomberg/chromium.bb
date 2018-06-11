@@ -31,6 +31,8 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
                     const std::string& storage_key,
                     MetadataChangeList* metadata_change_list));
   MOCK_METHOD1(UntrackEntity, void(const EntityData& entity_data));
+  MOCK_METHOD1(UntrackEntityForStorageKey,
+               void(const std::string& storage_key));
   MOCK_METHOD1(OnModelStarting, void(ModelTypeSyncBridge* bridge));
   MOCK_METHOD1(ModelReadyToSync, void(std::unique_ptr<MetadataBatch> batch));
   MOCK_METHOD0(IsTrackingMetadata, bool());

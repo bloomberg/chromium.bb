@@ -57,6 +57,13 @@ class ModelTypeChangeProcessor {
   // change_processor()->Delete() instead.
   virtual void UntrackEntity(const EntityData& entity_data) = 0;
 
+  // Remove entity metadata and do not track the entity. Applies to datatypes
+  // that support local deletions that should not get synced up (e.g. TYPED_URL
+  // does not sync up deletions of expired URLs). If the deletion should get
+  // synced up, use change_processor()->Delete() instead. The call is ignored if
+  // |storage_key| is unknown.
+  virtual void UntrackEntityForStorageKey(const std::string& storage_key) = 0;
+
   // Pass the pointer to the processor so that the processor can notify the
   // bridge of various events; |bridge| must not be nullptr and must outlive
   // this object.

@@ -414,13 +414,16 @@ void TypedURLSyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
     // Delete metadata from the DB and ask the processor to untrack the entries.
     for (const URLRow& row : deleted_rows) {
       std::string storage_key = GetStorageKeyFromURLRow(row);
+      // The following functions need to tolerate if there exists no metadata
+      // for |storage_key|. The reason is we have no way to tell if there is any
+      // metadata for this row. We cannot distinguish a URL that has never been
+      // typed from a URL that has been typed before but its typed visit has
+      // expired earlier than the URL itself (because there were non-typed
+      // visits afterwards). On top of that, this bridge is not very robust in
+      // syncing up every typed URL.
       sync_metadata_database_->ClearSyncMetadata(syncer::TYPED_URLS,
                                                  storage_key);
-      // TODO(jkrcal): Untrack the entity from the processor, too (by
-      // introducing UntrackEntityForStorageKey() function into the change
-      // processor). Extend the integration tests to cover the crash in
-      // https://crbug.com/827111. Also add unit-test coverage for expired
-      // deletions (needs some refactoring in the tests).
+      change_processor()->UntrackEntityForStorageKey(storage_key);
     }
     return;
   }

@@ -62,6 +62,12 @@ void CaptureCommitRequest(CommitRequestDataList* dst,
   *dst = std::move(src);
 }
 
+void CaptureStatusCounters(StatusCounters* dst,
+                           ModelType model_type,
+                           const StatusCounters& counters) {
+  *dst = counters;
+}
+
 class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
  public:
   explicit TestModelTypeSyncBridge(bool commit_only)
@@ -240,6 +246,11 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     worker()->AckOnePendingCommit();
     EXPECT_EQ(0U, worker()->GetNumPendingCommits());
     return;
+  }
+
+  ProcessorEntityTracker* GetEntityForStorageKey(
+      const std::string& storage_key) {
+    return type_processor()->GetEntityForStorageKey(storage_key);
   }
 
   void ResetState(bool keep_db) {
@@ -1511,6 +1522,55 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, UntrackEntity) {
   EXPECT_FALSE(db().HasMetadata(kHash1));
   EXPECT_EQ(0U, db().metadata_count());
   EXPECT_EQ(0, bridge()->get_storage_key_call_count());
+}
+
+// Tests that UntrackEntityForStorage won't propagate storage key to
+// ProcessorEntityTracker, and no entity's metadata are added into
+// MetadataChangeList.
+TEST_F(ClientTagBasedModelTypeProcessorTest, UntrackEntityForStorageKey) {
+  InitializeToReadyState();
+  bridge()->WriteItem(kKey1, kValue1);
+  worker()->VerifyPendingCommits({{kHash1}});
+  worker()->AckOnePendingCommit();
+
+  // Check the processor tracks the entity.
+  StatusCounters status_counters;
+  type_processor()->GetStatusCountersForDebugging(
+      base::BindOnce(&CaptureStatusCounters, &status_counters));
+  ASSERT_EQ(1u, status_counters.num_entries);
+  ASSERT_NE(nullptr, GetEntityForStorageKey(kKey1));
+
+  // The bridge deletes the data locally and does not want to sync the deletion.
+  // It only untracks the entity.
+  type_processor()->UntrackEntityForStorageKey(kKey1);
+
+  // The deletion is not synced up.
+  worker()->VerifyPendingCommits({});
+  // The processor tracks no entity any more.
+  type_processor()->GetStatusCountersForDebugging(
+      base::BindOnce(&CaptureStatusCounters, &status_counters));
+  EXPECT_EQ(status_counters.num_entries, 0U);
+  EXPECT_EQ(nullptr, GetEntityForStorageKey(kKey1));
+}
+
+// Tests that UntrackEntityForStorage does not crash if no such entity is being
+// tracked.
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       UntrackEntityForStorageKeyNonexistent) {
+  InitializeToReadyState();
+
+  // This should not crash for an unknown storage key and simply ignore the
+  // call.
+  type_processor()->UntrackEntityForStorageKey(kKey1);
+
+  // No deletion is not synced up.
+  worker()->VerifyPendingCommits({});
+  // The processor tracks no entity.
+  StatusCounters status_counters;
+  type_processor()->GetStatusCountersForDebugging(
+      base::BindOnce(&CaptureStatusCounters, &status_counters));
+  EXPECT_EQ(status_counters.num_entries, 0U);
+  EXPECT_EQ(nullptr, GetEntityForStorageKey(kKey1));
 }
 
 // Tests that ClientTagBasedModelTypeProcessor can do garbage collection by
