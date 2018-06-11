@@ -94,8 +94,6 @@ std::unique_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
       }
 
       continue;
-    } else if (address_field->ParseSearchTerm(scanner)) {
-      continue;
     } else {
       // No field found.
       break;
@@ -104,12 +102,11 @@ std::unique_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
 
   // If we have identified any address fields in this field then it should be
   // added to the list of fields.
-  // TODO(http://crbug.com/848413): Move search_term_ to its own parser.
   if (address_field->company_ || address_field->address1_ ||
       address_field->address2_ || address_field->address3_ ||
       address_field->street_address_ || address_field->city_ ||
       address_field->state_ || address_field->zip_ || address_field->zip4_ ||
-      address_field->country_ || address_field->search_term_) {
+      address_field->country_) {
     // Don't slurp non-labeled fields at the end into the address.
     if (has_trailing_non_labeled_fields)
       scanner->RewindTo(begin_trailing_non_labeled_fields);
@@ -130,8 +127,7 @@ AddressField::AddressField()
       state_(nullptr),
       zip_(nullptr),
       zip4_(nullptr),
-      country_(nullptr),
-      search_term_(nullptr) {}
+      country_(nullptr) {}
 
 void AddressField::AddClassifications(
     FieldCandidatesMap* field_candidates) const {
@@ -160,15 +156,6 @@ void AddressField::AddClassifications(
                     field_candidates);
   AddClassification(country_, ADDRESS_HOME_COUNTRY, kBaseAddressParserScore,
                     field_candidates);
-  AddClassification(search_term_, SEARCH_TERM, kBaseAddressParserScore,
-                    field_candidates);
-}
-
-bool AddressField::ParseSearchTerm(AutofillScanner* scanner) {
-  if (search_term_ && !search_term_->IsEmpty())
-    return false;
-
-  return ParseField(scanner, UTF8ToUTF16(kSearchTermRe), &search_term_);
 }
 
 bool AddressField::ParseCompany(AutofillScanner* scanner) {
