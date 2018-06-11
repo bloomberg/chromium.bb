@@ -379,13 +379,27 @@
             ],
             "experiments": [
                 {
-                    "name": "Standalone",
+                    "name": "AudioProcess",
                     "params": {
                         "teardown_timeout_s": "300"
                     },
                     "enable_features": [
                         "AudioServiceAudioStreams",
                         "AudioServiceOutOfProcess"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "android",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AudioServiceStreams",
+                    "enable_features": [
+                        "AudioServiceAudioStreams"
                     ]
                 }
             ]
