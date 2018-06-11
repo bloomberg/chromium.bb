@@ -2308,6 +2308,7 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   fclose(fout);
 }
 
+#if CONFIG_COLLECT_RD_STATS == 2
 static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
                                      const RD_STATS *const rd_stats,
                                      BLOCK_SIZE plane_bsize) {
@@ -2389,6 +2390,7 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   fprintf(fout, "\n");
   fclose(fout);
 }
+#endif  // CONFIG_COLLECT_RD_STATS == 2
 #endif  // CONFIG_COLLECT_RD_STATS
 
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
