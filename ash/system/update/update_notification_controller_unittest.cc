@@ -12,6 +12,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "ui/message_center/message_center.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
+#define SYSTEM_APP_NAME "Chrome OS"
+#else
+#define SYSTEM_APP_NAME "Chromium OS"
+#endif
+
 namespace ash {
 
 class UpdateNotificationControllerTest : public AshTestBase {
@@ -38,6 +44,32 @@ class UpdateNotificationControllerTest : public AshTestBase {
             ->title());
   }
 
+  std::string GetNotificationMessage() {
+    return base::UTF16ToUTF8(
+        message_center::MessageCenter::Get()
+            ->FindVisibleNotificationById(
+                UpdateNotificationController::kNotificationId)
+            ->message());
+  }
+
+  std::string GetNotificationButton(int index) {
+    return base::UTF16ToUTF8(
+        message_center::MessageCenter::Get()
+            ->FindVisibleNotificationById(
+                UpdateNotificationController::kNotificationId)
+            ->buttons()
+            .at(index)
+            .title);
+  }
+
+  int GetNotificationButtonCount() {
+    return message_center::MessageCenter::Get()
+        ->FindVisibleNotificationById(
+            UpdateNotificationController::kNotificationId)
+        ->buttons()
+        .size();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -57,9 +89,13 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdate) {
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
-  EXPECT_EQ("Restart to update", GetNotificationTitle());
+  EXPECT_EQ("Update available", GetNotificationTitle());
+  EXPECT_EQ("Learn more about the latest " SYSTEM_APP_NAME " update",
+            GetNotificationMessage());
+  EXPECT_EQ("Restart to update", GetNotificationButton(0));
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
 TEST_F(UpdateNotificationControllerTest, VisibilityAfterFlashUpdate) {
   // The system starts with no update pending, so the notification isn't
   // visible.
@@ -71,8 +107,12 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterFlashUpdate) {
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
-  EXPECT_EQ("Restart to update Adobe Flash Player", GetNotificationTitle());
+  EXPECT_EQ("Adobe Flash Player update available", GetNotificationTitle());
+  EXPECT_EQ("Learn more about the latest " SYSTEM_APP_NAME " update",
+            GetNotificationMessage());
+  EXPECT_EQ("Restart to update", GetNotificationButton(0));
 }
+#endif
 
 // Tests that the update icon's visibility after an update becomes
 // available for downloading over cellular connection.
@@ -89,7 +129,10 @@ TEST_F(UpdateNotificationControllerTest,
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
-  EXPECT_EQ("Click to view update details", GetNotificationTitle());
+  EXPECT_EQ("Update available", GetNotificationTitle());
+  EXPECT_EQ("Learn more about the latest " SYSTEM_APP_NAME " update",
+            GetNotificationMessage());
+  EXPECT_EQ(0, GetNotificationButtonCount());
 
   // Simulate the user's one time permission on downloading the update is
   // granted.
@@ -99,6 +142,26 @@ TEST_F(UpdateNotificationControllerTest,
 
   // The notification disappears.
   EXPECT_FALSE(HasNotification());
+}
+
+TEST_F(UpdateNotificationControllerTest,
+       VisibilityAfterUpdateRequiringFactoryReset) {
+  // The system starts with no update pending, so the notification isn't
+  // visible.
+  EXPECT_FALSE(HasNotification());
+
+  // Simulate an update that requires factory reset.
+  Shell::Get()->system_tray_controller()->ShowUpdateIcon(
+      mojom::UpdateSeverity::LOW, true, mojom::UpdateType::SYSTEM);
+
+  // The notification is now visible.
+  ASSERT_TRUE(HasNotification());
+  EXPECT_EQ("Update available", GetNotificationTitle());
+  EXPECT_EQ(
+      "This update requires powerwashing your device."
+      " Learn more about the latest " SYSTEM_APP_NAME " update.",
+      GetNotificationMessage());
+  EXPECT_EQ("Restart to update", GetNotificationButton(0));
 }
 
 }  // namespace ash
