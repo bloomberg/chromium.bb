@@ -33,7 +33,8 @@ class FeedSchedulerBridge {
                                 const jboolean j_has_outstanding_request);
 
   void OnReceiveNewContent(JNIEnv* env,
-                           const base::android::JavaRef<jobject>& j_this);
+                           const base::android::JavaRef<jobject>& j_this,
+                           const jlong j_content_creation_date_time_ms);
 
   void OnRequestError(JNIEnv* env,
                       const base::android::JavaRef<jobject>& j_this,

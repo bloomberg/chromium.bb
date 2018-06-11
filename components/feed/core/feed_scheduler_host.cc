@@ -21,7 +21,8 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
   return REQUEST_WITH_CONTENT;
 }
 
-void FeedSchedulerHost::OnReceiveNewContent() {}
+void FeedSchedulerHost::OnReceiveNewContent(
+    base::Time content_creation_date_time) {}
 
 void FeedSchedulerHost::OnRequestError(int network_response_code) {}
 
