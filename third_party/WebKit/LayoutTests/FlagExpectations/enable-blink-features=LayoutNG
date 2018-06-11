@@ -130,7 +130,6 @@ crbug.com/591099 editing/pasteboard/dragstart-contains-default-content.html [ Fa
 crbug.com/591099 editing/selection/4776665.html [ Failure Pass ]
 crbug.com/591099 editing/selection/4960137.html [ Failure ]
 crbug.com/591099 editing/selection/5232159.html [ Failure ]
-crbug.com/591099 editing/selection/5354455-2.html [ Failure ]
 crbug.com/591099 editing/selection/continuations-with-move-caret-to-boundary.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/591099 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_11.html [ Pass ]
