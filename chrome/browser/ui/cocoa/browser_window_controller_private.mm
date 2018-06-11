@@ -1058,8 +1058,9 @@ willPositionSheet:(NSWindow*)sheet
   if (base::mac::IsAtLeastOS10_13())
     return NO;
 
-  // Disable the custom exit animation in OSX 10.9: http://crbug.com/526327#c3.
-  if (base::mac::IsOS10_9() && !enterFullScreen)
+  // Disable the custom exit animation in Mac OSX 10.11:
+  // http://crbug.com/823191.
+  if (base::mac::IsOS10_11() && !enterFullScreen)
     return NO;
 
   NSView* root = [[self.window contentView] superview];
