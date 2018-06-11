@@ -33,7 +33,9 @@ import org.chromium.ui.base.LocalizationUtils;
  *
  * @VisibleForTesting
  */
-public abstract class Stack {
+public abstract class Stack implements ChromeAnimation.Animatable<Stack.Property> {
+    enum Property { SCROLL_OFFSET }
+
     public static final int MAX_NUMBER_OF_STACKED_TABS_TOP = 3;
     public static final int MAX_NUMBER_OF_STACKED_TABS_BOTTOM = 3;
 
@@ -526,8 +528,8 @@ public abstract class Stack {
                 // Build the AnimatorSet using the TabSwitcherAnimationFactory.
                 // This will give us the appropriate AnimatorSet based on the current
                 // state of the tab switcher and the OverviewAnimationType specified.
-                mTabAnimations = mAnimationFactory.createAnimatorSetForType(
-                        type, mStackTabs, focusIndex, sourceIndex, mSpacing, getDiscardRange());
+                mTabAnimations = mAnimationFactory.createAnimatorSetForType(type, this, mStackTabs,
+                        focusIndex, sourceIndex, mSpacing, getDiscardRange());
             }
 
             if (mTabAnimations != null) mTabAnimations.start();
@@ -549,7 +551,7 @@ public abstract class Stack {
      *
      * @param time The current time of the app in ms.
      */
-    private void finishAnimation(long time) {
+    protected void finishAnimation(long time) {
         if (mTabAnimations != null) mTabAnimations.updateAndFinish();
         if (mViewAnimations != null) mViewAnimations.end();
         if (mTabAnimations != null || mViewAnimations != null) mLayout.onStackAnimationFinished();
@@ -1887,6 +1889,20 @@ public abstract class Stack {
     }
 
     /**
+     * @return The current spacing between tabs.
+     */
+    public float getSpacing() {
+        return mSpacing;
+    }
+
+    /**
+     * @return The current overall scroll offset for the Stack.
+     */
+    public float getScrollOffset() {
+        return mScrollOffset;
+    }
+
+    /**
      * Computes the scale of the tab based on its discard status.
      *
      * @param amount    The discard amount.
@@ -2121,4 +2137,16 @@ public abstract class Stack {
 
         onUpOrCancel(time);
     }
+
+    @Override
+    public void setProperty(Property prop, float val) {
+        switch (prop) {
+            case SCROLL_OFFSET:
+                setScrollTarget(val, true);
+                break;
+        }
+    }
+
+    @Override
+    public void onPropertyAnimationFinished(Property prop) {}
 }
