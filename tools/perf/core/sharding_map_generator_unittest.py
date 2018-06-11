@@ -32,7 +32,7 @@ class TestShardingMapGenerator(unittest.TestCase):
         [[60, 56, 57], [66, 54, 80, 4], [2, 8, 7, 37, 2]])
 
     sharding_map = sharding_map_generator.generate_sharding_map(
-        timing_data, all_stories, 3)
+        timing_data, all_stories, 3, None)
     fd_map, map_path = tempfile.mkstemp(suffix='.json')
     fd_test_data, test_path = tempfile.mkstemp(suffix='.json')
     try:

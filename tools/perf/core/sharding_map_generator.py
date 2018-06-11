@@ -80,7 +80,7 @@ def main(args, benchmarks):
     all_stories[b.Name()] = _get_stories_for_benchmark(b)
 
   sharding_map = generate_sharding_map(story_timing_dict,
-      all_stories, args.num_shards)
+      all_stories, args.num_shards, args.debug)
 
   with open(args.output_file, 'w') as output_file:
     json.dump(sharding_map, output_file, indent = 4, separators=(',', ': '))
@@ -109,23 +109,36 @@ def get_args():
   parser.add_argument(
       '--test-data', action='store',
       help='If specified, test the generated sharding map with this data.')
+  parser.add_argument(
+      '--debug', action='store',
+      help='If specified, the filename to write extra timing data to.')
   return parser
 
 
-def generate_sharding_map(story_timing_dict, all_stories, num_shards):
+def generate_sharding_map(story_timing_dict, all_stories, num_shards, debug):
   max_time_per_shard = _get_max_time_per_shard(story_timing_dict, num_shards)
 
   total_time = 0
   sharding_map = OrderedDict()
+  debug_map = OrderedDict()
   for i in range(num_shards):
     sharding_map[str(i)] = {'benchmarks': OrderedDict()}
+    debug_map[str(i)] = OrderedDict()
+    time_per_shard = 0
     stories_in_shard = []
     while total_time < max_time_per_shard * (i + 1) and len(
         story_timing_dict) > 0:
       (story, time) = story_timing_dict.popitem(last=False)
       total_time += time
+      time_per_shard += time
       stories_in_shard.append(story)
+      debug_map[str(i)][story] = time
     _add_benchmarks_to_shard(sharding_map, i, stories_in_shard, all_stories)
+    debug_map[str(i)]['full_time'] = time_per_shard
+  if debug:
+    with open(debug, 'w') as output_file:
+      json.dump(debug_map, output_file, indent = 4, separators=(',', ': '))
+
   return sharding_map
 
 
