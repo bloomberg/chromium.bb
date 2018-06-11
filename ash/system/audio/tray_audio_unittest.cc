@@ -4,6 +4,7 @@
 
 #include "ash/system/audio/tray_audio.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/system_tray.h"
@@ -15,6 +16,11 @@ using TrayAudioTest = AshTestBase;
 
 // Tests that the volume popup view can be explicitly shown.
 TEST_F(TrayAudioTest, ShowPopUpVolumeView) {
+  // TODO(tetsui): Remove the test after UnifiedSystemTray launch.
+  // https://crbug.com/847104
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
   TrayAudio* tray_audio = GetPrimarySystemTray()->GetTrayAudio();
   ASSERT_TRUE(tray_audio);
 
@@ -27,7 +33,7 @@ TEST_F(TrayAudioTest, ShowPopUpVolumeView) {
   EXPECT_FALSE(status->ShouldShowShelf());
 
   // Simulate ARC asking to show the volume view.
-  TrayAudio::ShowPopUpVolumeView();
+  tray_audio->ShowPopUpVolumeView();
 
   // Volume view is now visible.
   EXPECT_TRUE(tray_audio->volume_view_for_testing());

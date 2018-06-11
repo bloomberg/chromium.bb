@@ -46,6 +46,9 @@ interface SystemTray {
   // user's one time permission on update over cellular connection has been
   // granted.
   SetUpdateOverCellularAvailableIconVisible(bool visible);
+
+  // Shows the volume slider bubble shown at the right bottom of screen.
+  ShowVolumeSliderBubble();
 };
 
 // Allows ash system tray to control a client (e.g. Chrome browser). Requests

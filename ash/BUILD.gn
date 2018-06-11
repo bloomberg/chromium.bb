@@ -1851,6 +1851,7 @@ test("ash_unittests") {
     "system/unified/top_shortcuts_view_unittest.cc",
     "system/unified/unified_system_info_view_unittest.cc",
     "system/unified/unified_system_tray_controller_unittest.cc",
+    "system/unified/unified_system_tray_unittest.cc",
     "system/update/tray_update_unittest.cc",
     "system/update/update_notification_controller_unittest.cc",
     "system/user/tray_user_unittest.cc",

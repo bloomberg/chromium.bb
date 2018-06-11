@@ -39,6 +39,10 @@ void UnifiedSliderBubbleController::CloseBubble() {
     bubble_widget_->Close();
 }
 
+bool UnifiedSliderBubbleController::IsBubbleShown() const {
+  return !!bubble_widget_;
+}
+
 void UnifiedSliderBubbleController::BubbleViewDestroyed() {
   slider_controller_.reset();
   bubble_view_ = nullptr;

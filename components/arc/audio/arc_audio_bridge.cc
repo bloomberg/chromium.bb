@@ -6,12 +6,15 @@
 
 #include <utility>
 
-#include "ash/system/audio/tray_audio.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/system_tray.mojom.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chromeos/audio/audio_device.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
 namespace {
@@ -72,7 +75,11 @@ void ArcAudioBridge::OnConnectionClosed() {
 
 void ArcAudioBridge::ShowVolumeControls() {
   DVLOG(2) << "ArcAudioBridge::ShowVolumeControls";
-  ash::TrayAudio::ShowPopUpVolumeView();
+  ash::mojom::SystemTrayPtr system_tray_ptr;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &system_tray_ptr);
+  system_tray_ptr->ShowVolumeSliderBubble();
 }
 
 void ArcAudioBridge::OnSystemVolumeUpdateRequest(int32_t percent) {

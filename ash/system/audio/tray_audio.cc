@@ -36,17 +36,22 @@ TrayAudio::~TrayAudio() {
     CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
 
-// static
 void TrayAudio::ShowPopUpVolumeView() {
-  // Show the popup on all monitors with a system tray.
-  for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
-    SystemTray* system_tray = root->GetSystemTray();
-    if (!system_tray)
-      continue;
-    // Show the popup by simulating a volume change. The provided node id and
-    // volume value are ignored.
-    system_tray->GetTrayAudio()->OnOutputNodeVolumeChanged(0, 0);
+  if (features::IsSystemTrayUnifiedEnabled())
+    return;
+
+  float percent = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.0f;
+  if (tray_view())
+    tray_view()->SetVisible(GetInitialVisibility());
+
+  if (volume_view_) {
+    volume_view_->SetVolumeLevel(percent);
+    SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
+    return;
   }
+
+  pop_up_volume_view_ = true;
+  ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds);
 }
 
 bool TrayAudio::GetInitialVisibility() {
@@ -99,21 +104,7 @@ views::View* TrayAudio::GetItemToRestoreFocusTo() {
 
 void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
                                           int /* volume */) {
-  if (features::IsSystemTrayUnifiedEnabled())
-    return;
-
-  float percent = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.0f;
-  if (tray_view())
-    tray_view()->SetVisible(GetInitialVisibility());
-
-  if (volume_view_) {
-    volume_view_->SetVolumeLevel(percent);
-    SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
-    return;
-  }
-
-  pop_up_volume_view_ = true;
-  ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds);
+  ShowPopUpVolumeView();
 }
 
 void TrayAudio::OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) {

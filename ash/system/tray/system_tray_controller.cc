@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/audio/tray_audio.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
@@ -226,6 +227,26 @@ void SystemTrayController::SetUpdateOverCellularAvailableIconVisible(
     bool visible) {
   Shell::Get()->system_tray_model()->SetUpdateOverCellularAvailableIconVisible(
       visible);
+}
+
+void SystemTrayController::ShowVolumeSliderBubble() {
+  // Show the bubble on all monitors with a system tray.
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
+      UnifiedSystemTray* system_tray =
+          root->GetStatusAreaWidget()->unified_system_tray();
+      if (!system_tray)
+        continue;
+      system_tray->ShowVolumeSliderBubble();
+    }
+  } else {
+    for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
+      ash::SystemTray* system_tray = root->GetSystemTray();
+      if (!system_tray)
+        continue;
+      system_tray->GetTrayAudio()->ShowPopUpVolumeView();
+    }
+  }
 }
 
 }  // namespace ash

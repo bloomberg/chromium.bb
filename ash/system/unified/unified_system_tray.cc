@@ -178,9 +178,18 @@ bool UnifiedSystemTray::IsBubbleShown() const {
   return !!bubble_;
 }
 
+bool UnifiedSystemTray::IsSliderBubbleShown() const {
+  return slider_bubble_controller_->IsBubbleShown();
+}
+
 void UnifiedSystemTray::ActivateBubble() {
   if (bubble_)
     bubble_->ActivateBubble();
+}
+
+void UnifiedSystemTray::ShowVolumeSliderBubble() {
+  slider_bubble_controller_->ShowBubble(
+      UnifiedSliderBubbleController::SLIDER_TYPE_VOLUME);
 }
 
 gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {

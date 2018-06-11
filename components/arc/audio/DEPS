@@ -1,4 +1,6 @@
 include_rules = [
-  "+ash/system/audio/tray_audio.h",
+  "+ash/public",
   "+chromeos/audio",
+  "+content/public/common",
+  "+services/service_manager/public",
 ]
