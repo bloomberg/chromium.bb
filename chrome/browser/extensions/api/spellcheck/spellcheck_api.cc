@@ -13,8 +13,6 @@
 
 namespace extensions {
 
-namespace errors = manifest_errors;
-
 namespace {
 
 SpellcheckDictionaryInfo* GetSpellcheckDictionaryInfo(
