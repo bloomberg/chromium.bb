@@ -720,8 +720,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'no_passthrough', 'intel'], bug=679692)
     self.Fail('deqp/functional/gles3/fbomultisample*',
         ['mac', 'intel'], bug=641209)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', 'intel'], bug=820225)
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/' +
