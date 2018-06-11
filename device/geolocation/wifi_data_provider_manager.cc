@@ -71,6 +71,10 @@ WifiDataProviderManager::~WifiDataProviderManager() {
   DCHECK(impl_.get());
 }
 
+bool WifiDataProviderManager::DelayedByPolicy() {
+  return impl_->DelayedByPolicy();
+}
+
 bool WifiDataProviderManager::GetData(WifiData* data) {
   return impl_->GetData(data);
 }

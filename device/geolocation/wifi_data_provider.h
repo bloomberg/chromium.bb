@@ -29,6 +29,9 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProvider
   // receiving notifications after this call.
   virtual void StopDataProvider() = 0;
 
+  // Returns true if the provider is delayed due to scanning policy.
+  virtual bool DelayedByPolicy() = 0;
+
   // Provides whatever data the provider has, which may be nothing. Return
   // value indicates whether this is all the data the provider could ever
   // obtain.

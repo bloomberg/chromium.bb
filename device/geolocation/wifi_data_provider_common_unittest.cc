@@ -90,32 +90,50 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
   GeolocationWifiDataProviderCommonTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        wifi_data_callback_(base::DoNothing()),
-        provider_(new WifiDataProviderCommonWithMock),
-        wlan_api_(provider_->wlan_api_.get()) {}
+        wifi_data_callback_(base::DoNothing()) {}
 
-  void SetUp() override {
-    // Initialize WifiPollingPolicy early so we can watch for calls to mocked
-    // functions.
-    WifiPollingPolicy::Initialize(provider_->CreatePollingPolicy());
-    if (WifiPollingPolicy::IsInitialized())
-      polling_policy_ = provider_->polling_policy_;
-
-    provider_->AddCallback(&wifi_data_callback_);
-  }
-
-  void TearDown() override {
+  void TearDownProvider() {
     provider_->RemoveCallback(&wifi_data_callback_);
     provider_->StopDataProvider();
+    provider_ = nullptr;
+    wlan_api_ = nullptr;
+  }
+
+  // Some usage patterns cause the provider to be created and destroyed
+  // frequently. Allow tests to simulate this behavior by recreating the
+  // provider without resetting WifiPollingPolicy.
+  void RecreateProvider() {
+    if (provider_)
+      TearDownProvider();
+    provider_ = new WifiDataProviderCommonWithMock;
+    provider_->AddCallback(&wifi_data_callback_);
+    wlan_api_ = provider_->wlan_api_.get();
+
+    // Initialize WifiPollingPolicy early so we can watch for calls to mocked
+    // functions. Normally the policy is initialized in StartDataProvider.
+    //
+    // The policy should be initialized only once to ensure its state is
+    // retained across restarts of the provider.
+    if (!polling_policy_) {
+      WifiPollingPolicy::Initialize(provider_->CreatePollingPolicy());
+      polling_policy_ = provider_->polling_policy_;
+    }
+  }
+
+  void SetUp() override { RecreateProvider(); }
+
+  void TearDown() override {
+    TearDownProvider();
     WifiPollingPolicy::Shutdown();
+    polling_policy_ = nullptr;
   }
 
  protected:
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   WifiDataProviderManager::WifiDataUpdateCallback wifi_data_callback_;
-  const scoped_refptr<WifiDataProviderCommonWithMock> provider_;
+  scoped_refptr<WifiDataProviderCommonWithMock> provider_;
 
-  MockWlanApi* const wlan_api_;
+  MockWlanApi* wlan_api_ = nullptr;
   MockPollingPolicy* polling_policy_ = nullptr;
 };
 
@@ -208,6 +226,45 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
   EXPECT_TRUE(provider_->GetData(&data));
   ASSERT_EQ(1u, data.access_point_data.size());
   EXPECT_EQ(single_access_point.ssid, data.access_point_data.begin()->ssid);
+}
+
+TEST_F(GeolocationWifiDataProviderCommonTest, DelayedByPolicy) {
+  static const int kPollingIntervalMillis = 1000;
+  base::RunLoop run_loop;
+
+  EXPECT_CALL(*polling_policy_, InitialInterval())
+      // Initial scan: no delay
+      .WillOnce(Return(0))
+      // Third scan (after recreating the provider): scheduled after a delay
+      .WillOnce(Return(kPollingIntervalMillis));
+  EXPECT_CALL(*polling_policy_, PollingInterval())
+      // Second scan: scheduled after a delay
+      .WillOnce(Return(kPollingIntervalMillis));
+
+  // Simulate a successful scan that found no wifi APs.
+  EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() {
+        run_loop.Quit();
+        return true;
+      }));
+
+  // The initial scan is scheduled with InitialInterval and should not be
+  // delayed.
+  provider_->StartDataProvider();
+  EXPECT_FALSE(provider_->DelayedByPolicy());
+
+  // Allow the pending call to DoWifiScanTask to proceed. This will fetch our
+  // mock wifi AP data and mark the first scan complete. It will also schedule
+  // a new scan to occur after PollingInterval.
+  run_loop.Run();
+  EXPECT_TRUE(provider_->DelayedByPolicy());
+
+  // Destroy the provider and recreate it, which will schedule a new scan.
+  // InitialInterval is used to schedule the new scan, but unlike the first
+  // scan which was scheduled immediately, it will now incur a delay.
+  RecreateProvider();
+  provider_->StartDataProvider();
+  EXPECT_TRUE(provider_->DelayedByPolicy());
 }
 
 }  // namespace device

@@ -45,13 +45,12 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderCommon
   // WifiDataProvider implementation
   void StartDataProvider() override;
   void StopDataProvider() override;
+  bool DelayedByPolicy() override;
   bool GetData(WifiData* data) override;
 
  protected:
   ~WifiDataProviderCommon() override;
 
-  // TODO(mcasas): change return types and possibly names of these two methods,
-  // see https://crbug.com/714348.
   // Returns ownership.
   virtual std::unique_ptr<WlanApiInterface> CreateWlanApi() = 0;
   // Returns ownership.
@@ -67,7 +66,10 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderCommon
   WifiData wifi_data_;
 
   // Whether we've successfully completed a scan for WiFi data.
-  bool is_first_scan_complete_;
+  bool is_first_scan_complete_ = false;
+
+  // Whether our first scan was delayed due to polling policy.
+  bool first_scan_delayed_ = false;
 
   // Underlying OS wifi API.
   std::unique_ptr<WlanApiInterface> wlan_api_;

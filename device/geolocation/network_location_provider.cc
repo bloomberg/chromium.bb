@@ -145,12 +145,27 @@ void NetworkLocationProvider::OnWifiDataUpdate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsStarted());
   is_wifi_data_complete_ = wifi_data_provider_manager_->GetData(&wifi_data_);
-  if (!is_wifi_data_complete_)
-    return;
+  if (is_wifi_data_complete_) {
+    wifi_timestamp_ = base::Time::Now();
+    is_new_data_available_ = true;
+  }
 
-  wifi_timestamp_ = base::Time::Now();
-  is_new_data_available_ = true;
-  RequestPosition();
+  // When RequestPosition is called, the most recent wifi data is sent to the
+  // geolocation service. If the wifi data is incomplete but a cached estimate
+  // is available, the cached estimate may be returned instead.
+  //
+  // If no wifi data is available or the data is incomplete, it may mean the
+  // provider is still performing the wifi scan. In this case we should wait
+  // for the scan to complete rather than return cached data.
+  //
+  // A lack of wifi data may also mean the scan is delayed due to the wifi
+  // scanning policy. This delay can vary based on how frequently the wifi
+  // data changes, but is on the order of a few seconds to several minutes.
+  // In this case it is better to call RequestPosition and return a cached
+  // position estimate if it is available.
+  bool delayed = wifi_data_provider_manager_->DelayedByPolicy();
+  if (is_wifi_data_complete_ || delayed)
+    RequestPosition();
 }
 
 void NetworkLocationProvider::OnLocationResponse(

@@ -12,6 +12,11 @@ EmptyWifiDataProvider::EmptyWifiDataProvider() {}
 
 EmptyWifiDataProvider::~EmptyWifiDataProvider() {}
 
+bool EmptyWifiDataProvider::DelayedByPolicy() {
+  // Empty data is never delayed.
+  return false;
+}
+
 bool EmptyWifiDataProvider::GetData(WifiData* data) {
   DCHECK(data);
   // This is all the data we can get - nothing.

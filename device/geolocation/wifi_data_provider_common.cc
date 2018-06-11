@@ -21,8 +21,7 @@ base::string16 MacAddressAsString16(const uint8_t mac_as_int[6]) {
       mac_as_int[3], mac_as_int[4], mac_as_int[5]));
 }
 
-WifiDataProviderCommon::WifiDataProviderCommon()
-    : is_first_scan_complete_(false), weak_factory_(this) {}
+WifiDataProviderCommon::WifiDataProviderCommon() : weak_factory_(this) {}
 
 WifiDataProviderCommon::~WifiDataProviderCommon() = default;
 
@@ -39,11 +38,17 @@ void WifiDataProviderCommon::StartDataProvider() {
     WifiPollingPolicy::Initialize(CreatePollingPolicy());
   DCHECK(WifiPollingPolicy::IsInitialized());
 
-  ScheduleNextScan(WifiPollingPolicy::Get()->InitialInterval());
+  int delay_interval = WifiPollingPolicy::Get()->InitialInterval();
+  ScheduleNextScan(delay_interval);
+  first_scan_delayed_ = (delay_interval > 0);
 }
 
 void WifiDataProviderCommon::StopDataProvider() {
   wlan_api_.reset();
+}
+
+bool WifiDataProviderCommon::DelayedByPolicy() {
+  return is_first_scan_complete_ ? true : first_scan_delayed_;
 }
 
 bool WifiDataProviderCommon::GetData(WifiData* data) {
