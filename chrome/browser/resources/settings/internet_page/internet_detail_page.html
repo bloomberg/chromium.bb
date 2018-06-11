@@ -80,24 +80,22 @@
           </cr-policy-indicator>
         </template>
       </div>
-      <template is="dom-if" if="[[!isSecondaryUser_]]">
-        <paper-button on-click="onForgetTap_"
-            hidden$="[[!showForget_(networkProperties)]]">
-          $i18n{networkButtonForget}
-        </paper-button>
-        <paper-button on-click="onViewAccountTap_"
-            hidden$="[[!showViewAccount_(networkProperties)]]">
-          $i18n{networkButtonViewAccount}
-        </paper-button>
-        <paper-button on-click="onActivateTap_"
-            hidden$="[[!showActivate_(networkProperties)]]">
-          $i18n{networkButtonActivate}
-        </paper-button>
-        <paper-button on-click="onConfigureTap_"
-            hidden$="[[!showConfigure_(networkProperties, globalPolicy)]]">
-          $i18n{networkButtonConfigure}
-        </paper-button>
-      </template>
+      <paper-button on-click="onForgetTap_"
+          hidden$="[[!showForget_(networkProperties)]]">
+        $i18n{networkButtonForget}
+      </paper-button>
+      <paper-button on-click="onViewAccountTap_"
+          hidden$="[[!showViewAccount_(networkProperties)]]">
+        $i18n{networkButtonViewAccount}
+      </paper-button>
+      <paper-button on-click="onActivateTap_"
+          hidden$="[[!showActivate_(networkProperties)]]">
+        $i18n{networkButtonActivate}
+      </paper-button>
+      <paper-button on-click="onConfigureTap_"
+          hidden$="[[!showConfigure_(networkProperties, globalPolicy)]]">
+        $i18n{networkButtonConfigure}
+      </paper-button> 
       <paper-button class="action-button" on-click="onConnectTap_"
           hidden$="[[!showConnect_(networkProperties, globalPolicy)]]"
           disabled="[[!enableConnect_(networkProperties, defaultNetwork,
