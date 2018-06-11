@@ -41,7 +41,7 @@ MediaPipelineBackendForMixer::CreateAudioDecoder() {
   if (audio_decoder_)
     return nullptr;
   audio_decoder_ = std::make_unique<AudioDecoderForMixer>(this);
-  if (video_decoder_ && !av_sync_) {
+  if (video_decoder_ && !av_sync_ && !IsIgnorePtsMode()) {
     av_sync_ = AvSync::Create(GetTaskRunner(), this);
   }
   return audio_decoder_.get();
@@ -54,7 +54,7 @@ MediaPipelineBackendForMixer::CreateVideoDecoder() {
     return nullptr;
   video_decoder_ = VideoDecoderForMixer::Create(params_);
   DCHECK(video_decoder_.get());
-  if (audio_decoder_ && !av_sync_) {
+  if (audio_decoder_ && !av_sync_ && !IsIgnorePtsMode()) {
     av_sync_ = AvSync::Create(GetTaskRunner(), this);
   }
   return video_decoder_.get();
@@ -74,7 +74,7 @@ bool MediaPipelineBackendForMixer::Initialize() {
 bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
   int64_t start_playback_timestamp_us = INT64_MIN;
-  if (params_.sync_type == MediaPipelineDeviceParams::kModeSyncPts) {
+  if (!IsIgnorePtsMode()) {
     start_playback_timestamp_us =
         MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
   }
@@ -182,6 +182,13 @@ int64_t MediaPipelineBackendForMixer::MonotonicClockNow() const {
   return zx_clock_get(ZX_CLOCK_MONOTONIC) / 1000;
 }
 #endif
+
+bool MediaPipelineBackendForMixer::IsIgnorePtsMode() const {
+  return params_.sync_type ==
+             MediaPipelineDeviceParams::MediaSyncType::kModeIgnorePts ||
+         params_.sync_type ==
+             MediaPipelineDeviceParams::MediaSyncType::kModeIgnorePtsAndVSync;
+}
 
 }  // namespace media
 }  // namespace chromecast
