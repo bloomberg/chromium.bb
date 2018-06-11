@@ -44,21 +44,24 @@ public class PermissionInfoTest {
 
     private void setGeolocation(
             String origin, String embedder, ContentSetting setting, boolean incognito) {
-        GeolocationInfo info = new GeolocationInfo(origin, embedder, incognito);
+        PermissionInfo info =
+                new PermissionInfo(PermissionInfo.Type.GEOLOCATION, origin, embedder, incognito);
         ThreadUtils.runOnUiThreadBlocking(() -> info.setContentSetting(setting));
     }
 
     private ContentSetting getGeolocation(String origin, String embedder, boolean incognito)
             throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(() -> {
-            GeolocationInfo info = new GeolocationInfo(origin, embedder, incognito);
+            PermissionInfo info = new PermissionInfo(
+                    PermissionInfo.Type.GEOLOCATION, origin, embedder, incognito);
             return info.getContentSetting();
         });
     }
 
     private void setNotifications(
             String origin, String embedder, ContentSetting setting, boolean incognito) {
-        NotificationInfo info = new NotificationInfo(origin, embedder, incognito);
+        PermissionInfo info =
+                new PermissionInfo(PermissionInfo.Type.NOTIFICATION, origin, embedder, incognito);
         ThreadUtils.runOnUiThreadBlocking(() -> info.setContentSetting(setting));
     }
 
@@ -67,7 +70,8 @@ public class PermissionInfoTest {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<ContentSetting>() {
             @Override
             public ContentSetting call() {
-                NotificationInfo info = new NotificationInfo(origin, embedder, incognito);
+                PermissionInfo info = new PermissionInfo(
+                        PermissionInfo.Type.NOTIFICATION, origin, embedder, incognito);
                 return info.getContentSetting();
             }
         });

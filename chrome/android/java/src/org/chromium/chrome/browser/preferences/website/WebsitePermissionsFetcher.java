@@ -102,9 +102,9 @@ public class WebsitePermissionsFetcher {
         TaskQueue queue = new TaskQueue();
         // Populate features from more specific to less specific.
         // Geolocation lookup permission is per-origin and per-embedder.
-        queue.add(new GeolocationInfoFetcher());
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.GEOLOCATION));
         // Midi sysex access permission is per-origin and per-embedder.
-        queue.add(new MidiInfoFetcher());
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.MIDI));
         // Cookies are stored per-host.
         queue.add(new CookieExceptionInfoFetcher());
         // Local storage info is per-origin.
@@ -121,13 +121,13 @@ public class WebsitePermissionsFetcher {
         // Sound exceptions are host-based patterns.
         queue.add(new SoundExceptionInfoFetcher());
         // Protected media identifier permission is per-origin and per-embedder.
-        queue.add(new ProtectedMediaIdentifierInfoFetcher());
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER));
         // Notification permission is per-origin.
-        queue.add(new NotificationInfoFetcher());
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.NOTIFICATION));
         // Camera capture permission is per-origin and per-embedder.
-        queue.add(new CameraCaptureInfoFetcher());
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CAMERA));
         // Micropohone capture permission is per-origin and per-embedder.
-        queue.add(new MicrophoneCaptureInfoFetcher());
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.MICROPHONE));
         // Background sync permission is per-origin.
         queue.add(new BackgroundSyncExceptionInfoFetcher());
         // Autoplay permission is per-origin.
@@ -135,9 +135,9 @@ public class WebsitePermissionsFetcher {
         // USB device permission is per-origin and per-embedder.
         queue.add(new UsbInfoFetcher());
         // Clipboard info is per-origin.
-        queue.add(new ClipboardInfoFetcher());
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CLIPBOARD));
         // Sensors permission is per-origin.
-        queue.add(new SensorsInfoFetcher());
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.SENSORS));
 
         queue.add(new PermissionsAvailableCallbackRunner());
 
@@ -159,7 +159,7 @@ public class WebsitePermissionsFetcher {
         // Populate features from more specific to less specific.
         if (category.showGeolocationSites()) {
             // Geolocation lookup permission is per-origin and per-embedder.
-            queue.add(new GeolocationInfoFetcher());
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.GEOLOCATION));
         } else if (category.showCookiesSites()) {
             // Cookies exceptions are patterns.
             queue.add(new CookieExceptionInfoFetcher());
@@ -170,10 +170,10 @@ public class WebsitePermissionsFetcher {
             queue.add(new WebStorageInfoFetcher());
         } else if (category.showCameraSites()) {
             // Camera capture permission is per-origin and per-embedder.
-            queue.add(new CameraCaptureInfoFetcher());
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CAMERA));
         } else if (category.showMicrophoneSites()) {
             // Micropohone capture permission is per-origin and per-embedder.
-            queue.add(new MicrophoneCaptureInfoFetcher());
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.MICROPHONE));
         } else if (category.showPopupSites()) {
             // Popup exceptions are host-based patterns (unless we start
             // synchronizing popup exceptions with desktop Chrome.)
@@ -189,13 +189,13 @@ public class WebsitePermissionsFetcher {
             queue.add(new SoundExceptionInfoFetcher());
         } else if (category.showNotificationsSites()) {
             // Push notification permission is per-origin.
-            queue.add(new NotificationInfoFetcher());
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.NOTIFICATION));
         } else if (category.showBackgroundSyncSites()) {
             // Background sync info is per-origin.
             queue.add(new BackgroundSyncExceptionInfoFetcher());
         } else if (category.showProtectedMediaSites()) {
             // Protected media identifier permission is per-origin and per-embedder.
-            queue.add(new ProtectedMediaIdentifierInfoFetcher());
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER));
         } else if (category.showAutoplaySites()) {
             // Autoplay permission is per-origin.
             queue.add(new AutoplayExceptionInfoFetcher());
@@ -204,10 +204,10 @@ public class WebsitePermissionsFetcher {
             queue.add(new UsbInfoFetcher());
         } else if (category.showClipboardSites()) {
             // Clipboard permission is per-origin.
-            queue.add(new ClipboardInfoFetcher());
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.CLIPBOARD));
         } else if (category.showSensorsSites()) {
             // Sensors permission is per-origin.
-            queue.add(new SensorsInfoFetcher());
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.SENSORS));
         }
         queue.add(new PermissionsAvailableCallbackRunner());
         queue.next();
@@ -296,38 +296,22 @@ public class WebsitePermissionsFetcher {
         }
     }
 
-    private class ClipboardInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (ClipboardInfo info : WebsitePreferenceBridge.getClipboardInfo()) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
-                if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).setClipboardInfo(info);
-            }
-        }
-    }
+    private class PermissionInfoFetcher extends Task {
+        final @PermissionInfo.Type int mType;
 
-    private class GeolocationInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (GeolocationInfo info : WebsitePreferenceBridge.getGeolocationInfo()) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
-                if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).setGeolocationInfo(info);
-            }
+        public PermissionInfoFetcher(@PermissionInfo.Type int type) {
+            mType = type;
         }
-    }
 
-    private class MidiInfoFetcher extends Task {
         @Override
         public void run() {
-            for (MidiInfo info : WebsitePreferenceBridge.getMidiInfo()) {
+            for (PermissionInfo info : WebsitePreferenceBridge.getPermissionInfo(mType)) {
                 WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
                 if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).setMidiInfo(info);
+                WebsiteAddress embedder = mType == PermissionInfo.Type.SENSORS
+                        ? null
+                        : WebsiteAddress.create(info.getEmbedder());
+                findOrCreateSite(origin, embedder).setPermissionInfo(info);
             }
         }
     }
@@ -407,55 +391,6 @@ public class WebsitePermissionsFetcher {
         }
     }
 
-    private class ProtectedMediaIdentifierInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (ProtectedMediaIdentifierInfo info :
-                    WebsitePreferenceBridge.getProtectedMediaIdentifierInfo()) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
-                if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).setProtectedMediaIdentifierInfo(info);
-            }
-        }
-    }
-
-    private class NotificationInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (NotificationInfo info : WebsitePreferenceBridge.getNotificationInfo()) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
-                if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).setNotificationInfo(info);
-            }
-        }
-    }
-
-    private class CameraCaptureInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (CameraInfo info : WebsitePreferenceBridge.getCameraInfo()) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
-                if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).setCameraInfo(info);
-            }
-        }
-    }
-
-    private class MicrophoneCaptureInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (MicrophoneInfo info : WebsitePreferenceBridge.getMicrophoneInfo()) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
-                if (origin == null) continue;
-                WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
-                findOrCreateSite(origin, embedder).setMicrophoneInfo(info);
-            }
-        }
-    }
-
     private class BackgroundSyncExceptionInfoFetcher extends Task {
         @Override
         public void run() {
@@ -472,17 +407,6 @@ public class WebsitePermissionsFetcher {
                 if (origin == null) continue;
                 WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
                 findOrCreateSite(origin, embedder).addChosenObjectInfo(info);
-            }
-        }
-    }
-
-    private class SensorsInfoFetcher extends Task {
-        @Override
-        public void run() {
-            for (SensorsInfo info : WebsitePreferenceBridge.getSensorsInfo()) {
-                WebsiteAddress origin = WebsiteAddress.create(info.getOrigin());
-                if (origin == null) continue;
-                findOrCreateSite(origin, null).setSensorsInfo(info);
             }
         }
     }

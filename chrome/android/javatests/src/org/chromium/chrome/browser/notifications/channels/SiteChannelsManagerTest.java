@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.NotificationInfo;
+import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
@@ -191,7 +191,8 @@ public class SiteChannelsManagerTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @SmallTest
     public void testBlockingPermissionInIncognitoCreatesNoChannels() throws Exception {
-        NotificationInfo info = new NotificationInfo("https://example-incognito.com", null, true);
+        PermissionInfo info = new PermissionInfo(
+                PermissionInfo.Type.NOTIFICATION, "https://example-incognito.com", null, true);
         ThreadUtils.runOnUiThreadBlocking(() -> info.setContentSetting(ContentSetting.BLOCK));
         assertThat(Arrays.asList(mSiteChannelsManager.getSiteChannels()), hasSize(0));
     }

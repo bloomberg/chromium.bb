@@ -16,7 +16,7 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.NotificationInfo;
+import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
@@ -83,7 +83,8 @@ public class NotificationTestRule extends ChromeActivityTestRule<ChromeTabbedAct
             @Override
             public void run() {
                 // The notification content setting does not consider the embedder origin.
-                NotificationInfo notificationInfo = new NotificationInfo(origin, "", false);
+                PermissionInfo notificationInfo =
+                        new PermissionInfo(PermissionInfo.Type.NOTIFICATION, origin, "", false);
                 notificationInfo.setContentSetting(setting);
             }
         });
