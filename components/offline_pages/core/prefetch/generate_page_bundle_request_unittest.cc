@@ -38,12 +38,12 @@ const int kTestMaxBundleSize = 100000;
 class GeneratePageBundleRequestTest : public PrefetchRequestTestBase {
  public:
   std::unique_ptr<GeneratePageBundleRequest> CreateRequest(
-      const PrefetchRequestFinishedCallback& callback) {
+      PrefetchRequestFinishedCallback callback) {
     std::vector<std::string> page_urls = {kTestURL, kTestURL2};
     return std::unique_ptr<GeneratePageBundleRequest>(
         new GeneratePageBundleRequest(
             kTestUserAgent, kTestGCMID, kTestMaxBundleSize, page_urls,
-            kTestChannel, request_context(), callback));
+            kTestChannel, request_context(), std::move(callback)));
   }
 };
 

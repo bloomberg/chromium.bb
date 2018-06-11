@@ -152,13 +152,13 @@ GeneratePageBundleTask::GeneratePageBundleTask(
     PrefetchStore* prefetch_store,
     PrefetchGCMHandler* gcm_handler,
     PrefetchNetworkRequestFactory* request_factory,
-    const PrefetchRequestFinishedCallback& callback)
+    PrefetchRequestFinishedCallback callback)
     : clock_(base::DefaultClock::GetInstance()),
       prefetch_dispatcher_(prefetch_dispatcher),
       prefetch_store_(prefetch_store),
       gcm_handler_(gcm_handler),
       request_factory_(request_factory),
-      callback_(callback),
+      callback_(std::move(callback)),
       weak_factory_(this) {}
 
 GeneratePageBundleTask::~GeneratePageBundleTask() {}
@@ -195,7 +195,7 @@ void GeneratePageBundleTask::GotRegistrationId(
   DCHECK(url_and_ids);
   // TODO(dimich): Add UMA reporting on instance_id::InstanceID::Result.
   request_factory_->MakeGeneratePageBundleRequest(url_and_ids->urls, id,
-                                                  callback_);
+                                                  std::move(callback_));
   prefetch_dispatcher_->GeneratePageBundleRequested(
       std::make_unique<PrefetchDispatcher::IdsVector>(
           std::move(url_and_ids->ids)));

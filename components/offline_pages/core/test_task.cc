@@ -12,14 +12,12 @@ ConsumedResource::ConsumedResource() {}
 
 ConsumedResource::~ConsumedResource() {}
 
-void ConsumedResource::Step(const base::Closure& step_callback) {
-  next_step_ = step_callback;
+void ConsumedResource::Step(base::OnceClosure step_callback) {
+  next_step_ = std::move(step_callback);
 }
 
 void ConsumedResource::CompleteStep() {
-  base::Closure temp_ = next_step_;
-  next_step_.Reset();
-  temp_.Run();
+  std::move(next_step_).Run();
 }
 
 TestTask::TestTask(ConsumedResource* resource)
@@ -37,7 +35,7 @@ TestTask::~TestTask() {}
 // Run is Step 1 in our case.
 void TestTask::Run() {
   state_ = TaskState::STEP_1;
-  resource_->Step(base::Bind(&TestTask::Step2, base::Unretained(this)));
+  resource_->Step(base::BindOnce(&TestTask::Step2, base::Unretained(this)));
 }
 
 void TestTask::Step2() {
@@ -46,7 +44,7 @@ void TestTask::Step2() {
     return;
   }
   state_ = TaskState::STEP_2;
-  resource_->Step(base::Bind(&TestTask::LastStep, base::Unretained(this)));
+  resource_->Step(base::BindOnce(&TestTask::LastStep, base::Unretained(this)));
 }
 
 // This is step 3, but we conclude here.

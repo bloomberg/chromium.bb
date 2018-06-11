@@ -30,7 +30,7 @@ class GetOperationRequest {
   GetOperationRequest(const std::string& name,
                       version_info::Channel channel,
                       net::URLRequestContextGetter* request_context_getter,
-                      const PrefetchRequestFinishedCallback& callback);
+                      PrefetchRequestFinishedCallback callback);
   ~GetOperationRequest();
 
  private:

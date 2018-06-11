@@ -15,13 +15,14 @@ Task::~Task() {}
 
 void Task::SetTaskCompletionCallbackForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_completion_runner,
-    const TaskCompletionCallback& task_completion_callback) {
-  SetTaskCompletionCallback(task_completion_runner, task_completion_callback);
+    TaskCompletionCallback task_completion_callback) {
+  SetTaskCompletionCallback(task_completion_runner,
+                            std::move(task_completion_callback));
 }
 
 void Task::SetTaskCompletionCallback(
     scoped_refptr<base::SingleThreadTaskRunner> task_completion_runner,
-    const TaskCompletionCallback& task_completion_callback) {
+    TaskCompletionCallback task_completion_callback) {
   // Attempts to enforce that SetTaskCompletionCallback is at most called once
   // and enforces that reasonable values are set once that happens.
   DCHECK(!task_completion_runner_);
@@ -29,7 +30,7 @@ void Task::SetTaskCompletionCallback(
   DCHECK(task_completion_callback_.is_null());
   DCHECK(!task_completion_callback.is_null());
   task_completion_runner_ = task_completion_runner;
-  task_completion_callback_ = task_completion_callback;
+  task_completion_callback_ = std::move(task_completion_callback);
 }
 
 void Task::TaskComplete() {
@@ -37,7 +38,7 @@ void Task::TaskComplete() {
     return;
 
   task_completion_runner_->PostTask(
-      FROM_HERE, base::Bind(task_completion_callback_, this));
+      FROM_HERE, base::BindOnce(std::move(task_completion_callback_), this));
 }
 
 }  // namespace offline_pages

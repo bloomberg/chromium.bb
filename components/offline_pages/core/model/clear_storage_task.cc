@@ -248,8 +248,8 @@ ClearStorageTask::~ClearStorageTask() {}
 void ClearStorageTask::Run() {
   TRACE_EVENT_ASYNC_BEGIN0("offline_pages", "ClearStorageTask running", this);
   archive_manager_->GetStorageStats(
-      base::Bind(&ClearStorageTask::OnGetStorageStatsDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ClearStorageTask::OnGetStorageStatsDone,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ClearStorageTask::OnGetStorageStatsDone(

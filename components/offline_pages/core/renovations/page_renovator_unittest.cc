@@ -55,7 +55,7 @@ PageRenovatorTest::FakeScriptInjector::FakeScriptInjector(
 void PageRenovatorTest::FakeScriptInjector::Inject(base::string16 script,
                                                    ResultCallback callback) {
   if (callback)
-    callback.Run(base::Value());
+    std::move(callback).Run(base::Value());
   fixture_->script_injector_inject_called_ = true;
 }
 

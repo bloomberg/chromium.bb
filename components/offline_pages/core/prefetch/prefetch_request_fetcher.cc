@@ -32,9 +32,9 @@ const char kRequestContentType[] = "application/x-protobuf";
 std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForGet(
     const GURL& url,
     net::URLRequestContextGetter* request_context_getter,
-    const FinishedCallback& callback) {
+    FinishedCallback callback) {
   return base::WrapUnique(new PrefetchRequestFetcher(
-      url, std::string(), request_context_getter, callback));
+      url, std::string(), request_context_getter, std::move(callback)));
 }
 
 // static
@@ -42,17 +42,18 @@ std::unique_ptr<PrefetchRequestFetcher> PrefetchRequestFetcher::CreateForPost(
     const GURL& url,
     const std::string& message,
     net::URLRequestContextGetter* request_context_getter,
-    const FinishedCallback& callback) {
+    FinishedCallback callback) {
   return base::WrapUnique(new PrefetchRequestFetcher(
-      url, message, request_context_getter, callback));
+      url, message, request_context_getter, std::move(callback)));
 }
 
 PrefetchRequestFetcher::PrefetchRequestFetcher(
     const GURL& url,
     const std::string& message,
     net::URLRequestContextGetter* request_context_getter,
-    const FinishedCallback& callback)
-    : request_context_getter_(request_context_getter), callback_(callback) {
+    FinishedCallback callback)
+    : request_context_getter_(request_context_getter),
+      callback_(std::move(callback)) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("offline_prefetch", R"(
         semantics {
@@ -104,7 +105,7 @@ void PrefetchRequestFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // TODO(jianli): Report UMA.
 
-  callback_.Run(status, data);
+  std::move(callback_).Run(status, data);
 }
 
 PrefetchRequestStatus PrefetchRequestFetcher::ParseResponse(

@@ -30,7 +30,7 @@ class PrefetchNetworkRequestFactory {
   virtual void MakeGeneratePageBundleRequest(
       const std::vector<std::string>& prefetch_urls,
       const std::string& gcm_registration_id,
-      const PrefetchRequestFinishedCallback& callback) = 0;
+      PrefetchRequestFinishedCallback callback) = 0;
 
   // Returns a list of URLs included into all currently ongoing
   // GeneratePageBundle requests.
@@ -42,7 +42,7 @@ class PrefetchNetworkRequestFactory {
   // will cancel the existing request and start a new one.
   virtual void MakeGetOperationRequest(
       const std::string& operation_name,
-      const PrefetchRequestFinishedCallback& callback) = 0;
+      PrefetchRequestFinishedCallback callback) = 0;
 
   // Returns the current GetOperationRequest with the given name, if any.
   virtual GetOperationRequest* FindGetOperationRequestByName(

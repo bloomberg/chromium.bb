@@ -49,7 +49,7 @@ TEST_F(OfflineTaskTest, RunTaskStepByStep) {
   TestTask task(&resource);
   task.SetTaskCompletionCallbackForTesting(
       base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&OfflineTaskTest::TaskCompleted, base::Unretained(this)));
+      base::BindOnce(&OfflineTaskTest::TaskCompleted, base::Unretained(this)));
 
   EXPECT_EQ(TaskState::NOT_STARTED, task.state());
   task.Run();

@@ -24,7 +24,7 @@ namespace offline_pages {
 // be called.
 class PageRenovator {
  public:
-  using CompletionCallback = base::RepeatingClosure;
+  using CompletionCallback = base::OnceClosure;
 
   // |renovation_loader| should be owned by the user and is expected to
   // outlive this PageRenovator instance.
