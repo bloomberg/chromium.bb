@@ -36,7 +36,6 @@ VaapiPictureNativePixmapOzone::VaapiPictureNativePixmapOzone(
                                texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(texture_id);
-  DCHECK(client_texture_id);
 }
 
 VaapiPictureNativePixmapOzone::~VaapiPictureNativePixmapOzone() {
