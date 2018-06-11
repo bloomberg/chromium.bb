@@ -11,6 +11,8 @@ namespace smb_client {
 extern const char kSmbScheme[];
 extern const char kSmbSchemePrefix[];
 
+constexpr int kNetBiosDiscoveryTimeoutSeconds = 1;
+
 }  // namespace smb_client
 }  // namespace chromeos
 
