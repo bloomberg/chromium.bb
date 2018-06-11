@@ -613,6 +613,26 @@
             ]
         }
     ],
+    "BackgroundPagePriority": [
+        {
+            "platforms": [
+                "win",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "LowPriorityEnabled",
+                    "enable_features": [
+                        "BlinkSchedulerLowPriorityForBackgroundPages"
+                    ]
+                }
+            ]
+        }
+    ],
     "BackgroundVideoOptimizations": [
         {
             "platforms": [
@@ -1553,6 +1573,26 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "FrameAndTaskTypePriorityDuringLoading": [
+        {
+            "platforms": [
+                "win",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "LowPriorityForHiddenFrameDuringLoading",
+                    "enable_features": [
+                        "BlinkSchedulerLowPriorityForHiddenFrameDuringLoading"
+                    ]
                 }
             ]
         }
