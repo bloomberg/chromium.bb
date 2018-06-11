@@ -215,6 +215,26 @@ class WidgetClosingObserver : public WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(WidgetClosingObserver);
 };
 
+// Use in tests to wait for a widget to be destroyed.
+// TODO(https://crrev.com/c/1086509): This is pretty similar to
+// WidgetClosingObserver. Can the two be combined?
+class WidgetDestroyedWaiter : public WidgetObserver {
+ public:
+  explicit WidgetDestroyedWaiter(Widget* widget);
+
+  // Wait for the widget to be destroyed, or return immediately if it was
+  // already destroyed since this object was created.
+  void Wait();
+
+ private:
+  // views::WidgetObserver
+  void OnWidgetDestroyed(Widget* widget) override;
+
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetDestroyedWaiter);
+};
+
 }  // namespace test
 }  // namespace views
 

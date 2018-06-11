@@ -203,5 +203,18 @@ void WidgetClosingObserver::OnWidgetClosing(Widget* widget) {
     run_loop_.Quit();
 }
 
+WidgetDestroyedWaiter::WidgetDestroyedWaiter(Widget* widget) {
+  widget->AddObserver(this);
+}
+
+void WidgetDestroyedWaiter::Wait() {
+  run_loop_.Run();
+}
+
+void WidgetDestroyedWaiter::OnWidgetDestroyed(Widget* widget) {
+  widget->RemoveObserver(this);
+  run_loop_.Quit();
+}
+
 }  // namespace test
 }  // namespace views

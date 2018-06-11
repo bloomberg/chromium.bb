@@ -29,42 +29,10 @@
 namespace {
 
 #if defined(TOOLKIT_VIEWS)
-// Helper to return when a Widget has been closed.
-// TODO(pkasting): This is pretty similar to views::test::WidgetClosingObserver
-// in ui/views/test/widget_test.h but keys off widget destruction rather than
-// closing.  Can the two be combined?
-class WidgetCloseObserver : public views::WidgetObserver {
+// Helper to close a Widget.
+class WidgetCloser {
  public:
-  explicit WidgetCloseObserver(views::Widget* widget) : widget_(widget) {
-    widget->AddObserver(this);
-  }
-
-  // views::WidgetObserver:
-  void OnWidgetDestroyed(views::Widget* widget) override {
-    widget_->RemoveObserver(this);
-    widget_ = nullptr;
-    run_loop_.Quit();
-  }
-
-  void WaitForDestroy() { run_loop_.Run(); }
-
- protected:
-  views::Widget* widget() { return widget_; }
-
- private:
-  views::Widget* widget_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetCloseObserver);
-};
-
-// Helper to close a Widget.  Inherits from WidgetCloseObserver since regardless
-// of whether the close is done synchronously, we always want callers to wait
-// for it to complete.
-class WidgetCloser : public WidgetCloseObserver {
- public:
-  WidgetCloser(views::Widget* widget, bool async)
-      : WidgetCloseObserver(widget) {
+  WidgetCloser(views::Widget* widget, bool async) : widget_(widget) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&WidgetCloser::CloseWidget,
                                   weak_ptr_factory_.GetWeakPtr(), async));
@@ -72,14 +40,13 @@ class WidgetCloser : public WidgetCloseObserver {
 
  private:
   void CloseWidget(bool async) {
-    if (!widget())
-      return;
-
     if (async)
-      widget()->Close();
+      widget_->Close();
     else
-      widget()->CloseNow();
+      widget_->CloseNow();
   }
+
+  views::Widget* widget_;
 
   base::WeakPtrFactory<WidgetCloser> weak_ptr_factory_{this};
 
@@ -141,8 +108,8 @@ void TestBrowserDialog::WaitForUserDismissal() {
 
 #if defined(TOOLKIT_VIEWS)
   ASSERT_FALSE(widgets_.empty());
-  WidgetCloseObserver observer(*widgets_.begin());
-  observer.WaitForDestroy();
+  views::test::WidgetDestroyedWaiter waiter(*widgets_.begin());
+  waiter.Wait();
 #else
   NOTIMPLEMENTED();
 #endif
@@ -151,8 +118,9 @@ void TestBrowserDialog::WaitForUserDismissal() {
 void TestBrowserDialog::DismissUi() {
 #if defined(TOOLKIT_VIEWS)
   ASSERT_FALSE(widgets_.empty());
+  views::test::WidgetDestroyedWaiter waiter(*widgets_.begin());
   WidgetCloser closer(*widgets_.begin(), AlwaysCloseAsynchronously());
-  closer.WaitForDestroy();
+  waiter.Wait();
 #else
   NOTIMPLEMENTED();
 #endif
