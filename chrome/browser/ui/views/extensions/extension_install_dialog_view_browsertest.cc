@@ -176,6 +176,13 @@ class ExtensionInstallDialogViewTest
 
 // Verifies that the delegate is notified when the user selects to accept or
 // cancel the install.
+//
+// Crashes flakily on Mac.  See http://crbug.com/851167
+#if defined(OS_MACOSX)
+#define MAYBE_NotifyDelegate DISABLED_NotifyDelegate
+#else
+#define MAYBE_NotifyDelegate NotifyDelegate
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
   {
     // User presses install.
