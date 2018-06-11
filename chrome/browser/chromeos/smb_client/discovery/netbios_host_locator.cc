@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/time/time.h"
+#include "chrome/browser/chromeos/smb_client/smb_constants.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
@@ -35,8 +37,17 @@ bool ShouldUseInterface(const net::NetworkInterface& interface) {
 
 NetBiosHostLocator::NetBiosHostLocator(GetInterfacesFunction get_interfaces,
                                        NetBiosClientFactory client_factory)
+    : NetBiosHostLocator(get_interfaces,
+                         client_factory,
+                         std::make_unique<base::OneShotTimer>()) {}
+
+NetBiosHostLocator::NetBiosHostLocator(
+    GetInterfacesFunction get_interfaces,
+    NetBiosClientFactory client_factory,
+    std::unique_ptr<base::OneShotTimer> timer)
     : get_interfaces_(std::move(get_interfaces)),
-      client_factory_(std::move(client_factory)) {}
+      client_factory_(std::move(client_factory)),
+      timer_(std::move(timer)) {}
 
 NetBiosHostLocator::~NetBiosHostLocator() = default;
 
@@ -60,6 +71,10 @@ void NetBiosHostLocator::FindHosts(FindHostsCallback callback) {
     running_ = false;
     std::move(callback_).Run(false /* success */, results_);
   }
+
+  timer_->Start(FROM_HERE,
+                base::TimeDelta::FromSeconds(kNetBiosDiscoveryTimeoutSeconds),
+                this, &NetBiosHostLocator::StopDiscovery);
 }
 
 net::NetworkInterfaceList NetBiosHostLocator::GetNetworkInterfaceList() {
@@ -91,6 +106,29 @@ void NetBiosHostLocator::PacketReceived(const std::vector<uint8_t>& packet,
                                         uint16_t transaction_id,
                                         const net::IPEndPoint& sender_ip) {
   NOTREACHED();
+}
+
+void NetBiosHostLocator::StopDiscovery() {
+  discovery_done_ = true;
+  netbios_clients_.clear();
+
+  if (outstanding_parse_requests_ == 0) {
+    FinishFindHosts();
+  }
+}
+
+void NetBiosHostLocator::FinishFindHosts() {
+  std::move(callback_).Run(true /* success */, results_);
+  ResetHostLocator();
+}
+
+void NetBiosHostLocator::ResetHostLocator() {
+  DCHECK(outstanding_parse_requests_ = 0);
+  DCHECK(netbios_clients_.empty());
+
+  results_.clear();
+  discovery_done_ = false;
+  running_ = false;
 }
 
 }  // namespace smb_client

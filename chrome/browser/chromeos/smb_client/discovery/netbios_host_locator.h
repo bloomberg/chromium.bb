@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/smb_client/discovery/host_locator.h"
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_client_interface.h"
 #include "net/base/network_interfaces.h"
@@ -35,6 +36,9 @@ class NetBiosHostLocator : public HostLocator,
 
   NetBiosHostLocator(GetInterfacesFunction get_interfaces,
                      NetBiosClientFactory client_factory);
+  NetBiosHostLocator(GetInterfacesFunction get_interfaces,
+                     NetBiosClientFactory client_factory,
+                     std::unique_ptr<base::OneShotTimer> timer);
 
   ~NetBiosHostLocator() override;
 
@@ -61,16 +65,31 @@ class NetBiosHostLocator : public HostLocator,
                       uint16_t transaction_id,
                       const net::IPEndPoint& sender_ip);
 
+  // Called upon expiration of |timer_|. Deletes all active netbios clients. If
+  // there are no |outstanding_parse_requests_|, FinishFindHosts is called which
+  // returns the results to the NetworkScanner.
+  void StopDiscovery();
+
+  // Runs |callback_| with |results_|, then calls ResetHostLocator to reset the
+  // state.
+  void FinishFindHosts();
+
+  // Resets the state of the HostLocator so that it can be resued.
+  void ResetHostLocator();
+
   bool running_ = false;
+  bool discovery_done_ = false;
+  uint16_t transaction_id_ = 0;
+  int32_t outstanding_parse_requests_ = 0;
   GetInterfacesFunction get_interfaces_;
   NetBiosClientFactory client_factory_;
   FindHostsCallback callback_;
   HostMap results_;
-  uint16_t transaction_id_ = 0;
   // |netbios_clients_| is a container for storing NetBios clients that are
   // currently performing a NetBios Name Request so that they do not go out of
   // scope. One NetBiosClient exists for each network interface on the device.
   std::list<std::unique_ptr<NetBiosClientInterface>> netbios_clients_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(NetBiosHostLocator);
 };
