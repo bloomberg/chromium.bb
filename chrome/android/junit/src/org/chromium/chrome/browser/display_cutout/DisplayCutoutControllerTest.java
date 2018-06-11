@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.display_cutout;
 
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,8 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.blink.mojom.ViewportFit;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -38,11 +41,21 @@ public class DisplayCutoutControllerTest {
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
+    @Mock
+    private ChromeActivity mChromeActivity;
+
+    @Mock
+    private InsetObserverView mInsetObserver;
+
     private DisplayCutoutController mDisplayCutoutController;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        // Mock dependency on InsetObserverView.
+        when(mTab.getActivity()).thenReturn(mChromeActivity);
+        when(mChromeActivity.getInsetObserverView()).thenReturn(mInsetObserver);
 
         mDisplayCutoutController = spy(new DisplayCutoutController(mTab));
     }
@@ -125,11 +138,10 @@ public class DisplayCutoutControllerTest {
         // In this test we are checking for a side effect of maybeUpdateLayout.
         // This is because the tab observer holds a reference to the original
         // mDisplayCutoutController and not the spied one.
-        verify(mTab, never()).getActivity();
-
         verify(mTab).addObserver(mTabObserverCaptor.capture());
-        mTabObserverCaptor.getValue().onInteractabilityChanged(true);
+        reset(mTab);
 
+        mTabObserverCaptor.getValue().onInteractabilityChanged(true);
         verify(mTab).getActivity();
     }
 
@@ -139,11 +151,10 @@ public class DisplayCutoutControllerTest {
         // In this test we are checking for a side effect of maybeUpdateLayout.
         // This is because the tab observer holds a reference to the original
         // mDisplayCutoutController and not the spied one.
-        verify(mTab, never()).getActivity();
-
         verify(mTab).addObserver(mTabObserverCaptor.capture());
-        mTabObserverCaptor.getValue().onInteractabilityChanged(false);
+        reset(mTab);
 
+        mTabObserverCaptor.getValue().onInteractabilityChanged(false);
         verify(mTab).getActivity();
     }
 
@@ -153,11 +164,10 @@ public class DisplayCutoutControllerTest {
         // In this test we are checking for a side effect of maybeUpdateLayout.
         // This is because the tab observer holds a reference to the original
         // mDisplayCutoutController and not the spied one.
-        verify(mTab, never()).getActivity();
-
         verify(mTab).addObserver(mTabObserverCaptor.capture());
-        mTabObserverCaptor.getValue().onShown(mTab);
+        reset(mTab);
 
+        mTabObserverCaptor.getValue().onShown(mTab);
         verify(mTab).getActivity();
     }
 }

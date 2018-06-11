@@ -2025,6 +2025,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/ChromeBackupAgentTest.java",
   "junit/src/org/chromium/chrome/browser/DelayedScreenLockIntentHandlerTest.java",
   "junit/src/org/chromium/chrome/browser/DisableHistogramsRule.java",
+  "junit/src/org/chromium/chrome/browser/InsetObserverViewTest.java",
   "junit/src/org/chromium/chrome/browser/ShortcutHelperTest.java",
   "junit/src/org/chromium/chrome/browser/SSLClientCertificateRequestTest.java",
   "junit/src/org/chromium/chrome/browser/autofill/keyboard_accessory/AccessorySheetControllerTest.java",
