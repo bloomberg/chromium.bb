@@ -1952,7 +1952,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": false,
           "io_timeout": 1200,
           "upload_test_results": true
@@ -1986,7 +1986,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": true,
           "io_timeout": 1200,
           "upload_test_results": true
@@ -7185,7 +7185,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": false,
           "io_timeout": 1200,
           "upload_test_results": true
@@ -7219,7 +7219,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": true,
           "io_timeout": 1200,
           "upload_test_results": true
@@ -11370,7 +11370,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": false,
           "io_timeout": 1200,
           "upload_test_results": true
@@ -13882,7 +13882,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": false,
           "io_timeout": 1200,
           "upload_test_results": true
@@ -17348,7 +17348,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": false,
           "io_timeout": 1200,
           "upload_test_results": true
@@ -17382,7 +17382,7 @@
             }
           ],
           "expiration": 36000,
-          "hard_timeout": 10800,
+          "hard_timeout": 14400,
           "ignore_task_failure": true,
           "io_timeout": 1200,
           "upload_test_results": true
