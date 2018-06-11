@@ -27,6 +27,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -114,7 +115,8 @@ bool ComparePortAssociations(
 
 }  // namespace
 
-class DisplayPrefsTest : public AshTestBase {
+class DisplayPrefsTest : public AshTestBase,
+                         public testing::WithParamInterface<bool> {
  protected:
   DisplayPrefsTest() {}
 
@@ -122,6 +124,13 @@ class DisplayPrefsTest : public AshTestBase {
 
   void SetUp() override {
     disable_provide_local_state();
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kEnableDisplayZoomSetting);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kEnableDisplayZoomSetting);
+    }
     AshTestBase::SetUp();
     DisplayPrefs::RegisterLocalStatePrefs(local_state_.registry());
     display_prefs()->SetPrefServiceForTest(&local_state_);
@@ -245,6 +254,7 @@ class DisplayPrefsTest : public AshTestBase {
  private:
   std::unique_ptr<WindowTreeHostManager::Observer> observer_;
   TestingPrefServiceSimple local_state_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayPrefsTest);
 };
@@ -257,7 +267,7 @@ class DisplayPrefsTestGuest : public DisplayPrefsTest {
   DISALLOW_COPY_AND_ASSIGN(DisplayPrefsTestGuest);
 };
 
-TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
+TEST_P(DisplayPrefsTest, ListedLayoutOverrides) {
   UpdateDisplay("100x100,200x200");
 
   display::DisplayIdList list = display_manager()->GetCurrentDisplayIdList();
@@ -295,7 +305,7 @@ TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
             GetRegisteredDisplayPlacementStr(dummy_list));
 }
 
-TEST_F(DisplayPrefsTest, BasicStores) {
+TEST_P(DisplayPrefsTest, BasicStores) {
   ash::WindowTreeHostManager* window_tree_host_manager =
       ash::Shell::Get()->window_tree_host_manager();
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -403,7 +413,11 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
   EXPECT_TRUE(property->GetInteger("ui-scale", &ui_scale));
   EXPECT_EQ(1, rotation);
-  EXPECT_EQ(1250, ui_scale);
+  const bool is_display_zoom_enabled = GetParam();
+  if (is_display_zoom_enabled)
+    EXPECT_EQ(-1000, ui_scale);
+  else
+    EXPECT_EQ(1250, ui_scale);
 
   // Internal display never registered the resolution.
   int width = 0, height = 0;
@@ -450,7 +464,10 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger("ui-scale", &ui_scale));
   EXPECT_EQ(0, rotation);
   // ui_scale works only on 2x scale factor/1st display.
-  EXPECT_EQ(1000, ui_scale);
+  if (is_display_zoom_enabled)
+    EXPECT_EQ(-1000, ui_scale);
+  else
+    EXPECT_EQ(1000, ui_scale);
   EXPECT_FALSE(property->GetInteger("insets_top", &top));
   EXPECT_FALSE(property->GetInteger("insets_left", &left));
   EXPECT_FALSE(property->GetInteger("insets_bottom", &bottom));
@@ -613,7 +630,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_EQ(400, height);
 }
 
-TEST_F(DisplayPrefsTest, PreventStore) {
+TEST_P(DisplayPrefsTest, PreventStore) {
   ResolutionNotificationController::SuppressTimerForTest();
   LoggedInAsUser();
   UpdateDisplay("400x300#500x400|400x300|300x200");
@@ -654,7 +671,7 @@ TEST_F(DisplayPrefsTest, PreventStore) {
   EXPECT_EQ(200, height);
 }
 
-TEST_F(DisplayPrefsTest, StoreForSwappedDisplay) {
+TEST_P(DisplayPrefsTest, StoreForSwappedDisplay) {
   UpdateDisplay("100x100,200x200");
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
@@ -722,7 +739,7 @@ TEST_F(DisplayPrefsTest, StoreForSwappedDisplay) {
   }
 }
 
-TEST_F(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
+TEST_P(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
   ash::WindowTreeHostManager* window_tree_host_manager =
       ash::Shell::Get()->window_tree_host_manager();
 
@@ -775,7 +792,7 @@ TEST_F(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
   EXPECT_EQ(1.0f, info_primary.configured_ui_scale());
 }
 
-TEST_F(DisplayPrefsTest, StorePowerStateNoLogin) {
+TEST_P(DisplayPrefsTest, StorePowerStateNoLogin) {
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
 
   // Stores display prefs without login, which still stores the power state.
@@ -783,7 +800,7 @@ TEST_F(DisplayPrefsTest, StorePowerStateNoLogin) {
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
 }
 
-TEST_F(DisplayPrefsTest, StorePowerStateGuest) {
+TEST_P(DisplayPrefsTest, StorePowerStateGuest) {
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
 
   LoggedInAsGuest();
@@ -791,7 +808,7 @@ TEST_F(DisplayPrefsTest, StorePowerStateGuest) {
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
 }
 
-TEST_F(DisplayPrefsTest, StorePowerStateNormalUser) {
+TEST_P(DisplayPrefsTest, StorePowerStateNormalUser) {
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
 
   LoggedInAsUser();
@@ -799,7 +816,7 @@ TEST_F(DisplayPrefsTest, StorePowerStateNormalUser) {
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayPowerState));
 }
 
-TEST_F(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
+TEST_P(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
   LoadDisplayPreferences();
@@ -807,7 +824,7 @@ TEST_F(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
             GetRequestedPowerState());
 }
 
-TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
+TEST_P(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
   LoadDisplayPreferences();
@@ -831,7 +848,7 @@ TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
 
 // Tests that display configuration changes caused by TabletModeController
 // are not saved.
-TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
+TEST_P(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
   ash::Shell* shell = ash::Shell::Get();
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
@@ -886,7 +903,7 @@ TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
 }
 
 // Tests that the rotation state is saved without a user being logged in.
-TEST_F(DisplayPrefsTest, StoreRotationStateNoLogin) {
+TEST_P(DisplayPrefsTest, StoreRotationStateNoLogin) {
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
@@ -910,7 +927,7 @@ TEST_F(DisplayPrefsTest, StoreRotationStateNoLogin) {
 }
 
 // Tests that the rotation state is saved when a guest is logged in.
-TEST_F(DisplayPrefsTest, StoreRotationStateGuest) {
+TEST_P(DisplayPrefsTest, StoreRotationStateGuest) {
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
@@ -935,7 +952,7 @@ TEST_F(DisplayPrefsTest, StoreRotationStateGuest) {
 }
 
 // Tests that the rotation state is saved when a normal user is logged in.
-TEST_F(DisplayPrefsTest, StoreRotationStateNormalUser) {
+TEST_P(DisplayPrefsTest, StoreRotationStateNormalUser) {
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
@@ -961,7 +978,7 @@ TEST_F(DisplayPrefsTest, StoreRotationStateNormalUser) {
 
 // Tests that rotation state is loaded without a user being logged in, and that
 // entering tablet mode applies the state.
-TEST_F(DisplayPrefsTest, LoadRotationNoLogin) {
+TEST_P(DisplayPrefsTest, LoadRotationNoLogin) {
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
@@ -1013,7 +1030,7 @@ TEST_F(DisplayPrefsTest, LoadRotationNoLogin) {
 }
 
 // Tests that rotation lock being set causes the rotation state to be saved.
-TEST_F(DisplayPrefsTest, RotationLockTriggersStore) {
+TEST_P(DisplayPrefsTest, RotationLockTriggersStore) {
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
@@ -1028,7 +1045,7 @@ TEST_F(DisplayPrefsTest, RotationLockTriggersStore) {
   EXPECT_TRUE(properties->GetBoolean("lock", &rotation_lock));
 }
 
-TEST_F(DisplayPrefsTest, SaveUnifiedMode) {
+TEST_P(DisplayPrefsTest, SaveUnifiedMode) {
   LoggedInAsUser();
   display_manager()->SetUnifiedDesktopEnabled(true);
 
@@ -1084,7 +1101,7 @@ TEST_F(DisplayPrefsTest, SaveUnifiedMode) {
   EXPECT_FALSE(stored_layout.default_unified);
 }
 
-TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
+TEST_P(DisplayPrefsTest, RestoreUnifiedMode) {
   const int64_t first_display_id = 210000001;
   const int64_t second_display_id = 220000002;
   display::ManagedDisplayInfo first_display_info =
@@ -1154,7 +1171,7 @@ TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
 }
 
-TEST_F(DisplayPrefsTest, SaveThreeDisplays) {
+TEST_P(DisplayPrefsTest, SaveThreeDisplays) {
   LoggedInAsUser();
   UpdateDisplay("200x200,200x200,300x300");
 
@@ -1175,7 +1192,7 @@ TEST_F(DisplayPrefsTest, SaveThreeDisplays) {
       display::DisplayIdListToString(list), &new_value));
 }
 
-TEST_F(DisplayPrefsTest, RestoreThreeDisplays) {
+TEST_P(DisplayPrefsTest, RestoreThreeDisplays) {
   LoggedInAsUser();
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayIdList list =
@@ -1205,7 +1222,7 @@ TEST_F(DisplayPrefsTest, RestoreThreeDisplays) {
             display_manager()->GetDisplayForId(list[2]).bounds());
 }
 
-TEST_F(DisplayPrefsTest, LegacyTouchCalibrationDataSupport) {
+TEST_P(DisplayPrefsTest, LegacyTouchCalibrationDataSupport) {
   UpdateDisplay("800x600,1200x800");
   LoggedInAsUser();
   int64_t id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -1265,7 +1282,7 @@ TEST_F(DisplayPrefsTest, LegacyTouchCalibrationDataSupport) {
             data_2);
 }
 
-TEST_F(DisplayPrefsTest, ExternalDisplayMirrorInfo) {
+TEST_P(DisplayPrefsTest, ExternalDisplayMirrorInfo) {
   LoggedInAsUser();
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -1363,7 +1380,7 @@ TEST_F(DisplayPrefsTest, ExternalDisplayMirrorInfo) {
   EXPECT_EQ(0U, pref_external_display_mirror_info->GetSize());
 }
 
-TEST_F(DisplayPrefsTest, DisplayMixedMirrorMode) {
+TEST_P(DisplayPrefsTest, DisplayMixedMirrorMode) {
   LoggedInAsUser();
 
   const int64_t internal_display_id =
@@ -1442,5 +1459,9 @@ TEST_F(DisplayPrefsTest, DisplayMixedMirrorMode) {
       local_state()->GetDictionary(prefs::kDisplayMixedMirrorModeParams);
   EXPECT_TRUE(pref_data->empty());
 }
+
+INSTANTIATE_TEST_CASE_P(IsDisplayZoomEnabled,
+                        DisplayPrefsTest,
+                        testing::Bool());
 
 }  // namespace ash

@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 
@@ -268,6 +269,7 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
       zoom_factor_(1.f),
+      is_zoom_factor_from_ui_scale_(false),
       configured_ui_scale_(1.0f),
       native_(false),
       is_aspect_preserving_scaling_(false),
@@ -286,6 +288,7 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
       zoom_factor_(1.f),
+      is_zoom_factor_from_ui_scale_(false),
       configured_ui_scale_(1.0f),
       native_(false),
       is_aspect_preserving_scaling_(false),
@@ -349,6 +352,7 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   rotations_ = native_info.rotations_;
   zoom_factor_ = native_info.zoom_factor_;
   configured_ui_scale_ = native_info.configured_ui_scale_;
+  is_zoom_factor_from_ui_scale_ = native_info.is_zoom_factor_from_ui_scale_;
 }
 
 void ManagedDisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
@@ -364,11 +368,13 @@ float ManagedDisplayInfo::GetDensityRatio() const {
 }
 
 float ManagedDisplayInfo::GetEffectiveDeviceScaleFactor() const {
+  if (features::IsDisplayZoomSettingEnabled())
+    return device_scale_factor_ * zoom_factor_;
   if (Display::IsInternalDisplayId(id_) && device_scale_factor_ == 1.25f)
-    return ((configured_ui_scale_ == 0.8f) ? 1.25f : 1.0f) * zoom_factor_;
+    return ((configured_ui_scale_ == 0.8f) ? 1.25f : 1.0f);
   if (device_scale_factor_ == configured_ui_scale_)
-    return zoom_factor_;
-  return device_scale_factor_ * zoom_factor_;
+    return 1.f;
+  return device_scale_factor_;
 }
 
 float ManagedDisplayInfo::GetEffectiveUIScale() const {

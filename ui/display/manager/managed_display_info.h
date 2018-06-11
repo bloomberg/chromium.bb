@@ -150,6 +150,13 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   float zoom_factor() const { return zoom_factor_; }
   void set_zoom_factor(float zoom_factor) { zoom_factor_ = zoom_factor; }
 
+  void set_is_zoom_factor_from_ui_scale(bool is_zoom_factor_from_ui_scale) {
+    is_zoom_factor_from_ui_scale_ = is_zoom_factor_from_ui_scale;
+  }
+  bool is_zoom_factor_from_ui_scale() const {
+    return is_zoom_factor_from_ui_scale_;
+  }
+
   // Gets/Sets the device DPI of the display.
   float device_dpi() const { return device_dpi_; }
   void set_device_dpi(float dpi) { device_dpi_ = dpi; }
@@ -304,6 +311,11 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // multiplicatively to the device scale factor to get the effecting scaling
   // for a display.
   float zoom_factor_;
+
+  // True if the |zoom_factor_| currently set is a port of the ui-scale. This is
+  // needed to correctly compute zoom values and effective device scale factor
+  // for FHD devices with 1.25 device scale factor.
+  bool is_zoom_factor_from_ui_scale_;
 
   // The pixel scale of the display. This is used to simply expand (or shrink)
   // the desktop over the native display resolution (useful in HighDPI display).

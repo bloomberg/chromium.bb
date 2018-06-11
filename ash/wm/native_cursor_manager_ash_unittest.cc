@@ -8,12 +8,14 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/cursor_manager_test_api.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -140,7 +142,25 @@ TEST_F(NativeCursorManagerAshTest, FractionalScale) {
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
 }
 
-TEST_F(NativeCursorManagerAshTest, UIScaleShouldNotChangeCursor) {
+// TODO(malaykeshav): Remove this when ui scale is no longer used.
+class NativeCursorManagerWithUiScaleTest : public NativeCursorManagerAshTest {
+ public:
+  NativeCursorManagerWithUiScaleTest() = default;
+  ~NativeCursorManagerWithUiScaleTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kEnableDisplayZoomSetting);
+    NativeCursorManagerAshTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeCursorManagerWithUiScaleTest);
+};
+
+TEST_F(NativeCursorManagerWithUiScaleTest, UIScaleShouldNotChangeCursor) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::Display::SetInternalDisplayId(display_id);
 
