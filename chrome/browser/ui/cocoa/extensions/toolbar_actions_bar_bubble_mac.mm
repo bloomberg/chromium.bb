@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -116,9 +116,9 @@ CGFloat kMinWidth = 320.0;
   // reference to |self|. The Block_copy operator automatically retains object
   // variables, and when the block is destroyed, the variables are automatically
   // released.
-  delegate_->OnBubbleShown(base::BindBlock(^{
+  delegate_->OnBubbleShown(base::BindRepeating(base::RetainBlock(^{
     [self close];
-  }));
+  })));
   [super showWindow:sender];
 }
 
