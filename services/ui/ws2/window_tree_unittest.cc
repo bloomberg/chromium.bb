@@ -970,6 +970,7 @@ TEST(WindowTreeTest2, Embed) {
   ASSERT_TRUE(embed_window);
   window->AddChild(embed_window);
   embed_window->SetBounds(gfx::Rect(1, 2, 3, 4));
+  setup.changes()->clear();
 
   std::unique_ptr<EmbeddingHelper> embedding_helper =
       setup.CreateEmbedding(embed_window);
@@ -981,6 +982,10 @@ TEST(WindowTreeTest2, Embed) {
   EXPECT_EQ(kInvalidTransportId, test_change.windows[0].parent_id);
   EXPECT_EQ(embed_window->TargetVisibility(), test_change.windows[0].visible);
   EXPECT_NE(kInvalidTransportId, test_change.windows[0].window_id);
+
+  // OnFrameSinkIdAllocated() should called on the parent tree.
+  ASSERT_EQ(1u, setup.changes()->size());
+  EXPECT_EQ(CHANGE_TYPE_FRAME_SINK_ID_ALLOCATED, (*setup.changes())[0].type);
 }
 
 TEST(WindowTreeTest2, StackAtTop) {

@@ -154,16 +154,14 @@ ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
                                          mojom::WindowTreePtr window_tree) {
   OnWillBecomeClientRootWindow(window);
 
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  DCHECK(server_window);
-  const ClientWindowId client_window_id = server_window->frame_sink_id();
-
   std::unique_ptr<ClientRoot> client_root_ptr =
       std::make_unique<ClientRoot>(this, window, is_top_level);
   ClientRoot* client_root = client_root_ptr.get();
   client_roots_.push_back(std::move(client_root_ptr));
 
   if (!is_top_level) {
+    ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+    DCHECK(server_window);
     const int64_t display_id =
         display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
     const ClientWindowId focused_window_id =
@@ -181,14 +179,6 @@ ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
   }
 
   client_root->RegisterVizEmbeddingSupport();
-
-  // Requests for top-levels don't get OnFrameSinkIdAllocated().
-  if (!is_top_level) {
-    // TODO(sky): centralize FrameSinkId management.
-    window_tree_client_->OnFrameSinkIdAllocated(
-        ClientWindowIdToTransportId(client_window_id),
-        server_window->frame_sink_id());
-  }
 
   return client_root;
 }
@@ -718,7 +708,12 @@ bool WindowTree::EmbedImpl(const ClientWindowId& window_id,
                                  base::Unretained(this), embedding.get()));
   if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
     embedding->embedded_tree()->can_change_root_window_visibility_ = false;
-  ServerWindow::GetMayBeNull(window)->SetEmbedding(std::move(embedding));
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  const ClientWindowId client_window_id = server_window->frame_sink_id();
+  server_window->SetEmbedding(std::move(embedding));
+  window_tree_client_->OnFrameSinkIdAllocated(
+      ClientWindowIdToTransportId(client_window_id),
+      server_window->frame_sink_id());
   return true;
 }
 
