@@ -133,6 +133,11 @@ V8CodeCache::GetCompileOptions(V8CacheOptions cache_options,
                            no_cache_reason);
   }
 
+  // If the resource is served from CacheStorage, generate the V8 code cache in
+  // the first load.
+  if (cache_handler->IsServedFromCacheStorage())
+    cache_options = kV8CacheOptionsCodeWithoutHeatCheck;
+
   switch (cache_options) {
     case kV8CacheOptionsDefault:
     case kV8CacheOptionsCode:

@@ -83,25 +83,6 @@ void ScriptController::UpdateSecurityOrigin(
   window_proxy_manager_->UpdateSecurityOrigin(security_origin);
 }
 
-namespace {
-
-V8CacheOptions CacheOptions(const CachedMetadataHandler* cache_handler,
-                            const Settings* settings) {
-  V8CacheOptions v8_cache_options(kV8CacheOptionsDefault);
-  if (settings) {
-    v8_cache_options = settings->GetV8CacheOptions();
-    if (v8_cache_options == kV8CacheOptionsNone)
-      return kV8CacheOptionsNone;
-  }
-  // If the resource is served from CacheStorage, generate the V8 code cache in
-  // the first load.
-  if (cache_handler && cache_handler->IsServedFromCacheStorage())
-    return kV8CacheOptionsCodeWithoutHeatCheck;
-  return v8_cache_options;
-}
-
-}  // namespace
-
 v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     v8::Local<v8::Context> context,
     const ScriptSourceCode& source,
@@ -114,10 +95,9 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
                                          source.StartPosition()));
   v8::Local<v8::Value> result;
   {
-    CachedMetadataHandler* cache_handler = source.CacheHandler();
-
-    V8CacheOptions v8_cache_options =
-        CacheOptions(cache_handler, GetFrame()->GetSettings());
+    V8CacheOptions v8_cache_options = kV8CacheOptionsDefault;
+    if (const Settings* settings = GetFrame()->GetSettings())
+      v8_cache_options = settings->GetV8CacheOptions();
 
     // Isolate exceptions that occur when compiling and executing
     // the code. These exceptions should not interfere with
