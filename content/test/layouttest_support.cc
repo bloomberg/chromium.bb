@@ -253,12 +253,6 @@ void FetchManifest(blink::WebView* view, FetchManifestCallback callback) {
       .RequestManifest(std::move(callback));
 }
 
-void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider) {
-  RenderThreadImpl::current_blink_platform_impl()
-      ->SetPlatformEventObserverForTesting(blink::kWebPlatformEventTypeGamepad,
-                                           std::move(provider));
-}
-
 void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function) {
   WorkerFetchContextImpl::InstallRewriteURLFunction(rewrite_url_function);
 }

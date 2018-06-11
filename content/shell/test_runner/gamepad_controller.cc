@@ -7,11 +7,13 @@
 #include <string.h>
 
 #include "base/macros.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -148,70 +150,120 @@ void GamepadControllerBindings::SetDualRumbleVibrationActuator(int index,
     controller_->SetDualRumbleVibrationActuator(index, enabled);
 }
 
-// static
-base::WeakPtr<GamepadController> GamepadController::Create(
-    WebTestDelegate* delegate) {
-  CHECK(delegate);
-
-  GamepadController* controller = new GamepadController();
-  delegate->SetGamepadProvider(controller);
-  return controller->weak_factory_.GetWeakPtr();
-}
-
 GamepadController::GamepadController()
-    : listener_(nullptr), weak_factory_(this) {
+    : observer_(nullptr), binding_(this), weak_factory_(this) {
+  size_t buffer_size = sizeof(device::GamepadHardwareBuffer);
+  buffer_ = mojo::SharedBufferHandle::Create(buffer_size);
+  CHECK(buffer_.is_valid());
+  mapping_ = buffer_->Map(buffer_size);
+  CHECK(mapping_);
+  gamepads_ = new (mapping_.get()) device::GamepadHardwareBuffer();
+
   Reset();
 }
 
 GamepadController::~GamepadController() {}
 
 void GamepadController::Reset() {
-  memset(&gamepads_, 0, sizeof(gamepads_));
+  memset(gamepads_, 0, sizeof(*gamepads_));
+  missed_dispatches_.reset();
 }
 
 void GamepadController::Install(blink::WebLocalFrame* frame) {
+  service_manager::Connector::TestApi connector_test_api(
+      blink::Platform::Current()->GetConnector());
+  connector_test_api.OverrideBinderForTesting(
+      service_manager::Identity(content::mojom::kBrowserServiceName),
+      device::mojom::GamepadMonitor::Name_,
+      base::BindRepeating(&GamepadController::OnInterfaceRequest,
+                          base::Unretained(this)));
+
   GamepadControllerBindings::Install(weak_factory_.GetWeakPtr(), frame);
 }
 
-void GamepadController::SampleGamepads(Gamepads& gamepads) {
-  memcpy(&gamepads, &gamepads_, sizeof(Gamepads));
+void GamepadController::OnInterfaceRequest(
+    mojo::ScopedMessagePipeHandle handle) {
+  binding_.Bind(device::mojom::GamepadMonitorRequest(std::move(handle)));
+  observer_ = nullptr;
 }
 
-void GamepadController::SetListener(blink::WebGamepadListener* listener) {
-  listener_ = listener;
+void GamepadController::GamepadStartPolling(
+    GamepadStartPollingCallback callback) {
+  std::move(callback).Run(
+      buffer_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY));
+}
+
+void GamepadController::GamepadStopPolling(
+    GamepadStopPollingCallback callback) {
+  std::move(callback).Run();
+}
+
+void GamepadController::SetObserver(
+    device::mojom::GamepadObserverPtr observer) {
+  observer_ = std::move(observer);
+
+  // Notify the new observer of any GamepadConnected RPCs that it missed because
+  // the SetObserver RPC wasn't processed in time. This happens during layout
+  // tests because SetObserver is async, so the test can continue to the
+  // DispatchConnected call before the SetObserver RPC was processed. This isn't
+  // an issue in the real implementation because the 'gamepadconnected' event
+  // doesn't fire until user input is detected, so even if a GamepadConnected
+  // event is missed, another will be picked up after the next user input.
+  gamepads_->seqlock.WriteBegin();
+  for (size_t index = 0; index < Gamepads::kItemsLengthCap; index++) {
+    if (missed_dispatches_.test(index)) {
+      observer_->GamepadConnected(index, gamepads_->data.items[index]);
+    }
+  }
+  missed_dispatches_.reset();
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::Connect(int index) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
     return;
-  gamepads_.items[index].connected = true;
+  gamepads_->seqlock.WriteBegin();
+  gamepads_->data.items[index].connected = true;
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::DispatchConnected(int index) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap) ||
-      !gamepads_.items[index].connected)
+      !gamepads_->data.items[index].connected)
     return;
-  const Gamepad& pad = gamepads_.items[index];
-  if (listener_)
-    listener_->DidConnectGamepad(index, pad);
+  gamepads_->seqlock.WriteBegin();
+  const Gamepad& pad = gamepads_->data.items[index];
+  if (observer_) {
+    observer_->GamepadConnected(index, pad);
+  } else {
+    // Record that there wasn't an observer to get the GamepadConnected RPC so
+    // we can send it when SetObserver gets called.
+    missed_dispatches_.set(index);
+  }
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::Disconnect(int index) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
     return;
-  Gamepad& pad = gamepads_.items[index];
+  gamepads_->seqlock.WriteBegin();
+  Gamepad& pad = gamepads_->data.items[index];
   pad.connected = false;
-  if (listener_)
-    listener_->DidDisconnectGamepad(index, pad);
+  if (observer_)
+    observer_->GamepadDisconnected(index, pad);
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::SetId(int index, const std::string& src) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
     return;
   const char* p = src.c_str();
-  memset(gamepads_.items[index].id, 0, sizeof(gamepads_.items[index].id));
+  gamepads_->seqlock.WriteBegin();
+  memset(gamepads_->data.items[index].id, 0,
+         sizeof(gamepads_->data.items[index].id));
   for (unsigned i = 0; *p && i < Gamepad::kIdLengthCap - 1; ++i)
-    gamepads_.items[index].id[i] = *p++;
+    gamepads_->data.items[index].id[i] = *p++;
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::SetButtonCount(int index, int buttons) {
@@ -219,7 +271,9 @@ void GamepadController::SetButtonCount(int index, int buttons) {
     return;
   if (buttons < 0 || buttons >= static_cast<int>(Gamepad::kButtonsLengthCap))
     return;
-  gamepads_.items[index].buttons_length = buttons;
+  gamepads_->seqlock.WriteBegin();
+  gamepads_->data.items[index].buttons_length = buttons;
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::SetButtonData(int index, int button, double data) {
@@ -227,8 +281,10 @@ void GamepadController::SetButtonData(int index, int button, double data) {
     return;
   if (button < 0 || button >= static_cast<int>(Gamepad::kButtonsLengthCap))
     return;
-  gamepads_.items[index].buttons[button].value = data;
-  gamepads_.items[index].buttons[button].pressed = data > 0.1f;
+  gamepads_->seqlock.WriteBegin();
+  gamepads_->data.items[index].buttons[button].value = data;
+  gamepads_->data.items[index].buttons[button].pressed = data > 0.1f;
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::SetAxisCount(int index, int axes) {
@@ -236,7 +292,9 @@ void GamepadController::SetAxisCount(int index, int axes) {
     return;
   if (axes < 0 || axes >= static_cast<int>(Gamepad::kAxesLengthCap))
     return;
-  gamepads_.items[index].axes_length = axes;
+  gamepads_->seqlock.WriteBegin();
+  gamepads_->data.items[index].axes_length = axes;
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::SetAxisData(int index, int axis, double data) {
@@ -244,16 +302,20 @@ void GamepadController::SetAxisData(int index, int axis, double data) {
     return;
   if (axis < 0 || axis >= static_cast<int>(Gamepad::kAxesLengthCap))
     return;
-  gamepads_.items[index].axes[axis] = data;
+  gamepads_->seqlock.WriteBegin();
+  gamepads_->data.items[index].axes[axis] = data;
+  gamepads_->seqlock.WriteEnd();
 }
 
 void GamepadController::SetDualRumbleVibrationActuator(int index,
                                                        bool enabled) {
   if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
     return;
-  gamepads_.items[index].vibration_actuator.type =
+  gamepads_->seqlock.WriteBegin();
+  gamepads_->data.items[index].vibration_actuator.type =
       device::GamepadHapticActuatorType::kDualRumble;
-  gamepads_.items[index].vibration_actuator.not_null = enabled;
+  gamepads_->data.items[index].vibration_actuator.not_null = enabled;
+  gamepads_->seqlock.WriteEnd();
 }
 
 }  // namespace test_runner

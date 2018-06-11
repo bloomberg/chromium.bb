@@ -40,7 +40,6 @@ class WebWidgetTestProxyBase;
 namespace content {
 
 class RenderFrame;
-class RendererGamepadProvider;
 class RenderView;
 class StoragePartition;
 
@@ -99,9 +98,6 @@ void EnableWebTestProxyCreation(
 typedef base::OnceCallback<void(const GURL&, const blink::Manifest&)>
     FetchManifestCallback;
 void FetchManifest(blink::WebView* view, FetchManifestCallback callback);
-
-// Sets gamepad provider to be used for layout tests.
-void SetMockGamepadProvider(std::unique_ptr<RendererGamepadProvider> provider);
 
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);

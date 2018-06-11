@@ -5,37 +5,39 @@
 #ifndef CONTENT_SHELL_TEST_RUNNER_GAMEPAD_CONTROLLER_H_
 #define CONTENT_SHELL_TEST_RUNNER_GAMEPAD_CONTROLLER_H_
 
-#include <map>
+#include <bitset>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "device/gamepad/public/cpp/gamepads.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 namespace blink {
-class WebGamepadListener;
 class WebLocalFrame;
 }
 
 namespace test_runner {
 
-class WebTestDelegate;
-
 class TEST_RUNNER_EXPORT GamepadController
-    : public base::SupportsWeakPtr<GamepadController> {
+    : public device::mojom::GamepadMonitor,
+      public base::SupportsWeakPtr<GamepadController> {
  public:
-  static base::WeakPtr<GamepadController> Create(WebTestDelegate* delegate);
-  ~GamepadController();
+  GamepadController();
+  ~GamepadController() override;
 
   void Reset();
   void Install(blink::WebLocalFrame* frame);
 
-  void SampleGamepads(device::Gamepads& gamepads);
-  void SetListener(blink::WebGamepadListener* listener);
+  void GamepadStartPolling(GamepadStartPollingCallback callback) override;
+  void GamepadStopPolling(GamepadStopPollingCallback callback) override;
+  void SetObserver(device::mojom::GamepadObserverPtr observer) override;
 
  private:
   friend class GamepadControllerBindings;
-  GamepadController();
 
   // TODO(b.kelemen): for historical reasons Connect just initializes the
   // object. The 'gamepadconnected' event will be dispatched via
@@ -45,8 +47,8 @@ class TEST_RUNNER_EXPORT GamepadController
   // Connect and at the same time updating all the gamepad tests.
   void Connect(int index);
   void DispatchConnected(int index);
-
   void Disconnect(int index);
+
   void SetId(int index, const std::string& src);
   void SetButtonCount(int index, int buttons);
   void SetButtonData(int index, int button, double data);
@@ -54,12 +56,15 @@ class TEST_RUNNER_EXPORT GamepadController
   void SetAxisData(int index, int axis, double data);
   void SetDualRumbleVibrationActuator(int index, bool enabled);
 
-  blink::WebGamepadListener* listener_;
+  void OnInterfaceRequest(mojo::ScopedMessagePipeHandle handle);
 
-  device::Gamepads gamepads_;
+  device::mojom::GamepadObserverPtr observer_;
+  mojo::Binding<device::mojom::GamepadMonitor> binding_;
+  mojo::ScopedSharedBufferHandle buffer_;
+  mojo::ScopedSharedBufferMapping mapping_;
 
-  // Mapping from gamepad index to connection state.
-  std::map<int, bool> pending_changes_;
+  device::GamepadHardwareBuffer* gamepads_;
+  std::bitset<device::Gamepads::kItemsLengthCap> missed_dispatches_;
 
   base::WeakPtrFactory<GamepadController> weak_factory_;
 

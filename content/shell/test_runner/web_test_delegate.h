@@ -38,7 +38,6 @@ class WebView;
 
 namespace test_runner {
 
-class GamepadController;
 class WebWidgetTestProxyBase;
 struct TestPreferences;
 
@@ -51,9 +50,6 @@ class WebTestDelegate {
   virtual void ClearEditCommand() = 0;
   virtual void SetEditCommand(const std::string& name,
                               const std::string& value) = 0;
-
-  // Sets gamepad provider to be used for tests.
-  virtual void SetGamepadProvider(GamepadController* controller) = 0;
 
   // Add a message to stderr (not saved to expected output files, for debugging
   // only).

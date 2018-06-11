@@ -128,31 +128,6 @@ class UseSynchronousResizeModeVisitor : public RenderViewVisitor {
   bool enable_;
 };
 
-class MockGamepadProvider : public RendererGamepadProvider {
- public:
-  explicit MockGamepadProvider(test_runner::GamepadController* controller)
-      : controller_(controller) {}
-  ~MockGamepadProvider() override {
-    StopIfObserving();
-  }
-
-  // RendererGamepadProvider implementation.
-  void SampleGamepads(device::Gamepads& gamepads) override {
-    controller_->SampleGamepads(gamepads);
-  }
-  void Start(blink::WebPlatformEventListener* listener) override {
-    controller_->SetListener(static_cast<blink::WebGamepadListener*>(listener));
-    RendererGamepadProvider::Start(listener);
-  }
-  void SendStartMessage() override {}
-  void SendStopMessage() override {}
-
- private:
-  std::unique_ptr<test_runner::GamepadController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockGamepadProvider);
-};
-
 class MockVideoCapturerSource : public media::VideoCapturerSource {
  public:
   MockVideoCapturerSource() = default;
@@ -212,13 +187,6 @@ void BlinkTestRunner::ClearEditCommand() {
 void BlinkTestRunner::SetEditCommand(const std::string& name,
                                      const std::string& value) {
   render_view()->SetEditCommandForNextKeyEvent(name, value);
-}
-
-void BlinkTestRunner::SetGamepadProvider(
-    test_runner::GamepadController* controller) {
-  std::unique_ptr<MockGamepadProvider> provider(
-      new MockGamepadProvider(controller));
-  SetMockGamepadProvider(std::move(provider));
 }
 
 void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
