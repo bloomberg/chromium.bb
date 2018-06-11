@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_TEST_FAKE_BLUETOOTH_LE_ADVERTISEMENT_WATCHER_WINRT_H_
 
 #include <windows.devices.bluetooth.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include <stdint.h>
@@ -73,7 +74,24 @@ class FakeBluetoothLEAdvertisementWatcherWinrt
       EventRegistrationToken* token) override;
   IFACEMETHODIMP remove_Stopped(EventRegistrationToken token) override;
 
+  void SimulateAdvertisement(
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
+                                 IBluetoothLEAdvertisementReceivedEventArgs>
+          advertisement);
+
  private:
+  ABI::Windows::Devices::Bluetooth::Advertisement::
+      BluetoothLEAdvertisementWatcherStatus status_ =
+          ABI::Windows::Devices::Bluetooth::Advertisement::
+              BluetoothLEAdvertisementWatcherStatus_Created;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          BluetoothLEAdvertisementWatcher*,
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          BluetoothLEAdvertisementReceivedEventArgs*>>
+      handler_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEAdvertisementWatcherWinrt);
 };
 

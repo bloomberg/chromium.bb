@@ -7,7 +7,12 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_export.h"
+
+#if defined(OS_WIN)
+#include <rpc.h>
+#endif  // defined(OS_WIN)
 
 namespace device {
 
@@ -41,6 +46,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothUUID {
   // format, the result might be invalid. Use IsValid to check for validity
   // after construction.
   explicit BluetoothUUID(const std::string& uuid);
+
+#if defined(OS_WIN)
+  // Windows exclusive constructor converting a GUID structure to a
+  // BluetoothUUID. This will always result in a 128 bit Format.
+  explicit BluetoothUUID(GUID uuid);
+#endif  // defined(OS_WIN)
 
   // Default constructor does nothing. Since BluetoothUUID is copyable, this
   // constructor is useful for initializing member variables and assigning a

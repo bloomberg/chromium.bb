@@ -8,7 +8,9 @@
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
+#include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,8 +18,10 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_pending_task.h"
 #include "base/time/time.h"
+#include "base/win/vector.h"
 #include "base/win/windows_version.h"
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
@@ -27,16 +31,42 @@
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
+#include "device/bluetooth/test/fake_bluetooth_le_advertisement_received_event_args_winrt.h"
+#include "device/bluetooth/test/fake_bluetooth_le_advertisement_watcher_winrt.h"
+#include "device/bluetooth/test/fake_bluetooth_le_advertisement_winrt.h"
 #include "device/bluetooth/test/fake_device_information_winrt.h"
+
+// Note: As UWP does not provide int specializations for IObservableVector and
+// VectorChangedEventHandler we need to supply our own. UUIDs were generated
+// using `uuidgen`.
+namespace ABI {
+namespace Windows {
+namespace Foundation {
+namespace Collections {
+
+template <>
+struct __declspec(uuid("2736c37e-4218-496f-a46a-92d5d9e610a9"))
+    IObservableVector<GUID> : IObservableVector_impl<GUID> {};
+
+template <>
+struct __declspec(uuid("94844fba-ddf9-475c-be6e-ebb87039cef6"))
+    VectorChangedEventHandler<GUID> : VectorChangedEventHandler_impl<GUID> {};
+
+}  // namespace Collections
+}  // namespace Foundation
+}  // namespace Windows
+}  // namespace ABI
 
 namespace {
 
-using Microsoft::WRL::Make;
-using Microsoft::WRL::ComPtr;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEAdvertisementWatcher;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapter;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
 using ABI::Windows::Devices::Enumeration::IDeviceInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationStatics;
+using Microsoft::WRL::ComPtr;
+using Microsoft::WRL::Make;
 
 class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
  public:
@@ -44,8 +74,13 @@ class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
                             ComPtr<IDeviceInformation> device_information,
                             InitCallback init_cb)
       : adapter_(std::move(adapter)),
-        device_information_(std::move(device_information)) {
+        device_information_(std::move(device_information)),
+        watcher_(Make<device::FakeBluetoothLEAdvertisementWatcherWinrt>()) {
     Init(std::move(init_cb));
+  }
+
+  device::FakeBluetoothLEAdvertisementWatcherWinrt* watcher() {
+    return watcher_.Get();
   }
 
  protected:
@@ -66,9 +101,15 @@ class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
     return device_information_statics.CopyTo(statics);
   };
 
+  HRESULT ActivateBluetoothAdvertisementLEWatcherInstance(
+      IBluetoothLEAdvertisementWatcher** instance) const override {
+    return watcher_.CopyTo(instance);
+  }
+
  private:
   ComPtr<IBluetoothAdapter> adapter_;
   ComPtr<IDeviceInformation> device_information_;
+  ComPtr<device::FakeBluetoothLEAdvertisementWatcherWinrt> watcher_;
 };
 
 BLUETOOTH_ADDRESS CanonicalStringToBLUETOOTH_ADDRESS(
@@ -86,33 +127,26 @@ BLUETOOTH_ADDRESS CanonicalStringToBLUETOOTH_ADDRESS(
 }
 
 // The canonical UUID string format is device::BluetoothUUID.value().
-BTH_LE_UUID CanonicalStringToBTH_LE_UUID(std::string uuid) {
+GUID CanonicalStringToGUID(base::StringPiece uuid) {
+  DCHECK_EQ(36u, uuid.size());
+  std::wstring braced_uuid = L'{' + base::UTF8ToWide(uuid) + L'}';
+  GUID guid;
+  CHECK_EQ(NOERROR, ::CLSIDFromString(braced_uuid.data(), &guid));
+  return guid;
+}
+
+// The canonical UUID string format is device::BluetoothUUID.value().
+BTH_LE_UUID CanonicalStringToBTH_LE_UUID(base::StringPiece uuid) {
   BTH_LE_UUID win_uuid = {0};
   if (uuid.size() == 4) {
     win_uuid.IsShortUuid = TRUE;
     unsigned int data[1];
-    int result = sscanf_s(uuid.c_str(), "%04x", &data[0]);
+    int result = sscanf_s(uuid.data(), "%04x", &data[0]);
     CHECK_EQ(1, result);
     win_uuid.Value.ShortUuid = data[0];
   } else if (uuid.size() == 36) {
     win_uuid.IsShortUuid = FALSE;
-    unsigned int data[11];
-    int result = sscanf_s(
-        uuid.c_str(), "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        &data[0], &data[1], &data[2], &data[3], &data[4], &data[5], &data[6],
-        &data[7], &data[8], &data[9], &data[10]);
-    CHECK_EQ(11, result);
-    win_uuid.Value.LongUuid.Data1 = data[0];
-    win_uuid.Value.LongUuid.Data2 = data[1];
-    win_uuid.Value.LongUuid.Data3 = data[2];
-    win_uuid.Value.LongUuid.Data4[0] = data[3];
-    win_uuid.Value.LongUuid.Data4[1] = data[4];
-    win_uuid.Value.LongUuid.Data4[2] = data[5];
-    win_uuid.Value.LongUuid.Data4[3] = data[6];
-    win_uuid.Value.LongUuid.Data4[4] = data[7];
-    win_uuid.Value.LongUuid.Data4[5] = data[8];
-    win_uuid.Value.LongUuid.Data4[6] = data[9];
-    win_uuid.Value.LongUuid.Data4[7] = data[10];
+    win_uuid.Value.LongUuid = CanonicalStringToGUID(uuid);
   } else {
     CHECK(false);
   }
@@ -231,24 +265,40 @@ BluetoothDevice* BluetoothTestWin::SimulateLowEnergyDevice(int device_ordinal) {
       break;
   }
 
-  win::BLEDevice* simulated_device = fake_bt_le_wrapper_->SimulateBLEDevice(
-      device_name, CanonicalStringToBLUETOOTH_ADDRESS(device_address));
-  if (simulated_device != nullptr) {
-    if (!service_uuid_1.empty()) {
-      fake_bt_le_wrapper_->SimulateGattService(
-          simulated_device, nullptr,
-          CanonicalStringToBTH_LE_UUID(service_uuid_1));
-    }
-    if (!service_uuid_2.empty()) {
-      fake_bt_le_wrapper_->SimulateGattService(
-          simulated_device, nullptr,
-          CanonicalStringToBTH_LE_UUID(service_uuid_2));
-    }
-  }
-  FinishPendingTasks();
+  if (BluetoothAdapterWin::UseNewBLEWinImplementation()) {
+    std::vector<GUID> guids;
+    if (!service_uuid_1.empty())
+      guids.push_back(CanonicalStringToGUID(service_uuid_1));
+    if (!service_uuid_2.empty())
+      guids.push_back(CanonicalStringToGUID(service_uuid_2));
 
-  std::vector<BluetoothDevice*> devices = adapter_->GetDevices();
-  for (auto* device : devices) {
+    auto service_uuids = Make<base::win::Vector<GUID>>(std::move(guids));
+    auto advertisement = Make<FakeBluetoothLEAdvertisementWinrt>(
+        std::move(device_name), std::move(service_uuids));
+    auto event_args = Make<FakeBluetoothLEAdvertisementReceivedEventArgsWinrt>(
+        device_address, std::move(advertisement));
+    static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
+        ->watcher()
+        ->SimulateAdvertisement(std::move(event_args));
+  } else {
+    win::BLEDevice* simulated_device = fake_bt_le_wrapper_->SimulateBLEDevice(
+        device_name, CanonicalStringToBLUETOOTH_ADDRESS(device_address));
+    if (simulated_device != nullptr) {
+      if (!service_uuid_1.empty()) {
+        fake_bt_le_wrapper_->SimulateGattService(
+            simulated_device, nullptr,
+            CanonicalStringToBTH_LE_UUID(service_uuid_1));
+      }
+      if (!service_uuid_2.empty()) {
+        fake_bt_le_wrapper_->SimulateGattService(
+            simulated_device, nullptr,
+            CanonicalStringToBTH_LE_UUID(service_uuid_2));
+      }
+    }
+    FinishPendingTasks();
+  }
+
+  for (auto* device : adapter_->GetDevices()) {
     if (device->GetAddress() == device_address)
       return device;
   }

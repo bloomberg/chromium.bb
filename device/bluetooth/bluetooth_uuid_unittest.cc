@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/bluetooth/bluetooth_uuid.h"
+
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
@@ -75,6 +77,30 @@ TEST(BluetoothUUIDTest, BluetoothUUID) {
   EXPECT_EQ(uuid1, uuid5);
   EXPECT_EQ(uuid1, uuid6);
 }
+
+#if defined(OS_WIN)
+TEST(BluetoothUUIDTest, BluetoothUUID_GUID) {
+  const char kValid128Bit0[] = "12345678-1234-5678-9abc-def123456789";
+  GUID guid;
+  guid.Data1 = 0x12345678;
+  guid.Data2 = 0x1234;
+  guid.Data3 = 0x5678;
+  guid.Data4[0] = 0x9a;
+  guid.Data4[1] = 0xbc;
+  guid.Data4[2] = 0xde;
+  guid.Data4[3] = 0xf1;
+  guid.Data4[4] = 0x23;
+  guid.Data4[5] = 0x45;
+  guid.Data4[6] = 0x67;
+  guid.Data4[7] = 0x89;
+
+  BluetoothUUID uuid(guid);
+  EXPECT_TRUE(uuid.IsValid());
+  EXPECT_EQ(BluetoothUUID::kFormat128Bit, uuid.format());
+  EXPECT_EQ(kValid128Bit0, uuid.value());
+  EXPECT_EQ(kValid128Bit0, uuid.canonical_value());
+}
+#endif  // defined(OS_WIN)
 
 // Verify that UUIDs are parsed case-insensitively
 TEST(BluetoothUUIDTest, BluetoothUUID_CaseInsensitive) {

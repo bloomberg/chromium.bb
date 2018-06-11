@@ -135,7 +135,11 @@ TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_RejectsInvalidFormats) {
 }
 
 // Verifies basic device properties, e.g. GetAddress, GetName, ...
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, LowEnergyDeviceProperties) {
+#else
 TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -162,7 +166,11 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
 }
 
 // Device with no advertised Service UUIDs.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, LowEnergyDeviceNoUUIDs) {
+#else
 TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;

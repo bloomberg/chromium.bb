@@ -6,11 +6,15 @@
 #define DEVICE_BLUETOOTH_TEST_FAKE_BLUETOOTH_LE_ADVERTISEMENT_WINRT_H_
 
 #include <windows.devices.bluetooth.advertisement.h>
+#include <wrl/client.h>
 #include <wrl/implements.h>
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace device {
 
@@ -21,7 +25,10 @@ class FakeBluetoothLEAdvertisementWinrt
           ABI::Windows::Devices::Bluetooth::Advertisement::
               IBluetoothLEAdvertisement> {
  public:
-  FakeBluetoothLEAdvertisementWinrt();
+  FakeBluetoothLEAdvertisementWinrt(
+      base::Optional<std::string> local_name,
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Foundation::Collections::IVector<GUID>> service_uuids);
   ~FakeBluetoothLEAdvertisementWinrt() override;
 
   // IBluetoothLEAdvertisement:
@@ -55,6 +62,10 @@ class FakeBluetoothLEAdvertisementWinrt
               BluetoothLEAdvertisementDataSection*>** section_list) override;
 
  private:
+  base::Optional<std::string> local_name_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVector<GUID>>
+      service_uuids_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEAdvertisementWinrt);
 };
 
