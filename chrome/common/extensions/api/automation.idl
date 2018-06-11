@@ -261,7 +261,6 @@
     expanded,
     focusable,
     focused,
-    hasPopup,
     horizontal,
     hovered,
     ignored,

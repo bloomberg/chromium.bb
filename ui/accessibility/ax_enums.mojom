@@ -282,7 +282,6 @@ enum State {
   kEditable,
   kExpanded,
   kFocusable,
-  kHasPopup,
    // Grows horizontally, e.g. most toolbars and separators.
   kHorizontal,
   kHovered,
