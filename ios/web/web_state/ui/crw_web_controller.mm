@@ -40,6 +40,7 @@
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#include "ios/web/navigation/error_retry_state_machine.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/navigation_manager_util.h"
@@ -555,16 +556,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // section of go/bling-navigation-experiment for details.
 - (web::NavigationContextImpl*)loadPlaceholderInWebViewForURL:
     (const GURL&)originalURL;
-// Transitions |item| to web::ErrorRetryState::kNavigatingToFailedNavigationItem
-// state. This is part of auto reloading an item that previously triggered a
-// native error view.
-// TODO(crbug.com/738020): Move navigation logic to NavigationManager.
-- (void)handleNavigationToFailedNavigationItem:(web::NavigationItemImpl*)item;
-// Transitions |item| to web::ErrorRetryState::kRetryFailedNavigationItem state.
-// This is part of auto reloading an item that previously triggered a native
-// error view.
-// TODO(crbug.com/738020): Move navigation logic to NavigationManager.
-- (void)handleRetryFailedNavigationItem:(web::NavigationItemImpl*)item;
+// Executes the command specified by the ErrorRetryStateMachine.
+- (void)handleErrorRetryCommand:(web::ErrorRetryCommand)command
+                 navigationItem:(web::NavigationItemImpl*)item
+              navigationContext:(web::NavigationContextImpl*)context;
 // Loads the current nativeController in a native view. If a web view is
 // present, removes it and swaps in the native view in its place. |context| can
 // not be null.
@@ -751,7 +746,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // provided by web view.
 - (void)updateSSLStatusForCurrentNavigationItem;
 // Called when a load ends in an SSL error and certificate chain.
-- (void)handleSSLCertError:(NSError*)error forNavigation:navigation;
+- (void)handleSSLCertError:(NSError*)error
+             forNavigation:navigation
+         errorRetryCommand:(web::ErrorRetryCommand)command;
 
 // Used in webView:didReceiveAuthenticationChallenge:completionHandler: to
 // reply with NSURLSessionAuthChallengeDisposition and credentials.
@@ -877,7 +874,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action;
 // Called when a load ends in an error.
 - (void)handleLoadError:(NSError*)error
-          forNavigation:(WKNavigation*)navigation;
+          forNavigation:(WKNavigation*)navigation
+      errorRetryCommand:(web::ErrorRetryCommand)command;
 
 // Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
 - (void)handleCancelledError:(NSError*)error
@@ -1724,6 +1722,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSError* error = context->GetError();
   DCHECK(error);
+  DCHECK_EQ(item->GetUniqueID(), context->GetNavigationItemUniqueID());
 
   if (web::IsWKWebViewSSLCertError(error)) {
     // This could happen only if certificate is absent or could not be parsed.
@@ -1740,15 +1739,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       !base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
     [self removeWebView];
-  } else if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
-    item->SetErrorRetryState(
-        web::ErrorRetryState::kDisplayingWebErrorForFailedNavigation);
-  } else {
-    item->SetErrorRetryState(
-        web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation);
   }
 
   if (!base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
+      item->error_retry_state_machine().SetDisplayingNativeError();
+
     id<CRWNativeContent> nativeContent =
         [_nativeProvider controllerForURL:currentURL
                                 withError:error
@@ -1835,16 +1831,46 @@ registerLoadRequestForURL:(const GURL&)requestURL
   return [_navigationStates contextForNavigation:navigation];
 }
 
-- (void)handleNavigationToFailedNavigationItem:(web::NavigationItemImpl*)item {
-  item->SetErrorRetryState(
-      web::ErrorRetryState::kNavigatingToFailedNavigationItem);
-  [_webView loadHTMLString:@"" baseURL:net::NSURLWithGURL(item->GetURL())];
-}
+- (void)handleErrorRetryCommand:(web::ErrorRetryCommand)command
+                 navigationItem:(web::NavigationItemImpl*)item
+              navigationContext:(web::NavigationContextImpl*)context {
+  if (command == web::ErrorRetryCommand::kDoNothing)
+    return;
 
-- (void)handleRetryFailedNavigationItem:(web::NavigationItemImpl*)item {
-  DCHECK_EQ(item->GetURL(), net::GURLWithNSURL(_webView.URL));
-  item->SetErrorRetryState(web::ErrorRetryState::kRetryFailedNavigationItem);
-  [_webView reload];
+  DCHECK_EQ(item->GetUniqueID(), context->GetNavigationItemUniqueID());
+  switch (command) {
+    case web::ErrorRetryCommand::kLoadPlaceholder: {
+      web::NavigationContextImpl* placeholderNavigationContext =
+          [self loadPlaceholderInWebViewForURL:item->GetURL()];
+      placeholderNavigationContext->SetError(context->GetError());
+      placeholderNavigationContext->SetIsPost(context->IsPost());
+    } break;
+
+    case web::ErrorRetryCommand::kLoadErrorView:
+      [self loadErrorPageForNavigationItem:item navigationContext:context];
+      break;
+
+    case web::ErrorRetryCommand::kReload:
+      [_webView reload];
+      break;
+
+    case web::ErrorRetryCommand::kRewriteWebViewURL: {
+      std::unique_ptr<web::NavigationContextImpl> navigationContext =
+          [self registerLoadRequestForURL:item->GetURL()
+                   sameDocumentNavigation:NO
+                           hasUserGesture:NO];
+      WKNavigation* navigation =
+          [_webView loadHTMLString:@""
+                           baseURL:net::NSURLWithGURL(item->GetURL())];
+      navigationContext->SetError(context->GetError());
+      navigationContext->SetIsPost(context->IsPost());
+      [_navigationStates setContext:std::move(navigationContext)
+                      forNavigation:navigation];
+    } break;
+
+    case web::ErrorRetryCommand::kDoNothing:
+      NOTREACHED();
+  }
 }
 
 - (void)loadCurrentURL {
@@ -2026,8 +2052,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // navigation. WKWebView allows multiple provisional navigations, while
   // Navigation Manager has only one pending navigation.
   if (item) {
-    item->SetVirtualURL(URL);
-    item->SetURL(URL);
+    if (!web::wk_navigation_util::IsWKInternalUrl(URL)) {
+      item->SetVirtualURL(URL);
+      item->SetURL(URL);
+    }
     // Redirects (3xx response code), must change POST requests to GETs.
     item->SetPostData(nil);
     item->ResetHttpRequestHeaders();
@@ -2940,7 +2968,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)handleLoadError:(NSError*)error
-          forNavigation:(WKNavigation*)navigation {
+          forNavigation:(WKNavigation*)navigation
+      errorRetryCommand:(web::ErrorRetryCommand)errorRetryCommand {
   if (error.code == NSURLErrorUnsupportedURL)
     return;
 
@@ -3036,29 +3065,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self loadErrorPageForNavigationItem:self.currentNavItem
                        navigationContext:navigationContext];
   } else {
-    web::ErrorRetryState errorRetryState =
-        self.currentNavItem->GetErrorRetryState();
-    if (errorRetryState ==
-        web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation) {
-      // The navigation item that failed to load already exists in the session
-      // history. This can arise if the failure occurs after the navigation is
-      // committed or if this is is a history navigation to a previously loaded
-      // page.
-      [self loadErrorPageForNavigationItem:self.currentNavItem
-                         navigationContext:navigationContext];
-    } else {
-      // The navigation item that failed to load is not yet in
-      // WKBackForwardList. This can arise when the failure happens during
-      // provisional load of a new page. Kick off a placeholder load to insert a
-      // WKBackForwardListItem. |loadErrorPageForNavigationItem| will be
-      // called when the placeholder finishes loading.
-      DCHECK_EQ(web::ErrorRetryState::kNoNavigationError, errorRetryState);
-      web::NavigationContextImpl* placeholderNavigationContext =
-          [self loadPlaceholderInWebViewForURL:self.currentNavItem->GetURL()];
-      placeholderNavigationContext->SetError(error);
-      placeholderNavigationContext->SetIsPost(
-          [self isCurrentNavigationItemPOST]);
-    }
+    [self handleErrorRetryCommand:errorRetryCommand
+                   navigationItem:self.currentNavItem
+                navigationContext:navigationContext];
   }
   if ([_navigationStates stateForNavigation:navigation] ==
       web::WKNavigationState::PROVISIONALY_FAILED) {
@@ -3720,7 +3729,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (void)handleSSLCertError:(NSError*)error
-             forNavigation:(WKNavigation*)navigation {
+             forNavigation:(WKNavigation*)navigation
+         errorRetryCommand:(web::ErrorRetryCommand)command {
   CHECK(web::IsWKWebViewSSLCertError(error));
 
   net::SSLInfo info;
@@ -3730,7 +3740,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // |info.cert| can be null if certChain in NSError is empty or can not be
     // parsed, in this case do not ask delegate if error should be allowed, it
     // should not be.
-    [self handleLoadError:error forNavigation:navigation];
+    [self handleLoadError:error
+            forNavigation:navigation
+        errorRetryCommand:command];
     return;
   }
 
@@ -4000,7 +4012,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
           messageRouter:messageRouter
       completionHandler:^(NSError* loadError) {
         if (loadError)
-          [self handleLoadError:loadError forNavigation:nil];
+          [self handleLoadError:loadError
+                  forNavigation:nil
+              errorRetryCommand:web::ErrorRetryCommand::kDoNothing];
         else
           self.webStateImpl->SetContentsMimeType("text/html");
       }];
@@ -4418,11 +4432,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
       // performing characters escaping).
       web::NavigationItem* item = web::GetItemWithUniqueID(
           self.navigationManagerImpl, context->GetNavigationItemUniqueID());
-      if (item) {
-        item->SetVirtualURL(webViewURL);
-        item->SetURL(webViewURL);
+      if (!web::wk_navigation_util::IsWKInternalUrl(webViewURL)) {
+        if (item) {
+          item->SetVirtualURL(webViewURL);
+          item->SetURL(webViewURL);
+        }
+        context->SetUrl(webViewURL);
       }
-      context->SetUrl(webViewURL);
     }
     _webStateImpl->OnNavigationStarted(context);
     return;
@@ -4499,7 +4515,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     didFailProvisionalNavigation:(WKNavigation*)navigation
                        withError:(NSError*)error {
   [self didReceiveWebViewNavigationDelegateCallback];
-
   [_navigationStates setState:web::WKNavigationState::PROVISIONALY_FAILED
                 forNavigation:navigation];
 
@@ -4535,10 +4550,29 @@ registerLoadRequestForURL:(const GURL&)requestURL
   } else {
     error = WKWebViewErrorWithSource(error, PROVISIONAL_LOAD);
 
-    if (web::IsWKWebViewSSLCertError(error))
-      [self handleSSLCertError:error forNavigation:navigation];
-    else
-      [self handleLoadError:error forNavigation:navigation];
+    web::NavigationContextImpl* context =
+        [_navigationStates contextForNavigation:navigation];
+    web::NavigationItemImpl* item =
+        context ? web::GetItemWithUniqueID(self.navigationManagerImpl,
+                                           context->GetNavigationItemUniqueID())
+                : nullptr;
+    web::ErrorRetryCommand command = web::ErrorRetryCommand::kDoNothing;
+    if (item) {
+      GURL errorURL =
+          net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
+      command = item->error_retry_state_machine().DidFailProvisionalNavigation(
+          net::GURLWithNSURL(webView.URL), errorURL);
+    }
+
+    if (web::IsWKWebViewSSLCertError(error)) {
+      [self handleSSLCertError:error
+                 forNavigation:navigation
+             errorRetryCommand:command];
+    } else {
+      [self handleLoadError:error
+              forNavigation:navigation
+          errorRetryCommand:command];
+    }
   }
 
   // This must be reset at the end, since code above may need information about
@@ -4771,8 +4805,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       return;
     }
 
-    web::NavigationItemImpl* item = self.currentNavItem;
-    web::ErrorRetryState errorRetryState = item->GetErrorRetryState();
+    web::NavigationItemImpl* item = web::GetItemWithUniqueID(
+        self.navigationManagerImpl, context->GetNavigationItemUniqueID());
 
     if (IsPlaceholderUrl(webViewURL)) {
       GURL originalURL = ExtractUrlFromPlaceholderUrl(webViewURL);
@@ -4803,52 +4837,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
       } else if (isWebUIURL) {
         DCHECK(_webUIManager);
         [_webUIManager loadWebUIForURL:item->GetURL()];
-      } else if (context && context->GetError()) {
-        item->SetErrorRetryState(
-            web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
-        [self loadErrorPageForNavigationItem:item navigationContext:context];
-      } else if (!base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
-        // This is a back/forward navigation to a native error page.
-        DCHECK_EQ(
-            web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation,
-            errorRetryState);
-      } else {
-        // This is a back/forward navigation to a web error page.
-        DCHECK_EQ(web::ErrorRetryState::kDisplayingWebErrorForFailedNavigation,
-                  errorRetryState);
       }
     }
 
-    // Handle state transitions for retrying a previously failed navigation to a
-    // web URL. App-specific URLs should never fail to load so should not change
-    // the error retry state.
-    if (!web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
-      switch (errorRetryState) {
-        case web::ErrorRetryState::kDisplayingNativeErrorForFailedNavigation:
-          DCHECK(context && context->GetPageTransition() &
-                                ui::PAGE_TRANSITION_FORWARD_BACK);
-          if (item->GetURL() == webViewURL) {
-            // Shortcut: if WebView already has the original URL (can happen
-            // when WebKit renders page from cache after after repeated
-            // back/forward navigations), skip kNavigatingToFailedNavigationItem
-            // state and just reload the page.
-            [self handleRetryFailedNavigationItem:item];
-          } else {
-            [self handleNavigationToFailedNavigationItem:item];
-          }
-          break;
-        case web::ErrorRetryState::kNavigatingToFailedNavigationItem:
-          [self handleRetryFailedNavigationItem:item];
-          break;
-        case web::ErrorRetryState::kRetryFailedNavigationItem:
-          item->SetErrorRetryState(web::ErrorRetryState::kNoNavigationError);
-          break;
-        case web::ErrorRetryState::kNoNavigationError:
-        case web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
-        case web::ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
-          break;
-      }
-    }
+    // Handle error display states.
+    web::ErrorRetryCommand command =
+        item->error_retry_state_machine().DidFinishNavigation(webViewURL);
+    [self handleErrorRetryCommand:command
+                   navigationItem:item
+                navigationContext:context];
   }
 
   [_navigationStates setState:web::WKNavigationState::FINISHED
@@ -4869,10 +4866,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
             withError:(NSError*)error {
   [self didReceiveWebViewNavigationDelegateCallback];
 
+  GURL webViewURL = net::GURLWithNSURL(webView.URL);
+
   // This callback should never be triggered for placeholder navigations.
+  auto errorRetryCommand = web::ErrorRetryCommand::kDoNothing;
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
       base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
-    DCHECK(!IsPlaceholderUrl(net::GURLWithNSURL(webView.URL)));
+    DCHECK(!IsPlaceholderUrl(webViewURL));
     // Sometimes |didFailNavigation| callback arrives after |stopLoading| has
     // been called. Abort in this case.
     if ([_navigationStates stateForNavigation:navigation] ==
@@ -4880,19 +4880,26 @@ registerLoadRequestForURL:(const GURL&)requestURL
       return;
     }
 
-    // Because the failure happened after didCommitNavigation:, current item
-    // should already have an entry in back-forward history. Indicate this to
-    // the navigation mnager so native error can be displayed without loading
-    // extra placeholders in the web view.
-    self.currentNavItem->SetErrorRetryState(
-        web::ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
+    web::NavigationContextImpl* context =
+        [_navigationStates contextForNavigation:navigation];
+    web::NavigationItemImpl* item =
+        context ? web::GetItemWithUniqueID(self.navigationManagerImpl,
+                                           context->GetNavigationItemUniqueID())
+                : nullptr;
+    if (item) {
+      GURL errorURL =
+          net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
+      errorRetryCommand = item->error_retry_state_machine().DidFailNavigation(
+          webViewURL, errorURL);
+    }
   }
 
   [_navigationStates setState:web::WKNavigationState::FAILED
                 forNavigation:navigation];
 
   [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
-          forNavigation:navigation];
+          forNavigation:navigation
+      errorRetryCommand:errorRetryCommand];
   _certVerificationErrors->Clear();
   [self forgetNullWKNavigation:navigation];
 }
@@ -5447,8 +5454,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                     forNavigation:navigation];
     [self reportBackForwardNavigationTypeForFastNavigation:NO];
     if (self.currentNavItem) {
-      self.currentNavItem->SetErrorRetryState(
-          web::ErrorRetryState::kNoNavigationError);
+      self.currentNavItem->error_retry_state_machine().ResetState();
     }
   };
 
@@ -5505,8 +5511,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [_navigationStates setContext:std::move(navigationContext)
                     forNavigation:navigation];
     if (self.currentNavItem) {
-      self.currentNavItem->SetErrorRetryState(
-          web::ErrorRetryState::kNoNavigationError);
+      self.currentNavItem->error_retry_state_machine().ResetState();
     }
   };
 

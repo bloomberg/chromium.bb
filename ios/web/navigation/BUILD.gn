@@ -53,6 +53,8 @@ source_set("core") {
   ]
 
   sources = [
+    "error_retry_state_machine.h",
+    "error_retry_state_machine.mm",
     "navigation_item_impl.h",
     "navigation_item_impl.mm",
     "navigation_manager_delegate.h",

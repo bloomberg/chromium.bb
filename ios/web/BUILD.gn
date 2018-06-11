@@ -252,6 +252,7 @@ source_set("ios_web_navigation_unittests") {
     "navigation/crw_navigation_item_storage_unittest.mm",
     "navigation/crw_session_controller_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
+    "navigation/error_retry_state_machine_unittest.mm",
     "navigation/navigation_item_impl_unittest.mm",
     "navigation/navigation_item_storage_test_util.h",
     "navigation/navigation_item_storage_test_util.mm",
