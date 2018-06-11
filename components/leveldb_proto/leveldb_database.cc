@@ -99,6 +99,40 @@ bool LevelDB::Save(const base::StringPairs& entries_to_save,
   return false;
 }
 
+bool LevelDB::UpdateWithRemoveFilter(const base::StringPairs& entries_to_save,
+                                     const KeyFilter& delete_key_filter) {
+  DFAKE_SCOPED_LOCK(thread_checker_);
+  if (!db_)
+    return false;
+
+  leveldb::WriteBatch updates;
+  for (const auto& pair : entries_to_save)
+    updates.Put(leveldb::Slice(pair.first), leveldb::Slice(pair.second));
+
+  if (!delete_key_filter.is_null()) {
+    leveldb::ReadOptions read_options;
+    std::unique_ptr<leveldb::Iterator> db_iterator(
+        db_->NewIterator(read_options));
+    for (db_iterator->SeekToFirst(); db_iterator->Valid();
+         db_iterator->Next()) {
+      leveldb::Slice key_slice = db_iterator->key();
+      std::string key(key_slice.data(), key_slice.size());
+      if (delete_key_filter.Run(key))
+        updates.Delete(leveldb::Slice(key));
+    }
+  }
+
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+  leveldb::Status status = db_->Write(write_options, &updates);
+  if (status.ok())
+    return true;
+
+  DLOG(WARNING) << "Failed deleting leveldb_proto entries: "
+                << status.ToString();
+  return false;
+}
+
 bool LevelDB::Load(std::vector<std::string>* entries) {
   return LoadWithFilter(KeyFilter(), entries);
 }

@@ -50,6 +50,11 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
           entries_to_save,
       std::unique_ptr<KeyVector> keys_to_remove,
       typename ProtoDatabase<T>::UpdateCallback callback) override;
+  void UpdateEntriesWithRemoveFilter(
+      std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
+          entries_to_save,
+      const LevelDB::KeyFilter& delete_key_filter,
+      typename ProtoDatabase<T>::UpdateCallback callback) override;
   void LoadEntries(typename ProtoDatabase<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
       const LevelDB::KeyFilter& key_filter,
@@ -151,6 +156,24 @@ void UpdateEntriesFromTaskRunner(
   }
 
   *success = database->Save(pairs_to_save, *keys_to_remove);
+}
+
+template <typename T>
+void UpdateEntriesWithRemoveFilterFromTaskRunner(
+    LevelDB* database,
+    std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
+    const LevelDB::KeyFilter& delete_key_filter,
+    bool* success) {
+  DCHECK(success);
+
+  // Serialize the values from Proto to string before passing on to database.
+  KeyValueVector pairs_to_save;
+  for (const auto& pair : *entries_to_save) {
+    pairs_to_save.push_back(
+        std::make_pair(pair.first, pair.second.SerializeAsString()));
+  }
+
+  *success = database->UpdateWithRemoveFilter(pairs_to_save, delete_key_filter);
 }
 
 template <typename T>
@@ -283,6 +306,23 @@ void ProtoDatabaseImpl<T>::UpdateEntries(
       base::BindOnce(UpdateEntriesFromTaskRunner<T>,
                      base::Unretained(db_.get()), std::move(entries_to_save),
                      std::move(keys_to_remove), success),
+      base::BindOnce(RunUpdateCallback<T>, std::move(callback),
+                     base::Owned(success)));
+}
+
+template <typename T>
+void ProtoDatabaseImpl<T>::UpdateEntriesWithRemoveFilter(
+    std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
+    const LevelDB::KeyFilter& delete_key_filter,
+    typename ProtoDatabase<T>::UpdateCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool* success = new bool(false);
+
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(UpdateEntriesWithRemoveFilterFromTaskRunner<T>,
+                     base::Unretained(db_.get()), std::move(entries_to_save),
+                     delete_key_filter, success),
       base::BindOnce(RunUpdateCallback<T>, std::move(callback),
                      base::Owned(success)));
 }
