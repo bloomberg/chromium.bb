@@ -26,6 +26,8 @@ class FakeBluetoothAdapterWinrt
   explicit FakeBluetoothAdapterWinrt(base::StringPiece address);
   ~FakeBluetoothAdapterWinrt() override;
 
+  static uint64_t ToRawBluetoothAddress(base::StringPiece address);
+
   // IBluetoothAdapter:
   IFACEMETHODIMP get_DeviceId(HSTRING* value) override;
   IFACEMETHODIMP get_BluetoothAddress(UINT64* value) override;

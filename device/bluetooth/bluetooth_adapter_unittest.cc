@@ -624,13 +624,17 @@ TEST_F(BluetoothTest, NoLocationServices) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_DiscoverLowEnergyDevice DiscoverLowEnergyDevice
 #else
 #define MAYBE_DiscoverLowEnergyDevice DISABLED_DiscoverLowEnergyDevice
 #endif
 // Discovers a device.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, DiscoverLowEnergyDevice) {
+#else
 TEST_F(BluetoothTest, MAYBE_DiscoverLowEnergyDevice) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -646,13 +650,17 @@ TEST_F(BluetoothTest, MAYBE_DiscoverLowEnergyDevice) {
   EXPECT_TRUE(device);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_DiscoverLowEnergyDeviceTwice DiscoverLowEnergyDeviceTwice
 #else
 #define MAYBE_DiscoverLowEnergyDeviceTwice DISABLED_DiscoverLowEnergyDeviceTwice
 #endif
 // Discovers the same device multiple times.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, DiscoverLowEnergyDeviceTwice) {
+#else
 TEST_F(BluetoothTest, MAYBE_DiscoverLowEnergyDeviceTwice) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -685,7 +693,11 @@ TEST_F(BluetoothTest, MAYBE_DiscoverLowEnergyDeviceTwice) {
 // Discovers a device, and then again with new Service UUIDs.
 // Makes sure we don't create another device when we've found the
 // device in the past.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
+#else
 TEST_F(BluetoothTest, MAYBE_DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -713,14 +725,18 @@ TEST_F(BluetoothTest, MAYBE_DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   EXPECT_EQ(1u, adapter_->GetDevices().size());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_DiscoverMultipleLowEnergyDevices DiscoverMultipleLowEnergyDevices
 #else
 #define MAYBE_DiscoverMultipleLowEnergyDevices \
   DISABLED_DiscoverMultipleLowEnergyDevices
 #endif
 // Discovers multiple devices when addresses vary.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, DiscoverMultipleLowEnergyDevices) {
+#else
 TEST_F(BluetoothTest, MAYBE_DiscoverMultipleLowEnergyDevices) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;

@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 
 namespace device {
 
@@ -21,7 +22,10 @@ class FakeBluetoothLEAdvertisementReceivedEventArgsWinrt
           ABI::Windows::Devices::Bluetooth::Advertisement::
               IBluetoothLEAdvertisementReceivedEventArgs> {
  public:
-  FakeBluetoothLEAdvertisementReceivedEventArgsWinrt();
+  FakeBluetoothLEAdvertisementReceivedEventArgsWinrt(
+      base::StringPiece address,
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
+                                 IBluetoothLEAdvertisement> advertisement);
   ~FakeBluetoothLEAdvertisementReceivedEventArgsWinrt() override;
 
   // IBluetoothLEAdvertisementReceivedEventArgs:
@@ -37,6 +41,11 @@ class FakeBluetoothLEAdvertisementReceivedEventArgsWinrt
           IBluetoothLEAdvertisement** value) override;
 
  private:
+  uint64_t raw_address_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
+                             IBluetoothLEAdvertisement>
+      advertisement_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEAdvertisementReceivedEventArgsWinrt);
 };
 

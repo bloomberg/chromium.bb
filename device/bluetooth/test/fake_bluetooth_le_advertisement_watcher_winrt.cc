@@ -15,13 +15,20 @@ using ABI::Windows::Devices::Bluetooth::Advertisement::
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     BluetoothLEAdvertisementWatcherStatus;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
+    BluetoothLEAdvertisementWatcherStatus_Started;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    BluetoothLEAdvertisementWatcherStatus_Stopped;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
     BluetoothLEAdvertisementWatcherStoppedEventArgs;
 using ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEScanningMode;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisementFilter;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEAdvertisementReceivedEventArgs;
 using ABI::Windows::Devices::Bluetooth::IBluetoothSignalStrengthFilter;
 using ABI::Windows::Foundation::TimeSpan;
 using ABI::Windows::Foundation::ITypedEventHandler;
+using Microsoft::WRL::ComPtr;
 
 }  // namespace
 
@@ -53,7 +60,8 @@ HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::get_MaxOutOfRangeTimeout(
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::get_Status(
     BluetoothLEAdvertisementWatcherStatus* value) {
-  return E_NOTIMPL;
+  *value = status_;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::get_ScanningMode(
@@ -63,7 +71,7 @@ HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::get_ScanningMode(
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::put_ScanningMode(
     BluetoothLEScanningMode value) {
-  return E_NOTIMPL;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::get_SignalStrengthFilter(
@@ -87,23 +95,27 @@ HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::put_AdvertisementFilter(
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::Start() {
-  return E_NOTIMPL;
+  status_ = BluetoothLEAdvertisementWatcherStatus_Started;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::Stop() {
-  return E_NOTIMPL;
+  status_ = BluetoothLEAdvertisementWatcherStatus_Stopped;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::add_Received(
     ITypedEventHandler<BluetoothLEAdvertisementWatcher*,
                        BluetoothLEAdvertisementReceivedEventArgs*>* handler,
     EventRegistrationToken* token) {
-  return E_NOTIMPL;
+  handler_ = handler;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::remove_Received(
     EventRegistrationToken token) {
-  return E_NOTIMPL;
+  handler_.Reset();
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::add_Stopped(
@@ -117,6 +129,12 @@ HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::add_Stopped(
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::remove_Stopped(
     EventRegistrationToken token) {
   return E_NOTIMPL;
+}
+
+void FakeBluetoothLEAdvertisementWatcherWinrt::SimulateAdvertisement(
+    ComPtr<IBluetoothLEAdvertisementReceivedEventArgs> advertisement) {
+  if (handler_)
+    handler_->Invoke(this, advertisement.Get());
 }
 
 }  // namespace device

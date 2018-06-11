@@ -7,7 +7,13 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+
+#if defined(OS_WIN)
+#include <objbase.h>
+#endif  // defined(OS_WIN)
 
 namespace device {
 
@@ -68,6 +74,22 @@ void GetCanonicalUuid(std::string uuid,
 BluetoothUUID::BluetoothUUID(const std::string& uuid) {
   GetCanonicalUuid(uuid, &value_, &canonical_value_, &format_);
 }
+
+#if defined(OS_WIN)
+BluetoothUUID::BluetoothUUID(GUID uuid) {
+  // 36 chars for UUID + 2 chars for braces + 1 char for null-terminator.
+  constexpr int kBufferSize = 39;
+  wchar_t buffer[kBufferSize];
+  int result = ::StringFromGUID2(uuid, buffer, kBufferSize);
+  DCHECK_EQ(kBufferSize, result);
+  DCHECK_EQ('{', buffer[0]);
+  DCHECK_EQ('}', buffer[37]);
+
+  GetCanonicalUuid(base::WideToUTF8(base::WStringPiece(buffer).substr(1, 36)),
+                   &value_, &canonical_value_, &format_);
+  DCHECK_EQ(kFormat128Bit, format_);
+}
+#endif  // defined(OS_WIN)
 
 BluetoothUUID::BluetoothUUID() : format_(kFormatInvalid) {
 }

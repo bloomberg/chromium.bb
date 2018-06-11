@@ -4,13 +4,20 @@
 
 #include "device/bluetooth/bluetooth_device_winrt.h"
 
+#include <utility>
+
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_adapter_winrt.h"
 
 namespace device {
 
-BluetoothDeviceWinrt::BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter)
-    : BluetoothDevice(adapter) {}
+BluetoothDeviceWinrt::BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
+                                           uint64_t raw_address,
+                                           base::Optional<std::string> name)
+    : BluetoothDevice(adapter),
+      address_(CanonicalizeAddress(raw_address)),
+      name_(std::move(name)) {}
 
 BluetoothDeviceWinrt::~BluetoothDeviceWinrt() = default;
 
@@ -20,8 +27,7 @@ uint32_t BluetoothDeviceWinrt::GetBluetoothClass() const {
 }
 
 std::string BluetoothDeviceWinrt::GetAddress() const {
-  NOTIMPLEMENTED();
-  return std::string();
+  return address_;
 }
 
 BluetoothDevice::VendorIDSource BluetoothDeviceWinrt::GetVendorIDSource()
@@ -51,8 +57,7 @@ uint16_t BluetoothDeviceWinrt::GetAppearance() const {
 }
 
 base::Optional<std::string> BluetoothDeviceWinrt::GetName() const {
-  NOTIMPLEMENTED();
-  return base::nullopt;
+  return name_;
 }
 
 bool BluetoothDeviceWinrt::IsPaired() const {
@@ -155,6 +160,14 @@ void BluetoothDeviceWinrt::ConnectToServiceInsecurely(
     const ConnectToServiceCallback& callback,
     const ConnectToServiceErrorCallback& error_callback) {
   NOTIMPLEMENTED();
+}
+
+// static
+std::string BluetoothDeviceWinrt::CanonicalizeAddress(uint64_t address) {
+  std::string bluetooth_address = BluetoothDevice::CanonicalizeAddress(
+      base::StringPrintf("%012llX", address));
+  DCHECK(!bluetooth_address.empty());
+  return bluetooth_address;
 }
 
 void BluetoothDeviceWinrt::CreateGattConnectionImpl() {

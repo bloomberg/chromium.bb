@@ -91,6 +91,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   virtual HRESULT GetDeviceInformationStaticsActivationFactory(
       ABI::Windows::Devices::Enumeration::IDeviceInformationStatics** statics)
       const;
+  virtual HRESULT ActivateBluetoothAdvertisementLEWatcherInstance(
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          IBluetoothLEAdvertisementWatcher** instance) const;
 
  private:
   void OnGetDefaultAdapter(
@@ -104,10 +107,24 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
           ABI::Windows::Devices::Enumeration::IDeviceInformation>
           device_information);
 
+  void OnAdvertisementReceived(
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          IBluetoothLEAdvertisementWatcher* watcher,
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          IBluetoothLEAdvertisementReceivedEventArgs* received);
+
+  void RemoveAdvertisementReceivedHandler();
+
   bool is_initialized_ = false;
   bool is_present_ = false;
   std::string address_;
   std::string name_;
+
+  size_t num_discovery_sessions_ = 0;
+  EventRegistrationToken advertisement_received_token_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
+                             IBluetoothLEAdvertisementWatcher>
+      ble_advertisement_watcher_;
 
   THREAD_CHECKER(thread_checker_);
 

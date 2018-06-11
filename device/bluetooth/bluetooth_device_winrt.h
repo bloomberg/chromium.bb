@@ -5,6 +5,8 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_WINRT_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_WINRT_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback_forward.h"
@@ -19,7 +21,9 @@ class BluetoothAdapterWinrt;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
  public:
-  explicit BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter);
+  BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
+                       uint64_t raw_address,
+                       base::Optional<std::string> name);
   ~BluetoothDeviceWinrt() override;
 
   // BluetoothDevice:
@@ -64,10 +68,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
 
+  // Returns the |address| in the canonical format: XX:XX:XX:XX:XX:XX, where
+  // each 'X' is a hex digit.
+  static std::string CanonicalizeAddress(uint64_t address);
+
  protected:
   // BluetoothDevice:
   void CreateGattConnectionImpl() override;
   void DisconnectGatt() override;
+
+ private:
+  std::string address_;
+  base::Optional<std::string> name_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceWinrt);
 };

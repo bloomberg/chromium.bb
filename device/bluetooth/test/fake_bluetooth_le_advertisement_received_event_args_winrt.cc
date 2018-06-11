@@ -4,6 +4,11 @@
 
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_received_event_args_winrt.h"
 
+#include <utility>
+
+#include "base/strings/string_piece.h"
+#include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
+
 namespace device {
 
 namespace {
@@ -19,7 +24,11 @@ using Microsoft::WRL::ComPtr;
 }  // namespace
 
 FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::
-    FakeBluetoothLEAdvertisementReceivedEventArgsWinrt() = default;
+    FakeBluetoothLEAdvertisementReceivedEventArgsWinrt(
+        base::StringPiece address,
+        ComPtr<IBluetoothLEAdvertisement> advertisement)
+    : raw_address_(FakeBluetoothAdapterWinrt::ToRawBluetoothAddress(address)),
+      advertisement_(std::move(advertisement)) {}
 
 FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::
     ~FakeBluetoothLEAdvertisementReceivedEventArgsWinrt() = default;
@@ -27,13 +36,15 @@ FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::
 HRESULT
 FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::get_RawSignalStrengthInDBm(
     int16_t* value) {
-  return E_NOTIMPL;
+  *value = 0;
+  return S_OK;
 }
 
 HRESULT
 FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::get_BluetoothAddress(
     uint64_t* value) {
-  return E_NOTIMPL;
+  *value = raw_address_;
+  return S_OK;
 }
 
 HRESULT
@@ -49,7 +60,7 @@ HRESULT FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::get_Timestamp(
 
 HRESULT FakeBluetoothLEAdvertisementReceivedEventArgsWinrt::get_Advertisement(
     IBluetoothLEAdvertisement** value) {
-  return E_NOTIMPL;
+  return advertisement_.CopyTo(value);
 }
 
 }  // namespace device

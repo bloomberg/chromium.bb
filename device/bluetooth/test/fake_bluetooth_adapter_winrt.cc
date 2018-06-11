@@ -33,16 +33,22 @@ using Microsoft::WRL::Make;
 
 }  // namespace
 
-FakeBluetoothAdapterWinrt::FakeBluetoothAdapterWinrt(
+FakeBluetoothAdapterWinrt::FakeBluetoothAdapterWinrt(base::StringPiece address)
+    : raw_address_(ToRawBluetoothAddress(address)) {}
+
+FakeBluetoothAdapterWinrt::~FakeBluetoothAdapterWinrt() = default;
+
+// static
+uint64_t FakeBluetoothAdapterWinrt::ToRawBluetoothAddress(
     base::StringPiece address) {
+  uint64_t raw_address;
   const bool result = base::HexStringToUInt64(
       base::StrCat(base::SplitStringPiece(address, ":", base::TRIM_WHITESPACE,
                                           base::SPLIT_WANT_ALL)),
-      &raw_address_);
+      &raw_address);
   DCHECK(result);
+  return raw_address;
 }
-
-FakeBluetoothAdapterWinrt::~FakeBluetoothAdapterWinrt() = default;
 
 HRESULT FakeBluetoothAdapterWinrt::get_DeviceId(HSTRING* value) {
   // The actual device id does not matter for testing, as long as this method
