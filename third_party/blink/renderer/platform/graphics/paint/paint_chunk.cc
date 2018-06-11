@@ -31,12 +31,10 @@ String PaintChunk::ToString() const {
       known_to_be_opaque);
   if (hit_test_data) {
     ret_val.append(String::Format(
-        ", border_rect=(%s), touch_action_rect=((%s), %s), "
+        ", border_rect=(%s), touch_action_rects=(%zu), "
         "wheel_event_handler_region=(%s) non_fast_scrollable_region=(%s))",
         hit_test_data->border_rect.ToString().Ascii().data(),
-        hit_test_data->touch_action_rect.rect.ToString().Ascii().data(),
-        TouchActionToString(
-            hit_test_data->touch_action_rect.whitelisted_touch_action),
+        hit_test_data->touch_action_rects.size(),
         hit_test_data->wheel_event_handler_region.Bounds()
             .ToString()
             .Ascii()

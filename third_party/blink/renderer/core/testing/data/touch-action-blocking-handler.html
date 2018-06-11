@@ -8,6 +8,8 @@
       width: 200px;
       height: 200px;
       overflow: scroll;
+    }
+    #touchaction {
       touch-action: pan-y;
     }
     .content {
@@ -23,8 +25,10 @@
 
 <body>
   <div id="scrollable">
-    <div id="handler"></div>
-    <div class="content"></div>
+    <div id="touchaction">
+      <div id="handler"></div>
+      <div class="content"></div>
+    </div>
   </div>
   <script>
     // A blocking touch handler should prevent scrolling in that region.

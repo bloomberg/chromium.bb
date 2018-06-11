@@ -112,7 +112,12 @@ class PLATFORM_EXPORT DisplayItem {
     kWebPlugin,
     kWebFont,
     kReflectionMask,
-    kDrawingLast = kReflectionMask,
+    // Compositor hit testing requires that layers are created and sized to
+    // include content that does not paint. Hit test display items ensure
+    // a layer exists and is sized properly even if no content would otherwise
+    // be painted.
+    kHitTest,
+    kDrawingLast = kHitTest,
 
     kForeignLayerFirst,
     kForeignLayerCanvas = kForeignLayerFirst,

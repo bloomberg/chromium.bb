@@ -49,6 +49,10 @@ class BlockPainter {
   // Paint scroll hit test placeholders in the correct paint order (see:
   // ScrollHitTestDisplayItem.h).
   void PaintScrollHitTestDisplayItem(const PaintInfo&);
+  // Paint a hit test display item and record hit test data. This should be
+  // called in the background paint phase even if there is no other painted
+  // content.
+  void RecordHitTestData(const PaintInfo&, const LayoutPoint& paint_offset);
   void PaintCarets(const PaintInfo&, const LayoutPoint&);
 
   const LayoutBlock& layout_block_;

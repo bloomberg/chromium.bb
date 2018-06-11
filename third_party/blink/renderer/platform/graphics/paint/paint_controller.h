@@ -94,6 +94,8 @@ class PLATFORM_EXPORT PaintController {
     return new_paint_chunks_.CurrentPaintChunkProperties();
   }
 
+  PaintChunk& CurrentPaintChunk() { return new_paint_chunks_.LastChunk(); }
+
   void ForceNewChunk(const DisplayItemClient& client, DisplayItem::Type type) {
     new_paint_chunks_.ForceNewChunk();
     new_paint_chunks_.UpdateCurrentPaintChunkProperties(

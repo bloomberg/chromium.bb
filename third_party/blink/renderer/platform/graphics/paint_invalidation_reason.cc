@@ -16,6 +16,8 @@ const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "incremental";
     case PaintInvalidationReason::kRectangle:
       return "invalidate paint rectangle";
+    case PaintInvalidationReason::kHitTest:
+      return "hit testing change";
     case PaintInvalidationReason::kFull:
       return "full";
     case PaintInvalidationReason::kStyle:

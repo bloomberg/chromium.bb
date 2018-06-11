@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -127,6 +128,71 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
   context_storage_.pop_back();
 }
 
+bool PrePaintTreeWalk::NeedsEffectiveWhitelistedTouchActionUpdate(
+    const LayoutObject& object,
+    PrePaintTreeWalk::PrePaintTreeWalkContext& context) const {
+  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    return false;
+  return context.effective_whitelisted_touch_action_changed ||
+         object.EffectiveWhitelistedTouchActionChanged() ||
+         object.DescendantEffectiveWhitelistedTouchActionChanged();
+}
+
+namespace {
+bool HasBlockingTouchEventHandler(const LayoutObject& object) {
+  auto* node = object.GetNode();
+  if (!node || !node->HasEventListeners())
+    return false;
+  const auto& registry = object.GetFrame()->GetEventHandlerRegistry();
+  const auto* blocking = registry.EventHandlerTargets(
+      EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+  const auto* blocking_low_latency = registry.EventHandlerTargets(
+      EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
+  return blocking->Contains(node) || blocking_low_latency->Contains(node);
+}
+}  // namespace
+
+void PrePaintTreeWalk::UpdateEffectiveWhitelistedTouchAction(
+    const LayoutObject& object,
+    PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
+  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    return;
+
+  if (object.EffectiveWhitelistedTouchActionChanged())
+    context.effective_whitelisted_touch_action_changed = true;
+
+  if (context.effective_whitelisted_touch_action_changed) {
+    object.GetMutableForPainting().UpdateInsideBlockingTouchEventHandler(
+        context.inside_blocking_touch_event_handler ||
+        HasBlockingTouchEventHandler(object));
+  }
+
+  if (object.InsideBlockingTouchEventHandler())
+    context.inside_blocking_touch_event_handler = true;
+}
+
+bool PrePaintTreeWalk::NeedsHitTestingPaintInvalidation(
+    const LayoutObject& object,
+    const PrePaintTreeWalk::PrePaintTreeWalkContext& context) const {
+  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    return false;
+  return context.effective_whitelisted_touch_action_changed;
+}
+
+void PrePaintTreeWalk::InvalidatePaintForHitTesting(
+    const LayoutObject& object,
+    PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
+  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    return;
+
+  if (context.effective_whitelisted_touch_action_changed) {
+    if (auto* paint_layer = context.paint_invalidator_context.painting_layer)
+      paint_layer->SetNeedsRepaint();
+    ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
+        object, PaintInvalidationReason::kHitTest);
+  }
+}
+
 void PrePaintTreeWalk::UpdateAuxiliaryObjectProperties(
     const LayoutObject& object,
     PrePaintTreeWalk::PrePaintTreeWalkContext& context) {
@@ -240,9 +306,15 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     }
   }
 
+  // This must happen before paint invalidation because background painting
+  // depends on the effective whitelisted touch action.
+  UpdateEffectiveWhitelistedTouchAction(object, context);
+
   paint_invalidator_.InvalidatePaint(
       object, base::OptionalOrNullptr(context.tree_builder_context),
       paint_invalidator_context);
+
+  InvalidatePaintForHitTesting(object, context);
 
   if (context.tree_builder_context) {
     property_changed |= property_tree_builder->UpdateForChildren();
@@ -291,7 +363,9 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
       NeedsTreeBuilderContextUpdate(object, parent_context());
   // Early out from the tree walk if possible.
   if (!needs_tree_builder_context_update &&
-      !object.ShouldCheckForPaintInvalidation()) {
+      !object.ShouldCheckForPaintInvalidation() &&
+      !NeedsEffectiveWhitelistedTouchActionUpdate(object, parent_context()) &&
+      !NeedsHitTestingPaintInvalidation(object, parent_context())) {
     return;
   }
 

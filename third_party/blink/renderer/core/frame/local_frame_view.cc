@@ -3070,6 +3070,8 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
       if (!print_mode_enabled)
         PaintTree();
 
+      GetScrollingCoordinator()->UpdateTouchActionRects(this);
+
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         if (!print_mode_enabled) {
