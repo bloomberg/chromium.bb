@@ -256,7 +256,11 @@ TEST_P(GLES2DecoderTest, IsTexture) {
 }
 
 TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
-  EXPECT_CALL(*gl_, GenTextures(1, _)).Times(1).RetiresOnSaturation();
+  const GLuint service_id = 123;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .Times(1)
+      .WillOnce(SetArgPointee<1>(service_id))
+      .RetiresOnSaturation();
   const GLenum target = GL_TEXTURE_EXTERNAL_OES;
   std::unique_ptr<AbstractTexture> abstract_texture =
       GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
@@ -265,6 +269,7 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
                                           0,                    /* border */
                                           GL_RGBA, GL_UNSIGNED_BYTE);
   EXPECT_EQ(abstract_texture->GetTextureBase()->target(), target);
+  EXPECT_EQ(abstract_texture->service_id(), service_id);
 
   // Set some parameters, and verify that we set them.
   Texture* texture = static_cast<Texture*>(abstract_texture->GetTextureBase());
@@ -290,7 +295,7 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   // matches the one we provide.
   scoped_refptr<gpu::gles2::GLStreamTextureImage> stream_image(
       new gpu::gles2::GLStreamTextureImageStub);
-  GLuint surface_texture_service_id = 123;
+  const GLuint surface_texture_service_id = service_id + 1;
   abstract_texture->SetStreamTextureImage(stream_image.get(),
                                           surface_texture_service_id);
   EXPECT_EQ(texture->GetLevelStreamTextureImage(target, 0), stream_image.get());
@@ -304,7 +309,11 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
 
 TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWithDecoder) {
   // Deleting the decoder should delete the AbstractTexture's TextureRef.
-  EXPECT_CALL(*gl_, GenTextures(1, _)).Times(1).RetiresOnSaturation();
+  const GLuint service_id = 123;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .Times(1)
+      .WillOnce(SetArgPointee<1>(service_id))
+      .RetiresOnSaturation();
   const GLenum target = GL_TEXTURE_EXTERNAL_OES;
   std::unique_ptr<AbstractTexture> abstract_texture =
       GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
@@ -323,7 +332,11 @@ TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWithDecoder) {
 TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWhenMadeCurrent) {
   // When an AbstractTexture is destroyed, the ref will be dropped by the next
   // call to MakeCurrent.
-  EXPECT_CALL(*gl_, GenTextures(1, _)).Times(1).RetiresOnSaturation();
+  const GLuint service_id = 123;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .Times(1)
+      .WillOnce(SetArgPointee<1>(service_id))
+      .RetiresOnSaturation();
   const GLenum target = GL_TEXTURE_EXTERNAL_OES;
   std::unique_ptr<AbstractTexture> abstract_texture =
       GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
