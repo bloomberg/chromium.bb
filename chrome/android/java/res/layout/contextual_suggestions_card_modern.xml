@@ -47,6 +47,7 @@
             android:scaleType="centerCrop"
             android:contentDescription="@null"
             android:src="@null"
+            app:chrometint="@color/dark_mode_tint"
             tools:src="@drawable/ic_snippet_thumbnail_placeholder" />
 
         <LinearLayout

@@ -6,7 +6,10 @@
 <!-- Layout for the control group representing Chrome's URL bar on small devices.
      This file is used for different LocationBarLayout subclasses and should remain generic.
 -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <ImageView android:id="@+id/incognito_badge"
         style="@style/LocationBarButton"
         android:layout_width="wrap_content"
@@ -38,7 +41,8 @@
             android:layout_gravity="center"
             android:alpha="0"
             android:visibility="invisible"
-            android:contentDescription="@string/accessibility_toolbar_btn_site_info" />
+            android:contentDescription="@string/accessibility_toolbar_btn_site_info"
+            app:chrometint="@color/dark_mode_tint" />
 
     </FrameLayout>
 

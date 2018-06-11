@@ -5,6 +5,7 @@
 
 <org.chromium.chrome.browser.toolbar.ScrollingBottomViewResourceFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_toolbar_control_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -66,7 +67,8 @@
                 style="@style/ToolbarMenuButtonPhone"
                 android:src="@drawable/ic_more_vert_black_24dp"
                 android:layout_gravity="top|center_horizontal"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu" />
+                android:contentDescription="@string/accessibility_toolbar_btn_menu"
+                app:chrometint="@color/dark_mode_tint" />
 
             <Space
                 android:layout_width="0dp"
