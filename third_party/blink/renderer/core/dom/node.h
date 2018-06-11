@@ -76,10 +76,17 @@ class WebPluginContainerImpl;
 const int kNodeStyleChangeShift = 18;
 const int kNodeCustomElementShift = 20;
 
+// Values for kChildNeedsStyleRecalcFlag, controlling whether a node gets its
+// style recalculated.
 enum StyleChangeType {
+  // This node does not need style recalculation.
   kNoStyleChange = 0,
+  // This node needs style recalculation.
   kLocalStyleChange = 1 << kNodeStyleChangeShift,
+  // This node and all of its flat-tree descendeants need style recalculation.
   kSubtreeStyleChange = 2 << kNodeStyleChangeShift,
+  // This node and all of its descendants are detached and need style
+  // recalculation.
   kNeedsReattachStyleChange = 3 << kNodeStyleChangeShift,
 };
 
@@ -401,6 +408,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool NeedsAttach() const {
     return GetStyleChangeType() == kNeedsReattachStyleChange;
   }
+  // True if the style recalc process should recalculate style for this node.
   bool NeedsStyleRecalc() const {
     // We do not ClearNeedsStyleRecalc() if the recalc triggers a layout re-
     // attachment (see Element::RecalcStyle()). In order to avoid doing an extra
@@ -412,6 +420,8 @@ class CORE_EXPORT Node : public EventTarget {
   StyleChangeType GetStyleChangeType() const {
     return static_cast<StyleChangeType>(node_flags_ & kStyleChangeMask);
   }
+  // True if the style recalculation process should traverse this node's
+  // children when looking for nodes that need recalculation.
   bool ChildNeedsStyleRecalc() const {
     return GetFlag(kChildNeedsStyleRecalcFlag);
   }
@@ -428,6 +438,8 @@ class CORE_EXPORT Node : public EventTarget {
   void SetChildNeedsStyleRecalc() { SetFlag(kChildNeedsStyleRecalcFlag); }
   void ClearChildNeedsStyleRecalc() { ClearFlag(kChildNeedsStyleRecalcFlag); }
 
+  // Sets the flag for the current node and also calls
+  // MarkAncestorsWithChildNeedsStyleRecalc
   void SetNeedsStyleRecalc(StyleChangeType, const StyleChangeReasonForTracing&);
   void ClearNeedsStyleRecalc();
 
@@ -463,6 +475,8 @@ class CORE_EXPORT Node : public EventTarget {
   }
   void MarkAncestorsWithChildNeedsDistributionRecalc();
 
+  // True if the style invalidation process should traverse this node's children
+  // when looking for pending invalidations.
   bool ChildNeedsStyleInvalidation() const {
     return GetFlag(kChildNeedsStyleInvalidationFlag);
   }
@@ -473,10 +487,14 @@ class CORE_EXPORT Node : public EventTarget {
     ClearFlag(kChildNeedsStyleInvalidationFlag);
   }
   void MarkAncestorsWithChildNeedsStyleInvalidation();
+
+  // True if there are pending invalidations against this node.
   bool NeedsStyleInvalidation() const {
     return GetFlag(kNeedsStyleInvalidationFlag);
   }
   void ClearNeedsStyleInvalidation() { ClearFlag(kNeedsStyleInvalidationFlag); }
+  // Sets the flag for the current node and also calls
+  // MarkAncestorsWithChildNeedsStyleInvalidation
   void SetNeedsStyleInvalidation();
 
   // This needs to be called before using FlatTreeTraversal.

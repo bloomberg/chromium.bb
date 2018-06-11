@@ -41,6 +41,10 @@ struct InvalidationLists;
 class QualifiedName;
 class RuleData;
 
+// Summarizes and indexes the contents of RuleData objects. It creates
+// invalidation sets from rule data and makes them available via several
+// CollectInvalidationSetForFoo methods which use the indices to quickly gather
+// the relevant InvalidationSets for a particular DOM mutation.
 class CORE_EXPORT RuleFeatureSet {
   DISALLOW_NEW();
 
@@ -48,6 +52,7 @@ class CORE_EXPORT RuleFeatureSet {
   RuleFeatureSet();
   ~RuleFeatureSet();
 
+  // Methods for updating the data in this object.
   void Add(const RuleFeatureSet&);
   void Clear();
 
@@ -55,6 +60,7 @@ class CORE_EXPORT RuleFeatureSet {
 
   SelectorPreMatch CollectFeaturesFromRuleData(const RuleData&);
 
+  // Methods for accessing the data in this object.
   bool UsesFirstLineRules() const { return metadata_.uses_first_line_rules; }
   bool UsesWindowInactiveSelector() const {
     return metadata_.uses_window_inactive_selector;

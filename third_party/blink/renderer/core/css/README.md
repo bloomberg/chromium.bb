@@ -12,4 +12,4 @@ Overview is [here](style-calculation.md).
 
 ## <a name="style-invalidation"></a> Style Invalidation
 
-Style invalidation docs <https://goo.gl/3ane6s> and <https://goo.gl/z0Z9gn>.
+Overview and further links are [here](style-invalidation.md).
