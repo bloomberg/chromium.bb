@@ -77,16 +77,31 @@
       [[event characters] characterAtIndex:0] <= 0x7f)
     eventString = [event characters];
 
-  // When both |characters| and |charactersIgnoringModifiers| are ascii, we
-  // want to use |characters| if it's a character and
-  // |charactersIgnoringModifiers| else (on dvorak, cmd-shift-z should fire
-  // "cmd-:" instead of "cmd-;", but on dvorak-qwerty, cmd-shift-z should fire
-  // cmd-shift-z instead of cmd-:).
-  if ([eventString characterAtIndex:0] <= 0x7f &&
-      [[event characters] length] > 0 &&
-      [[event characters] characterAtIndex:0] <= 0x7f &&
-      isalpha([[event characters] characterAtIndex:0]))
-    eventString = [event characters];
+  // We typically want to compare [NSMenuItem keyEquivalent] against [NSEvent
+  // charactersIgnoringModifiers]. There is a special keyboard layout "Dvorak -
+  // QWERTY" which uses QWERTY-style shortcuts when the Command key is held
+  // down. In this case, we want to use [NSEvent characters] instead of [NSEvent
+  // charactersIgnoringModifiers]. The problem is, this has the wrong behavior
+  // for every other keyboard layout when the "Shift" key is held down, since
+  // [NSEvent characters] does not reflect the effects of the "Shift" key.
+  //
+  // When the "Shift" key is not held down, we use [NSEvent characters], since
+  // that has the right behavior for all keyboard layouts. When the "Shift" key
+  // is held down, we use [NSEvent charactersWithoutModifiers], which has the
+  // right behavior everywhere but "Dvorak - QWERTY".
+  if (!(eventModifiers & NSShiftKeyMask)) {
+    // When both |characters| and |charactersIgnoringModifiers| are ascii, we
+    // want to use |characters| if it's a character and
+    // |charactersIgnoringModifiers| else (on dvorak, cmd-shift-z should fire
+    // "cmd-:" instead of "cmd-;", but on dvorak-qwerty, cmd-shift-z should fire
+    // cmd-shift-z instead of cmd-:).
+    if ([eventString characterAtIndex:0] <= 0x7f &&
+        [[event characters] length] > 0 &&
+        [[event characters] characterAtIndex:0] <= 0x7f &&
+        isalpha([[event characters] characterAtIndex:0])) {
+      eventString = [event characters];
+    }
+  }
 
   // Clear shift key for printable characters.
   if ((eventModifiers & (NSNumericPadKeyMask | NSFunctionKeyMask)) == 0 &&

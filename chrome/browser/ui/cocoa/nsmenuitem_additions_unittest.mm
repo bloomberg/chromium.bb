@@ -110,6 +110,13 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
   ExpectKeyFiresItem(key, item);
   ExpectKeyDoesntFireItem(KeyEvent(0x100, @"a", @"a", 0), item);
 
+  // cmd-shift-t
+  key = KeyEvent(0x12010a, @"t", @"T", 0);
+  item = MenuItem(@"T", 0x100000);
+  ExpectKeyFiresItem(key, item);
+  item = MenuItem(@"t", 0x100000);
+  ExpectKeyDoesntFireItem(key, item);
+
   // cmd-opt-shift-a
   key = KeyEvent(0x1a012a, @"\u00c5", @"A", 0);
   item = MenuItem(@"A", 0x180000);
