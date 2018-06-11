@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_client_interface.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
@@ -47,7 +49,8 @@ namespace smb_client {
 // class is alive. Upon destruction, the socket and corresponding firewall hole
 // are closed.
 class NetBiosClient : public network::mojom::UDPSocketReceiver,
-                      public NetBiosClientInterface {
+                      public NetBiosClientInterface,
+                      public base::SupportsWeakPtr<NetBiosClient> {
  public:
   using NetBiosResponseCallback = base::RepeatingCallback<
       void(const std::vector<uint8_t>&, uint16_t, const net::IPEndPoint&)>;
@@ -97,11 +100,14 @@ class NetBiosClient : public network::mojom::UDPSocketReceiver,
   // Section 4.2.12
   std::vector<uint8_t> GenerateBroadcastPacket();
 
+  bool executed_ = false;
+  const net::IPEndPoint bind_address_;
   net::IPEndPoint broadcast_address_;
   uint16_t transaction_id_;
   NetBiosResponseCallback callback_;
   std::unique_ptr<FirewallHole> firewall_hole_;
   network::mojom::UDPSocketPtr server_socket_;
+  mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(NetBiosClient);
 };
