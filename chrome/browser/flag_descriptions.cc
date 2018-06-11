@@ -653,6 +653,11 @@ const char kEnablePixelCanvasRecordingDescription[] =
     "with the pixel and improves text rendering. This should be enabled when a "
     "device is using fractional scale factor.";
 
+extern const char kEnableSyncUserConsentSeparateTypeName[] =
+    "Enable separate sync type for consents";
+extern const char kEnableSyncUserConsentSeparateTypeDescription[] =
+    "Emit user consents as a separate sync type instead of user events.";
+
 const char kEnableSyncUSSSessionsName[] = "Enable USS for sessions sync";
 const char kEnableSyncUSSSessionsDescription[] =
     "Enables the new, experimental implementation of session sync (aka tab "

@@ -59,6 +59,7 @@ source_set("unit_tests") {
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync:test_support_model",
+    "//components/variations:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
