@@ -55,6 +55,8 @@ class SharedResourceScheduler {
   bool empty() const { return request_to_priority_map_.empty(); }
 
  private:
+  friend class FakeBleAdvertiser;
+
   // Map from priority to a list of pending requests. Each list is ordered such
   // that requests that should be processed first reside before requests that
   // should be processed afterward.
