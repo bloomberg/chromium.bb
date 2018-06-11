@@ -173,8 +173,7 @@ WebPackageLoader::WebPackageLoader(
 WebPackageLoader::~WebPackageLoader() = default;
 
 void WebPackageLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& response_head) {
   // Must not be called because this WebPackageLoader and the client endpoints
   // were bound after OnReceiveResponse() is called.
   NOTREACHED();
@@ -183,13 +182,6 @@ void WebPackageLoader::OnReceiveResponse(
 void WebPackageLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
-  // Must not be called because this WebPackageLoader and the client endpoints
-  // were bound after OnReceiveResponse() is called.
-  NOTREACHED();
-}
-
-void WebPackageLoader::OnDataDownloaded(int64_t data_len,
-                                        int64_t encoded_data_len) {
   // Must not be called because this WebPackageLoader and the client endpoints
   // were bound after OnReceiveResponse() is called.
   NOTREACHED();
@@ -308,10 +300,9 @@ void WebPackageLoader::OnHTTPExchangeFound(
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
     network::ResourceResponseHead response_info = resource_response;
     response_info.ssl_info = base::nullopt;
-    client_->OnReceiveResponse(response_info, nullptr /* downloaded_file */);
+    client_->OnReceiveResponse(response_info);
   } else {
-    client_->OnReceiveResponse(resource_response,
-                               nullptr /* downloaded_file */);
+    client_->OnReceiveResponse(resource_response);
   }
 
   // Currently we always assume that we have body.

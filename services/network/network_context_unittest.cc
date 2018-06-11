@@ -220,7 +220,6 @@ TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
 
   client.RunUntilConnectionError();
   EXPECT_FALSE(client.has_received_completion());
-  EXPECT_EQ(0u, client.download_data_length());
 }
 
 TEST_F(NetworkContextTest, DisableQuic) {

@@ -776,7 +776,6 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(!request.download_to_file);
 
     const std::string extension_id = request.url.host();
     ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
@@ -852,7 +851,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
         return;
       }
 
-      client->OnReceiveResponse(head, nullptr);
+      client->OnReceiveResponse(head);
       client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
       client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
       return;

@@ -55,14 +55,6 @@ void TestRequestPeer::OnStartLoadingResponseBody(
   EXPECT_FALSE(context_->complete);
 }
 
-void TestRequestPeer::OnDownloadedData(int len, int encoded_data_length) {
-  EXPECT_TRUE(context_->received_response);
-  EXPECT_FALSE(context_->cancelled);
-  EXPECT_FALSE(context_->complete);
-  context_->total_downloaded_data_length += len;
-  context_->total_encoded_data_length += encoded_data_length;
-}
-
 void TestRequestPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
   if (context_->cancelled)
     return;

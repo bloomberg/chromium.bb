@@ -263,12 +263,6 @@ class WebURLResponse {
   // details.
   BLINK_PLATFORM_EXPORT void SetDidServiceWorkerNavigationPreload(bool);
 
-  // This indicates the location of a downloaded response if the
-  // WebURLRequest had the downloadToFile flag set to true. This file path
-  // remains valid for the lifetime of the WebURLLoader used to create it.
-  BLINK_PLATFORM_EXPORT WebString DownloadFilePath() const;
-  BLINK_PLATFORM_EXPORT void SetDownloadFilePath(const WebString&);
-
   // Remote IP address of the socket which fetched this resource.
   BLINK_PLATFORM_EXPORT WebString RemoteIPAddress() const;
   BLINK_PLATFORM_EXPORT void SetRemoteIPAddress(const WebString&);

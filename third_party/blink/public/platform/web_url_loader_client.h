@@ -84,10 +84,6 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   virtual void DidStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) {}
 
-  // Called when a chunk of response data is downloaded. This is only called
-  // if WebURLRequest's DownloadToFile flag was set to true.
-  virtual void DidDownloadData(int data_length, int encoded_data_length) {}
-
   // Called when a chunk of response data is received. |data_length| is the
   // number of bytes pointed to by |data|. |encoded_data_length| is the number
   // of bytes actually received from network to serve this chunk, including

@@ -69,7 +69,6 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
         network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));
     return;
   }
-  DCHECK(!request.download_to_file);
   BlobURLLoader::CreateAndStart(
       std::move(loader), request, std::move(client),
       handle_ ? std::make_unique<BlobDataHandle>(*handle_) : nullptr);

@@ -22,9 +22,6 @@ struct PPAPI_SHARED_EXPORT URLResponseInfoData {
   int32_t status_code;
   std::string status_text;
   std::string redirect_url;
-
-  // Valid when streaming to a file.
-  FileRefCreateInfo body_as_file_ref;
 };
 
 }  // namespace ppapi

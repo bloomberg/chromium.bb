@@ -45,7 +45,6 @@ class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
   void OnResponseCompleted(
       const net::URLRequestStatus& status,
       std::unique_ptr<ResourceController> controller) override;
-  void OnDataDownloaded(int bytes_downloaded) override;
 
   std::unique_ptr<ResourceHandler> next_handler_;
 };

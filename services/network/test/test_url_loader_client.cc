@@ -14,14 +14,12 @@ TestURLLoaderClient::TestURLLoaderClient() : binding_(this) {}
 TestURLLoaderClient::~TestURLLoaderClient() {}
 
 void TestURLLoaderClient::OnReceiveResponse(
-    const ResourceResponseHead& response_head,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    const ResourceResponseHead& response_head) {
   EXPECT_FALSE(has_received_response_);
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(has_received_completion_);
   has_received_response_ = true;
   response_head_ = response_head;
-  downloaded_file_ = std::move(downloaded_file);
   if (quit_closure_for_on_receive_response_)
     quit_closure_for_on_receive_response_.Run();
 }
@@ -40,17 +38,6 @@ void TestURLLoaderClient::OnReceiveRedirect(
   response_head_ = response_head;
   if (quit_closure_for_on_receive_redirect_)
     quit_closure_for_on_receive_redirect_.Run();
-}
-
-void TestURLLoaderClient::OnDataDownloaded(int64_t data_length,
-                                           int64_t encoded_data_length) {
-  EXPECT_TRUE(has_received_response_);
-  EXPECT_FALSE(has_received_completion_);
-  has_data_downloaded_ = true;
-  download_data_length_ += data_length;
-  encoded_download_data_length_ += encoded_data_length;
-  if (quit_closure_for_on_data_downloaded_)
-    quit_closure_for_on_data_downloaded_.Run();
 }
 
 void TestURLLoaderClient::OnReceiveCachedMetadata(
@@ -105,10 +92,6 @@ void TestURLLoaderClient::OnComplete(const URLLoaderCompletionStatus& status) {
     quit_closure_for_on_complete_.Run();
 }
 
-mojom::DownloadedTempFilePtr TestURLLoaderClient::TakeDownloadedTempFile() {
-  return std::move(downloaded_file_);
-}
-
 void TestURLLoaderClient::ClearHasReceivedRedirect() {
   has_received_redirect_ = false;
 }
@@ -142,15 +125,6 @@ void TestURLLoaderClient::RunUntilRedirectReceived() {
   quit_closure_for_on_receive_redirect_ = run_loop.QuitClosure();
   run_loop.Run();
   quit_closure_for_on_receive_redirect_.Reset();
-}
-
-void TestURLLoaderClient::RunUntilDataDownloaded() {
-  if (has_data_downloaded_)
-    return;
-  base::RunLoop run_loop;
-  quit_closure_for_on_data_downloaded_ = run_loop.QuitClosure();
-  run_loop.Run();
-  quit_closure_for_on_data_downloaded_.Reset();
 }
 
 void TestURLLoaderClient::RunUntilCachedMetadataReceived() {

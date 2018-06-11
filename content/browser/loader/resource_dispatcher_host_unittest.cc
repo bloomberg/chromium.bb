@@ -27,7 +27,6 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/detachable_resource_handler.h"
-#include "content/browser/loader/downloaded_temp_file_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_loader.h"
@@ -104,7 +103,6 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
   request.plugin_child_id = -1;
   request.resource_type = type;
   request.appcache_host_id = kAppCacheNoHostId;
-  request.download_to_file = false;
   request.should_reset_appcache = false;
   request.is_main_frame = true;
   request.transition_type = ui::PAGE_TRANSITION_LINK;
@@ -2207,138 +2205,6 @@ TEST_F(ResourceDispatcherHostTest, DataSentBeforeDetach) {
   client.RunUntilComplete();
   EXPECT_TRUE(client.response_body().is_valid());
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
-}
-
-// Tests the dispatcher host's temporary file management in the mojo-enabled
-// loading.
-TEST_F(ResourceDispatcherHostTest, RegisterDownloadedTempFileWithMojo) {
-  const int kRequestID = 1;
-
-  // Create a temporary file.
-  base::FilePath file_path;
-  ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
-  EXPECT_TRUE(base::PathExists(file_path));
-  scoped_refptr<ShareableFileReference> deletable_file =
-      ShareableFileReference::GetOrCreate(
-          file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-          base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})
-              .get());
-
-  // Not readable.
-  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      filter_->child_id(), file_path));
-
-  // Register it for a resource request.
-  auto downloaded_file =
-      DownloadedTempFileImpl::Create(filter_->child_id(), kRequestID);
-  network::mojom::DownloadedTempFilePtr downloaded_file_ptr =
-      DownloadedTempFileImpl::Create(filter_->child_id(), kRequestID);
-  host_.RegisterDownloadedTempFile(filter_->child_id(), kRequestID, file_path);
-
-  // Should be readable now.
-  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      filter_->child_id(), file_path));
-
-  // The child releases from the request.
-  downloaded_file_ptr = nullptr;
-  content::RunAllTasksUntilIdle();
-
-  // Still readable because there is another reference to the file. (The child
-  // may take additional blob references.)
-  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      filter_->child_id(), file_path));
-
-  // Release extra references and wait for the file to be deleted. (This relies
-  // on the delete happening on the FILE thread which is mapped to main thread
-  // in this test.)
-  deletable_file = nullptr;
-  content::RunAllTasksUntilIdle();
-
-  // The file is no longer readable to the child and has been deleted.
-  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      filter_->child_id(), file_path));
-  EXPECT_FALSE(base::PathExists(file_path));
-}
-
-// Tests that temporary files held on behalf of child processes are released
-// when the child process dies.
-TEST_F(ResourceDispatcherHostTest, ReleaseTemporiesOnProcessExit) {
-  const int kRequestID = 1;
-
-  // Create a temporary file.
-  base::FilePath file_path;
-  ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
-  scoped_refptr<ShareableFileReference> deletable_file =
-      ShareableFileReference::GetOrCreate(
-          file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-          base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})
-              .get());
-
-  // Register it for a resource request.
-  host_.RegisterDownloadedTempFile(filter_->child_id(), kRequestID, file_path);
-  deletable_file = nullptr;
-
-  // Should be readable now.
-  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      filter_->child_id(), file_path));
-
-  // Let the process die.
-  filter_->OnChannelClosing();
-  content::RunAllTasksUntilIdle();
-
-  // The file is no longer readable to the child and has been deleted.
-  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      filter_->child_id(), file_path));
-  EXPECT_FALSE(base::PathExists(file_path));
-}
-
-TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
-  // Make a request which downloads to file.
-  network::mojom::URLLoaderPtr loader;
-  network::TestURLLoaderClient client;
-  network::ResourceRequest request = CreateResourceRequest(
-      "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
-  request.download_to_file = true;
-  filter_->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0, 1, network::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  content::RunAllTasksUntilIdle();
-
-  // The request should contain the following messages:
-  //     ReceivedResponse    (indicates headers received and filename)
-  //     DataDownloaded*     (bytes downloaded and total length)
-  //     RequestComplete     (request is done)
-  client.RunUntilComplete();
-  EXPECT_FALSE(client.response_head().download_file_path.empty());
-  EXPECT_EQ(net::URLRequestTestJob::test_data_1().size(),
-            static_cast<size_t>(client.download_data_length()));
-  EXPECT_EQ(net::OK, client.completion_status().error_code);
-
-  // Verify that the data ended up in the temporary file.
-  std::string contents;
-  ASSERT_TRUE(base::ReadFileToString(client.response_head().download_file_path,
-                                     &contents));
-  EXPECT_EQ(net::URLRequestTestJob::test_data_1(), contents);
-
-  // The file should be readable by the child.
-  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      filter_->child_id(), client.response_head().download_file_path));
-
-  // When the renderer releases the file, it should be deleted.
-  // RunUntilIdle doesn't work because base::WorkerPool is involved.
-  ShareableFileReleaseWaiter waiter(client.response_head().download_file_path);
-  client.TakeDownloadedTempFile();
-  content::RunAllTasksUntilIdle();
-  waiter.Wait();
-  // The release callback runs before the delete is scheduled, so pump the
-  // message loop for the delete itself. (This relies on the delete happening on
-  // the FILE thread which is mapped to main thread in this test.)
-  content::RunAllTasksUntilIdle();
-
-  EXPECT_FALSE(base::PathExists(client.response_head().download_file_path));
-  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      filter_->child_id(), client.response_head().download_file_path));
 }
 
 WebContents* WebContentsBinder(WebContents* rv) { return rv; }

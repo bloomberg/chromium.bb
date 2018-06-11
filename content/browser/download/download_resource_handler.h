@@ -90,9 +90,6 @@ class CONTENT_EXPORT DownloadResourceHandler
       const net::URLRequestStatus& status,
       std::unique_ptr<ResourceController> controller) override;
 
-  // N/A to this flavor of DownloadHandler.
-  void OnDataDownloaded(int bytes_downloaded) override;
-
   void PauseRequest();
   void ResumeRequest();
 

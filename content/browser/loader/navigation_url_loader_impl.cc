@@ -870,9 +870,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
  private:
   // network::mojom::URLLoaderClient implementation:
-  void OnReceiveResponse(
-      const network::ResourceResponseHead& head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
+  void OnReceiveResponse(const network::ResourceResponseHead& head) override {
     received_response_ = true;
 
     // If the default loader (network) was used to handle the URL load request
@@ -907,8 +905,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 #if BUILDFLAG(ENABLE_PLUGINS)
       if (!response_intercepted && !must_download && !known_mime_type) {
         CheckPluginAndContinueOnReceiveResponse(
-            head, std::move(downloaded_file),
-            std::move(url_loader_client_endpoints),
+            head, std::move(url_loader_client_endpoints),
             std::vector<WebPluginInfo>());
         return;
       }
@@ -968,8 +965,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       }
     }
 
-    CallOnReceivedResponse(head, std::move(downloaded_file),
-                           std::move(url_loader_client_endpoints),
+    CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
                            std::move(cloned_navigation_data), is_download,
                            is_stream);
   }
@@ -977,7 +973,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 #if BUILDFLAG(ENABLE_PLUGINS)
   void CheckPluginAndContinueOnReceiveResponse(
       const network::ResourceResponseHead& head,
-      network::mojom::DownloadedTempFilePtr downloaded_file,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const std::vector<WebPluginInfo>& plugins) {
     bool stale;
@@ -996,7 +991,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // Refresh the plugins asynchronously.
       PluginService::GetInstance()->GetPlugins(base::BindOnce(
           &URLLoaderRequestController::CheckPluginAndContinueOnReceiveResponse,
-          weak_factory_.GetWeakPtr(), head, std::move(downloaded_file),
+          weak_factory_.GetWeakPtr(), head,
           std::move(url_loader_client_endpoints)));
       return;
     }
@@ -1005,15 +1000,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         !has_plugin &&
         (!head.headers || head.headers->response_code() / 100 == 2);
 
-    CallOnReceivedResponse(head, std::move(downloaded_file),
-                           std::move(url_loader_client_endpoints), nullptr,
-                           is_download, false /* is_stream */);
+    CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
+                           nullptr, is_download, false /* is_stream */);
   }
 #endif
 
   void CallOnReceivedResponse(
       const network::ResourceResponseHead& head,
-      network::mojom::DownloadedTempFilePtr downloaded_file,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<NavigationData> cloned_navigation_data,
       bool is_download,
@@ -1034,7 +1027,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                        response->DeepCopy(),
                        std::move(url_loader_client_endpoints),
                        std::move(cloned_navigation_data), global_request_id_,
-                       is_download, is_stream, std::move(downloaded_file)));
+                       is_download, is_stream));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -1066,7 +1059,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                        redirect_info, response->DeepCopy()));
   }
 
-  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {}
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override {}
@@ -1410,8 +1402,7 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& global_request_id,
     bool is_download,
-    bool is_stream,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    bool is_stream) {
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
                          "&NavigationURLLoaderImpl", this, "success", true);
 

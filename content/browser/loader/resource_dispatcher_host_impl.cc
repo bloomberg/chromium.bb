@@ -47,7 +47,6 @@
 #include "content/browser/loader/mime_sniffing_resource_handler.h"
 #include "content/browser/loader/mojo_async_resource_handler.h"
 #include "content/browser/loader/null_resource_controller.h"
-#include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -116,7 +115,6 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
-#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -169,12 +167,6 @@ void AbortRequestBeforeItStarts(
   status.encoded_data_length = 0;
   status.encoded_body_length = 0;
   url_loader_client->OnComplete(status);
-}
-
-void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
-                                               const base::FilePath& path) {
-  ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
-      child_id, path);
 }
 
 bool IsValidatedSCT(
@@ -1128,12 +1120,6 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
       request, std::move(mojo_request), std::move(url_loader_client),
       static_cast<ResourceType>(request_data.resource_type));
 
-  // The RedirectToFileResourceHandler depends on being next in the chain.
-  if (request_data.download_to_file) {
-    handler.reset(
-        new RedirectToFileResourceHandler(std::move(handler), request));
-  }
-
   // Prefetches outlive their child process.
   if (request_data.resource_type == RESOURCE_TYPE_PREFETCH) {
     auto detachable_handler = std::make_unique<DetachableResourceHandler>(
@@ -1256,41 +1242,6 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   return handler;
 }
 
-void ResourceDispatcherHostImpl::RegisterDownloadedTempFile(
-    int child_id, int request_id, const base::FilePath& file_path) {
-  scoped_refptr<ShareableFileReference> reference =
-      ShareableFileReference::Get(file_path);
-  DCHECK(reference.get());
-
-  registered_temp_files_[child_id][request_id] = reference;
-  ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
-      child_id, reference->path());
-
-  // When the temp file is deleted, revoke permissions that the renderer has
-  // to that file. This covers an edge case where the file is deleted and then
-  // the same name is re-used for some other purpose, we don't want the old
-  // renderer to still have access to it.
-  //
-  // We do this when the file is deleted because the renderer can take a blob
-  // reference to the temp file that outlives the url loaded that it was
-  // loaded with to keep the file (and permissions) alive.
-  reference->AddFinalReleaseCallback(
-      base::BindOnce(&RemoveDownloadFileFromChildSecurityPolicy, child_id));
-}
-
-void ResourceDispatcherHostImpl::UnregisterDownloadedTempFile(
-    int child_id, int request_id) {
-  DeletableFilesMap& map = registered_temp_files_[child_id];
-  DeletableFilesMap::iterator found = map.find(request_id);
-  if (found == map.end())
-    return;
-
-  map.erase(found);
-
-  // Note that we don't remove the security bits here. This will be done
-  // when all file refs are deleted (see RegisterDownloadedTempFile).
-}
-
 ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
     int child_id,
     int render_view_route_id,
@@ -1354,7 +1305,6 @@ void ResourceDispatcherHostImpl::CancelRequestsForProcess(int child_id) {
   const auto& map = keepalive_statistics_recorder_.per_process_records();
   if (map.find(child_id) != map.end())
     keepalive_statistics_recorder_.Unregister(child_id);
-  registered_temp_files_.erase(child_id);
 }
 
 void ResourceDispatcherHostImpl::CancelRequestsForRoute(

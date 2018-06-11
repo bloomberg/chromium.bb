@@ -106,7 +106,7 @@ class MockNetworkURLLoaderFactory final
       client->OnReceiveRedirect(net::RedirectInfo(), response_head);
       return;
     }
-    client->OnReceiveResponse(response_head, nullptr /* downloaded_file */);
+    client->OnReceiveResponse(response_head);
 
     // Pass the response body to the client.
     if (!response.body.empty()) {

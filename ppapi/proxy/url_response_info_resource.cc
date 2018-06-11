@@ -25,12 +25,8 @@ bool IsRedirect(int32_t status) {
 URLResponseInfoResource::URLResponseInfoResource(
     Connection connection,
     PP_Instance instance,
-    const URLResponseInfoData& data,
-    PP_Resource file_ref_resource)
-    : PluginResource(connection, instance),
-      data_(data),
-      body_as_file_ref_(ScopedPPResource::PassRef(), file_ref_resource) {
-}
+    const URLResponseInfoData& data)
+    : PluginResource(connection, instance), data_(data) {}
 
 URLResponseInfoResource::~URLResponseInfoResource() {
 }
@@ -64,11 +60,7 @@ PP_Var URLResponseInfoResource::GetProperty(PP_URLResponseProperty property) {
 }
 
 PP_Resource URLResponseInfoResource::GetBodyAsFileRef() {
-  if (!body_as_file_ref_.get())
-    return 0;
-  PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(
-      body_as_file_ref_.get());
-  return body_as_file_ref_.get();
+  return 0;
 }
 
 }  // namespace proxy

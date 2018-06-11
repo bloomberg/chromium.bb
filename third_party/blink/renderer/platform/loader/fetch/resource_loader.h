@@ -119,7 +119,6 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
   void DidStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void DidDownloadData(int, int) override;
   void DidFinishLoading(TimeTicks finish_time,
                         int64_t encoded_data_length,
                         int64_t encoded_body_length,

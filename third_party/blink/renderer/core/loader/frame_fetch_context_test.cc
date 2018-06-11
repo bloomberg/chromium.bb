@@ -1465,13 +1465,6 @@ TEST_F(FrameFetchContextTest, DispatchDidReceiveEncodedDataWhenDetached) {
   // Should not crash.
 }
 
-TEST_F(FrameFetchContextTest, DispatchDidDownloadDataWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  fetch_context->DispatchDidDownloadData(4, 7, 9);
-  // Should not crash.
-}
-
 TEST_F(FrameFetchContextTest, DispatchDidFinishLoadingWhenDetached) {
   dummy_page_holder = nullptr;
 

@@ -564,7 +564,7 @@ void SpeechRecognitionEngineTest::ProvideMockResponseStartDownstreamIfNeeded() {
   std::string headers("HTTP/1.1 200 OK\n\n");
   head.headers = new net::HttpResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-  downstream_request->client->OnReceiveResponse(head, nullptr);
+  downstream_request->client->OnReceiveResponse(head);
 
   mojo::DataPipe data_pipe;
   downstream_request->client->OnStartLoadingResponseBody(
@@ -632,7 +632,7 @@ void SpeechRecognitionEngineTest::CloseMockDownstream(
     std::string headers("HTTP/1.1 500 Server Sad\n\n");
     head.headers = new net::HttpResponseHeaders(
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-    downstream_request->client->OnReceiveResponse(head, nullptr);
+    downstream_request->client->OnReceiveResponse(head);
     // Wait for the response to be handled.
     base::RunLoop().RunUntilIdle();
     return;

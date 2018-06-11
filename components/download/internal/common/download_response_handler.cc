@@ -81,8 +81,7 @@ DownloadResponseHandler::DownloadResponseHandler(
 DownloadResponseHandler::~DownloadResponseHandler() = default;
 
 void DownloadResponseHandler::OnReceiveResponse(
-    const network::ResourceResponseHead& head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& head) {
   create_info_ = CreateDownloadCreateInfo(head);
   cert_status_ = head.cert_status;
 
@@ -159,9 +158,6 @@ void DownloadResponseHandler::OnReceiveRedirect(
   referrer_ = GURL(redirect_info.new_referrer);
   delegate_->OnReceiveRedirect();
 }
-
-void DownloadResponseHandler::OnDataDownloaded(int64_t data_length,
-                                               int64_t encoded_length) {}
 
 void DownloadResponseHandler::OnUploadProgress(
     int64_t current_position,

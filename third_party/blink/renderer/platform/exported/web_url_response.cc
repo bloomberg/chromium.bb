@@ -385,14 +385,6 @@ void WebURLResponse::SetDidServiceWorkerNavigationPreload(bool value) {
   resource_response_->SetDidServiceWorkerNavigationPreload(value);
 }
 
-WebString WebURLResponse::DownloadFilePath() const {
-  return resource_response_->DownloadedFilePath();
-}
-
-void WebURLResponse::SetDownloadFilePath(const WebString& download_file_path) {
-  resource_response_->SetDownloadedFilePath(download_file_path);
-}
-
 WebString WebURLResponse::RemoteIPAddress() const {
   return resource_response_->RemoteIPAddress();
 }

@@ -68,12 +68,10 @@ class CONTENT_EXPORT URLLoaderClientImpl final
 
   // network::mojom::URLLoaderClient implementation
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override;
+      const network::ResourceResponseHead& response_head) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head) override;
-  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override;
@@ -83,14 +81,10 @@ class CONTENT_EXPORT URLLoaderClientImpl final
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  // Takes |downloaded_file_|.
-  network::mojom::DownloadedTempFilePtr TakeDownloadedTempFile();
-
  private:
   class DeferredMessage;
   class DeferredOnReceiveResponse;
   class DeferredOnReceiveRedirect;
-  class DeferredOnDataDownloaded;
   class DeferredOnUploadProgress;
   class DeferredOnReceiveCachedMetadata;
   class DeferredOnComplete;
@@ -100,7 +94,6 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   void OnConnectionClosed();
 
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
-  network::mojom::DownloadedTempFilePtr downloaded_file_;
   std::vector<std::unique_ptr<DeferredMessage>> deferred_messages_;
   const int request_id_;
   bool has_received_response_ = false;

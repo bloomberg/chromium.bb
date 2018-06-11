@@ -249,13 +249,6 @@ void DetachableResourceHandler::OnResponseCompleted(
                                      std::make_unique<Controller>(this));
 }
 
-void DetachableResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  if (!next_handler_)
-    return;
-
-  next_handler_->OnDataDownloaded(bytes_downloaded);
-}
-
 void DetachableResourceHandler::ResumeInternal() {
   parent_read_buffer_ = nullptr;
   parent_read_buffer_size_ = nullptr;

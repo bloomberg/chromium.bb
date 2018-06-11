@@ -252,14 +252,6 @@ void WebURLRequest::SetAppCacheHostID(int app_cache_host_id) {
   resource_request_->SetAppCacheHostID(app_cache_host_id);
 }
 
-bool WebURLRequest::DownloadToFile() const {
-  return resource_request_->DownloadToFile();
-}
-
-void WebURLRequest::SetDownloadToFile(bool download_to_file) {
-  resource_request_->SetDownloadToFile(download_to_file);
-}
-
 bool WebURLRequest::PassResponsePipeToClient() const {
   return resource_request_->DownloadToBlob();
 }

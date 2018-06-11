@@ -125,10 +125,8 @@ ThrottlingURLLoader::StartInfo::StartInfo(
 ThrottlingURLLoader::StartInfo::~StartInfo() = default;
 
 ThrottlingURLLoader::ResponseInfo::ResponseInfo(
-    const network::ResourceResponseHead& in_response_head,
-    network::mojom::DownloadedTempFilePtr in_downloaded_file)
-    : response_head(in_response_head),
-      downloaded_file(std::move(in_downloaded_file)) {}
+    const network::ResourceResponseHead& in_response_head)
+    : response_head(in_response_head) {}
 
 ThrottlingURLLoader::ResponseInfo::~ResponseInfo() = default;
 
@@ -308,8 +306,7 @@ void ThrottlingURLLoader::StopDeferringForThrottle(
 }
 
 void ThrottlingURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
   DCHECK(deferring_throttles_.empty());
@@ -327,15 +324,13 @@ void ThrottlingURLLoader::OnReceiveResponse(
 
     if (deferred) {
       deferred_stage_ = DEFERRED_RESPONSE;
-      response_info_ = std::make_unique<ResponseInfo>(
-          response_head, std::move(downloaded_file));
+      response_info_ = std::make_unique<ResponseInfo>(response_head);
       client_binding_.PauseIncomingMethodCallProcessing();
       return;
     }
   }
 
-  forwarding_client_->OnReceiveResponse(response_head,
-                                        std::move(downloaded_file));
+  forwarding_client_->OnReceiveResponse(response_head);
 }
 
 void ThrottlingURLLoader::OnReceiveRedirect(
@@ -373,14 +368,6 @@ void ThrottlingURLLoader::OnReceiveRedirect(
   // suitable place to set this URL but there we do not have the data.
   response_url_ = redirect_info.new_url;
   forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
-}
-
-void ThrottlingURLLoader::OnDataDownloaded(int64_t data_len,
-                                           int64_t encoded_data_len) {
-  DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!loader_cancelled_);
-
-  forwarding_client_->OnDataDownloaded(data_len, encoded_data_len);
 }
 
 void ThrottlingURLLoader::OnUploadProgress(
@@ -477,9 +464,7 @@ void ThrottlingURLLoader::Resume() {
     }
     case DEFERRED_RESPONSE: {
       client_binding_.ResumeIncomingMethodCallProcessing();
-      forwarding_client_->OnReceiveResponse(
-          response_info_->response_head,
-          std::move(response_info_->downloaded_file));
+      forwarding_client_->OnReceiveResponse(response_info_->response_head);
       // Note: |this| may be deleted here.
       break;
     }

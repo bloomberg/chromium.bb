@@ -50,8 +50,6 @@ struct CONTENT_EXPORT SyncLoadResponse {
   std::string data;
 
   // Used for blob response type XMLHttpRequest.
-  base::Optional<int64_t> downloaded_file_length;
-  network::mojom::DownloadedTempFilePtr downloaded_tmp_file;
   blink::mojom::SerializedBlobPtr downloaded_blob;
 };
 

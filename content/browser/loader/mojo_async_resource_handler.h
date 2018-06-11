@@ -82,7 +82,6 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   void OnResponseCompleted(
       const net::URLRequestStatus& status,
       std::unique_ptr<ResourceController> controller) override;
-  void OnDataDownloaded(int bytes_downloaded) override;
 
   // network::mojom::URLLoader implementation:
   void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&

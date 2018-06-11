@@ -257,16 +257,6 @@ void ResourceDispatcher::OnStartLoadingResponseBody(
   request_info->peer->OnStartLoadingResponseBody(std::move(body));
 }
 
-void ResourceDispatcher::OnDownloadedData(int request_id,
-                                          int data_len,
-                                          int encoded_data_length) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
-    return;
-
-  request_info->peer->OnDownloadedData(data_len, encoded_data_length);
-}
-
 void ResourceDispatcher::OnReceivedRedirect(
     int request_id,
     const net::RedirectInfo& redirect_info,
@@ -400,17 +390,6 @@ void ResourceDispatcher::OnRequestComplete(
   peer->OnCompletedRequest(renderer_status);
 }
 
-network::mojom::DownloadedTempFilePtr
-ResourceDispatcher::TakeDownloadedTempFile(int request_id) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
-  if (it == pending_requests_.end())
-    return nullptr;
-  PendingRequestInfo* request_info = it->second.get();
-  if (!request_info->url_loader_client)
-    return nullptr;
-  return request_info->url_loader_client->TakeDownloadedTempFile();
-}
-
 bool ResourceDispatcher::RemovePendingRequest(
     int request_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -495,7 +474,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     const GURL& request_url,
     const std::string& method,
     const GURL& referrer,
-    bool download_to_file,
     std::unique_ptr<NavigationResponseOverrideParameters>
         navigation_response_override_params)
     : peer(std::move(peer)),
@@ -505,7 +483,6 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       response_url(request_url),
       response_method(method),
       response_referrer(referrer),
-      download_to_file(download_to_file),
       local_request_start(base::TimeTicks::Now()),
       buffer_size(0),
       navigation_response_override(
@@ -600,8 +577,7 @@ int ResourceDispatcher::StartAsync(
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
       std::move(peer), static_cast<ResourceType>(request->resource_type),
       request->render_frame_id, request->url, request->method,
-      request->referrer, request->download_to_file,
-      std::move(response_override_params));
+      request->referrer, std::move(response_override_params));
 
   if (override_url_loader) {
     pending_requests_[request_id]->url_loader_client =
@@ -710,8 +686,7 @@ void ResourceDispatcher::ContinueForNavigation(int request_id) {
       return;
   }
 
-  client_ptr->OnReceiveResponse(response_override->response,
-                                network::mojom::DownloadedTempFilePtr());
+  client_ptr->OnReceiveResponse(response_override->response);
 
   // Abort if the request is cancelled.
   if (!GetPendingRequestInfo(request_id))

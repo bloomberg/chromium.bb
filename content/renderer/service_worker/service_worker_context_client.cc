@@ -553,10 +553,8 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
   ~NavigationPreloadRequest() override {}
 
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
+      const network::ResourceResponseHead& response_head) override {
     DCHECK(!response_);
-    DCHECK(!downloaded_file);
     response_ = std::make_unique<blink::WebURLResponse>();
     // TODO(horo): Set report_security_info to true when DevTools is attached.
     const bool report_security_info = false;
@@ -586,11 +584,6 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
         fetch_event_id_, response_head.response_start,
         response_head.encoded_data_length, 0 /* encoded_body_length */,
         0 /* decoded_body_length */);
-  }
-
-  void OnDataDownloaded(int64_t data_length,
-                        int64_t encoded_data_length) override {
-    NOTREACHED();
   }
 
   void OnUploadProgress(int64_t current_position,

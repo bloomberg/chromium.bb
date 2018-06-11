@@ -1027,10 +1027,9 @@ void ResourceFetcher::RecordResourceTimingOnRedirect(
 }
 
 static bool IsDownloadOrStreamRequest(const ResourceRequest& request) {
-  // Never use cache entries for DownloadToFile / UseStreamOnResponse requests.
+  // Never use cache entries for DownloadToBlob / UseStreamOnResponse requests.
   // The data will be delivered through other paths.
-  return request.DownloadToFile() || request.DownloadToBlob() ||
-         request.UseStreamOnResponse();
+  return request.DownloadToBlob() || request.UseStreamOnResponse();
 }
 
 Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
@@ -1052,7 +1051,7 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
   }
 
   const ResourceRequest& request = params.GetResourceRequest();
-  if (request.DownloadToFile() || request.DownloadToBlob())
+  if (request.DownloadToBlob())
     return nullptr;
 
   if (IsImageResourceDisallowedToBeReused(*resource) ||

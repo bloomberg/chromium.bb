@@ -69,9 +69,4 @@ void LayeredResourceHandler::OnResponseCompleted(
   next_handler_->OnResponseCompleted(status, std::move(controller));
 }
 
-void LayeredResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  DCHECK(next_handler_.get());
-  next_handler_->OnDataDownloaded(bytes_downloaded);
-}
-
 }  // namespace content

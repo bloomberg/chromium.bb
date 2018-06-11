@@ -1555,7 +1555,7 @@ bool InterceptURLLoad(content::URLLoaderInterceptor::RequestParams* params) {
   if (url.query() != kPushUseNullEndTime)
     load_timing.push_end = base::TimeTicks::Now();
 
-  params->client->OnReceiveResponse(response, /*downloaded_file=*/nullptr);
+  params->client->OnReceiveResponse(response);
   params->client->OnComplete(network::URLLoaderCompletionStatus());
   return true;
 }

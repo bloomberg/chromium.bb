@@ -160,7 +160,7 @@ class FileURLDirectoryLoader
     network::ResourceResponseHead head;
     head.mime_type = "text/html";
     head.charset = "utf-8";
-    client->OnReceiveResponse(head, nullptr);
+    client->OnReceiveResponse(head);
     client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
     client_ = std::move(client);
 
@@ -559,7 +559,7 @@ class FileURLLoader : public network::mojom::URLLoader {
           base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
                              head.mime_type.c_str()));
     }
-    client->OnReceiveResponse(head, nullptr);
+    client->OnReceiveResponse(head);
     client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
     client_ = std::move(client);
 
@@ -635,7 +635,6 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK(!request.download_to_file);
   base::FilePath file_path;
   const bool is_file = net::FileURLToFilePath(request.url, &file_path);
   if (is_file && file_path.EndsWithSeparator() && file_path.IsAbsolute()) {

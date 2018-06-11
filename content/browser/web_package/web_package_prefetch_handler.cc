@@ -73,8 +73,7 @@ WebPackagePrefetchHandler::FollowRedirect(
 }
 
 void WebPackagePrefetchHandler::OnReceiveResponse(
-    const network::ResourceResponseHead& head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& head) {
   NOTREACHED();
 }
 
@@ -82,11 +81,6 @@ void WebPackagePrefetchHandler::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
   forwarding_client_->OnReceiveRedirect(redirect_info, head);
-}
-
-void WebPackagePrefetchHandler::OnDataDownloaded(int64_t data_length,
-                                                 int64_t encoded_length) {
-  NOTREACHED();
 }
 
 void WebPackagePrefetchHandler::OnUploadProgress(

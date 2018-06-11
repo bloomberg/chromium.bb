@@ -93,9 +93,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   // keyed by the source code of the script.
   SourceKeyedCachedMetadataHandler* CacheHandler();
 
-  base::Optional<int64_t> DownloadedFileLength() const {
-    return downloaded_file_length_;
-  }
   scoped_refptr<BlobDataHandle> DownloadedBlob() const {
     return downloaded_blob_;
   }
@@ -136,7 +133,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                     base::SingleThreadTaskRunner*) override;
   void NotifyFinished() override;
 
-  base::Optional<int64_t> downloaded_file_length_;
   scoped_refptr<BlobDataHandle> downloaded_blob_;
 
   // Used for preload matching.

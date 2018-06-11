@@ -221,23 +221,6 @@ void NetworkResourcesData::ResponseReceived(const String& request_id,
   resource_data->SetTextEncodingName(response.TextEncodingName());
   resource_data->SetHTTPStatusCode(response.HttpStatusCode());
   resource_data->SetRawHeaderSize(response.EncodedDataLength());
-
-  String file_path = response.DownloadedFilePath();
-  if (!file_path.IsEmpty()) {
-    std::unique_ptr<BlobData> blob_data =
-        BlobData::CreateForFileWithUnknownSize(file_path);
-    AtomicString mime_type;
-    if (response.IsHTTP())
-      mime_type = ExtractMIMETypeFromMediaType(
-          response.HttpHeaderField(HTTPNames::Content_Type));
-    if (mime_type.IsEmpty())
-      mime_type = response.MimeType();
-    if (mime_type.IsEmpty())
-      mime_type = AtomicString("text/plain");
-    blob_data->SetContentType(mime_type);
-    resource_data->SetDownloadedFileBlob(
-        BlobDataHandle::Create(std::move(blob_data), -1));
-  }
 }
 
 void NetworkResourcesData::BlobReceived(const String& request_id,

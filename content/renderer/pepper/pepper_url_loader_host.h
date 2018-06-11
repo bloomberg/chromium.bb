@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
@@ -96,7 +95,6 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
 
   // Converts a WebURLResponse to a URLResponseInfo and saves it.
   void SaveResponse(const blink::WebURLResponse& response);
-  void DidDataFromWebURLResponse(const ppapi::URLResponseInfoData& data);
 
   // Sends the UpdateProgress message (if necessary) to the plugin.
   void UpdateProgress();
@@ -138,8 +136,6 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
   // PpapiPluginMsg_URLLoader_ReceivedResponse to the plugin, which introduces
   // ordering constraints on following messages to the plugin.
   bool pending_response_;
-
-  base::WeakPtrFactory<PepperURLLoaderHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperURLLoaderHost);
 };

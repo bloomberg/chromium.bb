@@ -162,8 +162,7 @@ void ServiceWorkerNewScriptLoader::ResumeReadingBodyFromNet() {
 // URLLoaderClient for network loader ------------------------------------------
 
 void ServiceWorkerNewScriptLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& response_head) {
   DCHECK_EQ(NetworkLoaderState::kLoadingHeader, network_loader_state_);
   if (!version_->context() || version_->is_redundant()) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
@@ -256,9 +255,9 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
     network::ResourceResponseHead new_response_head = response_head;
     new_response_head.ssl_info.reset();
-    client_->OnReceiveResponse(new_response_head, std::move(downloaded_file));
+    client_->OnReceiveResponse(new_response_head);
   } else {
-    client_->OnReceiveResponse(response_head, std::move(downloaded_file));
+    client_->OnReceiveResponse(response_head);
   }
 
   network_loader_state_ = NetworkLoaderState::kWaitingForBody;
@@ -273,11 +272,6 @@ void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
   // https://w3c.github.io/ServiceWorker/#update-algorithm
   CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
                   kServiceWorkerRedirectError);
-}
-
-void ServiceWorkerNewScriptLoader::OnDataDownloaded(int64_t data_len,
-                                                    int64_t encoded_data_len) {
-  client_->OnDataDownloaded(data_len, encoded_data_len);
 }
 
 void ServiceWorkerNewScriptLoader::OnUploadProgress(

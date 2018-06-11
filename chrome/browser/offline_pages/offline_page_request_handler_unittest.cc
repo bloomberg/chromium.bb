@@ -347,8 +347,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   ~TestURLLoaderClient() override {}
 
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
+      const network::ResourceResponseHead& response_head) override {
     observer_->OnReceiveResponse(response_head);
   }
 
@@ -357,8 +356,6 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
       const network::ResourceResponseHead& response_head) override {
     observer_->OnReceiveRedirect(redirect_info.new_url);
   }
-
-  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {}
 
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
 

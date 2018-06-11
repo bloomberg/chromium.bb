@@ -206,12 +206,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool HasUserGesture() const { return has_user_gesture_; }
   void SetHasUserGesture(bool);
 
-  // True if request should be downloaded to file.
-  bool DownloadToFile() const { return download_to_file_; }
-  void SetDownloadToFile(bool download_to_file) {
-    download_to_file_ = download_to_file;
-  }
-
   // True if request shuold be downloaded to blob.
   bool DownloadToBlob() const { return download_to_blob_; }
   void SetDownloadToBlob(bool download_to_blob) {
@@ -409,7 +403,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool report_upload_progress_ : 1;
   bool report_raw_headers_ : 1;
   bool has_user_gesture_ : 1;
-  bool download_to_file_ : 1;
   bool download_to_blob_ : 1;
   bool use_stream_on_response_ : 1;
   bool keepalive_ : 1;
@@ -480,7 +473,6 @@ struct CrossThreadResourceRequestData {
   bool allow_stored_credentials_;
   bool report_upload_progress_;
   bool has_user_gesture_;
-  bool download_to_file_;
   bool download_to_blob_;
   bool skip_service_worker_;
   bool use_stream_on_response_;

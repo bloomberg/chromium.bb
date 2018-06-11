@@ -244,11 +244,6 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT int AppCacheHostID() const;
   BLINK_PLATFORM_EXPORT void SetAppCacheHostID(int);
 
-  // If true, the response body will be downloaded to a file managed by the
-  // WebURLLoader. See WebURLResponse::DownloadFilePath.
-  BLINK_PLATFORM_EXPORT bool DownloadToFile() const;
-  BLINK_PLATFORM_EXPORT void SetDownloadToFile(bool);
-
   // If true, the client expects to receive the raw response pipe. Similar to
   // UseStreamOnResponse but the stream will be a mojo DataPipe rather than a
   // WebDataConsumerHandle.
