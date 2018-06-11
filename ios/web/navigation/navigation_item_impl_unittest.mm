@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ios/web/navigation/wk_navigation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -172,48 +173,6 @@ TEST_F(NavigationItemTest, GetDisplayTitleForURL) {
 
   title = NavigationItemImpl::GetDisplayTitleForURL(GURL("file://foo/1.gz"));
   EXPECT_EQ("1.gz", base::UTF16ToUTF8(title));
-}
-
-// Tests state transitions between ErrorRetryStates.
-TEST_F(NavigationItemTest, SetErrorRetryState) {
-  NavigationItemImpl item;
-
-  // item is not tracked in error_retry_states_ so should default to NO_ERROR.
-  EXPECT_EQ(ErrorRetryState::kNoNavigationError, item.GetErrorRetryState());
-
-  // The orders below matter because not all state transitions are valid.
-  // Invalid transitions are not tested because death tests are not supported in
-  // iOS simulator build.
-  item.SetErrorRetryState(
-      ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
-  ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
-            item.GetErrorRetryState());
-
-  item.SetErrorRetryState(
-      ErrorRetryState::kDisplayingNativeErrorForFailedNavigation);
-  ASSERT_EQ(ErrorRetryState::kDisplayingNativeErrorForFailedNavigation,
-            item.GetErrorRetryState());
-
-  item.SetErrorRetryState(ErrorRetryState::kNavigatingToFailedNavigationItem);
-  ASSERT_EQ(ErrorRetryState::kNavigatingToFailedNavigationItem,
-            item.GetErrorRetryState());
-
-  item.SetErrorRetryState(ErrorRetryState::kRetryFailedNavigationItem);
-  ASSERT_EQ(ErrorRetryState::kRetryFailedNavigationItem,
-            item.GetErrorRetryState());
-
-  item.SetErrorRetryState(
-      ErrorRetryState::kReadyToDisplayErrorForFailedNavigation);
-  ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
-            item.GetErrorRetryState());
-
-  // Cycle through again, this time, terminate in no error.
-  item.SetErrorRetryState(
-      ErrorRetryState::kDisplayingNativeErrorForFailedNavigation);
-  item.SetErrorRetryState(ErrorRetryState::kNavigatingToFailedNavigationItem);
-  item.SetErrorRetryState(ErrorRetryState::kRetryFailedNavigationItem);
-  item.SetErrorRetryState(ErrorRetryState::kNoNavigationError);
-  ASSERT_EQ(ErrorRetryState::kNoNavigationError, item.GetErrorRetryState());
 }
 
 }  // namespace
