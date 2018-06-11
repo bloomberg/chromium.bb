@@ -1121,13 +1121,11 @@ Response PageHandler::SetWebLifecycleState(const std::string& state) {
     // TODO(fmeawad): Instead of forcing a visibility change, only allow
     // freezing a page if it was already hidden.
     web_contents->WasHidden();
-    web_contents->FreezePage();
+    web_contents->SetPageFrozen(true);
     return Response::OK();
   }
   if (state == Page::SetWebLifecycleState::StateEnum::Active) {
-    // Making the page visible should make it active as visible pages cannot be
-    // frozen.
-    web_contents->WasShown();
+    web_contents->SetPageFrozen(false);
     return Response::OK();
   }
   return Response::Error("Unidentified lifecycle state");

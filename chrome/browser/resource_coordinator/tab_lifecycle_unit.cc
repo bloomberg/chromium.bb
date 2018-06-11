@@ -227,7 +227,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
   if (GetState() != LifecycleUnitState::PENDING_DISCARD)
     SetState(LifecycleUnitState::PENDING_FREEZE);
 
-  GetWebContents()->FreezePage();
+  GetWebContents()->SetPageFrozen(true);
   return true;
 }
 

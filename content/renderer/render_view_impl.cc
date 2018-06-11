@@ -1116,7 +1116,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_PausePageScheduledTasks,
                         OnPausePageScheduledTasks)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
-    IPC_MESSAGE_HANDLER(PageMsg_FreezePage, OnFreezePage)
+    IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
 
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
@@ -2121,10 +2121,9 @@ void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {
     screen_info_ = screen_info;
 }
 
-void RenderViewImpl::OnFreezePage() {
-  if (webview()) {
-    webview()->FreezePage();
-  }
+void RenderViewImpl::SetPageFrozen(bool frozen) {
+  if (webview())
+    webview()->SetPageFrozen(frozen);
 }
 
 GURL RenderViewImpl::GetURLForGraphicsContext3D() {

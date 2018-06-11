@@ -1122,7 +1122,7 @@ void GpuBenchmarking::Freeze() {
   // freezing a page if it was already hidden.
   context.web_view()->SetVisibilityState(
       blink::mojom::PageVisibilityState::kHidden, false);
-  context.web_view()->FreezePage();
+  context.web_view()->SetPageFrozen(true);
 }
 
 }  // namespace content
