@@ -240,12 +240,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     non_blocking_ = true;
 
   // <spec step="4">Let source text be the element's child text content.</spec>
-  //
+  const String source_text = element_->TextFromChildren();
+
   // <spec step="5">If the element has no src attribute, and source text is the
   // empty string, then return. The script is not executed.</spec>
-  //
-  // TODO(hiroshige): Update the behavior according to the spec.
-  if (!element_->HasSourceAttribute() && !element_->HasChildren())
+  if (!element_->HasSourceAttribute() && source_text.IsEmpty())
     return false;
 
   // <spec step="6">If the element is not connected, then return. The script is
