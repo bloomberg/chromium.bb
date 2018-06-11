@@ -24,7 +24,6 @@ using bookmarks::BookmarkNode;
 
 namespace extensions {
 
-namespace keys = bookmark_api_constants;
 using api::bookmarks::BookmarkTreeNode;
 
 namespace bookmark_api_helpers {
@@ -127,19 +126,19 @@ bool RemoveNode(BookmarkModel* model,
                 std::string* error) {
   const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(model, id);
   if (!node) {
-    *error = keys::kNoNodeError;
+    *error = bookmark_api_constants::kNoNodeError;
     return false;
   }
   if (model->is_permanent_node(node)) {
-    *error = keys::kModifySpecialError;
+    *error = bookmark_api_constants::kModifySpecialError;
     return false;
   }
   if (bookmarks::IsDescendantOf(node, managed->managed_node())) {
-    *error = keys::kModifyManagedError;
+    *error = bookmark_api_constants::kModifyManagedError;
     return false;
   }
   if (node->is_folder() && !node->empty() && !recursive) {
-    *error = keys::kFolderNotEmptyError;
+    *error = bookmark_api_constants::kFolderNotEmptyError;
     return false;
   }
 

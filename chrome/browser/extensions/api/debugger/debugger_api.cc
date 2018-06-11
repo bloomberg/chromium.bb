@@ -60,7 +60,6 @@ using content::RenderProcessHost;
 using content::RenderWidgetHost;
 using content::WebContents;
 
-namespace keys = debugger_api_constants;
 namespace Attach = extensions::api::debugger::Attach;
 namespace Detach = extensions::api::debugger::Detach;
 namespace OnDetach = extensions::api::debugger::OnDetach;
@@ -346,13 +345,16 @@ DebuggerFunction::~DebuggerFunction() {
 void DebuggerFunction::FormatErrorMessage(const std::string& format) {
   if (debuggee_.tab_id)
     error_ = ErrorUtils::FormatErrorMessage(
-      format, keys::kTabTargetType, base::IntToString(*debuggee_.tab_id));
+        format, debugger_api_constants::kTabTargetType,
+        base::IntToString(*debuggee_.tab_id));
   else if (debuggee_.extension_id)
     error_ = ErrorUtils::FormatErrorMessage(
-      format, keys::kBackgroundPageTargetType, *debuggee_.extension_id);
+        format, debugger_api_constants::kBackgroundPageTargetType,
+        *debuggee_.extension_id);
   else
     error_ = ErrorUtils::FormatErrorMessage(
-      format, keys::kOpaqueTargetType, *debuggee_.target_id);
+        format, debugger_api_constants::kOpaqueTargetType,
+        *debuggee_.target_id);
 }
 
 bool DebuggerFunction::InitAgentHost() {
@@ -390,12 +392,12 @@ bool DebuggerFunction::InitAgentHost() {
       }
     }
   } else {
-    error_ = keys::kInvalidTargetError;
+    error_ = debugger_api_constants::kInvalidTargetError;
     return false;
   }
 
   if (!agent_host_.get()) {
-    FormatErrorMessage(keys::kNoTargetError);
+    FormatErrorMessage(debugger_api_constants::kNoTargetError);
     return false;
   }
   return true;
@@ -407,7 +409,7 @@ bool DebuggerFunction::InitClientHost() {
 
   client_host_ = FindClientHost();
   if (!client_host_) {
-    FormatErrorMessage(keys::kNotAttachedError);
+    FormatErrorMessage(debugger_api_constants::kNotAttachedError);
     return false;
   }
 
@@ -450,13 +452,13 @@ bool DebuggerAttachFunction::RunAsync() {
   if (!DevToolsAgentHost::IsSupportedProtocolVersion(
           params->required_version)) {
     error_ = ErrorUtils::FormatErrorMessage(
-        keys::kProtocolVersionNotSupportedError,
+        debugger_api_constants::kProtocolVersionNotSupportedError,
         params->required_version);
     return false;
   }
 
   if (FindClientHost()) {
-    FormatErrorMessage(keys::kAlreadyAttachedError);
+    FormatErrorMessage(debugger_api_constants::kAlreadyAttachedError);
     return false;
   }
 
@@ -465,7 +467,7 @@ bool DebuggerAttachFunction::RunAsync() {
       debuggee_);
 
   if (!host->Attach()) {
-    FormatErrorMessage(keys::kRestrictedError);
+    FormatErrorMessage(debugger_api_constants::kRestrictedError);
     return false;
   }
 
@@ -539,7 +541,7 @@ void DebuggerSendCommandFunction::SendResponseBody(
 }
 
 void DebuggerSendCommandFunction::SendDetachedError() {
-  error_ = keys::kDetachedWhileHandlingError;
+  error_ = debugger_api_constants::kDetachedWhileHandlingError;
   SendResponse(false);
 }
 

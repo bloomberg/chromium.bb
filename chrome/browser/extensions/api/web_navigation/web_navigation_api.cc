@@ -37,8 +37,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::WebNavigationTabObserver);
 
 namespace extensions {
 
-namespace helpers = web_navigation_api_helpers;
-namespace keys = web_navigation_api_constants;
 namespace web_navigation = api::web_navigation;
 
 namespace {
@@ -109,7 +107,8 @@ void WebNavigationEventRouter::TabReplacedAt(
       !FrameNavigationState::IsValidUrl(new_contents->GetURL()))
     return;
 
-  helpers::DispatchOnTabReplaced(old_contents, profile_, new_contents);
+  web_navigation_api_helpers::DispatchOnTabReplaced(old_contents, profile_,
+                                                    new_contents);
 }
 
 void WebNavigationEventRouter::Observe(
@@ -162,7 +161,7 @@ void WebNavigationEventRouter::RecordNewWebContents(
     pending_web_contents_[target_web_contents] = PendingWebContents(
         source_web_contents, frame_host, target_web_contents, target_url);
   } else {
-    helpers::DispatchOnCreatedNavigationTarget(
+    web_navigation_api_helpers::DispatchOnCreatedNavigationTarget(
         source_web_contents, target_web_contents->GetBrowserContext(),
         frame_host, target_web_contents, target_url);
   }
@@ -184,11 +183,10 @@ void WebNavigationEventRouter::TabAdded(content::WebContents* tab) {
       tab_observer->frame_navigation_state();
 
   if (frame_navigation_state.CanSendEvents(iter->second.source_frame_host)) {
-    helpers::DispatchOnCreatedNavigationTarget(
+    web_navigation_api_helpers::DispatchOnCreatedNavigationTarget(
         iter->second.source_web_contents,
         iter->second.target_web_contents->GetBrowserContext(),
-        iter->second.source_frame_host,
-        iter->second.target_web_contents,
+        iter->second.source_frame_host, iter->second.target_web_contents,
         iter->second.target_url);
   }
   pending_web_contents_.erase(iter);
@@ -227,11 +225,9 @@ void WebNavigationTabObserver::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   if (navigation_state_.CanSendEvents(render_frame_host) &&
       !navigation_state_.GetDocumentLoadCompleted(render_frame_host)) {
-    helpers::DispatchOnErrorOccurred(
-        web_contents(),
-        render_frame_host,
-        navigation_state_.GetUrl(render_frame_host),
-        net::ERR_ABORTED);
+    web_navigation_api_helpers::DispatchOnErrorOccurred(
+        web_contents(), render_frame_host,
+        navigation_state_.GetUrl(render_frame_host), net::ERR_ABORTED);
     navigation_state_.SetErrorOccurredInFrame(render_frame_host);
   }
 }
@@ -260,7 +256,8 @@ void WebNavigationTabObserver::DidStartNavigation(
   }
 
   pending_on_before_navigate_event_ =
-      helpers::CreateOnBeforeNavigateEvent(navigation_handle);
+      web_navigation_api_helpers::CreateOnBeforeNavigateEvent(
+          navigation_handle);
 
   // Only dispatch the onBeforeNavigate event if the associated WebContents
   // is already added to the tab strip. Otherwise the event should be delayed
@@ -301,9 +298,8 @@ void WebNavigationTabObserver::DocumentLoadedInFrame(
     return;
 
   navigation_state_.SetParsingFinished(render_frame_host);
-  helpers::DispatchOnDOMContentLoaded(
-      web_contents(),
-      render_frame_host,
+  web_navigation_api_helpers::DispatchOnDOMContentLoaded(
+      web_contents(), render_frame_host,
       navigation_state_.GetUrl(render_frame_host));
 
   if (!navigation_state_.GetDocumentLoadCompleted(render_frame_host))
@@ -312,9 +308,9 @@ void WebNavigationTabObserver::DocumentLoadedInFrame(
   // The load might already have finished by the time we finished parsing. For
   // compatibility reasons, we artifically delay the load completed signal until
   // after parsing was completed.
-  helpers::DispatchOnCompleted(web_contents(),
-                               render_frame_host,
-                               navigation_state_.GetUrl(render_frame_host));
+  web_navigation_api_helpers::DispatchOnCompleted(
+      web_contents(), render_frame_host,
+      navigation_state_.GetUrl(render_frame_host));
 }
 
 void WebNavigationTabObserver::DidFinishLoad(
@@ -339,9 +335,9 @@ void WebNavigationTabObserver::DidFinishLoad(
   // after parsing was completed.
   if (!navigation_state_.GetParsingFinished(render_frame_host))
     return;
-  helpers::DispatchOnCompleted(web_contents(),
-                               render_frame_host,
-                               navigation_state_.GetUrl(render_frame_host));
+  web_navigation_api_helpers::DispatchOnCompleted(
+      web_contents(), render_frame_host,
+      navigation_state_.GetUrl(render_frame_host));
 }
 
 void WebNavigationTabObserver::DidFailLoad(
@@ -355,11 +351,9 @@ void WebNavigationTabObserver::DidFailLoad(
     return;
 
   if (navigation_state_.CanSendEvents(render_frame_host)) {
-    helpers::DispatchOnErrorOccurred(
-        web_contents(),
-        render_frame_host,
-        navigation_state_.GetUrl(render_frame_host),
-        error_code);
+    web_navigation_api_helpers::DispatchOnErrorOccurred(
+        web_contents(), render_frame_host,
+        navigation_state_.GetUrl(render_frame_host), error_code);
   }
   navigation_state_.SetErrorOccurredInFrame(render_frame_host);
 }
@@ -440,7 +434,8 @@ void WebNavigationTabObserver::HandleCommit(
     histogram_value = events::WEB_NAVIGATION_ON_COMMITTED;
     event_name = web_navigation::OnCommitted::kEventName;
   }
-  helpers::DispatchOnCommitted(histogram_value, event_name, navigation_handle);
+  web_navigation_api_helpers::DispatchOnCommitted(histogram_value, event_name,
+                                                  navigation_handle);
 }
 
 void WebNavigationTabObserver::HandleError(
@@ -452,7 +447,7 @@ void WebNavigationTabObserver::HandleError(
         true);  // is_error_page
   }
 
-  helpers::DispatchOnErrorOccurred(navigation_handle);
+  web_navigation_api_helpers::DispatchOnErrorOccurred(navigation_handle);
 }
 
 // See also NavigationController::IsURLSameDocumentNavigation.

@@ -58,8 +58,6 @@ namespace extensions {
 
 namespace {
 
-namespace keys = tabs_constants;
-
 // |error_message| can optionally be passed in and will be set with an
 // appropriate message if the window cannot be found by id.
 Browser* GetBrowserInProfileWithId(Profile* profile,
@@ -81,7 +79,7 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
 
   if (error_message)
     *error_message = ErrorUtils::FormatErrorMessage(
-        keys::kWindowNotFoundError, base::IntToString(window_id));
+        tabs_constants::kWindowNotFoundError, base::IntToString(window_id));
 
   return nullptr;
 }
@@ -147,7 +145,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
         profile, function->include_incognito_information());
   if (!browser || !browser->window()) {
     if (error)
-      *error = keys::kNoCurrentWindowError;
+      *error = tabs_constants::kNoCurrentWindowError;
     return nullptr;
   }
 
@@ -162,8 +160,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
             opener_id, profile, function->include_incognito_information(),
             &opener_browser, nullptr, &opener, nullptr)) {
       if (error) {
-        *error = ErrorUtils::FormatErrorMessage(keys::kTabNotFoundError,
-                                                base::IntToString(opener_id));
+        *error = ErrorUtils::FormatErrorMessage(
+            tabs_constants::kTabNotFoundError, base::IntToString(opener_id));
       }
       return nullptr;
     }
@@ -179,8 +177,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
     url = ExtensionTabUtil::ResolvePossiblyRelativeURL(url_string,
                                                        function->extension());
     if (!url.is_valid()) {
-      *error =
-          ErrorUtils::FormatErrorMessage(keys::kInvalidUrlError, url_string);
+      *error = ErrorUtils::FormatErrorMessage(tabs_constants::kInvalidUrlError,
+                                              url_string);
       return nullptr;
     }
   } else {
@@ -189,7 +187,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
 
   // Don't let extensions crash the browser or renderers.
   if (ExtensionTabUtil::IsKillURL(url)) {
-    *error = keys::kNoCrashBrowserError;
+    *error = tabs_constants::kNoCrashBrowserError;
     return nullptr;
   }
 
@@ -282,7 +280,7 @@ Browser* ExtensionTabUtil::GetBrowserFromWindowID(
     Browser* result = details.GetCurrentBrowser();
     if (!result || !result->window()) {
       if (error)
-        *error = keys::kNoCurrentWindowError;
+        *error = tabs_constants::kNoCurrentWindowError;
       return nullptr;
     }
     return result;
@@ -311,7 +309,8 @@ int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
 }
 
 std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
-  return is_loading ? keys::kStatusValueLoading : keys::kStatusValueComplete;
+  return is_loading ? tabs_constants::kStatusValueLoading
+                    : tabs_constants::kStatusValueComplete;
 }
 
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
@@ -321,16 +320,16 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
 // static
 std::string ExtensionTabUtil::GetBrowserWindowTypeText(const Browser& browser) {
   if (browser.is_devtools())
-    return keys::kWindowTypeValueDevTools;
+    return tabs_constants::kWindowTypeValueDevTools;
   if (browser.is_type_popup())
-    return keys::kWindowTypeValuePopup;
+    return tabs_constants::kWindowTypeValuePopup;
   // TODO(devlin): Browser::is_app() returns true whenever Browser::app_name_
   // is non-empty (and includes instances such as devtools). Platform apps
   // should no longer be returned here; are there any other cases (that aren't
   // captured by is_devtools() or is_type_popup() for an app-type browser?
   if (browser.is_app())
-    return keys::kWindowTypeValueApp;
-  return keys::kWindowTypeValueNormal;
+    return tabs_constants::kWindowTypeValueApp;
+  return tabs_constants::kWindowTypeValueNormal;
 }
 
 // static
@@ -421,42 +420,43 @@ ExtensionTabUtil::CreateWindowValueForExtension(
     PopulateTabBehavior populate_tab_behavior) {
   auto result = std::make_unique<base::DictionaryValue>();
 
-  result->SetInteger(keys::kIdKey, browser.session_id().id());
-  result->SetString(keys::kWindowTypeKey, GetBrowserWindowTypeText(browser));
+  result->SetInteger(tabs_constants::kIdKey, browser.session_id().id());
+  result->SetString(tabs_constants::kWindowTypeKey,
+                    GetBrowserWindowTypeText(browser));
   ui::BaseWindow* window = browser.window();
-  result->SetBoolean(keys::kFocusedKey, window->IsActive());
+  result->SetBoolean(tabs_constants::kFocusedKey, window->IsActive());
   const Profile* profile = browser.profile();
-  result->SetBoolean(keys::kIncognitoKey, profile->IsOffTheRecord());
-  result->SetBoolean(keys::kAlwaysOnTopKey, window->IsAlwaysOnTop());
+  result->SetBoolean(tabs_constants::kIncognitoKey, profile->IsOffTheRecord());
+  result->SetBoolean(tabs_constants::kAlwaysOnTopKey, window->IsAlwaysOnTop());
 
   std::string window_state;
   if (window->IsMinimized()) {
-    window_state = keys::kShowStateValueMinimized;
+    window_state = tabs_constants::kShowStateValueMinimized;
   } else if (window->IsFullscreen()) {
-    window_state = keys::kShowStateValueFullscreen;
+    window_state = tabs_constants::kShowStateValueFullscreen;
 #if defined(OS_CHROMEOS)
     if (ash::IsWindowTrustedPinned(window))
-      window_state = keys::kShowStateValueLockedFullscreen;
+      window_state = tabs_constants::kShowStateValueLockedFullscreen;
 #endif
   } else if (window->IsMaximized()) {
-    window_state = keys::kShowStateValueMaximized;
+    window_state = tabs_constants::kShowStateValueMaximized;
   } else {
-    window_state = keys::kShowStateValueNormal;
+    window_state = tabs_constants::kShowStateValueNormal;
   }
-  result->SetString(keys::kShowStateKey, window_state);
+  result->SetString(tabs_constants::kShowStateKey, window_state);
 
   gfx::Rect bounds;
   if (window->IsMinimized())
     bounds = window->GetRestoredBounds();
   else
     bounds = window->GetBounds();
-  result->SetInteger(keys::kLeftKey, bounds.x());
-  result->SetInteger(keys::kTopKey, bounds.y());
-  result->SetInteger(keys::kWidthKey, bounds.width());
-  result->SetInteger(keys::kHeightKey, bounds.height());
+  result->SetInteger(tabs_constants::kLeftKey, bounds.x());
+  result->SetInteger(tabs_constants::kTopKey, bounds.y());
+  result->SetInteger(tabs_constants::kWidthKey, bounds.width());
+  result->SetInteger(tabs_constants::kHeightKey, bounds.height());
 
   if (populate_tab_behavior == kPopulateTabs)
-    result->Set(keys::kTabsKey, CreateTabList(&browser, extension));
+    result->Set(tabs_constants::kTabsKey, CreateTabList(&browser, extension));
 
   return result;
 }

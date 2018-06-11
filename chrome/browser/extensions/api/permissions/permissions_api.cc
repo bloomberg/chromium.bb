@@ -25,12 +25,6 @@ namespace extensions {
 
 using api::permissions::Permissions;
 
-namespace Contains = api::permissions::Contains;
-namespace GetAll = api::permissions::GetAll;
-namespace Remove = api::permissions::Remove;
-namespace Request  = api::permissions::Request;
-namespace helpers = permissions_api_helpers;
-
 namespace {
 
 const char kBlockedByEnterprisePolicy[] =
@@ -55,7 +49,8 @@ bool ignore_user_gesture_for_tests = false;
 }  // namespace
 
 ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
-  std::unique_ptr<Contains::Params> params(Contains::Params::Create(*args_));
+  std::unique_ptr<api::permissions::Contains::Params> params(
+      api::permissions::Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // NOTE: |permissions| is not used to make any security decisions. Therefore,
@@ -63,32 +58,36 @@ ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
   // avoid throwing error when extension() doesn't have access to file://.
   std::string error;
   std::unique_ptr<const PermissionSet> permissions =
-      helpers::UnpackPermissionSet(params->permissions,
-                                   true /* allow_file_access */, &error);
+      permissions_api_helpers::UnpackPermissionSet(
+          params->permissions, true /* allow_file_access */, &error);
   if (!permissions.get())
     return RespondNow(Error(error));
 
-  return RespondNow(ArgumentList(Contains::Results::Create(
+  return RespondNow(ArgumentList(api::permissions::Contains::Results::Create(
       extension()->permissions_data()->active_permissions().Contains(
           *permissions))));
 }
 
 ExtensionFunction::ResponseAction PermissionsGetAllFunction::Run() {
-  std::unique_ptr<Permissions> permissions = helpers::PackPermissionSet(
-      extension()->permissions_data()->active_permissions());
-  return RespondNow(ArgumentList(GetAll::Results::Create(*permissions)));
+  std::unique_ptr<Permissions> permissions =
+      permissions_api_helpers::PackPermissionSet(
+          extension()->permissions_data()->active_permissions());
+  return RespondNow(
+      ArgumentList(api::permissions::GetAll::Results::Create(*permissions)));
 }
 
 ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
-  std::unique_ptr<Remove::Params> params(Remove::Params::Create(*args_));
+  std::unique_ptr<api::permissions::Remove::Params> params(
+      api::permissions::Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string error;
   std::unique_ptr<const PermissionSet> permissions =
-      helpers::UnpackPermissionSet(params->permissions,
-                                   ExtensionPrefs::Get(browser_context())
-                                       ->AllowFileAccess(extension_->id()),
-                                   &error);
+      permissions_api_helpers::UnpackPermissionSet(
+          params->permissions,
+          ExtensionPrefs::Get(browser_context())
+              ->AllowFileAccess(extension_->id()),
+          &error);
 
   if (!permissions.get())
     return RespondNow(Error(error));
@@ -125,7 +124,8 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
   PermissionsUpdater(browser_context())
       .RemovePermissions(extension(), *permissions,
                          PermissionsUpdater::REMOVE_SOFT);
-  return RespondNow(ArgumentList(Remove::Results::Create(true)));
+  return RespondNow(
+      ArgumentList(api::permissions::Remove::Results::Create(true)));
 }
 
 // static
@@ -155,11 +155,12 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   if (!native_window)
     return RespondNow(Error("Could not find an active window."));
 
-  std::unique_ptr<Request::Params> params(Request::Params::Create(*args_));
+  std::unique_ptr<api::permissions::Request::Params> params(
+      api::permissions::Request::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::string error;
-  requested_permissions_ = helpers::UnpackPermissionSet(
+  requested_permissions_ = permissions_api_helpers::UnpackPermissionSet(
       params->permissions,
       ExtensionPrefs::Get(browser_context())->AllowFileAccess(extension_->id()),
       &error);
@@ -197,7 +198,8 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   if (granted.get() && granted->Contains(*requested_permissions_)) {
     PermissionsUpdater perms_updater(browser_context());
     perms_updater.AddPermissions(extension(), *requested_permissions_);
-    return RespondNow(ArgumentList(Request::Results::Create(true)));
+    return RespondNow(
+        ArgumentList(api::permissions::Request::Results::Create(true)));
   }
 
   // Filter out the granted permissions so we only prompt for new ones.
@@ -256,7 +258,7 @@ void PermissionsRequestFunction::OnInstallPromptDone(
     perms_updater.AddPermissions(extension(), *requested_permissions_);
   }
 
-  Respond(ArgumentList(Request::Results::Create(granted)));
+  Respond(ArgumentList(api::permissions::Request::Results::Create(granted)));
   Release();  // Balanced in Run().
 }
 

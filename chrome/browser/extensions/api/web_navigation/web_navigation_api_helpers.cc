@@ -32,7 +32,6 @@
 
 namespace extensions {
 
-namespace keys = web_navigation_api_constants;
 namespace web_navigation = api::web_navigation;
 
 namespace web_navigation_api_helpers {
@@ -103,10 +102,12 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
-  dict->SetString(keys::kUrlKey, url.spec());
-  dict->SetInteger(keys::kProcessIdKey, frame_host->GetProcess()->GetID());
-  dict->SetInteger(keys::kFrameIdKey,
+  dict->SetInteger(web_navigation_api_constants::kTabIdKey,
+                   ExtensionTabUtil::GetTabId(web_contents));
+  dict->SetString(web_navigation_api_constants::kUrlKey, url.spec());
+  dict->SetInteger(web_navigation_api_constants::kProcessIdKey,
+                   frame_host->GetProcess()->GetID());
+  dict->SetInteger(web_navigation_api_constants::kFrameIdKey,
                    ExtensionApiFrameIdMap::GetFrameId(frame_host));
 
   if (navigation_handle->WasServerRedirect()) {
@@ -121,7 +122,8 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
   if (ui::PageTransitionCoreTypeIs(transition_type,
                                    ui::PAGE_TRANSITION_AUTO_TOPLEVEL))
     transition_type_string = "start_page";
-  dict->SetString(keys::kTransitionTypeKey, transition_type_string);
+  dict->SetString(web_navigation_api_constants::kTransitionTypeKey,
+                  transition_type_string);
   auto qualifiers = std::make_unique<base::ListValue>();
   if (transition_type & ui::PAGE_TRANSITION_CLIENT_REDIRECT)
     qualifiers->AppendString("client_redirect");
@@ -131,8 +133,10 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
     qualifiers->AppendString("forward_back");
   if (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)
     qualifiers->AppendString("from_address_bar");
-  dict->Set(keys::kTransitionQualifiersKey, std::move(qualifiers));
-  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  dict->Set(web_navigation_api_constants::kTransitionQualifiersKey,
+            std::move(qualifiers));
+  dict->SetDouble(web_navigation_api_constants::kTimeStampKey,
+                  MilliSecondsFromTime(base::Time::Now()));
   args->Append(std::move(dict));
 
   content::BrowserContext* browser_context =

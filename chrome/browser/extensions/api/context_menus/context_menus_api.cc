@@ -17,7 +17,6 @@
 #include "extensions/common/url_pattern_set.h"
 
 using extensions::ErrorUtils;
-namespace helpers = extensions::context_menus_api_helpers;
 
 namespace {
 
@@ -47,13 +46,14 @@ ExtensionFunction::ResponseAction ContextMenusCreateFunction::Run() {
     // The Generated Id is added by context_menus_custom_bindings.js.
     base::DictionaryValue* properties = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &properties));
-    EXTENSION_FUNCTION_VALIDATE(
-        properties->GetInteger(helpers::kGeneratedIdKey, &id.uid));
+    EXTENSION_FUNCTION_VALIDATE(properties->GetInteger(
+        extensions::context_menus_api_helpers::kGeneratedIdKey, &id.uid));
   }
 
   std::string error;
-  if (!helpers::CreateMenuItem(params->create_properties, browser_context(),
-                               extension(), id, &error)) {
+  if (!extensions::context_menus_api_helpers::CreateMenuItem(
+          params->create_properties, browser_context(), extension(), id,
+          &error)) {
     return RespondNow(Error(error));
   }
   return RespondNow(NoArguments());
@@ -73,8 +73,9 @@ ExtensionFunction::ResponseAction ContextMenusUpdateFunction::Run() {
     NOTREACHED();
 
   std::string error;
-  if (!helpers::UpdateMenuItem(params->update_properties, browser_context(),
-                               extension(), item_id, &error)) {
+  if (!extensions::context_menus_api_helpers::UpdateMenuItem(
+          params->update_properties, browser_context(), extension(), item_id,
+          &error)) {
     return RespondNow(Error(error));
   }
   return RespondNow(NoArguments());
@@ -99,7 +100,8 @@ ExtensionFunction::ResponseAction ContextMenusRemoveFunction::Run() {
   // Ensure one extension can't remove another's menu items.
   if (!item || item->extension_id() != extension_id()) {
     return RespondNow(
-        Error(helpers::kCannotFindItemError, helpers::GetIDString(id)));
+        Error(extensions::context_menus_api_helpers::kCannotFindItemError,
+              extensions::context_menus_api_helpers::GetIDString(id)));
   }
 
   if (!manager->RemoveContextMenuItem(id))
