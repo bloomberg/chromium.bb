@@ -4,9 +4,9 @@
 
 #import "ui/base/cocoa/menu_controller.h"
 
+#include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/logging.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -262,8 +262,8 @@ NSString* const kMenuControllerMenuDidCloseNotification =
     // likely if the -cancel happens in the delegate method.
     NSMenu* menu = menu_;
 
-    postedItemSelectedTask_ =
-        std::make_unique<base::CancelableClosure>(base::BindBlock(^{
+    postedItemSelectedTask_ = std::make_unique<base::CancelableClosure>(
+        base::BindRepeating(base::RetainBlock(^{
           id target = [sender target];
           if ([target respondsToSelector:@selector(itemSelected:uiEventFlags:)])
             [target itemSelected:sender uiEventFlags:uiEventFlags];
@@ -276,7 +276,7 @@ NSString* const kMenuControllerMenuDidCloseNotification =
           // the target can not be set to nil here since that prevents re-use of
           // the menu for well-behaved consumers.
           CHECK([menu delegate]);  // Note: set to nil in -dealloc.
-        }));
+        })));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, postedItemSelectedTask_->callback());
   }

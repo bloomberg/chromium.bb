@@ -4,8 +4,8 @@
 
 #include "ui/gl/gl_image_io_surface_egl.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/mac/bind_objc_block.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_binders.h"
@@ -196,23 +196,24 @@ bool GLImageIOSurfaceEGL::CopyTexImage(unsigned target) {
   EGLSurface uv_surface = EGL_NO_SURFACE;
 
   glGetIntegerv(target_getter, &rgb_texture);
-  base::ScopedClosureRunner destroy_resources_runner(base::BindBlock(^{
-    if (y_surface != EGL_NO_SURFACE) {
-      EGLBoolean result =
-          eglReleaseTexImage(display_, y_surface, EGL_BACK_BUFFER);
-      DCHECK(result == EGL_TRUE);
-      result = eglDestroySurface(display_, y_surface);
-      DCHECK(result == EGL_TRUE);
-    }
-    if (uv_surface != EGL_NO_SURFACE) {
-      EGLBoolean result =
-          eglReleaseTexImage(display_, uv_surface, EGL_BACK_BUFFER);
-      DCHECK(result == EGL_TRUE);
-      result = eglDestroySurface(display_, uv_surface);
-      DCHECK(result == EGL_TRUE);
-    }
-    glBindTexture(target, rgb_texture);
-  }));
+  base::ScopedClosureRunner destroy_resources_runner(
+      base::BindOnce(base::RetainBlock(^{
+        if (y_surface != EGL_NO_SURFACE) {
+          EGLBoolean result =
+              eglReleaseTexImage(display_, y_surface, EGL_BACK_BUFFER);
+          DCHECK(result == EGL_TRUE);
+          result = eglDestroySurface(display_, y_surface);
+          DCHECK(result == EGL_TRUE);
+        }
+        if (uv_surface != EGL_NO_SURFACE) {
+          EGLBoolean result =
+              eglReleaseTexImage(display_, uv_surface, EGL_BACK_BUFFER);
+          DCHECK(result == EGL_TRUE);
+          result = eglDestroySurface(display_, uv_surface);
+          DCHECK(result == EGL_TRUE);
+        }
+        glBindTexture(target, rgb_texture);
+      })));
 
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, yuv_to_rgb_converter->y_texture());
   if (glGetError() != GL_NO_ERROR) {
