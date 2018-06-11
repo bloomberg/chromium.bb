@@ -118,7 +118,11 @@ TEST_F(SystemCoordinationUnitImplTest, DistributeMeasurementBatch) {
   EXPECT_EQ(0U, observer.process_property_change_seen_count());
   cu_graph.system->DistributeMeasurementBatch(
       CreateMeasurementBatch(start_time, 3, base::TimeDelta()));
-  // EXPECT_EQ(2U, observer.process_property_change_seen_count());
+
+  EXPECT_EQ(start_time, cu_graph.system->last_measurement_start_time());
+  EXPECT_EQ(start_time, cu_graph.system->last_measurement_end_time());
+
+  EXPECT_EQ(2U, observer.process_property_change_seen_count());
   EXPECT_EQ(1u, observer.system_event_seen_count());
 
   // The first measurement batch results in a zero CPU usage for the processes.

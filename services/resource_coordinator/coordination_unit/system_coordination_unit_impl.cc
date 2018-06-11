@@ -32,17 +32,26 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
       graph_->GetAllProcessCoordinationUnits();
 
   base::TimeDelta time_since_last_measurement;
-  if (!last_measurement_batch_time_.is_null()) {
+  if (!last_measurement_end_time_.is_null()) {
     // Use the end of the measurement batch as a proxy for when every
     // measurement was acquired. For the purpose of estimating CPU usage
     // over the duration from last measurement, it'll be near enough. The error
     // will average out, and there's an inherent race in knowing when a
     // measurement was actually acquired in any case.
     time_since_last_measurement =
-        measurement_batch->batch_ended_time - last_measurement_batch_time_;
+        measurement_batch->batch_ended_time - last_measurement_end_time_;
     DCHECK_LE(base::TimeDelta(), time_since_last_measurement);
   }
-  last_measurement_batch_time_ = measurement_batch->batch_ended_time;
+
+  // TODO(siggi): Need to decide what to do with measurements that span an
+  //    absurd length of time, or which are missing a significant portion of the
+  //    data wanted/required. Maybe there should be a filtering step here, or
+  //    perhaps this should be up to the consumers, who can perhaps better
+  //    assess whether the gaps affect them. This would require propagating more
+  //    information through the graph. Perhaps each page could maintain the
+  //    min/max span for all the data that went into the current estimates.
+  last_measurement_start_time_ = measurement_batch->batch_started_time;
+  last_measurement_end_time_ = measurement_batch->batch_ended_time;
 
   // Keep track of the pages updated with CPU cost for the second pass,
   // where their memory usage is updated.
@@ -76,7 +85,7 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
           for (FrameCoordinationUnitImpl* frame : frames) {
             PageCoordinationUnitImpl* page = frame->GetPageCoordinationUnit();
             if (page) {
-              page->set_usage_estimate_time(last_measurement_batch_time_);
+              page->set_usage_estimate_time(last_measurement_end_time_);
               page->set_cumulative_cpu_usage_estimate(
                   page->cumulative_cpu_usage_estimate() +
                   cumulative_cpu_delta / frames.size());
@@ -134,7 +143,7 @@ void SystemCoordinationUnitImpl::DistributeMeasurementBatch(
 
     page->set_private_footprint_kb_estimate(private_footprint_kb_sum);
 
-    DCHECK_EQ(last_measurement_batch_time_, page->usage_estimate_time());
+    DCHECK_EQ(last_measurement_end_time_, page->usage_estimate_time());
   }
 
   // Fire the end update signal.

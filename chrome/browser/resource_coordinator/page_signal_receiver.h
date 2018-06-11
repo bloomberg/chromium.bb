@@ -33,6 +33,14 @@ class PageSignalObserver {
                                        mojom::LifecycleState state) {}
   virtual void OnNonPersistentNotificationCreated(
       content::WebContents* web_contents) {}
+  // Note that because performance measurement is asynchronous to navigation,
+  // it's possible that |web_contents| has navigated to another site by the time
+  // this notification arrives - hence the |site| parameter.
+  virtual void OnLoadTimePerformanceEstimate(
+      content::WebContents* web_contents,
+      const std::string& origin,
+      base::TimeDelta cpu_usage_estimate,
+      uint64_t private_footprint_kb_estimate) {}
 };
 
 // Implementation of resource_coordinator::mojom::PageSignalReceiver.
@@ -60,6 +68,11 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
                          mojom::LifecycleState) override;
   void NotifyNonPersistentNotificationCreated(
       const CoordinationUnitID& page_cu_id) override;
+  void OnLoadTimePerformanceEstimate(
+      const CoordinationUnitID& page_cu_id,
+      const std::string& origin,
+      base::TimeDelta cpu_usage_estimate,
+      uint64_t private_footprint_kb_estimate) override;
 
   void AddObserver(PageSignalObserver* observer);
   void RemoveObserver(PageSignalObserver* observer);
@@ -70,6 +83,17 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   void RemoveCoordinationUnitID(const CoordinationUnitID& cu_id);
 
  private:
+  template <typename Method, typename... Params>
+  void NotifyObserversIfKnownCu(const CoordinationUnitID& page_cu_id,
+                                Method m,
+                                Params... params) {
+    auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
+    if (web_contents_iter == cu_id_web_contents_map_.end())
+      return;
+    for (auto& observer : observers_)
+      (observer.*m)(web_contents_iter->second, std::forward<Params>(params)...);
+  }
+
   mojo::Binding<mojom::PageSignalReceiver> binding_;
   std::map<CoordinationUnitID, content::WebContents*> cu_id_web_contents_map_;
   base::ObserverList<PageSignalObserver> observers_;

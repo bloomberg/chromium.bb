@@ -66,6 +66,8 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
                            const mojom::Event event) override;
   void OnProcessEventReceived(const ProcessCoordinationUnitImpl* page_cu,
                               const mojom::Event event) override;
+  void OnSystemEventReceived(const SystemCoordinationUnitImpl* system_cu,
+                             const mojom::Event event) override;
 
   void BindToInterface(
       resource_coordinator::mojom::PageSignalGeneratorRequest request,
@@ -83,6 +85,8 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
                            PageAlmostIdleTransitionsNoTimeout);
   FRIEND_TEST_ALL_PREFIXES(PageSignalGeneratorImplTest,
                            PageAlmostIdleTransitionsWithTimeout);
+  FRIEND_TEST_ALL_PREFIXES(PageSignalGeneratorImplTest,
+                           OnLoadTimePerformanceEstimate);
 
   // The state transitions for the PageAlmostIdle signal. In general a page
   // transitions through these states from top to bottom.
@@ -108,10 +112,11 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
   // Holds state per page CU. These are created via OnCoordinationUnitCreated
   // and destroyed via OnBeforeCoordinationUnitDestroyed.
   struct PageData {
-    // Initially at kLoadingNotStarted. Transitions through the states via calls
-    // to UpdateLoadIdleState. Is reset to kLoadingNotStarted when a non-same
-    // document navigation is committed.
-    LoadIdleState load_idle_state;
+    // Set the load idle state and the time of change. Also clears the
+    // |performance_estimate_issued| flag.
+    void SetLoadIdleState(LoadIdleState new_state, base::TimeTicks now);
+    LoadIdleState GetLoadIdleState() const { return load_idle_state; }
+
     // Marks the point in time when the DidStopLoading signal was received,
     // transitioning to kLoadedAndNotIdling or kLoadedAndIdling. This is used as
     // the basis for the kWaitingForIdleTimeout.
@@ -119,9 +124,19 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
     // Marks the point in time when the last transition to kLoadedAndIdling
     // occurred. Used for gating the transition to kLoadedAndIdle.
     base::TimeTicks idling_started;
+    // Notes the time of the last state change.
+    base::TimeTicks last_state_change;
+    // True iff a performance estimate has been issued for this page.
+    bool performance_estimate_issued = false;
     // A one-shot timer used for transitioning between kLoadedAndIdling and
     // kLoadedAndIdle.
     base::OneShotTimer idling_timer;
+
+   private:
+    // Initially at kLoadingNotStarted. Transitions through the states via calls
+    // to UpdateLoadIdleState. Is reset to kLoadingNotStarted when a non-same
+    // document navigation is committed.
+    LoadIdleState load_idle_state;
   };
 
   // These are called when properties/events affecting the load-idle state are
@@ -138,7 +153,8 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
                             mojom::LifecycleState state);
 
   // Helper function for transitioning to the final state.
-  void TransitionToLoadedAndIdle(const PageCoordinationUnitImpl* page_cu);
+  void TransitionToLoadedAndIdle(const PageCoordinationUnitImpl* page_cu,
+                                 base::TimeTicks now);
 
   // Convenience accessors for state associated with a |page_cu|.
   PageData* GetPageData(const PageCoordinationUnitImpl* page_cu);

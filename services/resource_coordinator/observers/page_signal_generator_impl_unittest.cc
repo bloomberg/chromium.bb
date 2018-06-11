@@ -40,11 +40,11 @@ class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
   size_t eqt_change_count_ = 0;
 };
 
-class MockPageSignalReceiver : public mojom::PageSignalReceiver {
+class MockPageSignalReceiverImpl : public mojom::PageSignalReceiver {
  public:
-  MockPageSignalReceiver(mojom::PageSignalReceiverRequest request)
+  MockPageSignalReceiverImpl(mojom::PageSignalReceiverRequest request)
       : binding_(this, std::move(request)) {}
-  ~MockPageSignalReceiver() override = default;
+  ~MockPageSignalReceiverImpl() override = default;
 
   // mojom::PageSignalReceiver implementation.
   void NotifyPageAlmostIdle(const CoordinationUnitID& page_cu_id) override {}
@@ -55,15 +55,25 @@ class MockPageSignalReceiver : public mojom::PageSignalReceiver {
   MOCK_METHOD1(NotifyNonPersistentNotificationCreated,
                void(const CoordinationUnitID& page_cu_id));
   MOCK_METHOD1(NotifyRendererIsBloated, void(const CoordinationUnitID& cu_id));
+  MOCK_METHOD4(OnLoadTimePerformanceEstimate,
+               void(const CoordinationUnitID& cu_id,
+                    const std::string& origin,
+                    base::TimeDelta cpu_usage_estimate,
+                    uint64_t private_footprint_kb_estimate));
 
  private:
   mojo::Binding<mojom::PageSignalReceiver> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockPageSignalReceiver);
+  DISALLOW_COPY_AND_ASSIGN(MockPageSignalReceiverImpl);
 };
+
+using MockPageSignalReceiver = testing::StrictMock<MockPageSignalReceiverImpl>;
 
 class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
  protected:
+  // Aliasing these here makes this unittest much more legible.
+  using LIS = PageSignalGeneratorImpl::LoadIdleState;
+
   void SetUp() override {
     std::unique_ptr<MockPageSignalGeneratorImpl> psg(
         std::make_unique<MockPageSignalGeneratorImpl>());
@@ -79,6 +89,9 @@ class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
     return page_signal_generator_;
   }
 
+  void DrivePageToLoadedAndIdle(
+      MockSinglePageInSingleProcessCoordinationUnitGraph* graph);
+
   void EnablePAI() {
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
     feature_list_->InitAndEnableFeature(features::kPageAlmostIdle);
@@ -91,6 +104,20 @@ class PageSignalGeneratorImplTest : public CoordinationUnitTestHarness {
   MockPageSignalGeneratorImpl* page_signal_generator_ = nullptr;
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 };
+
+void PageSignalGeneratorImplTest::DrivePageToLoadedAndIdle(
+    MockSinglePageInSingleProcessCoordinationUnitGraph* graph) {
+  // Drive the state machine forward through to LoadedAndIdle.
+  graph->page->SetIsLoading(true);
+  graph->frame->SetNetworkAlmostIdle(true);
+  graph->process->SetMainThreadTaskLoadIsLow(true);
+  graph->page->SetIsLoading(false);
+  task_env().FastForwardUntilNoTasksRemain();
+
+  PageSignalGeneratorImpl::PageData* page_data =
+      page_signal_generator()->GetPageData(graph->page.get());
+  EXPECT_EQ(LIS::kLoadedAndIdle, page_data->GetLoadIdleState());
+}
 
 TEST_F(PageSignalGeneratorImplTest,
        CalculatePageEQTForSinglePageWithMultipleProcesses) {
@@ -202,22 +229,19 @@ void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
   PageSignalGeneratorImpl::PageData* page_data = psg->GetPageData(page_cu);
   page_data->idling_timer.SetTaskRunner(task_env().GetMainThreadTaskRunner());
 
-  // Aliasing these here makes this unittest much more legible.
-  using LIS = PageSignalGeneratorImpl::LoadIdleState;
-
   // Initially the page should be in a loading not started state.
-  EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadingNotStarted, page_data->GetLoadIdleState());
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 
   // The state should not transition when a not loading state is explicitly
   // set.
   page_cu->SetIsLoading(false);
-  EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadingNotStarted, page_data->GetLoadIdleState());
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 
   // The state should transition to loading when loading starts.
   page_cu->SetIsLoading(true);
-  EXPECT_EQ(LIS::kLoading, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoading, page_data->GetLoadIdleState());
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 
   // Mark the page as idling. It should transition from kLoading directly
@@ -225,21 +249,21 @@ void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
   frame_cu->SetNetworkAlmostIdle(true);
   proc_cu->SetMainThreadTaskLoadIsLow(true);
   page_cu->SetIsLoading(false);
-  EXPECT_EQ(LIS::kLoadedAndIdling, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadedAndIdling, page_data->GetLoadIdleState());
   EXPECT_TRUE(page_data->idling_timer.IsRunning());
 
   // Indicate loading is happening again. This should be ignored.
   page_cu->SetIsLoading(true);
-  EXPECT_EQ(LIS::kLoadedAndIdling, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadedAndIdling, page_data->GetLoadIdleState());
   EXPECT_TRUE(page_data->idling_timer.IsRunning());
   page_cu->SetIsLoading(false);
-  EXPECT_EQ(LIS::kLoadedAndIdling, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadedAndIdling, page_data->GetLoadIdleState());
   EXPECT_TRUE(page_data->idling_timer.IsRunning());
 
   // Go back to not idling. We should transition back to kLoadedNotIdling, and
   // a timer should still be running.
   frame_cu->SetNetworkAlmostIdle(false);
-  EXPECT_EQ(LIS::kLoadedNotIdling, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadedNotIdling, page_data->GetLoadIdleState());
   EXPECT_TRUE(page_data->idling_timer.IsRunning());
 
   base::TimeTicks start = ResourceCoordinatorClock::NowTicks();
@@ -250,12 +274,12 @@ void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
     base::TimeDelta elapsed = end - start;
     EXPECT_LE(PageSignalGeneratorImpl::kLoadedAndIdlingTimeout, elapsed);
     EXPECT_LE(PageSignalGeneratorImpl::kWaitingForIdleTimeout, elapsed);
-    EXPECT_EQ(LIS::kLoadedAndIdle, page_data->load_idle_state);
+    EXPECT_EQ(LIS::kLoadedAndIdle, page_data->GetLoadIdleState());
     EXPECT_FALSE(page_data->idling_timer.IsRunning());
   } else {
     // Go back to idling.
     frame_cu->SetNetworkAlmostIdle(true);
-    EXPECT_EQ(LIS::kLoadedAndIdling, page_data->load_idle_state);
+    EXPECT_EQ(LIS::kLoadedAndIdling, page_data->GetLoadIdleState());
     EXPECT_TRUE(page_data->idling_timer.IsRunning());
 
     // Let the idle timer evaluate. The final state transition should occur.
@@ -264,21 +288,21 @@ void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
     base::TimeDelta elapsed = end - start;
     EXPECT_LE(PageSignalGeneratorImpl::kLoadedAndIdlingTimeout, elapsed);
     EXPECT_GT(PageSignalGeneratorImpl::kWaitingForIdleTimeout, elapsed);
-    EXPECT_EQ(LIS::kLoadedAndIdle, page_data->load_idle_state);
+    EXPECT_EQ(LIS::kLoadedAndIdle, page_data->GetLoadIdleState());
     EXPECT_FALSE(page_data->idling_timer.IsRunning());
   }
 
   // Firing other signals should not change the state at all.
   proc_cu->SetMainThreadTaskLoadIsLow(false);
-  EXPECT_EQ(LIS::kLoadedAndIdle, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadedAndIdle, page_data->GetLoadIdleState());
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
   frame_cu->SetNetworkAlmostIdle(false);
-  EXPECT_EQ(LIS::kLoadedAndIdle, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadedAndIdle, page_data->GetLoadIdleState());
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 
   // Post a navigation. The state should reset.
   page_cu->OnMainFrameNavigationCommitted();
-  EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state);
+  EXPECT_EQ(LIS::kLoadingNotStarted, page_data->GetLoadIdleState());
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 }
 
@@ -347,6 +371,108 @@ TEST_F(PageSignalGeneratorImplTest, NotifyRendererIsBloatedMultiplePages) {
   EXPECT_CALL(mock_receiver, NotifyRendererIsBloated(_)).Times(0);
   process->OnRendererIsBloated();
   run_loop.RunUntilIdle();
+  ::testing::Mock::VerifyAndClear(&mock_receiver);
+}
+
+namespace {
+
+mojom::ProcessResourceMeasurementBatchPtr CreateMeasurementBatch(
+    base::TimeTicks start_time,
+    size_t cpu_time_us,
+    size_t private_fp_kb) {
+  mojom::ProcessResourceMeasurementBatchPtr batch =
+      mojom::ProcessResourceMeasurementBatch::New();
+  batch->batch_started_time = start_time;
+  batch->batch_ended_time = start_time + base::TimeDelta::FromMicroseconds(10);
+
+  mojom::ProcessResourceMeasurementPtr measurement =
+      mojom::ProcessResourceMeasurement::New();
+  measurement->pid = 1;
+  measurement->cpu_usage = base::TimeDelta::FromMicroseconds(cpu_time_us);
+  measurement->private_footprint_kb = static_cast<uint32_t>(private_fp_kb);
+  batch->measurements.push_back(std::move(measurement));
+
+  return batch;
+}
+
+}  // namespace
+
+TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
+  EnablePAI();
+
+  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph(
+      coordination_unit_graph());
+
+  // Create a mock receiver and register it against the psg.
+  mojom::PageSignalReceiverPtr mock_receiver_ptr;
+  MockPageSignalReceiver mock_receiver(mojo::MakeRequest(&mock_receiver_ptr));
+  page_signal_generator()->AddReceiver(std::move(mock_receiver_ptr));
+
+  ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
+  task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  auto* page_cu = cu_graph.page.get();
+  auto* psg = page_signal_generator();
+
+  // Ensure the page_cu creation is witnessed and get the associated
+  // page data for testing, then bind the timer to the test task runner.
+  PageSignalGeneratorImpl::PageData* page_data = psg->GetPageData(page_cu);
+  page_data->idling_timer.SetTaskRunner(task_env().GetMainThreadTaskRunner());
+
+  DrivePageToLoadedAndIdle(&cu_graph);
+
+  base::TimeTicks event_time = ResourceCoordinatorClock::NowTicks();
+
+  // A measurement that starts before an initiating state change should not
+  // result in a notification.
+  cu_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
+      event_time - base::TimeDelta::FromMicroseconds(2), 10, 100));
+
+  cu_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
+      event_time + base::TimeDelta::FromMicroseconds(2), 15, 150));
+
+  // A second measurement after a notification has been generated shouldn't
+  // generate a second notification.
+  cu_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
+      event_time + base::TimeDelta::FromMicroseconds(4), 20, 200));
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(mock_receiver, OnLoadTimePerformanceEstimate(
+                                   cu_graph.page->id(), std::string(),
+                                   base::TimeDelta::FromMicroseconds(15), 150))
+        .WillOnce(
+            ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+    run_loop.Run();
+  }
+
+  ::testing::Mock::VerifyAndClear(&mock_receiver);
+
+  // Make sure a second run around the state machine generates a second event.
+  page_cu->OnMainFrameNavigationCommitted();
+  task_env().FastForwardUntilNoTasksRemain();
+  EXPECT_NE(LIS::kLoadedAndIdle, page_data->GetLoadIdleState());
+
+  DrivePageToLoadedAndIdle(&cu_graph);
+
+  event_time = ResourceCoordinatorClock::NowTicks();
+
+  // Dispatch another measurement and verify another notification is fired.
+  cu_graph.system->DistributeMeasurementBatch(CreateMeasurementBatch(
+      event_time + base::TimeDelta::FromMicroseconds(2), 25, 250));
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(mock_receiver, OnLoadTimePerformanceEstimate(
+                                   cu_graph.page->id(), std::string(),
+                                   base::TimeDelta::FromMicroseconds(25), 250))
+        .WillOnce(
+            ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+    run_loop.Run();
+  }
+
   ::testing::Mock::VerifyAndClear(&mock_receiver);
 }
 
