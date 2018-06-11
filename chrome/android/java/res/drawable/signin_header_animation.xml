@@ -99,7 +99,7 @@
             <!-- Green circle -->
             <path
                 android:fillColor="#34A751"
-                android:pathData="M280.52,47a17.401,17 0,1 0,34.802 0a17.401,17 0,1 0,-34.802 0z"/>
+                android:pathData="M280.52,47c0,9.7 7.7,17.4 17.4,17.4s17.4,-7.7 17.4,-17.4s-7.7,-17.4 -17.4,-17.4s-17.4,7.7 -17.4,17.4"/>
             <!-- Sync arrows -->
             <group
                 android:name="sync_arrows_rotation_group"
@@ -120,7 +120,7 @@
 
                 <path
                     android:fillColor="#4B87F1"
-                    android:pathData="M334,47a1.989,2 0,1 0,3.977 0a1.989,2 0,1 0,-3.977 0z"/>
+                    android:pathData="M334,47c0,1.1 0.9,2 2,2s2,-0.9 2,-2s-0.9,-2 -2,-2s-2,0.9 -2,2"/>
             </group>
 
         </vector>
