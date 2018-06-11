@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.app.Activity;
+import android.view.View;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -180,8 +181,16 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             }
 
             @Override
+            public void onSheetClosed(@StateChangeReason int reason) {
+                fadingBackgroundView.hideFadingOverlay(false);
+            }
+
+            @Override
             public void onTransitionPeekToHalf(float transitionFraction) {
-                fadingBackgroundView.setViewAlpha(transitionFraction);
+                // TODO(mdjones): This event should not occur after the bottom sheet is closed.
+                if (fadingBackgroundView.getVisibility() == View.VISIBLE) {
+                    fadingBackgroundView.setViewAlpha(transitionFraction);
+                }
             }
 
             @Override
