@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 
+#include <cstdlib>
 #include <utility>
 
 #include "base/location.h"
@@ -147,7 +148,7 @@ void DetachedResourceRequest::OnResponseCallback(
   }
 
   base::UmaHistogramSparse("CustomTabs.DetachedResourceRequest.FinalStatus",
-                           net_error);
+                           std::abs(net_error));
   std::move(cb_).Run(success);
 }
 
