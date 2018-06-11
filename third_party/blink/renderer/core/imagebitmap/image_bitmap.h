@@ -27,11 +27,6 @@ class ImageData;
 class ImageDecoder;
 class OffscreenCanvas;
 
-enum ColorSpaceInfoUpdate {
-  kUpdateColorSpaceInformation,
-  kDontUpdateColorSpaceInformation,
-};
-
 class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
                                       public CanvasImageSource,
                                       public ImageBitmapSource {
