@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/undo/bookmark_undo_utils.h"
@@ -66,11 +65,9 @@ const bookmarks::BookmarkNode* CreateBookmarkNode(
     const syncer::EntityData& sync_entity,
     const bookmarks::BookmarkNode* parent,
     bookmarks::BookmarkModel* model,
-    syncer::SyncClient* sync_client,
     int index) {
   DCHECK(parent);
   DCHECK(model);
-  DCHECK(sync_client);
 
   const sync_pb::BookmarkSpecifics& specifics =
       sync_entity.specifics.bookmark();
@@ -97,15 +94,17 @@ const bookmarks::BookmarkNode* CreateBookmarkNode(
 
 class ScopedRemoteUpdateBookmarks {
  public:
-  // |bookmark_model| must not be null and must outlive this object.
-  explicit ScopedRemoteUpdateBookmarks(syncer::SyncClient* const sync_client)
-      : sync_client_(sync_client),
-        suspend_undo_(sync_client->GetBookmarkUndoServiceIfExists()) {
+  // |bookmark_model| and |bookmark_undo_service| must not be null and must
+  // outlive this object.
+  ScopedRemoteUpdateBookmarks(bookmarks::BookmarkModel* bookmark_model,
+                              BookmarkUndoService* bookmark_undo_service)
+      : bookmark_model_(bookmark_model), suspend_undo_(bookmark_undo_service) {
     // Notify UI intensive observers of BookmarkModel that we are about to make
     // potentially significant changes to it, so the updates may be batched. For
     // example, on Mac, the bookmarks bar displays animations when bookmark
     // items are added or deleted.
-    sync_client_->GetBookmarkModel()->BeginExtensiveChanges();
+    DCHECK(bookmark_model_);
+    bookmark_model_->BeginExtensiveChanges();
   }
 
   ~ScopedRemoteUpdateBookmarks() {
@@ -113,11 +112,11 @@ class ScopedRemoteUpdateBookmarks {
     // applied, and that they may now be consumed. This prevents issues like the
     // one described in https://crbug.com/281562, where old and new items on the
     // bookmarks bar would overlap.
-    sync_client_->GetBookmarkModel()->EndExtensiveChanges();
+    bookmark_model_->EndExtensiveChanges();
   }
 
  private:
-  syncer::SyncClient* const sync_client_;
+  bookmarks::BookmarkModel* const bookmark_model_;
 
   // Changes made to the bookmark model due to sync should not be undoable.
   ScopedSuspendBookmarkUndo suspend_undo_;
@@ -127,9 +126,10 @@ class ScopedRemoteUpdateBookmarks {
 }  // namespace
 
 BookmarkModelTypeProcessor::BookmarkModelTypeProcessor(
-    syncer::SyncClient* sync_client)
-    : sync_client_(sync_client),
-      bookmark_model_(sync_client->GetBookmarkModel()),
+    bookmarks::BookmarkModel* bookmark_model,
+    BookmarkUndoService* bookmark_undo_service)
+    : bookmark_model_(bookmark_model),
+      bookmark_undo_service_(bookmark_undo_service),
       weak_ptr_factory_(this) {}
 
 BookmarkModelTypeProcessor::~BookmarkModelTypeProcessor() = default;
@@ -167,7 +167,8 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
     const syncer::UpdateResponseDataList& updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ScopedRemoteUpdateBookmarks update_bookmarks(sync_client_);
+  ScopedRemoteUpdateBookmarks update_bookmarks(bookmark_model_,
+                                               bookmark_undo_service_);
 
   for (const syncer::UpdateResponseData* update : ReorderUpdates(updates)) {
     const syncer::EntityData& update_data = update->entity.value();
@@ -273,9 +274,8 @@ void BookmarkModelTypeProcessor::ProcessRemoteCreate(
   // list of the children by assigning the index to the
   // parent_node->child_count(). It should instead compute the exact using the
   // unique position information of the new node as well as the siblings.
-  const bookmarks::BookmarkNode* bookmark_node =
-      CreateBookmarkNode(update_data, parent_node, bookmark_model_,
-                         sync_client_, parent_node->child_count());
+  const bookmarks::BookmarkNode* bookmark_node = CreateBookmarkNode(
+      update_data, parent_node, bookmark_model_, parent_node->child_count());
   if (!bookmark_node) {
     // We ignore bookmarks we can't add.
     DLOG(ERROR) << "Failed to create bookmark node with title "

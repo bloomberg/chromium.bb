@@ -15,9 +15,7 @@
 #include "components/sync/model/model_type_controller_delegate.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
-namespace syncer {
-class SyncClient;
-}
+class BookmarkUndoService;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -28,8 +26,10 @@ namespace sync_bookmarks {
 class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
                                    public syncer::ModelTypeControllerDelegate {
  public:
-  // |sync_client| must not be nullptr and must outlive this object.
-  explicit BookmarkModelTypeProcessor(syncer::SyncClient* sync_client);
+  // |bookmark_undo_service| and |bookmark_undo_service| must not be nullptr and
+  // must outlive this object.
+  BookmarkModelTypeProcessor(bookmarks::BookmarkModel* bookmark_model,
+                             BookmarkUndoService* bookmark_undo_service);
   ~BookmarkModelTypeProcessor() override;
 
   // ModelTypeProcessor implementation.
@@ -107,11 +107,12 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // the initial sync cycle only.
   void AssociatePermanentFolder(const syncer::EntityData& update_data);
 
-  syncer::SyncClient* const sync_client_;
-
   // The bookmark model we are processing local changes from and forwarding
   // remote changes to.
   bookmarks::BookmarkModel* const bookmark_model_;
+
+  // Used to suspend bookmark undo when processing remote changes.
+  BookmarkUndoService* const bookmark_undo_service_;
 
   // Reference to the CommitQueue.
   //
