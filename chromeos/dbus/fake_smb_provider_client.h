@@ -5,6 +5,10 @@
 #ifndef CHROMEOS_DBUS_FAKE_SMB_PROVIDER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_SMB_PROVIDER_CLIENT_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "chromeos/dbus/smb_provider_client.h"
 
 namespace chromeos {
@@ -14,6 +18,11 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
  public:
   FakeSmbProviderClient();
   ~FakeSmbProviderClient() override;
+
+  // Adds an entry in the |netbios_parse_results_| map for <packetid,
+  // hostnames>.
+  void AddNetBiosPacketParsingForTesting(uint8_t packet_id,
+                                         std::vector<std::string> hostnames);
 
   // DBusClient override.
   void Init(dbus::Bus* bus) override;
@@ -94,7 +103,13 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
   void SetupKerberos(const std::string& account_id,
                      SetupKerberosCallback callback) override;
 
+  void ParseNetBiosPacket(const std::vector<uint8_t>& packet,
+                          uint16_t transaction_id,
+                          ParseNetBiosPacketCallback callback) override;
+
  private:
+  std::map<uint8_t, std::vector<std::string>> netbios_parse_results_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeSmbProviderClient);
 };
 
