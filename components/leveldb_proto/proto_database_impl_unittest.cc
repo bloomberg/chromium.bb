@@ -52,6 +52,8 @@ class MockDB : public LevelDB {
                bool(const base::FilePath& database_dir,
                     const leveldb_env::Options& options));
   MOCK_METHOD2(Save, bool(const KeyValueVector&, const KeyVector&));
+  MOCK_METHOD2(UpdateWithRemoveFilter,
+               bool(const base::StringPairs&, const KeyFilter&));
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
   MOCK_METHOD2(LoadWithFilter,
                bool(const KeyFilter&, std::vector<std::string>*));
@@ -797,6 +799,42 @@ TEST_F(ProtoDatabaseImplLevelDBTest, TestCorruptDBReset) {
   ASSERT_TRUE(db.Get("TheKey", &found, &value));
   ASSERT_EQ("", value);
   ASSERT_FALSE(found);
+}
+
+TEST_F(ProtoDatabaseImplLevelDBTest, TestDBDeleteWithFilter) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  EntryMap model = GetSmallModel();
+
+  KeyValueVector save_entries;
+  std::vector<std::string> load_entries;
+  KeyVector remove_keys;
+
+  for (const auto& pair : model) {
+    save_entries.push_back(
+        std::make_pair(pair.second.id(), pair.second.SerializeAsString()));
+  }
+
+  std::unique_ptr<LevelDB> db(new LevelDB(kTestLevelDBClientName));
+  EXPECT_TRUE(db->Init(temp_dir.GetPath(), CreateSimpleOptions()));
+  EXPECT_TRUE(db->UpdateWithRemoveFilter(save_entries, LevelDB::KeyFilter()));
+
+  // Make sure the "0" entry is in database.
+  EXPECT_TRUE(
+      db->LoadWithFilter(base::BindRepeating(&ZeroFilter), &load_entries));
+  EXPECT_EQ(load_entries.size(), 1u);
+
+  // Delete "0" entry.
+  save_entries.clear();
+  EXPECT_TRUE(db->UpdateWithRemoveFilter(save_entries,
+                                         base::BindRepeating(&ZeroFilter)));
+
+  // Make sure the "0" entry is not there.
+  load_entries.clear();
+  EXPECT_TRUE(
+      db->LoadWithFilter(base::BindRepeating(&ZeroFilter), &load_entries));
+  EXPECT_EQ(load_entries.size(), 0u);
 }
 
 }  // namespace leveldb_proto

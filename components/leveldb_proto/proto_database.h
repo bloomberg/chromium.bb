@@ -56,6 +56,15 @@ class ProtoDatabase {
       std::unique_ptr<std::vector<std::string>> keys_to_remove,
       UpdateCallback callback) = 0;
 
+  // Asynchronously saves |entries_to_save| and deletes entries that satisfies
+  // the |delete_key_filter| from the database. |callback| will be invoked on
+  // the calling thread when complete. The filter will be called on
+  // ProtoDatabase's taskrunner.
+  virtual void UpdateEntriesWithRemoveFilter(
+      std::unique_ptr<KeyEntryVector> entries_to_save,
+      const LevelDB::KeyFilter& delete_key_filter,
+      UpdateCallback callback) = 0;
+
   // Asynchronously loads all entries from the database and invokes |callback|
   // when complete.
   virtual void LoadEntries(LoadCallback callback) = 0;
