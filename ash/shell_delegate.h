@@ -12,8 +12,6 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 
-class GURL;
-
 namespace aura {
 class Window;
 }
@@ -55,9 +53,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Create a shell-specific keyboard::KeyboardUI.
   virtual std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() = 0;
-
-  // Opens the |url| in a new browser tab.
-  virtual void OpenUrlFromArc(const GURL& url) = 0;
 
   // Returns the delegate. May be null in tests.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() = 0;
