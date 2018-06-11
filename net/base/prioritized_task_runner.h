@@ -82,6 +82,7 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
         base::OnceClosure reply,
         uint32_t priority,
         uint32_t task_count);
+    Job();
     ~Job();
 
     Job(Job&& other);
@@ -90,10 +91,8 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
     base::Location from_here;
     base::OnceClosure task;
     base::OnceClosure reply;
-    uint32_t priority;
-    uint32_t task_count;
-    scoped_refptr<base::TaskRunner> reply_task_runner =
-        base::ThreadTaskRunnerHandle::Get();
+    uint32_t priority = 0;
+    uint32_t task_count = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Job);
@@ -110,18 +109,19 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
   // Pops the next task from the heap.
   Job PopJob();
 
-  // Runs the highest priority job available.
-  void RunPostTaskAndReply();
+  void RunPostTaskAndReply(Job* out_job);
+
+  void RunReply(Job* job);
 
   ~PrioritizedTaskRunner();
 
   // TODO(jkarlin): Replace the heap with a std::priority_queue once it
   // supports move-only types.
-  // Accessed on both task_runner_ and Job::reply_task_runner.
+  // Accessed on both task_runner_ and the reply task runner.
   std::vector<Job> job_heap_;
   base::Lock job_heap_lock_;
 
-  // Accessed on Job::reply_task_runner.
+  // Accessed on the reply task runner.
   scoped_refptr<base::TaskRunner> task_runner_;
 
   // Used to preserve order of jobs of equal priority. This can overflow and
