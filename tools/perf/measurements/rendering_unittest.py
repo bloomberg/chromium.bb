@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from telemetry import decorators
 from telemetry.testing import options_for_unittests
 from telemetry.testing import page_test_test_case
 from telemetry.util import wpr_modes
@@ -27,6 +28,7 @@ class RenderingUnitTest(page_test_test_case.PageTestTestCase):
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
     self._options.pageset_repeat = 2
 
+  @decorators.Disabled('chromeos')  # crbug.com/851523
   def testRendering(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     results = self.RunMeasurement(
