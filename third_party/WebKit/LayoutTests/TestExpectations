@@ -4481,15 +4481,10 @@ crbug.com/799137 [ Mac ] media/controls/modern/doubletap-to-jump-backwards-at-st
 # This test is flaking (failing, crashing) on mac_chromium_rel_ng.
 crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/animated-scroll/touchpad-scroll-impl-to-main.html [ Skip ]
 
-# Sheriff failures 2018-01-23
-# Flaking on linux_chromium_rel_ng
-crbug.com/805788 [ Linux Win7 Win10 Mac ] virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Pass Timeout ]
-
 # Sheriff failures 2018-01-25
 # Flaking on Linux Tests, WebKit Linux Trusty (also ASAN, Leak)
 crbug.com/805794 [ Linux ] virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Pass Failure ]
 crbug.com/805794 [ Linux ] virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Pass Failure ]
-crbug.com/805794 [ Linux Win Mac ] virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Pass Timeout ]
 
 # Sheriff failures 2018-02-05
 crbug.com/809152 netinfo/estimate-multiple-frames.html [ Pass Failure ]
