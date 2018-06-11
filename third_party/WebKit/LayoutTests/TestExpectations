@@ -1976,9 +1976,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/699347 http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash ]
 
-crbug.com/788042 animations/animation-ready-reject-script-forbidden.html [ Timeout ]
-crbug.com/788042 virtual/threaded/animations/animation-ready-reject-script-forbidden.html [ Timeout ]
-
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
