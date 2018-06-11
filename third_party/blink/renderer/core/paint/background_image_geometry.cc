@@ -296,30 +296,21 @@ void BackgroundImageGeometry::SetRepeatY(const FillLayer& fill_layer,
 }
 
 void BackgroundImageGeometry::SetSpaceX(LayoutUnit space,
-                                        LayoutUnit available_width,
                                         LayoutUnit extra_offset) {
-  LayoutUnit computed_x_position =
-      RoundedMinimumValueForLength(Length(), available_width);
   SetSpaceSize(LayoutSize(space.Round(), SpaceSize().Height().ToInt()));
   LayoutUnit actual_width = TileSize().Width() + space;
-  SetPhaseX(actual_width
-                ? LayoutUnit(roundf(actual_width -
-                                    fmodf((computed_x_position + extra_offset),
-                                          actual_width)))
-                : LayoutUnit());
+  SetPhaseX(actual_width ? LayoutUnit(roundf(actual_width -
+                                             fmodf(extra_offset, actual_width)))
+                         : LayoutUnit());
 }
 
 void BackgroundImageGeometry::SetSpaceY(LayoutUnit space,
-                                        LayoutUnit available_height,
                                         LayoutUnit extra_offset) {
-  LayoutUnit computed_y_position =
-      RoundedMinimumValueForLength(Length(), available_height);
   SetSpaceSize(LayoutSize(SpaceSize().Width().ToInt(), space.Round()));
   LayoutUnit actual_height = TileSize().Height() + space;
   SetPhaseY(actual_height
                 ? LayoutUnit(roundf(actual_height -
-                                    fmodf((computed_y_position + extra_offset),
-                                          actual_height)))
+                                    fmodf(extra_offset, actual_height)))
                 : LayoutUnit());
 }
 
@@ -744,7 +735,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     LayoutUnit space = GetSpaceBetweenImageTiles(positioning_area_size.Width(),
                                                  TileSize().Width());
     if (space >= LayoutUnit())
-      SetSpaceX(space, available_width, box_offset.X());
+      SetSpaceX(space, box_offset.X());
     else
       background_repeat_x = EFillRepeat::kNoRepeatFill;
   }
@@ -767,7 +758,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     LayoutUnit space = GetSpaceBetweenImageTiles(positioning_area_size.Height(),
                                                  TileSize().Height());
     if (space >= LayoutUnit())
-      SetSpaceY(space, available_height, box_offset.Y());
+      SetSpaceY(space, box_offset.Y());
     else
       background_repeat_y = EFillRepeat::kNoRepeatFill;
   }
