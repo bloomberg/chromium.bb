@@ -85,27 +85,6 @@ body {
   background-color: rgba(90, 90, 90, 0.75);
 }
 
-#toolbar-puller-wrapper {
-  bottom: 0;
-  left: 0;
-  right: 0;
-  pointer-events: auto;
-  position: absolute;
-}
-
-#toolbar-puller-wrapper.puller-reset {
-  transition: -webkit-transform 200ms;
-}
-
-#toolbar-background {
-  background: rgba(32, 32, 32, 0.8);
-  height: 500px;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
 #toolbar-stripe {
   margin: 8px 0;
   position: relative;
@@ -143,10 +122,6 @@ body {
   top: 0;
 }
 
-.buttons.opposite-side {
-  justify-content: flex-start;
-}
-
 .buttons.prev-to-middle {
   /* Start just before the take-picture button. */
   -webkit-margin-end: calc(50% + 73px/2);
@@ -163,12 +138,6 @@ body {
   background-image: -webkit-image-set(
       url(../images/camera_button_album.png) 1x,
       url(../images/2x/camera_button_album.png) 2x);
-}
-
-.buttons #filters-toggle {
-  background-image: -webkit-image-set(
-      url(../images/camera_button_filters.png) 1x,
-      url(../images/2x/camera_button_filters.png) 2x);
 }
 
 #toolbar .buttons {
@@ -273,22 +242,6 @@ body.mirror #main-preview {
   -webkit-transform: scaleX(-1);
 }
 
-#effects-wrapper {
-  position: relative;
-}
-
-#effects {
-  margin-bottom: 8px;
-  overflow: auto;
-}
-
-#effects .padder {
-  display: flex;
-  list-style-type: none;
-  margin: 0;
-  padding: 0 0 5px;
-}
-
 ::-webkit-scrollbar {
   width: 0;
   height: 0;
@@ -302,70 +255,6 @@ body.mirror #main-preview {
   background: transparent;
   width: 0;
   height: 0;
-}
-
-#effects li {
-  -webkit-margin-end: 10px;
-  align-items: flex-start;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0;
-}
-
-#effects li:first-child {
-  padding-left: 10px;
-}
-
-#effects li:last-child {
-  padding-right: 10px;
-}
-
-#effects li div.preview-canvas-wrapper {
-  border: 2px solid transparent;
-  height: 80px;
-  overflow: hidden;
-  position: relative;
-  width: 80px;
-}
-
-#effects li[selected] div.preview-canvas-wrapper {
-  border: 2px solid rgb(66, 129, 244);
-}
-
-#effects li:not([selected]) {
-  /* Hide focus on the unselected effect during scrolling. (crbug.com/611666) */
-  outline: none;
-}
-
-#effects li div.preview-canvas-padder {
-  bottom: 0;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-#effects li canvas {
-  height: 257px;  /* Forces hardware accelerated 2d canvas. */
-  opacity: 1;
-  position: absolute;
-  top: 0;
-  transition: opacity 200ms;
-  width: 257px;
-}
-
-body.mirror #effects li canvas {
-  right: 0;
-}
-
-#effects li span {
-  -webkit-padding-before: 5px;
-  color: white;
-  display: block;
-  font-size: 90%;
-  text-align: center;
-  width: 80px;
 }
 
 #buttons {
@@ -494,16 +383,11 @@ body.mirror #effects li canvas {
 }
 
 #toolbar {
-  -webkit-transform: translateY(100%);
-  bottom: 52px;  /* Keep in sync with #toolbar.expanded. */
+  background: rgba(32, 32, 32, 0.8);
+  bottom: 0;
   left: 0;
   position: absolute;
   right: 0;
-  transition: -webkit-transform 200ms ease;
-}
-
-body:not(.has-error) #toolbar.expanded {
-  -webkit-transform: translateY(52px);
 }
 
 #camera,

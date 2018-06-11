@@ -114,45 +114,6 @@ camera.views.Camera = function(context, router) {
   this.locked_ = false;
 
   /**
-   * If the toolbar is expanded.
-   * @type {boolean}
-   * @private
-   */
-  this.expanded_ = false;
-
-  /**
-   * Toolbar animation effect wrapper.
-   * @type {camera.util.StyleEffect}
-   * @private
-   */
-  this.toolbarEffect_ = new camera.util.StyleEffect(
-      function(args, callback) {
-        var toggleFilters = document.querySelector('#filters-toggle');
-        if (toggleFilters.disabled) {
-          return;
-        }
-        var toolbar = document.querySelector('#toolbar');
-        if (args) {
-          toolbar.classList.add('expanded');
-        } else {
-          toolbar.classList.remove('expanded');
-          // Make all of the effects non-focusable.
-          var elements = document.querySelectorAll('#effects li');
-          for (var index = 0; index < elements.length; index++) {
-            elements[index].tabIndex = -1;
-          }
-          // If something was focused before, then focus the toggle button.
-          if (document.activeElement != document.body) {
-            toggleFilters.focus();
-          }
-        }
-        camera.util.waitForTransitionCompletion(
-            document.querySelector('#toolbar'), 500, function() {
-          callback();
-        });
-      }.bind(this));
-
-  /**
    * Timer for hiding the toast message after some delay.
    * @type {number?}
    * @private
@@ -199,60 +160,11 @@ camera.views.Camera = function(context, router) {
   this.taking_ = false;
 
   /**
-   * Timer used to automatically collapse the tools.
-   * @type {?number}
-   * @private
-   */
-  this.collapseTimer_ = null;
-
-  /**
    * Whether the camera is in video recording mode.
    * @type {boolean}
    * @private
    */
   this.is_recording_mode_ = false;
-
-  /**
-   * Scroller for the ribbon with effects.
-   * @type {camera.util.SmoothScroller}
-   * @private
-   */
-  this.scroller_ = new camera.util.SmoothScroller(
-      document.querySelector('#effects'),
-      document.querySelector('#effects .padder'));
-
-  /**
-   * Scroll bar for the ribbon with effects.
-   * @type {camera.HorizontalScrollBar}
-   * @private
-   */
-  this.scrollBar_ = new camera.HorizontalScrollBar(this.scroller_);
-
-  /**
-   * Detects if the mouse has been moved or clicked, and if any touch events
-   * have been performed on the view. If such events are detected, then the
-   * ribbon and the window buttons are shown.
-   *
-   * @type {camera.util.PointerTracker}
-   * @private
-   */
-  this.pointerTracker_ = new camera.util.PointerTracker(
-      document.body, this.onPointerActivity_.bind(this));
-
-  /**
-   * Enables scrolling the ribbon by dragging the mouse.
-   * @type {camera.util.MouseScroller}
-   * @private
-   */
-  this.mouseScroller_ = new camera.util.MouseScroller(this.scroller_);
-
-  /**
-   * Detects whether scrolling is being performed or not.
-   * @type {camera.util.ScrollTracker}
-   * @private
-   */
-  this.scrollTracker_ = new camera.util.ScrollTracker(
-      this.scroller_, function() {}, function() {});
 
   /**
    * @type {string}
@@ -324,11 +236,6 @@ camera.views.Camera = function(context, router) {
 
   document.querySelector('#toolbar #album-enter').addEventListener('click',
       this.onAlbumEnterClicked_.bind(this));
-
-  document.querySelector('#toolbar #filters-toggle').addEventListener('click',
-      this.onFiltersToggleClicked_.bind(this));
-
-  window.addEventListener('keydown', this.onWindowKeyDown_.bind(this));
 
   document.querySelector('#toggle-record').addEventListener(
       'click', this.onToggleRecordClicked_.bind(this));
@@ -422,7 +329,6 @@ camera.views.Camera.prototype.onLeave = function() {
  * @override
  */
 camera.views.Camera.prototype.onActivate = function() {
-  this.scrollTracker_.start();
   if (document.activeElement != document.body)
     document.querySelector('#take-picture').focus();
   this.updateAlbumButton_();
@@ -432,8 +338,6 @@ camera.views.Camera.prototype.onActivate = function() {
  * @override
  */
 camera.views.Camera.prototype.onInactivate = function() {
-  this.setExpanded_(false);
-  this.scrollTracker_.stop();
   if (this.taking_) {
     this.endTakePicture_();
   }
@@ -477,30 +381,6 @@ camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
  */
 camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
   this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
-};
-
-/**
- * Handles clicking on the toggle filters button.
- * @param {Event} event Mouse event
- * @private
- */
-camera.views.Camera.prototype.onFiltersToggleClicked_ = function(event) {
-  this.setExpanded_(!this.expanded_);
-};
-
-/**
- * Handles pressing a key within a window.
- * TODO(yuli): Remove this function when removing effects UI.
- *
- * @param {Event} event Key down event
- * @private
- */
-camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
-  // When the ribbon is focused, then do not collapse it when pressing keys.
-  if (this.active &&
-      document.activeElement == document.querySelector('#effects-wrapper')) {
-    this.setExpanded_(true);
-  }
 };
 
 /**
@@ -603,31 +483,6 @@ camera.views.Camera.prototype.onToggleMirrorClicked_ = function(event) {
   this.mirroringToggles_[this.videoDeviceId_] = enabled;
   chrome.storage.local.set({mirroringToggles: this.mirroringToggles_});
   this.updateMirroring_();
-};
-
-/**
- * Handles pointer actions, such as mouse or touch activity.
- * @param {Event} event Activity event.
- * @private
- */
-camera.views.Camera.prototype.onPointerActivity_ = function(event) {
-  // Update the ribbon's visibility only when camera view is active.
-  // TODO(yuli): Remove this function after removing effects UI.
-  if (this.active) {
-    switch (event.type) {
-      case 'mousedown':
-        // Toggle the ribbon if clicking on static area.
-        if (event.target == document.body) {
-          this.setExpanded_(!this.expanded_);
-          break;
-        }  // Otherwise continue.
-      default:
-        // Prevent auto-hiding the ribbon for any other activity.
-        if (this.expanded_)
-          this.setExpanded_(true);
-        break;
-    }
-  }
 };
 
 /**
@@ -829,40 +684,6 @@ camera.views.Camera.prototype.hideRecordingTimer_ = function() {
   var timerElement = document.querySelector('#recording-timer');
   timerElement.textContent = '';
   timerElement.classList.remove('visible');
-};
-
-/**
- * Toggles the toolbar visibility. However, it may delay the operation, if
- * eg. some UI element is hovered.
- *
- * @param {boolean} expanded True to show the toolbar, false to hide.
- * @private
- */
-camera.views.Camera.prototype.setExpanded_ = function(expanded) {
-  if (this.collapseTimer_) {
-    clearTimeout(this.collapseTimer_);
-    this.collapseTimer_ = null;
-  }
-  // Don't expand to show the effects if they are not supported.
-  if (!document.querySelector('#filters-toggle').disabled &&
-      expanded) {
-    var isRibbonHovered =
-        document.querySelector('#toolbar').webkitMatchesSelector(':hover');
-    if (!isRibbonHovered) {
-      this.collapseTimer_ = setTimeout(
-          this.setExpanded_.bind(this, false), 3000);
-    }
-    if (!this.expanded_) {
-      this.toolbarEffect_.invoke(true, function() {
-        this.expanded_ = true;
-      }.bind(this));
-    }
-  } else {
-    if (this.expanded_) {
-      this.expanded_ = false;
-      this.toolbarEffect_.invoke(false, function() {});
-    }
-  }
 };
 
 /**
