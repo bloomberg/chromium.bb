@@ -646,7 +646,15 @@ class PLATFORM_EXPORT ThreadState {
   // conservative GC was performed to handle the emergency.
   bool ForceMemoryPressureGCIfNeeded();
 
-  size_t EstimatedLiveSize(size_t current_size, size_t size_at_last_gc);
+  // Esimates the size of a heap based on |size_at_prev_gc| and wrapper counts
+  // (live and collected). |current_size| should be the currently allocated size
+  // for that heap.
+  //
+  // Note that this function should not be called while sweeping is running as
+  // it uses snapshots and live values collected during garbage collection and
+  // calling it during sweeping mixes garbage collection cycles.
+  size_t EstimatedLiveSize(size_t current_size, size_t size_at_prev_gc);
+
   size_t TotalMemorySize();
   double HeapGrowingRate();
   double PartitionAllocGrowingRate();
