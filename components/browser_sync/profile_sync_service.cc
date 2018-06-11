@@ -270,7 +270,8 @@ void ProfileSyncService::Initialize() {
   if (base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
     bookmark_model_type_processor_ =
         std::make_unique<sync_bookmarks::BookmarkModelTypeProcessor>(
-            sync_client_.get());
+            sync_client_->GetBookmarkModel(),
+            sync_client_->GetBookmarkUndoServiceIfExists());
   }
 
   device_info_sync_bridge_ = std::make_unique<DeviceInfoSyncBridge>(

@@ -172,7 +172,9 @@ TEST_F(BookmarkModelTypeProcessorTest,
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
-  BookmarkModelTypeProcessor processor(sync_client());
+  BookmarkModelTypeProcessor processor(
+      sync_client()->GetBookmarkModel(),
+      sync_client()->GetBookmarkUndoServiceIfExists());
 
   syncer::UpdateResponseDataList updates;
   // Add update for the permanent folder "Bookmarks bar".
@@ -199,7 +201,9 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
-  BookmarkModelTypeProcessor processor(sync_client());
+  BookmarkModelTypeProcessor processor(
+      sync_client()->GetBookmarkModel(),
+      sync_client()->GetBookmarkUndoServiceIfExists());
 
   const std::string kNodeId = "node_id";
   const std::string kTitle = "title";
@@ -234,7 +238,9 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
-  BookmarkModelTypeProcessor processor(sync_client());
+  BookmarkModelTypeProcessor processor(
+      sync_client()->GetBookmarkModel(),
+      sync_client()->GetBookmarkUndoServiceIfExists());
   // Build this structure
   // bookmark_bar
   //  |- folder1
