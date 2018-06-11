@@ -139,9 +139,15 @@ class MediaSessionServiceImplBrowserTest : public ContentBrowserTest {
   std::unique_ptr<MockMediaSessionPlayerObserver> player_;
 };
 
+#if defined(LEAK_SANITIZER)
+// TODO(crbug.com/850870) Plug the leaks.
+#define MAYBE_CrashMessageOnUnload DISABLED_CrashMessageOnUnload
+#else
+#define MAYBE_CrashMessageOnUnload CrashMessageOnUnload
+#endif
 // Two windows from the same BrowserContext.
 IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
-                       CrashMessageOnUnload) {
+                       MAYBE_CrashMessageOnUnload) {
   NavigateToURL(shell(), GetTestUrl("media/session", "embedder.html"));
   // Navigate to a chrome:// URL to avoid render process re-use.
   NavigateToURL(shell(), GURL("chrome://flags"));
