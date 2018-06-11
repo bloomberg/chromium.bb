@@ -33,6 +33,10 @@
              file="cr_elements/cr_input/cr_input.js"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_INPUT_STYLE_CSS_HTML"
+             file="cr_elements/cr_input/cr_input_style_css.html"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_SCROLLABLE_BEHAVIOR_HTML"
              file="cr_elements/cr_scrollable_behavior.html"
              type="chrome_html"
