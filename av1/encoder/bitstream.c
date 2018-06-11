@@ -3249,9 +3249,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
   }
 
-  const int might_bwd_adapt = !(cm->seq_params.reduced_still_picture_hdr) &&
-                              !(cm->large_scale_tile) &&
-                              !(cm->disable_cdf_update);
+  const int might_bwd_adapt =
+      !(cm->seq_params.reduced_still_picture_hdr) && !(cm->disable_cdf_update);
+  if (cm->large_scale_tile)
+    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
   if (might_bwd_adapt) {
     aom_wb_write_bit(

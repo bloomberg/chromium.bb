@@ -3736,9 +3736,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 
-  const int might_bwd_adapt = !(cm->seq_params.reduced_still_picture_hdr) &&
-                              !(cm->large_scale_tile) &&
-                              !(cm->disable_cdf_update);
+  const int might_bwd_adapt =
+      !(cm->seq_params.reduced_still_picture_hdr) && !(cm->disable_cdf_update);
   if (might_bwd_adapt) {
     cm->refresh_frame_context = aom_rb_read_bit(rb)
                                     ? REFRESH_FRAME_CONTEXT_DISABLED
