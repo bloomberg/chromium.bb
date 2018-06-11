@@ -68,6 +68,8 @@ class CORE_EXPORT PendingInvalidations {
   PendingInvalidations();
   ~PendingInvalidations(){};
   void Invalidate(Document&);
+  // May immediately invalidate the node and/or add pending invalidation sets to
+  // this node.
   void ScheduleInvalidationSetsForNode(const InvalidationLists&,
                                        ContainerNode&);
   void ScheduleSiblingInvalidationsAsDescendants(
