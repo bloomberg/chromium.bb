@@ -269,6 +269,19 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &SmbProviderClientImpl::HandleSetupKerberosCallback, &callback);
   }
 
+  void ParseNetBiosPacket(const std::vector<uint8_t>& packet,
+                          uint16_t transaction_id,
+                          ParseNetBiosPacketCallback callback) override {
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kParseNetBiosPacketMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfBytes(packet.data(), packet.size());
+    writer.AppendUint16(transaction_id);
+    CallMethod(&method_call,
+               &SmbProviderClientImpl::HandleParseNetBiosPacketCallback,
+               &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -452,9 +465,32 @@ class SmbProviderClientImpl : public SmbProviderClient {
     if (!reader.PopBool(&result)) {
       LOG(ERROR) << "SetupKerberos: parse failure.";
       std::move(callback).Run(false /* success */);
+      return;
     }
 
     std::move(callback).Run(result);
+  }
+
+  void HandleParseNetBiosPacketCallback(ParseNetBiosPacketCallback callback,
+                                        dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "ParseNetBiosPacket: failed to call smbprovider";
+      std::move(callback).Run(std::vector<std::string>());
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    smbprovider::HostnamesProto proto;
+
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "ParseNetBiosPacket: Failed to parse protobuf.";
+      std::move(callback).Run(std::vector<std::string>());
+      return;
+    }
+
+    std::vector<std::string> hostnames(proto.hostnames().begin(),
+                                       proto.hostnames().end());
+    std::move(callback).Run(hostnames);
   }
 
   // Default callback handler for D-Bus calls.

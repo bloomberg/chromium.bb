@@ -16,6 +16,12 @@ FakeSmbProviderClient::FakeSmbProviderClient() {}
 
 FakeSmbProviderClient::~FakeSmbProviderClient() {}
 
+void FakeSmbProviderClient::AddNetBiosPacketParsingForTesting(
+    uint8_t packet_id,
+    std::vector<std::string> hostnames) {
+  netbios_parse_results_[packet_id] = std::move(hostnames);
+}
+
 void FakeSmbProviderClient::Init(dbus::Bus* bus) {}
 
 void FakeSmbProviderClient::Mount(const base::FilePath& share_path,
@@ -162,6 +168,21 @@ void FakeSmbProviderClient::SetupKerberos(const std::string& account_id,
                                           SetupKerberosCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true /* success */));
+}
+
+void FakeSmbProviderClient::ParseNetBiosPacket(
+    const std::vector<uint8_t>& packet,
+    uint16_t transaction_id,
+    ParseNetBiosPacketCallback callback) {
+  std::vector<std::string> result;
+
+  // For testing, we map a 1 byte packet to a vector<std::string> to simulate
+  // parsing a list of hostnames from a packet.
+  if (packet.size() == 1 && netbios_parse_results_.count(packet[0])) {
+    result = netbios_parse_results_[packet[0]];
+  }
+
+  std::move(callback).Run(result);
 }
 
 }  // namespace chromeos

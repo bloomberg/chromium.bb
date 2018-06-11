@@ -41,6 +41,8 @@ class CHROMEOS_EXPORT SmbProviderClient
       base::OnceCallback<void(smbprovider::ErrorType error,
                               const smbprovider::DeleteListProto& delete_list)>;
   using SetupKerberosCallback = base::OnceCallback<void(bool success)>;
+  using ParseNetBiosPacketCallback =
+      base::OnceCallback<void(const std::vector<std::string>&)>;
 
   ~SmbProviderClient() override;
 
@@ -179,6 +181,13 @@ class CHROMEOS_EXPORT SmbProviderClient
   // ChromAD enrolled.
   virtual void SetupKerberos(const std::string& account_id,
                              SetupKerberosCallback callback) = 0;
+
+  // Calls ParseNetBiosPacket. This parses the hostnames from a NetBios packet
+  // |packet| and returns any hostnames described in the packet. Malformed
+  // packets will return no hostnames.
+  virtual void ParseNetBiosPacket(const std::vector<uint8_t>& packet,
+                                  uint16_t transaction_id,
+                                  ParseNetBiosPacketCallback callback) = 0;
 
  protected:
   // Create() should be used instead.
