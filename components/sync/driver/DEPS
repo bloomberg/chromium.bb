@@ -20,4 +20,6 @@ include_rules = [
   "+net",
   "+policy",
   "+services/identity/public/cpp",
+  "+services/network/public/cpp",
+  "+services/network/test",
 ]
