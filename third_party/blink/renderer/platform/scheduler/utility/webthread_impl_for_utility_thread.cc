@@ -29,12 +29,6 @@ WebThreadImplForUtilityThread::GetTaskRunner() const {
   return task_runner_;
 }
 
-scheduler::SingleThreadIdleTaskRunner*
-WebThreadImplForUtilityThread::GetIdleTaskRunner() const {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void WebThreadImplForUtilityThread::Init() {}
 
 }  // namespace scheduler

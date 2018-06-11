@@ -136,27 +136,6 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
   thread_.reset();
 }
 
-TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
-  MockIdleTask task;
-  base::WaitableEvent completion(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-
-  EXPECT_CALL(task, Run(_));
-  ON_CALL(task, Run(_)).WillByDefault(Invoke([&completion](double) {
-    completion.Signal();
-  }));
-
-  thread_->PostIdleTask(
-      FROM_HERE, base::BindOnce(&MockIdleTask::Run, WTF::Unretained(&task)));
-  // We need to post a wake-up task or idle work will never happen.
-  PostDelayedCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
-                             CrossThreadBind([] {}),
-                             TimeDelta::FromMilliseconds(50));
-
-  completion.Wait();
-}
-
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
   std::string calls;
   TestObserver observer(&calls);

@@ -67,7 +67,6 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
   task_queue_ = non_main_thread_scheduler_->DefaultTaskQueue();
   task_runner_ = TaskQueueWithTaskType::Create(
       task_queue_, TaskType::kWorkerThreadTaskQueueDefault);
-  idle_task_runner_ = non_main_thread_scheduler_->IdleTaskRunner();
   base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
   completion->Signal();
 }
@@ -78,7 +77,6 @@ void WebThreadImplForWorkerScheduler::ShutdownOnThread(
 
   task_queue_ = nullptr;
   task_runner_ = nullptr;
-  idle_task_runner_ = nullptr;
   non_main_thread_scheduler_ = nullptr;
 
   if (completion)
@@ -101,11 +99,6 @@ blink::PlatformThreadId WebThreadImplForWorkerScheduler::ThreadId() const {
 
 blink::ThreadScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
   return non_main_thread_scheduler_.get();
-}
-
-SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()
-    const {
-  return idle_task_runner_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
