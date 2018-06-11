@@ -67,6 +67,8 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   };
   State state_;
 
+  bool IsIgnorePtsMode() const;
+
   const MediaPipelineDeviceParams params_;
 
   std::unique_ptr<AvSync> av_sync_;
