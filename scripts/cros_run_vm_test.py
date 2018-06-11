@@ -153,7 +153,7 @@ class VMTest(object):
         '--ssh_options', '-F /dev/null -i /dev/null',
         'localhost:%d' % self._vm.ssh_port,
     ] + self.autotest
-    return self._RunCommand(cmd)
+    return cros_build_lib.RunCommand(cmd)
 
   def _RunTests(self):
     """Run tests.
@@ -167,7 +167,7 @@ class VMTest(object):
     if self.remote_cmd:
       result = self._RunVMCmd()
     elif self.host_cmd:
-      result = self._RunCommand(self.args)
+      result = cros_build_lib.RunCommand(self.args)
     elif self.catapult_tests:
       result = self._RunCatapultTests()
     elif self.autotest:
