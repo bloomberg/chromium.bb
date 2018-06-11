@@ -206,16 +206,17 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
 
 void PaintOpWriter::Write(const DrawImage& draw_image,
                           SkSize* scale_adjustment) {
-  // We never ask for subsets during serialization.
   const PaintImage& paint_image = draw_image.paint_image();
-  DCHECK_EQ(paint_image.width(), draw_image.src_rect().width());
-  DCHECK_EQ(paint_image.height(), draw_image.src_rect().height());
 
   // Empty image.
   if (!draw_image.paint_image()) {
     Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kNoImage));
     return;
   }
+
+  // We never ask for subsets during serialization.
+  DCHECK_EQ(paint_image.width(), draw_image.src_rect().width());
+  DCHECK_EQ(paint_image.height(), draw_image.src_rect().height());
 
   // Security constrained serialization inlines the image bitmap.
   if (enable_security_constraints_) {

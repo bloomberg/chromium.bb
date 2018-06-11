@@ -3364,4 +3364,34 @@ TEST(PaintOpBufferTest, TotalOpCount) {
   EXPECT_EQ(3 * len + 2, record_buffer->total_op_count());
 }
 
+TEST(PaintOpBufferTest, NullImages) {
+  PaintOpBuffer buffer;
+  buffer.push<DrawImageOp>(PaintImage(), 0.f, 0.f, nullptr);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  TestOptionsProvider options_provider;
+  SimpleBufferSerializer serializer(
+      memory.get(), PaintOpBuffer::kInitialBufferSize,
+      options_provider.image_provider(),
+      options_provider.transfer_cache_helper(),
+      options_provider.strike_server(), options_provider.color_space(),
+      options_provider.can_use_lcd_text(),
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
+  serializer.Serialize(&buffer);
+  ASSERT_TRUE(serializer.valid());
+  ASSERT_GT(serializer.written(), 0u);
+
+  auto deserialized_buffer =
+      PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                    options_provider.deserialize_options());
+  ASSERT_TRUE(deserialized_buffer);
+  ASSERT_EQ(deserialized_buffer->size(), 1u);
+  ASSERT_EQ(deserialized_buffer->GetFirstOp()->GetType(),
+            PaintOpType::DrawImage);
+}
+
 }  // namespace cc
