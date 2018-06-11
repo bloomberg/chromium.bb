@@ -81,7 +81,7 @@ inline v8::Local<v8::Value> ToV8SignedIntegerInternal<8>(int64_t value,
                                                          v8::Isolate* isolate) {
   int32_t value_in32_bit = static_cast<int32_t>(value);
   if (value_in32_bit == value)
-    return v8::Integer::New(isolate, value);
+    return v8::Integer::New(isolate, value_in32_bit);
   // V8 doesn't have a 64-bit integer implementation.
   return v8::Number::New(isolate, value);
 }
@@ -103,7 +103,7 @@ inline v8::Local<v8::Value> ToV8UnsignedIntegerInternal<8>(
     v8::Isolate* isolate) {
   uint32_t value_in32_bit = static_cast<uint32_t>(value);
   if (value_in32_bit == value)
-    return v8::Integer::NewFromUnsigned(isolate, value);
+    return v8::Integer::NewFromUnsigned(isolate, value_in32_bit);
   // V8 doesn't have a 64-bit integer implementation.
   return v8::Number::New(isolate, value);
 }
