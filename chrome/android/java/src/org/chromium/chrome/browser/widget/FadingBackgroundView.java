@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.view.View;
@@ -28,7 +29,8 @@ import javax.annotation.Nullable;
  *
  * To use the scrim, {@link #showFadingOverlay(ScrimParams)} must be called to set the params for
  * how the scrimm will behave. After that, users can either allow the default animation to run or
- * change the view's alpha manually using {@link #setViewAlpha(float)}.
+ * change the view's alpha manually using {@link #setViewAlpha(float)}. Once the scrim is done being
+ * used, {@link #hideFadingOverlay(boolean)} should be called.
  */
 public class FadingBackgroundView extends View implements View.OnClickListener {
     /** Params that define the behavior of the scrim for a single user. */
@@ -214,29 +216,6 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
                 && mStatusBarScrimDelegate != null) {
             mStatusBarScrimDelegate.setStatusBarScrimFraction(alpha);
         }
-
-        int newVisibility = alpha <= 0f ? View.GONE : View.VISIBLE;
-        setVisibility(newVisibility);
-    }
-
-    @Override
-    public void setVisibility(int visibility) {
-        if (getAlpha() <= 0f && visibility == View.VISIBLE) return;
-        super.setVisibility(visibility);
-    }
-
-    @Override
-    protected void dispatchVisibilityChanged(View view, int visibility) {
-        if (getAlpha() <= 0f && visibility == View.VISIBLE) return;
-        super.dispatchVisibilityChanged(view, visibility);
-    }
-
-    @Override
-    public void onVisibilityChanged(View view, int visibility) {
-        super.onVisibilityChanged(view, visibility);
-
-        if (mActiveParams == null || mActiveParams.observer == null) return;
-        mActiveParams.observer.onFadingViewVisibilityChanged(visibility == View.VISIBLE);
     }
 
     /**
@@ -244,6 +223,10 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
      */
     public void showFadingOverlay(ScrimParams params) {
         onParamsChanged(params);
+        setVisibility(View.VISIBLE);
+        if (mActiveParams.observer != null) {
+            mActiveParams.observer.onFadingViewVisibilityChanged(true);
+        }
         if (mOverlayFadeInAnimator == null) {
             mOverlayFadeInAnimator = ObjectAnimator.ofFloat(this, ALPHA, 1f);
             mOverlayFadeInAnimator.setDuration(FADE_DURATION_MS);
@@ -262,12 +245,21 @@ public class FadingBackgroundView extends View implements View.OnClickListener {
             mOverlayFadeOutAnimator = ObjectAnimator.ofFloat(this, ALPHA, 0f);
             mOverlayFadeOutAnimator.setDuration(FADE_DURATION_MS);
             mOverlayFadeOutAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+            mOverlayFadeOutAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    setVisibility(View.GONE);
+                    if (mActiveParams != null && mActiveParams.observer != null) {
+                        mActiveParams.observer.onFadingViewVisibilityChanged(false);
+                    }
+                    onParamsChanged(null);
+                }
+            });
         }
 
         mOverlayFadeOutAnimator.setFloatValues(getAlpha(), 0f);
         runFadeOverlayAnimation(mOverlayFadeOutAnimator);
         if (!fadeOut) mOverlayFadeOutAnimator.end();
-        onParamsChanged(null);
     }
 
     /**
