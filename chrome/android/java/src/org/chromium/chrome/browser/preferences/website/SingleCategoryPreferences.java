@@ -158,25 +158,31 @@ public class SingleCategoryPreferences extends PreferenceFragment
         } else if (mCategory.showBackgroundSyncSites()) {
             return website.site().getBackgroundSyncPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showCameraSites()) {
-            return website.site().getCameraPermission() == ContentSetting.BLOCK;
+            return website.site().getPermission(PermissionInfo.Type.CAMERA) == ContentSetting.BLOCK;
         } else if (mCategory.showClipboardSites()) {
-            return website.site().getClipboardPermission() == ContentSetting.BLOCK;
+            return website.site().getPermission(PermissionInfo.Type.CLIPBOARD)
+                    == ContentSetting.BLOCK;
         } else if (mCategory.showCookiesSites()) {
             return website.site().getCookiePermission() == ContentSetting.BLOCK;
         } else if (mCategory.showGeolocationSites()) {
-            return website.site().getGeolocationPermission() == ContentSetting.BLOCK;
+            return website.site().getPermission(PermissionInfo.Type.GEOLOCATION)
+                    == ContentSetting.BLOCK;
         } else if (mCategory.showJavaScriptSites()) {
             return website.site().getJavaScriptPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showMicrophoneSites()) {
-            return website.site().getMicrophonePermission() == ContentSetting.BLOCK;
+            return website.site().getPermission(PermissionInfo.Type.MICROPHONE)
+                    == ContentSetting.BLOCK;
         } else if (mCategory.showNotificationsSites()) {
-            return website.site().getNotificationPermission() == ContentSetting.BLOCK;
+            return website.site().getPermission(PermissionInfo.Type.NOTIFICATION)
+                    == ContentSetting.BLOCK;
         } else if (mCategory.showPopupSites()) {
             return website.site().getPopupPermission() == ContentSetting.BLOCK;
         } else if (mCategory.showProtectedMediaSites()) {
-            return website.site().getProtectedMediaIdentifierPermission() == ContentSetting.BLOCK;
+            return website.site().getPermission(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER)
+                    == ContentSetting.BLOCK;
         } else if (mCategory.showSensorsSites()) {
-            return website.site().getSensorsPermission() == ContentSetting.BLOCK;
+            return website.site().getPermission(PermissionInfo.Type.SENSORS)
+                    == ContentSetting.BLOCK;
         } else if (mCategory.showSoundSites()) {
             return website.site().getSoundPermission() == ContentSetting.BLOCK;
         }

@@ -23,7 +23,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
+import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -152,8 +152,8 @@ public class GeolocationHeaderTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                GeolocationInfo infoHttps =
-                        new GeolocationInfo(SEARCH_URL_1, null, false);
+                PermissionInfo infoHttps = new PermissionInfo(
+                        PermissionInfo.Type.GEOLOCATION, SEARCH_URL_1, null, false);
                 infoHttps.setContentSetting(httpsPermission);
                 String header = GeolocationHeader.getGeoHeader(
                         SEARCH_URL_1, mActivityTestRule.getActivity().getActivityTab());

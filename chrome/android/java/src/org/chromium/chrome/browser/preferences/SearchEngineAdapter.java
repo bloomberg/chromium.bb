@@ -33,8 +33,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
-import org.chromium.chrome.browser.preferences.website.NotificationInfo;
+import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
@@ -505,14 +504,14 @@ public class SearchEngineAdapter extends BaseAdapter
     private int getPermissionsLinkMessage(String url) {
         if (url == null) return 0;
 
-        NotificationInfo notificationSettings = new NotificationInfo(url, null, false);
-        boolean notificationsAllowed =
-                notificationSettings.getContentSetting() == ContentSetting.ALLOW
+        PermissionInfo settings =
+                new PermissionInfo(PermissionInfo.Type.NOTIFICATION, url, null, false);
+        boolean notificationsAllowed = settings.getContentSetting() == ContentSetting.ALLOW
                 && WebsitePreferenceBridge.isPermissionControlledByDSE(
                            ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url, false);
 
-        GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
-        boolean locationAllowed = locationSettings.getContentSetting() == ContentSetting.ALLOW
+        settings = new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
+        boolean locationAllowed = settings.getContentSetting() == ContentSetting.ALLOW
                 && WebsitePreferenceBridge.isPermissionControlledByDSE(
                            ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION, url, false);
 
@@ -523,19 +522,16 @@ public class SearchEngineAdapter extends BaseAdapter
         if (locationAllowed && systemLocationAllowed) {
             if (notificationsAllowed) {
                 return R.string.search_engine_location_and_notifications_allowed;
-            } else {
-                return R.string.search_engine_location_allowed;
             }
+            return R.string.search_engine_location_allowed;
         }
 
-        // Cases where the user has allowed location for the site but it's disabled at the system
-        // level.
+        // Cases where the user has allowed location for the site
+        // but it's disabled at the system level.
         if (locationAllowed) {
-            if (notificationsAllowed) {
-                return R.string.search_engine_notifications_allowed_system_location_disabled;
-            } else {
-                return R.string.search_engine_system_location_disabled;
-            }
+            return notificationsAllowed
+                    ? R.string.search_engine_notifications_allowed_system_location_disabled
+                    : R.string.search_engine_system_location_disabled;
         }
 
         // Cases where the user has not allowed location.
@@ -570,18 +566,17 @@ public class SearchEngineAdapter extends BaseAdapter
         String url = getSearchEngineUrl(templateUrl);
         if (url.isEmpty()) return false;
 
-        GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
-        ContentSetting locationPermission = locationSettings.getContentSetting();
-        return locationPermission == ContentSetting.ALLOW;
+        PermissionInfo locationSettings =
+                new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
+        return locationSettings.getContentSetting() == ContentSetting.ALLOW;
     }
 
     private int computeStartIndexForRecentSearchEngines() {
-        // If there are custom search engines to show, add 1 for showing the  "Recently visited"
-        // header.
+        // If there are custom search engines to show, add 1 for showing the
+        // "Recently visited" header.
         if (mRecentSearchEngines.size() > 0) {
             return mPrepopulatedSearchEngines.size() + 1;
-        } else {
-            return mPrepopulatedSearchEngines.size();
         }
+        return mPrepopulatedSearchEngines.size();
     }
 }

@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
+import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -404,9 +404,9 @@ public class GeolocationHeader {
      * geolocation infobar).
      */
     static ContentSetting locationContentSettingForUrl(Uri uri, boolean isIncognito) {
-        GeolocationInfo locationSettings = new GeolocationInfo(uri.toString(), null, isIncognito);
-        ContentSetting locationPermission = locationSettings.getContentSetting();
-        return locationPermission;
+        PermissionInfo locationSettings = new PermissionInfo(
+                PermissionInfo.Type.GEOLOCATION, uri.toString(), null, isIncognito);
+        return locationSettings.getContentSetting();
     }
 
     @VisibleForTesting

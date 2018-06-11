@@ -17,7 +17,6 @@ import java.util.List;
  * Website is a class for storing information about a website and its associated permissions.
  */
 public class Website implements Serializable {
-
     static final int INVALID_CAMERA_OR_MICROPHONE_ACCESS = 0;
     static final int CAMERA_ACCESS_ALLOWED = 1;
     static final int MICROPHONE_AND_CAMERA_ACCESS_ALLOWED = 2;
@@ -32,19 +31,14 @@ public class Website implements Serializable {
     private ContentSettingException mAdsException;
     private ContentSettingException mAutoplayExceptionInfo;
     private ContentSettingException mBackgroundSyncExceptionInfo;
-    private CameraInfo mCameraInfo;
-    private ClipboardInfo mClipboardInfo;
     private ContentSettingException mCookieException;
-    private GeolocationInfo mGeolocationInfo;
     private ContentSettingException mJavaScriptException;
-    private LocalStorageInfo mLocalStorageInfo;
-    private MicrophoneInfo mMicrophoneInfo;
-    private MidiInfo mMidiInfo;
-    private NotificationInfo mNotificationInfo;
     private ContentSettingException mPopupException;
-    private ProtectedMediaIdentifierInfo mProtectedMediaIdentifierInfo;
-    private SensorsInfo mSensorsInfo;
     private ContentSettingException mSoundException;
+
+    private PermissionInfo[] mPermissionInfo;
+
+    private LocalStorageInfo mLocalStorageInfo;
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
 
@@ -56,6 +50,7 @@ public class Website implements Serializable {
     public Website(WebsiteAddress origin, WebsiteAddress embedder) {
         mOrigin = origin;
         mEmbedder = embedder;
+        mPermissionInfo = new PermissionInfo[PermissionInfo.Type.NUM_PERMISSIONS];
     }
 
     public WebsiteAddress getAddress() {
@@ -197,53 +192,35 @@ public class Website implements Serializable {
     }
 
     /**
-     * Sets camera capture info class.
+     * @return PermissionInfo with permission details of specified type
+     *         (Camera, Clipboard, etc.).
      */
-    public void setCameraInfo(CameraInfo info) {
-        mCameraInfo = info;
-    }
-
-    public CameraInfo getCameraInfo() {
-        return mCameraInfo;
+    public PermissionInfo getPermissionInfo(@PermissionInfo.Type int type) {
+        return mPermissionInfo[type];
     }
 
     /**
-     * Returns what setting governs camera capture access.
+     * Set PermissionInfo for permission details of specified type
+     * (Camera, Clipboard, etc.).
      */
-    public ContentSetting getCameraPermission() {
-        return mCameraInfo != null ? mCameraInfo.getContentSetting() : null;
+    public void setPermissionInfo(PermissionInfo info) {
+        mPermissionInfo[info.getType()] = info;
     }
 
     /**
-     * Configure camera capture setting for this site.
+     * @return permission value for permission of specified type.
+     *         (Camera, Clipboard, etc.).
      */
-    public void setCameraPermission(ContentSetting value) {
-        if (mCameraInfo != null) mCameraInfo.setContentSetting(value);
+    public ContentSetting getPermission(@PermissionInfo.Type int type) {
+        return getPermissionInfo(type) != null ? getPermissionInfo(type).getContentSetting() : null;
     }
 
     /**
-     * Sets the ClipboardInfo object for this Website.
+     * Set permission value for permission of specified type
+     * (Camera, Clipboard, etc.).
      */
-    public void setClipboardInfo(ClipboardInfo info) {
-        mClipboardInfo = info;
-    }
-
-    public ClipboardInfo getClipboardInfo() {
-        return mClipboardInfo;
-    }
-
-    /**
-     * Returns what permission governs Clipboard access.
-     */
-    public ContentSetting getClipboardPermission() {
-        return mClipboardInfo != null ? mClipboardInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure Clipboard permission access setting for this site.
-     */
-    public void setClipboardPermission(ContentSetting value) {
-        if (mClipboardInfo != null) mClipboardInfo.setContentSetting(value);
+    public void setPermission(@PermissionInfo.Type int type, ContentSetting value) {
+        if (getPermissionInfo(type) != null) getPermissionInfo(type).setContentSetting(value);
     }
 
     /**
@@ -270,33 +247,6 @@ public class Website implements Serializable {
     public void setCookiePermission(ContentSetting value) {
         if (mCookieException != null) {
             mCookieException.setContentSetting(value);
-        }
-    }
-
-    /**
-     * Sets the GeoLocationInfo object for this Website.
-     */
-    public void setGeolocationInfo(GeolocationInfo info) {
-        mGeolocationInfo = info;
-    }
-
-    public GeolocationInfo getGeolocationInfo() {
-        return mGeolocationInfo;
-    }
-
-    /**
-     * Returns what permission governs geolocation access.
-     */
-    public ContentSetting getGeolocationPermission() {
-        return mGeolocationInfo != null ? mGeolocationInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure geolocation access setting for this site.
-     */
-    public void setGeolocationPermission(ContentSetting value) {
-        if (mGeolocationInfo != null) {
-            mGeolocationInfo.setContentSetting(value);
         }
     }
 
@@ -328,36 +278,6 @@ public class Website implements Serializable {
      */
     public ContentSettingException getJavaScriptException() {
         return mJavaScriptException;
-    }
-
-    /**
-     * Sets the SensorsInfo object for this Website.
-     */
-    public void setSensorsInfo(SensorsInfo info) {
-        mSensorsInfo = info;
-    }
-
-    /**
-     * Returns the SensorsInfo object for this Website.
-     */
-    public SensorsInfo getSensorsInfo() {
-        return mSensorsInfo;
-    }
-
-    /**
-     * Returns what permission governs sensors access.
-     */
-    public ContentSetting getSensorsPermission() {
-        return mSensorsInfo != null ? mSensorsInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Set sensors permission access setting for this site.
-     */
-    public void setSensorsPermission(ContentSetting value) {
-        if (mSensorsInfo != null) {
-            mSensorsInfo.setContentSetting(value);
-        }
     }
 
     /**
@@ -403,85 +323,6 @@ public class Website implements Serializable {
     }
 
     /**
-     * Sets microphone capture info class.
-     */
-    public void setMicrophoneInfo(MicrophoneInfo info) {
-        mMicrophoneInfo = info;
-    }
-
-    public MicrophoneInfo getMicrophoneInfo() {
-        return mMicrophoneInfo;
-    }
-
-    /**
-     * Returns what setting governs microphone capture access.
-     */
-    public ContentSetting getMicrophonePermission() {
-        return mMicrophoneInfo != null ? mMicrophoneInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure microphone capture setting for this site.
-     */
-    public void setMicrophonePermission(ContentSetting value) {
-        if (mMicrophoneInfo != null) mMicrophoneInfo.setContentSetting(value);
-    }
-
-    /**
-     * Sets the MidiInfo object for this Website.
-     */
-    public void setMidiInfo(MidiInfo info) {
-        mMidiInfo = info;
-    }
-
-    public MidiInfo getMidiInfo() {
-        return mMidiInfo;
-    }
-
-    /**
-     * Returns what permission governs MIDI usage access.
-     */
-    public ContentSetting getMidiPermission() {
-        return mMidiInfo != null ? mMidiInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure Midi usage access setting for this site.
-     */
-    public void setMidiPermission(ContentSetting value) {
-        if (mMidiInfo != null) {
-            mMidiInfo.setContentSetting(value);
-        }
-    }
-
-    /**
-     * Sets Notification access permission information class.
-     */
-    public void setNotificationInfo(NotificationInfo info) {
-        mNotificationInfo = info;
-    }
-
-    public NotificationInfo getNotificationInfo() {
-        return mNotificationInfo;
-    }
-
-    /**
-     * Returns what setting governs notification access.
-     */
-    public ContentSetting getNotificationPermission() {
-        return mNotificationInfo != null ? mNotificationInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure notification setting for this site.
-     */
-    public void setNotificationPermission(ContentSetting value) {
-        if (mNotificationInfo != null) {
-            mNotificationInfo.setContentSetting(value);
-        }
-    }
-
-    /**
      * Sets the Popup exception info for this Website.
      */
     public void setPopupException(ContentSettingException exception) {
@@ -506,34 +347,6 @@ public class Website implements Serializable {
     public void setPopupPermission(ContentSetting value) {
         if (mPopupException != null) {
             mPopupException.setContentSetting(value);
-        }
-    }
-
-    /**
-     * Sets protected media identifier access permission information class.
-     */
-    public void setProtectedMediaIdentifierInfo(ProtectedMediaIdentifierInfo info) {
-        mProtectedMediaIdentifierInfo = info;
-    }
-
-    public ProtectedMediaIdentifierInfo getProtectedMediaIdentifierInfo() {
-        return mProtectedMediaIdentifierInfo;
-    }
-
-    /**
-     * Returns what permission governs Protected Media Identifier access.
-     */
-    public ContentSetting getProtectedMediaIdentifierPermission() {
-        return mProtectedMediaIdentifierInfo != null
-                ? mProtectedMediaIdentifierInfo.getContentSetting() : null;
-    }
-
-    /**
-     * Configure Protected Media Identifier access setting for this site.
-     */
-    public void setProtectedMediaIdentifierPermission(ContentSetting value) {
-        if (mProtectedMediaIdentifierInfo != null) {
-            mProtectedMediaIdentifierInfo.setContentSetting(value);
         }
     }
 

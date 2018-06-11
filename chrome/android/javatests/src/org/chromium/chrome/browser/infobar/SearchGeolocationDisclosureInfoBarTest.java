@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.SearchGeolocationDisclosureTabHelper;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
+import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -43,14 +43,13 @@ public class SearchGeolocationDisclosureInfoBarTest {
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         // Simulate the DSE being granted location (the test server isn't set to be the DSE).
-        GeolocationInfo locationSettings =
-                new GeolocationInfo(mTestServer.getURL(SEARCH_PAGE), null, false);
+        PermissionInfo locationSettings = new PermissionInfo(
+                PermissionInfo.Type.GEOLOCATION, mTestServer.getURL(SEARCH_PAGE), null, false);
         ThreadUtils.runOnUiThread(() -> locationSettings.setContentSetting(ContentSetting.ALLOW));
     }
 

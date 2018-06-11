@@ -1,3 +1,4 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +29,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
-import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
+import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -303,7 +304,8 @@ public class PreferencesTest {
 
     private ContentSetting locationPermissionForSearchEngine(String keyword) {
         String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(keyword);
-        GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
+        PermissionInfo locationSettings =
+                new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
         return locationPermission;
     }
