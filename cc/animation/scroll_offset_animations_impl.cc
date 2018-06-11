@@ -5,6 +5,7 @@
 #include "cc/animation/scroll_offset_animations_impl.h"
 
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
@@ -45,6 +46,8 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
                              CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
           ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
   curve->SetInitialValue(current_offset, delayed_by);
+  TRACE_EVENT_INSTANT1("cc", "ScrollAnimationCreate", TRACE_EVENT_SCOPE_THREAD,
+                       "Duration", curve->Duration().InMillisecondsF());
 
   std::unique_ptr<KeyframeModel> keyframe_model = KeyframeModel::Create(
       std::move(curve), AnimationIdProvider::NextKeyframeModelId(),
@@ -108,6 +111,9 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
   trimmed -= delayed_by;
 
   curve->UpdateTarget(trimmed.InSecondsF(), new_target);
+  TRACE_EVENT_INSTANT1("cc", "ScrollAnimationUpdateTarget",
+                       TRACE_EVENT_SCOPE_THREAD, "UpdatedDuration",
+                       curve->Duration().InMillisecondsF());
 
   return true;
 }
