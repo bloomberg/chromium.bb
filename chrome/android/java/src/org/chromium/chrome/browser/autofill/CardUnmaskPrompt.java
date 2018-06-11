@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -17,7 +16,6 @@ import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
@@ -40,6 +38,9 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -48,12 +49,11 @@ import java.util.Calendar;
 /**
  * A prompt that bugs users to enter their CVC when unmasking a Wallet instrument (credit card).
  */
-public class CardUnmaskPrompt
-        implements DialogInterface.OnDismissListener, TextWatcher, OnClickListener {
+public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDialogView.Controller {
     private static CardUnmaskObserverForTest sObserverForTest;
 
     private final CardUnmaskPromptDelegate mDelegate;
-    private final AlertDialog mDialog;
+    private final ModalDialogView mDialog;
     private boolean mShouldRequestExpirationDate;
 
     private final View mMainView;
@@ -77,6 +77,8 @@ public class CardUnmaskPrompt
     private int mThisYear;
     private int mThisMonth;
     private boolean mValidationWaitsForCalendarTask;
+    private ModalDialogManager mModalDialogManager;
+    private Context mContext;
 
     private String mCvcErrorMessage;
     private String mExpirationMonthErrorMessage;
@@ -192,15 +194,13 @@ public class CardUnmaskPrompt
         mSuccessMessageDurationMilliseconds = successMessageDurationMilliseconds;
         ((ImageView) v.findViewById(R.id.cvc_hint_image)).setImageResource(drawableId);
 
-        mDialog = new AlertDialog.Builder(context, R.style.AlertDialogTheme)
-                .setTitle(title)
-                .setView(v)
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(confirmButtonLabel, null)
-                .create();
-        mDialog.setCanceledOnTouchOutside(false);
-        mDialog.setOnDismissListener(this);
-
+        ModalDialogView.Params params = new ModalDialogView.Params();
+        params.title = title;
+        params.customView = v;
+        params.negativeButtonTextId = R.string.cancel;
+        params.positiveButtonText = confirmButtonLabel;
+        params.cancelOnTouchOutside = false;
+        mDialog = new ModalDialogView(this, params);
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         mThisYear = -1;
         mThisMonth = -1;
@@ -213,7 +213,7 @@ public class CardUnmaskPrompt
         // Hitting the "submit" button on the software keyboard should submit the form if valid.
         mCardUnmaskInput.setOnEditorActionListener((v14, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                Button positiveButton = mDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                Button positiveButton = mDialog.getButton(ModalDialogView.BUTTON_POSITIVE);
                 if (positiveButton.isEnabled()) positiveButton.performClick();
                 return true;
             }
@@ -265,27 +265,28 @@ public class CardUnmaskPrompt
         }
     }
 
-    public void show() {
-        mDialog.show();
+    /**
+     * Show the dialog. If activity is null this method will not do anything.
+     */
+    public void show(ChromeActivity activity) {
+        if (activity == null) return;
+
+        mContext = activity;
+        mModalDialogManager = activity.getModalDialogManager();
+
+        mModalDialogManager.showDialog(mDialog, ModalDialogManager.APP_MODAL);
 
         showExpirationDateInputsInputs();
 
         // Override the View.OnClickListener so that pressing the positive button doesn't dismiss
         // the dialog.
-        Button verifyButton = mDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button verifyButton = mDialog.getButton(ModalDialogView.BUTTON_POSITIVE);
         verifyButton.setEnabled(false);
-        verifyButton.setOnClickListener(
-                view -> mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
-                        mMonthInput.getText().toString(),
-                        Integer.toString(getFourDigitYear()),
-                        mStoreLocallyCheckbox != null && mStoreLocallyCheckbox.isChecked()));
-
         mCardUnmaskInput.addTextChangedListener(this);
         mCardUnmaskInput.post(() -> setInitialFocus());
     }
 
     public void update(String title, String instructions, boolean shouldRequestExpirationDate) {
-        assert mDialog.isShowing();
         mDialog.setTitle(title);
         mInstructions.setText(instructions);
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
@@ -296,7 +297,7 @@ public class CardUnmaskPrompt
     }
 
     public void dismiss() {
-        mDialog.dismiss();
+        mModalDialogManager.dismissDialog(mDialog);
     }
 
     public void disableAndWaitForVerification() {
@@ -325,7 +326,7 @@ public class CardUnmaskPrompt
             Runnable dismissRunnable = () -> dismiss();
             if (mSuccessMessageDurationMilliseconds > 0) {
                 mVerificationProgressBar.setVisibility(View.GONE);
-                mDialog.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
+                mMainView.findViewById(R.id.verification_success).setVisibility(View.VISIBLE);
                 mVerificationView.setText(R.string.autofill_card_unmask_verification_success);
                 mVerificationView.announceForAccessibility(mVerificationView.getText());
                 new Handler().postDelayed(dismissRunnable, mSuccessMessageDurationMilliseconds);
@@ -333,11 +334,6 @@ public class CardUnmaskPrompt
                 new Handler().post(dismissRunnable);
             }
         }
-    }
-
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        mDelegate.dismissed();
     }
 
     @Override
@@ -351,7 +347,7 @@ public class CardUnmaskPrompt
      * is wrong. Finally checks whether the focuse should move to the next field.
      */
     private void validate() {
-        Button positiveButton = mDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        Button positiveButton = mDialog.getButton(ModalDialogView.BUTTON_POSITIVE);
 
         @ErrorType int errorType = getExpirationAndCvcErrorType();
         positiveButton.setEnabled(errorType == ERROR_TYPE_NONE);
@@ -400,8 +396,8 @@ public class CardUnmaskPrompt
         // the popup.
         if (mStoreLocallyTooltipPopup != null) return;
 
-        mStoreLocallyTooltipPopup = new PopupWindow(mDialog.getContext());
-        TextView text = new TextView(mDialog.getContext());
+        mStoreLocallyTooltipPopup = new PopupWindow(mContext);
+        TextView text = new TextView(mContext);
         text.setText(R.string.autofill_card_unmask_prompt_storage_tooltip);
         // Width is the dialog's width less the margins and padding around the checkbox and
         // icon.
@@ -412,7 +408,7 @@ public class CardUnmaskPrompt
                 - MarginLayoutParamsCompat.getMarginEnd((RelativeLayout.LayoutParams)
                         mStoreLocallyTooltipIcon.getLayoutParams()));
         text.setTextColor(Color.WHITE);
-        Resources resources = mDialog.getContext().getResources();
+        Resources resources = mContext.getResources();
         int hPadding = resources.getDimensionPixelSize(
                 R.dimen.autofill_card_unmask_tooltip_horizontal_padding);
         int vPadding = resources.getDimensionPixelSize(
@@ -444,8 +440,8 @@ public class CardUnmaskPrompt
     }
 
     private void setInitialFocus() {
-        InputMethodManager imm = (InputMethodManager) mDialog.getContext().getSystemService(
-                Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm =
+                (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         View view = mShouldRequestExpirationDate ? mMonthInput : mCardUnmaskInput;
         imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
@@ -534,10 +530,10 @@ public class CardUnmaskPrompt
         // draw the TextInput.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
-        ColorFilter filter = new PorterDuffColorFilter(
-                ApiCompatibilityUtils.getColor(
-                        mDialog.getContext().getResources(), R.color.input_underline_error_color),
-                PorterDuff.Mode.SRC_IN);
+        ColorFilter filter =
+                new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(mContext.getResources(),
+                                                  R.color.input_underline_error_color),
+                        PorterDuff.Mode.SRC_IN);
 
         // Decide on what field(s) to apply the filter.
         boolean filterMonth = errorType == ERROR_TYPE_EXPIRATION_MONTH
@@ -644,7 +640,7 @@ public class CardUnmaskPrompt
         mMonthInput.setEnabled(enabled);
         mYearInput.setEnabled(enabled);
         mStoreLocallyCheckbox.setEnabled(enabled);
-        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(enabled);
+        mDialog.getButton(ModalDialogView.BUTTON_POSITIVE).setEnabled(enabled);
     }
 
     /**
@@ -748,13 +744,32 @@ public class CardUnmaskPrompt
         }
     }
 
+    @Override
+    public void onClick(int buttonType) {
+        if (buttonType == ModalDialogView.BUTTON_POSITIVE) {
+            mDelegate.onUserInput(mCardUnmaskInput.getText().toString(),
+                    mMonthInput.getText().toString(), Integer.toString(getFourDigitYear()),
+                    mStoreLocallyCheckbox != null && mStoreLocallyCheckbox.isChecked());
+        } else if (buttonType == ModalDialogView.BUTTON_NEGATIVE) {
+            mModalDialogManager.cancelDialog(mDialog);
+        }
+    }
+
+    @Override
+    public void onCancel() {}
+
+    @Override
+    public void onDismiss() {
+        mDelegate.dismissed();
+    }
+
     @VisibleForTesting
     public static void setObserverForTest(CardUnmaskObserverForTest observerForTest) {
         sObserverForTest = observerForTest;
     }
 
     @VisibleForTesting
-    public AlertDialog getDialogForTest() {
+    public ModalDialogView getDialogForTest() {
         return mDialog;
     }
 

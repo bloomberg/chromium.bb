@@ -215,6 +215,20 @@ public class ModalDialogView implements View.OnClickListener {
     }
 
     /**
+     * @return The button that was added to the dialog using {@link Params}.
+     * @param button indicates which button should be returned.
+     */
+    public Button getButton(@ButtonType int button) {
+        if (button == BUTTON_POSITIVE) {
+            return mPositiveButton;
+        } else if (button == BUTTON_NEGATIVE) {
+            return mNegativeButton;
+        }
+        assert false;
+        return null;
+    }
+
+    /**
      * @return The controller that controls the actions on the dialogs.
      */
     public Controller getController() {
@@ -226,6 +240,16 @@ public class ModalDialogView implements View.OnClickListener {
      */
     public String getContentDescription() {
         return mParams.title;
+    }
+
+    /**
+     * TODO(huayinz): Should we consider adding a model change processor now that the params are
+     * mutable
+     *
+     * @param title Updates the title string to the new title.
+     */
+    public void setTitle(String title) {
+        mTitleView.setText(title);
     }
 
     /**

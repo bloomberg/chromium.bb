@@ -56,7 +56,8 @@ void CardUnmaskPromptViewAndroid::Show() {
       controller_->GetSuccessMessageDuration().InMilliseconds(),
       view_android->GetWindowAndroid()->GetJavaObject()));
 
-  Java_CardUnmaskBridge_show(env, java_object_);
+  Java_CardUnmaskBridge_show(env, java_object_,
+                             view_android->GetWindowAndroid()->GetJavaObject());
 }
 
 bool CardUnmaskPromptViewAndroid::CheckUserInputValidity(
