@@ -19,6 +19,8 @@ import re
 COLOR_PATTERN = re.compile(r'(>|")(#[0-9A-Fa-f]+)(<|")')
 VALID_COLOR_PATTERN = re.compile(
     r'^#([0-9A-F][0-9A-E]|[0-9A-E][0-9A-F])?[0-9A-F]{6}$')
+XML_APP_NAMESPACE_PATTERN = re.compile(
+    r'xmlns:(\w+)="http://schemas.android.com/apk/res-auto"')
 
 
 def CheckChangeOnUpload(input_api, output_api):
@@ -35,6 +37,7 @@ def _CommonChecks(input_api, output_api):
   result.extend(_CheckColorFormat(input_api, output_api))
   result.extend(_CheckColorReferences(input_api, output_api))
   result.extend(_CheckDuplicateColors(input_api, output_api))
+  result.extend(_CheckXmlNamespacePrefixes(input_api, output_api))
   # Add more checks here
   return result
 
@@ -134,6 +137,33 @@ def _CheckDuplicateColors(input_api, output_api):
     general name (e.g. google_grey_100).
 
     See https://crbug.com/775198 for more information.
+  ''',
+        errors)]
+  return []
+
+
+def _CheckXmlNamespacePrefixes(input_api, output_api):
+  """Checks consistency of prefixes used for XML namespace names."""
+  errors = []
+  for f in input_api.AffectedFiles(include_deletes=False):
+    if not f.LocalPath().endswith('.xml'):
+      continue
+    for line_number, line in f.ChangedContents():
+      xml_app_namespace = XML_APP_NAMESPACE_PATTERN.search(line)
+      if xml_app_namespace and not xml_app_namespace.group(1) == 'app':
+        errors.append(
+            '  %s:%d\n    \t%s' % (f.LocalPath(), line_number, line.strip()))
+  if errors:
+    return [output_api.PresubmitError(
+  '''
+  XML Namespace Prefixes Check failed:
+    Your new code added new xml namespace declaration that is not consistent
+    with other XML files. Namespace "http://schemas.android.com/apk/res-auto"
+    should use 'app' prefix:
+
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    See https://crbug.com/850616 for more information.
   ''',
         errors)]
   return []
