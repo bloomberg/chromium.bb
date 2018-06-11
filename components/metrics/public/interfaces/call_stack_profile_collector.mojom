@@ -74,5 +74,5 @@ struct CallStackProfileParams {
 interface CallStackProfileCollector {
   Collect(CallStackProfileParams params,
           mojo_base.mojom.TimeTicks start_timestamp,
-          array<CallStackProfile> profiles);
+          CallStackProfile profile);
 };

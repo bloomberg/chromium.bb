@@ -15,23 +15,23 @@
 
 namespace metrics {
 
-ChildCallStackProfileCollector::ProfilesState::ProfilesState() = default;
-ChildCallStackProfileCollector::ProfilesState::ProfilesState(ProfilesState&&) =
+ChildCallStackProfileCollector::ProfileState::ProfileState() = default;
+ChildCallStackProfileCollector::ProfileState::ProfileState(ProfileState&&) =
     default;
 
-ChildCallStackProfileCollector::ProfilesState::ProfilesState(
+ChildCallStackProfileCollector::ProfileState::ProfileState(
     const CallStackProfileParams& params,
     base::TimeTicks start_timestamp,
-    base::StackSamplingProfiler::CallStackProfiles profiles)
+    base::StackSamplingProfiler::CallStackProfile profile)
     : params(params),
       start_timestamp(start_timestamp),
-      profiles(std::move(profiles)) {}
+      profile(std::move(profile)) {}
 
-ChildCallStackProfileCollector::ProfilesState::~ProfilesState() = default;
+ChildCallStackProfileCollector::ProfileState::~ProfileState() = default;
 
 // Some versions of GCC need this for push_back to work with std::move.
-ChildCallStackProfileCollector::ProfilesState&
-ChildCallStackProfileCollector::ProfilesState::operator=(ProfilesState&&) =
+ChildCallStackProfileCollector::ProfileState&
+ChildCallStackProfileCollector::ProfileState::operator=(ProfileState&&) =
     default;
 
 ChildCallStackProfileCollector::ChildCallStackProfileCollector() {}
@@ -59,9 +59,9 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
   DCHECK(!parent_collector_);
   parent_collector_ = std::move(parent_collector);
   if (parent_collector_) {
-    for (ProfilesState& state : profiles_) {
+    for (ProfileState& state : profiles_) {
       parent_collector_->Collect(state.params, state.start_timestamp,
-                                 std::move(state.profiles));
+                                 std::move(state.profile));
     }
   }
   profiles_.clear();
@@ -70,16 +70,16 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
 void ChildCallStackProfileCollector::Collect(
     const CallStackProfileParams& params,
     base::TimeTicks start_timestamp,
-    std::vector<CallStackProfile> profiles) {
+    CallStackProfile profile) {
   // Impl function is used as it needs to PostTask() to itself on a different
   // thread - which only works with a void return value.
-  CollectImpl(params, start_timestamp, std::move(profiles));
+  CollectImpl(params, start_timestamp, std::move(profile));
 }
 
 void ChildCallStackProfileCollector::CollectImpl(
     const CallStackProfileParams& params,
     base::TimeTicks start_timestamp,
-    std::vector<CallStackProfile> profiles) {
+    CallStackProfile profile) {
   base::AutoLock alock(lock_);
   if (task_runner_ &&
       // The profiler thread does not have a task runner. Attempting to
@@ -91,15 +91,15 @@ void ChildCallStackProfileCollector::CollectImpl(
         FROM_HERE, base::BindOnce(&ChildCallStackProfileCollector::CollectImpl,
                                   // This class has lazy instance lifetime.
                                   base::Unretained(this), params,
-                                  start_timestamp, std::move(profiles)));
+                                  start_timestamp, std::move(profile)));
     return;
   }
 
   if (parent_collector_) {
-    parent_collector_->Collect(params, start_timestamp, std::move(profiles));
+    parent_collector_->Collect(params, start_timestamp, std::move(profile));
   } else if (retain_profiles_) {
     profiles_.push_back(
-        ProfilesState(params, start_timestamp, std::move(profiles)));
+        ProfileState(params, start_timestamp, std::move(profile)));
   }
 }
 

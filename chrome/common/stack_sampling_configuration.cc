@@ -75,15 +75,14 @@ StackSamplingConfiguration::StackSamplingConfiguration()
 base::StackSamplingProfiler::SamplingParams
 StackSamplingConfiguration::GetSamplingParamsForCurrentProcess() const {
   base::StackSamplingProfiler::SamplingParams params;
-  params.bursts = 1;
   params.initial_delay = base::TimeDelta::FromMilliseconds(0);
   params.sampling_interval = base::TimeDelta::FromMilliseconds(0);
-  params.samples_per_burst = 0;
+  params.samples_per_profile = 0;
 
   if (IsProfilerEnabledForCurrentProcess()) {
     const base::TimeDelta duration = base::TimeDelta::FromSeconds(30);
     params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-    params.samples_per_burst = duration / params.sampling_interval;
+    params.samples_per_profile = duration / params.sampling_interval;
   }
 
   return params;
@@ -169,7 +168,7 @@ StackSamplingConfiguration::ChooseConfiguration(
 
   int chosen = base::RandInt(0, total_weight - 1);  // Max is inclusive.
   int cumulative_weight = 0;
-  for (const Variation& variation : variations) {
+  for (const auto& variation : variations) {
     if (chosen >= cumulative_weight &&
         chosen < cumulative_weight + variation.weight) {
       return variation.config;

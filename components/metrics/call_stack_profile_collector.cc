@@ -5,7 +5,6 @@
 #include "components/metrics/call_stack_profile_collector.h"
 
 #include <utility>
-#include <vector>
 
 #include <memory>
 
@@ -30,16 +29,15 @@ void CallStackProfileCollector::Create(
       std::move(request));
 }
 
-void CallStackProfileCollector::Collect(
-    const CallStackProfileParams& params,
-    base::TimeTicks start_timestamp,
-    std::vector<CallStackProfile> profiles) {
+void CallStackProfileCollector::Collect(const CallStackProfileParams& params,
+                                        base::TimeTicks start_timestamp,
+                                        CallStackProfile profile) {
   if (params.process != expected_process_)
     return;
 
   CallStackProfileParams params_copy = params;
-  CallStackProfileMetricsProvider::ReceiveCompletedProfiles(
-      params_copy, start_timestamp, std::move(profiles));
+  CallStackProfileMetricsProvider::ReceiveCompletedProfile(
+      params_copy, start_timestamp, std::move(profile));
 }
 
 }  // namespace metrics

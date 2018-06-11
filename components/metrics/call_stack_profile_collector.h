@@ -25,7 +25,7 @@ class CallStackProfileCollector : public mojom::CallStackProfileCollector {
   // mojom::CallStackProfileCollector:
   void Collect(const CallStackProfileParams& params,
                base::TimeTicks start_timestamp,
-               std::vector<CallStackProfile> profiles) override;
+               CallStackProfile profile) override;
 
  private:
   // Profile params are validated to come from this process. Profiles with a
