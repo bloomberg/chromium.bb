@@ -15,6 +15,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/callback.h"
@@ -14295,8 +14296,10 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
   }
 
   // For testing only. Allows us to stress the ability to respond to OOM errors.
+  uint32_t num_pixels;
   if (workarounds().simulate_out_of_memory_on_large_textures &&
-      (width * height >= 4096 * 4096)) {
+      (!SafeMultiplyUint32(width, height, &num_pixels) ||
+       (num_pixels >= 4096 * 4096))) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "synthetic out of memory");
     return error::kNoError;
   }
@@ -14390,8 +14393,10 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   }
 
   // For testing only. Allows us to stress the ability to respond to OOM errors.
+  uint32_t num_pixels;
   if (workarounds().simulate_out_of_memory_on_large_textures &&
-      (width * height * depth >= 4096 * 4096)) {
+      (!SafeMultiplyUint32(width, height, &num_pixels) ||
+       (num_pixels >= 4096 * 4096))) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "synthetic out of memory");
     return error::kNoError;
   }
