@@ -311,7 +311,7 @@ void WindowPerformance::AddEventTiming(String event_type,
                                        TimeTicks processing_start,
                                        TimeDelta duration,
                                        bool cancelable) {
-  DCHECK(RuntimeEnabledFeatures::EventTimingEnabled());
+  DCHECK(OriginTrials::eventTimingEnabled(GetExecutionContext()));
 
   DCHECK(!start_time.is_null());
   DCHECK(!processing_start.is_null());

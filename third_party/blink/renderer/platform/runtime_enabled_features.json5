@@ -412,7 +412,8 @@
     },
     {
       name: "EventTiming",
-      status: "test",
+      origin_trial_feature_name: "EventTiming",
+      status: "experimental",
     },
     {
       name: "ExecCommandInJavaScript",
