@@ -17,6 +17,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.vr.VrMainActivity;
 
 /**
  * Utilities dealing with extracting information about VR intents.
@@ -190,11 +191,13 @@ public class VrIntentUtils {
 
     /**
      * @param intent The intent to possibly forward to the VR launcher.
+     * @param activity The activity launching the intent.
      * @return whether the intent was forwarded to the VR launcher.
      */
     public static boolean maybeForwardToVrLauncher(Intent intent, Activity activity) {
         // Standalone VR devices use 2D-in-VR rendering on O+.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false;
+        if (activity instanceof VrMainActivity) return false;
         if (wouldUse2DInVrRenderingMode(activity) && VrShellDelegate.deviceSupportsVrLaunches()) {
             Intent vrIntent = new Intent(intent);
             vrIntent.setComponent(null);
