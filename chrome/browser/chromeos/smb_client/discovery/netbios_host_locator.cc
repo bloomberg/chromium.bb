@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_host_locator.h"
 
+#include <memory>
+
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
@@ -31,19 +33,64 @@ bool ShouldUseInterface(const net::NetworkInterface& interface) {
           interface.type == net::NetworkChangeNotifier::CONNECTION_WIFI);
 }
 
-NetBiosHostLocator::NetBiosHostLocator(GetInterfacesFunction get_interfaces)
-    : get_interfaces_(std::move(get_interfaces)) {}
+NetBiosHostLocator::NetBiosHostLocator(GetInterfacesFunction get_interfaces,
+                                       NetBiosClientFactory client_factory)
+    : get_interfaces_(std::move(get_interfaces)),
+      client_factory_(std::move(client_factory)) {}
 
 NetBiosHostLocator::~NetBiosHostLocator() = default;
 
 void NetBiosHostLocator::FindHosts(FindHostsCallback callback) {
+  DCHECK(!running_);
   DCHECK(callback);
-
   callback_ = std::move(callback);
+  running_ = true;
+
+  net::NetworkInterfaceList network_interface_list = GetNetworkInterfaceList();
+
+  for (const auto& interface : network_interface_list) {
+    if (ShouldUseInterface(interface)) {
+      FindHostsOnInterface(interface);
+    }
+  }
+
+  if (netbios_clients_.empty()) {
+    // No NetBiosClients were created since there were either no interfaces or
+    // no valid interfaces.
+    running_ = false;
+    std::move(callback_).Run(false /* success */, results_);
+  }
 }
 
 net::NetworkInterfaceList NetBiosHostLocator::GetNetworkInterfaceList() {
   return get_interfaces_.Run();
+}
+
+void NetBiosHostLocator::FindHostsOnInterface(
+    const net::NetworkInterface& interface) {
+  net::IPAddress broadcast_address = CalculateBroadcastAddress(interface);
+
+  netbios_clients_.push_back(CreateClient());
+  ExecuteNameRequest(broadcast_address);
+}
+
+std::unique_ptr<NetBiosClientInterface> NetBiosHostLocator::CreateClient()
+    const {
+  return client_factory_.Run();
+}
+
+void NetBiosHostLocator::ExecuteNameRequest(
+    const net::IPAddress& broadcast_address) {
+  netbios_clients_.back()->ExecuteNameRequest(
+      broadcast_address, transaction_id_++,
+      base::BindRepeating(&NetBiosHostLocator::PacketReceived,
+                          base::Unretained(this)));
+}
+
+void NetBiosHostLocator::PacketReceived(const std::vector<uint8_t>& packet,
+                                        uint16_t transaction_id,
+                                        const net::IPEndPoint& sender_ip) {
+  NOTREACHED();
 }
 
 }  // namespace smb_client
