@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+#include "base/sys_byteorder.h"
 #include "third_party/blink/public/web/web_serialized_script_value_version.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -56,7 +57,6 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/byte_order.h"
 #include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
@@ -212,7 +212,7 @@ static void SwapWiredDataIfNeeded(uint8_t* buffer, size_t buffer_size) {
   size_t uchars_size = buffer_size / sizeof(UChar);
 
   for (size_t i = 0; i < uchars_size; ++i)
-    uchars[i] = ntohs(uchars[i]);
+    uchars[i] = base::NetToHost16(uchars[i]);
 }
 
 scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(

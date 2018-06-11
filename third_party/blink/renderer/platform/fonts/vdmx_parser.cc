@@ -30,8 +30,8 @@
 
 #include "third_party/blink/renderer/platform/fonts/vdmx_parser.h"
 
+#include "base/sys_byteorder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/byte_order.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #include <stdlib.h>
@@ -72,7 +72,7 @@ class Buffer {
     if (offset_ + sizeof(uint16_t) > length_)
       return false;
     memcpy(value, buffer_ + offset_, sizeof(uint16_t));
-    *value = ntohs(*value);
+    *value = base::NetToHost16(*value);
     offset_ += sizeof(uint16_t);
     return true;
   }
