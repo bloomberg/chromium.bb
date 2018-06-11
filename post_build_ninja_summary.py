@@ -56,6 +56,7 @@ will have a weighted time that is the same or similar to its elapsed time. A
 compile that runs in parallel with 999 other compiles will have a weighted time
 that is tiny."""
 
+import argparse
 import errno
 import os
 import sys
@@ -275,20 +276,27 @@ def SummarizeEntries(entries):
           len(entries), len(entries) / (length))
 
 
-def main(argv):
+def main():
     log_file = '.ninja_log'
-    for pid, arg in enumerate(argv):
-        if arg == '-C':
-          log_file = os.path.join(argv[pid+1], log_file)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-C', dest='build_directory',
+                        help='Build directory.')
+    parser.add_argument('--log-file',
+                        help="specific ninja log file to analyze.")
+    args, _extra_args = parser.parse_known_args()
+    if args.build_directory:
+        log_file = os.path.join(args.build_directory, log_file)
+    if args.log_file:
+        log_file = args.log_file
 
     try:
       with open(log_file, 'r') as log:
         entries = ReadTargets(log, False)
         SummarizeEntries(entries)
     except IOError:
-      print 'No log file found, no build summary created.'
+      print 'Log file %r not found, no build summary created.' % log_file
       return errno.ENOENT
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())
