@@ -557,9 +557,6 @@ split_static_library("ui") {
       # See crbug.com/590850
       "content_settings/content_setting_media_menu_model.cc",
       "content_settings/content_setting_media_menu_model.h",
-      "javascript_dialogs/javascript_dialog_cocoa.h",
-      "javascript_dialogs/javascript_dialog_cocoa.mm",
-      "javascript_dialogs/javascript_dialog_mac.cc",
       "proximity_auth/proximity_auth_error_bubble_stub.cc",
       "startup/session_crashed_infobar_delegate.cc",
       "startup/session_crashed_infobar_delegate.h",
@@ -2565,9 +2562,6 @@ split_static_library("ui") {
         "cocoa/simple_message_box_bridge_views.mm",
         "cocoa/subresource_filter/subresource_filter_bubble_controller.h",
         "cocoa/subresource_filter/subresource_filter_bubble_controller.mm",
-        "javascript_dialogs/javascript_dialog_cocoa.h",
-        "javascript_dialogs/javascript_dialog_cocoa.mm",
-        "javascript_dialogs/javascript_dialog_mac.cc",
       ]
     }
   } else {  # non-Mac.
@@ -3051,7 +3045,6 @@ split_static_library("ui") {
 
     if (!is_mac || mac_views_browser) {
       sources += [
-        "javascript_dialogs/javascript_dialog.cc",
         "views/accessibility/invert_bubble_view.cc",
         "views/accessibility/invert_bubble_view.h",
         "views/autofill/save_card_icon_view.cc",
