@@ -154,4 +154,199 @@ TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
             &scroll_hit_test_display_item.scroll_offset_node());
 }
 
+class BlockPainterTestWithPaintTouchAction
+    : public PaintControllerPaintTestBase,
+      private ScopedPaintTouchActionRectsForTest {
+ public:
+  BlockPainterTestWithPaintTouchAction()
+      : PaintControllerPaintTestBase(),
+        ScopedPaintTouchActionRectsForTest(true) {}
+};
+
+TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body { margin: 0; }
+      #parent { width: 100px; height: 100px; }
+      .touchActionNone { touch-action: none; }
+      #childVisible { width: 200px; height: 25px; }
+      #childHidden { width: 200px; height: 30px; visibility: hidden; }
+    </style>
+    <div id='parent'>
+      <div id='childVisible'></div>
+      <div id='childHidden'></div>
+    </div>
+  )HTML");
+
+  // Initially there should be no hit test display items because there is no
+  // touch action.
+  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 1,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+
+  // Add a touch action to parent and ensure that hit test display items are
+  // created for both the parent and child.
+  auto* parent_element = GetElementById("parent");
+  parent_element->setAttribute(HTMLNames::classAttr, "touchActionNone");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  auto* parent = GetLayoutObjectByElementId("parent");
+  auto* childVisible = GetLayoutObjectByElementId("childVisible");
+  auto* childHidden = GetLayoutObjectByElementId("childHidden");
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 4,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(*parent, DisplayItem::kHitTest),
+      TestDisplayItem(*childVisible, DisplayItem::kHitTest),
+      TestDisplayItem(*childHidden, DisplayItem::kHitTest));
+
+  // Remove the touch action from parent and ensure no hit test display items
+  // are left.
+  parent_element->removeAttribute(HTMLNames::classAttr);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 1,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+}
+
+namespace {
+class MockEventListener final : public EventListener {
+ public:
+  MockEventListener() : EventListener(kCPPEventListenerType) {}
+
+  bool operator==(const EventListener& other) const final {
+    return this == &other;
+  }
+
+  void handleEvent(ExecutionContext*, Event*) final {}
+};
+}  // namespace
+
+TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body { margin: 0; }
+      #parent { width: 100px; height: 100px; }
+      #child { width: 200px; height: 50px; }
+    </style>
+    <div id='parent'>
+      <div id='child'></div>
+    </div>
+  )HTML");
+
+  // Initially there should be no hit test display items because there are no
+  // event handlers.
+  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 1,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+
+  // Add an event listener to parent and ensure that hit test display items are
+  // created for both the parent and child.
+  MockEventListener* callback = new MockEventListener();
+  auto* parent_element = GetElementById("parent");
+  parent_element->addEventListener(EventTypeNames::touchstart, callback);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  auto* parent = GetLayoutObjectByElementId("parent");
+  auto* child = GetLayoutObjectByElementId("child");
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(*parent, DisplayItem::kHitTest),
+      TestDisplayItem(*child, DisplayItem::kHitTest));
+
+  // Remove the event handler from parent and ensure no hit test display items
+  // are left.
+  parent_element->RemoveAllEventListeners();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 1,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType));
+}
+
+TEST_F(BlockPainterTestWithPaintTouchAction,
+       TouchActionRectsAcrossPaintChanges) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body { margin: 0; }
+      #parent { width: 100px; height: 100px; touch-action: none; }
+      #child { width: 200px; height: 50px; }
+    </style>
+    <div id='parent'>
+      <div id='child'></div>
+    </div>
+  )HTML");
+
+  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  auto* parent = GetLayoutObjectByElementId("parent");
+  auto* child = GetLayoutObjectByElementId("child");
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(*parent, DisplayItem::kHitTest),
+      TestDisplayItem(*child, DisplayItem::kHitTest));
+
+  auto* child_element = GetElementById("parent");
+  child_element->setAttribute("style", "background: blue;");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 4,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(*parent, kBackgroundType),
+      TestDisplayItem(*parent, DisplayItem::kHitTest),
+      TestDisplayItem(*child, DisplayItem::kHitTest));
+}
+
+TEST_F(BlockPainterTestWithPaintTouchAction, ScrolledHitTestChunkProperties) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body { margin: 0; }
+      #scroller {
+        width: 100px;
+        height: 100px;
+        overflow: scroll;
+        touch-action: none;
+      }
+      #child {
+        width: 200px;
+        height: 50px;
+        touch-action: none;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='child'></div>
+    </div>
+  )HTML");
+
+  auto* scrolling_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  auto* scroller = GetLayoutObjectByElementId("scroller");
+  auto* child = GetLayoutObjectByElementId("child");
+  EXPECT_DISPLAY_LIST(
+      RootPaintController().GetDisplayItemList(), 3,
+      TestDisplayItem(*scrolling_client, kDocumentBackgroundType),
+      TestDisplayItem(*scroller, DisplayItem::kHitTest),
+      TestDisplayItem(*child, DisplayItem::kHitTest));
+
+  const auto& paint_chunks =
+      RootPaintController().GetPaintArtifact().PaintChunks();
+  EXPECT_EQ(3u, paint_chunks.size());
+
+  const auto& scroller_paint_chunk = RootPaintController().PaintChunks()[1];
+  EXPECT_EQ(ToLayoutBoxModelObject(scroller)->Layer(),
+            &scroller_paint_chunk.id.client);
+  EXPECT_EQ(FloatRect(0, 0, 100, 100), scroller_paint_chunk.bounds);
+  // The hit test rect for the scroller itself should not be scrolled.
+  EXPECT_FALSE(scroller_paint_chunk.properties.Transform()->ScrollNode());
+
+  const auto& scrolled_paint_chunk = RootPaintController().PaintChunks()[2];
+  EXPECT_EQ(scroller, &scrolled_paint_chunk.id.client);
+  EXPECT_EQ(FloatRect(0, 0, 200, 50), scrolled_paint_chunk.bounds);
+  // The hit test rect for the scrolled contents should be scrolled.
+  EXPECT_TRUE(scrolled_paint_chunk.properties.Transform()->ScrollNode());
+}
+
 }  // namespace blink

@@ -900,6 +900,10 @@
       name: "PagePopup",
       status: "stable",
     },
+    // Compute touch action rects in paint instead of ScrollingCoordinator.
+    {
+      name: "PaintTouchActionRects",
+    },
     {
       name: "PaintUnderInvalidationChecking",
       settable_from_internals: true,

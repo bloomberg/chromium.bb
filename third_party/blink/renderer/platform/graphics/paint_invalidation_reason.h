@@ -16,6 +16,8 @@ enum class PaintInvalidationReason : unsigned {
   kIncremental,
   kRectangle,
   kSelection,
+  // Hit test changes do not require raster invalidation.
+  kHitTest,
   // The following reasons will all cause full paint invalidation.
   kFull,  // Any unspecified reason of full invalidation.
   kStyle,

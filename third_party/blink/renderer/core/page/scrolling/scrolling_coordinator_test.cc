@@ -59,9 +59,13 @@
 
 namespace blink {
 
-class ScrollingCoordinatorTest : public testing::Test {
+class ScrollingCoordinatorTest : public testing::Test,
+                                 public testing::WithParamInterface<bool>,
+                                 private ScopedPaintTouchActionRectsForTest {
  public:
-  ScrollingCoordinatorTest() : base_url_("http://www.test.com/") {
+  ScrollingCoordinatorTest()
+      : ScopedPaintTouchActionRectsForTest(GetParam()),
+        base_url_("http://www.test.com/") {
     helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
     GetWebView()->Resize(IntSize(320, 240));
 
@@ -128,7 +132,9 @@ class ScrollingCoordinatorTest : public testing::Test {
   FrameTestHelpers::WebViewHelper helper_;
 };
 
-TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault) {
+INSTANTIATE_TEST_CASE_P(All, ScrollingCoordinatorTest, ::testing::Bool());
+
+TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   GetWebView()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
   ForceFullCompositingUpdate();
@@ -158,7 +164,7 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault) {
   ASSERT_FALSE(inner_viewport_scroll_layer->should_scroll_on_main_thread());
 }
 
-TEST_F(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
+TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
   GetWebView()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
   GetWebView()->GetSettings()->SetThreadedScrollingEnabled(false);
@@ -184,7 +190,7 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
   ASSERT_TRUE(inner_viewport_scroll_layer->should_scroll_on_main_thread());
 }
 
-TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
+TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   ScopedFractionalScrollOffsetsForTest fractional_scroll_offsets(true);
 
   RegisterMockedHttpURLLoad("fractional-scroll-div.html");
@@ -239,7 +245,7 @@ static cc::Layer* CcLayerFromElement(Element* element) {
   return graphics_layer->CcLayer();
 }
 
-TEST_F(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
+TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   RegisterMockedHttpURLLoad("fixed-position.html");
   NavigateTo(base_url_ + "fixed-position.html");
   ForceFullCompositingUpdate();
@@ -332,7 +338,7 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   }
 }
 
-TEST_F(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
+TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   RegisterMockedHttpURLLoad("sticky-position.html");
   NavigateTo(base_url_ + "sticky-position.html");
   ForceFullCompositingUpdate();
@@ -437,7 +443,28 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   }
 }
 
-TEST_F(ScrollingCoordinatorTest, touchEventHandler) {
+TEST_P(ScrollingCoordinatorTest, elementPointerEventHandler) {
+  LoadHTML(R"HTML(
+    <div id="pointer" style="width: 100px; height: 100px;"></div>
+    <script>
+      pointer.addEventListener('pointerdown', function(event) {
+      }, {blocking: false} );
+    </script>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  GraphicsLayer* graphics_layer = mapping->ScrollingContentsLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
+
+  // Pointer event handlers should not generate blocking touch action regions.
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_TRUE(region.IsEmpty());
+}
+
+TEST_P(ScrollingCoordinatorTest, touchEventHandler) {
   RegisterMockedHttpURLLoad("touch-event-handler.html");
   NavigateTo(base_url_ + "touch-event-handler.html");
   ForceFullCompositingUpdate();
@@ -447,7 +474,25 @@ TEST_F(ScrollingCoordinatorTest, touchEventHandler) {
                 WebEventListenerClass::kTouchStartOrMove));
 }
 
-TEST_F(ScrollingCoordinatorTest, touchEventHandlerPassive) {
+TEST_P(ScrollingCoordinatorTest, elementBlockingTouchEventHandler) {
+  LoadHTML(R"HTML(
+    <div id="blocking" style="width: 100px; height: 100px;"></div>
+    <script>
+      blocking.addEventListener('touchstart', function(event) {
+      }, {passive: false} );
+    </script>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  cc::Layer* cc_layer = mapping->ScrollingContentsLayer()->CcLayer();
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 100, 100));
+}
+
+TEST_P(ScrollingCoordinatorTest, touchEventHandlerPassive) {
   RegisterMockedHttpURLLoad("touch-event-handler-passive.html");
   NavigateTo(base_url_ + "touch-event-handler-passive.html");
   ForceFullCompositingUpdate();
@@ -457,7 +502,28 @@ TEST_F(ScrollingCoordinatorTest, touchEventHandlerPassive) {
                 WebEventListenerClass::kTouchStartOrMove));
 }
 
-TEST_F(ScrollingCoordinatorTest, touchEventHandlerBoth) {
+TEST_P(ScrollingCoordinatorTest, elementTouchEventHandlerPassive) {
+  LoadHTML(R"HTML(
+    <div id="passive" style="width: 100px; height: 100px;"></div>
+    <script>
+      passive.addEventListener('touchstart', function(event) {
+      }, {passive: true} );
+    </script>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  GraphicsLayer* graphics_layer = mapping->ScrollingContentsLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
+
+  // Passive event handlers should not generate blocking touch action regions.
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_TRUE(region.IsEmpty());
+}
+
+TEST_P(ScrollingCoordinatorTest, touchEventHandlerBoth) {
   RegisterMockedHttpURLLoad("touch-event-handler-both.html");
   NavigateTo(base_url_ + "touch-event-handler-both.html");
   ForceFullCompositingUpdate();
@@ -467,7 +533,7 @@ TEST_F(ScrollingCoordinatorTest, touchEventHandlerBoth) {
                 WebEventListenerClass::kTouchStartOrMove));
 }
 
-TEST_F(ScrollingCoordinatorTest, wheelEventHandler) {
+TEST_P(ScrollingCoordinatorTest, wheelEventHandler) {
   RegisterMockedHttpURLLoad("wheel-event-handler.html");
   NavigateTo(base_url_ + "wheel-event-handler.html");
   ForceFullCompositingUpdate();
@@ -477,7 +543,7 @@ TEST_F(ScrollingCoordinatorTest, wheelEventHandler) {
                 WebEventListenerClass::kMouseWheel));
 }
 
-TEST_F(ScrollingCoordinatorTest, wheelEventHandlerPassive) {
+TEST_P(ScrollingCoordinatorTest, wheelEventHandlerPassive) {
   RegisterMockedHttpURLLoad("wheel-event-handler-passive.html");
   NavigateTo(base_url_ + "wheel-event-handler-passive.html");
   ForceFullCompositingUpdate();
@@ -487,7 +553,7 @@ TEST_F(ScrollingCoordinatorTest, wheelEventHandlerPassive) {
                 WebEventListenerClass::kMouseWheel));
 }
 
-TEST_F(ScrollingCoordinatorTest, wheelEventHandlerBoth) {
+TEST_P(ScrollingCoordinatorTest, wheelEventHandlerBoth) {
   RegisterMockedHttpURLLoad("wheel-event-handler-both.html");
   NavigateTo(base_url_ + "wheel-event-handler-both.html");
   ForceFullCompositingUpdate();
@@ -497,7 +563,7 @@ TEST_F(ScrollingCoordinatorTest, wheelEventHandlerBoth) {
                 WebEventListenerClass::kMouseWheel));
 }
 
-TEST_F(ScrollingCoordinatorTest, scrollEventHandler) {
+TEST_P(ScrollingCoordinatorTest, scrollEventHandler) {
   RegisterMockedHttpURLLoad("scroll-event-handler.html");
   NavigateTo(base_url_ + "scroll-event-handler.html");
   ForceFullCompositingUpdate();
@@ -505,7 +571,7 @@ TEST_F(ScrollingCoordinatorTest, scrollEventHandler) {
   ASSERT_TRUE(GetWebLayerTreeView()->HaveScrollEventHandlers());
 }
 
-TEST_F(ScrollingCoordinatorTest, updateEventHandlersDuringTeardown) {
+TEST_P(ScrollingCoordinatorTest, updateEventHandlersDuringTeardown) {
   RegisterMockedHttpURLLoad("scroll-event-handler-window.html");
   NavigateTo(base_url_ + "scroll-event-handler-window.html");
   ForceFullCompositingUpdate();
@@ -515,7 +581,7 @@ TEST_F(ScrollingCoordinatorTest, updateEventHandlersDuringTeardown) {
   GetFrame()->GetDocument()->Shutdown();
 }
 
-TEST_F(ScrollingCoordinatorTest, clippedBodyTest) {
+TEST_P(ScrollingCoordinatorTest, clippedBodyTest) {
   RegisterMockedHttpURLLoad("clipped-body.html");
   NavigateTo(base_url_ + "clipped-body.html");
   ForceFullCompositingUpdate();
@@ -525,7 +591,7 @@ TEST_F(ScrollingCoordinatorTest, clippedBodyTest) {
   EXPECT_TRUE(root_scroll_layer->non_fast_scrollable_region().IsEmpty());
 }
 
-TEST_F(ScrollingCoordinatorTest, touchAction) {
+TEST_P(ScrollingCoordinatorTest, touchAction) {
   RegisterMockedHttpURLLoad("touch-action.html");
   NavigateTo(base_url_ + "touch-action.html");
   ForceFullCompositingUpdate();
@@ -539,7 +605,12 @@ TEST_F(ScrollingCoordinatorTest, touchAction) {
   CompositedLayerMapping* composited_layer_mapping =
       box->Layer()->GetCompositedLayerMapping();
 
-  GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
+  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
+  // https://crbug.com/826746.
+  auto* graphics_layer =
+      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
+          ? composited_layer_mapping->ScrollingContentsLayer()
+          : composited_layer_mapping->MainGraphicsLayer();
   cc::Layer* cc_layer = graphics_layer->CcLayer();
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionPanX | TouchAction::kTouchActionPanDown);
@@ -547,7 +618,7 @@ TEST_F(ScrollingCoordinatorTest, touchAction) {
   EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 1000, 1000));
 }
 
-TEST_F(ScrollingCoordinatorTest, touchActionRegions) {
+TEST_P(ScrollingCoordinatorTest, touchActionRegions) {
   RegisterMockedHttpURLLoad("touch-action-regions.html");
   NavigateTo(base_url_ + "touch-action-regions.html");
   ForceFullCompositingUpdate();
@@ -561,7 +632,12 @@ TEST_F(ScrollingCoordinatorTest, touchActionRegions) {
   CompositedLayerMapping* composited_layer_mapping =
       box->Layer()->GetCompositedLayerMapping();
 
-  GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
+  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
+  // https://crbug.com/826746.
+  auto* graphics_layer =
+      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
+          ? composited_layer_mapping->ScrollingContentsLayer()
+          : composited_layer_mapping->MainGraphicsLayer();
   cc::Layer* cc_layer = graphics_layer->CcLayer();
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
@@ -580,7 +656,179 @@ TEST_F(ScrollingCoordinatorTest, touchActionRegions) {
   EXPECT_EQ(region.bounds(), gfx::Rect(0, 100, 100, 100));
 }
 
-TEST_F(ScrollingCoordinatorTest, touchActionBlockingHandler) {
+TEST_P(ScrollingCoordinatorTest, touchActionNesting) {
+  LoadHTML(R"HTML(
+    <style>
+      #scrollable {
+        width: 200px;
+        height: 200px;
+        overflow: scroll;
+      }
+      #touchaction {
+        touch-action: pan-x;
+        width: 100px;
+        height: 100px;
+        margin: 5px;
+      }
+      #child {
+        width: 150px;
+        height: 50px;
+      }
+    </style>
+    <div id="scrollable">
+      <div id="touchaction">
+        <div id="child"></div>
+      </div>
+      <div id="forcescroll" style="width: 1000px; height: 1000px;"></div>
+    </div>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* scrollable = GetFrame()->GetDocument()->getElementById("scrollable");
+  auto* box = ToLayoutBox(scrollable->GetLayoutObject());
+  auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
+
+  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
+  // https://crbug.com/826746.
+  auto* graphics_layer =
+      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
+          ? composited_layer_mapping->ScrollingContentsLayer()
+          : composited_layer_mapping->MainGraphicsLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
+
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionPanX);
+  EXPECT_EQ(region.GetRegionComplexity(), 2);
+  EXPECT_EQ(region.bounds(), gfx::Rect(5, 5, 150, 100));
+}
+
+TEST_P(ScrollingCoordinatorTest, nestedTouchActionInvalidation) {
+  LoadHTML(R"HTML(
+    <style>
+      #scrollable {
+        width: 200px;
+        height: 200px;
+        overflow: scroll;
+      }
+      #touchaction {
+        touch-action: pan-x;
+        width: 100px;
+        height: 100px;
+        margin: 5px;
+      }
+      #child {
+        width: 150px;
+        height: 50px;
+      }
+    </style>
+    <div id="scrollable">
+      <div id="touchaction">
+        <div id="child"></div>
+      </div>
+      <div id="forcescroll" style="width: 1000px; height: 1000px;"></div>
+    </div>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* scrollable = GetFrame()->GetDocument()->getElementById("scrollable");
+  auto* box = ToLayoutBox(scrollable->GetLayoutObject());
+  auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
+
+  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
+  // https://crbug.com/826746.
+  GraphicsLayer* graphics_layer =
+      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
+          ? composited_layer_mapping->ScrollingContentsLayer()
+          : composited_layer_mapping->MainGraphicsLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
+
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionPanX);
+  EXPECT_EQ(region.GetRegionComplexity(), 2);
+  EXPECT_EQ(region.bounds(), gfx::Rect(5, 5, 150, 100));
+
+  scrollable->setAttribute("style", "touch-action: none", ASSERT_NO_EXCEPTION);
+  ForceFullCompositingUpdate();
+  region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionPanX);
+  EXPECT_TRUE(region.IsEmpty());
+}
+
+// Similar to nestedTouchActionInvalidation but tests that an ancestor with
+// touch-action: pan-x and a descendant with touch-action: pan-y results in a
+// touch-action rect of none for the descendant.
+TEST_P(ScrollingCoordinatorTest, nestedTouchActionChangesUnion) {
+  LoadHTML(R"HTML(
+    <style>
+      #ancestor {
+        width: 100px;
+        height: 100px;
+      }
+      #child {
+        touch-action: pan-x;
+        width: 150px;
+        height: 50px;
+      }
+    </style>
+    <div id="ancestor">
+      <div id="child"></div>
+    </div>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  GraphicsLayer* graphics_layer = mapping->ScrollingContentsLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
+
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionPanX);
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 150, 50));
+  region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_TRUE(region.IsEmpty());
+
+  Element* ancestor = GetFrame()->GetDocument()->getElementById("ancestor");
+  ancestor->setAttribute("style", "touch-action: pan-y", ASSERT_NO_EXCEPTION);
+  ForceFullCompositingUpdate();
+
+  region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionPanY);
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 100, 100));
+  region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionPanX);
+  EXPECT_TRUE(region.IsEmpty());
+  region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 150, 50));
+}
+
+// Box shadow is not hit testable and should not be included in touch action.
+TEST_P(ScrollingCoordinatorTest, touchActionExcludesBoxShadow) {
+  LoadHTML(R"HTML(
+    <style>
+      #shadow {
+        width: 100px;
+        height: 100px;
+        touch-action: none;
+        box-shadow: 10px 5px 5px red;
+      }
+    </style>
+    <div id="shadow"></div>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  GraphicsLayer* graphics_layer = mapping->ScrollingContentsLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
+
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 100, 100));
+}
+
+TEST_P(ScrollingCoordinatorTest, touchActionBlockingHandler) {
   RegisterMockedHttpURLLoad("touch-action-blocking-handler.html");
   NavigateTo(base_url_ + "touch-action-blocking-handler.html");
   ForceFullCompositingUpdate();
@@ -594,7 +842,12 @@ TEST_F(ScrollingCoordinatorTest, touchActionBlockingHandler) {
   CompositedLayerMapping* composited_layer_mapping =
       box->Layer()->GetCompositedLayerMapping();
 
-  GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
+  // Without PaintTouchActionRects, rects are on the wrong graphics layer. See:
+  // https://crbug.com/826746.
+  auto* graphics_layer =
+      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
+          ? composited_layer_mapping->ScrollingContentsLayer()
+          : composited_layer_mapping->MainGraphicsLayer();
   cc::Layer* cc_layer = graphics_layer->CcLayer();
 
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
@@ -604,11 +857,68 @@ TEST_F(ScrollingCoordinatorTest, touchActionBlockingHandler) {
 
   region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionPanY);
-  EXPECT_EQ(region.GetRegionComplexity(), 1);
+  EXPECT_EQ(region.GetRegionComplexity(), 2);
   EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 1000, 1000));
 }
 
-TEST_F(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
+TEST_P(ScrollingCoordinatorTest, touchActionOnScrollingElement) {
+  LoadHTML(R"HTML(
+    <style>
+      #scrollable {
+        width: 100px;
+        height: 100px;
+        overflow: scroll;
+        touch-action: pan-y;
+      }
+      #child {
+        width: 50px;
+        height: 150px;
+      }
+    </style>
+    <div id="scrollable">
+      <div id="child"></div>
+    </div>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  Element* scrollable_element =
+      GetFrame()->GetDocument()->getElementById("scrollable");
+  LayoutBox* box = ToLayoutBox(scrollable_element->GetLayoutObject());
+  auto* composited_layer_mapping = box->Layer()->GetCompositedLayerMapping();
+
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+    // With PaintTouchActionRects the outer layer (not scrollable) will be fully
+    // marked as pan-y (100x100) and the scrollable layer will only have the
+    // contents marked as pan-y (50x150).
+    auto* scrolling_contents_layer =
+        composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
+    cc::Region region =
+        scrolling_contents_layer->touch_action_region().GetRegionForTouchAction(
+            TouchAction::kTouchActionPanY);
+    EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 50, 150));
+
+    auto* non_scrolling_layer =
+        composited_layer_mapping->MainGraphicsLayer()->CcLayer();
+    region = non_scrolling_layer->touch_action_region().GetRegionForTouchAction(
+        TouchAction::kTouchActionPanY);
+    EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 100, 100));
+  } else {
+    // Without PaintTouchActionRects, the main graphics layer gets all touch
+    // action rects.
+    auto* main_graphics_layer =
+        composited_layer_mapping->MainGraphicsLayer()->CcLayer();
+    cc::Region region =
+        main_graphics_layer->touch_action_region().GetRegionForTouchAction(
+            TouchAction::kTouchActionPanY);
+    EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 100, 150));
+  }
+}
+
+TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
+  // TODO(pdr): Support window event handlers with PaintTouchActionRects.
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    return;
+
   LoadHTML(
       R"(<iframe style="width: 275px; height: 250px;"></iframe>)");
   WebLocalFrameImpl* child_frame =
@@ -655,7 +965,7 @@ TEST_F(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
             IntRect(region_child_frame.bounds()).Size());
 }
 
-TEST_F(ScrollingCoordinatorTest, overflowScrolling) {
+TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
   RegisterMockedHttpURLLoad("overflow-scrolling.html");
   NavigateTo(base_url_ + "overflow-scrolling.html");
   ForceFullCompositingUpdate();
@@ -701,7 +1011,7 @@ TEST_F(ScrollingCoordinatorTest, overflowScrolling) {
 #endif
 }
 
-TEST_F(ScrollingCoordinatorTest, overflowHidden) {
+TEST_P(ScrollingCoordinatorTest, overflowHidden) {
   RegisterMockedHttpURLLoad("overflow-hidden.html");
   NavigateTo(base_url_ + "overflow-hidden.html");
   ForceFullCompositingUpdate();
@@ -763,7 +1073,7 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden) {
   ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
 }
 
-TEST_F(ScrollingCoordinatorTest, iframeScrolling) {
+TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
   RegisterMockedHttpURLLoad("iframe-scrolling.html");
   RegisterMockedHttpURLLoad("iframe-scrolling-inner.html");
   NavigateTo(base_url_ + "iframe-scrolling.html");
@@ -817,7 +1127,7 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling) {
 #endif
 }
 
-TEST_F(ScrollingCoordinatorTest, rtlIframe) {
+TEST_P(ScrollingCoordinatorTest, rtlIframe) {
   RegisterMockedHttpURLLoad("rtl-iframe.html");
   RegisterMockedHttpURLLoad("rtl-iframe-inner.html");
   NavigateTo(base_url_ + "rtl-iframe.html");
@@ -865,7 +1175,7 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe) {
   ASSERT_EQ(expected_scroll_position, cc_scroll_layer->scroll_offset().x());
 }
 
-TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash) {
+TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash) {
   RegisterMockedHttpURLLoad("setup_scrollbar_layer_crash.html");
   NavigateTo(base_url_ + "setup_scrollbar_layer_crash.html");
   ForceFullCompositingUpdate();
@@ -873,7 +1183,7 @@ TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash) {
   // an empty document by javascript.
 }
 
-TEST_F(ScrollingCoordinatorTest,
+TEST_P(ScrollingCoordinatorTest,
        ScrollbarsForceMainThreadOrHaveCompositorScrollbarLayer) {
   RegisterMockedHttpURLLoad("trivial-scroller.html");
   NavigateTo(base_url_ + "trivial-scroller.html");
@@ -900,10 +1210,10 @@ TEST_F(ScrollingCoordinatorTest,
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-TEST_F(ScrollingCoordinatorTest,
+TEST_P(ScrollingCoordinatorTest,
        DISABLED_setupScrollbarLayerShouldSetScrollLayerOpaque)
 #else
-TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
+TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
 #endif
 {
   RegisterMockedHttpURLLoad("wide_document.html");
@@ -930,7 +1240,7 @@ TEST_F(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
             contents_layer->contents_opaque());
 }
 
-TEST_F(ScrollingCoordinatorTest,
+TEST_P(ScrollingCoordinatorTest,
        FixedPositionLosingBackingShouldTriggerMainThreadScroll) {
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   RegisterMockedHttpURLLoad("fixed-position-losing-backing.html");
@@ -957,7 +1267,7 @@ TEST_F(ScrollingCoordinatorTest,
   EXPECT_TRUE(scroll_layer->should_scroll_on_main_thread());
 }
 
-TEST_F(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
+TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
   GetWebView()->SetDeviceScaleFactor(2.f);
   RegisterMockedHttpURLLoad("custom_scrollbar.html");
@@ -999,7 +1309,7 @@ TEST_F(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
       MainThreadScrollingReason::kCustomScrollbarScrolling);
 }
 
-TEST_F(ScrollingCoordinatorTest,
+TEST_P(ScrollingCoordinatorTest,
        BackgroundAttachmentFixedShouldTriggerMainThreadScroll) {
   RegisterMockedHttpURLLoad("iframe-background-attachment-fixed.html");
   RegisterMockedHttpURLLoad("iframe-background-attachment-fixed-inner.html");
@@ -1087,7 +1397,7 @@ TEST_F(ScrollingCoordinatorTest,
 
 // Upon resizing the content size, the main thread scrolling reason
 // kHasNonLayerViewportConstrainedObject should be updated on all frames
-TEST_F(ScrollingCoordinatorTest,
+TEST_P(ScrollingCoordinatorTest,
        RecalculateMainThreadScrollingReasonsUponResize) {
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   RegisterMockedHttpURLLoad("has-non-layer-viewport-constrained-objects.html");
@@ -1130,7 +1440,7 @@ TEST_F(ScrollingCoordinatorTest,
   ASSERT_TRUE(layout_object);
 }
 
-TEST_F(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
+TEST_P(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   LoadHTML(
       "<body style='height: 1200px'>"
@@ -1145,7 +1455,7 @@ TEST_F(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
 // LocalFrameView::FrameIsScrollableDidChange is used as a dirty bit and is
 // set to clean in ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded.
 // This test ensures that the dirty bit is set and unset properly.
-TEST_F(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
+TEST_P(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
   LoadHTML(R"HTML(
     <div id='bg' style='background: red; width: 10px; height: 10px;'></div>
     <div id='forcescroll' style='height: 5000px;'></div>
@@ -1173,7 +1483,7 @@ TEST_F(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
   EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
 }
 
-TEST_F(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
+TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
   HistogramTester histogram_tester;
   LoadHTML(R"HTML(
     <div id='bg' style='background: blue;'></div>
@@ -1275,28 +1585,28 @@ class NonCompositedMainThreadScrollingReasonTest
   }
 };
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest, TransparentTest) {
+TEST_P(NonCompositedMainThreadScrollingReasonTest, TransparentTest) {
   TestNonCompositedReasons("transparent",
                            MainThreadScrollingReason::kHasOpacityAndLCDText);
 }
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest, TransformTest) {
+TEST_P(NonCompositedMainThreadScrollingReasonTest, TransformTest) {
   TestNonCompositedReasons("transform",
                            MainThreadScrollingReason::kHasTransformAndLCDText);
 }
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest, BackgroundNotOpaqueTest) {
+TEST_P(NonCompositedMainThreadScrollingReasonTest, BackgroundNotOpaqueTest) {
   TestNonCompositedReasons(
       "background-not-opaque",
       MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
 }
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest, ClipTest) {
+TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipTest) {
   TestNonCompositedReasons("clip",
                            MainThreadScrollingReason::kHasClipRelatedProperty);
 }
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
+TEST_P(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   uint32_t clip_reason = MainThreadScrollingReason::kHasClipRelatedProperty;
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
   Document* document = GetFrame()->GetDocument();
@@ -1345,17 +1655,17 @@ TEST_F(NonCompositedMainThreadScrollingReasonTest, ClipPathTest) {
   EXPECT_FALSE(frame_view->GetMainThreadScrollingReasons() & clip_reason);
 }
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest, LCDTextEnabledTest) {
+TEST_P(NonCompositedMainThreadScrollingReasonTest, LCDTextEnabledTest) {
   TestNonCompositedReasons("transparent",
                            MainThreadScrollingReason::kHasOpacityAndLCDText);
 }
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest, BoxShadowTest) {
+TEST_P(NonCompositedMainThreadScrollingReasonTest, BoxShadowTest) {
   TestNonCompositedReasons(
       "box-shadow", MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer);
 }
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest, StackingContextTest) {
+TEST_P(NonCompositedMainThreadScrollingReasonTest, StackingContextTest) {
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
 
   Document* document = GetFrame()->GetDocument();
@@ -1384,7 +1694,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonTest, StackingContextTest) {
   EXPECT_FALSE(scrollable_area->GetNonCompositedMainThreadScrollingReasons());
 }
 
-TEST_F(NonCompositedMainThreadScrollingReasonTest,
+TEST_P(NonCompositedMainThreadScrollingReasonTest,
        CompositedWithLCDTextRelatedReasonsTest) {
   // With "will-change:transform" we composite elements with
   // LCDTextRelatedReasons only. For elements with other

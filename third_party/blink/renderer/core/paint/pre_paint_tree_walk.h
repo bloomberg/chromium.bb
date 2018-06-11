@@ -38,7 +38,11 @@ class CORE_EXPORT PrePaintTreeWalk {
         bool needs_tree_builder_context)
         : paint_invalidator_context(parent_context_accessor),
           ancestor_overflow_paint_layer(
-              parent_context.ancestor_overflow_paint_layer) {
+              parent_context.ancestor_overflow_paint_layer),
+          inside_blocking_touch_event_handler(
+              parent_context.inside_blocking_touch_event_handler),
+          effective_whitelisted_touch_action_changed(
+              parent_context.effective_whitelisted_touch_action_changed) {
       if (needs_tree_builder_context || DCHECK_IS_ON()) {
         DCHECK(parent_context.tree_builder_context);
         tree_builder_context.emplace(*parent_context.tree_builder_context);
@@ -57,6 +61,13 @@ class CORE_EXPORT PrePaintTreeWalk {
     // is the root layer. Note that it is tree ancestor, not containing
     // block or stacking ancestor.
     PaintLayer* ancestor_overflow_paint_layer = nullptr;
+
+    // Whether there is a blocking touch event handler on any ancestor.
+    bool inside_blocking_touch_event_handler = false;
+
+    // When the effective whitelisted touch action changes on an ancestor, the
+    // entire subtree may need to update.
+    bool effective_whitelisted_touch_action_changed = false;
   };
 
   const PrePaintTreeWalkContext& ContextAt(size_t index) {
@@ -85,6 +96,19 @@ class CORE_EXPORT PrePaintTreeWalk {
                                      const PrePaintTreeWalkContext&);
   void UpdateAuxiliaryObjectProperties(const LayoutObject&,
                                        PrePaintTreeWalkContext&);
+
+  bool NeedsEffectiveWhitelistedTouchActionUpdate(
+      const LayoutObject&,
+      PrePaintTreeWalkContext&) const;
+  // Updates |LayoutObject::InsideBlockingTouchEventHandler|. Also ensures
+  // |PrePaintTreeWalkContext.effective_whitelisted_touch_action_changed| is set
+  // which will ensure the subtree is updated too.
+  void UpdateEffectiveWhitelistedTouchAction(const LayoutObject&,
+                                             PrePaintTreeWalkContext&);
+  bool NeedsHitTestingPaintInvalidation(const LayoutObject&,
+                                        const PrePaintTreeWalkContext&) const;
+  void InvalidatePaintForHitTesting(const LayoutObject&,
+                                    PrePaintTreeWalkContext&);
 
   void ResizeContextStorageIfNeeded();
 

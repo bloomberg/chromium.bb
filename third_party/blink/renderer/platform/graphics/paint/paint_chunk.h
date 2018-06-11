@@ -80,10 +80,15 @@ struct PLATFORM_EXPORT PaintChunk {
     return *hit_test_data.get();
   }
 
+  HitTestData* GetHitTestData() const { return hit_test_data.get(); }
+
   size_t MemoryUsageInBytes() const {
     size_t total_size = sizeof(*this);
-    if (hit_test_data)
+    if (hit_test_data) {
       total_size += sizeof(*hit_test_data);
+      total_size += hit_test_data->touch_action_rects.capacity() *
+                    sizeof(TouchActionRect);
+    }
     return total_size;
   }
 

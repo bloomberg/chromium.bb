@@ -1809,6 +1809,33 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // |SetShouldInvalidateSelection| on all selected children.
   void InvalidateSelectedChildrenOnStyleChange();
 
+  // The whitelisted touch action is the union of the effective touch action
+  // (from style) and blocking touch event handlers.
+  TouchAction EffectiveWhitelistedTouchAction() const {
+    if (InsideBlockingTouchEventHandler())
+      return TouchAction::kTouchActionNone;
+    return StyleRef().GetEffectiveTouchAction();
+  }
+
+  // Whether this object's Node has a blocking touch event handler on itself
+  // or an ancestor.
+  bool InsideBlockingTouchEventHandler() const {
+    return bitfields_.InsideBlockingTouchEventHandler();
+  }
+  // Mark this object as having a |EffectiveWhitelistedTouchAction| changed, and
+  // mark all ancestors as having a descendant that changed. This will cause a
+  // PrePaint tree walk to update effective whitelisted touch action.
+  void MarkEffectiveWhitelistedTouchActionChanged();
+  bool EffectiveWhitelistedTouchActionChanged() const {
+    return bitfields_.EffectiveWhitelistedTouchActionChanged();
+  }
+  bool DescendantEffectiveWhitelistedTouchActionChanged() const {
+    return bitfields_.DescendantEffectiveWhitelistedTouchActionChanged();
+  }
+  void UpdateInsideBlockingTouchEventHandler(bool inside) {
+    bitfields_.SetInsideBlockingTouchEventHandler(inside);
+  }
+
   // Painters can use const methods only, except for these explicitly declared
   // methods.
   class CORE_EXPORT MutableForPainting {
@@ -1822,6 +1849,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(false);
       layout_object_.bitfields_.SetSubtreeNeedsPaintPropertyUpdate(false);
       layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
+      layout_object_.bitfields_.SetEffectiveWhitelistedTouchActionChanged(
+          false);
+      layout_object_.bitfields_
+          .SetDescendantEffectiveWhitelistedTouchActionChanged(false);
     }
     void SetMayNeedPaintInvalidation() {
       layout_object_.SetMayNeedPaintInvalidation();
@@ -1876,6 +1907,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
 
     void InvalidateClipPathCache() { layout_object_.InvalidateClipPathCache(); }
+
+    void UpdateInsideBlockingTouchEventHandler(bool inside) {
+      layout_object_.UpdateInsideBlockingTouchEventHandler(inside);
+    }
 
 #if DCHECK_IS_ON()
     // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as
@@ -2371,6 +2406,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           outline_may_be_affected_by_descendants_(false),
           previous_outline_may_be_affected_by_descendants_(false),
           is_truncated_(false),
+          inside_blocking_touch_event_handler_(false),
+          effective_whitelisted_touch_action_changed_(true),
+          descendant_effective_whitelisted_touch_action_changed_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           background_obscuration_state_(kBackgroundObscurationStatusInvalid),
@@ -2572,9 +2610,27 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     ADD_BOOLEAN_BITFIELD(is_truncated_, IsTruncated);
 
+    // Whether this object's Node has a blocking touch event handler on itself
+    // or an ancestor. This is updated during the PrePaint phase.
+    ADD_BOOLEAN_BITFIELD(inside_blocking_touch_event_handler_,
+                         InsideBlockingTouchEventHandler);
+
+    // Set when |EffectiveWhitelistedTouchAction| changes (i.e., blocking touch
+    // event handlers change or effective touch action style changes). This only
+    // needs to be set on the object that changes as the PrePaint walk will
+    // ensure descendants are updated.
+    ADD_BOOLEAN_BITFIELD(effective_whitelisted_touch_action_changed_,
+                         EffectiveWhitelistedTouchActionChanged);
+
+    // Set when a descendant's |EffectiveWhitelistedTouchAction| changes. This
+    // is used to ensure the PrePaint tree walk processes objects with
+    // |effective_whitelisted_touch_action_changed_|.
+    ADD_BOOLEAN_BITFIELD(descendant_effective_whitelisted_touch_action_changed_,
+                         DescendantEffectiveWhitelistedTouchActionChanged);
+
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned unused_bits_ : 4;
+    unsigned unused_bits_ : 1;
 
    private:
     // This is the cached 'position' value of this object

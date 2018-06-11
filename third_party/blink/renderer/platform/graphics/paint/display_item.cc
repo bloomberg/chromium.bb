@@ -109,6 +109,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(WebPlugin);
     DEBUG_STRING_CASE(WebFont);
     DEBUG_STRING_CASE(ReflectionMask);
+    DEBUG_STRING_CASE(HitTest);
 
     DEFAULT_CASE;
   }

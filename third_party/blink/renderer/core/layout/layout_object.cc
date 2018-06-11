@@ -2233,6 +2233,8 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
       registry.DidRemoveEventHandler(*GetNode(),
                                      EventHandlerRegistry::kTouchAction);
     }
+    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+      MarkEffectiveWhitelistedTouchActionChanged();
   }
 }
 
@@ -3995,6 +3997,16 @@ void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {
     } else {
       child->SetShouldInvalidateSelection();
     }
+  }
+}
+
+void LayoutObject::MarkEffectiveWhitelistedTouchActionChanged() {
+  bitfields_.SetEffectiveWhitelistedTouchActionChanged(true);
+
+  LayoutObject* obj = ParentCrossingFrames();
+  while (obj && !obj->DescendantEffectiveWhitelistedTouchActionChanged()) {
+    obj->bitfields_.SetDescendantEffectiveWhitelistedTouchActionChanged(true);
+    obj = obj->ParentCrossingFrames();
   }
 }
 

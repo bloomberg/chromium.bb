@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 
@@ -284,6 +285,16 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
     default:
       NOTREACHED();
       break;
+  }
+
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+    if (handler_class == kTouchStartOrMoveEventBlocking ||
+        handler_class == kTouchStartOrMoveEventBlockingLowLatency) {
+      if (auto* node = target->ToNode()) {
+        if (auto* layout_object = node->GetLayoutObject())
+          layout_object->MarkEffectiveWhitelistedTouchActionChanged();
+      }
+    }
   }
 }
 

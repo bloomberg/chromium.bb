@@ -106,6 +106,11 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void UpdateAfterCompositingChangeIfNeeded(LocalFrameView*);
 
+  // Set the touch action rects on cc Layer's. This is the BlinkGenPropertyTrees
+  // version of |ComputeTouchEventTargetRects|.
+  // TODO(pdr): We may want to move this to a different file.
+  void UpdateTouchActionRects(LocalFrameView*);
+
   // Should be called whenever the slow repaint objects counter changes between
   // zero and one.
   void FrameViewHasBackgroundAttachmentFixedObjectsDidChange(LocalFrameView*);
