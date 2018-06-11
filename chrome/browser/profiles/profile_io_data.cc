@@ -34,10 +34,13 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
+#include "chrome/browser/net/loading_predictor_observer.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/policy_helpers.h"
+#include "chrome/browser/predictors/loading_predictor.h"
+#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
@@ -432,6 +435,13 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
 #endif
+
+  if (auto* loading_predictor =
+          predictors::LoadingPredictorFactory::GetForProfile(profile)) {
+    loading_predictor_observer_ =
+        std::make_unique<chrome_browser_net::LoadingPredictorObserver>(
+            loading_predictor);
+  }
 
   ProtocolHandlerRegistry* protocol_handler_registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
@@ -1085,6 +1095,11 @@ void ProfileIOData::Init(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extension_info_map_ = profile_params_->extension_info_map;
 #endif
+
+  if (profile_params_->loading_predictor_observer_) {
+    loading_predictor_observer_ =
+        std::move(profile_params_->loading_predictor_observer_);
+  }
 
 #if defined(OS_CHROMEOS)
   username_hash_ = profile_params_->username_hash;

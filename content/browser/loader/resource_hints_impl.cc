@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_hints.h"
 #include "net/base/address_list.h"
 #include "net/base/load_flags.h"
@@ -38,7 +38,9 @@ void PreconnectUrl(net::URLRequestContextGetter* getter,
                    const GURL& site_for_cookies,
                    int count,
                    bool allow_credentials) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ResourceDispatcherHostImpl::Get()
+             ->io_thread_task_runner()
+             ->BelongsToCurrentThread());
   DCHECK(getter);
   TRACE_EVENT2("net", "PreconnectUrl", "url", url.spec(), "count", count);
 
@@ -60,9 +62,6 @@ void PreconnectUrl(net::URLRequestContextGetter* getter,
                                        user_agent);
 
   net::NetworkDelegate* delegate = request_context->network_delegate();
-  // NetworkDelegate is not set in tests.
-  if (!delegate)
-    return;
   if (delegate->CanEnablePrivacyMode(url, site_for_cookies))
     request_info.privacy_mode = net::PRIVACY_MODE_ENABLED;
 
@@ -84,7 +83,9 @@ int PreresolveUrl(net::URLRequestContextGetter* getter,
                   const GURL& url,
                   const net::CompletionCallback& callback,
                   std::unique_ptr<net::HostResolver::Request>* out_request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ResourceDispatcherHostImpl::Get()
+             ->io_thread_task_runner()
+             ->BelongsToCurrentThread());
   DCHECK(getter);
   TRACE_EVENT1("net", "PreresolveUrl", "url", url.spec());
 

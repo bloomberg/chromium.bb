@@ -81,13 +81,11 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
 
   // Navigation simulation.
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
-  resources.push_back(
-      CreateResourceLoadInfoWithRedirects({initial_url, navigation_url}));
-  resources.push_back(
-      CreateResourceLoadInfo(script_url, content::RESOURCE_TYPE_SCRIPT));
+  URLRequestSummary script =
+      CreateURLRequestSummary(SessionID::FromSerializedValue(1), navigation_url,
+                              script_url, content::RESOURCE_TYPE_SCRIPT);
   PageRequestSummary summary =
-      CreatePageRequestSummary(navigation_url, initial_url, resources);
+      CreatePageRequestSummary(navigation_url, initial_url, {script});
 
   stats_collector_->RecordPageRequestSummary(summary);
 
@@ -116,14 +114,14 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
 
   // Simulate a page load with 2 resources, one we know, one we don't, plus we
   // know the main frame origin.
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
-  resources.push_back(CreateResourceLoadInfo(main_frame_url));
-  resources.push_back(
-      CreateResourceLoadInfo(gen(1), content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(
-      CreateResourceLoadInfo(gen(100), content::RESOURCE_TYPE_SCRIPT));
-  PageRequestSummary summary =
-      CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
+  URLRequestSummary script =
+      CreateURLRequestSummary(SessionID::FromSerializedValue(1), main_frame_url,
+                              gen(1), content::RESOURCE_TYPE_SCRIPT);
+  URLRequestSummary new_script =
+      CreateURLRequestSummary(SessionID::FromSerializedValue(1), main_frame_url,
+                              gen(100), content::RESOURCE_TYPE_SCRIPT);
+  PageRequestSummary summary = CreatePageRequestSummary(
+      main_frame_url, main_frame_url, {script, new_script});
 
   stats_collector_->RecordPageRequestSummary(summary);
 
@@ -163,6 +161,7 @@ TEST_F(LoadingStatsCollectorTest,
 
 TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
   const std::string main_frame_url("http://google.com/?query=cats");
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
   auto gen = [](int index) {
     return base::StringPrintf("http://cdn%d.google.com/script.js", index);
   };
@@ -188,16 +187,14 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
 
   {
     // Simulate a page load with 3 origins.
-    std::vector<content::mojom::ResourceLoadInfoPtr> resources;
-    resources.push_back(CreateResourceLoadInfo(main_frame_url));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(1), content::RESOURCE_TYPE_SCRIPT));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(2), content::RESOURCE_TYPE_SCRIPT));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(100), content::RESOURCE_TYPE_SCRIPT));
-    PageRequestSummary summary =
-        CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
+    URLRequestSummary script1 = CreateURLRequestSummary(
+        kTabId, main_frame_url, gen(1), content::RESOURCE_TYPE_SCRIPT);
+    URLRequestSummary script2 = CreateURLRequestSummary(
+        kTabId, main_frame_url, gen(2), content::RESOURCE_TYPE_SCRIPT);
+    URLRequestSummary script100 = CreateURLRequestSummary(
+        kTabId, main_frame_url, gen(100), content::RESOURCE_TYPE_SCRIPT);
+    PageRequestSummary summary = CreatePageRequestSummary(
+        main_frame_url, main_frame_url, {script1, script2, script100});
 
     stats_collector_->RecordPageRequestSummary(summary);
   }
@@ -216,6 +213,7 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
 // empty.
 TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
   const std::string main_frame_url = "http://google.com";
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
   auto stats = std::make_unique<PreconnectStats>(GURL(main_frame_url));
   stats_collector_->RecordPreconnectStats(std::move(stats));
 
@@ -223,12 +221,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
               PredictPreconnectOrigins(GURL(main_frame_url), _))
       .WillOnce(Return(false));
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
-  resources.push_back(CreateResourceLoadInfo(main_frame_url));
-  resources.push_back(CreateResourceLoadInfo("http://cdn.google.com/script.js",
-                                             content::RESOURCE_TYPE_SCRIPT));
+  URLRequestSummary script = CreateURLRequestSummary(
+      kTabId, main_frame_url, "http://cdn.google.com/script.js",
+      content::RESOURCE_TYPE_SCRIPT);
   PageRequestSummary summary =
-      CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
+      CreatePageRequestSummary(main_frame_url, main_frame_url, {script});
   stats_collector_->RecordPageRequestSummary(summary);
 
   // No histograms should be recorded.
@@ -246,6 +243,7 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
 // preresolve attempts only.
 TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
   const std::string main_frame_url("http://google.com/?query=cats");
+  const SessionID kTabId = SessionID::FromSerializedValue(1);
   auto gen = [](int index) {
     return base::StringPrintf("http://cdn%d.google.com/script.js", index);
   };
@@ -271,16 +269,14 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
 
   {
     // Simulate a page load with 3 origins.
-    std::vector<content::mojom::ResourceLoadInfoPtr> resources;
-    resources.push_back(CreateResourceLoadInfo(main_frame_url));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(1), content::RESOURCE_TYPE_SCRIPT));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(2), content::RESOURCE_TYPE_SCRIPT));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(100), content::RESOURCE_TYPE_SCRIPT));
-    PageRequestSummary summary =
-        CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
+    URLRequestSummary script1 = CreateURLRequestSummary(
+        kTabId, main_frame_url, gen(1), content::RESOURCE_TYPE_SCRIPT);
+    URLRequestSummary script2 = CreateURLRequestSummary(
+        kTabId, main_frame_url, gen(2), content::RESOURCE_TYPE_SCRIPT);
+    URLRequestSummary script100 = CreateURLRequestSummary(
+        kTabId, main_frame_url, gen(100), content::RESOURCE_TYPE_SCRIPT);
+    PageRequestSummary summary = CreatePageRequestSummary(
+        main_frame_url, main_frame_url, {script1, script2, script100});
 
     stats_collector_->RecordPageRequestSummary(summary);
   }

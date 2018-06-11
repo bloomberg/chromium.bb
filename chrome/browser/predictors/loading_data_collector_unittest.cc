@@ -17,6 +17,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,15 +41,86 @@ class LoadingDataCollectorTest : public testing::Test {
   void SetUp() override {
     LoadingDataCollector::SetAllowPortInUrlsForTesting(false);
     content::RunAllTasksUntilIdle();  // Runs the DB lookup.
+
+    url_request_job_factory_.Reset();
+    url_request_context_.set_job_factory(&url_request_job_factory_);
   }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
+  net::TestURLRequestContext url_request_context_;
+  MockURLRequestJobFactory url_request_job_factory_;
 
   std::unique_ptr<StrictMock<MockResourcePrefetchPredictor>> mock_predictor_;
   std::unique_ptr<LoadingDataCollector> collector_;
 };
+
+TEST_F(LoadingDataCollectorTest, SummarizeResponse) {
+  net::HttpResponseInfo response_info;
+  response_info.headers =
+      MakeResponseHeaders("HTTP/1.1 200 OK\n\nSome: Headers\n");
+  response_info.was_cached = true;
+  url_request_job_factory_.set_response_info(response_info);
+
+  GURL url("http://www.google.com/cat.png");
+  std::unique_ptr<net::URLRequest> request =
+      CreateURLRequest(url_request_context_, url, net::MEDIUM,
+                       content::RESOURCE_TYPE_IMAGE, true);
+  URLRequestSummary summary;
+  EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request, &summary));
+  EXPECT_EQ(url, summary.request_url);
+  EXPECT_EQ(content::RESOURCE_TYPE_IMAGE, summary.resource_type);
+  EXPECT_FALSE(summary.always_revalidate);
+
+  // Navigation_id elements should be unset by default.
+  EXPECT_FALSE(summary.navigation_id.tab_id.is_valid());
+  EXPECT_EQ(GURL(), summary.navigation_id.main_frame_url);
+}
+
+TEST_F(LoadingDataCollectorTest, SummarizeResponseContentType) {
+  net::HttpResponseInfo response_info;
+  response_info.headers = MakeResponseHeaders(
+      "HTTP/1.1 200 OK\n\n"
+      "Some: Headers\n"
+      "Content-Type: image/whatever\n");
+  url_request_job_factory_.set_response_info(response_info);
+  url_request_job_factory_.set_mime_type("image/png");
+
+  std::unique_ptr<net::URLRequest> request = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_PREFETCH, true);
+  URLRequestSummary summary;
+  EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request, &summary));
+  EXPECT_EQ(content::RESOURCE_TYPE_IMAGE, summary.resource_type);
+}
+
+TEST_F(LoadingDataCollectorTest, SummarizeResponseCachePolicy) {
+  net::HttpResponseInfo response_info;
+  response_info.headers = MakeResponseHeaders(
+      "HTTP/1.1 200 OK\n"
+      "Some: Headers\n");
+  url_request_job_factory_.set_response_info(response_info);
+
+  std::unique_ptr<net::URLRequest> request_no_validators = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_PREFETCH, true);
+
+  URLRequestSummary summary;
+  EXPECT_TRUE(
+      URLRequestSummary::SummarizeResponse(*request_no_validators, &summary));
+
+  response_info.headers = MakeResponseHeaders(
+      "HTTP/1.1 200 OK\n"
+      "ETag: \"Cr66\"\n"
+      "Cache-Control: no-cache\n");
+  url_request_job_factory_.set_response_info(response_info);
+  std::unique_ptr<net::URLRequest> request_etag = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_PREFETCH, true);
+  EXPECT_TRUE(URLRequestSummary::SummarizeResponse(*request_etag, &summary));
+  EXPECT_TRUE(summary.always_revalidate);
+}
 
 TEST_F(LoadingDataCollectorTest, HandledResourceTypes) {
   EXPECT_TRUE(LoadingDataCollector::IsHandledResourceType(
@@ -76,254 +149,470 @@ TEST_F(LoadingDataCollectorTest, HandledResourceTypes) {
       content::RESOURCE_TYPE_XHR, "application/javascript"));
 }
 
-TEST_F(LoadingDataCollectorTest, ShouldRecordMainFrameLoad) {
-  auto http_request = CreateResourceLoadInfo("http://www.google.com");
-  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceLoad(*http_request));
+TEST_F(LoadingDataCollectorTest, ShouldRecordRequestMainFrame) {
+  std::unique_ptr<net::URLRequest> http_request =
+      CreateURLRequest(url_request_context_, GURL("http://www.google.com"),
+                       net::MEDIUM, content::RESOURCE_TYPE_IMAGE, true);
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordRequest(
+      http_request.get(), content::RESOURCE_TYPE_MAIN_FRAME));
 
-  auto https_request = CreateResourceLoadInfo("https://www.google.com");
-  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceLoad(*https_request));
+  std::unique_ptr<net::URLRequest> https_request =
+      CreateURLRequest(url_request_context_, GURL("https://www.google.com"),
+                       net::MEDIUM, content::RESOURCE_TYPE_IMAGE, true);
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordRequest(
+      https_request.get(), content::RESOURCE_TYPE_MAIN_FRAME));
 
-  auto file_request = CreateResourceLoadInfo("file://www.google.com");
-  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceLoad(*file_request));
+  std::unique_ptr<net::URLRequest> file_request =
+      CreateURLRequest(url_request_context_, GURL("file://www.google.com"),
+                       net::MEDIUM, content::RESOURCE_TYPE_IMAGE, true);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordRequest(
+      file_request.get(), content::RESOURCE_TYPE_MAIN_FRAME));
 
-  auto https_request_with_port =
-      CreateResourceLoadInfo("https://www.google.com:666");
-  EXPECT_FALSE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*https_request_with_port));
+  std::unique_ptr<net::URLRequest> https_request_with_port =
+      CreateURLRequest(url_request_context_, GURL("https://www.google.com:666"),
+                       net::MEDIUM, content::RESOURCE_TYPE_IMAGE, true);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordRequest(
+      https_request_with_port.get(), content::RESOURCE_TYPE_MAIN_FRAME));
 }
 
-TEST_F(LoadingDataCollectorTest, ShouldRecordSubresourceLoad) {
+TEST_F(LoadingDataCollectorTest, ShouldRecordRequestSubResource) {
+  std::unique_ptr<net::URLRequest> http_request = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_IMAGE, false);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordRequest(
+      http_request.get(), content::RESOURCE_TYPE_IMAGE));
+
+  std::unique_ptr<net::URLRequest> https_request = CreateURLRequest(
+      url_request_context_, GURL("https://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_IMAGE, false);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordRequest(
+      https_request.get(), content::RESOURCE_TYPE_IMAGE));
+
+  std::unique_ptr<net::URLRequest> file_request = CreateURLRequest(
+      url_request_context_, GURL("file://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_IMAGE, false);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordRequest(
+      file_request.get(), content::RESOURCE_TYPE_IMAGE));
+
+  std::unique_ptr<net::URLRequest> https_request_with_port = CreateURLRequest(
+      url_request_context_, GURL("https://www.google.com:666/cat.png"),
+      net::MEDIUM, content::RESOURCE_TYPE_IMAGE, false);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordRequest(
+      https_request_with_port.get(), content::RESOURCE_TYPE_IMAGE));
+}
+
+TEST_F(LoadingDataCollectorTest, ShouldRecordResponseMainFrame) {
+  net::HttpResponseInfo response_info;
+  response_info.headers = MakeResponseHeaders("");
+  url_request_job_factory_.set_response_info(response_info);
+
+  std::unique_ptr<net::URLRequest> http_request =
+      CreateURLRequest(url_request_context_, GURL("http://www.google.com"),
+                       net::MEDIUM, content::RESOURCE_TYPE_MAIN_FRAME, true);
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResponse(http_request.get()));
+
+  std::unique_ptr<net::URLRequest> https_request =
+      CreateURLRequest(url_request_context_, GURL("https://www.google.com"),
+                       net::MEDIUM, content::RESOURCE_TYPE_MAIN_FRAME, true);
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResponse(https_request.get()));
+
+  std::unique_ptr<net::URLRequest> file_request =
+      CreateURLRequest(url_request_context_, GURL("file://www.google.com"),
+                       net::MEDIUM, content::RESOURCE_TYPE_MAIN_FRAME, true);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResponse(file_request.get()));
+
+  std::unique_ptr<net::URLRequest> https_request_with_port =
+      CreateURLRequest(url_request_context_, GURL("https://www.google.com:666"),
+                       net::MEDIUM, content::RESOURCE_TYPE_MAIN_FRAME, true);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResponse(
+      https_request_with_port.get()));
+}
+
+TEST_F(LoadingDataCollectorTest, ShouldRecordResponseSubresource) {
+  net::HttpResponseInfo response_info;
+  response_info.headers =
+      MakeResponseHeaders("HTTP/1.1 200 OK\n\nSome: Headers\n");
+  response_info.was_cached = true;
+  url_request_job_factory_.set_response_info(response_info);
+
   // Protocol.
-  auto http_image_request = CreateResourceLoadInfo(
-      "http://www.google.com/cat.png", content::RESOURCE_TYPE_IMAGE);
+  std::unique_ptr<net::URLRequest> http_image_request = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_IMAGE, true);
   EXPECT_TRUE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*http_image_request));
+      LoadingDataCollector::ShouldRecordResponse(http_image_request.get()));
 
-  auto https_image_request = CreateResourceLoadInfo(
-      "https://www.google.com/cat.png", content::RESOURCE_TYPE_IMAGE);
+  std::unique_ptr<net::URLRequest> https_image_request = CreateURLRequest(
+      url_request_context_, GURL("https://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_IMAGE, true);
   EXPECT_TRUE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*https_image_request));
+      LoadingDataCollector::ShouldRecordResponse(https_image_request.get()));
 
-  auto https_image_request_with_port = CreateResourceLoadInfo(
-      "https://www.google.com:666/cat.png", content::RESOURCE_TYPE_IMAGE);
-  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceLoad(
-      *https_image_request_with_port));
+  std::unique_ptr<net::URLRequest> https_image_request_with_port =
+      CreateURLRequest(url_request_context_,
+                       GURL("https://www.google.com:666/cat.png"), net::MEDIUM,
+                       content::RESOURCE_TYPE_IMAGE, true);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResponse(
+      https_image_request_with_port.get()));
 
-  auto file_image_request = CreateResourceLoadInfo(
-      "file://www.google.com/cat.png", content::RESOURCE_TYPE_IMAGE);
+  std::unique_ptr<net::URLRequest> file_image_request = CreateURLRequest(
+      url_request_context_, GURL("file://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_IMAGE, true);
   EXPECT_FALSE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*file_image_request));
+      LoadingDataCollector::ShouldRecordResponse(file_image_request.get()));
 
   // ResourceType.
-  auto sub_frame_request = CreateResourceLoadInfo(
-      "http://www.google.com/frame.html", content::RESOURCE_TYPE_SUB_FRAME);
+  std::unique_ptr<net::URLRequest> sub_frame_request = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/frame.html"),
+      net::MEDIUM, content::RESOURCE_TYPE_SUB_FRAME, true);
   EXPECT_FALSE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*sub_frame_request));
+      LoadingDataCollector::ShouldRecordResponse(sub_frame_request.get()));
 
-  auto font_request =
-      CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
-                             content::RESOURCE_TYPE_FONT_RESOURCE);
-  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceLoad(*font_request));
+  std::unique_ptr<net::URLRequest> font_request = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/comic-sans-ms.woff"),
+      net::MEDIUM, content::RESOURCE_TYPE_FONT_RESOURCE, true);
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResponse(font_request.get()));
 
   // From MIME Type.
-  auto prefetch_image_request = CreateResourceLoadInfo(
-      "http://www.google.com/cat.png", content::RESOURCE_TYPE_PREFETCH);
-  prefetch_image_request->mime_type = "image/png";
+  url_request_job_factory_.set_mime_type("image/png");
+  std::unique_ptr<net::URLRequest> prefetch_image_request = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/cat.png"), net::MEDIUM,
+      content::RESOURCE_TYPE_PREFETCH, true);
   EXPECT_TRUE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*prefetch_image_request));
+      LoadingDataCollector::ShouldRecordResponse(prefetch_image_request.get()));
 
-  auto prefetch_unknown_image_request = CreateResourceLoadInfo(
-      "http://www.google.com/cat.png", content::RESOURCE_TYPE_PREFETCH);
-  prefetch_unknown_image_request->mime_type = "image/my-wonderful-format";
-  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceLoad(
-      *prefetch_unknown_image_request));
+  url_request_job_factory_.set_mime_type("image/my-wonderful-format");
+  std::unique_ptr<net::URLRequest> prefetch_unknown_image_request =
+      CreateURLRequest(url_request_context_,
+                       GURL("http://www.google.com/cat.png"), net::MEDIUM,
+                       content::RESOURCE_TYPE_PREFETCH, true);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResponse(
+      prefetch_unknown_image_request.get()));
 
-  auto prefetch_font_request =
-      CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
-                             content::RESOURCE_TYPE_PREFETCH);
-  prefetch_font_request->mime_type = "font/woff";
+  url_request_job_factory_.set_mime_type("font/woff");
+  std::unique_ptr<net::URLRequest> prefetch_font_request = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/comic-sans-ms.woff"),
+      net::MEDIUM, content::RESOURCE_TYPE_PREFETCH, true);
   EXPECT_TRUE(
-      LoadingDataCollector::ShouldRecordResourceLoad(*prefetch_font_request));
+      LoadingDataCollector::ShouldRecordResponse(prefetch_font_request.get()));
 
-  auto prefetch_unknown_font_request =
-      CreateResourceLoadInfo("http://www.google.com/comic-sans-ms.woff",
-                             content::RESOURCE_TYPE_PREFETCH);
-  prefetch_unknown_font_request->mime_type = "font/woff-woff";
-  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceLoad(
-      *prefetch_unknown_font_request));
+  url_request_job_factory_.set_mime_type("font/woff-woff");
+  std::unique_ptr<net::URLRequest> prefetch_unknown_font_request =
+      CreateURLRequest(url_request_context_,
+                       GURL("http://www.google.com/comic-sans-ms.woff"),
+                       net::MEDIUM, content::RESOURCE_TYPE_PREFETCH, true);
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResponse(
+      prefetch_unknown_font_request.get()));
+
+  // Not main frame.
+  std::unique_ptr<net::URLRequest> font_request_sub_frame = CreateURLRequest(
+      url_request_context_, GURL("http://www.google.com/comic-sans-ms.woff"),
+      net::MEDIUM, content::RESOURCE_TYPE_FONT_RESOURCE, false);
+  EXPECT_FALSE(
+      LoadingDataCollector::ShouldRecordResponse(font_request_sub_frame.get()));
+}
+
+TEST_F(LoadingDataCollectorTest, ShouldRecordResourceFromMemoryCache) {
+  // Protocol.
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/cat.png"), content::RESOURCE_TYPE_IMAGE, ""));
+
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("https://www.google.com/cat.png"), content::RESOURCE_TYPE_IMAGE,
+      ""));
+
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("https://www.google.com:666/cat.png"), content::RESOURCE_TYPE_IMAGE,
+      ""));
+
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("file://www.google.com/cat.png"), content::RESOURCE_TYPE_IMAGE, ""));
+
+  // ResourceType.
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/frame.html"),
+      content::RESOURCE_TYPE_SUB_FRAME, ""));
+
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/comic-sans-ms.woff"),
+      content::RESOURCE_TYPE_FONT_RESOURCE, ""));
+
+  // From MIME Type.
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/cat.png"), content::RESOURCE_TYPE_PREFETCH,
+      "image/png"));
+
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/cat.png"), content::RESOURCE_TYPE_PREFETCH,
+      "image/my-wonderful-format"));
+
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/comic-sans-ms.woff"),
+      content::RESOURCE_TYPE_PREFETCH, "font/woff"));
+
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/comic-sans-ms.woff"),
+      content::RESOURCE_TYPE_PREFETCH, "font/woff-woff"));
 }
 
 // Single navigation that will be recorded. Will check for duplicate
 // resources and also for number of resources saved.
 TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
   const SessionID kTabId = SessionID::FromSerializedValue(1);
-  auto navigation_id = CreateNavigationID(kTabId, "http://www.google.com");
-  collector_->RecordStartNavigation(navigation_id);
-  collector_->RecordFinishNavigation(navigation_id, navigation_id,
-                                     /* is_error_page */ false);
+  URLRequestSummary main_frame =
+      CreateURLRequestSummary(kTabId, "http://www.google.com");
+  collector_->RecordURLRequest(main_frame);
+  collector_->RecordURLResponse(main_frame);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
-  resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::RESOURCE_TYPE_SCRIPT));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script2.js",
-                                             content::RESOURCE_TYPE_SCRIPT));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
-                                             content::RESOURCE_TYPE_SCRIPT));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image1.png",
-                                             content::RESOURCE_TYPE_IMAGE));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo("http://google.com/image2.png",
-                                             content::RESOURCE_TYPE_IMAGE));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfo(
-      "http://google.com/style2.css", content::RESOURCE_TYPE_STYLESHEET));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(
-      CreateResourceLoadInfo("http://static.google.com/style2-no-store.css",
-                             content::RESOURCE_TYPE_STYLESHEET,
-                             /* always_access_network */ true));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
-  resources.push_back(CreateResourceLoadInfoWithRedirects(
-      {"http://reader.google.com/style.css",
-       "http://dev.null.google.com/style.css"},
+  std::vector<URLRequestSummary> resources;
+  resources.push_back(CreateURLRequestSummary(
+      kTabId, "http://www.google.com", "http://google.com/style1.css",
       content::RESOURCE_TYPE_STYLESHEET));
-  collector_->RecordResourceLoadComplete(navigation_id, *resources.back());
+  collector_->RecordURLResponse(resources.back());
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
+                                              "http://google.com/script1.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  collector_->RecordURLResponse(resources.back());
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
+                                              "http://google.com/script2.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  collector_->RecordURLResponse(resources.back());
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
+                                              "http://google.com/script1.js",
+                                              content::RESOURCE_TYPE_SCRIPT));
+  collector_->RecordURLResponse(resources.back());
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
+                                              "http://google.com/image1.png",
+                                              content::RESOURCE_TYPE_IMAGE));
+  collector_->RecordURLResponse(resources.back());
+  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
+                                              "http://google.com/image2.png",
+                                              content::RESOURCE_TYPE_IMAGE));
+  collector_->RecordURLResponse(resources.back());
+  resources.push_back(CreateURLRequestSummary(
+      kTabId, "http://www.google.com", "http://google.com/style2.css",
+      content::RESOURCE_TYPE_STYLESHEET));
+  collector_->RecordURLResponse(resources.back());
+
+  auto no_store =
+      CreateURLRequestSummary(kTabId, "http://www.google.com",
+                              "http://static.google.com/style2-no-store.css",
+                              content::RESOURCE_TYPE_STYLESHEET);
+  no_store.is_no_store = true;
+  collector_->RecordURLResponse(no_store);
+
+  auto redirected = CreateURLRequestSummary(
+      kTabId, "http://www.google.com", "http://reader.google.com/style.css",
+      content::RESOURCE_TYPE_STYLESHEET);
+  redirected.redirect_url = GURL("http://dev.null.google.com/style.css");
+  collector_->RecordURLRedirect(redirected);
 
   auto summary = CreatePageRequestSummary("http://www.google.com",
                                           "http://www.google.com", resources);
+  summary.UpdateOrAddToOrigins(no_store);
+  summary.UpdateOrAddToOrigins(redirected);
+
+  redirected.is_no_store = true;
+  redirected.request_url = redirected.redirect_url;
+  redirected.redirect_url = GURL();
+  collector_->RecordURLResponse(redirected);
+  summary.UpdateOrAddToOrigins(redirected);
 
   EXPECT_CALL(*mock_predictor_,
               RecordPageRequestSummaryProxy(testing::Pointee(summary)));
 
-  collector_->RecordMainFrameLoadComplete(navigation_id);
+  collector_->RecordMainFrameLoadComplete(main_frame.navigation_id);
 }
 
 TEST_F(LoadingDataCollectorTest, SimpleRedirect) {
   const SessionID kTabId = SessionID::FromSerializedValue(1);
-  auto navigation_id = CreateNavigationID(kTabId, "http://fb.com/google");
-  collector_->RecordStartNavigation(navigation_id);
+  URLRequestSummary fb1 =
+      CreateURLRequestSummary(kTabId, "http://fb.com/google");
+  collector_->RecordURLRequest(fb1);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 
-  auto main_frame = CreateResourceLoadInfoWithRedirects(
-      {"http://fb.com/google", "http://facebook.com/google",
-       "https://facebook.com/google"});
+  URLRequestSummary fb2 = CreateRedirectRequestSummary(
+      kTabId, "http://fb.com/google", "http://facebook.com/google");
+  collector_->RecordURLRedirect(fb2);
+  URLRequestSummary fb3 = CreateRedirectRequestSummary(
+      kTabId, "http://facebook.com/google", "https://facebook.com/google");
+  collector_->RecordURLRedirect(fb3);
+  URLRequestSummary fb4 =
+      CreateURLRequestSummary(kTabId, "https://facebook.com/google");
+  collector_->RecordURLResponse(fb4);
 
-  auto new_navigation_id =
-      CreateNavigationID(kTabId, "https://facebook.com/google");
-  collector_->RecordFinishNavigation(navigation_id, new_navigation_id,
-                                     /* is_error_page */ false);
-  EXPECT_EQ(1U, collector_->inflight_navigations_.size());
-  EXPECT_EQ(navigation_id.main_frame_url,
-            collector_->inflight_navigations_[new_navigation_id]->initial_url);
-  collector_->RecordResourceLoadComplete(new_navigation_id, *main_frame);
-
-  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
-  resources.push_back(std::move(main_frame));
   EXPECT_CALL(
       *mock_predictor_,
       RecordPageRequestSummaryProxy(testing::Pointee(CreatePageRequestSummary(
-          "https://facebook.com/google", "http://fb.com/google", resources))));
+          "https://facebook.com/google", "http://fb.com/google",
+          std::vector<URLRequestSummary>()))));
 
-  collector_->RecordMainFrameLoadComplete(new_navigation_id);
+  collector_->RecordMainFrameLoadComplete(fb4.navigation_id);
 }
 
-// Tests that RecordNavigationFinish without the corresponding
-// RecordNavigationStart works fine.
-TEST_F(LoadingDataCollectorTest, RecordStartNavigationMissing) {
-  const SessionID kTabId = SessionID::FromSerializedValue(1);
-  auto navigation_id = CreateNavigationID(kTabId, "http://bbc.com");
-  auto new_navigation_id = CreateNavigationID(kTabId, "https://www.bbc.com");
-
-  // collector_->RecordStartNavigtion(navigation_id) is missing.
-  collector_->RecordFinishNavigation(navigation_id, new_navigation_id,
-                                     /* is_error_page */ false);
-  EXPECT_EQ(1U, collector_->inflight_navigations_.size());
-  EXPECT_EQ(navigation_id.main_frame_url,
-            collector_->inflight_navigations_[new_navigation_id]->initial_url);
-}
-
-TEST_F(LoadingDataCollectorTest, RecordFailedNavigation) {
-  const SessionID kTabId = SessionID::FromSerializedValue(1);
-  auto navigation_id = CreateNavigationID(kTabId, "http://bbc.com");
-
-  collector_->RecordStartNavigation(navigation_id);
-  EXPECT_EQ(1U, collector_->inflight_navigations_.size());
-  collector_->RecordFinishNavigation(navigation_id, navigation_id,
-                                     /* is_error_page */ true);
-  EXPECT_TRUE(collector_->inflight_navigations_.empty());
-}
-
-TEST_F(LoadingDataCollectorTest, ManyNavigations) {
+TEST_F(LoadingDataCollectorTest, OnMainFrameRequest) {
   const SessionID kTabId1 = SessionID::FromSerializedValue(1);
   const SessionID kTabId2 = SessionID::FromSerializedValue(2);
   const SessionID kTabId3 = SessionID::FromSerializedValue(3);
   const SessionID kTabId4 = SessionID::FromSerializedValue(4);
 
-  auto navigation_id1 = CreateNavigationID(kTabId1, "http://www.google.com");
-  auto navigation_id2 = CreateNavigationID(kTabId2, "http://www.google.com");
-  auto navigation_id3 = CreateNavigationID(kTabId3, "http://www.yahoo.com");
+  URLRequestSummary summary1 = CreateURLRequestSummary(
+      kTabId1, "http://www.google.com", "http://www.google.com",
+      content::RESOURCE_TYPE_MAIN_FRAME);
+  URLRequestSummary summary2 = CreateURLRequestSummary(
+      kTabId2, "http://www.google.com", "http://www.google.com",
+      content::RESOURCE_TYPE_MAIN_FRAME);
+  URLRequestSummary summary3 = CreateURLRequestSummary(
+      kTabId3, "http://www.yahoo.com", "http://www.yahoo.com",
+      content::RESOURCE_TYPE_MAIN_FRAME);
 
-  collector_->RecordStartNavigation(navigation_id1);
+  collector_->RecordURLRequest(summary1);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
-  collector_->RecordStartNavigation(navigation_id2);
+  collector_->RecordURLRequest(summary2);
   EXPECT_EQ(2U, collector_->inflight_navigations_.size());
-  collector_->RecordStartNavigation(navigation_id3);
+  collector_->RecordURLRequest(summary3);
   EXPECT_EQ(3U, collector_->inflight_navigations_.size());
 
   // Insert another with same navigation id. It should replace.
-  auto navigation_id4 = CreateNavigationID(kTabId1, "http://www.nike.com");
-  collector_->RecordStartNavigation(navigation_id4);
+  URLRequestSummary summary4 = CreateURLRequestSummary(
+      kTabId1, "http://www.nike.com", "http://www.nike.com",
+      content::RESOURCE_TYPE_MAIN_FRAME);
+  URLRequestSummary summary5 = CreateURLRequestSummary(
+      kTabId2, "http://www.google.com", "http://www.google.com",
+      content::RESOURCE_TYPE_MAIN_FRAME);
+
+  collector_->RecordURLRequest(summary4);
   EXPECT_EQ(3U, collector_->inflight_navigations_.size());
 
-  auto navigation_id5 = CreateNavigationID(kTabId2, "http://www.google.com");
   // Change this creation time so that it will go away on the next insert.
-  navigation_id5.creation_time =
+  summary5.navigation_id.creation_time =
       base::TimeTicks::Now() - base::TimeDelta::FromDays(1);
-  collector_->RecordStartNavigation(navigation_id5);
+  collector_->RecordURLRequest(summary5);
   EXPECT_EQ(3U, collector_->inflight_navigations_.size());
 
-  auto navigation_id6 = CreateNavigationID(kTabId4, "http://www.shoes.com");
-  collector_->RecordStartNavigation(navigation_id6);
+  URLRequestSummary summary6 = CreateURLRequestSummary(
+      kTabId4, "http://www.shoes.com", "http://www.shoes.com",
+      content::RESOURCE_TYPE_MAIN_FRAME);
+  collector_->RecordURLRequest(summary6);
   EXPECT_EQ(3U, collector_->inflight_navigations_.size());
 
-  EXPECT_TRUE(collector_->inflight_navigations_.find(navigation_id3) !=
+  EXPECT_TRUE(collector_->inflight_navigations_.find(summary3.navigation_id) !=
               collector_->inflight_navigations_.end());
-  EXPECT_TRUE(collector_->inflight_navigations_.find(navigation_id4) !=
+  EXPECT_TRUE(collector_->inflight_navigations_.find(summary4.navigation_id) !=
               collector_->inflight_navigations_.end());
-  EXPECT_TRUE(collector_->inflight_navigations_.find(navigation_id6) !=
+  EXPECT_TRUE(collector_->inflight_navigations_.find(summary6.navigation_id) !=
               collector_->inflight_navigations_.end());
 }
 
-TEST_F(LoadingDataCollectorTest, RecordResourceLoadComplete) {
+TEST_F(LoadingDataCollectorTest, OnMainFrameRedirect) {
+  const SessionID kTabId1 = SessionID::FromSerializedValue(1);
+  const SessionID kTabId2 = SessionID::FromSerializedValue(2);
+  const SessionID kTabId3 = SessionID::FromSerializedValue(3);
+  const SessionID kTabId4 = SessionID::FromSerializedValue(4);
+  const SessionID kTabId5 = SessionID::FromSerializedValue(5);
+
+  URLRequestSummary yahoo =
+      CreateURLRequestSummary(kTabId1, "http://yahoo.com");
+
+  URLRequestSummary bbc1 = CreateURLRequestSummary(kTabId2, "http://bbc.com");
+  URLRequestSummary bbc2 = CreateRedirectRequestSummary(
+      kTabId2, "http://bbc.com", "https://www.bbc.com");
+  NavigationID bbc_end = CreateNavigationID(kTabId2, "https://www.bbc.com");
+
+  URLRequestSummary youtube1 =
+      CreateURLRequestSummary(kTabId3, "http://youtube.com");
+  URLRequestSummary youtube2 = CreateRedirectRequestSummary(
+      kTabId3, "http://youtube.com", "https://youtube.com");
+  NavigationID youtube_end = CreateNavigationID(kTabId3, "https://youtube.com");
+
+  URLRequestSummary nyt1 = CreateURLRequestSummary(kTabId4, "http://nyt.com");
+  URLRequestSummary nyt2 = CreateRedirectRequestSummary(
+      kTabId4, "http://nyt.com", "http://nytimes.com");
+  URLRequestSummary nyt3 = CreateRedirectRequestSummary(
+      kTabId4, "http://nytimes.com", "http://m.nytimes.com");
+  NavigationID nyt_end = CreateNavigationID(kTabId4, "http://m.nytimes.com");
+
+  URLRequestSummary fb1 = CreateURLRequestSummary(kTabId5, "http://fb.com");
+  URLRequestSummary fb2 = CreateRedirectRequestSummary(kTabId5, "http://fb.com",
+                                                       "http://facebook.com");
+  URLRequestSummary fb3 = CreateRedirectRequestSummary(
+      kTabId5, "http://facebook.com", "https://facebook.com");
+  URLRequestSummary fb4 = CreateRedirectRequestSummary(
+      kTabId5, "https://facebook.com",
+      "https://m.facebook.com/?refsrc=https%3A%2F%2Fwww.facebook.com%2F&_rdr");
+  NavigationID fb_end = CreateNavigationID(
+      kTabId5,
+      "https://m.facebook.com/?refsrc=https%3A%2F%2Fwww.facebook.com%2F&_rdr");
+
+  // Redirect with empty redirect_url will be deleted.
+  collector_->RecordURLRequest(yahoo);
+  EXPECT_EQ(1U, collector_->inflight_navigations_.size());
+  collector_->OnMainFrameRedirect(yahoo);
+  EXPECT_TRUE(collector_->inflight_navigations_.empty());
+
+  // Redirect without previous request works fine.
+  // collector_->RecordURLRequest(bbc1) missing.
+  collector_->OnMainFrameRedirect(bbc2);
+  EXPECT_EQ(1U, collector_->inflight_navigations_.size());
+  EXPECT_EQ(bbc1.navigation_id.main_frame_url,
+            collector_->inflight_navigations_[bbc_end]->initial_url);
+
+  // http://youtube.com -> https://youtube.com.
+  collector_->RecordURLRequest(youtube1);
+  EXPECT_EQ(2U, collector_->inflight_navigations_.size());
+  collector_->OnMainFrameRedirect(youtube2);
+  EXPECT_EQ(2U, collector_->inflight_navigations_.size());
+  EXPECT_EQ(youtube1.navigation_id.main_frame_url,
+            collector_->inflight_navigations_[youtube_end]->initial_url);
+
+  // http://nyt.com -> http://nytimes.com -> http://m.nytimes.com.
+  collector_->RecordURLRequest(nyt1);
+  EXPECT_EQ(3U, collector_->inflight_navigations_.size());
+  collector_->OnMainFrameRedirect(nyt2);
+  collector_->OnMainFrameRedirect(nyt3);
+  EXPECT_EQ(3U, collector_->inflight_navigations_.size());
+  EXPECT_EQ(nyt1.navigation_id.main_frame_url,
+            collector_->inflight_navigations_[nyt_end]->initial_url);
+
+  // http://fb.com -> http://facebook.com -> https://facebook.com ->
+  // https://m.facebook.com/?refsrc=https%3A%2F%2Fwww.facebook.com%2F&_rdr.
+  collector_->RecordURLRequest(fb1);
+  EXPECT_EQ(4U, collector_->inflight_navigations_.size());
+  collector_->OnMainFrameRedirect(fb2);
+  collector_->OnMainFrameRedirect(fb3);
+  collector_->OnMainFrameRedirect(fb4);
+  EXPECT_EQ(4U, collector_->inflight_navigations_.size());
+  EXPECT_EQ(fb1.navigation_id.main_frame_url,
+            collector_->inflight_navigations_[fb_end]->initial_url);
+}
+
+TEST_F(LoadingDataCollectorTest, OnSubresourceResponse) {
   const SessionID kTabId = SessionID::FromSerializedValue(1);
   // If there is no inflight navigation, nothing happens.
-  auto navigation_id = CreateNavigationID(kTabId, "http://www.google.com");
-  auto resource1 = CreateResourceLoadInfo("http://google.com/style1.css",
-                                          content::RESOURCE_TYPE_STYLESHEET);
-  collector_->RecordResourceLoadComplete(navigation_id, *resource1);
+  URLRequestSummary resource1 = CreateURLRequestSummary(
+      kTabId, "http://www.google.com", "http://google.com/style1.css",
+      content::RESOURCE_TYPE_STYLESHEET);
+  collector_->RecordURLResponse(resource1);
   EXPECT_TRUE(collector_->inflight_navigations_.empty());
 
   // Add an inflight navigation.
-  collector_->RecordStartNavigation(navigation_id);
+  URLRequestSummary main_frame1 = CreateURLRequestSummary(
+      kTabId, "http://www.google.com", "http://www.google.com",
+      content::RESOURCE_TYPE_MAIN_FRAME);
+  collector_->RecordURLRequest(main_frame1);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 
   // Now add a few subresources.
-  auto resource2 = CreateResourceLoadInfo("http://google.com/script1.js",
-                                          content::RESOURCE_TYPE_SCRIPT);
-  auto resource3 = CreateResourceLoadInfo("http://google.com/script2.js",
-                                          content::RESOURCE_TYPE_SCRIPT);
-  collector_->RecordResourceLoadComplete(navigation_id, *resource1);
-  collector_->RecordResourceLoadComplete(navigation_id, *resource2);
-  collector_->RecordResourceLoadComplete(navigation_id, *resource3);
+  URLRequestSummary resource2 = CreateURLRequestSummary(
+      kTabId, "http://www.google.com", "http://google.com/script1.js",
+      content::RESOURCE_TYPE_SCRIPT);
+  URLRequestSummary resource3 = CreateURLRequestSummary(
+      kTabId, "http://www.google.com", "http://google.com/script2.js",
+      content::RESOURCE_TYPE_SCRIPT);
+  collector_->RecordURLResponse(resource1);
+  collector_->RecordURLResponse(resource2);
+  collector_->RecordURLResponse(resource3);
 
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 }
