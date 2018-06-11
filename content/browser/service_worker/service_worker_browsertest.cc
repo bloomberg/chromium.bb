@@ -2168,6 +2168,19 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkError) {
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
                        CanceledByInterceptor) {
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    // This is a test for a ResourceDispatcherHost interceptor cancelling the
+    // Navigation Preload request. The analogue for the
+    // NetworkService/ServiceWorker*Loader code path would be throttles, but
+    // these don't see Navigation Preload (crbug.com/825717) and there is no
+    // plan to allow them to, so just skip this test.
+
+    // This has to be called so the EmbeddedTestServer IO Thread is created,
+    // otherwise we crash on destruction.
+    embedded_test_server()->StartAcceptingConnections();
+    return;
+  }
+
   content::ResourceDispatcherHost::Get()->RegisterInterceptor(
       kNavigationPreloadHeaderName, "",
       base::Bind(&CancellingInterceptorCallback));
