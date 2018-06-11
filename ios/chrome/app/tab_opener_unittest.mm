@@ -54,11 +54,9 @@ class TabOpenerTest : public PlatformTest {
           EXPECT_EQ(expectedAppState, appState);
         } copy];
     URL_opening_handle_launch_swizzler_.reset(new ScopedBlockSwizzler(
-        [URLOpener class], @selector(handleLaunchOptions:
-                                       applicationActive:
-                                               tabOpener:
-                                      startupInformation:
-                                                appState:),
+        [URLOpener class],
+        @selector(handleLaunchOptions:applicationActive:tabOpener
+                                     :startupInformation:appState:),
         swizzle_block_));
   }
 

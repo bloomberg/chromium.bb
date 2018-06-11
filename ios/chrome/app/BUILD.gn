@@ -43,7 +43,7 @@ source_set("unit_tests") {
     "chrome_overlay_window_testing.h",
     "deferred_initialization_runner_unittest.mm",
     "main_application_delegate_unittest.mm",
-    "main_controller_unittest.mm",
+    "tab_opener_unittest.mm",
   ]
   deps = [
     ":app",
