@@ -4778,3 +4778,6 @@ crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-com
 # Sheriff 2018-06-08
 crbug.com/850170 [ Mac ] virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Pass Timeout ]
 crbug.com/851090 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
+
+# Sheriff 2018-06-11
+crbug.com/850202 [ Linux ] http/tests/devtools/network/network-filters.js [ Pass Failure ]
