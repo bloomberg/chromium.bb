@@ -117,7 +117,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   overlays = {}
   for path in paths:
     path = os.path.join(buildroot, path, '*')
-    for overlay in glob.glob(path):
+    for overlay in sorted(glob.glob(path)):
       name = GetOverlayName(overlay)
       if name is None:
         continue
@@ -140,7 +140,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
 
   # Easy enough -- dump them all.
   if board is None:
-    return [x['path'] for x in overlays.values()]
+    return sorted([x['path'] for x in overlays.values()])
 
   # Build up the list of repos we need.
   ret = []
@@ -176,7 +176,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   _AddRepo('chromeos', optional=True)
   path = os.path.join(buildroot, 'src', 'private-overlays',
                       'chromeos-*-overlay')
-  ret += glob.glob(path)
+  ret += sorted(glob.glob(path))
 
   # Locate the board repo by name.
   # Load the public & private versions if available.
