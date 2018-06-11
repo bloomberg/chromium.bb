@@ -1401,7 +1401,7 @@ bool SpdySession::ValidatePushedStream(spdy::SpdyStreamId stream_id,
     return false;
   }
   // Certificate must match for encrypted schemes only.
-  if (url.SchemeIsCryptographic() &&
+  if (key != spdy_session_key_ && url.SchemeIsCryptographic() &&
       !VerifyDomainAuthentication(key.host_port_pair().host())) {
     return false;
   }
