@@ -2954,6 +2954,7 @@ test("unit_tests") {
       "../browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h",
       "../browser/resource_coordinator/local_site_characteristics_data_writer_unittest.cc",
       "../browser/resource_coordinator/local_site_characteristics_non_recording_data_store_unittest.cc",
+      "../browser/resource_coordinator/local_site_characteristics_webcontents_observer_unittest.cc",
       "../browser/resource_coordinator/performance_measurement_manager_unittest.cc",
       "../browser/resource_coordinator/session_restore_policy_unittest.cc",
       "../browser/resource_coordinator/tab_activity_watcher_unittest.cc",

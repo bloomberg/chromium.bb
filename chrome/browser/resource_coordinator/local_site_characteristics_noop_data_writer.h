@@ -21,8 +21,7 @@ class LocalSiteCharacteristicsNoopDataWriter
   // SiteCharacteristicsDataWriter:
   void NotifySiteLoaded() override;
   void NotifySiteUnloaded() override;
-  void NotifySiteBackgrounded() override;
-  void NotifySiteForegrounded() override;
+  void NotifySiteVisibilityChanged(TabVisibility visibility) override;
   void NotifyUpdatesFaviconInBackground() override;
   void NotifyUpdatesTitleInBackground() override;
   void NotifyUsesAudioInBackground() override;

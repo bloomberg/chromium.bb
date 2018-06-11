@@ -22,6 +22,12 @@ class LocalSiteCharacteristicsDataStoreFactory
   static SiteCharacteristicsDataStore* GetForProfile(Profile* profile);
   static LocalSiteCharacteristicsDataStoreFactory* GetInstance();
 
+  // In production, an instance is created with the profile. In unit tests, no
+  // instance is created by default. If this method is called, an instance will
+  // be created the first time GetInstance() is called. In most unit tests, a
+  // custom factory should be set before the first call to GetInstance().
+  static void EnableForTesting();
+
  private:
   friend class base::NoDestructor<LocalSiteCharacteristicsDataStoreFactory>;
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_SITE_CHARACTERISTICS_DATA_WRITER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_SITE_CHARACTERISTICS_DATA_WRITER_H_
 
+#include "chrome/browser/resource_coordinator/site_characteristics_tab_visibility.h"
+
 namespace resource_coordinator {
 
 // Pure virtual interface to record the observations made for an origin.
@@ -17,9 +19,8 @@ class SiteCharacteristicsDataWriter {
   virtual void NotifySiteLoaded() = 0;
   virtual void NotifySiteUnloaded() = 0;
 
-  // Records background/foreground events.
-  virtual void NotifySiteBackgrounded() = 0;
-  virtual void NotifySiteForegrounded() = 0;
+  // Records visibility change events.
+  virtual void NotifySiteVisibilityChanged(TabVisibility visibility) = 0;
 
   // Records feature usage.
   virtual void NotifyUpdatesFaviconInBackground() = 0;
