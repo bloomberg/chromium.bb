@@ -11,8 +11,40 @@
 namespace chromeos {
 namespace smb_client {
 
+namespace {
+
+// TODO(baileyberro): Fill out chrome_policy with the enterprise policy to
+// disable NETBIOS discovery. https://crbug.com/850966
+constexpr net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
+  return net::DefineNetworkTrafficAnnotation("smb_netbios_name_query", R"(
+        semantics {
+          sender: "Native SMB for ChromeOS"
+          description:
+            "Performs a NETBIOS Name Query Request on the network to find "
+            "discoverable file shares."
+          trigger: " Starting the File Share mount process."
+          data:
+            "A NETBIOS Name Query Request packet as defined by "
+            "RFC 1002 Section 4.2.12."
+          destination: OTHER
+          destination_other:
+            "Data is sent to the broadcast_address of the local network."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "No settings control. This request will not be sent if the user "
+            "does not attempt to mount a Network File Share."
+          policy_exception_justification: "Not Implemented."
+        })");
+}
+
+}  // namespace
+
 NetBiosClient::NetBiosClient(network::mojom::NetworkContext* network_context) {
   NOTIMPLEMENTED();
+
+  GetNetworkTrafficAnnotationTag();
 }
 
 NetBiosClient::~NetBiosClient() {}
@@ -65,8 +97,35 @@ void NetBiosClient::OnReceived(int32_t result,
 }
 
 std::vector<uint8_t> NetBiosClient::GenerateBroadcastPacket() {
-  NOTIMPLEMENTED();
-  return std::vector<uint8_t>();
+  // https://tools.ietf.org/html/rfc1002
+  // Section 4.2.12
+  // [0-1]    - Transaction Id.
+  // [2-3]    - Broadcast Flag.
+  // [4-5]    - Question Count.
+  // [6-7]    - Answer Resource Count.
+  // [8-9]    - Authority Resource Count.
+  // [10-11]  - Additional Resource Count.
+  // [12]     - Length of name. 16 bytes of name encoded to 32 bytes.
+  // [13-14]  - '*' character encodes to 2 bytes.
+  // [15-44]  - Reaming 15 nulls which encode as 30 * 0x41.
+  // [45]     - Length of next segment.
+  // [46-47]  - Question type: Node status.
+  // [48-49]  - Question clasS: Internet.
+  std::vector<uint8_t> packet = {
+      0x00, 0x00, 0x00, 0x10, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x20, 0x43, 0x4b, 0x41, 0x41, 0x41, 0x41, 0x41,
+      0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
+      0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
+      0x41, 0x41, 0x41, 0x41, 0x41, 0x00, 0x00, 0x21, 0x00, 0x01};
+
+  // Set Transaction ID in Big Endian representation.
+  uint8_t first_byte_tx_id = transaction_id_ >> 8;
+  uint8_t second_byte_tx_id = transaction_id_ & 0xFF;
+
+  packet[0] = first_byte_tx_id;
+  packet[1] = second_byte_tx_id;
+
+  return packet;
 }
 
 }  // namespace smb_client

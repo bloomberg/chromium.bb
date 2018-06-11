@@ -98,6 +98,7 @@ class NetBiosClient : public network::mojom::UDPSocketReceiver,
   std::vector<uint8_t> GenerateBroadcastPacket();
 
   net::IPEndPoint broadcast_address_;
+  uint16_t transaction_id_;
   NetBiosResponseCallback callback_;
   std::unique_ptr<FirewallHole> firewall_hole_;
   network::mojom::UDPSocketPtr server_socket_;
