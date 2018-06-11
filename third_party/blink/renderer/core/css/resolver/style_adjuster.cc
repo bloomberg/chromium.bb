@@ -483,8 +483,7 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
 
   TouchAction enforced_by_policy = TouchAction::kTouchActionNone;
   if (element &&
-      IsSupportedInFeaturePolicy(
-          mojom::FeaturePolicyFeature::kVerticalScroll) &&
+      RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       element->GetDocument().GetFrame() &&
       !element->GetDocument().GetFrame()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kVerticalScroll)) {
@@ -704,8 +703,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // If intrinsically sized images or videos are disallowed by feature policy,
   // use default size (300 x 150) instead.
   if (IsImageOrVideoElement(element)) {
-    if (IsSupportedInFeaturePolicy(
-            mojom::FeaturePolicyFeature::kUnsizedMedia) &&
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
         element->GetDocument().GetFrame() &&
         !element->GetDocument().GetFrame()->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kUnsizedMedia)) {

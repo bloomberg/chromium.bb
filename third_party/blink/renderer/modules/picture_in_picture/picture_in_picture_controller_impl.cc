@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -50,8 +51,7 @@ PictureInPictureControllerImpl::IsDocumentAllowed() const {
 
   // If document is not allowed to use the policy-controlled feature named
   // "picture-in-picture", return kDisabledByFeaturePolicy status.
-  if (IsSupportedInFeaturePolicy(
-          blink::mojom::FeaturePolicyFeature::kPictureInPicture) &&
+  if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled() &&
       !frame->IsFeatureEnabled(
           blink::mojom::FeaturePolicyFeature::kPictureInPicture)) {
     return Status::kDisabledByFeaturePolicy;

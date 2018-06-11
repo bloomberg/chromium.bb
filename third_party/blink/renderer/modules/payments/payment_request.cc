@@ -737,23 +737,6 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
   if (!frame)
     return false;
 
-  if (!IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kPayment)) {
-    // 2. If |document|'s browsing context is a top-level browsing context, then
-    // return true.
-    if (frame->IsMainFrame())
-      return true;
-
-    // 3. If |document|'s browsing context has a browsing context container that
-    // is an iframe element with an |allowpaymentrequest| attribute specified,
-    // and whose node document is allowed to use the feature indicated by
-    // |allowpaymentrequest|, then return true.
-    if (frame->Owner() && frame->Owner()->AllowPaymentRequest())
-      return AllowedToUsePaymentRequest(frame->Tree().Parent());
-
-    // 4. Return false.
-    return false;
-  }
-
   // 2. If Feature Policy is enabled, return the policy for "payment" feature.
   return frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kPayment);
 }

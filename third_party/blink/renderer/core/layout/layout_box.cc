@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -684,7 +685,7 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
     // end of the IPC call.
     HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
     if (owner_element && owner_element->GetLayoutObject() &&
-        AllowedToPropageRecursiveScrollToParentFrame(params)) {
+        AllowedToPropagateRecursiveScrollToParentFrame(params)) {
       parent_box = owner_element->GetLayoutObject()->EnclosingBox();
       LayoutView* parent_view = owner_element->GetLayoutObject()->View();
       absolute_rect_for_parent = EnclosingLayoutRect(
@@ -707,7 +708,7 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
     return parent_box->ScrollRectToVisibleRecursive(absolute_rect_for_parent,
                                                     params);
   } else if (GetFrame()->IsLocalRoot() && !GetFrame()->IsMainFrame()) {
-    if (AllowedToPropageRecursiveScrollToParentFrame(params)) {
+    if (AllowedToPropagateRecursiveScrollToParentFrame(params)) {
       GetFrameView()->ScrollRectToVisibleInRemoteParent(
           absolute_rect_for_parent, params);
     }
@@ -5975,7 +5976,7 @@ void LayoutBox::RemoveSnapArea(const LayoutBox& snap_area) {
   }
 }
 
-bool LayoutBox::AllowedToPropageRecursiveScrollToParentFrame(
+bool LayoutBox::AllowedToPropagateRecursiveScrollToParentFrame(
     const WebScrollIntoViewParams& params) {
   if (!GetFrameView()->SafeToPropagateScrollToParent())
     return false;
@@ -5983,10 +5984,9 @@ bool LayoutBox::AllowedToPropageRecursiveScrollToParentFrame(
   if (params.GetScrollType() != kProgrammaticScroll)
     return true;
 
-  if (!IsSupportedInFeaturePolicy(
-          mojom::FeaturePolicyFeature::kVerticalScroll)) {
+  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled())
     return true;
-  }
+
   return GetFrame()->IsFeatureEnabled(
       mojom::FeaturePolicyFeature::kVerticalScroll);
 }

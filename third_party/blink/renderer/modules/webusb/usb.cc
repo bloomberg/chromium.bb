@@ -31,8 +31,6 @@ namespace {
 
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"usb\" is disallowed by feature policy.";
-const char kIframeBlocked[] =
-    "Access to this method is not allowed in embedded frames.";
 const char kNoDeviceSelected[] = "No device selected.";
 
 UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter& filter) {
@@ -106,16 +104,10 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
         DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
 
-  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kUsb)) {
-    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb)) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
-                                             kFeaturePolicyBlocked));
-    }
-  } else if (!frame->IsMainFrame()) {
+  if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kSecurityError, kIframeBlocked));
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kFeaturePolicyBlocked));
   }
 
   if (!chooser_service_) {

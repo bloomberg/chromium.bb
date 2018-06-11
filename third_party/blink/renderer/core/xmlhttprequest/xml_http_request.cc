@@ -748,7 +748,6 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
 
   if (!async_) {
     if (GetExecutionContext()->IsDocument() &&
-        IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kSyncXHR) &&
         !GetDocument()->GetFrame()->IsFeatureEnabled(
             mojom::FeaturePolicyFeature::kSyncXHR)) {
       LogConsoleError(GetExecutionContext(),
