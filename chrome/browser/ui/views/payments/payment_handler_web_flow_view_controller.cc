@@ -246,16 +246,23 @@ void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
 
 void PaymentHandlerWebFlowViewController::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSameDocument())
+    return;
+
   UpdateHeaderView();
 }
 
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsSameDocument())
+    return;
+
   if (!OriginSecurityChecker::IsOriginSecure(navigation_handle->GetURL()) ||
       (!OriginSecurityChecker::IsSchemeCryptographic(
            navigation_handle->GetURL()) &&
        !OriginSecurityChecker::IsOriginLocalhostOrFile(
-           navigation_handle->GetURL())) ||
+           navigation_handle->GetURL()) &&
+       !navigation_handle->GetURL().IsAboutBlank()) ||
       !SslValidityChecker::IsSslCertificateValid(
           navigation_handle->GetWebContents())) {
     AbortPayment();
