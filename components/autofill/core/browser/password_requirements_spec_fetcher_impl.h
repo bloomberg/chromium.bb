@@ -18,10 +18,8 @@
 #include "url/gurl.h"
 
 namespace network {
+class SharedURLLoaderFactory;
 class SimpleURLLoader;
-namespace mojom {
-class URLLoaderFactory;
-}  // namespace mojom
 }  // namespace network
 
 namespace autofill {
@@ -51,15 +49,15 @@ class PasswordRequirementsSpecFetcherImpl
   };
 
   // See the member variables for explanations of these parameters.
-  PasswordRequirementsSpecFetcherImpl(int version,
-                                      size_t prefix_length,
-                                      int timeout);
+  PasswordRequirementsSpecFetcherImpl(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      int version,
+      size_t prefix_length,
+      int timeout);
   ~PasswordRequirementsSpecFetcherImpl() override;
 
   // Implementation for PasswordRequirementsSpecFetcher:
-  void Fetch(network::mojom::URLLoaderFactory* loader_factory,
-             GURL origin,
-             FetchCallback callback) override;
+  void Fetch(GURL origin, FetchCallback callback) override;
 
  private:
   // This structure bundles all data that are associated to a network request
@@ -103,6 +101,8 @@ class PasswordRequirementsSpecFetcherImpl
 
   std::unique_ptr<LookupInFlight> RemoveLookupInFlight(
       const std::string& hash_prefix);
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // A version counter for requirements specs. If data changes on the server,
   // a new version number is pushed out to prevent that clients continue
