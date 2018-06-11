@@ -152,6 +152,10 @@ _INTEGRATION_NEGATIVE_FILTER = [
     # RemoteBrowserTest requires extra setup. TODO(johnchen@chromium.org):
     # Modify the test so it runs correctly as isolated test.
     'RemoteBrowserTest.*',
+    # These two SessionHandlingTest tests fail on the Mac 10.10 bot.
+    # See http://crbug.com/851721
+    'SessionHandlingTest.testGetSessions',
+    'SessionHandlingTest.testQuitASessionMoreThanOnce',
 ]
 
 
