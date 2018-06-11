@@ -295,6 +295,22 @@ void InProgressDownloadManager::ShutDown() {
   url_download_handlers_.clear();
 }
 
+void InProgressDownloadManager::DetermineDownloadTarget(
+    DownloadItemImpl* download,
+    const DownloadTargetCallback& callback) {
+  // TODO(http://crbug.com/851581): handle the case that |target_path| and
+  // |intermediate_path| are empty.
+  base::FilePath target_path = download->GetTargetFilePath().empty()
+                                   ? download->GetForcedFilePath()
+                                   : download->GetTargetFilePath();
+  base::FilePath intermediate_path = download->GetFullPath().empty()
+                                         ? download->GetForcedFilePath()
+                                         : download->GetFullPath();
+  callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               download->GetDangerType(), intermediate_path,
+               DOWNLOAD_INTERRUPT_REASON_NONE);
+}
+
 void InProgressDownloadManager::ResumeInterruptedDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     uint32_t id,

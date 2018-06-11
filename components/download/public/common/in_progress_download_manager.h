@@ -117,6 +117,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void ShutDown();
 
   // DownloadItemImplDelegate implementations.
+  void DetermineDownloadTarget(DownloadItemImpl* download,
+                               const DownloadTargetCallback& callback) override;
   void ResumeInterruptedDownload(std::unique_ptr<DownloadUrlParameters> params,
                                  uint32_t id,
                                  const GURL& site_url) override;
