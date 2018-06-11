@@ -11,24 +11,29 @@ package chromeos.assistant;
 
 import "about_me_settings_ui.proto";
 import "consent_flow_ui.proto";
+import "email_opt_in_ui.proto";
 
 message SettingsUi {
   optional AboutMeSettingsUi about_me_settings = 5;
   optional ConsentFlowUi consent_flow_ui = 27;
+  optional EmailOptInUi email_opt_in_ui = 33;
 }
 
 message SettingsUiUpdate {
   optional AboutMeSettingsUiUpdate about_me_settings_update = 4;
   optional ConsentFlowUiUpdate consent_flow_ui_update = 21;
+  optional EmailOptInUpdate email_opt_in_update = 26;
 }
 
 message SettingsUiUpdateResult {
   optional AboutMeSettingsUiUpdateResult about_me_settings_update_result = 4;
   optional ConsentFlowUiUpdateResult consent_flow_update_result = 11;
+  optional EmailOptInUpdateResult email_opt_in_update_result = 15;
 }
 
 // Determines which settings sub-pages should be requested to the server.
 message SettingsUiSelector {
   optional bool about_me_settings = 5;
   optional ConsentFlowUiSelector consent_flow_ui_selector = 35;
+  optional bool email_opt_in = 43;
 }

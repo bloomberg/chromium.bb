@@ -5,67 +5,14 @@
 /**
  * @fileoverview Polymer element for displaying material design assistant
  * value prop screen.
+ *
+ * Event 'loading' will be fired when the page is loading/reloading.
+ * Event 'error' will be fired when the webview failed to load.
+ * Event 'loaded' will be fired when the page has been successfully loaded.
  */
 
-class HtmlSanitizer {
-  /**
-   * @param {Set} allowedTags set of whitelisted tags.
-   */
-  constructor(allowedTags) {
-    this.allowedTags = allowedTags;
-  }
-
-  /**
-   * Sanitize the html snippet.
-   * Only allow the tags in allowedTags.
-   *
-   * @param {string} content the html snippet to be sanitized.
-   * @return {string} sanitized html snippet.
-   *
-   * @public
-   */
-  sanitizeHtml(content) {
-    var doc = document.implementation.createHTMLDocument();
-    var div = doc.createElement('div');
-    div.innerHTML = content;
-    return this.sanitizeNode_(doc, div).innerHTML;
-  }
-
-  /**
-   * Sanitize the html node.
-   *
-   * @param {Document} doc document object for sanitize use.
-   * @param {Element} node the DOM element to be sanitized.
-   * @return {Element} sanitized DOM element.
-   *
-   * @private
-   */
-  sanitizeNode_(doc, node) {
-    var name = node.nodeName.toLowerCase();
-    if (name == '#text') {
-      return node;
-    }
-    if (!this.allowedTags.has(name)) {
-      return doc.createTextNode('');
-    }
-
-    var copy = doc.createElement(name);
-    // Only allow 'href' attribute for tag 'a'.
-    if (name == 'a' && node.attributes.length == 1 &&
-        node.attributes.item(0).name == 'href') {
-      copy.setAttribute('href', node.getAttribute('href'));
-    }
-
-    while (node.childNodes.length > 0) {
-      var child = node.removeChild(node.childNodes[0]);
-      copy.appendChild(this.sanitizeNode_(doc, child));
-    }
-    return copy;
-  }
-}
-
 Polymer({
-  is: 'assistant-value-prop-md',
+  is: 'assistant-value-prop',
 
   properties: {
     /**
@@ -116,20 +63,6 @@ Polymer({
   loadingError_: false,
 
   /**
-   * Timeout ID for loading animation.
-   * @type {number}
-   * @private
-   */
-  animationTimeout_: null,
-
-  /**
-   * Timeout ID for loading (will fire an error).
-   * @type {number}
-   * @private
-   */
-  loadingTimeout_: null,
-
-  /**
    * The value prop webview object.
    * @type {Object}
    * @private
@@ -176,8 +109,7 @@ Polymer({
    * @type {HtmlSanitizer}
    * @private
    */
-  sanitizer_:
-      new HtmlSanitizer(new Set(['b', 'i', 'br', 'p', 'a', 'ul', 'li', 'div'])),
+  sanitizer_: new HtmlSanitizer(),
 
   /**
    * On-tap event handler for skip button.
@@ -189,24 +121,13 @@ Polymer({
   },
 
   /**
-   * On-tap event handler for retry button.
-   *
-   * @private
-   */
-  onRetryTap_: function() {
-    this.reloadWebView();
-  },
-
-  /**
    * On-tap event handler for more button.
    *
    * @private
    */
   onMoreTap_: function() {
-    this.removeClass_('value-prop-loading');
-    this.removeClass_('value-prop-loaded');
-    this.removeClass_('value-prop-error');
-    this.addClass_('value-prop-more');
+    this.$['view-container'].hidden = true;
+    this.$['more-container'].hidden = false;
     this.moreContents = false;
     this.$['next-button'].focus();
   },
@@ -221,66 +142,26 @@ Polymer({
   },
 
   /**
-   * Add class to the list of classes of root elements.
-   * @param {string} className class to add
-   *
-   * @private
-   */
-  addClass_: function(className) {
-    this.$['value-prop-dialog'].classList.add(className);
-  },
-
-  /**
-   * Remove class to the list of classes of root elements.
-   * @param {string} className class to remove
-   *
-   * @private
-   */
-  removeClass_: function(className) {
-    this.$['value-prop-dialog'].classList.remove(className);
-  },
-
-  /**
    * Reloads value prop webview.
    */
-  reloadWebView: function() {
+  reloadPage: function() {
+    this.fire('loading');
+
     this.loadingError_ = false;
     this.headerReceived_ = false;
     this.valuePropView_.src =
         'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v1_omni_' +
         this.locale + '.html';
 
-    window.clearTimeout(this.animationTimeout_);
-    window.clearTimeout(this.loadingTimeout_);
-    this.removeClass_('value-prop-loaded');
-    this.removeClass_('value-prop-error');
-    this.removeClass_('value-prop-more');
-    this.addClass_('value-prop-loading');
     this.buttonsDisabled = true;
-
-    this.animationTimeout_ = window.setTimeout(function() {
-      this.addClass_('value-prop-loading-animation');
-    }.bind(this), 500);
-    this.loadingTimeout_ = window.setTimeout(function() {
-      this.onWebViewErrorOccurred();
-    }.bind(this), 5000);
   },
 
   /**
    * Handles event when value prop webview cannot be loaded.
    */
   onWebViewErrorOccurred: function(details) {
+    this.fire('error');
     this.loadingError_ = true;
-    window.clearTimeout(this.animationTimeout_);
-    window.clearTimeout(this.loadingTimeout_);
-    this.removeClass_('value-prop-loading-animation');
-    this.removeClass_('value-prop-loading');
-    this.removeClass_('value-prop-loaded');
-    this.removeClass_('value-prop-more');
-    this.addClass_('value-prop-error');
-
-    this.buttonsDisabled = false;
-    this.$['retry-button'].focus();
   },
 
   /**
@@ -393,13 +274,7 @@ Polymer({
    * Handles event when all the page content has been loaded.
    */
   onPageLoaded: function() {
-    window.clearTimeout(this.animationTimeout_);
-    window.clearTimeout(this.loadingTimeout_);
-    this.removeClass_('value-prop-loading-animation');
-    this.removeClass_('value-prop-loading');
-    this.removeClass_('value-prop-error');
-    this.removeClass_('value-prop-more');
-    this.addClass_('value-prop-loaded');
+    this.fire('loaded');
 
     this.buttonsDisabled = false;
     if (this.moreContents) {
@@ -439,6 +314,6 @@ Polymer({
       this.initialized_ = true;
     }
 
-    this.reloadWebView();
+    this.reloadPage();
   },
 });

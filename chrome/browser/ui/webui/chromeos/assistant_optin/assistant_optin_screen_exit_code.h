@@ -14,6 +14,9 @@ namespace chromeos {
 enum class AssistantOptInScreenExitCode {
   VALUE_PROP_SKIPPED = 0,
   VALUE_PROP_ACCEPTED = 1,
+  THIRD_PARTY_CONTINUED = 2,
+  EMAIL_OPTED_IN = 3,
+  EMAIL_OPTED_OUT = 4,
   EXIT_CODES_COUNT
 };
 

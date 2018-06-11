@@ -3,6 +3,7 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <dom-module id="setting-zippy">
@@ -17,12 +18,16 @@
         <div class="title">
           <content select=".zippy-title"></content>
         </div>
-        <div class="content">
+        <div class="content" noZippy$="[[noZippy]]">
           <content select=".zippy-description"></content>
         </div>
       </div>
       <div class="flex"></div>
-      <cr-expand-button expanded="{{expanded_}}"></cr-expand-button>
+      <cr-expand-button expanded="{{expanded_}}" hidden="[[noZippy]]">
+      </cr-expand-button>
+      <div class="toggle">
+        <content select=".zippy-toggle" hidden="[[!noZippy]]"></content>
+      </div>
     </div>
     <iron-collapse opened="[[expanded_]]">
       <div class="content indent">

@@ -15,6 +15,11 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    noZippy: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**

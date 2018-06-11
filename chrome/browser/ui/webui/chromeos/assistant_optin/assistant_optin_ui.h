@@ -41,15 +41,23 @@ class AssistantOptInUI
   // Called by a screen when user's done with it.
   void OnExit(AssistantOptInScreenExitCode exit_code);
 
+  void OnEmailOptInResult(bool opted_in);
+
   // Handle response from the settings manager.
   void OnGetSettingsResponse(const std::string& settings);
-  void OnUpdateSettingsResponse(const std::string& settings);
+  void OnUpdateSettingsResponse(bool should_exit, const std::string& settings);
 
   // Show next screen in the optin flow.
   void Next();
 
   // Consent token used to complete the opt-in.
   std::string consent_token_;
+
+  // Whether activity controll is needed for user.
+  bool activity_controll_needed_ = true;
+
+  // Whether email optin is needed for user.
+  bool email_optin_needed_ = false;
 
   AssistantOptInHandler* assistant_handler_ = nullptr;
   std::unique_ptr<JSCallsContainer> js_calls_container_;
