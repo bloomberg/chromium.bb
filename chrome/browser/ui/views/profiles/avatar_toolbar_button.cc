@@ -116,6 +116,10 @@ bool AvatarToolbarButton::IsIncognito() const {
 }
 
 bool AvatarToolbarButton::ShouldShowGenericIcon() const {
+  // This function should only be used for regular profiles. Guest and Incognito
+  // sessions should be handled separately and never call this function.
+  DCHECK(!profile_->IsGuestSession());
+  DCHECK(!profile_->IsOffTheRecord());
   return g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
                  .GetNumberOfProfiles() == 1 &&
@@ -125,6 +129,9 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
 base::string16 AvatarToolbarButton::GetAvatarTooltipText() {
   if (IsIncognito())
     return l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_INCOGNITO_TOOLTIP);
+
+  if (profile_->IsGuestSession())
+    return l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
 
   if (ShouldShowGenericIcon())
     return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
