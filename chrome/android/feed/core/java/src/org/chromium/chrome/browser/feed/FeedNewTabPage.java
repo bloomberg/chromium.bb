@@ -26,12 +26,15 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
 /**
  * Provides a new tab page that displays an interest feed rendered list of content suggestions.
  */
 public class FeedNewTabPage extends BasicNativePage {
+    private final StreamLifecycleManager mStreamLifecycleManager;
+
     private FrameLayout mRootView;
     private String mTitle;
     private FeedImageLoader mImageLoader;
@@ -107,8 +110,9 @@ public class FeedNewTabPage extends BasicNativePage {
             TabModelSelector tabModelSelector) {
         super(activity, nativePageHost);
 
-        Profile profile = nativePageHost.getActiveTab().getProfile();
         FeedProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+        Tab tab = nativePageHost.getActiveTab();
+        Profile profile = tab.getProfile();
         mImageLoader = new FeedImageLoader(profile, activity);
         SuggestionsNavigationDelegateImpl navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(
@@ -123,14 +127,13 @@ public class FeedNewTabPage extends BasicNativePage {
                         .build();
 
         Stream stream = streamScope.getStream();
-        stream.onCreate(null);
+        mStreamLifecycleManager = new StreamLifecycleManager(stream, activity, tab);
+
         stream.getView().setBackgroundColor(Color.WHITE);
         mRootView.addView(stream.getView());
 
         // TODO(skym): This is a work around for outstanding Feed bug.
         stream.triggerRefresh();
-
-        // TODO(https://crbug.com/803317): Call appropriate lifecycle methods.
     }
 
     @Override
@@ -145,6 +148,7 @@ public class FeedNewTabPage extends BasicNativePage {
     public void destroy() {
         super.destroy();
         mImageLoader.destroy();
+        mStreamLifecycleManager.destroy();
     }
 
     @Override

@@ -15,6 +15,7 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedNewTabPage.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedProcessScopeFactory.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/StreamLifecycleManager.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/action/FeedActionHandler.java",
   ]
 
