@@ -4646,6 +4646,13 @@ bool Document::SetFocusedElement(Element* new_focused_element,
     }
     CancelFocusAppearanceUpdate();
     UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(focused_element_);
+    // UpdateStyleAndLayout can call SetFocusedElement (through
+    // ScrollAndFocusFragmentAnchor called in Document::LayoutUpdated) and clear
+    // focused_element_.
+    if (focused_element_ != new_focused_element) {
+      focus_change_blocked = true;
+      goto SetFocusedElementDone;
+    }
     focused_element_->UpdateFocusAppearanceWithOptions(
         params.selection_behavior, params.options);
 
