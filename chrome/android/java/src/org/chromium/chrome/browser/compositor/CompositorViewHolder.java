@@ -368,6 +368,9 @@ public class CompositorViewHolder extends FrameLayout
         if (mSystemUiFullscreen) onViewportChanged();
     }
 
+    @Override
+    public void onSafeAreaChanged(Rect area) {}
+
     /**
      * Should be called for cleanup when the CompositorView instance is no longer used.
      */
