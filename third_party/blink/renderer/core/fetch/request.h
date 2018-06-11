@@ -69,7 +69,6 @@ class CORE_EXPORT Request final : public Body {
   String cache() const;
   String redirect() const;
   String integrity() const;
-  String importance() const;
   bool keepalive() const;
   bool isHistoryNavigation() const;
   AbortSignal* signal() const { return signal_; }
