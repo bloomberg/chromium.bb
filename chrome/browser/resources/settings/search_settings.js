@@ -31,6 +31,8 @@ cr.define('settings', function() {
    */
   const IGNORED_ELEMENTS = new Set([
     'CONTENT',
+    'CR-ACTION-MENU',
+    'CR-DIALOG',
     'CR-EVENTS',
     'DIALOG',
     'IMG',
@@ -40,6 +42,7 @@ cr.define('settings', function() {
     'PAPER-RIPPLE',
     'PAPER-SLIDER',
     'PAPER-SPINNER-LITE',
+    'SLOT',
     'STYLE',
     'TEMPLATE',
   ]);

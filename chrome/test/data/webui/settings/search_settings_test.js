@@ -106,6 +106,8 @@ cr.define('settings_test', function() {
     test('ignored elements are ignored', function() {
       const text = 'hello';
       document.body.innerHTML = `<settings-section hidden-by-search>
+             <cr-action-menu>${text}</cr-action-menu>
+             <cr-dialog>${text}</cr-dialog>
              <cr-events>${text}</cr-events>
              <dialog>${text}</dialog>
              <iron-icon>${text}</iron-icon>
@@ -114,6 +116,8 @@ cr.define('settings_test', function() {
              <paper-ripple>${text}</paper-ripple>
              <paper-slider>${text}</paper-slider>
              <paper-spinner-lite>${text}</paper-spinner-lite>
+             <slot>${text}</slot>
+             <content>${text}</content>
              <style>${text}</style>
              <template>${text}</template>
            </settings-section>`;
