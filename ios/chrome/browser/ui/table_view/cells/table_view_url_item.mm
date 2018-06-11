@@ -44,11 +44,11 @@ const CGFloat kFaviconContainerWidth = 28;
   TableViewURLCell* cell =
       base::mac::ObjCCastStrict<TableViewURLCell>(tableCell);
   // Use the page's title for the label, or its URL if title is empty.
-  if (self.title) {
+  if ([self.title length] == 0) {
+    cell.titleLabel.text = base::SysUTF8ToNSString(self.URL.host());
+  } else {
     cell.titleLabel.text = self.title;
     cell.URLLabel.text = base::SysUTF8ToNSString(self.URL.host());
-  } else {
-    cell.titleLabel.text = base::SysUTF8ToNSString(self.URL.host());
   }
   cell.metadataLabel.text = self.metadata;
   cell.metadataLabel.hidden = ([self.metadata length] == 0);
