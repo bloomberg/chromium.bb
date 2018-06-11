@@ -46,6 +46,7 @@ class TabLoaderTester {
 
   // Additional helper functions.
   bool IsSharedTabLoader() const;
+  bool HasTimedOutLoads() const;
 
  private:
   TabLoader* tab_loader_ = nullptr;

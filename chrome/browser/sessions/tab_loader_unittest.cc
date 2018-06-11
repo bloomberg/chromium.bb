@@ -192,6 +192,7 @@ TEST_F(TabLoaderTest, ForceLoadTimer) {
   EXPECT_TRUE(tab_loader_.IsSharedTabLoader());
 
   SimulateLoadTimeout();
+  EXPECT_FALSE(tab_loader_.HasTimedOutLoads());
 
   // Expect all tabs to be loading. Note that this also validates that
   // force-loads can exceed the number of loadingslots.
@@ -269,7 +270,7 @@ TEST_F(TabLoaderTest, TimeoutCanExceedLoadingSlots) {
   CreateMultipleRestoredWebContents(1, 4);
 
   // Create the tab loader with 2 loading slots. This should initially start
-  // loading 1 tabs, due to exclusive initial loading of active tabs.
+  // loading 1 tab, due to exclusive initial loading of active tabs.
   max_simultaneous_loads_ = 2;
   TabLoader::RestoreTabs(restored_tabs_, clock_.NowTicks());
   EXPECT_EQ(4u, tab_loader_.tabs_to_load().size());
@@ -279,6 +280,7 @@ TEST_F(TabLoaderTest, TimeoutCanExceedLoadingSlots) {
   // Simulate a timeout and expect there to be 2 loading tabs and 3 left to
   // load.
   SimulateLoadTimeout();
+  EXPECT_FALSE(tab_loader_.HasTimedOutLoads());
   EXPECT_EQ(3u, tab_loader_.tabs_to_load().size());
   EXPECT_EQ(2u, tab_loader_.scheduled_to_load_count());
   EXPECT_EQ(2u, tab_loader_.force_load_delay_multiplier());
@@ -286,6 +288,7 @@ TEST_F(TabLoaderTest, TimeoutCanExceedLoadingSlots) {
 
   // Do it again and expect 3 tabs to be loading.
   SimulateLoadTimeout();
+  EXPECT_FALSE(tab_loader_.HasTimedOutLoads());
   EXPECT_EQ(2u, tab_loader_.tabs_to_load().size());
   EXPECT_EQ(3u, tab_loader_.scheduled_to_load_count());
   EXPECT_EQ(4u, tab_loader_.force_load_delay_multiplier());
@@ -293,6 +296,7 @@ TEST_F(TabLoaderTest, TimeoutCanExceedLoadingSlots) {
 
   // Do it again and expect 4 tabs to be loading.
   SimulateLoadTimeout();
+  EXPECT_FALSE(tab_loader_.HasTimedOutLoads());
   EXPECT_EQ(1u, tab_loader_.tabs_to_load().size());
   EXPECT_EQ(4u, tab_loader_.scheduled_to_load_count());
   EXPECT_EQ(8u, tab_loader_.force_load_delay_multiplier());

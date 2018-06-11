@@ -467,6 +467,11 @@ void TabLoader::ForceLoadTimerFired() {
   force_load_time_ = base::TimeTicks();
   force_load_delay_multiplier_ *= 2;
 
+  // Remove the expired tab from the set of loading tabs so that this tab can't
+  // be detected as having timed out a second time in the next call to
+  // StartTimerIfNeeded.
+  tabs_loading_.erase(tabs_loading_.begin());
+
   // Load a new tab, ignoring the number of open loading slots. This prevents
   // loading from being blocked indefinitely by slow to load tabs. Note that
   // this can exceed the soft-cap on simultaneously loading tabs.
@@ -526,6 +531,14 @@ void TabLoader::LoadNextTab(bool due_to_timeout) {
   }
 }
 
+base::TimeDelta TabLoader::GetLoadTimeoutPeriod() const {
+  base::TimeDelta timeout = delegate_->GetTimeoutBeforeLoadingNextTab() *
+                            force_load_delay_multiplier_;
+  if (!did_one_tab_load_)
+    timeout = delegate_->GetFirstTabLoadingTimeout();
+  return timeout;
+}
+
 void TabLoader::StartTimerIfNeeded() {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
 
@@ -537,16 +550,11 @@ void TabLoader::StartTimerIfNeeded() {
     return;
   }
 
-  // Get the timeout period.
-  base::TimeDelta timeout = delegate_->GetTimeoutBeforeLoadingNextTab() *
-                            force_load_delay_multiplier_;
-  if (!did_one_tab_load_)
-    timeout = delegate_->GetFirstTabLoadingTimeout();
-
   // Determine the time at which the earliest loading tab will timeout. If
   // this is the same as the time at which the currently running timer is
   // scheduled to fire then do nothing and simply let the timer fire. This
   // minimizes timer cancelations which cause orphaned tasks.
+  base::TimeDelta timeout = GetLoadTimeoutPeriod();
   base::TimeTicks expiry_time =
       tabs_loading_.begin()->loading_start_time + timeout;
   if (expiry_time == force_load_time_) {
@@ -555,8 +563,8 @@ void TabLoader::StartTimerIfNeeded() {
   }
 
   // Get the time remaining to the expiry, lower bounded by zero.
-  base::TimeDelta expiry_delta = expiry_time - clock_->NowTicks();
-  std::max(base::TimeDelta(), expiry_time - clock_->NowTicks());
+  base::TimeDelta expiry_delta =
+      std::max(base::TimeDelta(), expiry_time - clock_->NowTicks());
   force_load_time_ = expiry_time;
   force_load_timer_.Stop();
 

@@ -157,6 +157,9 @@ class TabLoader : public base::RefCounted<TabLoader>,
   // if the number of simultaneously loading tabs is exceeded.
   void LoadNextTab(bool due_to_timeout);
 
+  // Returns the current load timeout period.
+  base::TimeDelta GetLoadTimeoutPeriod() const;
+
   // Can do nothing, start a timer, or cancel a previously started timer
   // depending on whether or not one needs to be running.
   void StartTimerIfNeeded();
