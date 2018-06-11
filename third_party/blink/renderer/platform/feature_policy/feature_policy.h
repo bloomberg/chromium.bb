@@ -58,10 +58,6 @@ ParseFeaturePolicy(const String& policy,
                    Vector<String>* messages,
                    const FeatureNameMap& feature_names);
 
-// Verifies whether feature policy is enabled and |feature| is supported in
-// feature policy.
-PLATFORM_EXPORT bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FEATURE_POLICY_FEATURE_POLICY_H_

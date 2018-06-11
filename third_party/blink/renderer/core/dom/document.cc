@@ -6112,8 +6112,7 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
 bool Document::AllowedToUseDynamicMarkUpInsertion(
     const char* api_name,
     ExceptionState& exception_state) {
-  if (!IsSupportedInFeaturePolicy(
-          mojom::FeaturePolicyFeature::kDocumentStreamInsertion)) {
+  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
     return true;
   }
   if (!frame_ || frame_->IsFeatureEnabled(

@@ -135,32 +135,6 @@ ParsedFeaturePolicy ParseFeaturePolicy(
   return whitelists;
 }
 
-bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
-  switch (feature) {
-    case mojom::FeaturePolicyFeature::kFullscreen:
-    case mojom::FeaturePolicyFeature::kPayment:
-    case mojom::FeaturePolicyFeature::kUsb:
-    case mojom::FeaturePolicyFeature::kWebVr:
-    case mojom::FeaturePolicyFeature::kAccelerometer:
-    case mojom::FeaturePolicyFeature::kAmbientLightSensor:
-    case mojom::FeaturePolicyFeature::kGyroscope:
-    case mojom::FeaturePolicyFeature::kMagnetometer:
-    case mojom::FeaturePolicyFeature::kSyncXHR:
-      return true;
-    case mojom::FeaturePolicyFeature::kPictureInPicture:
-      return RuntimeEnabledFeatures::PictureInPictureAPIEnabled();
-    case mojom::FeaturePolicyFeature::kUnsizedMedia:
-    case mojom::FeaturePolicyFeature::kVerticalScroll:
-    case mojom::FeaturePolicyFeature::kLegacyImageFormats:
-    case mojom::FeaturePolicyFeature::kImageCompression:
-    case mojom::FeaturePolicyFeature::kDocumentStreamInsertion:
-    case mojom::FeaturePolicyFeature::kMaxDownscalingImage:
-      return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled();
-    default:
-      return false;
-  }
-}
-
 const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {

@@ -25,10 +25,6 @@ const char kNavigatorDetachedError[] =
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"xr\" is disallowed by feature policy.";
 
-const char kCrossOriginSubframeBlocked[] =
-    "Blocked call to navigator.xr.requestDevice inside a cross-origin "
-    "iframe because the frame has never been activated by the user.";
-
 const char kNoDevicesMessage[] = "No devices found.";
 
 }  // namespace
@@ -86,19 +82,12 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
     did_log_requestDevice_ = true;
   }
 
-  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kWebVr)) {
-    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr)) {
-      // Only allow the call to be made if the appropraite feature policy is in
-      // place.
-      return ScriptPromise::RejectWithDOMException(
-          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
-                                             kFeaturePolicyBlocked));
-    }
-  } else if (!frame->HasBeenActivated() && frame->IsCrossOriginSubframe()) {
-    // Block calls from cross-origin iframes that have never had a user gesture.
+  if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr)) {
+    // Only allow the call to be made if the appropraite feature policy is in
+    // place.
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
-                                           kCrossOriginSubframeBlocked));
+                                           kFeaturePolicyBlocked));
   }
 
   // If we're still waiting for a previous call to resolve return that promise

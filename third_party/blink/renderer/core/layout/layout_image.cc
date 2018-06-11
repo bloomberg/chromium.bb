@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -54,8 +55,7 @@ bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
                                   ImageResourceContent* new_image) {
   // Invert the image if the document does not have the 'legacy-image-formats'
   // feature enabled, and the image is not one of the allowed formats.
-  if (IsSupportedInFeaturePolicy(
-          mojom::FeaturePolicyFeature::kLegacyImageFormats) &&
+  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       !frame.IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kLegacyImageFormats)) {
     if (!new_image->IsAcceptableContentType()) {
@@ -64,8 +64,7 @@ bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
   }
   // Invert the image if the document does not have the image-compression'
   // feature enabled and the image is not sufficiently-well-compressed.
-  if (IsSupportedInFeaturePolicy(
-          mojom::FeaturePolicyFeature::kImageCompression) &&
+  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       !frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kImageCompression)) {
     if (!new_image->IsAcceptableCompressionRatio())
       return true;
@@ -76,8 +75,7 @@ bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
 bool CheckForMaxDownscalingImagePolicy(const LocalFrame& frame,
                                        HTMLImageElement* element,
                                        LayoutImage* layout_image) {
-  if (!IsSupportedInFeaturePolicy(
-          mojom::FeaturePolicyFeature::kMaxDownscalingImage) ||
+  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() ||
       frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kMaxDownscalingImage))
     return false;
   // Invert the image if the image's size is more than 2 times bigger than the

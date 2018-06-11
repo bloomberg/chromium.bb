@@ -1642,7 +1642,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // Returns true when the current recursive scroll into visible could propagate
   // to parent frame.
-  bool AllowedToPropageRecursiveScrollToParentFrame(
+  bool AllowedToPropagateRecursiveScrollToParentFrame(
       const WebScrollIntoViewParams&);
 
   LayoutRect DebugRect() const override;

@@ -31,10 +31,6 @@ namespace {
 const char kFeaturePolicyBlockedMessage[] =
     "Access to the feature \"vr\" is disallowed by feature policy.";
 
-const char kGetVRDisplaysCrossOriginBlockedMessage[] =
-    "Access to navigator.getVRDisplays requires a user gesture in cross-origin "
-    "embedded frames.";
-
 const char kNotAssociatedWithDocumentMessage[] =
     "The object is no longer associated with a document.";
 
@@ -147,21 +143,10 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            kNotAssociatedWithDocumentMessage));
   }
-  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kWebVr)) {
-    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr)) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
-                                             kFeaturePolicyBlockedMessage));
-    }
-  } else if (!frame->HasBeenActivated() && frame->IsCrossOriginSubframe()) {
-    // Before we introduced feature policy, cross-origin iframes had access to
-    // WebVR APIs. Ideally, we want to block access to WebVR APIs for
-    // cross-origin iframes. To be backward compatible, we changed to require a
-    // user gesture for cross-origin iframes.
+  if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr)) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kSecurityError,
-                             kGetVRDisplaysCrossOriginBlockedMessage));
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kFeaturePolicyBlockedMessage));
   }
 
   // Similar to the restriciton above, we're going to block developers from

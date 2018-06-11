@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -574,8 +575,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
       TouchActionUtil::ComputeEffectiveTouchAction(*touch_node);
 
   should_enforce_vertical_scroll_ =
-      IsSupportedInFeaturePolicy(
-          mojom::FeaturePolicyFeature::kVerticalScroll) &&
+      RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       !touch_sequence_document_->GetFrame()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kVerticalScroll);
   if (should_enforce_vertical_scroll_ &&
