@@ -326,7 +326,7 @@ int64_t DownloadUIAdapterTest::AddRequest(const GURL& url,
   params.url = url;
   params.client_id = client_id;
   return request_coordinator()->SavePageLater(
-      params, base::Bind(&SavePageLaterCallback));
+      params, base::BindOnce(&SavePageLaterCallback));
 }
 
 void DownloadUIAdapterTest::AddInitialPage(
@@ -457,7 +457,7 @@ TEST_F(DownloadUIAdapterTest, RemoveRequest) {
   std::vector<int64_t> requests_to_remove = {id};
   request_coordinator()->RemoveRequests(
       requests_to_remove,
-      base::Bind(
+      base::BindOnce(
           [](int64_t id, const MultipleItemStatuses& statuses) {
             EXPECT_EQ(1UL, statuses.size());
             EXPECT_EQ(id, statuses[0].first);

@@ -21,21 +21,21 @@ namespace offline_pages {
 // Asynchronously fetches the offline prefetch related data from the server.
 class PrefetchRequestFetcher : public net::URLFetcherDelegate {
  public:
-  using FinishedCallback = base::Callback<void(PrefetchRequestStatus status,
-                                               const std::string& data)>;
+  using FinishedCallback = base::OnceCallback<void(PrefetchRequestStatus status,
+                                                   const std::string& data)>;
 
   // Creates a fetcher that will sends a GET request to the server.
   static std::unique_ptr<PrefetchRequestFetcher> CreateForGet(
       const GURL& url,
       net::URLRequestContextGetter* request_context_getter,
-      const FinishedCallback& callback);
+      FinishedCallback callback);
 
   // Creates a fetcher that will sends a POST request to the server.
   static std::unique_ptr<PrefetchRequestFetcher> CreateForPost(
       const GURL& url,
       const std::string& message,
       net::URLRequestContextGetter* request_context_getter,
-      const FinishedCallback& callback);
+      FinishedCallback callback);
 
   ~PrefetchRequestFetcher() override;
 
@@ -48,7 +48,7 @@ class PrefetchRequestFetcher : public net::URLFetcherDelegate {
   PrefetchRequestFetcher(const GURL& url,
                          const std::string& message,
                          net::URLRequestContextGetter* request_context_getter,
-                         const FinishedCallback& callback);
+                         FinishedCallback callback);
 
   PrefetchRequestStatus ParseResponse(const net::URLFetcher* source,
                                       std::string* data);

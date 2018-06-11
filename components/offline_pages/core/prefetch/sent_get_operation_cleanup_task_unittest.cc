@@ -34,13 +34,13 @@ class TestingPrefetchNetworkRequestFactory
   void MakeGeneratePageBundleRequest(
       const std::vector<std::string>& prefetch_urls,
       const std::string& gcm_registration_id,
-      const PrefetchRequestFinishedCallback& callback) override {}
+      PrefetchRequestFinishedCallback callback) override {}
   std::unique_ptr<std::set<std::string>> GetAllUrlsRequested() const override {
     return std::unique_ptr<std::set<std::string>>();
   }
   void MakeGetOperationRequest(
       const std::string& operation_name,
-      const PrefetchRequestFinishedCallback& callback) override {}
+      PrefetchRequestFinishedCallback callback) override {}
   GetOperationRequest* FindGetOperationRequestByName(
       const std::string& operation_name) const override {
     return nullptr;

@@ -155,8 +155,8 @@ void DownloadUIAdapter::ThumbnailAdded(OfflinePageModel* model,
                                        const OfflinePageThumbnail& thumbnail) {
   model_->GetPageByOfflineId(
       thumbnail.offline_id,
-      base::BindRepeating(&DownloadUIAdapter::OnPageGetForThumbnailAdded,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DownloadUIAdapter::OnPageGetForThumbnailAdded,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 // RequestCoordinator::Observer
@@ -403,8 +403,8 @@ void DownloadUIAdapter::PauseDownload(const ContentId& id) {
   // TODO(fgorski): Clean this up in a way where 2 round trips + GetAllRequests
   // is not necessary.
   request_coordinator_->GetAllRequests(
-      base::Bind(&DownloadUIAdapter::PauseDownloadContinuation,
-                 weak_ptr_factory_.GetWeakPtr(), id.id));
+      base::BindOnce(&DownloadUIAdapter::PauseDownloadContinuation,
+                     weak_ptr_factory_.GetWeakPtr(), id.id));
 }
 
 void DownloadUIAdapter::PauseDownloadContinuation(
@@ -420,8 +420,8 @@ void DownloadUIAdapter::ResumeDownload(const ContentId& id,
   // is not necessary.
   if (has_user_gesture) {
     request_coordinator_->GetAllRequests(
-        base::Bind(&DownloadUIAdapter::ResumeDownloadContinuation,
-                   weak_ptr_factory_.GetWeakPtr(), id.id));
+        base::BindOnce(&DownloadUIAdapter::ResumeDownloadContinuation,
+                       weak_ptr_factory_.GetWeakPtr(), id.id));
   } else {
     request_coordinator_->StartImmediateProcessing(base::DoNothing());
   }

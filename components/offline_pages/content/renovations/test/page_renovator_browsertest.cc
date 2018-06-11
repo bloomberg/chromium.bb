@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, CorrectRenovationsRun) {
   InitializeWithTestingRenovations(GURL("http://foo.bar/"));
   // This should run FooPageRenovation and AlwaysRenovation, but not
   // BarPageRenovation.
-  page_renovator_->RunRenovations(base::Bind(
+  page_renovator_->RunRenovations(base::BindOnce(
       &PageRenovatorBrowserTest::QuitRunLoop, base::Unretained(this)));
   content::RunThisRunLoop(run_loop_.get());
 
@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, CorrectRenovationsRun) {
 IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, WikipediaRenovationRuns) {
   Navigate(kWikipediaTestPagePath);
   InitializeWithRealRenovations(GURL("http://en.m.wikipedia.org/"));
-  page_renovator_->RunRenovations(base::Bind(
+  page_renovator_->RunRenovations(base::BindOnce(
       &PageRenovatorBrowserTest::QuitRunLoop, base::Unretained(this)));
   content::RunThisRunLoop(run_loop_.get());
 

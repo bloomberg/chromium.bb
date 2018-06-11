@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_downloader_impl.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
@@ -108,8 +109,9 @@ void PrefetchDownloaderImpl::StartDownload(
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
   params.client = download::DownloadClient::OFFLINE_PAGE_PREFETCH;
   params.guid = download_id;
-  params.callback = base::Bind(&PrefetchDownloaderImpl::OnStartDownload,
-                               weak_ptr_factory_.GetWeakPtr());
+  params.callback = base::AdaptCallbackForRepeating(
+      base::BindOnce(&PrefetchDownloaderImpl::OnStartDownload,
+                     weak_ptr_factory_.GetWeakPtr()));
   params.scheduling_params.network_requirements =
       download::SchedulingParams::NetworkRequirements::UNMETERED;
   params.scheduling_params.battery_requirements =

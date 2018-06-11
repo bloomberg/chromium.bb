@@ -108,8 +108,8 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotFocusAfterCrash) {
 TEST_F(BackgroundLoaderContentsTest, CannotDownloadNoDelegate) {
   contents()->CanDownload(
       GURL::EmptyGURL(), std::string(),
-      base::Bind(&BackgroundLoaderContentsTest::DownloadCallback,
-                 base::Unretained(this)));
+      base::BindRepeating(&BackgroundLoaderContentsTest::DownloadCallback,
+                          base::Unretained(this)));
   WaitForSignal();
   ASSERT_FALSE(download());
   ASSERT_FALSE(can_download_delegate_called());
@@ -119,8 +119,8 @@ TEST_F(BackgroundLoaderContentsTest, CanDownload_DelegateCalledWhenSet) {
   SetDelegate();
   contents()->CanDownload(
       GURL::EmptyGURL(), std::string(),
-      base::Bind(&BackgroundLoaderContentsTest::DownloadCallback,
-                 base::Unretained(this)));
+      base::BindRepeating(&BackgroundLoaderContentsTest::DownloadCallback,
+                          base::Unretained(this)));
   WaitForSignal();
   ASSERT_TRUE(download());
   ASSERT_TRUE(can_download_delegate_called());
@@ -161,8 +161,8 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
       false /* disable_local_echo */);
   contents()->RequestMediaAccessPermission(
       nullptr /* contents */, request /* request */,
-      base::Bind(&BackgroundLoaderContentsTest::MediaAccessCallback,
-                 base::Unretained(this)));
+      base::BindRepeating(&BackgroundLoaderContentsTest::MediaAccessCallback,
+                          base::Unretained(this)));
   WaitForSignal();
   // No devices allowed.
   ASSERT_TRUE(devices().empty());

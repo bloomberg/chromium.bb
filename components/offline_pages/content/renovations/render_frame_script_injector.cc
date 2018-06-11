@@ -29,20 +29,20 @@ void RenderFrameScriptInjector::Inject(base::string16 script,
   // Must create proxy callback since ExecuteJavaScriptInIsolatedWorld
   // takes a |const base::Value*| argument instead of a |const
   // base::Value&|.
-  base::RepeatingCallback<void(const base::Value*)> proxy_callback =
-      base::BindRepeating(
-          [](ResultCallback user_callback, const base::Value* result) {
-            base::Value new_result = result ? result->Clone() : base::Value();
-            if (user_callback)
-              user_callback.Run(new_result);
-          },
-          callback);
+  base::OnceCallback<void(const base::Value*)> proxy_callback = base::BindOnce(
+      [](ResultCallback user_callback, const base::Value* result) {
+        base::Value new_result = result ? result->Clone() : base::Value();
+        if (user_callback)
+          std::move(user_callback).Run(new_result);
+      },
+      std::move(callback));
 
   // |render_frame_host_| should still be alive if the
   // caller is using this class correctly.
   DCHECK(render_frame_host_);
   render_frame_host_->ExecuteJavaScriptInIsolatedWorld(
-      script, std::move(proxy_callback), isolated_world_id_);
+      script, base::AdaptCallbackForRepeating(std::move(proxy_callback)),
+      isolated_world_id_);
 }
 
 }  // namespace offline_pages

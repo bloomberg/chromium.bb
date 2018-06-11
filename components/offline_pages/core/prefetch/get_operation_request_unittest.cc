@@ -38,9 +38,10 @@ const char kServerPathForTestOperation[] = "/v1/operations/test-operation-1234";
 class GetOperationRequestTest : public PrefetchRequestTestBase {
  public:
   std::unique_ptr<GetOperationRequest> CreateRequest(
-      const PrefetchRequestFinishedCallback& callback) {
-    return std::unique_ptr<GetOperationRequest>(new GetOperationRequest(
-        kTestOperationName, kTestChannel, request_context(), callback));
+      PrefetchRequestFinishedCallback callback) {
+    return std::unique_ptr<GetOperationRequest>(
+        new GetOperationRequest(kTestOperationName, kTestChannel,
+                                request_context(), std::move(callback)));
   }
 };
 

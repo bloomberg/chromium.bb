@@ -30,7 +30,7 @@ namespace offline_pages {
 class Task {
  public:
   // Signature of the method to be called by a task, when its work is done.
-  typedef base::Callback<void(Task*)> TaskCompletionCallback;
+  typedef base::OnceCallback<void(Task*)> TaskCompletionCallback;
 
   Task();
   virtual ~Task();
@@ -45,7 +45,7 @@ class Task {
   // |SetTaskCompletionCallback| for details.
   void SetTaskCompletionCallbackForTesting(
       scoped_refptr<base::SingleThreadTaskRunner> task_completion_runner,
-      const TaskCompletionCallback& task_completion_callback);
+      TaskCompletionCallback task_completion_callback);
 
  protected:
   // Call |TaskComplete| as the last call, before the task is terminated. This
@@ -66,7 +66,7 @@ class Task {
   // not set, it will also work.
   void SetTaskCompletionCallback(
       scoped_refptr<base::SingleThreadTaskRunner> task_completion_runner,
-      const TaskCompletionCallback& task_completion_callback);
+      TaskCompletionCallback task_completion_callback);
 
   // Completion callback for this task set by |SetTaskCompletionCallback|.
   TaskCompletionCallback task_completion_callback_;

@@ -30,7 +30,7 @@ class GeneratePageBundleRequest {
       const std::vector<std::string>& page_urls,
       version_info::Channel channel,
       net::URLRequestContextGetter* request_context_getter,
-      const PrefetchRequestFinishedCallback& callback);
+      PrefetchRequestFinishedCallback callback);
   ~GeneratePageBundleRequest();
 
   const std::vector<std::string>& requested_urls() { return requested_urls_; }

@@ -33,7 +33,7 @@ class PrefetchRequestFetcherTest : public PrefetchRequestTestBase {
 
  private:
   PrefetchRequestStatus RunFetcher(
-      const base::Callback<void(void)>& respond_callback,
+      base::OnceCallback<void(void)> respond_callback,
       std::string* data_received);
 };
 
@@ -41,8 +41,8 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithNetError(
     net::Error net_error) {
   std::string data_received;
   PrefetchRequestStatus status =
-      RunFetcher(base::Bind(&PrefetchRequestTestBase::RespondWithNetError,
-                            base::Unretained(this), net_error),
+      RunFetcher(base::BindOnce(&PrefetchRequestTestBase::RespondWithNetError,
+                                base::Unretained(this), net_error),
                  &data_received);
   EXPECT_TRUE(data_received.empty());
   return status;
@@ -52,8 +52,8 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithHttpError(
     int http_error) {
   std::string data_received;
   PrefetchRequestStatus status =
-      RunFetcher(base::Bind(&PrefetchRequestTestBase::RespondWithHttpError,
-                            base::Unretained(this), http_error),
+      RunFetcher(base::BindOnce(&PrefetchRequestTestBase::RespondWithHttpError,
+                                base::Unretained(this), http_error),
                  &data_received);
   EXPECT_TRUE(data_received.empty());
   return status;
@@ -62,13 +62,13 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithHttpError(
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcherWithData(
     const std::string& response_data,
     std::string* data_received) {
-  return RunFetcher(base::Bind(&PrefetchRequestTestBase::RespondWithData,
-                               base::Unretained(this), response_data),
+  return RunFetcher(base::BindOnce(&PrefetchRequestTestBase::RespondWithData,
+                                   base::Unretained(this), response_data),
                     data_received);
 }
 
 PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
-    const base::Callback<void(void)>& respond_callback,
+    base::OnceCallback<void(void)> respond_callback,
     std::string* data_received) {
   base::MockCallback<PrefetchRequestFetcher::FinishedCallback> callback;
   std::unique_ptr<PrefetchRequestFetcher> fetcher =
@@ -79,7 +79,7 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
   std::string data;
   EXPECT_CALL(callback, Run(_, _))
       .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&data)));
-  respond_callback.Run();
+  std::move(respond_callback).Run();
 
   *data_received = data;
   return status;

@@ -16,12 +16,12 @@ class ConsumedResource {
   ConsumedResource();
   ~ConsumedResource();
 
-  void Step(const base::Closure& step_callback);
+  void Step(base::OnceClosure step_callback);
   void CompleteStep();
   bool HasNextStep() const { return !next_step_.is_null(); }
 
  private:
-  base::Closure next_step_;
+  base::OnceClosure next_step_;
 };
 
 // Sample test task. This should not be used as a example of task implementation

@@ -31,7 +31,7 @@ class GeneratePageBundleTask : public Task {
                          PrefetchStore* prefetch_store,
                          PrefetchGCMHandler* gcm_handler,
                          PrefetchNetworkRequestFactory* request_factory,
-                         const PrefetchRequestFinishedCallback& callback);
+                         PrefetchRequestFinishedCallback callback);
   ~GeneratePageBundleTask() override;
 
   // Task implementation.

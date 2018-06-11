@@ -26,7 +26,7 @@ class GetOperationTask : public Task {
 
   GetOperationTask(PrefetchStore* store,
                    PrefetchNetworkRequestFactory* request_factory,
-                   const PrefetchRequestFinishedCallback& callback);
+                   PrefetchRequestFinishedCallback callback);
   ~GetOperationTask() override;
 
   // Task implementation.

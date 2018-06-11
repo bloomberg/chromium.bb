@@ -199,9 +199,9 @@ enum class PrefetchItemErrorCode {
 
 // Callback invoked upon completion of a prefetch request.
 using PrefetchRequestFinishedCallback =
-    base::Callback<void(PrefetchRequestStatus status,
-                        const std::string& operation_name,
-                        const std::vector<RenderPageInfo>& pages)>;
+    base::OnceCallback<void(PrefetchRequestStatus status,
+                            const std::string& operation_name,
+                            const std::vector<RenderPageInfo>& pages)>;
 
 // Holds information about a suggested URL to be prefetched.
 struct PrefetchURL {
@@ -237,10 +237,6 @@ struct PrefetchDownloadResult {
   base::FilePath file_path;
   int64_t file_size = 0;
 };
-
-// Callback invoked upon completion of a download.
-using PrefetchDownloadCompletedCallback =
-    base::Callback<void(const PrefetchDownloadResult& result)>;
 
 // Describes all the info needed to import an archive.
 struct PrefetchArchiveInfo {

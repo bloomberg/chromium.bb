@@ -23,10 +23,6 @@ namespace {
 
 const char kPrefetchStoreFileName[] = "PrefetchStore.db";
 
-using InitializeCallback =
-    base::Callback<void(InitializationStatus,
-                        std::unique_ptr<sql::Connection>)>;
-
 bool PrepareDirectory(const base::FilePath& path) {
   base::File::Error error = base::File::FILE_OK;
   if (!base::DirectoryExists(path.DirName())) {

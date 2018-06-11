@@ -862,10 +862,11 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByUrlPredicate) {
   EXPECT_CALL(callback, Run(testing::A<DeletePageResult>()));
   CheckTaskQueueIdle();
 
-  UrlPredicate predicate =
-      base::Bind([](const GURL& expected_url,
-                    const GURL& url) -> bool { return url == expected_url; },
-                 kTestUrl);
+  UrlPredicate predicate = base::BindRepeating(
+      [](const GURL& expected_url, const GURL& url) -> bool {
+        return url == expected_url;
+      },
+      kTestUrl);
 
   model()->DeleteCachedPagesByURLPredicate(predicate, callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());

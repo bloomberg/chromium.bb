@@ -118,18 +118,26 @@ class FakePrefetchNetworkRequestFactory
   void MakeGeneratePageBundleRequest(
       const std::vector<std::string>& prefetch_urls,
       const std::string& gcm_registration_id,
-      const PrefetchRequestFinishedCallback& callback) override {
-    TestPrefetchNetworkRequestFactory::MakeGeneratePageBundleRequest(
-        prefetch_urls, gcm_registration_id, callback);
-    if (!respond_to_generate_page_bundle_)
+      PrefetchRequestFinishedCallback callback) override {
+    // TODO(https://crbug.com/850648): Explicitly passing in a base::DoNothing()
+    // callback when |respond_to_generate_page_bundle_| is set to true, to avoid
+    // the |callback| being called for more than once.
+    if (!respond_to_generate_page_bundle_) {
+      TestPrefetchNetworkRequestFactory::MakeGeneratePageBundleRequest(
+          prefetch_urls, gcm_registration_id, std::move(callback));
       return;
+    } else {
+      TestPrefetchNetworkRequestFactory::MakeGeneratePageBundleRequest(
+          prefetch_urls, gcm_registration_id, base::DoNothing());
+    }
     std::vector<RenderPageInfo> pages;
     for (const std::string& url : prefetch_urls) {
       pages.push_back(RenderInfo(url));
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindRepeating(callback, PrefetchRequestStatus::SUCCESS,
-                                       kOperationName, pages));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), PrefetchRequestStatus::SUCCESS,
+                       kOperationName, pages));
   }
 
   void set_respond_to_generate_page_bundle(bool value) {

@@ -66,9 +66,9 @@ void OfflinePageMetadataStoreTestUtil::InsertItem(const OfflinePageItem& page) {
   AddPageResult result;
   auto task = std::make_unique<AddPageTask>(
       store(), page,
-      base::Bind([](AddPageResult* out_result,
-                    AddPageResult cb_result) { *out_result = cb_result; },
-                 &result));
+      base::BindOnce([](AddPageResult* out_result,
+                        AddPageResult cb_result) { *out_result = cb_result; },
+                     &result));
   task->Run();
   task_runner_->RunUntilIdle();
   EXPECT_EQ(AddPageResult::SUCCESS, result);
@@ -90,7 +90,7 @@ OfflinePageMetadataStoreTestUtil::GetPageByOfflineId(int64_t offline_id) {
   OfflinePageItem* page = nullptr;
   auto task = GetPagesTask::CreateTaskMatchingOfflineId(
       store(),
-      base::Bind(
+      base::BindOnce(
           [](OfflinePageItem** out_page, const OfflinePageItem* cb_page) {
             if (cb_page)
               *out_page = new OfflinePageItem(*cb_page);

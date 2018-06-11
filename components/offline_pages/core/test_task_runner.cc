@@ -25,9 +25,9 @@ void TestTaskRunner::RunTask(Task* task) {
   Task* completed_task = nullptr;
   task->SetTaskCompletionCallbackForTesting(
       task_runner_.get(),
-      base::Bind([](Task** completed_task_ptr,
-                    Task* task) { *completed_task_ptr = task; },
-                 &completed_task));
+      base::BindOnce([](Task** completed_task_ptr,
+                        Task* task) { *completed_task_ptr = task; },
+                     &completed_task));
   task->Run();
   task_runner_->RunUntilIdle();
   EXPECT_EQ(task, completed_task);
