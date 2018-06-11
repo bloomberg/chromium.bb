@@ -64,7 +64,6 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   // SigninManagerBase::Observer implementation.
   void GoogleSigninSucceeded(const std::string& account_id,
                              const std::string& username) override;
-  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
