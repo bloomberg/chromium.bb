@@ -64,7 +64,6 @@ public class DataReductionStatsPreference extends Preference {
     private long mLeftPosition;
     private long mRightPosition;
     private Long mCurrentTime;
-    private CharSequence mOriginalTotalPhrase;
     private CharSequence mSavingsTotalPhrase;
     private CharSequence mReceivedTotalPhrase;
     private String mStartDatePhrase;
@@ -284,14 +283,28 @@ public class DataReductionStatsPreference extends Preference {
         final long compressedTotalBytes = mReceivedNetworkStatsHistory.getTotalBytes();
         mReceivedTotalPhrase = FileSizeUtil.formatFileSize(context, compressedTotalBytes);
         final long originalTotalBytes = mOriginalNetworkStatsHistory.getTotalBytes();
-        mOriginalTotalPhrase = FileSizeUtil.formatFileSize(context, originalTotalBytes);
         final long savingsTotalBytes = originalTotalBytes - compressedTotalBytes;
         mSavingsTotalPhrase = FileSizeUtil.formatFileSize(context, savingsTotalBytes);
         mStartDatePhrase = formatDate(context, start);
         mEndDatePhrase = formatDate(context, end);
 
+        long breakdownSavingsTotal = 0;
+        long breakdownUsageTotal = 0;
+        for (DataReductionDataUseItem item : mSiteBreakdownItems) {
+            breakdownSavingsTotal += item.getDataSaved();
+            breakdownUsageTotal += item.getDataUsed();
+        }
+        final long savingsDiff = Math.abs(breakdownSavingsTotal - savingsTotalBytes);
+        final long usageDiff = Math.abs(breakdownUsageTotal - compressedTotalBytes);
+        final int savingsDiffPercent =
+                (int) (savingsDiff / (breakdownSavingsTotal + savingsTotalBytes) * 100);
+        final int usageDiffPercent =
+                (int) (usageDiff / (breakdownUsageTotal + compressedTotalBytes) * 100);
+
         DataReductionProxyUma.dataReductionProxyUserViewedSavings(
                 compressedTotalBytes, originalTotalBytes);
+        DataReductionProxyUma.dataReductionProxyUserViewedSavingsDifference(
+                savingsDiffPercent, usageDiffPercent);
     }
 
     private static String formatDate(Context context, long millisSinceEpoch) {
