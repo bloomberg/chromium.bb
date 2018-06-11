@@ -22,10 +22,9 @@
 
 namespace blink {
 
-CacheStorage* CacheStorage::Create(
-    GlobalFetch::ScopedFetcher* fetcher,
-    service_manager::InterfaceProvider* mojo_provider) {
-  return new CacheStorage(fetcher, mojo_provider);
+CacheStorage* CacheStorage::Create(ExecutionContext* context,
+                                   GlobalFetch::ScopedFetcher* fetcher) {
+  return new CacheStorage(context, fetcher);
 }
 
 ScriptPromise CacheStorage::open(ScriptState* script_state,
@@ -208,10 +207,11 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   return promise;
 }
 
-CacheStorage::CacheStorage(GlobalFetch::ScopedFetcher* fetcher,
-                           service_manager::InterfaceProvider* mojo_provider)
+CacheStorage::CacheStorage(ExecutionContext* context,
+                           GlobalFetch::ScopedFetcher* fetcher)
     : scoped_fetcher_(fetcher) {
-  mojo_provider->GetInterface(mojo::MakeRequest(&cache_storage_ptr_));
+  context->GetInterfaceProvider()->GetInterface(
+      MakeRequest(&cache_storage_ptr_, context->GetInterfaceInvalidator()));
 }
 
 CacheStorage::~CacheStorage() = default;

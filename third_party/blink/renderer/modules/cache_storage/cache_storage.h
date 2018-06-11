@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/cache_storage/cache_query_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -23,8 +24,7 @@ class CacheStorage final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CacheStorage* Create(GlobalFetch::ScopedFetcher*,
-                              service_manager::InterfaceProvider*);
+  static CacheStorage* Create(ExecutionContext*, GlobalFetch::ScopedFetcher*);
   ~CacheStorage() override;
 
   ScriptPromise open(ScriptState*, const String& cache_name);
@@ -39,24 +39,14 @@ class CacheStorage final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  class Callbacks;
-  class WithCacheCallbacks;
-  class DeleteCallbacks;
-  class KeysCallbacks;
-  class MatchCallbacks;
-
-  friend class WithCacheCallbacks;
-  friend class DeleteCallbacks;
-
-  CacheStorage(GlobalFetch::ScopedFetcher*,
-               service_manager::InterfaceProvider*);
+  CacheStorage(ExecutionContext*, GlobalFetch::ScopedFetcher*);
   ScriptPromise MatchImpl(ScriptState*,
                           const Request*,
                           const CacheQueryOptions&);
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
 
-  mojom::blink::CacheStoragePtr cache_storage_ptr_;
+  RevocableInterfacePtr<mojom::blink::CacheStorage> cache_storage_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorage);
 };

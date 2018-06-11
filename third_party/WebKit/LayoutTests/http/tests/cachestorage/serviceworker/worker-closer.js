@@ -1,3 +1,4 @@
+postMessage('started');
 console.log('worker-close.js starting.');
 fetch('');
 close();

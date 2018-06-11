@@ -67,9 +67,8 @@ class GlobalCacheStorageImpl final
             "provider.");
         return nullptr;
       }
-      caches_ =
-          CacheStorage::Create(GlobalFetch::ScopedFetcher::From(fetching_scope),
-                               context->GetInterfaceProvider());
+      caches_ = CacheStorage::Create(
+          context, GlobalFetch::ScopedFetcher::From(fetching_scope));
     }
     return caches_;
   }
