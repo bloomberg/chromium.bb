@@ -171,13 +171,7 @@ bool CreateWebURLRequest(PP_Instance instance,
 
   dest->SetURL(
       frame->GetDocument().CompleteURL(WebString::FromUTF8(data->url)));
-  dest->SetDownloadToFile(data->stream_to_file);
   dest->SetReportUploadProgress(data->record_upload_progress);
-
-  if (data->stream_to_file) {
-    frame->BlinkFeatureUsageReport({static_cast<int>(
-        blink::mojom::WebFeature::kPPAPIURLRequestStreamToFile)});
-  }
 
   if (!data->method.empty())
     dest->SetHTTPMethod(WebString::FromUTF8(data->method));

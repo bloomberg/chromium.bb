@@ -417,7 +417,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
                           const network::ResourceResponseInfo& info);
   void OnReceivedResponse(const network::ResourceResponseInfo& info);
   void OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body);
-  void OnDownloadedData(int len, int encoded_data_length);
   void OnReceivedData(std::unique_ptr<ReceivedData> data);
   void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(const char* data, int len);
@@ -477,7 +476,6 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
@@ -504,7 +502,6 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override {}
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {}
-  void OnDownloadedData(int len, int encoded_data_length) override {}
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override {}
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
   void OnReceivedCachedMetadata(const char* data, int len) override {}
@@ -699,7 +696,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->fetch_frame_type = request.GetFrameType();
   resource_request->request_body =
       GetRequestBodyForWebURLRequest(request).get();
-  resource_request->download_to_file = request.DownloadToFile();
   resource_request->keepalive = request.GetKeepalive();
   resource_request->has_user_gesture = request.HasUserGesture();
   resource_request->enable_load_timing = true;
@@ -883,12 +879,6 @@ void WebURLLoaderImpl::Context::OnStartLoadingResponseBody(
     client_->DidStartLoadingResponseBody(std::move(body));
 }
 
-void WebURLLoaderImpl::Context::OnDownloadedData(int len,
-                                                 int encoded_data_length) {
-  if (client_)
-    client_->DidDownloadData(len, encoded_data_length);
-}
-
 void WebURLLoaderImpl::Context::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
   const char* payload = data->payload();
@@ -1004,8 +994,8 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
     return false;
 
   // The fast paths for data URL, Start() and HandleDataURL(), don't support
-  // the downloadToFile option.
-  if (request.DownloadToFile() || request.PassResponsePipeToClient())
+  // the PassResponsePipeToClient option.
+  if (request.PassResponsePipeToClient())
     return false;
 
   // Data url requests from object tags may need to be intercepted as streams
@@ -1100,12 +1090,6 @@ void WebURLLoaderImpl::RequestPeerImpl::OnStartLoadingResponseBody(
   context_->OnStartLoadingResponseBody(std::move(body));
 }
 
-void WebURLLoaderImpl::RequestPeerImpl::OnDownloadedData(
-    int len,
-    int encoded_data_length) {
-  context_->OnDownloadedData(len, encoded_data_length);
-}
-
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
   if (discard_body_)
@@ -1182,8 +1166,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetRemotePort(info.socket_address.port());
   response->SetConnectionID(info.load_timing.socket_log_id);
   response->SetConnectionReused(info.load_timing.socket_reused);
-  response->SetDownloadFilePath(
-      blink::FilePathToWebString(info.download_file_path));
   response->SetWasFetchedViaSPDY(info.was_fetched_via_spdy);
   response->SetWasFetchedViaServiceWorker(info.was_fetched_via_service_worker);
   response->SetWasFallbackRequiredByServiceWorker(
@@ -1298,7 +1280,6 @@ void WebURLLoaderImpl::LoadSynchronously(
     WebData& data,
     int64_t& encoded_data_length,
     int64_t& encoded_body_length,
-    base::Optional<int64_t>& downloaded_file_length,
     blink::WebBlobInfo& downloaded_blob) {
   TRACE_EVENT0("loading", "WebURLLoaderImpl::loadSynchronously");
   SyncLoadResponse sync_load_response;
@@ -1336,7 +1317,6 @@ void WebURLLoaderImpl::LoadSynchronously(
                       request.ReportRawHeaders());
   encoded_data_length = sync_load_response.info.encoded_data_length;
   encoded_body_length = sync_load_response.info.encoded_body_length;
-  downloaded_file_length = sync_load_response.downloaded_file_length;
   if (sync_load_response.downloaded_blob) {
     downloaded_blob = blink::WebBlobInfo(
         WebString::FromLatin1(sync_load_response.downloaded_blob->uuid),

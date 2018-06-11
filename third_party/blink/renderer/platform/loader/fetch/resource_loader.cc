@@ -657,12 +657,6 @@ void ResourceLoader::DidStartLoadingResponseBody(
                 WrapWeakPersistent(this)));
 }
 
-void ResourceLoader::DidDownloadData(int length, int encoded_data_length) {
-  Context().DispatchDidDownloadData(resource_->Identifier(), length,
-                                    encoded_data_length);
-  resource_->DidDownloadData(length);
-}
-
 void ResourceLoader::DidReceiveData(const char* data, int length) {
   CHECK_GE(length, 0);
 
@@ -755,11 +749,10 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   WebData data_out;
   int64_t encoded_data_length = WebURLLoaderClient::kUnknownEncodedDataLength;
   int64_t encoded_body_length = 0;
-  base::Optional<int64_t> downloaded_file_length;
   WebBlobInfo downloaded_blob;
   loader_->LoadSynchronously(request_in, this, response_out, error_out,
                              data_out, encoded_data_length, encoded_body_length,
-                             downloaded_file_length, downloaded_blob);
+                             downloaded_blob);
 
   // A message dispatched while synchronously fetching the resource
   // can bring about the cancellation of this load.
@@ -788,15 +781,10 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     });
   }
 
-  if (downloaded_file_length) {
-    DCHECK(request.DownloadToFile());
-    DidDownloadData(*downloaded_file_length, encoded_body_length);
-  }
   if (request.DownloadToBlob()) {
     auto blob = downloaded_blob.GetBlobHandle();
-    if (blob) {
-      DidDownloadData(blob->size(), blob->size());
-    }
+    if (blob)
+      OnProgress(blob->size());
     FinishedCreatingBlob(blob);
   }
   DidFinishLoading(CurrentTimeTicks(), encoded_data_length, encoded_body_length,

@@ -89,11 +89,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // CanReadRawCookies permission.
   scoped_refptr<HttpRawRequestResponseInfo> raw_request_response_info;
 
-  // The path to a file that will contain the response body.  It may only
-  // contain a portion of the response body at the time that the ResponseInfo
-  // becomes available.
-  base::FilePath download_file_path;
-
   // True if the response was delivered using SPDY.
   bool was_fetched_via_spdy;
 

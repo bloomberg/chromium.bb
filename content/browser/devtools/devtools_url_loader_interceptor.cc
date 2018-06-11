@@ -151,7 +151,6 @@ struct ResponseMetadata {
 
   network::ResourceResponseHead head;
   std::unique_ptr<net::RedirectInfo> redirect_info;
-  network::mojom::DownloadedTempFilePtr downloaded_file;
   std::vector<uint8_t> cached_metadata;
   size_t encoded_length = 0;
   size_t transfer_size = 0;
@@ -238,12 +237,9 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   void ResumeReadingBodyFromNet() override;
 
   // network::mojom::URLLoaderClient methods
-  void OnReceiveResponse(
-      const network::ResourceResponseHead& head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override;
+  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override;
-  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
@@ -820,8 +816,7 @@ Response InterceptionJob::InnerContinueRequest(
     // TODO(caseq): report error if other modifications are present.
     DCHECK_EQ(State::kResponseReceived, state_);
     DCHECK(!body_reader_);
-    client_->OnReceiveResponse(response_metadata_->head,
-                               std::move(response_metadata_->downloaded_file));
+    client_->OnReceiveResponse(response_metadata_->head);
     response_metadata_.reset();
     loader_->ResumeReadingBodyFromNet();
     client_binding_.ResumeIncomingMethodCallProcessing();
@@ -972,8 +967,7 @@ Response InterceptionJob::ProcessRedirectByClient(const std::string& location) {
 }
 
 void InterceptionJob::SendResponse(const base::StringPiece& body) {
-  client_->OnReceiveResponse(response_metadata_->head,
-                             std::move(response_metadata_->downloaded_file));
+  client_->OnReceiveResponse(response_metadata_->head);
 
   // We shouldn't be able to transfer a string that big over the protocol,
   // but just in case...
@@ -1140,19 +1134,17 @@ void InterceptionJob::ResumeReadingBodyFromNet() {
 
 // URLLoaderClient methods
 void InterceptionJob::OnReceiveResponse(
-    const network::ResourceResponseHead& head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& head) {
   state_ = State::kResponseReceived;
   DCHECK(!response_metadata_);
   if (!(stage_ & InterceptionStage::RESPONSE)) {
-    client_->OnReceiveResponse(head, std::move(downloaded_file));
+    client_->OnReceiveResponse(head);
     return;
   }
   loader_->PauseReadingBodyFromNet();
   client_binding_.PauseIncomingMethodCallProcessing();
 
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
-  response_metadata_->downloaded_file = std::move(downloaded_file);
 
   auto request_info = BuildRequestInfo(&head);
   const network::ResourceRequest& request = create_loader_params_->request;
@@ -1182,12 +1174,6 @@ void InterceptionJob::OnReceiveRedirect(
   request_info->http_response_status_code = redirect_info.status_code;
   request_info->redirect_url = redirect_info.new_url.spec();
   NotifyClient(std::move(request_info));
-}
-
-void InterceptionJob::OnDataDownloaded(int64_t data_length,
-                                       int64_t encoded_length) {
-  if (ShouldBypassForResponse())
-    client_->OnDataDownloaded(data_length, encoded_length);
 }
 
 void InterceptionJob::OnUploadProgress(int64_t current_position,

@@ -179,12 +179,10 @@ class SubresourceLoader : public network::mojom::URLLoader,
   // network::mojom::URLLoaderClient implementation
   // Called by either the appcache or network loader, whichever is in use.
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
+      const network::ResourceResponseHead& response_head) override {
     // Don't MaybeFallback for appcache produced responses.
     if (appcache_loader_ || !handler_) {
-      remote_client_->OnReceiveResponse(response_head,
-                                        std::move(downloaded_file));
+      remote_client_->OnReceiveResponse(response_head);
       return;
     }
 
@@ -192,19 +190,16 @@ class SubresourceLoader : public network::mojom::URLLoader,
     handler_->MaybeFallbackForSubresourceResponse(
         response_head,
         base::BindOnce(&SubresourceLoader::ContinueOnReceiveResponse,
-                       weak_factory_.GetWeakPtr(), response_head,
-                       std::move(downloaded_file)));
+                       weak_factory_.GetWeakPtr(), response_head));
   }
 
   void ContinueOnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      network::mojom::DownloadedTempFilePtr downloaded_file,
       SingleRequestURLLoaderFactory::RequestHandler handler) {
     if (handler) {
       CreateAndStartAppCacheLoader(std::move(handler));
     } else {
-      remote_client_->OnReceiveResponse(response_head,
-                                        std::move(downloaded_file));
+      remote_client_->OnReceiveResponse(response_head);
     }
   }
 
@@ -235,10 +230,6 @@ class SubresourceLoader : public network::mojom::URLLoader,
       CreateAndStartAppCacheLoader(std::move(handler));
     else
       remote_client_->OnReceiveRedirect(redirect_info_, response_head);
-  }
-
-  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {
-    remote_client_->OnDataDownloaded(data_len, encoded_data_len);
   }
 
   void OnUploadProgress(int64_t current_position,

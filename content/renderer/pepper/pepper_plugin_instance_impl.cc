@@ -914,7 +914,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
     return true;
   }
 
-  if (module()->is_crashed()) {
+  if (module()->is_crashed() || !render_frame_) {
     // Don't create a resource for a crashed plugin.
     container()->GetDocument().GetFrame()->StopLoading();
     return false;
@@ -939,14 +939,13 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
       std::unique_ptr<ppapi::host::ResourceHost>(std::move(loader_host)));
   DCHECK(pending_host_id);
 
-  DataFromWebURLResponse(
-      host_impl,
-      pp_instance(),
-      response,
-      base::Bind(&PepperPluginInstanceImpl::DidDataFromWebURLResponse,
-                 weak_factory_.GetWeakPtr(),
-                 response,
-                 pending_host_id));
+  render_frame()
+      ->GetTaskRunner(blink::TaskType::kInternalLoading)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&PepperPluginInstanceImpl::DidDataFromWebURLResponse,
+                         weak_factory_.GetWeakPtr(), response, pending_host_id,
+                         DataFromWebURLResponse(response)));
 
   // If the load was not abandoned, document_loader_ will now be set. It's
   // possible that the load was canceled by now and document_loader_ was

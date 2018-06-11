@@ -55,10 +55,6 @@ class TestRequestPeer : public RequestPeer {
     ADD_FAILURE() << "OnStartLoadingResponseBody should not be called.";
   }
 
-  void OnDownloadedData(int len, int encoded_data_length) override {
-    ADD_FAILURE() << "OnDownloadedData should not be called.";
-  }
-
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override {
     EXPECT_FALSE(context_->complete);
     context_->data.append(data->payload(), data->length());

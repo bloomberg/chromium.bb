@@ -79,29 +79,13 @@ interface URLLoader {
   ResumeReadingBodyFromNet();
 };
 
-// Opaque handle passed from the browser process to a child process to manage
-// the lifetime of temporary files used for download_to_file resource loading.
-// When the message pipe for this interface is closed, the browser process will
-// clean up the corresponding temporary file.
-interface DownloadedTempFile {
-};
-
 interface URLLoaderClient {
   // Called when the response head is received.
-  // |downloaded_file| is non-null in the 'download_to_file' case.
-  OnReceiveResponse(URLResponseHead head,
-                    DownloadedTempFile? downloaded_file);
+  OnReceiveResponse(URLResponseHead head);
 
   // Called when the request has been redirected. The receiver is expected to
   // call FollowRedirect or cancel the request.
   OnReceiveRedirect(URLRequestRedirectInfo redirect_info, URLResponseHead head);
-
-  // Called when some data from a resource request has been downloaded to the
-  // file. This is only called in the 'download_to_file' case and replaces
-  // OnStartLoadingResponseBody in the call sequence in that case.
-  // TODO(yhirano): Remove |encoded_length| and use OnTransferSizeUpdated
-  // instead.
-  OnDataDownloaded(int64 data_length, int64 encoded_length);
 
   // Called when the service made some progress on the file upload. This is
   // called only when the request has an upload data.
@@ -113,7 +97,7 @@ interface URLLoaderClient {
   OnReceiveCachedMetadata(array<uint8> data);
 
   // Called when the transfer size is updated. This is only called if
-  // |report_raw_headers| is set and |download_to_file| is unset in the request.
+  // |report_raw_headers| is set in the request.
   // The transfer size is the length of the response (including both headers
   // and the body) over the network. |transfer_size_diff| is the difference from
   // the value previously reported one (including the one in OnReceiveResponse

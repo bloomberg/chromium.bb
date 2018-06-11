@@ -195,11 +195,6 @@ void SyncLoadContext::OnStartLoadingResponseBody(
                      base::Unretained(this)));
 }
 
-void SyncLoadContext::OnDownloadedData(int len, int encoded_data_length) {
-  downloaded_file_length_ =
-      (downloaded_file_length_ ? *downloaded_file_length_ : 0) + len;
-}
-
 void SyncLoadContext::OnReceivedData(std::unique_ptr<ReceivedData> data) {
   DCHECK(!Completed());
   response_->data.append(data->payload(), data->length());
@@ -216,13 +211,6 @@ void SyncLoadContext::OnCompletedRequest(
     response_->cors_error = status.cors_error_status->cors_error;
   response_->info.encoded_data_length = status.encoded_data_length;
   response_->info.encoded_body_length = status.encoded_body_length;
-  response_->downloaded_file_length = downloaded_file_length_;
-  // Need to pass |downloaded_tmp_file| to the caller thread. Otherwise the blob
-  // creation in ResourceResponse::SetDownloadedFilePath() fails.
-  response_->downloaded_tmp_file =
-      resource_dispatcher_->TakeDownloadedTempFile(request_id_);
-  DCHECK_EQ(!response_->downloaded_file_length,
-            !response_->downloaded_tmp_file);
   if (blob_response_started_ && !blob_finished_) {
     request_completed_ = true;
     return;

@@ -217,8 +217,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
     resource_response.headers->AddHeader(
         "Content-Type: application/cert-chain+cbor");
-    mock_loader_factory_.client_ptr()->OnReceiveResponse(
-        resource_response, nullptr /* downloaded_file */);
+    mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
   }
 
   DeferringURLLoaderThrottle* InitializeDeferringURLLoaderThrottle() {
@@ -408,8 +407,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_ContentLengthCheck) {
   resource_response.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
   resource_response.content_length = message.size();
-  mock_loader_factory_.client_ptr()->OnReceiveResponse(
-      resource_response, nullptr /* downloaded_file */);
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
   mojo::DataPipe data_pipe(message.size());
   CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
   data_pipe.producer_handle.reset();
@@ -442,8 +440,7 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_404) {
   network::ResourceResponseHead resource_response;
   resource_response.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 404 Not Found");
-  mock_loader_factory_.client_ptr()->OnReceiveResponse(
-      resource_response, nullptr /* downloaded_file */);
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
@@ -458,8 +455,7 @@ TEST_F(SignedExchangeCertFetcherTest, WrongContentType) {
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
   resource_response.headers->AddHeader(
       "Content-Type: application/octet-stream");
-  mock_loader_factory_.client_ptr()->OnReceiveResponse(
-      resource_response, nullptr /* downloaded_file */);
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);

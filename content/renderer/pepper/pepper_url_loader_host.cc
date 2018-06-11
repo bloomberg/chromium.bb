@@ -57,8 +57,7 @@ PepperURLLoaderHost::PepperURLLoaderHost(RendererPpapiHostImpl* host,
       total_bytes_to_be_sent_(-1),
       bytes_received_(0),
       total_bytes_to_be_received_(-1),
-      pending_response_(false),
-      weak_factory_(this) {
+      pending_response_(false) {
   DCHECK((main_document_loader && !resource) ||
          (!main_document_loader && resource));
 }
@@ -405,19 +404,10 @@ void PepperURLLoaderHost::SaveResponse(const WebURLResponse& response) {
     DCHECK(!pending_response_);
     pending_response_ = true;
 
-    DataFromWebURLResponse(
-        renderer_ppapi_host_,
-        pp_instance(),
-        response,
-        base::Bind(&PepperURLLoaderHost::DidDataFromWebURLResponse,
-                   weak_factory_.GetWeakPtr()));
+    SendUpdateToPlugin(
+        std::make_unique<PpapiPluginMsg_URLLoader_ReceivedResponse>(
+            DataFromWebURLResponse(response)));
   }
-}
-
-void PepperURLLoaderHost::DidDataFromWebURLResponse(
-    const ppapi::URLResponseInfoData& data) {
-  SendUpdateToPlugin(
-      std::make_unique<PpapiPluginMsg_URLLoader_ReceivedResponse>(data));
 }
 
 void PepperURLLoaderHost::UpdateProgress() {

@@ -857,9 +857,7 @@ void URLLoader::DeleteSelf() {
 }
 
 void URLLoader::SendResponseToClient() {
-  mojom::DownloadedTempFilePtr downloaded_file_ptr;
-  url_loader_client_->OnReceiveResponse(response_->head,
-                                        std::move(downloaded_file_ptr));
+  url_loader_client_->OnReceiveResponse(response_->head);
 
   net::IOBufferWithSize* metadata =
       url_request_->response_info().metadata.get();

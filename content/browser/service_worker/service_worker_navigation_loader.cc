@@ -193,8 +193,7 @@ void ServiceWorkerNavigationLoader::CommitResponseHeaders() {
   DCHECK_EQ(Status::kStarted, status_);
   DCHECK(url_loader_client_.is_bound());
   status_ = Status::kSentHeader;
-  url_loader_client_->OnReceiveResponse(response_head_,
-                                        nullptr /* downloaded_file */);
+  url_loader_client_->OnReceiveResponse(response_head_);
 }
 
 void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {

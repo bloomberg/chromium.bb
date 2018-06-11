@@ -141,8 +141,6 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   encoded_data_length_ = data->encoded_data_length_;
   encoded_body_length_ = data->encoded_body_length_;
   decoded_body_length_ = data->decoded_body_length_;
-  downloaded_file_path_ = data->downloaded_file_path_;
-  downloaded_file_handle_ = data->downloaded_file_handle_;
 
   // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support
   // whatever values may be present in the opaque m_extraData structure.
@@ -211,8 +209,6 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
   data->encoded_data_length_ = encoded_data_length_;
   data->encoded_body_length_ = encoded_body_length_;
   data->decoded_body_length_ = decoded_body_length_;
-  data->downloaded_file_path_ = downloaded_file_path_.IsolatedCopy();
-  data->downloaded_file_handle_ = downloaded_file_handle_;
 
   // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support
   // whatever values may be present in the opaque m_extraData structure.
@@ -561,20 +557,6 @@ void ResourceResponse::SetEncodedBodyLength(long long value) {
 
 void ResourceResponse::SetDecodedBodyLength(long long value) {
   decoded_body_length_ = value;
-}
-
-void ResourceResponse::SetDownloadedFilePath(
-    const String& downloaded_file_path) {
-  downloaded_file_path_ = downloaded_file_path;
-  if (downloaded_file_path_.IsEmpty()) {
-    downloaded_file_handle_ = nullptr;
-    return;
-  }
-  // TODO(dmurph): Investigate whether we need the mimeType on this blob.
-  std::unique_ptr<BlobData> blob_data =
-      BlobData::CreateForFileWithUnknownSize(downloaded_file_path_);
-  blob_data->DetachFromCurrentThread();
-  downloaded_file_handle_ = BlobDataHandle::Create(std::move(blob_data), -1);
 }
 
 void ResourceResponse::AppendRedirectResponse(

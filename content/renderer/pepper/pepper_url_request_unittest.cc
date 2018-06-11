@@ -61,14 +61,6 @@ class URLRequestInfoTest : public RenderViewTest {
     RenderViewTest::TearDown();
   }
 
-  bool GetDownloadToFile() {
-    WebURLRequest web_request;
-    URLRequestInfoData data = info_->GetData();
-    if (!CreateWebURLRequest(pp_instance_, &data, GetMainFrame(), &web_request))
-      return false;
-    return web_request.DownloadToFile();
-  }
-
   WebString GetURL() {
     WebURLRequest web_request;
     URLRequestInfoData data = info_->GetData();
@@ -129,13 +121,8 @@ TEST_F(URLRequestInfoTest, AsURLRequestInfo) {
 TEST_F(URLRequestInfoTest, StreamToFile) {
   SetStringProperty(PP_URLREQUESTPROPERTY_URL, "http://www.google.com");
 
-  EXPECT_FALSE(GetDownloadToFile());
-
   EXPECT_FALSE(SetBooleanProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, true));
-  EXPECT_FALSE(GetDownloadToFile());
-
   EXPECT_FALSE(SetBooleanProperty(PP_URLREQUESTPROPERTY_STREAMTOFILE, false));
-  EXPECT_FALSE(GetDownloadToFile());
 }
 
 TEST_F(URLRequestInfoTest, FollowRedirects) {

@@ -283,7 +283,7 @@ void OfflinePageURLLoader::OnReceiveResponse(
   response_head.charset = "utf-8";
   response_head.content_length = file_size;
 
-  client_->OnReceiveResponse(response_head, nullptr);
+  client_->OnReceiveResponse(response_head);
   client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
 
   producer_handle_ = std::move(pipe.producer_handle);

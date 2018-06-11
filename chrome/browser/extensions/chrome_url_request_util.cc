@@ -224,7 +224,7 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
           base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
                              head.mime_type.c_str()));
     }
-    client_->OnReceiveResponse(head, nullptr);
+    client_->OnReceiveResponse(head);
     client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
 
     uint32_t write_size = data->size();

@@ -166,9 +166,6 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
     MaybeRunDevToolsCallbacks();
   }
 
-  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {
-    client_->OnDataDownloaded(data_length, encoded_length);
-  }
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override {
@@ -181,10 +178,8 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
     client_->OnTransferSizeUpdated(transfer_size_diff);
   }
-  void OnReceiveResponse(
-      const network::ResourceResponseHead& head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
-    client_->OnReceiveResponse(head, std::move(downloaded_file));
+  void OnReceiveResponse(const network::ResourceResponseHead& head) override {
+    client_->OnReceiveResponse(head);
     DCHECK(on_response_);
     std::move(on_response_).Run();
     if (!devtools_enabled_)

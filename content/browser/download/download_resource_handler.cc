@@ -242,10 +242,6 @@ void DownloadResourceHandler::OnResponseCompleted(
   controller->Resume();
 }
 
-void DownloadResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  NOTREACHED();
-}
-
 void DownloadResourceHandler::PauseRequest() {
   core_.PauseRequest();
 }

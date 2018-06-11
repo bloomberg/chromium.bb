@@ -339,7 +339,7 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
     head.content_length = data_.size();
     head.headers = CreateHttpResponseHeaders(200);
 
-    client_->OnReceiveResponse(head, /*downloaded_file=*/nullptr);
+    client_->OnReceiveResponse(head);
     client_->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
 
     data_producer_ = std::make_unique<mojo::StringDataPipeProducer>(
@@ -517,7 +517,7 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
                       &head_.mime_type);
       }
 
-      client_->OnReceiveResponse(head_, /*downloaded_file=*/nullptr);
+      client_->OnReceiveResponse(head_);
       client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
     }
     remaining_bytes_ -= result;

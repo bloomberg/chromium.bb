@@ -47,7 +47,6 @@
 #include "url/gurl.h"
 
 namespace base {
-class FilePath;
 class OneShotTimer;
 }
 
@@ -63,7 +62,6 @@ class ResourceScheduler;
 
 namespace storage {
 class FileSystemContext;
-class ShareableFileReference;
 }
 
 namespace content {
@@ -181,15 +179,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Cancels any blocked request for the specified route id.
   void CancelBlockedRequestsForRoute(
       const GlobalFrameRoutingId& global_routing_id);
-
-  // Maintains a collection of temp files created in support of
-  // the download_to_file capability. Used to grant access to the
-  // child process and to defer deletion of the file until it's
-  // no longer needed.
-  void RegisterDownloadedTempFile(
-      int child_id, int request_id,
-      const base::FilePath& file_path);
-  void UnregisterDownloadedTempFile(int child_id, int request_id);
 
   // Indicates whether third-party sub-content can pop-up HTTP basic auth
   // dialog boxes.
@@ -666,15 +655,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   static net::NetworkTrafficAnnotationTag GetTrafficAnnotation();
 
   LoaderMap pending_loaders_;
-
-  // Collection of temp files downloaded for child processes via
-  // the download_to_file mechanism. We avoid deleting them until
-  // the client no longer needs them.
-  typedef std::map<int, scoped_refptr<storage::ShareableFileReference> >
-      DeletableFilesMap;  // key is request id
-  typedef std::map<int, DeletableFilesMap>
-      RegisteredTempFiles;  // key is child process id
-  RegisteredTempFiles registered_temp_files_;
 
   // A timer that periodically calls UpdateLoadInfo while |pending_loaders_| is
   // not empty, at least one RenderViewHost is loading, and not waiting on an

@@ -94,8 +94,7 @@ int AppCacheUpdateJob::UpdateURLLoaderRequest::Cancel() {
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& response_head) {
   response_ = response_head;
 
   // TODO(ananta/michaeln)
@@ -121,12 +120,6 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveRedirect(
     const network::ResourceResponseHead& response_head) {
   response_ = response_head;
   fetcher_->OnReceivedRedirect(redirect_info);
-}
-
-void AppCacheUpdateJob::UpdateURLLoaderRequest::OnDataDownloaded(
-    int64_t data_len,
-    int64_t encoded_data_len) {
-  NOTIMPLEMENTED();
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnUploadProgress(

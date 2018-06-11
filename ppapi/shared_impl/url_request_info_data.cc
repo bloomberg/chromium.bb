@@ -45,7 +45,6 @@ URLRequestInfoData::URLRequestInfoData()
     : url(),
       method(),
       headers(),
-      stream_to_file(false),
       follow_redirects(true),
       record_download_progress(false),
       record_upload_progress(false),

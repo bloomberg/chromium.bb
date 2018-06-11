@@ -196,8 +196,7 @@ void SignedExchangeCertFetcher::OnDataComplete() {
 
 // network::mojom::URLLoaderClient
 void SignedExchangeCertFetcher::OnReceiveResponse(
-    const network::ResourceResponseHead& head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& head) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnReceiveResponse");
   if (devtools_proxy_) {
@@ -250,12 +249,6 @@ void SignedExchangeCertFetcher::OnReceiveRedirect(
                "SignedExchangeCertFetcher::OnReceiveRedirect");
   // Currently the cert fetcher doesn't allow any redirects.
   Abort();
-}
-
-void SignedExchangeCertFetcher::OnDataDownloaded(int64_t data_length,
-                                                 int64_t encoded_length) {
-  // Cert fetching is not a downloading job.
-  NOTREACHED();
 }
 
 void SignedExchangeCertFetcher::OnUploadProgress(

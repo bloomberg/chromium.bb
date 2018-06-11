@@ -20,14 +20,9 @@ class PPAPI_PROXY_EXPORT URLResponseInfoResource
     : public PluginResource,
       public thunk::PPB_URLResponseInfo_API {
  public:
-  // The file_ref_resource should be the body_as_file_ref host resource in the
-  // |data| converted to a resource valid in the current process (if we're
-  // downloading to a file; it will be 0 if we're not). A reference
-  // is passed from the caller and is taken over by this object.
   URLResponseInfoResource(Connection connection,
                           PP_Instance instance,
-                          const URLResponseInfoData& data,
-                          PP_Resource file_ref_resource);
+                          const URLResponseInfoData& data);
   ~URLResponseInfoResource() override;
 
   // Resource override.
@@ -41,9 +36,6 @@ class PPAPI_PROXY_EXPORT URLResponseInfoResource
 
  private:
   URLResponseInfoData data_;
-
-  // Non-zero when the load is being streamed to a file.
-  ScopedPPResource body_as_file_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(URLResponseInfoResource);
 };

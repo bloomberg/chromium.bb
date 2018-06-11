@@ -390,9 +390,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   long long DecodedBodyLength() const { return decoded_body_length_; }
   void SetDecodedBodyLength(long long value);
 
-  const String& DownloadedFilePath() const { return downloaded_file_path_; }
-  void SetDownloadedFilePath(const String&);
-
   // Extra data associated with this response.
   ExtraData* GetExtraData() const { return extra_data_.get(); }
   void SetExtraData(scoped_refptr<ExtraData> extra_data) {
@@ -545,13 +542,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   // removed.
   long long decoded_body_length_ = 0;
 
-  // The downloaded file path if the load streamed to a file.
-  String downloaded_file_path_;
-
-  // The handle to the downloaded file to ensure the underlying file will not
-  // be deleted.
-  scoped_refptr<BlobDataHandle> downloaded_file_handle_;
-
   // ExtraData associated with the response.
   scoped_refptr<ExtraData> extra_data_;
 
@@ -616,8 +606,6 @@ struct CrossThreadResourceResponseData {
   long long encoded_data_length_;
   long long encoded_body_length_;
   long long decoded_body_length_;
-  String downloaded_file_path_;
-  scoped_refptr<BlobDataHandle> downloaded_file_handle_;
 };
 
 }  // namespace blink

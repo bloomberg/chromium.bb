@@ -56,7 +56,6 @@ struct PPAPI_SHARED_EXPORT URLRequestInfoData {
   std::string method;
   std::string headers;
 
-  bool stream_to_file;
   bool follow_redirects;
   bool record_download_progress;
   bool record_upload_progress;

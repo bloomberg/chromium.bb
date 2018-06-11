@@ -115,9 +115,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                               int data_length) override;
   void DispatchDidReceiveEncodedData(unsigned long identifier,
                                      int encoded_data_length) override;
-  void DispatchDidDownloadData(unsigned long identifier,
-                               int data_length,
-                               int encoded_data_length) override;
   void DispatchDidDownloadToBlob(unsigned long identifier,
                                  BlobDataHandle*) override;
   void DispatchDidFinishLoading(unsigned long identifier,

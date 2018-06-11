@@ -66,7 +66,7 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
 
   network::mojom::URLLoaderClientPtr client;
   client.Bind(std::move(client_info));
-  client->OnReceiveResponse(headers->head, nullptr);
+  client->OnReceiveResponse(headers->head);
 
   base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
                           bytes->size());
@@ -244,7 +244,6 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(!request.download_to_file);
 
     if (request.url.scheme() != scheme_) {
       DVLOG(1) << "Bad scheme: " << request.url.scheme();

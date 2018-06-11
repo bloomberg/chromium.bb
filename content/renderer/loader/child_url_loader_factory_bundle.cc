@@ -48,19 +48,13 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
   }
 
   // network::mojom::URLLoaderClient implementation:
-  void OnReceiveResponse(
-      const network::ResourceResponseHead& head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
-    client_sink_->OnReceiveResponse(head, std::move(downloaded_file));
+  void OnReceiveResponse(const network::ResourceResponseHead& head) override {
+    client_sink_->OnReceiveResponse(head);
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override {
     client_sink_->OnReceiveRedirect(redirect_info, head);
-  }
-
-  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {
-    client_sink_->OnDataDownloaded(data_length, encoded_length);
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -171,7 +165,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
         std::move(override_iter->second);
     subresource_overrides_.erase(override_iter);
 
-    client->OnReceiveResponse(transferrable_loader->head, nullptr);
+    client->OnReceiveResponse(transferrable_loader->head);
     mojo::MakeStrongBinding(
         std::make_unique<URLLoaderRelay>(
             network::mojom::URLLoaderPtr(

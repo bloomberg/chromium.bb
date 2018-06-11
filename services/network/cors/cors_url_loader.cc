@@ -160,8 +160,7 @@ void CORSURLLoader::ResumeReadingBodyFromNet() {
 }
 
 void CORSURLLoader::OnReceiveResponse(
-    const ResourceResponseHead& response_head,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    const ResourceResponseHead& response_head) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
@@ -182,8 +181,7 @@ void CORSURLLoader::OnReceiveResponse(
       return;
     }
   }
-  forwarding_client_->OnReceiveResponse(response_head,
-                                        std::move(downloaded_file));
+  forwarding_client_->OnReceiveResponse(response_head);
 }
 
 void CORSURLLoader::OnReceiveRedirect(
@@ -201,14 +199,6 @@ void CORSURLLoader::OnReceiveRedirect(
   is_waiting_follow_redirect_call_ = true;
   last_response_url_ = redirect_info.new_url;
   forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
-}
-
-void CORSURLLoader::OnDataDownloaded(int64_t data_len,
-                                     int64_t encoded_data_len) {
-  DCHECK(network_loader_);
-  DCHECK(forwarding_client_);
-  DCHECK(!is_waiting_follow_redirect_call_);
-  forwarding_client_->OnDataDownloaded(data_len, encoded_data_len);
 }
 
 void CORSURLLoader::OnUploadProgress(int64_t current_position,

@@ -85,7 +85,7 @@ class ResourceDispatcherTest : public testing::Test,
     head.headers = new net::HttpResponseHeaders(raw_headers);
     head.mime_type = kTestPageMimeType;
     head.charset = kTestPageCharset;
-    client->OnReceiveResponse(head, {});
+    client->OnReceiveResponse(head);
   }
 
   std::unique_ptr<network::ResourceRequest> CreateResourceRequest() {
@@ -183,8 +183,6 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
 
     void OnStartLoadingResponseBody(
         mojo::ScopedDataPipeConsumerHandle body) override {}
-
-    void OnDownloadedData(int len, int encoded_data_length) override {}
 
     void OnReceivedData(std::unique_ptr<ReceivedData> data) override {
       data_.append(data->payload(), data->length());
@@ -325,7 +323,7 @@ class TimeConversionTest : public ResourceDispatcherTest {
     ASSERT_EQ(1u, loader_and_clients_.size());
     auto client = std::move(loader_and_clients_[0].second);
     loader_and_clients_.clear();
-    client->OnReceiveResponse(response_head, {});
+    client->OnReceiveResponse(response_head);
   }
 
   const network::ResourceResponseInfo& response_info() const {
@@ -396,7 +394,7 @@ class CompletionTimeConversionTest : public ResourceDispatcherTest {
     // copied.
     response_head.load_timing.request_start_time =
         base::Time() + base::TimeDelta::FromSeconds(99);
-    client->OnReceiveResponse(response_head, {});
+    client->OnReceiveResponse(response_head);
 
     network::URLLoaderCompletionStatus status;
     status.completion_time = completion_time;

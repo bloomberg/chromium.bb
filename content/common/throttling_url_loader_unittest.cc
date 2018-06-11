@@ -55,7 +55,7 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   }
 
   void NotifyClientOnReceiveResponse() {
-    client_ptr_->OnReceiveResponse(network::ResourceResponseHead(), nullptr);
+    client_ptr_->OnReceiveResponse(network::ResourceResponseHead());
   }
 
   void NotifyClientOnReceiveRedirect() {
@@ -154,8 +154,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
+      const network::ResourceResponseHead& response_head) override {
     on_received_response_called_++;
     if (on_received_response_callback_)
       on_received_response_callback_.Run();
@@ -167,7 +166,6 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
     if (on_received_redirect_callback_)
       on_received_redirect_callback_.Run();
   }
-  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {}
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override {}

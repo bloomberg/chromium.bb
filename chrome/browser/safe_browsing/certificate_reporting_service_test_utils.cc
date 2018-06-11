@@ -365,7 +365,7 @@ void CertificateReportingServiceTestHelper::SendResponse(
   head.headers = new net::HttpResponseHeaders(
       "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
   head.mime_type = "text/html";
-  client->OnReceiveResponse(head, nullptr);
+  client->OnReceiveResponse(head);
   client->OnComplete(network::URLLoaderCompletionStatus());
 }
 

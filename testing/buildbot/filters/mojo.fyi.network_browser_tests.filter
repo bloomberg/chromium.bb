@@ -183,19 +183,6 @@
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeader
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeaderForRedirect
 
-# download_to_file is only used by PNaCl at this point and it will be removed
-# soon as it has almost zero usage. At that point these tests should be deleted.
-# http://crbug.com/791702
--OutOfProcessPPAPITest.FileRef1
--OutOfProcessPPAPITest.FileRef2
--OutOfProcessPPAPITest.URLLoader1
--PPAPINaClNewlibTest.FileRef1
--PPAPINaClNewlibTest.FileRef2
--PPAPINaClNewlibTest.URLLoader1
--PPAPINaClPNaClNonSfiTest.FileRef1
--PPAPINaClPNaClNonSfiTest.FileRef2
--PPAPINaClPNaClNonSfiTest.URLLoader1
-
 # Requires a replacement for ChromeNetworkDelegate.
 # http://crbug.com/841309
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromResourceRequest

@@ -224,10 +224,6 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void DidDownloadData(int dataLength, int encodedDataLength) override {
-    EXPECT_TRUE(loader_);
-  }
-
   void DidReceiveData(const char* data, int dataLength) override {
     EXPECT_TRUE(loader_);
     // The response should have started, but must not have finished, or failed.
@@ -796,15 +792,13 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   blink::WebData data;
   int64_t encoded_data_length = 0;
   int64_t encoded_body_length = 0;
-  base::Optional<int64_t> downloaded_file_length;
   blink::WebBlobInfo downloaded_blob;
-  client()->loader()->LoadSynchronously(
-      request, nullptr, response, error, data, encoded_data_length,
-      encoded_body_length, downloaded_file_length, downloaded_blob);
+  client()->loader()->LoadSynchronously(request, nullptr, response, error, data,
+                                        encoded_data_length,
+                                        encoded_body_length, downloaded_blob);
 
   EXPECT_EQ(kEncodedBodyLength, encoded_body_length);
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);
-  EXPECT_FALSE(downloaded_file_length);
   EXPECT_TRUE(downloaded_blob.Uuid().IsNull());
 }
 

@@ -81,7 +81,7 @@ void ServiceWorkerInstalledScriptLoader::OnHttpInfoRead(
   if (options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
     head.ssl_info = info->ssl_info;
 
-  client_->OnReceiveResponse(head, nullptr /* downloaded_file */);
+  client_->OnReceiveResponse(head);
 
   if (info->metadata) {
     const uint8_t* data =

@@ -26,12 +26,9 @@ class URLLoaderStatusMonitor : public network::mojom::URLLoaderClient {
   ~URLLoaderStatusMonitor() override = default;
 
   // network::mojom::URLLoaderClient
-  void OnReceiveResponse(
-      const network::ResourceResponseHead& head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {}
+  void OnReceiveResponse(const network::ResourceResponseHead& head) override {}
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override {}
-  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {}
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override {}
@@ -188,8 +185,7 @@ void ResourceDownloader::InterceptResponse(
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
   response->head.cert_status = cert_status;
-  url_loader_client_->OnReceiveResponse(
-      response->head, network::mojom::DownloadedTempFilePtr());
+  url_loader_client_->OnReceiveResponse(response->head);
 
   // Bind the new client.
   url_loader_client_binding_ =

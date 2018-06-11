@@ -91,10 +91,6 @@ void SecurityFilterPeer::OnStartLoadingResponseBody(
   NOTREACHED();
 }
 
-void SecurityFilterPeer::OnDownloadedData(int len, int encoded_data_length) {
-  NOTREACHED();
-}
-
 void SecurityFilterPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
   NOTREACHED();
 }

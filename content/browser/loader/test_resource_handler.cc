@@ -147,7 +147,6 @@ void TestResourceHandler::OnWillRead(
     int* buf_size,
     std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
-  EXPECT_FALSE(expect_on_data_downloaded_);
   EXPECT_EQ(0, on_response_completed_called_);
   // Only create a ScopedCallDepthTracker if not called re-entrantly, as
   // OnWillRead may be called synchronously in response to a Resume(), but
@@ -182,7 +181,6 @@ void TestResourceHandler::OnReadCompleted(
     int bytes_read,
     std::unique_ptr<ResourceController> controller) {
   EXPECT_FALSE(canceled_);
-  EXPECT_FALSE(expect_on_data_downloaded_);
   EXPECT_EQ(1, on_will_start_called_);
   EXPECT_EQ(1, on_response_started_called_);
   EXPECT_EQ(0, on_response_completed_called_);
@@ -225,7 +223,7 @@ void TestResourceHandler::OnResponseCompleted(
   parent_read_buffer_size_ = nullptr;
 
   EXPECT_EQ(0, on_response_completed_called_);
-  if (status.is_success() && !expect_on_data_downloaded_ && expect_eof_read_)
+  if (status.is_success() && expect_eof_read_)
     EXPECT_EQ(1, on_read_eof_called_);
 
   ++on_response_completed_called_;
@@ -246,15 +244,6 @@ void TestResourceHandler::OnResponseCompleted(
   }
 
   controller->Resume();
-}
-
-void TestResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  EXPECT_TRUE(expect_on_data_downloaded_);
-  EXPECT_EQ(1, on_will_start_called_);
-  EXPECT_EQ(1, on_response_started_called_);
-  EXPECT_EQ(0, on_response_completed_called_);
-
-  total_bytes_downloaded_ += bytes_downloaded;
 }
 
 void TestResourceHandler::Resume() {

@@ -73,8 +73,4 @@ void StreamResourceHandler::OnResponseCompleted(
   controller->Resume();
 }
 
-void StreamResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  NOTREACHED();
-}
-
 }  // namespace content

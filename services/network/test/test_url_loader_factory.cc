@@ -136,7 +136,7 @@ bool TestURLLoaderFactory::CreateLoaderAndStartInternal(
   }
 
   if (it->second.status.error_code == net::OK) {
-    client->OnReceiveResponse(it->second.head, nullptr);
+    client->OnReceiveResponse(it->second.head);
     mojo::DataPipe data_pipe(it->second.content.size());
     uint32_t bytes_written = it->second.content.size();
     CHECK_EQ(MOJO_RESULT_OK, data_pipe.producer_handle->WriteData(

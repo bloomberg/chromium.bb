@@ -85,8 +85,7 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 }
 
 void PrefetchURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& response) {
   if (signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(url_, response)) {
     DCHECK(!web_package_prefetch_handler_);
 
@@ -99,18 +98,13 @@ void PrefetchURLLoader::OnReceiveResponse(
         resource_context_, request_context_getter_, this);
     return;
   }
-  forwarding_client_->OnReceiveResponse(response, std::move(downloaded_file));
+  forwarding_client_->OnReceiveResponse(response);
 }
 
 void PrefetchURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
   forwarding_client_->OnReceiveRedirect(redirect_info, head);
-}
-
-void PrefetchURLLoader::OnDataDownloaded(int64_t data_length,
-                                         int64_t encoded_length) {
-  forwarding_client_->OnDataDownloaded(data_length, encoded_length);
 }
 
 void PrefetchURLLoader::OnUploadProgress(int64_t current_position,

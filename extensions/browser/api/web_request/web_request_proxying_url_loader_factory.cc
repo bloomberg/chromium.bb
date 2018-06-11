@@ -140,12 +140,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
-    const network::ResourceResponseHead& head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
+    const network::ResourceResponseHead& head) {
   current_response_ = head;
-  HandleResponseOrRedirectHeaders(base::BindRepeating(
-      &InProgressRequest::ContinueToResponseStarted, weak_factory_.GetWeakPtr(),
-      base::Passed(&downloaded_file)));
+  HandleResponseOrRedirectHeaders(
+      base::BindRepeating(&InProgressRequest::ContinueToResponseStarted,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
@@ -155,12 +154,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
   HandleResponseOrRedirectHeaders(
       base::BindRepeating(&InProgressRequest::ContinueToBeforeRedirect,
                           weak_factory_.GetWeakPtr(), redirect_info));
-}
-
-void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnDataDownloaded(
-    int64_t data_length,
-    int64_t encoded_length) {
-  target_client_->OnDataDownloaded(data_length, encoded_length);
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnUploadProgress(
@@ -306,9 +299,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
-    ContinueToResponseStarted(
-        network::mojom::DownloadedTempFilePtr downloaded_file,
-        int error_code) {
+    ContinueToResponseStarted(int error_code) {
   if (error_code != net::OK) {
     OnRequestError(network::URLLoaderCompletionStatus(error_code));
     return;
@@ -356,8 +347,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       factory_->browser_context_, factory_->info_map_, &info_.value(), net::OK);
-  target_client_->OnReceiveResponse(current_response_,
-                                    std::move(downloaded_file));
+  target_client_->OnReceiveResponse(current_response_);
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::

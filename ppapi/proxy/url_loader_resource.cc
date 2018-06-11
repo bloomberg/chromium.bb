@@ -16,7 +16,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
-#include "ppapi/shared_impl/ppapi_features.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 #include "ppapi/thunk/enter.h"
@@ -160,11 +159,6 @@ int32_t URLLoaderResource::ReadResponseBody(
   if (!response_info_.get())
     return PP_ERROR_FAILED;
 
-  // Fail if we have a valid file ref.
-  // ReadResponseBody() is for reading to a user-provided buffer.
-  if (response_info_->data().body_as_file_ref.IsValid())
-    return PP_ERROR_FAILED;
-
   if (bytes_to_read <= 0 || !buffer)
     return PP_ERROR_BADARGUMENT;
 
@@ -187,30 +181,7 @@ int32_t URLLoaderResource::ReadResponseBody(
 
 int32_t URLLoaderResource::FinishStreamingToFile(
     scoped_refptr<TrackedCallback> callback) {
-  if (!base::FeatureList::IsEnabled(features::kStreamToFile))
-    return PP_ERROR_NOTSUPPORTED;
-
-  int32_t rv = ValidateCallback(callback);
-  if (rv != PP_OK)
-    return rv;
-  if (!response_info_.get())
-    return PP_ERROR_FAILED;
-
-  // Fail if we do not have a valid file ref.
-  if (!response_info_->data().body_as_file_ref.IsValid())
-    return PP_ERROR_FAILED;
-
-  // We may have already reached EOF.
-  if (done_status_ != PP_OK_COMPLETIONPENDING)
-    return done_status_;
-
-  is_streaming_to_file_ = true;
-  if (is_asynchronous_load_suspended_)
-    SetDefersLoading(false);
-
-  // Wait for didFinishLoading / didFail.
-  RegisterCallback(callback);
-  return PP_OK_COMPLETIONPENDING;
+  return PP_ERROR_NOTSUPPORTED;
 }
 
 void URLLoaderResource::Close() {
@@ -366,15 +337,8 @@ void URLLoaderResource::RunCallback(int32_t result) {
 }
 
 void URLLoaderResource::SaveResponseInfo(const URLResponseInfoData& data) {
-  // Create a proxy resource for the the file ref host resource if needed.
-  PP_Resource body_as_file_ref = 0;
-  if (data.body_as_file_ref.IsValid()) {
-    body_as_file_ref = FileRefResource::CreateFileRef(connection(),
-                                                      pp_instance(),
-                                                      data.body_as_file_ref);
-  }
-  response_info_ = new URLResponseInfoResource(
-      connection(), pp_instance(), data, body_as_file_ref);
+  response_info_ =
+      new URLResponseInfoResource(connection(), pp_instance(), data);
 }
 
 int32_t URLLoaderResource::FillUserBuffer() {

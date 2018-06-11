@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "content/browser/loader/downloaded_temp_file_impl.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -185,7 +184,6 @@ void MojoAsyncResourceHandler::OnResponseStarted(
     upload_progress_tracker_ = nullptr;
   }
 
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
   response->head.encoded_data_length = request()->raw_header_size();
   reported_total_received_bytes_ = response->head.encoded_data_length;
 
@@ -193,22 +191,13 @@ void MojoAsyncResourceHandler::OnResponseStarted(
   response->head.response_start = time_response_started_;
   sent_received_response_message_ = true;
 
-  network::mojom::DownloadedTempFilePtr downloaded_file_ptr;
-  if (!response->head.download_file_path.empty()) {
-    downloaded_file_ptr = DownloadedTempFileImpl::Create(info->GetChildID(),
-                                                         info->GetRequestID());
-    rdh_->RegisterDownloadedTempFile(info->GetChildID(), info->GetRequestID(),
-                                     response->head.download_file_path);
-  }
-
   if ((url_loader_options_ &
        network::mojom::kURLLoadOptionSendSSLInfoWithResponse) &&
       request()->ssl_info().cert) {
     response->head.ssl_info = request()->ssl_info();
   }
 
-  url_loader_client_->OnReceiveResponse(response->head,
-                                        std::move(downloaded_file_ptr));
+  url_loader_client_->OnReceiveResponse(response->head);
 
   net::IOBufferWithSize* metadata = GetResponseMetadata(request());
   if (metadata) {
@@ -382,11 +371,6 @@ void MojoAsyncResourceHandler::OnReadCompleted(
 
   buffer_ = nullptr;
   controller->Resume();
-}
-
-void MojoAsyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  url_loader_client_->OnDataDownloaded(bytes_downloaded,
-                                       CalculateRecentlyReceivedBytes());
 }
 
 void MojoAsyncResourceHandler::FollowRedirect(

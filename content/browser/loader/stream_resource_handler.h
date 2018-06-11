@@ -59,8 +59,6 @@ class StreamResourceHandler : public ResourceHandler {
       const net::URLRequestStatus& status,
       std::unique_ptr<ResourceController> controller) override;
 
-  void OnDataDownloaded(int bytes_downloaded) override;
-
   Stream* stream() { return writer_.stream(); }
 
  private:

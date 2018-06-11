@@ -152,9 +152,8 @@ void SharedWorkerScriptLoader::ResumeReadingBodyFromNet() {
 // calls FollowRedirect(), it can do so.
 
 void SharedWorkerScriptLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head,
-    network::mojom::DownloadedTempFilePtr downloaded_file) {
-  client_->OnReceiveResponse(response_head, std::move(downloaded_file));
+    const network::ResourceResponseHead& response_head) {
+  client_->OnReceiveResponse(response_head);
 }
 
 void SharedWorkerScriptLoader::OnReceiveRedirect(
@@ -168,11 +167,6 @@ void SharedWorkerScriptLoader::OnReceiveRedirect(
 
   redirect_info_ = redirect_info;
   client_->OnReceiveRedirect(redirect_info, response_head);
-}
-
-void SharedWorkerScriptLoader::OnDataDownloaded(int64_t data_len,
-                                                int64_t encoded_data_len) {
-  client_->OnDataDownloaded(data_len, encoded_data_len);
 }
 
 void SharedWorkerScriptLoader::OnUploadProgress(

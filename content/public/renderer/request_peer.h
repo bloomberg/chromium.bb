@@ -76,15 +76,6 @@ class CONTENT_EXPORT RequestPeer {
   virtual void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) = 0;
 
-  // Called when a chunk of response data is downloaded.  This method may be
-  // called multiple times or not at all if an error occurs.  This method is
-  // only called if RequestInfo::download_to_file was set to true, and in
-  // that case, OnReceivedData will not be called.
-  // The encoded_data_length is the length of the encoded data transferred
-  // over the network, which could be different from data length (e.g. for
-  // gzipped content).
-  virtual void OnDownloadedData(int len, int encoded_data_length) = 0;
-
   // Called when a chunk of response data is available. This method may
   // be called multiple times or not at all if an error occurs.
   virtual void OnReceivedData(std::unique_ptr<ReceivedData> data) = 0;

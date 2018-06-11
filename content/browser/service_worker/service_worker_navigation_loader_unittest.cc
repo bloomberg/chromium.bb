@@ -85,8 +85,7 @@ class NavigationPreloadLoaderClient final
 
   // network::mojom::URLLoaderClient implementation
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
+      const network::ResourceResponseHead& response_head) override {
     response_head_ = response_head;
   }
   void OnStartLoadingResponseBody(
@@ -127,8 +126,6 @@ class NavigationPreloadLoaderClient final
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head) override {}
-  void OnDataDownloaded(int64_t data_length,
-                        int64_t encoded_data_length) override {}
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override {}
@@ -178,7 +175,7 @@ class MockNetworkURLLoaderFactory final
     network::ResourceResponseHead response;
     response.headers = info.headers;
     response.headers->GetMimeType(&response.mime_type);
-    client->OnReceiveResponse(response, nullptr);
+    client->OnReceiveResponse(response);
 
     std::string body = "this body came from the network";
     uint32_t bytes_written = body.size();

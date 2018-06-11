@@ -132,8 +132,6 @@ class CONTENT_EXPORT ResourceDispatcher {
           response_override_params,
       base::OnceClosure* continue_navigation_function);
 
-  network::mojom::DownloadedTempFilePtr TakeDownloadedTempFile(int request_id);
-
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
   bool RemovePendingRequest(
@@ -186,7 +184,6 @@ class CONTENT_EXPORT ResourceDispatcher {
                        const GURL& request_url,
                        const std::string& method,
                        const GURL& referrer,
-                       bool download_to_file,
                        std::unique_ptr<NavigationResponseOverrideParameters>
                            response_override_params);
 
@@ -203,7 +200,6 @@ class CONTENT_EXPORT ResourceDispatcher {
     GURL response_url;
     std::string response_method;
     GURL response_referrer;
-    bool download_to_file;
     bool has_pending_redirect = false;
     base::TimeTicks local_request_start;
     base::TimeTicks local_response_start;
@@ -246,7 +242,6 @@ class CONTENT_EXPORT ResourceDispatcher {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   void OnStartLoadingResponseBody(int request_id,
                                   mojo::ScopedDataPipeConsumerHandle body);
-  void OnDownloadedData(int request_id, int data_len, int encoded_data_length);
   void OnRequestComplete(int request_id,
                          const network::URLLoaderCompletionStatus& status);
 

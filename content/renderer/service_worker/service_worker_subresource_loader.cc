@@ -60,12 +60,10 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head,
-      network::mojom::DownloadedTempFilePtr downloaded_file) override {
+      const network::ResourceResponseHead& response_head) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveResponse(
-        rewrite_header_callback_.Run(response_head),
-        std::move(downloaded_file));
+        rewrite_header_callback_.Run(response_head));
   }
 
   void OnReceiveRedirect(
@@ -74,11 +72,6 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveRedirect(
         redirect_info, rewrite_header_callback_.Run(response_head));
-  }
-
-  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {
-    DCHECK(url_loader_client_.is_bound());
-    url_loader_client_->OnDataDownloaded(data_len, encoded_data_len);
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -461,8 +454,7 @@ void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
   DCHECK(url_loader_client_.is_bound());
   status_ = Status::kSentHeader;
   // TODO(kinuko): Fill the ssl_info.
-  url_loader_client_->OnReceiveResponse(response_head_,
-                                        nullptr /* downloaded_file */);
+  url_loader_client_->OnReceiveResponse(response_head_);
 }
 
 void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {

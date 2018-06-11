@@ -268,11 +268,9 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   void Retry();
 
   // mojom::URLLoaderClient implementation;
-  void OnReceiveResponse(const ResourceResponseHead& response_head,
-                         mojom::DownloadedTempFilePtr downloaded_file) override;
+  void OnReceiveResponse(const ResourceResponseHead& response_head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override;
-  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
   void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override;
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnUploadProgress(int64_t current_position,
@@ -1301,8 +1299,7 @@ void SimpleURLLoaderImpl::Retry() {
 }
 
 void SimpleURLLoaderImpl::OnReceiveResponse(
-    const ResourceResponseHead& response_head,
-    mojom::DownloadedTempFilePtr downloaded_file) {
+    const ResourceResponseHead& response_head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (request_state_->response_info) {
     // The final headers have already been received, so the URLLoader is
@@ -1366,11 +1363,6 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
 
   final_url_ = redirect_info.new_url;
   url_loader_->FollowRedirect(base::nullopt);
-}
-
-void SimpleURLLoaderImpl::OnDataDownloaded(int64_t data_length,
-                                           int64_t encoded_length) {
-  NOTIMPLEMENTED();
 }
 
 void SimpleURLLoaderImpl::OnReceiveCachedMetadata(

@@ -69,7 +69,6 @@ class CONTENT_EXPORT DetachableResourceHandler : public ResourceHandler {
   void OnResponseCompleted(
       const net::URLRequestStatus& status,
       std::unique_ptr<ResourceController> controller) override;
-  void OnDataDownloaded(int bytes_downloaded) override;
 
  private:
   class Controller;

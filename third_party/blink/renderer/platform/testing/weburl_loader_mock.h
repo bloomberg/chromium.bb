@@ -52,7 +52,6 @@ class WebURLLoaderMock : public WebURLLoader {
                          WebData&,
                          int64_t& encoded_data_length,
                          int64_t& encoded_body_length,
-                         base::Optional<int64_t>& downloaded_file_length,
                          blink::WebBlobInfo& downloaded_blob) override;
   void LoadAsynchronously(const WebURLRequest& request,
                           WebURLLoaderClient* client) override;
