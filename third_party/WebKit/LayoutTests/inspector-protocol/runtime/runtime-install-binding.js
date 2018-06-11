@@ -1,6 +1,6 @@
 (async function(testRunner) {
   const {page, session, dp} = await testRunner.startBlank(
-      'Tests that Runtime.addBinding is preserved on navigations and ' +
+      'Tests that Runtime.installBinding is preserved on navigations and ' +
       'injected before the addScriptOnNewDocument is run.');
   dp.Runtime.enable();
   dp.Page.enable();
@@ -27,36 +27,5 @@
   testRunner.log('Navigate to page with console.debug..');
   await dp.Page.navigate({url: testRunner.url('../resources/binding.html')});
   testRunner.log(await dp.Runtime.onceBindingCalled());
-
-  testRunner.log('Add binding in iframe..');
-  session.evaluateAsync(`
-    function appendIframe(url) {
-      var frame = document.createElement('iframe');
-      frame.id = 'iframe';
-      frame.src = url;
-      document.body.appendChild(frame);
-      return new Promise(resolve => frame.onload = resolve);
-    }
-    appendIframe('${testRunner.url('../resources/binding.html')}')
-  `);
-  const {params:{context}} = await dp.Runtime.onceExecutionContextCreated();
-  testRunner.log(await dp.Runtime.addBinding({
-    name: 'isolateSend',
-    executionContextId: context.id
-  }));
-  dp.Runtime.onBindingCalled(msg => testRunner.log(msg));
-  testRunner.log('Call bindings in iframe..');
-  await dp.Runtime.evaluate({
-    expression: 'isolateSend(\'42\'), send(\'12\')',
-    contextId: context.id
-  });
-  testRunner.log('Call send binding in page..');
-  testRunner.log(await dp.Runtime.evaluate({
-    expression: 'send(\'12\')',
-  }));
-  testRunner.log('Call isolateSend binding in page..');
-  testRunner.log(await dp.Runtime.evaluate({
-    expression: 'isolateSend(\'12\')',
-  }));
   testRunner.completeTest();
 })

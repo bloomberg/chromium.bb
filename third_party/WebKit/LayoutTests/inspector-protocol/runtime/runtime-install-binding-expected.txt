@@ -1,4 +1,4 @@
-Tests that Runtime.addBinding is preserved on navigations and injected before the addScriptOnNewDocument is run.
+Tests that Runtime.installBinding is preserved on navigations and injected before the addScriptOnNewDocument is run.
 Install binding..
 {
     id : <number>
@@ -22,84 +22,6 @@ Navigate to page with console.debug..
         executionContextId : <number>
         name : send
         payload : payload
-    }
-}
-Add binding in iframe..
-{
-    id : <number>
-    result : {
-    }
-}
-Call bindings in iframe..
-{
-    method : Runtime.bindingCalled
-    params : {
-        executionContextId : <number>
-        name : isolateSend
-        payload : 42
-    }
-}
-{
-    method : Runtime.bindingCalled
-    params : {
-        executionContextId : <number>
-        name : send
-        payload : 12
-    }
-}
-Call send binding in page..
-{
-    method : Runtime.bindingCalled
-    params : {
-        executionContextId : <number>
-        name : send
-        payload : 12
-    }
-}
-{
-    id : <number>
-    result : {
-        result : {
-            type : undefined
-        }
-    }
-}
-Call isolateSend binding in page..
-{
-    id : <number>
-    result : {
-        exceptionDetails : {
-            columnNumber : 0
-            exception : {
-                className : ReferenceError
-                description : ReferenceError: isolateSend is not defined     at <anonymous>:1:1
-                objectId : <string>
-                subtype : error
-                type : object
-            }
-            exceptionId : 1
-            lineNumber : 0
-            scriptId : <string>
-            stackTrace : {
-                callFrames : [
-                    [0] : {
-                        columnNumber : 0
-                        functionName : 
-                        lineNumber : 0
-                        scriptId : <string>
-                        url : 
-                    }
-                ]
-            }
-            text : Uncaught
-        }
-        result : {
-            className : ReferenceError
-            description : ReferenceError: isolateSend is not defined     at <anonymous>:1:1
-            objectId : <string>
-            subtype : error
-            type : object
-        }
     }
 }
 
