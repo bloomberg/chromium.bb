@@ -1158,7 +1158,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
         if (!tab->IsSelected()) {
           if (!stacked_layout_) {
             // In Refresh mode, defer the painting of the hovered tab to below.
-            if (MD::IsRefreshUi() && tab->IsMouseHovered()) {
+            if (MD::IsRefreshUi() && tab->IsMouseHovered() && !hovered_tab) {
               hovered_tab = tab;
             } else {
               tab->Paint(paint_info);
@@ -1206,7 +1206,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   if (hovered_tab && !is_dragging)
     hovered_tab->Paint(paint_info);
 
-  // Keep track of the last tab that was hovered to that it continues to be
+  // Keep track of the last tab that was hovered so that it continues to be
   // painted right before the active tab while the animation is running.
   last_hovered_tab_ = hovered_tab;
 
