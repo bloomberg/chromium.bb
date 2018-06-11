@@ -6,12 +6,9 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omnibox/browser/contextual_suggestions_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 
 // static
 ContextualSuggestionsService*
@@ -30,11 +27,9 @@ ContextualSuggestionsServiceFactory::GetInstance() {
 KeyedService* ContextualSuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  return new ContextualSuggestionsService(signin_manager, token_service,
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  return new ContextualSuggestionsService(identity_manager,
                                           profile->GetRequestContext());
 }
 
@@ -42,8 +37,7 @@ ContextualSuggestionsServiceFactory::ContextualSuggestionsServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "ContextualSuggestionsService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SigninManagerFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 ContextualSuggestionsServiceFactory::~ContextualSuggestionsServiceFactory() {}
