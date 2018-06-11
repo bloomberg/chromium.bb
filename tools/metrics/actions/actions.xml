@@ -1788,22 +1788,25 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.InstantApps.BannerDismissed">
-  <owner>mariakhomenko@chromium.org</owner>
-  <description>Promo banner for an instant app has been dismissed.</description>
+  <owner>thildebr@chromium.org</owner>
+  <description>
+    Infobar banner for an instant app has been dismissed by the user.
+  </description>
 </action>
 
 <action name="Android.InstantApps.BannerDismissedAppIsDefault">
   <owner>thildebr@chromium.org</owner>
   <description>
-    A promo banner shown when opening the instant app is default has been
-    dismissed.
+    Infobar banner shown when opening the instant app is default has been
+    dismissed. Infobar is shown for a default app when the user arrives on the
+    page via intra-site navigation.
   </description>
 </action>
 
 <action name="Android.InstantApps.BannerOpen">
-  <owner>mariakhomenko@chromium.org</owner>
+  <owner>thildebr@chromium.org</owner>
   <description>
-    User clicked &quot;Open App&quot; button on the instant apps banner.
+    User clicked &quot;Open App&quot; button on the instant apps infobar.
   </description>
 </action>
 
@@ -1817,16 +1820,19 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.InstantApps.BannerShown" not_user_triggered="true">
-  <owner>mariakhomenko@chromium.org</owner>
-  <description>Promo banner for an instant app has been displayed.</description>
+  <owner>thildebr@chromium.org</owner>
+  <description>
+    Infobar advertising an instant app has been displayed.
+  </description>
 </action>
 
 <action name="Android.InstantApps.BannerShownAppIsDefault"
     not_user_triggered="true">
   <owner>thildebr@chromium.org</owner>
   <description>
-    Promo banner for an instant app has been displayed when opening the app is
-    default.
+    Infobar for an instant app has been displayed when opening the app is
+    default. Infobar is shown for a default app when the user arrives on the
+    page via intra-site navigation.
   </description>
 </action>
 
@@ -1840,22 +1846,24 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.InstantApps.LaunchedByDefault" not_user_triggered="true">
-  <owner>mariakhomenko@chromium.org</owner>
+  <owner>thildebr@chromium.org</owner>
   <description>
-    An instant app was launched without any user prompting.
+    An instant app was launched without any user prompting during a navigation
+    within Chrome. This happens when the user has previously chosen to use the
+    Instant App by opening it through the infobar UI.
   </description>
 </action>
 
 <action name="Android.InstantApps.LaunchedFromWebsiteSettingsPopup">
-  <owner>mariakhomenko@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
+  <owner>thildebr@chromium.org</owner>
   <description>
     An instant app was launched from the page info popup.
   </description>
 </action>
 
 <action name="Android.InstantApps.OpenInstantAppButtonShown">
-  <owner>mariakhomenko@chromium.org</owner>
+  <owner>thildebr@chromium.org</owner>
   <description>
     Recorded when the user opened PageInfo dialog and saw a button to launch an
     Instant App there.
@@ -1938,7 +1946,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.PhoneIntent">
-  <owner>mariakhomenko@chromium.org</owner>
+  <owner>mpearson@chromium.org</owner>
   <description>
     A user clicked on a telephone number link in Chrome content.
   </description>
@@ -11580,7 +11588,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileExternalNavigationDispatched">
-  <owner>mariakhomenko@chromium.org</owner>
+  <owner>thildebr@chromium.org</owner>
   <description>
     Records when the system started a VIEW intent on a navigation click. This
     happens when there is another application in the system that's not a browser
@@ -11590,7 +11598,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileExternalNavigationReceived">
-  <owner>mariakhomenko@chromium.org</owner>
+  <owner>thildebr@chromium.org</owner>
   <description>
     Records when a user was given a choice between using Chrome and an installed
     app and chose Chrome.
@@ -12295,7 +12303,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReceivedExternalIntent">
-  <owner>mariakhomenko@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
     A VIEW intent was received by the tabbed mode activity.  This will combine
@@ -12307,7 +12314,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReceivedExternalIntent.App">
-  <owner>mariakhomenko@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
     A VIEW intent was received by the tabbed mode activity from an external
@@ -12316,7 +12322,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReceivedExternalIntent.Chrome">
-  <owner>mariakhomenko@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
     A VIEW intent was received by the tabbed mode activity from Chrome.  This is
@@ -12466,7 +12471,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabbedModeViewIntentFromApp">
-  <owner>mariakhomenko@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
     A VIEW intent was received by the tabbed mode activity from an external
@@ -12475,7 +12479,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabbedModeViewIntentFromChrome">
-  <owner>mariakhomenko@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
     A VIEW intent was received by the tabbed mode activity from Chrome.
