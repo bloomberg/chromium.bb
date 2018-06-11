@@ -197,16 +197,6 @@ TEST_F(SysInfoTest, IsRunningOnChromeOS) {
   EXPECT_TRUE(SysInfo::IsRunningOnChromeOS());
 }
 
-TEST_F(SysInfoTest, GetStrippedReleaseBoard) {
-  const char* kLsbRelease1 = "CHROMEOS_RELEASE_BOARD=Glimmer\n";
-  SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease1, Time());
-  EXPECT_EQ("glimmer", SysInfo::GetStrippedReleaseBoard());
-
-  const char* kLsbRelease2 = "CHROMEOS_RELEASE_BOARD=glimmer-signed-mp-v4keys";
-  SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease2, Time());
-  EXPECT_EQ("glimmer", SysInfo::GetStrippedReleaseBoard());
-}
-
 #endif  // OS_CHROMEOS
 
 }  // namespace base

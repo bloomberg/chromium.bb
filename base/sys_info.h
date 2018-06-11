@@ -131,12 +131,6 @@ class BASE_EXPORT SysInfo {
   // details.
   static std::string GetLsbReleaseBoard();
 
-  // DEPRECATED: Please see GetLsbReleaseBoard's comment.
-  // Convenience function for GetLsbReleaseBoard() removing trailing "-signed-*"
-  // if present. Returns "unknown" if CHROMEOS_RELEASE_BOARD is not set.
-  // TODO(derat): Delete this after October 2017.
-  static std::string GetStrippedReleaseBoard();
-
   // Returns the creation time of /etc/lsb-release. (Used to get the date and
   // time of the Chrome OS build).
   static Time GetLsbReleaseTime();
