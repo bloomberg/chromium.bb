@@ -17,8 +17,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,7 +35,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "components/arc/intent_helper/page_transition_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
@@ -115,44 +112,6 @@ void ChromeShellDelegate::PreInit() {
   // Shell is constructed but before OnShellInitialized() is called. Depends on
   // CroSettings. TODO(stevenjb): Move to src/ash.
   new policy::DisplayRotationDefaultHandler();
-}
-
-void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
-  if (!url.is_valid())
-    return;
-
-  GURL url_to_open = url;
-  if (url.SchemeIs(url::kFileScheme) || url.SchemeIs(url::kContentScheme)) {
-    // Chrome cannot open this URL. Read the contents via ARC content file
-    // system with an external file URL.
-    url_to_open = arc::ArcUrlToExternalFileUrl(url_to_open);
-  }
-
-  // If the url is for system settings, show the settings in a system tray
-  // instead of a browser tab.
-  if (url_to_open.GetContent() == "settings" &&
-      (url_to_open.SchemeIs(url::kAboutScheme) ||
-       url_to_open.SchemeIs(content::kChromeUIScheme))) {
-    chrome::ShowSettingsSubPageForProfile(
-        ProfileManager::GetActiveUserProfile(), "");
-    return;
-  }
-
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  content::WebContents* tab = chrome::AddSelectedTabWithURL(
-      displayer.browser(), url_to_open,
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
-                                ui::PAGE_TRANSITION_FROM_API));
-
-  // Adding a flag to remember this tab was originated on the ARC context.
-  tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                   std::make_unique<arc::ArcWebContentsData>());
-
-  // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
-  // browser will be shown on the active desktop, we ensure the visibility.
-  multi_user_util::MoveWindowToCurrentDesktop(
-      displayer.browser()->window()->GetNativeWindow());
 }
 
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {

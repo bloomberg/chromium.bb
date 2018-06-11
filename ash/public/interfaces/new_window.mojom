@@ -16,9 +16,6 @@ interface NewWindowController {
   // Shows the keyboard shortcut overlay. TODO(mash): this calls the client
   // function of the same name below, but it should be implemented inside ash.
   ShowKeyboardOverlay();
-
-  // Opens a new tab with the specified URL.
-  NewTabWithUrl(url.mojom.Url url);
 };
 
 // A delegate interface that an ash user sends to ash to handle certain window

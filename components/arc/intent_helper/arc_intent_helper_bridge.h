@@ -30,6 +30,7 @@ namespace arc {
 
 class ArcBridgeService;
 class IntentFilter;
+class OpenUrlDelegate;
 
 // Receives intents from ARC.
 class ArcIntentHelperBridge
@@ -47,6 +48,8 @@ class ArcIntentHelperBridge
   // Appends '.' + |to_append| to the intent helper package name.
   static std::string AppendStringToIntentHelperPackageName(
       const std::string& to_append);
+
+  static void SetOpenUrlDelegate(OpenUrlDelegate* delegate);
 
   ArcIntentHelperBridge(content::BrowserContext* context,
                         ArcBridgeService* bridge_service);
@@ -66,14 +69,6 @@ class ArcIntentHelperBridge
   void OpenWallpaperPicker() override;
   void SetWallpaperDeprecated(const std::vector<uint8_t>& jpeg_data) override;
   void OpenVolumeControl() override;
-
-  class OpenUrlDelegate {
-   public:
-    virtual ~OpenUrlDelegate() = default;
-
-    // Opens the given URL in the Chrome browser.
-    virtual void OpenUrl(const GURL& url) = 0;
-  };
 
   // Retrieves icons for the |activities| and calls |callback|.
   // See ActivityIconLoader::GetActivityIcons() for more details.
@@ -102,9 +97,6 @@ class ArcIntentHelperBridge
   static std::vector<mojom::IntentHandlerInfoPtr> FilterOutIntentHelper(
       std::vector<mojom::IntentHandlerInfoPtr> handlers);
 
-  void SetOpenUrlDelegateForTesting(
-      std::unique_ptr<OpenUrlDelegate> open_url_delegate);
-
   static const char kArcIntentHelperPackageName[];
 
  private:
@@ -113,7 +105,6 @@ class ArcIntentHelperBridge
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  std::unique_ptr<OpenUrlDelegate> open_url_delegate_;
   internal::ActivityIconLoader icon_loader_;
 
   // List of intent filters from Android. Used to determine if Chrome should

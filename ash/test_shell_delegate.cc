@@ -31,8 +31,6 @@ std::unique_ptr<keyboard::KeyboardUI> TestShellDelegate::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();
 }
 
-void TestShellDelegate::OpenUrlFromArc(const GURL& url) {}
-
 NetworkingConfigDelegate* TestShellDelegate::GetNetworkingConfigDelegate() {
   return nullptr;
 }

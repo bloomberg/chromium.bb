@@ -9,10 +9,18 @@
 
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/macros.h"
+#include "components/arc/intent_helper/open_url_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
 
-class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
+namespace content {
+class WebContents;
+}
+
+// Handles opening new tabs and windows on behalf of ash (over mojo) and the
+// ARC bridge (via a delegate in the browser process).
+class ChromeNewWindowClient : public ash::mojom::NewWindowClient,
+                              public arc::OpenUrlDelegate {
  public:
   ChromeNewWindowClient();
   ~ChromeNewWindowClient() override;
@@ -32,8 +40,16 @@ class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
   void ShowTaskManager() override;
   void OpenFeedbackPage() override;
 
+  // arc::OpenUrlDelegate:
+  void OpenUrlFromArc(const GURL& url) override;
+
  private:
   class TabRestoreHelper;
+
+  // Opens a URL in a new tab. Returns the WebContents for the tab that
+  // opened the URL. If the URL is for a chrome://settings page, opens settings
+  // in a new window and returns null.
+  content::WebContents* OpenUrlImpl(const GURL& url);
 
   std::unique_ptr<TabRestoreHelper> tab_restore_helper_;
 

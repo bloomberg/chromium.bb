@@ -27,9 +27,9 @@ class ASH_EXPORT NewWindowController : public mojom::NewWindowController {
   // NewWindowController:
   void SetClient(mojom::NewWindowClientAssociatedPtrInfo client) override;
   void ShowKeyboardOverlay() override;
-  void NewTabWithUrl(const GURL& url) override;
 
   // Pass throughs for methods of the same name on |client_|.
+  void NewTabWithUrl(const GURL& url);
   void NewTab();
   void NewWindow(bool incognito);
   void OpenFileManager();

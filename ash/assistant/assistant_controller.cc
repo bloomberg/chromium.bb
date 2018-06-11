@@ -8,9 +8,9 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/new_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "base/bind.h"
@@ -393,7 +393,7 @@ void AssistantController::OnDialogPlateContentsCommitted(
 }
 
 void AssistantController::OpenUrl(const GURL& url) {
-  Shell::Get()->shell_delegate()->OpenUrlFromArc(url);
+  Shell::Get()->new_window_controller()->NewTabWithUrl(url);
   StopInteraction();
 }
 
