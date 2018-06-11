@@ -841,11 +841,9 @@ void ArcBluetoothBridge::DisableAdapter(DisableAdapterCallback callback) {
     DequeueLocalPowerChange(AdapterPowerState::TURN_OFF);
   } else {
     BLUETOOTH_LOG(EVENT) << "Received a request to disable adapter (remote)";
-    if (bluetooth_adapter_->IsPowered()) {
-      EnqueueRemotePowerChange(AdapterPowerState::TURN_OFF,
-                               std::move(callback));
-      return;
-    }
+    // Silently ignore any request to turn off Bluetooth from Android.
+    // Android will still receive the success callback.
+    // (https://crbug.com/851097)
   }
 
   OnPoweredOff(std::move(callback), false /* save_user_pref */);
