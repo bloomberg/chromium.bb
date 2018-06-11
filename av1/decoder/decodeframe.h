@@ -71,6 +71,8 @@ struct aom_read_bit_buffer *av1_init_read_bit_buffer(
 
 void av1_free_mc_tmp_buf(void *td, int use_highbd);
 
+void av1_set_single_tile_decoding_mode(AV1_COMMON *const cm);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

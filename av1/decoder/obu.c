@@ -769,6 +769,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         }
 
         cm->large_scale_tile = 1;
+        av1_set_single_tile_decoding_mode(cm);
         decoded_payload_size =
             read_and_decode_one_tile_list(pbi, &rb, data, data + payload_size,
                                           p_data_end, &frame_decoding_finished);

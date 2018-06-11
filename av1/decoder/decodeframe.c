@@ -2176,7 +2176,7 @@ static void read_tile_info_max_tile(AV1_COMMON *const cm,
   av1_calculate_tile_rows(cm);
 }
 
-static void set_single_tile_decoding_mode(AV1_COMMON *const cm) {
+void av1_set_single_tile_decoding_mode(AV1_COMMON *const cm) {
   cm->single_tile_decoding = 0;
   if (cm->large_scale_tile) {
     struct loopfilter *lf = &cm->lf;
@@ -4129,9 +4129,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   read_film_grain(cm, rb);
 
 #if EXT_TILE_DEBUG
-  if (cm->large_scale_tile) read_ext_tile_info(pbi, rb);
+  if (cm->large_scale_tile) {
+    read_ext_tile_info(pbi, rb);
+    av1_set_single_tile_decoding_mode(cm);
+  }
 #endif  // EXT_TILE_DEBUG
-  set_single_tile_decoding_mode(&pbi->common);
   return 0;
 }
 
