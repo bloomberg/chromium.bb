@@ -136,7 +136,8 @@ void SetFieldLabelsOnUpdate(const autofill::ServerFieldType password_type,
          password_type == autofill::PROBABLY_NEW_PASSWORD ||
          password_type == autofill::NOT_NEW_PASSWORD)
       << password_type;
-  DCHECK(!submitted_form.new_password_element.empty());
+  if (submitted_form.new_password_element.empty())
+    return;
 
   (*field_types)[submitted_form.password_element] = autofill::PASSWORD;
   (*field_types)[submitted_form.new_password_element] = password_type;
@@ -154,8 +155,7 @@ void SetFieldLabelsOnSave(const autofill::ServerFieldType password_type,
 
   if (!form.new_password_element.empty()) {
     (*field_types)[form.new_password_element] = password_type;
-  } else {
-    DCHECK(!form.password_element.empty());
+  } else if (!form.password_element.empty()) {
     (*field_types)[form.password_element] = password_type;
   }
 }
