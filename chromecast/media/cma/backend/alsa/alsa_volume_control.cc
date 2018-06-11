@@ -50,11 +50,18 @@ class AlsaVolumeControl::ScopedAlsaMixer {
     alsa_err = alsa_->MixerAttach(mixer, mixer_device_name.c_str());
     if (alsa_err < 0) {
       LOG(ERROR) << "MixerAttach error: " << alsa_->StrError(alsa_err);
+      alsa_->MixerClose(mixer);
       mixer = nullptr;
       return;
     }
     ALSA_ASSERT(MixerElementRegister, mixer, NULL, NULL);
-    ALSA_ASSERT(MixerLoad, mixer);
+    alsa_err = alsa->MixerLoad(mixer);
+    if (alsa_err < 0) {
+      LOG(ERROR) << "MixerLoad error: " << alsa_->StrError(alsa_err);
+      alsa_->MixerClose(mixer);
+      mixer = nullptr;
+      return;
+    }
 
     snd_mixer_selem_id_t* sid = NULL;
     ALSA_ASSERT(MixerSelemIdMalloc, &sid);
