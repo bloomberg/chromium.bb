@@ -44,6 +44,11 @@ static_assert(kDexSentinelIndexAsOffset != kInvalidOffset,
 // wrecks havoc for base::checked_cast<int16_t>().
 constexpr int kInstrUnitSize = static_cast<int>(sizeof(uint16_t));
 
+// Checks if |offset| is byte aligned to 32 bits or 4 bytes.
+bool Is32BitAligned(offset_t offset) {
+  return offset % 4 == 0;
+}
+
 /******** CodeItemParser ********/
 
 // A parser to extract successive code items from a DEX image whose header has
@@ -120,7 +125,7 @@ class CodeItemParser {
     const auto* code_item = source_.GetPointer<const dex::CodeItem>();
     if (!code_item)
       return kInvalidOffset;
-    DCHECK_EQ(0U, code_item_offset % 4U);
+    DCHECK(Is32BitAligned(code_item_offset));
 
     // Skip instruction bytes.
     if (!source_.GetArray<uint16_t>(code_item->insns_size))
@@ -407,17 +412,14 @@ class ItemReferenceReader : public ReferenceReader {
 
   // ReferenceReader:
   base::Optional<Reference> GetNext() override {
-    while (true) {
-      if (cur_idx_ >= num_items_)
-        return base::nullopt;
-
+    while (cur_idx_ < num_items_) {
       const offset_t item_offset = OffsetOfIndex(cur_idx_);
       const offset_t location = item_offset + rel_location_;
       // The general check is |location + reference_width > hi_|. However, by
       // assumption |hi_| and |lo_| do not straddle the body of a Reference. So
       // |reference_width| is unneeded.
       if (location >= hi_)
-        return base::nullopt;
+        break;
       const offset_t target = mapper_.Run(location);
 
       // kDexSentinelOffset (0) may appear for the following:
@@ -435,11 +437,12 @@ class ItemReferenceReader : public ReferenceReader {
 
       if (target == kInvalidOffset) {
         LOG(WARNING) << "Invalid item target at " << AsHex<8>(location) << ".";
-        return base::nullopt;
+        break;
       }
       ++cur_idx_;
       return Reference{location, target};
     }
+    return base::nullopt;
   }
 
  private:
@@ -456,11 +459,104 @@ class ItemReferenceReader : public ReferenceReader {
   offset_t cur_idx_ = 0;
 };
 
+// Parses a flattened jagged list of lists of items that looks like:
+//   NTTT|NTT|NTTTT|N|NTT...
+// where |N| is an uint32_t representing the number of items in each sub-list,
+// and "T" is a fixed-size item (|item_width|) of type "T". On success, stores
+// the offset of each |T| into |reference_list|, and returns true. Otherwise
+// (e.g., on finding any structural problem) returns false.
+bool ParseItemOffsets(ConstBufferView image,
+                      const dex::MapItem& map_item,
+                      size_t item_width,
+                      std::vector<offset_t>* item_offsets) {
+  // Sanity check: |image| should at least fit |map_item.size| copies of "N".
+  if (!image.covers_array(map_item.offset, map_item.size, sizeof(uint32_t)))
+    return false;
+  BufferSource source = std::move(BufferSource(image).Skip(map_item.offset));
+  item_offsets->clear();
+  for (uint32_t i = 0; i < map_item.size; ++i) {
+    if (!source.AlignOn(image, 4U))
+      return false;
+    uint32_t unsafe_size;
+    if (!source.GetValue<uint32_t>(&unsafe_size))
+      return false;
+    DCHECK(Is32BitAligned(
+        base::checked_cast<offset_t>(source.begin() - image.begin())));
+    if (!source.covers_array(0, unsafe_size, item_width))
+      return false;
+    for (uint32_t j = 0; j < unsafe_size; ++j) {
+      item_offsets->push_back(
+          base::checked_cast<offset_t>(source.begin() - image.begin()));
+      source.Skip(item_width);
+    }
+  }
+  return true;
+}
+
+/******** CachedItemListReferenceReader ********/
+
+// A class that takes sorted |item_offsets|, and emits all member variable of
+// interest (MVIs) that fall inside |[lo, hi)|. The MVI of each item has
+// location of |rel_location| from item offset, and has target extracted with
+// |mapper| (which performs validation). By the "atomicity assumption", [|lo,
+// hi)| never cut across an MVI.
+class CachedItemListReferenceReader : public ReferenceReader {
+ public:
+  // A function that takes an MVI's location and emit its target offset.
+  using Mapper = base::RepeatingCallback<offset_t(offset_t)>;
+
+  CachedItemListReferenceReader(offset_t lo,
+                                offset_t hi,
+                                uint32_t rel_location,
+                                const std::vector<offset_t>& item_offsets,
+                                Mapper&& mapper)
+      : hi_(hi),
+        rel_location_(rel_location),
+        end_it_(item_offsets.cend()),
+        mapper_(mapper) {
+    cur_it_ = std::upper_bound(item_offsets.cbegin(), item_offsets.cend(), lo);
+    if (cur_it_ != item_offsets.begin() && *(cur_it_ - 1) >= lo)
+      --cur_it_;
+  }
+
+  // ReferenceReader:
+  base::Optional<Reference> GetNext() override {
+    while (cur_it_ < end_it_) {
+      const offset_t location = *cur_it_ + rel_location_;
+      if (location >= hi_)  // Check is simplified by atomicity assumption.
+        break;
+      const offset_t target = mapper_.Run(location);
+      if (target == kInvalidOffset) {
+        LOG(WARNING) << "Invalid item target at " << AsHex<8>(location) << ".";
+        break;
+      }
+      ++cur_it_;
+
+      // kDexSentinelOffset is a sentinel for;
+      // - AnnotationsDirectoryItem: class_annotations_off
+      if (target == kDexSentinelOffset)
+        continue;
+      return Reference{location, target};
+    }
+    return base::nullopt;
+  }
+
+ private:
+  const offset_t hi_;
+  const uint32_t rel_location_;
+  const std::vector<offset_t>::const_iterator end_it_;
+  const Mapper mapper_;
+  std::vector<offset_t>::const_iterator cur_it_;
+
+  DISALLOW_COPY_AND_ASSIGN(CachedItemListReferenceReader);
+};
+
 // Reads an INT index at |location| in |image| and translates the index to the
 // offset of a fixed-size item specified by |target_map_item| and
 // |target_item_size|. Returns the target offset if valid, or kInvalidOffset
-// otherwise. This is compatible with InstructionReferenceReader::Mapper and
-// ItemReferenceReader::Mapper.
+// otherwise. This is compatible with
+// CachedReferenceListReferenceReader::Mapper,
+// InstructionReferenceReader::Mapper, and ItemReferenceReader::Mapper.
 template <typename INT>
 static offset_t ReadTargetIndex(ConstBufferView image,
                                 const dex::MapItem& target_map_item,
@@ -482,8 +578,8 @@ static offset_t ReadTargetIndex(ConstBufferView image,
 // Reads uint32_t value in |image| at (valid) |location| and checks whether it
 // is a safe offset of a fixed-size item. Returns the target offset (possibly a
 // sentinel) if valid, or kInvalidOffset otherwise. This is compatible with
-// InstructionReferenceReader::Mapper, ItemReferenceReader::Mapper, and
-// CachedListItemReferenceReader::Mapper.
+// CachedReferenceListReferenceReader::Mapper,
+// InstructionReferenceReader::Mapper, and ItemReferenceReader::Mapper.
 static offset_t ReadTargetOffset32(ConstBufferView image, offset_t location) {
   const offset_t unsafe_target =
       static_cast<offset_t>(image.read<uint32_t>(location));
@@ -644,6 +740,9 @@ std::vector<ReferenceGroup> DisassemblerDex::MakeReferenceGroups() const {
       {{4, TypeTag(kClassDefToSuperClassTypeId), PoolTag(kTypeId)},
        &DisassemblerDex::MakeReadClassDefToSuperClassTypeId32,
        &DisassemblerDex::MakeWriteTypeId32},
+      {{2, TypeTag(kTypeListToTypeId), PoolTag(kTypeId)},
+       &DisassemblerDex::MakeReadTypeListToTypeId16,
+       &DisassemblerDex::MakeWriteTypeId16},
       {{2, TypeTag(kCodeToTypeId), PoolTag(kTypeId)},
        &DisassemblerDex::MakeReadCodeToTypeId16,
        &DisassemblerDex::MakeWriteTypeId16},
@@ -662,6 +761,10 @@ std::vector<ReferenceGroup> DisassemblerDex::MakeReferenceGroups() const {
       {{4, TypeTag(kClassDefToInterfacesTypeList), PoolTag(kTypeList)},
        &DisassemblerDex::MakeReadClassDefToInterfacesTypeList,
        &DisassemblerDex::MakeWriteAbs32},
+      {{4, TypeTag(kAnnotationSetRefListToAnnotationSet),
+        PoolTag(kAnnotionSet)},
+       &DisassemblerDex::MakeReadAnnotationSetRefListToAnnotationSet,
+       &DisassemblerDex::MakeWriteAbs32},
       {{4, TypeTag(kClassDefToClassData), PoolTag(kClassData)},
        &DisassemblerDex::MakeReadClassDefToClassData,
        &DisassemblerDex::MakeWriteAbs32},
@@ -676,6 +779,9 @@ std::vector<ReferenceGroup> DisassemblerDex::MakeReferenceGroups() const {
        &DisassemblerDex::MakeWriteRelCode32},
       {{4, TypeTag(kStringIdToStringData), PoolTag(kStringData)},
        &DisassemblerDex::MakeReadStringIdToStringData,
+       &DisassemblerDex::MakeWriteAbs32},
+      {{4, TypeTag(kAnnotationSetToAnnotation), PoolTag(kAnnotation)},
+       &DisassemblerDex::MakeReadAnnotationSetToAnnotation,
        &DisassemblerDex::MakeWriteAbs32},
       {{4, TypeTag(kClassDefToStaticValuesEncodedArray),
         PoolTag(kEncodedArray)},
@@ -872,6 +978,36 @@ DisassemblerDex::MakeReadClassDefToStaticValuesEncodedArray(offset_t lo,
   return std::make_unique<ItemReferenceReader>(
       lo, hi, class_def_map_item_, sizeof(dex::ClassDefItem),
       offsetof(dex::ClassDefItem, static_values_off), std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader> DisassemblerDex::MakeReadTypeListToTypeId16(
+    offset_t lo,
+    offset_t hi) {
+  auto mapper =
+      base::BindRepeating(ReadTargetIndex<decltype(dex::TypeItem::type_idx)>,
+                          image_, type_map_item_, sizeof(dex::TypeIdItem));
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::TypeItem, type_idx), type_list_offsets_,
+      std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationSetToAnnotation(offset_t lo, offset_t hi) {
+  // dex::AnnotationOffItem::annotation_off mapper.
+  auto mapper = base::BindRepeating(ReadTargetOffset32, image_);
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::AnnotationOffItem, annotation_off),
+      annotation_set_offsets_, std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationSetRefListToAnnotationSet(offset_t lo,
+                                                             offset_t hi) {
+  // dex::AnnotationSetRefItem::annotations_off mapper.
+  auto mapper = base::BindRepeating(ReadTargetOffset32, image_);
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::AnnotationSetRefItem, annotations_off),
+      annotation_set_ref_list_offsets_, std::move(mapper));
 }
 
 std::unique_ptr<ReferenceReader> DisassemblerDex::MakeReadCodeToStringId16(
@@ -1207,7 +1343,7 @@ bool DisassemblerDex::ParseHeader() {
   std::set<uint16_t> required_item_types = {
       dex::kTypeStringIdItem, dex::kTypeTypeIdItem,   dex::kTypeProtoIdItem,
       dex::kTypeFieldIdItem,  dex::kTypeMethodIdItem, dex::kTypeClassDefItem,
-      dex::kTypeCodeItem,
+      dex::kTypeTypeList,     dex::kTypeCodeItem,
   };
   for (offset_t i = 0; i < list_size; ++i) {
     const dex::MapItem* item = &item_list[i];
@@ -1230,7 +1366,35 @@ bool DisassemblerDex::ParseHeader() {
   field_map_item_ = *map_item_map_[dex::kTypeFieldIdItem];
   method_map_item_ = *map_item_map_[dex::kTypeMethodIdItem];
   class_def_map_item_ = *map_item_map_[dex::kTypeClassDefItem];
+  type_list_map_item_ = *map_item_map_[dex::kTypeTypeList];
   code_map_item_ = *map_item_map_[dex::kTypeCodeItem];
+
+  // The following types are optional and may not be present in every DEX file.
+  if (map_item_map_.count(dex::kTypeAnnotationSetRefList)) {
+    annotation_set_ref_list_map_item_ =
+        *map_item_map_[dex::kTypeAnnotationSetRefList];
+  }
+  if (map_item_map_.count(dex::kTypeAnnotationSetItem))
+    annotation_set_map_item_ = *map_item_map_[dex::kTypeAnnotationSetItem];
+
+  // Iteratively extract variable length lists. Any failure would indicate
+  // invalid DEX. Success indicates that no structural problem is found.
+  // However, contained references data read from parsed items still require
+  // validation.
+  if (!ParseItemOffsets(image_, type_list_map_item_, sizeof(dex::TypeItem),
+                        &type_list_offsets_)) {
+    return false;
+  }
+  if (!ParseItemOffsets(image_, annotation_set_ref_list_map_item_,
+                        sizeof(dex::AnnotationSetRefItem),
+                        &annotation_set_ref_list_offsets_)) {
+    return false;
+  }
+  if (!ParseItemOffsets(image_, annotation_set_map_item_,
+                        sizeof(dex::AnnotationOffItem),
+                        &annotation_set_offsets_)) {
+    return false;
+  }
 
   // Iteratively extract variable-length code items blocks. Any failure would
   // indicate invalid DEX. Success indicates that no structural problem is
