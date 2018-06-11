@@ -39,7 +39,7 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/plugins/pdf_plugin_placeholder_observer.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
-#include "chrome/browser/predictors/loading_predictor_tab_helper.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -336,8 +336,10 @@ offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
         web_contents);
   }
 
-  if (predictors::LoadingPredictorFactory::GetForProfile(profile))
-    predictors::LoadingPredictorTabHelper::CreateForWebContents(web_contents);
+  if (predictors::LoadingPredictorFactory::GetForProfile(profile)) {
+    predictors::ResourcePrefetchPredictorTabHelper::CreateForWebContents(
+        web_contents);
+  }
 
   if (tracing::NavigationTracingObserver::IsEnabled())
     tracing::NavigationTracingObserver::CreateForWebContents(web_contents);
