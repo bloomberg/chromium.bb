@@ -174,6 +174,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t presentation_token,
                                  const gfx::PresentationFeedback& feedback);
+  void DidRejectCompositorFrame(
+      uint32_t presentation_token,
+      bool request_presentation_feedback,
+      std::vector<TransferableResource> frame_resource_list);
 
   // BeginFrameObserver implementation.
   void OnBeginFrame(const BeginFrameArgs& args) override;

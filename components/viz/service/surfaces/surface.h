@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -126,15 +127,19 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   bool needs_sync_tokens() const { return needs_sync_tokens_; }
 
   // Returns false if |frame| is invalid.
+  // |frame_rejected_callback| will be called once if the frame will not be
+  // displayed.
   // |draw_callback| is called once to notify the client that the previously
   // submitted CompositorFrame is processed and that another frame can be
   // there is visible damage.
   // |aggregated_damage_callback| is called when |surface| or one of its
   // descendents is determined to be damaged at aggregation time.
   // |presented_callback| is called when the |frame| has been turned into light
-  // the first time on display, or the |frame| will never be displayed.
+  // the first time on display, or if the |frame| is replaced by another prior
+  // to display.
   bool QueueFrame(CompositorFrame frame,
                   uint64_t frame_index,
+                  base::ScopedClosureRunner frame_rejected_callback,
                   base::OnceClosure draw_callback,
                   const AggregatedDamageCallback& aggregated_damage_callback,
                   PresentedCallback presented_callback);

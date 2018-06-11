@@ -126,6 +126,7 @@ void Surface::Close() {
 bool Surface::QueueFrame(
     CompositorFrame frame,
     uint64_t frame_index,
+    base::ScopedClosureRunner frame_rejected_callback,
     base::OnceClosure callback,
     const AggregatedDamageCallback& aggregated_damage_callback,
     PresentedCallback presented_callback) {
@@ -135,18 +136,10 @@ bool Surface::QueueFrame(
       frame.device_scale_factor() != surface_info_.device_scale_factor()) {
     TRACE_EVENT_INSTANT0("viz", "Surface invariants violation",
                          TRACE_EVENT_SCOPE_THREAD);
-    if (presented_callback)
-      std::move(presented_callback).Run(gfx::PresentationFeedback());
     return false;
   }
 
   if (closed_) {
-    std::vector<ReturnedResource> resources =
-        TransferableResource::ReturnResources(frame.resource_list);
-    surface_client_->ReturnResources(resources);
-    std::move(callback).Run();
-    if (presented_callback)
-      std::move(presented_callback).Run(gfx::PresentationFeedback());
     return true;
   }
 
@@ -188,6 +181,10 @@ bool Surface::QueueFrame(
 
   // Returns resources for the previous pending frame.
   UnrefFrameResourcesAndRunCallbacks(std::move(previous_pending_frame_data));
+
+  // The frame should not fail to display beyond this point. Release the
+  // callback so it is not called.
+  (void)frame_rejected_callback.Release();
 
   return true;
 }
