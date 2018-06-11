@@ -665,7 +665,8 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         int callCount = helper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             EditText editText =
-                    ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId));
+                    ((EditText) mCardUnmaskPrompt.getDialogForTest().getView().findViewById(
+                            resourceId));
             editText.setText(input);
             editText.getOnFocusChangeListener().onFocusChange(null, false);
         });
@@ -681,7 +682,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         ThreadUtils.runOnUiThreadBlocking(() -> {
             for (int i = 0; i < resourceIds.length; ++i) {
                 EditText editText =
-                        ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(
+                        ((EditText) mCardUnmaskPrompt.getDialogForTest().getView().findViewById(
                                 resourceIds[i]));
                 editText.setText(values[i]);
                 editText.getOnFocusChangeListener().onFocusChange(null, false);
@@ -696,7 +697,8 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         int callCount = helper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             EditText editText =
-                    (EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId);
+                    (EditText) mCardUnmaskPrompt.getDialogForTest().getView().findViewById(
+                            resourceId);
             editText.requestFocus();
             editText.onEditorAction(EditorInfo.IME_ACTION_DONE);
         });
@@ -807,8 +809,9 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
 
     /* package */ View getCardUnmaskView() throws Throwable {
         return ThreadUtils.runOnUiThreadBlocking(
-                () -> mCardUnmaskPrompt.getDialogForTest().findViewById(
-                        R.id.autofill_card_unmask_prompt));
+                ()
+                        -> mCardUnmaskPrompt.getDialogForTest().getView().findViewById(
+                                R.id.autofill_card_unmask_prompt));
     }
 
     @Override

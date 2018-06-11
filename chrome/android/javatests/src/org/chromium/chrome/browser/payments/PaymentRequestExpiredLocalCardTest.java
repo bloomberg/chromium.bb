@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.payments;
 
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.FIRST_BILLING_ADDRESS;
 
-import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -22,6 +21,7 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -71,7 +71,7 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
         mRule.setTextInExpiredCardUnmaskDialogAndWait(
                 new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
                 new String[] {"11", "26", "123"}, mRule.getReadyToUnmask());
-        mRule.clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mRule.getDismissed());
+        mRule.clickCardUnmaskButtonAndWait(ModalDialogView.BUTTON_POSITIVE, mRule.getDismissed());
         mRule.expectResultContains(new String[] {"Jon Doe", "4111111111111111", "11", "2026",
                 "basic-card", "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US",
                 "en", "freeShippingOption"});
@@ -91,7 +91,7 @@ public class PaymentRequestExpiredLocalCardTest implements MainActivityStartCall
         mRule.setTextInExpiredCardUnmaskDialogAndWait(
                 new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
                 new String[] {"11", "26", "123"}, mRule.getReadyToUnmask());
-        mRule.clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mRule.getDismissed());
+        mRule.clickCardUnmaskButtonAndWait(ModalDialogView.BUTTON_POSITIVE, mRule.getDismissed());
 
         // Make sure the new expiration date was saved.
         CreditCard storedCard = mHelper.getCreditCard(mCreditCardId);

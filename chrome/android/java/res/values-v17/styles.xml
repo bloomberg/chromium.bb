@@ -130,7 +130,7 @@
     </style>
 
     <style name="ModalDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
-        <item name="android:textColor">@color/light_active_color</item>
+        <item name="android:textColor">@color/blue_when_enabled</item>
     </style>
 
     <style name="SimpleDialog" parent="AlertDialogTheme">
