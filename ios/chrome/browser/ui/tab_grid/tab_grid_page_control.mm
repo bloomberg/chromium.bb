@@ -100,6 +100,8 @@ const int kSliderColor = 0xF8F9FA;
 const int kBackgroundColor = 0x5F6368;
 // Alpha for the background view.
 const CGFloat kBackgroundAlpha = 1.0;
+// Color for the regular tab count label
+const CGFloat kSelectedLabelColor = 0x3C4043;
 
 // Returns the point that's at the center of |rect|.
 CGPoint RectCenter(CGRect rect) {
@@ -488,7 +490,8 @@ NSString* StringForItemCount(long count) {
 // Selected labels use a different size and are black.
 - (UILabel*)labelSelected:(BOOL)selected {
   CGFloat size = selected ? kSelectedLabelSize : kLabelSize;
-  UIColor* color = selected ? UIColor.blackColor : UIColorFromRGB(kSliderColor);
+  UIColor* color = selected ? UIColorFromRGB(kSelectedLabelColor)
+                            : UIColorFromRGB(kSliderColor);
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, size, size)];
   label.backgroundColor = UIColor.clearColor;
   label.textAlignment = NSTextAlignmentCenter;
