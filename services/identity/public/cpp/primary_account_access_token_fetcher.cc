@@ -102,17 +102,6 @@ void PrimaryAccountAccessTokenFetcher::GoogleSigninSucceeded(
   WaitForRefreshToken();
 }
 
-void PrimaryAccountAccessTokenFetcher::GoogleSigninFailed(
-    const GoogleServiceAuthError& error) {
-  DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);
-  DCHECK(waiting_for_sign_in_);
-  DCHECK(!waiting_for_refresh_token_);
-  waiting_for_sign_in_ = false;
-  signin_manager_->RemoveObserver(this);
-
-  std::move(callback_).Run(error, std::string());
-}
-
 void PrimaryAccountAccessTokenFetcher::OnRefreshTokenAvailable(
     const std::string& account_id) {
   DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);
