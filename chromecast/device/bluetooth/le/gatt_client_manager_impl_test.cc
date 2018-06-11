@@ -605,5 +605,17 @@ TEST_F(GattClientManagerTest, ConnectMultiple) {
   }
 }
 
+TEST_F(GattClientManagerTest, GetServicesFailOnConnect) {
+  EXPECT_CALL(cb_, Run(false));
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+  device->Connect(cb_.Get());
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(false));
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             true /* connected */);
+  ASSERT_FALSE(device->IsConnected());
+}
+
 }  // namespace bluetooth
 }  // namespace chromecast
