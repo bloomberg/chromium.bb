@@ -130,6 +130,12 @@ public class NonOverlappingStack extends Stack {
     }
 
     @Override
+    protected void finishAnimation(long time) {
+        super.finishAnimation(time);
+        mSuppressScrollClamping = false;
+    }
+
+    @Override
     protected boolean evenOutTabs(float amount, boolean allowReverseDirection) {
         // Nothing to do here; tabs are always a fixed distance apart in NonOverlappingStack (except
         // during tab close/un-close animations)
@@ -158,7 +164,7 @@ public class NonOverlappingStack extends Stack {
      *         (e.g. we're in the process of animating a scroll or the user is currently dragging),
      *         returns the index of the tab closest to the center.
      */
-    private int getCenteredTabIndex() {
+    public int getCenteredTabIndex() {
         return Math.round(-mScrollOffset / mSpacing);
     }
 
@@ -306,6 +312,15 @@ public class NonOverlappingStack extends Stack {
         // a result of changing the scale.
         if (getNonDyingTabCount() > 1) return super.getMaxTabHeight();
         return (SCALE_FRACTION_MULTIPLE_TABS / SCALE_FRACTION_SINGLE_TAB) * super.getMaxTabHeight();
+    }
+
+    /**
+     * This method sets mSuppressScrollClamping to true to allow an animation to animate the
+     * mScrollOffset outside the normal bounds. It will be reset to false when finishAnimation() is
+     * called.
+     */
+    public void suppressScrollClampingForAnimation() {
+        mSuppressScrollClamping = true;
     }
 
     /**

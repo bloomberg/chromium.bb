@@ -18,7 +18,6 @@ import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTa
 import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.X_IN_STACK_OFFSET;
 import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab.Property.Y_IN_STACK_INFLUENCE;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
@@ -34,11 +33,6 @@ class StackAnimationLandscape extends StackAnimation {
             float borderFramePaddingTopOpaque, float borderFramePaddingLeft) {
         super(stack, width, height, topBrowserControlsHeight, borderFramePaddingTop,
                 borderFramePaddingTopOpaque, borderFramePaddingLeft);
-    }
-
-    // If this flag is enabled, we're using the non-overlapping tab switcher.
-    private boolean isHorizontalTabSwitcherFlagEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
     }
 
     @Override

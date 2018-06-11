@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTa
 
 import android.view.animation.Interpolator;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
@@ -146,6 +147,7 @@ public abstract class StackAnimation {
      *
      * @param type          The type of animation to be created.  This is what
      *                      determines which helper method is called.
+     * @param stack         The current stack.
      * @param tabs          The tabs that make up the current stack that will
      *                      be animated.
      * @param focusIndex    The index of the tab that is the focus of this animation.
@@ -154,8 +156,8 @@ public abstract class StackAnimation {
      * @param discardRange  The range of the discard amount value.
      * @return              The resulting TabSwitcherAnimation that will animate the tabs.
      */
-    public ChromeAnimation<?> createAnimatorSetForType(OverviewAnimationType type, StackTab[] tabs,
-            int focusIndex, int sourceIndex, int spacing, float discardRange) {
+    public ChromeAnimation<?> createAnimatorSetForType(OverviewAnimationType type, Stack stack,
+            StackTab[] tabs, int focusIndex, int sourceIndex, int spacing, float discardRange) {
         ChromeAnimation<?> set = null;
 
         if (tabs != null) {
@@ -177,7 +179,7 @@ public abstract class StackAnimation {
                 case DISCARD_ALL:
                 // Purposeful fall through
                 case UNDISCARD:
-                    set = createUpdateDiscardAnimatorSet(tabs, spacing, discardRange);
+                    set = createUpdateDiscardAnimatorSet(stack, tabs, spacing, discardRange);
                     break;
                 case NEW_TAB_OPENED:
                     set = createNewTabOpenedAnimatorSet(tabs, focusIndex, discardRange);
@@ -201,6 +203,11 @@ public abstract class StackAnimation {
 
     protected abstract void addTiltScrollAnimation(ChromeAnimation<Animatable<?>> set,
             LayoutTab tab, float end, int duration, int startTime);
+
+    // If this flag is enabled, we're using the non-overlapping tab switcher.
+    protected boolean isHorizontalTabSwitcherFlagEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
+    }
 
     /**
      * Responsible for generating the animations that shows the stack
@@ -269,10 +276,11 @@ public abstract class StackAnimation {
      *                     tabs to create the appropriate animation.
      */
     protected ChromeAnimation<?> createUpdateDiscardAnimatorSet(
-            StackTab[] tabs, int spacing, float discardRange) {
+            Stack stack, StackTab[] tabs, int spacing, float discardRange) {
         ChromeAnimation<Animatable<?>> set = new ChromeAnimation<Animatable<?>>();
 
         int dyingTabsCount = 0;
+        int firstDyingTabIndex = -1;
         float firstDyingTabOffset = 0;
         for (int i = 0; i < tabs.length; ++i) {
             StackTab tab = tabs[i];
@@ -282,6 +290,7 @@ public abstract class StackAnimation {
             if (tab.isDying()) {
                 dyingTabsCount++;
                 if (dyingTabsCount == 1) {
+                    firstDyingTabIndex = i;
                     firstDyingTabOffset = getScreenPositionInScrollDirection(tab);
                 }
             }
@@ -292,17 +301,23 @@ public abstract class StackAnimation {
         int newIndex = 0;
         for (int i = 0; i < tabs.length; ++i) {
             StackTab tab = tabs[i];
-            long startTime = (long) Math.max(0, TAB_REORDER_START_SPAN
-                            / getScreenSizeInScrollDirection()
-                            * (getScreenPositionInScrollDirection(tab) - firstDyingTabOffset));
+            // If the non-overlapping horizontal tab switcher is enabled, we shift all the tabs over
+            // simultaneously. Otherwise we stagger the animation start times to create a ripple
+            // effect.
+            long startTime = isHorizontalTabSwitcherFlagEnabled()
+                    ? 0
+                    : (long) Math.max(0,
+                              TAB_REORDER_START_SPAN / getScreenSizeInScrollDirection()
+                                      * (getScreenPositionInScrollDirection(tab)
+                                                - firstDyingTabOffset));
             if (tab.isDying()) {
                 float discard = tab.getDiscardAmount();
                 if (discard == 0.0f) discard = isDefaultDiscardDirectionPositive() ? 0.0f : -0.0f;
                 float s = Math.copySign(1.0f, discard);
                 long duration = (long) (DISCARD_ANIMATION_DURATION
                         * (1.0f - Math.abs(discard / discardRange)));
-                addAnimation(set, tab, DISCARD_AMOUNT, discard, discardRange * s, duration,
-                        startTime, false, interpolator);
+                addAnimation(set, tab, DISCARD_AMOUNT, discard, discardRange * s, duration, 0,
+                        false, interpolator);
             } else {
                 if (tab.getDiscardAmount() != 0.f) {
                     addAnimation(set, tab, DISCARD_AMOUNT, tab.getDiscardAmount(), 0.0f,
@@ -327,12 +342,46 @@ public abstract class StackAnimation {
                     float start = tab.getScrollOffset();
                     if (start != newScrollOffset) {
                         addAnimation(set, tab, SCROLL_OFFSET, start, newScrollOffset,
-                                TAB_REORDER_DURATION, startTime);
+                                TAB_REORDER_DURATION, 0);
                     }
                 }
                 newIndex++;
             }
         }
+
+        // Scroll offset animation for non-overlapping horizontal tab switcher (if enabled)
+        if (isHorizontalTabSwitcherFlagEnabled()) {
+            NonOverlappingStack nonOverlappingStack = (NonOverlappingStack) stack;
+            int centeredTabIndex = nonOverlappingStack.getCenteredTabIndex();
+
+            // For all tab closures (except for the last one), we slide the remaining tabs in to
+            // fill the gap.
+            //
+            // There are two cases where we also need to animate the NonOverlappingStack's overall
+            // scroll position over by one tab:
+            //
+            // - Closing the last tab while centered on it (since we don't have a tab we can slide
+            //   over to replace it)
+            //
+            // - Closing any tab prior to the currently centered one (so we can keep the same tab
+            //   centered). Together with animating the individual scroll offsets for each tab, this
+            //   has the visual appearance of sliding in the prior tabs from the left (in LTR mode)
+            //   to fill the gap.
+            boolean closingLastTabWhileCentered =
+                    firstDyingTabIndex == tabs.length - 1 && firstDyingTabIndex == centeredTabIndex;
+            boolean closingPriorTab =
+                    firstDyingTabIndex != -1 && firstDyingTabIndex < centeredTabIndex;
+
+            boolean shouldAnimateStackScrollOffset = closingLastTabWhileCentered || closingPriorTab;
+
+            if (shouldAnimateStackScrollOffset) {
+                nonOverlappingStack.suppressScrollClampingForAnimation();
+                addAnimation(set, nonOverlappingStack, Stack.Property.SCROLL_OFFSET,
+                        stack.getScrollOffset(), -(centeredTabIndex - 1) * stack.getSpacing(),
+                        TAB_REORDER_DURATION, 0);
+            }
+        }
+
         return set;
     }
 
