@@ -32,7 +32,6 @@ _CONFIG = [
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
             'base::AutoReset',
-            'base::ByteSwap',
             'base::GetUniqueIdForProcess',
             'base::Location',
             'base::MakeRefCounted',
@@ -83,6 +82,11 @@ _CONFIG = [
 
             # Base atomic utilities
             'base::AtomicSequenceNumber',
+
+            # Byte order
+            'base::ByteSwap',
+            'base::NetToHost(16|32|64)',
+            'base::HostToNet(16|32|64)',
 
             # (Cryptographic) random number generation
             'base::RandUint64',
