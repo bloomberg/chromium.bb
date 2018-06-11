@@ -103,7 +103,7 @@ class ServerSharedBitmapManager;
 namespace content {
 
 class BrowserAccessibilityManager;
-class FlingScheduler;
+class FlingSchedulerBase;
 class InputRouter;
 class MockRenderWidgetHost;
 class RenderWidgetHostOwnerDelegate;
@@ -1197,7 +1197,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   const viz::FrameSinkId frame_sink_id_;
 
-  std::unique_ptr<FlingScheduler> fling_scheduler_;
+  std::unique_ptr<FlingSchedulerBase> fling_scheduler_;
 
   bool did_receive_first_frame_after_navigation_ = true;
 
