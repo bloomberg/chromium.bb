@@ -102,15 +102,18 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
 }  // namespace
 
 SyncServiceCrypto::SyncServiceCrypto(
-    const base::Closure& notify_observers,
-    const base::Callback<ModelTypeSet()>& get_preferred_types,
+    base::RepeatingClosure notify_observers,
+    base::RepeatingCallback<ModelTypeSet()> get_preferred_types,
+    base::RepeatingCallback<bool()> can_configure_data_types,
     SyncPrefs* sync_prefs)
-    : notify_observers_(notify_observers),
-      get_preferred_types_(get_preferred_types),
+    : notify_observers_(std::move(notify_observers)),
+      get_preferred_types_(std::move(get_preferred_types)),
+      can_configure_data_types_(std::move(can_configure_data_types)),
       sync_prefs_(sync_prefs),
       weak_factory_(this) {
   DCHECK(notify_observers_);
   DCHECK(get_preferred_types_);
+  DCHECK(can_configure_data_types_);
   DCHECK(sync_prefs_);
 }
 
@@ -259,7 +262,7 @@ void SyncServiceCrypto::OnPassphraseRequired(
   passphrase_required_reason_ = reason;
 
   const ModelTypeSet types = get_preferred_types_.Run();
-  if (data_type_manager_) {
+  if (data_type_manager_ && can_configure_data_types_.Run()) {
     DCHECK(data_type_manager_->IsNigoriEnabled());
     // Reconfigure without the encrypted types (excluded implicitly via the
     // failed datatypes handler).
@@ -283,7 +286,7 @@ void SyncServiceCrypto::OnPassphraseAccepted() {
   // Make sure the data types that depend on the passphrase are started at
   // this time.
   const ModelTypeSet types = get_preferred_types_.Run();
-  if (data_type_manager_) {
+  if (data_type_manager_ && can_configure_data_types_.Run()) {
     // Re-enable any encrypted types if necessary.
     data_type_manager_->Configure(types, CONFIGURE_REASON_CRYPTO);
   }
@@ -365,6 +368,7 @@ void SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_type_manager_);
   DCHECK(!saved_nigori_state_);
+  DCHECK(can_configure_data_types_.Run());
   saved_nigori_state_ = std::make_unique<SyncEncryptionHandler::NigoriState>();
   sync_prefs_->GetNigoriSpecificsForPassphraseTransition(
       &saved_nigori_state_->nigori_specifics);

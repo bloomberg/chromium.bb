@@ -24,8 +24,9 @@ class SyncPrefs;
 // encryption communications with the sync thread.
 class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
  public:
-  SyncServiceCrypto(const base::Closure& notify_observers,
-                    const base::Callback<ModelTypeSet()>& get_preferred_types,
+  SyncServiceCrypto(base::RepeatingClosure notify_observers,
+                    base::RepeatingCallback<ModelTypeSet()> get_preferred_types,
+                    base::RepeatingCallback<bool()> can_configure_data_types,
                     SyncPrefs* sync_prefs);
   ~SyncServiceCrypto() override;
 
@@ -93,10 +94,14 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
       const std::string& passphrase) const;
 
   // Calls SyncServiceBase::NotifyObservers(). Never null.
-  const base::Closure notify_observers_;
+  const base::RepeatingClosure notify_observers_;
 
   // Calls SyncService::GetPreferredDataTypes(). Never null.
-  const base::Callback<ModelTypeSet()> get_preferred_types_;
+  const base::RepeatingCallback<ModelTypeSet()> get_preferred_types_;
+
+  // Returns true if data types can be configured and false otherwise (e.g. if
+  // setup has not been completed). Never null.
+  const base::RepeatingCallback<bool()> can_configure_data_types_;
 
   // A pointer to the sync prefs. Never null and guaranteed to outlive us.
   SyncPrefs* const sync_prefs_;

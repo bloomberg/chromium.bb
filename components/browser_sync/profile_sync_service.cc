@@ -467,6 +467,8 @@ void ProfileSyncService::ResetCryptoState() {
                           base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
                           base::Unretained(this)),
+      base::BindRepeating(&ProfileSyncService::CanConfigureDataTypes,
+                          base::Unretained(this)),
       &sync_prefs_);
 }
 
