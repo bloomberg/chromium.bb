@@ -204,6 +204,9 @@ bool FakeRemoteGattCharacteristic::WriteWithoutResponse(
 
 void FakeRemoteGattCharacteristic::SubscribeToNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
+#if defined(OS_CHROMEOS)
+    NotificationType notification_type,
+#endif
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -225,12 +225,18 @@ void BluetoothRemoteGattCharacteristicBlueZ::PrepareWriteRemoteCharacteristic(
 
 void BluetoothRemoteGattCharacteristicBlueZ::SubscribeToNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
+#if defined(OS_CHROMEOS)
+    NotificationType notification_type,
+#endif
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
       ->StartNotify(
           object_path(),
+#if defined(OS_CHROMEOS)
+          notification_type,
+#endif
           base::Bind(
               &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess,
               weak_ptr_factory_.GetWeakPtr(), callback),

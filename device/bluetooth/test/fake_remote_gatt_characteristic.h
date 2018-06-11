@@ -101,11 +101,20 @@ class FakeRemoteGattCharacteristic
   bool WriteWithoutResponse(base::span<const uint8_t> value) override;
 
  protected:
+#if defined(OS_CHROMEOS)
+  // device::BluetoothRemoteGattCharacteristic overrides:
+  void SubscribeToNotifications(
+      device::BluetoothRemoteGattDescriptor* ccc_descriptor,
+      NotificationType notification_type,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+#else
   // device::BluetoothRemoteGattCharacteristic overrides:
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
       const ErrorCallback& error_callback) override;
+#endif
   void UnsubscribeFromNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,

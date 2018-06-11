@@ -41,6 +41,9 @@ class BluetoothRemoteGattService;
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
     : public virtual BluetoothGattCharacteristic {
  public:
+  // Bluetooth Spec Vol 3, Part G, 3.3.3.3 Client Characteristic Configuration.
+  enum class NotificationType { kNotification = 1, kIndication };
+
   // The ValueCallback is used to return the value of a remote characteristic
   // upon a read request.
   typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
@@ -116,6 +119,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // BluetoothGattNotifySession object that you received in |callback|.
   virtual void StartNotifySession(const NotifySessionCallback& callback,
                                   const ErrorCallback& error_callback);
+#if defined(OS_CHROMEOS)
+  // TODO(https://crbug.com/849359): This method should also be implemented on
+  // Android and Windows.
+  // macOS does not support specifying a notification type. According to macOS
+  // documentation if the characteristic supports both notify and indicate, only
+  // notifications will be enabled.
+  // https://developer.apple.com/documentation/corebluetooth/cbperipheral/1518949-setnotifyvalue?language=objc#discussion
+  virtual void StartNotifySession(NotificationType notification_type,
+                                  const NotifySessionCallback& callback,
+                                  const ErrorCallback& error_callback);
+#endif
 
   // Sends a read request to a remote characteristic to read its value.
   // |callback| is called to return the read value on success and
@@ -163,10 +177,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
   // notifications/indications. This method is meant to be called from
   // StartNotifySession and should contain only the code necessary to start
   // listening to characteristic notifications on a particular platform.
+#if defined(OS_CHROMEOS)
+  // |notification_type| specifies the type of notifications that will be
+  // enabled: notifications or indications.
+  // TODO(https://crbug.com/849359): This method should also be implemented on
+  // Android and Windows.
+  virtual void SubscribeToNotifications(
+      BluetoothRemoteGattDescriptor* ccc_descriptor,
+      NotificationType notification_type,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+#else
   virtual void SubscribeToNotifications(
       BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
+#endif
 
   // Writes to the Client Characteristic Configuration descriptor to disable
   // notifications/indications. This method is meant to be called from
@@ -220,7 +246,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
     void Cancel();
   };
 
+  void StartNotifySessionInternal(
+      const base::Optional<NotificationType>& notification_type,
+      const NotifySessionCallback& callback,
+      const ErrorCallback& error_callback);
   void ExecuteStartNotifySession(
+      const base::Optional<NotificationType>& notification_type,
       NotifySessionCallback callback,
       ErrorCallback error_callback,
       NotifySessionCommand::Type previous_command_type,
@@ -245,6 +276,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
       BluetoothGattNotifySession* session,
       base::Closure callback,
       BluetoothRemoteGattService::GattErrorCode error);
+  bool IsNotificationTypeSupported(
+      const base::Optional<NotificationType>& notification_type);
 
   // Pending StartNotifySession / StopNotifySession calls.
   base::queue<std::unique_ptr<NotifySessionCommand>> pending_notify_commands_;

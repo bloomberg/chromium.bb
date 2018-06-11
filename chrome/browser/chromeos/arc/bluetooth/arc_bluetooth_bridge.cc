@@ -1639,8 +1639,18 @@ void ArcBluetoothBridge::WriteGattDescriptor(
       repeating_callback.Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
       return;
     case ENABLE_NOTIFICATION_VALUE:
+      characteristic->StartNotifySession(
+          bluez::BluetoothRemoteGattCharacteristicBlueZ::NotificationType::
+              kNotification,
+          base::Bind(&ArcBluetoothBridge::OnGattNotifyStartDone,
+                     weak_factory_.GetWeakPtr(), repeating_callback,
+                     char_id_str),
+          base::Bind(&OnGattOperationError, repeating_callback));
+      return;
     case ENABLE_INDICATION_VALUE:
       characteristic->StartNotifySession(
+          bluez::BluetoothRemoteGattCharacteristicBlueZ::NotificationType::
+              kIndication,
           base::Bind(&ArcBluetoothBridge::OnGattNotifyStartDone,
                      weak_factory_.GetWeakPtr(), repeating_callback,
                      char_id_str),

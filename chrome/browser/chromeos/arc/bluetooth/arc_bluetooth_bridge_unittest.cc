@@ -308,7 +308,8 @@ TEST_F(ArcBluetoothBridgeTest, GetGattDB) {
             db[1]->uuid);
   EXPECT_EQ(mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC,
             db[1]->type);
-  EXPECT_EQ(device::BluetoothGattCharacteristic::PROPERTY_NOTIFY,
+  EXPECT_EQ(device::BluetoothGattCharacteristic::PROPERTY_NOTIFY |
+                device::BluetoothGattCharacteristic::PROPERTY_INDICATE,
             db[1]->properties);
 
   EXPECT_EQ(device::BluetoothUUID(bluez::FakeBluetoothGattDescriptorClient::

@@ -62,9 +62,19 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicClient
                          const std::vector<uint8_t>& value,
                          const base::Closure& callback,
                          const ErrorCallback& error_callback) override;
+#if defined(OS_CHROMEOS)
+  void StartNotify(
+      const dbus::ObjectPath& object_path,
+      device::BluetoothRemoteGattCharacteristic::NotificationType
+          notification_type,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+#else
   void StartNotify(const dbus::ObjectPath& object_path,
                    const base::Closure& callback,
                    const ErrorCallback& error_callback) override;
+#endif
+
   void StopNotify(const dbus::ObjectPath& object_path,
                   const base::Closure& callback,
                   const ErrorCallback& error_callback) override;
