@@ -25,7 +25,8 @@ class ASH_EXPORT UpdateNotificationController : public UpdateObserver {
 
   bool ShouldShowUpdate() const;
   base::string16 GetNotificationTitle() const;
-  void HandleNotificationClick();
+  base::string16 GetNotificationMessage() const;
+  void HandleNotificationClick(base::Optional<int> index);
 
   static const char kNotificationId[];
 

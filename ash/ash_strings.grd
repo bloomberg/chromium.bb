@@ -349,6 +349,24 @@ This file contains the strings for ash.
         Click to view update details
       </message>
 
+      <message name="IDS_UPDATE_NOTIFICATION_TITLE" desc="The title of the notification to notify that the user should restart to get system updates.">
+        Update available
+      </message>
+      <if expr="is_chrome_branded">
+        <message name="IDS_UPDATE_NOTIFICATION_TITLE_FLASH_PLAYER" desc="The title of the notification to notify the user should restart to get system updates in order to update Flash Player.">
+          Adobe Flash Player update available
+        </message>
+      </if>
+      <message name="IDS_UPDATE_NOTIFICATION_MESSAGE_LEARN_MORE" desc="The body of the notification to notify that the user should restart to get system updates. This notification body links to the info page on the update.">
+        Learn more about the latest <ph name="SYSTEM_APP_NAME">$1<ex>Chromium OS</ex></ph> update
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_RESTART_BUTTON" meaning="button label" desc="The label used as the button to restart system and update. Displayed as the action button of the notification for system update.">
+        Restart to update
+      </message>
+      <message name="IDS_UPDATE_NOTIFICATION_MESSAGE_POWERWASH" desc="The notification message used in the system notification update when user need to powerwash the device in order to update the system.">
+        This update requires powerwashing your device. Learn more about the latest <ph name="SYSTEM_APP_NAME">$1<ex>Chromium OS</ex></ph> update.
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the volume slider.">
         Volume
       </message>

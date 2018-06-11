@@ -46,11 +46,10 @@ void UpdateNotificationController::OnUpdateAvailable() {
     return;
   }
 
-  // TODO(tetsui): Update resource strings according to UX.
   std::unique_ptr<Notification> notification =
       Notification::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-          GetNotificationTitle(), base::string16() /* message */, gfx::Image(),
+          GetNotificationTitle(), GetNotificationMessage(), gfx::Image(),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
@@ -62,6 +61,15 @@ void UpdateNotificationController::OnUpdateAvailable() {
           kSystemMenuUpdateIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_pinned(true);
+
+  if (model_->update_required()) {
+    std::vector<message_center::ButtonInfo> notification_actions;
+    message_center::ButtonInfo button_info = message_center::ButtonInfo(
+        l10n_util::GetStringUTF16(IDS_UPDATE_NOTIFICATION_RESTART_BUTTON));
+    notification_actions.push_back(button_info);
+    notification->set_buttons(notification_actions);
+  }
+
   MessageCenter::Get()->AddNotification(std::move(notification));
 }
 
@@ -69,27 +77,40 @@ bool UpdateNotificationController::ShouldShowUpdate() const {
   return model_->update_required() || model_->update_over_cellular_available();
 }
 
-base::string16 UpdateNotificationController::GetNotificationTitle() const {
-  // TODO(tetsui): Update resource strings according to UX.
+base::string16 UpdateNotificationController::GetNotificationMessage() const {
+  base::string16 system_app_name =
+      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME);
   if (model_->factory_reset_required()) {
-    return l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE);
+    return l10n_util::GetStringFUTF16(IDS_UPDATE_NOTIFICATION_MESSAGE_POWERWASH,
+                                      system_app_name);
   }
-  if (model_->update_type() == mojom::UpdateType::FLASH) {
-    return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_UPDATE_FLASH);
-  }
-
-  if (!model_->update_required() && model_->update_over_cellular_available()) {
-    return l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_UPDATE_OVER_CELLULAR_AVAILABLE);
-  }
-
-  return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_UPDATE);
+  return l10n_util::GetStringFUTF16(IDS_UPDATE_NOTIFICATION_MESSAGE_LEARN_MORE,
+                                    system_app_name);
 }
 
-void UpdateNotificationController::HandleNotificationClick() {
+base::string16 UpdateNotificationController::GetNotificationTitle() const {
+#if defined(GOOGLE_CHROME_BUILD)
+  if (model_->update_type() == mojom::UpdateType::FLASH) {
+    return l10n_util::GetStringUTF16(
+        IDS_UPDATE_NOTIFICATION_TITLE_FLASH_PLAYER);
+  }
+#endif
+
+  return l10n_util::GetStringUTF16(IDS_UPDATE_NOTIFICATION_TITLE);
+}
+
+void UpdateNotificationController::HandleNotificationClick(
+    base::Optional<int> button_index) {
   DCHECK(ShouldShowUpdate());
 
+  if (!button_index) {
+    // Notification message body clicked, which says "learn more".
+    Shell::Get()->system_tray_controller()->ShowAboutChromeOS();
+    return;
+  }
+
+  // Restart
+  DCHECK(button_index.value() == 0);
   message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
                                                            false /* by_user */);
 
