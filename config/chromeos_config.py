@@ -4233,6 +4233,7 @@ def TryjobMirrors(site_config):
         gs_path=config_lib.GS_PATH_DEFAULT,
         schedule=None,
         triggered_gitiles=None,
+        important=True,
     )
 
     # Force uprev. This is so patched in changes are always built.
