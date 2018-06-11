@@ -107,6 +107,9 @@ class TabLoadTracker {
   // This allows the singleton constructor access to the protected constructor.
   friend class base::NoDestructor<TabLoadTracker>;
 
+  // For unittesting.
+  friend class LocalSiteCharacteristicsWebContentsObserverTest;
+
   // These declarations allows the various bits of TabManager plumbing to
   // forward notifications to the TabLoadTracker.
   friend class resource_coordinator::ResourceCoordinatorTabHelper;

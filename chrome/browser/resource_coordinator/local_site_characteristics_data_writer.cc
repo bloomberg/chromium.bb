@@ -8,13 +8,15 @@ namespace resource_coordinator {
 
 LocalSiteCharacteristicsDataWriter::~LocalSiteCharacteristicsDataWriter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!is_loaded_);
+  if (is_loaded_)
+    NotifySiteUnloaded();
 }
 
 void LocalSiteCharacteristicsDataWriter::NotifySiteLoaded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  is_loaded_ = true;
 
+  DCHECK(!is_loaded_);
+  is_loaded_ = true;
   impl_->NotifySiteLoaded();
 
   if (tab_visibility_ == TabVisibility::kBackground)
@@ -30,24 +32,23 @@ void LocalSiteCharacteristicsDataWriter::NotifySiteUnloaded() {
   impl_->NotifySiteUnloaded(tab_visibility_);
 }
 
-void LocalSiteCharacteristicsDataWriter::NotifySiteBackgrounded() {
+void LocalSiteCharacteristicsDataWriter::NotifySiteVisibilityChanged(
+    TabVisibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(TabVisibility::kBackground, tab_visibility_);
 
-  tab_visibility_ = TabVisibility::kBackground;
+  // Ignore this if we receive the same event multiple times.
+  if (tab_visibility_ == visibility)
+    return;
 
-  if (is_loaded_)
-    impl_->NotifyLoadedSiteBackgrounded();
-}
+  tab_visibility_ = visibility;
 
-void LocalSiteCharacteristicsDataWriter::NotifySiteForegrounded() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(TabVisibility::kForeground, tab_visibility_);
-
-  tab_visibility_ = TabVisibility::kForeground;
-
-  if (is_loaded_)
-    impl_->NotifyLoadedSiteForegrounded();
+  if (is_loaded_) {
+    if (visibility == TabVisibility::kBackground) {
+      impl_->NotifyLoadedSiteBackgrounded();
+    } else {
+      impl_->NotifyLoadedSiteForegrounded();
+    }
+  }
 }
 
 void LocalSiteCharacteristicsDataWriter::NotifyUpdatesFaviconInBackground() {

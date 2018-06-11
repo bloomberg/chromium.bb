@@ -153,9 +153,10 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
 
 LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // It's currently required that the site gets unloaded before destroying this
-  // object.
-  // TODO(sebmarchand): Check if this is a valid assumption.
+  // All users of this object should make sure that they send the same number of
+  // NotifySiteLoaded and NotifySiteUnloaded events, in practice this mean
+  // tracking the loaded state and sending an unload event in their destructor
+  // if needed.
   DCHECK(!IsLoaded());
   DCHECK_EQ(0U, loaded_tabs_in_background_count_);
 

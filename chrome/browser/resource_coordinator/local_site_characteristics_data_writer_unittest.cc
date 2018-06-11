@@ -169,7 +169,7 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest,
   EXPECT_TRUE(TabIsLoadedAndInBackground());
 
   // Transition #8: Loaded + Bg -> Loaded + Fg.
-  writer_->NotifySiteForegrounded();
+  writer_->NotifySiteVisibilityChanged(TabVisibility::kForeground);
   EXPECT_TRUE(TabIsLoaded());
   EXPECT_FALSE(TabIsLoadedAndInBackground());
 
@@ -178,11 +178,11 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest,
   EXPECT_FALSE(TabIsLoaded());
 
   // Transition #1: Unloaded + Fg -> Unloaded + Bg.
-  writer_->NotifySiteBackgrounded();
+  writer_->NotifySiteVisibilityChanged(TabVisibility::kBackground);
   EXPECT_FALSE(TabIsLoaded());
 
   // Transition #2: Unloaded + Bg -> Unloaded + Fg.
-  writer_->NotifySiteForegrounded();
+  writer_->NotifySiteVisibilityChanged(TabVisibility::kForeground);
   EXPECT_FALSE(TabIsLoaded());
 
   // Transition #6: Unloaded + Fg -> Loaded + Fg.
@@ -191,7 +191,7 @@ TEST_F(LocalSiteCharacteristicsDataWriterTest,
   EXPECT_FALSE(TabIsLoadedAndInBackground());
 
   // Transition #7: Loaded + Fg -> Loaded + Bg.
-  writer_->NotifySiteBackgrounded();
+  writer_->NotifySiteVisibilityChanged(TabVisibility::kBackground);
   EXPECT_TRUE(TabIsLoaded());
   EXPECT_TRUE(TabIsLoadedAndInBackground());
 

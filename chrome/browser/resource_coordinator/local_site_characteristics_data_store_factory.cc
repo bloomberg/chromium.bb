@@ -16,6 +16,12 @@
 
 namespace resource_coordinator {
 
+namespace {
+
+bool g_enable_for_testing = false;
+
+}  // namespace
+
 // static
 SiteCharacteristicsDataStore*
 LocalSiteCharacteristicsDataStoreFactory::GetForProfile(Profile* profile) {
@@ -30,6 +36,10 @@ LocalSiteCharacteristicsDataStoreFactory*
 LocalSiteCharacteristicsDataStoreFactory::GetInstance() {
   static base::NoDestructor<LocalSiteCharacteristicsDataStoreFactory> instance;
   return instance.get();
+}
+
+void LocalSiteCharacteristicsDataStoreFactory::EnableForTesting() {
+  g_enable_for_testing = true;
 }
 
 LocalSiteCharacteristicsDataStoreFactory::
@@ -91,12 +101,20 @@ LocalSiteCharacteristicsDataStoreFactory::GetBrowserContextToUse(
 
 bool LocalSiteCharacteristicsDataStoreFactory::
     ServiceIsCreatedWithBrowserContext() const {
+  // If this factory is enabled for tests then it's preferable to create this
+  // service on demand so tests can use custom factories (via the
+  // SetTestingFactory function).
+  if (g_enable_for_testing)
+    return false;
+
+  // Otherwise it's fine to initialize this service when the browser context
+  // gets created so the database will be ready when we need it.
   return base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase);
 }
 
 bool LocalSiteCharacteristicsDataStoreFactory::ServiceIsNULLWhileTesting()
     const {
-  return true;
+  return !g_enable_for_testing;
 }
 
 }  // namespace resource_coordinator
