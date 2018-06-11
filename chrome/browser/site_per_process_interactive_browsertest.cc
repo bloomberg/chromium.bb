@@ -855,8 +855,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   FullscreenElementInABA(FullscreenExitMethod::ESC_PRESS);
 }
 
+// This test is flaky on Linux (crbug.com/851236) and also not working
+// on Mac (crbug.com/850594).
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       FullscreenElementInABAAndExitViaJS) {
+                       DISABLED_FullscreenElementInABAAndExitViaJS) {
   if (IsMacViewsBrowser())
     return;
   FullscreenElementInABA(FullscreenExitMethod::JS_CALL);
