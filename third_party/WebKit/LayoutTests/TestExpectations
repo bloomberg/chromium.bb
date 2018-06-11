@@ -137,6 +137,15 @@ crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failu
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
+# New OffscreenCanvas Tests that are breaking LayoutTest
+crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.font.parse.invalid.html [ Skip ]
+crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.font.parse.invalid.worker.html [ Skip ]
+crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.fill.basic-manual.worker.js [ Skip ]
+crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.fill.maxWidth.large-manual.worker.js [ Skip ]
+crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.fill.rtl-manual.worker.js [ Skip ]
+crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.kern.consistent-manual.worker.js [ Skip ]
+crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.draw.stroke.basic-manual.worker.js [ Skip ]
+
 # Sheriff 2018/05/25
 crbug.com/846749 [ Mac ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Failure ]
 
