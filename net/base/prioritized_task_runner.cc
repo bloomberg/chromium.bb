@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/task_runner_util.h"
 
 namespace net {
 
@@ -22,6 +22,8 @@ PrioritizedTaskRunner::Job::Job(const base::Location& from_here,
       reply(std::move(reply)),
       priority(priority),
       task_count(task_count) {}
+
+PrioritizedTaskRunner::Job::Job() {}
 
 PrioritizedTaskRunner::Job::~Job() = default;
 PrioritizedTaskRunner::Job::Job(Job&& other) = default;
@@ -44,9 +46,14 @@ void PrioritizedTaskRunner::PostTaskAndReply(const base::Location& from_here,
     std::push_heap(job_heap_.begin(), job_heap_.end(), JobComparer());
   }
 
-  task_runner_->PostTask(
+  Job* out_job = new Job();
+
+  task_runner_->PostTaskAndReply(
       from_here,
-      base::BindOnce(&PrioritizedTaskRunner::RunPostTaskAndReply, this));
+      base::BindOnce(&PrioritizedTaskRunner::RunPostTaskAndReply, this,
+                     out_job),
+      base::BindOnce(&PrioritizedTaskRunner::RunReply, this,
+                     base::Owned(out_job)));
 }
 
 PrioritizedTaskRunner::Job PrioritizedTaskRunner::PopJob() {
@@ -58,15 +65,17 @@ PrioritizedTaskRunner::Job PrioritizedTaskRunner::PopJob() {
   return result;
 }
 
-void PrioritizedTaskRunner::RunPostTaskAndReply() {
+PrioritizedTaskRunner::~PrioritizedTaskRunner() = default;
+
+void PrioritizedTaskRunner::RunPostTaskAndReply(Job* out_job) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  PrioritizedTaskRunner::Job job = PopJob();
-
-  std::move(job.task).Run();
-  job.reply_task_runner->PostTask(job.from_here, std::move(job.reply));
+  *out_job = PopJob();
+  std::move(out_job->task).Run();
 }
 
-PrioritizedTaskRunner::~PrioritizedTaskRunner() = default;
+void PrioritizedTaskRunner::RunReply(Job* job) {
+  std::move(job->reply).Run();
+}
 
 }  // namespace net
