@@ -71,6 +71,13 @@ extern const SkColor kHeaderBackgroundColor;
 
 extern const SkColor kHeaderTextColorNormal;
 
+// Constants for the title row.
+constexpr int kTitleRowVerticalPadding = 4;
+constexpr int kTitleRowProgressBarHeight = 2;
+constexpr int kTitleRowPaddingTop = kTitleRowVerticalPadding;
+constexpr int kTitleRowPaddingBottom =
+    kTitleRowVerticalPadding - kTitleRowProgressBarHeight;
+
 extern const SkColor kMobileNotConnectedXIconColor;
 
 // Extra padding used to adjust hitting region around tray items.
@@ -138,6 +145,8 @@ constexpr SkColor kUnifiedMenuIconColorDisabled =
     SkColorSetA(kUnifiedMenuIconColor, 0xa3);
 constexpr SkColor kUnifiedMenuButtonColor =
     SkColorSetA(kUnifiedMenuIconColor, 0x14);
+constexpr SkColor kUnifiedMenuSeparatorColor =
+    SkColorSetA(kUnifiedMenuIconColor, 0x23);
 constexpr SkColor kUnifiedMenuButtonColorActive =
     SkColorSetRGB(0x25, 0x81, 0xdf);
 constexpr SkColor kUnifiedNotificationSeparatorColor =
@@ -177,6 +186,9 @@ constexpr int kUnifiedNotificationSeparatorThickness = 1;
 // expand/collapse button.
 constexpr int kUnifiedTopShortcutButtonDefaultSpacing = 16;
 constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
+
+// Constants used in the title row of a detailed view in UnifiedSystemTray.
+constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 
 }  // namespace ash
 

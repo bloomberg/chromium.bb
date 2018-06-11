@@ -26,6 +26,14 @@ class ASH_EXPORT SystemTrayItemDetailedViewDelegate
   void CloseBubble() override;
   SkColor GetBackgroundColor(ui::NativeTheme* native_theme) override;
   bool IsOverflowIndicatorEnabled() const override;
+  TriView* CreateTitleRow(int string_id) override;
+  views::View* CreateTitleSeparator() override;
+  views::Button* CreateBackButton(views::ButtonListener* listener) override;
+  views::Button* CreateInfoButton(views::ButtonListener* listener,
+                                  int info_accessible_name_id) override;
+  views::Button* CreateSettingsButton(views::ButtonListener* listener,
+                                      int setting_accessible_name_id) override;
+  views::Button* CreateHelpButton(views::ButtonListener* listener) override;
 
  private:
   // Actually transitions to the main view. The actual transition is

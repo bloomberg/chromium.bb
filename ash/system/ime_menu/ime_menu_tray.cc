@@ -269,6 +269,22 @@ class ImeMenuListView : public ImeListView, public DetailedViewDelegate {
         ui::NativeTheme::kColorId_BubbleBackground);
   }
   bool IsOverflowIndicatorEnabled() const override { return true; }
+  TriView* CreateTitleRow(int string_id) override { return nullptr; }
+  views::View* CreateTitleSeparator() override { return nullptr; }
+  views::Button* CreateBackButton(views::ButtonListener* listener) override {
+    return nullptr;
+  }
+  views::Button* CreateInfoButton(views::ButtonListener* listener,
+                                  int info_accessible_name_id) override {
+    return nullptr;
+  }
+  views::Button* CreateSettingsButton(views::ButtonListener* listener,
+                                      int setting_accessible_name_id) override {
+    return nullptr;
+  }
+  views::Button* CreateHelpButton(views::ButtonListener* listener) override {
+    return nullptr;
+  }
 
  protected:
   void Layout() override {

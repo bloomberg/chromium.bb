@@ -104,6 +104,7 @@ class ASH_EXPORT TrayDetailedView : public views::View,
   // Helper functions which create and return the settings and help buttons,
   // respectively, used in the material design top-most header row. The caller
   // assumes ownership of the returned buttons.
+  views::Button* CreateInfoButton(int info_accessible_name_id);
   views::Button* CreateSettingsButton(int setting_accessible_name_id);
   views::Button* CreateHelpButton();
 
@@ -129,11 +130,6 @@ class ASH_EXPORT TrayDetailedView : public views::View,
 
   // Transition to main view from detailed view.
   void TransitionToMainView();
-
-  // Helper function which creates and returns the back button used in the
-  // material design top-most header row. The caller assumes ownership of the
-  // returned button.
-  views::Button* CreateBackButton();
 
   DetailedViewDelegate* const delegate_;
   views::BoxLayout* box_layout_;

@@ -229,13 +229,6 @@ class ScrollContentsView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ScrollContentsView);
 };
 
-// Constants for the title row.
-const int kTitleRowVerticalPadding = 4;
-const int kTitleRowProgressBarHeight = 2;
-const int kTitleRowPaddingTop = kTitleRowVerticalPadding;
-const int kTitleRowPaddingBottom =
-    kTitleRowVerticalPadding - kTitleRowProgressBarHeight;
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -274,28 +267,13 @@ void TrayDetailedView::ButtonPressed(views::Button* sender,
 void TrayDetailedView::CreateTitleRow(int string_id) {
   DCHECK(!tri_view_);
 
-  tri_view_ = TrayPopupUtils::CreateDefaultRowView();
+  tri_view_ = delegate_->CreateTitleRow(string_id);
 
-  back_button_ = CreateBackButton();
+  back_button_ = delegate_->CreateBackButton(this);
   tri_view_->AddView(TriView::Container::START, back_button_);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  auto* label = TrayPopupUtils::CreateDefaultLabel();
-  label->SetText(rb.GetLocalizedString(string_id));
-  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
-  style.SetupLabel(label);
-  tri_view_->AddView(TriView::Container::CENTER, label);
-
-  tri_view_->SetContainerVisible(TriView::Container::END, false);
-
-  tri_view_->SetBorder(views::CreateEmptyBorder(kTitleRowPaddingTop, 0,
-                                                kTitleRowPaddingBottom, 0));
   AddChildViewAt(tri_view_, 0);
-  views::Separator* separator = new views::Separator();
-  separator->SetColor(kMenuSeparatorColor);
-  separator->SetBorder(views::CreateEmptyBorder(
-      kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
-  AddChildViewAt(separator, kTitleRowSeparatorIndex);
+  AddChildViewAt(delegate_->CreateTitleSeparator(), kTitleRowSeparatorIndex);
 
   CreateExtraTitleRowButtons();
   Layout();
@@ -409,22 +387,17 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
   child_at(kTitleRowSeparatorIndex)->SetVisible(!visible);
 }
 
+views::Button* TrayDetailedView::CreateInfoButton(int info_accessible_name_id) {
+  return delegate_->CreateInfoButton(this, info_accessible_name_id);
+}
+
 views::Button* TrayDetailedView::CreateSettingsButton(
     int setting_accessible_name_id) {
-  SystemMenuButton* button = new SystemMenuButton(this, kSystemMenuSettingsIcon,
-                                                  setting_accessible_name_id);
-  if (!TrayPopupUtils::CanOpenWebUISettings())
-    button->SetEnabled(false);
-  return button;
+  return delegate_->CreateSettingsButton(this, setting_accessible_name_id);
 }
 
 views::Button* TrayDetailedView::CreateHelpButton() {
-  SystemMenuButton* button =
-      new SystemMenuButton(this, kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
-  // Help opens a web page, so treat it like Web UI settings.
-  if (!TrayPopupUtils::CanOpenWebUISettings())
-    button->SetEnabled(false);
-  return button;
+  return delegate_->CreateHelpButton(this);
 }
 
 void TrayDetailedView::HandleViewClicked(views::View* view) {
@@ -444,12 +417,6 @@ void TrayDetailedView::TransitionToMainView() {
 
 void TrayDetailedView::CloseBubble() {
   delegate_->CloseBubble();
-}
-
-views::Button* TrayDetailedView::CreateBackButton() {
-  SystemMenuButton* button = new SystemMenuButton(
-      this, kSystemMenuArrowBackIcon, IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
-  return button;
 }
 
 void TrayDetailedView::Layout() {
