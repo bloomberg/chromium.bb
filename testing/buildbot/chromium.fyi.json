@@ -3950,6 +3950,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_cleaner_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -4826,6 +4832,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "chrome_app_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "chrome_cleaner_unittests"
       },
       {
         "swarming": {
