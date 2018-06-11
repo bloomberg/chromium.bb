@@ -360,7 +360,8 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         mEnumStartTime = SystemClock.elapsedRealtime();
-        mWorkerTask = new FileEnumWorkerTask(this, new MimeTypeFileFilter(mMimeTypes));
+        mWorkerTask = new FileEnumWorkerTask(
+                mActivity.getWindowAndroid(), this, new MimeTypeFileFilter(mMimeTypes));
         mWorkerTask.execute();
     }
 

@@ -45,8 +45,7 @@ import java.util.concurrent.TimeUnit;
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
-public class SelectFileDialog
-        implements WindowAndroid.IntentCallback, PermissionCallback, PhotoPickerListener {
+public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPickerListener {
     private static final String TAG = "SelectFileDialog";
     private static final String IMAGE_TYPE = "image/";
     private static final String VIDEO_TYPE = "video/";
@@ -97,8 +96,16 @@ public class SelectFileDialog
     private Uri mCameraOutputUri;
     private WindowAndroid mWindowAndroid;
 
+    /** Whether an Activity is available on the system to support capturing images (i.e. Camera). */
     private boolean mSupportsImageCapture;
+
+    /**
+     * Whether an Activity is available to capture video (i.e. Camera with video recording
+     * capabilities).
+     */
     private boolean mSupportsVideoCapture;
+
+    /** Whether an Activity is available to capture audio. */
     private boolean mSupportsAudioCapture;
 
     SelectFileDialog(long nativeSelectFileDialog) {
@@ -146,25 +153,36 @@ public class SelectFileDialog
                         new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION));
 
         List<String> missingPermissions = new ArrayList<>();
-        if (((mSupportsImageCapture && shouldShowImageTypes())
-                || (mSupportsVideoCapture && shouldShowVideoTypes()))
-                        && !window.hasPermission(Manifest.permission.CAMERA)) {
-            missingPermissions.add(Manifest.permission.CAMERA);
-        }
-        if (mSupportsAudioCapture && shouldShowAudioTypes()
-                && !window.hasPermission(Manifest.permission.RECORD_AUDIO)) {
-            missingPermissions.add(Manifest.permission.RECORD_AUDIO);
-        }
-        if (UiUtils.shouldShowPhotoPicker()
-                && !window.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            missingPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (shouldUsePhotoPicker()) {
+            if (!window.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                missingPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+        } else {
+            if (((mSupportsImageCapture && shouldShowImageTypes())
+                        || (mSupportsVideoCapture && shouldShowVideoTypes()))
+                    && !window.hasPermission(Manifest.permission.CAMERA)) {
+                missingPermissions.add(Manifest.permission.CAMERA);
+            }
+            if (mSupportsAudioCapture && shouldShowAudioTypes()
+                    && !window.hasPermission(Manifest.permission.RECORD_AUDIO)) {
+                missingPermissions.add(Manifest.permission.RECORD_AUDIO);
+            }
         }
 
         if (missingPermissions.isEmpty()) {
             launchSelectFileIntent();
         } else {
-            window.requestPermissions(
-                    missingPermissions.toArray(new String[missingPermissions.size()]), this);
+            String[] requestPermissions =
+                    missingPermissions.toArray(new String[missingPermissions.size()]);
+            window.requestPermissions(requestPermissions, (permissions, grantResults) -> {
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (grantResults[i] == PackageManager.PERMISSION_DENIED && mCapture) {
+                        onFileNotSelected();
+                        return;
+                    }
+                }
+                launchSelectFileIntent();
+            });
         }
     }
 
@@ -178,7 +196,7 @@ public class SelectFileDialog
             new GetCameraIntentTask(false, mWindowAndroid, this)
                     .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else {
-            launchSelectFileWithCameraIntent(hasCameraPermission, null);
+            launchSelectFileWithCameraIntent(null);
         }
     }
 
@@ -186,13 +204,13 @@ public class SelectFileDialog
      * Called to launch an intent to allow user to select files. If |camera| is null,
      * the select file dialog shouldn't include any files from the camera. Otherwise, user
      * is allowed to choose files from the camera.
-     * @param hasCameraPermission Whether accessing camera is allowed.
      * @param camera Intent for selecting files from camera.
      */
-    private void launchSelectFileWithCameraIntent(boolean hasCameraPermission, Intent camera) {
+    private void launchSelectFileWithCameraIntent(Intent camera) {
         RecordHistogram.recordEnumeratedHistogram("Android.SelectFileDialogScope",
                 determineSelectFileDialogScope(), SELECT_FILE_DIALOG_SCOPE_COUNT);
 
+        boolean hasCameraPermission = mWindowAndroid.hasPermission(Manifest.permission.CAMERA);
         Intent camcorder = null;
         if (mSupportsVideoCapture && hasCameraPermission) {
             camcorder = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
@@ -208,18 +226,18 @@ public class SelectFileDialog
         // Quick check - if the |capture| parameter is set and |fileTypes| has the appropriate MIME
         // type, we should just launch the appropriate intent. Otherwise build up a chooser based
         // on the accept type and then display that to the user.
-        if (captureCamera() && camera != null) {
+        if (captureImage() && camera != null) {
             if (mWindowAndroid.showIntent(camera, this, R.string.low_memory_error)) return;
-        } else if (captureCamcorder() && camcorder != null) {
+        } else if (captureVideo() && camcorder != null) {
             if (mWindowAndroid.showIntent(camcorder, this, R.string.low_memory_error)) return;
-        } else if (captureMicrophone() && soundRecorder != null) {
+        } else if (captureAudio() && soundRecorder != null) {
             if (mWindowAndroid.showIntent(soundRecorder, this, R.string.low_memory_error)) return;
         }
 
         // Use the new photo picker, if available.
         Activity activity = mWindowAndroid.getActivity().get();
         List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
-        if (activity != null && imageMimeTypes != null
+        if (shouldUsePhotoPicker()
                 && UiUtils.showPhotoPicker(activity, this, mAllowMultiple, imageMimeTypes)) {
             return;
         }
@@ -269,6 +287,20 @@ public class SelectFileDialog
         if (!mWindowAndroid.showIntent(chooser, this, R.string.low_memory_error)) {
             onFileNotSelected();
         }
+    }
+
+    /**
+     * Determines whether the photo picker should be used for this select file request.  To be
+     * applicable for the photo picker, the following must be true:
+     *   1.) Only image types were requested in the file request
+     *   2.) The file request did not explicitly ask to capture camera directly.
+     *   3.) The photo picker is supported by the embedder (i.e. Chrome).
+     *   4.) There is a valid Android Activity associated with the file request.
+     */
+    private boolean shouldUsePhotoPicker() {
+        List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
+        return !captureImage() && imageMimeTypes != null && UiUtils.shouldShowPhotoPicker()
+                && mWindowAndroid.getActivity().get() != null;
     }
 
     /**
@@ -352,8 +384,21 @@ public class SelectFileDialog
                 break;
 
             case LAUNCH_CAMERA:
-                new GetCameraIntentTask(true, mWindowAndroid, this)
-                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                if (!mWindowAndroid.hasPermission(Manifest.permission.CAMERA)) {
+                    mWindowAndroid.requestPermissions(new String[] {Manifest.permission.CAMERA},
+                            (permissions, grantResults) -> {
+                                assert grantResults.length == 1;
+                                if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                                    onFileNotSelected();
+                                    return;
+                                }
+                                new GetCameraIntentTask(true, mWindowAndroid, this)
+                                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            });
+                } else {
+                    new GetCameraIntentTask(true, mWindowAndroid, this)
+                            .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
                 break;
         }
     }
@@ -386,10 +431,10 @@ public class SelectFileDialog
         protected void onPostExecute(Uri result) {
             mCameraOutputUri = result;
             if (mCameraOutputUri == null) {
-                if (captureCamera() || mDirectToCamera) {
+                if (captureImage() || mDirectToCamera) {
                     onFileNotSelected();
                 } else {
-                    launchSelectFileWithCameraIntent(true, null);
+                    launchSelectFileWithCameraIntent(null);
                 }
                 return;
             }
@@ -406,7 +451,7 @@ public class SelectFileDialog
             if (mDirectToCamera) {
                 mWindow.showIntent(camera, mCallback, R.string.low_memory_error);
             } else {
-                launchSelectFileWithCameraIntent(true, camera);
+                launchSelectFileWithCameraIntent(camera);
             }
         }
     }
@@ -500,17 +545,6 @@ public class SelectFileDialog
         window.showError(R.string.opening_file_error);
     }
 
-    @Override
-    public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-        for (int i = 0; i < grantResults.length; i++) {
-            if (grantResults[i] == PackageManager.PERMISSION_DENIED && mCapture) {
-                onFileNotSelected();
-                return;
-            }
-        }
-        launchSelectFileIntent();
-    }
-
     private void onFileNotSelected() {
         onFileNotSelected(mNativeSelectFileDialog);
     }
@@ -587,15 +621,29 @@ public class SelectFileDialog
         return mFileTypes.size() == 1 && TextUtils.equals(mFileTypes.get(0), type);
     }
 
-    private boolean captureCamera() {
+    /**
+     * Whether the HTML input field specified the 'capture' attribute and specifically requested
+     * image capture.
+     *
+     * See https://www.w3.org/TR/html-media-capture/ for further description.
+     */
+    private boolean captureImage() {
         return mCapture && acceptsSpecificType(ALL_IMAGE_TYPES);
     }
 
-    private boolean captureCamcorder() {
+    /**
+     * Whether the HTML input field specified the 'capture' attribute and specifically requested
+     * video capture.
+     */
+    private boolean captureVideo() {
         return mCapture && acceptsSpecificType(ALL_VIDEO_TYPES);
     }
 
-    private boolean captureMicrophone() {
+    /**
+     * Whether the HTML input field specified the 'capture' attribute and specifically requested
+     * audio capture.
+     */
+    private boolean captureAudio() {
         return mCapture && acceptsSpecificType(ALL_AUDIO_TYPES);
     }
 

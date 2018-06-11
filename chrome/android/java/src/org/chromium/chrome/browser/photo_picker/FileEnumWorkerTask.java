@@ -5,14 +5,11 @@
 package org.chromium.chrome.browser.photo_picker;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.Process;
 
-import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,6 +31,8 @@ class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
         void filesEnumeratedCallback(List<PickerBitmap> files);
     }
 
+    private final WindowAndroid mWindowAndroid;
+
     // The callback to use to communicate the results.
     private FilesEnumeratedCallback mCallback;
 
@@ -45,10 +44,13 @@ class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
 
     /**
      * A FileEnumWorkerTask constructor.
+     * @param windowAndroid The window wrapper associated with the current activity.
      * @param callback The callback to use to communicate back the results.
      * @param filter The file filter to apply to the list.
      */
-    public FileEnumWorkerTask(FilesEnumeratedCallback callback, MimeTypeFileFilter filter) {
+    public FileEnumWorkerTask(WindowAndroid windowAndroid, FilesEnumeratedCallback callback,
+            MimeTypeFileFilter filter) {
+        mWindowAndroid = windowAndroid;
         mCallback = callback;
         mFilter = filter;
     }
@@ -112,9 +114,8 @@ class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
         Collections.sort(pickerBitmaps);
 
         pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.GALLERY));
-        if (ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
-                    Manifest.permission.CAMERA, Process.myPid(), Process.myUid())
-                == PackageManager.PERMISSION_GRANTED) {
+        if (mWindowAndroid.hasPermission(Manifest.permission.CAMERA)
+                || mWindowAndroid.canRequestPermission(Manifest.permission.CAMERA)) {
             pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.CAMERA));
         }
 
