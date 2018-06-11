@@ -23,7 +23,6 @@ group("features") {
   deps = [
     "//ios/showcase/bubble",
     "//ios/showcase/content_suggestions",
-    "//ios/showcase/manual_fill",
     "//ios/showcase/payments",
     "//ios/showcase/recent_tabs",
     "//ios/showcase/settings",

@@ -17,23 +17,7 @@
 // |kShowcaseClassForDisplayKey| and |kShowcaseClassForInstantiationKey| are
 // required. |kShowcaseUseCaseKey| is optional.
 + (NSArray<showcase::ModelRow*>*)model {
-  NSDictionary* manualFillDictionary;
-  if (IsIPadIdiom()) {
-    manualFillDictionary = @{
-      showcase::kClassForDisplayKey : @"IPadKeyboardProtoViewController",
-      showcase::kClassForInstantiationKey : @"IPadKeyboardProtoViewController",
-      showcase::kUseCaseKey : @"Manual Fill for iPad",
-    };
-  } else {
-    manualFillDictionary = @{
-      showcase::kClassForDisplayKey : @"IPhoneKeyboardProtoViewController",
-      showcase::
-      kClassForInstantiationKey : @"IPhoneKeyboardProtoViewController",
-      showcase::kUseCaseKey : @"Manual Fill for iPhone",
-    };
-  }
   return @[
-    manualFillDictionary,
     @{
       showcase::kClassForDisplayKey : @"ContentSuggestionsViewController",
       showcase::kClassForInstantiationKey : @"SCContentSuggestionsCoordinator",

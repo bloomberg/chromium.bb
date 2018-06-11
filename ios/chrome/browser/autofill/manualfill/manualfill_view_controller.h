@@ -2,20 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_PROTO_VIEW_CONTROLLER_H_
-#define IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_PROTO_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_AUTOFILL_MANUALFILL_MANUALFILL_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_AUTOFILL_MANUALFILL_MANUALFILL_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
 namespace manualfill {
-
-// Activates constraints to keep both views in the same place, with the same
-// size.
-//
-// @param sourceView The view to be constraint to destinationView.
-// @param destinationView The view to constraint sourceView.
-void AddSameConstraints(UIView* sourceView, UIView* destinationView);
 
 // Searches for the first responder in the passed view hierarchy.
 //
@@ -36,9 +29,9 @@ UIView* GetFirstResponderSubview(UIView* view);
 
 @end
 
-// Main class to show the prototype. It contains the code needed to create and
-// interact with a WKWebView. Meant to be subclassed.
-@interface KeyboardProtoViewController
+// View Controller with the common logic for managing the manual fill views. As
+// well as sending user input to the web view. Meant to be subclassed.
+@interface ManualfillViewController
     : UIViewController<ManualFillContentDelegate>
 
 // The web view to test the prototype.
@@ -61,4 +54,4 @@ UIView* GetFirstResponderSubview(UIView* view);
 
 @end
 
-#endif  // IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_PROTO_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_AUTOFILL_MANUALFILL_MANUALFILL_VIEW_CONTROLLER_H_

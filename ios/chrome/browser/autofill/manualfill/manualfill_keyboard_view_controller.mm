@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/showcase/manual_fill/iphone_keyboard_proto_view_controller.h"
+#import "ios/chrome/browser/autofill/manualfill/manualfill_keyboard_view_controller.h"
 
 #import <UIKit/UIKit.h>
 
-#import "ios/showcase/manual_fill/keyboard_complement_view.h"
-#import "ios/showcase/manual_fill/password_picker_view_controller.h"
+#import "ios/chrome/browser/autofill/manualfill/password_picker_view_controller.h"
+#import "ios/chrome/browser/ui/autofill/manualfill/keyboard_background_view.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,7 +33,7 @@ UIView* GetKeyboardAccessoryView() {
 
 }  // namespace
 
-@interface IPhoneKeyboardProtoViewController ()
+@interface ManualfillKeyboardViewController ()
 
 // A strong reference to `inputAccessoryView` used in this class to jump
 // between the web view fields.
@@ -43,7 +44,7 @@ UIView* GetKeyboardAccessoryView() {
 @property(nonatomic) BOOL shouldShowManualFillView;
 
 // The manual fill view, this is what is shown behind the keyboard.
-@property(nonatomic) KeyboardComplementView* manualFillView;
+@property(nonatomic) KeyboardBackgroundView* manualFillView;
 
 // TODO:(javierrobles) explore always hidding the host view instead of this.
 // The keyboard accessory view, this is added above the WKWebView's.
@@ -65,7 +66,7 @@ UIView* GetKeyboardAccessoryView() {
 
 @end
 
-@implementation IPhoneKeyboardProtoViewController
+@implementation ManualfillKeyboardViewController
 @synthesize lastAccessoryInputView = _lastAccessoryInputView;
 @synthesize shouldShowManualFillView = _shouldShowManualFillView;
 @synthesize manualFillView = _manualFillView;
@@ -80,7 +81,7 @@ UIView* GetKeyboardAccessoryView() {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.manualFillView = [[KeyboardComplementView alloc] initWithDelegate:self];
+  self.manualFillView = [[KeyboardBackgroundView alloc] initWithDelegate:self];
   self.manualFillView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:self.manualFillView];
 
@@ -132,8 +133,7 @@ UIView* GetKeyboardAccessoryView() {
           [[KeyboardAccessoryView alloc] initWithDelegate:self];
       self.keyboardAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
       [inputAccessoryView addSubview:self.keyboardAccessoryView];
-      manualfill::AddSameConstraints(self.keyboardAccessoryView,
-                                     inputAccessoryView);
+      AddSameConstraints(self.keyboardAccessoryView, inputAccessoryView);
     }
   }
 }
@@ -228,8 +228,7 @@ UIView* GetKeyboardAccessoryView() {
   [self addChildViewController:viewController];
   viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self.manualFillView.containerView addSubview:viewController.view];
-  manualfill::AddSameConstraints(self.manualFillView.containerView,
-                                 viewController.view);
+  AddSameConstraints(self.manualFillView.containerView, viewController.view);
   [viewController didMoveToParentViewController:self];
 
   [self.webView endEditing:YES];

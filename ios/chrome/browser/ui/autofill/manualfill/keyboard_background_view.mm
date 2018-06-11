@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/showcase/manual_fill/keyboard_complement_view.h"
+#import "ios/chrome/browser/ui/autofill/manualfill/keyboard_background_view.h"
 
-#import "ios/showcase/manual_fill/keyboard_accessory_view.h"
+#import "ios/chrome/browser/ui/autofill/manualfill/keyboard_accessory_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@implementation KeyboardComplementView
+@implementation KeyboardBackgroundView
 
 @synthesize containerView = _containerView;
 
