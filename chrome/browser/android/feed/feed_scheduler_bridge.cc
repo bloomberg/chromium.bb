@@ -58,9 +58,12 @@ jint FeedSchedulerBridge::ShouldSessionRequestData(
       j_has_outstanding_request));
 }
 
-void FeedSchedulerBridge::OnReceiveNewContent(JNIEnv* env,
-                                              const JavaRef<jobject>& j_this) {
-  scheduler_host_->OnReceiveNewContent();
+void FeedSchedulerBridge::OnReceiveNewContent(
+    JNIEnv* env,
+    const JavaRef<jobject>& j_this,
+    const jlong j_content_creation_date_time_ms) {
+  scheduler_host_->OnReceiveNewContent(
+      base::Time::FromJavaTime(j_content_creation_date_time_ms));
 }
 
 void FeedSchedulerBridge::OnRequestError(JNIEnv* env,

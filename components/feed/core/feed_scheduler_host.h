@@ -45,7 +45,7 @@ class FeedSchedulerHost {
       bool has_outstanding_request);
 
   // Called when a successful refresh completes.
-  void OnReceiveNewContent();
+  void OnReceiveNewContent(base::Time content_creation_date_time);
 
   // Called when an unsuccessful refresh completes.
   void OnRequestError(int network_response_code);
