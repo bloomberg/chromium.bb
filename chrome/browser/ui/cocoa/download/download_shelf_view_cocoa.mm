@@ -128,23 +128,4 @@ constexpr CGFloat kMDShelfHeight = 44;
   return YES;
 }
 
-- (void)adjustHeightForDivider {
-  if (!self.window)
-    return;
-  if (!base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf))
-    return;
-  [self stopAnimation];
-  if (NSHeight([self bounds])) {
-    [self setHeight:kMDShelfHeight + [self cr_lineWidth]];
-  }
-}
-
-- (void)viewDidMoveToWindow {
-  [self adjustHeightForDivider];
-}
-
-- (void)viewDidChangeBackingProperties {
-  [self adjustHeightForDivider];
-}
-
 @end
