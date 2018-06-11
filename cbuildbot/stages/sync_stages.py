@@ -70,7 +70,9 @@ PRECQ_EXPIRY_MSG = (
     'status for changes are cleared after a generous timeout. This change '
     'will be re-tested by the pre-cq before the CQ picks it up.')
 PRECQ_EARLY_CRASH_MSG = (
-    'The %s trybot for your change crashed after %s minutes.'
+    'The %s trybot for your change crashed.'
+    '\n\n'
+    '%s'
     '\n\n'
     'This problem can happen if your change causes the builder '
     'to crash, or if there is some infrastructure issue. If your '
@@ -1743,8 +1745,10 @@ class PreCQLauncherStage(SyncStage):
         if status != constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED:
           continue
 
-        pool.SendNotification(
-            change, '%(details)s', details=PRECQ_EARLY_CRASH_MSG)
+        msg = PRECQ_EARLY_CRASH_MSG % (
+            config,
+            tree_status.ConstructLegolandBuildURL(progress.buildbucket_id))
+        pool.SendNotification(change, '%(details)s', details=msg)
         pool.RemoveReady(change, reason=config)
         pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
 

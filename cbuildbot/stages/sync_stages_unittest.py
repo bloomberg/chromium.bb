@@ -1172,6 +1172,9 @@ pre-cq-configs: link-pre-cq
     mock_buildbucket_client = mock.Mock()
     self.sync_stage.buildbucket_client = mock_buildbucket_client
 
+    send_notification = self.PatchObject(
+        validation_pool.ValidationPool, 'SendNotification')
+
     changes = self._PrepareChangesWithPendingVerifications(
         [['apple-pre-cq', 'banana-pre-cq'], ['cinnamon-pre-cq']])
 
@@ -1230,6 +1233,16 @@ pre-cq-configs: link-pre-cq
     self.assertEqual(
         progress_map[changes[1]]['cinnamon-pre-cq'].status,
         constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+
+    # Finally, make sure a notification message is sent as expected.
+    send_notification.assert_called_once()
+    self.assertIn(
+        'The banana-pre-cq trybot for your change crashed.',
+        send_notification.call_args[1]['details'])
+    self.assertIn(
+        'https://cros-goldeneye.corp.google.com/chromeos/healthmonitoring'
+        '/buildDetails?buildbucketId=bb_id_1',
+        send_notification.call_args[1]['details'])
 
   def testSpeculativePreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications(
