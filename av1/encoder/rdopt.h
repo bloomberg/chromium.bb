@@ -78,20 +78,16 @@ static INLINE int av1_cost_skip_txb(MACROBLOCK *x, TXB_CTX *txb_ctx, int plane,
 }
 
 static INLINE int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x,
-                                  BLOCK_SIZE plane_bsize, int plane,
-                                  int blk_row, int blk_col, int block,
-                                  TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
-                                  const ENTROPY_CONTEXT *l,
+                                  int plane, int blk_row, int blk_col,
+                                  int block, TX_SIZE tx_size, TXB_CTX *txb_ctx,
                                   int use_fast_coef_costing) {
 #if TXCOEFF_COST_TIMER
   struct aom_usec_timer timer;
   aom_usec_timer_start(&timer);
 #endif
   (void)use_fast_coef_costing;
-  TXB_CTX txb_ctx;
-  get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
   const int cost = av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block,
-                                       tx_size, &txb_ctx);
+                                       tx_size, txb_ctx);
 #if TXCOEFF_COST_TIMER
   AV1_COMMON *tmp_cm = (AV1_COMMON *)&cpi->common;
   aom_usec_timer_mark(&timer);
