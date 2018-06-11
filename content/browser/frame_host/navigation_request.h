@@ -440,6 +440,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Only valid when PerNavigationMojoInterface is enabled.
   mojom::NavigationClientAssociatedPtr commit_navigation_client_;
 
+  // If set, any redirects to HTTP for this navigation will be upgraded to
+  // HTTPS. This is used only on subframe navigations, when
+  // upgrade-insecure-requests is set as a CSP policy.
+  bool upgrade_if_insecure_ = false;
+
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);
