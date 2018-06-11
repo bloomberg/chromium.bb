@@ -57,6 +57,9 @@
 // Toggles tracking form related changes in the page.
 - (void)toggleTrackingFormMutations:(BOOL)state;
 
+// Toggles tracking the source of the input events in the page.
+- (void)toggleTrackingUserEditedFields:(BOOL)state;
+
 // Designated initializer. |receiver| should not be nil.
 - (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
     NS_DESIGNATED_INITIALIZER;

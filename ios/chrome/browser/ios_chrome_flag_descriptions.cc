@@ -33,6 +33,10 @@ const char kAutofillDynamicFormsName[] = "Autofill dynamic forms";
 const char kAutofillDynamicFormsDescription[] =
     "Refills forms that dynamically change after an initial fill";
 
+const char kAutofillPrefilledFieldsName[] = "Autofill prefilled forms";
+const char kAutofillPrefilledFieldsDescription[] =
+    "Fills forms that contain a programmatically filled value.";
+
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[] =
     "Autofill Enforce Min Required Fields For Heuristics";
 const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[] =
