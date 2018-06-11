@@ -18,6 +18,7 @@
 using cast_channel::GetAppAvailabilityResult;
 using testing::_;
 using testing::Invoke;
+using testing::IsEmpty;
 
 namespace media_router {
 
@@ -32,9 +33,13 @@ class CastAppDiscoveryServiceTest : public testing::Test {
                                                           &socket_service_,
                                                           &media_sink_service_,
                                                           &clock_)),
-        source_a_1_(*CastMediaSource::From("cast:AAAAAAAA?clientId=1")),
-        source_a_2_(*CastMediaSource::From("cast:AAAAAAAA?clientId=2")),
-        source_b_1_(*CastMediaSource::From("cast:BBBBBBBB?clientId=1")) {
+        source_a_1_(*CastMediaSource::From(
+            "cast:AAAAAAAA?clientId=1&capabilities=video_out,audio_out")),
+        source_a_2_(*CastMediaSource::From(
+            "cast:AAAAAAAA?clientId=2&capabilities=video_out,audio_out")),
+        source_b_1_(*CastMediaSource::From(
+            "cast:BBBBBBBB?clientId=1&capabilities=video_out,audio_out")),
+        sink1_(CreateCastSink(1)) {
     ON_CALL(socket_service_, GetSocket(_))
         .WillByDefault(testing::Return(&socket_));
     task_runner_->RunPendingTasks();
@@ -75,6 +80,7 @@ class CastAppDiscoveryServiceTest : public testing::Test {
   CastMediaSource source_a_1_;
   CastMediaSource source_a_2_;
   CastMediaSource source_b_1_;
+  MediaSinkInternal sink1_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastAppDiscoveryServiceTest);
@@ -85,7 +91,6 @@ TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinks) {
 
   // Adding a sink after app registered causes app availability request to be
   // sent.
-  MediaSinkInternal sink1 = CreateCastSink(1);
   cast_channel::GetAppAvailabilityCallback cb;
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
       .WillOnce(
@@ -94,7 +99,7 @@ TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinks) {
             cb = std::move(callback);
           }));
 
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 
   // Same app ID should not trigger another request.
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, _, _)).Times(0);
@@ -103,7 +108,7 @@ TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinks) {
       base::BindRepeating(&CastAppDiscoveryServiceTest::OnSinkQueryUpdated,
                           base::Unretained(this)));
 
-  std::vector<MediaSinkInternal> sinks_1 = {sink1};
+  std::vector<MediaSinkInternal> sinks_1 = {sink1_};
   EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), sinks_1));
   EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_2_.source_id(), sinks_1));
   std::move(cb).Run("AAAAAAAA", GetAppAvailabilityResult::kAvailable);
@@ -111,9 +116,8 @@ TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinks) {
   // No more updates for |source_a_1_|.
   subscription1.reset();
   EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), _)).Times(0);
-  EXPECT_CALL(*this,
-              OnSinkQueryUpdated(source_a_2_.source_id(), testing::IsEmpty()));
-  RemoveSink(sink1);
+  EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_2_.source_id(), IsEmpty()));
+  RemoveSink(sink1_);
 }
 
 TEST_F(CastAppDiscoveryServiceTest, SinkQueryUpdatedOnSinkUpdate) {
@@ -121,7 +125,6 @@ TEST_F(CastAppDiscoveryServiceTest, SinkQueryUpdatedOnSinkUpdate) {
 
   // Adding a sink after app registered causes app availability request to be
   // sent.
-  MediaSinkInternal sink1 = CreateCastSink(1);
   cast_channel::GetAppAvailabilityCallback cb;
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
       .WillOnce(
@@ -130,25 +133,24 @@ TEST_F(CastAppDiscoveryServiceTest, SinkQueryUpdatedOnSinkUpdate) {
             cb = std::move(callback);
           }));
 
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 
-  // Query now includes |sink1|.
-  std::vector<MediaSinkInternal> sinks_1 = {sink1};
+  // Query now includes |sink1_|.
+  std::vector<MediaSinkInternal> sinks_1 = {sink1_};
   EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), sinks_1));
   std::move(cb).Run("AAAAAAAA", GetAppAvailabilityResult::kAvailable);
 
   // Updating |sink1| causes |source_a_1_| query to be updated.
-  sink1.sink().set_name("Updated name");
-  sinks_1 = {sink1};
+  sink1_.sink().set_name("Updated name");
+  sinks_1 = {sink1_};
   EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), sinks_1));
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 }
 
 TEST_F(CastAppDiscoveryServiceTest, Refresh) {
   auto subscription1 = StartObservingMediaSinksInitially(source_a_1_);
   auto subscription2 = StartObservingMediaSinksInitially(source_b_1_);
 
-  MediaSinkInternal sink1 = CreateCastSink(1);
   EXPECT_CALL(*this, OnSinkQueryUpdated(_, _));
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
       .WillOnce(Invoke([](cast_channel::CastSocket*, const std::string& app_id,
@@ -160,7 +162,7 @@ TEST_F(CastAppDiscoveryServiceTest, Refresh) {
                           cast_channel::GetAppAvailabilityCallback& callback) {
         std::move(callback).Run(app_id, GetAppAvailabilityResult::kUnknown);
       }));
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 
   MediaSinkInternal sink2 = CreateCastSink(2);
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
@@ -196,9 +198,8 @@ TEST_F(CastAppDiscoveryServiceTest, Refresh) {
 
 TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinksAfterSinkAdded) {
   // No registered apps.
-  MediaSinkInternal sink1 = CreateCastSink(1);
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, _, _)).Times(0);
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _));
   auto subscription1 = app_discovery_service_->StartObservingMediaSinks(
@@ -225,7 +226,6 @@ TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinksCachedValue) {
 
   // Adding a sink after app registered causes app availability request to be
   // sent.
-  MediaSinkInternal sink1 = CreateCastSink(1);
   cast_channel::GetAppAvailabilityCallback cb;
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
       .WillOnce(
@@ -233,9 +233,9 @@ TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinksCachedValue) {
                        cast_channel::GetAppAvailabilityCallback& callback) {
             cb = std::move(callback);
           }));
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 
-  std::vector<MediaSinkInternal> sinks_1 = {sink1};
+  std::vector<MediaSinkInternal> sinks_1 = {sink1_};
   EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), sinks_1));
   std::move(cb).Run("AAAAAAAA", GetAppAvailabilityResult::kAvailable);
 
@@ -249,7 +249,7 @@ TEST_F(CastAppDiscoveryServiceTest, StartObservingMediaSinksCachedValue) {
                           base::Unretained(this)));
 
   // Same source as |source_a_1_|. The callback will be invoked.
-  auto source3 = CastMediaSource::From("cast:AAAAAAAA?clientId=1");
+  auto source3 = CastMediaSource::From(source_a_1_.source_id());
   ASSERT_TRUE(source3);
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, _, _)).Times(0);
   EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), sinks_1));
@@ -264,14 +264,13 @@ TEST_F(CastAppDiscoveryServiceTest, AvailabilityUnknownOrUnavailable) {
 
   // Adding a sink after app registered causes app availability request to be
   // sent.
-  MediaSinkInternal sink1 = CreateCastSink(1);
   EXPECT_CALL(*this, OnSinkQueryUpdated(_, _)).Times(0);
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
       .WillOnce(Invoke([](cast_channel::CastSocket*, const std::string&,
                           cast_channel::GetAppAvailabilityCallback& callback) {
         std::move(callback).Run("AAAAAAAA", GetAppAvailabilityResult::kUnknown);
       }));
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 
   // Sink updated and unknown app availability will cause request to be sent
   // again.
@@ -282,20 +281,43 @@ TEST_F(CastAppDiscoveryServiceTest, AvailabilityUnknownOrUnavailable) {
         std::move(callback).Run("AAAAAAAA",
                                 GetAppAvailabilityResult::kUnavailable);
       }));
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 
   // Known availability -- no request sent.
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
       .Times(0);
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
 
   // Removing the sink will also remove previous availability information.
   // Next time sink is added, request will be sent.
   EXPECT_CALL(*this, OnSinkQueryUpdated(_, _)).Times(0);
-  RemoveSink(sink1);
+  RemoveSink(sink1_);
 
   EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _));
-  AddOrUpdateSink(sink1);
+  AddOrUpdateSink(sink1_);
+}
+
+TEST_F(CastAppDiscoveryServiceTest, CapabilitiesFiltering) {
+  // Make |sink1_| an audio only device.
+  sink1_.cast_data().capabilities =
+      cast_channel::CastDeviceCapability::AUDIO_OUT;
+  AddOrUpdateSink(sink1_);
+
+  cast_channel::GetAppAvailabilityCallback cb;
+  EXPECT_CALL(message_handler_, DoRequestAppAvailability(_, "AAAAAAAA", _))
+      .WillOnce(testing::WithArg<2>(
+          [&cb](cast_channel::GetAppAvailabilityCallback& callback) {
+            cb = std::move(callback);
+          }));
+  auto subscription1 = app_discovery_service_->StartObservingMediaSinks(
+      source_a_1_,
+      base::BindRepeating(&CastAppDiscoveryServiceTest::OnSinkQueryUpdated,
+                          base::Unretained(this)));
+
+  // Even though the app is available, the sink does not fulfill the required
+  // capabilities.
+  EXPECT_CALL(*this, OnSinkQueryUpdated(source_a_1_.source_id(), IsEmpty()));
+  std::move(cb).Run("AAAAAAAA", GetAppAvailabilityResult::kAvailable);
 }
 
 }  // namespace media_router

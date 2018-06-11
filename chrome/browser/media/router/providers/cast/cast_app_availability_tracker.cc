@@ -125,23 +125,4 @@ std::vector<std::string> CastAppAvailabilityTracker::GetRegisteredApps() const {
   return registered_apps;
 }
 
-base::flat_set<MediaSink::Id> CastAppAvailabilityTracker::GetAvailableSinks(
-    const CastMediaSource& source) const {
-  base::flat_set<MediaSink::Id> sink_ids;
-  // For each sink, check if there is at least one available app in |source|.
-  for (const auto& availabilities : app_availabilities_) {
-    for (const auto& app_info : source.app_infos()) {
-      const auto& availabilities_map = availabilities.second;
-      auto availability_it = availabilities_map.find(app_info.app_id);
-      if (availability_it != availabilities_map.end() &&
-          availability_it->second.first ==
-              GetAppAvailabilityResult::kAvailable) {
-        sink_ids.insert(availabilities.first);
-        break;
-      }
-    }
-  }
-  return sink_ids;
-}
-
 }  // namespace media_router
