@@ -47,8 +47,6 @@ using content::BrowserThread;
 
 namespace extensions {
 
-namespace errors = manifest_errors;
-
 namespace {
 
 // The following enumeration is used in histograms matching
@@ -189,7 +187,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
         GetCreationFlags(&info),
         &error);
   } else {
-    error = errors::kManifestUnreadable;
+    error = manifest_errors::kManifestUnreadable;
   }
 
   // Once installed, non-unpacked extensions cannot change their IDs (e.g., by
@@ -197,7 +195,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
   // TODO(jstritar): migrate preferences when unpacked extensions change IDs.
   if (extension.get() && !Manifest::IsUnpackedLocation(extension->location()) &&
       info.extension_id != extension->id()) {
-    error = errors::kCannotChangeExtensionID;
+    error = manifest_errors::kCannotChangeExtensionID;
     extension = nullptr;
   }
 
