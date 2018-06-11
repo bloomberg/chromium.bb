@@ -22,61 +22,45 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
       token_service_(token_service),
       scopes_(scopes),
       callback_(std::move(callback)),
-      waiting_for_sign_in_(false),
-      waiting_for_refresh_token_(false),
+      signin_manager_observer_(this),
+      token_service_observer_(this),
       access_token_retried_(false),
       mode_(mode) {
   Start();
 }
 
 PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() {
-  if (waiting_for_sign_in_) {
-    signin_manager_->RemoveObserver(this);
-  }
-  if (waiting_for_refresh_token_) {
-    token_service_->RemoveObserver(this);
-  }
 }
 
 void PrimaryAccountAccessTokenFetcher::Start() {
-  if (mode_ == Mode::kImmediate) {
+  if (mode_ == Mode::kImmediate || AreCredentialsAvailable()) {
     StartAccessTokenRequest();
     return;
   }
 
-  if (signin_manager_->IsAuthenticated()) {
-    // Already signed in: Make sure we have a refresh token, then get the access
-    // token.
-    WaitForRefreshToken();
-    return;
-  }
-
-  // Not signed in: Wait for a sign-in to complete (to get the refresh token),
-  // then get the access token.
-  DCHECK(!waiting_for_sign_in_);
-  waiting_for_sign_in_ = true;
-  signin_manager_->AddObserver(this);
+  // Start observing the SigninManager and Token Service. These observers will
+  // be removed either when credentials are obtained and an access token request
+  // is started or when this object is destroyed.
+  signin_manager_observer_.Add(signin_manager_);
+  token_service_observer_.Add(token_service_);
 }
 
-void PrimaryAccountAccessTokenFetcher::WaitForRefreshToken() {
+bool PrimaryAccountAccessTokenFetcher::AreCredentialsAvailable() const {
   DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);
-  DCHECK(signin_manager_->IsAuthenticated());
-  DCHECK(!waiting_for_refresh_token_);
 
-  if (token_service_->RefreshTokenIsAvailable(
-          signin_manager_->GetAuthenticatedAccountId())) {
-    // Already have refresh token: Get the access token directly.
-    StartAccessTokenRequest();
-    return;
-  }
-
-  // Signed in, but refresh token isn't there yet: Wait for the refresh
-  // token to be loaded, then get the access token.
-  waiting_for_refresh_token_ = true;
-  token_service_->AddObserver(this);
+  return (signin_manager_->IsAuthenticated() &&
+          token_service_->RefreshTokenIsAvailable(
+              signin_manager_->GetAuthenticatedAccountId()));
 }
 
 void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
+  DCHECK(mode_ == Mode::kImmediate || AreCredentialsAvailable());
+
+  // By the time of starting an access token request, we should no longer be
+  // listening for signin-related events.
+  DCHECK(!signin_manager_observer_.IsObserving(signin_manager_));
+  DCHECK(!token_service_observer_.IsObserving(token_service_));
+
   // Note: We might get here even in cases where we know that there's no refresh
   // token. We're requesting an access token anyway, so that the token service
   // will generate an appropriate error code that we can return to the client.
@@ -92,29 +76,23 @@ void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
 void PrimaryAccountAccessTokenFetcher::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username) {
-  DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);
-  DCHECK(waiting_for_sign_in_);
-  DCHECK(!waiting_for_refresh_token_);
-  DCHECK(signin_manager_->IsAuthenticated());
-  waiting_for_sign_in_ = false;
-  signin_manager_->RemoveObserver(this);
-
-  WaitForRefreshToken();
+  ProcessSigninStateChange();
 }
 
 void PrimaryAccountAccessTokenFetcher::OnRefreshTokenAvailable(
     const std::string& account_id) {
+  ProcessSigninStateChange();
+}
+
+void PrimaryAccountAccessTokenFetcher::ProcessSigninStateChange() {
   DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);
-  DCHECK(waiting_for_refresh_token_);
-  DCHECK(!waiting_for_sign_in_);
 
-  // Only react on tokens for the account the user has signed in with.
-  if (account_id != signin_manager_->GetAuthenticatedAccountId()) {
+  if (!AreCredentialsAvailable())
     return;
-  }
 
-  waiting_for_refresh_token_ = false;
-  token_service_->RemoveObserver(this);
+  signin_manager_observer_.Remove(signin_manager_);
+  token_service_observer_.Remove(token_service_);
+
   StartAccessTokenRequest();
 }
 
@@ -150,8 +128,7 @@ void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
   // don't have to.
   if (mode_ == Mode::kWaitUntilAvailable && !access_token_retried_ &&
       error.state() == GoogleServiceAuthError::State::REQUEST_CANCELED &&
-      token_service_->RefreshTokenIsAvailable(
-          signin_manager_->GetAuthenticatedAccountId())) {
+      AreCredentialsAvailable()) {
     access_token_retried_ = true;
     StartAccessTokenRequest();
     return;
