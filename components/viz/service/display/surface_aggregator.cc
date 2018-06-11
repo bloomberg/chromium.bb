@@ -539,22 +539,14 @@ void SurfaceAggregator::ReportMissingFallbackSurface(
     const SurfaceId& fallback_surface_id,
     const Surface* fallback_surface) {
   // If the fallback surface is unavailable then that's an error.
-  std::stringstream error_stream;
-  error_stream << fallback_surface_id;
-  std::string frame_sink_debug_label(
-      manager_->GetFrameSinkDebugLabel(fallback_surface_id.frame_sink_id()));
-  // Add the debug label, if available, to the error log to help diagnose a
-  // misbehaving client.
-  if (!frame_sink_debug_label.empty())
-    error_stream << " [" << frame_sink_debug_label << "]";
   if (!fallback_surface) {
-    error_stream << " is missing during aggregation";
+    DLOG(ERROR) << fallback_surface_id << " is missing during aggregation";
     ++uma_stats_.missing_surface;
   } else {
-    error_stream << " has no active frame during aggregation";
+    DLOG(ERROR) << fallback_surface_id
+                << " has no active frame during aggregation";
     ++uma_stats_.no_active_frame;
   }
-  DLOG(ERROR) << error_stream.str();
 }
 
 void SurfaceAggregator::AddColorConversionPass() {

@@ -30,6 +30,7 @@ class VideoDetectorTest;
 class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
  public:
   VideoDetector(
+      const std::vector<FrameSinkId>& registered_frame_sink_ids,
       SurfaceManager* surface_manager,
       const base::TickClock* tick_clock = base::DefaultTickClock::GetInstance(),
       scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr);

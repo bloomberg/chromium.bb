@@ -39,6 +39,13 @@ FrameSinkManagerImpl::FrameSinkSourceMapping&
 FrameSinkManagerImpl::FrameSinkSourceMapping::operator=(
     FrameSinkSourceMapping&& other) = default;
 
+FrameSinkManagerImpl::FrameSinkData::FrameSinkData() = default;
+FrameSinkManagerImpl::FrameSinkData::FrameSinkData(FrameSinkData&& other) =
+    default;
+FrameSinkManagerImpl::FrameSinkData::~FrameSinkData() = default;
+FrameSinkManagerImpl::FrameSinkData& FrameSinkManagerImpl::FrameSinkData::
+operator=(FrameSinkData&& other) = default;
+
 FrameSinkManagerImpl::FrameSinkManagerImpl(
     SharedBitmapManager* shared_bitmap_manager,
     base::Optional<uint32_t> activation_deadline_in_frames,
@@ -94,7 +101,10 @@ void FrameSinkManagerImpl::ForceShutdown() {
 void FrameSinkManagerImpl::RegisterFrameSinkId(
     const FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  surface_manager_.RegisterFrameSinkId(frame_sink_id);
+  DCHECK(!base::ContainsKey(frame_sink_data_, frame_sink_id));
+
+  frame_sink_data_.emplace(std::make_pair(frame_sink_id, FrameSinkData()));
+
   if (video_detector_)
     video_detector_->OnFrameSinkIdRegistered(frame_sink_id);
 
@@ -113,28 +123,27 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
   if (video_detector_)
     video_detector_->OnFrameSinkIdInvalidated(frame_sink_id);
 
-  synchronization_event_labels_.erase(frame_sink_id);
-
   // Destroy the [Root]CompositorFrameSinkImpl if there is one.
   sink_map_.erase(frame_sink_id);
+
+  frame_sink_data_.erase(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::EnableSynchronizationReporting(
     const FrameSinkId& frame_sink_id,
     const std::string& reporting_label) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(fsamuel): We should move FrameSink labels over to
-  // FrameSinkManagerImpl and unify them with synchronization event labels
-  // and other metadata about FrameSinks.
-  DCHECK_GT(surface_manager_.valid_frame_sink_labels().count(frame_sink_id),
-            0u);
-  synchronization_event_labels_.emplace(frame_sink_id, reporting_label);
+  auto it = frame_sink_data_.find(frame_sink_id);
+  if (it != frame_sink_data_.end())
+    it->second.synchronization_label = reporting_label;
 }
 
 void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
     const FrameSinkId& frame_sink_id,
     const std::string& debug_label) {
-  surface_manager_.SetFrameSinkDebugLabel(frame_sink_id, debug_label);
+  auto it = frame_sink_data_.find(frame_sink_id);
+  if (it != frame_sink_data_.end())
+    it->second.debug_label = debug_label;
 }
 
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
@@ -275,8 +284,10 @@ void FrameSinkManagerImpl::DropTemporaryReference(const SurfaceId& surface_id) {
 
 void FrameSinkManagerImpl::AddVideoDetectorObserver(
     mojom::VideoDetectorObserverPtr observer) {
-  if (!video_detector_)
-    video_detector_ = std::make_unique<VideoDetector>(&surface_manager_);
+  if (!video_detector_) {
+    video_detector_ = std::make_unique<VideoDetector>(
+        GetRegisteredFrameSinkIds(), &surface_manager_);
+  }
   video_detector_->AddObserver(std::move(observer));
 }
 
@@ -338,13 +349,18 @@ void FrameSinkManagerImpl::OnSurfaceActivated(
 
   // If |duration| is populated then there was a synchronization event prior
   // to this activation.
-  auto it = synchronization_event_labels_.find(surface_id.frame_sink_id());
-  if (it != synchronization_event_labels_.end()) {
-    TRACE_EVENT_INSTANT2(
-        "viz", "SurfaceSynchronizationEvent", TRACE_EVENT_SCOPE_THREAD,
-        "duration_ms", duration->InMilliseconds(), "client_label", it->second);
-    base::UmaHistogramCustomCounts(it->second, duration->InMilliseconds(), 1,
-                                   10000, 50);
+  auto it = frame_sink_data_.find(surface_id.frame_sink_id());
+  if (it == frame_sink_data_.end())
+    return;
+
+  std::string& synchronization_label = it->second.synchronization_label;
+  if (!synchronization_label.empty()) {
+    TRACE_EVENT_INSTANT2("viz", "SurfaceSynchronizationEvent",
+                         TRACE_EVENT_SCOPE_THREAD, "duration_ms",
+                         duration->InMilliseconds(), "client_label",
+                         synchronization_label);
+    base::UmaHistogramCustomCounts(synchronization_label,
+                                   duration->InMilliseconds(), 1, 10000, 50);
   }
 }
 
@@ -537,8 +553,8 @@ VideoDetector* FrameSinkManagerImpl::CreateVideoDetectorForTesting(
     const base::TickClock* tick_clock,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   DCHECK(!video_detector_);
-  video_detector_ = std::make_unique<VideoDetector>(surface_manager(),
-                                                    tick_clock, task_runner);
+  video_detector_ = std::make_unique<VideoDetector>(
+      GetRegisteredFrameSinkIds(), surface_manager(), tick_clock, task_runner);
   return video_detector_.get();
 }
 
@@ -548,6 +564,14 @@ void FrameSinkManagerImpl::AddObserver(FrameSinkObserver* obs) {
 
 void FrameSinkManagerImpl::RemoveObserver(FrameSinkObserver* obs) {
   observer_list_.RemoveObserver(obs);
+}
+
+base::StringPiece FrameSinkManagerImpl::GetFrameSinkDebugLabel(
+    const FrameSinkId& frame_sink_id) const {
+  auto it = frame_sink_data_.find(frame_sink_id);
+  if (it != frame_sink_data_.end())
+    return it->second.debug_label;
+  return base::StringPiece();
 }
 
 std::vector<FrameSinkId> FrameSinkManagerImpl::GetCreatedFrameSinkIds() const {
@@ -560,7 +584,7 @@ std::vector<FrameSinkId> FrameSinkManagerImpl::GetCreatedFrameSinkIds() const {
 std::vector<FrameSinkId> FrameSinkManagerImpl::GetRegisteredFrameSinkIds()
     const {
   std::vector<FrameSinkId> frame_sink_ids;
-  for (auto& map_entry : surface_manager_.valid_frame_sink_labels())
+  for (auto& map_entry : frame_sink_data_)
     frame_sink_ids.push_back(map_entry.first);
   return frame_sink_ids;
 }

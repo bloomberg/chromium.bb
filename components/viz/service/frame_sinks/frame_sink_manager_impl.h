@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/constants.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -171,6 +172,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void AddObserver(FrameSinkObserver* obs);
   void RemoveObserver(FrameSinkObserver* obs);
 
+  // Returns the debug label associated with |frame_sink_id| if any.
+  base::StringPiece GetFrameSinkDebugLabel(
+      const FrameSinkId& frame_sink_id) const;
+
   // Returns ids of all FrameSinks that were created.
   std::vector<FrameSinkId> GetCreatedFrameSinkIds() const;
   // Returns ids of all FrameSinks that were registered.
@@ -185,6 +190,23 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
  private:
   friend class FrameSinkManagerTest;
+
+  // Metadata for a CompositorFrameSink.
+  struct FrameSinkData {
+    FrameSinkData();
+    FrameSinkData(FrameSinkData&& other);
+    ~FrameSinkData();
+    FrameSinkData& operator=(FrameSinkData&& other);
+
+    // A label to identify frame sink.
+    std::string debug_label;
+
+    // Record synchronization events for this FrameSinkId if not empty.
+    std::string synchronization_label;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
+  };
 
   // BeginFrameSource routing information for a FrameSinkId.
   struct FrameSinkSourceMapping {
@@ -224,6 +246,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // Provides a Display for CreateRootCompositorFrameSink().
   DisplayProvider* const display_provider_;
 
+  // Contains registered frame sink ids, debug labels and synchronization
+  // labels. Map entries will be created when frame sink is registered and
+  // destroyed when frame sink is invalidated.
+  base::flat_map<FrameSinkId, FrameSinkData> frame_sink_data_;
+
   // Set of BeginFrameSource along with associated FrameSinkIds. Any child
   // that is implicitly using this frame sink must be reachable by the
   // parent in the dag.
@@ -239,10 +266,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // [Root]CompositorFrameSinkImpls are owned in this map.
   base::flat_map<FrameSinkId, std::unique_ptr<mojom::CompositorFrameSink>>
       sink_map_;
-
-  // The set of FrameSinkIds that the client wants synchronization event
-  // notifications for.
-  base::flat_map<FrameSinkId, std::string> synchronization_event_labels_;
 
   PrimaryBeginFrameSource primary_source_;
 

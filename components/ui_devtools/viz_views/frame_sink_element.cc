@@ -92,8 +92,7 @@ std::unique_ptr<protocol::Array<std::string>> FrameSinkElement::GetAttributes()
   attributes->addItem(frame_sink_id_.ToString());
   attributes->addItem("Title");
   attributes->addItem(
-      frame_sink_manager_->surface_manager()->GetFrameSinkDebugLabel(
-          frame_sink_id_));
+      frame_sink_manager_->GetFrameSinkDebugLabel(frame_sink_id_));
   return attributes;
 }
 

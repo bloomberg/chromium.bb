@@ -84,6 +84,9 @@ class FrameSinkManagerTest : public testing::Test {
 
     // Make sure test cleans up all [Root]CompositorFrameSinkImpls.
     EXPECT_TRUE(manager_.support_map_.empty());
+
+    // Make sure test has invalidated all registered FrameSinkIds.
+    EXPECT_TRUE(manager_.frame_sink_data_.empty());
   }
 
  protected:
@@ -433,6 +436,19 @@ TEST_F(FrameSinkManagerTest, EvictSurfaces) {
   manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(manager_.surface_manager()->GetSurfaceForId(surface_id1));
   EXPECT_FALSE(manager_.surface_manager()->GetSurfaceForId(surface_id2));
+}
+
+// Verify that setting debug label works and that debug labels are cleared when
+// FrameSinkId is invalidated.
+TEST_F(FrameSinkManagerTest, DebugLabel) {
+  const std::string label = "Test Label";
+
+  manager_.RegisterFrameSinkId(kFrameSinkIdA);
+  manager_.SetFrameSinkDebugLabel(kFrameSinkIdA, label);
+  EXPECT_EQ(label, manager_.GetFrameSinkDebugLabel(kFrameSinkIdA));
+
+  manager_.InvalidateFrameSinkId(kFrameSinkIdA);
+  EXPECT_EQ("", manager_.GetFrameSinkDebugLabel(kFrameSinkIdA));
 }
 
 namespace {
