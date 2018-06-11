@@ -230,6 +230,7 @@
           'shards': 20,
         },
       },
+      # chromium.clang
       'ToTWin(dbg)': {
         'swarming': {
           'shards': 20,
@@ -239,12 +240,6 @@
         'swarming': {
           'shards': 20,
         },
-      },
-      'ToTLinuxThinLTO': {
-        # TODO(kbr): remove this spurious filter.
-        'args': [
-          '--gtest_filter=-SaveType/SavePageMultiFrameBrowserTest.ObjectElements/0',
-        ],
       },
       # chromium.fyi
       'Out of Process Profiling Linux': {
@@ -2493,6 +2488,18 @@
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
+      # chromium.clang
+      'ToTWin(dbg)': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'ToTWin64(dbg)': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      # chromium.memory
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372

@@ -13924,9 +13924,6 @@
         "test": "boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--gtest_filter=-SaveType/SavePageMultiFrameBrowserTest.ObjectElements/0"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
@@ -16830,7 +16827,7 @@
         "name": "viz_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests"
       },
@@ -18564,7 +18561,7 @@
         "name": "viz_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests"
       },
