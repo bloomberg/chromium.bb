@@ -183,10 +183,8 @@ void BackgroundFetchContext::UpdateUI(
                      title, std::move(callback)));
 }
 
-void BackgroundFetchContext::OnRegistrationDeleted(
-    int64_t service_worker_registration_id,
-    const GURL& pattern) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void BackgroundFetchContext::AbandonFetches(
+    int64_t service_worker_registration_id) {
   // Abandon all active fetches associated with this service worker.
   // BackgroundFetchJobController::Abort() will eventually lead to deletion of
   // the controller from job_controllers, hence we can't use a range based
@@ -195,9 +193,12 @@ void BackgroundFetchContext::OnRegistrationDeleted(
        /* no_increment */) {
     auto saved_iter = iter;
     iter++;
-    if (saved_iter->second->registration_id()
-            .service_worker_registration_id() ==
-        service_worker_registration_id) {
+    if (service_worker_registration_id ==
+            blink::mojom::kInvalidServiceWorkerRegistrationId ||
+        saved_iter->second->registration_id()
+                .service_worker_registration_id() ==
+            service_worker_registration_id) {
+      DCHECK(saved_iter->second);
       saved_iter->second->Abort(
           BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE);
     }
@@ -205,8 +206,10 @@ void BackgroundFetchContext::OnRegistrationDeleted(
 
   for (auto iter = fetch_callbacks_.begin(); iter != fetch_callbacks_.end();
        /* no increment */) {
-    if (iter->first.service_worker_registration_id() ==
-        service_worker_registration_id) {
+    if (service_worker_registration_id ==
+            blink::mojom::kInvalidServiceWorkerRegistrationId ||
+        iter->first.service_worker_registration_id() ==
+            service_worker_registration_id) {
       DCHECK(iter->second);
       std::move(iter->second)
           .Run(blink::mojom::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE,
@@ -217,8 +220,16 @@ void BackgroundFetchContext::OnRegistrationDeleted(
   }
 }
 
+void BackgroundFetchContext::OnRegistrationDeleted(
+    int64_t service_worker_registration_id,
+    const GURL& pattern) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  AbandonFetches(service_worker_registration_id);
+}
+
 void BackgroundFetchContext::OnStorageWiped() {
-  // TODO(nator): abort all active fetches for storage partition.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  AbandonFetches(blink::mojom::kInvalidServiceWorkerRegistrationId);
 }
 
 void BackgroundFetchContext::DidUpdateStoredUI(
