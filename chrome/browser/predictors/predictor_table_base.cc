@@ -36,6 +36,10 @@ void PredictorTableBase::SetCancelled() {
   cancelled_.Set();
 }
 
+bool PredictorTableBase::IsCancelled() {
+  return cancelled_.IsSet();
+}
+
 sql::Connection* PredictorTableBase::DB() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   return db_;
