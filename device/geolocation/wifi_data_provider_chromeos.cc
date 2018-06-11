@@ -47,6 +47,11 @@ void WifiDataProviderChromeOs::StopDataProvider() {
   ScheduleStop();
 }
 
+bool WifiDataProviderChromeOs::DelayedByPolicy() {
+  DCHECK(CalledOnClientThread());
+  return is_first_scan_complete_ ? true : first_scan_delayed_;
+}
+
 bool WifiDataProviderChromeOs::GetData(WifiData* data) {
   DCHECK(CalledOnClientThread());
   DCHECK(data);
@@ -134,7 +139,9 @@ void WifiDataProviderChromeOs::ScheduleStart() {
     return;
   }
   started_ = true;
-  ScheduleNextScan(WifiPollingPolicy::Get()->InitialInterval());
+  int delay_interval = WifiPollingPolicy::Get()->InitialInterval();
+  ScheduleNextScan(delay_interval);
+  first_scan_delayed_ = (delay_interval > 0);
 }
 
 bool WifiDataProviderChromeOs::GetAccessPointData(

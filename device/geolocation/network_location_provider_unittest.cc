@@ -71,6 +71,8 @@ class MockWifiDataProvider : public WifiDataProvider {
 
   void StopDataProvider() override { ++stop_calls_; }
 
+  bool DelayedByPolicy() override { return false; }
+
   bool GetData(WifiData* data_out) override {
     CHECK(data_out);
     *data_out = data_;

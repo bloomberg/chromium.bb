@@ -58,6 +58,9 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderManager {
   // instance. Return value indicates success.
   static bool Unregister(WifiDataUpdateCallback* callback);
 
+  // Returns true if the data provider is currently delayed by polling policy.
+  bool DelayedByPolicy();
+
   // Provides whatever data the provider has, which may be nothing. Return
   // value indicates whether this is all the data the provider could ever
   // obtain.

@@ -22,6 +22,7 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
   // WifiDataProvider
   void StartDataProvider() override;
   void StopDataProvider() override;
+  bool DelayedByPolicy() override;
   bool GetData(WifiData* data) override;
 
  private:
@@ -58,6 +59,9 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
 
   // Whether we've successfully completed a scan for WiFi data. (client thread)
   bool is_first_scan_complete_ = false;
+
+  // Whether our first scan was delayed due to polling policy. (client thread)
+  bool first_scan_delayed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderChromeOs);
 };
