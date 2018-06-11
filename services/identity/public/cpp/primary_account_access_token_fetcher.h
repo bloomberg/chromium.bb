@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -58,7 +59,10 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
  private:
   void Start();
 
-  void WaitForRefreshToken();
+  // Returns true iff there is a primary account with a refresh token. Should
+  // only be called in mode |kWaitUntilAvailable|.
+  bool AreCredentialsAvailable() const;
+
   void StartAccessTokenRequest();
 
   // SigninManagerBase::Observer implementation.
@@ -67,6 +71,10 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
+
+  // Checks whether credentials are now available and starts an access token
+  // request if so. Should only be called in mode |kWaitUntilAvailable|.
+  void ProcessSigninStateChange();
 
   // OAuth2TokenService::Consumer implementation.
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -80,8 +88,10 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   OAuth2TokenService::ScopeSet scopes_;
   TokenCallback callback_;
 
-  bool waiting_for_sign_in_;
-  bool waiting_for_refresh_token_;
+  ScopedObserver<SigninManagerBase, PrimaryAccountAccessTokenFetcher>
+      signin_manager_observer_;
+  ScopedObserver<OAuth2TokenService, PrimaryAccountAccessTokenFetcher>
+      token_service_observer_;
 
   std::unique_ptr<OAuth2TokenService::Request> access_token_request_;
 
