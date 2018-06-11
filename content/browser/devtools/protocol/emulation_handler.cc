@@ -354,12 +354,22 @@ void EmulationHandler::UpdateTouchEventEmulationState() {
     return;
   if (host_->GetParent() && !host_->IsCrossProcessSubframe())
     return;
+
+  // We only have a single TouchEmulator for all frames, so let the main frame's
+  // EmulationHandler enable/disable it.
+  if (!host_->frame_tree_node()->IsMainFrame())
+    return;
+
   if (touch_emulation_enabled_) {
-    host_->GetRenderWidgetHost()->GetTouchEmulator()->Enable(
-        TouchEmulator::Mode::kEmulatingTouchFromMouse,
-        TouchEmulationConfigurationToType(touch_emulation_configuration_));
+    if (auto* touch_emulator =
+            host_->GetRenderWidgetHost()->GetTouchEmulator()) {
+      touch_emulator->Enable(
+          TouchEmulator::Mode::kEmulatingTouchFromMouse,
+          TouchEmulationConfigurationToType(touch_emulation_configuration_));
+    }
   } else {
-    host_->GetRenderWidgetHost()->GetTouchEmulator()->Disable();
+    if (auto* touch_emulator = host_->GetRenderWidgetHost()->GetTouchEmulator())
+      touch_emulator->Disable();
   }
   if (GetWebContents()) {
     GetWebContents()->SetForceDisableOverscrollContent(

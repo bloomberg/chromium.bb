@@ -62,7 +62,8 @@ class TouchEmulatorTest : public testing::Test,
     forwarded_events_.push_back(event.GetType());
   }
 
-  void ForwardEmulatedTouchEvent(const blink::WebTouchEvent& event) override {
+  void ForwardEmulatedTouchEvent(const blink::WebTouchEvent& event,
+                                 RenderWidgetHostViewBase* target) override {
     forwarded_events_.push_back(event.GetType());
     EXPECT_EQ(1U, event.touches_length);
     EXPECT_EQ(last_mouse_x_, event.touches[0].PositionInWidget().x);
@@ -145,7 +146,7 @@ class TouchEmulatorTest : public testing::Test,
     last_mouse_y_ = y;
     event.SetPositionInWidget(x, y);
     event.SetPositionInScreen(x, y);
-    emulator()->HandleMouseEvent(event);
+    emulator()->HandleMouseEvent(event, nullptr);
   }
 
   bool SendMouseWheelEvent() {
@@ -235,7 +236,7 @@ class TouchEmulatorTest : public testing::Test,
     last_mouse_x_ = x;
     last_mouse_y_ = y;
     WebTouchEvent event = MakeTouchEvent(type, state, x, y);
-    emulator()->InjectTouchEvent(event, base::OnceClosure());
+    emulator()->InjectTouchEvent(event, nullptr, base::OnceClosure());
   }
 
   void AckOldestTouchEvent() {

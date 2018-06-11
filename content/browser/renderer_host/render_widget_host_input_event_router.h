@@ -18,6 +18,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/service/surfaces/surface_hittest_delegate.h"
+#include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/browser/renderer_host/render_widget_targeter.h"
 #include "content/common/content_export.h"
@@ -48,6 +49,7 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class RenderWidgetTargeter;
+class TouchEmulator;
 
 // Class owned by WebContentsImpl for the purpose of directing input events
 // to the correct RenderWidgetHost on pages with multiple RenderWidgetHosts.
@@ -57,7 +59,8 @@ class RenderWidgetTargeter;
 // forwards the event to the owning RWHV of the returned Surface ID.
 class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     : public RenderWidgetHostViewBaseObserver,
-      public RenderWidgetTargeter::Delegate {
+      public RenderWidgetTargeter::Delegate,
+      public TouchEmulatorClient {
  public:
   RenderWidgetHostInputEventRouter();
   ~RenderWidgetHostInputEventRouter() final;
@@ -95,6 +98,11 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   void OnHittestData(const FrameHostMsg_HittestData_Params& params);
 
+  TouchEmulator* GetTouchEmulator();
+  // Since GetTouchEmulator will lazily create a touch emulator, the following
+  // accessor allows testing for its existence without causing it to be created.
+  bool has_touch_emulator() const { return touch_emulator_.get(); }
+
   // Returns the RenderWidgetHostImpl inside the |root_view| at |point| where
   // |point| is with respect to |root_view|'s coordinates. If a RWHI is found,
   // the value of |transformed_point| is the coordinate of the point with
@@ -111,6 +119,15 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   std::vector<RenderWidgetHostView*> GetRenderWidgetHostViewsForTests() const;
   RenderWidgetTargeter* GetRenderWidgetTargeterForTests();
+
+  // TouchEmulatorClient:
+  void ForwardEmulatedGestureEvent(
+      const blink::WebGestureEvent& event) override;
+  void ForwardEmulatedTouchEvent(const blink::WebTouchEvent& event,
+                                 RenderWidgetHostViewBase* target) override;
+  void SetCursor(const WebCursor& cursor) override;
+  void ShowContextMenuAtPoint(const gfx::Point& point,
+                              const ui::MenuSourceType source_type) override;
 
  private:
   struct HittestData {
@@ -272,6 +289,11 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   RenderWidgetHostViewBase* last_mouse_move_target_;
   RenderWidgetHostViewBase* last_mouse_move_root_view_;
 
+  // Tracked for the purpose of providing a root_view when dispatching emulated
+  // touch/gesture events.
+  RenderWidgetHostViewBase* last_emulated_event_root_view_;
+  float last_device_scale_factor_;
+
   int active_touches_;
   // Keep track of when we are between GesturePinchBegin and GesturePinchEnd
   // inclusive, as we need to route these events (and anything in between) to
@@ -283,6 +305,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   std::unique_ptr<RenderWidgetTargeter> event_targeter_;
   bool use_viz_hit_test_ = false;
+
+  std::unique_ptr<TouchEmulator> touch_emulator_;
 
   base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_;
 

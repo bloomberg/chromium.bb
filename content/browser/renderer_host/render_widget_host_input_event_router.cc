@@ -18,6 +18,7 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/cursor_manager.h"
+#include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -85,6 +86,9 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
       break;
     }
   }
+
+  if (touch_emulator_)
+    touch_emulator_->OnViewDestroyed(view);
 
   if (view == touch_target_.target) {
     touch_target_.target = nullptr;
@@ -183,6 +187,8 @@ RenderWidgetHostInputEventRouter::RenderWidgetHostInputEventRouter()
     : touchscreen_gesture_target_in_map_(false),
       last_mouse_move_target_(nullptr),
       last_mouse_move_root_view_(nullptr),
+      last_emulated_event_root_view_(nullptr),
+      last_device_scale_factor_(1.f),
       active_touches_(0),
       in_touchscreen_gesture_pinch_(false),
       gesture_pinch_did_send_scroll_begin_(false),
@@ -1391,8 +1397,18 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     return;
   }
   if (blink::WebInputEvent::IsTouchEventType(event.GetType())) {
-    DispatchTouchEvent(root_view, target,
-                       static_cast<const blink::WebTouchEvent&>(event), latency,
+    auto& touch_event = static_cast<const blink::WebTouchEvent&>(event);
+    TouchEventWithLatencyInfo touch_with_latency(touch_event, latency);
+    if (touch_emulator_ &&
+        touch_emulator_->HandleTouchEvent(touch_with_latency.event)) {
+      // We cheat a litle bit here, and assume that we know that even if the
+      // target is a RenderWidgetHostViewChildFrame, that it would only try to
+      // forward the ack to the root view anyways, so we send it there directly.
+      root_view->ProcessAckedTouchEvent(touch_with_latency,
+                                        INPUT_EVENT_ACK_STATE_CONSUMED);
+      return;
+    }
+    DispatchTouchEvent(root_view, target, touch_event, latency,
                        target_location);
     return;
   }
@@ -1412,6 +1428,68 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
     }
   }
   NOTREACHED();
+}
+
+TouchEmulator* RenderWidgetHostInputEventRouter::GetTouchEmulator() {
+  if (!touch_emulator_)
+    touch_emulator_.reset(new TouchEmulator(this, last_device_scale_factor_));
+
+  return touch_emulator_.get();
+}
+
+void RenderWidgetHostInputEventRouter::ForwardEmulatedGestureEvent(
+    const blink::WebGestureEvent& event) {
+  TRACE_EVENT0("input",
+               "RenderWidgetHostInputEventRouter::ForwardEmulatedGestureEvent");
+  DCHECK(last_emulated_event_root_view_);
+  DispatchTouchscreenGestureEvent(last_emulated_event_root_view_, nullptr,
+                                  event, ui::LatencyInfo(),
+                                  event.PositionInWidget());
+}
+
+void RenderWidgetHostInputEventRouter::ForwardEmulatedTouchEvent(
+    const blink::WebTouchEvent& event,
+    RenderWidgetHostViewBase* target) {
+  TRACE_EVENT0("input",
+               "RenderWidgetHostInputEventRouter::ForwardEmulatedTouchEvent");
+  // Here we re-use the last root view we saw for a mouse move event, or fall
+  // back to using |target| as the root_view if we haven't seen a mouse event;
+  // this latter case only happens for injected touch events.
+  // TODO(wjmaclean): Why doesn't this class just track its root view?
+  DCHECK(IsViewInMap(static_cast<RenderWidgetHostViewBase*>(target)));
+  last_emulated_event_root_view_ =
+      last_mouse_move_root_view_ ? last_mouse_move_root_view_ : target;
+
+  if (event.GetType() == blink::WebInputEvent::kTouchStart)
+    active_touches_ += CountChangedTouchPoints(event);
+  blink::WebFloatPoint position_in_widget = event.touches[0].PositionInWidget();
+  gfx::PointF transformed_point = target->TransformRootPointToViewCoordSpace(
+      gfx::PointF(position_in_widget.x, position_in_widget.y));
+  DispatchTouchEvent(last_emulated_event_root_view_, target, event,
+                     ui::LatencyInfo(), transformed_point);
+}
+
+void RenderWidgetHostInputEventRouter::SetCursor(const WebCursor& cursor) {
+  if (!last_mouse_move_root_view_)
+    return;
+
+  last_device_scale_factor_ =
+      last_mouse_move_root_view_->current_device_scale_factor();
+  if (auto* cursor_manager = last_mouse_move_root_view_->GetCursorManager()) {
+    for (auto it : owner_map_)
+      cursor_manager->UpdateCursor(it.second, cursor);
+  }
+}
+
+void RenderWidgetHostInputEventRouter::ShowContextMenuAtPoint(
+    const gfx::Point& point,
+    const ui::MenuSourceType source_type) {
+  DCHECK(last_mouse_move_target_);
+
+  auto* rwhi = static_cast<RenderWidgetHostImpl*>(
+      last_mouse_move_target_->GetRenderWidgetHost());
+  DCHECK(rwhi);
+  rwhi->ShowContextMenuAtPoint(point, source_type);
 }
 
 }  // namespace content
