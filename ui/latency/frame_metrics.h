@@ -39,7 +39,8 @@ class LatencyAccelerationClient : public frame_metrics::StreamAnalyzerClient {
 enum class FrameMetricsSource {
   Unknown = 0,
   UnitTest = 1,
-  Thread = 2,
+  RendererCompositor = 2,
+  UiCompositor = 3,
 };
 
 enum class FrameMetricsSourceThread {

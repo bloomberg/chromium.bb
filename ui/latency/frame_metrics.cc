@@ -121,8 +121,10 @@ const char* ToString(FrameMetricsSource source) {
   switch (source) {
     case FrameMetricsSource::UnitTest:
       return "UnitTest";
-    case FrameMetricsSource::Thread:
-      return "Thread";
+    case FrameMetricsSource::RendererCompositor:
+      return "RendererCompositor";
+    case FrameMetricsSource::UiCompositor:
+      return "UiCompositor";
     case FrameMetricsSource::Unknown:
       break;
   };

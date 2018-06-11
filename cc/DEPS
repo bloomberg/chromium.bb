@@ -29,7 +29,7 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/skia/include",
   "+third_party/skia/src/core/SkRemoteGlyphCache.h",
-  "+ui/latency/latency_info.h",
+  "+ui/latency",
   "+ui/gfx",
   "+ui/gl",
 
