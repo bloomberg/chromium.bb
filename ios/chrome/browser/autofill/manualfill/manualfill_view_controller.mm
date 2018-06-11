@@ -2,27 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/showcase/manual_fill/keyboard_proto_view_controller.h"
+#import "ios/chrome/browser/autofill/manualfill/manualfill_view_controller.h"
 
 #import <WebKit/WebKit.h>
+
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace manualfill {
-
-void AddSameConstraints(UIView* sourceView, UIView* destinationView) {
-  [NSLayoutConstraint activateConstraints:@[
-    [sourceView.leadingAnchor
-        constraintEqualToAnchor:destinationView.leadingAnchor],
-    [sourceView.trailingAnchor
-        constraintEqualToAnchor:destinationView.trailingAnchor],
-    [sourceView.bottomAnchor
-        constraintEqualToAnchor:destinationView.bottomAnchor],
-    [sourceView.topAnchor constraintEqualToAnchor:destinationView.topAnchor],
-  ]];
-}
 
 UIView* GetFirstResponderSubview(UIView* view) {
   if ([view isFirstResponder])
@@ -39,7 +29,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 
 }  // namespace manualfill
 
-@interface KeyboardProtoViewController ()
+@interface ManualfillViewController ()
 
 // The last recorded active field identifier, used to interact with the web
 // view (i.e. overwrite the input of the field).
@@ -47,7 +37,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 
 @end
 
-@implementation KeyboardProtoViewController
+@implementation ManualfillViewController
 
 @synthesize activeFieldID = _activeFieldID;
 @synthesize lastFirstResponder = _lastFirstResponder;
@@ -60,7 +50,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
                                 configuration:[self webViewConfiguration]];
   [self.view addSubview:self.webView];
   self.webView.translatesAutoresizingMaskIntoConstraints = NO;
-  manualfill::AddSameConstraints(self.webView, self.view);
+  AddSameConstraints(self.webView, self.view);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -80,7 +70,7 @@ UIView* GetFirstResponderSubview(UIView* view) {
 #pragma mark - Document Interaction
 
 - (void)updateActiveFieldID {
-  __weak KeyboardProtoViewController* weakSelf = self;
+  __weak __typeof(self) weakSelf = self;
   NSString* javaScriptQuery = @"__gCrWeb.manualfill.activeElementId()";
   [self.webView evaluateJavaScript:javaScriptQuery
                  completionHandler:^(id result, NSError* error) {

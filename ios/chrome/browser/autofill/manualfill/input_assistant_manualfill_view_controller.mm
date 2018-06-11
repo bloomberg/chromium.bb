@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/showcase/manual_fill/ipad_keyboard_proto_view_controller.h"
+#import "ios/chrome/browser/autofill/manualfill/input_assistant_manualfill_view_controller.h"
 
 #import <WebKit/WebKit.h>
 
-#import "ios/showcase/manual_fill/password_picker_view_controller.h"
+#import "ios/chrome/browser/autofill/manualfill/password_picker_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface IPadKeyboardProtoViewController ()
+@interface InputAssistantManualfillViewController ()
 
 /// The view controller presented or nil if none.
 @property(nonatomic, weak) UIViewController* presentedPickerViewController;
 
 @end
 
-@implementation IPadKeyboardProtoViewController
+@implementation InputAssistantManualfillViewController
 
 @synthesize presentedPickerViewController = _presentedPickerViewController;
 

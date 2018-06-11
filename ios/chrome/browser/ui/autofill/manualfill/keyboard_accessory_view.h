@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_ACCESSORY_VIEW_H_
-#define IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_ACCESSORY_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUALFILL_KEYBOARD_ACCESSORY_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUALFILL_KEYBOARD_ACCESSORY_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
+// Protocol to handle user interactions in a KeyboardAccessoryView.
 @protocol KeyboardAccessoryViewDelegate
 
 // Invoked after the user touches the `accounts` button.
@@ -54,4 +55,4 @@
 
 @end
 
-#endif  // IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_ACCESSORY_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUALFILL_KEYBOARD_ACCESSORY_VIEW_H_

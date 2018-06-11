@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_COMPLEMENT_VIEW_H_
-#define IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_COMPLEMENT_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUALFILL_KEYBOARD_BACKGROUND_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUALFILL_KEYBOARD_BACKGROUND_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -11,7 +11,7 @@
 
 // View to show behind the keyboard. It contains an Accessory View and a
 // Container for more detailed content.
-@interface KeyboardComplementView : UIView
+@interface KeyboardBackgroundView : UIView
 
 // View to contain a picker (addresses, credit cards or credentials) for the
 // user.
@@ -38,4 +38,4 @@
 
 @end
 
-#endif  // IOS_SHOWCASE_MANUAL_FILL_KEYBOARD_COMPLEMENT_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUALFILL_KEYBOARD_BACKGROUND_VIEW_H_
