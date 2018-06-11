@@ -953,7 +953,8 @@ class RTCPeerConnectionHandler::SetLocalDescriptionRequest
   void OnSuccessOnMainThread(
       webrtc::PeerConnectionInterface::SignalingState signaling_state) {
     DCHECK(main_thread_->BelongsToCurrentThread());
-    handler_->OnSignalingChange(signaling_state);
+    if (handler_)
+      handler_->OnSignalingChange(signaling_state);
     tracker_.TrackOnSuccess(nullptr);
     webkit_request_.RequestSucceeded();
     webkit_request_.Reset();
