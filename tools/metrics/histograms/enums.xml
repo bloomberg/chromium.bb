@@ -44789,6 +44789,12 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Actionable error"/>
 </enum>
 
+<enum name="SyncUploadState">
+  <int value="0" label="Initializing"/>
+  <int value="1" label="Not Active"/>
+  <int value="2" label="Active"/>
+</enum>
+
 <enum name="SystemLogPIIType">
   <obsolete>
     Deprecated and removed from code as of 01/2016.

@@ -165,8 +165,10 @@ class PersonalDataManager : public KeyedService,
   // Resets the card for |guid| to the masked state.
   void ResetFullServerCard(const std::string& guid);
 
-  // Resets all unmasked cards to the masked state.
-  void ResetFullServerCards();
+  // Resets all unmasked cards to the masked state if |is_dry_run| is false.
+  // Only records the number of cards that would have been remasked if
+  // |is_dry_run| is true.
+  void ResetFullServerCards(bool is_dry_run = false);
 
   // Deletes all server profiles and cards (both masked and unmasked).
   void ClearAllServerData();
