@@ -84,21 +84,27 @@ class ResetTest : public LoginManagerTest {
   }
 
   void CloseResetScreen() {
-    ASSERT_TRUE(JSExecuted("$('reset-cancel-button').click();"));
+    ASSERT_TRUE(JSExecuted(
+        "chrome.send('login.ResetScreen.userActed', ['cancel-reset']);"));
   }
 
   void ClickResetButton() {
-    ASSERT_TRUE(JSExecuted("$('reset-confirm-commit').click();"));
+    ASSERT_TRUE(JSExecuted(
+        "chrome.send('login.ResetScreen.userActed', ['powerwash-pressed']);"));
   }
 
   void ClickRestartButton() {
-    ASSERT_TRUE(JSExecuted("$('reset-restart-button').click();"));
+    ASSERT_TRUE(JSExecuted(
+        "chrome.send('login.ResetScreen.userActed', ['restart-pressed']);"));
   }
   void ClickToConfirmButton() {
-    ASSERT_TRUE(JSExecuted("$('reset-toconfirm-button').click();"));
+    ASSERT_TRUE(JSExecuted(
+        "chrome.send('login.ResetScreen.userActed', ['show-confirmation']);"));
   }
   void ClickDismissConfirmationButton() {
-    ASSERT_TRUE(JSExecuted("$('reset-confirm-dismiss').click();"));
+    ASSERT_TRUE(
+        JSExecuted("chrome.send('login.ResetScreen.userActed', "
+                   "['reset-confirm-dismissed']);"));
   }
 
   FakeUpdateEngineClient* update_engine_client_;
