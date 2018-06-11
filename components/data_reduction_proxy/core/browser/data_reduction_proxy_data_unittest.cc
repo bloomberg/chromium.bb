@@ -78,6 +78,31 @@ TEST_F(DataReductionProxyDataTest, BasicSettersAndGetters) {
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
             data->effective_connection_type());
 
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+            data->connection_type());
+  data->set_connection_type(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_WIFI,
+            data->connection_type());
+
+  EXPECT_EQ(std::vector<DataReductionProxyData::RequestInfo>(),
+            data->request_info());
+  DataReductionProxyData::RequestInfo request_info_1(
+      DataReductionProxyData::RequestInfo::Protocol::HTTP, false,
+      base::TimeDelta(), base::TimeDelta(), base::TimeDelta());
+  DataReductionProxyData::RequestInfo request_info_2(
+      DataReductionProxyData::RequestInfo::Protocol::HTTPS, true,
+      base::TimeDelta(), base::TimeDelta(), base::TimeDelta());
+  std::vector<DataReductionProxyData::RequestInfo> test_vector;
+  data->add_request_info(request_info_1);
+  test_vector.push_back(request_info_1);
+  EXPECT_EQ(test_vector, data->request_info());
+  data->add_request_info(request_info_2);
+  test_vector.push_back(request_info_2);
+  EXPECT_EQ(test_vector, data->request_info());
+  data->set_request_info(std::vector<DataReductionProxyData::RequestInfo>());
+  EXPECT_EQ(std::vector<DataReductionProxyData::RequestInfo>(),
+            data->request_info());
+
   EXPECT_FALSE(data->page_id());
   uint64_t page_id = 1;
   data->set_page_id(page_id);
@@ -123,6 +148,10 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
   for (size_t i = 0; i < arraysize(tests); ++i) {
     static const char kSessionKey[] = "test-key";
     static const GURL kTestURL("test-url");
+    std::vector<DataReductionProxyData::RequestInfo> request_info;
+    request_info.push_back(DataReductionProxyData::RequestInfo(
+        DataReductionProxyData::RequestInfo::Protocol::HTTP, false,
+        base::TimeDelta(), base::TimeDelta(), base::TimeDelta()));
     std::unique_ptr<DataReductionProxyData> data(new DataReductionProxyData());
     data->set_used_data_reduction_proxy(tests[i].data_reduction_used);
     data->set_lofi_requested(tests[i].lofi_test_value);
@@ -132,6 +161,8 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     data->set_session_key(kSessionKey);
     data->set_request_url(kTestURL);
     data->set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+    data->set_connection_type(net::NetworkChangeNotifier::CONNECTION_WIFI);
+    data->set_request_info(request_info);
     data->set_page_id(2u);
     std::unique_ptr<DataReductionProxyData> copy = data->DeepCopy();
     EXPECT_EQ(tests[i].lofi_test_value, copy->lofi_requested());
@@ -143,6 +174,9 @@ TEST_F(DataReductionProxyDataTest, DeepCopy) {
     EXPECT_EQ(kTestURL, copy->request_url());
     EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
               copy->effective_connection_type());
+    EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_WIFI,
+              copy->connection_type());
+    EXPECT_EQ(request_info, copy->request_info());
     EXPECT_EQ(2u, data->page_id().value());
   }
 }

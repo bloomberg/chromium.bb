@@ -156,6 +156,25 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
     request->set_previews_type(PageloadMetrics_PreviewsType_NONE);
   }
 
+  for (auto request_info_data : request_data.request_info()) {
+    RequestInfo* request_info = request->add_main_frame_network_request();
+    request_info->set_protocol(
+        protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
+            request_info_data.protocol));
+    request_info->set_proxy_bypass(request_info_data.proxy_bypass);
+    request_info->set_allocated_dns_time(
+        protobuf_parser::CreateDurationFromTimeDelta(request_info_data.dns_time)
+            .release());
+    request_info->set_allocated_connect_time(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            request_info_data.connect_time)
+            .release());
+    request_info->set_allocated_http_time(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            request_info_data.http_time)
+            .release());
+  }
+
   // Only report opt out information if a server preview was shown (otherwise,
   // report opt out unknown). Similarly, if app background (Android) caused this
   // report to be sent before the page load is terminated, do not report opt out

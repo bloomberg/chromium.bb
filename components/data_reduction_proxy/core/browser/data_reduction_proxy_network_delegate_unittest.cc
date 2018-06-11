@@ -1164,6 +1164,11 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
       request.get(), data_reduction_proxy_info, proxy_retry_info,
       &headers_original);
   DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
+  uint64_t original_page_id = data->page_id().value();
+  // Artificially add a RequestInfo for sake of testing that it is persisted.
+  data->add_request_info(DataReductionProxyData::RequestInfo(
+      DataReductionProxyData::RequestInfo::Protocol::HTTP, false,
+      base::TimeDelta(), base::TimeDelta(), base::TimeDelta()));
 
   EXPECT_TRUE(data);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
@@ -1180,6 +1185,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
   data = DataReductionProxyData::GetData(*request);
   EXPECT_FALSE(data && data->used_data_reduction_proxy());
+  // page_id and request_info should be persisted across redirects.
+  EXPECT_EQ(original_page_id, data->page_id().value());
+  EXPECT_EQ(1u, data->request_info().size());
 
   // Call NotifyBeforeSendHeaders again with different proxy info to check that
   // new data isn't added. Use a new set of headers since the redirected HTTP

@@ -332,6 +332,20 @@ PageloadMetrics_ConnectionType ProtoConnectionTypeFromConnectionType(
   }
 }
 
+RequestInfo_Protocol ProtoRequestInfoProtocolFromRequestInfoProtocol(
+    DataReductionProxyData::RequestInfo::Protocol protocol) {
+  switch (protocol) {
+    case DataReductionProxyData::RequestInfo::Protocol::HTTP:
+      return RequestInfo_Protocol_HTTP;
+    case DataReductionProxyData::RequestInfo::Protocol::HTTPS:
+      return RequestInfo_Protocol_HTTPS;
+    case DataReductionProxyData::RequestInfo::Protocol::QUIC:
+      return RequestInfo_Protocol_QUIC;
+    case DataReductionProxyData::RequestInfo::Protocol::UNKNOWN:
+      return RequestInfo_Protocol_UNKNOWN;
+  }
+}
+
 net::ProxyServer::Scheme SchemeFromProxyScheme(
     ProxyServer_ProxyScheme proxy_scheme) {
   switch (proxy_scheme) {
