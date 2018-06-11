@@ -5,6 +5,7 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/content"
     style="@style/ListItemContainer" >
 
@@ -13,5 +14,6 @@
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/selected_view"
         style="@style/ListItemEndIcon"
-        android:src="@drawable/ic_check_googblue_24dp" />
+        android:src="@drawable/ic_check_googblue_24dp"
+        app:chrometint="@color/dark_mode_tint" />
 </LinearLayout>

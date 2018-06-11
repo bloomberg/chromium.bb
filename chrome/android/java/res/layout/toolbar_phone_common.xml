@@ -5,7 +5,9 @@
 
 <!-- The toolbar containing the URL bar, back button, and NTP button.
 -->
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <org.chromium.chrome.browser.widget.newtab.NewTabButton
         android:id="@+id/new_tab_button"
@@ -23,7 +25,8 @@
         style="@style/ToolbarButton"
         android:src="@drawable/btn_toolbar_home"
         android:contentDescription="@string/accessibility_toolbar_btn_home"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:chrometint="@color/dark_mode_tint" />
 
     <org.chromium.chrome.browser.omnibox.LocationBarPhone
         android:id="@+id/location_bar"
@@ -65,7 +68,8 @@
                 android:id="@+id/menu_button"
                 style="@style/ToolbarMenuButtonPhone"
                 android:src="@drawable/ic_more_vert_black_24dp"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu" />
+                android:contentDescription="@string/accessibility_toolbar_btn_menu"
+                app:chrometint="@color/dark_mode_tint" />
 
             <ImageView
                 android:id="@+id/menu_badge"

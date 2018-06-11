@@ -96,5 +96,6 @@
         android:layout_alignParentEnd="true"
         android:scaleType="centerCrop"
         android:contentDescription="@null"
-        android:src="@null" />
+        android:src="@null"
+        app:chrometint="@color/dark_mode_tint" />
 </RelativeLayout>

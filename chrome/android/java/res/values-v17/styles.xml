@@ -31,9 +31,6 @@
         <item name="colorControlNormal">@color/light_normal_color</item>
         <item name="colorControlActivated">@color/light_active_color</item>
 
-        <!-- Default TintedImageButton tint -->
-        <item name="chrometint">@color/dark_mode_tint</item>
-
         <!-- Navigation Transitions, requires API level 21 -->
         <item name="android:windowAllowEnterTransitionOverlap" tools:targetApi="21">false</item>
         <item name="android:windowAllowReturnTransitionOverlap" tools:targetApi="21">true</item>
@@ -110,9 +107,6 @@
         <item name="colorControlActivated">@color/light_active_color</item>
         <item name="colorControlNormal">@color/light_normal_color</item>
         <item name="colorPrimary">@color/light_active_color</item>
-
-        <!-- Default TintedImageButton tint -->
-        <item name="chrometint">@color/dark_mode_tint</item>
     </style>
 
     <style name="ModalDialogTheme" parent="AlertDialogTheme">
@@ -290,6 +284,7 @@
         <item name="android:layout_weight">1</item>
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
         <item name="android:scaleType">center</item>
+        <item name="chrometint">@color/dark_mode_tint</item>
     </style>
     <style name="OverflowMenuAnim">
         <item name="android:windowEnterAnimation">@anim/menu_enter</item>
@@ -555,6 +550,7 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:scaleType">center</item>
         <item name="android:layout_gravity">end</item>
+        <item name="chrometint">@color/dark_mode_tint</item>
     </style>
     <style name="ModernToolbar" parent="Widget.AppCompat.Toolbar">
         <item name="titleTextAppearance">@style/BlackHeadline1</item>

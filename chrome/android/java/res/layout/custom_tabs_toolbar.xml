@@ -5,6 +5,7 @@
 
 <org.chromium.chrome.browser.toolbar.CustomTabToolbar
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="@dimen/custom_tabs_control_container_height">
@@ -26,7 +27,8 @@
             android:layout_gravity="center_vertical"
             android:contentDescription="@string/accessibility_toolbar_btn_site_info"
             android:scaleType="center"
-            android:visibility="invisible" />
+            android:visibility="invisible"
+            app:chrometint="@color/dark_mode_tint" />
         <view
             class="org.chromium.chrome.browser.toolbar.CustomTabToolbar$InterceptTouchLayout"
             android:id="@+id/title_url_container"
@@ -75,5 +77,6 @@
         android:paddingEnd="4dp"
         android:src="@drawable/ic_more_vert_black_24dp"
         android:contentDescription="@string/accessibility_toolbar_btn_menu"
-        android:background="@null" />
+        android:background="@null"
+        app:chrometint="@color/dark_mode_tint" />
 </org.chromium.chrome.browser.toolbar.CustomTabToolbar>

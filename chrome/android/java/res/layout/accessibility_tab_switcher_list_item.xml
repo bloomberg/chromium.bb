@@ -31,7 +31,8 @@
             android:paddingEnd="8dp"
             android:scaleType="fitCenter"
             android:gravity="center_vertical"
-            android:contentDescription="@null" />
+            android:contentDescription="@null"
+            app:chrometint="@color/dark_mode_tint" />
         <TextView
             android:id="@+id/tab_title"
             android:layout_width="0dp"
@@ -68,7 +69,8 @@
             style="@style/ListItemEndIconSmall"
             android:paddingStart="23dp"
             android:paddingEnd="13dp"
-            android:src="@drawable/btn_delete_24dp" />
+            android:src="@drawable/btn_delete_24dp"
+            app:chrometint="@color/dark_mode_tint" />
     </LinearLayout>
 
     <LinearLayout

@@ -38,8 +38,7 @@
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:scaleType="fitCenter"
-        android:src="?android:attr/listChoiceIndicatorMultiple"
-        app:chrometint="@null" />
+        android:src="?android:attr/listChoiceIndicatorMultiple" />
 
     <!-- Displays an icon. -->
     <org.chromium.chrome.browser.widget.TintedImageButton
@@ -51,6 +50,5 @@
         android:paddingEnd="16dp"
         android:paddingTop="12dp"
         android:paddingBottom="12dp"
-        android:scaleType="fitCenter"
-        app:chrometint="@null" />
+        android:scaleType="fitCenter" />
 </LinearLayout>

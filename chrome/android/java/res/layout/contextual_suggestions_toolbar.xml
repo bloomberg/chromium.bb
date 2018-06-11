@@ -66,7 +66,8 @@
             android:background="?attr/selectableItemBackground"
             android:src="@drawable/btn_close"
             android:scaleType="center"
-            android:contentDescription="@string/close" />
+            android:contentDescription="@string/close"
+            app:chrometint="@color/dark_mode_tint" />
    </LinearLayout>
 
    <ImageView

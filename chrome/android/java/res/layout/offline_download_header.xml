@@ -4,8 +4,10 @@
      found in the LICENSE file. -->
 
 <!-- Represents the suggested offline pages section header in the DownloadHistoryAdapter. -->
-<view class="org.chromium.chrome.browser.download.ui.OfflineGroupHeaderView"
+<view
+    class="org.chromium.chrome.browser.download.ui.OfflineGroupHeaderView"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" >
 
@@ -16,7 +18,8 @@
         <org.chromium.chrome.browser.widget.TintedImageView
             android:id="@+id/icon_view"
             style="@style/DownloadIconView"
-            android:src="@drawable/ic_chrome" />
+            android:src="@drawable/ic_chrome"
+            app:chrometint="@color/dark_mode_tint" />
 
         <RelativeLayout
             android:id="@+id/completed_layout"
