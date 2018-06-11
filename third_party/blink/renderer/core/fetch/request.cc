@@ -265,16 +265,16 @@ Request* Request::CreateRequestWithRequestOrString(
       request->SetMode(network::mojom::FetchRequestMode::kCORS);
   }
 
-  if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
-    // This is not yet standardized, but we can assume the following:
-    // "If |init|'s importance member is present, set |request|'s importance
-    // mode to it." For more information see Priority Hints at
-    // https://crbug.com/821464
-    if (init.Importance() == "low") {
-      request->SetImportance(mojom::FetchImportanceMode::kImportanceLow);
-    } else if (init.Importance() == "high") {
-      request->SetImportance(mojom::FetchImportanceMode::kImportanceHigh);
-    }
+  // This is not yet standardized, but we can assume the following:
+  // "If |init|'s importance member is present, set |request|'s importance
+  // mode to it." For more information see Priority Hints at
+  // https://crbug.com/821464
+  DCHECK(init.Importance().IsNull() ||
+         RuntimeEnabledFeatures::PriorityHintsEnabled());
+  if (init.Importance() == "low") {
+    request->SetImportance(mojom::FetchImportanceMode::kImportanceLow);
+  } else if (init.Importance() == "high") {
+    request->SetImportance(mojom::FetchImportanceMode::kImportanceHigh);
   }
 
   // "Let |credentials| be |init|'s credentials member if it is present, and
