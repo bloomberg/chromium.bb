@@ -69,7 +69,6 @@ class PLATFORM_EXPORT CompositorThreadScheduler
   base::Thread* thread_;
 
   CompositorMetricsHelper compositor_metrics_helper_;
-  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorThreadScheduler);
 };

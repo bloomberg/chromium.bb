@@ -27,10 +27,7 @@ CompositorThreadScheduler::CompositorThreadScheduler(
           std::move(task_queue_manager),
           this,
           TaskType::kCompositorThreadTaskQueueDefault)),
-      thread_(thread),
-      default_task_runner_(TaskQueueWithTaskType::Create(
-          DefaultTaskQueue(),
-          TaskType::kCompositorThreadTaskQueueDefault)) {}
+      thread_(thread) {}
 
 CompositorThreadScheduler::~CompositorThreadScheduler() = default;
 
@@ -53,7 +50,8 @@ void CompositorThreadScheduler::OnTaskCompleted(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 CompositorThreadScheduler::DefaultTaskRunner() {
-  return default_task_runner_;
+  NOTREACHED();
+  return nullptr;
 }
 
 scoped_refptr<scheduler::SingleThreadIdleTaskRunner>
