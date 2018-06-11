@@ -319,8 +319,10 @@ class KeySystemsTest : public testing::Test {
 
     foovideo_codec_.push_back("foovideo");
 
+    // KeySystems only do strict codec string comparison. Extended codecs are
+    // not supported. Note that in production KeySystemConfigSelector will strip
+    // codec extension before calling into KeySystems.
     foovideo_extended_codec_.push_back("foovideo.4D400C");
-
     foovideo_dot_codec_.push_back("foovideo.");
 
     fooaudio_codec_.push_back("fooaudio");
@@ -551,8 +553,8 @@ TEST_F(KeySystemsTest,
       kVideoFoo, foovideo_and_fooaudio_codecs(), kUsesAes));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoFoo, fooaudio_codec(), kUsesAes));
-  // Extended codecs fail because this is handled by SimpleWebMimeRegistryImpl.
-  // They should really pass canPlayType().
+
+  // Extended codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoFoo, foovideo_extended_codec(), kUsesAes));
 
@@ -681,8 +683,7 @@ TEST_F(
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoFoo, fooaudio_codec(), kExternal));
 
-  // Extended codecs fail because this is handled by SimpleWebMimeRegistryImpl.
-  // They should really pass canPlayType().
+  // Extended codecs.
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoFoo, foovideo_extended_codec(), kExternal));
 

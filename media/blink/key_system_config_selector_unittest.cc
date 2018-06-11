@@ -64,6 +64,8 @@ const char kUnsupportedCodec[] = "unsupported_codec";
 const char kInvalidCodec[] = "foo";
 const char kRequireHwSecureCodec[] = "require_hw_secure_codec";
 const char kDisallowHwSecureCodec[] = "disallow_hw_secure_codec";
+const char kExtendedVideoCodec[] = "video_extended_codec.extended";
+const char kExtendedVideoCodecStripped[] = "video_extended_codec";
 // A special codec that is supported by the key systems, but is not supported
 // in IsSupportedMediaType() when |use_aes_decryptor| is true.
 const char kUnsupportedByAesDecryptorCodec[] = "unsupported_by_aes_decryptor";
@@ -115,6 +117,9 @@ bool IsSupportedMediaType(const std::string& container_mime_type,
   std::vector<std::string> codec_vector;
   SplitCodecsToVector(codecs, &codec_vector, false);
   for (const std::string& codec : codec_vector) {
+    DCHECK_NE(codec, kExtendedVideoCodecStripped)
+        << "codecs passed into this function should not be stripped";
+
     if (codec == kInvalidCodec)
       return false;
 
@@ -213,6 +218,9 @@ class FakeKeySystems : public KeySystems {
 
     for (const std::string& codec : codecs) {
       DCHECK(IsValidCodec(codec)) << "Invalid codec should not be passed in";
+      DCHECK_NE(codec, kExtendedVideoCodec)
+          << "Extended codec should already been stripped";
+
       if (codec == kUnsupportedCodec ||
           !IsCompatibleWithEmeMediaType(media_type, codec)) {
         return EmeConfigRule::NOT_SUPPORTED;
@@ -730,6 +738,19 @@ TEST_F(KeySystemConfigSelectorTest, SessionTypes_PermissionCanBeRequired) {
 
 TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_Empty) {
   auto config = UsableConfiguration();
+  configs_.push_back(config);
+
+  SelectConfigReturnsConfig();
+}
+
+TEST_F(KeySystemConfigSelectorTest, VideoCapabilities_ExtendedCodec) {
+  std::vector<WebMediaKeySystemMediaCapability> video_capabilities(1);
+  video_capabilities[0].content_type = "a";
+  video_capabilities[0].mime_type = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kExtendedVideoCodec;
+
+  auto config = EmptyConfiguration();
+  config.video_capabilities = video_capabilities;
   configs_.push_back(config);
 
   SelectConfigReturnsConfig();
