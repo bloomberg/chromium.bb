@@ -200,6 +200,14 @@ TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {
 }
 
 bool StatusAreaWidget::ShouldShowShelf() const {
+  // If UnifiedSystemTray is enabled, and it has main bubble, return true.
+  if (unified_system_tray_ && unified_system_tray_->IsBubbleShown())
+    return true;
+
+  // If UnifiedSystemTray is enabled, and it has a slider bubble, return false.
+  if (unified_system_tray_ && unified_system_tray_->IsSliderBubbleShown())
+    return false;
+
   // The system tray bubble may or may not want to force the shelf to be
   // visible.
   if (system_tray_ && system_tray_->IsSystemBubbleVisible())

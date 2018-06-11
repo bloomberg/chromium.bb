@@ -38,11 +38,20 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   explicit UnifiedSystemTray(Shelf* shelf);
   ~UnifiedSystemTray() override;
 
-  // True if the bubble is shown.
+  // True if the bubble is shown. It does not include slider bubbles, and when
+  // they're shown it still returns false.
   bool IsBubbleShown() const;
+
+  // True if a slider bubble e.g. volume slider triggered by keyboard
+  // accelerator is shown.
+  bool IsSliderBubbleShown() const;
 
   // Activates the system tray bubble.
   void ActivateBubble();
+
+  // Shows volume slider bubble shown at the right bottom of screen. The bubble
+  // is same as one shown when volume buttons on keyboard are pressed.
+  void ShowVolumeSliderBubble();
 
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBubbleBoundsInScreen() const;
@@ -62,6 +71,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   UnifiedSystemTrayModel* model() { return model_.get(); }
 
  private:
+  friend class UnifiedSystemTrayTest;
   friend class UnifiedSystemTrayTestApi;
 
   // Private class implements message_center::UiDelegate.

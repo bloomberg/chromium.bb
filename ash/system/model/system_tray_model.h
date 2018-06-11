@@ -38,6 +38,7 @@ class SystemTrayModel : public mojom::SystemTray {
                       bool factory_reset_required,
                       mojom::UpdateType update_type) override;
   void SetUpdateOverCellularAvailableIconVisible(bool visible) override;
+  void ShowVolumeSliderBubble() override;
 
   ClockModel* clock() { return clock_.get(); }
   EnterpriseDomainModel* enterprise_domain() {

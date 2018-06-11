@@ -60,4 +60,8 @@ void SystemTrayModel::SetUpdateOverCellularAvailableIconVisible(bool visible) {
   update_model()->SetUpdateOverCellularAvailable(visible);
 }
 
+void SystemTrayModel::ShowVolumeSliderBubble() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace ash
