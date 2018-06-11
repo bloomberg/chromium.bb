@@ -125,5 +125,27 @@ class DuplicateColorsTest(unittest.TestCase):
     self.assertEqual(0, len(errors))
 
 
+class XmlNamespacePrefixesTest(unittest.TestCase):
+
+  def testFailure(self):
+    lines = ['xmlns:chrome="http://schemas.android.com/apk/res-auto"']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('chrome/path/file.xml', lines)]
+    errors = PRESUBMIT._CheckXmlNamespacePrefixes(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
+    self.assertEqual(1, len(errors[0].items))
+    self.assertEqual('  chrome/path/file.xml:1',
+                     errors[0].items[0].splitlines()[0])
+
+  def testSucess(self):
+    lines = ['xmlns:app="http://schemas.android.com/apk/res-auto"']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [MockFile('chrome/path/file.xml', lines)]
+    errors = PRESUBMIT._CheckXmlNamespacePrefixes(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(errors))
+
+
 if __name__ == '__main__':
   unittest.main()
