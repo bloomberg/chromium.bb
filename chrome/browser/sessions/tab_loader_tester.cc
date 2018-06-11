@@ -87,3 +87,12 @@ TabLoader* TabLoaderTester::shared_tab_loader() {
 bool TabLoaderTester::IsSharedTabLoader() const {
   return tab_loader_ == TabLoader::shared_tab_loader_;
 }
+
+bool TabLoaderTester::HasTimedOutLoads() const {
+  if (tab_loader_->tabs_loading_.empty())
+    return false;
+  base::TimeTicks expiry_time =
+      tab_loader_->tabs_loading_.begin()->loading_start_time +
+      tab_loader_->GetLoadTimeoutPeriod();
+  return expiry_time <= tab_loader_->clock_->NowTicks();
+}
