@@ -297,9 +297,6 @@ TEST_F(BackgroundFetchJobControllerTest, Abort) {
 
   controller->StartRequest(requests[0]);
   controller->Abort(BackgroundFetchReasonToAbort::CANCELLED_FROM_UI);
-  // Tell the delegate to abort the job as well so it doesn't send completed
-  // messages to the JobController.
-  delegate_->Abort(registration_id.unique_id());
 
   base::RunLoop().RunUntilIdle();
 
@@ -357,9 +354,28 @@ TEST_F(BackgroundFetchJobControllerTest, ServiceWorkerRegistrationDeleted) {
   context_->OnRegistrationDeleted(kExampleServiceWorkerRegistrationId,
                                   GURL("https://example.com/funny_cat.png"));
 
-  // Tell the delegate to abort the job as well so it doesn't send completed
-  // messages to the JobController.
-  delegate_->Abort(registration_id.unique_id());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(JobCompletionStatus::kAborted,
+            request_manager_.GetCompletionStatus(registration_id));
+}
+
+TEST_F(BackgroundFetchJobControllerTest, ServiceWorkerDatabaseDeleted) {
+  BackgroundFetchRegistrationId registration_id;
+
+  auto requests = CreateRegistrationForRequests(
+      &registration_id, {{GURL("https://example.com/funny_cat.png"), "GET"}},
+      true /* auto_complete_requests */);
+
+  EXPECT_EQ(JobCompletionStatus::kRunning,
+            request_manager_.GetCompletionStatus(registration_id));
+
+  std::unique_ptr<BackgroundFetchJobController> controller =
+      CreateJobController(registration_id, requests.size());
+
+  AddControllerToContextMap(registration_id.unique_id(), std::move(controller));
+
+  context_->OnStorageWiped();
 
   base::RunLoop().RunUntilIdle();
 

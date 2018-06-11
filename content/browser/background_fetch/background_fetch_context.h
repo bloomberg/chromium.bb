@@ -205,6 +205,11 @@ class CONTENT_EXPORT BackgroundFetchContext
   void SetDataManagerForTesting(
       std::unique_ptr<BackgroundFetchDataManager> data_manager);
 
+  // Helper method to abandon ongoing fetches for a given service worker.
+  // Abandons all of them if |service_worker_registration_id| is set to
+  // blink::mojom::kInvalidServiceWorkerRegistrationId.
+  void AbandonFetches(int64_t service_worker_registration_id);
+
   // |this| is owned, indirectly, by the BrowserContext.
   BrowserContext* browser_context_;
 
