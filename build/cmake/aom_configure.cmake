@@ -290,9 +290,6 @@ else()
     add_compiler_flag_if_supported("-Werror")
   endif()
 
-  # Flag(s) added here negate CMake defaults.
-  add_compiler_flag_if_supported("-Wno-unused-function")
-
   if("${CMAKE_BUILD_TYPE}" MATCHES "Rel")
     add_compiler_flag_if_supported("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0")
   endif()
