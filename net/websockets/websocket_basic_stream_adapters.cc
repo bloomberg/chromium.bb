@@ -25,19 +25,18 @@ WebSocketClientSocketHandleAdapter::WebSocketClientSocketHandleAdapter(
 
 WebSocketClientSocketHandleAdapter::~WebSocketClientSocketHandleAdapter() {}
 
-int WebSocketClientSocketHandleAdapter::Read(
-    IOBuffer* buf,
-    int buf_len,
-    const CompletionCallback& callback) {
-  return connection_->socket()->Read(buf, buf_len, callback);
+int WebSocketClientSocketHandleAdapter::Read(IOBuffer* buf,
+                                             int buf_len,
+                                             CompletionOnceCallback callback) {
+  return connection_->socket()->Read(buf, buf_len, std::move(callback));
 }
 
 int WebSocketClientSocketHandleAdapter::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
-  return connection_->socket()->Write(buf, buf_len, callback,
+  return connection_->socket()->Write(buf, buf_len, std::move(callback),
                                       traffic_annotation);
 }
 
@@ -76,7 +75,7 @@ void WebSocketSpdyStreamAdapter::DetachDelegate() {
 
 int WebSocketSpdyStreamAdapter::Read(IOBuffer* buf,
                                      int buf_len,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   DCHECK(!read_callback_);
   DCHECK_LT(0, buf_len);
 
@@ -91,14 +90,14 @@ int WebSocketSpdyStreamAdapter::Read(IOBuffer* buf,
   if (!stream_)
     return stream_error_;
 
-  read_callback_ = callback;
+  read_callback_ = std::move(callback);
   return ERR_IO_PENDING;
 }
 
 int WebSocketSpdyStreamAdapter::Write(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   CHECK(headers_sent_);
   DCHECK(!write_callback_);
@@ -109,7 +108,7 @@ int WebSocketSpdyStreamAdapter::Write(
     return stream_error_;
 
   stream_->SendData(buf, buf_len, MORE_DATA_TO_SEND);
-  write_callback_ = callback;
+  write_callback_ = std::move(callback);
   write_length_ = buf_len;
   return ERR_IO_PENDING;
 }
@@ -143,13 +142,13 @@ void WebSocketSpdyStreamAdapter::OnDataReceived(
     std::unique_ptr<SpdyBuffer> buffer) {
   read_data_.Enqueue(std::move(buffer));
   if (read_callback_)
-    base::ResetAndReturn(&read_callback_).Run(CopySavedReadDataIntoBuffer());
+    std::move(read_callback_).Run(CopySavedReadDataIntoBuffer());
 }
 
 void WebSocketSpdyStreamAdapter::OnDataSent() {
   DCHECK(write_callback_);
 
-  base::ResetAndReturn(&write_callback_).Run(write_length_);
+  std::move(write_callback_).Run(write_length_);
 }
 
 void WebSocketSpdyStreamAdapter::OnTrailers(
@@ -166,13 +165,13 @@ void WebSocketSpdyStreamAdapter::OnClose(int status) {
   if (read_callback_) {
     DCHECK(read_data_.IsEmpty());
     // Might destroy |this|.
-    base::ResetAndReturn(&read_callback_).Run(status);
+    std::move(read_callback_).Run(status);
     if (!self)
       return;
   }
   if (write_callback_) {
     // Might destroy |this|.
-    base::ResetAndReturn(&write_callback_).Run(status);
+    std::move(write_callback_).Run(status);
     if (!self)
       return;
   }
