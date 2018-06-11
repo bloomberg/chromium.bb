@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 
@@ -68,6 +70,7 @@ class ChromeConfigurator : public update_client::Configurator {
   update_client::ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
   std::vector<uint8_t> GetRunActionKeyHash() const override;
+  std::string GetAppGuid() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
@@ -200,6 +203,14 @@ bool ChromeConfigurator::IsPerUserInstall() const {
 
 std::vector<uint8_t> ChromeConfigurator::GetRunActionKeyHash() const {
   return configurator_impl_.GetRunActionKeyHash();
+}
+
+std::string ChromeConfigurator::GetAppGuid() const {
+#if defined(OS_WIN)
+  return install_static::UTF16ToUTF8(install_static::GetAppGuid());
+#else
+  return configurator_impl_.GetAppGuid();
+#endif
 }
 
 }  // namespace

@@ -54,6 +54,7 @@ class IOSConfigurator : public update_client::Configurator {
   update_client::ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
   std::vector<uint8_t> GetRunActionKeyHash() const override;
+  std::string GetAppGuid() const override;
 
  private:
   friend class base::RefCountedThreadSafe<IOSConfigurator>;
@@ -170,6 +171,10 @@ bool IOSConfigurator::IsPerUserInstall() const {
 
 std::vector<uint8_t> IOSConfigurator::GetRunActionKeyHash() const {
   return configurator_impl_.GetRunActionKeyHash();
+}
+
+std::string IOSConfigurator::GetAppGuid() const {
+  return configurator_impl_.GetAppGuid();
 }
 
 }  // namespace

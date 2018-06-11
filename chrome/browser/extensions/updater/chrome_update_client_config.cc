@@ -209,6 +209,10 @@ std::vector<uint8_t> ChromeUpdateClientConfig::GetRunActionKeyHash() const {
   return impl_.GetRunActionKeyHash();
 }
 
+std::string ChromeUpdateClientConfig::GetAppGuid() const {
+  return impl_.GetAppGuid();
+}
+
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}
 
 // static

@@ -175,6 +175,10 @@ void TestConfigurator::SetPingUrl(const GURL& url) {
   ping_url_ = url;
 }
 
+void TestConfigurator::SetAppGuid(const std::string& app_guid) {
+  app_guid_ = app_guid;
+}
+
 PrefService* TestConfigurator::GetPrefService() const {
   return nullptr;
 }
@@ -189,6 +193,10 @@ bool TestConfigurator::IsPerUserInstall() const {
 
 std::vector<uint8_t> TestConfigurator::GetRunActionKeyHash() const {
   return std::vector<uint8_t>(std::begin(gjpm_hash), std::end(gjpm_hash));
+}
+
+std::string TestConfigurator::GetAppGuid() const {
+  return app_guid_;
 }
 
 }  // namespace update_client
