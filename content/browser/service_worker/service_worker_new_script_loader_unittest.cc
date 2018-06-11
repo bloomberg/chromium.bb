@@ -109,13 +109,15 @@ class MockNetworkURLLoaderFactory final
     client->OnReceiveResponse(response_head, nullptr /* downloaded_file */);
 
     // Pass the response body to the client.
-    uint32_t bytes_written = response.body.size();
-    mojo::DataPipe data_pipe;
-    MojoResult result = data_pipe.producer_handle->WriteData(
-        response.body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-    ASSERT_EQ(MOJO_RESULT_OK, result);
-    client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-
+    if (!response.body.empty()) {
+      uint32_t bytes_written = response.body.size();
+      mojo::DataPipe data_pipe;
+      MojoResult result = data_pipe.producer_handle->WriteData(
+          response.body.data(), &bytes_written,
+          MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+      ASSERT_EQ(MOJO_RESULT_OK, result);
+      client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+    }
     network::URLLoaderCompletionStatus status;
     status.error_code = net::OK;
     client->OnComplete(status);
@@ -350,11 +352,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_EmptyBody) {
 
   // The client should have received the response.
   EXPECT_TRUE(client->has_received_response());
-  EXPECT_TRUE(client->response_body().is_valid());
-  std::string response;
-  EXPECT_TRUE(
-      mojo::BlockingCopyToString(client->response_body_release(), &response));
-  EXPECT_TRUE(response.empty());
+  EXPECT_FALSE(client->response_body().is_valid());
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
@@ -512,7 +510,7 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
                         std::string("HTTP/1.1 200 OK\n"
                                     "Content-Type: text/javascript\n"
                                     "Service-Worker-Allowed: /in-scope/\n\n"),
-                        std::string()));
+                        std::string("٩( ’ω’ )و I'm body!")));
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   SetUpRegistrationWithOptions(kScriptURL, options);
