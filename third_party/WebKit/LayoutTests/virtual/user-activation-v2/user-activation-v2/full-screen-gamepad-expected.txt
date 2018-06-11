@@ -1,4 +1,5 @@
 EXPECTED (internals.runtimeFlags.userActivationV2Enabled == 'true') OK
+EVENT(gamepadconnected)
 EVENT(fullscreenchange)
 EXPECTED (document.fullscreenElement == '[object HTMLHtmlElement]') OK
 EVENT(fullscreenchange)

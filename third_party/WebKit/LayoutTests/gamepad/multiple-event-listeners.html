@@ -18,9 +18,9 @@ window.addEventListener('gamepadconnected', function() {
 window.removeEventListener('gamepadconnected', listenerToRemove);
 
 setTimeout(function() {
-    testFailed("gamepadconnected event should have been recieved.");
+    testFailed("gamepadconnected event should have been received.");
     finishJSTest();
-}, 50);
+}, 100);
 
 if (gamepadController) {
     gamepadController.connect(0);

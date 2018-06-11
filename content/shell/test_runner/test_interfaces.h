@@ -51,7 +51,7 @@ class TestInterfaces {
   blink::WebThemeEngine* GetThemeEngine();
 
  private:
-  base::WeakPtr<GamepadController> gamepad_controller_;
+  std::unique_ptr<GamepadController> gamepad_controller_;
   std::unique_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;
 

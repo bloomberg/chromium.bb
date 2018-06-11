@@ -4,6 +4,12 @@
 <script>
     var span = document.getElementsByTagName('span')[0];
 
+    var gamepadConnected = function() {
+        navigator.getGamepads();
+        document.documentElement.requestFullscreen();
+        waitForEvent(document, 'fullscreenchange', documentEnteredFullscreen, false, true);
+    }
+
     var documentEnteredFullscreen = function() {
         testExpected("document.fullscreenElement", document.documentElement);
         span.requestFullscreen();
@@ -41,9 +47,8 @@
             gamepadController.setId(0, "FullScream Maximizer");
             gamepadController.setButtonCount(0, 1);
             gamepadController.setButtonData(0, 0, 1);
-            navigator.getGamepads();
+            gamepadController.dispatchConnected(0);
         }
-        document.documentElement.requestFullscreen();
-        waitForEvent(document, 'fullscreenchange', documentEnteredFullscreen, false, true);
+        waitForEvent(window, 'gamepadconnected', gamepadConnected, false, true);
     }
 </script>

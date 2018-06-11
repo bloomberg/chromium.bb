@@ -1,45 +1,44 @@
 <!DOCTYPE html>
 <body>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/gamepad-helpers.js"></script>
 <script>
-    description("Validates the exposed Gamepad API.")
 
-    shouldBeDefined("navigator.getGamepads");
-    shouldBeDefined("GamepadEvent");
+promise_test(async () => {
+    assert_inherits(navigator, 'getGamepads');
+    assert_own_property(window, 'GamepadEvent');
 
-    gamepads = navigator.getGamepads();
-    shouldBe("gamepads.length", "4");
-    shouldBeNull("gamepads[0]");
-    shouldBe("gamepads.item.__proto__", "Function.prototype")
-    shouldBeNull("gamepads.item(0)");
+    let gamepads = navigator.getGamepads();
+    assert_equals(gamepads.length, 4, 'gamepads.length');
+    assert_equals(gamepads[0], null, 'gamepads[0]');
+    assert_class_string(gamepads.item, 'Function', 'gamepads.item');
+    assert_equals(gamepads.item(0), null, 'gamepads.item(0)');
 
-    if (window.gamepadController)
-    {
-        gamepadController.connect(0);
-        gamepadController.setId(0, "MockStick 3000");
-        gamepadController.setButtonCount(0, 1);
-        gamepadController.setAxisCount(0, 1);
+    gamepadController.connect(0);
+    gamepadController.setId(0, "MockStick 3000");
+    gamepadController.setButtonCount(0, 1);
+    gamepadController.setAxisCount(0, 1);
+    gamepadController.dispatchConnected(0);
 
-        gamepad = navigator.getGamepads()[0];
-        shouldBeNonNull("gamepad");
-        shouldBeTrue("gamepad.connected");
-        shouldBe("gamepad.__proto__", "Gamepad.prototype");
-        shouldBe("gamepad.id.__proto__", "String.prototype");
-        shouldBe("gamepad.connected.__proto__", "Boolean.prototype");
-        shouldBe("gamepad.index.__proto__", "Number.prototype");
-        shouldBe("gamepad.timestamp.__proto__", "Number.prototype");
-        shouldBe("gamepad.axes.__proto__", "Array.prototype");
-        shouldBe("gamepad.axes[0].__proto__", "Number.prototype");
-        shouldBe("gamepad.buttons.__proto__", "Array.prototype");
-        shouldBe("gamepad.buttons[0].pressed.__proto__", "Boolean.prototype");
-        shouldBe("gamepad.buttons[0].value.__proto__", "Number.prototype");
-        shouldBe("gamepad.mapping.__proto__", "String.prototype");
-        shouldBeTrue("Object.isFrozen(gamepad.axes)");
-        shouldBeTrue("Object.isFrozen(gamepad.buttons)");
-    }
-    else
-    {
-        testFailed("no gamepadController available.");
-    }
+    await ongamepadconnected();
+    let gamepad = navigator.getGamepads()[0];
+    assert_not_equals(gamepad, null, 'gamepad');
+    assert_true(gamepad.connected, 'gamepad.connected');
+    assert_class_string(gamepad, 'Gamepad', 'gamepad');
+    assert_class_string(gamepad.id, 'String', 'gamepad.id');
+    assert_class_string(gamepad.connected, 'Boolean', 'gamepad.connected');
+    assert_class_string(gamepad.index, 'Number', 'gamepad.index');
+    assert_class_string(gamepad.timestamp, 'Number', 'gamepad.timestamp');
+    assert_class_string(gamepad.axes, 'Array', 'gamepad.axes');
+    assert_class_string(gamepad.axes[0], 'Number', 'gamepad.axes[0]');
+    assert_class_string(gamepad.buttons, 'Array', 'gamepad.buttons');
+    assert_class_string(gamepad.buttons[0].pressed, 'Boolean', 'gamepad.buttons[0].pressed');
+    assert_class_string(gamepad.buttons[0].value, 'Number', 'gamepad.buttons[0].value');
+    assert_class_string(gamepad.mapping, 'String', 'gamepad.mapping');
+    assert_true(Object.isFrozen(gamepad.axes), 'gamepad.axes frozen');
+    assert_true(Object.isFrozen(gamepad.buttons), 'gamepad.buttons frozen');
+}, "Validates the exposed Gamepad API.");
+
 </script>
 </body>

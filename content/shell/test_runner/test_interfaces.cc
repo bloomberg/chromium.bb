@@ -26,7 +26,8 @@
 namespace test_runner {
 
 TestInterfaces::TestInterfaces()
-    : test_runner_(new TestRunner(this)),
+    : gamepad_controller_(new GamepadController()),
+      test_runner_(new TestRunner(this)),
       delegate_(nullptr),
       main_view_(nullptr) {
   blink::SetLayoutTestMode(true);
@@ -51,23 +52,17 @@ void TestInterfaces::SetMainView(blink::WebView* web_view) {
 }
 
 void TestInterfaces::SetDelegate(WebTestDelegate* delegate) {
-  if (delegate)
-    gamepad_controller_ = GamepadController::Create(delegate);
-  else
-    gamepad_controller_ = nullptr;
   test_runner_->SetDelegate(delegate);
   delegate_ = delegate;
 }
 
 void TestInterfaces::BindTo(blink::WebLocalFrame* frame) {
-  if (gamepad_controller_)
-    gamepad_controller_->Install(frame);
+  gamepad_controller_->Install(frame);
   GCController::Install(frame);
 }
 
 void TestInterfaces::ResetTestHelperControllers() {
-  if (gamepad_controller_)
-    gamepad_controller_->Reset();
+  gamepad_controller_->Reset();
   blink::WebCache::Clear();
 
   for (WebViewTestProxyBase* web_view_test_proxy_base : window_list_)
