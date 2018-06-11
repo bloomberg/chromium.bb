@@ -5481,20 +5481,25 @@ TEST_F(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
 struct PushUrlTestParams {
   const char* url_to_fetch;
   const char* url_to_push;
+  bool client_cert_sent;
   SpdyPushedStreamFate expected_fate;
 } push_url_test_cases[] = {
     // http scheme cannot be pushed (except by trusted proxy).
-    {"https://www.example.org/foo.html", "http://www.example.org/foo.js",
+    {"https://www.example.org/foo.html", "http://www.example.org/foo.js", false,
      SpdyPushedStreamFate::kNonHttpsPushedScheme},
     // ftp scheme cannot be pushed.
-    {"https://www.example.org/foo.html", "ftp://www.example.org/foo.js",
+    {"https://www.example.org/foo.html", "ftp://www.example.org/foo.js", false,
      SpdyPushedStreamFate::kInvalidUrl},
     // Cross subdomain, certificate not valid.
     {"https://www.example.org/foo.html", "https://blat.www.example.org/foo.js",
-     SpdyPushedStreamFate::kCertificateMismatch},
+     false, SpdyPushedStreamFate::kCertificateMismatch},
     // Cross domain, certificate not valid.
-    {"https://www.example.org/foo.html", "https://www.foo.com/foo.js",
-     SpdyPushedStreamFate::kCertificateMismatch}};
+    {"https://www.example.org/foo.html", "https://www.foo.com/foo.js", false,
+     SpdyPushedStreamFate::kCertificateMismatch},
+    // Cross domain, certificate valid, but cross-origin push is rejected on a
+    // connection with client certificate.
+    {"https://www.example.org/foo.html", "https://mail.example.org/foo.js",
+     true, SpdyPushedStreamFate::kCertificateMismatch}};
 
 class SpdyNetworkTransactionPushUrlTest
     : public SpdyNetworkTransactionTest,
@@ -5553,7 +5558,12 @@ class SpdyNetworkTransactionPushUrlTest
                                        std::move(session_deps));
 
     helper.RunPreTestSetup();
-    helper.AddData(&data);
+
+    auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+    ssl_provider->ssl_info.client_cert_sent = GetParam().client_cert_sent;
+    ssl_provider->ssl_info.cert =
+        ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    helper.AddDataWithSSLSocketDataProvider(&data, std::move(ssl_provider));
 
     HttpNetworkTransaction* trans = helper.trans();
 
@@ -5688,6 +5698,63 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
 
   base::RunLoop().RunUntilIdle();
   helper.VerifyDataConsumed();
+  VerifyStreamsClosed(helper);
+}
+
+// Regression test for https://crbug.com/832859:  Server push is accepted on a
+// connection with client certificate, as long as SpdySessionKey matches.
+TEST_F(SpdyNetworkTransactionTest, ServerPushWithClientCert) {
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, DEFAULT_PRIORITY));
+  spdy::SpdySerializedFrame priority(
+      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(priority, 3)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame push(
+      spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, kPushedUrl));
+  spdy::SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame body2(
+      spdy_util_.ConstructSpdyDataFrame(2, "pushed", true));
+  MockRead reads[] = {CreateMockRead(resp, 1), CreateMockRead(push, 2),
+                      CreateMockRead(body1, 4), CreateMockRead(body2, 5),
+                      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6)};
+
+  SequencedSocketData data(reads, writes);
+
+  auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->ssl_info.client_cert_sent = true;
+  ssl_provider->ssl_info.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  helper.RunPreTestSetup();
+  helper.AddDataWithSSLSocketDataProvider(&data, std::move(ssl_provider));
+
+  EXPECT_TRUE(helper.StartDefaultTest());
+  helper.FinishDefaultTest();
+
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  HttpRequestInfo request = CreateGetPushRequest();
+  TestCompletionCallback callback;
+  int rv = trans2.Start(&request, callback.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* const response = trans2.GetResponseInfo();
+  EXPECT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+
+  std::string result;
+  ReadResult(&trans2, &result);
+  EXPECT_EQ("pushed", result);
+
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+
   VerifyStreamsClosed(helper);
 }
 

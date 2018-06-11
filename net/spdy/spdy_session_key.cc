@@ -45,6 +45,10 @@ bool SpdySessionKey::operator==(const SpdySessionKey& other) const {
          socket_tag_ == other.socket_tag_;
 }
 
+bool SpdySessionKey::operator!=(const SpdySessionKey& other) const {
+  return !(*this == other);
+}
+
 size_t SpdySessionKey::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(host_port_proxy_pair_);
 }

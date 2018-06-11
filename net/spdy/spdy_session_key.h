@@ -28,8 +28,9 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
   // Comparator function so this can be placed in a std::map.
   bool operator<(const SpdySessionKey& other) const;
 
-  // Equality test of contents.
+  // Equality tests of contents.
   bool operator==(const SpdySessionKey& other) const;
+  bool operator!=(const SpdySessionKey& other) const;
 
   const HostPortProxyPair& host_port_proxy_pair() const {
     return host_port_proxy_pair_;
