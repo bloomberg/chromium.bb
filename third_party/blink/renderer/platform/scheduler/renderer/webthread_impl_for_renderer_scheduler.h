@@ -31,7 +31,6 @@ class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 
   // WebThreadBase implementation.
-  SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
   void Init() override;
 
  private:
@@ -46,7 +45,6 @@ class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
       base::sequence_manager::TaskTimeObserver*) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   MainThreadSchedulerImpl* scheduler_;  // Not owned.
   PlatformThreadId thread_id_;
 };

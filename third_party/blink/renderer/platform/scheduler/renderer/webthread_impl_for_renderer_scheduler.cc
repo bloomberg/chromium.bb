@@ -14,7 +14,6 @@ namespace scheduler {
 WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
     MainThreadSchedulerImpl* scheduler)
     : task_runner_(scheduler->DefaultTaskRunner()),
-      idle_task_runner_(scheduler->IdleTaskRunner()),
       scheduler_(scheduler),
       thread_id_(base::PlatformThread::CurrentId()) {}
 
@@ -27,11 +26,6 @@ blink::PlatformThreadId WebThreadImplForRendererScheduler::ThreadId() const {
 
 blink::ThreadScheduler* WebThreadImplForRendererScheduler::Scheduler() const {
   return scheduler_;
-}
-
-SingleThreadIdleTaskRunner*
-WebThreadImplForRendererScheduler::GetIdleTaskRunner() const {
-  return idle_task_runner_.get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

@@ -23,7 +23,6 @@ class TaskTimeObserver;
 
 namespace blink {
 namespace scheduler {
-class SingleThreadIdleTaskRunner;
 
 // TODO(scheduler-dev): Do not expose this class in Blink public API.
 class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
@@ -41,8 +40,6 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
   bool IsCurrentThread() const override;
   PlatformThreadId ThreadId() const override = 0;
 
-  virtual void PostIdleTask(const base::Location& location, IdleTask idle_task);
-
   void AddTaskObserver(TaskObserver* observer) override;
   void RemoveTaskObserver(TaskObserver* observer) override;
 
@@ -50,10 +47,6 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
       base::sequence_manager::TaskTimeObserver* task_time_observer) override;
   void RemoveTaskTimeObserver(
       base::sequence_manager::TaskTimeObserver* task_time_observer) override;
-
-  // Returns the base::Bind-compatible task runner for posting idle tasks to
-  // this thread. Can be called from any thread.
-  virtual scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const = 0;
 
   virtual void Init() = 0;
 

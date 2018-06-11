@@ -15,7 +15,6 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
-#include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/utility/webthread_impl_for_utility_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/compositor_thread_scheduler.h"
@@ -86,19 +85,6 @@ void WebThreadBase::AddTaskObserverInternal(
 void WebThreadBase::RemoveTaskObserverInternal(
     base::MessageLoop::TaskObserver* observer) {
   base::MessageLoopCurrent::Get()->RemoveTaskObserver(observer);
-}
-
-// static
-void WebThreadBase::RunWebThreadIdleTask(blink::WebThread::IdleTask idle_task,
-                                         base::TimeTicks deadline) {
-  std::move(idle_task).Run((deadline - base::TimeTicks()).InSecondsF());
-}
-
-void WebThreadBase::PostIdleTask(const base::Location& location,
-                                 IdleTask idle_task) {
-  GetIdleTaskRunner()->PostIdleTask(
-      location, base::BindOnce(&WebThreadBase::RunWebThreadIdleTask,
-                               std::move(idle_task)));
 }
 
 bool WebThreadBase::IsCurrentThread() const {

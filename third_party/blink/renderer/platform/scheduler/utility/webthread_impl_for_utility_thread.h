@@ -26,7 +26,6 @@ class PLATFORM_EXPORT WebThreadImplForUtilityThread
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 
   // WebThreadBase implementation.
-  scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
   void Init() override;
 
  private:
