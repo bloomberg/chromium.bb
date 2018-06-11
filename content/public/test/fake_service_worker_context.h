@@ -46,9 +46,9 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
                              const GURL& other_url,
                              CheckHasServiceWorkerCallback callback) override;
   void ClearAllServiceWorkersForTest(base::OnceClosure) override;
-  void StartActiveWorkerForPattern(
+  void StartWorkerForPattern(
       const GURL& pattern,
-      ServiceWorkerContext::StartActiveWorkerCallback info_callback,
+      ServiceWorkerContext::StartWorkerCallback info_callback,
       base::OnceClosure failure_callback) override;
   void StartServiceWorkerForNavigationHint(
       const GURL& document_url,

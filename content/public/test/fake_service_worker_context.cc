@@ -66,9 +66,9 @@ void FakeServiceWorkerContext::ClearAllServiceWorkersForTest(
     base::OnceClosure) {
   NOTREACHED();
 }
-void FakeServiceWorkerContext::StartActiveWorkerForPattern(
+void FakeServiceWorkerContext::StartWorkerForPattern(
     const GURL& pattern,
-    ServiceWorkerContext::StartActiveWorkerCallback info_callback,
+    ServiceWorkerContext::StartWorkerCallback info_callback,
     base::OnceClosure failure_callback) {
   NOTREACHED();
 }
