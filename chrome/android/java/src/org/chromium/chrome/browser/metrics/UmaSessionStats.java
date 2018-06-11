@@ -10,7 +10,7 @@ import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
-import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
@@ -60,9 +60,10 @@ public class UmaSessionStats {
         String url = tab.getUrl();
         if (!TextUtils.isEmpty(url) && UrlUtilities.isHttpOrHttps(url)) {
             AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
-                if (InstantAppsHandler.getInstance().getInstantAppIntentForUrl(url) != null) {
-                    RecordUserAction.record("Android.InstantApps.InstantAppsEligiblePageLoaded");
-                }
+                boolean isEligible =
+                        InstantAppsHandler.getInstance().getInstantAppIntentForUrl(url) != null;
+                RecordHistogram.recordBooleanHistogram(
+                        "Android.InstantApps.EligiblePageLoaded", isEligible);
             });
         }
 

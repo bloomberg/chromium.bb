@@ -1838,6 +1838,7 @@ should be able to be added at any place in this file.
 
 <action name="Android.InstantApps.InstantAppsEligiblePageLoaded"
     not_user_triggered="true">
+  <obsolete>Deleted as of June 8, 2018</obsolete>
   <owner>mariakhomenko@chromium.org</owner>
   <description>
     A page finished loading in Chrome that could have been loaded in an Instant
