@@ -1785,6 +1785,12 @@
       },
     },
   },
+  'network_service_browser_tests': {
+    'remove_from': [
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
+    ],
+  },
   'notification_helper_unittests': {
     'remove_from': [
       # The test uses WinRT, which only exists in Windows 8 or above.

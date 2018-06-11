@@ -4794,6 +4794,17 @@
       },
       {
         "args": [
+          "--enable-features=NetworkService",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+        ],
+        "name": "network_service_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
         ],
@@ -4858,12 +4869,33 @@
         "test": "components_browsertests"
       },
       {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_components_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "components_browsertests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": false
         },
         "test": "components_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--enable-features=NetworkService",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter"
+        ],
+        "name": "network_service_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -4958,6 +4990,16 @@
         "test": "extensions_browsertests"
       },
       {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_extensions_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "extensions_browsertests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -5018,6 +5060,16 @@
         "test": "installer_util_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--enable-features=NetworkService"
+        ],
+        "name": "network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": false
         },
