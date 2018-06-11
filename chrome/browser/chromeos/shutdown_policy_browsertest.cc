@@ -189,7 +189,9 @@ IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, TestBasic) {
 // tooltip to "restart". Note that the tooltip doesn't change dynamically if the
 // menu is open during the policy change -- that's a rare condition and
 // supporting it would add complexity.
-IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, PolicyChange) {
+//
+// TODO(crbug.com/851208): Disabled test due to flakiness.
+IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, DISABLED_PolicyChange) {
   // Change the policy to reboot and let it propagate over mojo to ash.
   UpdateRebootOnShutdownPolicy(true);
   SyncRefreshDevicePolicy();
