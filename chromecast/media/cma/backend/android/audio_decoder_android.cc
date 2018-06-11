@@ -248,6 +248,7 @@ bool AudioDecoderAndroid::SetConfig(const AudioConfig& config) {
             << " sample_format=" << config.sample_format
             << " bytes_per_channel=" << config.bytes_per_channel
             << " channel_number=" << config.channel_number
+            << " playout_channel=" << config.playout_channel
             << " samples_per_second=" << config.samples_per_second
             << " is_encrypted=" << config.is_encrypted();
 
@@ -405,6 +406,24 @@ void AudioDecoderAndroid::OnBufferDecoded(
     int input_frames = decoded->data_size() / (kNumChannels * sizeof(float));
 
     DCHECK(!rate_shifter_info_.empty());
+
+    // If not kChannelAll, wipe all other channels for stereo sound.
+    if (config_.playout_channel != kChannelAll) {
+      // There is an assumption hardcoded for playout_channel to be left
+      // or right. Adding a check here in case this changes.
+      DCHECK_GE(config_.playout_channel, 0);
+      DCHECK_LT(config_.playout_channel, 2);
+      for (int c = 0; c < kNumChannels; ++c) {
+        if (c != config_.playout_channel) {
+          const size_t channel_size = decoded->data_size() / kNumChannels;
+          std::memcpy(
+              decoded->writable_data() + c * channel_size,
+              decoded->writable_data() + config_.playout_channel * channel_size,
+              channel_size);
+        }
+      }
+    }
+
     RateShifterInfo* rate_info = &rate_shifter_info_.front();
     // Bypass rate shifter if the rate is 1.0, and there are no frames queued
     // in the rate shifter.
