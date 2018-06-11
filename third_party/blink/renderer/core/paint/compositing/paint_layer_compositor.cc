@@ -365,7 +365,7 @@ void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
   DCHECK(!HasAcceleratedCompositing());
 
   if (update_type >= kCompositingUpdateAfterCompositingInputChange)
-    CompositingInputsUpdater(RootLayer()).Update();
+    CompositingInputsUpdater(RootLayer(), compositing_reason_finder_).Update();
 
 #if DCHECK_IS_ON()
   CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
@@ -441,7 +441,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
   Vector<PaintLayer*> layers_needing_paint_invalidation;
 
   if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
-    CompositingInputsUpdater(update_root).Update();
+    CompositingInputsUpdater(update_root, compositing_reason_finder_).Update();
 
 #if DCHECK_IS_ON()
     // FIXME: Move this check to the end of the compositing update.
@@ -886,6 +886,11 @@ void PaintLayerCompositor::AttachRootLayer() {
     // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
     // frame's layoutObject in the parent document.
     owner_element->SetNeedsCompositingUpdate();
+    if (owner_element->GetLayoutObject()) {
+      ToLayoutBoxModelObject(owner_element->GetLayoutObject())
+          ->Layer()
+          ->SetNeedsCompositingInputsUpdate();
+    }
     root_layer_attachment_ = kRootLayerAttachedViaEnclosingFrame;
   }
 }

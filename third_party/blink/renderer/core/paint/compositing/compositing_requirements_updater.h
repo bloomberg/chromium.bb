@@ -71,8 +71,6 @@ class CompositingRequirementsUpdater {
                        IntRect& absolute_descendant_bounding_box,
                        CompositingReasonsStats&);
 
-  void MaybeEnableCompositedScrolling(PaintLayer*, CompositingReasons&);
-
   LayoutView& layout_view_;
   CompositingReasonFinder& compositing_reason_finder_;
 };

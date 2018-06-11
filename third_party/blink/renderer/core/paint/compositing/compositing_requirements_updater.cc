@@ -243,29 +243,6 @@ void CompositingRequirementsUpdater::Update(
                   absolute_descendant_bounding_box, compositing_reasons_stats);
 }
 
-void CompositingRequirementsUpdater::MaybeEnableCompositedScrolling(
-    PaintLayer* layer,
-    CompositingReasons& reasons) {
-  // Add CompositingReasonOverflowScrollingTouch for layers that do not
-  // already have it but need it.
-  // Note that m_compositingReasonFinder.directReasons(layer) already includes
-  // CompositingReasonOverflowScrollingTouch for anything that has
-  // layer->needsCompositedScrolling() true. That is, for cases where we
-  // explicitly decide not to have LCD text or cases where the layer will
-  // still support LCD text even if the layer is composited.
-  if (reasons && layer->ScrollsOverflow() &&
-      !layer->NeedsCompositedScrolling()) {
-    // We can get here for a scroller that will be composited for some other
-    // reason and hence will already use grayscale AA text. We recheck for
-    // needsCompositedScrolling ignoring LCD to correctly add the
-    // CompositingReasonOverflowScrollingTouch reason to layers that can
-    // support it with grayscale AA text.
-    layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(true);
-    if (layer->NeedsCompositedScrolling())
-      reasons |= CompositingReason::kOverflowScrollingTouch;
-  }
-}
-
 void CompositingRequirementsUpdater::UpdateRecursive(
     PaintLayer* ancestor_layer,
     PaintLayer* layer,
@@ -286,15 +263,16 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   // PaintLayer children and whose children can't use its backing to render
   // into. These children (the controls) always need to be promoted into their
   // own layers to draw on top of the accelerated video.
+
+  // TODO(chrishtr): Fix this Don't mess with direct reasons in this method.
   if (current_recursion_data.compositing_ancestor_ &&
       current_recursion_data.compositing_ancestor_->GetLayoutObject().IsVideo())
     direct_reasons |= CompositingReason::kVideoOverlay;
 
   bool has_composited_scrolling_ancestor =
       layer->AncestorScrollingLayer() &&
-      (compositing_reason_finder_.DirectReasons(layer->AncestorScrollingLayer(),
-                                                false) &
-       CompositingReason::kOverflowScrollingTouch);
+      layer->AncestorScrollingLayer()->GetScrollableArea() &&
+      layer->AncestorScrollingLayer()->NeedsCompositedScrolling();
 
   bool use_clipped_bounding_rect =
       !has_composited_scrolling_ancestor ||
@@ -309,22 +287,38 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   const bool moves_with_respect_to_compositing_ancestor =
       layer->SticksToScroller() &&
       !current_recursion_data.compositing_ancestor_->IsRootLayer();
-  // TODO(chrishtr): use |hasCompositedScrollingAncestor| instead.
+  // TODO(chrishtr): use |has_composited_scrolling_ancestor| instead.
   const bool ignore_lcd_text =
-      current_recursion_data.has_composited_scrolling_ancestor_ ||
-      moves_with_respect_to_compositing_ancestor;
-  direct_reasons |=
-      compositing_reason_finder_.DirectReasons(layer, ignore_lcd_text);
+      current_recursion_data.has_composited_scrolling_ancestor_;
+
+  CompositingReasons direct_from_paint_layer =
+      layer->DirectCompositingReasons();
+
+  if (compositing_reason_finder_.RequiresCompositingForScrollDependentPosition(
+          layer,
+          ignore_lcd_text || moves_with_respect_to_compositing_ancestor)) {
+    direct_from_paint_layer |= CompositingReason::kScrollDependentPosition;
+  }
+
+  DCHECK(
+      direct_from_paint_layer ==
+      compositing_reason_finder_.DirectReasons(
+          layer, ignore_lcd_text || moves_with_respect_to_compositing_ancestor))
+      << " Expected: "
+      << CompositingReason::ToString(
+             compositing_reason_finder_.DirectReasons(layer, ignore_lcd_text))
+      << " Actual: " << CompositingReason::ToString(direct_from_paint_layer);
+
+  direct_reasons |= direct_from_paint_layer;
+
+  if (layer->GetScrollableArea() &&
+      layer->GetScrollableArea()->NeedsCompositedScrolling()) {
+    direct_reasons |= CompositingReason::kOverflowScrollingTouch;
+  }
 
   bool can_be_composited = compositor->CanBeComposited(layer);
-  if (can_be_composited) {
+  if (can_be_composited)
     reasons_to_composite |= direct_reasons;
-
-    if (layer->IsRootLayer() && compositor->RootShouldAlwaysComposite())
-      reasons_to_composite |= CompositingReason::kRoot;
-
-    MaybeEnableCompositedScrolling(layer, reasons_to_composite);
-  }
 
   if ((reasons_to_composite & CompositingReason::kOverflowScrollingTouch) &&
       !layer->IsRootLayer())
@@ -527,15 +521,16 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     if (child_recursion_data.subtree_is_compositing_ ||
         RequiresCompositingOrSquashing(reasons_to_composite) ||
         compositor->RootShouldAlwaysComposite()) {
+#if DCHECK_IS_ON()
+      // The reason for compositing should not be due to composited scrolling.
+      // It should only be compositing in order to represent composited content
+      // within a composited subframe.
+      bool was = layer->NeedsCompositedScrolling();
+      layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(true);
+      DCHECK(was == layer->NeedsCompositedScrolling());
+#endif
+
       reasons_to_composite |= CompositingReason::kRoot;
-      current_recursion_data.subtree_is_compositing_ = true;
-      // Try again to enable composited scrolling if root became composited due
-      // to subtree_is_compositing_ or overlap.
-      // TODO(skobes): At this point we've already done recursion to descendant
-      // layers, possibly with has_composited_scrolling_ancestor_ == false.
-      // We should refactor overlap testing etc. to be independent of having
-      // composited scrolling ancestors. See crbug.com/777672, crbug.com/782991.
-      MaybeEnableCompositedScrolling(layer, reasons_to_composite);
     } else {
       compositor->SetCompositingModeEnabled(false);
       reasons_to_composite = CompositingReason::kNone;
