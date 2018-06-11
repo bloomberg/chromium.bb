@@ -101,9 +101,9 @@ const char kTouchActionURLWithOverlapArea[] =
     "  touch-action: pan-x;"
     "}"
     "</style>"
+    "<div class='box ta-auto'></div>"
     "<div class='box ta-panx'></div>"
     "<div class='box ta-pany'></div>"
-    "<div class='box ta-auto'></div>"
     "<div class=spacer></div>"
     "<script>"
     "  document.title='ready';"
@@ -279,9 +279,18 @@ class TouchActionBrowserTest : public ContentBrowserTest {
         ExecuteScriptAndExtractInt("document.documentElement.scrollHeight");
     EXPECT_EQ(expected_scroll_height_after_scroll, scroll_height);
 
+    float page_scale_factor =
+        frame_observer_->LastRenderFrameMetadata().page_scale_factor;
+    if (page_scale_factor == 0)
+      page_scale_factor = 1.0f;
+    gfx::PointF touch_point(point);
+    if (page_scale_factor != 1.0f) {
+      touch_point.set_x(touch_point.x() * page_scale_factor);
+      touch_point.set_y(touch_point.y() * page_scale_factor);
+    }
     SyntheticSmoothScrollGestureParams params;
     params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-    params.anchor = gfx::PointF(point);
+    params.anchor = touch_point;
     params.distances.push_back(-distance);
 
     run_loop_ = std::make_unique<base::RunLoop>();
@@ -331,9 +340,17 @@ class TouchActionBrowserTest : public ContentBrowserTest {
     int scroll_top = GetScrollTop();
     int scroll_left = GetScrollLeft();
 
-    // Allow for 1px rounding inaccuracies for some screen sizes.
-    EXPECT_LE(expected_scroll_position_after_scroll.y() / 2, scroll_top);
-    EXPECT_LE(expected_scroll_position_after_scroll.x() / 2, scroll_left);
+    // It is hard to know when would the synthetic gesture being completely
+    // processed, so just make sure that it scrolled at least 1px along the
+    // expected scroll direction.
+    if (expected_scroll_position_after_scroll.y() > 0)
+      EXPECT_GT(scroll_top, 1);
+    else
+      EXPECT_EQ(scroll_top, 0);
+    if (expected_scroll_position_after_scroll.x() > 0)
+      EXPECT_GT(scroll_left, 1);
+    else
+      EXPECT_EQ(scroll_left, 0);
   }
 
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
