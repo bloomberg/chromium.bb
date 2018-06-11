@@ -32,6 +32,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_local_storage.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -64,6 +65,13 @@
 
 namespace ui {
 
+class TLSDestructionCheckerForX11 {
+ public:
+  static bool HasBeenDestroyed() {
+    return base::ThreadLocalStorage::HasBeenDestroyed();
+  }
+};
+
 namespace {
 
 // Constants that are part of EWMH.
@@ -71,6 +79,11 @@ constexpr int kNetWMStateAdd = 1;
 constexpr int kNetWMStateRemove = 0;
 
 int DefaultX11ErrorHandler(XDisplay* d, XErrorEvent* e) {
+  // This callback can be invoked by drivers very late in thread destruction,
+  // when Chrome TLS is no longer usable. https://crbug.com/849225.
+  if (TLSDestructionCheckerForX11::HasBeenDestroyed())
+    return 0;
+
   if (base::MessageLoopCurrent::Get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&LogErrorEventDescription, d, *e));
