@@ -24,8 +24,11 @@ std::unique_ptr<base::DictionaryValue> GetAllPolicyValuesAsDictionary(
 
 // Returns a JSON with the values of all set policies.
 // |with_user_policies| governs if values with POLICY_SCOPE_USER are included.
+// |with_device_identity| governs if device identity data (e.g.
+// enrollment client ID) is included, it is used in remote logging command.
 std::string GetAllPolicyValuesAsJSON(content::BrowserContext* context,
-                                     bool with_user_policies);
+                                     bool with_user_policies,
+                                     bool with_device_identity);
 
 }  // namespace policy
 

@@ -802,7 +802,7 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
     const base::FilePath& path) const {
   std::string json_policies = policy::GetAllPolicyValuesAsJSON(
       web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */);
+      true /* with_user_policies */, false /* with device identity */);
 
   base::PostTaskWithTraits(
       FROM_HERE,
