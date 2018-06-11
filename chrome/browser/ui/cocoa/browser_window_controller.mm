@@ -1021,11 +1021,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)setStarredState:(BOOL)isStarred {
   [toolbarController_ setStarredState:isStarred];
-
-  if ([touchBar_ isStarred] != isStarred) {
-    [touchBar_ setIsStarred:isStarred];
-    [self invalidateTouchBar];
-  }
 }
 
 - (void)setCurrentPageIsTranslated:(BOOL)on {
@@ -1038,7 +1033,6 @@ bool IsTabDetachingInFullscreenEnabled() {
     [[self fullscreenToolbarController] revealToolbarForWebContents:newContents
                                                        inForeground:YES];
   }
-  [self invalidateTouchBar];
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
@@ -1156,7 +1150,6 @@ bool IsTabDetachingInFullscreenEnabled() {
 
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force {
   [toolbarController_ setIsLoading:isLoading force:force];
-  [touchBar_ setIsPageLoading:isLoading];
 }
 
 - (void)firstResponderUpdated:(NSResponder*)responder {
@@ -1905,16 +1898,11 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (BrowserWindowTouchBar*)browserWindowTouchBar {
   if (!touchBar_) {
     touchBar_.reset([[BrowserWindowTouchBar alloc]
-                initWithBrowser:browser_.get()
-        browserWindowController:self]);
+        initWithBrowser:browser_.get()
+                 window:[self window]]);
   }
 
   return touchBar_.get();
-}
-
-- (void)invalidateTouchBar {
-  if ([[self window] respondsToSelector:@selector(setTouchBar:)])
-    [[self window] performSelector:@selector(setTouchBar:) withObject:nil];
 }
 
 - (BOOL)isToolbarShowing {
