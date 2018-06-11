@@ -92,7 +92,11 @@ void AvSyncVideo::UpkeepAvSync() {
 
   int64_t new_current_vpts = 0;
   int64_t timestamp = 0;
-  backend_->video_decoder()->GetCurrentPts(&timestamp, &new_current_vpts);
+  if (!backend_->video_decoder()->GetCurrentPts(&timestamp, &new_current_vpts)) {
+    LOG(ERROR) << "Failed to get VPTS.";
+    return;
+  }
+
   if (new_current_vpts != last_vpts_value_recorded_) {
     video_pts_->AddSample(now, new_current_vpts, 1.0);
     last_vpts_value_recorded_ = new_current_vpts;
