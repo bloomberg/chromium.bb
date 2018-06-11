@@ -251,7 +251,7 @@ void WebUIImpl::CallJavascriptFunctionUnsafe(
 
 void WebUIImpl::RegisterMessageCallback(base::StringPiece message,
                                         const MessageCallback& callback) {
-  message_callbacks_.emplace(message, callback);
+  message_callbacks_.emplace(message.as_string(), callback);
 }
 
 void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
