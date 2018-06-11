@@ -67,7 +67,7 @@ class DisassemblerDex : public Disassembler {
     kMethodIdToClassTypeId,
     kClassDefToClassTypeId,
     kClassDefToSuperClassTypeId,
-    // kTypeListToTypeId,  // Unused
+    kTypeListToTypeId,
     kCodeToTypeId,
 
     kMethodIdToProtoId,  // kProtoId
@@ -84,7 +84,7 @@ class DisassemblerDex : public Disassembler {
 
     // kAnnotationsDirectoryToParameterAnnotationSetRef,  // kAnnotationSetRef,
 
-    // kAnnotationSetRefListToAnnotationSet,  // kAnnotationSet,
+    kAnnotationSetRefListToAnnotationSet,  // kAnnotationSet,
     // kAnnotationsDirectoryToClassAnnotationSet,
     // kAnnotationsDirectoryToFieldAnnotationSet,
     // kAnnotationsDirectoryToMethodAnnotationSet,
@@ -97,7 +97,7 @@ class DisassemblerDex : public Disassembler {
 
     kStringIdToStringData,  // kStringData
 
-    // kAnnotationSetToAnnotation,  // kAnnotation
+    kAnnotationSetToAnnotation,  // kAnnotation
 
     kClassDefToStaticValuesEncodedArray,  // kEncodedArrayItem
 
@@ -171,6 +171,14 @@ class DisassemblerDex : public Disassembler {
   std::unique_ptr<ReferenceReader> MakeReadClassDefToStaticValuesEncodedArray(
       offset_t lo,
       offset_t hi);
+  std::unique_ptr<ReferenceReader> MakeReadTypeListToTypeId16(offset_t lo,
+                                                              offset_t hi);
+  std::unique_ptr<ReferenceReader> MakeReadAnnotationSetToAnnotation(
+      offset_t lo,
+      offset_t hi);
+  std::unique_ptr<ReferenceReader> MakeReadAnnotationSetRefListToAnnotationSet(
+      offset_t lo,
+      offset_t hi);
   std::unique_ptr<ReferenceReader> MakeReadCodeToStringId16(offset_t lo,
                                                             offset_t hi);
   std::unique_ptr<ReferenceReader> MakeReadCodeToStringId32(offset_t lo,
@@ -222,10 +230,18 @@ class DisassemblerDex : public Disassembler {
   dex::MapItem field_map_item_ = {};
   dex::MapItem method_map_item_ = {};
   dex::MapItem class_def_map_item_ = {};
+  dex::MapItem type_list_map_item_ = {};
   dex::MapItem code_map_item_ = {};
 
-  // Sorted list of offsets of code items in |image_|.
+  // Optionally supported (not all DEX files have these).
+  dex::MapItem annotation_set_ref_list_map_item_ = {};
+  dex::MapItem annotation_set_map_item_ = {};
+
+  // Sorted list of offsets of parsed items in |image_|.
   std::vector<offset_t> code_item_offsets_;
+  std::vector<offset_t> type_list_offsets_;
+  std::vector<offset_t> annotation_set_ref_list_offsets_;
+  std::vector<offset_t> annotation_set_offsets_;
 
   DISALLOW_COPY_AND_ASSIGN(DisassemblerDex);
 };
