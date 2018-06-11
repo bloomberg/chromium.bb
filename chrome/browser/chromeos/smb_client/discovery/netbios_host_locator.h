@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/smb_client/discovery/host_locator.h"
 #include "chrome/browser/chromeos/smb_client/discovery/netbios_client_interface.h"
+#include "chromeos/dbus/smb_provider_client.h"
 #include "net/base/network_interfaces.h"
 
 namespace chromeos {
@@ -35,9 +36,11 @@ class NetBiosHostLocator : public HostLocator,
       base::RepeatingCallback<std::unique_ptr<NetBiosClientInterface>()>;
 
   NetBiosHostLocator(GetInterfacesFunction get_interfaces,
-                     NetBiosClientFactory client_factory);
+                     NetBiosClientFactory client_factory,
+                     SmbProviderClient* smb_provider_client);
   NetBiosHostLocator(GetInterfacesFunction get_interfaces,
                      NetBiosClientFactory client_factory,
+                     SmbProviderClient* smb_provider_client,
                      std::unique_ptr<base::OneShotTimer> timer);
 
   ~NetBiosHostLocator() override;
@@ -65,6 +68,11 @@ class NetBiosHostLocator : public HostLocator,
                       uint16_t transaction_id,
                       const net::IPEndPoint& sender_ip);
 
+  // Callback handler for a request to parse a packet. Adds
+  // <hostname, sender_ip> entries to |results_|.
+  void OnPacketParsed(const net::IPEndPoint& sender_ip,
+                      const std::vector<std::string>& hostnames);
+
   // Called upon expiration of |timer_|. Deletes all active netbios clients. If
   // there are no |outstanding_parse_requests_|, FinishFindHosts is called which
   // returns the results to the NetworkScanner.
@@ -77,12 +85,22 @@ class NetBiosHostLocator : public HostLocator,
   // Resets the state of the HostLocator so that it can be resued.
   void ResetHostLocator();
 
+  // Helper function to add a <hostname, sender_ip> pair to |results_|.
+  void AddHostToResult(const net::IPEndPoint& sender_ip,
+                       const std::string& hostname);
+
+  // Checks whether an entry already exists for |hostname| in |results_| with a
+  // different |sender_ip|.
+  bool WouldOverwriteResult(const net::IPEndPoint& sender_ip,
+                            const std::string& hostname) const;
+
   bool running_ = false;
   bool discovery_done_ = false;
   uint16_t transaction_id_ = 0;
   int32_t outstanding_parse_requests_ = 0;
   GetInterfacesFunction get_interfaces_;
   NetBiosClientFactory client_factory_;
+  SmbProviderClient* smb_provider_client_;
   FindHostsCallback callback_;
   HostMap results_;
   // |netbios_clients_| is a container for storing NetBios clients that are

@@ -8,6 +8,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/smb_client/smb_constants.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 
 namespace chromeos {
@@ -36,17 +37,21 @@ bool ShouldUseInterface(const net::NetworkInterface& interface) {
 }
 
 NetBiosHostLocator::NetBiosHostLocator(GetInterfacesFunction get_interfaces,
-                                       NetBiosClientFactory client_factory)
+                                       NetBiosClientFactory client_factory,
+                                       SmbProviderClient* smb_provider_client)
     : NetBiosHostLocator(get_interfaces,
                          client_factory,
+                         smb_provider_client,
                          std::make_unique<base::OneShotTimer>()) {}
 
 NetBiosHostLocator::NetBiosHostLocator(
     GetInterfacesFunction get_interfaces,
     NetBiosClientFactory client_factory,
+    SmbProviderClient* smb_provider_client,
     std::unique_ptr<base::OneShotTimer> timer)
     : get_interfaces_(std::move(get_interfaces)),
       client_factory_(std::move(client_factory)),
+      smb_provider_client_(std::move(smb_provider_client)),
       timer_(std::move(timer)) {}
 
 NetBiosHostLocator::~NetBiosHostLocator() = default;
@@ -105,10 +110,37 @@ void NetBiosHostLocator::ExecuteNameRequest(
 void NetBiosHostLocator::PacketReceived(const std::vector<uint8_t>& packet,
                                         uint16_t transaction_id,
                                         const net::IPEndPoint& sender_ip) {
-  NOTREACHED();
+  if (discovery_done_) {
+    // Avoids race condition where this callback is called after the timer has
+    // expired.
+    return;
+  }
+
+  ++outstanding_parse_requests_;
+  smb_provider_client_->ParseNetBiosPacket(
+      packet, transaction_id,
+      base::BindOnce(&NetBiosHostLocator::OnPacketParsed, AsWeakPtr(),
+                     sender_ip));
+}
+
+void NetBiosHostLocator::OnPacketParsed(
+    const net::IPEndPoint& sender_ip,
+    const std::vector<std::string>& hostnames) {
+  DCHECK_GE(outstanding_parse_requests_, 0);
+
+  --outstanding_parse_requests_;
+  for (const auto& hostname : hostnames) {
+    AddHostToResult(sender_ip, hostname);
+  }
+
+  if (discovery_done_ && outstanding_parse_requests_ == 0) {
+    FinishFindHosts();
+  }
 }
 
 void NetBiosHostLocator::StopDiscovery() {
+  DCHECK(!discovery_done_);
+
   discovery_done_ = true;
   netbios_clients_.clear();
 
@@ -123,12 +155,29 @@ void NetBiosHostLocator::FinishFindHosts() {
 }
 
 void NetBiosHostLocator::ResetHostLocator() {
-  DCHECK(outstanding_parse_requests_ = 0);
+  DCHECK_EQ(0, outstanding_parse_requests_);
   DCHECK(netbios_clients_.empty());
 
   results_.clear();
   discovery_done_ = false;
   running_ = false;
+}
+
+void NetBiosHostLocator::AddHostToResult(const net::IPEndPoint& sender_ip,
+                                         const std::string& hostname) {
+  if (WouldOverwriteResult(sender_ip, hostname)) {
+    LOG(ERROR) << hostname << ":" << results_[hostname]
+               << " will be overwritten by " << hostname << ":"
+               << sender_ip.ToStringWithoutPort();
+  }
+  results_[hostname] = sender_ip.ToStringWithoutPort();
+}
+
+bool NetBiosHostLocator::WouldOverwriteResult(
+    const net::IPEndPoint& sender_ip,
+    const std::string& hostname) const {
+  return results_.count(hostname) &&
+         results_.at(hostname) != sender_ip.ToStringWithoutPort();
 }
 
 }  // namespace smb_client
