@@ -95,11 +95,6 @@ class CastAppAvailabilityTracker {
   // Returns a list of registered app IDs.
   std::vector<std::string> GetRegisteredApps() const;
 
-  // Returns a list of sink IDs compatible with |source|, using the current
-  // availability info.
-  base::flat_set<MediaSink::Id> GetAvailableSinks(
-      const CastMediaSource& source) const;
-
  private:
   // App ID to availability.
   using AppAvailabilityMap = base::flat_map<std::string, AppAvailability>;

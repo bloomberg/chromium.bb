@@ -35,6 +35,12 @@ bool ShouldRefreshAppAvailability(
   return false;
 }
 
+bool HasAllRequiredCapabilities(int required_capabilities,
+                                const MediaSinkInternal& sink) {
+  return (required_capabilities & sink.cast_data().capabilities) ==
+         required_capabilities;
+}
+
 }  // namespace
 
 CastAppDiscoveryServiceImpl::CastAppDiscoveryServiceImpl(
@@ -68,11 +74,10 @@ CastAppDiscoveryServiceImpl::StartObservingMediaSinks(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const MediaSource::Id& source_id = source.source_id();
 
-  // Returned cached results immediately, if available.
-  base::flat_set<MediaSink::Id> cached_sink_ids =
-      availability_tracker_.GetAvailableSinks(source);
-  if (!cached_sink_ids.empty())
-    callback.Run(source_id, GetSinksByIds(cached_sink_ids));
+  // Return cached results immediately, if available.
+  auto cached_sinks = GetAvailableSinks(source);
+  if (!cached_sinks.empty())
+    callback.Run(source_id, cached_sinks);
 
   auto& callback_list = sink_queries_[source_id];
   if (!callback_list) {
@@ -214,21 +219,36 @@ void CastAppDiscoveryServiceImpl::UpdateSinkQueries(
     auto it = sink_queries_.find(source_id);
     if (it == sink_queries_.end())
       continue;
-    base::flat_set<MediaSink::Id> sink_ids =
-        availability_tracker_.GetAvailableSinks(source);
-    it->second->Notify(source_id, GetSinksByIds(sink_ids));
+    it->second->Notify(source_id, GetAvailableSinks(source));
   }
 }
 
-std::vector<MediaSinkInternal> CastAppDiscoveryServiceImpl::GetSinksByIds(
-    const base::flat_set<MediaSink::Id>& sink_ids) const {
-  std::vector<MediaSinkInternal> sinks;
-  for (const auto& sink_id : sink_ids) {
-    const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
-    if (sink)
-      sinks.push_back(*sink);
+bool CastAppDiscoveryServiceImpl::SinkSupportsSource(
+    const MediaSinkInternal& sink,
+    const CastMediaSource& source) const {
+  const auto& app_infos = source.app_infos();
+  for (const auto& app_info : app_infos) {
+    auto required_capabilities = app_info.required_capabilities;
+    auto availability =
+        availability_tracker_.GetAvailability(sink.sink().id(), app_info.app_id)
+            .first;
+    if (availability == cast_channel::GetAppAvailabilityResult::kAvailable &&
+        HasAllRequiredCapabilities(required_capabilities, sink)) {
+      return true;
+    }
   }
-  return sinks;
+  return false;
+}
+
+std::vector<MediaSinkInternal> CastAppDiscoveryServiceImpl::GetAvailableSinks(
+    const CastMediaSource& source) const {
+  const auto& sinks = media_sink_service_->GetSinks();
+  std::vector<MediaSinkInternal> available_sinks;
+  for (const auto& sink : sinks) {
+    if (SinkSupportsSource(sink.second, source))
+      available_sinks.push_back(sink.second);
+  }
+  return available_sinks;
 }
 
 }  // namespace media_router
