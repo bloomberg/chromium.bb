@@ -295,7 +295,7 @@ void LayoutView::UpdateBlockLayout(bool relayout_children) {
 }
 
 void LayoutView::UpdateLayout() {
-  if (!GetDocument().Paginated())
+  if (!GetDocument().Printing())
     SetPageLogicalHeight(LayoutUnit());
 
   // TODO(wangxianzhu): Move this into ViewPaintInvalidator.

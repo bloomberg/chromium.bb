@@ -709,8 +709,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   void SetPrinting(PrintingState);
 
-  bool Paginated() const { return Printing(); }
-
   enum CompatibilityMode { kQuirksMode, kLimitedQuirksMode, kNoQuirksMode };
 
   void SetCompatibilityMode(CompatibilityMode);
