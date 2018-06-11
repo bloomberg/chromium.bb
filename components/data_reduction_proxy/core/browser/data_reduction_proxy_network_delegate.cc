@@ -345,6 +345,12 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
                   data_reduction_proxy_request_options_->GetSecureSession()) {
     page_id = data->page_id();
   }
+  // Always persist data's |request_info| since it tracks connection pingback
+  // data for redirects on main frame requests. It should include re-issued
+  // requests and client redirects.
+  std::vector<DataReductionProxyData::RequestInfo> request_info;
+  if (data)
+    request_info = data->TakeRequestInfo();
 
   // Reset |request|'s DataReductionProxyData.
   DataReductionProxyData::ClearData(request);
@@ -399,6 +405,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
         page_id = data_reduction_proxy_request_options_->GeneratePageId();
       }
       data->set_page_id(page_id.value());
+      data->set_request_info(std::move(request_info));
     }
   }
 
@@ -444,6 +451,12 @@ void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
     page_id = data->page_id();
   }
 
+  // Persist data's |request_info| since it tracks connection pingback data for
+  // redirects on main frame requests.
+  std::vector<DataReductionProxyData::RequestInfo> request_info;
+  if (data)
+    request_info = data->TakeRequestInfo();
+
   DataReductionProxyData::ClearData(request);
 
   if (page_id) {
@@ -451,6 +464,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
     data->set_page_id(page_id.value());
     data->set_session_key(
         data_reduction_proxy_request_options_->GetSecureSession());
+    data->set_request_info(std::move(request_info));
   }
 }
 
