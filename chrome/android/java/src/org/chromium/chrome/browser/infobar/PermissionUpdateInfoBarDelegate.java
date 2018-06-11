@@ -12,6 +12,7 @@ import android.provider.Settings;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
@@ -96,8 +97,8 @@ class PermissionUpdateInfoBarDelegate implements PermissionCallback {
             ApplicationStatus.registerStateListenerForActivity(mActivityStateListener, activity);
 
             Intent settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            settingsIntent.setData(Uri.parse(
-                    "package:" + windowAndroid.getApplicationContext().getPackageName()));
+            settingsIntent.setData(
+                    Uri.parse("package:" + ContextUtils.getApplicationContext().getPackageName()));
             settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(settingsIntent);
         }
