@@ -22,9 +22,13 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/text_elider.h"
+
 #if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/javascript_dialog_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#else
+#include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavaScriptDialogTabHelper);
@@ -123,6 +127,25 @@ DialogOriginRelationship GetDialogOriginRelationship(
   }
   return DialogOriginRelationship::
       HTTP_MAIN_FRAME_NON_HTTP_ALERTING_FRAME_DIFFERENT_ORIGIN_ANCESTOR;
+}
+
+base::WeakPtr<JavaScriptDialog> CreateNewDialog(
+    content::WebContents* parent_web_contents,
+    content::WebContents* alerting_web_contents,
+    const base::string16& title,
+    content::JavaScriptDialogType dialog_type,
+    const base::string16& message_text,
+    const base::string16& default_prompt_text,
+    content::JavaScriptDialogManager::DialogClosedCallback dialog_callback) {
+#if defined(OS_ANDROID)
+  return JavaScriptDialogAndroid::Create(
+      parent_web_contents, alerting_web_contents, title, dialog_type,
+      message_text, default_prompt_text, std::move(dialog_callback));
+#else
+  return JavaScriptDialogViews::Create(
+      parent_web_contents, alerting_web_contents, title, dialog_type,
+      message_text, default_prompt_text, std::move(dialog_callback));
+#endif
 }
 
 }  // namespace
@@ -274,16 +297,15 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
   dialog_type_ = dialog_type;
   if (make_pending) {
     DCHECK(!dialog_);
-    pending_dialog_ =
-        base::BindOnce(&JavaScriptDialog::Create, parent_web_contents,
-                       alerting_web_contents, title, dialog_type,
-                       truncated_message_text, truncated_default_prompt_text,
-                       base::BindOnce(&JavaScriptDialogTabHelper::CloseDialog,
-                                      base::Unretained(this),
-                                      DismissalCause::DIALOG_BUTTON_CLICKED));
+    pending_dialog_ = base::BindOnce(
+        &CreateNewDialog, parent_web_contents, alerting_web_contents, title,
+        dialog_type, truncated_message_text, truncated_default_prompt_text,
+        base::BindOnce(&JavaScriptDialogTabHelper::CloseDialog,
+                       base::Unretained(this),
+                       DismissalCause::DIALOG_BUTTON_CLICKED));
   } else {
     DCHECK(!pending_dialog_);
-    dialog_ = JavaScriptDialog::Create(
+    dialog_ = CreateNewDialog(
         parent_web_contents, alerting_web_contents, title, dialog_type,
         truncated_message_text, truncated_default_prompt_text,
         base::BindOnce(&JavaScriptDialogTabHelper::CloseDialog,
