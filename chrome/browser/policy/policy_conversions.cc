@@ -16,6 +16,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -25,6 +26,15 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#endif
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -177,11 +187,63 @@ std::unique_ptr<base::DictionaryValue> GetAllPolicyValuesAsDictionary(
   return std::make_unique<base::DictionaryValue>(std::move(all_policies));
 }
 
+#if defined(OS_CHROMEOS)
+void FillIdentityFieldsFromPolicy(base::DictionaryValue* policy_dump,
+                                  const em::PolicyData* policy) {
+  if (!policy) {
+    return;
+  }
+
+  if (policy->has_device_id())
+    policy_dump->SetString("client_id", policy->device_id());
+
+  if (policy->has_annotated_location())
+    policy_dump->SetString("device_location", policy->annotated_location());
+
+  if (policy->has_annotated_asset_id())
+    policy_dump->SetString("asset_id", policy->annotated_asset_id());
+
+  if (policy->has_display_domain())
+    policy_dump->SetString("display_domain", policy->display_domain());
+
+  if (policy->has_machine_name())
+    policy_dump->SetString("machine_name", policy->machine_name());
+}
+#endif  // defined(OS_CHROMEOS)
+
+void FillIdentityFields(base::DictionaryValue* policy_dump) {
+#if defined(OS_CHROMEOS)
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->IsEnterpriseManaged()) {
+    policy_dump->SetString("enrollment_domain",
+                           connector->GetEnterpriseEnrollmentDomain());
+
+    if (connector->IsActiveDirectoryManaged()) {
+      FillIdentityFieldsFromPolicy(
+          policy_dump, connector->GetDeviceActiveDirectoryPolicyManager()
+                           ->store()
+                           ->policy());
+    }
+
+    if (connector->IsCloudManaged()) {
+      FillIdentityFieldsFromPolicy(
+          policy_dump,
+          connector->GetDeviceCloudPolicyManager()->device_store()->policy());
+    }
+  }
+#endif  // defined(OS_CHROMEOS)
+}
+
 std::string GetAllPolicyValuesAsJSON(content::BrowserContext* context,
-                                     bool with_user_policies) {
+                                     bool with_user_policies,
+                                     bool with_device_identity) {
   std::unique_ptr<base::DictionaryValue> all_policies =
       policy::GetAllPolicyValuesAsDictionary(context, with_user_policies,
                                              false /* convert_values */);
+  if (with_device_identity) {
+    FillIdentityFields(all_policies.get());
+  }
   return DictionaryToJSONString(*all_policies)->GetString();
 }
 
