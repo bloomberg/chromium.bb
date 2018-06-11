@@ -1063,7 +1063,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '# ' + self.git_base + 'repo_2@%s, DEPS' % (
                  self.githash('repo_2', 1)[:7]),
-        '# ' + self.git_base + 'repo_8, DEPS'
+        '# ' + self.git_base + 'repo_6, DEPS',
+        '# ' + self.git_base + 'repo_8, DEPS',
     ], deps_contents.splitlines())
 
   def testFlattenPinAllDeps(self):
@@ -1232,6 +1233,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '# ' + self.git_base + 'repo_2@%s, DEPS' % (
             self.githash('repo_2', 1)),
+        '# ' + self.git_base + 'repo_6@%s, DEPS' % (
+            self.githash('repo_6', 1)),
         '# ' + self.git_base + 'repo_8@%s, DEPS' % (
             self.githash('repo_8', 1)),
     ], deps_contents.splitlines())
@@ -1317,6 +1320,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '',
         '}',
         '',
+        '# ' + self.git_base + 'repo_10, DEPS',
         '# ' + self.git_base + 'repo_11, DEPS',
         '# ' + self.git_base + 'repo_8, DEPS',
         '# ' + self.git_base + 'repo_9, DEPS',
@@ -1326,6 +1330,8 @@ class GClientSmokeGIT(GClientSmokeBase):
       deps_files_contents = json.load(f)
 
     self.assertEqual([
+      {'url': self.git_base + 'repo_10', 'deps_file': 'DEPS',
+       'hierarchy': [['src', self.git_base + 'repo_10']]},
       {'url': self.git_base + 'repo_11', 'deps_file': 'DEPS',
        'hierarchy': [['src', self.git_base + 'repo_10'],
                      ['src/repo11', self.git_base + 'repo_11']]},
@@ -1387,7 +1393,8 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  },',
         '',
         '}',
-        ''
+        '',
+        '# ' + self.git_base + 'repo_14, DEPS',
     ], deps_contents.splitlines())
 
 

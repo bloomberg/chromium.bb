@@ -358,7 +358,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def __init__(self, parent, name, url, managed, custom_deps,
                custom_vars, custom_hooks, deps_file, should_process,
-               relative, condition, print_outbuf=False):
+               should_recurse, relative, condition, print_outbuf=False):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
         self, parent, url, managed, custom_deps, custom_vars,
@@ -402,17 +402,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # unavailable
     self._got_revision = None
 
-    # This is a mutable value that overrides the normal recursion limit for this
-    # dependency.  It is read from the actual DEPS file so cannot be set on
-    # class instantiation.
-    self.recursion_override = None
     # recursedeps is a mutable value that selectively overrides the default
-    # 'no recursion' setting on a dep-by-dep basis.  It will replace
-    # recursion_override.
+    # 'no recursion' setting on a dep-by-dep basis.
     #
-    # It will be a dictionary of {deps_name: {"deps_file": depfile_name}} or
-    # None.
-    self.recursedeps = None
+    # It will be a dictionary of {deps_name: depfile_namee}
+    self.recursedeps = {}
+
+    # Whether we should process this dependency's DEPS file.
+    self._should_recurse = should_recurse
 
     self._OverrideUrl()
     # This is inherited from WorkItem.  We want the URL to be a resource.
@@ -497,9 +494,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # This becomes messy for >2 depth as the DEPS file format is a dictionary,
     # thus unsorted, while the .gclient format is a list thus sorted.
     #
-    # * _recursion_limit is hard coded 2 and there is no hope to change this
-    # value.
-    #
     # Interestingly enough, the following condition only works in the case we
     # want: self is a 2nd level node. 3nd level node wouldn't need this since
     # they already have their parent as a requirement.
@@ -517,24 +511,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     return requirements
 
   @property
-  def try_recursedeps(self):
-    """Returns False if recursion_override is ever specified."""
-    if self.recursion_override is not None:
-      return False
-    return self.parent.try_recursedeps
-
-  @property
-  def recursion_limit(self):
-    """Returns > 0 if this dependency is not too recursed to be processed."""
-    # We continue to support the absence of recursedeps until tools and DEPS
-    # using recursion_override are updated.
-    if self.try_recursedeps and self.parent.recursedeps != None:
-      if self.name in self.parent.recursedeps:
-        return 1
-
-    if self.recursion_override is not None:
-      return self.recursion_override
-    return max(self.parent.recursion_limit - 1, 0)
+  def should_recurse(self):
+    return self._should_recurse
 
   def verify_validity(self):
     """Verifies that this Dependency is fine to add as a child of another one.
@@ -609,12 +587,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     """Convert a deps dict to a dict of Dependency objects."""
     deps_to_add = []
     for name, dep_value in deps.iteritems():
-      should_process = self.recursion_limit and self.should_process
-      deps_file = self.deps_file
-      if self.recursedeps is not None:
-        ent = self.recursedeps.get(name)
-        if ent is not None:
-          deps_file = ent['deps_file']
+      should_process = self.should_process
       if dep_value is None:
         continue
 
@@ -653,8 +626,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                 custom_deps=None,
                 custom_vars=self.custom_vars,
                 custom_hooks=None,
-                deps_file=deps_file,
+                deps_file=self.recursedeps.get(name, self.deps_file),
                 should_process=should_process,
+                should_recurse=name in self.recursedeps,
                 relative=use_relative_paths,
                 condition=condition))
 
@@ -743,17 +717,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       rel_prefix = os.path.dirname(self.name)
 
     if 'recursion' in local_scope:
-      self.recursion_override = local_scope.get('recursion')
       logging.warning(
-          'Setting %s recursion to %d.', self.name, self.recursion_limit)
-    self.recursedeps = None
+          '%s: Ignoring recursion = %d.', self.name, local_scope['recursion'])
+
     if 'recursedeps' in local_scope:
-      self.recursedeps = {}
       for ent in local_scope['recursedeps']:
         if isinstance(ent, basestring):
-          self.recursedeps[ent] = {"deps_file": self.deps_file}
+          self.recursedeps[ent] = self.deps_file
         else:  # (depname, depsfilename)
-          self.recursedeps[ent[0]] = {"deps_file": ent[1]}
+          self.recursedeps[ent[0]] = ent[1]
       logging.warning('Found recursedeps %r.', repr(self.recursedeps))
 
       if rel_prefix:
@@ -788,7 +760,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if 'action' in hook:
         hooks_to_run.append(hook)
 
-    if self.recursion_limit:
+    if self.should_recurse:
       self._pre_deps_hooks = [
           Hook.from_dict(hook, variables=self.get_vars(), verbose=True,
                          conditions=self.condition)
@@ -914,12 +886,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         while file_list[i].startswith(('\\', '/')):
           file_list[i] = file_list[i][1:]
 
-    if self.recursion_limit:
+    if self.should_recurse:
       self.ParseDepsFile()
 
     self._run_is_done(file_list or [])
 
-    if self.recursion_limit:
+    if self.should_recurse:
       if command in ('update', 'revert') and not options.noprehooks:
         self.RunPreDepsHooks()
       # Parse the dependencies of this dependency.
@@ -1015,7 +987,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     RunOnDeps() must have been called before to load the DEPS.
     """
     result = []
-    if not self.should_process or not self.recursion_limit:
+    if not self.should_process or not self.should_recurse:
       # Don't run the hook when it is above recursion_limit.
       return result
     # If "--force" was specified, run all hooks regardless of what files have
@@ -1304,6 +1276,7 @@ solutions = %(solution_list)s
         custom_hooks=None,
         deps_file='unused',
         should_process=True,
+        should_recurse=True,
         relative=None,
         condition=None,
         print_outbuf=True)
@@ -1407,6 +1380,7 @@ it or fix the checkout.
             custom_hooks=s.get('custom_hooks', []),
             deps_file=s.get('deps_file', 'DEPS'),
             should_process=True,
+            should_recurse=True,
             relative=None,
             condition=None,
             print_outbuf=True))
@@ -1799,16 +1773,6 @@ it or fix the checkout.
     return self._enforced_os
 
   @property
-  def recursion_limit(self):
-    """How recursive can each dependencies in DEPS file can load DEPS file."""
-    return self._recursion_limit
-
-  @property
-  def try_recursedeps(self):
-    """Whether to attempt using recursedeps-style recursion processing."""
-    return True
-
-  @property
   def target_os(self):
     return self._enforced_os
 
@@ -1837,6 +1801,7 @@ class CipdDependency(Dependency):
         custom_hooks=None,
         deps_file=None,
         should_process=should_process,
+        should_recurse=False,
         relative=relative,
         condition=condition)
     if relative:
@@ -2047,8 +2012,7 @@ class Flattener(object):
 
     def add_deps_file(dep):
       # Only include DEPS files referenced by recursedeps.
-      if not (dep.parent is None or
-              (dep.name in (dep.parent.recursedeps or {}))):
+      if not dep.should_recurse:
         return
       deps_file = dep.deps_file
       deps_path = os.path.join(self._client.root_dir, dep.name, deps_file)
@@ -2129,9 +2093,9 @@ class Flattener(object):
     for sub_dep in dep.dependencies:
       self._add_dep(sub_dep)
 
-    deps_by_name = {d.name: d for d in dep.dependencies}
-    for recurse_dep_name in (dep.recursedeps or []):
-      self._flatten_dep(deps_by_name[recurse_dep_name])
+    for d in dep.dependencies:
+      if d.should_recurse:
+        self._flatten_dep(d)
 
 
 def CMDflatten(parser, args):

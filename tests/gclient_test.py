@@ -201,8 +201,19 @@ class GclientTest(trial_dir.TestCase):
     # auto-fixed.
     url = 'proto://host/path/@revision'
     d = gclient.Dependency(
-        None, 'name', url, None, None, None,
-        None, '', True, False, None, True)
+        parent=None,
+        name='name',
+        url=url,
+        managed=None,
+        custom_deps=None,
+        custom_vars=None,
+        custom_hooks=None,
+        deps_file='',
+        should_process=True,
+        should_recurse=False,
+        relative=False,
+        condition=None,
+        print_outbuf=True)
     self.assertEquals('proto://host/path@revision', d.url)
 
   def testStr(self):
@@ -212,19 +223,51 @@ class GclientTest(trial_dir.TestCase):
     obj.add_dependencies_and_close(
       [
         gclient.Dependency(
-            obj, 'foo', 'svn://example.com/foo', None,
-            None, None, None, 'DEPS', True, False, None, True),
+            parent=obj,
+            name='foo',
+            url='svn://example.com/foo',
+            managed=None,
+            custom_deps=None,
+            custom_vars=None,
+            custom_hooks=None,
+            deps_file='DEPS',
+            should_process=True,
+            should_recurse=True,
+            relative=False,
+            condition=None,
+            print_outbuf=True),
         gclient.Dependency(
-            obj, 'bar', 'svn://example.com/bar', None,
-            None, None, None, 'DEPS', True, False, None, True),
+            parent=obj,
+            name='bar',
+            url='svn://example.com/bar',
+            managed=None,
+            custom_deps=None,
+            custom_vars=None,
+            custom_hooks=None,
+            deps_file='DEPS',
+            should_process=True,
+            should_recurse=False,
+            relative=False,
+            condition=None,
+            print_outbuf=True),
       ],
       [])
     obj.dependencies[0].add_dependencies_and_close(
       [
         gclient.Dependency(
-            obj.dependencies[0], 'foo/dir1', 'svn://example.com/foo/dir1',
-            None, None, None, None, 'DEPS', True,
-            False, None, True),
+            parent=obj.dependencies[0],
+            name='foo/dir1',
+            url='svn://example.com/foo/dir1',
+            managed=None,
+            custom_deps=None,
+            custom_vars=None,
+            custom_hooks=None,
+            deps_file='DEPS',
+            should_process=True,
+            should_recurse=False,
+            relative=False,
+            condition=None,
+            print_outbuf=True),
       ],
       [])
     # TODO(ehmaldonado): Improve this test.
@@ -593,56 +636,6 @@ class GclientTest(trial_dir.TestCase):
           ],
         sorted(self._get_processed()))
 
-  def testRecursionOverride(self):
-    """Verifies gclient respects the |recursion| var syntax.
-
-    We check several things here:
-    - |recursion| = 3 sets recursion on the foo dep to exactly 3
-      (we pull /fizz, but not /fuzz)
-    - pulling foo/bar at recursion level 1 (in .gclient) is overriden by
-      a later pull of foo/bar at recursion level 2 (in the dep tree)
-    """
-    write(
-        '.gclient',
-        'solutions = [\n'
-        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
-        '  { "name": "foo/bar", "url": "svn://example.com/bar" },\n'
-          ']')
-    write(
-        os.path.join('foo', 'DEPS'),
-        'deps = {\n'
-        '  "bar": "/bar",\n'
-        '}\n'
-        'recursion = 3')
-    write(
-        os.path.join('bar', 'DEPS'),
-        'deps = {\n'
-        '  "baz": "/baz",\n'
-        '}')
-    write(
-        os.path.join('baz', 'DEPS'),
-        'deps = {\n'
-        '  "fizz": "/fizz",\n'
-        '}')
-    write(
-        os.path.join('fizz', 'DEPS'),
-        'deps = {\n'
-        '  "fuzz": "/fuzz",\n'
-        '}')
-
-    options, _ = gclient.OptionParser().parse_args([])
-    obj = gclient.GClient.LoadCurrentConfig(options)
-    obj.RunOnDeps('None', [])
-    self.assertEquals(
-        [
-          ('foo', 'svn://example.com/foo'),
-          ('foo/bar', 'svn://example.com/bar'),
-          ('bar', 'svn://example.com/bar'),
-          ('baz', 'svn://example.com/baz'),
-          ('fizz', 'svn://example.com/fizz'),
-        ],
-        self._get_processed())
-
   def testRecursedepsOverride(self):
     """Verifies gclient respects the |recursedeps| var syntax.
 
@@ -774,95 +767,6 @@ class GclientTest(trial_dir.TestCase):
           ('foo', 'svn://example.com/foo'),
           ('foo/bar', 'svn://example.com/bar'),
           ('foo/bar/baz', 'svn://example.com/baz'),
-        ],
-        self._get_processed())
-
-  def testRecursionOverridesRecursedeps(self):
-    """Verifies gclient respects |recursion| over |recursedeps|.
-
-    |recursion| is set in a top-level DEPS file.  That value is meant
-    to affect how many subdeps are parsed via recursion.
-
-    |recursedeps| is set in each DEPS file to control whether or not
-    to recurse into the immediate next subdep.
-
-    This test verifies that if both syntaxes are mixed in a DEPS file,
-    we disable |recursedeps| support and only obey |recursion|.
-
-    Since this setting is evaluated per DEPS file, recursed DEPS
-    files will each be re-evaluated according to the per DEPS rules.
-    So a DEPS that only contains |recursedeps| could then override any
-    previous |recursion| setting.  There is extra processing to ensure
-    this does not happen.
-
-    For this test to work correctly, we need to use a DEPS chain that
-    only contains recursion controls in the top DEPS file.
-
-    In foo, |recursion| and |recursedeps| are specified.  When we see
-    |recursion|, we stop trying to use |recursedeps|.
-
-    There are 2 constructions of DEPS here that are key to this test:
-
-    (1) In foo, if we used |recursedeps| instead of |recursion|, we
-        would also pull in bar.  Since bar's DEPS doesn't contain any
-        recursion statements, we would stop processing at bar.
-
-    (2) In fizz, if we used |recursedeps| at all, we should pull in
-        fuzz.
-
-    We expect to keep going past bar (satisfying 1) and we don't
-    expect to pull in fuzz (satisfying 2).
-    """
-    write(
-        '.gclient',
-        'solutions = [\n'
-        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
-        '  { "name": "foo/bar", "url": "svn://example.com/bar" },\n'
-          ']')
-    write(
-        os.path.join('foo', 'DEPS'),
-        'deps = {\n'
-        '  "bar": "/bar",\n'
-        '}\n'
-        'recursion = 3\n'
-        'recursedeps = ["bar"]')
-    write(
-        os.path.join('bar', 'DEPS'),
-        'deps = {\n'
-        '  "baz": "/baz",\n'
-        '}')
-    write(
-        os.path.join('baz', 'DEPS'),
-        'deps = {\n'
-        '  "fizz": "/fizz",\n'
-        '}')
-    write(
-        os.path.join('fizz', 'DEPS'),
-        'deps = {\n'
-        '  "fuzz": "/fuzz",\n'
-        '}\n'
-        'recursedeps = ["fuzz"]')
-    write(
-        os.path.join('fuzz', 'DEPS'),
-        'deps = {\n'
-        '  "tar": "/tar",\n'
-        '}')
-
-    options, _ = gclient.OptionParser().parse_args([])
-    obj = gclient.GClient.LoadCurrentConfig(options)
-    obj.RunOnDeps('None', [])
-    self.assertEquals(
-        [
-          ('foo', 'svn://example.com/foo'),
-          ('foo/bar', 'svn://example.com/bar'),
-          ('bar', 'svn://example.com/bar'),
-          # Deps after this would have been skipped if we were obeying
-          # |recursedeps|.
-          ('baz', 'svn://example.com/baz'),
-          ('fizz', 'svn://example.com/fizz'),
-          # And this dep would have been picked up if we were obeying
-          # |recursedeps|.
-          # 'svn://example.com/foo/bar/baz/fuzz',
         ],
         self._get_processed())
 
@@ -1130,23 +1034,43 @@ class GclientTest(trial_dir.TestCase):
     obj.add_dependencies_and_close(
       [
         gclient.Dependency(
-            obj, 'foo', 'svn://example.com/foo', None,
-            None, None, None, 'DEPS', True,
-            False, None, True),
+            parent=obj,
+            name='foo',
+            url='svn://example.com/foo',
+            managed=None,
+            custom_deps=None,
+            custom_vars=None,
+            custom_hooks=None,
+            deps_file='DEPS',
+            should_process=True,
+            should_recurse=True,
+            relative=False,
+            condition=None,
+            print_outbuf=True),
       ],
       [])
     obj.dependencies[0].add_dependencies_and_close(
       [
-        gclient.CipdDependency(obj.dependencies[0], 'foo',
-                               {'package': 'foo_package',
-                                'version': 'foo_version'},
-                               cipd_root, None, True, False,
-                               'fake_condition'),
-        gclient.CipdDependency(obj.dependencies[0], 'foo',
-                               {'package': 'bar_package',
-                                'version': 'bar_version'},
-                               cipd_root, None, True, False,
-                               'fake_condition'),
+        gclient.CipdDependency(
+            parent=obj.dependencies[0],
+            name='foo',
+            dep_value={'package': 'foo_package',
+                       'version': 'foo_version'},
+            cipd_root=cipd_root,
+            custom_vars=None,
+            should_process=True,
+            relative=False,
+            condition='fake_condition'),
+        gclient.CipdDependency(
+            parent=obj.dependencies[0],
+            name='bar',
+            dep_value={'package': 'bar_package',
+                       'version': 'bar_version'},
+            cipd_root=cipd_root,
+            custom_vars=None,
+            should_process=True,
+            relative=False,
+            condition='fake_condition'),
       ],
       [])
     dep0 = obj.dependencies[0].dependencies[0]

@@ -1321,7 +1321,7 @@ class CipdRoot(object):
           suffix='.ensure', delete=False) as ensure_file:
         for subdir, packages in sorted(self._packages_by_subdir.iteritems()):
           ensure_file.write('@Subdir %s\n' % subdir)
-          for package in packages:
+          for package in sorted(packages, key=lambda p: p.name):
             ensure_file.write('%s %s\n' % (package.name, package.version))
           ensure_file.write('\n')
       yield ensure_file.name
