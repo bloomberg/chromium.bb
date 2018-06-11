@@ -1617,7 +1617,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   current_gc_data_.stack_state = stack_state;
   current_gc_data_.marking_type = marking_type;
   current_gc_data_.reason = reason;
-  current_gc_data_.marking_time_in_milliseconds = 0;
 
   if (should_compact)
     Heap().Compaction()->Initialize(this);
@@ -1648,8 +1647,6 @@ void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
 }
 
 void ThreadState::MarkPhaseVisitRoots() {
-  double start_time = WTF::CurrentTimeTicksInMilliseconds();
-
   // StackFrameDepth should be disabled so we don't trace most of the object
   // graph in one incremental marking step.
   DCHECK(!Heap().GetStackFrameDepth().IsEnabled());
@@ -1662,22 +1659,13 @@ void ThreadState::MarkPhaseVisitRoots() {
     SafePointScope safe_point_scope(current_gc_data_.stack_state, this);
     Heap().VisitStackRoots(current_gc_data_.visitor.get());
   }
-  current_gc_data_.marking_time_in_milliseconds +=
-      WTF::CurrentTimeTicksInMilliseconds() - start_time;
 }
 
 bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
-  double start_time = WTF::CurrentTimeTicksInMilliseconds();
-
   StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
-
   // 3. Transitive closure to trace objects including ephemerons.
-  bool complete = Heap().AdvanceMarkingStackProcessing(
-      current_gc_data_.visitor.get(), deadline_seconds);
-
-  current_gc_data_.marking_time_in_milliseconds +=
-      WTF::CurrentTimeTicksInMilliseconds() - start_time;
-  return complete;
+  return Heap().AdvanceMarkingStackProcessing(current_gc_data_.visitor.get(),
+                                              deadline_seconds);
 }
 
 bool ThreadState::ShouldVerifyMarking() const {
