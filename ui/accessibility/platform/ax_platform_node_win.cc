@@ -2525,7 +2525,14 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     // Supported by IAccessibleEx.
     // TODO(suproteem): Implementations where applicable.
     case UIA_AriaPropertiesPropertyId:
+      result->vt = VT_EMPTY;
+      break;
+
     case UIA_AriaRolePropertyId:
+      result->vt = VT_BSTR;
+      result->bstrVal = SysAllocString(UIAAriaRole().c_str());
+      break;
+
     case UIA_AutomationIdPropertyId:
     case UIA_ClassNamePropertyId:
     case UIA_ClickablePointPropertyId:
@@ -2967,6 +2974,7 @@ int AXPlatformNodeWin::MSAARole() {
         return ROLE_SYSTEM_COMBOBOX;
       return ROLE_SYSTEM_BUTTONMENU;
     }
+
     case ax::mojom::Role::kPre:
       return ROLE_SYSTEM_TEXT;
 
@@ -3718,6 +3726,476 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
   }
 
   return result;
+}
+
+base::string16 AXPlatformNodeWin::UIAAriaRole() {
+  // If this is a web area for a presentational iframe, give it a role of
+  // something other than document so that the fact that it's a separate doc
+  // is not exposed to AT.
+  if (IsWebAreaForPresentationalIframe())
+    return L"group";
+
+  switch (GetData().role) {
+    case ax::mojom::Role::kAlert:
+      return L"alert";
+
+    case ax::mojom::Role::kAlertDialog:
+      // Our MSAA implementation suggests the use of
+      // "alert", not "alertdialog" because some
+      // Windows screen readers are not compatible with
+      // |ax::mojom::Role::kAlertDialog| yet.
+      return L"alert";
+
+    case ax::mojom::Role::kAnchor:
+      return L"link";
+
+    case ax::mojom::Role::kApplication:
+      return L"application";
+
+    case ax::mojom::Role::kArticle:
+      return L"article";
+
+    case ax::mojom::Role::kAudio:
+      return L"group";
+
+    case ax::mojom::Role::kBanner:
+      return L"banner";
+
+    case ax::mojom::Role::kBlockquote:
+      return L"group";
+
+    case ax::mojom::Role::kButton:
+      return L"button";
+
+    case ax::mojom::Role::kCanvas:
+      return L"img";
+
+    case ax::mojom::Role::kCaption:
+      return L"description";
+
+    case ax::mojom::Role::kCaret:
+      return L"region";
+
+    case ax::mojom::Role::kCell:
+      return L"gridcell";
+
+    case ax::mojom::Role::kCheckBox:
+      return L"checkbox";
+
+    case ax::mojom::Role::kClient:
+      return L"region";
+
+    case ax::mojom::Role::kColorWell:
+      return L"textbox";
+
+    case ax::mojom::Role::kColumn:
+      return L"region";
+
+    case ax::mojom::Role::kColumnHeader:
+      return L"columnheader";
+
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+      return L"combobox";
+
+    case ax::mojom::Role::kComplementary:
+      return L"complementary";
+
+    case ax::mojom::Role::kContentDeletion:
+    case ax::mojom::Role::kContentInsertion:
+      return L"group";
+
+    case ax::mojom::Role::kContentInfo:
+      return L"contentinfo";
+
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime:
+      return L"list";
+
+    case ax::mojom::Role::kDefinition:
+      return L"definition";
+
+    case ax::mojom::Role::kDescriptionListDetail:
+      return L"description";
+
+    case ax::mojom::Role::kDescriptionList:
+      return L"list";
+
+    case ax::mojom::Role::kDescriptionListTerm:
+      return L"listitem";
+
+    case ax::mojom::Role::kDesktop:
+      return L"document";
+
+    case ax::mojom::Role::kDetails:
+      return L"group";
+
+    case ax::mojom::Role::kDialog:
+      return L"dialog";
+
+    case ax::mojom::Role::kDisclosureTriangle:
+      return L"button";
+
+    case ax::mojom::Role::kDirectory:
+      return L"directory";
+
+    case ax::mojom::Role::kDocCover:
+      return L"img";
+
+    case ax::mojom::Role::kDocBackLink:
+    case ax::mojom::Role::kDocBiblioRef:
+    case ax::mojom::Role::kDocGlossRef:
+    case ax::mojom::Role::kDocNoteRef:
+      return L"link";
+
+    case ax::mojom::Role::kDocBiblioEntry:
+    case ax::mojom::Role::kDocEndnote:
+    case ax::mojom::Role::kDocFootnote:
+      return L"listitem";
+
+    case ax::mojom::Role::kDocPageBreak:
+      return L"separator";
+
+    case ax::mojom::Role::kDocAbstract:
+    case ax::mojom::Role::kDocAcknowledgments:
+    case ax::mojom::Role::kDocAfterword:
+    case ax::mojom::Role::kDocAppendix:
+    case ax::mojom::Role::kDocBibliography:
+    case ax::mojom::Role::kDocChapter:
+    case ax::mojom::Role::kDocColophon:
+    case ax::mojom::Role::kDocConclusion:
+    case ax::mojom::Role::kDocCredit:
+    case ax::mojom::Role::kDocCredits:
+    case ax::mojom::Role::kDocDedication:
+    case ax::mojom::Role::kDocEndnotes:
+    case ax::mojom::Role::kDocEpigraph:
+    case ax::mojom::Role::kDocEpilogue:
+    case ax::mojom::Role::kDocErrata:
+    case ax::mojom::Role::kDocExample:
+    case ax::mojom::Role::kDocForeword:
+    case ax::mojom::Role::kDocGlossary:
+    case ax::mojom::Role::kDocIndex:
+    case ax::mojom::Role::kDocIntroduction:
+    case ax::mojom::Role::kDocNotice:
+    case ax::mojom::Role::kDocPageList:
+    case ax::mojom::Role::kDocPart:
+    case ax::mojom::Role::kDocPreface:
+    case ax::mojom::Role::kDocPrologue:
+    case ax::mojom::Role::kDocPullquote:
+    case ax::mojom::Role::kDocQna:
+    case ax::mojom::Role::kDocSubtitle:
+    case ax::mojom::Role::kDocTip:
+    case ax::mojom::Role::kDocToc:
+      return L"group";
+
+    case ax::mojom::Role::kDocument:
+    case ax::mojom::Role::kRootWebArea:
+    case ax::mojom::Role::kWebArea:
+      return L"document";
+
+    case ax::mojom::Role::kEmbeddedObject:
+      if (delegate_->GetChildCount()) {
+        return L"group";
+      } else {
+        return L"document";
+      }
+
+    case ax::mojom::Role::kFeed:
+      return L"group";
+
+    case ax::mojom::Role::kFigcaption:
+      return L"group";
+
+    case ax::mojom::Role::kFigure:
+      return L"group";
+
+    case ax::mojom::Role::kFooter:
+      return L"group";
+
+    case ax::mojom::Role::kForm:
+      return L"form";
+
+    case ax::mojom::Role::kGenericContainer:
+      return L"group";
+
+    case ax::mojom::Role::kGraphicsDocument:
+      return L"document";
+
+    case ax::mojom::Role::kGraphicsObject:
+      return L"region";
+
+    case ax::mojom::Role::kGraphicsSymbol:
+      return L"img";
+
+    case ax::mojom::Role::kGrid:
+      return L"grid";
+
+    case ax::mojom::Role::kGroup:
+      return L"group";
+
+    case ax::mojom::Role::kHeading:
+      return L"heading";
+
+    case ax::mojom::Role::kIframe:
+      return L"document";
+
+    case ax::mojom::Role::kIframePresentational:
+      return L"group";
+
+    case ax::mojom::Role::kImage:
+      return L"img";
+
+    case ax::mojom::Role::kImageMap:
+      return L"document";
+
+    case ax::mojom::Role::kInputTime:
+      return L"group";
+
+    case ax::mojom::Role::kInlineTextBox:
+      return L"textbox";
+
+    case ax::mojom::Role::kLabelText:
+    case ax::mojom::Role::kLegend:
+      return L"description";
+
+    case ax::mojom::Role::kLayoutTable:
+      return L"grid";
+
+    case ax::mojom::Role::kLayoutTableCell:
+      return L"gridcell";
+
+    case ax::mojom::Role::kLayoutTableColumn:
+      return L"region";
+
+    case ax::mojom::Role::kLayoutTableRow:
+      return L"row";
+
+    case ax::mojom::Role::kLink:
+      return L"link";
+
+    case ax::mojom::Role::kList:
+      return L"list";
+
+    case ax::mojom::Role::kListItem:
+      return L"listitem";
+
+    case ax::mojom::Role::kListBox:
+      return L"listbox";
+
+    case ax::mojom::Role::kListBoxOption:
+      return L"option";
+
+    case ax::mojom::Role::kLocationBar:  // TODO(accessibility) Remove.
+      NOTREACHED();
+      return L"textbox";
+
+    case ax::mojom::Role::kLog:
+      return L"log";
+
+    case ax::mojom::Role::kMain:
+      return L"main";
+
+    case ax::mojom::Role::kMark:
+      return L"description";
+
+    case ax::mojom::Role::kMarquee:
+      return L"marquee";
+
+    case ax::mojom::Role::kMath:
+      return L"group";
+
+    case ax::mojom::Role::kMenu:
+    case ax::mojom::Role::kMenuButton:
+      return L"menu";
+
+    case ax::mojom::Role::kMenuBar:
+      return L"menubar";
+
+    case ax::mojom::Role::kMenuItem:
+      return L"menuitem";
+
+    case ax::mojom::Role::kMenuItemCheckBox:
+      return L"menuitemcheckbox";
+
+    case ax::mojom::Role::kMenuItemRadio:
+      return L"menuitemradio";
+
+    case ax::mojom::Role::kMenuListPopup:
+      if (IsAncestorComboBox())
+        return L"list";
+      return L"menu";
+
+    case ax::mojom::Role::kMenuListOption:
+      if (IsAncestorComboBox())
+        return L"listitem";
+      return L"menuitem";
+
+    case ax::mojom::Role::kMeter:
+      return L"progressbar";
+
+    case ax::mojom::Role::kNavigation:
+      return L"navigation";
+
+    case ax::mojom::Role::kNote:
+      return L"note";
+
+    case ax::mojom::Role::kParagraph:
+      return L"group";
+
+    case ax::mojom::Role::kPopUpButton: {
+      std::string html_tag =
+          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
+      if (html_tag == "select")
+        return L"combobox";
+      return L"menu";
+    }
+
+    case ax::mojom::Role::kPre:
+      return L"region";
+
+    case ax::mojom::Role::kProgressIndicator:
+      return L"progressbar";
+
+    case ax::mojom::Role::kRadioButton:
+      return L"radio";
+
+    case ax::mojom::Role::kRadioGroup:
+      return L"radiogroup";
+
+    case ax::mojom::Role::kRegion: {
+      std::string html_tag =
+          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
+      if (html_tag == "section" &&
+          GetData()
+              .GetString16Attribute(ax::mojom::StringAttribute::kName)
+              .empty()) {
+        // Do not use ARIA mapping for nameless <section>.
+        return L"group";
+      }
+      // Use ARIA mapping.
+      return L"region";
+    }
+
+    case ax::mojom::Role::kRow: {
+      // Role changes depending on whether row is inside a treegrid
+      // https://www.w3.org/TR/core-aam-1.1/#role-map-row
+      return IsInTreeGrid() ? L"treeitem" : L"row";
+    }
+
+    case ax::mojom::Role::kRowHeader:
+      return L"rowheader";
+
+    case ax::mojom::Role::kRuby:
+      return L"region";
+
+    case ax::mojom::Role::kScrollBar:
+      return L"scrollbar";
+
+    case ax::mojom::Role::kScrollView:
+      return L"region";
+
+    case ax::mojom::Role::kSearch:
+      return L"search";
+
+    case ax::mojom::Role::kSlider:
+      return L"slider";
+
+    case ax::mojom::Role::kSliderThumb:
+      return L"slider";
+
+    case ax::mojom::Role::kSpinButton:
+      return L"spinbutton";
+
+    case ax::mojom::Role::kSwitch:
+      return L"checkbox";
+
+    case ax::mojom::Role::kAnnotation:
+    case ax::mojom::Role::kListMarker:
+    case ax::mojom::Role::kStaticText:
+      return L"description";
+
+    case ax::mojom::Role::kStatus:
+      return L"status";
+
+    case ax::mojom::Role::kSplitter:
+      return L"separator";
+
+    case ax::mojom::Role::kSvgRoot:
+      return L"img";
+
+    case ax::mojom::Role::kTab:
+      return L"tab";
+
+    case ax::mojom::Role::kTable:
+      return L"grid";
+
+    case ax::mojom::Role::kTableHeaderContainer:
+      return L"group";
+
+    case ax::mojom::Role::kTabList:
+      return L"tablist";
+
+    case ax::mojom::Role::kTabPanel:
+      return L"tabpanel";
+
+    case ax::mojom::Role::kTerm:
+      return L"listitem";
+
+    case ax::mojom::Role::kTitleBar:
+      return L"document";
+
+    case ax::mojom::Role::kToggleButton:
+      return L"button";
+
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kSearchBox:
+      return L"textbox";
+
+    case ax::mojom::Role::kTextFieldWithComboBox:
+      return L"combobox";
+
+    case ax::mojom::Role::kAbbr:
+    case ax::mojom::Role::kTime:
+      return L"description";
+
+    case ax::mojom::Role::kTimer:
+      return L"timer";
+
+    case ax::mojom::Role::kToolbar:
+      return L"toolbar";
+
+    case ax::mojom::Role::kTooltip:
+      return L"tooltip";
+
+    case ax::mojom::Role::kTree:
+      return L"tree";
+
+    case ax::mojom::Role::kTreeGrid:
+      return L"treegrid";
+
+    case ax::mojom::Role::kTreeItem:
+      return L"treeitem";
+
+    case ax::mojom::Role::kLineBreak:
+      return L"separator";
+
+    case ax::mojom::Role::kVideo:
+      return L"group";
+
+    case ax::mojom::Role::kWebView:
+      return L"document";
+
+    case ax::mojom::Role::kPane:
+    case ax::mojom::Role::kWindow:
+    case ax::mojom::Role::kIgnored:
+    case ax::mojom::Role::kNone:
+    case ax::mojom::Role::kPresentational:
+    case ax::mojom::Role::kUnknown:
+      return L"region";
+  }
+
+  NOTREACHED();
+  return L"document";
 }
 
 base::string16 AXPlatformNodeWin::GetValue() {
