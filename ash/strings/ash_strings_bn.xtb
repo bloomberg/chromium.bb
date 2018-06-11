@@ -200,6 +200,7 @@
 <translation id="5457599981699367932">অতিথি হিসাবে ব্রাউজ করুন</translation>
 <translation id="54609108002486618">পরিচালিত</translation>
 <translation id="553675580533261935">সেশন থেকে প্রস্থান করছে</translation>
+<translation id="5537725057119320332">কাস্ট করুন</translation>
 <translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" এক্সটেনশানটি এই নেটওয়ার্কের সাথে সংযোগ স্থাপন করতে সাহায্য করতে পারে৷</translation>
 <translation id="554893713779400387">ডিক্টেশন চালু বা বন্ধ করুন</translation>
 <translation id="5571066253365925590">ব্লুটুথ সক্ষমিত</translation>
@@ -304,12 +305,14 @@
 <translation id="7654687942625752712">পড়ে শোনানো বিকল্প চালু করতে পাঁচ সেকেন্ডের জন্য ভলিউম কীগুলি প্রেস করে ধরে রাখুন।</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7692480393933218409">সংযুক্ত USB-C ডিভাইসগুলি চার্জ হচ্ছে</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">আপডেটের বিশদ বিবরণ জানার জন্য ক্লিক করুন</translation>
 <translation id="7796353162336583443">একটি নোট, স্ক্রিনশট নিতে, Google সহায়ক, লেজার পয়েন্টার, বা ম্যাগনিফিকেশনের কাচ ব্যবহার করার জন্য শেলফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
 <translation id="7798302898096527229">Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">জোরালো সিগন্যাল</translation>
 <translation id="7842569679327885685">সতর্কতা: পরীক্ষামূলক বৈশিষ্ট্য</translation>
+<translation id="7846634333498149051">কীবোর্ড</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের প্রশাসক একাধিক প্রবেশ করুন অননুমোদিত করেছেন৷</translation>
 <translation id="7933084174919150729">Google সহায়ক শুধুমাত্র প্রাথমিক প্রোফাইলেই ব্যবহার করা যায়।</translation>
 <translation id="79341161159229895">অ্যাকাউন্টটি <ph name="FIRST_PARENT_EMAIL" /> এবং <ph name="SECOND_PARENT_EMAIL" /> পরিচালনা করছেন</translation>

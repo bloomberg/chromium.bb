@@ -202,6 +202,7 @@
 <translation id="5457599981699367932">גלוש כאורח</translation>
 <translation id="54609108002486618">מנוהל</translation>
 <translation id="553675580533261935">יציאה מההפעלה</translation>
+<translation id="5537725057119320332">העבר</translation>
 <translation id="5548285847212963613">התוסף "<ph name="EXTENSION_NAME" />" יכול לעזור בהתחברות אל הרשת הזו.</translation>
 <translation id="554893713779400387">הפעלת הכתבה או הפסקתה</translation>
 <translation id="5571066253365925590">‏Bluetooth מופעל</translation>
@@ -312,12 +313,14 @@
 <translation id="7654687942625752712">כדי להשבית את קורא המסך הקולי, צריך ללחוץ על שני לחצני עוצמת הקול למשך חמש שניות.</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7692480393933218409">‏טעינת מכשירים מחוברים עם יציאת USB-C</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">לחץ כדי להציג את פרטי העדכון</translation>
 <translation id="7796353162336583443">‏כדי לרשום הערה או לצלם צילום מסך, או כדי להשתמש ב-Google Assistant, בסמן הלייזר או בזכוכית המגדלת, צריך להקיש על לחצן הסטיילוס במדף.</translation>
 <translation id="7798302898096527229">‏הקש על Search או על Shift כדי לבטל.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ו-<ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">אות חזק</translation>
 <translation id="7842569679327885685">אזהרה: תכונה ניסיונית</translation>
+<translation id="7846634333498149051">מקלדת</translation>
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>
 <translation id="7933084174919150729">‏Google Assistant זמין רק לפרופיל ראשי.</translation>
 <translation id="79341161159229895">החשבון מנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>

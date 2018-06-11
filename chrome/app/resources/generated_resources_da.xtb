@@ -176,6 +176,7 @@
 <translation id="123578888592755962">Disken er fuld</translation>
 <translation id="1238191093934674082">Åben VPN</translation>
 <translation id="1240892293903523606">DOM Inspector</translation>
+<translation id="124116460088058876">Flere sprog</translation>
 <translation id="1241753985463165747">Læse og redigere alle dine data på det aktuelle website, når dette er aktiveret</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> vil gerne nulstille dine indstillinger.</translation>
 <translation id="1243314992276662751">Upload</translation>
@@ -209,6 +210,7 @@
 <translation id="1296497012903089238">Certifikattype</translation>
 <translation id="1297175357211070620">Destination</translation>
 <translation id="1297922636971898492">Google Drev er ikke tilgængeligt lige nu. Uploadet genstarter automatisk, når Google Drev er tilgængeligt igen.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> beder om, at din enheds identitet bekræftes af Google for at fastslå muligheden for forbedret afspilning af beskyttet indhold.</translation>
 <translation id="1300806585489372370">Hvis du vil ændre denne indstilling, skal du først <ph name="BEGIN_LINK" />aktivere id<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Tillad JavaScript via Apple Events</translation>
 <translation id="1303101771013849280">Tilføjer HTML-fil som bogmærke</translation>
@@ -1065,7 +1067,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2624142942574147739">Denne side har adgang til dit kamera og din mikrofon.</translation>
 <translation id="2626799779920242286">Prøv igen senere.</translation>
 <translation id="2630681426381349926">Opret forbindelse til Wi-Fi for at komme i gang</translation>
-<translation id="2631006050119455616">Gemt</translation>
 <translation id="2631498379019108537">Vis indtastningsmuligheder på hylden</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> bruger <ph name="USAGE" /> MB diskplads.</translation>
 <translation id="2633212996805280240">Vil du fjerne "<ph name="EXTENSION_NAME" />"?</translation>

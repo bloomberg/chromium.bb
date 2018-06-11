@@ -53,7 +53,7 @@
       Ja šai politikai ir norādīta vērtība “False”, netiks ziņots par izstrādes slēdža stāvokli.</translation>
 <translation id="1160479894929412407">QUIC protokola atļaušana</translation>
 <translation id="1160939557934457296">Aizliegums turpināt pārlūkošanu no Drošas pārlūkošanas brīdinājuma lapas</translation>
-<translation id="1189817621108632689">Ļauj iestatīt URL rakstu sarakstu ar vietnēm, kurām nav atļauts attēlot attēlus..
+<translation id="1189817621108632689">Ļauj iestatīt URL rakstu sarakstu ar vietnēm, kurām nav atļauts attēlot attēlus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas DefaultImagesSetting (ja tā ir iestatīta) vai no lietotāja personiskās konfigurācijas.
 
@@ -896,6 +896,11 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3512226956150568738">Ja klienta ierīces modelis jau atbalstīja ARC pirms migrācijas uz ext4, kas bija nepieciešama, lai izpildītu ARC, un ja politika ArcEnabled ir iestatīta kā “true”, šī opcija darbosies kā politikas AskUser vērtība (vērtība 3). Visos citos gadījumos (ja ierīces modelis iepriekš neatbalstīja ARC vai ja politika ArcEnabled ir iestatīta kā “false”), šī vērtība ir ekvivalenta politikas DisallowArc vērtībai (vērtība 0).</translation>
 <translation id="3524204464536655762">Neatļaut nevienai vietnei pieprasīt piekļuvi pievienotajām USB ierīcēm, izmantojot WebUSB API</translation>
 <translation id="3528000905991875314">Iespējo alternatīvas kļūdu lapas</translation>
+<translation id="3545457887306538845">Ļauj noteikt, kādos gadījumos var izmantot izstrādātāja rīkus.
+
+      Ja politikai ir iestatīta vērtība “DeveloperToolsDisallowedForForceInstalledExtensions” (vērtība “0” — noklusējuma vērtība), izstrādātāja rīki un JavaScript konsole ir pieejami, taču tiem nevar piekļūt paplašinājumos, kas instalēti saskaņā ar uzņēmuma politiku.
+      Ja politikai ir iestatīta vērtība “DeveloperToolsAllowed” (vērtība “1”), izstrādātāja rīkiem un JavaScript konsolei var piekļūt un tos var izmantot visos gadījumos, tostarp arī paplašinājumos, kas instalēti saskaņā ar uzņēmuma politiku.
+      Ja politikai ir iestatīta vērtība “DeveloperToolsDisallowed” (vērtība “2”), izstrādātāja rīkiem nevar piekļūt un vietnes elementus vairs nevar pārbaudīt. Tiek atspējoti visi īsinājumtaustiņi un izvēļņu vai kontekstizvēļņu komandas, ar kuru palīdzību tiek atvērti izstrādātāju rīki vai JavaScript konsole.</translation>
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
 <translation id="3556806727696701427">Iespējo <ph name="PRODUCT_NAME" /> funkciju Droša pārlūkošana un neļauj lietotājiem mainīt šo iestatījumu.
 
@@ -1978,6 +1983,37 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6810445994095397827">Bloķēt JavaScript šajās vietnēs</translation>
 <translation id="681446116407619279">Atbalstītās autentifikācijas shēmas</translation>
 <translation id="6835883744948188639">Periodiski rādīt lietotājam uzvedni par ieteicamu atkārtotu palaišanu</translation>
+<translation id="6838056959556423778">Tiek ignorētas <ph name="PRODUCT_NAME" /> noklusējuma printera atlasīšanas kārtulas.
+
+      Šī politika nosaka kārtulas, kas paredzētas noklusējuma printera atlasīšanai pārlūkā <ph name="PRODUCT_NAME" />, pirmo reizi profilā izmantojot drukāšanas funkciju.
+
+      Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME" /> mēģinās atrast printeri, kurš atbilst visiem norādītajiem atribūtiem, un atlasīt to kā noklusējuma printeri. Tiek atlasīts pirmais printeris, kurš atbilst politikai. Ja nav unikālas atbilstības, var tikt atlasīts jebkurš printeris atkarībā no tā, kādā secībā printeri tiek atrasti.
+
+      Ja šī politika nav iestatīta vai noildzes laikā nav atrasts atbilstošs printeris, kā noklusējuma vērtība tiek atlasīts iebūvētais PDF printeris. Ja PDF printeris nav pieejams, netiek atlasīts neviens printeris.
+
+      Vērtība tiek parsēta kā JSON objekts atbilstoši šai shēmai::
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Vai ierobežot atbilstoša printera meklēšanu konkrētu printeru kopā.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regulārā izteiksme, kurai ir jāatbilst printera ID.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulārā izteiksme, kurai ir jāatbilst printera rādāmajam nosaukumam.",
+            "type": "string"
+          }
+        }
+      }
+
+      Pakalpojumam <ph name="CLOUD_PRINT_NAME" /> pievienotie printeri tiek uzskatīti par “<ph name="PRINTER_TYPE_CLOUD" />”, pārējie printeri tiek klasificēti kā “<ph name="PRINTER_TYPE_LOCAL" />”.
+      Neaizpildot lauku, tam atbilst visas vērtības, piemēram, nenorādot savienojamību, drukas priekšskatījumā tiek uzsākta visu veidu printeru atklāšana — gan vietējo, gan mākoņa.
+      Regulārās izteiksmes shēmām ir jāatbilst JavaScript RegExp sintaksei, un atbilstības ir reģistrjutīgas.</translation>
 <translation id="684856667300805181">Šī politika tika noņemta <ph name="PRODUCT_NAME" /> 68 versijā, un to aizstāj politika <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ar atjauninājumu M66 šai politikai tika pārtraukts atbalsts un tā tika noņemta, jo tā tika izmantota tikai iekšējai testēšanai un apdraud drošību.
 
@@ -2256,6 +2292,17 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7511361072385293666">Ja politikai ir iestatīta vērtība Patiesa vai tā nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauts lietot protokolu QUIC.
       Ja politikai ir iestatīta vērtība Nepatiesa, protokolu QUIC nav atļauts lietot.</translation>
 <translation id="7519251620064708155">Atļaut atslēgu ģenerēšanu šajās vietnēs</translation>
+<translation id="7529083451528428240">Ļauj bloķēt lietotāja sesiju atbilstoši iestatītajam klienta laikam vai dienas lietojuma kvotai.
+
+          Elements |time_window_limit| norāda diennakts laika periodu, kurā lietotāja sesija ir jābloķē. Katrai nedēļas dienai tiek atbalstīta tikai viena kārtula, tāpēc elementa |entries| vērtību diapazons ir 0–7. Elementos |starts_at| un |ends_at| tiek norādītas laika perioda ierobežojuma sākuma un beigu vērtības: ja elementa |ends_at| vērtība ir mazāka par |starts_at| vērtību, tas nozīmē, ka laika periods |time_limit_window| beidzas nākamajā dienā. Elements |last_updated_millis| ir UTC laikspiedols, kas norāda ieraksta pēdējās atjaunināšanas laiku; tas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilstu veselam skaitlim.
+
+          Elements |time_usage_limit| norāda ierīces lietojuma ilguma dienas kvotu — lietojuma ilgumam sasniedzot šo vērtību, lietotāja sesija tiek aizvērta. Katrai nedēļas dienai ir atsevišķs rekvizīts — tas ir jāiestata tikai tad, ja attiecīgajai dienai ir iestatīta aktīva kvota. Elements |usage_quota_mins| norāda dienā atļauto pārvaldītās ierīces lietošanas ilgumu, bet elements |reset_at| norāda laiku, kad lietojuma kvota tiek atjaunota. Noklusējuma vērtība elementam |reset_at| ir pusnakts ({'hour': 0, 'minute': 0}). Elements |last_updated_millis| ir UTC laikspiedols, kas norāda ieraksta pēdējās atjaunināšanas laiku; tas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilst veselam skaitlim.
+
+          |overrides| var izmantot, lai norādītu īslaicīgi ignorējamu vienu vai vairākas iepriekšējās kārtulas.
+          * Ja elements “time_window_limit” vai “time_usage_limit” nav aktīvs, ierīces bloķēšanai var izmantot elementu |LOCK|.
+          * Elements |LOCK| īslaicīgi aizver lietotāja sesiju līdz nākamajam elementā “time_window_limit” vai “time_usage_limit” norādītajam laika periodam.
+          * Elements |UNLOCK| atver lietotāja sesiju, kuru aizvēršanu aktivizēja elementā “time_window_limit” vai “time_usage_limit” iestatītās vērtības.
+          Elements |created_time_millis| ir ignorēšanas kārtulas izveides UTC laikspiedols, kas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilstu veselam skaitlim. Šī vērtība tiek izmantota, lai noteiktu ignorēšanas ilgumu. Ja pašreizējā aktīvā laika ierobežojuma funkcija (lietošanas ilguma ierobežojums vai lietošanas perioda ierobežojums) tika aktivizēta pēc ignorēšanas vērtības izveides, ignorēšanas vērtība netiks aktivizēta. Ja ignorēšanas vērtība tika izveidota pirms pēdējo izmaiņu ieviešanas aktīvajā elementā “time_window_limit” vai “time_usage_window”, ignorēšanas vērtība netiek piemērota.</translation>
 <translation id="7529100000224450960">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts atvērt uznirstošos logus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPopupsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>

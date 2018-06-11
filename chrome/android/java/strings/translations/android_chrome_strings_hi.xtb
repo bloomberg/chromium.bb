@@ -92,6 +92,7 @@
 <translation id="17513872634828108">टैब खोलें</translation>
 <translation id="1756600373018374892">अपने टैब पर तुरंत एक्सेस के लिए यह बटन टैप करें.</translation>
 <translation id="1779089405699405702">चित्र डीकोडर</translation>
+<translation id="1782483593938241562">खत्म होने की तारीख: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">डिफ़ॉल्ट डाउनलोड स्थान किसी भी समय बदलें</translation>
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="1829244130665387512">पेज में ढूंढें</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">पेज रीफ्रेश करें</translation>
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
 <translation id="271033894570825754">नया</translation>
+<translation id="2728754400939377704">साइट के हिसाब से क्रम में लगाएं</translation>
 <translation id="2736391366332017384">अपने मौजूदा टैब में नए टैब पेज पर जाने के लिए 'होम' बटन पर टैप करें</translation>
 <translation id="2744248271121720757">झटपट खोजने या मिलती-जुलती कार्रवाइयां देखने के लिए किसी शब्द पर टैप करें</translation>
 <translation id="2762000892062317888">अभी-अभी</translation>
@@ -231,7 +233,7 @@
 <translation id="2979025552038692506">चयनित गुप्त टैब</translation>
 <translation id="2989523299700148168">हाल ही में देखे गए</translation>
 <translation id="2996291259634659425">पासफ़्रेज़ बनाएं</translation>
-<translation id="2996809686854298943">URL आवश्यक है</translation>
+<translation id="2996809686854298943">URL ज़रूरी है</translation>
 <translation id="300526633675317032">इससे वेबसाइट की सभी <ph name="SIZE_IN_KB" /> जगह साफ़ हो जाएगी.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> केबी डाउनलोड किया गया</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">आपके व्यवस्थापक द्वारा प्रबंधित</translation>
 <translation id="4116038641877404294">पेज का ऑफ़लाइन उपयोग करने के लिए उन्हें डाउनलोड करें</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d बुकमार्क}one{%1$d बुकमार्क}other{%1$d बुकमार्क}}</translation>
+<translation id="4159800535322890630">साइटों को अपने डिवाइस के सेंसर एक्सेस करने से ब्लॉक करें</translation>
 <translation id="4165986682804962316">साइट सेटिंग</translation>
 <translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> इस्तेमाल किए गए</translation>
 <translation id="4181841719683918333">भाषाएं</translation>
 <translation id="4195643157523330669">नए टैब में खोलें</translation>
 <translation id="4198423547019359126">डाउनलोड करने की कोई जगह उपलब्ध नहीं है</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">कार्ड</translation>
 <translation id="5595485650161345191">पता संपादित करें</translation>
 <translation id="5596627076506792578">अधिक विकल्प</translation>
+<translation id="5620299005957670886">साइटों को अपने डिवाइस के सेंसर एक्सेस करने दें (सुझाया गया)</translation>
 <translation id="5620928963363755975">अधिक विकल्प बटन से डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
 <translation id="5626134646977739690">नाम:</translation>
 <translation id="5639724618331995626">सभी साइटों को अनुमति दें</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google अनुवाद</translation>
 <translation id="5916664084637901428">चालू</translation>
 <translation id="5919204609460789179">समन्वयन प्रारंभ करने के लिए <ph name="PRODUCT_NAME" /> अपडेट करें</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> सेव किए गए</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
 <translation id="5942872142862698679">खोजने के लिए Google का उपयोग करना</translation>
 <translation id="5956665950594638604">Chrome सहायता केंद्र को नए टैब में खोलें</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">सुरक्षित सामग्री</translation>
 <translation id="6627583120233659107">फ़ोल्‍डर संपादित करें</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
+<translation id="6643649862576733715">सेव किए गए डेटा की मात्रा के हिसाब से क्रम में लगाएं</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}one{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}other{<ph name="CONTACT_PREVIEW" />\u2026 और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}}</translation>
 <translation id="6656545060687952787">डिवाइस स्‍कैन करने के लिए Chrome को स्‍थान एक्‍सेस की आवश्‍यकता है. <ph name="BEGIN_LINK" />अनुमतियां अपडेट करें<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome पहली बार चलाने का अनुभव</translation>
 <translation id="741204030948306876">हां मैं सहमत हूं</translation>
+<translation id="7413229368719586778">शुरू होने की तारीख: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">पहले पूछें</translation>
 <translation id="7423538860840206698">क्लिपबोर्ड पढ़ने से ब्लॉक किया गया है</translation>
 <translation id="7437998757836447326">Chrome से प्रस्थान करें</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">शुरुआती पन्ने में बदलाव करें</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> और कई साइटें</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> भाषा के पेज का अनुवाद नहीं किया जाएगा</translation>
+<translation id="8349013245300336738">इस्तेमाल किए गए डेटा की मात्रा के हिसाब से क्रम में लगाएं</translation>
 <translation id="8363501664269050863">मार्गदर्शक पैनल. बंद करने के लिए नीचे स्वाइप करें.</translation>
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
@@ -863,7 +872,7 @@
 <translation id="8583805026567836021">खाते का डेटा साफ़ हो रहा है</translation>
 <translation id="8609465669617005112">ऊपर जाएं</translation>
 <translation id="8616006591992756292">आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
-<translation id="8617240290563765734">डाउनलोड की गई सामग्री में निर्दिष्‍ट URL खोलें?</translation>
+<translation id="8617240290563765734">सुझाया गया वह URL खोलें जिसे डाउनलोड की गई सामग्री में बताया गया है?</translation>
 <translation id="862875433388403934">अन्य ऐप्लिकेशन में डाउनलोड की गई सामग्री (फ़िल्में, संगीत, आदि) तब तक चलाने योग्य नहीं हो सकती, जब तक कि वे ऐप्लिकेशन नए डिवाइस प्रमाणिकता पर आधारित लाइसेंस पुन: प्राप्त नहीं कर लेते.
 
 नए लाइसेंस प्राप्त करने के लिए, इंटरनेट से कनेक्ट करें और अपनी डाउनलोड की गई सामग्री चलाएं.</translation>

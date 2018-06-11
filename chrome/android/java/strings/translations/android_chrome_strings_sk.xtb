@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Otvorené karty</translation>
 <translation id="1756600373018374892">Klepnutím na toto tlačidlo rýchlo pristúpite k svojim kartám.</translation>
 <translation id="1779089405699405702">Dekodér obrázkov</translation>
+<translation id="1782483593938241562">Dátum ukončenia: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Kedykoľvek zmeniť predvolené umiestnenie stiahnutých súborov</translation>
 <translation id="1807246157184219062">Svetlý režim</translation>
 <translation id="1829244130665387512">Nájsť na stránke</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Obnoviť stránku</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="271033894570825754">Nové</translation>
+<translation id="2728754400939377704">Zoradiť podľa webu</translation>
 <translation id="2736391366332017384">Klepnutím na tlačidlo plochy prejdete na stránku na novej karte vo svojej aktuálnej karte</translation>
 <translation id="2744248271121720757">Klepnutím na slovo aktivujete dynamické vyhľadávanie alebo zobrazíte súvisiace akcie</translation>
 <translation id="2762000892062317888">práve teraz</translation>
@@ -353,8 +355,10 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4113030288477039509">Spravované vaším správcom</translation>
 <translation id="4116038641877404294">Stiahnite si stránky na použitie offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d záložka}few{%1$d záložky}many{%1$d záložky}other{%1$d záložiek}}</translation>
+<translation id="4159800535322890630">Zablokovať webom prístup k senzorom</translation>
 <translation id="4165986682804962316">Nastavenia webu</translation>
 <translation id="4170011742729630528">Služba nie je k dispozícii. Skúste to znova neskôr.</translation>
+<translation id="4179980317383591987">Využité: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Jazyky</translation>
 <translation id="4195643157523330669">Otvoriť na novej karte</translation>
 <translation id="4198423547019359126">Nie sú k dispozícii žiadne umiestnenia stiahnutých súborov</translation>
@@ -520,6 +524,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="5585019845078534178">Karty</translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
 <translation id="5596627076506792578">Ďalšie možnosti</translation>
+<translation id="5620299005957670886">Povoliť webom prístup k senzorom (odporúčané)</translation>
 <translation id="5620928963363755975">Súbory a stránky nájdete v priečinku Stiahnuté súbory po použití tlačidla Ďalšie možnosti</translation>
 <translation id="5626134646977739690">Názov:</translation>
 <translation id="5639724618331995626">Povoliť všetky weby</translation>
@@ -563,6 +568,7 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="5911030830365207728">Prekladač Google</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
 <translation id="5919204609460789179">Ak chcete spustiť synchronizáciu, aktualizujte aplikáciu <ph name="PRODUCT_NAME" /></translation>
+<translation id="5937580074298050696">Ušetrené: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovať</translation>
 <translation id="5942872142862698679">Na vyhľadávanie sa používa Google</translation>
 <translation id="5956665950594638604">Otvorenie Centra pomoci prehliadača Chrome na novej karte</translation>
@@ -643,6 +649,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6612358246767739896">Chránený obsah</translation>
 <translation id="6627583120233659107">Upraviť priečinok</translation>
 <translation id="6643016212128521049">Vymazať</translation>
+<translation id="6643649862576733715">Zoradiť podľa množstva ušetrených dát</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ďalší}few{<ph name="CONTACT_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ďalšie}many{<ph name="CONTACT_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ďalšieho}other{<ph name="CONTACT_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ďalších}}</translation>
 <translation id="6656545060687952787">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. <ph name="BEGIN_LINK" />Aktualizovať povolenia<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
@@ -729,6 +736,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7400418766976504921">Webová adresa</translation>
 <translation id="7403691278183511381">Skúsenosť pri prvom spustení Chromu</translation>
 <translation id="741204030948306876">Áno, súhlasím</translation>
+<translation id="7413229368719586778">Dátum začatia: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Najprv sa spýtať</translation>
 <translation id="7423538860840206698">Blokovať čítanie schránky</translation>
 <translation id="7437998757836447326">Odhlásenie z prehliadača Chrome</translation>
@@ -834,6 +842,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8313455859591948645">Úprava stránky pri spustení</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> a ďalšie weby</translation>
 <translation id="8339163506404995330">Stránky v jazyku <ph name="LANGUAGE" /> nebudú prekladané</translation>
+<translation id="8349013245300336738">Zoradiť podľa množstva využitých dát</translation>
 <translation id="8363501664269050863">Navigačný panel. Zatvorte potiahnutím nadol.</translation>
 <translation id="8372893542064058268">Povolenie synchronizácie na pozadí na konkrétnom webe.</translation>
 <translation id="8374821112118309944">Aplikáciu TalkBack je potrebné aktualizovať na novšiu verziu.</translation>

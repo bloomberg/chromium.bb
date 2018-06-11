@@ -203,6 +203,7 @@
 <translation id="5457599981699367932">以访客身份浏览</translation>
 <translation id="54609108002486618">托管</translation>
 <translation id="553675580533261935">退出会话</translation>
+<translation id="5537725057119320332">投射</translation>
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME" />”可帮助连接到此网络。</translation>
 <translation id="554893713779400387">开启/关闭语音输入</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
@@ -311,12 +312,14 @@
 <translation id="7654687942625752712">同时按住两个音量键 5 秒钟，即可停用语音反馈。</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7692480393933218409">正在为已连接的 USB-C 设备充电</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">点击即可查看相关更新的详情</translation>
 <translation id="7796353162336583443">点按任务栏中的触控笔按钮可开始记事、截取屏幕截图，以及使用 Google 智能助理、激光笔或放大镜。</translation>
 <translation id="7798302898096527229">按搜索键或按 Shift 键可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">信号较强</translation>
 <translation id="7842569679327885685">警告：实验性功能</translation>
+<translation id="7846634333498149051">键盘</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
 <translation id="7933084174919150729">Google 智能助理仅适用于主要个人资料。</translation>
 <translation id="79341161159229895">该帐号由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>

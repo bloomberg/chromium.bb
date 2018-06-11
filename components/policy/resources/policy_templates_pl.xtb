@@ -863,6 +863,11 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3512226956150568738">Jeśli model urządzenia klienta obsługiwał środowisko ARC już wtedy, gdy do uruchomienia ARC nie była konieczna migracja do ext4, i jeśli zasada ArcEnabled jest ustawiona na wartość prawda, ta opcja będzie zachowywać się tak jak opcja AskUser (wartość 3). We wszystkich pozostałych przypadkach (jeśli model urządzenia nie obsługiwał wcześniej ARC lub jeśli zasada ArcEnabled jest ustawiona na wartość fałsz), ta wartość jest równoznaczna z opcją DisallowArc (wartość 0).</translation>
 <translation id="3524204464536655762">Nie zezwalaj żadnym stronom na wysyłanie próśb o dostęp do urządzeń USB przez interfejs API WebUSB</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
+<translation id="3545457887306538845">Określa, gdzie można używać narzędzi dla programistów.
+
+      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowedForForceInstalledExtensions” (wartość 0, która jest domyślną), narzędzia dla programistów i konsola JavaScript są dostępne wszędzie z wyjątkiem kontekstu rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
+      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsAllowed” (wartość 1), narzędzia dla programistów i konsola JavaScript są dostępne we wszystkich kontekstach, również w kontekście rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
+      Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), narzędzia dla programistów są niedostępne i nie można badać elementów na stronach. Wyłączone będą wszystkie skróty klawiszowe oraz pozycje menu i menu kontekstowego, które otwierają narzędzia dla programistów i konsolę JavaScript.</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="3556806727696701427">Włącza funkcję Bezpieczne przeglądanie w: <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
 
@@ -1887,6 +1892,37 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="681446116407619279">Obsługiwane schematy uwierzytelniania</translation>
 <translation id="6835883744948188639">Wyświetlaj cyklicznie komunikat o tym, że zalecane jest ponowne uruchomienie</translation>
+<translation id="6838056959556423778">Zastępuje reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />.
+
+      Ta zasada określa reguły wybierania domyślnej drukarki w <ph name="PRODUCT_NAME" />. Ma to miejsce podczas pierwszego użycia funkcji drukowania w danym profilu.
+
+      Gdy ta zasada jest skonfigurowana, <ph name="PRODUCT_NAME" /> spróbuje znaleźć drukarkę odpowiadającą wszystkim określonym atrybutom, a następnie wybierze ją jako domyślną. Wybierana jest pierwsza znaleziona drukarka, która odpowiada atrybutom. Jeśli jest kilka drukarek odpowiadających atrybutom, wybrana może być dowolna z nich – znaczenie ma tutaj kolejność ich wykrycia.
+
+      Jeśli zasada nie jest skonfigurowana lub drukarka odpowiadająca atrybutom nie zostanie znaleziona w przeznaczonym na to czasie, jako domyślna wybierana jest wbudowana drukarka PDF, a jeśli nie jest ona dostępna, drukarka domyślna nie jest wybierana.
+
+      Wartość musi być obiektem JSON o następującym schemacie:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Czy ograniczyć wyszukiwanie do określonego zbioru drukarek.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Wyrażenie regularne określające identyfikator drukarki.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Wyrażenie regularne określające wyświetlaną nazwę drukarki.",
+            "type": "string"
+          }
+        }
+      }
+
+      Typ <ph name="PRINTER_TYPE_CLOUD" /> to drukarki połączone z <ph name="CLOUD_PRINT_NAME" />, pozostałe to typ <ph name="PRINTER_TYPE_LOCAL" />.
+      Pominięcie któregoś pola oznacza, że brane są pod uwagę wszystkie wartości, np. jeśli nie określisz typu połączenia, funkcja podglądu wydruku zacznie wykrywać wszystkie rodzaje drukarek – lokalne i w chmurze.
+      Wyrażenia regularne muszą mieć składnię JavaScript RegExp. Rozróżniana jest wielkość liter.</translation>
 <translation id="684856667300805181">Ta zasada została usunięta w <ph name="PRODUCT_NAME" /> 68 i zastąpiona zasadą <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Ta zasada została wycofana i usunięta w M66, ponieważ była używana tylko do testów wewnętrznych i obniżała bezpieczeństwo.
 
@@ -2139,6 +2175,17 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7511361072385293666">Jeśli ta zasada jest włączona lub nieustawiona, użycie protokołu QUIC w <ph name="PRODUCT_NAME" /> jest dozwolone.
       Jeśli zasada jest wyłączona, użycie protokołu QUIC jest niedozwolone.</translation>
 <translation id="7519251620064708155">Zezwalaj na generowanie kluczy w tych witrynach</translation>
+<translation id="7529083451528428240">Umożliwia blokowanie sesji użytkownika na podstawie godziny na kliencie lub dziennego limitu użytkowania.
+
+          |time_window_limit| określa przedział czasu, w którym sesja użytkownika ma być zablokowana. Możliwe jest określenie tylko jednej reguły dla każdego dnia tygodnia, więc tablica |entries| może mieć od 0 do 7 elementów. |starts_at| i |ends_at| to początek i koniec przedziału czasu – jeśli godzina |ends_at| jest wcześniejsza niż |starts_at|, przedział czasu |time_limit_window| kończy się następnego dnia. |last_updated_millis| to sygnatura czasowa UTC ostatniej modyfikacji tej pozycji – jest to ciąg znaków, ponieważ sygnatura czasowa jest zbyt duża, aby zapisać ją jako liczbę całkowitą.
+
+          |time_usage_limit| określa dzienny limit użytkowania. Gdy użytkownik go przekroczy, jego sesja zostaje zablokowana. Każdemu dniu tygodnia odpowiada odrębna właściwość, którą należy ustawić tylko w przypadku, gdy danego dnia ma obowiązywać limit. |usage_quota_mins| to czas, przez który można używać urządzenia zarządzanego w danym dniu, a |reset_at| to godzina odnowienia limitu. Domyślną wartością |reset_at| jest północ ({'hour': 0, 'minute': 0}). |last_updated_millis| to sygnatura czasowa UTC ostatniej modyfikacji tej pozycji – jest to ciąg znaków, ponieważ sygnatura czasowa jest zbyt duża, aby zapisać ją jako liczbę całkowitą.
+
+          |overrides| umożliwia tymczasowe unieważnienie jednej lub wielu wcześniej określonych reguł.
+          * Jeśli oba limity – time_window_limit i time_usage_limit – nie są aktywne, urządzenie można zablokować za pomocą |LOCK|.
+          * |LOCK| tymczasowo blokuje sesję użytkownika do momentu rozpoczęcia najbliższego przedziału czasu określonego przez time_window_limit lub time_usage_limit.
+          * |UNLOCK| odblokowuje sesję użytkownika zablokowaną przez time_window_limit lub time_usage_limit.
+          |created_time_millis| to sygnatura czasowa UTC utworzenia pozycji |overrides| – jest to ciąg znaków, ponieważ sygnatura czasowa jest zbyt duża, aby zapisać ją jako liczbę całkowitą. Jest używana do ustalania, czy ta pozycja nadal obowiązuje. Jeśli aktywny obecnie limit (na podstawie czasu użytkowania lub przedziału czasu) rozpoczął się już po utworzeniu tej pozycji, nie będzie ona stosowana. Nie będzie też stosowana, jeśli została utworzona przed ostatnią zmianą aktywnego limitu time_window_limit lub time_usage_window.</translation>
 <translation id="7529100000224450960">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7529144158022474049">Współczynnik rozkładania automatycznych aktualizacji w czasie</translation>
 <translation id="7534199150025803530">Ta zasada nie ma wpływu na aplikację Dysk Google na Androida. Aby uniemożliwić używanie Dysku Google przez połączenia komórkowe, należy wyłączyć możliwość zainstalowania tej aplikacji.</translation>

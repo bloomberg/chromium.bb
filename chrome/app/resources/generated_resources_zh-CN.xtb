@@ -176,6 +176,7 @@
 <translation id="123578888592755962">磁盘已满</translation>
 <translation id="1238191093934674082">Open VPN</translation>
 <translation id="1240892293903523606">DOM 检查器</translation>
+<translation id="124116460088058876">更多语言</translation>
 <translation id="1241753985463165747">调用时可读取和更改您在当前网站上的所有数据</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />要重置您的设置。</translation>
 <translation id="1243314992276662751">上传</translation>
@@ -1064,7 +1065,6 @@
 <translation id="2624142942574147739">此网页正在使用您的摄像头和麦克风。</translation>
 <translation id="2626799779920242286">请稍后重试。</translation>
 <translation id="2630681426381349926">连接到 Wi-Fi 才能开始</translation>
-<translation id="2631006050119455616">已节省</translation>
 <translation id="2631498379019108537">在任务栏中显示输入法选项</translation>
 <translation id="2633199387167390344"><ph name="NAME" />占用了<ph name="USAGE" /> MB的磁盘空间。</translation>
 <translation id="2633212996805280240">要删除“<ph name="EXTENSION_NAME" />”吗？</translation>

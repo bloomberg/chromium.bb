@@ -212,7 +212,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7308322188646931570">Chrome tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
 <translation id="7330164299247909639">Todennusvarmenne epäonnistui. Kirjaudu uudelleen Google Chromeen käyttäjänä <ph name="USER_NAME" /> tai ota yhteyttä järjestelmänvalvojaan. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Uusi ikkuna</translation>
-<translation id="7369650938475876456">Käytä Chromen luomaa vahvaa salasanaa.</translation>
 <translation id="7398801000654795464">Chromeen kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
 <translation id="7408085963519505752">Chrome-käyttöjärjestelmän käyttöehdot</translation>
 <translation id="7419046106786626209">Chrome-käyttöjärjestelmä ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>

@@ -896,6 +896,11 @@
 <translation id="3512226956150568738">Jika model peranti pelanggan sudah menyokong ARC sebelum penghijrahan kepada ext4 yang diperlukan untuk menjalankan ARC dan jika dasar ArcEnabled ditetapkan kepada benar, pilihan ini akan berkelakuan seperti AskUser (nilai 3). Dalam semua keadaan lain, (jika model peranti tidak menyokong ARC sebelum ini atau jika dasar ArcEnabled ditetapkan kepada palsu), nilai ini bersamaan dengan DisallowArc (nilai 0).</translation>
 <translation id="3524204464536655762">Jangan benarkan mana-mana tapak meminta akses kepada peranti USB melalui API WebUSB</translation>
 <translation id="3528000905991875314">Dayakan halaman ralat ganti</translation>
+<translation id="3545457887306538845">Membenarkan anda mengawal tempat Alat Pembangun boleh digunakan.
+
+      Jika dasar ini ditetapkan kepada 'DeveloperToolsDisallowedForForceInstalledExtensions' (nilai 0, iaitu nilai lalai), Alat Pembangun dan konsol JavaScript boleh diakses secara umum, tetapi tidak boleh diakses dalam konteks sambungan yang dipasang oleh dasar perusahaan.
+      Jika dasar ini ditetapkan kepada 'DeveloperToolsAllowed' (nilai 1), Alat Pembangun dan konsol JavaScript boleh diakses dan digunakan dalam semua konteks, termasuk konteks sambungan yang dipasang oleh dasar perusahaan.
+      Jika dasar ini ditetapkan kepada 'DeveloperToolsDisallowed' (nilai 2), Alat Pembangun tidak boleh diakses dan unsur tapak web tidak boleh disemak lagi. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3556806727696701427">Mendayakan ciri Penyemakan Imbas Selamat <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
 
@@ -1979,6 +1984,37 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6810445994095397827">Sekat JavaScript pada tapak ini</translation>
 <translation id="681446116407619279">Skim pengesahan yang disokong</translation>
 <translation id="6835883744948188639">Tunjukkan gesaan berulang kepada pengguna yang menunjukkan pelancaran semula disyorkan</translation>
+<translation id="6838056959556423778">Membatalkan peraturan pilihan pencetak lalai <ph name="PRODUCT_NAME" />.
+
+      Dasar ini menentukan peraturan untuk memilih pencetak lalai dalam <ph name="PRODUCT_NAME" /> yang berlaku apabila fungsi cetak mula-mula digunakan dengan sesuatu profil.
+
+      Apabila dasar ini ditetapkan, <ph name="PRODUCT_NAME" /> akan cuba mencari pencetak yang sepadan dengan semua atribut yang dinyatakan dan memilihnya sebagai pencetak lalai. Pencetak pertama yang ditemui sepadan dengan dasar akan dipilih. Sekiranya tiada padanan yang unik, sebarang pencetak yang sepadan boleh dipilih, bergantung pada tertib pencetak itu ditemui.
+
+      Jika dasar ini tidak ditetapkan atau pencetak yang sepadan tidak ditemui sehingga tamat masa, pencetak PDF terbina dalam akan dipilih sebagai pencetak lalai atau apabila pencetak PDF tidak tersedia, tiada pencetak dipilih akan digunakan sebagai plilihan lalai.
+
+      Nilai akan dihuraikan sebagai objek JSON yang mematuhi skema berikut:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Pencetak yang disambungkan ke <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, pencetak yang selebihnya diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
+      Apabila medan tidak dimasukkan, bermakna semua nilai sepadan, contohnya, tidak menentukan sambungan akan menyebabkan Pratonton Cetakan memulakan penemuan semua jenis pencetak, setempat dan awan.
+      Pola ungkapan biasa mesti mematuhi sintaks RegExp JavaScript dan padanan bersifat sensitif huruf.</translation>
 <translation id="684856667300805181">Dasar ini telah dialih keluar dalam <ph name="PRODUCT_NAME" /> 68 dan digantikan oleh <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Dasar ini ditamatkan dan dialih keluar dalam M66, kerana digunakan untuk ujian dalaman sahaja dan merupakan liabiliti keselamatan.
 
@@ -2257,6 +2293,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7511361072385293666">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, penggunaan protokol QUIC dalam <ph name="PRODUCT_NAME" /> dibenarkan.
       Jika dasar ini ditetapkan kepada palsu, penggunaan protokol QUIC tidak dibenarkan.</translation>
 <translation id="7519251620064708155">Benarkan penghasilan kunci pada tapak ini</translation>
+<translation id="7529083451528428240">Membolehkan anda mengunci sesi pengguna berdasarkan masa pelanggan atau kuota penggunaan untuk hari itu.
+
+          Ciri |time_window_limit| menentukan tingkap harian yang digunakan untuk mengunci sesi pengguna. Kami hanya menyokong satu peraturan bagi setiap hari dalam seminggu, oleh itu saiz tatasusunan |entries| mungkin berbeza-beza dari 0 hingga 7. |starts_at| dan |ends_at| ialah titik mula dan tamat had tingkap, apabila |ends_at| lebih kecil daripada |starts_at|, bermakna |time_limit_window| tamat pada hari berikutnya. |last_updated_millis| ialah cap masa UTC untuk kali terakhir masukan ini dikemas kini, yang dihantar sebagai rentetan kerana cap masa tidak sesuai dalam bentuk nombor bulat.
+
+          Ciri |time_usage_limit| menentukan kuota skrin harian. Oleh itu, apabila pengguna mencapai had ini, sesi pengguna akan dikunci. Terdapat sifat bagi setiap hari dalam seminggu dan sifat ini harus ditetapkan jika terdapat kuota aktif untuk hari itu. |usage_quota_mins| ialah jumlah masa peranti terurus boleh digunakan dalam sehari dan |reset_at| ialah masa apabila kuota penggunaan diperbaharui. Nilai lalai untuk |reset_at| ialah tengah malam ({'hour': 0, 'minute': 0}). |last_updated_millis| ialah cap masa UTC untuk kali terakhir masukan ini dikemas kini, yang dihantar sebagai rentetan kerana cap masa tidak sesuai dalam bentuk nombor bulat.
+
+          |overrides| disediakan untuk membatalkan pengesahan satu atau beberapa peraturan yang terdahulu buat sementara waktu.
+          * Jika time_window_limit atau time_usage_limit tidak aktif, |LOCK| boleh digunakan untuk mengunci peranti.
+          * |LOCK| mengunci sesi pengguna buat sementara waktu hingga time_window_limit atau time_usage_limit yang berikutnya bermula.
+          * |UNLOCK| membuka kunci sesi pengguna yang dikunci mengikut time_window_limit atau time_usage_limit.
+          |created_time_millis| ialah cap masa UTC untuk penghasilan pembatalan, yang dihantar sebagai Rentetan kerana cap masa tidak sesuai dalam bentuk nombor bulat. Cap masa ini digunakan untuk menentukan sama ada pembatalan ini masih perlu dikenakan. Jika ciri had masa aktif semasa (had penggunaan masa atau had tingkap masa) bermula selepas pembatalan dihasilkan, tiada tindakan perlu diambil. Selain itu, jika pembatalan dihasilkan sebelum perubahan time_window_limit atau time_usage_window aktif yang terakhir, pembatalan tidak perlu dikenakan.</translation>
 <translation id="7529100000224450960">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk membuka pop timbul.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPopupsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>

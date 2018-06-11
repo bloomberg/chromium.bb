@@ -176,6 +176,7 @@
 <translation id="123578888592755962">Disk dolu</translation>
 <translation id="1238191093934674082">Open VPN</translation>
 <translation id="1240892293903523606">DOM denetleyicisi</translation>
+<translation id="124116460088058876">Diğer diller</translation>
 <translation id="1241753985463165747">Çağrıldığında geçerli web sitesindeki tüm verilerinizi okuma ve değiştirme</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />, ayarlarınızı sıfırlamak istiyor.</translation>
 <translation id="1243314992276662751">Yükle</translation>
@@ -209,6 +210,7 @@
 <translation id="1296497012903089238">Sertifika Türü</translation>
 <translation id="1297175357211070620">Hedef</translation>
 <translation id="1297922636971898492">Google Drive şu anda kullanılamıyor. Google Drive tekrar kullanılabilir olduğunda yükleme işlemi otomatik olarak yeniden başlayacak.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" />, cihazınızın korumalı medyanın gelişmiş oynatma için uygun olup olmadığını belirlemek amacıyla cihaz kimliğinizin Google tarafından doğrulanmasını istiyor.</translation>
 <translation id="1300806585489372370">Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />tanımlayıcılar özelliğini açın<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Apple Events'ten JavaScript'e izin ver</translation>
 <translation id="1303101771013849280">Yer İşaretleri HTML Dosyası</translation>
@@ -1067,7 +1069,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2624142942574147739">Bu sayfa kameranıza ve mikrofonunuza erişiyor.</translation>
 <translation id="2626799779920242286">Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="2630681426381349926">Başlamak için Kablosuz ağa bağlanın</translation>
-<translation id="2631006050119455616">Tasarruf Edilen</translation>
 <translation id="2631498379019108537">Giriş seçeneklerini rafta göster</translation>
 <translation id="2633199387167390344"><ph name="NAME" />, <ph name="USAGE" /> MB disk alanı kullanıyor.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" kaldırılsın mı?</translation>

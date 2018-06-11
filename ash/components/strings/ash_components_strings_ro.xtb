@@ -5,6 +5,7 @@
 <translation id="1122869341872663659">Se afișează <ph name="N" /> rezultate ale căutării pentru <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Trage linkul în bara de adrese a filei</translation>
 <translation id="1204450209689312104">Deschide o fereastră nouă în modul incognito</translation>
+<translation id="1251638888133819822">Activează sau dezactivează lupa de ecran complet</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Printează pagina curentă</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">Reîncarcă pagina curentă fără a folosi conținutul memorat în cache</translation>
 <translation id="526651782186312376">Selectează textul până la începutul rândului</translation>
 <translation id="5316716239522500219">Oglindiți monitoarele</translation>
+<translation id="539072479502328326">Activează sau dezactivează lupa andocată</translation>
 <translation id="5487187679583934283">Pornește sau oprește tastarea cuvintelor rostite</translation>
 <translation id="5541719484267030947">În timp ce tragi fila, apasă pe <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Caută pe pagina curentă</translation>

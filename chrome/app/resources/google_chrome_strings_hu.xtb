@@ -73,6 +73,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="2770231113462710648">Alapértelmezett böngésző beállítása:</translation>
 <translation id="2799223571221894425">Újraindítás</translation>
 <translation id="2847461019998147611">A Google Chrome megjelenítése ezen a nyelven</translation>
+<translation id="2857540653560290388">A Chrome indítása…</translation>
 <translation id="2871893339301912279">Bejelentkezett a Chrome-ba.</translation>
 <translation id="2888126860611144412">A Chrome névjegye</translation>
 <translation id="3037838751736561277">A Google Chrome háttérmódban van.</translation>
@@ -210,7 +211,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7308322188646931570">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez</translation>
 <translation id="7330164299247909639">A hitelesítési tanúsítvány nem használható. Jelentkezzen be újra a Google Chrome-ba a(z) <ph name="USER_NAME" /> felhasználónévvel, vagy kérjen további információt a rendszergazdájától. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Új ablak</translation>
-<translation id="7369650938475876456">A Chrome által generált erős jelszó használata</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chrome-ba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
 <translation id="7408085963519505752">Chrome OS – Szerződési Feltételek</translation>
 <translation id="7419046106786626209">A Chrome OS nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>

@@ -819,6 +819,7 @@
 <translation id="6945221475159498467">Изабери</translation>
 <translation id="6948701128805548767">Да бисте видели начине и захтеве за преузимање, изаберите адресу</translation>
 <translation id="6949872517221025916">Ресетујте лозинку</translation>
+<translation id="6950684638814147129">Грешка при рашчлањивању JSON вредности: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Изгледа да је сертификат сервера фалсификован.</translation>
 <translation id="6965382102122355670">Потврди</translation>
 <translation id="6965978654500191972">Уређај</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Родитељи га још увек нису одобрили</translation>
 <translation id="8625384913736129811">Сачувај ову картицу на овом уређају</translation>
 <translation id="8639963783467694461">Подешавања Аутоматског попуњавања</translation>
+<translation id="8663226718884576429">Резиме поруџбине, <ph name="TOTAL_LABEL" />, још детаља</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, одговор, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Ваша веза са доменом <ph name="DOMAIN" /> није шифрована.</translation>
 <translation id="8718314106902482036">Плаћање није довршено</translation>

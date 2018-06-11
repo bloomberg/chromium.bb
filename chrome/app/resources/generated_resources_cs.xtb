@@ -176,6 +176,7 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="123578888592755962">Disk je plný</translation>
 <translation id="1238191093934674082">Open VPN</translation>
 <translation id="1240892293903523606">Inspektor DOM</translation>
+<translation id="124116460088058876">Další jazyky</translation>
 <translation id="1241753985463165747">Při zavolání číst a měnit všechna data na aktuálním webu</translation>
 <translation id="1242633766021457174">Nástroj <ph name="THIRD_PARTY_TOOL_NAME" /> chce resetovat vaše nastavení.</translation>
 <translation id="1243314992276662751">Nahrát</translation>
@@ -1069,7 +1070,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2624142942574147739">Tato stránka může používat vaší webovou kameru a mikrofon.</translation>
 <translation id="2626799779920242286">Zkuste to prosím znovu později.</translation>
 <translation id="2630681426381349926">Chcete-li začít, připojte se k síti Wi-Fi</translation>
-<translation id="2631006050119455616">Uloženo</translation>
 <translation id="2631498379019108537">Zobrazovat na poličce možnosti vstupu</translation>
 <translation id="2633199387167390344">Aplikace nebo rozšíření <ph name="NAME" /> používá <ph name="USAGE" /> MB místa na disku.</translation>
 <translation id="2633212996805280240">Odstranit rozšíření <ph name="EXTENSION_NAME" />?</translation>

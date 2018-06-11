@@ -145,6 +145,7 @@
 <translation id="2416512023405990736">അൺചെക്കുചെയ്‌ത ഒരു ചെക്ക്‌ ബോക്‌സ്</translation>
 <translation id="2417569100218200841">ഉള്ളടക്ക വിവരം</translation>
 <translation id="2417948780551741035">അന്തിമ കുറിപ്പുകൾ</translation>
+<translation id="2421113964388408478">ഇല്ലാതാക്കൽ</translation>
 <translation id="2422937916923936891">മെനു ഇനം ചെക്ക് ബോക്‌സ്</translation>
 <translation id="2428534162001909979">കമാൻഡ് മെനുകൾ</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -178,6 +179,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ഓഡിയോ</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">സൂപ്പർസ്ക്രിപ്‌റ്റ് അവസാനം</translation>
 <translation id="2749275490991666823">ചെക്കുചെയ്‌തത്</translation>
 <translation id="27527859628328957">ഫോക്കസ് ചെയ്യാനാകുന്ന അടുത്ത ഇനത്തിലേക്ക് പോകുക</translation>
 <translation id="276402504937943375">ഉള്ളടക്ക പട്ടിക</translation>
@@ -202,6 +204,7 @@
 <translation id="288178314850623291">നിർദ്ദിഷ്‌ട തരത്തിലുള്ള ഘടകങ്ങളിലേക്ക് പോകാൻ 'കമാൻഡുകളിലേക്ക് പോകുക' ഉപയോഗിക്കുക. തലക്കെട്ടുകളിലൂടെ മുന്നോട്ട് പോകാൻ തിരയൽ + H അമർത്തുകയോ പിന്നോട്ട് പോകാൻ തിരയൽ + ഷിഫ്‌റ്റ് + H അമർത്തുകയോ ചെയ്യുക.</translation>
 <translation id="2894654529758326923">വിവരം</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{ഇടത് ബ്രേസ്}other{# ഇടത് ബ്രേസുകൾ}}</translation>
+<translation id="2909478709401302630">സൂപ്പർസ്ക്രിപ്‌റ്റ് തുടക്കം</translation>
 <translation id="2911433807131383493">ChromeVox ട്യൂട്ടോറിയൽ തുറക്കുക</translation>
 <translation id="2932083475399492303">ഘടനാപരമായവയ്‌ക്ക് അല്ലെങ്കിൽ ലേഔട്ടിന് ഇടയിലുള്ള ലൈൻ തരം ടോഗിൾ ചെയ്യുക</translation>
 <translation id="2944762337049891859">പേജ് പൂർണ്ണമായി ലോഡുചെയ്‌ത ശേഷം അത് സ്വയമേവ വായിക്കുക.</translation>
@@ -383,6 +386,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{വലത് ബ്രേസ്}other{# വലത് ബ്രേസുകൾ}}</translation>
 <translation id="4158704014418536539">കേസ് സെൻസിറ്റീവ്.</translation>
 <translation id="4161663686871496107">ChromeVox സംഭാഷണ ഫീഡ്‌ബാക്ക് തയ്യാറാണ്</translation>
+<translation id="4166192625054637755">സൂപ്പർസ്ക്രിപ്‌റ്റ് അവസാനം</translation>
 <translation id="4173994908659439270">എഡിറ്റുചെയ്യാൻ കഴിയുന്ന അടുത്ത വാചക ഫീൽഡ് ഒന്നുമില്ല.</translation>
 <translation id="4176463684765177261">അപ്രാപ്‌തമാക്കി</translation>
 <translation id="4188530942454211480">മുമ്പത്തെ വാക്യം</translation>
@@ -422,6 +426,7 @@
 <translation id="4476183483923481720">പുതിയ വരി</translation>
 <translation id="4482330759234983253">മുൻ പട്ടിക</translation>
 <translation id="4491109536499578614">ചിത്രം</translation>
+<translation id="4505167975768625962">ചേർക്കൽ</translation>
 <translation id="4517854969512651305">മൂല്യം കൂട്ടുക</translation>
 <translation id="4529987814483543472">ക്ലാസിക്ക് കീമാപ്പ്</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{സ്ലാഷ്}other{# സ്ലാഷുകൾ}}</translation>
@@ -526,6 +531,7 @@
 <translation id="5330443287809544590"><ph name="NAME" />, ലിങ്ക്</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">ബാക്ക്‌ ലിങ്ക്</translation>
+<translation id="5350654862897073517">സൂപ്പർസ്ക്രിപ്‌റ്റ് തുടക്കം</translation>
 <translation id="536031132345979795">വായന തുടരുന്നതിനിടയിൽ പുറകിലേക്ക് പോകുക</translation>
 <translation id="5368000168321181111">ഇയർകോൺസ് ഓഫാണ്</translation>
 <translation id="5374320867641260420">അടുത്ത ബട്ടൺ ഒന്നുമില്ല.</translation>

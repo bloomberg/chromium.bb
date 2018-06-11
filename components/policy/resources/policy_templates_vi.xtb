@@ -896,6 +896,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3512226956150568738">Nếu cần có kiểu thiết bị khách đã hỗ trợ ARC trước khi di chuyển sang ext4 để chạy ARC và nếu chính sách ArcEnabled được đặt thành true thì tùy chọn này sẽ hoạt động giống như AskUser (giá trị 3). Trong tất cả các trường hợp khác (nếu kiểu thiết bị không hỗ trợ ARC từ trước hoặc nếu chính sách ArcEnabled được đặt thành false), thì giá trị này sẽ tương đương với DisallowArc (giá trị 0).</translation>
 <translation id="3524204464536655762">Không cho phép bất kỳ trang web nào yêu cầu quyền truy cập vào thiết bị USB qua API WebUSB</translation>
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
+<translation id="3545457887306538845">Cho phép bạn kiểm soát vị trí có thể sử dụng Công cụ dành cho nhà phát triển.
+
+      Nếu đặt chính sách này thành 'DeveloperToolsDisallowedForForceInstalledExtensions' (giá trị 0 là giá trị mặc định) thì nói chung, bạn có thể truy cập vào Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript. Tuy nhiên, trong ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp, thì bạn không thể truy cập vào những mục này.
+      Nếu đặt chính sách này thành 'DeveloperToolsAllowed' (giá trị 1), thì bạn có thể truy cập cũng như sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript trong tất cả các ngữ cảnh, bao gồm cả ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp.
+      Nếu đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2), thì bạn không thể truy cập vào Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3556806727696701427">Bật tính năng Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi mục cài đặt này.
 
@@ -1972,6 +1977,37 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
 <translation id="6835883744948188639">Nên hiển thị lời nhắc định kỳ cho người dùng cho biết cần chạy lại</translation>
+<translation id="6838056959556423778">Ghi đè các quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />.
+
+      Chính sách này xác định quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />. Điều này xảy ra vào lần đầu chức năng in được sử dụng với một cấu hình.
+
+      Khi bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố tìm một máy in khớp với tất cả các thuộc tính đã chỉ định và chọn thiết bị đó làm máy in mặc định. Máy in đầu tiên được tìm thấy phù hợp với chính sách sẽ được chọn, trong trường hợp kết quả trùng khớp không phải duy nhất, có thể chọn bất kỳ máy in trùng khớp nào tùy thuộc vào thứ tự mà máy in được tìm thấy.
+
+      Nếu bạn chưa đặt chính sách này hoặc không tìm thấy máy in trùng khớp trong khoảng thời gian chờ thì máy in sẽ được đặt mặc định thành máy in PDF tích hợp hoặc không có máy in nào được chọn khi không có máy in PDF.
+
+      Giá trị này được phân tích cú pháp là đối tượng JSON, tuân theo giản đồ sau đây:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Máy in đã kết nối với <ph name="CLOUD_PRINT_NAME" /> được coi là <ph name="PRINTER_TYPE_CLOUD" />, các máy in còn lại được phân loại là <ph name="PRINTER_TYPE_LOCAL" />.
+      Bỏ qua một trường nghĩa là tất cả các giá trị trùng khớp, chẳng hạn như không chỉ rõ kết nối, sẽ làm cho chế độ Xem trước bản in bắt đầu tìm tất cả các loại máy in, cục bộ và trên đám mây.
+      Mẫu biểu thức thông thường phải tuân thủ cú pháp JavaScript RegExp và kết quả trùng khớp có phân biệt chữ hoa-thường.</translation>
 <translation id="684856667300805181">Chính sách này đã bị xóa trong <ph name="PRODUCT_NAME" /> 68 và thay thế bằng <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Chính sách này không được dùng nữa và đã bị xóa trong M66, vì chính sách này trước đây chỉ dùng để kiểm tra nội bộ và tiềm ẩn nguy cơ bảo mật.
 
@@ -2248,6 +2284,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7511361072385293666">Nếu chính sách này được đặt thành true hoặc không được đặt thì được phép sử dụng giao thức QUIC trong <ph name="PRODUCT_NAME" />.
       Nếu chính sách này được đặt thành false thì không được phép sử dụng giao thức QUIC.</translation>
 <translation id="7519251620064708155">Cho phép tạo khóa trên các trang web này</translation>
+<translation id="7529083451528428240">Cho phép bạn khóa phiên của người dùng dựa vào thời gian của ứng dụng hoặc định mức sử dụng trong ngày.
+
+          |time_window_limit| chỉ định một khoảng thời gian hàng ngày mà phiên của người dùng sẽ bị khóa. Chúng tôi chỉ hỗ trợ mỗi ngày trong tuần một quy tắc, do đó, kích thước của mảng |entries| có thể dao động trong khoảng từ 0 đến 7. |starts_at| và |ends_at| là thời gian bắt đầu và thời gian kết thúc của giới hạn thời gian, khi |ends_at| sớm hơn |starts_at| thì điều đó có nghĩa là |time_limit_window| kết thúc vào ngày tiếp theo. |last_updated_millis| là dấu thời gian UTC cho thời gian gần đây nhất mục này được cập nhật, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
+
+          |time_usage_limit| chỉ định định mức sử dụng màn hình hàng ngày, do vậy, khi người dùng đạt đến giới hạn này, phiên của người dùng sẽ bị khóa. Có một khoảng thời gian cho mỗi ngày trong tuần và chỉ nên đặt khoảng thời gian này nếu có định mức hoạt động cho ngày đó. |usage_quota_mins| là khoảng thời gian có thể sử dụng thiết bị được quản lý trong một ngày và |reset_at| là thời gian khi định mức sử dụng được gia hạn. Giá trị mặc định cho |reset_at| là nửa đêm ({'hour': 0, 'minute': 0}). |last_updated_millis| là dấu thời gian UTC cho lần gần đây nhất cập nhật mục này, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
+
+          |overrides| được cung cấp để tạm thời vô hiệu hóa một hoặc nhiều quy tắc trước đó.
+          * Nếu time_window_limit hoặc time_usage_limit đều không hoạt động, thì |LOCK| có thể được dùng để khóa thiết bị.
+          * |LOCK| sẽ tạm thời khóa phiên người dùng cho tới khi time_window_limit hoặc time_usage_limit tiếp theo bắt đầu.
+          * |UNLOCK| sẽ mở khóa phiên người dùng bị khóa bằng time_window_limit hoặc time_usage_limit.
+          |created_time_millis| là dấu thời gian UTC để tạo nội dung ghi đè, dấu thời gian này được gửi dưới dạng Chuỗi vì số nguyên sẽ không phù hợp. Dấu thời gian này dùng để xác định có tiếp tục áp dụng nội dung ghi đè này hay không. Nếu tính năng giới hạn thời gian hiện đang hoạt động (giới hạn mức sử dụng thời gian hoặc giới hạn khoảng thời gian) khởi động sau khi nội dung ghi đè được tạo, thì nội dung ghi đè sẽ không có hiệu lực. Ngoài ra, nếu nội dung ghi đè được tạo trước lần thay đổi gần đây nhất của time_window_limit hoặc time_usage_window đang hoạt động, thì nội dung ghi đè này cũng sẽ không được áp dụng.</translation>
 <translation id="7529100000224450960">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép mở cửa sổ bật lên.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultPopupsSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>

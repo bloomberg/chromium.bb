@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Geöffnete Tabs</translation>
 <translation id="1756600373018374892">Tippen Sie auf diese Schaltfläche, um schnell auf Ihre Tabs zuzugreifen.</translation>
 <translation id="1779089405699405702">Bild-Decodierer</translation>
+<translation id="1782483593938241562">Enddatum: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Sie können den Standard-Downloadpfad jederzeit ändern</translation>
 <translation id="1807246157184219062">Hell</translation>
 <translation id="1829244130665387512">Auf Seite suchen</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Seite aktualisieren</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="271033894570825754">Neu</translation>
+<translation id="2728754400939377704">Nach Website sortieren</translation>
 <translation id="2736391366332017384">Tippen Sie auf die Schaltfläche "Startseite", um die "Neuer Tab"-Seite auf Ihrem aktuellen Tab zu öffnen</translation>
 <translation id="2744248271121720757">Tippen Sie auf ein Wort, um eine Sofortsuche zu starten oder weitere Aktionen anzuzeigen</translation>
 <translation id="2762000892062317888">gerade eben</translation>
@@ -353,8 +355,10 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="4113030288477039509">Von Ihrem Administrator verwaltet</translation>
 <translation id="4116038641877404294">Seiten zur Offline-Ansicht herunterladen</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d Lesezeichen}other{%1$d Lesezeichen}}</translation>
+<translation id="4159800535322890630">Verhindern, dass Websites auf Ihre Sensoren zugreifen</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> verwendet</translation>
 <translation id="4181841719683918333">Sprachen</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
 <translation id="4198423547019359126">Keine verfügbaren Speicherorte für Downloads</translation>
@@ -521,6 +525,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="5585019845078534178">Karten</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="5596627076506792578">Weitere Optionen</translation>
+<translation id="5620299005957670886">Websites den Zugriff auf Ihre Sensoren erlauben (empfohlen)</translation>
 <translation id="5620928963363755975">Ihre Dateien und Seiten finden Sie durch Auswahl der Schaltfläche "Weitere Optionen" unter "Downloads"</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5639724618331995626">Alle Websites zulassen</translation>
@@ -564,6 +569,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="5911030830365207728">Google Übersetzer</translation>
 <translation id="5916664084637901428">An</translation>
 <translation id="5919204609460789179">Zur Synchronisierung müssen Sie <ph name="PRODUCT_NAME" /> aktualisieren</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> gespeichert</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5942872142862698679">Suche erfolgt mit Google</translation>
 <translation id="5956665950594638604">Chrome-Hilfe in einem neuen Tab öffnen</translation>
@@ -644,6 +650,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6627583120233659107">Ordner bearbeiten</translation>
 <translation id="6643016212128521049">Löschen</translation>
+<translation id="6643649862576733715">Nach der Menge der gespeicherten Daten sortieren</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weitere}other{<ph name="CONTACT_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weitere}}</translation>
 <translation id="6656545060687952787">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. <ph name="BEGIN_LINK" />Berechtigungen aktualisieren<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Passwort</translation>
@@ -730,6 +737,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Eindruck beim ersten Ausführen von Chrome</translation>
 <translation id="741204030948306876">Ja, bitte</translation>
+<translation id="7413229368719586778">Startdatum: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7423538860840206698">Es dürfen keine Dateien aus der Zwischenablage abgerufen werden</translation>
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
@@ -835,6 +843,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8313455859591948645">"Beim Start"-Seite bearbeiten</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> und weitere Websites</translation>
 <translation id="8339163506404995330">Seiten auf <ph name="LANGUAGE" /> werden nicht übersetzt</translation>
+<translation id="8349013245300336738">Nach der Menge der verwendeten Daten sortieren</translation>
 <translation id="8363501664269050863">Navigationsbereich. Zum Schließen nach unten wischen.</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
 <translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>

@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Buka tab</translation>
 <translation id="1756600373018374892">Tekan tombol ini untuk akses cepat ke tab Anda.</translation>
 <translation id="1779089405699405702">Pendekode gambar</translation>
+<translation id="1782483593938241562">Tanggal akhir <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Ubah lokasi download default kapan saja</translation>
 <translation id="1807246157184219062">Terang</translation>
 <translation id="1829244130665387512">Cari di halaman</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Segarkan halaman</translation>
 <translation id="2709516037105925701">Isi-Otomatis</translation>
 <translation id="271033894570825754">Baru</translation>
+<translation id="2728754400939377704">Urutkan menurut situs</translation>
 <translation id="2736391366332017384">Tap tombol layar utama untuk membuka halaman tab baru pada tab saat ini</translation>
 <translation id="2744248271121720757">Tap sebuah kata untuk menelusuri secara instan atau melihat tindakan terkait</translation>
 <translation id="2762000892062317888">baru saja</translation>
@@ -353,8 +355,10 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk memperse
 <translation id="4113030288477039509">Dikelola oleh administrator</translation>
 <translation id="4116038641877404294">Download halaman untuk melihat secara offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}other{%1$d bookmark}}</translation>
+<translation id="4159800535322890630">Blokir situs agar tidak mengakses sensor</translation>
 <translation id="4165986682804962316">Setelan situs</translation>
 <translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> digunakan</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="4198423547019359126">Tidak tersedia lokasi download</translation>
@@ -520,6 +524,7 @@ Akun Google Anda mungkin memiliki bentuk histori browsing lain seperti penelusur
 <translation id="5585019845078534178">Kartu</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5596627076506792578">Opsi lainnya</translation>
+<translation id="5620299005957670886">Izinkan situs mengakses sensor Anda (disarankan)</translation>
 <translation id="5620928963363755975">Temukan file dan halaman di Download dari tombol Opsi Lainnya</translation>
 <translation id="5626134646977739690">Nama:</translation>
 <translation id="5639724618331995626">Izinkan semua situs</translation>
@@ -563,6 +568,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5911030830365207728">Google Terjemahan</translation>
 <translation id="5916664084637901428">Aktif</translation>
 <translation id="5919204609460789179">Perbarui <ph name="PRODUCT_NAME" /> untuk memulai sinkronisasi</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> dihemat</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
 <translation id="5942872142862698679">Menggunakan Google untuk penelusuran</translation>
 <translation id="5956665950594638604">Membuka Pusat Bantuan Chrome di tab baru</translation>
@@ -643,6 +649,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Hapus</translation>
+<translation id="6643649862576733715">Urutkan menurut jumlah kuota yang dihemat</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}other{<ph name="CONTACT_PREVIEW" />\u2026 dan <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> lainnya}}</translation>
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK" />Perbarui izin<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Sandi</translation>
@@ -729,6 +736,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Pengalaman Penggunaan Pertama Chrome</translation>
 <translation id="741204030948306876">Ya, saya ikut</translation>
+<translation id="7413229368719586778">Tanggal mulai <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Tanyakan terlebih dahulu</translation>
 <translation id="7423538860840206698">Diblokir agar tidak membaca papan klip</translation>
 <translation id="7437998757836447326">Keluar dari Chrome</translation>
@@ -834,6 +842,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8313455859591948645">Edit halaman awal</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> dan situs lainnya</translation>
 <translation id="8339163506404995330">Halaman dalam bahasa <ph name="LANGUAGE" /> tidak akan diterjemahkan</translation>
+<translation id="8349013245300336738">Urutkan menurut jumlah kuota yang digunakan</translation>
 <translation id="8363501664269050863">Panel navigasi. Geser ke bawah untuk menutup.</translation>
 <translation id="8372893542064058268">Mengizinkan Sinkronisasi Latar Belakang untuk situs tertentu.</translation>
 <translation id="8374821112118309944">Anda perlu memperbarui TalkBack ke versi yang lebih baru.</translation>

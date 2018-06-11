@@ -819,6 +819,7 @@
 <translation id="6945221475159498467">Odaberi</translation>
 <translation id="6948701128805548767">Odaberite adresu za prikaz načina preuzimanja i zahtjeva za preuzimanje</translation>
 <translation id="6949872517221025916">Poništite zaporku</translation>
+<translation id="6950684638814147129">Došlo je do pogreške prilikom raščlanjivanja vrijednosti JSON-a: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Certifikat poslužitelja izgleda kao falsifikat.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="6965978654500191972">Uređaj</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Roditelji je još nisu odobrili</translation>
 <translation id="8625384913736129811">Spremi tu karticu na ovaj uređaj</translation>
 <translation id="8639963783467694461">Postavke automatske ispune</translation>
+<translation id="8663226718884576429">Sažetak narudžbe, <ph name="TOTAL_LABEL" />, više pojedinosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odgovor, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaša veza s <ph name="DOMAIN" /> nije šifrirana.</translation>
 <translation id="8718314106902482036">Plaćanje nije dovršeno</translation>

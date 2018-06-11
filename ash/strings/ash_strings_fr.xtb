@@ -203,6 +203,7 @@
 <translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
 <translation id="54609108002486618">Géré</translation>
 <translation id="553675580533261935">Fermeture de la session</translation>
+<translation id="5537725057119320332">Caster</translation>
 <translation id="5548285847212963613">L'extension "<ph name="EXTENSION_NAME" />" peut aider à se connecter à ce réseau.</translation>
 <translation id="554893713779400387">Activer ou désactiver la dictée</translation>
 <translation id="5571066253365925590">Bluetooth activé</translation>
@@ -311,12 +312,14 @@
 <translation id="7654687942625752712">Appuyez pendant cinq secondes sur les deux touches de volume pour désactiver les commentaires audio.</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Cliquer pour afficher les informations relatives à la mise à jour</translation>
 <translation id="7796353162336583443">Appuyez sur le bouton du stylet situé sur l'étagère pour prendre des notes, effectuer des captures d'écran et utiliser l'Assistant Google, le pointeur laser ou la loupe.</translation>
 <translation id="7798302898096527229">Appuyez sur Rechercher ou Maj pour annuler.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> et <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Signal de forte intensité</translation>
 <translation id="7842569679327885685">Avertissement : Fonctionnalité expérimentale</translation>
+<translation id="7846634333498149051">Clavier</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7933084174919150729">L'Assistant Google n'est disponible que pour le profil principal.</translation>
 <translation id="79341161159229895">Compte géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" /></translation>

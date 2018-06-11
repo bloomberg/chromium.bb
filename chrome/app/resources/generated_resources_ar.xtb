@@ -42,7 +42,7 @@
 <translation id="1056775291175587022">لم يتم العثور على أي شبكات.</translation>
 <translation id="1056898198331236512">تحذير</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1061904396131502319">حان وقت الاستراحة تقريبًا</translation>
+<translation id="1061904396131502319">سيتم قفل الجهاز بعد قليل</translation>
 <translation id="1062407476771304334">استبدال</translation>
 <translation id="1064835277883315402">الانضمام إلى شبكة خاصة</translation>
 <translation id="1064912851688322329">‏قطع الاتصال بحساب Google</translation>
@@ -176,6 +176,7 @@
 <translation id="123578888592755962">القرص ممتلئ</translation>
 <translation id="1238191093934674082">‏فتح الشبكة الظاهرية الخاصة (VPN)</translation>
 <translation id="1240892293903523606">‏مراقب DOM</translation>
+<translation id="124116460088058876">مزيد من اللغات</translation>
 <translation id="1241753985463165747">قراءة جميع بياناتك وتغييرها على موقع الويب الحالي عند الاستدعاء</translation>
 <translation id="1242633766021457174">يريد <ph name="THIRD_PARTY_TOOL_NAME" /> إعادة تعيين إعداداتك.</translation>
 <translation id="1243314992276662751">تحميل</translation>
@@ -209,6 +210,7 @@
 <translation id="1296497012903089238">نوع الشهادة</translation>
 <translation id="1297175357211070620">الوجهة</translation>
 <translation id="1297922636971898492">‏Google Drive غير متاح في الوقت الحالي. ستتم إعادة تشغيل التحميل تلقائيًا فور توفر Google Drive.</translation>
+<translation id="1300415640239881824">‏يرغب <ph name="DOMAIN" /> في أن تتحقَّق Google من هوية جهازك لتحديد مدى أهليته للتشغيل المُحسَّن للوسائط المحمية.</translation>
 <translation id="1300806585489372370">لتغيير هذا الإعداد، عليك أولاً <ph name="BEGIN_LINK" />تشغيل المُعرّفات<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">‏السماح بجافا سكريبت من أحداث Apple</translation>
 <translation id="1303101771013849280">‏لوضع إشارة مرجعية لملف HTML</translation>
@@ -670,7 +672,7 @@
 <translation id="1997484222658892567">يريد <ph name="URL" /> تخزين حجم كبير من البيانات على جهاز الكمبيوتر المحلي بشكل دائم.</translation>
 <translation id="1997616988432401742">شهاداتك</translation>
 <translation id="1999115740519098545">عند بدء التشغيل</translation>
-<translation id="200544492091181894">يمكنك دائمًا تغيير ذلك لاحقًا من الإعدادات</translation>
+<translation id="200544492091181894">يمكنك تغيير هذا الخيار من الإعدادات متى شئت.</translation>
 <translation id="2006638907958895361">فتح الرابط في <ph name="APP" /></translation>
 <translation id="2007404777272201486">الإبلاغ عن مشكلة...</translation>
 <translation id="2016430552235416146">التقليدي</translation>
@@ -1066,7 +1068,6 @@
 <translation id="2624142942574147739">هذه الصفحة تدخل إلى الكاميرا والميكروفون التابعين لك.</translation>
 <translation id="2626799779920242286">يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="2630681426381349926">‏الاتصال بشبكة Wi-Fi للبدء</translation>
-<translation id="2631006050119455616">تم الحفظ</translation>
 <translation id="2631498379019108537">إظهار خيارات الإدخال في الرف</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> يستخدم <ph name="USAGE" /> ميغابايت من مساحة القرص.</translation>
 <translation id="2633212996805280240">هل تريد إزالة "<ph name="EXTENSION_NAME" />"؟</translation>
@@ -2460,7 +2461,7 @@
 <translation id="4863769717153320198">‏تبدو كـ <ph name="WIDTH" /> x <ph name="HEIGHT" /> (تلقائية)</translation>
 <translation id="4864369630010738180">جارٍ تسجيل الدخول...</translation>
 <translation id="486635084936119914">فتح أنواع معينة من الملفات تلقائيًا بعد التنزيل</translation>
-<translation id="4869142322204669043">‏قد تستخدم Google المحتوى على المواقع التي تزورها ونشاط التصفُّح والتفاعلات لتخصيص <ph name="IDS_SHORT_PRODUCT_NAME" /> وخدمات Google الأخرى، مثل "الترجمة" و"البحث" و"الإعلانات". كما يمكنك تخصيص ذلك في أي وقت في الإعدادات.</translation>
+<translation id="4869142322204669043">‏قد تستخدم Google المحتوى على المواقع التي تزورها ونشاط التصفُّح والتفاعلات لتخصيص <ph name="IDS_SHORT_PRODUCT_NAME" /> وخدمات Google الأخرى، مثل "ترجمة" و"بحث" من Google والإعلانات. كما يمكنك تخصيص ذلك في أي وقت في "الإعدادات".</translation>
 <translation id="48704129375571883">إضافة ميزات إضافية</translation>
 <translation id="4870903493621965035">ليست هناك أجهزة مقترنة</translation>
 <translation id="4871210892959306034">$1 كيلوبايت</translation>
@@ -3607,7 +3608,7 @@
 <translation id="6584878029876017575">‏التوقيع مدى الحياة لـ Microsoft</translation>
 <translation id="6585283250473596934">جارٍ الدخول إلى الجلسة العامة.</translation>
 <translation id="6586451623538375658">تبديل زر الماوس الرئيسي</translation>
-<translation id="6589660129740381104">لمساعدتك في إدارة تجربتك بسهولة أكبر في <ph name="IDS_SHORT_PRODUCT_NAME" />، يتم التحكُّم حاليًا بشكلٍ موحَّد بالميزات المرتبطة بالمزامنة والتخصيص، وقد يؤدي تفعيل ذلك إلى تغيير الإعدادات الحالية.</translation>
+<translation id="6589660129740381104">لمساعدتك في إدارة تجربتك بسهولة أكبر في <ph name="IDS_SHORT_PRODUCT_NAME" />، يتم التحكُّم حاليًا بشكلٍ موحَّد بالميزات المرتبطة بالمزامنة والتخصيص، وقد يؤدي تفعيل هذا الخيار إلى تغيير الإعدادات الحالية.</translation>
 <translation id="6589706261477377614">زيادة سطوع المفاتيح</translation>
 <translation id="6590458744723262880">إعادة تسمية المجلد</translation>
 <translation id="6592267180249644460">‏تم التقاط سجلات WebRTC في <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
@@ -5216,7 +5217,7 @@
 <translation id="9064275926664971810">تفعيل الملء التلقائي لملء النماذج بنقرة واحدة</translation>
 <translation id="9064939804718829769">جارٍ النقل...</translation>
 <translation id="9065203028668620118">تحرير</translation>
-<translation id="9066773882585798925">سماع النص بصوت واضح</translation>
+<translation id="9066773882585798925">سماع النص بصوت عالٍ</translation>
 <translation id="9066782832737749352">تحويل النَّص إلى الكلام</translation>
 <translation id="9070219033670098627">تبديل شخص</translation>
 <translation id="9071637495340542136">جارٍ تثبيت <ph name="APP_NAME" />...</translation>

@@ -203,6 +203,7 @@
 <translation id="5457599981699367932">Browse as Guest</translation>
 <translation id="54609108002486618">Managed</translation>
 <translation id="553675580533261935">Exiting session</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5548285847212963613">The extension "<ph name="EXTENSION_NAME" />" can help connect to this network.</translation>
 <translation id="554893713779400387">Toggle dictation</translation>
 <translation id="5571066253365925590">Bluetooth enabled</translation>
@@ -311,12 +312,14 @@
 <translation id="7654687942625752712">Press and hold both volume keys for five seconds to disable spoken feedback.</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7692480393933218409">Charging connected USB-C devices</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Click to view update details</translation>
 <translation id="7796353162336583443">Tap the stylus button on the shelf to take a note, screenshot, use the Google Assistant, laser pointer or magnifying glass.</translation>
 <translation id="7798302898096527229">Press Search or Shift to cancel.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> and <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Strong signal</translation>
 <translation id="7842569679327885685">Warning: Experimental feature</translation>
+<translation id="7846634333498149051">Keyboard</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
 <translation id="7933084174919150729">The Google Assistant is only available for primary profile.</translation>
 <translation id="79341161159229895">Account managed by <ph name="FIRST_PARENT_EMAIL" /> and <ph name="SECOND_PARENT_EMAIL" /></translation>

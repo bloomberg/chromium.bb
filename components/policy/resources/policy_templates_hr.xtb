@@ -867,6 +867,11 @@
 <translation id="3512226956150568738">Ako je klijentov model uređaja već podržavao ARC prije nego što je premještanje na ext4 bilo obavezno za izvođenje ARC-a i ako je pravilo ArcEnabled postavljeno na true, ta će se opcija ponašati kao AskUser (vrijednost 3). U svim ostalim slučajevima (ako model uređaja nije podržavao ARC ili ako je pravilo ArcEnabled postavljeno na false), ta je vrijednost ekvivalentna pravilu DisallowArc (vrijednost 0).</translation>
 <translation id="3524204464536655762">Ne dopuštaj nijednoj web-lokaciji da traži pristup USB uređajima putem API-ja WebUSB</translation>
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
+<translation id="3545457887306538845">Omogućuje vam da kontrolirate gdje se mogu upotrebljavati Alati za razvojne programere.
+
+      Ako se to pravilo postavi na DeveloperToolsDisallowedForForceInstalledExtensions" (vrijednost 0, što je zadano za poslovne korisnike), Alatima za razvojne programere i konzoli JavaScript može se pristupiti općenito, ali im se ne može pristupiti u kontekstu proširenja instaliranih prema pravilima organizacije.
+      Ako se to pravilo postavi na "DeveloperToolsAllowed" (vrijednost 1, Alatima za razvojne programere i konzoli JavaScript može se pristupiti i može ih se upotrebljavati u svim kontekstima, uključujući kontekst proširenja instaliranih prema pravilima organizacije.
+      Ako se to pravilo postavi na "DeveloperToolsDisallowed" (vrijednost 2), Alatima za razvojne programere neće se moći pristupiti, a elementi web-lokacije više se neće moći pregledavati. Onemogućit će se svi tipkovni prečaci i svi unosi izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScript:</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
 <translation id="3556806727696701427">Omogućuje značajku Sigurno pregledavanje preglednika <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
 
@@ -1903,6 +1908,37 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6810445994095397827">Blok JavaScript na ovim web-lokacijama</translation>
 <translation id="681446116407619279">Podržane sheme autentifikacije</translation>
 <translation id="6835883744948188639">Prikaži korisniku ponavljajuću obavijest o preporučenom ponovnom pokretanju</translation>
+<translation id="6838056959556423778">Nadjačava zadana pravila za odabir pisača u proizvodu <ph name="PRODUCT_NAME" />.
+
+      Tim se pravilom daju odrednice za odabir zadanog pisača u proizvodu <ph name="PRODUCT_NAME" /> prilikom prve upotrebe funkcije ispisa na profilu.
+
+      Kada se to pravilo postavi, proizvod <ph name="PRODUCT_NAME" /> pokušat će pronaći pisač koji odgovara svim navedenim atributima i odabrati ga kao zadani. Odabire se prvi pisač koji odgovara pravilu, a u slučaju da se pronađe više odgovarajućih pisača, može se odabrati bilo koji pisač ovisno o redoslijedu njihovog otkrivanja.
+
+      Ako se to pravilo ne postavi ili se ne pronađe odgovarajući pisač u okviru vremenskog ograničenja, upotrebljavat će se ugrađeni PDF pisač ili se neće odabrati nijedan ako PDF pisač nije dostupan.
+
+      Vrijednost se raščlanjuje kao JSON objekt prema sljedećoj shemi:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Treba li se ograničiti traženje odgovarajućeg pisača na određeni skup pisača.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regularni izraz koji se treba podudarati s ID-jem pisača.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regularni izraz koji se treba podudarati sa zaslonskim nazivom pisača.",
+            "type": "string"
+          }
+        }
+      }
+
+      Pisači povezani s uslugom <ph name="CLOUD_PRINT_NAME" /> smatraju se vrstom <ph name="PRINTER_TYPE_CLOUD" />, dok su ostali pisači klasificirani kao vrsta <ph name="PRINTER_TYPE_LOCAL" />.
+      Izostavljanje polja znači da su podudarne sve vrijednosti. Na primjer, ako se ne odredi povezivanje, pregled ispisa pokrenut će otkrivanje svih vrsta pisača, kako lokalnih tako i onih u oblaku.
+      Uzorci regularnih izraza moraju slijediti sintaksu JavaScript RegExp, a u podudaranjima se razlikuju mala i velika slova.</translation>
 <translation id="684856667300805181">To je pravilo uklonjeno iz sustava <ph name="PRODUCT_NAME" /> 68 i zamijenjeno pravilom <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">To je pravilo zastarjelo i uklonjeno u M66 budući da se upotrebljavalo samo za interno testiranje i predstavlja sigurnosni rizik.
 
@@ -2157,6 +2193,17 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7511361072385293666">Ako se to pravilo postavi na "istinito" ili ako se ne postavi, dopuštena je upotreba QUIC protokola na proizvodu <ph name="PRODUCT_NAME" />.
       Ako se postavi na "neistinito", upotreba QUIC protokola nije dopuštena.</translation>
 <translation id="7519251620064708155">Dopusti generiranje ključeva na ovim web-lokacijama</translation>
+<translation id="7529083451528428240">Omogućuje vam da zaključate sesiju korisnika na temelju vremena klijenta ili korisničke kvote za taj dan.
+
+          |time_window_limit| određuje dnevni vremenski okvir u kojemu se sesija korisnika treba zaključati. Podržavamo samo jedno pravilo za svaki dan u tjednu, stoga veličina niza |entries| može varirati od nula do sedam. |starts_at| i |ends_at| su početak i kraj ograničenja vremenskog okvira, a kada je |ends_at| manji od |starts_at|, to znači da |time_limit_window| završava sljedeći dan. |last_updated_millis| je vremenska oznaka prema UTC-u za posljednje ažuriranje tog unosa, a šalje se u obliku niza jer vremenska oznaka ne bi stala u cijeli broj. 
+
+          |time_usage_limit| određuje dnevnu kvotu zaslona i kada je korisnik dosegne, sesija korisnika se zaključava. Postoji određeno svojstvo za svaki dan u tjednu, a ono se postavlja samo ako postoji aktivna kvota za taj dan. |usage_quota_mins| je količina vremena u kojemu se upravljani uređaj može upotrebljavati u jednom danu, a |reset_at| je vrijeme kada se kvota za upotrebu obnavlja. Zadana vrijednost za |reset_at| jest ponoć ({"sat": 0, "minuta": 0}). |last_updated_millis| je vremenska oznaka prema UCT-u za vrijeme za posljednje ažuriranje tog unosa, a šalje se u obliku niza jer vremenska oznaka ne bi stala u cijeli broj.
+
+          |overrides| služi za privremeno poništavanje jednog ili više prethodnih pravila.
+          * Ako ni time_window_limit ni time_usage_limit nisu aktivni, za zaključavanje uređaja može se upotrijebiti |LOCK|.
+          * |LOCK| privremeno zaključava sesiju korisnika dok ne počne sljedeći time_window_limit ili time_usage_limit.
+          * |UNLOCK| otključava sesiju korisnika koja je zaključana funkcijom time_window_limit ili time_usage_limit.
+          |created_time_millis| je vremenska oznaka prema UTC-u za izradu nadjačavanja, a šalje se u obliku niza jer vremenska oznaka ne bi stala u cijeli broj. Upotrebljava se kako bi se odredilo treba li se to nadjačavanje još primjenjivati. Ako je trenutačna značajka ograničenja aktivnog vremena (vremensko ograničenje uporabe ili ograničenje vremenskog okvira) započela nakon što je nadjačavanje izrađeno, ne bi se trebala primjenjivati. Ne bi se trebala primjenjivati ni ako je nadjačavanje izrađeno prije posljednje promjene ograničenja time_window_limit ili time_usage_window.</translation>
 <translation id="7529100000224450960">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije kojima je dopušteno otvaranje skočnih prozora. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPopupsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="7529144158022474049">Čimbenik raspršivanja automatskog ažuriranja</translation>
 <translation id="7534199150025803530">To pravilo nema utjecaja na Android aplikaciju Google disk. Ako želite spriječiti upotrebu Google diska putem mobilnih veza, onemogućite instaliranje Android aplikacije Google disk.</translation>

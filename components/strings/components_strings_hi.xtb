@@ -446,11 +446,11 @@
 <translation id="4067947977115446013">मान्य पता जोड़ें</translation>
 <translation id="4072486802667267160">आपका आदेश संसाधित करते समय गड़बड़ी हुई. कृपया फिर से कोशिश करें.</translation>
 <translation id="4075732493274867456">क्लाइंट और सर्वर, सामान्य SSL प्रोटोकॉल वर्शन या सिफ़र सुइट का समर्थन नहीं करते हैं.</translation>
-<translation id="4079302484614802869">प्रॉक्‍सी कॉन्‍फ़िगरेशन को .pac स्‍क्रिप्‍ट URL का उपयोग करने के लिए सेट किया जाता है, फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर के लिए नहीं.</translation>
+<translation id="4079302484614802869">प्रॉक्‍सी कॉन्‍फ़िगरेशन को .pac स्‍क्रिप्‍ट यूआरएल का उपयोग करने के लिए सेट किया जाता है, फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर के लिए नहीं.</translation>
 <translation id="4098354747657067197">आगे भ्रामक साइट है</translation>
 <translation id="4103249731201008433">डिवाइस की क्रम संख्या अमान्य है</translation>
 <translation id="410351446219883937">स्वतः चलाएं</translation>
-<translation id="4103763322291513355">काली सूची में डाले गए URL तथा आपके सिस्टम व्यवस्थापक द्वारा लागू की गई अन्य नीतियों को देखने के लिए &lt;strong&gt;chrome://policy&lt;/strong&gt; पर जाएं.</translation>
+<translation id="4103763322291513355">प्रतिबंधित किए गए URL और आपके सिस्टम ए़़डमिन ने जिन अन्य नीतियों को लागू किया है, उन्हें देखने के लिए &lt;strong&gt;chrome://policy&lt;/strong&gt; पर जाएं.</translation>
 <translation id="4110652170750985508">अपना भुगतान देखें</translation>
 <translation id="4116663294526079822">इस साइट पर हमेशा अनुमति दें</translation>
 <translation id="4117700440116928470">नीति क्षेत्र समर्थित नहीं है.</translation>
@@ -646,9 +646,9 @@
 <translation id="5470861586879999274">&amp;संपादित करना फिर से करें</translation>
 <translation id="5481076368049295676">यह सामग्री आपके डिवाइस पर ऐसा खतरनाक सॉफ़्टवेयर इंस्टॉल करने की कोशिश कर सकती है जो आपकी जानकारी चुरा सकता है या उसे हटा सकता है. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">मान्य पता जोड़ें</translation>
-<translation id="5492298309214877701">कंपनी, संगठन या विद्यालय के इंट्रानेट पर इस साइट का URL एक बाहरी वेबसाइट जैसा है.
+<translation id="5492298309214877701">किसी कंपनी, संगठन या स्कूल के इंट्रानेट पर इस साइट का URL एक बाहरी वेबसाइट जैसा है.
     <ph name="LINE_BREAK" />
-    अपने सिस्टम व्यस्थापक से संपर्क करने का प्रयास करें.</translation>
+    अपने सिस्टम एडमिन से संपर्क करने की कोशिश करें.</translation>
 <translation id="5509780412636533143">प्रबंधित बुकमार्क</translation>
 <translation id="5510766032865166053">हो सकता है कि उसे ले जाया गया हो या हटा दिया गया हो.</translation>
 <translation id="5523118979700054094">नीति का नाम</translation>
@@ -709,7 +709,7 @@
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
 <translation id="598637245381783098">भुगतान ऐप्लिकेशन नहीं खोला जा सकता</translation>
-<translation id="5989320800837274978">न तो कोई फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और न ही कोई .pac स्क्रिप्ट URL निर्दिष्ट किए गए हैं.</translation>
+<translation id="5989320800837274978">न तो कोई फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और न ही कोई .pac स्क्रिप्ट URL साफ़ तौर पर बताया गया है.</translation>
 <translation id="5990559369517809815">सर्वर से किए गए अनुरोधों को एक्‍सटेंशन द्वारा अवरुद्ध कर दिया गया है.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">वर्ष</translation>
@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6948701128805548767">पिकअप के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
 <translation id="6949872517221025916">पासवर्ड रीसेट करें</translation>
+<translation id="6950684638814147129">JSON मान पार्स करते समय गड़बड़ी हुई: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">सर्वर का प्रमाणपत्र फर्जी दिखाई देता है.</translation>
 <translation id="6965382102122355670">ठीक है</translation>
 <translation id="6965978654500191972">डिवाइस</translation>
@@ -995,7 +996,7 @@
 <translation id="8184538546369750125">वैश्विक डिफ़ॉल्ट का उपयोग करें (अनुमति दें)</translation>
 <translation id="8191494405820426728">स्थानीय क्रैश आईडी <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">&amp;ले जाना वापस लाएं</translation>
-<translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" आईडी वाले एक्‍सटेंशन का अमान्‍य अपडेट URL.</translation>
+<translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" आईडी वाले एक्‍सटेंशन का दिया गया अपडेट URL अमान्य है.</translation>
 <translation id="8202097416529803614">आदेश सारांश</translation>
 <translation id="8205463626947051446">साइट तंग करने वाले विज्ञापन दिखाने के लिए जानी जाती है</translation>
 <translation id="8211406090763984747">कनेक्शन सुरक्षित है</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8620436878122366504">आपके अभिभावकों ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
 <translation id="8625384913736129811">यह कार्ड इस डिवाइस पर सेव करें</translation>
 <translation id="8639963783467694461">ऑटोमैटिक भरना की सेटिंग...</translation>
+<translation id="8663226718884576429">ऑर्डर की खास बातें, <ph name="TOTAL_LABEL" />, ज़्यादा जानकारी</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> से आपके कनेक्शन को एन्क्रिप्ट नहीं किया गया है.</translation>
 <translation id="8718314106902482036">भुगतान पूरा नहीं हुआ</translation>

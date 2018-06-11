@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Mga bukas na tab</translation>
 <translation id="1756600373018374892">I-tap ang button na ito para sa mabilis na access sa iyong mga tab.</translation>
 <translation id="1779089405699405702">Pang-decode ng larawan</translation>
+<translation id="1782483593938241562">Petsa ng pagtatapos <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Baguhin ang default na lokasyon ng pag-download anumang oras</translation>
 <translation id="1807246157184219062">Maliwanag</translation>
 <translation id="1829244130665387512">Nahanap sa pahina</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">I-refresh ang page</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="271033894570825754">Bago</translation>
+<translation id="2728754400939377704">Pagbukud-bukurin ayon sa site</translation>
 <translation id="2736391366332017384">I-tap ang button ng home para makapunta sa page ng bagong tab sa iyong kasalukuyang tab</translation>
 <translation id="2744248271121720757">Mag-tap ng salita upang hanapin agad ito o tingnan ang mga nauugnay na pagkilos</translation>
 <translation id="2762000892062317888">ngayon lang</translation>
@@ -353,8 +355,10 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="4113030288477039509">Pinamamahalaan ng iyong administrator</translation>
 <translation id="4116038641877404294">I-download ang mga page upang magamit ang mga ito offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bookmark}one{%1$d bookmark}other{%1$d na bookmark}}</translation>
+<translation id="4159800535322890630">Mag-block ng mga site sa pag-access sa iyong mga sensor</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> ang nagamit</translation>
 <translation id="4181841719683918333">Mga Wika</translation>
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="4198423547019359126">Walang available na lokasyon ng pag-download</translation>
@@ -520,6 +524,7 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="5585019845078534178">Mga Card</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
 <translation id="5596627076506792578">Higit pang opsyon</translation>
+<translation id="5620299005957670886">Payagan ang mga site na i-access ang iyong mga sensor (inirerekomenda)</translation>
 <translation id="5620928963363755975">Hanapin ang iyong mga file at page sa Mga Download mula sa button na Higit Pang Opsyon</translation>
 <translation id="5626134646977739690">Pangalan:</translation>
 <translation id="5639724618331995626">Payagan ang lahat ng site</translation>
@@ -563,6 +568,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">Naka-on</translation>
 <translation id="5919204609460789179">I-update ang <ph name="PRODUCT_NAME" /> upang simulan ang pag-sync</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> ang natipid</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="5942872142862698679">Ginagamit ang Google para sa paghahanap</translation>
 <translation id="5956665950594638604">Buksan ang Help Center ng Chrome sa bagong tab</translation>
@@ -643,6 +649,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6612358246767739896">Pinoprotektahang content</translation>
 <translation id="6627583120233659107">I-edit ang folder</translation>
 <translation id="6643016212128521049">I-clear</translation>
+<translation id="6643649862576733715">Pagbukud-bukurin ayon sa dami ng data na natipid</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> iba pa}one{<ph name="CONTACT_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> iba pa}other{<ph name="CONTACT_PREVIEW" />\u2026 at <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> na iba pa}}</translation>
 <translation id="6656545060687952787">Kailangan ng Chrome ng access sa lokasyon upang makapag-scan at makakita ng mga device. <ph name="BEGIN_LINK" />I-update ang mga pahintulot<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Password</translation>
@@ -729,6 +736,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Unang Karanasan sa Pagtakbo ng Chrome</translation>
 <translation id="741204030948306876">Oo, sali ako</translation>
+<translation id="7413229368719586778">Petsa ng pagsisimula <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Magtanong muna</translation>
 <translation id="7423538860840206698">Na-block sa pag-read ng clipboard</translation>
 <translation id="7437998757836447326">Mag-sign out sa Chrome</translation>
@@ -834,6 +842,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8313455859591948645">I-edit ang page sa pagsisimula</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> at higit pang site</translation>
 <translation id="8339163506404995330">Hindi isasalin ang mga page na nasa <ph name="LANGUAGE" /></translation>
+<translation id="8349013245300336738">Pagbukud-bukurin ayon sa dami ng data na nagamit</translation>
 <translation id="8363501664269050863">Panel ng navigation. Mag-swipe pababa upang isara.</translation>
 <translation id="8372893542064058268">Payagan ang Pag-sync sa Background para sa isang partikular na site.</translation>
 <translation id="8374821112118309944">Kailangan mong i-update ang TalkBack sa isang mas bagong bersyon.</translation>

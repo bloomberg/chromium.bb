@@ -178,6 +178,7 @@
 <translation id="123578888592755962">Disco lleno</translation>
 <translation id="1238191093934674082">OpenVPN</translation>
 <translation id="1240892293903523606">Inspector de DOM</translation>
+<translation id="124116460088058876">Más idiomas</translation>
 <translation id="1241753985463165747">Leer y modificar todos los datos del sitio web actual cuando se ejecute</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quiere restablecer la configuración.</translation>
 <translation id="1243314992276662751">Subir</translation>
@@ -1078,7 +1079,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2624142942574147739">Esta página tiene acceso a la cámara y al micrófono.</translation>
 <translation id="2626799779920242286">Vuelve a intentarlo más tarde.</translation>
 <translation id="2630681426381349926">Conéctate a una red Wi-Fi para empezar</translation>
-<translation id="2631006050119455616">Ahorrados</translation>
 <translation id="2631498379019108537">Mostrar opciones de entrada en la estantería</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> utiliza <ph name="USAGE" /> MB del espacio en disco.</translation>
 <translation id="2633212996805280240">¿Quieres eliminar "<ph name="EXTENSION_NAME" />"?</translation>
@@ -3988,7 +3988,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7119389851461848805">encendido</translation>
 <translation id="7120865473764644444">No se ha podido conectar con el servidor de sincronización. Reintentando...</translation>
 <translation id="7121362699166175603">Borra el historial y los autocompletados de la barra de direcciones. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7123360114020465152">Ya no se admite</translation>
+<translation id="7123360114020465152">Ya no es compatible</translation>
 <translation id="71243390042171582">Actualizada hace <ph name="MINUTES" /> minutos</translation>
 <translation id="7124929488592184705">Error al imprimir <ph name="DOCUMENT_NAME" /></translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; - &lt;em&gt;búsqueda en Drive&lt;/em&gt;</translation>

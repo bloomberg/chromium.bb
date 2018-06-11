@@ -821,6 +821,7 @@
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6948701128805548767">Pilih alamat untuk melihat kaedah dan syarat pengambilan</translation>
 <translation id="6949872517221025916">Tetapkan Semula Kata Laluan</translation>
+<translation id="6950684638814147129">Ralat semasa menghuraikan nilai JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Sijil pelayan rupanya adalah pemalsuan.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Peranti</translation>
@@ -1052,6 +1053,7 @@
 <translation id="8620436878122366504">Ibu bapa anda belum meluluskannya</translation>
 <translation id="8625384913736129811">Simpan Kad Ini pada Peranti Ini</translation>
 <translation id="8639963783467694461">Tetapan auto isi</translation>
+<translation id="8663226718884576429">Ringkasan Pesanan, <ph name="TOTAL_LABEL" />, Butiran Lanjut</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, jawapan, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Sambungan anda ke <ph name="DOMAIN" /> tidak disulitkan.</translation>
 <translation id="8718314106902482036">Pembayaran belum selesai</translation>

@@ -108,6 +108,7 @@
     <ph name="LINE_BREAK2" />
     Виберіть кілька фотографій.</translation>
 <translation id="1149401351239820326">Місяць закінчення терміну дії</translation>
+<translation id="1151917987301063366">Завжди дозволяти хосту <ph name="HOST" /> доступ до датчиків</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
 <translation id="1156488781945104845">Поточний час</translation>
 <translation id="1161575384898972166">Увійдіть у <ph name="TOKEN_NAME" />, щоб експортувати сертифікат клієнта.</translation>
@@ -124,6 +125,7 @@
 <translation id="1175364870820465910">&amp;Друк...</translation>
 <translation id="117624967391683467">Копіювання файлу <ph name="FILE_NAME" />…</translation>
 <translation id="1177138678118607465">Google може використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук, рекламу й інші служби Google. Це налаштування можна змінити на сторінці myaccount.google.com/activitycontrols/search</translation>
+<translation id="1177753005899755865">ПОМИЛКА. Не вдалося завантажити компонент віртуальної машини.</translation>
 <translation id="1177863135347784049">Спеціальне</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Видалити</translation>
@@ -176,6 +178,7 @@
 <translation id="123578888592755962">Диск заповнено</translation>
 <translation id="1238191093934674082">Відкрити VPN</translation>
 <translation id="1240892293903523606">Інспектор DOM</translation>
+<translation id="124116460088058876">Інші мови</translation>
 <translation id="1241753985463165747">Читати та змінювати всі ваші дані на поточному веб-сайті, коли він викликається</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> хоче скинути ваші налаштування.</translation>
 <translation id="1243314992276662751">Завантажити</translation>
@@ -372,6 +375,7 @@
 <translation id="1529891865407786369">Джерело живлення</translation>
 <translation id="1530838837447122178">Відкрити налаштування миші та сенсорної панелі</translation>
 <translation id="1531004739673299060">додатка</translation>
+<translation id="1534389735079119190">ПОМИЛКА. Не вдалося запустити контейнер у віртуальній машині.</translation>
 <translation id="15373452373711364">Великий курсор миші</translation>
 <translation id="1543284117603151572">Імпортовано з Edge</translation>
 <translation id="1545177026077493356">Автоматичний режим термінала</translation>
@@ -424,6 +428,7 @@
 <translation id="1616298854599875024">Не вдається імпортувати розширення <ph name="IMPORT_NAME" />, оскільки воно не є спільним модулем</translation>
 <translation id="161707228174452095">Відбиток пальця додано.</translation>
 <translation id="1618268899808219593">Довідковий центр</translation>
+<translation id="162035744160882748">Увімкнути синхронізацію, персоналізацію й інші служби Google</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1624026626836496796">Це потрібно зробити лише раз. Ваші облікові дані не буде збережено.</translation>
 <translation id="1627276047960621195">Опис файлу</translation>
@@ -499,6 +504,7 @@
 <translation id="1726100011689679555">Сервери імен</translation>
 <translation id="1729533290416704613">Розширення також змінило сторінку, яка відкривається під час пошуку в універсальному вікні пошуку.</translation>
 <translation id="1731589410171062430">Усього: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> ( <ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" /> )</translation>
+<translation id="1731754778936909679">ПОМИЛКА. Не вдалося запустити сервіс віртуальної машини.</translation>
 <translation id="1731911755844941020">...</translation>
 <translation id="1732215134274276513">Відкріпити вкладки</translation>
 <translation id="1734824808160898225">Можливо, <ph name="PRODUCT_NAME" /> не зможе оновлюватись</translation>
@@ -506,6 +512,7 @@
 <translation id="1737968601308870607">Помилка файлу</translation>
 <translation id="1743570585616704562">Не розпізнано</translation>
 <translation id="1743970419083351269">Закрити панель завантажень</translation>
+<translation id="1744060673522309905">Не вдається приєднати пристрій до домену. Переконайтеся, що ви не перевищили допустиму кількість доданих пристроїв.</translation>
 <translation id="1744108098763830590">фонова сторінка</translation>
 <translation id="1745520510852184940">Завжди виконувати цю дію</translation>
 <translation id="174937106936716857">Усього файлів</translation>
@@ -614,6 +621,7 @@
 <translation id="1897762215429052132">Налаштування з’єднання з мережею, мови, розкладки клавіатури…</translation>
 <translation id="1901303067676059328">Вибрати &amp;всі</translation>
 <translation id="1902576642799138955">Період чинності</translation>
+<translation id="1905375423839394163">Назва пристрою Chromebook</translation>
 <translation id="1905710495812624430">Перевищено максимальну кількість дозволених спроб.</translation>
 <translation id="1909880997794698664">Справді назавжди перевести цей пристрій у режим термінала?</translation>
 <translation id="1910721550319506122">Вітаємо!</translation>
@@ -806,6 +814,7 @@
 <translation id="221872881068107022">Зворотне прокручування</translation>
 <translation id="2220529011494928058">Повідомити про проблему</translation>
 <translation id="2220572644011485463">PIN-код або пароль</translation>
+<translation id="2222414641881146529">Надсилати дані системи</translation>
 <translation id="2224444042887712269">Це налаштування встановив користувач <ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">Редагувати ім’я папки</translation>
 <translation id="2226449515541314767">Цьому сайту заборонено повністю контролювати пристрої MIDI.</translation>
@@ -867,6 +876,7 @@
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" запитує додаткові дозволи.</translation>
 <translation id="2307462900900812319">Установити параметри мережі</translation>
 <translation id="230927227160767054">Ця сторінка хоче встановити обробника служби.</translation>
+<translation id="2309620859903500144">Доступ цього сайту до датчиків руху чи світла заблоковано.</translation>
 <translation id="2316129865977710310">Ні, дякую</translation>
 <translation id="2317842250900878657">Перенесено <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Розмір паперу</translation>
@@ -1014,6 +1024,7 @@
 <translation id="2544853746127077729">Сертифікат автентифікації відхилений мережею</translation>
 <translation id="2547921442987553570">Додати в <ph name="EXTENSION_NAME" /></translation>
 <translation id="2550212893339833758">Змінна пам’ять</translation>
+<translation id="2550596535588364872">Дозволити розширенню <ph name="EXTENSION_NAME" /> відкрити файл <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> не вдалося з'єднатися з <ph name="NETWORK_ID" />. Виберіть іншу мережу або повторіть спробу.</translation>
 <translation id="2553440850688409052">Сховати цей плагін</translation>
 <translation id="2554553592469060349">Вибраний файл завеликий (максимальний розмір – 3 МБ).</translation>
@@ -1068,7 +1079,6 @@
 <translation id="2624142942574147739">Ця сторінка має доступ до ваших камери та мікрофона.</translation>
 <translation id="2626799779920242286">Повторіть спробу пізніше.</translation>
 <translation id="2630681426381349926">Під’єднайтеся до Wi-Fi, щоб почати</translation>
-<translation id="2631006050119455616">Збережено</translation>
 <translation id="2631498379019108537">Показувати на полиці опції введення</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> використовує <ph name="USAGE" /> МБ місця на диску.</translation>
 <translation id="2633212996805280240">Видалити "<ph name="EXTENSION_NAME" />"?</translation>
@@ -1162,11 +1172,13 @@
 <translation id="2740393541869613458">переглядати веб-сайти, які відвідував контрольований користувач, і</translation>
 <translation id="2743387203779672305">Копіювати в буфер</translation>
 <translation id="2745080116229976798">Посилене підпорядкування Microsoft</translation>
+<translation id="2749295145042071768">Запускається сервіс віртуальної машини.</translation>
 <translation id="2749756011735116528">Увійти в <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Перевірити граматику та правопис</translation>
 <translation id="2751739896257479635">2-га фаза автентифікації EAP</translation>
 <translation id="2755367719610958252">Керувати функціями для спеціальних можливостей</translation>
 <translation id="275662540872599901">екран вимкнено</translation>
+<translation id="2761898608071930085">Інший обліковий запис</translation>
 <translation id="2762441749940182211">Заборонено використовувати камеру</translation>
 <translation id="2765217105034171413">Малий</translation>
 <translation id="2766006623206032690">Вста&amp;вити та перейти</translation>
@@ -1258,6 +1270,7 @@
 <translation id="2902312830803030883">Додаткові дії</translation>
 <translation id="2903457445916429186">Відкрити вибрані елементи</translation>
 <translation id="2903493209154104877">Адреси</translation>
+<translation id="2903882649406874750">Завжди блокувати доступ до датчиків для хосту <ph name="HOST" /></translation>
 <translation id="290444763029043472"><ph name="DOWNLOADED_AMOUNT_MB" /> МБ / завантажено <ph name="TOTAL_AMOUNT_MB" /> МБ</translation>
 <translation id="2904456025988372123">Запитувати, якщо сайт намагається завантажити файли автоматично після першого файлу</translation>
 <translation id="2907619724991574506">URL-адреси автозавантаження</translation>
@@ -1314,6 +1327,7 @@
 <translation id="3003144360685731741">Рекомендовані мережі</translation>
 <translation id="3003623123441819449">Кеш CSS</translation>
 <translation id="3003633581067744647">Зменшене зображення</translation>
+<translation id="3003828226041301643">Не вдається приєднати пристрій до домену. Перевірте обліковий запис, щоб переконатися, що ви можете додавати пристрої.</translation>
 <translation id="3003967365858406397">Пристрій <ph name="PHONE_NAME" /> створить приватне з’єднання Wi-Fi.</translation>
 <translation id="3004391367407090544">Поверніться пізніше</translation>
 <translation id="3006881078666935414">Немає даних про використання</translation>
@@ -1353,6 +1367,7 @@
 <translation id="304747341537320566">Системи синтезу мовлення</translation>
 <translation id="304826556400666995">Увімкнути звук на вкладках</translation>
 <translation id="3053013834507634016">Використання ключа сертифіката</translation>
+<translation id="3055065387062707862">Запускається контейнер у віртуальній машині.</translation>
 <translation id="3057861065630527966">Створити резервні копії фотографій і відео</translation>
 <translation id="3060379269883947824">Увімкнути службу Читання з екрана</translation>
 <translation id="3061707000357573562">Служба виправлень</translation>
@@ -1445,6 +1460,7 @@
 <translation id="3206175707080061730">Файл із назвою "$1" уже існує. Замінити його?</translation>
 <translation id="3208703785962634733">Не підтверджено</translation>
 <translation id="3213187967168344806">Не вдається додати принтер. Перезапустіть комп’ютер і повторіть спробу.</translation>
+<translation id="321356136776075234">Організаційний підрозділ пристрою (напр., OU=Chromebooks,DC=приклад,DC=com)</translation>
 <translation id="3217843140356091325">Створити комбінацію клавіш?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="3220586366024592812">Відбулося аварійне завершення процесу для функції підключення  <ph name="CLOUD_PRINT_NAME" />. Перезапустити?</translation>
@@ -1791,6 +1807,7 @@
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> тепер відображатиметься в Консолі адміністратора</translation>
 <translation id="3741243925913727067">Створення резервних копій фотографій і відео з носія на Google Диску.</translation>
 <translation id="3742055079367172538">Знімок екрана зроблено</translation>
+<translation id="3742666961763734085">Не вдається знайти організаційний підрозділ із такою назвою. Повторіть спробу.</translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
 <translation id="3748026146096797577">Не з’єднано</translation>
 <translation id="3749289110408117711">Ім’я файлу</translation>
@@ -1983,6 +2000,7 @@
 <translation id="4023146161712577481">Визначення конфігурації пристрою.</translation>
 <translation id="4027804175521224372">(Ви не ввійшли – <ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK" />)</translation>
 <translation id="4031179711345676612">Дозволено використовувати мікрофон</translation>
+<translation id="4031527940632463547">Датчики заблоковано</translation>
 <translation id="4031910098617850788">F5</translation>
 <translation id="4033471457476425443">Додати нову папку</translation>
 <translation id="4034042927394659004">Зменшити яскравість клавіатури</translation>
@@ -2197,6 +2215,7 @@
 <translation id="4415748029120993980">Еліптична крива SECG secp384r1 (також відома як NIST P-384)</translation>
 <translation id="4416582610654027550">Введіть дійсну URL-адресу</translation>
 <translation id="4419409365248380979">Завжди дозволяти хосту <ph name="HOST" /> створювати файли cookie</translation>
+<translation id="4419556793104466535">Керування синхронізацією, персоналізацією тощо</translation>
 <translation id="4421932782753506458">Киця</translation>
 <translation id="4422347585044846479">Редагувати закладку для цієї сторінки</translation>
 <translation id="4423104065312875417">Установити додаткові системи синтезу мовлення</translation>
@@ -2223,6 +2242,7 @@
 <translation id="4448844063988177157">Пошук Wi-Fi мереж...</translation>
 <translation id="4449996769074858870">На цій вкладці відтворюється аудіофайл.</translation>
 <translation id="4450974146388585462">Діагностувати</translation>
+<translation id="4453946976636652378">Шукайте в <ph name="SEARCH_ENGINE_NAME" /> або введіть URL-адресу</translation>
 <translation id="445923051607553918">Увійти в мережу Wi-Fi</translation>
 <translation id="4462159676511157176">Імена серверів – персоналізовано</translation>
 <translation id="4467100756425880649">Галерея Веб-магазину Chrome</translation>
@@ -2246,6 +2266,7 @@
 <translation id="4508051413094283164">Відкривати все у вікні в режимі анонімного перегляду</translation>
 <translation id="4508265954913339219">Помилка активації</translation>
 <translation id="4508765956121923607">Переглянути д&amp;жерело</translation>
+<translation id="4509823033118379431">Зображення наразі недоступні. Щоб переглянути колекції, підключіться знову.</translation>
 <translation id="451407183922382411">Технологія <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Створити нового контрольованого користувача</translation>
 <translation id="4514610446763173167">Відтворити або призупинити відео</translation>
@@ -2280,6 +2301,7 @@
 <translation id="4555769855065597957">Shadow</translation>
 <translation id="4556110439722119938">Ваші закладки, історія, паролі й інші налаштування синхронізуватимуться з обліковим записом Google, щоб ви могли користуватися ними на всіх своїх пристроях</translation>
 <translation id="4558426062282641716">Потрібен дозвіл на автозапуск</translation>
+<translation id="4559617833001311418">Цей сайт має доступ до датчиків руху чи світла.</translation>
 <translation id="4562155214028662640">Додати відбиток пальця</translation>
 <translation id="4565377596337484307">Сховати пароль</translation>
 <translation id="4567772783389002344">Додати слово</translation>
@@ -2402,6 +2424,7 @@
 <translation id="4750394297954878236">Пропозиції</translation>
 <translation id="475088594373173692">Перший користувач</translation>
 <translation id="4751476147751820511">Датчики руху та світла</translation>
+<translation id="4755151420634597054">ПОМИЛКА. Не вдалося запустити віртуальну машину.</translation>
 <translation id="4756378406049221019">Зупинити/оновити</translation>
 <translation id="4756388243121344051">&amp;Історія</translation>
 <translation id="4759238208242260848">Завантаження</translation>
@@ -2432,6 +2455,7 @@
 <translation id="4808667324955055115">Спливаючі вікна заблоковано:</translation>
 <translation id="480990236307250886">Відкрити домашню сторінку</translation>
 <translation id="4812632551187706935">Не вдалось ініціалізувати з’єднання</translation>
+<translation id="4813136279048157860">Мої зображення</translation>
 <translation id="4813512666221746211">Помилка мережі</translation>
 <translation id="4816492930507672669">За розміром сторінки</translation>
 <translation id="4820334425169212497">Ні</translation>
@@ -2463,6 +2487,7 @@
 <translation id="4856478137399998590">Службу пересилання мобільних даних активовано. Нею можна користуватися</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Відкрити всі в &amp;анонімному вікні}=1{Відкрити в &amp;анонімному вікні}one{Відкрити всі (#) в &amp;анонімному вікні}few{Відкрити всі (#) в &amp;анонімному вікні}many{Відкрити всі (#) в &amp;анонімному вікні}other{Відкрити всі (#) в &amp;анонімному вікні}}</translation>
 <translation id="4858913220355269194">Футбол</translation>
+<translation id="4862042298115071399"><ph name="WINDOW_TITLE" />: відео відтворюється в режимі "Картинка в картинці"</translation>
 <translation id="4862050643946421924">Додавання пристрою…</translation>
 <translation id="4862642413395066333">Підписування відповідей OCSP</translation>
 <translation id="4863769717153320198"><ph name="WIDTH" />x<ph name="HEIGHT" /> (за умовчанням)</translation>
@@ -2674,6 +2699,7 @@
 <translation id="5170568018924773124">Показати в папці</translation>
 <translation id="5171045022955879922">Знайдіть або введіть URL-адресу</translation>
 <translation id="5171343362375269016">Замінена пам’ять</translation>
+<translation id="5175379009094579629">Назва пристрою недійсна. Введіть дійсну назву.</translation>
 <translation id="5177479852722101802">Продовжити блокувати доступ до камери та мікрофона</translation>
 <translation id="5177526793333269655">Перегляд ескізів</translation>
 <translation id="5177549709747445269">Ви використовуєте мобільний Інтернет</translation>
@@ -2710,10 +2736,12 @@
 <translation id="5235750401727657667">Відкривати нову вкладку на місці поточної сторінки</translation>
 <translation id="5238278114306905396">Програму "<ph name="EXTENSION_NAME" />" автоматично вилучено.</translation>
 <translation id="5238369540257804368">Діапазони</translation>
+<translation id="5240817131241497236">Змінилися налаштування, які керують синхронізацією, персоналізацією й іншими службами Google у Chrome. Це може вплинути на поточні налаштування.</translation>
 <translation id="5241128660650683457">Переглядати всі ваші дані на веб-сайтах, які ви відвідуєте</translation>
 <translation id="5242724311594467048">Увімкнути розширення "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5244474230056479698">Синхронізація з обліковим записом <ph name="EMAIL" /></translation>
 <translation id="5246282308050205996">Відбулося аварійне завершення роботи програми <ph name="APP_NAME" />. Натисніть цю спливаючу підказку, щоб перезапустити програму.</translation>
+<translation id="5247051749037287028">Відображувана назва (необов’язково)</translation>
 <translation id="5249624017678798539">Завантаження не закінчилося через аварійне завершення роботи веб-переглядача.</translation>
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> використовує ваші геодані, щоб надавати локальний вміст. Це можна змінити в меню "<ph name="SETTINGS_LINK" />".</translation>
 <translation id="5252456968953390977">Роумінг</translation>
@@ -3073,6 +3101,7 @@
 <translation id="5751545372099101699">Елемент полиці 4</translation>
 <translation id="5752453871435543420">Резервне копіювання ОС Chrome в Інтернеті</translation>
 <translation id="5756163054456765343">Довідковий центр</translation>
+<translation id="5758823144991844964">Файли Play</translation>
 <translation id="5759728514498647443">Документи, які ви друкуєте через додаток <ph name="APP_NAME" />, може переглядати додаток <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Пристроїв USB не знайдено</translation>
 <translation id="5764483294734785780">Збере&amp;гти аудіо як...</translation>
@@ -3161,6 +3190,7 @@
 <translation id="5867841422488265304">Виконайте пошук або введіть веб-адресу</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5869522115854928033">Збережені паролі</translation>
+<translation id="5869948122057593679">Закрити всі вікна</translation>
 <translation id="5870086504539785141">Закрити меню доступності</translation>
 <translation id="5870155679953074650">Тривалі затримки</translation>
 <translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>
@@ -3267,6 +3297,7 @@
 <translation id="6055171183283175969">Введений пароль неправильний.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 із шифруванням RSA</translation>
 <translation id="6056710589053485679">Звичайне перезавантаження</translation>
+<translation id="6057381398996433816">Цьому сайту заборонено використовувати датчики руху та світла.</translation>
 <translation id="6059652578941944813">Ієрархія сертифіката</translation>
 <translation id="6059925163896151826">Пристрої USB</translation>
 <translation id="6064217302520318294">Блокування екрана</translation>
@@ -3298,6 +3329,7 @@
 <translation id="6101226222197207147">Додано нову програму (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="6103681770816982672">Застереження. Ви переходите на версію для розробників</translation>
 <translation id="6104068876731806426">Облікові записи Google</translation>
+<translation id="6104311680260824317">Не вдається приєднати пристрій до домену. Сервер не підтримує вказані типи шифрування Kerberos. Перегляньте розділ "Більше опцій", щоб налаштувати шифрування.</translation>
 <translation id="6105158702728922449">Використовувати вашу камеру та мікрофон</translation>
 <translation id="6105877918873366097">Дата останнього доступу</translation>
 <translation id="6107012941649240045">Кому видано</translation>
@@ -3548,6 +3580,7 @@
 <translation id="6474884162850599008">Від’єднати обліковий запис Google Диска</translation>
 <translation id="6475697075626596525">Додаток <ph name="APP_NAME" /> хоче показувати вміст вашого екрана. Виберіть, що показувати.</translation>
 <translation id="6478248366783946499">Завантажити небезпечний файл?</translation>
+<translation id="6483485061007832714">Відкрити завантаження</translation>
 <translation id="6483805311199035658">Відкривається файл <ph name="FILE" />...</translation>
 <translation id="6485131920355264772">Не вдалось отримати дані про вільне місце</translation>
 <translation id="648637985389593741">Так, увімкнути синхронізацію та персоналізацію</translation>
@@ -3734,6 +3767,7 @@
 <translation id="6766101255664245434">Робіть новий знімок або вибирайте наявне фото чи значок.
           <ph name="LINE_BREAK" />
           Це зображення з’являтиметься на екрані входу та заблокованому екрані Chromebook.</translation>
+<translation id="6767639283522617719">Не вдається приєднатися до домену. Переконайтеся, що налаштування для організаційного підрозділу правильні.</translation>
 <translation id="6769712124046837540">Додавання принтера…</translation>
 <translation id="6771503742377376720">Є Центром сертифікації</translation>
 <translation id="6777817260680419853">Переспрямування заблоковано</translation>
@@ -3761,6 +3795,7 @@
 <translation id="680572642341004180">Увімкнути відстеження RLZ в <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6807889908376551050">Показати всі...</translation>
 <translation id="6810613314571580006">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно підтверджувати облікові дані під час кожного входу на сайтах.</translation>
+<translation id="6810768462515084623">Схоже, пароль уже не дійсний. Поновіть його на іншому пристрої та повторіть спробу.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> неможливо запустити з кореневого каталогу.</translation>
 <translation id="6812841287760418429">Залишити зміни</translation>
 <translation id="6817174620439930047">Запитувати, коли сайт хоче використовувати виключні повідомлення системи, щоб отримувати доступ до пристроїв MIDI (рекомендується)</translation>
@@ -3793,12 +3828,14 @@
 <translation id="6860097299815761905">Налаштування проксі-сервера...</translation>
 <translation id="6860427144121307915">Відкрити у вкладці</translation>
 <translation id="6862635236584086457">Для всіх файлів, збережених у цій папці, автоматично зберігаються резервні копії онлайн</translation>
+<translation id="6864219378771002430">Запускається віртуальна машина.</translation>
 <translation id="6865313869410766144">Дані автозаповнення форм</translation>
 <translation id="686664946474413495">Температура кольорів</translation>
 <translation id="6870888490422746447">Виберіть додаток:</translation>
 <translation id="6871644448911473373">Відповідач OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Сервер відхилив введений вами пароль.</translation>
 <translation id="687588960939994211">Також видалити історію, закладки, налаштування й інші дані Chrome, збережені на цьому пристрої.</translation>
+<translation id="6878422606530379992">Використання датчиків дозволено</translation>
 <translation id="6880587130513028875">На цій сторінці зображення заблоковано.</translation>
 <translation id="6883319974225028188">На жаль, системі не вдалося зберегти конфігурацію пристрою.</translation>
 <translation id="6885771755599377173">Перегляд інформації про систему</translation>
@@ -3966,6 +4003,7 @@
 <translation id="7134098520442464001">Зменшити розмір тексту</translation>
 <translation id="7136694880210472378">Установити за умовчанням</translation>
 <translation id="7136984461011502314">Вас вітає <ph name="PRODUCT_NAME" /></translation>
+<translation id="7136993520339022828">Виявлено помилку. Повторіть спробу, вибравши інші зображення.</translation>
 <translation id="7138678301420049075">Інше</translation>
 <translation id="713888829801648570">На жаль, неможливо підтвердити ваш пароль, оскільки ви не під’єднані до Інтернету.</translation>
 <translation id="7140928199327930795">Немає інших доступних пристроїв.</translation>
@@ -4112,6 +4150,7 @@
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Підсвічувати курсор миші під час руху</translation>
 <translation id="7377169924702866686">Клавішу Caps Lock увімкнено.</translation>
+<translation id="7377451353532943397">Продовжити блокувати доступ до датчиків</translation>
 <translation id="7378627244592794276">Ні</translation>
 <translation id="73786666777299047">Відкрити Веб-магазин Chrome</translation>
 <translation id="7378810950367401542">/</translation>
@@ -4263,6 +4302,7 @@
 <translation id="7595453277607160340">Щоб користуватися додатками Android, а <ph name="DEVICE_TYPE" /> працював належним чином, знову ввійдіть і оновіть їх.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (код помилки <ph name="ERROR_CODE" />).</translation>
 <translation id="7598466960084663009">Перезавантажити ком’ютер</translation>
+<translation id="7599527631045201165">Назва пристрою задовга. Введіть коротшу назву.</translation>
 <translation id="7600965453749440009">Ніколи не перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="760197030861754408">Щоб під’єднати пристрій, перейдіть на сторінку <ph name="LANDING_PAGE" />.</translation>
 <translation id="7602079150116086782">Немає вкладок з інших пристроїв</translation>
@@ -4363,6 +4403,7 @@
 <translation id="7773726648746946405">Пам’ять сеансу</translation>
 <translation id="7776701556330691704">Голосів не знайдено</translation>
 <translation id="7781335840981796660">Усі облікові записи користувачів і локальні дані буде видалено.</translation>
+<translation id="7781540849114045652">Завантажується компонент віртуальної машини.</translation>
 <translation id="7782102568078991263">Більше немає пропозицій від Google</translation>
 <translation id="778330624322499012">Не вдалося завантажити плагін <ph name="PLUGIN_NAME" /></translation>
 <translation id="7784067724422331729">Цей файл заблоковано налаштуваннями безпеки на вашому комп’ютері.</translation>
@@ -4436,6 +4477,7 @@
 <translation id="7839051173341654115">Переглянути медіа-вміст або створити його резервну копію</translation>
 <translation id="7839192898639727867">Ідентифікатор ключа суб'єкта сертифіката</translation>
 <translation id="7839804798877833423">Для отримання цих файлів буде використано приблизно <ph name="FILE_SIZE" /> мобільного передавання даних.</translation>
+<translation id="7844553762889824470">Щоб озвучити текст, виділіть його та натисніть клавішу пошуку + S. Також можна утримувати клавішу пошуку чи торкнутися значка "Читання з екрана" біля зображення профілю, щоб виділити потрібний фрагмент.</translation>
 <translation id="7844992432319478437">Оновлення відмінностей</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="7846634333498149051">Клавіатура</translation>
@@ -4668,6 +4710,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">сторінка</translation>
 <translation id="8180786512391440389">Розширення "<ph name="EXTENSION" />" має доступ до читання й видалення зображень, відео та звукових файлів у вибраних розташуваннях.</translation>
+<translation id="8181215761849004992">Не вдається приєднатися до домену. Перевірте в обліковому записі, чи ви можете додавати пристрої.</translation>
 <translation id="8184288427634747179">Перейти у профіль "<ph name="AVATAR_NAME" />"</translation>
 <translation id="8185331656081929126">Показувати сповіщення, якщо в мережі виявлено нові принтери</translation>
 <translation id="8186609076106987817">Серверу не вдалося знайти файл.</translation>
@@ -4933,6 +4976,7 @@
 <translation id="8642267168767642381">Ви провели пальцем надто повільно</translation>
 <translation id="8642947597466641025">Збільшити розмір тексту</translation>
 <translation id="8643418457919840804">Щоб продовжити, виберіть опцію:</translation>
+<translation id="8645354835496065562">Дозволяти доступ до датчиків</translation>
 <translation id="8647834505253004544">Недійсна веб-адреса</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> або <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Хоча у вас більше немає доступу до старого профілю, ви можете видалити його.</translation>
@@ -5103,6 +5147,7 @@
 <translation id="8876309039915144086">Згенерувати пароль…</translation>
 <translation id="8877448029301136595">[батьківський каталог]</translation>
 <translation id="8879284080359814990">&amp;Показати як вкладку</translation>
+<translation id="8883847527783433352">Синхронізувати з іншим обліковим записом</translation>
 <translation id="8884961208881553398">Додати нові сервіси</translation>
 <translation id="8885197664446363138">Функція Smart Lock недоступна</translation>
 <translation id="8888432776533519951">Колір:</translation>
@@ -5138,6 +5183,11 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" /> транслює вікно на вкладку <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416">Ваш пристрій <ph name="DEVICE_TYPE" /> можна розблокувати за допомогою телефона Android.</translation>
 <translation id="8946359700442089734">Функції налагодження не повністю ввімкнено на цьому пристрої <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
+<translation id="8948006114608036530">Зараз цей пристрій автоматично надсилає в Google дані про діагностику та використання пристрою й додатків. Цей параметр налаштовано власником. Якщо Історію додатків і веб-пошуку ввімкнено, ця інформація зберігатиметься в обліковому записі. Ви зможете керувати нею в розділі "Моя активність".
+
+    Це загальна інформація про пристрій і його використання (як-от рівень заряду акумулятора, застосування додатків і з’єднання з мережею). Ці дані буде використано, щоб покращувати продукти й служби Google. Також деякі зведені дані допоможуть партнерам, як-от розробникам Android, удосконалити свої додатки та продукти.
+    Якщо вимкнути цю функцію, пристрій усе одно зможе надсилати інформацію, потрібну для отримання важливих послуг, як-от оновлень системи та засобів безпеки.
+    Щоб керувати цією функцією, перейдіть у "Налаштування" &gt; Google і виберіть опцію "Використання та діагностика" в меню.</translation>
 <translation id="894871326938397531">Завершити анонімний перегляд?</translation>
 <translation id="895347679606913382">Запуск...</translation>
 <translation id="8954952943849489823">Помилка переміщення. Неочікувана помилка: $1</translation>
@@ -5147,6 +5197,7 @@
 <translation id="8959810181433034287">Контрольований користувач повинен буде використовувати цей пароль для входу, тому придумайте безпечний пароль і не забудьте повідомити його контрольованому користувачу.</translation>
 <translation id="8960795431111723921">Наразі ми вивчаємо цю проблему.</translation>
 <translation id="8962083179518285172">Сховати деталі</translation>
+<translation id="8962918469425892674">Цей сайт використовує датчики руху чи світла.</translation>
 <translation id="8965037249707889821">Введіть старий пароль</translation>
 <translation id="8965697826696209160">Недостатньо місця.</translation>
 <translation id="8967866634928501045">Натисніть Alt + Shift + A, щоб показати</translation>
@@ -5337,6 +5388,7 @@
 <translation id="952992212772159698">Не активовано</translation>
 <translation id="957960681186851048">Цей сайт намагався автоматично завантажити декілька файлів</translation>
 <translation id="9580706199804957">Не вдалося під’єднатися до служб Google</translation>
+<translation id="958416628331784386">На цій вкладці відео відтворюється в режимі "Картинка в картинці".</translation>
 <translation id="958515377357646513">Торкніться, щоб перейти далі.</translation>
 <translation id="960719561871045870">Код оператора</translation>
 <translation id="960987915827980018">Залишилася приблизно 1 год.</translation>

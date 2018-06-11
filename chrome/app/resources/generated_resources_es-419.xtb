@@ -176,6 +176,7 @@
 <translation id="123578888592755962">Disco lleno</translation>
 <translation id="1238191093934674082">OpenVPN</translation>
 <translation id="1240892293903523606">Inspector de DOM</translation>
+<translation id="124116460088058876">Más idiomas</translation>
 <translation id="1241753985463165747">Leer y modificar todos los datos del sitio web actual cuando se invoca</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quiere restablecer la configuración.</translation>
 <translation id="1243314992276662751">Cargar</translation>
@@ -209,6 +210,7 @@
 <translation id="1296497012903089238">Tipo de certificado</translation>
 <translation id="1297175357211070620">Destino</translation>
 <translation id="1297922636971898492">Actualmente, Google Drive no está disponible. La carga se reiniciará automáticamente cuando vuelva a estar disponible.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> desea que Google verifique la identidad de tu dispositivo para determinar si puede reproducir de forma mejorada contenido protegido.</translation>
 <translation id="1300806585489372370">Para cambiar esta configuración, primero <ph name="BEGIN_LINK" />activa los identificadores<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Permitir JavaScript para eventos de Apple</translation>
 <translation id="1303101771013849280">Archivo HTML de favoritos</translation>
@@ -1064,7 +1066,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2624142942574147739">Esta página está accediendo a la cámara y al micrófono.</translation>
 <translation id="2626799779920242286">Vuelve a intentarlo más tarde.</translation>
 <translation id="2630681426381349926">Conéctate a una red Wi-Fi para comenzar</translation>
-<translation id="2631006050119455616">Ahorrados</translation>
 <translation id="2631498379019108537">Mostrar opciones de entrada en la biblioteca</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> está utilizando <ph name="USAGE" /> MB de espacio en el disco.</translation>
 <translation id="2633212996805280240">¿Quieres eliminar "<ph name="EXTENSION_NAME" />"?</translation>
@@ -4555,7 +4556,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8012382203418782830">Se tradujo esta página.</translation>
 <translation id="8014154204619229810">El actualizador se está ejecutando en este momento. Actualiza dentro de un minuto para verificarlo de nuevo.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> no puede volver a la versión instalada previamente. Vuelve a intentarlo para utilizar la función Powerwash en el dispositivo.</translation>
-<translation id="8014210335923519270">Envía a Google información sobre el sistema y sobre el modo en que lo usas para mejorar <ph name="IDS_SHORT_PRODUCT_NAME" /> y su seguridad</translation>
+<translation id="8014210335923519270">Para mejorar <ph name="IDS_SHORT_PRODUCT_NAME" /> y su seguridad, envía a Google información sobre el sistema y sobre el modo en que lo usas</translation>
 <translation id="8016266267177410919">Almacenamiento temporal</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Se editó el acceso directo</translation>

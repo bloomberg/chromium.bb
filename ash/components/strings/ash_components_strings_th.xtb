@@ -5,6 +5,7 @@
 <translation id="1122869341872663659">กำลังแสดงผลการค้นหา <ph name="QUERY" /> <ph name="N" /> รายการ</translation>
 <translation id="1195667586424773550">ลากลิงก์ไปยังแถบที่อยู่ของแท็บ</translation>
 <translation id="1204450209689312104">เปิดหน้าต่างใหม่ในโหมดไม่ระบุตัวตน</translation>
+<translation id="1251638888133819822">เปิดหรือปิดแว่นขยายทั้งหน้าจอ</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">พิมพ์หน้าเว็บปัจจุบัน</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">โหลดหน้าเว็บปัจจุบันซ้ำโดยไม่ใช้เนื้อหาที่แคช</translation>
 <translation id="526651782186312376">เลือกข้อความไปจนถึงต้นบรรทัด</translation>
 <translation id="5316716239522500219">แสดงผลบนหน้าจอ</translation>
+<translation id="539072479502328326">เปิดหรือปิดแว่นขยายหน้าจอบางส่วน</translation>
 <translation id="5487187679583934283">เริ่มหรือหยุดพิมพ์สิ่งที่คุณพูด</translation>
 <translation id="5541719484267030947">กด <ph name="ESC" /> ขณะที่ลากแท็บ</translation>
 <translation id="5554139136362089836">ค้นหาในหน้าปัจจุบัน</translation>

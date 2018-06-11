@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6948701128805548767">หากต้องการดูวิธีการรับสินค้าและข้อกำหนด โปรดเลือกที่อยู่</translation>
 <translation id="6949872517221025916">รีเซ็ตรหัสผ่าน</translation>
+<translation id="6950684638814147129">เกิดข้อผิดพลาดขณะแยกวิเคราะห์ค่า JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">ใบรับรองของเซิร์ฟเวอร์น่าจะเป็นของปลอม</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6965978654500191972">อุปกรณ์</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8620436878122366504">ผู้ปกครองยังไม่ได้อนุมัติเว็บไซต์นี้</translation>
 <translation id="8625384913736129811">บันทึกบัตรนี้ลงในอุปกรณ์นี้</translation>
 <translation id="8639963783467694461">การตั้งค่าป้อนอัตโนมัติ</translation>
+<translation id="8663226718884576429">สรุปคำสั่งซื้อ <ph name="TOTAL_LABEL" /> รายละเอียดเพิ่มเติม</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, คำตอบ, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">การเชื่อมต่อของคุณไปยัง <ph name="DOMAIN" /> ไม่ได้รับการเข้ารหัส</translation>
 <translation id="8718314106902482036">การชำระเงินไม่เสร็จสมบูรณ์</translation>

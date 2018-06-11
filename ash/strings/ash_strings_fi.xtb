@@ -204,6 +204,7 @@
 <translation id="5457599981699367932">Selaa vierailijana</translation>
 <translation id="54609108002486618">Hallinnoitu</translation>
 <translation id="553675580533261935">Käyttökerran lopettaminen</translation>
+<translation id="5537725057119320332">Lähetä</translation>
 <translation id="5548285847212963613">Laajennus <ph name="EXTENSION_NAME" /> voi auttaa muodostamaan yhteyden tähän verkkoon.</translation>
 <translation id="554893713779400387">Ota sanelu käyttöön tai poista se käytöstä</translation>
 <translation id="5571066253365925590">Bluetooth käytössä</translation>
@@ -314,12 +315,14 @@
 <translation id="7654687942625752712">Poista äänipalaute käytöstä painamalla molempia äänenvoimakkuuspainikkeita viiden sekunnin ajan.</translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7692480393933218409">Ladataan yhdistettyjä C-tyypin USB-laitteita</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">Klikkaa nähdäksesi päivityksen tiedot</translation>
 <translation id="7796353162336583443">Napauttamalla hyllyn näyttökynäpainiketta voit tehdä muistiinpanoja, tallentaa kuvakaappauksen ja käyttää Google Assistantia, laserosoitinta tai suurennuslasia.</translation>
 <translation id="7798302898096527229">Peruuta painamalla haku- tai vaihtonäppäintä.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Vahva signaali</translation>
 <translation id="7842569679327885685">Varoitus: Kokeellinen ominaisuus</translation>
+<translation id="7846634333498149051">Näppäimistö</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
 <translation id="7933084174919150729">Google Assistant on käytettävissä vain ensisijaisella profiililla.</translation>
 <translation id="79341161159229895"><ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /> hallinnoivat tiliä</translation>

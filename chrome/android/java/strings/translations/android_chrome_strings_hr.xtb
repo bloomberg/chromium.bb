@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Otvorene kartice</translation>
 <translation id="1756600373018374892">Dodirnite ovaj gumb da biste brzo pristupili svojim karticama.</translation>
 <translation id="1779089405699405702">Dekodiranje slika</translation>
+<translation id="1782483593938241562">Datum završetka: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Zadanu lokaciju preuzimanja možete promijeniti kad god želite</translation>
 <translation id="1807246157184219062">Svijetlo</translation>
 <translation id="1829244130665387512">Traži na stranici</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Osvježavanje stranice</translation>
 <translation id="2709516037105925701">Automatsko popunjavanje</translation>
 <translation id="271033894570825754">Novo</translation>
+<translation id="2728754400939377704">Poredaj po web-lokaciji</translation>
 <translation id="2736391366332017384">Dodirnite gumb početnog zaslona za pristup web-stranici nove kartice u trenutačnoj kartici</translation>
 <translation id="2744248271121720757">Dodirnite riječ da biste je odmah pretražili ili vidjeli povezane radnje</translation>
 <translation id="2762000892062317888">upravo sada</translation>
@@ -353,8 +355,10 @@ Da biste prilagodili pojam za pretraživanje, odaberite ga tako što ćete ga du
 <translation id="4113030288477039509">Upravlja vaš administrator</translation>
 <translation id="4116038641877404294">Preuzmite stranice za izvanmrežnu upotrebu</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d oznaka}one{%1$d oznaka}few{%1$d oznake}other{%1$d oznaka}}</translation>
+<translation id="4159800535322890630">Blokiranje web-lokacijama pristup senzorima</translation>
 <translation id="4165986682804962316">Postavke web-lokacije</translation>
 <translation id="4170011742729630528">Usluga nije dostupna, pokušajte ponovo kasnije.</translation>
+<translation id="4179980317383591987">Iskorišteno <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Jezici</translation>
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="4198423547019359126">Lokacije preuzimanja nisu dostupne</translation>
@@ -520,6 +524,7 @@ Vaš Google račun može sadržavati druge oblike povijesti pregledavanja, na pr
 <translation id="5585019845078534178">Kartice</translation>
 <translation id="5595485650161345191">Uređivanje adrese</translation>
 <translation id="5596627076506792578">Više opcija</translation>
+<translation id="5620299005957670886">Dopuštenje web-lokacijama pristup senzorima (preporučeno)</translation>
 <translation id="5620928963363755975">Pronađite svoje datoteke i stranice u Preuzimanjima pomoću gumba Više opcija</translation>
 <translation id="5626134646977739690">Naziv:</translation>
 <translation id="5639724618331995626">Dopusti sve web-lokacije</translation>
@@ -563,6 +568,7 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="5911030830365207728">Google prevoditelj</translation>
 <translation id="5916664084637901428">Uključi</translation>
 <translation id="5919204609460789179">Ažurirajte <ph name="PRODUCT_NAME" /> za pokretanje sinkronizacije</translation>
+<translation id="5937580074298050696">Spremljeno <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
 <translation id="5942872142862698679">Za pretraživanje se upotrebljava Google</translation>
 <translation id="5956665950594638604">Otvaranje Chromeovog centra za pomoć na novoj kartici</translation>
@@ -643,6 +649,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="6627583120233659107">Uredi mapu</translation>
 <translation id="6643016212128521049">Izbriši</translation>
+<translation id="6643649862576733715">Poredaj po količini spremljenih podataka</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 i još <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6656545060687952787">Chrome treba pristup lokaciji kako bi skenirao uređaje. <ph name="BEGIN_LINK" />Ažuriraj dopuštenja<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Zaporka</translation>
@@ -729,6 +736,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chromeov doživljaj prvog pokretanja</translation>
 <translation id="741204030948306876">Da, u redu</translation>
+<translation id="7413229368719586778">Datum početka: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Prvo pitaj</translation>
 <translation id="7423538860840206698">Blokirano je čitanje međuspremnika</translation>
 <translation id="7437998757836447326">Odjava s Chromea</translation>
@@ -834,6 +842,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8313455859591948645">Uređivanje početne stranice</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i druge web-lokacije</translation>
 <translation id="8339163506404995330">Neće se prevoditi <ph name="LANGUAGE" /></translation>
+<translation id="8349013245300336738">Poredaj po količini potrošenih podataka</translation>
 <translation id="8363501664269050863">Navigacijska ploča. Prijeđite prstom prema dolje za zatvaranje.</translation>
 <translation id="8372893542064058268">Omogućuje sinkronizaciju u pozadini za određenu web-lokaciju.</translation>
 <translation id="8374821112118309944">Morate ažurirati TalkBack na najnoviju verziju.</translation>

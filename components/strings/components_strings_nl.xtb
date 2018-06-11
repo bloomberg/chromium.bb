@@ -815,6 +815,7 @@
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6948701128805548767">Selecteer een adres om ophaalmethoden en vereisten te bekijken</translation>
 <translation id="6949872517221025916">Wachtwoord opnieuw instellen</translation>
+<translation id="6950684638814147129">Fout bij het parseren van de JSON-waarde: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Het certificaat van de server lijkt vals te zijn.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Apparaat</translation>
@@ -1045,6 +1046,7 @@
 <translation id="8620436878122366504">Je ouders hebben dit nog niet goedgekeurd</translation>
 <translation id="8625384913736129811">Deze kaart opslaan op dit apparaat</translation>
 <translation id="8639963783467694461">Instellingen voor Automatisch aanvullen</translation>
+<translation id="8663226718884576429">Besteloverzicht, <ph name="TOTAL_LABEL" />, meer informatie</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, antwoord, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Je verbinding met <ph name="DOMAIN" /> is niet gecodeerd.</translation>
 <translation id="8718314106902482036">Betaling niet voltooid</translation>

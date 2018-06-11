@@ -5,6 +5,7 @@
 <translation id="1122869341872663659"><ph name="N" /> keresési találat megjelenítve a következőre: <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">A link húzása a lap címsávjára</translation>
 <translation id="1204450209689312104">Új ablak megnyitása inkognitómódban</translation>
+<translation id="1251638888133819822">A teljes képernyős nagyító be- vagy kikapcsolása</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Az aktuális oldal nyomtatása</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">Az aktuális oldal újratöltése gyorsítótárazott tartalom használata nélkül</translation>
 <translation id="526651782186312376">Szöveg kijelölése a sor elejéig</translation>
 <translation id="5316716239522500219">Monitorok tükrözése</translation>
+<translation id="539072479502328326">A dokkolt nagyító be- vagy kikapcsolása</translation>
 <translation id="5487187679583934283">Elindítja vagy leállítja az Ön által mondottak gépelését</translation>
 <translation id="5541719484267030947">A lap húzása közben tartsa lenyomva az <ph name="ESC" /> gombot</translation>
 <translation id="5554139136362089836">Keresés az aktuális oldalon</translation>

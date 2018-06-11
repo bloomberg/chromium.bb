@@ -176,6 +176,7 @@
 <translation id="123578888592755962">Enheten är full</translation>
 <translation id="1238191093934674082">Open VPN</translation>
 <translation id="1240892293903523606">DOM-inspektör</translation>
+<translation id="124116460088058876">Fler språk</translation>
 <translation id="1241753985463165747">Läsa och ändra all din data på den aktuella webbplatsen när den anropas</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> önskar återställa dina inställningar.</translation>
 <translation id="1243314992276662751">Ladda upp</translation>
@@ -209,6 +210,7 @@
 <translation id="1296497012903089238">Certifikattyp</translation>
 <translation id="1297175357211070620">Destination</translation>
 <translation id="1297922636971898492">Google Drive är inte tillgängligt för närvarande. Överföringen fortsätter automatiskt när Google Drive är tillgängligt igen.</translation>
+<translation id="1300415640239881824"><ph name="DOMAIN" /> kräver att enhetens identitet verifieras av Google för att avgöra om enheten är kvalificerad för förbättrad uppspelning av skyddat innehåll.</translation>
 <translation id="1300806585489372370"><ph name="BEGIN_LINK" />Aktivera identifierare<ph name="END_LINK" /> om du vill ändra den här inställningen</translation>
 <translation id="1302227299132585524">Tillåt JavaScript från Apple Events</translation>
 <translation id="1303101771013849280">HTML-fil med bokmärken</translation>
@@ -1066,7 +1068,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2624142942574147739">Din kamera och mikrofon används på sidan.</translation>
 <translation id="2626799779920242286">Försök igen senare.</translation>
 <translation id="2630681426381349926">Anslut till Wi-Fi om du vill börja</translation>
-<translation id="2631006050119455616">Sparat</translation>
 <translation id="2631498379019108537">Visa inmatningsalternativ på hyllan</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> använder <ph name="USAGE" /> MB diskutrymme.</translation>
 <translation id="2633212996805280240">Vill du ta bort <ph name="EXTENSION_NAME" />?</translation>

@@ -92,6 +92,7 @@
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1756600373018374892">このボタンをタップして簡単にタブに移動できます。</translation>
 <translation id="1779089405699405702">画像デコーダー</translation>
+<translation id="1782483593938241562">終了日: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">デフォルトのダウンロード保存先はいつでも変更できます</translation>
 <translation id="1807246157184219062">明</translation>
 <translation id="1829244130665387512">ページ内検索</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="271033894570825754">新しいファイル</translation>
+<translation id="2728754400939377704">サイトで並べ替え</translation>
 <translation id="2736391366332017384">現在のタブに新しいタブの画面を読み込むには、ホームボタンをタップします</translation>
 <translation id="2744248271121720757">単語をタップすると、検索をすばやく実行したり、関連する操作メニューを確認したりできます</translation>
 <translation id="2762000892062317888">たった今</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">管理者により管理されています</translation>
 <translation id="4116038641877404294">ページをダウンロードするとオフラインで使用できるようになります</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 個のブックマーク}other{%1$d 個のブックマーク}}</translation>
+<translation id="4159800535322890630">サイトによるセンサーへのアクセスをブロックする</translation>
 <translation id="4165986682804962316">サイトの設定</translation>
 <translation id="4170011742729630528">このサービスはご利用になれません。しばらくしてからもう一度お試しください。</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> 使用</translation>
 <translation id="4181841719683918333">言語</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4198423547019359126">ダウンロードの保存先はありません</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">カード</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
+<translation id="5620299005957670886">サイトによるセンサーへのアクセスを許可する（推奨）</translation>
 <translation id="5620928963363755975">[その他のオプション] から [ダウンロード] を開いて自分のファイルやページを探すことができます</translation>
 <translation id="5626134646977739690">名前:</translation>
 <translation id="5639724618331995626">すべてのサイトを許可</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google 翻訳</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5919204609460789179">同期を開始するには <ph name="PRODUCT_NAME" /> を更新してください</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> 節約</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5942872142862698679">検索に Google を使用します</translation>
 <translation id="5956665950594638604">Chrome ヘルプセンターを新しいタブで開く</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6627583120233659107">フォルダを編集</translation>
 <translation id="6643016212128521049">クリア</translation>
+<translation id="6643649862576733715">データ節約量で並べ替え</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件}other{<ph name="CONTACT_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 件}}</translation>
 <translation id="6656545060687952787">デバイスをスキャンするには、Chrome で位置情報にアクセスする必要があります。<ph name="BEGIN_LINK" />権限を更新<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">パスワード</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome 初回起動時の操作</translation>
 <translation id="741204030948306876">有効にする</translation>
+<translation id="7413229368719586778">開始日: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">最初に確認する</translation>
 <translation id="7423538860840206698">クリップボードの読み取りがブロックされています</translation>
 <translation id="7437998757836447326">Chromeからログアウト</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">起動ページの編集</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> とその他のサイト</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />のページは翻訳されません</translation>
+<translation id="8349013245300336738">データ使用量で並べ替え</translation>
 <translation id="8363501664269050863">ナビゲーション パネルです。閉じるには下にスワイプします。</translation>
 <translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>

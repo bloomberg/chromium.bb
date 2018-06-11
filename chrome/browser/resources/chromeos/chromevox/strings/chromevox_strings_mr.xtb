@@ -145,6 +145,7 @@
 <translation id="2416512023405990736">अनचेक केलेला चेकबॉक्स</translation>
 <translation id="2417569100218200841">सामग्री माहिती</translation>
 <translation id="2417948780551741035">अंतिम नोंदी</translation>
+<translation id="2421113964388408478">हटवणे</translation>
 <translation id="2422937916923936891">मेनू आयटम चेक बॉक्‍स</translation>
 <translation id="2428534162001909979">आदेश मेनू</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -178,6 +179,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ऑडिओ</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">सुपरस्क्रिप्टचा शेवट</translation>
 <translation id="2749275490991666823">चेक केलेले</translation>
 <translation id="27527859628328957">पुढील फोकस करण्यायोग्य आयटमवर जंप करा</translation>
 <translation id="276402504937943375">अनुक्रमणिका</translation>
@@ -202,6 +204,7 @@
 <translation id="288178314850623291">विशिष्ट प्रकारच्या घटकांवर जाण्यासाठी यावर जा आदेशांचा वापर करा. शीर्षलेखांमध्ये पुढे जाण्यासाठी, शोध + H किंवा मागे जाण्यासाठी शोध + Shift + H दाबा.</translation>
 <translation id="2894654529758326923">माहिती</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{डावा महिरपी कंस}one{# डावे महिरपी कंस}other{# डावे महिरपी कंस}}</translation>
+<translation id="2909478709401302630">सुपरस्क्रिप्टची सुरुवात</translation>
 <translation id="2911433807131383493">ChromeVox ट्यूटोरियल उघडा</translation>
 <translation id="2932083475399492303">संरचनात्मक किंवा लेआउट मधील रेखा प्रकार टॉगल करा</translation>
 <translation id="2944762337049891859">पृष्ठ लोड होणे समाप्त झाले की स्वयंचलितपणे ते वाचा.</translation>
@@ -383,6 +386,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{उजवा महिरपी कंस}one{# उजवे महिरपी कंस}other{# उजवे महिरपी कंस}}</translation>
 <translation id="4158704014418536539">केस संवेदनशील.</translation>
 <translation id="4161663686871496107">ChromeVox बोललेला अभिप्राय तयार आहे</translation>
+<translation id="4166192625054637755">सबस्क्रिप्टचा शेवट</translation>
 <translation id="4173994908659439270">पुढील संपादन करण्‍यायोग्‍य मजकूर फील्‍ड नाही.</translation>
 <translation id="4176463684765177261">अक्षम</translation>
 <translation id="4188530942454211480">मागील वाक्य</translation>
@@ -422,6 +426,7 @@
 <translation id="4476183483923481720">नवीन रेखा</translation>
 <translation id="4482330759234983253">मागील सारणी</translation>
 <translation id="4491109536499578614">इमेज</translation>
+<translation id="4505167975768625962">घालणे</translation>
 <translation id="4517854969512651305">मूल्य वाढवा</translation>
 <translation id="4529987814483543472">क्लासिक मुख्य नकाशा</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{स्लॅश}one{# स्लॅश}other{# स्लॅश}}</translation>
@@ -526,6 +531,7 @@
 <translation id="5330443287809544590"><ph name="NAME" />, दुवा</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">मागील लिंक</translation>
+<translation id="5350654862897073517">सबस्क्रिप्टची सुरुवात</translation>
 <translation id="536031132345979795">सतत वाचन करताना मागील वगळा</translation>
 <translation id="5368000168321181111">इअरकॉन बंद आहेत</translation>
 <translation id="5374320867641260420">पुढील बटण नाही.</translation>

@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Ανοικτές καρτέλες</translation>
 <translation id="1756600373018374892">Πατήστε αυτό το κουμπί για γρήγορη πρόσβαση στις καρτέλες σας.</translation>
 <translation id="1779089405699405702">Εργαλείο αποκωδικοποίησης εικόνων</translation>
+<translation id="1782483593938241562">Ημερομηνία λήξης: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Αλλάξτε την προεπιλεγμένη τοποθεσία λήψης ανά πάσα στιγμή</translation>
 <translation id="1807246157184219062">Ανοιχτόχρωμο</translation>
 <translation id="1829244130665387512">Εύρεση στη σελίδα</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Ανανέωση σελίδας</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="271033894570825754">Νέο</translation>
+<translation id="2728754400939377704">Ταξινόμηση κατά ιστότοπο</translation>
 <translation id="2736391366332017384">Πατήστε το κουμπί αρχικής οθόνης για να μεταβείτε στη σελίδα σε νέα καρτέλα στην τρέχουσα καρτέλα</translation>
 <translation id="2744248271121720757">Πατήστε μια λέξη για άμεση αναζήτηση ή για να δείτε τις σχετικές ενέργειες</translation>
 <translation id="2762000892062317888">μόλις τώρα</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">Διαχειρίζεται από το διαχειριστή σας</translation>
 <translation id="4116038641877404294">Κατεβάστε σελίδες για να τις χρησιμοποιήσετε εκτός σύνδεσης</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d σελιδοδείκτης}other{%1$d σελιδοδείκτες}}</translation>
+<translation id="4159800535322890630">Αποκλείστε την πρόσβαση των ιστοτόπων στους αισθητήρες σας</translation>
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
 <translation id="4170011742729630528">Η υπηρεσία δεν είναι διαθέσιμη. Δοκιμάστε ξανά αργότερα.</translation>
+<translation id="4179980317383591987">Χρησιμοποιήθηκαν <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Γλώσσες</translation>
 <translation id="4195643157523330669">Άνοιγμα σε νέα καρτέλα</translation>
 <translation id="4198423547019359126">Δεν υπάρχουν διαθέσιμες τοποθεσίες λήψης</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">Κάρτες</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
 <translation id="5596627076506792578">Περισσότερες επιλογές</translation>
+<translation id="5620299005957670886">Να επιτρέπεται στους ιστοτόπους η πρόσβαση στους αισθητήρες σας (συνιστάται)</translation>
 <translation id="5620928963363755975">Βρείτε τα αρχεία και τις σελίδες σας στις Λήψις από το κουμπί Περισσότερες επιλογές</translation>
 <translation id="5626134646977739690">Όνομα:</translation>
 <translation id="5639724618331995626">Να επιτρέπονται όλοι οι ιστότοποι</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Μετάφραση Google</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5919204609460789179">Ενημερώστε το <ph name="PRODUCT_NAME" /> για να ξεκινήσει ο συγχρονισμός</translation>
+<translation id="5937580074298050696">Εξοικονομήθηκαν <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="5942872142862698679">Χρήση του Google για αναζήτηση</translation>
 <translation id="5956665950594638604">Άνοιγμα Κέντρου βοήθειας Chrome σε νέα καρτέλα</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">Προστατευμένο περιεχόμενο</translation>
 <translation id="6627583120233659107">Επεξεργασία φακέλου</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
+<translation id="6643649862576733715">Ταξινόμηση κατά όγκο δεδομένων που εξοικονομήθηκαν</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ακόμη}other{<ph name="CONTACT_PREVIEW" />\u2026 και <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ακόμη}}</translation>
 <translation id="6656545060687952787">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία, προκειμένου να κάνει σάρωση για συσκευές. <ph name="BEGIN_LINK" />Ενημέρωση δικαιωμάτων<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Εμπειρία πρώτης εκτέλεσης Chrome</translation>
 <translation id="741204030948306876">Ναι, συμφωνώ</translation>
+<translation id="7413229368719586778">Ημερομηνία έναρξης: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Να γίνεται ερώτηση πρώτα</translation>
 <translation id="7423538860840206698">Αποκλεισμός από ανάγνωση πρόχειρου</translation>
 <translation id="7437998757836447326">Αποσύνδεση από το Chrome</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">Επεξεργασία σελίδας εκκίνησης</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> και άλλους ιστοτόπους</translation>
 <translation id="8339163506404995330">Οι σελίδες στα <ph name="LANGUAGE" /> δεν θα μεταφράζονται</translation>
+<translation id="8349013245300336738">Ταξινόμηση κατά όγκο δεδομένων που χρησιμοποιήθηκαν</translation>
 <translation id="8363501664269050863">Πλαίσιο πλοήγησης. Σύρετε προς τα κάτω για κλείσιμο.</translation>
 <translation id="8372893542064058268">Να επιτρέπεται ο Συγχρονισμός παρασκηνίου για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="8374821112118309944">Θα πρέπει να ενημερώσετε το TalkBack σε νεότερη έκδοση.</translation>

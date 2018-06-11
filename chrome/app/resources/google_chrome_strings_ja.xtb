@@ -73,6 +73,7 @@
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2799223571221894425">再起動</translation>
 <translation id="2847461019998147611">Google Chrome をこの言語で表示</translation>
+<translation id="2857540653560290388">Chrome を起動しています...</translation>
 <translation id="2871893339301912279">Chrome にログインしました</translation>
 <translation id="2888126860611144412">Chrome について</translation>
 <translation id="3037838751736561277">Google Chrome はバックグラウンド モードです。</translation>
@@ -210,7 +211,6 @@
 <translation id="7308322188646931570">ファイルをダウンロードするには、Chrome でストレージへのアクセスを許可する必要があります</translation>
 <translation id="7330164299247909639">認証証明書でエラーが発生しました。<ph name="USER_NAME" /> として Google Chrome にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
-<translation id="7369650938475876456">Chrome で生成された安全なパスワードの使用をおすすめします</translation>
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="7408085963519505752">Chrome OS 利用規約</translation>
 <translation id="7419046106786626209">お使いのドメインでは同期を利用できないため、Chrome OS はデータを同期できませんでした。</translation>

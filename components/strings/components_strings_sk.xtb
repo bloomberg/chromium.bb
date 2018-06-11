@@ -815,6 +815,7 @@
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6948701128805548767">Ak chcete zobraziť spôsoby a požiadavky vyzdvihnutia, vyberte adresu</translation>
 <translation id="6949872517221025916">Obnovenie hesla</translation>
+<translation id="6950684638814147129">Chyba pri analyzovaní hodnoty JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Zdá sa, že certifikát servera je falošný.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Zariadenie</translation>
@@ -1046,6 +1047,7 @@
 <translation id="8620436878122366504">Vaši rodičia to zatiaľ neschválili</translation>
 <translation id="8625384913736129811">Uložiť túto kartu do tohto zariadenia</translation>
 <translation id="8639963783467694461">Nastavenia automatického dopĺňania</translation>
+<translation id="8663226718884576429">Súhrn objednávky, <ph name="TOTAL_LABEL" />, Ďalšie podrobnosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odpoveď, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaše pripojenie k doméne <ph name="DOMAIN" /> sa nešifruje.</translation>
 <translation id="8718314106902482036">Platba nebola dokončená</translation>

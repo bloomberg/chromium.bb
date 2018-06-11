@@ -13,7 +13,7 @@
 <translation id="1111673857033749125">Šeit būs redzamas grāmatzīmes, kuras esat saglabājis citās ierīcēs.</translation>
 <translation id="1113597929977215864">Rādīt vienkāršoto skatu</translation>
 <translation id="1121094540300013208">Lietojuma un avāriju pārskati</translation>
-<translation id="11221688409173367">Lai skatītu tieši jums atlasītos rakstos, pieskarieties pogai Sākums.</translation>
+<translation id="11221688409173367">Lai skatītu tieši jums atlasītos rakstus, pieskarieties pogai Sākums.</translation>
 <translation id="1129510026454351943">Informācija: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1145536944570833626">Dzēst esošos datus.</translation>
 <translation id="1146678959555564648">Ieiet virtuālajā realitātē</translation>
@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="1756600373018374892">Pieskaries šai pogai, lai ātri piekļūt savām cilnēm.</translation>
 <translation id="1779089405699405702">Attēlu dekodētājs</translation>
+<translation id="1782483593938241562">Beigu datums: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Noklusējuma lejupielādes vietu var mainīt jebkurā laikā.</translation>
 <translation id="1807246157184219062">Gaišs</translation>
 <translation id="1829244130665387512">Atrast lapā</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Atsvaidzināt lapu</translation>
 <translation id="2709516037105925701">Automātiskā aizpilde</translation>
 <translation id="271033894570825754">Jauns</translation>
+<translation id="2728754400939377704">Kārtot pēc vietnes</translation>
 <translation id="2736391366332017384">Lai pašreizējā cilnē pārietu uz jaunas cilnes lapu, pieskarieties pogai Sākums.</translation>
 <translation id="2744248271121720757">Pieskarieties vārdam, lai meklētu tūlīt vai skatītu saistītas darbības.</translation>
 <translation id="2762000892062317888">tikko</translation>
@@ -353,8 +355,10 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4113030288477039509">Pārvalda jūsu administrators</translation>
 <translation id="4116038641877404294">Lejupielādējiet lapas, lai izmantotu tās bezsaistē</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d grāmatzīme}zero{%1$d grāmatzīmes}one{%1$d grāmatzīme}other{%1$d grāmatzīmes}}</translation>
+<translation id="4159800535322890630">Neļaut vietnēm piekļūt jūsu ierīces sensoriem</translation>
 <translation id="4165986682804962316">Vietnes iestatījumi</translation>
 <translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
+<translation id="4179980317383591987">Izmantots: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Valodas</translation>
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
 <translation id="4198423547019359126">Nav pieejamu lejupielādes atrašanās vietu.</translation>
@@ -520,6 +524,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="5585019845078534178">Kartes</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>
 <translation id="5596627076506792578">Citas opcijas</translation>
+<translation id="5620299005957670886">Ļaut vietnēm piekļūt jūsu ierīces sensoriem (ieteicams)</translation>
 <translation id="5620928963363755975">Atrodiet savus failus un lapas sadaļā Lejupielādes, nospiežot pogu Vairāk opciju</translation>
 <translation id="5626134646977739690">Nosaukums:</translation>
 <translation id="5639724618331995626">Atļaut apmeklēt visas vietnes</translation>
@@ -563,6 +568,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="5911030830365207728">Google tulkotājs</translation>
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5919204609460789179">Lai sāktu sinhronizēšanu, atjauniniet <ph name="PRODUCT_NAME" /></translation>
+<translation id="5937580074298050696">Saglabāts: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="5942872142862698679">Tiek izmantota meklētājprogramma Google</translation>
 <translation id="5956665950594638604">Atvērt Chrome palīdzības centru jaunā cilnē</translation>
@@ -643,6 +649,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6612358246767739896">Aizsargāts saturs</translation>
 <translation id="6627583120233659107">Rediģēt mapi</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
+<translation id="6643649862576733715">Kārtot pēc saglabāto datu apjoma</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}zero{<ph name="CONTACT_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6656545060687952787">Lai meklētu ierīces, pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietai. <ph name="BEGIN_LINK" />Atjauniniet atļaujas<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">Parole</translation>
@@ -729,6 +736,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome pirmās palaišanas pieredze</translation>
 <translation id="741204030948306876">Jā, piekrītu</translation>
+<translation id="7413229368719586778">Sākuma datums: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Vispirms jautāt</translation>
 <translation id="7423538860840206698">Bloķēta starpliktuves satura lasīšana</translation>
 <translation id="7437998757836447326">Izrakstīšanās no pārlūka Chrome</translation>
@@ -834,6 +842,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8313455859591948645">Sākumlapas rediģēšana</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> un citas vietnes</translation>
 <translation id="8339163506404995330">Lapas šādā valodā: <ph name="LANGUAGE" /> netiks tulkotas.</translation>
+<translation id="8349013245300336738">Kārtot pēc izmantoto datu apjoma</translation>
 <translation id="8363501664269050863">Navigācijas panelis. Velciet uz leju, lai aizvērtu.</translation>
 <translation id="8372893542064058268">Atļaut sinhronizāciju fonā konkrētai vietnei</translation>
 <translation id="8374821112118309944">Jums ir jāatjaunina lietotne TalkBack uz jaunāku versiju.</translation>

@@ -819,6 +819,7 @@
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6948701128805548767">Выберите адрес, чтобы посмотреть способы и условия получения.</translation>
 <translation id="6949872517221025916">Сброс пароля</translation>
+<translation id="6950684638814147129">Ошибка при синтаксическом анализе значения JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Возможно, сертификат сервера фальсифицирован.</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6965978654500191972">Устройство</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8620436878122366504">Ещё не одобрено родителями</translation>
 <translation id="8625384913736129811">Сохранить карту на этом устройстве</translation>
 <translation id="8639963783467694461">Настройки автозаполнения</translation>
+<translation id="8663226718884576429">Информация о заказе, <ph name="TOTAL_LABEL" />, дополнительные сведения</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ответ, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Соединение с <ph name="DOMAIN" /> не зашифровано.</translation>
 <translation id="8718314106902482036">Не удалось обработать платеж</translation>

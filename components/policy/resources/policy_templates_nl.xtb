@@ -883,6 +883,11 @@
 <translation id="3512226956150568738">Als het apparaatmodel van de klant al ondersteuning voor ARC bood voordat migratie naar ext4 nodig werd om ARC uit te voeren en als het beleid ArcEnabled is ingesteld op 'true' (waar), wordt AskUser (waarde 3) gebruikt voor deze optie. In alle andere gevallen (als het apparaatmodel voorheen geen ondersteuning voor ARC bood of als het beleid ArcEnabled op 'false' (onwaar) is ingesteld), is deze waarde gelijk aan DisallowArc (waarde 0).</translation>
 <translation id="3524204464536655762">Niet toestaan dat sites via de WebUSB API toegang tot USB-apparaten vragen</translation>
 <translation id="3528000905991875314">Alternatieve foutpagina's inschakelen</translation>
+<translation id="3545457887306538845">Hiermee stel je in welke Developer Tools kunnen worden gebruikt.
+
+      Als dit beleid is ingesteld op DeveloperToolsDisallowedForForceInstalledExtensions (waarde 0, de standaardinstelling), zijn de Developer Tools en de JavaScript-console wel algemeen toegankelijk, maar niet in de context van extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid.
+      Als dit beleid is ingesteld op DeveloperToolsAllowed (waarde 1), zijn de Developer Tools en de JavaScript-console toegankelijk en bruikbaar in elke context, inclusief de context van extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid.
+      Als dit beleid is ingesteld op DeveloperToolsDisallowed (waarde 2), zijn de Developer Tools niet toegankelijk en kunnen de website-elementen niet meer worden geïnspecteerd. De sneltoetsen en items van menu's of contextmenu's waarmee de Developer Tools of de JavaScript-console kunnen worden geopend, zijn uitgeschakeld.</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="3556806727696701427">Hiermee schakel je de functie Safe Browsing van <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze instelling kunnen aanpassen.
 
@@ -1966,6 +1971,37 @@
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
 <translation id="6835883744948188639">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten wordt aanbevolen</translation>
+<translation id="6838056959556423778">Hiermee negeer je de regels van <ph name="PRODUCT_NAME" /> voor selectie van de standaardprinter.
+
+      Met dit beleid kun je bepalen welke regels je wilt gebruiken om de standaardprinter in <ph name="PRODUCT_NAME" /> te selecteren. Je kunt dit instellen wanneer de afdrukfunctie voor het eerst in een profiel wordt gebruikt.
+
+      Wanneer dit beleid is ingesteld, probeert <ph name="PRODUCT_NAME" /> een printer te vinden die overeenkomt met alle opgegeven kenmerken en wordt deze geselecteerd als standaardprinter. De eerste gevonden printer die overeenkomt met dit beleid, wordt geselecteerd. Als meerdere printers overeenkomen, kan elke willekeurige overeenkomende printer worden geselecteerd, afhankelijk van de volgorde waarin de printers worden gevonden.
+
+      Als dit beleid niet is ingesteld, of als er geen overeenkomende printer binnen de time-outperiode wordt gevonden, wordt de printer standaard ingesteld op de ingebouwde pdf-printer, of er wordt geen printer geselecteerd, als de pdf-printer niet beschikbaar is.
+
+      De waarde wordt geparseerd als JSON-object, overeenkomend met het volgende schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Zoeken van overeenkomende printer al of niet beperken tot een specifieke reeks printers.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Reguliere expressie voor overeenkomende printer-ID.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Reguliere expressie voor overeenkomende printerweergavenaam.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printers die zijn gekoppeld aan <ph name="CLOUD_PRINT_NAME" /> worden als printers van het type <ph name="PRINTER_TYPE_CLOUD" /> beschouwd. De overige printers worden geclassificeerd als <ph name="PRINTER_TYPE_LOCAL" />.
+      Wanneer een veld wordt overgeslagen, betekent dit dat alle waarden overeenkomen. Als er bijvoorbeeld geen verbinding wordt opgegeven, worden voor het afdrukvoorbeeld alle typen printers gedetecteerd, zowel lokale als cloudprinters.
+      Reguliere-expressiepatronen moeten de JavaScript RegExp-syntaxis volgen en namen komen alleen overeen als ook het hoofdlettergebruik klopt (hoofdlettergevoelig).</translation>
 <translation id="684856667300805181">Dit beleid is in <ph name="PRODUCT_NAME" /> 68 verwijderd en vervangen door <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Dit beleid is beëindigd en uit M66 verwijderd, omdat het alleen werd gebruikt voor interne testen en een beveiligingsrisico vormt.
 
@@ -2234,6 +2270,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7511361072385293666">Als dit beleid wordt ingesteld op 'waar' of niet wordt ingesteld, wordt het gebruik van het QUIC-protocol in <ph name="PRODUCT_NAME" /> toegestaan.
       Als dit beleid wordt ingesteld op 'onwaar', wordt het gebruik van het QUIC-protocol niet toegestaan.</translation>
 <translation id="7519251620064708155">Het genereren van sleutels toestaan op deze sites</translation>
+<translation id="7529083451528428240">Hiermee kun je de gebruikerssessie vergrendelen op basis van de tijd op de client of de gebruikslimiet van de dag.
+
+          Met |time_window_limit| kun je een dagelijks tijdvenster opgeven waarin de gebruikerssessie moet worden vergrendeld. Omdat er slechts één regel voor elke dag van de week wordt ondersteund, mag de reeks |entries| qua grootte variëren van 0-7. |starts_at| en |ends_at| geven het begin en het einde van het tijdvenster aan. Als |ends_at| kleiner is dan |starts_at|, betekent dit dat |time_limit_window| eindigt op de volgende dag. |last_updated_millis| is de UTC-tijdstempel voor de laatste keer dat deze invoer is geüpdatet en wordt als reeks verzonden, omdat de tijdstempel niet in een geheel getal past.
+
+          Met |time_usage_limit| kun je een dagelijkse schermlimiet opgeven. Wanneer de gebruiker deze limiet bereikt, wordt de gebruikerssessie vergrendeld. Er is een eigenschap voor elke dag van de week en deze mag alleen worden ingesteld als er een actieve limiet voor die dag bestaat. |usage_quota_mins| is de hoeveelheid tijd waarin het beheerde apparaat op een dag kan worden gebruikt en |reset_at| is het tijdstip waarop de gebruikslimiet wordt vernieuwd. De standaardwaarde voor |reset_at| is middernacht ({'hour': 0, 'minute': 0}). |last_updated_millis| is de UTC-tijdstempel voor de laatste keer dat deze invoer is geüpdatet en wordt als reeks verzonden omdat de tijdstempel niet in een geheel getal past.
+
+          Met |overrides| kun je tijdelijk een of meer van de vorige regels ongeldig maken.
+          * Als time_window_limit en time_usage_limit geen van beide actief zijn, kun je |LOCK| gebruiken om het apparaat te vergrendelen.
+          * Met |LOCK| wordt een gebruikerssessie tijdelijk vergrendeld totdat de volgende time_window_limit of time_usage_limit begint.
+          * Met |UNLOCK| kun je een gebruikerssessie ontgrendelen die is vergrendeld door time_window_limit of time_usage_limit.
+          |created_time_millis| is de UTC-tijdstempel voor het maken van de overschrijving en wordt als reeks verzonden omdat de tijdstempel niet in een geheel getal past. Deze variabele wordt gebruikt om te bepalen of deze overschrijving nog steeds moet worden toegepast. Als de momenteel actieve tijdslimietfunctie (time_usage_limit of time_window_limit) is gestart nadat de overschrijving is gemaakt, onderneemt deze geen actie. Daarnaast is het zo dat de overschrijving niet wordt toegepast als deze is gemaakt vóór de laatste wijziging van de actieve time_window_limit of time_usage_window.</translation>
 <translation id="7529100000224450960">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop pop-ups mogen worden geopend.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultPopupsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>

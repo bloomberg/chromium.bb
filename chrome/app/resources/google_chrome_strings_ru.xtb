@@ -73,6 +73,7 @@
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
 <translation id="2799223571221894425">Перезапустить</translation>
 <translation id="2847461019998147611">Отображать Google Chrome на этом языке</translation>
+<translation id="2857540653560290388">Запуск Chrome...</translation>
 <translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
 <translation id="2888126860611144412">О браузере Chrome</translation>
 <translation id="3037838751736561277">Google Chrome работает в фоновом режиме</translation>
@@ -210,7 +211,6 @@
 <translation id="7308322188646931570">Для скачивания файлов браузеру Chrome требуется доступ к хранилищу.</translation>
 <translation id="7330164299247909639">Ошибка сертификата аутентификации. Войдите в Google Chrome как <ph name="USER_NAME" /> ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Новое окно</translation>
-<translation id="7369650938475876456">Используйте надежный пароль, сгенерированный Chrome.</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7408085963519505752">Условия использования Chrome OS</translation>
 <translation id="7419046106786626209">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>

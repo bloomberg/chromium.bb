@@ -893,6 +893,11 @@
 <translation id="3512226956150568738">Kung sinusuportahan na ng modelo ng device ng kliyente ang ARC bago kailanganin ang paglipat sa ext4 upang mapatakbo ang ARC at kung nakatakda sa true ang patakarang ArcEnabled, gagana ang opsyong ito bilang AskUser (value 3). Sa lahat ng iba pang sitwasyon (kung hindi sinusuportahan ng modelo ng device ang ARC dati, o kung nakatakda sa false ang patakarang ArcEnabled), ang value na ito ay katumbas ng DisallowArc (value 0).</translation>
 <translation id="3524204464536655762">Huwag payagan ang anumang site na humiling ng access sa mga USB device sa pamamagitan ng WebUSB API</translation>
 <translation id="3528000905991875314">Paganahin ang mga kahaliling pahina ng error</translation>
+<translation id="3545457887306538845">Nagbibigay-daan sa iyong kontrolin kung saan maaaring gamitin ang Mga Tool ng Developer.
+
+      Kung itatakda ang patakarang ito sa 'DeveloperToolsDisallowedForForceInstalledExtensions' (value na 0, ang default na value), ang Mga Tool ng Developer at JavaScript console ay maa-access sa pangkalahatan, ngunit hindi maa-access ang mga ito sa konteksto ng mga extension na na-install ng patakaran ng enterprise.
+      Kung itatakda ang patakarang ito sa 'DeveloperToolsAllowed' (value 1), ang Mga Tool ng Developer at JavaScript console ay maa-access at magagamit sa lahat ng konteksto, kabilang ang konteksto ng mga extension na na-install ng patakaran ng enterprise.
+      Kung itatakda ang patakarang ito sa 'DeveloperToolsDisallowed' (value 2), ang Mga Tool ng Developer ay hindi maa-access at ang mga elemento ng website ay hindi na masisiyasat. Ang anumang keyboard shortcut at anumang menu o entry sa menu ng konteksto para buksan ang Mga Tool ng Developer o JavaScript Console ay madi-disable.</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="3556806727696701427">Ine-enable ang feature na Ligtas na Pag-browse ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -1972,6 +1977,37 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
 <translation id="681446116407619279">Mga suportadong scheme ng pagpapatotoo</translation>
 <translation id="6835883744948188639">Magpakita sa user ng umuulit na prompt na nagsasaad na inirerekomenda ang muling paglulunsad</translation>
+<translation id="6838056959556423778">Ino-override ang mga default na panuntunan sa pagpili ng printer ng <ph name="PRODUCT_NAME" />.
+
+      Tinutukoy ng patakarang ito ang mga panuntunan para sa pagpili sa default na printer sa <ph name="PRODUCT_NAME" /> na magaganap sa unang beses na gagamitin ang function na pag-print sa pamamagitan ng isang profile.
+
+      Kapag nakatakda ang patakarang ito, tatangkain ng <ph name="PRODUCT_NAME" /> na maghanap ng printer na tumutugma sa lahat ng natukoy na attribute, at pipiliin ito bilang default na printer. Pipiliin ang unang printer na mahahanap na tumutugma sa patakaran, kung may hindi natatanging pagtutugma, maaaring piliin ang anumang tumutugmang printer, depende sa pagkakasunud-sunod ng pagtuklas sa mga printer.
+
+      Kung hindi nakatakda ang patakarang ito o walang mahahanap na tumutugmang printer sa panahon ng timeout, magde-default ang printer sa naka-built in na PDF printer o walang napiling printer, kapag hindi available ang PDF printer.
+
+      Naka-parse ang value bilang JSON object na sumusunod sa schema sa ibaba:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Kung lilimitahan o hindi ang paghahanap sa tumutugmang printer sa isang partikular na set ng mga printer.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Karaniwang expression para magtugma ng printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Karaniwang expression para magtugma ng display name ng printer .",
+            "type": "string"
+          }
+        }
+      }
+
+      Ang mga printer na nakakonekta sa <ph name="CLOUD_PRINT_NAME" /> ay itinuturing na <ph name="PRINTER_TYPE_CLOUD" />, ang iba pang printer ay kabilang sa klasipikasyong <ph name="PRINTER_TYPE_LOCAL" />.
+      Nangangahulugan ang pag-aalis ng field na ang lahat ng tugma ng value, halimbawa, na hindi tumutukoy ng pagkakakonekta ay magdudulot sa Print Preview na simulan ang pagtuklas ng lahat ng uri ng printer, lokal, at cloud.
+      Dapat sumunod ang mga pattern ng regular na expression sa JavaScript RegExp syntax at case sensistive ang mga tugma.</translation>
 <translation id="684856667300805181">Inalis ang patakarang ito sa <ph name="PRODUCT_NAME" /> 68 at pinalitan ito ng <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Hindi na ginagamit at tinanggal na ang patakarang ito sa M66, dahil ginamit lang ito para sa internal na pagsubok at isa itong sagutin sa seguridad.
 
@@ -2250,6 +2286,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7511361072385293666">Kung nakatakda ang patakaran na ito sa true o hindi ito nakatakda, ang paggamit ng QUIC protocol sa <ph name="PRODUCT_NAME" /> ay pinapayagan.
       Kung ang patakaran na ito ay nakatakda sa false, ang paggamit ng QUIC protocol ay hindi pinapayagan.</translation>
 <translation id="7519251620064708155">Payagan ang pagbuo ng key sa mga site na ito</translation>
+<translation id="7529083451528428240">Nagbibigay-daan sa iyong i-lock ang session ng user batay sa oras ng client o quota sa paggamit sa araw na iyon.
+
+          Nagtatakda ang |time_window_limit| ng pang-araw-araw na window kung saan dapat i-lock ang session ng user. Isang panuntunan lang ang sinusuportahan namin para sa bawat araw ng linggo, samakatuwid maaaring mag-iba-iba ang array ng |entries| mula 0-7 sa laki. Ang |starts_at| at |ends_at| ang simula at dulo ng limitasyon sa window, kapag mas maliit ang |ends_at| kaysa sa |starts_at|, nangangahulugan itong matatapos ang |time_limit_window| sa susunod na araw. Ang |last_updated_millis| ay ang UTC timestamp kung kailan huling na-update ang entry na ito, ipinapadala ito bilang isang string dahil hindi magkakasya ang timestamp sa isang integer.
+
+          Tumutukoy ang |time_usage_limit| ng pang-araw-araw na quota sa screen, kaya kapag naabot ito ng user, mala-lock ang session ng user. May property para sa bawat araw ng linggo, at dapat lang itong itakda kung mayroong aktibong quota para sa araw na iyon. Ang |usage_quota_mins| ay ang haba ng oras kung kailan maaaring gamitin ang pinapamahalaang device sa isang araw at ang |reset_at| ay ang oras kung kailan nare-renew ang quota sa paggamit. Ang default na value para sa |reset_at| ay hatinggabi ({'hour': 0, 'minute': 0}). Ang |last_updated_millis| ay ang UTC timestamp kung kailan huling na-update ang entry na ito, ipinapadala ito bilang isang string dahil hindi magkakasya ang timestamp sa isang integer.
+
+          Ibinibigay ang |overrides| para pansamantalang ma-invalidate ang isa o higit pa sa mga nakaraang panuntunan.
+          * Kung hindi aktibo ang time_window_limit o time_usage_limit maaaring gamitin ang |LOCK| para i-lock ang device.
+          * Pansamantalang naglo-lock ng session ng user ang |LOCK| hanggang magsimula ang susunod na time_window_limit o time_usage_limit.
+          * Ang |UNLOCK| ay nakakapag-unlock ng session ng user na na-lock ng time_window_limit o time_usage_limit.
+          Ang |created_time_millis| ay ang UTC timestamp para sa paggawa ng override, ipinapadala ito bilang isang String dahil hindi magkakasya ang timestamp sa isang integer. Ginagamit ito para tukuyin kung dapat pa ring ilapat ang pag-override na ito. Kung nagsimula ang kasalukuyang aktibong feature na limitasyon sa oras (limitasyon sa oras ng paggamit o limitasyon sa oras sa window) pagkatapos gawin ang override, hindi dapat ito magsagawa ng pagkilos. Gayundin, kung nagawa ang override bago ang huling pagbabago ng aktibong time_window_limit o time_usage_window hindi dapat ito ilapat.</translation>
 <translation id="7529100000224450960">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magbukas ng mga popup.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultPopupsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>

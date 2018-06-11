@@ -176,6 +176,7 @@
 <translation id="123578888592755962">Disque saturé.</translation>
 <translation id="1238191093934674082">Ouvrir le VPN</translation>
 <translation id="1240892293903523606">Inspecteur de DOM</translation>
+<translation id="124116460088058876">Plus de langues</translation>
 <translation id="1241753985463165747">Accéder à toutes vos données sur le site Web actuellement consulté et les modifier</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> souhaite rétablir vos paramètres.</translation>
 <translation id="1243314992276662751">Importer</translation>
@@ -209,6 +210,7 @@
 <translation id="1296497012903089238">Type de certificat</translation>
 <translation id="1297175357211070620">Destination</translation>
 <translation id="1297922636971898492">Google Drive n'est pas disponible pour le moment. L'importation reprendra lorsque Google Drive sera à nouveau disponible.</translation>
+<translation id="1300415640239881824">La validation de l'identité de votre appareil est requise pour le site <ph name="DOMAIN" /> afin que Google puisse déterminer si vous pouvez bénéficier d'une lecture améliorée des contenus protégés.</translation>
 <translation id="1300806585489372370">Pour modifier ce paramètre, commencez par <ph name="BEGIN_LINK" />activer les identifiants<ph name="END_LINK" /></translation>
 <translation id="1302227299132585524">Autoriser JavaScript dans les événements AppleScript</translation>
 <translation id="1303101771013849280">Ajouter le fichier HTML aux favoris</translation>
@@ -1067,7 +1069,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2624142942574147739">Cette page accède à votre caméra et à votre micro</translation>
 <translation id="2626799779920242286">Veuillez réessayer ultérieurement.</translation>
 <translation id="2630681426381349926">Se connecter au réseau Wi-Fi pour commencer</translation>
-<translation id="2631006050119455616">Enregistrées</translation>
 <translation id="2631498379019108537">Afficher les options de saisie sur l'étagère</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> utilise actuellement <ph name="USAGE" /> Mo d'espace disque.</translation>
 <translation id="2633212996805280240">Désinstaller "<ph name="EXTENSION_NAME" />" ?</translation>

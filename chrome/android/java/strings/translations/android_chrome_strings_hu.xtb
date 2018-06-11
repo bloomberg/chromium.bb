@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Megnyitott lapok</translation>
 <translation id="1756600373018374892">Koppintson erre a gombra lapjai gyors eléréséhez.</translation>
 <translation id="1779089405699405702">Képdekóder</translation>
+<translation id="1782483593938241562">Befejezés dátuma: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Az alapértelmezett letöltési helyet bármikor módosíthatja</translation>
 <translation id="1807246157184219062">Világos</translation>
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Oldal frissítése</translation>
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="271033894570825754">Új</translation>
+<translation id="2728754400939377704">Rendezés webhely szerint</translation>
 <translation id="2736391366332017384">Koppintson a Kezdőképernyő gombra az új lap oldal megnyitásához az aktuális lapon</translation>
 <translation id="2744248271121720757">Az azonnali kereséshez koppintson a kívánt szóra, vagy tekintse meg a kapcsolódó műveleteket</translation>
 <translation id="2762000892062317888">éppen most</translation>
@@ -353,8 +355,10 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4113030288477039509">A rendszergazdája kezeli</translation>
 <translation id="4116038641877404294">Töltse le az oldalakat, hogy offline is használhassa őket</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d könyvjelző}other{%1$d könyvjelző}}</translation>
+<translation id="4159800535322890630">Érzékelőkhöz való hozzáférés megtiltása webhelyeknek</translation>
 <translation id="4165986682804962316">Webhelybeállítások</translation>
 <translation id="4170011742729630528">A szolgáltatás nem érhető el, próbálja újra később.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> felhasználva</translation>
 <translation id="4181841719683918333">Nyelvek</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="4198423547019359126">Nem áll rendelkezésre letöltési hely</translation>
@@ -520,6 +524,7 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="5585019845078534178">Kártyák</translation>
 <translation id="5595485650161345191">Cím szerkesztése</translation>
 <translation id="5596627076506792578">További lehetőségek</translation>
+<translation id="5620299005957670886">Az érzékelőkhöz való hozzáférés engedélyezése a webhelyek számára (ajánlott)</translation>
 <translation id="5620928963363755975">A fájlokat és oldalakat a További lehetőségek gomb Letöltések menüpontjában találhatja meg</translation>
 <translation id="5626134646977739690">Név:</translation>
 <translation id="5639724618331995626">Minden webhely engedélyezése</translation>
@@ -563,6 +568,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="5911030830365207728">Google Fordító</translation>
 <translation id="5916664084637901428">Be</translation>
 <translation id="5919204609460789179">A szinkronizálás megkezdéséhez frissítse a következőt: <ph name="PRODUCT_NAME" /></translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> megtakarított adatmennyiség</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="5942872142862698679">A Google használata a kereséshez</translation>
 <translation id="5956665950594638604">A Chrome súgójának megnyitása új lapon</translation>
@@ -643,6 +649,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6612358246767739896">Védett tartalom</translation>
 <translation id="6627583120233659107">Mappa szerkesztése</translation>
 <translation id="6643016212128521049">Törlés</translation>
+<translation id="6643649862576733715">Rendezés a megtakarított adatmennyiség szerint</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6656545060687952787">A Chrome-nak hozzá kell férnie a tartózkodási helyhez, hogy eszközöket kereshessen. <ph name="BEGIN_LINK" />Frissítse az engedélyeket<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Jelszó</translation>
@@ -729,6 +736,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome – Első futtatási élmény</translation>
 <translation id="741204030948306876">Igen, folytatom</translation>
+<translation id="7413229368719586778">Kezdés dátuma: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Kérdezzen rá</translation>
 <translation id="7423538860840206698">Le van tiltva a vágólap megtekintése</translation>
 <translation id="7437998757836447326">Kijelentkezés a Chrome-ból</translation>
@@ -834,6 +842,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8313455859591948645">Kezdőoldal szerkesztése</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> és további webhelyek</translation>
 <translation id="8339163506404995330">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva</translation>
+<translation id="8349013245300336738">Rendezés a felhasznált adatmennyiség szerint</translation>
 <translation id="8363501664269050863">Navigációs panel. Csúsztassa le a bezáráshoz.</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
 <translation id="8374821112118309944">Frissítenie kell a TalkBack alkalmazást egy újabb verzióra.</translation>

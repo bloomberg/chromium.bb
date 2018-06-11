@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6948701128805548767">Để xem các yêu cầu và phương thức nhận hàng, hãy chọn một địa chỉ</translation>
 <translation id="6949872517221025916">Đặt lại mật khẩu</translation>
+<translation id="6950684638814147129">Lỗi khi phân tích cú pháp giá trị JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Chứng chỉ của máy chủ dường như giả mạo.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Thiết bị</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8620436878122366504">Cha mẹ của bạn chưa phê duyệt trang web</translation>
 <translation id="8625384913736129811">Lưu thẻ này vào thiết bị này</translation>
 <translation id="8639963783467694461">Cài đặt tự động điền</translation>
+<translation id="8663226718884576429">Tóm tắt đơn hàng, <ph name="TOTAL_LABEL" />, chi tiết khác</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, câu trả lời, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Kết nối của bạn đến <ph name="DOMAIN" /> không được mã hóa.</translation>
 <translation id="8718314106902482036">Thanh toán chưa hoàn tất</translation>

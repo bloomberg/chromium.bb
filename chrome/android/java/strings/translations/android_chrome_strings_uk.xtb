@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Відкриті вкладки</translation>
 <translation id="1756600373018374892">Торкніться цієї кнопки, щоб отримати швидкий доступ до вкладок.</translation>
 <translation id="1779089405699405702">Декодер зображень</translation>
+<translation id="1782483593938241562">Дата завершення: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Будь-коли змінюйте папку для завантажень за умовчанням</translation>
 <translation id="1807246157184219062">Світла</translation>
 <translation id="1829244130665387512">Знайти на сторінці</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Оновити сторінку</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="271033894570825754">Новий</translation>
+<translation id="2728754400939377704">Сортувати за сайтом</translation>
 <translation id="2736391366332017384">Торкніться кнопки головного екрана, щоб перейти на нову вкладку в поточній вкладці</translation>
 <translation id="2744248271121720757">Торкніться слова для миттєвого пошуку або перегляду схожих дій</translation>
 <translation id="2762000892062317888">щойно</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">Керується адміністратором</translation>
 <translation id="4116038641877404294">Завантажуйте сторінки, щоб переглядати їх офлайн</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d закладка}one{%1$d закладка}few{%1$d закладки}many{%1$d закладок}other{%1$d закладки}}</translation>
+<translation id="4159800535322890630">Блокувати доступ сайтів до датчиків</translation>
 <translation id="4165986682804962316">Налаштування сайту</translation>
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
+<translation id="4179980317383591987">Використано <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Мови</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4198423547019359126">Немає доступних місць для завантаження</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">Картки</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
 <translation id="5596627076506792578">Інші опції</translation>
+<translation id="5620299005957670886">Надати сайтам доступ до датчиків (рекомендовано)</translation>
 <translation id="5620928963363755975">Знаходьте свої файли та сторінки в розділі "Завантаження", натиснувши кнопку "Більше опцій"</translation>
 <translation id="5626134646977739690">Ім'я:</translation>
 <translation id="5639724618331995626">Дозволити всі сайти</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google Перекладач</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
 <translation id="5919204609460789179">Оновіть <ph name="PRODUCT_NAME" />, щоб почати синхронізацію</translation>
+<translation id="5937580074298050696">Заощаджено <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5942872142862698679">Пошук за допомогою Google</translation>
 <translation id="5956665950594638604">Відкрити Довідковий центр Chrome у новій вкладці</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">Захищений вміст</translation>
 <translation id="6627583120233659107">Редагувати папку</translation>
 <translation id="6643016212128521049">Очистити</translation>
+<translation id="6643649862576733715">Сортувати за кількістю заощадженого трафіку</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6656545060687952787">Щоб знаходити пристрої, Chrome потрібний доступ до геоданих. <ph name="BEGIN_LINK" />Оновлити дозволи<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">URL-адреса</translation>
 <translation id="7403691278183511381">Перший запуск Chrome</translation>
 <translation id="741204030948306876">Увімкнути</translation>
+<translation id="7413229368719586778">Дата початку: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Спершу запитувати</translation>
 <translation id="7423538860840206698">Заборонено переглядати буфер обміну</translation>
 <translation id="7437998757836447326">Вихід із Chrome</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">Редагувати стартову сторінку</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> та інші сайти</translation>
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
+<translation id="8349013245300336738">Сортувати за кількістю використаного трафіку</translation>
 <translation id="8363501664269050863">Панель навігації. Проведіть пальцем униз, щоб закрити.</translation>
 <translation id="8372893542064058268">сайті.</translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>

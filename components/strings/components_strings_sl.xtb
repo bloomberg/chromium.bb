@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6948701128805548767">Če si želite ogledati načine prevzema in zahteve, izberite naslov</translation>
 <translation id="6949872517221025916">Ponastavitev gesla</translation>
+<translation id="6950684638814147129">Napaka pri razčlenjevanju vrednosti JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Potrdilo strežnika je očitno ponaredek.</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="6965978654500191972">Naprava</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Starši še niso odobrili</translation>
 <translation id="8625384913736129811">Shrani to kartico v tej napravi</translation>
 <translation id="8639963783467694461">Nastavitve samodejnega izpolnjevanja</translation>
+<translation id="8663226718884576429">Povzetek naročila, <ph name="TOTAL_LABEL" />, več podrobnosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odgovor, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaša povezava z <ph name="DOMAIN" /> ni kodirana.</translation>
 <translation id="8718314106902482036">Plačilo ni končano</translation>

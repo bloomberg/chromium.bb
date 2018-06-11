@@ -73,6 +73,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
 <translation id="2799223571221894425">Uruchom ponownie</translation>
 <translation id="2847461019998147611">Wyświetlaj Google Chrome w tym języku</translation>
+<translation id="2857540653560290388">Uruchamiam Chrome…</translation>
 <translation id="2871893339301912279">Jesteś zalogowany w Chrome.</translation>
 <translation id="2888126860611144412">Chrome – informacje</translation>
 <translation id="3037838751736561277">Google Chrome jest w trybie działania w tle</translation>
@@ -211,7 +212,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="7308322188646931570">Chrome musi mieć dostęp do pamięci, by pobierać pliki</translation>
 <translation id="7330164299247909639">Błąd certyfikatu uwierzytelniania. Jeszcze raz zaloguj się w Google Chrome jako <ph name="USER_NAME" /> lub skontaktuj się z administratorem, by uzyskać więcej informacji. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nowe okno</translation>
-<translation id="7369650938475876456">Użyj silnego hasła wygenerowanego przez Chrome</translation>
 <translation id="7398801000654795464">Byłeś zalogowany w Chrome jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
 <translation id="7408085963519505752">Warunki korzystania z Chrome OS</translation>
 <translation id="7419046106786626209">System operacyjny Chrome nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>

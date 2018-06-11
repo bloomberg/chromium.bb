@@ -200,6 +200,7 @@
 <translation id="5457599981699367932">تصفَّح كزائر</translation>
 <translation id="54609108002486618">تتم إدارته</translation>
 <translation id="553675580533261935">جارٍ الخروج من الجلسة</translation>
+<translation id="5537725057119320332">إرسال</translation>
 <translation id="5548285847212963613">يمكن أن تساعد الإضافة " <ph name="EXTENSION_NAME" /> "على الاتصال بهذه الشبكة.</translation>
 <translation id="554893713779400387">تبديل الإملاء</translation>
 <translation id="5571066253365925590">تم تفعيل البلوتوث</translation>
@@ -308,12 +309,14 @@
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7692480393933218409">‏جارٍ شحن أجهزة USB-C المتصلة</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="776344839111254542">النقر لعرض تفاصيل التحديث</translation>
 <translation id="7796353162336583443">‏انقر على زر قلم الشاشة على الرف لتدوين ملاحظة أو الحصول على لقطة شاشة أو استخدام مساعد Google أو مؤشر الليزر أو العدسة المكبرة.</translation>
 <translation id="7798302898096527229">‏اضغط على مفتاح البحث أو المفتاح Shift للإلغاء.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و<ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">إشارة قوية</translation>
 <translation id="7842569679327885685">تحذير: ميزة تجريبية</translation>
+<translation id="7846634333498149051">لوحة المفاتيح</translation>
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7933084174919150729">‏لا يتوفر مساعد Google إلا للملف الشخصي الأساسي.</translation>
 <translation id="79341161159229895">يُدير <ph name="FIRST_PARENT_EMAIL" /> و<ph name="SECOND_PARENT_EMAIL" /> الحساب.</translation>

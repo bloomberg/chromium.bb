@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Tab đang mở</translation>
 <translation id="1756600373018374892">Nhấn nút này để truy cập nhanh vào các tab của bạn.</translation>
 <translation id="1779089405699405702">Bộ giải mã hình ảnh</translation>
+<translation id="1782483593938241562">Ngày kết thúc <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Thay đổi vị trí tải xuống mặc định bất cứ lúc nào</translation>
 <translation id="1807246157184219062">Sáng</translation>
 <translation id="1829244130665387512">Tìm trong trang</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Làm mới trang</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="271033894570825754">Mới</translation>
+<translation id="2728754400939377704">Sắp xếp theo trang web</translation>
 <translation id="2736391366332017384">Chạm vào nút màn hình chính để truy cập vào trang tab mới trong tab hiện tại của bạn</translation>
 <translation id="2744248271121720757">Hãy nhấn vào một từ để tìm kiếm ngay hoặc xem các hành động có liên quan</translation>
 <translation id="2762000892062317888">vừa xong</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">Do quản trị viên của bạn quản lý</translation>
 <translation id="4116038641877404294">Tải trang xuống để sử dụng ngoại tuyến</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d dấu trang}other{%1$d dấu trang}}</translation>
+<translation id="4159800535322890630">Chặn các trang web truy cập vào cảm biến của bạn</translation>
 <translation id="4165986682804962316">Cài đặt trang web</translation>
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
+<translation id="4179980317383591987">Đã dùng <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="4198423547019359126">Không có vị trí tải xuống</translation>
@@ -520,6 +524,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5585019845078534178">Thẻ</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="5596627076506792578">Tùy chọn khác</translation>
+<translation id="5620299005957670886">Cho phép các trang web truy cập vào cảm biến của bạn (nên dùng)</translation>
 <translation id="5620928963363755975">Tìm tệp và trang của bạn trong Tài nguyên đã tải xuống từ nút Tùy chọn khác</translation>
 <translation id="5626134646977739690">Tên:</translation>
 <translation id="5639724618331995626">Cho phép tất cả trang web</translation>
@@ -563,6 +568,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5911030830365207728">Google Dịch</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5919204609460789179">Cập nhật <ph name="PRODUCT_NAME" /> để bắt đầu đồng bộ hóa</translation>
+<translation id="5937580074298050696">Tiết kiệm được <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5942872142862698679">Sử dụng Google để tìm kiếm</translation>
 <translation id="5956665950594638604">Mở Trung tâm trợ giúp Chrome trong tab mới</translation>
@@ -643,6 +649,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6627583120233659107">Chỉnh sửa thư mục</translation>
 <translation id="6643016212128521049">Xóa</translation>
+<translation id="6643649862576733715">Sắp xếp theo lượng dữ liệu tiết kiệm được</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> tùy chọn khác}other{<ph name="CONTACT_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> tùy chọn khác}}</translation>
 <translation id="6656545060687952787">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK" />Cập nhật quyền<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
@@ -729,6 +736,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Trải nghiệm lần chạy đầu tiên của Chrome</translation>
 <translation id="741204030948306876">Có, tôi đồng ý</translation>
+<translation id="7413229368719586778">Ngày bắt đầu <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Hỏi trước</translation>
 <translation id="7423538860840206698">Đã chặn quyền đọc khay nhớ tạm</translation>
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
@@ -834,6 +842,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8313455859591948645">Chỉnh sửa trang khởi động</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> và các trang web khác</translation>
 <translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>
+<translation id="8349013245300336738">Sắp xếp theo lượng dữ liệu đã sử dụng</translation>
 <translation id="8363501664269050863">Bảng điều hướng. Vuốt xuống để đóng.</translation>
 <translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>

@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6948701128805548767">Aby zobaczyć metody odbioru oraz wymagania, wybierz adres</translation>
 <translation id="6949872517221025916">Resetuj hasło</translation>
+<translation id="6950684638814147129">Błąd podczas przetwarzania wartości JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Certyfikat serwera wydaje się sfałszowany.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Urządzenie</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Twoi rodzice jeszcze na to nie zezwolili</translation>
 <translation id="8625384913736129811">Zapisz tę kartę na tym urządzeniu</translation>
 <translation id="8639963783467694461">Ustawienia autouzupełniania</translation>
+<translation id="8663226718884576429">Podsumowanie zamówienia, <ph name="TOTAL_LABEL" />, Szczegółowe informacje</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odpowiedź, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Połączenie z witryną <ph name="DOMAIN" /> nie jest szyfrowane.</translation>
 <translation id="8718314106902482036">Płatność nie została zrealizowana</translation>

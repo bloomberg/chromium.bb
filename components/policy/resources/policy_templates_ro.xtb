@@ -871,6 +871,11 @@
 <translation id="3512226956150568738">Dacă modelul de dispozitiv al clientului era compatibil deja cu ARC înainte ca migrarea la ext4 să fie necesară pentru rularea ARC și dacă politica ArcEnabled este activată, această opțiune va funcționa ca AskUser (valoarea 3). În restul cazurilor (dacă modelul de dispozitiv nu era compatibil cu ARC înainte sau dacă politica ArcEnabled este dezactivată), această valoare este echivalentă cu DisallowArc (valoarea 0).</translation>
 <translation id="3524204464536655762">Nu permite niciunui site să solicite acces la dispozitivele USB prin API-ul WebUSB</translation>
 <translation id="3528000905991875314">Activează pagini de eroare alternative</translation>
+<translation id="3545457887306538845">Îți permite să stabilești unde pot fi folosite Instrumentele pentru dezvoltatori.
+
+      Dacă această politică este setată la „DeveloperToolsDisallowedForForceInstalledExtensions” (valoarea 0, care este valoarea prestabilită), Instrumentele pentru dezvoltatori și consola JavaScript pot fi accesate la modul general, dar nu pot fi accesate în contextul extensiilor instalate pe baza politicii de companie.
+      Dacă această politică este setată la „DeveloperToolsAllowed” (valoarea 1), Instrumentele pentru dezvoltatori și consola JavaScript pot fi accesate și folosite în orice context, inclusiv în contextul extensiilor instalate pe baza politicii de companie.
+      Dacă această politică este setată la „DeveloperToolsDisallowed” (valoarea 2), Instrumentele pentru dezvoltatori nu pot fi accesate și elementele site-urilor nu mai pot fi inspectate. Comenzile rapide de la tastatură și intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate.</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="3556806727696701427">Activează funcția Navigare sigură din <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să modifice această setare.
 
@@ -1910,6 +1915,37 @@
 <translation id="6810445994095397827">Blochează JavaScript de pe aceste site-uri</translation>
 <translation id="681446116407619279">Scheme de autentificare acceptate</translation>
 <translation id="6835883744948188639">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este recomandată</translation>
+<translation id="6838056959556423778">Modifică regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />.
+
+      Această politică stabilește regulile de selectare a imprimantei prestabilite pentru <ph name="PRODUCT_NAME" />, acțiune care are loc atunci când funcția de printare este folosită pentru prima dată cu un profil.
+
+      Dacă politica este configurată, <ph name="PRODUCT_NAME" /> va încerca să găsească o imprimantă care corespunde cu toate atributele specificate și o va selecta ca imprimantă prestabilită. Se va selecta prima imprimantă conformă cu politica; dacă mai multe imprimante sunt conforme cu politica, oricare dintre acestea poate fi selectată, în funcție de ordinea în care sunt descoperite.
+
+      Dacă politica nu este configurată sau nu se găsește nicio imprimantă conformă cu politica în timpul limită, imprimanta prestabilită va fi imprimanta PDF încorporată sau, când imprimanta PDF nu este disponibilă, nu se va selecta nicio imprimantă.
+
+      Valoarea este analizată ca obiect JSON, în conformitate cu următoarea schemă:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Imprimantele conectate la <ph name="CLOUD_PRINT_NAME" /> intră în categoria <ph name="PRINTER_TYPE_CLOUD" />, iar restul imprimantelor sunt clasificate ca <ph name="PRINTER_TYPE_LOCAL" />.
+      Dacă un câmp nu este completat, toate valorile coincid. De exemplu, dacă nu este specificată conectivitatea, Vizualizarea înainte de printare va iniția descoperirea tuturor tipurilor de imprimante, locale și din cloud.
+      Șabloanele expresiei regulate trebuie să respecte sintaxa JavaScript RegExp, iar valorile care coincid disting între scrierea cu majuscule și minuscule.</translation>
 <translation id="684856667300805181">Această politică a fost eliminată în <ph name="PRODUCT_NAME" /> 68 și înlocuită cu <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Această politică este învechită și eliminată din M66, deoarece a fost folosită doar pentru testare internă și reprezintă un risc de securitate.
 
@@ -2172,6 +2208,17 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7511361072385293666">Dacă această politică este activată sau nu este configurată, este permisă folosirea protocolului QUIC în <ph name="PRODUCT_NAME" />.
       Dacă această politică este dezactivată, nu este permisă folosirea protocolului QUIC.</translation>
 <translation id="7519251620064708155">Permite generarea cheilor pe aceste site-uri</translation>
+<translation id="7529083451528428240">Îți permite să blochezi sesiunea utilizatorului în funcție de timpul clientului sau de cotele de folosire ale zilei.
+
+         |time_window_limit| specifică o fereastră zilnică în care trebuie blocată sesiunea utilizatorului. Acceptăm o singură regulă pentru fiecare zi a săptămânii, așa că matricea |entries| poate avea o dimensiune între 0 și 7. |starts_at| și |ends_at| reprezintă începutul și sfârșitul ferestrei; când |ends_at| este mai mic decât |starts_at| înseamnă că |time_limit_window| se încheie în ziua următoare. |last_updated_millis| este marcajul temporal UTC pentru ultima actualizare a intrării și este trimis ca șir, deoarece n-ar încăpea într-un număr întreg.
+
+         |time_usage_limit| specifică o cotă zilnică de folosire a dispozitivului, iar când utilizatorul o atinge, sesiunea se blochează. Există câte o proprietate pentru fiecare zi a săptămânii și aceasta trebuie setată doar dacă există o cotă activă pentru ziua respectivă. |usage_quota_mins| este timpul cât poate fi folosit dispozitivul gestionat într-o zi, iar |reset_at| este momentul când se reînnoiește cota de folosire. Valoarea prestabilită pentru |reset_at| este miezul nopții ({'hour': 0, 'minute': 0}). |last_updated_millis| este marcajul temporal UTC pentru ultima actualizare a intrării și este trimis ca șir, deoarece n-ar încăpea într-un număr întreg.
+
+          |overrides| se specifică pentru a anula temporar una sau mai multe dintre regulile anterioare.
+          * Dacă nici time_window_limit și nici time_usage_limit nu sunt active, |LOCK| se poate folosi pentru a bloca dispozitivul.
+          * |LOCK| blochează temporar o sesiune de utilizator până când începe următoarea time_window_limit sau time_usage_limit.
+          * |UNLOCK| deblochează sesiunea unui utilizator care a fost blocată de time_window_limit sau time_usage_limit.
+          |created_time_millis| este marcajul temporal UTC pentru crearea modificării și este trimis ca șir, deoarece n-ar încăpea într-un număr întreg. Se folosește pentru a stabili dacă modificarea mai trebuie aplicată. Dacă funcția curentă de limitare a timpului (limita de timp de folosire sau limita ferestrei de timp) a început după crearea modificării, nu trebuie aplicată. Dacă modificarea a fost creată înainte de ultima modificare a valorii time_window_limit sau time_usage_window active, nu trebuie aplicată.</translation>
 <translation id="7529100000224450960">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile ce au permisiunea să deschidă ferestre de tip pop-up. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultPopupsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7529144158022474049">Factor de difuzare pentru actualizări automate</translation>
 <translation id="7534199150025803530">Această politică nu afectează aplicația Android Google Drive. Dacă vrei să împiedici folosirea Google Drive prin conexiunile mobile, îți recomandăm să nu permiți instalarea aplicației Android Google Drive.</translation>
