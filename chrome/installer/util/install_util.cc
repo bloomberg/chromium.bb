@@ -48,7 +48,7 @@ const wchar_t kRegDowngradeVersion[] = L"DowngradeVersion";
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum class StartMenuShortStatus {
+enum class StartMenuShortcutStatus {
   kSuccess = 0,
   kGetShortcutPathFailed = 1,
   kShortcutMissing = 2,
@@ -56,8 +56,8 @@ enum class StartMenuShortStatus {
   kMaxValue = kToastActivatorClsidIncorrect,
 };
 
-void LogStartMenuShortStatus(StartMenuShortStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.StartMenuShortStatus",
+void LogStartMenuShortcutStatus(StartMenuShortcutStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.StartMenuShortcutStatus",
                             status);
 }
 
@@ -305,14 +305,14 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
           install_static::IsSystemInstall() ? ShellUtil::SYSTEM_LEVEL
                                             : ShellUtil::CURRENT_USER,
           &shortcut_path)) {
-    LogStartMenuShortStatus(StartMenuShortStatus::kGetShortcutPathFailed);
+    LogStartMenuShortcutStatus(StartMenuShortcutStatus::kGetShortcutPathFailed);
     return false;
   }
 
   shortcut_path =
       shortcut_path.Append(dist->GetShortcutName() + installer::kLnkExt);
   if (!base::PathExists(shortcut_path)) {
-    LogStartMenuShortStatus(StartMenuShortStatus::kShortcutMissing);
+    LogStartMenuShortcutStatus(StartMenuShortcutStatus::kShortcutMissing);
     return false;
   }
 
@@ -324,12 +324,12 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
 
   if (!::IsEqualCLSID(properties.toast_activator_clsid,
                       install_static::GetToastActivatorClsid())) {
-    LogStartMenuShortStatus(
-        StartMenuShortStatus::kToastActivatorClsidIncorrect);
+    LogStartMenuShortcutStatus(
+        StartMenuShortcutStatus::kToastActivatorClsidIncorrect);
     return false;
   }
 
-  LogStartMenuShortStatus(StartMenuShortStatus::kSuccess);
+  LogStartMenuShortcutStatus(StartMenuShortcutStatus::kSuccess);
   return true;
 }
 

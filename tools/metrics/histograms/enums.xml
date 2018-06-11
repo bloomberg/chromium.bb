@@ -49026,7 +49026,18 @@ Full version information for the fingerprint enum values:
       label="Misconfig - Shortcut and ComServer and ComInitialization"/>
 </enum>
 
+<enum name="WindowsNotificationStartMenuShortcutStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Get shortcut path failed"/>
+  <int value="2" label="Shortcut missing"/>
+  <int value="3" label="Toast activator CLSID incorrect"/>
+</enum>
+
 <enum name="WindowsNotificationStartMenuShortStatus">
+  <obsolete>
+    Deprecated 06/2018. Replaced with WindowsNotificationStartMenuShortcutStatus
+    where typo is fixed.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Get shortcut path failed"/>
   <int value="2" label="Shortcut missing"/>
