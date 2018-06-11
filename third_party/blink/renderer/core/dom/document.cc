@@ -981,9 +981,7 @@ Element* Document::CreateElementForBinding(
                            : g_null_atom);
 
   bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
-  bool create_v1_builtin =
-      string_or_options.IsDictionary() &&
-      RuntimeEnabledFeatures::CustomElementsBuiltinEnabled();
+  bool create_v1_builtin = string_or_options.IsDictionary();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
 
@@ -1055,9 +1053,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
     return nullptr;
 
   bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
-  bool create_v1_builtin =
-      string_or_options.IsDictionary() &&
-      RuntimeEnabledFeatures::CustomElementsBuiltinEnabled();
+  bool create_v1_builtin = string_or_options.IsDictionary();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
 

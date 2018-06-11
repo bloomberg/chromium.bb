@@ -167,8 +167,7 @@ CustomElementDefinition* CustomElementRegistry::define(
 
   // Step 7. customized built-in elements definition
   // element interface extends option checks
-  if (RuntimeEnabledFeatures::CustomElementsBuiltinEnabled() &&
-      options.hasExtends()) {
+  if (options.hasExtends()) {
     // 7.1. If element interface is valid custom element name, throw exception
     const AtomicString& extends = AtomicString(options.extends());
     if (ThrowIfValidName(AtomicString(options.extends()), exception_state))
