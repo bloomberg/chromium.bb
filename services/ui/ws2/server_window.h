@@ -28,7 +28,7 @@ class EventHandler;
 namespace ws2 {
 
 class Embedding;
-class WindowServiceClient;
+class WindowTree;
 
 // Tracks any state associated with an aura::Window for the WindowService.
 // ServerWindow is created for every window created at the request of a client,
@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   // that of the Window (the Window ends up owning the ServerWindow).
   // |is_top_level| is true if the window represents a top-level window.
   static ServerWindow* Create(aura::Window* window,
-                              WindowServiceClient* client,
+                              WindowTree* tree,
                               const viz::FrameSinkId& frame_sink_id,
                               bool is_top_level);
 
@@ -54,15 +54,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   }
   static const ServerWindow* GetMayBeNull(const aura::Window* window);
 
-  WindowServiceClient* owning_window_service_client() {
-    return owning_window_service_client_;
-  }
-  const WindowServiceClient* owning_window_service_client() const {
-    return owning_window_service_client_;
-  }
+  WindowTree* owning_window_tree() { return owning_window_tree_; }
+  const WindowTree* owning_window_tree() const { return owning_window_tree_; }
 
-  WindowServiceClient* embedded_window_service_client();
-  const WindowServiceClient* embedded_window_service_client() const;
+  WindowTree* embedded_window_tree();
+  const WindowTree* embedded_window_tree() const;
 
   void set_frame_sink_id(const viz::FrameSinkId& frame_sink_id) {
     frame_sink_id_ = frame_sink_id;
@@ -76,11 +72,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_areas);
 
-  void SetCaptureOwner(WindowServiceClient* owner);
-  WindowServiceClient* capture_owner() const { return capture_owner_; }
+  void SetCaptureOwner(WindowTree* owner);
+  WindowTree* capture_owner() const { return capture_owner_; }
 
-  void set_focus_owner(WindowServiceClient* owner) { focus_owner_ = owner; }
-  WindowServiceClient* focus_owner() const { return focus_owner_; }
+  void set_focus_owner(WindowTree* owner) { focus_owner_ = owner; }
+  WindowTree* focus_owner() const { return focus_owner_; }
 
   // Returns true if the window has an embedding, and the owning client
   // intercepts events that would normally target descendants.
@@ -113,7 +109,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   friend class ServerWindowTestHelper;
 
   ServerWindow(aura::Window*,
-               WindowServiceClient* client,
+               WindowTree* tree,
                const viz::FrameSinkId& frame_sink_id,
                bool is_top_level);
 
@@ -123,11 +119,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
 
   aura::Window* window_;
 
-  // Client that created the window. Null if the window was not created at the
+  // Tree that created the window. Null if the window was not created at the
   // request of a client. Generally this is null for first level embedding,
   // otherwise non-null. A first level embedding is one where local code
   // calls InitForEmbed() on a Window not associated with any other clients.
-  WindowServiceClient* owning_window_service_client_;
+  WindowTree* owning_window_tree_;
 
   // Non-null if there is an embedding in this window.
   std::unique_ptr<Embedding> embedding_;
@@ -154,11 +150,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   // WindowService (meaning ui/events and aura's event processing continues).
   // For example, a mouse press in the non-client area of a top-level results
   // in views setting capture.
-  WindowServiceClient* capture_owner_ = nullptr;
+  WindowTree* capture_owner_ = nullptr;
 
   // This serves the same purpose as |capture_owner_|, but is used for focus.
   // See |capture_owner_| for details.
-  WindowServiceClient* focus_owner_ = nullptr;
+  WindowTree* focus_owner_ = nullptr;
 
   base::Optional<viz::LocalSurfaceId> local_surface_id_;
 

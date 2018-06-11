@@ -22,15 +22,15 @@ namespace ui {
 namespace ws2 {
 
 class WindowService;
-class WindowServiceClient;
+class WindowTree;
 
-// Owns the mojo structures and WindowServiceClient for a single client.
-class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClientBinding {
+// Owns the mojo structures and WindowTree for a single client.
+class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeBinding {
  public:
-  WindowServiceClientBinding();
-  ~WindowServiceClientBinding();
+  WindowTreeBinding();
+  ~WindowTreeBinding();
 
-  // See WindowServiceClient for details on parameters and when to use.
+  // See WindowTree for details on parameters and when to use.
   // |window_tree_client_ptr| may be null for tests.
   void InitForEmbed(WindowService* window_service,
                     mojom::WindowTreeClientPtr window_tree_client_ptr,
@@ -38,27 +38,25 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClientBinding {
                     aura::Window* initial_root,
                     base::OnceClosure connection_lost_callback);
 
-  // See WindowServiceClient for details on parameters and when to use.
+  // See WindowTree for details on parameters and when to use.
   void InitFromFactory(WindowService* window_service,
                        mojom::WindowTreeRequest window_tree_request,
                        mojom::WindowTreeClientPtr window_tree_client,
                        base::OnceClosure connection_lost_callback);
 
-  WindowServiceClient* window_service_client() {
-    return window_service_client_.get();
-  }
+  WindowTree* window_tree() { return window_tree_.get(); }
 
  private:
-  friend class WindowServiceClient;
+  friend class WindowTree;
 
   void CreateBinding(mojom::WindowTreeRequest window_tree_request,
                      base::OnceClosure connection_lost_callback);
 
   mojom::WindowTreeClientPtr window_tree_client_;
-  std::unique_ptr<WindowServiceClient> window_service_client_;
+  std::unique_ptr<WindowTree> window_tree_;
   std::unique_ptr<mojo::Binding<mojom::WindowTree>> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowServiceClientBinding);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeBinding);
 };
 
 }  // namespace ws2

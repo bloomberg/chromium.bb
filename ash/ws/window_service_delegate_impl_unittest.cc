@@ -20,8 +20,7 @@ class WindowServiceDelegateImplTest : public AshTestBase {
   ~WindowServiceDelegateImplTest() override = default;
 
   ui::Id GetTopLevelWindowId() {
-    return GetWindowServiceClientTestHelper()->TransportIdForWindow(
-        top_level_.get());
+    return GetWindowTreeTestHelper()->TransportIdForWindow(top_level_.get());
   }
 
   wm::WmToplevelWindowEventHandler* event_handler() {
@@ -42,10 +41,9 @@ class WindowServiceDelegateImplTest : public AshTestBase {
     GetEventGenerator().PressLeftButton();
   }
   void TearDown() override {
-    // Ash owns the WindowServiceClient, which also handles deleting
-    // |top_level_|. This needs to delete |top_level_| before the
-    // WindowServiceClient is deleted, otherwise the WindowServiceClient will
-    // delete |top_level_|, leading to a double delete.
+    // Ash owns the WindowTree, which also handles deleting |top_level_|. This
+    // needs to delete |top_level_| before the WindowTree is deleted, otherwise
+    // the WindowTree will delete |top_level_|, leading to a double delete.
     top_level_.reset();
     AshTestBase::TearDown();
   }
@@ -58,7 +56,7 @@ class WindowServiceDelegateImplTest : public AshTestBase {
 };
 
 TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoop) {
-  GetWindowServiceClientTestHelper()->window_tree()->PerformWindowMove(
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
       21, GetTopLevelWindowId(), ui::mojom::MoveLoopSource::MOUSE,
       gfx::Point());
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
@@ -74,7 +72,7 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoop) {
 }
 
 TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressRunLoop) {
-  GetWindowServiceClientTestHelper()->window_tree()->PerformWindowMove(
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
       29, GetTopLevelWindowId(), ui::mojom::MoveLoopSource::MOUSE,
       gfx::Point());
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
@@ -86,14 +84,14 @@ TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressRunLoop) {
 }
 
 TEST_F(WindowServiceDelegateImplTest, CancelWindowMoveLoop) {
-  GetWindowServiceClientTestHelper()->window_tree()->PerformWindowMove(
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
       21, GetTopLevelWindowId(), ui::mojom::MoveLoopSource::MOUSE,
       gfx::Point());
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   GetEventGenerator().MoveMouseTo(gfx::Point(5, 6));
   EXPECT_EQ(gfx::Point(105, 106), top_level_->bounds().origin());
   GetWindowTreeClientChanges()->clear();
-  GetWindowServiceClientTestHelper()->window_tree()->CancelWindowMove(
+  GetWindowTreeTestHelper()->window_tree()->CancelWindowMove(
       GetTopLevelWindowId());
   EXPECT_FALSE(event_handler()->is_drag_in_progress());
   EXPECT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),

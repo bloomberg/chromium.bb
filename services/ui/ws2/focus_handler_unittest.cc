@@ -28,69 +28,73 @@ namespace {
 
 TEST(FocusHandlerTest, FocusTopLevel) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
 
   // SetFocus() should fail as |top_level| isn't visible.
-  EXPECT_FALSE(setup.client_test_helper()->SetFocus(top_level));
+  EXPECT_FALSE(setup.window_tree_test_helper()->SetFocus(top_level));
 
   top_level->Show();
-  EXPECT_TRUE(setup.client_test_helper()->SetFocus(top_level));
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(top_level));
   EXPECT_TRUE(top_level->HasFocus());
 }
 
 TEST(FocusHandlerTest, FocusNull) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  EXPECT_TRUE(setup.client_test_helper()->SetFocus(top_level));
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(top_level));
   EXPECT_TRUE(top_level->HasFocus());
-  EXPECT_TRUE(setup.client_test_helper()->SetFocus(nullptr));
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(nullptr));
   EXPECT_FALSE(top_level->HasFocus());
 }
 
 TEST(FocusHandlerTest, FocusChild) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  aura::Window* window = setup.client_test_helper()->NewWindow();
+  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(window);
 
   // SetFocus() should fail as |window| isn't parented yet.
-  EXPECT_FALSE(setup.client_test_helper()->SetFocus(window));
+  EXPECT_FALSE(setup.window_tree_test_helper()->SetFocus(window));
 
   top_level->AddChild(window);
   // SetFocus() should still fail as |window| isn't visible.
-  EXPECT_FALSE(setup.client_test_helper()->SetFocus(window));
-  setup.client_test_helper()->SetCanFocus(window, false);
+  EXPECT_FALSE(setup.window_tree_test_helper()->SetFocus(window));
+  setup.window_tree_test_helper()->SetCanFocus(window, false);
   window->Show();
 
   // SetFocus() should fail as SetCanFocus(false) was called.
-  EXPECT_FALSE(setup.client_test_helper()->SetFocus(window));
+  EXPECT_FALSE(setup.window_tree_test_helper()->SetFocus(window));
 
-  setup.client_test_helper()->SetCanFocus(window, true);
-  EXPECT_TRUE(setup.client_test_helper()->SetFocus(window));
+  setup.window_tree_test_helper()->SetCanFocus(window, true);
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(window));
 }
 
 TEST(FocusHandlerTest, NotifyOnFocusChange) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  aura::Window* window1 = setup.client_test_helper()->NewWindow();
+  aura::Window* window1 = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(window1);
   top_level->AddChild(window1);
   window1->Show();
-  aura::Window* window2 = setup.client_test_helper()->NewWindow(4);
+  aura::Window* window2 = setup.window_tree_test_helper()->NewWindow(4);
   ASSERT_TRUE(window2);
   top_level->AddChild(window2);
   window2->Show();
   setup.changes()->clear();
 
   // Window is parented and visible, so SetFocus() should succeed.
-  EXPECT_TRUE(setup.client_test_helper()->SetFocus(window1));
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetFocus(window1));
   // As the client originated the request it is not notified of the change.
   EXPECT_TRUE(setup.changes()->empty());
 
@@ -103,10 +107,11 @@ TEST(FocusHandlerTest, NotifyOnFocusChange) {
 
 TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  aura::Window* embed_window = setup.client_test_helper()->NewWindow();
+  aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(embed_window);
   top_level->AddChild(embed_window);
   embed_window->Show();
@@ -116,7 +121,8 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
   embedding_helper->changes()->clear();
 
   // Set focus from the embedded client.
-  EXPECT_TRUE(embedding_helper->client_test_helper->SetFocus(embed_window));
+  EXPECT_TRUE(
+      embedding_helper->window_tree_test_helper->SetFocus(embed_window));
   EXPECT_TRUE(embed_window->HasFocus());
   EXPECT_TRUE(setup.changes()->empty());
   EXPECT_TRUE(embedding_helper->changes()->empty());
@@ -133,7 +139,7 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
   embedding_helper->changes()->clear();
 
   // Set focus from the parent. The embedded client should lose focus.
-  setup.client_test_helper()->SetFocus(embed_window);
+  setup.window_tree_test_helper()->SetFocus(embed_window);
   EXPECT_TRUE(embed_window->HasFocus());
   EXPECT_TRUE(setup.changes()->empty());
   EXPECT_EQ("Focused id=null",
@@ -150,10 +156,11 @@ TEST(FocusHandlerTest, FocusChangeFromEmbedded) {
 
 TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
   WindowServiceTestSetup setup;
-  aura::Window* top_level = setup.client_test_helper()->NewTopLevelWindow();
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  aura::Window* embed_window = setup.client_test_helper()->NewWindow();
+  aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
   ASSERT_TRUE(embed_window);
   top_level->AddChild(embed_window);
   embed_window->Show();
@@ -162,7 +169,7 @@ TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
       embed_window, mojom::kEmbedFlagEmbedderInterceptsEvents);
   ASSERT_TRUE(embedding_helper);
   aura::Window* embed_child_window =
-      embedding_helper->client_test_helper->NewWindow();
+      embedding_helper->window_tree_test_helper->NewWindow();
   ASSERT_TRUE(embed_child_window);
   embed_child_window->Show();
   embed_window->AddChild(embed_child_window);
@@ -171,7 +178,7 @@ TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
 
   // Set focus from the embedded client.
   EXPECT_TRUE(
-      embedding_helper->client_test_helper->SetFocus(embed_child_window));
+      embedding_helper->window_tree_test_helper->SetFocus(embed_child_window));
   EXPECT_TRUE(embed_child_window->HasFocus());
 
   // Generate a key-press. Even though focus is on a window in the embedded

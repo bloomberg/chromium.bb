@@ -54,9 +54,8 @@ class TopLevelWindowFactoryTest : public AshTestBase {
     properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
-    aura::Window* window =
-        GetWindowServiceClientTestHelper()->NewTopLevelWindow(
-            mojo::MapToFlatMap(std::move(properties)));
+    aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
+        mojo::MapToFlatMap(std::move(properties)));
     window->Show();
     return window;
   }
@@ -88,7 +87,7 @@ TEST_F(TopLevelWindowFactoryTest, IsWindowShownInCorrectDisplay) {
 }
 
 TEST_F(TopLevelWindowFactoryTest, UnknownWindowTypeReturnsNull) {
-  EXPECT_FALSE(GetWindowServiceClientTestHelper()->NewTopLevelWindow());
+  EXPECT_FALSE(GetWindowTreeTestHelper()->NewTopLevelWindow());
 }
 
 TEST_F(TopLevelWindowFactoryTest, CreateTopLevelWindow) {
@@ -105,7 +104,7 @@ TEST_F(TopLevelWindowFactoryTest, CreateTopLevelWindow) {
   properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
-  aura::Window* window = GetWindowServiceClientTestHelper()->NewTopLevelWindow(
+  aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
       mojo::MapToFlatMap(std::move(properties)));
   ASSERT_TRUE(window->parent());
   EXPECT_EQ(kShellWindowId_DefaultContainer, window->parent()->id());
@@ -122,7 +121,7 @@ TEST_F(TopLevelWindowFactoryTest, CreateUnfocusableTopLevelWindow) {
   properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
-  aura::Window* window = GetWindowServiceClientTestHelper()->NewTopLevelWindow(
+  aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
       mojo::MapToFlatMap(std::move(properties)));
   ASSERT_TRUE(window);
   window->Show();
@@ -138,7 +137,7 @@ TEST_F(TopLevelWindowFactoryTest, CreateUnfocusablePopupWindow) {
   properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::POPUP));
-  aura::Window* window = GetWindowServiceClientTestHelper()->NewTopLevelWindow(
+  aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
       mojo::MapToFlatMap(std::move(properties)));
   ASSERT_TRUE(window);
   window->Show();

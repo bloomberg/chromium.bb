@@ -35,14 +35,13 @@ enum class EventTargetingPolicy;
 namespace ws2 {
 
 class Embedding;
-class WindowServiceClient;
+class WindowTree;
 
-// Used for accessing private members of WindowServiceClient in tests.
-class WindowServiceClientTestHelper {
+// Used for accessing private members of WindowTree in tests.
+class WindowTreeTestHelper {
  public:
-  explicit WindowServiceClientTestHelper(
-      WindowServiceClient* window_service_client);
-  ~WindowServiceClientTestHelper();
+  explicit WindowTreeTestHelper(WindowTree* window_tree);
+  ~WindowTreeTestHelper();
 
   mojom::WindowTree* window_tree();
 
@@ -103,12 +102,12 @@ class WindowServiceClientTestHelper {
  private:
   ClientWindowId ClientWindowIdForWindow(aura::Window* window);
 
-  WindowServiceClient* window_service_client_;
+  WindowTree* window_tree_;
 
   // Next id to use for creating a window (including top-level windows).
   Id next_window_id_ = 1;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowServiceClientTestHelper);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeTestHelper);
 };
 
 }  // namespace ws2

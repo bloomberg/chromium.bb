@@ -23,19 +23,17 @@ namespace ui {
 namespace ws2 {
 
 class WindowHostFrameSinkClient;
-class WindowServiceClient;
+class WindowTree;
 
-// WindowServiceClient creates a ClientRoot for each window the client is
-// embedded in. A ClientRoot is created as the result of another client
-// using Embed(), or this client requesting a top-level window. ClientRoot is
-// responsible for maintaining state associated with the root, as well as
-// notifying the client of any changes to windows parented to the root.
+// WindowTree creates a ClientRoot for each window the client is embedded in. A
+// ClientRoot is created as the result of another client using Embed(), or this
+// client requesting a top-level window. ClientRoot is responsible for
+// maintaining state associated with the root, as well as notifying the client
+// of any changes to the root Window.
 class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
     : public aura::WindowObserver {
  public:
-  ClientRoot(WindowServiceClient* window_service_client,
-             aura::Window* window,
-             bool is_top_level);
+  ClientRoot(WindowTree* window_tree, aura::Window* window, bool is_top_level);
   ~ClientRoot() override;
 
   // Registers the necessary state needed for embedding in viz.
@@ -64,7 +62,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
-  WindowServiceClient* window_service_client_;
+  WindowTree* window_tree_;
   aura::Window* window_;
   const bool is_top_level_;
 

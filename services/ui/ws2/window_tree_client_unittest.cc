@@ -71,7 +71,7 @@ void ScheduleEmbedCallbackImpl(base::RunLoop* run_loop,
 // -----------------------------------------------------------------------------
 
 bool EmbedUrl(service_manager::Connector* connector,
-              WindowTree* tree,
+              mojom::WindowTree* tree,
               const std::string& url,
               Id root_id) {
   bool result = false;
@@ -87,7 +87,9 @@ bool EmbedUrl(service_manager::Connector* connector,
   return result;
 }
 
-bool Embed(WindowTree* tree, Id root_id, mojom::WindowTreeClientPtr client) {
+bool Embed(mojom::WindowTree* tree,
+           Id root_id,
+           mojom::WindowTreeClientPtr client) {
   bool result = false;
   base::RunLoop run_loop;
   {
@@ -99,7 +101,7 @@ bool Embed(WindowTree* tree, Id root_id, mojom::WindowTreeClientPtr client) {
   return result;
 }
 
-bool EmbedUsingToken(WindowTree* tree,
+bool EmbedUsingToken(mojom::WindowTree* tree,
                      Id root_id,
                      const base::UnguessableToken& token) {
   bool result = false;
@@ -111,7 +113,7 @@ bool EmbedUsingToken(WindowTree* tree,
   return result;
 }
 
-void ScheduleEmbed(WindowTree* tree,
+void ScheduleEmbed(mojom::WindowTree* tree,
                    mojom::WindowTreeClientPtr client,
                    base::UnguessableToken* token) {
   base::RunLoop run_loop;
@@ -120,7 +122,7 @@ void ScheduleEmbed(WindowTree* tree,
   run_loop.Run();
 }
 
-void GetWindowTree(WindowTree* tree,
+void GetWindowTree(mojom::WindowTree* tree,
                    Id window_id,
                    std::vector<TestWindow>* windows) {
   base::RunLoop run_loop;
@@ -575,9 +577,9 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
 
   // Various clients. |wt1()|, being the first client, has special permissions
   // (it's treated as the window manager).
-  WindowTree* wt1() { return wt_client1_->tree(); }
-  WindowTree* wt2() { return wt_client2_->tree(); }
-  WindowTree* wt3() { return wt_client3_->tree(); }
+  mojom::WindowTree* wt1() { return wt_client1_->tree(); }
+  mojom::WindowTree* wt2() { return wt_client2_->tree(); }
+  mojom::WindowTree* wt3() { return wt_client3_->tree(); }
 
   TestWindowTreeClient2* wt_client1() { return wt_client1_.get(); }
   TestWindowTreeClient2* wt_client2() { return wt_client2_.get(); }
@@ -619,7 +621,7 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
     }
   }
 
-  void EstablishThirdClient(WindowTree* owner, Id root_id) {
+  void EstablishThirdClient(mojom::WindowTree* owner, Id root_id) {
     ASSERT_TRUE(wt_client3_.get() == nullptr);
     wt_client3_ = EstablishClientViaEmbed(owner, root_id);
     ASSERT_TRUE(wt_client3_.get() != nullptr);
@@ -631,13 +633,14 @@ class WindowTreeClientTest2 : public WindowServerServiceTestBase {
 
   // Establishes a new client by way of Embed() on the specified WindowTree.
   std::unique_ptr<TestWindowTreeClient2> EstablishClientViaEmbed(
-      WindowTree* owner,
+      mojom::WindowTree* owner,
       Id root_id) {
     return EstablishClientViaEmbedWithPolicyBitmask(owner, root_id);
   }
 
   std::unique_ptr<TestWindowTreeClient2>
-  EstablishClientViaEmbedWithPolicyBitmask(WindowTree* owner, Id root_id) {
+  EstablishClientViaEmbedWithPolicyBitmask(mojom::WindowTree* owner,
+                                           Id root_id) {
     if (!EmbedUrl(connector(), owner, test_name(), root_id)) {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;

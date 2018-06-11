@@ -48,12 +48,11 @@ ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
   return ServerWindow::Create(window, nullptr, frame_sink_id, is_top_level);
 }
 
-std::unique_ptr<WindowServiceClient> WindowService::CreateWindowServiceClient(
+std::unique_ptr<WindowTree> WindowService::CreateWindowTree(
     mojom::WindowTreeClient* window_tree_client) {
   const ClientSpecificId client_id = next_client_id_++;
   CHECK_NE(0u, next_client_id_);
-  return std::make_unique<WindowServiceClient>(this, client_id,
-                                               window_tree_client);
+  return std::make_unique<WindowTree>(this, client_id, window_tree_client);
 }
 
 void WindowService::SetFrameDecorationValues(
@@ -71,7 +70,7 @@ bool WindowService::HasRemoteClient(aura::Window* window) {
 void WindowService::RequestClose(aura::Window* window) {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   DCHECK(window && server_window->IsTopLevel());
-  server_window->owning_window_service_client()->RequestClose(server_window);
+  server_window->owning_window_tree()->RequestClose(server_window);
 }
 
 void WindowService::OnStart() {

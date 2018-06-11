@@ -190,8 +190,8 @@ void AshTestBase::TearDown() {
 
   // These depend upon WindowService, which is owned by Shell, so they must
   // be destroyed before the Shell (owned by AshTestHelper).
-  client_test_helper_.reset();
-  window_service_client_.reset();
+  window_tree_test_helper.reset();
+  window_tree_.reset();
 
   // Flush the message loop to finish pending release tasks.
   RunAllPendingInMessageLoop();
@@ -298,9 +298,9 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(mus_window_type));
 
-  // WindowServiceClientTestHelper maps 0 to a unique id.
+  // WindowTreeTestHelper maps 0 to a unique id.
   std::unique_ptr<aura::Window> window(
-      GetWindowServiceClientTestHelper()->NewTopLevelWindow(
+      GetWindowTreeTestHelper()->NewTopLevelWindow(
           mojo::MapToFlatMap(std::move(properties))));
   window->set_id(shell_window_id);
   window->Show();
@@ -543,20 +543,19 @@ display::Display AshTestBase::GetSecondaryDisplay() {
   return ash_test_helper_->GetSecondaryDisplay();
 }
 
-ui::ws2::WindowServiceClientTestHelper*
-AshTestBase::GetWindowServiceClientTestHelper() {
-  CreateWindowServiceClientIfNecessary();
-  return client_test_helper_.get();
+ui::ws2::WindowTreeTestHelper* AshTestBase::GetWindowTreeTestHelper() {
+  CreateWindowTreeIfNecessary();
+  return window_tree_test_helper.get();
 }
 
 ui::ws2::TestWindowTreeClient* AshTestBase::GetTestWindowTreeClient() {
-  CreateWindowServiceClientIfNecessary();
+  CreateWindowTreeIfNecessary();
   return window_tree_client_.get();
 }
 
-ui::ws2::WindowServiceClient* AshTestBase::GetWindowServiceClient() {
-  CreateWindowServiceClientIfNecessary();
-  return window_service_client_.get();
+ui::ws2::WindowTree* AshTestBase::GetWindowTree() {
+  CreateWindowTreeIfNecessary();
+  return window_tree_.get();
 }
 
 std::unique_ptr<aura::Window> AshTestBase::CreateTestWindowMash(
@@ -573,21 +572,18 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindowMash(
   return base::WrapUnique<aura::Window>(window);
 }
 
-void AshTestBase::CreateWindowServiceClientIfNecessary() {
+void AshTestBase::CreateWindowTreeIfNecessary() {
   if (window_tree_client_)
     return;
 
   // Lazily create a single client.
   window_tree_client_ = std::make_unique<ui::ws2::TestWindowTreeClient>();
-  window_service_client_ =
-      Shell::Get()
-          ->window_service_owner()
-          ->window_service()
-          ->CreateWindowServiceClient(window_tree_client_.get());
-  window_service_client_->InitFromFactory();
-  client_test_helper_ =
-      std::make_unique<ui::ws2::WindowServiceClientTestHelper>(
-          window_service_client_.get());
+  window_tree_ =
+      Shell::Get()->window_service_owner()->window_service()->CreateWindowTree(
+          window_tree_client_.get());
+  window_tree_->InitFromFactory();
+  window_tree_test_helper =
+      std::make_unique<ui::ws2::WindowTreeTestHelper>(window_tree_.get());
 }
 
 void AshTestBase::OnWindowInitialized(aura::Window* window) {}

@@ -21,12 +21,10 @@
 namespace ui {
 namespace ws2 {
 
-ClientRoot::ClientRoot(WindowServiceClient* window_service_client,
+ClientRoot::ClientRoot(WindowTree* window_tree,
                        aura::Window* window,
                        bool is_top_level)
-    : window_service_client_(window_service_client),
-      window_(window),
-      is_top_level_(is_top_level) {
+    : window_tree_(window_tree), window_(window), is_top_level_(is_top_level) {
   window_->AddObserver(this);
   // TODO: wire up gfx::Insets() correctly below. See usage in
   // aura::ClientSurfaceEmbedder for details. Insets here are used for
@@ -74,7 +72,7 @@ bool ClientRoot::ShouldAssignLocalSurfaceId() {
   if (is_top_level_)
     return true;
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
-  return server_window->owning_window_service_client() == nullptr;
+  return server_window->owning_window_tree() == nullptr;
 }
 
 void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
@@ -109,22 +107,22 @@ void ClientRoot::UpdatePrimarySurfaceId() {
 void ClientRoot::OnWindowPropertyChanged(aura::Window* window,
                                          const void* key,
                                          intptr_t old) {
-  if (window_service_client_->property_change_tracker_
-          ->IsProcessingChangeForWindow(window, ClientChangeType::kProperty)) {
+  if (window_tree_->property_change_tracker_->IsProcessingChangeForWindow(
+          window, ClientChangeType::kProperty)) {
     // Do not send notifications for changes intiated by the client.
     return;
   }
   std::string transport_name;
   std::unique_ptr<std::vector<uint8_t>> transport_value;
-  if (window_service_client_->window_service()
+  if (window_tree_->window_service()
           ->property_converter()
           ->ConvertPropertyForTransport(window, key, &transport_name,
                                         &transport_value)) {
     base::Optional<std::vector<uint8_t>> transport_value_mojo;
     if (transport_value)
       transport_value_mojo.emplace(std::move(*transport_value));
-    window_service_client_->window_tree_client_->OnWindowSharedPropertyChanged(
-        window_service_client_->TransportIdForWindow(window), transport_name,
+    window_tree_->window_tree_client_->OnWindowSharedPropertyChanged(
+        window_tree_->TransportIdForWindow(window), transport_name,
         transport_value_mojo);
   }
 }
@@ -135,11 +133,11 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        ui::PropertyChangeReason reason) {
   UpdatePrimarySurfaceId();
   client_surface_embedder_->UpdateSizeAndGutters();
-  // See comments in WindowServiceClient::SetWindowBoundsImpl() for details on
+  // See comments in WindowTree::SetWindowBoundsImpl() for details on
   // why this always notifies the client.
-  window_service_client_->window_tree_client_->OnWindowBoundsChanged(
-      window_service_client_->TransportIdForWindow(window), old_bounds,
-      new_bounds, ServerWindow::GetMayBeNull(window_)->local_surface_id());
+  window_tree_->window_tree_client_->OnWindowBoundsChanged(
+      window_tree_->TransportIdForWindow(window), old_bounds, new_bounds,
+      ServerWindow::GetMayBeNull(window_)->local_surface_id());
 }
 
 }  // namespace ws2

@@ -48,8 +48,8 @@ class EventGenerator;
 }
 namespace ws2 {
 class TestWindowTreeClient;
-class WindowServiceClient;
-class WindowServiceClientTestHelper;
+class WindowTree;
+class WindowTreeTestHelper;
 }  // namespace ws2
 }
 
@@ -240,10 +240,10 @@ class AshTestBase : public testing::Test,
   display::Display GetPrimaryDisplay();
   display::Display GetSecondaryDisplay();
 
-  // Returns the WindowServiceClientTestHelper, creating if necessary.
-  ui::ws2::WindowServiceClientTestHelper* GetWindowServiceClientTestHelper();
+  // Returns the WindowTreeTestHelper, creating if necessary.
+  ui::ws2::WindowTreeTestHelper* GetWindowTreeTestHelper();
   ui::ws2::TestWindowTreeClient* GetTestWindowTreeClient();
-  ui::ws2::WindowServiceClient* GetWindowServiceClient();
+  ui::ws2::WindowTree* GetWindowTree();
 
  private:
   std::unique_ptr<aura::Window> CreateTestWindowMash(
@@ -251,7 +251,7 @@ class AshTestBase : public testing::Test,
       int shell_window_id,
       std::map<std::string, std::vector<uint8_t>>* properties);
 
-  void CreateWindowServiceClientIfNecessary();
+  void CreateWindowTreeIfNecessary();
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
@@ -272,8 +272,8 @@ class AshTestBase : public testing::Test,
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
   std::unique_ptr<ui::ws2::TestWindowTreeClient> window_tree_client_;
-  std::unique_ptr<ui::ws2::WindowServiceClient> window_service_client_;
-  std::unique_ptr<ui::ws2::WindowServiceClientTestHelper> client_test_helper_;
+  std::unique_ptr<ui::ws2::WindowTree> window_tree_;
+  std::unique_ptr<ui::ws2::WindowTreeTestHelper> window_tree_test_helper;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

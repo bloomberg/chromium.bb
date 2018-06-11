@@ -48,15 +48,13 @@ namespace ws2 {
 class GpuSupport;
 class ScreenProvider;
 class ServerWindow;
-class WindowServiceClient;
 class WindowServiceDelegate;
+class WindowTree;
 class WindowTreeFactory;
 
 // WindowService is the entry point into providing an implementation of
 // the ui::mojom::WindowTree related mojoms on top of an aura Window hierarchy.
-// A WindowServiceClient is created for each client. Typically you'll
-// also create a WindowTreeFactory to handle incoming
-// mojom::WindowTreeFactoryRequests.
+// A WindowTree is created for each client.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
     : public service_manager::Service {
  public:
@@ -68,9 +66,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Gets the ServerWindow for |window|, creating if necessary.
   ServerWindow* GetServerWindowForWindowCreateIfNecessary(aura::Window* window);
 
-  // Creates a new WindowServiceClient, caller must call one of the Init()
-  // functions on the returned object.
-  std::unique_ptr<WindowServiceClient> CreateWindowServiceClient(
+  // Creates a new WindowTree, caller must call one of the Init() functions on
+  // the returned object.
+  std::unique_ptr<WindowTree> CreateWindowTree(
       mojom::WindowTreeClient* window_tree_client);
 
   // Sets the window frame metrics.
@@ -126,7 +124,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   std::unique_ptr<clipboard::ClipboardImpl> clipboard_;
 
-  // Id for the next WindowServiceClient.
+  // Id for the next WindowTree.
   ClientSpecificId next_client_id_ = kWindowServerClientId + 1;
 
   // Id used for the next window created locally that is exposed to clients.

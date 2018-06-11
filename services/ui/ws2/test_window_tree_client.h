@@ -17,7 +17,7 @@
 namespace ui {
 namespace ws2 {
 
-class WindowServiceClient;
+class WindowTree;
 
 // WindowTreeClient implementation that logs all changes to a tracker.
 class TestWindowTreeClient : public mojom::WindowTreeClient,
@@ -83,7 +83,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 
   // Acks the first InputEvent that was received, and removes it. Returns true
   // if there was an event.
-  bool AckFirstEvent(WindowServiceClient* client, mojom::EventResult result);
+  bool AckFirstEvent(WindowTree* tree, mojom::EventResult result);
 
   // TestChangeTracker::Delegate:
   void OnChangeAdded() override;
