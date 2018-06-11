@@ -97,6 +97,7 @@ class TestConfigurator : public Configurator {
   ActivityDataService* GetActivityDataService() const override;
   bool IsPerUserInstall() const override;
   std::vector<uint8_t> GetRunActionKeyHash() const override;
+  std::string GetAppGuid() const override;
 
   void SetBrand(const std::string& brand);
   void SetOnDemandTime(int seconds);
@@ -106,6 +107,7 @@ class TestConfigurator : public Configurator {
   void SetEnabledComponentUpdates(bool enabled_component_updates);
   void SetUpdateCheckUrl(const GURL& url);
   void SetPingUrl(const GURL& url);
+  void SetAppGuid(const std::string& app_guid);
 
  private:
   friend class base::RefCountedThreadSafe<TestConfigurator>;
@@ -121,6 +123,7 @@ class TestConfigurator : public Configurator {
   bool enabled_component_updates_;
   GURL update_check_url_;
   GURL ping_url_;
+  std::string app_guid_;
 
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;

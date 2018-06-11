@@ -146,6 +146,10 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // feature to support testing.
   virtual std::vector<uint8_t> GetRunActionKeyHash() const = 0;
 
+  // Returns the app GUID with which Chrome is registered with Google Update, or
+  // an empty string if this brand does not integrate with Google Update.
+  virtual std::string GetAppGuid() const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<Configurator>;
 

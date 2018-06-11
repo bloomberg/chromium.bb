@@ -85,6 +85,10 @@ class ConfiguratorImpl {
   // Returns the key hash corresponding to a CRX trusted by ActionRun.
   std::vector<uint8_t> GetRunActionKeyHash() const;
 
+  // Returns the app GUID with which Chrome is registered with Google Update, or
+  // an empty string if this brand does not integrate with Google Update.
+  std::string GetAppGuid() const;
+
  private:
   std::string extra_info_;
   bool background_downloads_enabled_;

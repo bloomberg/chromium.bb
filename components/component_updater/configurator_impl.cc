@@ -119,4 +119,11 @@ std::vector<uint8_t> ConfiguratorImpl::GetRunActionKeyHash() const {
                               0x32, 0x76, 0xd9, 0x93, 0xb5, 0xa3, 0xce, 0x02};
 }
 
+// The default implementation for most embedders returns an empty string.
+// Desktop embedders, such as the Windows component updater can provide a
+// meaningful implementation for this function.
+std::string ConfiguratorImpl::GetAppGuid() const {
+  return {};
+}
+
 }  // namespace component_updater
