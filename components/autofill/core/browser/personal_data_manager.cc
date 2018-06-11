@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -435,17 +436,31 @@ void PersonalDataManager::OnSyncServiceInitialized(
 
     sync_service_ = sync_service;
 
+    UMA_HISTOGRAM_BOOLEAN(
+        "Autofill.ResetFullServerCards.SyncServiceNullOnInitialized",
+        !sync_service_);
     if (!sync_service_) {
-      ResetFullServerCards();
+      // TODO(crbug.com/851294): Reset server cards once the auth error
+      // investigation is done.
+      ResetFullServerCards(/*dry_run=*/!base::FeatureList::IsEnabled(
+          features::kAutofillResetFullServerCardsOnAuthError));
       return;
     }
 
     sync_service_->AddObserver(this);
     // Re-mask all server cards if the upload state is not active.
-    if (syncer::GetUploadToGoogleState(
+    bool is_upload_not_active =
+        syncer::GetUploadToGoogleState(
             sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
-        syncer::UploadState::NOT_ACTIVE) {
-      ResetFullServerCards();
+        syncer::UploadState::NOT_ACTIVE;
+    UMA_HISTOGRAM_BOOLEAN(
+        "Autofill.ResetFullServerCards.SyncServiceNotActiveOnInitialized",
+        is_upload_not_active);
+    if (is_upload_not_active) {
+      // TODO(crbug.com/851294): Reset server cards once the auth error
+      // investigation is done.
+      ResetFullServerCards(/*dry_run=*/!base::FeatureList::IsEnabled(
+          features::kAutofillResetFullServerCardsOnAuthError));
     }
   }
 }
@@ -531,10 +546,16 @@ void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
   // be necessary anymore to implement SyncServiceObserver; instead the
   // notification should flow through the payments sync bridge.
   DCHECK_EQ(sync_service_, sync_service);
-  if (syncer::GetUploadToGoogleState(sync_service_,
-                                     syncer::ModelType::AUTOFILL_WALLET_DATA) !=
-      syncer::UploadState::ACTIVE) {
-    ResetFullServerCards();
+  syncer::UploadState upload_state = syncer::GetUploadToGoogleState(
+      sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Autofill.ResetFullServerCards.SyncServiceStatusOnStateChanged",
+      upload_state);
+  if (upload_state == syncer::UploadState::NOT_ACTIVE) {
+    // TODO(crbug.com/851294): Reset server cards once the auth error
+    // investigation is done.
+    ResetFullServerCards(/*dry_run=*/!base::FeatureList::IsEnabled(
+        features::kAutofillResetFullServerCardsOnAuthError));
   }
 }
 
@@ -784,14 +805,26 @@ void PersonalDataManager::ResetFullServerCard(const std::string& guid) {
   }
 }
 
-void PersonalDataManager::ResetFullServerCards() {
+void PersonalDataManager::ResetFullServerCards(bool is_dry_run) {
+  size_t nb_cards_reset = 0;
   for (const auto& card : server_credit_cards_) {
     if (card->record_type() == CreditCard::FULL_SERVER_CARD) {
-      CreditCard card_copy = *card;
-      card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
-      card_copy.SetNumber(card->LastFourDigits());
-      UpdateServerCreditCard(card_copy);
+      ++nb_cards_reset;
+      if (!is_dry_run) {
+        CreditCard card_copy = *card;
+        card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
+        card_copy.SetNumber(card->LastFourDigits());
+        UpdateServerCreditCard(card_copy);
+      }
     }
+  }
+  if (is_dry_run) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "Autofill.ResetFullServerCards.NumberOfCardsReset.DryRun",
+        nb_cards_reset);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("Autofill.ResetFullServerCards.NumberOfCardsReset",
+                             nb_cards_reset);
   }
 }
 
@@ -2250,6 +2283,12 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
 
   if (is_syncing_for_test_)
     return true;
+
+  // Check if the feature to offer server cards on auth error is enabled.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsInteractionsOnAuthError)) {
+    return true;
+  }
 
   // Server cards should be suggested if the sync service active.
   return syncer::GetUploadToGoogleState(

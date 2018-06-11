@@ -27,6 +27,12 @@ const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS{
 const base::Feature kAutofillDynamicForms{"AutofillDynamicForms",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the server credit cards are offered to be filled and
+// uploaded to Google Pay if the sync service is in auth error.
+const base::Feature kAutofillEnablePaymentsInteractionsOnAuthError{
+    "AutofillDontOfferServerCardsOnAuthError",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether Autofill should fill fields previously filled by the
 // website.
 const base::Feature kAutofillPrefilledFields{"AutofillPrefilledFields",
@@ -57,6 +63,12 @@ const base::Feature kAutofillManualFallback{"AutofillManualFallback",
 // Controls whether credit card suggestions are made on insecure pages.
 const base::Feature kAutofillRequireSecureCreditCardContext{
     "AutofillRequireSecureCreditCardContext", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether Full Server credit cards should be reset when the sync
+// service is in an auth error state.
+const base::Feature kAutofillResetFullServerCardsOnAuthError{
+    "AutofillResetFullServerCardsOnAuthError",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not a group of fields not enclosed in a form can be
 // considered a form. If this is enabled, unowned fields will only constitute

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
@@ -146,14 +147,16 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     return false;
   }
 
-  // Check if the upload to Google state is active. This also returns false for
-  // users that have a secondary passphrase. Users who have enabled a passphrase
-  // have chosen to not make their sync information accessible to Google. Since
-  // upload makes credit card data available to other Google systems, disable it
-  // for passphrase users.
-  if (syncer::GetUploadToGoogleState(sync_service,
+  // Check if the upload to Google state is active. This also returns false
+  // for users that have a secondary passphrase. Users who have enabled a
+  // passphrase have chosen to not make their sync information accessible to
+  // Google. Since upload makes credit card data available to other Google
+  // systems, disable it for passphrase users.
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsInteractionsOnAuthError) &&
+      syncer::GetUploadToGoogleState(sync_service,
                                      syncer::ModelType::AUTOFILL_WALLET_DATA) !=
-      syncer::UploadState::ACTIVE) {
+          syncer::UploadState::ACTIVE) {
     return false;
   }
 
@@ -192,7 +195,7 @@ bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled() {
 #if defined(OS_MACOSX)
 bool IsMacViewsAutofillPopupExperimentEnabled() {
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (!features::IsViewsBrowserCocoa())
+  if (!::features::IsViewsBrowserCocoa())
     return true;
 #endif
 
@@ -203,7 +206,7 @@ bool IsMacViewsAutofillPopupExperimentEnabled() {
 bool ShouldUseNativeViews() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   return base::FeatureList::IsEnabled(kAutofillExpandedPopupViews) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
+         base::FeatureList::IsEnabled(::features::kExperimentalUi);
 #else
   return false;
 #endif

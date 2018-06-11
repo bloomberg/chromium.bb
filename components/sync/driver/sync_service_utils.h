@@ -12,7 +12,8 @@ namespace syncer {
 class SyncService;
 
 // Indicates whether uploading of data to Google is enabled, i.e. the user has
-// given consent to upload this data.
+// given consent to upload this data. Since this enum is used for logging
+// histograms, entries must not be removed or reordered.
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.sync
 enum class UploadState {
@@ -29,7 +30,9 @@ enum class UploadState {
   // area.
   NOT_ACTIVE,
   // We're actively syncing data to Google servers.
-  ACTIVE
+  ACTIVE,
+  // Used when logging histograms. Must have this exact name.
+  kMaxValue = ACTIVE
 };
 
 // Returns whether |type| is being uploaded to Google. This is useful for
