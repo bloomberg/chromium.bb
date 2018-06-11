@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -18,8 +18,8 @@ BoxDecorationData::BoxDecorationData(const LayoutBox& layout_box)
   bleed_avoidance = ComputeBleedAvoidance(&layout_box);
 }
 
-BoxDecorationData::BoxDecorationData(const NGPhysicalFragment& fragment)
-    : BoxDecorationData(fragment.Style()) {
+BoxDecorationData::BoxDecorationData(const NGPhysicalBoxFragment& fragment)
+    : BoxDecorationData(fragment.StyleForBackground()) {
   bleed_avoidance = ComputeBleedAvoidance(fragment.GetLayoutObject());
 }
 

@@ -13,7 +13,7 @@ namespace blink {
 class LayoutBox;
 class LayoutObject;
 class Document;
-class NGPhysicalFragment;
+class NGPhysicalBoxFragment;
 class ComputedStyle;
 
 // Information extracted from ComputedStyle for box painting.
@@ -22,7 +22,7 @@ struct BoxDecorationData {
 
  public:
   BoxDecorationData(const LayoutBox&);
-  BoxDecorationData(const NGPhysicalFragment&);
+  BoxDecorationData(const NGPhysicalBoxFragment&);
 
   Color background_color;
   BackgroundBleedAvoidance bleed_avoidance;

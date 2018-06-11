@@ -80,6 +80,12 @@ LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
   return layout_inline;
 }
 
+bool LayoutInline::IsFirstLineAnonymous() const {
+  // TODO(kojii): We can add a flag, but this seems enough for now.
+  return IsAnonymous() && Parent() && Parent()->IsLayoutBlockFlow() &&
+         !PreviousSibling() && !NextSibling();
+}
+
 void LayoutInline::WillBeDestroyed() {
   // Make sure to destroy anonymous children first while they are still
   // connected to the rest of the tree, so that they will properly dirty line
