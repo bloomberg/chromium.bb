@@ -25,7 +25,7 @@ std::unique_ptr<Event> PointerWatcher::CreateEventForClient(
   return Event::Clone(event);
 }
 
-PointerWatcher::PointerWatcher(WindowServiceClient* client) : client_(client) {
+PointerWatcher::PointerWatcher(WindowTree* tree) : tree_(tree) {
   aura::Env::GetInstance()->AddWindowEventDispatcherObserver(this);
 }
 
@@ -72,8 +72,8 @@ void PointerWatcher::OnWindowEventDispatcherFinishedProcessingEvent(
   if (!pending_event_)
     return;
 
-  client_->SendPointerWatcherEventToClient(dispatcher->host()->GetDisplayId(),
-                                           std::move(pending_event_));
+  tree_->SendPointerWatcherEventToClient(dispatcher->host()->GetDisplayId(),
+                                         std::move(pending_event_));
 }
 
 }  // namespace ws2

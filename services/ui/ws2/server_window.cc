@@ -81,7 +81,7 @@ PointerId GetPointerId(const Event& event) {
 // . If the location is in the non-client area, then child Windows are not
 //   considered. This is done to ensure the delegate of the window (which is
 //   local) sees the event.
-// . To ensure |WindowServiceClient::intercepts_events_| is honored.
+// . To ensure |WindowTree::intercepts_events_| is honored.
 class ServerWindowTargeter : public aura::WindowTargeter {
  public:
   explicit ServerWindowTargeter(ServerWindow* server_window)
@@ -147,9 +147,9 @@ class ServerWindowEventHandler : public ui::EventHandler {
     if (HandleInterceptedEvent(event) || ShouldIgnoreEvent(*event))
       return;
 
-    auto* owning = server_window_->owning_window_service_client();
-    auto* embedded = server_window_->embedded_window_service_client();
-    WindowServiceClient* target_client = nullptr;
+    auto* owning = server_window_->owning_window_tree();
+    auto* embedded = server_window_->embedded_window_tree();
+    WindowTree* target_client = nullptr;
     if (server_window_->DoesOwnerInterceptEvents()) {
       // A client that intercepts events, always gets the event regardless of
       // focus/capture.
@@ -211,8 +211,7 @@ class ServerWindowEventHandler : public ui::EventHandler {
     // ServerWindowTargeter. As a result ServerWindowEventHandler has to check
     // for a client intercepting events.
     if (server_window_->DoesOwnerInterceptEvents()) {
-      server_window_->owning_window_service_client()->SendEventToClient(
-          window(), *event);
+      server_window_->owning_window_tree()->SendEventToClient(window(), *event);
       event->StopPropagation();
       return true;
     }
@@ -267,9 +266,9 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
  public:
   explicit TopLevelEventHandler(ServerWindow* server_window)
       : ServerWindowEventHandler(server_window) {
-    // Top-levels should always have an owning_window_service_client().
+    // Top-levels should always have an owning_window_tree().
     // OnEvent() assumes this.
-    DCHECK(server_window->owning_window_service_client());
+    DCHECK(server_window->owning_window_tree());
   }
 
   ~TopLevelEventHandler() override = default;
@@ -360,8 +359,7 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
         stop_propagation = true;
       }
     }
-    server_window()->owning_window_service_client()->SendEventToClient(window(),
-                                                                       *event);
+    server_window()->owning_window_tree()->SendEventToClient(window(), *event);
     if (stop_propagation)
       event->StopPropagation();
   }
@@ -411,13 +409,13 @@ ServerWindow::~ServerWindow() = default;
 
 // static
 ServerWindow* ServerWindow::Create(aura::Window* window,
-                                   WindowServiceClient* client,
+                                   WindowTree* tree,
                                    const viz::FrameSinkId& frame_sink_id,
                                    bool is_top_level) {
   DCHECK(!GetMayBeNull(window));
   // Owned by |window|.
   ServerWindow* server_window =
-      new ServerWindow(window, client, frame_sink_id, is_top_level);
+      new ServerWindow(window, tree, frame_sink_id, is_top_level);
   return server_window;
 }
 
@@ -426,13 +424,12 @@ const ServerWindow* ServerWindow::GetMayBeNull(const aura::Window* window) {
   return window ? window->GetProperty(kServerWindowKey) : nullptr;
 }
 
-WindowServiceClient* ServerWindow::embedded_window_service_client() {
-  return embedding_ ? embedding_->embedded_client() : nullptr;
+WindowTree* ServerWindow::embedded_window_tree() {
+  return embedding_ ? embedding_->embedded_tree() : nullptr;
 }
 
-const WindowServiceClient* ServerWindow::embedded_window_service_client()
-    const {
-  return embedding_ ? embedding_->embedded_client() : nullptr;
+const WindowTree* ServerWindow::embedded_window_tree() const {
+  return embedding_ ? embedding_->embedded_tree() : nullptr;
 }
 
 void ServerWindow::SetClientArea(
@@ -450,7 +447,7 @@ void ServerWindow::SetClientArea(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void ServerWindow::SetCaptureOwner(WindowServiceClient* owner) {
+void ServerWindow::SetCaptureOwner(WindowTree* owner) {
   capture_owner_ = owner;
   if (!IsTopLevel())
     return;
@@ -460,7 +457,7 @@ void ServerWindow::SetCaptureOwner(WindowServiceClient* owner) {
 }
 
 bool ServerWindow::DoesOwnerInterceptEvents() const {
-  return embedding_ && embedding_->embedding_client_intercepts_events();
+  return embedding_ && embedding_->embedding_tree_intercepts_events();
 }
 
 void ServerWindow::SetEmbedding(std::unique_ptr<Embedding> embedding) {
@@ -468,14 +465,12 @@ void ServerWindow::SetEmbedding(std::unique_ptr<Embedding> embedding) {
 }
 
 bool ServerWindow::HasNonClientArea() const {
-  return owning_window_service_client_ &&
-         owning_window_service_client_->IsTopLevel(window_) &&
+  return owning_window_tree_ && owning_window_tree_->IsTopLevel(window_) &&
          (!client_area_.IsEmpty() || !additional_client_areas_.empty());
 }
 
 bool ServerWindow::IsTopLevel() const {
-  return owning_window_service_client_ &&
-         owning_window_service_client_->IsTopLevel(window_);
+  return owning_window_tree_ && owning_window_tree_->IsTopLevel(window_);
 }
 
 void ServerWindow::AttachCompositorFrameSink(
@@ -490,11 +485,11 @@ void ServerWindow::AttachCompositorFrameSink(
 }
 
 ServerWindow::ServerWindow(aura::Window* window,
-                           WindowServiceClient* client,
+                           WindowTree* tree,
                            const viz::FrameSinkId& frame_sink_id,
                            bool is_top_level)
     : window_(window),
-      owning_window_service_client_(client),
+      owning_window_tree_(tree),
       frame_sink_id_(frame_sink_id) {
   window_->SetProperty(kServerWindowKey, this);
   if (is_top_level)

@@ -1,13 +1,12 @@
 This directory contains the code for building a Window Service
 implementation on top of an existing Aura hierarchy.
 
-Each client is managed by an instance of WindowServiceClient. In this
-directory, a client generally means a unique connection to the WindowService.
-More specifically a client is an implementation of mojom::WindowTreeClient.
-WindowServiceClient implements the mojom::WindowTree implementation that is
-passed to the client. WindowServiceClient creates a ClientRoot for the window
-the client is embedded in, as well as a ClientRoot for all top-level
-window requests.
+Each client is managed by an instance of WindowTree. In this directory, a client
+generally means a unique connection to the WindowService. More specifically a
+client is an implementation of mojom::WindowTreeClient.
+WindowTree implements the mojom::WindowTree implementation that is
+passed to the client. WindowTree creates a ClientRoot for the window the client
+is embedded in, as well as a ClientRoot for all top-level window requests.
 
 Clients establish a connection to the WindowService by configuring Aura with a
 mode of MUS. See aura::Env::Mode for details.

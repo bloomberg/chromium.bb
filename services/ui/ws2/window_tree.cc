@@ -57,14 +57,14 @@ uint32_t GenerateEventAckId() {
 
 // This is used to track KeyEvents sent to the client. If a KeyEvent is not
 // handled by the client, it's processed locally for accelerators.
-struct WindowServiceClient::InFlightKeyEvent {
+struct WindowTree::InFlightKeyEvent {
   uint32_t id;
   std::unique_ptr<Event> event;
 };
 
-WindowServiceClient::WindowServiceClient(WindowService* window_service,
-                                         ClientSpecificId client_id,
-                                         mojom::WindowTreeClient* client)
+WindowTree::WindowTree(WindowService* window_service,
+                       ClientSpecificId client_id,
+                       mojom::WindowTreeClient* client)
     : window_service_(window_service),
       client_id_(client_id),
       window_tree_client_(client),
@@ -72,7 +72,7 @@ WindowServiceClient::WindowServiceClient(WindowService* window_service,
   wm::CaptureController::Get()->AddObserver(this);
 }
 
-WindowServiceClient::~WindowServiceClient() {
+WindowTree::~WindowTree() {
   wm::CaptureController::Get()->RemoveObserver(this);
 
   // Delete the embeddings first, that way we don't attempt to notify the client
@@ -91,8 +91,8 @@ WindowServiceClient::~WindowServiceClient() {
   }
 }
 
-void WindowServiceClient::InitForEmbed(aura::Window* root,
-                                       mojom::WindowTreePtr window_tree_ptr) {
+void WindowTree::InitForEmbed(aura::Window* root,
+                              mojom::WindowTreePtr window_tree_ptr) {
   // Force ServerWindow to be created for |root|.
   ServerWindow* server_window =
       window_service_->GetServerWindowForWindowCreateIfNecessary(root);
@@ -103,12 +103,11 @@ void WindowServiceClient::InitForEmbed(aura::Window* root,
   CreateClientRoot(root, is_top_level, std::move(window_tree_ptr));
 }
 
-void WindowServiceClient::InitFromFactory() {
+void WindowTree::InitFromFactory() {
   connection_type_ = ConnectionType::kOther;
 }
 
-void WindowServiceClient::SendEventToClient(aura::Window* window,
-                                            const Event& event) {
+void WindowTree::SendEventToClient(aura::Window* window, const Event& event) {
   uint32_t event_id = kDefaultEventId;
   if (event.type() == ui::ET_KEY_PRESSED ||
       event.type() == ui::ET_KEY_RELEASED) {
@@ -132,28 +131,27 @@ void WindowServiceClient::SendEventToClient(aura::Window* window,
       PointerWatcher::CreateEventForClient(event), matches_pointer_watcher);
 }
 
-void WindowServiceClient::SendPointerWatcherEventToClient(
+void WindowTree::SendPointerWatcherEventToClient(
     int64_t display_id,
     std::unique_ptr<ui::Event> event) {
   window_tree_client_->OnPointerEventObserved(std::move(event),
                                               kInvalidTransportId, display_id);
 }
 
-bool WindowServiceClient::IsTopLevel(aura::Window* window) {
+bool WindowTree::IsTopLevel(aura::Window* window) {
   auto iter = FindClientRootWithRoot(window);
   return iter != client_roots_.end() && (*iter)->is_top_level();
 }
 
-void WindowServiceClient::RequestClose(ServerWindow* window) {
+void WindowTree::RequestClose(ServerWindow* window) {
   DCHECK(window->IsTopLevel());
-  DCHECK_EQ(this, window->owning_window_service_client());
+  DCHECK_EQ(this, window->owning_window_tree());
   window_tree_client_->RequestClose(TransportIdForWindow(window->window()));
 }
 
-ClientRoot* WindowServiceClient::CreateClientRoot(
-    aura::Window* window,
-    bool is_top_level,
-    mojom::WindowTreePtr window_tree) {
+ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
+                                         bool is_top_level,
+                                         mojom::WindowTreePtr window_tree) {
   OnWillBecomeClientRootWindow(window);
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
@@ -195,8 +193,8 @@ ClientRoot* WindowServiceClient::CreateClientRoot(
   return client_root;
 }
 
-void WindowServiceClient::DeleteClientRoot(ClientRoot* client_root,
-                                           DeleteClientRootReason reason) {
+void WindowTree::DeleteClientRoot(ClientRoot* client_root,
+                                  DeleteClientRootReason reason) {
   aura::Window* window = client_root->window();
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
@@ -243,20 +241,20 @@ void WindowServiceClient::DeleteClientRoot(ClientRoot* client_root,
   if (reason == DeleteClientRootReason::kUnembed) {
     // Notify the owner of the window it no longer has a client embedded in it.
     ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-    if (server_window->owning_window_service_client() &&
-        server_window->owning_window_service_client() != this) {
+    if (server_window->owning_window_tree() &&
+        server_window->owning_window_tree() != this) {
       // ClientRoots always trigger creation of a ServerWindow, so
       // |server_window| must exist at this point.
       DCHECK(server_window);
-      server_window->owning_window_service_client()
+      server_window->owning_window_tree()
           ->window_tree_client_->OnEmbeddedAppDisconnected(
-              server_window->owning_window_service_client()
-                  ->TransportIdForWindow(window));
+              server_window->owning_window_tree()->TransportIdForWindow(
+                  window));
     }
   }
 }
 
-void WindowServiceClient::DeleteClientRootWithRoot(aura::Window* window) {
+void WindowTree::DeleteClientRootWithRoot(aura::Window* window) {
   auto iter = FindClientRootWithRoot(window);
   if (iter == client_roots_.end())
     return;
@@ -264,27 +262,25 @@ void WindowServiceClient::DeleteClientRootWithRoot(aura::Window* window) {
   DeleteClientRoot(iter->get(), DeleteClientRootReason::kEmbed);
 }
 
-aura::Window* WindowServiceClient::GetWindowByClientId(
-    const ClientWindowId& id) {
+aura::Window* WindowTree::GetWindowByClientId(const ClientWindowId& id) {
   auto iter = client_window_id_to_window_map_.find(id);
   return iter == client_window_id_to_window_map_.end() ? nullptr : iter->second;
 }
 
-aura::Window* WindowServiceClient::GetWindowByTransportId(
-    Id transport_window_id) {
+aura::Window* WindowTree::GetWindowByTransportId(Id transport_window_id) {
   return GetWindowByClientId(MakeClientWindowId(transport_window_id));
 }
 
-bool WindowServiceClient::IsClientCreatedWindow(aura::Window* window) {
+bool WindowTree::IsClientCreatedWindow(aura::Window* window) {
   return window && client_created_windows_.count(window) > 0u;
 }
 
-bool WindowServiceClient::IsClientRootWindow(aura::Window* window) {
+bool WindowTree::IsClientRootWindow(aura::Window* window) {
   return window && FindClientRootWithRoot(window) != client_roots_.end();
 }
 
-WindowServiceClient::ClientRoots::iterator
-WindowServiceClient::FindClientRootWithRoot(aura::Window* window) {
+WindowTree::ClientRoots::iterator WindowTree::FindClientRootWithRoot(
+    aura::Window* window) {
   if (!window)
     return client_roots_.end();
   for (auto iter = client_roots_.begin(); iter != client_roots_.end(); ++iter) {
@@ -294,31 +290,28 @@ WindowServiceClient::FindClientRootWithRoot(aura::Window* window) {
   return client_roots_.end();
 }
 
-bool WindowServiceClient::IsWindowKnown(aura::Window* window) const {
+bool WindowTree::IsWindowKnown(aura::Window* window) const {
   return window && window_to_client_window_id_map_.count(window) > 0u;
 }
 
-bool WindowServiceClient::IsWindowRootOfAnotherClient(
-    aura::Window* window) const {
+bool WindowTree::IsWindowRootOfAnotherClient(aura::Window* window) const {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  return server_window &&
-         server_window->embedded_window_service_client() != nullptr &&
-         server_window->embedded_window_service_client() != this;
+  return server_window && server_window->embedded_window_tree() != nullptr &&
+         server_window->embedded_window_tree() != this;
 }
 
-void WindowServiceClient::OnCaptureLost(aura::Window* lost_capture) {
+void WindowTree::OnCaptureLost(aura::Window* lost_capture) {
   DCHECK(IsWindowKnown(lost_capture));
   window_tree_client_->OnCaptureChanged(kInvalidTransportId,
                                         TransportIdForWindow(lost_capture));
 }
 
-void WindowServiceClient::OnPerformWindowMoveDone(uint32_t change_id,
-                                                  bool result) {
+void WindowTree::OnPerformWindowMoveDone(uint32_t change_id, bool result) {
   window_moving_ = nullptr;
   window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
-aura::Window* WindowServiceClient::AddClientCreatedWindow(
+aura::Window* WindowTree::AddClientCreatedWindow(
     const ClientWindowId& id,
     bool is_top_level,
     std::unique_ptr<aura::Window> window_ptr) {
@@ -329,8 +322,8 @@ aura::Window* WindowServiceClient::AddClientCreatedWindow(
   return window;
 }
 
-void WindowServiceClient::AddWindowToKnownWindows(aura::Window* window,
-                                                  const ClientWindowId& id) {
+void WindowTree::AddWindowToKnownWindows(aura::Window* window,
+                                         const ClientWindowId& id) {
   DCHECK_EQ(0u, window_to_client_window_id_map_.count(window));
   window_to_client_window_id_map_[window] = id;
 
@@ -340,8 +333,8 @@ void WindowServiceClient::AddWindowToKnownWindows(aura::Window* window,
     window->AddObserver(this);
 }
 
-void WindowServiceClient::RemoveWindowFromKnownWindows(aura::Window* window,
-                                                       bool delete_if_owned) {
+void WindowTree::RemoveWindowFromKnownWindows(aura::Window* window,
+                                              bool delete_if_owned) {
   DCHECK(IsWindowKnown(window));
   auto client_iter = client_created_windows_.find(window);
   if (client_iter != client_created_windows_.end()) {
@@ -360,7 +353,7 @@ void WindowServiceClient::RemoveWindowFromKnownWindows(aura::Window* window,
   window_to_client_window_id_map_.erase(iter);
 }
 
-void WindowServiceClient::RemoveWindowFromKnownWindowsRecursive(
+void WindowTree::RemoveWindowFromKnownWindowsRecursive(
     aura::Window* window,
     std::vector<aura::Window*>* created_windows) {
   if (IsClientCreatedWindow(window)) {
@@ -380,13 +373,12 @@ void WindowServiceClient::RemoveWindowFromKnownWindowsRecursive(
     RemoveWindowFromKnownWindowsRecursive(child, created_windows);
 }
 
-bool WindowServiceClient::IsValidIdForNewWindow(
-    const ClientWindowId& id) const {
+bool WindowTree::IsValidIdForNewWindow(const ClientWindowId& id) const {
   return client_window_id_to_window_map_.count(id) == 0u &&
          base::checked_cast<ClientSpecificId>(id.client_id()) == client_id_;
 }
 
-Id WindowServiceClient::ClientWindowIdToTransportId(
+Id WindowTree::ClientWindowIdToTransportId(
     const ClientWindowId& client_window_id) const {
   if (client_window_id.client_id() == client_id_)
     return client_window_id.sink_id();
@@ -394,27 +386,25 @@ Id WindowServiceClient::ClientWindowIdToTransportId(
   return (client_id << 32) | client_window_id.sink_id();
 }
 
-Id WindowServiceClient::TransportIdForWindow(aura::Window* window) const {
+Id WindowTree::TransportIdForWindow(aura::Window* window) const {
   DCHECK(IsWindowKnown(window));
   auto iter = window_to_client_window_id_map_.find(window);
   DCHECK(iter != window_to_client_window_id_map_.end());
   return ClientWindowIdToTransportId(iter->second);
 }
 
-ClientWindowId WindowServiceClient::MakeClientWindowId(
-    Id transport_window_id) const {
+ClientWindowId WindowTree::MakeClientWindowId(Id transport_window_id) const {
   if (!ClientIdFromTransportId(transport_window_id))
     return ClientWindowId(client_id_, transport_window_id);
   return ClientWindowId(ClientIdFromTransportId(transport_window_id),
                         ClientWindowIdFromTransportId(transport_window_id));
 }
 
-bool WindowServiceClient::IsLocalSurfaceIdAssignedByClient(
-    aura::Window* window) {
+bool WindowTree::IsLocalSurfaceIdAssignedByClient(aura::Window* window) {
   return !IsTopLevel(window) && IsClientCreatedWindow(window);
 }
 
-std::vector<mojom::WindowDataPtr> WindowServiceClient::WindowsToWindowDatas(
+std::vector<mojom::WindowDataPtr> WindowTree::WindowsToWindowDatas(
     const std::vector<aura::Window*>& windows) {
   std::vector<mojom::WindowDataPtr> array(windows.size());
   for (size_t i = 0; i < windows.size(); ++i)
@@ -422,8 +412,7 @@ std::vector<mojom::WindowDataPtr> WindowServiceClient::WindowsToWindowDatas(
   return array;
 }
 
-mojom::WindowDataPtr WindowServiceClient::WindowToWindowData(
-    aura::Window* window) {
+mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
   aura::Window* parent = window->parent();
   aura::Window* transient_parent =
       aura::client::GetTransientWindowClient()->GetTransientParent(window);
@@ -449,16 +438,15 @@ mojom::WindowDataPtr WindowServiceClient::WindowToWindowData(
   return window_data;
 }
 
-void WindowServiceClient::OnWillBecomeClientRootWindow(aura::Window* window) {
+void WindowTree::OnWillBecomeClientRootWindow(aura::Window* window) {
   DCHECK(window);
 
   // Only one client may be embedded in a window at a time.
   ServerWindow* server_window =
       window_service_->GetServerWindowForWindowCreateIfNecessary(window);
-  if (server_window->embedded_window_service_client()) {
-    server_window->embedded_window_service_client()->DeleteClientRootWithRoot(
-        window);
-    DCHECK(!server_window->embedded_window_service_client());
+  if (server_window->embedded_window_tree()) {
+    server_window->embedded_window_tree()->DeleteClientRootWithRoot(window);
+    DCHECK(!server_window->embedded_window_tree());
   }
 
   // Because a new client is being embedded all existing children are removed.
@@ -468,7 +456,7 @@ void WindowServiceClient::OnWillBecomeClientRootWindow(aura::Window* window) {
     window->RemoveChild(window->children().front());
 }
 
-bool WindowServiceClient::NewWindowImpl(
+bool WindowTree::NewWindowImpl(
     const ClientWindowId& client_window_id,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
   DVLOG(3) << "new window client=" << client_id_
@@ -497,7 +485,7 @@ bool WindowServiceClient::NewWindowImpl(
   return true;
 }
 
-bool WindowServiceClient::DeleteWindowImpl(const ClientWindowId& window_id) {
+bool WindowTree::DeleteWindowImpl(const ClientWindowId& window_id) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "deleting window client=" << client_id_
            << " client window_id= " << window_id.ToString();
@@ -518,7 +506,7 @@ bool WindowServiceClient::DeleteWindowImpl(const ClientWindowId& window_id) {
   return true;
 }
 
-bool WindowServiceClient::SetCaptureImpl(const ClientWindowId& window_id) {
+bool WindowTree::SetCaptureImpl(const ClientWindowId& window_id) {
   DVLOG(3) << "SetCapture window_id=" << window_id;
   aura::Window* window = GetWindowByClientId(window_id);
   if (!window) {
@@ -556,7 +544,7 @@ bool WindowServiceClient::SetCaptureImpl(const ClientWindowId& window_id) {
   return capture_controller->GetCaptureWindow() == window;
 }
 
-bool WindowServiceClient::ReleaseCaptureImpl(const ClientWindowId& window_id) {
+bool WindowTree::ReleaseCaptureImpl(const ClientWindowId& window_id) {
   DVLOG(3) << "ReleaseCapture window_id=" << window_id;
   aura::Window* window = GetWindowByClientId(window_id);
   if (!window) {
@@ -595,8 +583,8 @@ bool WindowServiceClient::ReleaseCaptureImpl(const ClientWindowId& window_id) {
   return capture_controller->GetCaptureWindow() != window;
 }
 
-bool WindowServiceClient::AddWindowImpl(const ClientWindowId& parent_id,
-                                        const ClientWindowId& child_id) {
+bool WindowTree::AddWindowImpl(const ClientWindowId& parent_id,
+                               const ClientWindowId& child_id) {
   aura::Window* parent = GetWindowByClientId(parent_id);
   aura::Window* child = GetWindowByClientId(child_id);
   DVLOG(3) << "add window client=" << client_id_
@@ -628,7 +616,7 @@ bool WindowServiceClient::AddWindowImpl(const ClientWindowId& parent_id,
   return false;
 }
 
-bool WindowServiceClient::RemoveWindowFromParentImpl(
+bool WindowTree::RemoveWindowFromParentImpl(
     const ClientWindowId& client_window_id) {
   aura::Window* window = GetWindowByClientId(client_window_id);
   DVLOG(3) << "removing window from parent client=" << client_id_
@@ -652,9 +640,8 @@ bool WindowServiceClient::RemoveWindowFromParentImpl(
   return false;
 }
 
-bool WindowServiceClient::SetWindowVisibilityImpl(
-    const ClientWindowId& window_id,
-    bool visible) {
+bool WindowTree::SetWindowVisibilityImpl(const ClientWindowId& window_id,
+                                         bool visible) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "SetWindowVisibility client=" << client_id_
            << " client window_id= " << window_id.ToString();
@@ -676,7 +663,7 @@ bool WindowServiceClient::SetWindowVisibilityImpl(
   return false;
 }
 
-bool WindowServiceClient::SetWindowPropertyImpl(
+bool WindowTree::SetWindowPropertyImpl(
     const ClientWindowId& window_id,
     const std::string& name,
     const base::Optional<std::vector<uint8_t>>& value) {
@@ -705,11 +692,10 @@ bool WindowServiceClient::SetWindowPropertyImpl(
   return true;
 }
 
-bool WindowServiceClient::EmbedImpl(
-    const ClientWindowId& window_id,
-    mojom::WindowTreeClientPtr window_tree_client_ptr,
-    mojom::WindowTreeClient* window_tree_client,
-    uint32_t flags) {
+bool WindowTree::EmbedImpl(const ClientWindowId& window_id,
+                           mojom::WindowTreeClientPtr window_tree_client_ptr,
+                           mojom::WindowTreeClient* window_tree_client,
+                           uint32_t flags) {
   DVLOG(3) << "Embed window_id=" << window_id;
 
   aura::Window* window = GetWindowByClientId(window_id);
@@ -726,18 +712,18 @@ bool WindowServiceClient::EmbedImpl(
       (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
   std::unique_ptr<Embedding> embedding =
       std::make_unique<Embedding>(this, window, owner_intercept_events);
-  embedding->Init(
-      window_service_, std::move(window_tree_client_ptr), window_tree_client,
-      base::BindOnce(&WindowServiceClient::OnEmbeddedClientConnectionLost,
-                     base::Unretained(this), embedding.get()));
+  embedding->Init(window_service_, std::move(window_tree_client_ptr),
+                  window_tree_client,
+                  base::BindOnce(&WindowTree::OnEmbeddedClientConnectionLost,
+                                 base::Unretained(this), embedding.get()));
   if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
-    embedding->embedded_client()->can_change_root_window_visibility_ = false;
+    embedding->embedded_tree()->can_change_root_window_visibility_ = false;
   ServerWindow::GetMayBeNull(window)->SetEmbedding(std::move(embedding));
   return true;
 }
 
-bool WindowServiceClient::SetWindowOpacityImpl(const ClientWindowId& window_id,
-                                               float opacity) {
+bool WindowTree::SetWindowOpacityImpl(const ClientWindowId& window_id,
+                                      float opacity) {
   aura::Window* window = GetWindowByClientId(window_id);
   DVLOG(3) << "SetWindowOpacity client=" << client_id_
            << " client window_id= " << window_id.ToString();
@@ -752,7 +738,7 @@ bool WindowServiceClient::SetWindowOpacityImpl(const ClientWindowId& window_id,
   return false;
 }
 
-bool WindowServiceClient::SetWindowBoundsImpl(
+bool WindowTree::SetWindowBoundsImpl(
     const ClientWindowId& window_id,
     const gfx::Rect& bounds,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
@@ -817,10 +803,9 @@ bool WindowServiceClient::SetWindowBoundsImpl(
   return false;
 }
 
-bool WindowServiceClient::ReorderWindowImpl(
-    const ClientWindowId& window_id,
-    const ClientWindowId& relative_window_id,
-    mojom::OrderDirection direction) {
+bool WindowTree::ReorderWindowImpl(const ClientWindowId& window_id,
+                                   const ClientWindowId& relative_window_id,
+                                   mojom::OrderDirection direction) {
   DVLOG(3) << "ReorderWindow window_id=" << window_id
            << " relative_window_id=" << relative_window_id;
   aura::Window* window = GetWindowByClientId(window_id);
@@ -841,7 +826,7 @@ bool WindowServiceClient::ReorderWindowImpl(
   return true;
 }
 
-std::vector<aura::Window*> WindowServiceClient::GetWindowTreeImpl(
+std::vector<aura::Window*> WindowTree::GetWindowTreeImpl(
     const ClientWindowId& window_id) {
   aura::Window* window = GetWindowByClientId(window_id);
   std::vector<aura::Window*> results;
@@ -849,15 +834,14 @@ std::vector<aura::Window*> WindowServiceClient::GetWindowTreeImpl(
   return results;
 }
 
-bool WindowServiceClient::SetFocusImpl(const ClientWindowId& window_id) {
+bool WindowTree::SetFocusImpl(const ClientWindowId& window_id) {
   DVLOG(3) << "SetFocus window_id=" << window_id;
   // FocusHandler deals with a null window.
   return focus_handler_.SetFocus(GetWindowByClientId(window_id));
 }
 
-bool WindowServiceClient::StackAboveImpl(
-    const ClientWindowId& above_window_id,
-    const ClientWindowId& below_window_id) {
+bool WindowTree::StackAboveImpl(const ClientWindowId& above_window_id,
+                                const ClientWindowId& below_window_id) {
   DVLOG(3) << "StackAbove above_window_id=" << above_window_id
            << " below_window_id=" << below_window_id;
   aura::Window* above_window = GetWindowByClientId(above_window_id);
@@ -874,7 +858,7 @@ bool WindowServiceClient::StackAboveImpl(
   return true;
 }
 
-bool WindowServiceClient::StackAtTopImpl(const ClientWindowId& window_id) {
+bool WindowTree::StackAtTopImpl(const ClientWindowId& window_id) {
   DVLOG(3) << "StackAtTop window_id= " << window_id;
 
   aura::Window* window = GetWindowByClientId(window_id);
@@ -888,9 +872,8 @@ bool WindowServiceClient::StackAtTopImpl(const ClientWindowId& window_id) {
   return true;
 }
 
-void WindowServiceClient::GetWindowTreeRecursive(
-    aura::Window* window,
-    std::vector<aura::Window*>* windows) {
+void WindowTree::GetWindowTreeRecursive(aura::Window* window,
+                                        std::vector<aura::Window*>* windows) {
   if (!IsWindowKnown(window))
     return;
 
@@ -899,11 +882,11 @@ void WindowServiceClient::GetWindowTreeRecursive(
     GetWindowTreeRecursive(child, windows);
 }
 
-void WindowServiceClient::OnEmbeddedClientConnectionLost(Embedding* embedding) {
+void WindowTree::OnEmbeddedClientConnectionLost(Embedding* embedding) {
   ServerWindow::GetMayBeNull(embedding->window())->SetEmbedding(nullptr);
 }
 
-void WindowServiceClient::OnWindowDestroyed(aura::Window* window) {
+void WindowTree::OnWindowDestroyed(aura::Window* window) {
   DCHECK(IsWindowKnown(window));
 
   // WARNING: this function is not necessarily called. In particular it isn't
@@ -914,8 +897,7 @@ void WindowServiceClient::OnWindowDestroyed(aura::Window* window) {
   if (iter != client_roots_.end()) {
     // TODO(sky): add test coverage of this. I'm pretty sure this isn't wired
     // up correctly.
-    DeleteClientRoot(iter->get(),
-                     WindowServiceClient::DeleteClientRootReason::kDeleted);
+    DeleteClientRoot(iter->get(), WindowTree::DeleteClientRootReason::kDeleted);
   }
 
   DCHECK_NE(0u, window_to_client_window_id_map_.count(window));
@@ -928,8 +910,8 @@ void WindowServiceClient::OnWindowDestroyed(aura::Window* window) {
   RemoveWindowFromKnownWindows(window, delete_if_owned);
 }
 
-void WindowServiceClient::OnCaptureChanged(aura::Window* lost_capture,
-                                           aura::Window* gained_capture) {
+void WindowTree::OnCaptureChanged(aura::Window* lost_capture,
+                                  aura::Window* gained_capture) {
   if (property_change_tracker_->IsProcessingChangeForWindow(
           lost_capture, ClientChangeType::kCapture) ||
       property_change_tracker_->IsProcessingChangeForWindow(
@@ -963,7 +945,7 @@ void WindowServiceClient::OnCaptureChanged(aura::Window* lost_capture,
   }
 }
 
-void WindowServiceClient::NewWindow(
+void WindowTree::NewWindow(
     uint32_t change_id,
     Id transport_window_id,
     const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
@@ -976,7 +958,7 @@ void WindowServiceClient::NewWindow(
       NewWindowImpl(MakeClientWindowId(transport_window_id), properties));
 }
 
-void WindowServiceClient::NewTopLevelWindow(
+void WindowTree::NewTopLevelWindow(
     uint32_t change_id,
     Id transport_window_id,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
@@ -1014,32 +996,29 @@ void WindowServiceClient::NewTopLevelWindow(
       display::Screen::GetScreen()->GetDisplayNearestWindow(top_level).id();
   // This passes null for the mojom::WindowTreePtr because the client has
   // already been given the mojom::WindowTreePtr that is backed by this
-  // WindowServiceClient.
+  // WindowTree.
   CreateClientRoot(top_level, is_top_level, nullptr);
   window_tree_client_->OnTopLevelCreated(
       change_id, WindowToWindowData(top_level), display_id,
       top_level->IsVisible(), top_level_server_window->local_surface_id());
 }
 
-void WindowServiceClient::DeleteWindow(uint32_t change_id,
-                                       Id transport_window_id) {
+void WindowTree::DeleteWindow(uint32_t change_id, Id transport_window_id) {
   window_tree_client_->OnChangeCompleted(
       change_id, DeleteWindowImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowServiceClient::SetCapture(uint32_t change_id,
-                                     Id transport_window_id) {
+void WindowTree::SetCapture(uint32_t change_id, Id transport_window_id) {
   window_tree_client_->OnChangeCompleted(
       change_id, SetCaptureImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowServiceClient::ReleaseCapture(uint32_t change_id,
-                                         Id transport_window_id) {
+void WindowTree::ReleaseCapture(uint32_t change_id, Id transport_window_id) {
   window_tree_client_->OnChangeCompleted(
       change_id, ReleaseCaptureImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowServiceClient::StartPointerWatcher(bool want_moves) {
+void WindowTree::StartPointerWatcher(bool want_moves) {
   if (!pointer_watcher_)
     pointer_watcher_ = std::make_unique<PointerWatcher>(this);
   pointer_watcher_->set_types_to_watch(
@@ -1047,11 +1026,11 @@ void WindowServiceClient::StartPointerWatcher(bool want_moves) {
                  : PointerWatcher::TypesToWatch::kUpDown);
 }
 
-void WindowServiceClient::StopPointerWatcher() {
+void WindowTree::StopPointerWatcher() {
   pointer_watcher_.reset();
 }
 
-void WindowServiceClient::SetWindowBounds(
+void WindowTree::SetWindowBounds(
     uint32_t change_id,
     Id window_id,
     const gfx::Rect& bounds,
@@ -1061,13 +1040,13 @@ void WindowServiceClient::SetWindowBounds(
                                      local_surface_id));
 }
 
-void WindowServiceClient::SetWindowTransform(uint32_t change_id,
-                                             Id window_id,
-                                             const gfx::Transform& transform) {
+void WindowTree::SetWindowTransform(uint32_t change_id,
+                                    Id window_id,
+                                    const gfx::Transform& transform) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetClientArea(
+void WindowTree::SetClientArea(
     Id transport_window_id,
     const gfx::Insets& insets,
     const base::Optional<std::vector<gfx::Rect>>& additional_client_areas) {
@@ -1090,25 +1069,24 @@ void WindowServiceClient::SetClientArea(
       insets, additional_client_areas.value_or(std::vector<gfx::Rect>()));
 }
 
-void WindowServiceClient::SetHitTestMask(
-    Id window_id,
-    const base::Optional<gfx::Rect>& mask) {
+void WindowTree::SetHitTestMask(Id window_id,
+                                const base::Optional<gfx::Rect>& mask) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
+void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetWindowVisibility(uint32_t change_id,
-                                              Id transport_window_id,
-                                              bool visible) {
+void WindowTree::SetWindowVisibility(uint32_t change_id,
+                                     Id transport_window_id,
+                                     bool visible) {
   window_tree_client_->OnChangeCompleted(
       change_id, SetWindowVisibilityImpl(
                      MakeClientWindowId(transport_window_id), visible));
 }
 
-void WindowServiceClient::SetWindowProperty(
+void WindowTree::SetWindowProperty(
     uint32_t change_id,
     Id window_id,
     const std::string& name,
@@ -1118,15 +1096,15 @@ void WindowServiceClient::SetWindowProperty(
       SetWindowPropertyImpl(MakeClientWindowId(window_id), name, value));
 }
 
-void WindowServiceClient::SetWindowOpacity(uint32_t change_id,
-                                           Id transport_window_id,
-                                           float opacity) {
+void WindowTree::SetWindowOpacity(uint32_t change_id,
+                                  Id transport_window_id,
+                                  float opacity) {
   window_tree_client_->OnChangeCompleted(
       change_id,
       SetWindowOpacityImpl(MakeClientWindowId(transport_window_id), opacity));
 }
 
-void WindowServiceClient::AttachCompositorFrameSink(
+void WindowTree::AttachCompositorFrameSink(
     Id transport_window_id,
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
     viz::mojom::CompositorFrameSinkClientPtr client) {
@@ -1140,10 +1118,9 @@ void WindowServiceClient::AttachCompositorFrameSink(
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   // If this isn't called on the root, then only allow it if there is not
   // another client embedded in the window.
-  const bool allow =
-      IsClientRootWindow(window) ||
-      (IsClientCreatedWindow(window) &&
-       server_window->embedded_window_service_client() == nullptr);
+  const bool allow = IsClientRootWindow(window) ||
+                     (IsClientCreatedWindow(window) &&
+                      server_window->embedded_window_tree() == nullptr);
   if (!allow) {
     DVLOG(1) << "AttachCompositorFrameSink failed (policy disallowed)";
     return;
@@ -1153,119 +1130,112 @@ void WindowServiceClient::AttachCompositorFrameSink(
                                            std::move(client));
 }
 
-void WindowServiceClient::AddWindow(uint32_t change_id,
-                                    Id parent_id,
-                                    Id child_id) {
+void WindowTree::AddWindow(uint32_t change_id, Id parent_id, Id child_id) {
   window_tree_client_->OnChangeCompleted(
       change_id, AddWindowImpl(MakeClientWindowId(parent_id),
                                MakeClientWindowId(child_id)));
 }
 
-void WindowServiceClient::RemoveWindowFromParent(uint32_t change_id,
-                                                 Id window_id) {
+void WindowTree::RemoveWindowFromParent(uint32_t change_id, Id window_id) {
   window_tree_client_->OnChangeCompleted(
       change_id, RemoveWindowFromParentImpl(MakeClientWindowId(window_id)));
 }
 
-void WindowServiceClient::AddTransientWindow(uint32_t change_id,
-                                             Id window_id,
-                                             Id transient_window_id) {
+void WindowTree::AddTransientWindow(uint32_t change_id,
+                                    Id window_id,
+                                    Id transient_window_id) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::RemoveTransientWindowFromParent(
-    uint32_t change_id,
-    Id transient_window_id) {
+void WindowTree::RemoveTransientWindowFromParent(uint32_t change_id,
+                                                 Id transient_window_id) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetModalType(uint32_t change_id,
-                                       Id window_id,
-                                       ui::ModalType type) {
+void WindowTree::SetModalType(uint32_t change_id,
+                              Id window_id,
+                              ui::ModalType type) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetChildModalParent(uint32_t change_id,
-                                              Id window_id,
-                                              Id parent_window_id) {
+void WindowTree::SetChildModalParent(uint32_t change_id,
+                                     Id window_id,
+                                     Id parent_window_id) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::ReorderWindow(uint32_t change_id,
-                                        Id transport_window_id,
-                                        Id transport_relative_window_id,
-                                        mojom::OrderDirection direction) {
+void WindowTree::ReorderWindow(uint32_t change_id,
+                               Id transport_window_id,
+                               Id transport_relative_window_id,
+                               mojom::OrderDirection direction) {
   const bool result = ReorderWindowImpl(
       MakeClientWindowId(transport_window_id),
       MakeClientWindowId(transport_relative_window_id), direction);
   window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
-void WindowServiceClient::GetWindowTree(Id window_id,
-                                        GetWindowTreeCallback callback) {
+void WindowTree::GetWindowTree(Id window_id, GetWindowTreeCallback callback) {
   std::vector<aura::Window*> windows =
       GetWindowTreeImpl(MakeClientWindowId(window_id));
   std::move(callback).Run(WindowsToWindowDatas(windows));
 }
 
-void WindowServiceClient::Embed(Id transport_window_id,
-                                mojom::WindowTreeClientPtr client_ptr,
-                                uint32_t embed_flags,
-                                EmbedCallback callback) {
+void WindowTree::Embed(Id transport_window_id,
+                       mojom::WindowTreeClientPtr client_ptr,
+                       uint32_t embed_flags,
+                       EmbedCallback callback) {
   mojom::WindowTreeClient* client = client_ptr.get();
   std::move(callback).Run(EmbedImpl(MakeClientWindowId(transport_window_id),
                                     std::move(client_ptr), client,
                                     embed_flags));
 }
 
-void WindowServiceClient::ScheduleEmbed(mojom::WindowTreeClientPtr client,
-                                        ScheduleEmbedCallback callback) {
+void WindowTree::ScheduleEmbed(mojom::WindowTreeClientPtr client,
+                               ScheduleEmbedCallback callback) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::ScheduleEmbedForExistingClient(
+void WindowTree::ScheduleEmbedForExistingClient(
     uint32_t window_id,
     ScheduleEmbedForExistingClientCallback callback) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::EmbedUsingToken(Id window_id,
-                                          const base::UnguessableToken& token,
-                                          uint32_t embed_flags,
-                                          EmbedUsingTokenCallback callback) {
+void WindowTree::EmbedUsingToken(Id window_id,
+                                 const base::UnguessableToken& token,
+                                 uint32_t embed_flags,
+                                 EmbedUsingTokenCallback callback) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetFocus(uint32_t change_id, Id transport_window_id) {
+void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {
   window_tree_client_->OnChangeCompleted(
       change_id, SetFocusImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowServiceClient::SetCanFocus(Id transport_window_id, bool can_focus) {
+void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
   focus_handler_.SetCanFocus(GetWindowByTransportId(transport_window_id),
                              can_focus);
 }
 
-void WindowServiceClient::SetCursor(uint32_t change_id,
-                                    Id window_id,
-                                    ui::CursorData cursor) {
+void WindowTree::SetCursor(uint32_t change_id,
+                           Id window_id,
+                           ui::CursorData cursor) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetWindowTextInputState(
-    Id window_id,
-    ::ui::mojom::TextInputStatePtr state) {
+void WindowTree::SetWindowTextInputState(Id window_id,
+                                         ::ui::mojom::TextInputStatePtr state) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetImeVisibility(
-    Id window_id,
-    bool visible,
-    ::ui::mojom::TextInputStatePtr state) {
+void WindowTree::SetImeVisibility(Id window_id,
+                                  bool visible,
+                                  ::ui::mojom::TextInputStatePtr state) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::SetEventTargetingPolicy(
+void WindowTree::SetEventTargetingPolicy(
     Id transport_window_id,
     ::ui::mojom::EventTargetingPolicy policy) {
   aura::Window* window = GetWindowByTransportId(transport_window_id);
@@ -1273,8 +1243,8 @@ void WindowServiceClient::SetEventTargetingPolicy(
     window->SetEventTargetingPolicy(policy);
 }
 
-void WindowServiceClient::OnWindowInputEventAck(uint32_t event_id,
-                                                mojom::EventResult result) {
+void WindowTree::OnWindowInputEventAck(uint32_t event_id,
+                                       mojom::EventResult result) {
   if (!in_flight_key_events_.empty() &&
       in_flight_key_events_.front()->id == event_id) {
     std::unique_ptr<InFlightKeyEvent> in_flight_event =
@@ -1289,34 +1259,31 @@ void WindowServiceClient::OnWindowInputEventAck(uint32_t event_id,
   }
 }
 
-void WindowServiceClient::DeactivateWindow(Id window_id) {
+void WindowTree::DeactivateWindow(Id window_id) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::StackAbove(uint32_t change_id,
-                                     Id above_id,
-                                     Id below_id) {
+void WindowTree::StackAbove(uint32_t change_id, Id above_id, Id below_id) {
   const bool result = StackAboveImpl(MakeClientWindowId(above_id),
                                      MakeClientWindowId(below_id));
   window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
-void WindowServiceClient::StackAtTop(uint32_t change_id, Id window_id) {
+void WindowTree::StackAtTop(uint32_t change_id, Id window_id) {
   const bool result = StackAtTopImpl(MakeClientWindowId(window_id));
   window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
-void WindowServiceClient::PerformWmAction(Id window_id,
-                                          const std::string& action) {
+void WindowTree::PerformWmAction(Id window_id, const std::string& action) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::GetWindowManagerClient(
+void WindowTree::GetWindowManagerClient(
     ::ui::mojom::WindowManagerClientAssociatedRequest internal) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::GetCursorLocationMemory(
+void WindowTree::GetCursorLocationMemory(
     GetCursorLocationMemoryCallback callback) {
   auto shared_buffer_handle =
       aura::Env::GetInstance()->GetLastMouseLocationMemory();
@@ -1324,10 +1291,10 @@ void WindowServiceClient::GetCursorLocationMemory(
   std::move(callback).Run(std::move(shared_buffer_handle));
 }
 
-void WindowServiceClient::PerformWindowMove(uint32_t change_id,
-                                            Id transport_window_id,
-                                            mojom::MoveLoopSource source,
-                                            const gfx::Point& cursor) {
+void WindowTree::PerformWindowMove(uint32_t change_id,
+                                   Id transport_window_id,
+                                   mojom::MoveLoopSource source,
+                                   const gfx::Point& cursor) {
   DVLOG(3) << "PerformWindowMove id="
            << MakeClientWindowId(transport_window_id).ToString();
   aura::Window* window = GetWindowByTransportId(transport_window_id);
@@ -1348,11 +1315,11 @@ void WindowServiceClient::PerformWindowMove(uint32_t change_id,
   window_moving_ = window;
   window_service_->delegate()->RunWindowMoveLoop(
       window, source, cursor,
-      base::BindOnce(&WindowServiceClient::OnPerformWindowMoveDone,
+      base::BindOnce(&WindowTree::OnPerformWindowMoveDone,
                      weak_factory_.GetWeakPtr(), change_id));
 }
 
-void WindowServiceClient::CancelWindowMove(Id transport_window_id) {
+void WindowTree::CancelWindowMove(Id transport_window_id) {
   if (!window_moving_) {
     DVLOG(1) << "CancelWindowMove called and a move is not underway";
     return;
@@ -1365,7 +1332,7 @@ void WindowServiceClient::CancelWindowMove(Id transport_window_id) {
     DVLOG(1) << "CancelWindowMove called with wrong window";
 }
 
-void WindowServiceClient::PerformDragDrop(
+void WindowTree::PerformDragDrop(
     uint32_t change_id,
     Id source_window_id,
     const gfx::Point& screen_location,
@@ -1377,7 +1344,7 @@ void WindowServiceClient::PerformDragDrop(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void WindowServiceClient::CancelDragDrop(Id window_id) {
+void WindowTree::CancelDragDrop(Id window_id) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

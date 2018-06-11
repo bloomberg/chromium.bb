@@ -39,15 +39,14 @@ class PointerWatcher;
 class ServerWindow;
 class WindowService;
 
-// WindowServiceClient manages a client connected to the Window Service.
-// WindowServiceClient provides the implementation of mojom::WindowTree that
-// the client talks to. WindowServiceClient implements the mojom::WindowTree
-// interface on top of aura. That is, changes to the aura Window hierarchy
-// are mirrored to the mojom::WindowTreeClient interface. Similarly, changes
-// from the client by way of the mojom::WindowTree interface modify the
-// underlying aura Windows.
+// WindowTree manages a client connected to the Window Service. WindowTree
+// provides the implementation of mojom::WindowTree that the client talks to.
+// WindowTree implements the mojom::WindowTree interface on top of aura. That
+// is, changes to the aura Window hierarchy are mirrored to the
+// mojom::WindowTreeClient interface. Similarly, changes from the client by way
+// of the mojom::WindowTree interface modify the underlying aura Windows.
 //
-// WindowServiceClient is created in two distinct ways:
+// WindowTree is created in two distinct ways:
 // . when the client is embedded in a specific aura::Window, by way of
 //   WindowTree::Embed(). Use InitForEmbed(). This configuration has only a
 //   single ClientRoot.
@@ -56,19 +55,18 @@ class WindowService;
 //   InitFromFactory() for this. In this configuration there is a ClientRoot
 //   per top-level.
 //
-// Typically instances of WindowServiceClient are owned by a
-// WindowServiceClientBinding that is created via WindowTreeFactory, but that
-// is not necessary (in particular tests often do not use
-// WindowServiceClientBinding).
-class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
+// Typically instances of WindowTree are owned by a WindowTreeBinding that is
+// created via WindowTreeFactory, but that is not necessary (in particular tests
+// often do not use WindowTreeBinding).
+class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
     : public mojom::WindowTree,
       public aura::WindowObserver,
       public aura::client::CaptureClientObserver {
  public:
-  WindowServiceClient(WindowService* window_service,
-                      ClientSpecificId client_id,
-                      mojom::WindowTreeClient* client);
-  ~WindowServiceClient() override;
+  WindowTree(WindowService* window_service,
+             ClientSpecificId client_id,
+             mojom::WindowTreeClient* client);
+  ~WindowTree() override;
 
   // See class description for details on Init variants.
   void InitForEmbed(aura::Window* root, mojom::WindowTreePtr window_tree_ptr);
@@ -93,10 +91,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 
  private:
   friend class ClientRoot;
-  // TODO(sky): WindowServiceClient should be refactored such that it is not
+  // TODO(sky): WindowTree should be refactored such that it is not
   // necessary to friend this.
   friend class FocusHandler;
-  friend class WindowServiceClientTestHelper;
+  friend class WindowTreeTestHelper;
 
   struct InFlightKeyEvent;
 
@@ -123,8 +121,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
     // The embedded client explicitly asked to be unembedded.
     kUnembed,
 
-    // Called when the ClientRoot is deleted from the WindowServiceClient
-    // destructor.
+    // Called when the ClientRoot is deleted from the WindowTree destructor.
     kDestructor,
   };
 
@@ -421,9 +418,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // Set while a window move loop is in progress.
   aura::Window* window_moving_ = nullptr;
 
-  base::WeakPtrFactory<WindowServiceClient> weak_factory_{this};
+  base::WeakPtrFactory<WindowTree> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WindowServiceClient);
+  DISALLOW_COPY_AND_ASSIGN(WindowTree);
 };
 
 }  // namespace ws2

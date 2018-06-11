@@ -16,13 +16,13 @@ namespace ui {
 namespace ws2 {
 
 class ServerWindow;
-class WindowServiceClient;
+class WindowTree;
 
 // FocusHandler handles focus requests from the client, as well as notifying
 // the client when focus changes.
 class FocusHandler : public aura::client::FocusChangeObserver {
  public:
-  explicit FocusHandler(WindowServiceClient* window_service_client);
+  explicit FocusHandler(WindowTree* window_tree);
   ~FocusHandler() override;
 
   // Sets focus to |window| (which may be null). Returns true on success.
@@ -42,7 +42,7 @@ class FocusHandler : public aura::client::FocusChangeObserver {
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 
-  WindowServiceClient* window_service_client_;
+  WindowTree* window_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusHandler);
 };

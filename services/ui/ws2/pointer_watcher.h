@@ -16,7 +16,7 @@ class Event;
 
 namespace ws2 {
 
-class WindowServiceClient;
+class WindowTree;
 
 // PointerWatcher is used when a client has requested to observe pointer events
 // that the client would not normally receive. PointerWatcher observes events
@@ -35,7 +35,7 @@ class PointerWatcher : public aura::WindowEventDispatcherObserver {
     kUpDownMoveWheel,
   };
 
-  explicit PointerWatcher(WindowServiceClient* client);
+  explicit PointerWatcher(WindowTree* tree);
   ~PointerWatcher() override;
 
   // Applies any necessary transformations on the event before sending to the
@@ -61,7 +61,7 @@ class PointerWatcher : public aura::WindowEventDispatcherObserver {
 
   TypesToWatch types_to_watch_ = TypesToWatch::kUpDown;
 
-  WindowServiceClient* client_;
+  WindowTree* tree_;
 
   // Events matching TypesToWatch are processed in two phases:
   // . In OnWindowEventDispatcherStartedProcessing() if the event should be

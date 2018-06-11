@@ -56,13 +56,13 @@ TestWindowTreeClient::PopObservedPointerEvent() {
   return event;
 }
 
-bool TestWindowTreeClient::AckFirstEvent(WindowServiceClient* client,
+bool TestWindowTreeClient::AckFirstEvent(WindowTree* tree,
                                          mojom::EventResult result) {
   if (input_events_.empty())
     return false;
   InputEvent input_event = PopInputEvent();
-  WindowServiceClientTestHelper(client).OnWindowInputEventAck(
-      input_event.event_id, result);
+  WindowTreeTestHelper(tree).OnWindowInputEventAck(input_event.event_id,
+                                                   result);
   return true;
 }
 

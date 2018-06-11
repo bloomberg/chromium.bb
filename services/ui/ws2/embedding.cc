@@ -14,13 +14,13 @@
 namespace ui {
 namespace ws2 {
 
-Embedding::Embedding(WindowServiceClient* embedding_client,
+Embedding::Embedding(WindowTree* embedding_tree,
                      aura::Window* window,
-                     bool embedding_client_intercepts_events)
-    : embedding_client_(embedding_client),
+                     bool embedding_tree_intercepts_events)
+    : embedding_tree_(embedding_tree),
       window_(window),
-      embedding_client_intercepts_events_(embedding_client_intercepts_events) {
-  DCHECK(embedding_client_);
+      embedding_tree_intercepts_events_(embedding_tree_intercepts_events) {
+  DCHECK(embedding_tree_);
   DCHECK(window_);
 }  // namespace ws2
 

@@ -24,21 +24,20 @@ void WindowTreeFactory::AddBinding(mojom::WindowTreeFactoryRequest request) {
 
 void WindowTreeFactory::CreateWindowTree(mojom::WindowTreeRequest tree_request,
                                          mojom::WindowTreeClientPtr client) {
-  std::unique_ptr<WindowServiceClientBinding> binding =
-      std::make_unique<WindowServiceClientBinding>();
+  std::unique_ptr<WindowTreeBinding> binding =
+      std::make_unique<WindowTreeBinding>();
   binding->InitFromFactory(
       window_service_, std::move(tree_request), std::move(client),
       base::BindOnce(&WindowTreeFactory::OnLostConnectionToClient,
                      base::Unretained(this), binding.get()));
-  window_service_client_bindings_.push_back(std::move(binding));
+  window_tree_bindings_.push_back(std::move(binding));
 }
 
-void WindowTreeFactory::OnLostConnectionToClient(
-    WindowServiceClientBinding* binding) {
-  for (auto iter = window_service_client_bindings_.begin();
-       iter != window_service_client_bindings_.end(); ++iter) {
+void WindowTreeFactory::OnLostConnectionToClient(WindowTreeBinding* binding) {
+  for (auto iter = window_tree_bindings_.begin();
+       iter != window_tree_bindings_.end(); ++iter) {
     if (iter->get() == binding) {
-      window_service_client_bindings_.erase(iter);
+      window_tree_bindings_.erase(iter);
       return;
     }
   }

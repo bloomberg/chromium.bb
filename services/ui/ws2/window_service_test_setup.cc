@@ -52,16 +52,15 @@ WindowServiceTestSetup::WindowServiceTestSetup()
   aura::client::SetFocusClient(root(), focus_controller());
   delegate_.set_top_level_parent(aura_test_helper_.root_window());
 
-  window_service_client_ =
-      service_->CreateWindowServiceClient(&window_tree_client_);
-  window_service_client_->InitFromFactory();
-  client_test_helper_ = std::make_unique<WindowServiceClientTestHelper>(
-      window_service_client_.get());
+  window_tree_ = service_->CreateWindowTree(&window_tree_client_);
+  window_tree_->InitFromFactory();
+  window_tree_test_helper_ =
+      std::make_unique<WindowTreeTestHelper>(window_tree_.get());
 }
 
 WindowServiceTestSetup::~WindowServiceTestSetup() {
-  client_test_helper_.reset();
-  window_service_client_.reset();
+  window_tree_test_helper_.reset();
+  window_tree_.reset();
   service_.reset();
   scoped_capture_client_.reset();
   aura::client::SetFocusClient(root(), nullptr);
@@ -73,17 +72,15 @@ std::unique_ptr<EmbeddingHelper> WindowServiceTestSetup::CreateEmbedding(
     aura::Window* embed_root,
     uint32_t flags) {
   auto embedding_helper = std::make_unique<EmbeddingHelper>();
-  embedding_helper->embedding = client_test_helper_->Embed(
+  embedding_helper->embedding = window_tree_test_helper_->Embed(
       embed_root, nullptr, &embedding_helper->window_tree_client, flags);
   if (!embedding_helper->embedding)
     return nullptr;
-  embedding_helper->window_service_client =
-      embedding_helper->embedding->embedded_client();
-  embedding_helper->client_test_helper =
-      std::make_unique<WindowServiceClientTestHelper>(
-          embedding_helper->window_service_client);
-  embedding_helper->parent_window_service_client =
-      embedding_helper->embedding->embedding_client();
+  embedding_helper->window_tree = embedding_helper->embedding->embedded_tree();
+  embedding_helper->window_tree_test_helper =
+      std::make_unique<WindowTreeTestHelper>(embedding_helper->window_tree);
+  embedding_helper->parent_window_tree =
+      embedding_helper->embedding->embedding_tree();
   return embedding_helper;
 }
 
@@ -93,8 +90,7 @@ EmbeddingHelper::~EmbeddingHelper() {
   if (!embedding)
     return;
 
-  WindowServiceClientTestHelper(parent_window_service_client)
-      .DestroyEmbedding(embedding);
+  WindowTreeTestHelper(parent_window_tree).DestroyEmbedding(embedding);
 }
 
 }  // namespace ws2

@@ -24,8 +24,8 @@ namespace ui {
 namespace ws2 {
 
 class WindowService;
-class WindowServiceClient;
-class WindowServiceClientTestHelper;
+class WindowTree;
+class WindowTreeTestHelper;
 
 struct EmbeddingHelper;
 
@@ -42,8 +42,8 @@ class WindowServiceTestSetup {
   aura::Window* root() { return aura_test_helper_.root_window(); }
   TestWindowServiceDelegate* delegate() { return &delegate_; }
   TestWindowTreeClient* window_tree_client() { return &window_tree_client_; }
-  WindowServiceClientTestHelper* client_test_helper() {
-    return client_test_helper_.get();
+  WindowTreeTestHelper* window_tree_test_helper() {
+    return window_tree_test_helper_.get();
   }
   wm::FocusController* focus_controller() { return &focus_controller_; }
 
@@ -51,9 +51,7 @@ class WindowServiceTestSetup {
     return window_tree_client_.tracker()->changes();
   }
 
-  WindowServiceClient* window_service_client() {
-    return window_service_client_.get();
-  }
+  WindowTree* window_tree() { return window_tree_.get(); }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_{
@@ -64,8 +62,8 @@ class WindowServiceTestSetup {
   TestWindowServiceDelegate delegate_;
   std::unique_ptr<WindowService> service_;
   TestWindowTreeClient window_tree_client_;
-  std::unique_ptr<WindowServiceClient> window_service_client_;
-  std::unique_ptr<WindowServiceClientTestHelper> client_test_helper_;
+  std::unique_ptr<WindowTree> window_tree_;
+  std::unique_ptr<WindowTreeTestHelper> window_tree_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceTestSetup);
 };
@@ -86,12 +84,12 @@ struct EmbeddingHelper {
   TestWindowTreeClient window_tree_client;
 
   // The client Embed() was called on.
-  WindowServiceClient* parent_window_service_client = nullptr;
+  WindowTree* parent_window_tree = nullptr;
 
-  // NOTE: this is owned by |parent_window_service_client|.
-  WindowServiceClient* window_service_client = nullptr;
+  // NOTE: this is owned by |parent_window_tree|.
+  WindowTree* window_tree = nullptr;
 
-  std::unique_ptr<WindowServiceClientTestHelper> client_test_helper;
+  std::unique_ptr<WindowTreeTestHelper> window_tree_test_helper;
 };
 
 }  // namespace ws2

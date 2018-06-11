@@ -17,12 +17,11 @@ namespace ui {
 namespace ws2 {
 
 class WindowService;
-class WindowServiceClientBinding;
+class WindowTreeBinding;
 
-// Implementation of mojom::WindowTreeFactory. This creates a
-// WindowServiceClientBinding for each request for a WindowTree. Any
-// WindowServiceClientBindings created by WindowTreeFactory are owned by the
-// WindowTreeFactory.
+// Implementation of mojom::WindowTreeFactory. This creates a WindowTreeBinding
+// for each request for a WindowTree. Any WindowTreeBindings created by
+// WindowTreeFactory are owned by the WindowTreeFactory.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeFactory
     : public mojom::WindowTreeFactory {
  public:
@@ -36,14 +35,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeFactory
                         mojom::WindowTreeClientPtr client) override;
 
  private:
-  void OnLostConnectionToClient(WindowServiceClientBinding* binding);
+  void OnLostConnectionToClient(WindowTreeBinding* binding);
 
-  using WindowServiceClientBindings =
-      std::vector<std::unique_ptr<WindowServiceClientBinding>>;
+  using WindowTreeBindings = std::vector<std::unique_ptr<WindowTreeBinding>>;
 
   WindowService* window_service_;
   mojo::BindingSet<mojom::WindowTreeFactory> bindings_;
-  WindowServiceClientBindings window_service_client_bindings_;
+  WindowTreeBindings window_tree_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);
 };

@@ -11,169 +11,154 @@
 namespace ui {
 namespace ws2 {
 
-WindowServiceClientTestHelper::WindowServiceClientTestHelper(
-    WindowServiceClient* window_service_client)
-    : window_service_client_(window_service_client) {}
+WindowTreeTestHelper::WindowTreeTestHelper(WindowTree* window_tree)
+    : window_tree_(window_tree) {}
 
-WindowServiceClientTestHelper::~WindowServiceClientTestHelper() = default;
+WindowTreeTestHelper::~WindowTreeTestHelper() = default;
 
-mojom::WindowTree* WindowServiceClientTestHelper::window_tree() {
-  return static_cast<mojom::WindowTree*>(window_service_client_);
+mojom::WindowTree* WindowTreeTestHelper::window_tree() {
+  return static_cast<mojom::WindowTree*>(window_tree_);
 }
 
-mojom::WindowDataPtr WindowServiceClientTestHelper::WindowToWindowData(
+mojom::WindowDataPtr WindowTreeTestHelper::WindowToWindowData(
     aura::Window* window) {
-  return window_service_client_->WindowToWindowData(window);
+  return window_tree_->WindowToWindowData(window);
 }
 
-aura::Window* WindowServiceClientTestHelper::NewWindow(
+aura::Window* WindowTreeTestHelper::NewWindow(
     Id transport_window_id,
     base::flat_map<std::string, std::vector<uint8_t>> properties) {
   if (transport_window_id == 0)
     transport_window_id = next_window_id_++;
   const uint32_t change_id = 1u;
-  window_service_client_->NewWindow(change_id, transport_window_id, properties);
-  return window_service_client_->GetWindowByClientId(
-      window_service_client_->MakeClientWindowId(transport_window_id));
+  window_tree_->NewWindow(change_id, transport_window_id, properties);
+  return window_tree_->GetWindowByClientId(
+      window_tree_->MakeClientWindowId(transport_window_id));
 }
 
-void WindowServiceClientTestHelper::DeleteWindow(aura::Window* window) {
+void WindowTreeTestHelper::DeleteWindow(aura::Window* window) {
   const int change_id = 1u;
-  window_service_client_->DeleteWindow(change_id, TransportIdForWindow(window));
+  window_tree_->DeleteWindow(change_id, TransportIdForWindow(window));
 }
 
-aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
+aura::Window* WindowTreeTestHelper::NewTopLevelWindow(
     Id transport_window_id,
     base::flat_map<std::string, std::vector<uint8_t>> properties) {
   if (transport_window_id == 0)
     transport_window_id = next_window_id_++;
   const uint32_t change_id = 1u;
-  window_service_client_->NewTopLevelWindow(change_id, transport_window_id,
-                                            properties);
-  return window_service_client_->GetWindowByClientId(
-      window_service_client_->MakeClientWindowId(transport_window_id));
+  window_tree_->NewTopLevelWindow(change_id, transport_window_id, properties);
+  return window_tree_->GetWindowByClientId(
+      window_tree_->MakeClientWindowId(transport_window_id));
 }
 
-aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
+aura::Window* WindowTreeTestHelper::NewTopLevelWindow(
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   return NewTopLevelWindow(0u, properties);
 }
 
-bool WindowServiceClientTestHelper::SetCapture(aura::Window* window) {
-  return window_service_client_->SetCaptureImpl(
-      ClientWindowIdForWindow(window));
+bool WindowTreeTestHelper::SetCapture(aura::Window* window) {
+  return window_tree_->SetCaptureImpl(ClientWindowIdForWindow(window));
 }
 
-bool WindowServiceClientTestHelper::ReleaseCapture(aura::Window* window) {
-  return window_service_client_->ReleaseCaptureImpl(
-      ClientWindowIdForWindow(window));
+bool WindowTreeTestHelper::ReleaseCapture(aura::Window* window) {
+  return window_tree_->ReleaseCaptureImpl(ClientWindowIdForWindow(window));
 }
 
-bool WindowServiceClientTestHelper::ReorderWindow(
-    aura::Window* window,
-    aura::Window* relative_window,
-    mojom::OrderDirection direction) {
-  return window_service_client_->ReorderWindowImpl(
+bool WindowTreeTestHelper::ReorderWindow(aura::Window* window,
+                                         aura::Window* relative_window,
+                                         mojom::OrderDirection direction) {
+  return window_tree_->ReorderWindowImpl(
       ClientWindowIdForWindow(window), ClientWindowIdForWindow(relative_window),
       direction);
 }
 
-bool WindowServiceClientTestHelper::SetWindowBounds(
+bool WindowTreeTestHelper::SetWindowBounds(
     aura::Window* window,
     const gfx::Rect& bounds,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
-  return window_service_client_->SetWindowBoundsImpl(
-      ClientWindowIdForWindow(window), bounds, local_surface_id);
+  return window_tree_->SetWindowBoundsImpl(ClientWindowIdForWindow(window),
+                                           bounds, local_surface_id);
 }
 
-void WindowServiceClientTestHelper::SetWindowBoundsWithAck(
-    aura::Window* window,
-    const gfx::Rect& bounds,
-    uint32_t change_id) {
+void WindowTreeTestHelper::SetWindowBoundsWithAck(aura::Window* window,
+                                                  const gfx::Rect& bounds,
+                                                  uint32_t change_id) {
   base::Optional<viz::LocalSurfaceId> local_surface_id;
-  window_service_client_->SetWindowBounds(
-      change_id, TransportIdForWindow(window), bounds, local_surface_id);
+  window_tree_->SetWindowBounds(change_id, TransportIdForWindow(window), bounds,
+                                local_surface_id);
 }
 
-void WindowServiceClientTestHelper::SetClientArea(
+void WindowTreeTestHelper::SetClientArea(
     aura::Window* window,
     const gfx::Insets& insets,
     base::Optional<std::vector<gfx::Rect>> additional_client_areas) {
-  window_service_client_->SetClientArea(TransportIdForWindow(window), insets,
-                                        additional_client_areas);
+  window_tree_->SetClientArea(TransportIdForWindow(window), insets,
+                              additional_client_areas);
 }
 
-void WindowServiceClientTestHelper::SetWindowProperty(
-    aura::Window* window,
-    const std::string& name,
-    const std::vector<uint8_t>& value,
-    uint32_t change_id) {
-  window_service_client_->SetWindowProperty(
-      change_id, TransportIdForWindow(window), name, value);
+void WindowTreeTestHelper::SetWindowProperty(aura::Window* window,
+                                             const std::string& name,
+                                             const std::vector<uint8_t>& value,
+                                             uint32_t change_id) {
+  window_tree_->SetWindowProperty(change_id, TransportIdForWindow(window), name,
+                                  value);
 }
 
-Embedding* WindowServiceClientTestHelper::Embed(
-    aura::Window* window,
-    mojom::WindowTreeClientPtr client_ptr,
-    mojom::WindowTreeClient* client,
-    uint32_t embed_flags) {
-  if (!window_service_client_->EmbedImpl(ClientWindowIdForWindow(window),
-                                         std::move(client_ptr), client,
-                                         embed_flags)) {
+Embedding* WindowTreeTestHelper::Embed(aura::Window* window,
+                                       mojom::WindowTreeClientPtr client_ptr,
+                                       mojom::WindowTreeClient* client,
+                                       uint32_t embed_flags) {
+  if (!window_tree_->EmbedImpl(ClientWindowIdForWindow(window),
+                               std::move(client_ptr), client, embed_flags)) {
     return nullptr;
   }
   return ServerWindow::GetMayBeNull(window)->embedding();
 }
 
-void WindowServiceClientTestHelper::SetEventTargetingPolicy(
+void WindowTreeTestHelper::SetEventTargetingPolicy(
     aura::Window* window,
     mojom::EventTargetingPolicy policy) {
-  window_service_client_->SetEventTargetingPolicy(TransportIdForWindow(window),
-                                                  policy);
+  window_tree_->SetEventTargetingPolicy(TransportIdForWindow(window), policy);
 }
 
-void WindowServiceClientTestHelper::OnWindowInputEventAck(
-    uint32_t event_id,
-    mojom::EventResult result) {
-  window_service_client_->OnWindowInputEventAck(event_id, result);
+void WindowTreeTestHelper::OnWindowInputEventAck(uint32_t event_id,
+                                                 mojom::EventResult result) {
+  window_tree_->OnWindowInputEventAck(event_id, result);
 }
 
-bool WindowServiceClientTestHelper::StackAbove(aura::Window* above_window,
-                                               aura::Window* below_window) {
-  return window_service_client_->StackAboveImpl(
-      ClientWindowIdForWindow(above_window),
-      ClientWindowIdForWindow(below_window));
+bool WindowTreeTestHelper::StackAbove(aura::Window* above_window,
+                                      aura::Window* below_window) {
+  return window_tree_->StackAboveImpl(ClientWindowIdForWindow(above_window),
+                                      ClientWindowIdForWindow(below_window));
 }
 
-bool WindowServiceClientTestHelper::StackAtTop(aura::Window* window) {
-  return window_service_client_->StackAtTopImpl(
-      ClientWindowIdForWindow(window));
+bool WindowTreeTestHelper::StackAtTop(aura::Window* window) {
+  return window_tree_->StackAtTopImpl(ClientWindowIdForWindow(window));
 }
 
-Id WindowServiceClientTestHelper::TransportIdForWindow(aura::Window* window) {
-  return window ? window_service_client_->TransportIdForWindow(window)
+Id WindowTreeTestHelper::TransportIdForWindow(aura::Window* window) {
+  return window ? window_tree_->TransportIdForWindow(window)
                 : kInvalidTransportId;
 }
 
-bool WindowServiceClientTestHelper::SetFocus(aura::Window* window) {
-  return window_service_client_->SetFocusImpl(ClientWindowIdForWindow(window));
+bool WindowTreeTestHelper::SetFocus(aura::Window* window) {
+  return window_tree_->SetFocusImpl(ClientWindowIdForWindow(window));
 }
 
-void WindowServiceClientTestHelper::SetCanFocus(aura::Window* window,
-                                                bool can_focus) {
-  window_service_client_->SetCanFocus(
-      window_service_client_->TransportIdForWindow(window), can_focus);
+void WindowTreeTestHelper::SetCanFocus(aura::Window* window, bool can_focus) {
+  window_tree_->SetCanFocus(window_tree_->TransportIdForWindow(window),
+                            can_focus);
 }
 
-void WindowServiceClientTestHelper::DestroyEmbedding(Embedding* embedding) {
-  // Triggers WindowServiceClient deleting the Embedding.
-  window_service_client_->OnEmbeddedClientConnectionLost(embedding);
+void WindowTreeTestHelper::DestroyEmbedding(Embedding* embedding) {
+  // Triggers WindowTree deleting the Embedding.
+  window_tree_->OnEmbeddedClientConnectionLost(embedding);
 }
 
-ClientWindowId WindowServiceClientTestHelper::ClientWindowIdForWindow(
+ClientWindowId WindowTreeTestHelper::ClientWindowIdForWindow(
     aura::Window* window) {
-  return window_service_client_->MakeClientWindowId(
-      TransportIdForWindow(window));
+  return window_tree_->MakeClientWindowId(TransportIdForWindow(window));
 }
 
 }  // namespace ws2

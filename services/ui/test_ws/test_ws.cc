@@ -50,7 +50,7 @@ class Client {
     window_->Init(LAYER_NOT_DRAWN);
     window_->set_owned_by_parent(false);
     root->AddChild(window_.get());
-    binding_ = std::make_unique<ws2::WindowServiceClientBinding>();
+    binding_ = std::make_unique<ws2::WindowTreeBinding>();
     mojom::WindowTreeClient* tree_client = tree_client_ptr.get();
     binding_->InitForEmbed(
         window_service, std::move(tree_client_ptr), tree_client, window_.get(),
@@ -66,7 +66,7 @@ class Client {
   }
 
   std::unique_ptr<aura::Window> window_;
-  std::unique_ptr<ws2::WindowServiceClientBinding> binding_;
+  std::unique_ptr<ws2::WindowTreeBinding> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(Client);
 };
