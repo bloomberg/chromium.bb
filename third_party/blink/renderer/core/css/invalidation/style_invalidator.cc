@@ -275,17 +275,23 @@ void StyleInvalidator::Invalidate(Element& element, SiblingData& sibling_data) {
     // if-block.
     if (InvalidatesSlotted() && IsHTMLSlotElement(element))
       InvalidateSlotDistributedElements(ToHTMLSlotElement(element));
+
+    if (InsertionPointCrossing() && element.IsV0InsertionPoint()) {
+      element.SetNeedsStyleRecalc(kSubtreeStyleChange,
+                                  StyleChangeReasonForTracing::Create(
+                                      StyleChangeReason::kStyleInvalidator));
+    }
   }
 
-  // If we have invalidation sets that could apply to descendants or we know
-  // there are invalidation sets to be found in the descendants then we descend.
-  if (HasInvalidationSets() || element.ChildNeedsStyleInvalidation())
+  // We need to recurse into children if:
+  // * the whole subtree is not invalid and we have invalidation sets that
+  //   could apply to the descendants.
+  // * there are invalidation sets attached to descendants then we need to
+  //   clear the flags on the nodes, whether we use the sets or not.
+  if ((!WholeSubtreeInvalid() && HasInvalidationSets()) ||
+      element.ChildNeedsStyleInvalidation()) {
     InvalidateChildren(element);
-
-  if (InsertionPointCrossing() && element.IsV0InsertionPoint())
-    element.SetNeedsStyleRecalc(kSubtreeStyleChange,
-                                StyleChangeReasonForTracing::Create(
-                                    StyleChangeReason::kStyleInvalidator));
+  }
 
   element.ClearChildNeedsStyleInvalidation();
   element.ClearNeedsStyleInvalidation();
