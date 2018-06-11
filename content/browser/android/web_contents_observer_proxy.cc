@@ -270,4 +270,11 @@ void WebContentsObserverProxy::SetToBaseURLForDataURLIfNeeded(
   }
 }
 
+void WebContentsObserverProxy::ViewportFitChanged(
+    blink::mojom::ViewportFit value) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_viewportFitChanged(
+      env, java_observer_, as_jint(static_cast<int>(value)));
+}
+
 }  // namespace content
