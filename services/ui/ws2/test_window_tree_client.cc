@@ -101,7 +101,9 @@ void TestWindowTreeClient::OnCaptureChanged(Id new_capture_window_id,
 
 void TestWindowTreeClient::OnFrameSinkIdAllocated(
     Id window_id,
-    const viz::FrameSinkId& frame_sink_id) {}
+    const viz::FrameSinkId& frame_sink_id) {
+  tracker_.OnFrameSinkIdAllocated(window_id, frame_sink_id);
+}
 
 void TestWindowTreeClient::OnTopLevelCreated(
     uint32_t change_id,
