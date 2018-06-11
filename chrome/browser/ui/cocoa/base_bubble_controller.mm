@@ -4,8 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
-#import "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -360,13 +360,13 @@
                                     object:window];
 
   bubbleCloser_ = std::make_unique<ui::BubbleCloser>(
-      window, base::BindBlock(^{
+      window, base::BindRepeating(base::RetainBlock(^{
         // Do it right now, because if this event is right mouse event, it may
         // pop up a menu. windowDidResignKey: will not run until the menu is
         // closed.
         if ([self respondsToSelector:@selector(windowDidResignKey:)])
           [self windowDidResignKey:note];
-      }));
+      })));
 
   // The resignationObserver_ watches for when a window resigns key state,
   // meaning the key window has changed and the bubble should be dismissed.

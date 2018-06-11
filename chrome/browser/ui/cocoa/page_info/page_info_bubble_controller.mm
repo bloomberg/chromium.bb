@@ -8,8 +8,8 @@
 
 #include <cmath>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -1021,10 +1021,10 @@ bool IsInternalURL(const GURL& url) {
                                       atPoint:(NSPoint)point {
   GURL url = webContents_ ? webContents_->GetURL() : GURL();
   __block PageInfoBubbleController* weakSelf = self;
-  PermissionMenuModel::ChangeCallback callback =
-      base::BindBlock(^(const PageInfoUI::PermissionInfo& permission) {
+  PermissionMenuModel::ChangeCallback callback = base::BindRepeating(
+      base::RetainBlock(^(const PageInfoUI::PermissionInfo& permission) {
         [weakSelf onPermissionChanged:permission.type to:permission.setting];
-      });
+      }));
   base::scoped_nsobject<PermissionSelectorButton> button(
       [[PermissionSelectorButton alloc] initWithPermissionInfo:permissionInfo
                                                         forURL:url
@@ -1056,10 +1056,10 @@ bool IsInternalURL(const GURL& url) {
                                      toView:(NSView*)view
                                     atPoint:(NSPoint)point {
   __block PageInfoBubbleController* weakSelf = self;
-  auto callback =
-      base::BindBlock(^(const PageInfoUI::ChosenObjectInfo& objectInfo) {
+  auto callback = base::BindRepeating(
+      base::RetainBlock(^(const PageInfoUI::ChosenObjectInfo& objectInfo) {
         [weakSelf onChosenObjectDeleted:objectInfo];
-      });
+      }));
   base::scoped_nsobject<ChosenObjectDeleteButton> button(
       [[ChosenObjectDeleteButton alloc]
           initWithChosenObject:std::move(objectInfo)
