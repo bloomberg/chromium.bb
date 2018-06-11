@@ -52,8 +52,7 @@ def Resolve(path, exe_path, loader_path, rpaths):
   path = path.replace('@executable_path', exe_path)
   if path.find('@rpath') != -1:
     for rpath in rpaths:
-      new_path = Resolve(path.replace('@rpath', rpath), exe_path, loader_path,
-                         [])
+      new_path = path.replace('@rpath', rpath)
       if os.access(new_path, os.X_OK):
         return new_path
     return ''
@@ -106,11 +105,11 @@ def GetDeveloperDirMac():
   print 'WARNING: no value found for DEVELOPER_DIR. Some commands may fail.'
 
 
-def GetSharedLibraryDependenciesMac(binary, loader_path):
+def GetSharedLibraryDependenciesMac(binary, exe_path, loader_rpaths):
   """Return absolute paths to all shared library dependecies of the binary.
 
   This implementation assumes that we're running on a Mac system."""
-  exe_path = os.path.dirname(binary)
+  loader_path = os.path.dirname(binary)
   env = os.environ.copy()
   developer_dir = GetDeveloperDirMac()
   if developer_dir:
@@ -121,7 +120,10 @@ def GetSharedLibraryDependenciesMac(binary, loader_path):
   for idx, line in enumerate(otool):
     if line.find('cmd LC_RPATH') != -1:
       m = re.match(' *path (.*) \(offset .*\)$', otool[idx+2])
-      rpaths.append(m.group(1))
+      rpath = m.group(1)
+      rpath = rpath.replace('@loader_path', loader_path)
+      rpath = rpath.replace('@executable_path', exe_path)
+      rpaths.append(rpath)
     elif line.find('cmd LC_ID_DYLIB') != -1:
       m = re.match(' *name (.*) \(offset .*\)$', otool[idx+2])
       dylib_id = m.group(1)
@@ -136,24 +138,26 @@ def GetSharedLibraryDependenciesMac(binary, loader_path):
       # as the first line. Filter that out.
       if m.group(1) == dylib_id:
         continue
-      dep = Resolve(m.group(1), exe_path, loader_path, rpaths)
+      dep = Resolve(m.group(1), exe_path, loader_path, loader_rpaths + rpaths)
       if dep:
         deps.append(os.path.normpath(dep))
       else:
-        print >>sys.stderr, \
-            'ERROR: failed to resolve %s, exe_path %s, loader_path %s' % (
-            m.group(1), exe_path, loader_path)
+        print >>sys.stderr, (
+            'ERROR: failed to resolve %s, exe_path %s, loader_path %s, '
+            'rpaths %s' % (m.group(1), exe_path, loader_path,
+                           ', '.join(loader_rpaths + rpaths)))
         sys.exit(1)
-  return deps
+  return deps, rpaths
 
 
-def GetSharedLibraryDependencies(options, binary, loader_path):
+def GetSharedLibraryDependencies(options, binary, exe_path, loader_rpaths):
   """Return absolute paths to all shared library dependecies of the binary."""
   deps = []
   if sys.platform.startswith('linux'):
-    deps = GetSharedLibraryDependenciesLinux(binary)
+    deps, rpaths = GetSharedLibraryDependenciesLinux(binary), []
   elif sys.platform == 'darwin':
-    deps = GetSharedLibraryDependenciesMac(binary, loader_path)
+    deps, rpaths = GetSharedLibraryDependenciesMac(
+        binary, exe_path, loader_rpaths)
   else:
     print "Platform not supported."
     sys.exit(1)
@@ -164,7 +168,7 @@ def GetSharedLibraryDependencies(options, binary, loader_path):
     if (os.access(dep, os.X_OK) and
         os.path.abspath(os.path.dirname(dep)).startswith(build_dir)):
       result.append(dep)
-  return result
+  return result, rpaths
 
 
 def mkdir_p(path):
@@ -313,13 +317,15 @@ def main():
 
   # Build the transitive closure of all dependencies.
   binaries = set([options.binary])
-  queue = [options.binary]
-  loader_path = os.path.dirname(options.binary)
+  queue = [(options.binary, [])]
+  exe_path = os.path.dirname(options.binary)
   while queue:
-    deps = GetSharedLibraryDependencies(options, queue.pop(0), loader_path)
+    current_binary, current_rpaths = queue.pop(0)
+    deps, new_rpaths = GetSharedLibraryDependencies(
+        options, current_binary, exe_path, current_rpaths)
     new_deps = set(deps) - binaries
     binaries |= new_deps
-    queue.extend(list(new_deps))
+    queue.extend([(dep, current_rpaths + new_rpaths) for dep in new_deps])
 
   GenerateSymbols(options, binaries)
 
