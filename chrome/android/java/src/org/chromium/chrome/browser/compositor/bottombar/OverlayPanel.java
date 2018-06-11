@@ -310,14 +310,25 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         mDidClearTextControls = !visible;
 
         SelectionPopupController spc = SelectionPopupController.fromWebContents(baseWebContents);
-        if (!visible) {
-            spc.setPreserveSelectionOnNextLossOfFocus(true);
-            if (baseWebContents.getViewAndroidDelegate() != null) {
-                baseWebContents.getViewAndroidDelegate().getContainerView().clearFocus();
-            }
-        }
+        if (!visible) spc.setPreserveSelectionOnNextLossOfFocus(true);
+        updateFocus(baseWebContents, visible);
 
         spc.updateTextSelectionUI(visible);
+    }
+
+    // Claim or lose focus of the content view of the base WebContents. This keeps
+    // the state of the text selected for overlay in consistent way.
+    private static void updateFocus(WebContents baseWebContents, boolean focusBaseView) {
+        ViewGroup baseContentView = baseWebContents.getViewAndroidDelegate() != null
+                ? baseWebContents.getViewAndroidDelegate().getContainerView()
+                : null;
+        if (baseContentView == null) return;
+
+        if (focusBaseView) {
+            baseContentView.requestFocus();
+        } else {
+            baseContentView.clearFocus();
+        }
     }
 
     // ============================================================================================
