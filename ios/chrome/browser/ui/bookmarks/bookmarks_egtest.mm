@@ -103,11 +103,24 @@ id<GREYMatcher> BookmarksDeleteSwipeButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_ACTION_DELETE);
 }
 
-// Matcher for the Back button on the bookmarks UI.
-id<GREYMatcher> BookmarksBackButton() {
-  return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                        IDS_IOS_BOOKMARK_NEW_BACK_LABEL)),
-                    grey_enabled(), nil);
+// Matcher for the Back button to |previousViewControllerLabel| on the bookmarks
+// UI.
+id<GREYMatcher> NavigateBackButtonTo(NSString* previousViewControllerLabel) {
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    if (@available(iOS 11, *)) {
+      return grey_allOf(grey_kindOfClass([UIButton class]),
+                        grey_accessibilityLabel(previousViewControllerLabel),
+                        nil);
+    } else {
+      return grey_allOf(grey_accessibilityTrait(UIAccessibilityTraitButton),
+                        grey_accessibilityLabel(previousViewControllerLabel),
+                        nil);
+    }
+  } else {
+    return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                          IDS_IOS_BOOKMARK_NEW_BACK_LABEL)),
+                      grey_enabled(), nil);
+  }
 }
 
 // Matcher for the DONE button on the bookmarks UI.
@@ -678,9 +691,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
 
-  // Make sure the Mobile Bookmarks is not present.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Mobile Bookmarks")]
-      assertWithMatcher:grey_nil()];
+  // Make sure Mobile Bookmarks is not present. Also check the button Class to
+  // avoid matching the "back" NavigationBar button.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Mobile Bookmarks"),
+                                   grey_kindOfClass([UITableViewCell class]),
+                                   nil)] assertWithMatcher:grey_nil()];
 
   // Open the first folder, to be able to go back twice on the bookmarks.
   [[EarlGrey
@@ -703,6 +720,17 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 }
 
 - (void)testUndoDeleteBookmarkFromSwipe {
+  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
+  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
+  // fail on devices. Disabling this test under these conditions on the
+  // meantime.
+  if (@available(iOS 11, *)) {
+    if (experimental_flags::IsBookmarksUIRebootEnabled() && !IsCompactWidth()) {
+      EARL_GREY_TEST_SKIPPED(@"Test disabled on UIRefresh iPad on iOS11.");
+    }
+  }
+
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -715,7 +743,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Verify context bar does not change when "Delete" shows up.
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES
                                        newFolderEnabled:YES];
-
   // Delete it.
   [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
       performAction:grey_tap()];
@@ -744,7 +771,18 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 #define MAYBE_testSwipeToDeleteDisabledInEditMode \
   FLAKY_testSwipeToDeleteDisabledInEditMode
 #endif
-- (void)MAYBE_testSwipeToDeleteDisabledInEditMode {
+- (void)testSwipeToDeleteDisabledInEditMode {
+  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
+  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
+  // fail on devices. Disabling this test under these conditions on the
+  // meantime.
+  if (@available(iOS 11, *)) {
+    if (experimental_flags::IsBookmarksUIRebootEnabled() && !IsCompactWidth()) {
+      EARL_GREY_TEST_SKIPPED(@"Test disabled on UIRefresh iPad on iOS11.");
+    }
+  }
+
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];
@@ -1175,7 +1213,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // 4. Test the cancel button at edit page.
 
   // Come back to the Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
       performAction:grey_tap()];
 
   // Change to edit mode
@@ -1644,13 +1682,20 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Dismiss the context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
-      performAction:grey_tap()];
+  // Dismiss the context menu. On non compact width tap the Bookmarks TableView
+  // to dismiss, since there might not be a cancel button.
+  if (IsCompactWidth()) {
+    [[EarlGrey
+        selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+        performAction:grey_tap()];
+  }
 
   // Come back to the root.
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
       performAction:grey_tap()];
 
   // Long press on Mobile Bookmarks.
@@ -2020,11 +2065,11 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       performAction:grey_tap()];
 
-  // Verify folder picker is appeared.
+  // Verify folder picker appeared.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON))]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
 
   // Delete the First URL programmatically in background.  Folder picker will
   // not close as the selected nodes "Second URL" and "Folder 1" still exist.
@@ -2109,10 +2154,14 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       performAction:grey_tap()];
 
-  // Choose to move into Folder 1.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
+  // Choose to move into Folder 1. Use grey_ancestor since
+  // BookmarksHomeTableView might be visible on the background on non-compact
+  // widthts, and there might be a "Folder1" node there as well.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(TappableBookmarkNodeWithLabel(@"Folder 1"),
+                            grey_ancestor(grey_accessibilityID(
+                                kBookmarkFolderPickerViewContainerIdentifier)),
+                            nil)] performAction:grey_tap()];
 
   // Verify all folder flow UI is now closed.
   [self verifyFolderFlowIsClosed];
@@ -2170,11 +2219,11 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       performAction:grey_tap()];
 
-  // Verify folder picker is appeared.
+  // Verify folder picker appeared.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
-                                   IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON))]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
 
   // Delete the selected URL and folder programmatically.
   [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
@@ -2395,7 +2444,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
 
   // Come back to root node, and the promo view should appear.
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
       performAction:grey_tap()];
 
   // Check promo view is still visible.
@@ -2616,8 +2665,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                                 pressReturn:NO];
 
   // Interrupt the folder name editing by tapping on back.
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
       performAction:grey_tap()];
+
   // Come back to Mobile Bookmarks.
   [BookmarksTestCase openMobileBookmarks];
 
@@ -2648,7 +2698,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       performAction:grey_tap()];
   // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
       performAction:grey_tap()];
 
   // Verify folder name "New Folder 3" was committed.
@@ -2714,7 +2764,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [self verifyEmptyBackgroundAppears];
 
   // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
       performAction:grey_tap()];
 
   // Change to edit mode, using context menu.
@@ -2786,7 +2836,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [self verifyEmptyBackgroundAppears];
 
   // Come back to Folder 1 (which is also deleted).
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
       performAction:grey_tap()];
 
   // Verify both select and new folder button are disabled.
@@ -2796,7 +2846,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [self verifyEmptyBackgroundAppears];
 
   // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
       performAction:grey_tap()];
 
   // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
@@ -2919,11 +2969,11 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Reopen bookmarks.
   [BookmarksTestCase openBookmarks];
 
-  // Go back 1 level.
-  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+  // Go back 1 level to Folder 1.
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
       performAction:grey_tap()];
 
-  // Ensure Folder 1 is seen, by verifying folders at this level.
+  // Ensure we are at Folder 1, by verifying folders at this level.
   [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Folder 2"];
 }
 
@@ -3169,7 +3219,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                          base::SysNSStringToUTF16(@"Bottom URL"), dummyURL);
 
   NSString* dummyTitle = @"Dummy URL";
-  for (int i = 0; i < 15; i++) {
+  for (int i = 0; i < 20; i++) {
     bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
                            base::SysNSStringToUTF16(dummyTitle), dummyURL);
   }
@@ -3182,7 +3232,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Add URLs to Folder 1.
   bookmark_model->AddURL(folder1, 0, base::SysNSStringToUTF16(@"Bottom 1"),
                          dummyURL);
-  for (int i = 0; i < 15; i++) {
+  for (int i = 0; i < 20; i++) {
     bookmark_model->AddURL(folder1, 0, base::SysNSStringToUTF16(dummyTitle),
                            dummyURL);
   }
@@ -3666,16 +3716,22 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 // Scroll the bookmarks to top.
 + (void)scrollToTop {
+  // Provide a start points since it prevents some tests timing out under
+  // certain configurations.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+      performAction:grey_scrollToContentEdgeWithStartPoint(
+                        kGREYContentEdgeBottom, 0.5, 0.5)];
 }
 
 // Scroll the bookmarks to bottom.
 + (void)scrollToBottom {
+  // Provide a start points since it prevents some tests timing out under
+  // certain configurations.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+      performAction:grey_scrollToContentEdgeWithStartPoint(
+                        kGREYContentEdgeBottom, 0.5, 0.5)];
 }
 
 // Verify a folder with given name is created and it is not being edited.
@@ -3726,10 +3782,14 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
           grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  // Select the new destination folder.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(destinationFolder)]
-      performAction:grey_tap()];
+  // Select the new destination folder. Use grey_ancestor since
+  // BookmarksHomeTableView might be visible on the background on non-compact
+  // widthts, and there might be a "destinationFolder" node there as well.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(TappableBookmarkNodeWithLabel(destinationFolder),
+                            grey_ancestor(grey_accessibilityID(
+                                kBookmarkFolderPickerViewContainerIdentifier)),
+                            nil)] performAction:grey_tap()];
 
   // Verify folder picker is dismissed.
   [[EarlGrey
