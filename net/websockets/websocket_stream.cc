@@ -113,10 +113,10 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
       std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
       std::unique_ptr<WebSocketStreamRequestAPI> api_delegate)
-      : delegate_(std::make_unique<Delegate>(this)),
+      : delegate_(this),
         url_request_(context->CreateRequest(url,
                                             DEFAULT_PRIORITY,
-                                            delegate_.get(),
+                                            &delegate_,
                                             kTrafficAnnotation)),
         connect_delegate_(std::move(connect_delegate)),
         handshake_stream_(nullptr),
@@ -285,7 +285,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
 
   // |delegate_| needs to be declared before |url_request_| so that it gets
   // initialised first.
-  std::unique_ptr<Delegate> delegate_;
+  Delegate delegate_;
 
   // Deleting the WebSocketStreamRequestImpl object deletes this URLRequest
   // object, cancelling the whole connection.
