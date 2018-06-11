@@ -106,6 +106,9 @@ const char kPostRebootSwitchesInOtherRegistryKeySwitch[] =
 // only.
 const char kRemoveScanOnlyUwS[] = "remove-scan-only-uws";
 
+// Enable reporting of force-installed Chrome extensions.
+const char kReportExtensionsSwitch[] = "report-extensions";
+
 // Mojo pipe token generated in the broker process and passed to the sandbox
 // process to bind with the EngineCommands IPC interface.
 const char kSandboxMojoPipeTokenSwitch[] = "sandbox-mojo-pipe-token";
