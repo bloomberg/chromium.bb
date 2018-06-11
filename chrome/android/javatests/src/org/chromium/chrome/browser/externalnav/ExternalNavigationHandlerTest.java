@@ -12,6 +12,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
@@ -30,10 +31,10 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.banners.InstallerDelegateTest.TestPackageManager;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -156,9 +157,12 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testChromeReferrer() {
+    public void
+    testChromeReferrer() {
         mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
 
         // http://crbug.com/159153: Don't override http or https URLs from the NTP or bookmarks.
@@ -185,7 +189,10 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testRedirectFromFormSubmit() {
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    public void
+    testRedirectFromFormSubmit() {
         mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
 
         // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
@@ -321,7 +328,11 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testRedirectToMarketWithoutReferrer() {
+
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    public void
+    testRedirectToMarketWithoutReferrer() {
         mDelegate.setCanResolveActivityForExternalSchemes(false);
 
         checkUrl(INTENT_APP_NOT_INSTALLED_DEFAULT_MARKET_REFERRER)
@@ -444,9 +455,12 @@ public class ExternalNavigationHandlerTest {
         }
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testInitialIntent() throws URISyntaxException {
+    public void
+    testInitialIntent() throws URISyntaxException {
         mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
         mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
 
@@ -490,9 +504,12 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testInitialIntentHeadingToChrome() throws URISyntaxException {
+    public void
+    testInitialIntentHeadingToChrome() throws URISyntaxException {
         mDelegate.add(new IntentActivity(YOUTUBE_MOBILE_URL, YOUTUBE_PACKAGE_NAME));
 
         TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
@@ -523,9 +540,12 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testIntentForCustomTab() throws URISyntaxException {
+    public void
+    testIntentForCustomTab() throws URISyntaxException {
         mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
 
         TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
@@ -600,9 +620,12 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testInstantAppsIntent_customTabRedirect() throws Exception {
+    public void
+    testInstantAppsIntent_customTabRedirect() throws Exception {
         TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
         int transTypeLinkFromIntent = PageTransition.LINK | PageTransition.FROM_API;
 
@@ -626,7 +649,10 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testInstantAppsIntent_incomingIntentRedirect() throws Exception {
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    public void
+    testInstantAppsIntent_incomingIntentRedirect() throws Exception {
         int transTypeLinkFromIntent = PageTransition.LINK
                 | PageTransition.FROM_API;
         TabRedirectHandler redirectHandler = new TabRedirectHandler(mContext);
@@ -666,9 +692,12 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testInstantAppsIntent_serpReferrer() {
+    public void
+    testInstantAppsIntent_serpReferrer() {
         String intentUrl = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
                 + "package=com.google.android.instantapps.supervisor;"
                 + "action=com.google.android.instantapps.START;"
@@ -734,9 +763,12 @@ public class ExternalNavigationHandlerTest {
         Assert.assertNull(mDelegate.getReferrerUrlForClobbering());
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testFallbackUrl_IntentResolutionSucceedsInIncognito() {
+    public void
+    testFallbackUrl_IntentResolutionSucceedsInIncognito() {
         // IMDB app is installed.
         mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
 
@@ -993,9 +1025,12 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testChromeAppInBackground() {
+    public void
+    testChromeAppInBackground() {
         mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
         mDelegate.setIsChromeAppInForeground(false);
         checkUrl(YOUTUBE_URL).expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
@@ -1045,7 +1080,10 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testPlusAppRefresh() {
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    public void
+    testPlusAppRefresh() {
         mDelegate.add(new IntentActivity(PLUS_STREAM_URL, "plus"));
 
         checkUrl(PLUS_STREAM_URL)
@@ -1105,7 +1143,10 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testIntentWithMissingReferrer() {
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    public void
+    testIntentWithMissingReferrer() {
         mDelegate.add(new IntentActivity("http://refertest.com", "refertest"));
         mDelegate.add(new IntentActivity("https://refertest.com", "refertest"));
 
@@ -1213,7 +1254,10 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testSms_DispatchIntentToDefaultSmsApp() {
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    public void
+    testSms_DispatchIntentToDefaultSmsApp() {
         final String referer = "https://www.google.com/";
         mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
         mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
@@ -1230,7 +1274,10 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testSms_DefaultSmsAppDoesNotHandleIntent() {
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
+    public void
+    testSms_DefaultSmsAppDoesNotHandleIntent() {
         final String referer = "https://www.google.com/";
         mDelegate.add(new IntentActivity("sms", TEXT_APP_1_PACKAGE_NAME));
         mDelegate.add(new IntentActivity("sms", TEXT_APP_2_PACKAGE_NAME));
@@ -1365,9 +1412,12 @@ public class ExternalNavigationHandlerTest {
      * Test that tapping a link which falls solely into the scope of a different WebAPK launches a
      * WebAPK without showing the intent picker.
      */
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
-    public void testLaunchWebApk_BypassIntentPickerFromAnotherWebApk() {
+    public void
+    testLaunchWebApk_BypassIntentPickerFromAnotherWebApk() {
         final String scope1 = "https://www.webapk.with.native.com";
         final String scope1WebApkPackageName = "org.chromium.webapk.with.native";
         final String scope1NativeAppPackageName = "com.webapk.with.native.android";
