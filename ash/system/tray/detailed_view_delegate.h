@@ -9,9 +9,17 @@
 
 namespace ui {
 class NativeTheme;
-};
+}  // namespace ui
+
+namespace views {
+class Button;
+class ButtonListener;
+class View;
+}  // namespace views
 
 namespace ash {
+
+class TriView;
 
 // A delegate of TrayDetailedView that handles bubble related actions e.g.
 // transition to the main view, closing the bubble, etc.
@@ -32,6 +40,34 @@ class DetailedViewDelegate {
 
   // Return true if overflow indicator of ScrollView is enabled.
   virtual bool IsOverflowIndicatorEnabled() const = 0;
+
+  // Return TriView used for the title row. It should have title label of
+  // |string_id| in CENTER. TrayDetailedView will calls CreateBackButton() and
+  // adds the returned view to START.
+  virtual TriView* CreateTitleRow(int string_id) = 0;
+
+  // Return the separator used between the title row and the contents. Caller
+  // takes ownership of the returned view.
+  virtual views::View* CreateTitleSeparator() = 0;
+
+  // Return the back button used in the title row. Caller takes ownership of the
+  // returned view.
+  virtual views::Button* CreateBackButton(views::ButtonListener* listener) = 0;
+
+  // Return the info button used in the title row. Caller takes ownership of the
+  // returned view.
+  virtual views::Button* CreateInfoButton(views::ButtonListener* listener,
+                                          int info_accessible_name_id) = 0;
+
+  // Return the settings button used in the title row. Caller takes ownership of
+  // the returned view.
+  virtual views::Button* CreateSettingsButton(
+      views::ButtonListener* listener,
+      int setting_accessible_name_id) = 0;
+
+  // Return the help button used in the title row. Caller takes ownership of the
+  // returned view.
+  virtual views::Button* CreateHelpButton(views::ButtonListener* listener) = 0;
 };
 
 }  // namespace ash
