@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "build/build_config.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
@@ -62,7 +63,12 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
 
   enum {
     // Max number of entries we'll keep around.
+#if defined(OS_ANDROID)
+    // Android keeps at most 5 recent tabs.
+    kMaxEntries = 5,
+#else
     kMaxEntries = 25,
+#endif
   };
 
   // Creates a new TabRestoreServiceHelper and provides an object that provides
