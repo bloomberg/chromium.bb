@@ -135,12 +135,15 @@ class LegacyLinker extends Linker {
      * Call this method just before loading any native shared libraries in this process.
      */
     @Override
-    public void prepareLibraryLoad() {
+    public void prepareLibraryLoad(@Nullable String apkFilePath) {
         if (DEBUG) {
             Log.i(TAG, "prepareLibraryLoad() called");
         }
         synchronized (mLock) {
             ensureInitializedLocked();
+            if (apkFilePath != null) {
+                nativeAddZipArchivePath(apkFilePath);
+            }
             mPrepareLibraryLoadCalled = true;
 
             if (mInBrowserProcess) {
@@ -440,18 +443,14 @@ class LegacyLinker extends Linker {
      * equivalent, so you can only open one library in a given zip file. The
      * library must not be the Chromium linker library.
      *
-     * @param zipFilePath The path of the zip file containing the library (or null).
      * @param libFilePath The path of the library (possibly in the zip file).
      * @param isFixedAddressPermitted If true, uses a fixed load address if one was
      * supplied, otherwise ignores the fixed address and loads wherever available.
      */
     @Override
-    void loadLibraryImpl(@Nullable String zipFilePath,
-                         String libFilePath,
-                         boolean isFixedAddressPermitted) {
+    void loadLibraryImpl(String libFilePath, boolean isFixedAddressPermitted) {
         if (DEBUG) {
-            Log.i(TAG, "loadLibraryImpl: "
-                    + zipFilePath + ", " + libFilePath + ", " + isFixedAddressPermitted);
+            Log.i(TAG, "loadLibraryImpl: " + libFilePath + ", " + isFixedAddressPermitted);
         }
         synchronized (mLock) {
             ensureInitializedLocked();
@@ -491,19 +490,10 @@ class LegacyLinker extends Linker {
             }
 
             final String sharedRelRoName = libFilePath;
-            if (zipFilePath != null) {
-                if (!nativeLoadLibraryInZipFile(zipFilePath, libFilePath, loadAddress, libInfo)) {
-                    String errorMessage = "Unable to load library: " + libFilePath
-                                          + ", in: " + zipFilePath;
-                    Log.e(TAG, errorMessage);
-                    throw new UnsatisfiedLinkError(errorMessage);
-                }
-            } else {
-                if (!nativeLoadLibrary(libFilePath, loadAddress, libInfo)) {
-                    String errorMessage = "Unable to load library: " + libFilePath;
-                    Log.e(TAG, errorMessage);
-                    throw new UnsatisfiedLinkError(errorMessage);
-                }
+            if (!nativeLoadLibrary(libFilePath, loadAddress, libInfo)) {
+                String errorMessage = "Unable to load library: " + libFilePath;
+                Log.e(TAG, errorMessage);
+                throw new UnsatisfiedLinkError(errorMessage);
             }
 
             // Print the load address to the logcat when testing the linker. The format
@@ -594,19 +584,13 @@ class LegacyLinker extends Linker {
                                                     LibInfo libInfo);
 
     /**
-     * Native method used to load a library which is inside a zipfile.
+     * Native method used to add a zip archive or APK to the search path
+     * for native libraries. Allows loading directly from it.
      *
-     * @param zipfileName Filename of the zip file containing the library.
-     * @param library Platform specific library name (e.g. libfoo.so)
-     * @param loadAddress Explicit load address, or 0 for randomized one.
-     * @param libInfo If not null, the mLoadAddress and mLoadSize fields
-     * of this LibInfo instance will set on success.
+     * @param zipfilePath Path of the zip file containing the libraries.
      * @return true for success, false otherwise.
      */
-    private static native boolean nativeLoadLibraryInZipFile(@Nullable String zipfileName,
-                                                             String libraryName,
-                                                             long loadAddress,
-                                                             LibInfo libInfo);
+    private static native boolean nativeAddZipArchivePath(String zipFilePath);
 
     /**
      * Native method used to create a shared RELRO section.

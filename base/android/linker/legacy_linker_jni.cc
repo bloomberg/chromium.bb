@@ -83,87 +83,40 @@ class ScopedLibrary {
   crazy_library_t* lib_;
 };
 
-template <class LibraryOpener>
-bool GenericLoadLibrary(JNIEnv* env,
-                        const char* library_name,
-                        jlong load_address,
-                        jobject lib_info_obj,
-                        const LibraryOpener& opener) {
-  LOG_INFO("Called for %s, at address 0x%llx", library_name, load_address);
+// We identify the abi tag for which the linker is running. This allows
+// us to select the library which matches the abi of the linker.
+
+#if defined(__arm__) && defined(__ARM_ARCH_7A__)
+#define CURRENT_ABI "armeabi-v7a"
+#elif defined(__arm__)
+#define CURRENT_ABI "armeabi"
+#elif defined(__i386__)
+#define CURRENT_ABI "x86"
+#elif defined(__mips__)
+#define CURRENT_ABI "mips"
+#elif defined(__x86_64__)
+#define CURRENT_ABI "x86_64"
+#elif defined(__aarch64__)
+#define CURRENT_ABI "arm64-v8a"
+#else
+#error "Unsupported target abi"
+#endif
+
+// Add a zip archive file path to the context's current search path
+// list. Making it possible to load libraries directly from it.
+JNI_GENERATOR_EXPORT bool
+Java_org_chromium_base_library_1loader_LegacyLinker_nativeAddZipArchivePath(
+    JNIEnv* env,
+    jclass clazz,
+    jstring apk_path_obj) {
+  String apk_path(env, apk_path_obj);
+
+  char search_path[512];
+  snprintf(search_path, sizeof(search_path), "%s!lib/" CURRENT_ABI "/",
+           apk_path.c_str());
+
   crazy_context_t* context = GetCrazyContext();
-
-  if (!IsValidAddress(load_address)) {
-    LOG_ERROR("Invalid address 0x%llx",
-              static_cast<unsigned long long>(load_address));
-    return false;
-  }
-
-  // Set the desired load address (0 means randomize it).
-  crazy_context_set_load_address(context, static_cast<size_t>(load_address));
-
-  ScopedLibrary library;
-  if (!opener.Open(library.GetPtr(), library_name, context)) {
-    return false;
-  }
-
-  crazy_library_info_t info;
-  if (!crazy_library_get_info(library.Get(), context, &info)) {
-    LOG_ERROR("Could not get library information for %s: %s",
-              library_name, crazy_context_get_error(context));
-    return false;
-  }
-
-  // Release library object to keep it alive after the function returns.
-  library.Release();
-
-  s_lib_info_fields.SetLoadInfo(env,
-                                lib_info_obj,
-                                info.load_address, info.load_size);
-  LOG_INFO("Success loading library %s", library_name);
-  return true;
-}
-
-// Used for opening the library in a regular file.
-class FileLibraryOpener {
- public:
-  bool Open(crazy_library_t** library,
-            const char* library_name,
-            crazy_context_t* context) const;
-};
-
-bool FileLibraryOpener::Open(crazy_library_t** library,
-                             const char* library_name,
-                             crazy_context_t* context) const {
-  if (!crazy_library_open(library, library_name, context)) {
-    LOG_ERROR("Could not open %s: %s",
-              library_name, crazy_context_get_error(context));
-    return false;
-  }
-  return true;
-}
-
-// Used for opening the library in a zip file.
-class ZipLibraryOpener {
- public:
-  explicit ZipLibraryOpener(const char* zip_file) : zip_file_(zip_file) { }
-  bool Open(crazy_library_t** library,
-            const char* library_name,
-            crazy_context_t* context) const;
- private:
-  const char* zip_file_;
-};
-
-bool ZipLibraryOpener::Open(crazy_library_t** library,
-                            const char* library_name,
-                            crazy_context_t* context) const {
-  if (!crazy_library_open_in_zip_file(library,
-                                      zip_file_,
-                                      library_name,
-                                      context)) {
-     LOG_ERROR("Could not open %s in zip file %s: %s",
-               library_name, zip_file_, crazy_context_get_error(context));
-     return false;
-  }
+  crazy_context_add_search_path(context, search_path);
   return true;
 }
 
@@ -178,65 +131,49 @@ bool ZipLibraryOpener::Open(crazy_library_t** library,
 // and is ignored here.
 // |library_name| is the library name (e.g. libfoo.so).
 // |load_address| is an explicit load address.
-// |library_info| is a LibInfo handle used to communicate information
+// |lib_info_obj| is a LibInfo handle used to communicate information
 // with the Java side.
 // Return true on success.
-JNI_GENERATOR_EXPORT jboolean
+JNI_GENERATOR_EXPORT bool
 Java_org_chromium_base_library_1loader_LegacyLinker_nativeLoadLibrary(
     JNIEnv* env,
     jclass clazz,
-    jstring library_name,
+    jstring lib_name_obj,
     jlong load_address,
     jobject lib_info_obj) {
-  String lib_name(env, library_name);
-  FileLibraryOpener opener;
+  String library_name(env, lib_name_obj);
+  LOG_INFO("Called for %s, at address 0x%llx", library_name, load_address);
+  crazy_context_t* context = GetCrazyContext();
 
-  return GenericLoadLibrary(env,
-                            lib_name.c_str(),
-                            static_cast<size_t>(load_address),
-                            lib_info_obj,
-                            opener);
-}
+  if (!IsValidAddress(load_address)) {
+    LOG_ERROR("Invalid address 0x%llx",
+              static_cast<unsigned long long>(load_address));
+    return false;
+  }
 
-// Load a library from a zipfile with the chromium linker. The
-// library in the zipfile must be uncompressed and page aligned.
-// The basename of the library is given. The library is expected
-// to be lib/<abi_tag>/crazy.<basename>. The <abi_tag> used will be the
-// same as the abi for this linker. The "crazy." prefix is included
-// so that the Android Package Manager doesn't extract the library into
-// /data/app-lib.
-//
-// Loading the library will also call its JNI_OnLoad() method, which
-// shall register its methods. Note that lazy native method resolution
-// will _not_ work after this, because Dalvik uses the system's dlsym()
-// which won't see the new library, so explicit registration is mandatory.
-//
-// |env| is the current JNI environment handle.
-// |clazz| is the static class handle for org.chromium.base.Linker,
-// and is ignored here.
-// |zipfile_name| is the filename of the zipfile containing the library.
-// |library_name| is the library base name (e.g. libfoo.so).
-// |load_address| is an explicit load address.
-// |library_info| is a LibInfo handle used to communicate information
-// with the Java side.
-// Returns true on success.
-JNI_GENERATOR_EXPORT jboolean
-Java_org_chromium_base_library_1loader_LegacyLinker_nativeLoadLibraryInZipFile(
-    JNIEnv* env,
-    jclass clazz,
-    jstring zipfile_name,
-    jstring library_name,
-    jlong load_address,
-    jobject lib_info_obj) {
-  String zipfile_name_str(env, zipfile_name);
-  String lib_name(env, library_name);
-  ZipLibraryOpener opener(zipfile_name_str.c_str());
+  // Set the desired load address (0 means randomize it).
+  crazy_context_set_load_address(context, static_cast<size_t>(load_address));
 
-  return GenericLoadLibrary(env,
-                            lib_name.c_str(),
-                            static_cast<size_t>(load_address),
-                            lib_info_obj,
-                            opener);
+  ScopedLibrary library;
+  if (!crazy_library_open(library.GetPtr(), library_name.c_str(), context)) {
+    return false;
+  }
+
+  crazy_library_info_t info;
+  if (!crazy_library_get_info(library.Get(), context, &info)) {
+    LOG_ERROR("Could not get library information for %s: %s",
+              library_name.c_str(), crazy_context_get_error(context));
+    return false;
+  }
+
+  // Release library object to keep it alive after the function returns.
+  library.Release();
+
+  s_lib_info_fields.SetLoadInfo(env,
+                                lib_info_obj,
+                                info.load_address, info.load_size);
+  LOG_INFO("Success loading library %s", library_name.c_str());
+  return true;
 }
 
 // Class holding the Java class and method ID for the Java side Linker

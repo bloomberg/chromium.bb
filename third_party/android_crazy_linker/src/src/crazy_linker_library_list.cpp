@@ -426,38 +426,6 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
   return wrap;
 }
 
-// We identify the abi tag for which the linker is running. This allows
-// us to select the library which matches the abi of the linker.
-
-#if defined(__arm__) && defined(__ARM_ARCH_7A__)
-#define CURRENT_ABI "armeabi-v7a"
-#elif defined(__arm__)
-#define CURRENT_ABI "armeabi"
-#elif defined(__i386__)
-#define CURRENT_ABI "x86"
-#elif defined(__mips__)
-#define CURRENT_ABI "mips"
-#elif defined(__x86_64__)
-#define CURRENT_ABI "x86_64"
-#elif defined(__aarch64__)
-#define CURRENT_ABI "arm64-v8a"
-#else
-#error "Unsupported target abi"
-#endif
-
-LibraryView* LibraryList::LoadLibraryInZipFile(
-    const char* zip_file_path,
-    const char* lib_name,
-    uintptr_t load_address,
-    SearchPathList* search_path_list,
-    Error* error) {
-  String path(zip_file_path);
-  path.Append("!lib/" CURRENT_ABI "/");
-  path.Append(lib_name);
-
-  return LoadLibrary(path.c_str(), load_address, search_path_list, error);
-}
-
 void LibraryList::AddLibrary(LibraryView* wrap) {
   known_libraries_.PushBack(wrap);
 }
