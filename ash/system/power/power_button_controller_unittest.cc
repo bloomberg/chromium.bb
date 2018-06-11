@@ -1237,8 +1237,7 @@ TEST_P(PowerButtonControllerWithPositionTest, MenuShownAtPercentageOfPosition) {
   }
   TapToDismissPowerButtonMenu();
 
-  ASSERT_TRUE(display::test::DisplayManagerTestApi(display_manager())
-                  .SetDisplayUIScale(primary_id, scale_factor));
+  display_manager()->UpdateZoomFactor(primary_id, 1.f / scale_factor);
   ASSERT_EQ(1.0f, GetPrimaryDisplay().device_scale_factor());
   display_bounds = GetPrimaryDisplay().bounds();
   int scale_up_width = display_bounds.width();

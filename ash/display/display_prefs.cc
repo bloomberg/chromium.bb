@@ -23,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
@@ -552,8 +553,16 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
     property_value->SetInteger("rotation",
                                static_cast<int>(info.GetRotation(
                                    display::Display::RotationSource::USER)));
-    property_value->SetInteger(
-        "ui-scale", static_cast<int>(info.configured_ui_scale() * 1000));
+
+    // If display zoom mode is enabled, we store a negative ui scale to let us
+    // know the next time we boot that it is not the first boot with display
+    // zoom mode enabled.
+    if (features::IsDisplayZoomSettingEnabled()) {
+      property_value->SetInteger("ui-scale", -1000);
+    } else {
+      property_value->SetInteger(
+          "ui-scale", static_cast<int>(info.configured_ui_scale() * 1000));
+    }
 
     display::ManagedDisplayMode mode;
     if (!display.IsInternal() &&

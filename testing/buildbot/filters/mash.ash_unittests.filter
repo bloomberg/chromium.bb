@@ -181,7 +181,7 @@
 -NativeCursorManagerAshTest.SetCursor
 -NativeCursorManagerAshTest.SetCursorSize
 -NativeCursorManagerAshTest.SetDeviceScaleFactorAndRotation
--NativeCursorManagerAshTest.UIScaleShouldNotChangeCursor
+-NativeCursorManagerWithUiScaleTest.UIScaleShouldNotChangeCursor
 
 # TODO: NightLight and mirror mode in mash. https://crbug.com/836368
 -NightLightTest.TestNightLightWithDisplayConfigurationChanges

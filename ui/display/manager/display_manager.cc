@@ -656,22 +656,28 @@ void DisplayManager::RegisterDisplayProperty(
   display_info_[display_id].SetRotation(rotation,
                                         Display::RotationSource::ACTIVE);
 
+  // We want to match the effective display resolution from what it was when
+  // ui scale was being used. This ensures that the users do not face any
+  // disruption after an update and/or when the display zoom feature is
+  // enabled. This also ensures that kiosk apps that have a ui scale set does
+  // not break when display zoom is enabled.
+  // NOTE - If the user tries to change the zoom level, they may not be able
+  // to come back to this zoom level again.
   if (features::IsDisplayZoomSettingEnabled()) {
-    // If the |ui_scale| is anything other than 1, it means display zoom feature
-    // has just been enabled. We want to match the effective display resolution
-    // from what it was when ui scale was being used. This ensures that the
-    // users do not face any disruption after an update and/or when the display
-    // zoom feature is enabled. This also ensures that kiosk apps that have a ui
-    // scale set does not break when display zoom is enabled.
-    // NOTE - If the user tries to change the zoom level, they may not be able
-    // to come back to this zoom level again.
-    if (std::abs(ui_scale - 1.f) > std::numeric_limits<float>::epsilon())
-      display_info_[display_id].set_zoom_factor(1.f / ui_scale);
-    else
+    // We store a negative ui_scale value when the display zoom mode is enabled.
+    // If |ui_scale| is negative, it means this is not the first boot with
+    // display zoom enabled, and hence we do not need to port the value for
+    // zoom scale from |ui_scale|.
+    if (ui_scale < 0) {
       display_info_[display_id].set_zoom_factor(display_zoom_factor);
+    } else {
+      display_info_[display_id].set_zoom_factor(1.f / ui_scale);
+      display_info_[display_id].set_is_zoom_factor_from_ui_scale(true);
+    }
     display_info_[display_id].set_configured_ui_scale(1.f);
-  } else if (0.5f <= ui_scale && ui_scale <= 2.0f)
+  } else if (0.5f <= ui_scale && ui_scale <= 2.0f) {
     display_info_[display_id].set_configured_ui_scale(ui_scale);
+  }
 
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
@@ -2009,10 +2015,34 @@ void DisplayManager::AddMirrorDisplayInfoIfAny(
 
 void DisplayManager::InsertAndUpdateDisplayInfo(
     const ManagedDisplayInfo& new_info) {
-  std::map<int64_t, ManagedDisplayInfo>::iterator info =
-      display_info_.find(new_info.id());
-  if (info != display_info_.end()) {
-    info->second.Copy(new_info);
+  auto it = display_info_.find(new_info.id());
+  if (it != display_info_.end()) {
+    ManagedDisplayInfo* info = &(it->second);
+    info->Copy(new_info);
+
+    // FHD devices with 1.25 DSF behave differently from other configuration.
+    // It uses 1.25 DSF for its display mode, only when the UI-Scale is set to
+    // 0.8. Which means that the rest of the display modes do not have a 1.25
+    // DSF. Instead they have a DSF of 1.
+    // The logic to convert a ui scale to the corresponding display zoom factor
+    // relies on the assumption that the DSF for all modes in an internal
+    // display is constant.
+    // In the case of a FHD 1.25 DSF device, when we are converting a ui scale
+    // to the corresponding display zoom scale, we assume a DSF of 1.25 for all
+    // non native display modes. This we now know is incorrect. The actual
+    // active DSF for all non native modes is 1. This means we have to offset
+    // the new net scale of |1.25 DSF * zoom_scale| such that it is equal to the
+    // old net scale of |1 DSF * 1/ui_scale| to get the correct one-to-one
+    // mapping. We know |zoom_scale = 1/ui_scale|, which means we have to offset
+    // the net scale by a factor of 1/1.25 to get the correct result.
+    // See https://crbug/845987 for more detailed info and explanation.
+    if (info->is_zoom_factor_from_ui_scale() &&
+        Display::IsInternalDisplayId(new_info.id()) &&
+        new_info.bounds_in_native().height() == 1080 &&
+        new_info.device_scale_factor() == 1.25f) {
+      info->set_zoom_factor(info->zoom_factor() * 0.8f);
+      info->set_is_zoom_factor_from_ui_scale(false);
+    }
   } else {
     display_info_[new_info.id()] = new_info;
     display_info_[new_info.id()].set_native(false);
@@ -2022,7 +2052,8 @@ void DisplayManager::InsertAndUpdateDisplayInfo(
     // internally.
     if (Display::IsInternalDisplayId(new_info.id()) &&
         new_info.bounds_in_native().height() == 1080 &&
-        new_info.device_scale_factor() == 1.25f) {
+        new_info.device_scale_factor() == 1.25f &&
+        !features::IsDisplayZoomSettingEnabled()) {
       display_info_[new_info.id()].set_configured_ui_scale(0.8f);
     }
   }
