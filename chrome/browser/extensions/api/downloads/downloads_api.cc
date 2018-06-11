@@ -1003,14 +1003,6 @@ bool DownloadsDownloadFunction::RunAsync() {
   if (Fault(!download_url.is_valid(), errors::kInvalidURL, &error_))
     return false;
 
-  Profile* current_profile = GetProfile();
-  // TODO(https://crbug.com/845845): Remove changing current_profile. If a
-  // download request comes from a regular profile, and the incognito profile
-  // exists and extension is running in spanning mode, then we will use
-  // incognito download manager, which is not a correct decision.
-  if (include_incognito_information() && GetProfile()->HasOffTheRecordProfile())
-    current_profile = GetProfile()->GetOffTheRecordProfile();
-
   content::StoragePartition* storage_partition =
       BrowserContext::GetStoragePartition(
           render_frame_host()->GetProcess()->GetBrowserContext(),
@@ -1109,8 +1101,8 @@ bool DownloadsDownloadFunction::RunAsync() {
   download_params->set_do_not_prompt_for_login(true);
   download_params->set_download_source(download::DownloadSource::EXTENSION_API);
 
-  DownloadManager* manager = BrowserContext::GetDownloadManager(
-      current_profile);
+  DownloadManager* manager = BrowserContext::GetDownloadManager(GetProfile());
+
   manager->DownloadUrl(std::move(download_params));
   RecordApiFunctions(DOWNLOADS_FUNCTION_DOWNLOAD);
   return true;

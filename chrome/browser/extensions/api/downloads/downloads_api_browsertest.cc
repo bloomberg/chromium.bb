@@ -622,7 +622,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
       const std::string& args) {
     SetUpExtensionFunction(function.get());
     return extension_function_test_utils::RunFunctionAndReturnSingleResult(
-        function.get(), args, browser(), GetFlags());
+        function.get(), args, current_browser(), GetFlags());
   }
 
   std::string RunFunctionAndReturnError(
@@ -630,7 +630,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
       const std::string& args) {
     SetUpExtensionFunction(function.get());
     return extension_function_test_utils::RunFunctionAndReturnError(
-        function.get(), args, browser(), GetFlags());
+        function.get(), args, current_browser(), GetFlags());
   }
 
   bool RunFunctionAndReturnString(
@@ -1744,6 +1744,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   int result_id = -1;
   ASSERT_TRUE(result->GetAsInteger(&result_id));
   DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(GetCurrentManager()->GetBrowserContext()->IsOffTheRecord());
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
