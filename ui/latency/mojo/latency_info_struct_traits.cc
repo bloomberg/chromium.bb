@@ -59,49 +59,6 @@ ui::SourceEventType MojoSourceEventTypeToUI(ui::mojom::SourceEventType type) {
 }  // namespace
 
 // static
-base::TimeTicks StructTraits<ui::mojom::LatencyComponentDataView,
-                             ui::LatencyInfo::LatencyComponent>::
-    event_time(const ui::LatencyInfo::LatencyComponent& component) {
-  return component.event_time;
-}
-
-// static
-uint32_t StructTraits<ui::mojom::LatencyComponentDataView,
-                      ui::LatencyInfo::LatencyComponent>::
-    event_count(const ui::LatencyInfo::LatencyComponent& component) {
-  return component.event_count;
-}
-
-// static
-base::TimeTicks StructTraits<ui::mojom::LatencyComponentDataView,
-                             ui::LatencyInfo::LatencyComponent>::
-    first_event_time(const ui::LatencyInfo::LatencyComponent& component) {
-  return component.first_event_time;
-}
-
-// static
-base::TimeTicks StructTraits<ui::mojom::LatencyComponentDataView,
-                             ui::LatencyInfo::LatencyComponent>::
-    last_event_time(const ui::LatencyInfo::LatencyComponent& component) {
-  return component.last_event_time;
-}
-
-// static
-bool StructTraits<ui::mojom::LatencyComponentDataView,
-                  ui::LatencyInfo::LatencyComponent>::
-    Read(ui::mojom::LatencyComponentDataView data,
-         ui::LatencyInfo::LatencyComponent* out) {
-  if (!data.ReadEventTime(&out->event_time))
-    return false;
-  if (!data.ReadFirstEventTime(&out->first_event_time))
-    return false;
-  if (!data.ReadLastEventTime(&out->last_event_time))
-    return false;
-  out->event_count = data.event_count();
-  return true;
-}
-
-// static
 const std::string&
 StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::trace_name(
     const ui::LatencyInfo& info) {
@@ -166,20 +123,8 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
     ui::LatencyInfo* out) {
   if (!data.ReadTraceName(&out->trace_name_))
     return false;
-
-  mojo::ArrayDataView<ui::mojom::LatencyComponentPairDataView> components;
-  data.GetLatencyComponentsDataView(&components);
-  for (uint32_t i = 0; i < components.size(); ++i) {
-    ui::mojom::LatencyComponentPairDataView component_pair;
-    components.GetDataView(i, &component_pair);
-    ui::LatencyInfo::LatencyMap::key_type key;
-    if (!component_pair.ReadKey(&key))
-      return false;
-    auto& value = out->latency_components_[key];
-    if (!component_pair.ReadValue(&value))
-      return false;
-  }
-
+  if (!data.ReadLatencyComponents(&out->latency_components_))
+    return false;
   out->trace_id_ = data.trace_id();
   if (!data.ReadSnapshots(&out->snapshots_))
     return false;

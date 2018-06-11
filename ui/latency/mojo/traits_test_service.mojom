@@ -8,8 +8,5 @@ import "ui/latency/mojo/latency_info.mojom";
 
 interface TraitsTestService {
   [Sync]
-  EchoLatencyComponent(LatencyComponent l) => (LatencyComponent pass);
-
-  [Sync]
   EchoLatencyInfo(LatencyInfo l) => (LatencyInfo pass);
 };

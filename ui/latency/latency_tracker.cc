@@ -47,14 +47,13 @@ bool IsInertialScroll(const LatencyInfo& latency) {
 // to when the scroll gesture results in final frame swap. All scroll events are
 // included in this metric.
 void RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
-    const ui::LatencyInfo::LatencyComponent& start,
-    const ui::LatencyInfo::LatencyComponent& end) {
+    base::TimeTicks start,
+    base::TimeTicks end) {
   CONFIRM_EVENT_TIMES_EXIST(start, end);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Event.Latency.Scroll.Wheel.TimeToScrollUpdateSwapBegin2",
-      std::max(static_cast<int64_t>(0),
-               (end.last_event_time - start.first_event_time).InMicroseconds()),
-      1, 1000000, 100);
+      std::max(static_cast<int64_t>(0), (end - start).InMicroseconds()), 1,
+      1000000, 100);
 }
 
 }  // namespace
@@ -68,15 +67,15 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(
 }
 
 void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
-  LatencyInfo::LatencyComponent gpu_swap_end_component;
+  base::TimeTicks gpu_swap_end_timestamp;
   if (!latency.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
-                           &gpu_swap_end_component)) {
+                           &gpu_swap_end_timestamp)) {
     return;
   }
 
-  LatencyInfo::LatencyComponent gpu_swap_begin_component;
+  base::TimeTicks gpu_swap_begin_timestamp;
   bool found_component = latency.FindLatency(
-      ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, &gpu_swap_begin_component);
+      ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, &gpu_swap_begin_timestamp);
   DCHECK_AND_RETURN_ON_FAIL(found_component);
 
   if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
@@ -90,8 +89,8 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
       source_event_type == ui::SourceEventType::TOUCH ||
       source_event_type == ui::SourceEventType::INERTIAL ||
       source_event_type == ui::SourceEventType::KEY_PRESS) {
-    ComputeEndToEndLatencyHistograms(gpu_swap_begin_component,
-                                     gpu_swap_end_component, latency);
+    ComputeEndToEndLatencyHistograms(gpu_swap_begin_timestamp,
+                                     gpu_swap_end_timestamp, latency);
   }
 }
 
@@ -101,15 +100,14 @@ void LatencyTracker::DisableMetricSamplingForTesting() {
 
 void LatencyTracker::ReportUkmScrollLatency(
     const InputMetricEvent& metric_event,
-    const LatencyInfo::LatencyComponent& start_component,
-    const LatencyInfo::LatencyComponent&
-        time_to_scroll_update_swap_begin_component,
-    const LatencyInfo::LatencyComponent& time_to_handled_component,
+    base::TimeTicks start_timestamp,
+    base::TimeTicks time_to_scroll_update_swap_begin_timestamp,
+    base::TimeTicks time_to_handled_timestamp,
     bool is_main_thread,
     const ukm::SourceId ukm_source_id) {
-  CONFIRM_EVENT_TIMES_EXIST(start_component,
-                            time_to_scroll_update_swap_begin_component)
-  CONFIRM_EVENT_TIMES_EXIST(start_component, time_to_handled_component)
+  CONFIRM_EVENT_TIMES_EXIST(start_timestamp,
+                            time_to_scroll_update_swap_begin_timestamp)
+  CONFIRM_EVENT_TIMES_EXIST(start_timestamp, time_to_handled_timestamp)
 
   // Only report a subset of this metric as the volume is too high.
   if (metric_sampling_ &&
@@ -140,25 +138,23 @@ void LatencyTracker::ReportUkmScrollLatency(
   builder.SetMetric(
       "TimeToScrollUpdateSwapBegin",
       std::max(static_cast<int64_t>(0),
-               (time_to_scroll_update_swap_begin_component.last_event_time -
-                start_component.first_event_time)
+               (time_to_scroll_update_swap_begin_timestamp - start_timestamp)
                    .InMicroseconds()));
-  builder.SetMetric("TimeToHandled",
-                    std::max(static_cast<int64_t>(0),
-                             (time_to_handled_component.last_event_time -
-                              start_component.first_event_time)
-                                 .InMicroseconds()));
+  builder.SetMetric(
+      "TimeToHandled",
+      std::max(static_cast<int64_t>(0),
+               (time_to_handled_timestamp - start_timestamp).InMicroseconds()));
   builder.SetMetric("IsMainThread", is_main_thread);
   builder.Record(ukm_recorder);
 }
 
 void LatencyTracker::ComputeEndToEndLatencyHistograms(
-    const ui::LatencyInfo::LatencyComponent& gpu_swap_begin_component,
-    const ui::LatencyInfo::LatencyComponent& gpu_swap_end_component,
+    base::TimeTicks gpu_swap_begin_timestamp,
+    base::TimeTicks gpu_swap_end_timestamp,
     const ui::LatencyInfo& latency) {
   DCHECK_AND_RETURN_ON_FAIL(!latency.coalesced());
 
-  LatencyInfo::LatencyComponent original_component;
+  base::TimeTicks original_timestamp;
   std::string scroll_name = "Uninitialized";
 
   const std::string input_modality =
@@ -166,7 +162,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
   if (latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          &original_component)) {
+          &original_timestamp)) {
     DCHECK(input_modality == "Wheel" || input_modality == "Touch");
 
     // For inertial scrolling we don't separate the first event from the rest of
@@ -177,7 +173,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     // level metric.
     UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
         "Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin",
-        original_component, gpu_swap_begin_component);
+        original_timestamp, gpu_swap_begin_timestamp);
 
     // This UMA metric tracks the time between the final frame swap for the
     // first scroll event in a sequence and the original timestamp of that
@@ -185,7 +181,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin3",
-        original_component, gpu_swap_begin_component);
+        original_timestamp, gpu_swap_begin_timestamp);
 
     // This is the same metric as above. But due to a change in rebucketing,
     // UMA pipeline cannot process this for the chirp alerts. Hence adding a
@@ -194,16 +190,16 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin2",
-        original_component, gpu_swap_begin_component);
+        original_timestamp, gpu_swap_begin_timestamp);
 
     if (input_modality == "Wheel") {
       RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
-          original_component, gpu_swap_begin_component);
+          original_timestamp, gpu_swap_begin_timestamp);
     }
 
   } else if (latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-                 &original_component)) {
+                 &original_timestamp)) {
     DCHECK(input_modality == "Wheel" || input_modality == "Touch");
 
     // For inertial scrolling we don't separate the first event from the rest of
@@ -214,7 +210,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     // level metric.
     UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
         "Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin",
-        original_component, gpu_swap_begin_component);
+        original_timestamp, gpu_swap_begin_timestamp);
 
     // This UMA metric tracks the time from when the original touch/wheel event
     // is created to when the scroll gesture results in final frame swap.
@@ -222,7 +218,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin3",
-        original_component, gpu_swap_begin_component);
+        original_timestamp, gpu_swap_begin_timestamp);
 
     // This is the same metric as above. But due to a change in rebucketing,
     // UMA pipeline cannot process this for the chirp alerts. Hence adding a
@@ -231,23 +227,23 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
             ".TimeToScrollUpdateSwapBegin2",
-        original_component, gpu_swap_begin_component);
+        original_timestamp, gpu_swap_begin_timestamp);
 
     if (input_modality == "Wheel") {
       RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
-          original_component, gpu_swap_begin_component);
+          original_timestamp, gpu_swap_begin_timestamp);
     }
 
   } else if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-                                 &original_component)) {
+                                 &original_timestamp)) {
     if (latency.source_event_type() == SourceEventType::KEY_PRESS) {
       UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-          "Event.Latency.EndToEnd.KeyPress", original_component,
-          gpu_swap_begin_component);
+          "Event.Latency.EndToEnd.KeyPress", original_timestamp,
+          gpu_swap_begin_timestamp);
     } else if (latency.source_event_type() == SourceEventType::MOUSE) {
       UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-          "Event.Latency.EndToEnd.Mouse", original_component,
-          gpu_swap_begin_component);
+          "Event.Latency.EndToEnd.Mouse", original_timestamp,
+          gpu_swap_begin_timestamp);
     }
     return;
   } else {
@@ -258,14 +254,14 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   // Record scroll latency metrics.
   DCHECK(scroll_name == "ScrollBegin" || scroll_name == "ScrollUpdate" ||
          (IsInertialScroll(latency) && scroll_name == "ScrollInertial"));
-  LatencyInfo::LatencyComponent rendering_scheduled_component;
+  base::TimeTicks rendering_scheduled_timestamp;
   bool rendering_scheduled_on_main = latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT,
-      &rendering_scheduled_component);
+      &rendering_scheduled_timestamp);
   if (!rendering_scheduled_on_main) {
     bool found_component = latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT,
-        &rendering_scheduled_component);
+        &rendering_scheduled_timestamp);
     DCHECK_AND_RETURN_ON_FAIL(found_component);
   }
 
@@ -284,8 +280,8 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
                                : InputMetricEvent::SCROLL_UPDATE_WHEEL;
     }
     ReportUkmScrollLatency(
-        input_metric_event, original_component, gpu_swap_begin_component,
-        rendering_scheduled_component, rendering_scheduled_on_main,
+        input_metric_event, original_timestamp, gpu_swap_begin_timestamp,
+        rendering_scheduled_timestamp, rendering_scheduled_on_main,
         latency.ukm_source_id());
   }
 
@@ -294,44 +290,44 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
       "Event.Latency." + scroll_name + "." + input_modality +
           ".TimeToHandled2_" + thread_name,
-      original_component, rendering_scheduled_component);
+      original_timestamp, rendering_scheduled_timestamp);
 
   if (input_modality == "Wheel") {
     UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
         "Event.Latency.Scroll.Wheel.TimeToHandled2_" + thread_name,
-        original_component, rendering_scheduled_component);
+        original_timestamp, rendering_scheduled_timestamp);
   }
 
-  LatencyInfo::LatencyComponent renderer_swap_component;
+  base::TimeTicks renderer_swap_timestamp;
   bool found_component =
       latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT,
-                          &renderer_swap_component);
+                          &renderer_swap_timestamp);
   DCHECK_AND_RETURN_ON_FAIL(found_component);
 
   UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
       "Event.Latency." + scroll_name + "." + input_modality +
           ".HandledToRendererSwap2_" + thread_name,
-      rendering_scheduled_component, renderer_swap_component);
+      rendering_scheduled_timestamp, renderer_swap_timestamp);
 
-  LatencyInfo::LatencyComponent browser_received_swap_component;
+  base::TimeTicks browser_received_swap_timestamp;
   found_component =
       latency.FindLatency(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT,
-                          &browser_received_swap_component);
+                          &browser_received_swap_timestamp);
   DCHECK_AND_RETURN_ON_FAIL(found_component);
 
   UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
       "Event.Latency." + scroll_name + "." + input_modality +
           ".RendererSwapToBrowserNotified2",
-      renderer_swap_component, browser_received_swap_component);
+      renderer_swap_timestamp, browser_received_swap_timestamp);
 
   UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
       "Event.Latency." + scroll_name + "." + input_modality +
           ".BrowserNotifiedToBeforeGpuSwap2",
-      browser_received_swap_component, gpu_swap_begin_component);
+      browser_received_swap_timestamp, gpu_swap_begin_timestamp);
 
   UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
       "Event.Latency." + scroll_name + "." + input_modality + ".GpuSwap2",
-      gpu_swap_begin_component, gpu_swap_end_component);
+      gpu_swap_begin_timestamp, gpu_swap_end_timestamp);
 }
 
 }  // namespace ui

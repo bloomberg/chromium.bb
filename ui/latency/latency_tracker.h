@@ -38,16 +38,15 @@ class LatencyTracker {
 
   void ReportUkmScrollLatency(
       const InputMetricEvent& metric_event,
-      const LatencyInfo::LatencyComponent& start_component,
-      const LatencyInfo::LatencyComponent&
-          time_to_scroll_update_swap_begin_component,
-      const LatencyInfo::LatencyComponent& time_to_handled_component,
+      base::TimeTicks start_timestamp,
+      base::TimeTicks time_to_scroll_update_swap_begin_timestamp,
+      base::TimeTicks time_to_handled_timestamp,
       bool is_main_thread,
       const ukm::SourceId ukm_source_id);
 
   void ComputeEndToEndLatencyHistograms(
-      const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
-      const LatencyInfo::LatencyComponent& gpu_swap_end_component,
+      base::TimeTicks gpu_swap_begin_timestamp,
+      base::TimeTicks gpu_swap_end_timestamp,
       const LatencyInfo& latency);
 
   typedef struct SamplingScheme {

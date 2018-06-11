@@ -42,14 +42,6 @@ TEST(LatencyInfoParamTraitsTest, Basic) {
 
   EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                  nullptr));
-
-  LatencyInfo::LatencyComponent rwh_comp;
-  EXPECT_TRUE(output.FindLatency(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                                 &rwh_comp));
-  EXPECT_EQ(1u, rwh_comp.event_count);
-
-  EXPECT_TRUE(
-      output.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, nullptr));
 }
 
 TEST(LatencyInfoParamTraitsTest, InvalidData) {

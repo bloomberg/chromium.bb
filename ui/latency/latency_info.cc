@@ -178,8 +178,7 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
 
   for (const auto& lc : other.latency_components()) {
     if (lc.first == type) {
-      AddLatencyNumberWithTimestamp(lc.first, lc.second.event_time,
-                                    lc.second.event_count);
+      AddLatencyNumberWithTimestamp(lc.first, lc.second, 1);
     }
   }
 
@@ -204,8 +203,7 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
 
   for (const auto& lc : other.latency_components()) {
     if (!FindLatency(lc.first, nullptr)) {
-      AddLatencyNumberWithTimestamp(lc.first, lc.second.event_time,
-                                    lc.second.event_count);
+      AddLatencyNumberWithTimestamp(lc.first, lc.second, 1);
     }
   }
 
@@ -258,12 +256,12 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
       // for an input event, we want to draw the beginning as when the event is
       // originally created, e.g. the timestamp of its ORIGINAL/UI_COMPONENT,
       // not when we actually issue the ASYNC_BEGIN trace event.
-      LatencyComponent begin_component;
+      base::TimeTicks begin_timestamp;
       base::TimeTicks ts;
       if (FindLatency(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
-                      &begin_component) ||
-          FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, &begin_component)) {
-        ts = begin_component.event_time;
+                      &begin_timestamp) ||
+          FindLatency(INPUT_EVENT_LATENCY_UI_COMPONENT, &begin_timestamp)) {
+        ts = begin_timestamp;
       } else {
         ts = base::TimeTicks::Now();
       }
@@ -290,21 +288,8 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
   }
 
   LatencyMap::iterator it = latency_components_.find(component);
-  if (it == latency_components_.end()) {
-    LatencyComponent info = {time, event_count, time, time};
-    latency_components_[component] = info;
-  } else {
-    uint32_t new_count = event_count + it->second.event_count;
-    if (event_count > 0 && new_count != 0) {
-      // Do a weighted average, so that the new event_time is the average of
-      // the times of events currently in this structure with the time passed
-      // into this method.
-      it->second.event_time += (time - it->second.event_time) * event_count /
-          new_count;
-      it->second.event_count = new_count;
-      it->second.last_event_time = std::max(it->second.last_event_time, time);
-    }
-  }
+  DCHECK(it == latency_components_.end());
+  latency_components_[component] = time;
 
   if (component == INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT)
     Terminate();
@@ -337,9 +322,7 @@ LatencyInfo::AsTraceableData() {
     std::unique_ptr<base::DictionaryValue> component_info(
         new base::DictionaryValue());
     component_info->SetDouble(
-        "time", static_cast<double>(
-                    lc.second.event_time.since_origin().InMicroseconds()));
-    component_info->SetDouble("count", lc.second.event_count);
+        "time", static_cast<double>(lc.second.since_origin().InMicroseconds()));
     record_data->Set(GetComponentName(lc.first), std::move(component_info));
   }
   record_data->SetDouble("trace_id", static_cast<double>(trace_id_));
@@ -354,7 +337,7 @@ LatencyInfo::AsTraceableData() {
 }
 
 bool LatencyInfo::FindLatency(LatencyComponentType type,
-                              LatencyComponent* output) const {
+                              base::TimeTicks* output) const {
   LatencyMap::const_iterator it = latency_components_.find(type);
   if (it == latency_components_.end())
     return false;
