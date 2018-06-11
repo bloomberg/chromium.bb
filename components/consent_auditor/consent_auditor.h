@@ -20,6 +20,7 @@ class UserEventService;
 }
 
 namespace sync_pb {
+class UserConsentSpecifics;
 class UserEventSpecifics;
 }
 
@@ -51,6 +52,8 @@ enum class Feature {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.consent_auditor
 enum class ConsentStatus { NOT_GIVEN, GIVEN };
 
+// TODO(vitaliii): Delete user-event-related code once USER_CONSENTS type is
+// fully launched.
 class ConsentAuditor : public KeyedService {
  public:
   ConsentAuditor(PrefService* pref_service,
@@ -90,7 +93,14 @@ class ConsentAuditor : public KeyedService {
   GetControllerDelegateOnUIThread();
 
  private:
-  std::unique_ptr<sync_pb::UserEventSpecifics> ConstructUserConsent(
+  std::unique_ptr<sync_pb::UserEventSpecifics> ConstructUserEventSpecifics(
+      const std::string& account_id,
+      Feature feature,
+      const std::vector<int>& description_grd_ids,
+      int confirmation_grd_id,
+      ConsentStatus status);
+
+  std::unique_ptr<sync_pb::UserConsentSpecifics> ConstructUserConsentSpecifics(
       const std::string& account_id,
       Feature feature,
       const std::vector<int>& description_grd_ids,

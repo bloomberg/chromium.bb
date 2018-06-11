@@ -26773,6 +26773,7 @@ from previous Chrome versions.
   <int value="-2048679945" label="NTPOfflinePageDownloadSuggestions:disabled"/>
   <int value="-2047832738" label="enable-system-timezone-automatic-detection"/>
   <int value="-2047822258" label="enable-avfoundation"/>
+  <int value="-2047190657" label="SyncUserConsentSeparateType:enabled"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
   <int value="-2041668231" label="V8ContextSnapshot:disabled"/>
   <int value="-2040471724" label="CrOSComponent:disabled"/>
@@ -27120,6 +27121,7 @@ from previous Chrome versions.
   <int value="-1391693054"
       label="ContentSuggestionsFaviconsFromNewServer:disabled"/>
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
+  <int value="-1383597259" label="SyncUserConsentSeparateType:disabled"/>
   <int value="-1382671832" label="OmniboxUIExperimentVerticalMargin:enabled"/>
   <int value="-1377186702" label="DesktopIOSPromotion:disabled"/>
   <int value="-1376510363" label="ServiceWorkerScriptFullCodeCache:disabled"/>

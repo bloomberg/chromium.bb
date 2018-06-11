@@ -17,6 +17,7 @@
 #include "components/sync/user_events/user_event_service.h"
 
 using sync_pb::UserConsentTypes;
+using sync_pb::UserConsentSpecifics;
 using sync_pb::UserEventSpecifics;
 
 namespace consent_auditor {
@@ -28,7 +29,11 @@ const char kLocalConsentConfirmationKey[] = "confirmation";
 const char kLocalConsentVersionKey[] = "version";
 const char kLocalConsentLocaleKey[] = "locale";
 
-UserEventSpecifics::UserConsent::Feature FeatureToProtoEnum(
+bool IsSeparateConsentTypeEnabled() {
+  return base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType);
+}
+
+UserEventSpecifics::UserConsent::Feature FeatureToUserEventProtoEnum(
     consent_auditor::Feature feature) {
   switch (feature) {
     case consent_auditor::Feature::CHROME_SYNC:
@@ -56,6 +61,22 @@ UserConsentTypes::ConsentStatus StatusToProtoEnum(
   return UserConsentTypes::CONSENT_STATUS_UNSPECIFIED;
 }
 
+UserConsentSpecifics::Feature FeatureToUserConsentProtoEnum(
+    consent_auditor::Feature feature) {
+  switch (feature) {
+    case consent_auditor::Feature::CHROME_SYNC:
+      return UserConsentSpecifics::CHROME_SYNC;
+    case consent_auditor::Feature::PLAY_STORE:
+      return UserConsentSpecifics::PLAY_STORE;
+    case consent_auditor::Feature::BACKUP_AND_RESTORE:
+      return UserConsentSpecifics::BACKUP_AND_RESTORE;
+    case consent_auditor::Feature::GOOGLE_LOCATION_SERVICE:
+      return UserConsentSpecifics::GOOGLE_LOCATION_SERVICE;
+  }
+  NOTREACHED();
+  return UserConsentSpecifics::FEATURE_UNSPECIFIED;
+}
+
 }  // namespace
 
 ConsentAuditor::ConsentAuditor(
@@ -69,6 +90,7 @@ ConsentAuditor::ConsentAuditor(
       user_event_service_(user_event_service),
       app_version_(app_version),
       app_locale_(app_locale) {
+  DCHECK(!IsSeparateConsentTypeEnabled() || consent_sync_bridge_);
   DCHECK(pref_service_);
   // TODO(vitaliii): Don't require user_event_service when the separate datatype
   // is enabled.
@@ -112,31 +134,65 @@ void ConsentAuditor::RecordGaiaConsent(
       break;
   }
 
-  // TODO(msramek): Pass in the actual account id.
-  std::unique_ptr<sync_pb::UserEventSpecifics> specifics = ConstructUserConsent(
-      account_id, feature, description_grd_ids, confirmation_grd_id, status);
-  user_event_service_->RecordUserEvent(std::move(specifics));
+  if (IsSeparateConsentTypeEnabled()) {
+    // TODO(msramek): Pass in the actual account id.
+    std::unique_ptr<sync_pb::UserConsentSpecifics> specifics =
+        ConstructUserConsentSpecifics(account_id, feature, description_grd_ids,
+                                      confirmation_grd_id, status);
+    consent_sync_bridge_->RecordConsent(std::move(specifics));
+  } else {
+    // TODO(msramek): Pass in the actual account id.
+    std::unique_ptr<sync_pb::UserEventSpecifics> specifics =
+        ConstructUserEventSpecifics(account_id, feature, description_grd_ids,
+                                    confirmation_grd_id, status);
+    user_event_service_->RecordUserEvent(std::move(specifics));
+  }
 }
 
 std::unique_ptr<sync_pb::UserEventSpecifics>
-ConsentAuditor::ConstructUserConsent(
+ConsentAuditor::ConstructUserEventSpecifics(
     const std::string& account_id,
     Feature feature,
     const std::vector<int>& description_grd_ids,
     int confirmation_grd_id,
     ConsentStatus status) {
+  DCHECK(!IsSeparateConsentTypeEnabled());
+
   auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
   specifics->set_event_time_usec(
       base::Time::Now().since_origin().InMicroseconds());
   auto* consent = specifics->mutable_user_consent();
   consent->set_account_id(account_id);
-  consent->set_feature(FeatureToProtoEnum(feature));
+  consent->set_feature(FeatureToUserEventProtoEnum(feature));
   for (int id : description_grd_ids) {
     consent->add_description_grd_ids(id);
   }
   consent->set_confirmation_grd_id(confirmation_grd_id);
   consent->set_locale(app_locale_);
   consent->set_status(StatusToProtoEnum(status));
+  return specifics;
+}
+
+std::unique_ptr<sync_pb::UserConsentSpecifics>
+ConsentAuditor::ConstructUserConsentSpecifics(
+    const std::string& account_id,
+    Feature feature,
+    const std::vector<int>& description_grd_ids,
+    int confirmation_grd_id,
+    ConsentStatus status) {
+  DCHECK(IsSeparateConsentTypeEnabled());
+
+  auto specifics = std::make_unique<sync_pb::UserConsentSpecifics>();
+  specifics->set_client_consent_time_usec(
+      base::Time::Now().since_origin().InMicroseconds());
+  specifics->set_account_id(account_id);
+  specifics->set_feature(FeatureToUserConsentProtoEnum(feature));
+  for (int id : description_grd_ids) {
+    specifics->add_description_grd_ids(id);
+  }
+  specifics->set_confirmation_grd_id(confirmation_grd_id);
+  specifics->set_locale(app_locale_);
+  specifics->set_status(StatusToProtoEnum(status));
   return specifics;
 }
 

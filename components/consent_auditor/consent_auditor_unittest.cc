@@ -4,7 +4,9 @@
 
 #include "components/consent_auditor/consent_auditor.h"
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "base/memory/weak_ptr.h"
 #include "base/test/scoped_feature_list.h"
@@ -13,8 +15,10 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/fake_model_type_controller_delegate.h"
 #include "components/sync/user_events/fake_user_event_service.h"
+#include "components/variations/variations_params_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using sync_pb::UserConsentSpecifics;
 using sync_pb::UserEventSpecifics;
 
 namespace consent_auditor {
@@ -74,7 +78,8 @@ class FakeConsentSyncBridge : public syncer::ConsentSyncBridge {
   // ConsentSyncBridge implementation.
   void RecordConsent(
       std::unique_ptr<sync_pb::UserConsentSpecifics> specifics) override {
-    NOTIMPLEMENTED();
+    DCHECK(specifics);
+    recorded_user_consents_.push_back(*specifics);
   }
 
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -82,13 +87,19 @@ class FakeConsentSyncBridge : public syncer::ConsentSyncBridge {
     return delegate_;
   }
 
+  // Fake methods.
   void SetControllerDelegateOnUIThread(
       base::WeakPtr<syncer::ModelTypeControllerDelegate> delegate) {
     delegate_ = delegate;
   }
 
+  const std::vector<UserConsentSpecifics>& GetRecordedUserConsents() const {
+    return recorded_user_consents_;
+  }
+
  private:
   base::WeakPtr<syncer::ModelTypeControllerDelegate> delegate_;
+  std::vector<UserConsentSpecifics> recorded_user_consents_;
 };
 
 }  // namespace
@@ -122,6 +133,19 @@ class ConsentAuditorTest : public testing::Test {
     consent_sync_bridge_ = std::move(bridge);
   }
 
+  void SetIsSeparateConsentTypeEnabledFeature(bool new_value) {
+    // VariationParamsManager supports only one
+    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
+    // previous settings first to make this explicit.
+    params_manager_.ClearAllVariationParams();
+    if (new_value) {
+      params_manager_.SetVariationParamsWithFeatureAssociations(
+          /*trial_name=*/switches::kSyncUserConsentSeparateType.name,
+          /*param_values=*/std::map<std::string, std::string>(),
+          {switches::kSyncUserConsentSeparateType.name});
+    }
+  }
+
   ConsentAuditor* consent_auditor() { return consent_auditor_.get(); }
   PrefService* pref_service() const { return pref_service_.get(); }
   syncer::FakeUserEventService* user_event_service() {
@@ -130,11 +154,14 @@ class ConsentAuditorTest : public testing::Test {
 
  private:
   std::unique_ptr<ConsentAuditor> consent_auditor_;
+
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<syncer::FakeUserEventService> user_event_service_;
   std::string app_version_;
   std::string app_locale_;
   std::unique_ptr<syncer::ConsentSyncBridge> consent_sync_bridge_;
+
+  variations::testing::VariationParamsManager params_manager_;
 };
 
 TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
@@ -208,6 +235,8 @@ TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
 }
 
 TEST_F(ConsentAuditorTest, RecordingEnabled) {
+  SetIsSeparateConsentTypeEnabledFeature(false);
+
   consent_auditor()->RecordGaiaConsent(kAccountId, Feature::CHROME_SYNC, {}, 0,
                                        ConsentStatus::GIVEN);
   auto& events = user_event_service()->GetRecordedUserEvents();
@@ -215,6 +244,8 @@ TEST_F(ConsentAuditorTest, RecordingEnabled) {
 }
 
 TEST_F(ConsentAuditorTest, RecordingDisabled) {
+  SetIsSeparateConsentTypeEnabledFeature(false);
+
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(switches::kSyncUserConsentEvents);
   consent_auditor()->RecordGaiaConsent(kAccountId, Feature::CHROME_SYNC, {}, 0,
@@ -223,7 +254,9 @@ TEST_F(ConsentAuditorTest, RecordingDisabled) {
   EXPECT_EQ(0U, events.size());
 }
 
-TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
+TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserEvent) {
+  SetIsSeparateConsentTypeEnabledFeature(false);
+  SetConsentSyncBridge(nullptr);
   SetAppVersion(kCurrentAppVersion);
   SetAppLocale(kCurrentAppLocale);
   BuildConsentAuditor();
@@ -252,7 +285,49 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 }
 
+TEST_F(ConsentAuditorTest, RecordGaiaConsentAsUserConsent) {
+  auto wrapped_fake_bridge = std::make_unique<FakeConsentSyncBridge>();
+  FakeConsentSyncBridge* fake_bridge = wrapped_fake_bridge.get();
+
+  SetIsSeparateConsentTypeEnabledFeature(true);
+  SetConsentSyncBridge(std::move(wrapped_fake_bridge));
+  SetAppVersion(kCurrentAppVersion);
+  SetAppLocale(kCurrentAppLocale);
+  BuildConsentAuditor();
+
+  std::vector<int> kDescriptionMessageIds = {12, 37, 42};
+  int kConfirmationMessageId = 47;
+  // TODO(vitaliii): Inject a fake clock instead.
+  base::Time time_before = base::Time::Now();
+  consent_auditor()->RecordGaiaConsent(
+      kAccountId, Feature::CHROME_SYNC, kDescriptionMessageIds,
+      kConfirmationMessageId, ConsentStatus::GIVEN);
+  base::Time time_after = base::Time::Now();
+
+  // The consent should be recorded as a separate type and not as a user event.
+  EXPECT_EQ(0U, user_event_service()->GetRecordedUserEvents().size());
+
+  std::vector<UserConsentSpecifics> consents =
+      fake_bridge->GetRecordedUserConsents();
+  ASSERT_EQ(1U, consents.size());
+  UserConsentSpecifics consent = consents[0];
+
+  EXPECT_LE(time_before.since_origin().InMicroseconds(),
+            consent.client_consent_time_usec());
+  EXPECT_GE(time_after.since_origin().InMicroseconds(),
+            consent.client_consent_time_usec());
+  EXPECT_EQ(kAccountId, consent.account_id());
+  EXPECT_EQ(UserConsentSpecifics::CHROME_SYNC, consent.feature());
+  EXPECT_EQ(3, consent.description_grd_ids_size());
+  EXPECT_EQ(kDescriptionMessageIds[0], consent.description_grd_ids(0));
+  EXPECT_EQ(kDescriptionMessageIds[1], consent.description_grd_ids(1));
+  EXPECT_EQ(kDescriptionMessageIds[2], consent.description_grd_ids(2));
+  EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
+  EXPECT_EQ(kCurrentAppLocale, consent.locale());
+}
+
 TEST_F(ConsentAuditorTest, ShouldReturnNoSyncDelegateWhenNoBridge) {
+  SetIsSeparateConsentTypeEnabledFeature(false);
   SetConsentSyncBridge(nullptr);
   BuildConsentAuditor();
 
@@ -262,6 +337,7 @@ TEST_F(ConsentAuditorTest, ShouldReturnNoSyncDelegateWhenNoBridge) {
 }
 
 TEST_F(ConsentAuditorTest, ShouldReturnSyncDelegateWhenBridgePresent) {
+  SetIsSeparateConsentTypeEnabledFeature(true);
   auto fake_bridge = std::make_unique<FakeConsentSyncBridge>();
 
   syncer::FakeModelTypeControllerDelegate fake_delegate(
