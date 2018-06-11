@@ -84,7 +84,8 @@ class ArcImeService : public KeyedService,
                        aura::Window* lost_focus) override;
 
   // Overridden from ArcImeBridge::Delegate:
-  void OnTextInputTypeChanged(ui::TextInputType type) override;
+  void OnTextInputTypeChanged(ui::TextInputType type,
+                              bool is_personalized_learning_allowed) override;
   void OnCursorRectChanged(const gfx::Rect& rect,
                            bool is_screen_coordinates) override;
   void OnCancelComposition() override;
@@ -162,6 +163,7 @@ class ArcImeService : public KeyedService,
   std::unique_ptr<ArcImeBridge> ime_bridge_;
   std::unique_ptr<ArcWindowDelegate> arc_window_delegate_;
   ui::TextInputType ime_type_;
+  bool is_personalized_learning_allowed_;
   gfx::Rect cursor_rect_;
   bool has_composition_text_;
   gfx::Range text_range_;
