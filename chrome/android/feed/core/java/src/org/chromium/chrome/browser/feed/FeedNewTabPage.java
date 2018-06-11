@@ -13,8 +13,8 @@ import android.widget.FrameLayout;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.api.scope.FeedStreamScope;
 import com.google.android.libraries.feed.api.stream.Stream;
-import com.google.android.libraries.feed.host.config.Configuration;
 import com.google.android.libraries.feed.host.stream.CardConfiguration;
+import com.google.android.libraries.feed.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -38,6 +38,12 @@ public class FeedNewTabPage extends BasicNativePage {
     private FrameLayout mRootView;
     private String mTitle;
     private FeedImageLoader mImageLoader;
+
+    private static class DummySnackbarApi implements SnackbarApi {
+        // TODO: implement snackbar functionality.
+        @Override
+        public void show(String message) {}
+    }
 
     private static class BasicStreamConfiguration implements StreamConfiguration {
         private final Resources mResources;
@@ -94,7 +100,7 @@ public class FeedNewTabPage extends BasicNativePage {
         }
 
         @Override
-        public float getCardBottomPadding() {
+        public int getCardBottomMargin() {
             return mCardMarginBottom;
         }
     }
@@ -123,7 +129,7 @@ public class FeedNewTabPage extends BasicNativePage {
                                 new FeedActionHandler(navigationDelegate),
                                 new BasicStreamConfiguration(activity.getResources()),
                                 new BasicCardConfiguration(activity.getResources()),
-                                new Configuration.Builder().build())
+                                new DummySnackbarApi())
                         .build();
 
         Stream stream = streamScope.getStream();
