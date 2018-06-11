@@ -46,6 +46,7 @@ class PLATFORM_EXPORT ImageFrame final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
+  enum PixelFormat { kN32, kRGBA_F16 };
   enum Status { kFrameEmpty, kFramePartial, kFrameComplete };
   enum DisposalMethod {
     // If you change the numeric values of these, make sure you audit
@@ -74,10 +75,15 @@ class PLATFORM_EXPORT ImageFrame final {
     kBlendAtopBgcolor,
   };
   typedef uint32_t PixelData;
+  typedef uint64_t PixelDataF16;
 
   typedef WebVector<char> ICCProfile;
 
   ImageFrame();
+
+  ImageFrame(PixelFormat pixel_format) : ImageFrame() {
+    pixel_format_ = pixel_format;
+  }
 
   // The assignment operator reads has_alpha_ (inside SetStatus()) before it
   // sets it (in SetHasAlpha()).  This doesn't cause any problems, since the
@@ -109,6 +115,7 @@ class PLATFORM_EXPORT ImageFrame final {
   // same X-coordinates on each subsequent row up to but not including
   // end_y.
   void CopyRowNTimes(int start_x, int end_x, int start_y, int end_y) {
+    DCHECK(pixel_format_ == kN32);
     DCHECK_LT(start_x, Width());
     DCHECK_LE(end_x, Width());
     DCHECK_LT(start_y, Height());
@@ -125,7 +132,8 @@ class PLATFORM_EXPORT ImageFrame final {
   // allocation succeeded.
   bool AllocatePixelData(int new_width, int new_height, sk_sp<SkColorSpace>);
 
-  bool HasAlpha() const;
+  bool HasAlpha() const { return has_alpha_; }
+  PixelFormat GetPixelFormat() const { return pixel_format_; }
   const IntRect& OriginalFrameRect() const { return original_frame_rect_; }
   Status GetStatus() const { return status_; }
   TimeDelta Duration() const { return duration_; }
@@ -174,7 +182,18 @@ class PLATFORM_EXPORT ImageFrame final {
     required_previous_frame_index_ = previous_frame_index;
   }
 
-  inline PixelData* GetAddr(int x, int y) { return bitmap_.getAddr32(x, y); }
+  inline PixelData* GetAddr(int x, int y) {
+    DCHECK(pixel_format_ == kN32);
+    return bitmap_.getAddr32(x, y);
+  }
+
+  inline PixelDataF16* GetAddrF16(int x, int y) {
+    DCHECK(pixel_format_ == kRGBA_F16);
+    SkPixmap pixmap;
+    if (!bitmap_.peekPixels(&pixmap))
+      NOTREACHED();
+    return pixmap.writable_addr64(x, y);
+  }
 
   inline void SetRGBA(int x,
                       int y,
@@ -182,6 +201,7 @@ class PLATFORM_EXPORT ImageFrame final {
                       unsigned g,
                       unsigned b,
                       unsigned a) {
+    DCHECK(pixel_format_ == kN32);
     SetRGBA(GetAddr(x, y), r, g, b, a);
   }
 
@@ -190,6 +210,7 @@ class PLATFORM_EXPORT ImageFrame final {
                       unsigned g,
                       unsigned b,
                       unsigned a) {
+    DCHECK(pixel_format_ == kN32);
     if (premultiply_alpha_)
       SetRGBAPremultiply(dest, r, g, b, a);
     else
@@ -213,6 +234,10 @@ class PLATFORM_EXPORT ImageFrame final {
     *dest = SkPackARGB32NoCheck(a, r, g, b);
   }
 
+  static void SetRGBAPremultiplyF16Buffer(PixelDataF16* dst,
+                                          PixelDataF16* src,
+                                          size_t num_pixels);
+
   static inline void SetRGBARaw(PixelData* dest,
                                 unsigned r,
                                 unsigned g,
@@ -220,6 +245,10 @@ class PLATFORM_EXPORT ImageFrame final {
                                 unsigned a) {
     *dest = SkPackARGB32NoCheck(a, r, g, b);
   }
+
+  static void SetPixelsOpaqueF16Buffer(PixelDataF16* dst,
+                                       PixelDataF16* src,
+                                       size_t num_pixels);
 
   // Blend the RGBA pixel provided by |red|, |green|, |blue| and |alpha| over
   // the pixel in |dest|, without premultiplication, and overwrite |dest| with
@@ -229,6 +258,10 @@ class PLATFORM_EXPORT ImageFrame final {
                            unsigned green,
                            unsigned blue,
                            unsigned alpha);
+
+  static void BlendRGBARawF16Buffer(PixelDataF16* dst,
+                                    PixelDataF16* src,
+                                    size_t num_pixels);
 
   // Blend the pixel, without premultiplication, in |src| over |dst| and
   // overwrite |src| with the result.
@@ -247,7 +280,8 @@ class PLATFORM_EXPORT ImageFrame final {
     if (a == 0x0)
       return;
 
-    // If the new pixel is opaque, no need for blending - just write the pixel.
+    // If the new pixel is opaque, no need for blending - just write the
+    // pixel.
     if (a == 0xFF) {
       SetRGBAPremultiply(dest, r, g, b, a);
       return;
@@ -257,6 +291,10 @@ class PLATFORM_EXPORT ImageFrame final {
     SetRGBAPremultiply(&src, r, g, b, a);
     *dest = SkPMSrcOver(src, *dest);
   }
+
+  static void BlendRGBAPremultipliedF16Buffer(PixelDataF16* dst,
+                                              PixelDataF16* src,
+                                              size_t num_pixels);
 
   // Blend the pixel in |src| over |dst| and overwrite |src| with the result.
   static inline void BlendSrcOverDstPremultiplied(PixelData* src,
@@ -281,6 +319,7 @@ class PLATFORM_EXPORT ImageFrame final {
   SkBitmap bitmap_;
   SkBitmap::Allocator* allocator_;
   bool has_alpha_;
+  PixelFormat pixel_format_;
   // This will always just be the entire buffer except for GIF or WebP
   // frames whose original rect was smaller than the overall image size.
   IntRect original_frame_rect_;

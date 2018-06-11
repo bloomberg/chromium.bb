@@ -28,12 +28,17 @@
 
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
 
 ImageFrame::ImageFrame()
     : allocator_(nullptr),
       has_alpha_(true),
+      pixel_format_(kN32),
       status_(kFrameEmpty),
       disposal_method_(kDisposeNotSpecified),
       alpha_blend_source_(kBlendAtopPreviousFrame),
@@ -59,6 +64,7 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other) {
   // Be sure that this is called after we've called SetStatus(), since we
   // look at our status to know what to do with the alpha value.
   SetHasAlpha(other.HasAlpha());
+  pixel_format_ = other.pixel_format_;
   SetRequiredPreviousFrameIndex(other.RequiredPreviousFrameIndex());
   return *this;
 }
@@ -107,15 +113,14 @@ bool ImageFrame::AllocatePixelData(int new_width,
   // AllocatePixelData() should only be called once.
   DCHECK(!Width() && !Height());
 
-  bitmap_.setInfo(SkImageInfo::MakeN32(
+  SkImageInfo info = SkImageInfo::MakeN32(
       new_width, new_height,
       premultiply_alpha_ ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
-      std::move(color_space)));
+      std::move(color_space));
+  if (pixel_format_ == kRGBA_F16)
+    info = info.makeColorType(kRGBA_F16_SkColorType);
+  bitmap_.setInfo(info);
   return bitmap_.tryAllocPixels(allocator_);
-}
-
-bool ImageFrame::HasAlpha() const {
-  return has_alpha_;
 }
 
 sk_sp<SkImage> ImageFrame::FinalizePixelsAndGetImage() {
@@ -150,6 +155,58 @@ void ImageFrame::ZeroFillFrameRect(const IntRect& rect) {
 
   bitmap_.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
   SetHasAlpha(true);
+}
+
+void ImageFrame::SetRGBAPremultiplyF16Buffer(PixelDataF16* dst,
+                                             PixelDataF16* src,
+                                             size_t num_pixels) {
+  sk_sp<SkColorSpace> color_space = SkColorSpace::MakeSRGBLinear();
+  auto color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+  SkColorSpaceXform::Apply(color_space.get(), color_format, dst,
+                           color_space.get(), color_format, src, num_pixels,
+                           SkColorSpaceXform::AlphaOp::kPremul_AlphaOp);
+}
+
+void ImageFrame::SetPixelsOpaqueF16Buffer(PixelDataF16* dst,
+                                          PixelDataF16* src,
+                                          size_t num_pixels) {
+  // We set the alpha half float to 0x3c00, which is equal to 1.
+  while (num_pixels-- > 0)
+    *dst++ = (*src++ & 0x0000ffffffffffff) | 0x3c00000000000000;
+}
+
+static void BlendRGBAF16Buffer(ImageFrame::PixelDataF16* dst,
+                               ImageFrame::PixelDataF16* src,
+                               size_t num_pixels,
+                               SkAlphaType dst_alpha_type) {
+  // Source is always unpremul, but the blending result might be premul or
+  // unpremul, depending on the alpha type of the destination pixel passed to
+  // this function.
+  SkImageInfo info =
+      SkImageInfo::Make(num_pixels, 1, kRGBA_F16_SkColorType, dst_alpha_type,
+                        SkColorSpace::MakeSRGBLinear());
+  sk_sp<SkSurface> surface =
+      SkSurface::MakeRasterDirect(info, dst, info.minRowBytes());
+
+  SkPixmap src_pixmap(info.makeAlphaType(kUnpremul_SkAlphaType), src,
+                      info.minRowBytes());
+  sk_sp<SkImage> src_image =
+      SkImage::MakeFromRaster(src_pixmap, nullptr, nullptr);
+
+  surface->getCanvas()->drawImage(src_image, 0, 0);
+  surface->flush();
+}
+
+void ImageFrame::BlendRGBARawF16Buffer(PixelDataF16* dst,
+                                       PixelDataF16* src,
+                                       size_t num_pixels) {
+  BlendRGBAF16Buffer(dst, src, num_pixels, kUnpremul_SkAlphaType);
+}
+
+void ImageFrame::BlendRGBAPremultipliedF16Buffer(PixelDataF16* dst,
+                                                 PixelDataF16* src,
+                                                 size_t num_pixels) {
+  BlendRGBAF16Buffer(dst, src, num_pixels, kPremul_SkAlphaType);
 }
 
 static uint8_t BlendChannel(uint8_t src,
