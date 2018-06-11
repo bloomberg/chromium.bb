@@ -24,6 +24,7 @@ class EffectTree;
 class TransformTree;
 class PropertyTrees;
 struct EffectNode;
+struct TransformNode;
 
 namespace draw_property_utils {
 
@@ -88,13 +89,7 @@ gfx::Transform CC_EXPORT ScreenSpaceTransform(const LayerImpl* layer,
                                               const TransformTree& tree);
 
 void CC_EXPORT UpdatePageScaleFactor(PropertyTrees* property_trees,
-                                     const LayerImpl* page_scale_layer,
-                                     float page_scale_factor,
-                                     float device_scale_factor,
-                                     const gfx::Transform device_transform);
-
-void CC_EXPORT UpdatePageScaleFactor(PropertyTrees* property_trees,
-                                     const Layer* page_scale_layer,
+                                     TransformNode* page_scale_node,
                                      float page_scale_factor,
                                      float device_scale_factor,
                                      const gfx::Transform device_transform);

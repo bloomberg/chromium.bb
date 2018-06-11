@@ -1294,14 +1294,32 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTrees(
     const gfx::Rect& viewport,
     SkColor root_background_color) const {
   if (!property_trees_.needs_rebuild) {
-    draw_property_utils::UpdatePageScaleFactor(
-        &property_trees_, page_scale_layer_, page_scale_factor_,
-        device_scale_factor, device_transform_);
+    bool page_scale_is_root_layer = page_scale_layer_ == root_layer_;
+    if (page_scale_layer_) {
+      DCHECK_GE(page_scale_layer_->transform_tree_index(),
+                TransformTree::kRootNodeId);
+      TransformNode* node = property_trees_.transform_tree.Node(
+          page_scale_layer_->transform_tree_index());
+
+      // When the page scale layer is also the root layer, the node should also
+      // store the combined scale factor and not just the page scale factor.
+      float device_scale_factor_for_page_scale_node = 1.f;
+      gfx::Transform device_transform_for_page_scale_node;
+      if (page_scale_is_root_layer) {
+        device_transform_for_page_scale_node = device_transform_;
+        device_scale_factor_for_page_scale_node = device_scale_factor;
+      }
+
+      draw_property_utils::UpdatePageScaleFactor(
+          &property_trees_, node, page_scale_factor_,
+          device_scale_factor_for_page_scale_node,
+          device_transform_for_page_scale_node);
+    }
     draw_property_utils::UpdateElasticOverscroll(
         &property_trees_, overscroll_elasticity_layer_, elastic_overscroll_);
     clip_tree_.SetViewportClip(gfx::RectF(viewport));
     float page_scale_factor_for_root =
-        page_scale_layer_ == root_layer_ ? page_scale_factor_ : 1.f;
+        page_scale_is_root_layer ? page_scale_factor_ : 1.f;
     transform_tree_.SetRootTransformsAndScales(
         device_scale_factor, page_scale_factor_for_root, device_transform_,
         root_layer_->position());

@@ -586,6 +586,9 @@ class CC_EXPORT LayerTreeImpl {
   bool ClampBrowserControlsShownRatio();
 
  private:
+  TransformNode* PageScaleTransformNode();
+  void UpdatePageScaleNode();
+
   ElementListType GetElementTypeForAnimation() const;
   void UpdateTransformAnimation(ElementId element_id, int transform_node_index);
 

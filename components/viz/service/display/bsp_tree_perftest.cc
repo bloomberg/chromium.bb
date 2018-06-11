@@ -22,6 +22,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/transform_node.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/test/paths.h"
@@ -115,7 +116,10 @@ class BspTreePerfTest : public cc::LayerTreeTest {
         active_tree->elastic_overscroll()->Current(active_tree->IsActiveTree()),
         active_tree->OverscrollElasticityLayer(), max_texture_size,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
-        &update_list, active_tree->property_trees());
+        &update_list, active_tree->property_trees(),
+        active_tree->property_trees()->transform_tree.Node(
+            active_tree->InnerViewportContainerLayer()
+                ->transform_tree_index()));
     cc::LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 

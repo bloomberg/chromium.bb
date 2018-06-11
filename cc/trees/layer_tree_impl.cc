@@ -806,19 +806,48 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
   }
 }
 
+TransformNode* LayerTreeImpl::PageScaleTransformNode() {
+  if (!PageScaleLayer())
+    return nullptr;
+
+  DCHECK_GE(PageScaleLayer()->transform_tree_index(),
+            TransformTree::kRootNodeId);
+  return property_trees()->transform_tree.Node(
+      PageScaleLayer()->transform_tree_index());
+}
+
+void LayerTreeImpl::UpdatePageScaleNode() {
+  if (!PageScaleTransformNode()) {
+    DCHECK(layer_list_.empty() || current_page_scale_factor() == 1);
+    return;
+  }
+
+  // When the page scale layer is also the root layer (this happens in the UI
+  // compositor), the node should also store the combined scale factor and not
+  // just the page scale factor.
+  // TODO(bokan): Need to implement this behavior for
+  // BlinkGeneratedPropertyTrees. i.e. (no page scale layer).
+  float device_scale_factor_for_page_scale_layer = 1.f;
+  gfx::Transform device_transform_for_page_scale_layer;
+  if (IsRootLayer(PageScaleLayer())) {
+    DCHECK(!settings().use_layer_lists);
+    device_transform_for_page_scale_layer = host_impl_->DrawTransform();
+    device_scale_factor_for_page_scale_layer = device_scale_factor();
+  }
+
+  draw_property_utils::UpdatePageScaleFactor(
+      property_trees(), PageScaleTransformNode(), current_page_scale_factor(),
+      device_scale_factor_for_page_scale_layer,
+      device_transform_for_page_scale_layer);
+}
+
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
   DCHECK(IsActiveTree());
   DCHECK(lifecycle().AllowsPropertyTreeAccess());
   if (page_scale_factor()->SetCurrent(
           ClampPageScaleFactorToLimits(active_page_scale))) {
     DidUpdatePageScale();
-    if (PageScaleLayer()) {
-      draw_property_utils::UpdatePageScaleFactor(
-          property_trees(), PageScaleLayer(), current_page_scale_factor(),
-          device_scale_factor(), host_impl_->DrawTransform());
-    } else {
-      DCHECK(layer_list_.empty() || active_page_scale == 1);
-    }
+    UpdatePageScaleNode();
   }
 }
 
@@ -852,15 +881,8 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
     DidUpdatePageScale();
 
   DCHECK(lifecycle().AllowsPropertyTreeAccess());
-  if (page_scale_factor) {
-    if (PageScaleLayer()) {
-      draw_property_utils::UpdatePageScaleFactor(
-          property_trees(), PageScaleLayer(), current_page_scale_factor(),
-          device_scale_factor(), host_impl_->DrawTransform());
-    } else {
-      DCHECK(layer_list_.empty() || *page_scale_factor == 1);
-    }
-  }
+  if (page_scale_factor)
+    UpdatePageScaleNode();
 }
 
 void LayerTreeImpl::set_browser_controls_shrink_blink_size(bool shrink) {
@@ -1120,7 +1142,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
         elastic_overscroll()->Current(IsActiveTree()),
         OverscrollElasticityLayer(), max_texture_size(),
         settings().layer_transforms_should_scale_layer_contents,
-        &render_surface_list_, &property_trees_);
+        &render_surface_list_, &property_trees_, PageScaleTransformNode());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
       UMA_HISTOGRAM_COUNTS(
