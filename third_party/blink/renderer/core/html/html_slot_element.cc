@@ -505,6 +505,10 @@ void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
       ToElement(node)->RecalcStyleForReattach();
       continue;
     }
+    // We only need to pick up changes for inherited style, we do not actually
+    // need to match rules against this element but we do that for
+    // simplicity. If we ever stop doing this then we need to update
+    // StyleInvalidator::Invalidate as described in the comment there.
     node->SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(
