@@ -129,9 +129,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-  // Call the current page setter to sync the scroll view offset to the current
-  // page value.
-  self.currentPage = _currentPage;
   [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   [self configureViewControllerForCurrentSizeClassesAndPage];
   if (animated && self.transitionCoordinator) {
@@ -151,6 +148,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
+  // Call the current page setter to sync the scroll view offset to the current
+  // page value. Don't animate this.
+  self.currentPage = _currentPage;
   // The content inset of the tab grids must be modified so that the toolbars
   // do not obscure the tabs. This may change depending on orientation.
   UIEdgeInsets contentInset = UIEdgeInsetsZero;
@@ -300,13 +300,20 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - TabGridPaging
 
 - (void)setActivePage:(TabGridPage)activePage {
-  self.currentPage = activePage;
+  [self setCurrentPage:activePage animated:YES];
   _activePage = activePage;
 }
 
 #pragma mark - Private
 
 - (void)setCurrentPage:(TabGridPage)currentPage {
+  [self setCurrentPage:currentPage animated:NO];
+}
+
+// Sets the value of |currentPage|, adjusting the position of the scroll view
+// to match. If |animated| is YES, the scroll view change may animate; if it is
+// NO, it will never animate.
+- (void)setCurrentPage:(TabGridPage)currentPage animated:(BOOL)animated {
   // This method should never early return if |currentPage| == |_currentPage|;
   // the ivar may have been set before the scroll view could be updated. Calling
   // this method should always update the scroll view's offset if possible.
@@ -319,8 +326,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   CGFloat pageWidth = self.scrollView.frame.size.width;
   NSUInteger pageIndex = GetPageIndexFromPage(currentPage);
   CGPoint offset = CGPointMake(pageIndex * pageWidth, 0);
-  // If the view is visible, animate the change. Otherwise don't.
-  if (self.view.window == nil) {
+  // If the view is visible and |animated| is YES, animate the change.
+  // Otherwise don't.
+  if (self.view.window == nil || !animated) {
     self.scrollView.contentOffset = offset;
     _currentPage = currentPage;
   } else {
@@ -823,7 +831,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)pageControlChanged:(id)sender {
-  self.currentPage = self.topToolbar.pageControl.selectedPage;
+  [self setCurrentPage:self.topToolbar.pageControl.selectedPage animated:YES];
 }
 
 @end
