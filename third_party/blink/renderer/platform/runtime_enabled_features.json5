@@ -344,10 +344,6 @@
       name: "CustomElementDefaultStyle",
       status: "experimental",
     },
-    {
-      name: "CustomElementsBuiltin",
-      status: "stable",
-    },
     // Introduced this flag as stable so web developers can test their sites
     // without native Custom Elements v0 support.
     {
