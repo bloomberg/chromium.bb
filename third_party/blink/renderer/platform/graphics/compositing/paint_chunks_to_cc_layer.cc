@@ -683,8 +683,6 @@ void PaintChunksToCcLayer::ConvertInto(
     const FloatSize& visual_rect_subpixel_offset,
     const DisplayItemList& display_items,
     cc::DisplayItemList& cc_list) {
-  if (RuntimeEnabledFeatures::DisablePaintChunksToCcLayerEnabled())
-    return;
   ConversionContext(layer_state, layer_offset, visual_rect_subpixel_offset,
                     cc_list)
       .Convert(paint_chunks, display_items);

@@ -293,9 +293,6 @@ void CompositedLayerRasterInvalidator::Generate(
     const gfx::Rect& layer_bounds,
     const PropertyTreeState& layer_state,
     const FloatSize& visual_rect_subpixel_offset) {
-  if (RuntimeEnabledFeatures::DisableRasterInvalidationEnabled())
-    return;
-
   if (RasterInvalidationTracking::ShouldAlwaysTrack())
     EnsureTracking();
 

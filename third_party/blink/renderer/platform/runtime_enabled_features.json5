@@ -379,12 +379,6 @@
       status: "experimental",
     },
     {
-      name: "DisablePaintChunksToCcLayer",
-    },
-    {
-      name: "DisableRasterInvalidation",
-    },
-    {
       name: "DisplayCutoutAPI",
       settable_from_internals: true,
     },
