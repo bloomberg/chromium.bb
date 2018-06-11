@@ -18952,6 +18952,8 @@ Called by update_net_error_codes.py.-->
   <int value="2465" label="CanvasConvertToBlob"/>
   <int value="2466" label="PolymerV1Detected"/>
   <int value="2467" label="PolymerV2Detected"/>
+  <int value="2468" label="PerformanceEventTimingBuffer"/>
+  <int value="2469" label="PerformanceEventTimingConstructor"/>
 </enum>
 
 <enum name="FeedbackSource">
