@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
@@ -35,16 +36,78 @@ namespace chrome {
 
 namespace {
 
-void StartClientCertificateRequest(
-    const net::SSLCertRequestInfo* cert_request_info,
-    ui::WindowAndroid* window,
-    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
+class SSLClientCertPendingRequests;
+
+const char kSSLClientCertPendingRequests[] = "SSLClientCertPendingRequests";
+
+class ClientCertRequest {
+ public:
+  ClientCertRequest(
+      base::WeakPtr<SSLClientCertPendingRequests> pending_requests,
+      const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
+      std::unique_ptr<content::ClientCertificateDelegate> delegate)
+      : pending_requests_(pending_requests),
+        cert_request_info_(cert_request_info),
+        delegate_(std::move(delegate)) {}
+
+  ~ClientCertRequest() {}
+
+  void CertificateSelected(scoped_refptr<net::X509Certificate> cert,
+                           scoped_refptr<net::SSLPrivateKey> key);
+
+  net::SSLCertRequestInfo* cert_request_info() const {
+    return cert_request_info_.get();
+  }
+
+ private:
+  base::WeakPtr<SSLClientCertPendingRequests> pending_requests_;
+  scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
+  std::unique_ptr<content::ClientCertificateDelegate> delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientCertRequest);
+};
+
+class SSLClientCertPendingRequests : public base::SupportsUserData::Data {
+ public:
+  explicit SSLClientCertPendingRequests(content::WebContents* web_contents)
+      : web_contents_(web_contents), weak_factory_(this) {}
+  ~SSLClientCertPendingRequests() override {}
+
+  void AddRequest(std::unique_ptr<ClientCertRequest> request);
+
+  void RequestComplete(net::SSLCertRequestInfo* info,
+                       scoped_refptr<net::X509Certificate> cert,
+                       scoped_refptr<net::SSLPrivateKey> key);
+
+  base::WeakPtr<SSLClientCertPendingRequests> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+ private:
+  void PumpRequests();
+
+  bool active_request_ = false;
+  base::queue<std::unique_ptr<ClientCertRequest>> pending_requests_;
+
+  content::WebContents* web_contents_;
+  base::WeakPtrFactory<SSLClientCertPendingRequests> weak_factory_;
+};
+
+static void StartClientCertificateRequest(
+    std::unique_ptr<ClientCertRequest> request,
+    content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ui::WindowAndroid* window = ViewAndroidHelper::FromWebContents(web_contents)
+                                  ->GetViewAndroid()
+                                  ->GetWindowAndroid();
+  DCHECK(window);
 
   // Build the |key_types| JNI parameter, as a String[]
   std::vector<std::string> key_types;
-  for (size_t n = 0; n < cert_request_info->cert_key_types.size(); ++n) {
-    switch (cert_request_info->cert_key_types[n]) {
+  for (size_t n = 0; n < request->cert_request_info()->cert_key_types.size();
+       ++n) {
+    switch (request->cert_request_info()->cert_key_types[n]) {
       case net::CLIENT_CERT_RSA_SIGN:
         key_types.push_back("RSA");
         break;
@@ -68,7 +131,7 @@ void StartClientCertificateRequest(
   // Build the |encoded_principals| JNI parameter, as a byte[][]
   ScopedJavaLocalRef<jobjectArray> principals_ref =
       base::android::ToJavaArrayOfByteArray(
-          env, cert_request_info->cert_authorities);
+          env, request->cert_request_info()->cert_authorities);
   if (principals_ref.is_null()) {
     LOG(ERROR) << "Could not create principals array (byte[][])";
     return;
@@ -78,21 +141,72 @@ void StartClientCertificateRequest(
   // a jint.
   ScopedJavaLocalRef<jstring> host_name_ref =
       base::android::ConvertUTF8ToJavaString(
-          env, cert_request_info->host_and_port.host());
+          env, request->cert_request_info()->host_and_port.host());
 
   // Pass the address of the delegate through to Java.
-  jlong request_id = reinterpret_cast<intptr_t>(delegate.get());
+  jlong request_id = reinterpret_cast<intptr_t>(request.get());
 
   if (!chrome::android::
           Java_SSLClientCertificateRequest_selectClientCertificate(
               env, request_id, window->GetJavaObject(), key_types_ref,
               principals_ref, host_name_ref,
-              cert_request_info->host_and_port.port())) {
+              request->cert_request_info()->host_and_port.port())) {
     return;
   }
 
   // Ownership was transferred to Java.
-  ignore_result(delegate.release());
+  ignore_result(request.release());
+}
+
+void SSLClientCertPendingRequests::AddRequest(
+    std::unique_ptr<ClientCertRequest> request) {
+  pending_requests_.push(std::move(request));
+  PumpRequests();
+}
+
+void SSLClientCertPendingRequests::RequestComplete(
+    net::SSLCertRequestInfo* info,
+    scoped_refptr<net::X509Certificate> cert,
+    scoped_refptr<net::SSLPrivateKey> key) {
+  active_request_ = false;
+  std::string host_and_port = info->host_and_port.ToString();
+
+  base::queue<std::unique_ptr<ClientCertRequest>> new_pending_requests;
+  while (!pending_requests_.empty()) {
+    std::unique_ptr<ClientCertRequest> next =
+        std::move(pending_requests_.front());
+    pending_requests_.pop();
+    if (host_and_port == next->cert_request_info()->host_and_port.ToString()) {
+      next->CertificateSelected(cert, key);
+    } else {
+      new_pending_requests.push(std::move(next));
+    }
+  }
+  pending_requests_.swap(new_pending_requests);
+
+  PumpRequests();
+}
+
+void SSLClientCertPendingRequests::PumpRequests() {
+  if (active_request_ || pending_requests_.empty()) {
+    return;
+  }
+
+  active_request_ = true;
+  std::unique_ptr<ClientCertRequest> next =
+      std::move(pending_requests_.front());
+  pending_requests_.pop();
+
+  StartClientCertificateRequest(std::move(next), web_contents_);
+}
+
+void ClientCertRequest::CertificateSelected(
+    scoped_refptr<net::X509Certificate> cert,
+    scoped_refptr<net::SSLPrivateKey> key) {
+  delegate_->ContinueWithCertificate(cert, key);
+  if (pending_requests_) {
+    pending_requests_->RequestComplete(cert_request_info(), cert, key);
+  }
 }
 
 }  // namespace
@@ -118,13 +232,13 @@ static void JNI_SSLClientCertificateRequest_OnSystemRequestCompletion(
     const JavaParamRef<jobject>& private_key_ref) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Take back ownership of the delegate object.
-  std::unique_ptr<content::ClientCertificateDelegate> delegate(
-      reinterpret_cast<content::ClientCertificateDelegate*>(request_id));
+  // Take back ownership of the request object.
+  std::unique_ptr<ClientCertRequest> request(
+      reinterpret_cast<ClientCertRequest*>(request_id));
 
   if (encoded_chain_ref == NULL || private_key_ref == NULL) {
     LOG(ERROR) << "No client certificate selected";
-    delegate->ContinueWithCertificate(nullptr, nullptr);
+    request->CertificateSelected(nullptr, nullptr);
     return;
   }
 
@@ -155,8 +269,7 @@ static void JNI_SSLClientCertificateRequest_OnSystemRequestCompletion(
     return;
   }
 
-  delegate->ContinueWithCertificate(std::move(client_cert),
-                                    std::move(private_key));
+  request->CertificateSelected(std::move(client_cert), std::move(private_key));
 }
 
 static void NotifyClientCertificatesChanged() {
@@ -192,11 +305,18 @@ void ShowSSLClientCertificateSelector(
     return;
   }
 
-  ui::WindowAndroid* window = ViewAndroidHelper::FromWebContents(contents)
-      ->GetViewAndroid()->GetWindowAndroid();
-  DCHECK(window);
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  StartClientCertificateRequest(cert_request_info, window, std::move(delegate));
+  SSLClientCertPendingRequests* active_requests =
+      static_cast<SSLClientCertPendingRequests*>(
+          contents->GetUserData(&kSSLClientCertPendingRequests));
+
+  if (active_requests == nullptr) {
+    active_requests = new SSLClientCertPendingRequests(contents);
+    contents->SetUserData(&kSSLClientCertPendingRequests,
+                          base::WrapUnique(active_requests));
+  }
+
+  active_requests->AddRequest(std::make_unique<ClientCertRequest>(
+      active_requests->GetWeakPtr(), cert_request_info, std::move(delegate)));
 }
 
 }  // namespace chrome
