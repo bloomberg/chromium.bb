@@ -53,6 +53,7 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/latency/frame_metrics.h"
 
 namespace gfx {
 class ScrollOffset;
@@ -1076,9 +1077,30 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
-  base::circular_deque<
-      std::pair<uint32_t, std::vector<LayerTreeHost::PresentationTimeCallback>>>
-      presentation_callbacks_;
+  // Stores information needed once we get a response for a particular
+  // presentation token.
+  struct FrameTokenInfo {
+    FrameTokenInfo(
+        uint32_t token,
+        base::TimeTicks cc_frame_time,
+        std::vector<LayerTreeHost::PresentationTimeCallback> callbacks);
+    FrameTokenInfo(FrameTokenInfo&&);
+    ~FrameTokenInfo();
+
+    uint32_t token;
+
+    // The compositor frame time used to produce the frame.
+    base::TimeTicks cc_frame_time;
+
+    // The callbacks to send back to the main thread.
+    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks;
+
+    DISALLOW_COPY_AND_ASSIGN(FrameTokenInfo);
+  };
+
+  base::circular_deque<FrameTokenInfo> frame_token_infos_;
+  ui::FrameMetrics frame_metrics_;
+  ui::SkippedFrameTracker skipped_frame_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

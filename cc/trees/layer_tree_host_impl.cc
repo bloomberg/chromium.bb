@@ -229,6 +229,25 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
   }
 }
 
+ui::FrameMetricsSettings LTHI_FrameMetricsSettings(
+    const LayerTreeSettings& settings) {
+  ui::FrameMetricsSource source =
+      settings.commit_to_active_tree
+          ? ui::FrameMetricsSource::UiCompositor
+          : ui::FrameMetricsSource::RendererCompositor;
+  ui::FrameMetricsSourceThread source_thread =
+      settings.commit_to_active_tree
+          ? ui::FrameMetricsSourceThread::UiCompositor
+          : ui::FrameMetricsSourceThread::RendererCompositor;
+  ui::FrameMetricsCompileTarget compile_target =
+      settings.using_synchronous_renderer_compositor
+          ? ui::FrameMetricsCompileTarget::SynchronousCompositor
+          : settings.wait_for_all_pipeline_stages_before_draw
+                ? ui::FrameMetricsCompileTarget::Headless
+                : ui::FrameMetricsCompileTarget::Chromium;
+  return ui::FrameMetricsSettings(source, source_thread, compile_target);
+}
+
 }  // namespace
 
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
@@ -304,7 +323,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
           base::BindRepeating(
               &LayerTreeHostImpl::RequestInvalidationForAnimatedImages,
               base::Unretained(this)),
-          settings_.enable_image_animation_resync) {
+          settings_.enable_image_animation_resync),
+      frame_metrics_(LTHI_FrameMetricsSettings(settings_)),
+      skipped_frame_tracker_(&frame_metrics_) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -1236,6 +1257,8 @@ void LayerTreeHostImpl::InvalidateContentOnImplSide() {
 void LayerTreeHostImpl::InvalidateLayerTreeFrameSink() {
   DCHECK(layer_tree_frame_sink());
   layer_tree_frame_sink()->Invalidate();
+
+  skipped_frame_tracker_.DidProduceFrame();
 }
 
 DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
@@ -1714,27 +1737,46 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
   client_->DidReceiveCompositorFrameAckOnImplThread();
 }
 
+LayerTreeHostImpl::FrameTokenInfo::FrameTokenInfo(
+    uint32_t token,
+    base::TimeTicks cc_frame_time,
+    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks)
+    : token(token),
+      cc_frame_time(cc_frame_time),
+      callbacks(std::move(callbacks)) {}
+
+LayerTreeHostImpl::FrameTokenInfo::FrameTokenInfo(FrameTokenInfo&&) = default;
+LayerTreeHostImpl::FrameTokenInfo::~FrameTokenInfo() = default;
+
 void LayerTreeHostImpl::DidPresentCompositorFrame(
     uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
   TRACE_EVENT_MARK_WITH_TIMESTAMP0("cc,benchmark", "FramePresented",
                                    feedback.timestamp);
   std::vector<LayerTreeHost::PresentationTimeCallback> all_callbacks;
-  while (!presentation_callbacks_.empty()) {
-    auto iter = presentation_callbacks_.begin();
-    if (PresentationTokenGT(iter->first, frame_token))
+  while (!frame_token_infos_.empty()) {
+    auto info = frame_token_infos_.begin();
+    if (PresentationTokenGT(info->token, frame_token))
       break;
-    auto& callbacks = iter->second;
-    std::copy(std::make_move_iterator(callbacks.begin()),
-              std::make_move_iterator(callbacks.end()),
+
+    // Update compositor frame latency and smoothness stats only for frames
+    // that caused on-screen damage.
+    if (info->token == frame_token)
+      frame_metrics_.AddFrameDisplayed(info->cc_frame_time, feedback.timestamp);
+
+    std::copy(std::make_move_iterator(info->callbacks.begin()),
+              std::make_move_iterator(info->callbacks.end()),
               std::back_inserter(all_callbacks));
-    presentation_callbacks_.erase(iter);
+    frame_token_infos_.erase(info);
   }
   client_->DidPresentCompositorFrameOnImplThread(
       frame_token, std::move(all_callbacks), feedback);
 }
 
-void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t frame_token) {}
+void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t frame_token) {
+  TRACE_EVENT_INSTANT0("cc,benchmark", "FrameDiscarded",
+                       TRACE_EVENT_SCOPE_THREAD);
+}
 
 void LayerTreeHostImpl::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
@@ -1815,8 +1857,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.frame_token = next_frame_token_++;
   if (!next_frame_token_)
     next_frame_token_ = 1u;
-  if (active_tree_->has_presentation_callbacks())
-    metadata.request_presentation_feedback = true;
 
   metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
                                  active_tree_->device_scale_factor();
@@ -1838,10 +1878,15 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   metadata.content_source_id = active_tree_->content_source_id();
 
   active_tree_->GetViewportSelection(&metadata.selection);
-  if (active_tree_->has_presentation_callbacks()) {
-    presentation_callbacks_.push_back(
-        {metadata.frame_token, active_tree_->TakePresentationCallbacks()});
-    DCHECK_LE(presentation_callbacks_.size(), 25u);
+
+  if (active_tree_->has_presentation_callbacks() ||
+      settings_.always_request_presentation_time) {
+    metadata.request_presentation_feedback = true;
+    frame_token_infos_.emplace_back(metadata.frame_token,
+                                    CurrentBeginFrameArgs().frame_time,
+                                    active_tree_->TakePresentationCallbacks());
+
+    DCHECK_LE(frame_token_infos_.size(), 25u);
   }
 
   if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
@@ -1924,6 +1969,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::DrawLayers");
 
   ResetRequiresHighResToDraw();
+  skipped_frame_tracker_.DidProduceFrame();
 
   if (frame->has_no_damage) {
     DCHECK(!resourceless_software_draw_);
@@ -2271,6 +2317,7 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
 }
 
 bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
+  impl_thread_phase_ = ImplThreadPhase::INSIDE_IMPL_FRAME;
   current_begin_frame_tracker_.Start(args);
 
   if (is_likely_to_require_a_draw_) {
@@ -2288,7 +2335,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   for (auto* it : video_frame_controllers_)
     it->OnBeginFrame(args);
 
-  impl_thread_phase_ = ImplThreadPhase::INSIDE_IMPL_FRAME;
+  skipped_frame_tracker_.BeginFrame(args.frame_time, args.interval);
 
   bool recent_frame_had_no_damage =
       consecutive_frame_with_damage_count_ < settings_.damaged_frame_limit;
@@ -2313,6 +2360,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
 }
 
 void LayerTreeHostImpl::DidFinishImplFrame() {
+  skipped_frame_tracker_.FinishFrame();
   impl_thread_phase_ = ImplThreadPhase::IDLE;
   current_begin_frame_tracker_.Finish();
   tile_manager_.decoded_image_tracker().NotifyFrameFinished();
@@ -2747,6 +2795,7 @@ void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
 void LayerTreeHostImpl::SetNeedsRedraw() {
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   client_->SetNeedsRedrawOnImplThread();
+  skipped_frame_tracker_.WillProduceFrame();
 }
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
