@@ -10,21 +10,28 @@
 
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "url/gurl.h"
 
-class OAuth2TokenService;
-class SigninManagerBase;
+namespace base {
+class Time;
+}
+namespace identity {
+class IdentityManager;
+class PrimaryAccountAccessTokenFetcher;
+}  // namespace identity
+namespace net {
+class URLRequestContextGetter;
+}
+class GoogleServiceAuthError;
 class TemplateURLService;
 
 // A service to fetch suggestions from a remote endpoint given a URL.
 class ContextualSuggestionsService : public KeyedService {
  public:
-  // |signin_manager| and |token_service| may be null but only unauthenticated
-  // requests will issued.
+  // |identity_manager| may be null but only unauthenticated requests will
+  // issued.
   // |request_context|  may be null, but some services may be disabled.
-  ContextualSuggestionsService(SigninManagerBase* signin_manager,
-                               OAuth2TokenService* token_service,
+  ContextualSuggestionsService(identity::IdentityManager* identity_manager,
                                net::URLRequestContextGetter* request_context);
 
   ~ContextualSuggestionsService() override;
@@ -128,8 +135,7 @@ class ContextualSuggestionsService : public KeyedService {
                             const std::string& access_token);
 
   net::URLRequestContextGetter* request_context_;
-  SigninManagerBase* signin_manager_;
-  OAuth2TokenService* token_service_;
+  identity::IdentityManager* identity_manager_;
 
   // Helper for fetching OAuth2 access tokens. This is non-null when an access
   // token request is currently in progress.

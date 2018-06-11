@@ -9,8 +9,7 @@
 MockAutocompleteProviderClient::MockAutocompleteProviderClient() {
   contextual_suggestions_service_ =
       std::make_unique<ContextualSuggestionsService>(
-          /*signin_manager=*/nullptr, /*token_service=*/nullptr,
-          GetRequestContext());
+          /*identity_manager=*/nullptr, GetRequestContext());
 }
 
 MockAutocompleteProviderClient::~MockAutocompleteProviderClient() {

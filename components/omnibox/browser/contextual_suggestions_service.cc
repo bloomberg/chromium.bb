@@ -23,6 +23,8 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 namespace {
 
@@ -91,12 +93,10 @@ std::string FormatRequestBodyExperimentalService(const std::string& current_url,
 }  // namespace
 
 ContextualSuggestionsService::ContextualSuggestionsService(
-    SigninManagerBase* signin_manager,
-    OAuth2TokenService* token_service,
+    identity::IdentityManager* identity_manager,
     net::URLRequestContextGetter* request_context)
     : request_context_(request_context),
-      signin_manager_(signin_manager),
-      token_service_(token_service),
+      identity_manager_(identity_manager),
       token_fetcher_(nullptr) {}
 
 ContextualSuggestionsService::~ContextualSuggestionsService() {}
@@ -294,12 +294,10 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
 
-  const bool should_fetch_access_token =
-      (signin_manager_ != nullptr) && (token_service_ != nullptr);
   // If authentication services are unavailable or if this request is still
   // waiting for an oauth2 token, run the contextual service without access
   // tokens.
-  if (!should_fetch_access_token || (token_fetcher_ != nullptr)) {
+  if ((identity_manager_ == nullptr) || (token_fetcher_ != nullptr)) {
     std::move(callback).Run(std::move(fetcher));
     return;
   }
@@ -307,8 +305,8 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   // Create the oauth2 token fetcher.
   const OAuth2TokenService::ScopeSet scopes{
       "https://www.googleapis.com/auth/cusco-chrome-extension"};
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-      "contextual_suggestions_service", signin_manager_, token_service_, scopes,
+  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+      "contextual_suggestions_service", scopes,
       base::BindOnce(&ContextualSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(fetcher),
                      std::move(callback)),
