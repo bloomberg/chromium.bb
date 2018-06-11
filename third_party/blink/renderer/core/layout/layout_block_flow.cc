@@ -3055,6 +3055,21 @@ LayoutInline* LayoutBlockFlow::InlineElementContinuation() const {
                                                   : nullptr;
 }
 
+bool LayoutBlockFlow::NeedsAnonymousInlineWrapper() const {
+  // If ::first-line has background properties, create an anonymous inline
+  // wrapper. This helps paint code to handle it.
+  DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
+  if (!GetDocument().GetStyleEngine().UsesFirstLineRules())
+    return false;
+  const ComputedStyle& first_line_style = FirstLineStyleRef();
+  const ComputedStyle& style = StyleRef();
+  if (&first_line_style == &style)
+    return false;
+  // We need an anonymous inline wrapper only if ::first-line has different
+  // background, but excessive anonymous inline will not harm.
+  return first_line_style.HasBackground();
+}
+
 void LayoutBlockFlow::AddChild(LayoutObject* new_child,
                                LayoutObject* before_child) {
   if (LayoutMultiColumnFlowThread* flow_thread = MultiColumnFlowThread()) {
@@ -3106,6 +3121,20 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
         DCHECK(before_child->IsAnonymousBlock());
         DCHECK_EQ(before_child->Parent(), this);
       }
+    } else if (UNLIKELY(layout_ng_enabled && NeedsAnonymousInlineWrapper())) {
+      LayoutObject* after_child =
+          before_child ? before_child->PreviousSibling() : LastChild();
+      if (after_child && after_child->IsAnonymous() &&
+          after_child->IsLayoutInline()) {
+        after_child->AddChild(new_child);
+        return;
+      }
+      LayoutInline* new_wrapper = LayoutInline::CreateAnonymous(&GetDocument());
+      new_wrapper->SetStyle(ComputedStyle::CreateAnonymousStyleWithDisplay(
+          StyleRef(), EDisplay::kInline));
+      LayoutBox::AddChild(new_wrapper, before_child);
+      new_wrapper->AddChild(new_child);
+      return;
     }
   } else if (!child_is_block_level) {
     // This block has block children. We may want to put the new child into an

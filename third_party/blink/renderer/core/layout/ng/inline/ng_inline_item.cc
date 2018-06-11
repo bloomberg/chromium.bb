@@ -114,7 +114,7 @@ void NGInlineItem::ComputeBoxProperties() {
 
   if (type_ == NGInlineItem::kOpenTag) {
     DCHECK(style_ && layout_object_ && layout_object_->IsLayoutInline());
-    if (layout_object_->HasBoxDecorationBackground() || style_->HasPadding() ||
+    if (style_->HasBoxDecorationBackground() || style_->HasPadding() ||
         style_->HasMargin()) {
       is_empty_item_ = IsInlineBoxEmpty(*style_, *layout_object_);
       should_create_box_fragment_ = true;

@@ -6,7 +6,9 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -56,6 +58,25 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   }
   GetLayoutObject()->SetOutlineMayBeAffectedByDescendants(
       !descendant_outlines_.IsEmpty());
+}
+
+bool NGPhysicalBoxFragment::IsFirstLineAnonymousInlineBox() const {
+  return IsInlineBox() && UsesFirstLineStyle() &&
+         layout_object_->IsAnonymous() && layout_object_->IsLayoutInline() &&
+         ToLayoutInline(layout_object_)->IsFirstLineAnonymous();
+}
+
+const ComputedStyle& NGPhysicalBoxFragment::StyleForBackground() const {
+  if (!IsFirstLineAnonymousInlineBox())
+    return Style();
+
+  // TODO(kojii): Ideally, the first-line anonymous can return a synthesized
+  // style that has background inherited from the ::first-line style. Doing so
+  // is a bit complicated, and fortunately paint code can handle background
+  // properties and geometry from different style objects.
+  LayoutObject* container = GetLayoutObject()->Parent();
+  DCHECK(container && container->IsLayoutBlockFlow());
+  return container->FirstLineStyleRef();
 }
 
 const NGBaseline* NGPhysicalBoxFragment::Baseline(

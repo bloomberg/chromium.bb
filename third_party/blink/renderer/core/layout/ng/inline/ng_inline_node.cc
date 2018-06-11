@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
@@ -608,6 +609,22 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
       item.style_ = item.layout_object_->FirstLineStyle();
       item.SetStyleVariant(NGStyleVariant::kFirstLine);
     }
+  }
+
+  // Check if we have a first-line anonymous inline box. It is the first
+  // open-tag if we have.
+  for (auto& item : first_line_items->items) {
+    if (item.Type() == NGInlineItem::kOpenTag) {
+      if (item.layout_object_->IsAnonymous() &&
+          item.layout_object_->IsLayoutInline() &&
+          item.layout_object_->Parent() == GetLayoutObject() &&
+          ToLayoutInline(item.layout_object_)->IsFirstLineAnonymous()) {
+        item.should_create_box_fragment_ = true;
+      }
+      break;
+    }
+    if (item.Type() != NGInlineItem::kBidiControl)
+      break;
   }
 
   // Re-shape if the font is different.
