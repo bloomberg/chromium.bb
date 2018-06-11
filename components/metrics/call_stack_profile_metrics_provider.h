@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_METRICS_CALL_STACK_PROFILE_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_CALL_STACK_PROFILE_METRICS_PROVIDER_H_
 
-#include <vector>
-
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -44,14 +42,14 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   static base::StackSamplingProfiler::CompletedCallback
   GetProfilerCallbackForBrowserProcess(const CallStackProfileParams& params);
 
-  // Provides completed stack profiles to the metrics provider. Intended for use
+  // Provides completed stack profile to the metrics provider. Intended for use
   // when receiving profiles over IPC. In-process StackSamplingProfiler users
-  // should instead use a variant of GetProfilerCallback*(). |profiles| is not
+  // should instead use a variant of GetProfilerCallback*(). |profile| is not
   // const& because it must be passed with std::move.
-  static void ReceiveCompletedProfiles(
+  static void ReceiveCompletedProfile(
       const CallStackProfileParams& params,
       base::TimeTicks profile_start_time,
-      base::StackSamplingProfiler::CallStackProfiles profiles);
+      base::StackSamplingProfiler::CallStackProfile profile);
 
   // MetricsProvider:
   void OnRecordingEnabled() override;

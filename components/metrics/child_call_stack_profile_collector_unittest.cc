@@ -19,11 +19,6 @@
 
 namespace metrics {
 
-namespace {
-
-
-}  // namespace
-
 class ChildCallStackProfileCollectorTest : public testing::Test {
  protected:
   class Receiver : public mojom::CallStackProfileCollector {
@@ -36,14 +31,12 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
 
     void Collect(const CallStackProfileParams& params,
                  base::TimeTicks start_timestamp,
-                 std::vector<CallStackProfile> profiles) override {
-      this->profiles.push_back(ChildCallStackProfileCollector::ProfilesState(
-          params,
-          start_timestamp,
-          std::move(profiles)));
+                 CallStackProfile profile) override {
+      this->profiles.push_back(ChildCallStackProfileCollector::ProfileState(
+          params, start_timestamp, std::move(profile)));
     }
 
-    std::vector<ChildCallStackProfileCollector::ProfilesState> profiles;
+    std::vector<ChildCallStackProfileCollector::ProfileState> profiles;
 
    private:
     mojo::Binding<mojom::CallStackProfileCollector> binding_;
@@ -54,18 +47,14 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
   ChildCallStackProfileCollectorTest()
       : receiver_impl_(new Receiver(MakeRequest(&receiver_))) {}
 
-  void CollectEmptyProfiles(
-      const CallStackProfileParams& params,
-      size_t profile_count) {
-    base::StackSamplingProfiler::CallStackProfiles profiles;
-    for (size_t i = 0; i < profile_count; ++i)
-      profiles.push_back(base::StackSamplingProfiler::CallStackProfile());
+  void CollectEmptyProfile(const CallStackProfileParams& params) {
+    base::StackSamplingProfiler::CallStackProfile profile;
     child_collector_.GetProfilerCallback(params, base::TimeTicks::Now())
-        .Run(std::move(profiles));
+        .Run(std::move(profile));
   }
 
-  const std::vector<ChildCallStackProfileCollector::ProfilesState>&
-  profiles() const {
+  const std::vector<ChildCallStackProfileCollector::ProfileState>& profiles()
+      const {
     return child_collector_.profiles_;
   }
 
@@ -82,13 +71,11 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
 TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   EXPECT_EQ(0u, profiles().size());
 
-  // Add profiles before providing the interface.
-  CollectEmptyProfiles(
-      CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
-                             CallStackProfileParams::MAIN_THREAD,
-                             CallStackProfileParams::JANKY_TASK,
-                             CallStackProfileParams::PRESERVE_ORDER),
-      2);
+  // Add a profile before providing the interface.
+  CollectEmptyProfile(CallStackProfileParams(
+      CallStackProfileParams::BROWSER_PROCESS,
+      CallStackProfileParams::MAIN_THREAD, CallStackProfileParams::JANKY_TASK,
+      CallStackProfileParams::PRESERVE_ORDER));
   ASSERT_EQ(1u, profiles().size());
   EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS,
             profiles()[0].params.process);
@@ -99,7 +86,6 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   base::TimeTicks start_timestamp = profiles()[0].start_timestamp;
   EXPECT_GE(base::TimeDelta::FromMilliseconds(10),
             base::TimeTicks::Now() - start_timestamp);
-  EXPECT_EQ(2u, profiles()[0].profiles.size());
 
   // Set the interface. The profiles should be passed to it.
   child_collector_.SetParentProfileCollector(std::move(receiver_));
@@ -111,17 +97,13 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER,
             receiver_impl_->profiles[0].params.ordering_spec);
   EXPECT_EQ(start_timestamp, receiver_impl_->profiles[0].start_timestamp);
-  EXPECT_EQ(2u, receiver_impl_->profiles[0].profiles.size());
 
-  // Add profiles after providing the interface. They should also be passed to
-  // it.
+  // Add a profile after providing the interface. It should also be passed.
   receiver_impl_->profiles.clear();
-  CollectEmptyProfiles(
-      CallStackProfileParams(CallStackProfileParams::GPU_PROCESS,
-                             CallStackProfileParams::MAIN_THREAD,
-                             CallStackProfileParams::THREAD_HUNG,
-                             CallStackProfileParams::PRESERVE_ORDER),
-      1);
+  CollectEmptyProfile(CallStackProfileParams(
+      CallStackProfileParams::GPU_PROCESS, CallStackProfileParams::MAIN_THREAD,
+      CallStackProfileParams::THREAD_HUNG,
+      CallStackProfileParams::PRESERVE_ORDER));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, profiles().size());
   ASSERT_EQ(1u, receiver_impl_->profiles.size());
@@ -136,19 +118,16 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   EXPECT_GE(base::TimeDelta::FromMilliseconds(10),
             (base::TimeTicks::Now() -
              receiver_impl_->profiles[0].start_timestamp));
-  EXPECT_EQ(1u, receiver_impl_->profiles[0].profiles.size());
 }
 
 TEST_F(ChildCallStackProfileCollectorTest, InterfaceNotProvided) {
   EXPECT_EQ(0u, profiles().size());
 
-  // Add profiles before providing a null interface.
-  CollectEmptyProfiles(
-      CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
-                             CallStackProfileParams::MAIN_THREAD,
-                             CallStackProfileParams::JANKY_TASK,
-                             CallStackProfileParams::PRESERVE_ORDER),
-      2);
+  // Add a profile before providing a null interface.
+  CollectEmptyProfile(CallStackProfileParams(
+      CallStackProfileParams::BROWSER_PROCESS,
+      CallStackProfileParams::MAIN_THREAD, CallStackProfileParams::JANKY_TASK,
+      CallStackProfileParams::PRESERVE_ORDER));
   ASSERT_EQ(1u, profiles().size());
   EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS,
             profiles()[0].params.process);
@@ -158,21 +137,19 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceNotProvided) {
             profiles()[0].params.ordering_spec);
   EXPECT_GE(base::TimeDelta::FromMilliseconds(10),
             base::TimeTicks::Now() - profiles()[0].start_timestamp);
-  EXPECT_EQ(2u, profiles()[0].profiles.size());
 
-  // Set the null interface. The profiles should be flushed.
+  // Set the null interface. The profile should be flushed.
   child_collector_.SetParentProfileCollector(
       mojom::CallStackProfileCollectorPtr());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, profiles().size());
 
-  // Add profiles after providing a null interface. They should also be flushed.
-  CollectEmptyProfiles(
-      CallStackProfileParams(CallStackProfileParams::GPU_PROCESS,
-                             CallStackProfileParams::MAIN_THREAD,
-                             CallStackProfileParams::THREAD_HUNG,
-                             CallStackProfileParams::PRESERVE_ORDER),
-      1);
+  // Add a profile after providing a null interface. They should also be
+  // flushed.
+  CollectEmptyProfile(CallStackProfileParams(
+      CallStackProfileParams::GPU_PROCESS, CallStackProfileParams::MAIN_THREAD,
+      CallStackProfileParams::THREAD_HUNG,
+      CallStackProfileParams::PRESERVE_ORDER));
   EXPECT_EQ(0u, profiles().size());
 }
 

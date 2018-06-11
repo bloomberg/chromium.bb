@@ -175,12 +175,11 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     // The time that a profile was started, for calculating the total duration.
     Time profile_start_time;
 
-    // Counters that indicate the current position along the acquisition.
-    int burst_count = 0;
+    // Counter that indicates the current sample position along the acquisition.
     int sample_count = 0;
 
-    // The collected stack samples. The active profile is always at the back().
-    CallStackProfiles profiles;
+    // The collected stack samples.
+    CallStackProfile profile;
 
     // Sequence number for generating new collection ids.
     static AtomicSequenceNumber next_collection_id;
@@ -497,13 +496,12 @@ void StackSamplingProfiler::SamplingThread::FinishCollection(
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   DCHECK_EQ(0u, active_collections_.count(collection->collection_id));
 
-  // If there is no duration for the final profile (because it was stopped),
-  // calculate it now.
-  if (!collection->profiles.empty() &&
-      collection->profiles.back().profile_duration == TimeDelta()) {
-    collection->profiles.back().profile_duration =
-        Time::Now() - collection->profile_start_time +
-        collection->params.sampling_interval;
+  // If there is no duration for the profile (because it was stopped), calculate
+  // it now.
+  if (collection->profile.profile_duration == TimeDelta()) {
+    collection->profile.profile_duration = Time::Now() -
+                                           collection->profile_start_time +
+                                           collection->params.sampling_interval;
   }
 
   // Extract some information so callback and event-signalling can still be
@@ -511,11 +509,11 @@ void StackSamplingProfiler::SamplingThread::FinishCollection(
   // This allows the the controlling object (and tests using it) to be confident
   // that collection is fully finished when those things occur.
   const CompletedCallback callback = collection->callback;
-  CallStackProfiles profiles = std::move(collection->profiles);
+  CallStackProfile profile = std::move(collection->profile);
   WaitableEvent* finished = collection->finished;
 
-  // Run the associated callback, passing the collected profiles.
-  callback.Run(std::move(profiles));
+  // Run the associated callback, passing the collected profile.
+  callback.Run(std::move(profile));
 
   // Signal that this collection is finished.
   finished->Signal();
@@ -526,28 +524,24 @@ void StackSamplingProfiler::SamplingThread::RecordSample(
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   DCHECK(collection->native_sampler);
 
-  // If this is the first sample of a burst, a new Profile needs to be created
-  // and filled.
+  // If this is the first sample, the Profile params needs to be filled.
   if (collection->sample_count == 0) {
-    collection->profiles.push_back(CallStackProfile());
-    CallStackProfile& profile = collection->profiles.back();
-    profile.sampling_period = collection->params.sampling_interval;
+    collection->profile.sampling_period = collection->params.sampling_interval;
     collection->profile_start_time = Time::Now();
-    collection->native_sampler->ProfileRecordingStarting(&profile.modules);
+    collection->native_sampler->ProfileRecordingStarting(
+        &collection->profile.modules);
   }
 
-  // The currently active profile being captured.
-  CallStackProfile& profile = collection->profiles.back();
-
   // Record a single sample.
-  profile.samples.push_back(Sample());
-  collection->native_sampler->RecordStackSample(stack_buffer_.get(),
-                                                &profile.samples.back());
+  collection->profile.samples.push_back(Sample());
+  collection->native_sampler->RecordStackSample(
+      stack_buffer_.get(), &collection->profile.samples.back());
 
-  // If this is the last sample of a burst, record the total time.
-  if (collection->sample_count == collection->params.samples_per_burst - 1) {
-    profile.profile_duration = Time::Now() - collection->profile_start_time +
-                               collection->params.sampling_interval;
+  // If this is the last sample of a profile, record the total time.
+  if (collection->sample_count == collection->params.samples_per_profile - 1) {
+    collection->profile.profile_duration = Time::Now() -
+                                           collection->profile_start_time +
+                                           collection->params.sampling_interval;
     collection->native_sampler->ProfileRecordingStopped();
   }
 }
@@ -698,14 +692,8 @@ bool StackSamplingProfiler::SamplingThread::FinishSample(
   // target thread, if the interval is smaller than the time it takes to
   // actually acquire the sample. Anything sampling that quickly is going
   // to be a problem anyway so don't worry about it.
-  if (++collection->sample_count < collection->params.samples_per_burst) {
+  if (++collection->sample_count < collection->params.samples_per_profile) {
     collection->next_sample_time += collection->params.sampling_interval;
-    return true;
-  }
-
-  if (++collection->burst_count < collection->params.bursts) {
-    collection->sample_count = 0;
-    collection->next_sample_time += collection->params.burst_interval;
     return true;
   }
 

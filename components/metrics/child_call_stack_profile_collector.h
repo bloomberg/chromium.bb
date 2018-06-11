@@ -50,9 +50,9 @@ class ChildCallStackProfileCollector {
   ChildCallStackProfileCollector();
   ~ChildCallStackProfileCollector();
 
-  // Get a callback for use with StackSamplingProfiler that provides completed
-  // profiles to this object. The callback should be immediately passed to the
-  // StackSamplingProfiler, and should not be reused between
+  // Get a callback for use with StackSamplingProfiler that provides the
+  // completed profile to this object. The callback should be immediately passed
+  // to the StackSamplingProfiler, and should not be reused between
   // StackSamplingProfilers. This function may be called on any thread.
   base::StackSamplingProfiler::CompletedCallback GetProfilerCallback(
       const CallStackProfileParams& params,
@@ -67,39 +67,38 @@ class ChildCallStackProfileCollector {
  private:
   friend class ChildCallStackProfileCollectorTest;
 
-  // Bundles together a set of collected profiles and the collection state for
-  // storage, pending availability of the parent mojo interface. |profiles|
+  // Bundles together a collected profile and the collection state for
+  // storage, pending availability of the parent mojo interface. |profile|
   // is not const& because it must be passed with std::move.
-  struct ProfilesState {
-    ProfilesState();
-    ProfilesState(ProfilesState&&);
-    ProfilesState(
-        const CallStackProfileParams& params,
-        base::TimeTicks start_timestamp,
-        base::StackSamplingProfiler::CallStackProfiles profiles);
-    ~ProfilesState();
+  struct ProfileState {
+    ProfileState();
+    ProfileState(ProfileState&&);
+    ProfileState(const CallStackProfileParams& params,
+                 base::TimeTicks start_timestamp,
+                 base::StackSamplingProfiler::CallStackProfile profile);
+    ~ProfileState();
 
-    ProfilesState& operator=(ProfilesState&&);
+    ProfileState& operator=(ProfileState&&);
 
     CallStackProfileParams params;
     base::TimeTicks start_timestamp;
 
-    // The sampled profiles.
-    base::StackSamplingProfiler::CallStackProfiles profiles;
+    // The sampled profile.
+    base::StackSamplingProfiler::CallStackProfile profile;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(ProfilesState);
+    DISALLOW_COPY_AND_ASSIGN(ProfileState);
   };
 
   using CallStackProfile = base::StackSamplingProfiler::CallStackProfile;
 
   void Collect(const CallStackProfileParams& params,
                base::TimeTicks start_timestamp,
-               std::vector<CallStackProfile> profiles);
+               CallStackProfile profile);
 
   void CollectImpl(const CallStackProfileParams& params,
                    base::TimeTicks start_timestamp,
-                   std::vector<CallStackProfile> profiles);
+                   CallStackProfile profile);
 
   // This object may be accessed on any thread, including the profiler
   // thread. The expected use case for the object is to be created and have
@@ -107,7 +106,7 @@ class ChildCallStackProfileCollector {
   // of PostTask and the like for inter-thread communication.
   base::Lock lock_;
 
-  // Whether to retain profiles when the interface is not set. Remains true
+  // Whether to retain the profile when the interface is not set. Remains true
   // until the invocation of SetParentProfileCollector(), at which point it is
   // false for the rest of the object lifetime.
   bool retain_profiles_ = true;
@@ -123,7 +122,7 @@ class ChildCallStackProfileCollector {
 
   // Profiles being cached by this object, pending a parent interface to be
   // supplied.
-  std::vector<ProfilesState> profiles_;
+  std::vector<ProfileState> profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildCallStackProfileCollector);
 };
