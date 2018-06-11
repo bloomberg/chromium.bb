@@ -451,6 +451,8 @@ blink_core_sources("html") {
     "imports/html_imports_controller.h",
     "imports/link_import.cc",
     "imports/link_import.h",
+    "lazy_load_frame_observer.cc",
+    "lazy_load_frame_observer.h",
     "link_manifest.cc",
     "link_manifest.h",
     "link_rel_attribute.cc",
