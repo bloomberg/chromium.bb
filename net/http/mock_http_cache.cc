@@ -14,7 +14,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_cache_writers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -333,7 +332,7 @@ void MockDiskEntry::IgnoreCallbacks(bool value) {
     return;
   ignore_callbacks_ = value;
   if (!value)
-    StoreAndDeliverCallbacks(false, NULL, CompletionCallback(), 0);
+    StoreAndDeliverCallbacks(false, NULL, CompletionOnceCallback(), 0);
 }
 
 MockDiskEntry::~MockDiskEntry() = default;
@@ -616,7 +615,7 @@ scoped_refptr<MockDiskEntry> MockDiskCache::GetDiskEntryRef(
 int MockBackendFactory::CreateBackend(
     NetLog* net_log,
     std::unique_ptr<disk_cache::Backend>* backend,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   backend->reset(new MockDiskCache());
   return OK;
 }
@@ -772,7 +771,7 @@ int MockDiskCacheNoCB::CreateEntry(const std::string& key,
 int MockBackendNoCbFactory::CreateBackend(
     NetLog* net_log,
     std::unique_ptr<disk_cache::Backend>* backend,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   backend->reset(new MockDiskCacheNoCB());
   return OK;
 }
@@ -790,7 +789,7 @@ MockBlockingBackendFactory::~MockBlockingBackendFactory() = default;
 int MockBlockingBackendFactory::CreateBackend(
     NetLog* net_log,
     std::unique_ptr<disk_cache::Backend>* backend,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   if (!block_) {
     if (!fail_)
       backend->reset(new MockDiskCache());
@@ -798,7 +797,7 @@ int MockBlockingBackendFactory::CreateBackend(
   }
 
   backend_ =  backend;
-  callback_ = callback;
+  callback_ = std::move(callback);
   return ERR_IO_PENDING;
 }
 

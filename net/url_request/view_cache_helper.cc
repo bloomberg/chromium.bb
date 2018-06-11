@@ -218,8 +218,8 @@ int ViewCacheHelper::DoGetBackend() {
     return ERR_FAILED;
 
   return http_cache->GetBackend(
-      &disk_cache_, base::Bind(&ViewCacheHelper::OnIOComplete,
-                               base::Unretained(this)));
+      &disk_cache_,
+      base::BindOnce(&ViewCacheHelper::OnIOComplete, base::Unretained(this)));
 }
 
 int ViewCacheHelper::DoGetBackendComplete(int result) {

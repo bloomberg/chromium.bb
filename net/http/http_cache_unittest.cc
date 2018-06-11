@@ -29,6 +29,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "net/base/cache_type.h"
+#include "net/base/completion_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -4291,14 +4292,14 @@ TEST_F(HttpCacheTest, DeleteCacheWaitingForBackend) {
 
   // We cannot call FinishCreation because the factory itself will go away with
   // the cache, so grab the callback and attempt to use it.
-  CompletionCallback callback = factory->callback();
+  CompletionOnceCallback callback = factory->ReleaseCallback();
   std::unique_ptr<disk_cache::Backend>* backend = factory->backend();
 
   cache.reset();
   base::RunLoop().RunUntilIdle();
 
   backend->reset();
-  callback.Run(ERR_ABORTED);
+  std::move(callback).Run(ERR_ABORTED);
 }
 
 // Tests that we can delete the cache while creating the backend, from within

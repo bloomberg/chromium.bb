@@ -15,9 +15,11 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string_split.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/request_priority.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -242,7 +244,7 @@ class MockBackendFactory : public HttpCache::BackendFactory {
  public:
   int CreateBackend(NetLog* net_log,
                     std::unique_ptr<disk_cache::Backend>* backend,
-                    const CompletionCallback& callback) override;
+                    CompletionOnceCallback callback) override;
 };
 
 class MockHttpCache {
@@ -326,7 +328,7 @@ class MockBackendNoCbFactory : public HttpCache::BackendFactory {
  public:
   int CreateBackend(NetLog* net_log,
                     std::unique_ptr<disk_cache::Backend>* backend,
-                    const CompletionCallback& callback) override;
+                    CompletionOnceCallback callback) override;
 };
 
 // This backend factory allows us to control the backend instantiation.
@@ -337,7 +339,7 @@ class MockBlockingBackendFactory : public HttpCache::BackendFactory {
 
   int CreateBackend(NetLog* net_log,
                     std::unique_ptr<disk_cache::Backend>* backend,
-                    const CompletionCallback& callback) override;
+                    CompletionOnceCallback callback) override;
 
   // Completes the backend creation. Any blocked call will be notified via the
   // provided callback.
@@ -346,13 +348,13 @@ class MockBlockingBackendFactory : public HttpCache::BackendFactory {
   std::unique_ptr<disk_cache::Backend>* backend() { return backend_; }
   void set_fail(bool fail) { fail_ = fail; }
 
-  const CompletionCallback& callback() { return callback_; }
+  CompletionOnceCallback ReleaseCallback() { return std::move(callback_); }
 
  private:
   int Result() { return fail_ ? ERR_FAILED : OK; }
 
   std::unique_ptr<disk_cache::Backend>* backend_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   bool block_;
   bool fail_;
 };
