@@ -10,12 +10,18 @@
 
   // Show all messages, including verbose.
   Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
+  Console.ConsoleView.instance()._filter._textFilterUI.setValue("url:script");
+  Console.ConsoleView.instance()._filter._onFilterChanged();
   Console.ConsoleView.instance()._filter._currentFilter.levelsMask = Console.ConsoleFilter.allLevelsFilterValue();
 
   for (var i = 0; i < 5; i++) {
+    // Groupable messages.
     addViolationMessage('Verbose-level violation', `script${i}.js`, SDK.ConsoleMessage.MessageLevel.Verbose);
     addViolationMessage('Error-level violation', `script${i}.js`, SDK.ConsoleMessage.MessageLevel.Error);
     addConsoleAPIMessage('ConsoleAPI log', `script${i}.js`);
+    addViolationMessage('Violation hidden by filter', `zzz.js`, SDK.ConsoleMessage.MessageLevel.Verbose);
+
+    // Non-groupable messages.
     await ConsoleTestRunner.evaluateInConsolePromise(`'evaluated command'`);
     await ConsoleTestRunner.evaluateInConsolePromise(`produce_reference_error`);
   }
