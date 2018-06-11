@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/spdy/spdy_read_queue.h"
 #include "net/spdy/spdy_stream.h"
@@ -32,10 +32,10 @@ class NET_EXPORT_PRIVATE WebSocketClientSocketHandleAdapter
 
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
   void Disconnect() override;
   bool is_initialized() const override;
@@ -79,13 +79,13 @@ class NET_EXPORT_PRIVATE WebSocketSpdyStreamAdapter
 
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
 
   // Write() must not be called before Delegate::OnHeadersSent() is called.
   // Write() always returns asynchronously.
   int Write(IOBuffer* buf,
             int buf_len,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
   void Disconnect() override;
@@ -132,7 +132,7 @@ class NET_EXPORT_PRIVATE WebSocketSpdyStreamAdapter
 
   // Read callback saved for asynchronous reads.
   // Whenever |read_data_| is not empty, |read_callback_| must be null.
-  CompletionCallback read_callback_;
+  CompletionOnceCallback read_callback_;
 
   // Write length saved to be passed to |write_callback_|.  This is necessary
   // because SpdyStream::Delegate::OnDataSent() does not pass number of bytes
@@ -140,7 +140,7 @@ class NET_EXPORT_PRIVATE WebSocketSpdyStreamAdapter
   int write_length_;
 
   // Write callback saved for asynchronous writes (all writes are asynchronous).
-  CompletionCallback write_callback_;
+  CompletionOnceCallback write_callback_;
 
   NetLogWithSource net_log_;
 

@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_frame_parser.h"
@@ -43,11 +44,11 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
     virtual ~Adapter() = default;
     virtual int Read(IOBuffer* buf,
                      int buf_len,
-                     const CompletionCallback& callback) = 0;
+                     CompletionOnceCallback callback) = 0;
     virtual int Write(
         IOBuffer* buf,
         int buf_len,
-        const CompletionCallback& callback,
+        CompletionOnceCallback callback,
         const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
     virtual void Disconnect() = 0;
     virtual bool is_initialized() const = 0;
