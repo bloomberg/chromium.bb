@@ -312,6 +312,10 @@ void FakeBluetoothGattCharacteristicClient::PrepareWriteValue(
 
 void FakeBluetoothGattCharacteristicClient::StartNotify(
     const dbus::ObjectPath& object_path,
+#if defined(OS_CHROMEOS)
+    device::BluetoothRemoteGattCharacteristic::NotificationType
+        notification_type,
+#endif
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (!IsHeartRateVisible()) {
@@ -387,6 +391,7 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
       kHeartRateMeasurementUUID);
   heart_rate_measurement_properties_->service.ReplaceValue(service_path);
   flags.push_back(bluetooth_gatt_characteristic::kFlagNotify);
+  flags.push_back(bluetooth_gatt_characteristic::kFlagIndicate);
   heart_rate_measurement_properties_->flags.ReplaceValue(flags);
 
   // ==== Body Sensor Location Characteristic ====

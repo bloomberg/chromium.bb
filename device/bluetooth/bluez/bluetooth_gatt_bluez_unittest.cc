@@ -1435,8 +1435,10 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicProperties) {
   characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->GetHeartRateMeasurementPath()
           .value());
-  EXPECT_EQ(BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY,
-            characteristic->GetProperties());
+  EXPECT_EQ(BluetoothRemoteGattCharacteristic::PROPERTY_NOTIFY |
+                BluetoothRemoteGattCharacteristic::PROPERTY_INDICATE,
+            static_cast<BluetoothRemoteGattCharacteristic::Property>(
+                characteristic->GetProperties()));
 }
 
 TEST_F(BluetoothGattBlueZTest, GattDescriptorValue) {
@@ -1940,6 +1942,59 @@ TEST_F(BluetoothGattBlueZTest, ReliableWrite) {
   EXPECT_EQ(1001, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_EQ(1000, observer.gatt_characteristic_value_changed_count());
+}
+
+TEST_F(BluetoothGattBlueZTest, NotificationType) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDeviceBlueZ* device = static_cast<BluetoothDeviceBlueZ*>(
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress));
+  ASSERT_TRUE(device);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Expose the fake Heart Rate service. This will asynchronously expose
+  // characteristics.
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_EQ(1, observer.gatt_service_added_count());
+
+  BluetoothRemoteGattService* service =
+      device->GetGattService(observer.last_gatt_service_id());
+
+  // Run the message loop so that the characteristics appear.
+  base::RunLoop().Run();
+  BluetoothRemoteGattCharacteristic* characteristic =
+      service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                     ->GetHeartRateMeasurementPath()
+                                     .value());
+
+  // Request to start notifications.
+  characteristic->StartNotifySession(
+      BluetoothRemoteGattCharacteristic::NotificationType::kNotification,
+      base::Bind(&BluetoothGattBlueZTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  base::RunLoop().Run();
+  EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count());
+
+  // Request to start indications.
+  fake_bluetooth_gatt_characteristic_client_->StopNotify(
+      fake_bluetooth_gatt_characteristic_client_->GetHeartRateMeasurementPath(),
+      base::Bind(&BluetoothGattBlueZTest::SuccessCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattBlueZTest::DBusErrorCallback,
+                 base::Unretained(this)));
+  characteristic->StartNotifySession(
+      BluetoothRemoteGattCharacteristic::NotificationType::kIndication,
+      base::Bind(&BluetoothGattBlueZTest::NotifySessionCallback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
+                 base::Unretained(this)));
+  base::RunLoop().Run();
+  EXPECT_EQ(2, observer.gatt_characteristic_value_changed_count());
 }
 #endif
 

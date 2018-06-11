@@ -49,6 +49,12 @@ class MockBluetoothGattCharacteristic
                      BluetoothRemoteGattDescriptor*(const std::string&));
   MOCK_METHOD1(AddDescriptor, bool(BluetoothRemoteGattDescriptor*));
   MOCK_METHOD1(UpdateValue, bool(const std::vector<uint8_t>&));
+#if defined(OS_CHROMEOS)
+  MOCK_METHOD3(StartNotifySession,
+               void(NotificationType,
+                    const NotifySessionCallback&,
+                    const ErrorCallback&));
+#endif
   MOCK_METHOD2(StartNotifySession,
                void(const NotifySessionCallback&, const ErrorCallback&));
   MOCK_METHOD2(StopNotifySession,
@@ -73,10 +79,18 @@ class MockBluetoothGattCharacteristic
       const std::string& identifier) const;
 
  protected:
+#if defined(OS_CHROMEOS)
+  MOCK_METHOD4(SubscribeToNotifications,
+               void(BluetoothRemoteGattDescriptor*,
+                    NotificationType,
+                    const base::Closure&,
+                    const ErrorCallback&));
+#else
   MOCK_METHOD3(SubscribeToNotifications,
                void(BluetoothRemoteGattDescriptor*,
                     const base::Closure&,
                     const ErrorCallback&));
+#endif
   MOCK_METHOD3(UnsubscribeFromNotifications,
                void(BluetoothRemoteGattDescriptor*,
                     const base::Closure&,

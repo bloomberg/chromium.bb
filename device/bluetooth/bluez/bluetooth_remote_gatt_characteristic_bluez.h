@@ -72,10 +72,18 @@ class BluetoothRemoteGattCharacteristicBlueZ
 #endif
 
  protected:
+#if defined(OS_CHROMEOS)
+  void SubscribeToNotifications(
+      device::BluetoothRemoteGattDescriptor* ccc_descriptor,
+      NotificationType notification_type,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
+#else
   void SubscribeToNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
       const ErrorCallback& error_callback) override;
+#endif
   void UnsubscribeFromNotifications(
       device::BluetoothRemoteGattDescriptor* ccc_descriptor,
       const base::Closure& callback,
