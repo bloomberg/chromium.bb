@@ -868,6 +868,15 @@ def ShallowFetch(git_repo, git_url, sparse_checkout=None):
   logging.info('ShallowFetch completed in %s.', utcnow() - start)
 
 
+def FindGitTopLevel(path):
+  """Returns the top-level directory of the given git working tree path."""
+  try:
+    ret = RunGit(path, ['rev-parse', '--show-toplevel'])
+    return ret.output.strip()
+  except cros_build_lib.RunCommandError:
+    return None
+
+
 def GetProjectUserEmail(git_repo):
   """Get the email configured for the project."""
   output = RunGit(git_repo, ['var', 'GIT_COMMITTER_IDENT']).output

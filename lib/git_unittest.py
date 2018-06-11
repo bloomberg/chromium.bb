@@ -159,6 +159,10 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEquals(osutils.ReadFile(sparse_checkout),
                       'dir1/file1\ndir2/file2')
 
+  def testFindGitTopLevel(self):
+    git.FindGitTopLevel(self.fake_path)
+    self.assertCommandContains(['--show-toplevel'])
+
   def testAddPath(self):
     git.AddPath(self.fake_path)
     self.assertCommandContains(['add'])

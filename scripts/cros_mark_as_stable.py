@@ -397,8 +397,15 @@ def _CommitOverlays(options, manifest, overlays, overlay_tracking_branch,
     tracking_branch = overlay_tracking_branch[overlay]
 
     existing_commit = git.GetGitRepoRevision(overlay)
+
+    # Make sure we run in the top-level git directory in case we are
+    # adding/removing an overlay in existing_commit.
+    git_root = git.FindGitTopLevel(overlay)
+    if git_root is None:
+      cros_build_lib.Die('No git repo at overlay directory %s.', overlay)
+
     work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
-                            cwd=overlay)
+                            cwd=git_root)
     work_branch.CreateBranch()
     if not work_branch.Exists():
       cros_build_lib.Die('Unable to create stabilizing branch in %s' %
@@ -406,7 +413,7 @@ def _CommitOverlays(options, manifest, overlays, overlay_tracking_branch,
 
     # In the case of uprevving overlays that have patches applied to them,
     # include the patched changes in the stabilizing branch.
-    git.RunGit(overlay, ['rebase', existing_commit])
+    git.RunGit(git_root, ['rebase', existing_commit])
 
     ebuilds = overlay_ebuilds.get(overlay, [])
     if ebuilds:
