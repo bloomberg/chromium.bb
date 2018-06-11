@@ -282,6 +282,13 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
   CHECK(callback_received_begin_frame_);
   CHECK(callback_received_receive_ack_);
 
+  ++ack_pending_count_;
+
+  base::ScopedClosureRunner frame_rejected_callback(base::BindOnce(
+      &CompositorFrameSinkSupport::DidRejectCompositorFrame,
+      weak_factory_.GetWeakPtr(), frame.metadata.frame_token,
+      frame.metadata.request_presentation_feedback, frame.resource_list));
+
   compositor_frame_callback_ = std::move(callback);
   if (compositor_frame_callback_) {
     callback_received_begin_frame_ = false;
@@ -299,7 +306,6 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
   // TODO(crbug.com/846739): It should be possible to use
   // |frame.metadata.frame_token| instead of maintaining a |last_frame_index_|.
   uint64_t frame_index = ++last_frame_index_;
-  ++ack_pending_count_;
 
   // Override the has_damage flag (ignoring invalid data from clients).
   frame.metadata.begin_frame_ack.has_damage = true;
@@ -346,14 +352,6 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     if (!surface_info.is_valid() || !monotonically_increasing_id) {
       TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
                            TRACE_EVENT_SCOPE_THREAD);
-      std::vector<ReturnedResource> resources =
-          TransferableResource::ReturnResources(frame.resource_list);
-      ReturnResources(resources);
-      DidReceiveCompositorFrameAck();
-      if (frame.metadata.request_presentation_feedback) {
-        DidPresentCompositorFrame(frame.metadata.frame_token,
-                                  gfx::PresentationFeedback());
-      }
       return SURFACE_INVARIANTS_VIOLATION;
     }
 
@@ -369,7 +367,7 @@ CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
       last_created_surface_id_, frame_index, std::move(hit_test_region_list));
 
   bool result = current_surface->QueueFrame(
-      std::move(frame), frame_index,
+      std::move(frame), frame_index, std::move(frame_rejected_callback),
       base::BindOnce(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                      weak_factory_.GetWeakPtr()),
       base::BindRepeating(&CompositorFrameSinkSupport::OnAggregatedDamage,
@@ -477,6 +475,19 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
       client_->DidPresentCompositorFrame(presentation_token, feedback);
     else
       client_->DidDiscardCompositorFrame(presentation_token);
+  }
+}
+
+void CompositorFrameSinkSupport::DidRejectCompositorFrame(
+    uint32_t presentation_token,
+    bool request_presentation_feedback,
+    std::vector<TransferableResource> frame_resource_list) {
+  std::vector<ReturnedResource> resources =
+      TransferableResource::ReturnResources(frame_resource_list);
+  ReturnResources(resources);
+  DidReceiveCompositorFrameAck();
+  if (request_presentation_feedback) {
+    DidPresentCompositorFrame(presentation_token, gfx::PresentationFeedback());
   }
 }
 

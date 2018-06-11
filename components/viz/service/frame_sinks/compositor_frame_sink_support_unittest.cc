@@ -105,24 +105,30 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     manager_.surface_manager()->RemoveObserver(&surface_observer_);
   }
 
-  void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
-                                          size_t num_resource_ids) {
-    auto frame = MakeDefaultCompositorFrame();
+  void AddResourcesToFrame(CompositorFrame* frame,
+                           ResourceId* resource_ids,
+                           size_t num_resource_ids) {
     for (size_t i = 0u; i < num_resource_ids; ++i) {
       TransferableResource resource;
       resource.id = resource_ids[i];
       resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
       resource.mailbox_holder.sync_token = frame_sync_token_;
-      frame.resource_list.push_back(resource);
+      frame->resource_list.push_back(resource);
     }
+  }
+
+  void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
+                                          size_t num_resource_ids) {
+    auto frame = MakeDefaultCompositorFrame();
+    AddResourcesToFrame(&frame, resource_ids, num_resource_ids);
     support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
     EXPECT_EQ(surface_observer_.last_created_surface_id().local_surface_id(),
               local_surface_id_);
   }
 
   bool SubmitCompositorFrameWithCopyRequest(
+      CompositorFrame frame,
       std::unique_ptr<CopyOutputRequest> request) {
-    auto frame = MakeDefaultCompositorFrame();
     frame.render_pass_list.back()->copy_requests.push_back(std::move(request));
     const auto result = support_->MaybeSubmitCompositorFrame(
         local_surface_id_, std::move(frame), base::nullopt,
@@ -153,6 +159,18 @@ class CompositorFrameSinkSupportTest : public testing::Test {
       unref_array.push_back(resource);
     }
     support_->UnrefResources(unref_array);
+  }
+
+  void CheckReturnedResourcesMatchExpected(ResourceId* expected_returned_ids,
+                                           size_t expected_resources) {
+    const std::vector<ReturnedResource>& actual_resources =
+        fake_support_client_.returned_resources();
+    ASSERT_EQ(expected_resources, actual_resources.size());
+    for (size_t i = 0; i < expected_resources; ++i) {
+      ReturnedResource resource = actual_resources[i];
+      EXPECT_EQ(expected_returned_ids[i], resource.id);
+    }
+    fake_support_client_.clear_returned_resources();
   }
 
   void CheckReturnedResourcesMatchExpected(ResourceId* expected_returned_ids,
@@ -581,8 +599,19 @@ TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
             *got_nothing = result->IsEmpty();
           },
           &did_receive_aborted_copy_result));
-  EXPECT_FALSE(SubmitCompositorFrameWithCopyRequest(std::move(request)));
+
+  auto frame = MakeDefaultCompositorFrame();
+  ResourceId frame_resource_ids[] = {1, 2, 3};
+  AddResourcesToFrame(&frame, frame_resource_ids,
+                      base::size(frame_resource_ids));
+
+  EXPECT_FALSE(SubmitCompositorFrameWithCopyRequest(std::move(frame),
+                                                    std::move(request)));
   EXPECT_TRUE(did_receive_aborted_copy_result);
+
+  // All the resources in the rejected frame should have been returned.
+  CheckReturnedResourcesMatchExpected(frame_resource_ids,
+                                      base::size(frame_resource_ids));
 
   manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
@@ -804,10 +833,19 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
   frame = CompositorFrameBuilder()
               .AddRenderPass(gfx::Rect(5, 4), gfx::Rect())
               .Build();
+  ResourceId frame_resource_ids[] = {1, 2, 3};
+  AddResourcesToFrame(&frame, frame_resource_ids,
+                      base::size(frame_resource_ids));
+
   result = support_->MaybeSubmitCompositorFrame(
       local_surface_id_, std::move(frame), base::nullopt,
       mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+
   EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
+
+  // All the resources in the rejected frame should have been returned.
+  CheckReturnedResourcesMatchExpected(frame_resource_ids,
+                                      base::size(frame_resource_ids));
 }
 
 // Check that if the device scale factor of a CompositorFrame doesn't match the
