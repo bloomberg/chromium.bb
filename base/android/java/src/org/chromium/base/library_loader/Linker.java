@@ -13,7 +13,6 @@ import android.os.Parcelable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ResourceExtractor;
 import org.chromium.base.annotations.AccessedByNative;
 
 import java.util.HashMap;
@@ -460,7 +459,7 @@ public abstract class Linker {
             System.loadLibrary(LINKER_JNI_LIBRARY);
             LibraryLoader.incrementRelinkerCountNotHitHistogram();
         } catch (UnsatisfiedLinkError e) {
-            if (ResourceExtractor.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
+            if (LibraryLoader.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
                 System.load(LibraryLoader.getExtractedLibraryPath(
                         ContextUtils.getApplicationContext(), LINKER_JNI_LIBRARY));
                 LibraryLoader.incrementRelinkerCountHitHistogram();
