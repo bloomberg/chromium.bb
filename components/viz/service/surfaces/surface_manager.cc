@@ -158,14 +158,7 @@ void SurfaceManager::DestroySurface(const SurfaceId& surface_id) {
   surfaces_to_destroy_.insert(surface_id);
 }
 
-void SurfaceManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id) {
-  bool inserted = valid_frame_sink_labels_.emplace(frame_sink_id, "").second;
-  DCHECK(inserted);
-}
-
 void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
-  valid_frame_sink_labels_.erase(frame_sink_id);
-
   // Remove any temporary references owned by |frame_sink_id|.
   std::vector<SurfaceId> temp_refs_to_clear;
   for (auto& map_entry : temporary_references_) {
@@ -178,21 +171,6 @@ void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
     RemoveTemporaryReference(surface_id, RemovedReason::INVALIDATED);
 
   GarbageCollectSurfaces();
-}
-
-void SurfaceManager::SetFrameSinkDebugLabel(const FrameSinkId& frame_sink_id,
-                                            const std::string& debug_label) {
-  auto it = valid_frame_sink_labels_.find(frame_sink_id);
-  DCHECK(it != valid_frame_sink_labels_.end());
-  it->second = debug_label;
-}
-
-std::string SurfaceManager::GetFrameSinkDebugLabel(
-    const FrameSinkId& frame_sink_id) const {
-  auto it = valid_frame_sink_labels_.find(frame_sink_id);
-  if (it != valid_frame_sink_labels_.end())
-    return it->second;
-  return std::string();
 }
 
 const SurfaceId& SurfaceManager::GetRootSurfaceId() const {
@@ -608,10 +586,6 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
   if (surface) {
     *str << surface->surface_id().ToString();
 
-    std::string frame_sink_label =
-        GetFrameSinkDebugLabel(surface_id.frame_sink_id());
-    if (!frame_sink_label.empty())
-      *str << " " << frame_sink_label;
     *str << (IsMarkedForDestruction(surface_id) ? " destroyed" : " live");
 
     if (surface->HasPendingFrame()) {
