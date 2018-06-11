@@ -4606,8 +4606,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // On iOS 11.3 didReceiveServerRedirectForProvisionalNavigation: is not
     // always called. So if URL was unexpectedly changed then it's probably
     // because redirect callback was not called.
-    // TODO(crbug.com/810911): Remove this workaround.
-    if (context && context->GetUrl() != webViewURL) {
+    if (@available(iOS 12, *)) {
+      // rdar://37547029 was fixed on iOS 12.
+    } else if (context && context->GetUrl() != webViewURL) {
       [self didReceiveRedirectForNavigation:context withURL:webViewURL];
     }
   }
