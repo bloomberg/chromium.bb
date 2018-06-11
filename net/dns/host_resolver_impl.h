@@ -282,8 +282,8 @@ class NET_EXPORT HostResolverImpl
                    const HostCache::Entry& entry,
                    base::TimeDelta ttl);
 
-  // Removes |job| from |jobs_|, only if it exists, but does not delete it.
-  void RemoveJob(Job* job);
+  // Removes |job| from |jobs_| and return, only if it exists.
+  std::unique_ptr<Job> RemoveJob(Job* job);
 
   // Aborts all in progress jobs with ERR_NETWORK_CHANGED and notifies their
   // requests. Might start new jobs.

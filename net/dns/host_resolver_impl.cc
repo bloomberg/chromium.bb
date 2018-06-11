@@ -1764,11 +1764,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     // This job must be removed from resolver's |jobs_| now to make room for a
     // new job with the same key in case one of the OnComplete callbacks decides
-    // to spawn one. Consequently, the job deletes itself when CompleteRequests
-    // is done.
-    std::unique_ptr<Job> self_deleter(this);
-
-    resolver_->RemoveJob(this);
+    // to spawn one. Consequently, if the job was owned by |jobs_|, the job
+    // deletes itself when CompleteRequests is done.
+    std::unique_ptr<Job> self_deleter = resolver_->RemoveJob(this);
 
     if (is_running()) {
       if (is_proc_running()) {
@@ -1961,22 +1959,24 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   auto jobit = jobs_.find(key);
   Job* job;
   if (jobit == jobs_.end()) {
-    job = new Job(weak_ptr_factory_.GetWeakPtr(), key, priority,
-                  proc_task_runner_, source_net_log, tick_clock_);
-    job->Schedule(false);
+    auto new_job =
+        std::make_unique<Job>(weak_ptr_factory_.GetWeakPtr(), key, priority,
+                              proc_task_runner_, source_net_log, tick_clock_);
+    job = new_job.get();
+    new_job->Schedule(false);
 
     // Check for queue overflow.
     if (dispatcher_->num_queued_jobs() > max_queued_jobs_) {
       Job* evicted = static_cast<Job*>(dispatcher_->EvictOldestLowest());
       DCHECK(evicted);
-      evicted->OnEvicted();  // Deletes |evicted|.
-      if (evicted == job) {
+      evicted->OnEvicted();
+      if (evicted == new_job.get()) {
         rv = ERR_HOST_RESOLVER_QUEUE_TOO_LARGE;
         LogFinishRequest(source_net_log, info, rv);
         return rv;
       }
     }
-    jobs_[key] = base::WrapUnique(job);
+    jobs_[key] = std::move(new_job);
   } else {
     job = jobit->second.get();
   }
@@ -2388,13 +2388,15 @@ void HostResolverImpl::CacheResult(const Key& key,
     cache_->Set(key, entry, tick_clock_->NowTicks(), ttl);
 }
 
-void HostResolverImpl::RemoveJob(Job* job) {
+std::unique_ptr<HostResolverImpl::Job> HostResolverImpl::RemoveJob(Job* job) {
   DCHECK(job);
+  std::unique_ptr<Job> retval;
   auto it = jobs_.find(job->key());
   if (it != jobs_.end() && it->second.get() == job) {
-    it->second.release();
+    it->second.swap(retval);
     jobs_.erase(it);
   }
+  return retval;
 }
 
 HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
@@ -2512,7 +2514,6 @@ void HostResolverImpl::AbortAllInProgressJobs() {
   // Then Abort them.
   for (size_t i = 0; self.get() && i < jobs_to_abort.size(); ++i) {
     jobs_to_abort[i]->Abort();
-    ignore_result(jobs_to_abort[i].release());
   }
 
   if (self)
