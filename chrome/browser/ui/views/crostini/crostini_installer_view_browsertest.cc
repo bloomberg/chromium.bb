@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,8 +18,6 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,12 +25,7 @@
 
 class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
  public:
-  CrostiniInstallerViewBrowserTest()
-      : fake_concierge_client_(new chromeos::FakeConciergeClient()) {
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
-        base::WrapUnique(fake_concierge_client_));
-    crostini::CrostiniManager::GetInstance()->set_is_testing(true);
-  }
+  CrostiniInstallerViewBrowserTest() {}
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -62,10 +54,6 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
   bool HasCancelButton() {
     return ActiveView()->GetDialogClientView()->cancel_button() != nullptr;
   }
-
- protected:
-  // Owned by chromeos::DBusThreadManager
-  chromeos::FakeConciergeClient* fake_concierge_client_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -107,27 +95,5 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, Cancel) {
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kNotStarted),
-      1);
-}
-
-IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
-  base::HistogramTester histogram_tester;
-  ShowUi("default");
-  EXPECT_NE(nullptr, ActiveView());
-  vm_tools::concierge::StartVmResponse response;
-  response.set_success(false);
-  fake_concierge_client_->set_start_vm_response(std::move(response));
-
-  ActiveView()->GetDialogClientView()->AcceptWindow();
-  EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
-  base::RunLoop().RunUntilIdle();
-  ActiveView()->GetDialogClientView()->CancelWindow();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, ActiveView());
-
-  histogram_tester.ExpectBucketCount(
-      "Crostini.SetupResult",
-      static_cast<base::HistogramBase::Sample>(
-          CrostiniInstallerView::SetupResult::kErrorStartingTermina),
       1);
 }
