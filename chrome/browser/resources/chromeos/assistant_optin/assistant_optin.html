@@ -19,6 +19,9 @@
 <include src="../login/oobe_buttons.html">
 <include src="../login/oobe_change_picture.html">
 <include src="../login/oobe_dialog.html">
+<include src="assistant_get_more.html">
+<include src="assistant_loading.html">
+<include src="assistant_third_party.html">
 <include src="assistant_value_prop.html">
 <include src="setting_zippy.html">
 
@@ -39,8 +42,14 @@
 <body>
 
 <div id="consent-dialog" role="group">
-   <assistant-value-prop-md id="value-prop-md">
-   </assistant-value-prop-md>
+   <assistant-loading id="loading">
+   </assistant-loading>
+   <assistant-value-prop id="value-prop">
+   </assistant-value-prop>
+   <assistant-third-party id="third-party" hidden>
+   </assistant-third-party>
+   <assistant-get-more id="get-more" hidden>
+   </assistant-get-more>
 </div>
 
 <script src="chrome://resources/js/i18n_template.js"></script>

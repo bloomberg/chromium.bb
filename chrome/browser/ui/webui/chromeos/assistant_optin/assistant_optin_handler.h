@@ -26,7 +26,8 @@ class AssistantOptInHandler : public BaseWebUIHandler {
 
   // Send message and consent data to the page.
   void ReloadContent(const base::DictionaryValue& dict);
-  void AddSettingZippy(const base::ListValue& data);
+  void AddSettingZippy(const std::string& type, const base::ListValue& data);
+  void ShowNextScreen();
 
  private:
   // Handler for JS WebUI message.

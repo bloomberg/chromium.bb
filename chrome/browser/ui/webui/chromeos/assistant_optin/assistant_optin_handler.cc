@@ -38,8 +38,13 @@ void AssistantOptInHandler::ReloadContent(const base::DictionaryValue& dict) {
   CallJSOrDefer("reloadContent", dict);
 }
 
-void AssistantOptInHandler::AddSettingZippy(const base::ListValue& data) {
-  CallJSOrDefer("addSettingZippy", data);
+void AssistantOptInHandler::AddSettingZippy(const std::string& type,
+                                            const base::ListValue& data) {
+  CallJSOrDefer("addSettingZippy", type, data);
+}
+
+void AssistantOptInHandler::ShowNextScreen() {
+  CallJSOrDefer("showNextScreen");
 }
 
 void AssistantOptInHandler::HandleInitialized() {

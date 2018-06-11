@@ -16,6 +16,10 @@
   padding: 6px 0 6px 0;
 }
 
+.content[noZippy] {
+  padding-bottom: 0;
+}
+
 .icon {
   min-width: 38px;
 }
@@ -24,6 +28,10 @@
   display: block;
   height: 24px;
   width: 24px;
+}
+
+.toggle {
+  padding-top: 9px;
 }
 
 .indent {

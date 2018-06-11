@@ -4826,6 +4826,18 @@
   <message name="IDS_VOICE_INTERACTION_LOGO" desc="Logo label for voice interaction.">
     Google assistant logo
   </message>
+  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin.">
+    Get info for what's on screen
+  </message>
+  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin.">
+    See relevant suggestions from your Assistant related to what's on your screen.
+  </message>
+  <message name="IDS_ASSISTANT_GET_MORE_SCREEN_TITLE" desc="Title for assistant get more screen.">
+    Get the most out of your Assistant
+  </message>
+  <message name="IDS_ASSISTANT_GET_MORE_SCREEN_CONTINUE_BUTTON" desc="Button label for accepting the get more screen.">
+    Done
+  </message>
 
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">

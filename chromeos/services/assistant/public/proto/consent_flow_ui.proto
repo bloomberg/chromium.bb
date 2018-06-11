@@ -91,6 +91,34 @@ message ConsentFlowUi {
     }
     optional ActivityControlUi activity_control_ui = 1;
 
+    // Represents the subsection of the ConsentUi that displays and conveys a
+    // disclosure that the user's account might be shared with third
+    // parties the user invokes in conversation/interaction with the Assistant.
+    //
+    // Always present.
+    message ThirdPartyDisclosureUi {
+      // Title of the page.
+      //
+      // Required.
+      optional string title = 5;
+
+      // The disclosures to present.
+      //
+      // Required.
+      repeated ClassicActivityControlUiTexts.SettingZippy disclosures = 2;
+
+      // Text for button that lets user acknowledge disclosures and continue
+      // to next screen.
+      //
+      // Required.
+      optional string button_continue = 3;
+    }
+    optional ThirdPartyDisclosureUi third_party_disclosure_ui = 3;
+
+    // Contains an HTML string with links to Google's Terms of Service and
+    // Privacy Policy.
+    optional string tos_pp_links = 9;
+
     // Text for the button that lets the user accept the opt-ins, committing
     // their new state.
     //
@@ -116,6 +144,10 @@ message ConsentFlowUiUpdate {
 
   // If present, opt the user in.
   optional bytes consent_token = 1;
+
+  // True means the user saw 3p disclosure and acknowledged it, false means 3p
+  // disclosure was not presented to the user.
+  optional bool saw_third_party_disclosure = 3;
 }
 
 // Represents the response to updating consent flow.
