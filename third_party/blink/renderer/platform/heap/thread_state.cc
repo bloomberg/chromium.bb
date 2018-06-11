@@ -149,6 +149,14 @@ const char* StackStateString(BlinkGC::StackState state) {
   return "<Unknown>";
 }
 
+// Helper function to convert a byte count to a KB count, capping at
+// INT_MAX if the number is larger than that.
+constexpr size_t CappedSizeInKB(size_t size_in_bytes) {
+  const size_t size_in_kb = size_in_bytes / 1024;
+  const size_t limit = std::numeric_limits<int>::max();
+  return size_in_kb > limit ? limit : size_in_kb;
+}
+
 }  // namespace
 
 ThreadState::ThreadState()
