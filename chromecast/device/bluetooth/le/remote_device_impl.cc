@@ -287,6 +287,9 @@ void RemoteDeviceImpl::SetConnected(bool connected) {
     if (!gatt_client_manager_->gatt_client()->GetServices(addr_)) {
       LOG(ERROR) << "Couldn't discover services, disconnecting";
       Disconnect({});
+      if (connect_cb_) {
+        std::move(connect_cb_).Run(false);
+      }
     }
   } else {
     uuid_to_service_.clear();
