@@ -1046,6 +1046,8 @@ inline void Node::LazyReattachIfAttached() {
 }
 
 inline bool Node::ShouldCallRecalcStyle(StyleRecalcChange change) {
+  if (NeedsReattachLayoutTree())
+    return false;
   return change >= kIndependentInherit || NeedsStyleRecalc() ||
          ChildNeedsStyleRecalc();
 }
