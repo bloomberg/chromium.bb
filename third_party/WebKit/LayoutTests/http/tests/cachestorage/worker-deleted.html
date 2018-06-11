@@ -7,22 +7,36 @@
 <script>
 var worker_script = 'serviceworker/worker-closer.js';
 var worker_script2 = 'serviceworker/worker-closer2.js';
-test(function(t) {
-  var p = new Promise(function(resolve, reject) {
+var worker1Started = false;
+var worker2Started = false;
+function waitUntilWorkerThreadsExit(callback) {
+  if (internals.workerThreadCount > 0) {
+    setTimeout(() => { waitUntilWorkerThreadsExit(callback) }, 10);
+  } else {
+    callback();
+  }
+}
+function workerOnMesage(message, callback) {
+  assert_equals('started', message);
+  if (worker1Started && worker2Started) {
+    waitUntilWorkerThreadsExit(callback);
+  }
+}
+promise_test(function(t) {
+  return new Promise(function(resolve) {
       var worker1 = new Worker(worker_script);
       var worker2 = new Worker(worker_script2);
-      return;
-    }).then(() => {
-      var worker1 = new Worker(worker_script);
-      var worker2 = new Worker(worker_script2);
-      return 'success';
-    }).then(result => {
-      assert_equals(result, 'success');
-    });
-  Promise.resolve(p);
+      worker1.onmessage = function(message) {
+        worker1Started = true;
+        workerOnMesage(message.data, resolve);
+      };
+      worker2.onmessage = function(message) {
+        worker2Started = true;
+        workerOnMesage(message.data, resolve);
+      };
+  }).then(() => { gc(true); });
 });
 </script>
 <body> Something
 </body>
-
 </html>
