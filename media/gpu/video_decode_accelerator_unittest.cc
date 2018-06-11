@@ -525,15 +525,14 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
     LOG_ASSERT(texture_ref);
 
     int32_t picture_buffer_id = next_picture_buffer_id_++;
-    int irrelevant_id = picture_buffer_id;
     LOG_ASSERT(
         active_textures_.insert(std::make_pair(picture_buffer_id, texture_ref))
             .second);
 
     PictureBuffer::TextureIds texture_ids(1, texture_id);
     buffers.push_back(PictureBuffer(picture_buffer_id, dimensions,
-                                    PictureBuffer::TextureIds{irrelevant_id++},
-                                    texture_ids, texture_target, pixel_format));
+                                    PictureBuffer::TextureIds(), texture_ids,
+                                    texture_target, pixel_format));
   }
   decoder_->AssignPictureBuffers(buffers);
 

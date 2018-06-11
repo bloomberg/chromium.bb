@@ -35,7 +35,6 @@ VaapiPictureNativePixmapOzone::VaapiPictureNativePixmapOzone(
                                client_texture_id,
                                texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(texture_id);
 }
 
 VaapiPictureNativePixmapOzone::~VaapiPictureNativePixmapOzone() {
@@ -58,30 +57,33 @@ bool VaapiPictureNativePixmapOzone::Initialize() {
   }
 
   // Import dmabuf fds into the output gl texture through EGLImage.
-  if (make_context_current_cb_ && !make_context_current_cb_.Run())
-    return false;
+  if (texture_id_ != 0 && !make_context_current_cb_.is_null()) {
+    if (!make_context_current_cb_.Run())
+      return false;
 
-  gl::ScopedTextureBinder texture_binder(texture_target_, texture_id_);
+    gl::ScopedTextureBinder texture_binder(texture_target_, texture_id_);
 
-  const gfx::BufferFormat format = pixmap_->GetBufferFormat();
+    gfx::BufferFormat format = pixmap_->GetBufferFormat();
 
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size_, BufferFormatToInternalFormat(format)));
-  if (!image->Initialize(pixmap_.get(), format)) {
-    LOG(ERROR) << "Failed to create GLImage";
-    return false;
+    scoped_refptr<gl::GLImageNativePixmap> image(new gl::GLImageNativePixmap(
+        size_, BufferFormatToInternalFormat(format)));
+    if (!image->Initialize(pixmap_.get(), format)) {
+      LOG(ERROR) << "Failed to create GLImage";
+      return false;
+    }
+    gl_image_ = image;
+    if (!gl_image_->BindTexImage(texture_target_)) {
+      LOG(ERROR) << "Failed to bind texture to GLImage";
+      return false;
+    }
   }
-  gl_image_ = image;
-  if (!gl_image_->BindTexImage(texture_target_)) {
-    LOG(ERROR) << "Failed to bind texture to GLImage";
-    return false;
-  }
 
-  if (bind_image_cb_ &&
-      !bind_image_cb_.Run(client_texture_id_, texture_target_, gl_image_,
-                          true /* can_bind_to_sampler */)) {
-    LOG(ERROR) << "Failed to bind client_texture_id";
-    return false;
+  if (client_texture_id_ != 0 && !bind_image_cb_.is_null()) {
+    if (!bind_image_cb_.Run(client_texture_id_, texture_target_, gl_image_,
+                            true)) {
+      LOG(ERROR) << "Failed to bind client_texture_id";
+      return false;
+    }
   }
 
   return true;
@@ -96,7 +98,7 @@ bool VaapiPictureNativePixmapOzone::Allocate(gfx::BufferFormat format) {
       factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size_, format,
                                   gfx::BufferUsage::SCANOUT_VDA_WRITE);
   if (!pixmap_) {
-    LOG(ERROR) << "Failed allocating a pixmap";
+    DVLOG(1) << "Failed allocating a pixmap";
     return false;
   }
 
@@ -116,7 +118,7 @@ bool VaapiPictureNativePixmapOzone::ImportGpuMemoryBufferHandle(
       gpu_memory_buffer_handle.native_pixmap_handle);
 
   if (!pixmap_) {
-    LOG(ERROR) << "Failed creating a pixmap from a native handle";
+    DVLOG(1) << "Failed creating a pixmap from a native handle";
     return false;
   }
 

@@ -588,12 +588,22 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
 
   for (size_t i = 0; i < buffers.size(); ++i) {
-    DCHECK(requested_pic_size_ == buffers[i].size());
+    uint32_t client_id = !buffers[i].client_texture_ids().empty()
+                             ? buffers[i].client_texture_ids()[0]
+                             : 0;
+    uint32_t service_id = !buffers[i].service_texture_ids().empty()
+                              ? buffers[i].service_texture_ids()[0]
+                              : 0;
+
+    DCHECK_EQ(buffers[i].texture_target(),
+              vaapi_picture_factory_->GetGLTextureTarget());
 
     std::unique_ptr<VaapiPicture> picture(vaapi_picture_factory_->Create(
-        vaapi_wrapper_, make_context_current_cb_, bind_image_cb_, buffers[i]));
-    RETURN_AND_NOTIFY_ON_FAILURE(picture, "Failed creating a VaapiPicture",
-                                 PLATFORM_FAILURE, );
+        vaapi_wrapper_, make_context_current_cb_, bind_image_cb_,
+        buffers[i].id(), requested_pic_size_, service_id, client_id,
+        buffers[i].texture_target()));
+    RETURN_AND_NOTIFY_ON_FAILURE(
+        picture.get(), "Failed creating a VaapiPicture", PLATFORM_FAILURE, );
 
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
       RETURN_AND_NOTIFY_ON_FAILURE(
