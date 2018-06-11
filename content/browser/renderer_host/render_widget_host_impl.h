@@ -421,8 +421,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // TouchEmulatorClient implementation.
   void ForwardEmulatedGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
-  void ForwardEmulatedTouchEvent(
-      const blink::WebTouchEvent& touch_event) override;
+  void ForwardEmulatedTouchEvent(const blink::WebTouchEvent& touch_event,
+                                 RenderWidgetHostViewBase* target) override;
   void SetCursor(const WebCursor& cursor) override;
   void ShowContextMenuAtPoint(const gfx::Point& point,
                               const ui::MenuSourceType source_type) override;
@@ -925,6 +925,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override;
 
+  // Returns a pointer to the touch emulator serving this host, but only if it
+  // already exists; calling this function will not force creation of a
+  // TouchEmulator.
+  TouchEmulator* GetExistingTouchEmulator();
+
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
@@ -1069,8 +1074,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool is_in_touchpad_gesture_fling_;
 
   std::unique_ptr<SyntheticGestureController> synthetic_gesture_controller_;
-
-  std::unique_ptr<TouchEmulator> touch_emulator_;
 
   // Receives and handles all input events.
   std::unique_ptr<InputRouter> input_router_;

@@ -347,7 +347,7 @@ class InputHandler::InputInjector
         &DispatchTouchEventCallback::sendSuccess, std::move(callback));
     for (size_t i = 0; i < events.size(); i++) {
       widget_host_->GetTouchEmulator()->InjectTouchEvent(
-          events[i],
+          events[i], widget_host_->GetView(),
           i == events.size() - 1 ? std::move(closure) : base::OnceClosure());
     }
     MaybeSelfDestruct();

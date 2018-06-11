@@ -158,7 +158,7 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
         GetWidgetHost(), blink::WebInputEvent::kTouchMove);
 
     for (const auto& event : kEvents)
-      GetWidgetHost()->ForwardEmulatedTouchEvent(event);
+      GetWidgetHost()->ForwardEmulatedTouchEvent(event, nullptr);
 
     // Runs until we get the InputMsgAck callback.
     EXPECT_EQ(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,

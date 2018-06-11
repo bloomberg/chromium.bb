@@ -16,6 +16,7 @@
 #include "components/viz/common/features.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
+#include "content/browser/renderer_host/input/touch_emulator.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
@@ -34,6 +35,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -993,6 +995,156 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   router->RouteMouseWheelEvent(root_rwhv, &scroll_event, ui::LatencyInfo());
 
   root_scroll_begin_observer.Wait();
+}
+
+class SitePerProcessEmulatedTouchBrowserTest
+    : public SitePerProcessHitTestBrowserTest {
+ public:
+  enum TestType { ScrollBubbling, PinchGoesToMainFrame };
+
+  ~SitePerProcessEmulatedTouchBrowserTest() override {}
+
+  void RunTest(TestType test_type) {
+    GURL main_url(embedded_test_server()->GetURL(
+        "/frame_tree/page_with_positioned_frame.html"));
+    ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+    // It is safe to obtain the root frame tree node here, as it doesn't change.
+    FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+    ASSERT_EQ(1U, root->child_count());
+
+    FrameTreeNode* iframe_node = root->child_at(0);
+    GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+    EXPECT_EQ(site_url, iframe_node->current_url());
+
+    RenderWidgetHostViewBase* root_rwhv =
+        static_cast<RenderWidgetHostViewBase*>(
+            root->current_frame_host()->GetRenderWidgetHost()->GetView());
+    RenderWidgetHostViewBase* child_rwhv =
+        static_cast<RenderWidgetHostViewBase*>(iframe_node->current_frame_host()
+                                                   ->GetRenderWidgetHost()
+                                                   ->GetView());
+
+    RenderWidgetHostInputEventRouter* router =
+        static_cast<WebContentsImpl*>(shell()->web_contents())
+            ->GetInputEventRouter();
+
+    WaitForChildFrameSurfaceReady(iframe_node->current_frame_host());
+
+    auto expect_gesture_with_position = base::BindRepeating(
+        [](blink::WebInputEvent::Type expected_type,
+           const gfx::Point& expected_position, content::InputEventAckSource,
+           content::InputEventAckState, const blink::WebInputEvent& event) {
+          if (event.GetType() != expected_type)
+            return false;
+
+          const blink::WebGestureEvent& gesture_event =
+              static_cast<const blink::WebGestureEvent&>(event);
+          EXPECT_NEAR(expected_position.x(), gesture_event.PositionInWidget().x,
+                      1);
+          EXPECT_NEAR(expected_position.y(), gesture_event.PositionInWidget().y,
+                      1);
+          EXPECT_EQ(blink::kWebGestureDeviceTouchscreen,
+                    gesture_event.SourceDevice());
+          return true;
+        });
+
+    blink::WebInputEvent::Type expected_gesture_type;
+    switch (test_type) {
+      case ScrollBubbling:
+        expected_gesture_type = blink::WebInputEvent::kGestureScrollBegin;
+        break;
+      case PinchGoesToMainFrame:
+        expected_gesture_type = blink::WebInputEvent::kGesturePinchBegin;
+        break;
+      default:
+        ASSERT_TRUE(false);
+    }
+
+    gfx::Point position_in_child(5, 5);
+    InputEventAckWaiter child_gesture_event_observer(
+        child_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(expect_gesture_with_position, expected_gesture_type,
+                            position_in_child));
+
+    gfx::Point position_in_root =
+        child_rwhv->TransformPointToRootCoordSpace(position_in_child);
+    InputEventAckWaiter root_gesture_event_observer(
+        root_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(expect_gesture_with_position, expected_gesture_type,
+                            position_in_root));
+
+    // Enable touch emulation.
+    auto* touch_emulator = router->GetTouchEmulator();
+    ASSERT_TRUE(touch_emulator);
+    touch_emulator->Enable(TouchEmulator::Mode::kEmulatingTouchFromMouse,
+                           ui::GestureProviderConfigType::CURRENT_PLATFORM);
+
+    // Create mouse events to emulate touch scroll. Since the page has no touch
+    // handlers, these events will be converted into a gesture scroll sequence.
+    base::TimeTicks simulated_event_time = ui::EventTimeForNow();
+    base::TimeDelta simulated_event_time_delta =
+        base::TimeDelta::FromMilliseconds(100);
+    blink::WebMouseEvent mouse_move_event =
+        SyntheticWebMouseEventBuilder::Build(blink::WebInputEvent::kMouseMove,
+                                             position_in_root.x(),
+                                             position_in_root.y(), 0);
+    mouse_move_event.SetTimeStamp(simulated_event_time);
+
+    int mouse_modifier = (test_type == PinchGoesToMainFrame)
+                             ? blink::WebInputEvent::kShiftKey
+                             : 0;
+    blink::WebMouseEvent mouse_down_event =
+        SyntheticWebMouseEventBuilder::Build(
+            blink::WebInputEvent::kMouseDown, position_in_root.x(),
+            position_in_root.y(), mouse_modifier);
+    mouse_down_event.button = blink::WebMouseEvent::Button::kLeft;
+    simulated_event_time += simulated_event_time_delta;
+    mouse_down_event.SetTimeStamp(simulated_event_time);
+
+    blink::WebMouseEvent mouse_drag_event =
+        SyntheticWebMouseEventBuilder::Build(
+            blink::WebInputEvent::kMouseMove, position_in_root.x(),
+            position_in_root.y() + 20, mouse_modifier);
+    simulated_event_time += simulated_event_time_delta;
+    mouse_drag_event.SetTimeStamp(simulated_event_time);
+    mouse_drag_event.button = blink::WebMouseEvent::Button::kLeft;
+
+    blink::WebMouseEvent mouse_up_event = SyntheticWebMouseEventBuilder::Build(
+        blink::WebInputEvent::kMouseUp, position_in_root.x(),
+        position_in_root.y() + 20, mouse_modifier);
+    mouse_up_event.button = blink::WebMouseEvent::Button::kLeft;
+    simulated_event_time += simulated_event_time_delta;
+    mouse_up_event.SetTimeStamp(simulated_event_time);
+
+    // Send mouse events and wait for GesturePinchBegin.
+    router->RouteMouseEvent(root_rwhv, &mouse_move_event, ui::LatencyInfo());
+    router->RouteMouseEvent(root_rwhv, &mouse_down_event, ui::LatencyInfo());
+    router->RouteMouseEvent(root_rwhv, &mouse_drag_event, ui::LatencyInfo());
+    router->RouteMouseEvent(root_rwhv, &mouse_up_event, ui::LatencyInfo());
+
+    if (test_type == ScrollBubbling) {
+      // Verify child receives GestureScrollBegin.
+      child_gesture_event_observer.Wait();
+    }
+
+    // Verify the root receives the GesturePinchBegin or GestureScrollBegin,
+    // depending on |test_type|.
+    root_gesture_event_observer.Wait();
+
+    // Shut down.
+    touch_emulator->Disable();
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
+                       EmulatedTouchScrollBubbles) {
+  RunTest(ScrollBubbling);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
+                       EmulatedTouchPinchGoesToMainFrame) {
+  RunTest(PinchGoesToMainFrame);
 }
 
 #if defined(USE_AURA) || defined(OS_ANDROID)
@@ -4154,6 +4306,10 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                                          testing::ValuesIn(kOneScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
+                        testing::Combine(testing::ValuesIn(kHitTestOption),
+                                         testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        SitePerProcessEmulatedTouchBrowserTest,
                         testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
 #if defined(USE_AURA)
