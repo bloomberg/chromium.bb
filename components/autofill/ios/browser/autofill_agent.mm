@@ -587,6 +587,10 @@ void GetFormAndField(autofill::FormData* form,
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
   [jsAutofillManager_ toggleTrackingFormMutations:YES];
+
+  [jsAutofillManager_ toggleTrackingUserEditedFields:
+                          base::FeatureList::IsEnabled(
+                              autofill::features::kAutofillPrefilledFields)];
   [self scanFormsInPage:webState pageURL:pageURL];
 }
 

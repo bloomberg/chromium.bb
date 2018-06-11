@@ -24,6 +24,10 @@ extern const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[];
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];
 
+// Title and description for the flag to control the dynamic autofill.
+extern const char kAutofillPrefilledFieldsName[];
+extern const char kAutofillPrefilledFieldsDescription[];
+
 // Enforcing restrictions to enable/disable autofill small form support.
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsName[];
 extern const char kAutofillEnforceMinRequiredFieldsForHeuristicsDescription[];

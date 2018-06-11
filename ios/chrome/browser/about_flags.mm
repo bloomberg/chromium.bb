@@ -285,6 +285,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
      flag_descriptions::kAutofillDynamicFormsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
+    {"autofill-prefilled-fields",
+     flag_descriptions::kAutofillPrefilledFieldsName,
+     flag_descriptions::kAutofillPrefilledFieldsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillPrefilledFields)},
     {"autofill-restrict-formless-form-extraction",
      flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
      flag_descriptions::

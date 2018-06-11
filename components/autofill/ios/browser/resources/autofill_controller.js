@@ -290,7 +290,8 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
     // b) The element is a 'select-one' element. 'select-one' elements are
     //    always autofilled; see AutofillManager::FillOrPreviewDataModelForm().
     // c) The "value" or "placeholder" attributes match the value, if any; or
-    if (element.value &&
+    // d) The value has not been set by the user.
+    if (element.value && __gCrWeb.form.fieldWasEditedByUser(element) &&
         !__gCrWeb.autofill.sanitizedFieldIsEmpty(element.value) &&
         fieldIdentifier !== forceFillFieldIdentifier &&
         !__gCrWeb.fill.isSelectElement(element) &&

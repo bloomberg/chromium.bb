@@ -69,6 +69,13 @@ __gCrWeb.form.messageToSend = null;
 __gCrWeb.form.lastFocusedElement = null;
 
 /**
+ * A WeakMap to track if the current value of a field was entered by user or
+ * programmatically.
+ * If the map is null, the source of changed is not track.
+ */
+ __gCrWeb.form.wasEditedByUser = null;
+
+/**
  * Based on Element::isFormControlElement() (WebKit)
  * @param {Element} element A DOM element.
  * @return {boolean} true if the |element| is a form control element.
@@ -336,6 +343,9 @@ var formActivity_ = function(evt) {
   if (evt.type != 'blur') {
     __gCrWeb.form.lastFocusedElement = document.activeElement;
   }
+  if (['change', 'input'].includes(evt.type)) {
+    __gCrWeb.form.wasEditedByUser.set(target, evt.isTrusted);
+  }
   if (target != __gCrWeb.form.lastFocusedElement) return;
   var msg = {
     'command': 'form.activity',
@@ -400,16 +410,18 @@ var attachListeners_ = function() {
   /**
    * Focus events performed on the 'capture' phase otherwise they are often
    * not received.
+   * Input and change performed on the 'capture' phase as they are needed to
+   * detect if the current value is entered by the user.
    */
   document.addEventListener('focus', formActivity_, true);
   document.addEventListener('blur', formActivity_, true);
   document.addEventListener('change', formActivity_, true);
+  document.addEventListener('input', formActivity_, true);
 
  /**
-  * Text input is watched at the bubbling phase as this seems adequate in
+  * Other events are watched at the bubbling phase as this seems adequate in
   * practice and it is less obtrusive to page scripts than capture phase.
   */
-  document.addEventListener('input', formActivity_, false);
   document.addEventListener('keyup', formActivity_, false);
   document.addEventListener('submit',submitHandler_, false);
 };
@@ -474,6 +486,34 @@ __gCrWeb.form['trackFormMutations'] = function(delay) {
   __gCrWeb.form.formMutationObserver.observe(
       document, {childList: true, subtree: true});
 };
+
+/**
+ * Enables or disables the tracking of input event sources.
+ */
+__gCrWeb.form['toggleTrackingUserEditedFields'] = function(track) {
+  if (track) {
+    __gCrWeb.form.wasEditedByUser =
+        __gCrWeb.form.wasEditedByUser || new WeakMap();
+  } else {
+    __gCrWeb.form.wasEditedByUser = null;
+  }
+}
+
+/**
+ * Returns whether the last |input| or |change| event on |element| was triggered
+ * by a user action (was "trusted").
+ */
+__gCrWeb.form['fieldWasEditedByUser'] = function(element) {
+  if (__gCrWeb.form.wasEditedByUser === null) {
+    // Input event sources is not tracked.
+    // Return true to preserve previous behavior.
+    return true;
+  }
+  if (!__gCrWeb.form.wasEditedByUser.has(element)) {
+    return false;
+  }
+  return __gCrWeb.form.wasEditedByUser.get(element);
+}
 
 /** Flush the message queue. */
 if (__gCrWeb.message) {

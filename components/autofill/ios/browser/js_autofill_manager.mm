@@ -91,6 +91,13 @@
   [_receiver executeJavaScript:script completionHandler:nil];
 }
 
+- (void)toggleTrackingUserEditedFields:(BOOL)state {
+  NSString* script = [NSString
+      stringWithFormat:@"__gCrWeb.form.toggleTrackingUserEditedFields(%s);",
+                       state ? "true" : "false"];
+  [_receiver executeJavaScript:script completionHandler:nil];
+}
+
 - (void)fillForm:(NSString*)dataString
     forceFillFieldIdentifier:(NSString*)forceFillFieldIdentifier
            completionHandler:(ProceduralBlock)completionHandler {
