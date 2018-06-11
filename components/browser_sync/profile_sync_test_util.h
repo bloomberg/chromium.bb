@@ -22,6 +22,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 namespace history {
 class HistoryService;
@@ -125,6 +126,10 @@ class ProfileSyncServiceBundle {
     return url_request_context_.get();
   }
 
+  network::TestURLLoaderFactory* url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
   sync_preferences::TestingPrefServiceSyncable* pref_service() {
     return &pref_service_;
   }
@@ -168,7 +173,10 @@ class ProfileSyncServiceBundle {
   testing::NiceMock<sync_sessions::MockSyncSessionsClient>
       sync_sessions_client_;
   invalidation::FakeInvalidationService fake_invalidation_service_;
+  // TODO(https://crbug.com/844968): Remove references to url_request_context_
+  // once the rest of the sync engine is migrated to network service.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   base::ScopedTempDir base_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceBundle);

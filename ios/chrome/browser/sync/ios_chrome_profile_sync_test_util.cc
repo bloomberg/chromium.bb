@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_sync_client.h"
 #include "ios/chrome/common/channel_info.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(
@@ -38,6 +39,7 @@ CreateProfileSyncServiceParamsForTest(
   init_params.network_time_update_callback = base::DoNothing();
   init_params.base_directory = browser_state->GetStatePath();
   init_params.url_request_context = browser_state->GetRequestContext();
+  init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
   init_params.debug_identifier = browser_state->GetDebugName();
   init_params.channel = ::GetChannel();
 
