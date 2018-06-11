@@ -99,8 +99,8 @@ class BackgroundImageGeometry {
                   LayoutUnit,
                   LayoutUnit,
                   LayoutUnit);
-  void SetSpaceX(LayoutUnit, LayoutUnit, LayoutUnit);
-  void SetSpaceY(LayoutUnit, LayoutUnit, LayoutUnit);
+  void SetSpaceX(LayoutUnit, LayoutUnit);
+  void SetSpaceY(LayoutUnit, LayoutUnit);
 
   void UseFixedAttachment(const LayoutPoint& attachment_point);
   void SetHasNonLocalGeometry() { has_non_local_geometry_ = true; }
