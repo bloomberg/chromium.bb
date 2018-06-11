@@ -40,6 +40,7 @@ class PredictorTableBase
   virtual void LogDatabaseStats() = 0;
   void Initialize(sql::Connection* db);
   void SetCancelled();
+  bool IsCancelled();
   sql::Connection* DB();
   void ResetDB();
 

@@ -39,15 +39,7 @@ const char kPreconnectMode[] = "preconnect";
 const char kNoPreconnectMode[] = "no-preconnect";
 
 const base::Feature kSpeculativePreconnectFeature{
-  kSpeculativePreconnectFeatureName,
-// TODO(https://crbug.com/839886): Enable the feature on ChromeOS after disk I/O
-// flakes are fixed.
-#if defined(OS_CHROMEOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    kSpeculativePreconnectFeatureName, base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool MaybeEnableSpeculativePreconnect(LoadingPredictorConfig* config) {
   if (!base::FeatureList::IsEnabled(kSpeculativePreconnectFeature))
