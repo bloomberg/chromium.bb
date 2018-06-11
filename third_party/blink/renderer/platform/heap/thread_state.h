@@ -749,7 +749,6 @@ class PLATFORM_EXPORT ThreadState {
     BlinkGC::StackState stack_state;
     BlinkGC::MarkingType marking_type;
     BlinkGC::GCReason reason;
-    double marking_time_in_milliseconds;
     std::unique_ptr<MarkingVisitor> visitor;
   };
   GCData current_gc_data_;
