@@ -15,6 +15,7 @@ js_type_check("closure_compile") {
     ":settings_dropdown_menu",
     ":settings_radio_group",
     ":settings_slider",
+    ":settings_textarea",
     ":settings_toggle_button",
   ]
 }
@@ -96,6 +97,9 @@ js_library("settings_slider") {
     "//ui/webui/resources/cr_elements/policy:cr_policy_pref_behavior",
     "//ui/webui/resources/js:assert",
   ]
+}
+
+js_library("settings_textarea") {
 }
 
 js_library("settings_toggle_button") {

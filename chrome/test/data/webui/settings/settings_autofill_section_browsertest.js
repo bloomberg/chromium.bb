@@ -715,8 +715,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       return self.createAddressDialog_(FakeDataMaker.emptyAddressEntry())
           .then(function(dialog) {
             const saveButton = dialog.$.saveButton;
-            const testElements = dialog.$.dialog.querySelectorAll(
-                'paper-input,paper-textarea,cr-input');
+            const testElements =
+                dialog.$.dialog.querySelectorAll('settings-textarea, cr-input');
 
             // Default country is 'US' expecting: Name, Organization,
             // Street address, City, State, ZIP code, Phone, and Email.

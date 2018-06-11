@@ -59,6 +59,14 @@ suite('cr-input', function() {
     assertFalse(input.hasAttribute('placeholder'));
   });
 
+  test('labelHiddenWhenEmpty', function() {
+    const label = crInput.$.label;
+    assertTrue(label.hidden);
+    crInput.label = 'foobar';
+    assertFalse(label.hidden);
+    assertEquals('foobar', label.textContent);
+  });
+
   test('valueSetCorrectly', function() {
     crInput.value = 'hello';
     assertEquals(crInput.value, input.value);

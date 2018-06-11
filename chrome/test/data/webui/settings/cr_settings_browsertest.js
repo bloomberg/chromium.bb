@@ -94,6 +94,28 @@ TEST_F('CrSettingsSliderTest', 'All', function() {
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
+function CrSettingsTextareaTest() {}
+
+CrSettingsTextareaTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/controls/settings_textarea.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'settings_textarea_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsTextareaTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
 function CrSettingsToggleButtonTest() {}
 
 CrSettingsToggleButtonTest.prototype = {

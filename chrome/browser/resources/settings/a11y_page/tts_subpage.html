@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html"
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-textarea.html">
 <link rel="import" href="../device_page/display_size_slider.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../languages_page/languages_browser_proxy.html">
@@ -24,6 +24,15 @@
         -webkit-margin-start: var(--settings-box-row-indent);
         -webkit-padding-end: 0;
         -webkit-padding-start: 0;
+      }
+
+      #previewInput {
+        width: 100%;
+        --cr-input-error-display: none;
+      }
+
+      #previewInput paper-button {
+        -webkit-margin-start: 8px;
       }
     </style>
 
@@ -75,15 +84,13 @@
       </select>
     </div>
     <div class="settings-box continuation">
-      <div class="start">
-        <paper-textarea id="previewInput" type="text"
-            label="$i18n{textToSpeechPreviewInputLabel}"
-            always-float-label value="$i18n{textToSpeechPreviewInput}">
-        </paper-textarea>
-      </div>
-      <paper-button on-click="onPreviewTtsClick_" disabled="[[!hasVoices]]">
+      <cr-input id="previewInput" label="$i18n{textToSpeechPreviewInputLabel}"
+          value="$i18n{textToSpeechPreviewInput}">
+        <paper-button on-click="onPreviewTtsClick_" disabled="[[!hasVoices]]"
+            slot="suffix">
           $i18n{textToSpeechPreviewPlay}
-      </paper-button>
+        </paper-button>
+      </cr-input>
     </div>
 
     <h2>$i18n{textToSpeechVoices}</h2>
