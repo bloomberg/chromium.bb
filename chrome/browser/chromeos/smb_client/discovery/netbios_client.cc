@@ -7,11 +7,14 @@
 #include "chromeos/network/firewall_hole.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace chromeos {
 namespace smb_client {
 
 namespace {
+
+constexpr int kNetBiosPort = 137;
 
 // TODO(baileyberro): Fill out chrome_policy with the enterprise policy to
 // disable NETBIOS discovery. https://crbug.com/850966
@@ -41,59 +44,111 @@ constexpr net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
 
 }  // namespace
 
-NetBiosClient::NetBiosClient(network::mojom::NetworkContext* network_context) {
-  NOTIMPLEMENTED();
+NetBiosClient::NetBiosClient(network::mojom::NetworkContext* network_context)
+    : bind_address_(net::IPAddress::IPv4AllZeros(), 0 /* port */),
+      receiver_binding_(this) {
+  DCHECK(network_context);
 
-  GetNetworkTrafficAnnotationTag();
+  network::mojom::UDPSocketReceiverPtr rec_int_ptr;
+  receiver_binding_.Bind(mojo::MakeRequest(&rec_int_ptr));
+
+  network_context->CreateUDPSocket(mojo::MakeRequest(&server_socket_),
+                                   std::move(rec_int_ptr));
 }
 
-NetBiosClient::~NetBiosClient() {}
+NetBiosClient::~NetBiosClient() = default;
 
 void NetBiosClient::ExecuteNameRequest(const net::IPAddress& broadcast_address,
                                        uint16_t transaction_id,
                                        NetBiosResponseCallback callback) {
-  NOTIMPLEMENTED();
+  DCHECK(!executed_);
+  DCHECK(callback);
+
+  broadcast_address_ = net::IPEndPoint(broadcast_address, kNetBiosPort);
+  transaction_id_ = transaction_id;
+  callback_ = callback;
+
+  executed_ = true;
+  BindSocket();
 }
 
 void NetBiosClient::BindSocket() {
-  NOTIMPLEMENTED();
+  server_socket_->Bind(
+      bind_address_, nullptr /* socket_options */,
+      base::BindOnce(&NetBiosClient::OnBindComplete, AsWeakPtr()));
 }
 
 void NetBiosClient::OpenPort(uint16_t port) {
-  NOTIMPLEMENTED();
+  FirewallHole::Open(
+      FirewallHole::PortType::UDP, port, "" /* all interfaces */,
+      base::BindRepeating(&NetBiosClient::OnOpenPortComplete, AsWeakPtr()));
 }
 
 void NetBiosClient::SetBroadcast() {
-  NOTIMPLEMENTED();
+  server_socket_->SetBroadcast(
+      true /* broadcast */,
+      base::BindOnce(&NetBiosClient::OnSetBroadcastCompleted, AsWeakPtr()));
 }
 
 void NetBiosClient::SendPacket() {
-  NOTIMPLEMENTED();
+  server_socket_->SendTo(
+      broadcast_address_, GenerateBroadcastPacket(),
+      net::MutableNetworkTrafficAnnotationTag(GetNetworkTrafficAnnotationTag()),
+      base::BindOnce(&NetBiosClient::OnSendCompleted, AsWeakPtr()));
 }
 
 void NetBiosClient::OnBindComplete(
     int32_t result,
     const base::Optional<net::IPEndPoint>& local_ip) {
-  NOTIMPLEMENTED();
+  if (result != net::OK) {
+    LOG(ERROR) << "NetBiosClient: Binding socket failed: " << result;
+    return;
+  }
+
+  OpenPort(local_ip.value().port());
 }
 
 void NetBiosClient::OnOpenPortComplete(
     std::unique_ptr<FirewallHole> firewall_hole) {
-  NOTIMPLEMENTED();
+  if (!firewall_hole) {
+    LOG(ERROR) << "NetBiosClient: Opening port failed.";
+    return;
+  }
+  firewall_hole_ = std::move(firewall_hole);
+
+  SetBroadcast();
 }
 
 void NetBiosClient::OnSetBroadcastCompleted(int32_t result) {
-  NOTIMPLEMENTED();
+  if (result != net::OK) {
+    LOG(ERROR) << "NetBiosClient: SetBroadcast failed: " << result;
+    return;
+  }
+
+  SendPacket();
 }
 
 void NetBiosClient::OnSendCompleted(int32_t result) {
-  NOTIMPLEMENTED();
+  if (result != net::OK) {
+    LOG(ERROR) << "NetBiosClient: Send failed: " << result;
+    return;
+  }
+  server_socket_->ReceiveMore(1);
 }
 
 void NetBiosClient::OnReceived(int32_t result,
                                const base::Optional<net::IPEndPoint>& src_ip,
                                base::Optional<base::span<const uint8_t>> data) {
-  NOTIMPLEMENTED();
+  if (result != net::OK) {
+    LOG(ERROR) << "NetBiosClient: Receive failed: " << result;
+    return;
+  }
+
+  DCHECK(data);
+  std::vector<uint8_t> response_packet(data->begin(), data->end());
+
+  callback_.Run(response_packet, transaction_id_, src_ip.value());
+  server_socket_->ReceiveMore(1);
 }
 
 std::vector<uint8_t> NetBiosClient::GenerateBroadcastPacket() {
