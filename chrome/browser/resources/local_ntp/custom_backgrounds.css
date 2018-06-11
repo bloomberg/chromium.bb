@@ -255,7 +255,7 @@
 }
 
 .is-img-sel #bg-daily-refresh {
-  display: inline-block;
+  display: none;
 }
 
 .is-col-sel #bg-daily-refresh {
@@ -263,7 +263,7 @@
 }
 
 .is-img-sel #bg-sel-refresh-text {
-  display: inline-block;
+  display: none;
   margin: 24px 0 0 64px;
 }
 
