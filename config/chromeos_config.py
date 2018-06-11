@@ -3193,7 +3193,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.chromium_pfq_informational,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
-      important=False,
+      important=True,
       description='Test canary versions of goma.',
       boards=[
           'amd64-generic',
@@ -3250,6 +3250,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       ['amd64-generic', 'daisy'],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
+      important=True,
   )
 
   site_config.ApplyForBoards(
@@ -3257,6 +3258,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       ['caroline', 'eve', 'peach_pit', 'tricky', 'veyron_minnie',],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
+      important=True,
   )
 
   _telemetry_boards = frozenset([
@@ -3275,6 +3277,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   site_config['amd64-generic-telemetry'].apply(
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
+      important=True,
   )
 
 
