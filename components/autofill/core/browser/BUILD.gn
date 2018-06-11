@@ -470,6 +470,7 @@ source_set("unit_tests") {
     "//services/identity/public/cpp:test_support",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network:test_support",
+    "//services/network/public/cpp",
     "//sql",
     "//testing/gmock",
     "//testing/gtest",

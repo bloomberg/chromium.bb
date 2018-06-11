@@ -8,12 +8,6 @@
 #include "base/callback.h"
 #include "url/gurl.h"
 
-namespace network {
-namespace mojom {
-class URLLoaderFactory;
-}  // namespace mojom
-}  // namespace network
-
 namespace autofill {
 
 class PasswordRequirementsSpec;
@@ -39,11 +33,7 @@ class PasswordRequirementsSpecFetcher {
   //
   // If the network request fails or times out, the callback receives an empty
   // spec.
-  //
-  // |origin| passed by value because it may need to be normalized.
-  virtual void Fetch(network::mojom::URLLoaderFactory* loader_factory,
-                     GURL origin,
-                     FetchCallback callback) = 0;
+  virtual void Fetch(GURL origin, FetchCallback callback) = 0;
 };
 
 }  // namespace autofill

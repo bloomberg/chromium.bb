@@ -15,16 +15,21 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/url_canon.h"
 
 namespace autofill {
 
 PasswordRequirementsSpecFetcherImpl::PasswordRequirementsSpecFetcherImpl(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     int version,
     size_t prefix_length,
     int timeout)
-    : version_(version), prefix_length_(prefix_length), timeout_(timeout) {
+    : url_loader_factory_(std::move(url_loader_factory)),
+      version_(version),
+      prefix_length_(prefix_length),
+      timeout_(timeout) {
   DCHECK_GE(version_, 0);
   DCHECK_LE(prefix_length_, 32u);
   DCHECK_GE(timeout_, 0);
@@ -84,7 +89,6 @@ GURL GetUrlForRequirementsSpec(int version, const std::string& hash_prefix) {
 }  // namespace
 
 void PasswordRequirementsSpecFetcherImpl::Fetch(
-    network::mojom::URLLoaderFactory* loader_factory,
     GURL origin,
     FetchCallback callback) {
   DCHECK(origin.is_valid());
@@ -149,7 +153,7 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(
   lookup->url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   lookup->url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory,
+      url_loader_factory_.get(),
       base::BindOnce(&PasswordRequirementsSpecFetcherImpl::OnFetchComplete,
                      base::Unretained(this), hash_prefix));
 

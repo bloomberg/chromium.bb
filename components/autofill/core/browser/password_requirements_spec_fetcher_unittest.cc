@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/browser/proto/password_requirements_shard.pb.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -218,13 +219,15 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
 
     // Trigger the network request and record data of the callback.
     PasswordRequirementsSpecFetcherImpl fetcher(
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &loader_factory),
         test.generation, test.prefix_length, test.timeout);
     auto callback =
         base::BindLambdaForTesting([&](const PasswordRequirementsSpec& spec) {
           callback_called = true;
           returned_spec = spec;
         });
-    fetcher.Fetch(&loader_factory, GURL(test.origin), callback);
+    fetcher.Fetch(GURL(test.origin), callback);
 
     environment.RunUntilIdle();
 
@@ -276,15 +279,17 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchDataInterleaved) {
     // unified into one network request.
     const size_t kPrefixLength = 0;
     const int kTimeout = 1000;
-    PasswordRequirementsSpecFetcherImpl fetcher(kVersion, kPrefixLength,
-                                                kTimeout);
+    PasswordRequirementsSpecFetcherImpl fetcher(
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &loader_factory),
+        kVersion, kPrefixLength, kTimeout);
 
     fetcher.Fetch(
-        &loader_factory, GURL("http://a.com"),
+        GURL("http://a.com"),
         base::BindLambdaForTesting(
             [&](const PasswordRequirementsSpec& spec) { spec_for_a = spec; }));
     fetcher.Fetch(
-        &loader_factory, GURL("http://b.com"),
+        GURL("http://b.com"),
         base::BindLambdaForTesting(
             [&](const PasswordRequirementsSpec& spec) { spec_for_b = spec; }));
 
