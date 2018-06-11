@@ -42,7 +42,8 @@ class CC_EXPORT LayerTreeHostCommon {
                                       float page_scale_factor,
                                       const Layer* page_scale_layer,
                                       const Layer* inner_viewport_scroll_layer,
-                                      const Layer* outer_viewport_scroll_layer);
+                                      const Layer* outer_viewport_scroll_layer,
+                                      TransformNode* page_scale_transform_node);
     CalcDrawPropsMainInputsForTesting(Layer* root_layer,
                                       const gfx::Size& device_viewport_size,
                                       const gfx::Transform& device_transform);
@@ -56,6 +57,7 @@ class CC_EXPORT LayerTreeHostCommon {
     const Layer* page_scale_layer;
     const Layer* inner_viewport_scroll_layer;
     const Layer* outer_viewport_scroll_layer;
+    TransformNode* page_scale_transform_node;
   };
 
   struct CC_EXPORT CalcDrawPropsImplInputs {
@@ -74,7 +76,8 @@ class CC_EXPORT LayerTreeHostCommon {
         int max_texture_size,
         bool can_adjust_raster_scales,
         RenderSurfaceList* render_surface_list,
-        PropertyTrees* property_trees);
+        PropertyTrees* property_trees,
+        TransformNode* page_scale_transform_node);
 
     LayerImpl* root_layer;
     gfx::Size device_viewport_size;
@@ -90,6 +93,7 @@ class CC_EXPORT LayerTreeHostCommon {
     bool can_adjust_raster_scales;
     RenderSurfaceList* render_surface_list;
     PropertyTrees* property_trees;
+    TransformNode* page_scale_transform_node;
   };
 
   struct CC_EXPORT CalcDrawPropsImplInputsForTesting

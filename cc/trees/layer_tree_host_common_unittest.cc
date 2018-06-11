@@ -115,6 +115,12 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     inputs.page_scale_layer = page_scale_layer;
     inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
     inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
+    if (page_scale_layer) {
+      PropertyTrees* property_trees =
+          root_layer->layer_tree_host()->property_trees();
+      inputs.page_scale_transform_node = property_trees->transform_tree.Node(
+          page_scale_layer->transform_tree_index());
+    }
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 
@@ -149,6 +155,12 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
     inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
     inputs.can_adjust_raster_scales = true;
+    if (page_scale_layer) {
+      PropertyTrees* property_trees =
+          root_layer->layer_tree_impl()->property_trees();
+      inputs.page_scale_transform_node = property_trees->transform_tree.Node(
+          page_scale_layer->transform_tree_index());
+    }
 
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
@@ -1251,6 +1263,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
         root, root->bounds(), translate, &render_surface_list_impl);
     inputs.page_scale_factor = page_scale_factor;
     inputs.page_scale_layer = root;
+    inputs.page_scale_transform_node =
+        inputs.property_trees->transform_tree.Node(
+            inputs.page_scale_layer->transform_tree_index());
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     gfx::Transform page_scaled_translate = translate;
@@ -7844,6 +7859,8 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   inputs.page_scale_factor = page_scale_factor;
   inputs.can_adjust_raster_scales = true;
   inputs.page_scale_layer = root_layer;
+  inputs.page_scale_transform_node = inputs.property_trees->transform_tree.Node(
+      inputs.page_scale_layer->transform_tree_index());
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   EXPECT_FLOAT_EQ(3.f, root_layer->GetIdealContentsScale());

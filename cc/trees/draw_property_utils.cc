@@ -490,52 +490,6 @@ static void UpdateElasticOverscrollInternal(
   property_trees->transform_tree.set_needs_update(true);
 }
 
-#if DCHECK_IS_ON()
-static void ValidatePageScaleLayer(const Layer* page_scale_layer) {
-  DCHECK_EQ(page_scale_layer->position().ToString(), gfx::PointF().ToString());
-  DCHECK_EQ(page_scale_layer->transform_origin().ToString(),
-            gfx::Point3F().ToString());
-}
-
-static void ValidatePageScaleLayer(const LayerImpl* page_scale_layer) {}
-#endif
-
-template <typename LayerType>
-static void UpdatePageScaleFactorInternal(PropertyTrees* property_trees,
-                                          const LayerType* page_scale_layer,
-                                          float page_scale_factor,
-                                          float device_scale_factor,
-                                          gfx::Transform device_transform) {
-  if (property_trees->transform_tree.page_scale_factor() == page_scale_factor)
-    return;
-
-  property_trees->transform_tree.set_page_scale_factor(page_scale_factor);
-  DCHECK(page_scale_layer);
-  DCHECK_GE(page_scale_layer->transform_tree_index(),
-            TransformTree::kRootNodeId);
-  TransformNode* node = property_trees->transform_tree.Node(
-      page_scale_layer->transform_tree_index());
-// TODO(enne): property trees can't ask the layer these things, but
-// the page scale layer should *just* be the page scale.
-#if DCHECK_IS_ON()
-  ValidatePageScaleLayer(page_scale_layer);
-#endif
-
-  if (IsRootLayer(page_scale_layer)) {
-    // When the page scale layer is also the root layer, the node should also
-    // store the combined scale factor and not just the page scale factor.
-    float post_local_scale_factor = page_scale_factor * device_scale_factor;
-    node->post_local_scale_factor = post_local_scale_factor;
-    node->post_local = device_transform;
-    node->post_local.Scale(post_local_scale_factor, post_local_scale_factor);
-  } else {
-    node->post_local_scale_factor = page_scale_factor;
-    node->update_post_local_transform(gfx::PointF(), gfx::Point3F());
-  }
-  node->needs_local_transform_update = true;
-  property_trees->transform_tree.set_needs_update(true);
-}
-
 static gfx::Rect LayerDrawableContentRect(
     const LayerImpl* layer,
     const gfx::Rect& layer_bounds_in_target_space,
@@ -1046,23 +1000,23 @@ void ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
 }
 
 void UpdatePageScaleFactor(PropertyTrees* property_trees,
-                           const LayerImpl* page_scale_layer,
+                           TransformNode* page_scale_node,
                            float page_scale_factor,
                            float device_scale_factor,
                            const gfx::Transform device_transform) {
-  UpdatePageScaleFactorInternal(property_trees, page_scale_layer,
-                                page_scale_factor, device_scale_factor,
-                                device_transform);
-}
+  if (property_trees->transform_tree.page_scale_factor() == page_scale_factor)
+    return;
 
-void UpdatePageScaleFactor(PropertyTrees* property_trees,
-                           const Layer* page_scale_layer,
-                           float page_scale_factor,
-                           float device_scale_factor,
-                           const gfx::Transform device_transform) {
-  UpdatePageScaleFactorInternal(property_trees, page_scale_layer,
-                                page_scale_factor, device_scale_factor,
-                                device_transform);
+  property_trees->transform_tree.set_page_scale_factor(page_scale_factor);
+
+  float post_local_scale_factor = page_scale_factor * device_scale_factor;
+  page_scale_node->post_local_scale_factor = post_local_scale_factor;
+  page_scale_node->post_local = device_transform;
+  page_scale_node->post_local.Scale(post_local_scale_factor,
+                                    post_local_scale_factor);
+
+  page_scale_node->needs_local_transform_update = true;
+  property_trees->transform_tree.set_needs_update(true);
 }
 
 void UpdateElasticOverscroll(PropertyTrees* property_trees,
