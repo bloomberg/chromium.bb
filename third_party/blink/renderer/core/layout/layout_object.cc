@@ -115,9 +115,19 @@ namespace blink {
 
 namespace {
 
-inline bool ShouldUseNewLayout(const ComputedStyle& style) {
-  return RuntimeEnabledFeatures::LayoutNGEnabled() &&
-         !style.ForceLegacyLayout();
+inline bool ShouldUseNewLayout(const Element& element,
+                               const ComputedStyle& style) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return false;
+  const Document& document = element.GetDocument();
+  bool requires_ng_block_fragmentation =
+      document.Printing() ||
+      (document.GetLayoutView() &&
+       document.GetLayoutView()->StyleRef().IsOverflowPaged());
+  if (requires_ng_block_fragmentation &&
+      !RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled())
+    return false;
+  return !style.ForceLegacyLayout();
 }
 
 template <typename Predicate>
@@ -244,11 +254,11 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kBlock:
     case EDisplay::kFlowRoot:
     case EDisplay::kInlineBlock:
-      if (ShouldUseNewLayout(style))
+      if (ShouldUseNewLayout(*element, style))
         return new LayoutNGBlockFlow(element);
       return new LayoutBlockFlow(element);
     case EDisplay::kListItem:
-      if (ShouldUseNewLayout(style))
+      if (ShouldUseNewLayout(*element, style))
         return new LayoutNGListItem(element);
       return new LayoutListItem(element);
     case EDisplay::kTable:
@@ -264,11 +274,11 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kTableColumn:
       return new LayoutTableCol(element);
     case EDisplay::kTableCell:
-      if (ShouldUseNewLayout(style))
+      if (ShouldUseNewLayout(*element, style))
         return new LayoutNGTableCell(element);
       return new LayoutTableCell(element);
     case EDisplay::kTableCaption:
-      if (ShouldUseNewLayout(style))
+      if (ShouldUseNewLayout(*element, style))
         return new LayoutNGTableCaption(element);
       return new LayoutTableCaption(element);
     case EDisplay::kWebkitBox:
@@ -277,7 +287,7 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kFlex:
     case EDisplay::kInlineFlex:
       if (RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled() &&
-          ShouldUseNewLayout(style)) {
+          ShouldUseNewLayout(*element, style)) {
         return new LayoutNGFlexibleBox(element);
       }
       return new LayoutFlexibleBox(element);

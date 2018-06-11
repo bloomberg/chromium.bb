@@ -693,7 +693,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
           (style.IsOverflowPaged() &&
            element != document.ViewportDefiningElement())) {
         style.SetForceLegacyLayout(true);
-      } else if (document.Paginated()) {
+      } else if (document.Printing()) {
         // This needs to be discovered on the root element.
         DCHECK_EQ(element, document.documentElement());
         style.SetForceLegacyLayout(true);
