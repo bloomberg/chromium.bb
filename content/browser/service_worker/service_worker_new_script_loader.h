@@ -27,7 +27,7 @@ struct HttpResponseInfoIOBuffer;
 // network, and returns the response to |client|, while also writing the
 // response into the service worker script storage.
 //
-// This works as follows:
+// In the common case, this works as follows:
 //   1. Makes a network request.
 //   2. OnReceiveResponse() is called, writes the response headers to the
 //      service worker script storage and responds with them to the |client|
@@ -38,6 +38,14 @@ struct HttpResponseInfoIOBuffer;
 //   4. OnComplete() for the network load and OnWriteDataComplete() are called,
 //      calls CommitCompleted() and closes the connections with the network
 //      service and the renderer process.
+// In an uncommon case, the response body is empty so
+// OnStartLoadingResponseBody() is not called.
+//
+// A set of |network_loader_state_|, |header_writer_state_|, and
+// |body_writer_state_| is the state of this loader. Each of them is changed
+// independently, while some state changes have dependency to other state
+// changes.  See the comment for each field below to see exactly when their
+// state changes happen.
 //
 // In case there is already an installed service worker for this registration,
 // this class also performs the "byte-for-byte" comparison for updating the
@@ -96,14 +104,15 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   const static uint32_t kReadBufferSize;
 
  private:
-  enum class State {
+  enum class NetworkLoaderState {
     kNotStarted,
-    kStarted,
-    kWroteHeaders,
-    kWroteData,
+    kLoadingHeader,
+    kWaitingForBody,
+    kLoadingBody,
     kCompleted,
   };
-  void AdvanceState(State new_state);
+
+  enum class WriterState { kNotStarted, kWriting, kCompleted };
 
   // Writes the given headers into the service worker script storage.
   void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
@@ -146,14 +155,48 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
-  bool network_load_completed_ = false;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   // Used for responding with the fetched script to this loader's client.
   network::mojom::URLLoaderClientPtr client_;
   mojo::ScopedDataPipeProducerHandle client_producer_;
 
-  State state_ = State::kNotStarted;
+  // Represents the state of |network_loader_|.
+  // Corresponds to the steps described in the class comments.
+  //
+  // When response body exists:
+  // CreateLoaderAndStart(): kNotStarted -> kLoadingHeader
+  // OnReceiveResponse(): kLoadingHeader -> kWaitingForBody
+  // OnStartLoadingResponseBody(): kWaitingForBody -> kLoadingBody
+  // OnComplete(): kLoadingBody -> kCompleted
+  //
+  // When response body is empty:
+  // CreateLoaderAndStart(): kNotStarted -> kLoadingHeader
+  // OnReceiveResponse(): kLoadingHeader -> kWaitingForBody
+  // OnComplete(): kWaitingForBody -> kCompleted
+  NetworkLoaderState network_loader_state_ = NetworkLoaderState::kNotStarted;
+
+  // Represents the state of |cache_writer_|.
+  // Set to kWriting when it starts to write the header, and set to kCompleted
+  // when the header has been written.
+  //
+  // OnReceiveResponse(): kNotStarted -> kWriting (in WriteHeaders())
+  // OnWriteHeadersComplete(): kWriting -> kCompleted
+  WriterState header_writer_state_ = WriterState::kNotStarted;
+
+  // Represents the state of |cache_writer_| and |network_consumer_|.
+  // Set to kWriting when |this| starts watching |network_consumer_|, and set to
+  // kCompleted when all data has been written to |cache_writer_|.
+  //
+  // When response body exists:
+  // OnStartLoadingResponseBody() && OnWriteHeadersComplete():
+  //     kNotStarted -> kWriting
+  // OnNetworkDataAvailable() && MOJO_RESULT_FAILED_PRECONDITION:
+  //     kWriting -> kCompleted
+  //
+  // When response body is empty:
+  // OnComplete(): kNotStarted -> kCompleted
+  WriterState body_writer_state_ = WriterState::kNotStarted;
 
   const uint32_t original_options_;
 
