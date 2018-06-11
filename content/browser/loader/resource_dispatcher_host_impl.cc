@@ -1624,6 +1624,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   new_request->set_method(info.common_params.method);
   new_request->set_site_for_cookies(info.site_for_cookies);
   new_request->set_initiator(info.begin_params->initiator_origin);
+  new_request->set_upgrade_if_insecure(info.upgrade_if_insecure);
   if (info.is_main_frame) {
     new_request->set_first_party_url_policy(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);

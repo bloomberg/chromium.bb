@@ -154,7 +154,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
       const std::string& method,
       NavigationURLLoaderDelegate* delegate,
       bool allow_download = false,
-      bool is_main_frame = true) {
+      bool is_main_frame = true,
+      bool upgrade_if_insecure = false) {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
             headers, net::LOAD_NORMAL, false /* skip_service_worker */,
@@ -176,6 +177,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
             false /* parent_is_main_frame */, false /* are_ancestors_secure */,
             -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
             false /* report_raw_headers */, false /* is_prerenering */,
+            upgrade_if_insecure /* upgrade_if_insecure */,
             nullptr /* blob_url_loader_factory */,
             base::UnguessableToken::Create() /* devtools_navigation_token */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
@@ -255,6 +257,26 @@ class NavigationURLLoaderImplTest : public testing::Test {
     delegate.WaitForResponseStarted();
 
     return most_recent_resource_request_.value().priority;
+  }
+
+  GURL NavigateAndReturnRedirectURL(const GURL& url,
+                                    bool upgrade_if_insecure,
+                                    bool expect_request_fail) {
+    TestNavigationURLLoaderDelegate delegate;
+    std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
+        url,
+        base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
+                           url.GetOrigin().spec().c_str()),
+        "GET", &delegate, false /* allow_download */, true /*is_main_frame*/,
+        upgrade_if_insecure);
+    delegate.WaitForRequestRedirected();
+    loader->FollowRedirect(base::nullopt);
+    if (expect_request_fail) {
+      delegate.WaitForRequestFailed();
+    } else {
+      delegate.WaitForResponseStarted();
+    }
+    return delegate.redirect_info().new_url;
   }
 
  protected:
@@ -385,6 +407,26 @@ TEST_F(NavigationURLLoaderImplTest, RedirectModifiedHeaders) {
   EXPECT_TRUE(
       most_recent_resource_request_->headers.GetHeader("Header3", &header3));
   EXPECT_EQ("Value3", header3);
+}
+
+// Tests that the Upgrade If Insecure flag is obeyed.
+TEST_F(NavigationURLLoaderImplTest, UpgradeIfInsecureTest) {
+  ASSERT_TRUE(http_test_server_.Start());
+  const GURL url = http_test_server_.GetURL("/redirect301-to-http");
+  GURL expected_url = GURL("http://test.test/test");
+  // We expect the request to fail since there is no server listening at
+  // test.test, but for the purpose of this test we only need to validate the
+  // redirect URL was not changed.
+  EXPECT_EQ(expected_url,
+            NavigateAndReturnRedirectURL(url, false /* upgrade_if_insecure */,
+                                         true /* expect_request_fail */));
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr("https");
+  expected_url = expected_url.ReplaceComponents(replacements);
+  // Same as above, but validating the URL is upgraded to https.
+  EXPECT_EQ(expected_url,
+            NavigateAndReturnRedirectURL(url, true /* upgrade_if_insecure */,
+                                         true /* expect_request_fail */));
 }
 
 }  // namespace content

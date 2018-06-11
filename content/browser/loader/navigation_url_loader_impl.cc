@@ -244,6 +244,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->fetch_redirect_mode = network::mojom::FetchRedirectMode::kManual;
   new_request->fetch_request_context_type =
       request_info->begin_params->request_context_type;
+  new_request->upgrade_if_insecure = request_info->upgrade_if_insecure;
   return new_request;
 }
 
@@ -280,6 +281,7 @@ std::unique_ptr<NavigationRequestInfo> CreateNavigationRequestInfoForRedirect(
       previous_request_info.is_for_guests_only,
       previous_request_info.report_raw_headers,
       previous_request_info.is_prerendering,
+      previous_request_info.upgrade_if_insecure,
       nullptr /* blob_url_loader_factory */,
       previous_request_info.devtools_navigation_token);
 }

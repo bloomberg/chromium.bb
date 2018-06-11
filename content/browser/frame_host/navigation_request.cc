@@ -1349,6 +1349,7 @@ void NavigationRequest::OnStartChecksComplete(
           report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==
               blink::mojom::PageVisibilityState::kPrerender,
+          upgrade_if_insecure_,
           blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
                                    : nullptr,
           devtools_navigation_token()),
@@ -1677,13 +1678,12 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
       CheckCSPDirectives(parent, is_redirect, is_response_check,
                          CSPContext::CHECK_REPORT_ONLY_CSP);
 
-  // TODO(mkwst,estark): upgrade-insecure-requests does not work when following
-  // redirects. Trying to uprade the new URL on redirect here is fruitless: the
-  // redirect URL cannot be changed at this point. upgrade-insecure-requests
-  // needs to move to the net stack to resolve this. https://crbug.com/615885
+  // upgrade-insecure-requests is handled in the network code for redirects,
+  // only do the upgrade here if this is not a redirect.
   if (!is_redirect && !frame_tree_node()->IsMainFrame()) {
     if (parent &&
         parent->ShouldModifyRequestUrlForCsp(true /* is subresource */)) {
+      upgrade_if_insecure_ = true;
       parent->ModifyRequestUrlForCsp(&common_params_.url);
       request_params_.original_url = common_params_.url;
     }
