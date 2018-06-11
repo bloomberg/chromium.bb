@@ -540,7 +540,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnPageWasHidden();
   void OnPageWasShown();
   void OnUpdateScreenInfo(const ScreenInfo& screen_info);
-  void OnFreezePage();
+  void SetPageFrozen(bool frozen);
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.

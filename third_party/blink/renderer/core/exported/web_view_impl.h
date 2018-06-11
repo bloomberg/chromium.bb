@@ -236,7 +236,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetShowFPSCounter(bool) override;
   void SetShowScrollBottleneckRects(bool) override;
   void AcceptLanguagesChanged() override;
-  void FreezePage() override;
+  void SetPageFrozen(bool frozen) override;
 
   void DidUpdateFullscreenSize();
 

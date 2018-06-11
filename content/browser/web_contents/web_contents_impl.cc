@@ -1827,8 +1827,11 @@ void WebContentsImpl::Stop() {
     observer.NavigationStopped();
 }
 
-void WebContentsImpl::FreezePage() {
-  SendPageMessage(new PageMsg_FreezePage(MSG_ROUTING_NONE));
+void WebContentsImpl::SetPageFrozen(bool frozen) {
+  // A visible page is never frozen.
+  DCHECK_NE(Visibility::VISIBLE, GetVisibility());
+
+  SendPageMessage(new PageMsg_SetPageFrozen(MSG_ROUTING_NONE, frozen));
 }
 
 std::unique_ptr<WebContents> WebContentsImpl::Clone() {

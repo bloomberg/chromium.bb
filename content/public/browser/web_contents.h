@@ -536,8 +536,10 @@ class WebContents : public PageNavigator,
   // Stop any pending navigation.
   virtual void Stop() = 0;
 
-  // Freeze the current page.
-  virtual void FreezePage() = 0;
+  // Freezes or unfreezes the current page. A frozen page runs as few tasks as
+  // possible. This cannot be called when the page is visible. If the page is
+  // made visible after this is called, it is automatically unfrozen.
+  virtual void SetPageFrozen(bool frozen) = 0;
 
   // Creates a new WebContents with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.

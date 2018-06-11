@@ -54,9 +54,9 @@ IPC_MESSAGE_ROUTED1(PageMsg_PausePageScheduledTasks, bool /* paused */)
 IPC_MESSAGE_ROUTED1(PageMsg_UpdateScreenInfo,
                     content::ScreenInfo /* screen_info */)
 
-// Sent to all renderers, instructing them to freeze all frames that belongs to
-// this page.
-IPC_MESSAGE_ROUTED0(PageMsg_FreezePage)
+// Sent to all renderers, instructing them to freeze or unfreeze all frames that
+// belongs to this page.
+IPC_MESSAGE_ROUTED1(PageMsg_SetPageFrozen, bool /* frozen */)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

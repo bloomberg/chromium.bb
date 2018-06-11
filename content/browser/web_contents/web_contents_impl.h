@@ -376,7 +376,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void NotifyPreferencesChanged() override;
 
   void Stop() override;
-  void FreezePage() override;
+  void SetPageFrozen(bool frozen) override;
   std::unique_ptr<WebContents> Clone() override;
   void ReloadFocusedFrame(bool bypass_cache) override;
   void Undo() override;

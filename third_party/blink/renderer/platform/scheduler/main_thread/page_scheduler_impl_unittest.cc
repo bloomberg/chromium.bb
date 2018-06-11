@@ -31,6 +31,12 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace page_scheduler_impl_unittest {
 
+namespace {
+void IncrementCounter(int* counter) {
+  ++*counter;
+}
+}  // namespace
+
 class PageSchedulerImplTest : public testing::Test {
  public:
   PageSchedulerImplTest() = default;
@@ -105,6 +111,73 @@ class PageSchedulerImplTest : public testing::Test {
 
   scoped_refptr<TaskQueue> UnpausableTaskQueue() {
     return frame_scheduler_->UnpausableTaskQueue();
+  }
+
+  // Verifies that freezing the PageScheduler prevents tasks from running. Then
+  // set the page as visible or unfreezes it while still hidden (depending on
+  // the argument), and verifies that tasks can run.
+  void TestFreeze(bool make_page_visible) {
+    ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+    ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
+
+    int counter = 0;
+    LoadingTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    ThrottleableTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    DeferrableTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    PausableTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    UnpausableTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+    page_scheduler_->SetPageVisible(false);
+    EXPECT_EQ(false, page_scheduler_->IsFrozen());
+
+    // In a backgrounded active page, all queues should run.
+    test_task_runner_->FastForwardUntilNoTasksRemain();
+    EXPECT_EQ(5, counter);
+
+    LoadingTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    ThrottleableTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    DeferrableTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    PausableTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    UnpausableTaskQueue()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+    counter = 0;
+
+    page_scheduler_->SetPageFrozen(true);
+    EXPECT_EQ(true, page_scheduler_->IsFrozen());
+
+    // In a backgrounded frozen page, only Unpausable queue should run.
+    test_task_runner_->FastForwardUntilNoTasksRemain();
+    EXPECT_EQ(1, counter);
+
+    // Make the page visible or unfreeze it while hidden.
+    if (make_page_visible)
+      page_scheduler_->SetPageVisible(true);
+    else
+      page_scheduler_->SetPageFrozen(false);
+    EXPECT_EQ(false, page_scheduler_->IsFrozen());
+
+    // Once the page is unfrozen, the rest of the queues should run.
+    test_task_runner_->FastForwardUntilNoTasksRemain();
+    EXPECT_EQ(5, counter);
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
@@ -1159,61 +1232,17 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
   base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
 }
 
-namespace {
-void IncrementCounter(int* counter) {
-  ++*counter;
+// Verify that freezing a page prevents tasks in its task queues from running.
+// Then, verify that making the page visible unfreezes it and allows tasks in
+// its task queues to run.
+TEST_F(PageSchedulerImplTest, PageFreezeAndSetVisible) {
+  TestFreeze(true);
 }
-}  // namespace
 
-TEST_F(PageSchedulerImplTest, PageFreeze) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
-  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
-
-  int counter = 0;
-  LoadingTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  ThrottleableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  DeferrableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  PausableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  UnpausableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-
-  page_scheduler_->SetPageVisible(false);
-  EXPECT_EQ(false, page_scheduler_->IsFrozen());
-
-  // In a backgrounded active page, all queues should run.
-  test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(5, counter);
-
-  LoadingTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  ThrottleableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  DeferrableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  PausableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  UnpausableTaskQueue()->PostTask(
-      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  counter = 0;
-
-  page_scheduler_->SetPageFrozen(true);
-  EXPECT_EQ(true, page_scheduler_->IsFrozen());
-
-  // In a backgrounded frozen page, only Unpausable queue should run.
-  test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(1, counter);
-
-  // A visible page should not be frozen.
-  page_scheduler_->SetPageVisible(true);
-  EXPECT_EQ(false, page_scheduler_->IsFrozen());
-
-  // Once the page is unfrozen, the rest of the queues should run.
-  test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_EQ(5, counter);
+// Same as before, but unfreeze the page explicitly instead of making it
+// visible.
+TEST_F(PageSchedulerImplTest, PageFreezeAndUnfreeze) {
+  TestFreeze(false);
 }
 
 TEST_F(PageSchedulerImplTest, AudioState) {

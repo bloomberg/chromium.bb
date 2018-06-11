@@ -427,8 +427,8 @@ class WebView : protected WebWidget {
 
   // Lifecycle state ------------------------------------------------------
 
-  // Freeze the page and all the local frames.
-  virtual void FreezePage() = 0;
+  // Freezes or unfreezes the page and all the local frames.
+  virtual void SetPageFrozen(bool frozen) = 0;
 
   // Testing functionality for TestRunner ---------------------------------
 

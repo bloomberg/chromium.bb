@@ -3726,8 +3726,8 @@ LocalFrame* WebViewImpl::FocusedLocalFrameAvailableForIme() const {
   return ime_accept_events_ ? FocusedLocalFrameInWidget() : nullptr;
 }
 
-void WebViewImpl::FreezePage() {
-  Scheduler()->SetPageFrozen(true);
+void WebViewImpl::SetPageFrozen(bool frozen) {
+  Scheduler()->SetPageFrozen(frozen);
 }
 
 void WebViewImpl::AddAutoplayFlags(int32_t value) {
