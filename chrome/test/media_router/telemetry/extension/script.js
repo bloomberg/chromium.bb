@@ -30,23 +30,31 @@ function collectData(port) {
  * @param metric_name the metric name, e.g cpu.
  */
 function _postData(processes, port, metric_name) {
-  var tabPid = port.sender.tab.id;
+  let tabPid = port.sender.tab.id;
   if (!tabPid) {
     return;
   }
-  var tabProcess = processes[tabPid];
+  let tabProcess = "";
+  for (let p in processes) {
+    for (let task in processes[p].tasks) {
+      if (processes[p].tasks[task].tabId == tabPid)
+        tabProcess = processes[p].osProcessId;
+    }
+    if (tabProcess)
+      break;
+  }
   if (!tabProcess) {
     return;
   }
-  var message = {};
+  let message = {};
   message[metric_name] = {'current_tab': tabProcess[metric_name]};
-  for (var pid in processes) {
-    var process = processes[pid];
+  for (let pid in processes) {
+    let process = processes[pid];
     data = process[metric_name];
     if (['browser', 'gpu', 'extension'].indexOf(process.type) > -1) {
        if (process.type == 'extension'){
-         for (var index in process.tasks) {
-          var task = process.tasks[index];
+         for (let index in process.tasks) {
+          let task = process.tasks[index];
           if (task.title && task.title.indexOf('Chrome Media Router') > -1) {
             message[metric_name]['mr_' + process.type] = data;
           }
