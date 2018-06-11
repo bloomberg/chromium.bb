@@ -2240,6 +2240,7 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   DCHECK(!ParentOrShadowHostNode()->NeedsStyleRecalc());
   DCHECK(change >= kIndependentInherit || NeedsStyleRecalc());
   DCHECK(ParentComputedStyle());
+  DCHECK(!GetNonAttachedStyle());
 
   scoped_refptr<const ComputedStyle> old_style = GetComputedStyle();
 
@@ -2347,6 +2348,8 @@ void Element::RecalcStyleForReattach() {
   }
   if (recalc_descendants)
     RecalcShadowIncludingDescendantStylesForReattach();
+
+  ClearChildNeedsStyleRecalc();
 
   if (HasCustomStyleCallbacks())
     DidRecalcStyle(kReattach);

@@ -154,6 +154,7 @@ NodeRenderingData::~NodeRenderingData() {
 void NodeRenderingData::SetNonAttachedStyle(
     scoped_refptr<ComputedStyle> non_attached_style) {
   DCHECK_NE(&SharedEmptyData(), this);
+  DCHECK(!non_attached_style || !non_attached_style_);
   non_attached_style_ = non_attached_style;
 }
 
