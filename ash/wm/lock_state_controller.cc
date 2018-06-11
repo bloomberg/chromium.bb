@@ -61,17 +61,19 @@ constexpr int kTimeoutMultiplier = 1;
 constexpr int kMaxShutdownSoundDurationMs = 1500;
 
 // Amount of time to wait for our lock requests to be honored before giving up.
-constexpr int kLockFailTimeoutMs = 8000 * kTimeoutMultiplier;
+constexpr base::TimeDelta kLockFailTimeout =
+    base::TimeDelta::FromSeconds(8 * kTimeoutMultiplier);
 
 // When the button has been held continuously from the unlocked state, amount of
 // time that we wait after the screen locker window is shown before starting the
 // pre-shutdown animation.
-constexpr int kLockToShutdownTimeoutMs = 150;
+constexpr base::TimeDelta kLockToShutdownTimeout =
+    base::TimeDelta::FromMilliseconds(150);
 
-// Additional time (beyond kFastCloseAnimMs) to wait after starting the
-// fast-close shutdown animation before actually requesting shutdown, to give
-// the animation time to finish.
-constexpr int kShutdownRequestDelayMs = 50;
+// Additional time to wait after starting the fast-close shutdown animation
+// before actually requesting shutdown, to give the animation time to finish.
+constexpr base::TimeDelta kShutdownRequestDelay =
+    base::TimeDelta::FromMilliseconds(50);
 
 }  // namespace
 
@@ -275,9 +277,8 @@ void LockStateController::StartLockToShutdownTimer() {
   DCHECK(shutdown_reason_);
   shutdown_after_lock_ = false;
   lock_to_shutdown_timer_.Stop();
-  lock_to_shutdown_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kLockToShutdownTimeoutMs),
-      this, &LockStateController::OnLockToShutdownTimeout);
+  lock_to_shutdown_timer_.Start(FROM_HERE, kLockToShutdownTimeout, this,
+                                &LockStateController::OnLockToShutdownTimeout);
 }
 
 void LockStateController::OnLockToShutdownTimeout() {
@@ -305,8 +306,7 @@ void LockStateController::OnPreShutdownAnimationTimeout() {
 }
 
 void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
-  base::TimeDelta duration =
-      base::TimeDelta::FromMilliseconds(kShutdownRequestDelayMs);
+  base::TimeDelta duration = kShutdownRequestDelay;
   if (with_animation_time) {
     duration +=
         animator_->GetDuration(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
@@ -510,13 +510,7 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
         ->RequestLockScreen();
   }
 
-  base::TimeDelta timeout =
-      base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs);
-  // TODO(derat): Remove this scaling after October 2017 when daisy (Samsung
-  // Chromebook XE303) is unsupported.
-  if (base::SysInfo::GetStrippedReleaseBoard() == "daisy")
-    timeout *= 2;
-  lock_fail_timer_.Start(FROM_HERE, timeout, this,
+  lock_fail_timer_.Start(FROM_HERE, kLockFailTimeout, this,
                          &LockStateController::OnLockFailTimeout);
 
   lock_duration_timer_.reset(new base::ElapsedTimer());
