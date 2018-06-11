@@ -123,9 +123,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                              const GURL& other_url,
                              CheckHasServiceWorkerCallback callback) override;
   void ClearAllServiceWorkersForTest(base::OnceClosure callback) override;
-  void StartActiveWorkerForPattern(const GURL& pattern,
-                                   StartActiveWorkerCallback info_callback,
-                                   base::OnceClosure failure_callback) override;
+  void StartWorkerForPattern(const GURL& pattern,
+                             StartWorkerCallback info_callback,
+                             base::OnceClosure failure_callback) override;
   void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
       StartServiceWorkerForNavigationHintCallback callback) override;
@@ -174,6 +174,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // Must be called from the IO thread.
   void FindReadyRegistrationForPattern(const GURL& scope,
                                        FindRegistrationCallback callback);
+
+  // Similar to FindReadyRegistrationForPattern, but in the case no waiting or
+  // active worker is found (i.e., there is only an installing worker),
+  // |callback| is called without waiting for the worker to reach active.
+  void FindRegistrationForPattern(const GURL& scope,
+                                  FindRegistrationCallback callback);
 
   // Returns the registration for |registration_id|. It is guaranteed that the
   // returned registration has the activated worker.
@@ -289,7 +295,18 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       URLLoaderFactoryGetter* url_loader_factory_getter);
   void ShutdownOnIO();
 
+  // If |include_installing_version| is true, |callback| is called if there is
+  // an installing version with no waiting or active version.
+  void FindRegistrationForPatternImpl(const GURL& scope,
+                                      bool include_installing_version,
+                                      FindRegistrationCallback callback);
+
   void DidFindRegistrationForFindReady(
+      FindRegistrationCallback callback,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidFindRegistrationForFindImpl(
+      bool include_installing_version,
       FindRegistrationCallback callback,
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);

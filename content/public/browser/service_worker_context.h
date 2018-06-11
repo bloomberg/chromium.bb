@@ -63,7 +63,7 @@ class ServiceWorkerContext {
   using StartServiceWorkerForNavigationHintCallback = base::OnceCallback<void(
       StartServiceWorkerForNavigationHintResult result)>;
 
-  using StartActiveWorkerCallback =
+  using StartWorkerCallback =
       base::OnceCallback<void(int process_id, int thread_id)>;
 
   // Registers the header name which should not be passed to the ServiceWorker.
@@ -164,14 +164,14 @@ class ServiceWorkerContext {
   // be called on the UI thread.
   virtual void ClearAllServiceWorkersForTest(base::OnceClosure callback) = 0;
 
-  // Starts the active worker of the registration whose scope is |pattern|.
+  // Starts the active worker of the registration whose scope is |pattern|. If
+  // there is no active worker, starts the installing worker.
   // |info_callback| is passed the worker's render process id and thread id.
   //
   // Must be called on IO thread.
-  virtual void StartActiveWorkerForPattern(
-      const GURL& pattern,
-      StartActiveWorkerCallback info_callback,
-      base::OnceClosure failure_callback) = 0;
+  virtual void StartWorkerForPattern(const GURL& pattern,
+                                     StartWorkerCallback info_callback,
+                                     base::OnceClosure failure_callback) = 0;
 
   // Starts the service worker for |document_url|. Called when a navigation to
   // that URL is predicted to occur soon. Must be called from the UI thread. The

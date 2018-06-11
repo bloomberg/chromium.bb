@@ -31,10 +31,10 @@ void FinishTask(LazyContextTaskQueue::PendingTask task,
   std::move(task).Run(std::move(params));
 }
 
-void DidStartActiveWorkerForPattern(LazyContextTaskQueue::PendingTask task,
-                                    const ExtensionId& extension_id,
-                                    int process_id,
-                                    int thread_id) {
+void DidStartWorkerForPattern(LazyContextTaskQueue::PendingTask task,
+                              const ExtensionId& extension_id,
+                              int process_id,
+                              int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -42,8 +42,8 @@ void DidStartActiveWorkerForPattern(LazyContextTaskQueue::PendingTask task,
                      thread_id));
 }
 
-void DidStartActiveWorkerFail() {
-  DCHECK(false) << "DidStartActiveWorkerFail";
+void DidStartWorkerFail() {
+  DCHECK(false) << "DidStartWorkerFail";
   // TODO(lazyboy): Handle failure case.
 }
 
@@ -52,11 +52,10 @@ void GetServiceWorkerInfoOnIO(
     const ExtensionId& extension_id,
     content::ServiceWorkerContext* service_worker_context,
     LazyContextTaskQueue::PendingTask task) {
-  service_worker_context->StartActiveWorkerForPattern(
+  service_worker_context->StartWorkerForPattern(
       pattern,
-      base::BindOnce(&DidStartActiveWorkerForPattern, std::move(task),
-                     extension_id),
-      base::BindOnce(&DidStartActiveWorkerFail));
+      base::BindOnce(&DidStartWorkerForPattern, std::move(task), extension_id),
+      base::BindOnce(&DidStartWorkerFail));
 }
 
 }  // namespace

@@ -79,11 +79,10 @@ void SkipWaitingWorkerOnIO(
   registration->ActivateWaitingVersionWhenReady();
 }
 
-void DidStartActiveWorker(
-    scoped_refptr<ServiceWorkerVersion> version,
-    ServiceWorkerContext::StartActiveWorkerCallback info_callback,
-    base::OnceClosure error_callback,
-    ServiceWorkerStatusCode start_worker_status) {
+void DidStartWorker(scoped_refptr<ServiceWorkerVersion> version,
+                    ServiceWorkerContext::StartWorkerCallback info_callback,
+                    base::OnceClosure error_callback,
+                    ServiceWorkerStatusCode start_worker_status) {
   if (start_worker_status != SERVICE_WORKER_OK) {
     std::move(error_callback).Run();
     return;
@@ -92,27 +91,37 @@ void DidStartActiveWorker(
   std::move(info_callback).Run(instance->process_id(), instance->thread_id());
 }
 
-void FoundReadyRegistrationForStartActiveWorker(
-    ServiceWorkerContext::StartActiveWorkerCallback info_callback,
+void FoundRegistrationForStartWorker(
+    ServiceWorkerContext::StartWorkerCallback info_callback,
     base::OnceClosure failure_callback,
     ServiceWorkerStatusCode service_worker_status,
-    scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
+    scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (service_worker_status == SERVICE_WORKER_OK) {
-    // Note: There might be a remote possibility that
-    // |service_worker_registration|'s active version might change
-    // between here and DidStartActiveWorker, so
-    // bind |active_version| to RunAfterStartWorker.
-    scoped_refptr<ServiceWorkerVersion> active_version =
-        service_worker_registration->active_version();
-    DCHECK(active_version.get());
-    active_version->RunAfterStartWorker(
-        ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST,
-        base::BindOnce(&DidStartActiveWorker, active_version,
-                       std::move(info_callback), std::move(failure_callback)));
-  } else {
+  if (service_worker_status != SERVICE_WORKER_OK) {
     std::move(failure_callback).Run();
+    return;
   }
+
+  ServiceWorkerVersion* version_ptr = registration->active_version()
+                                          ? registration->active_version()
+                                          : registration->installing_version();
+  // Since FindRegistrationForPattern returned SERVICE_WORKER_OK, there must be
+  // either:
+  // - an active version, which optionally might have activated from a waiting
+  //   version (as DidFindRegistrationForFindImpl will activate any waiting
+  //   version).
+  // - or an installing version.
+  DCHECK(version_ptr);
+
+  // Note: There might be a remote possibility that |registration|'s |version|
+  // might change between here and DidStartWorker, so bind |version| to
+  // RunAfterStartWorker.
+  scoped_refptr<ServiceWorkerVersion> version =
+      base::WrapRefCounted(version_ptr);
+  version->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST,
+      base::BindOnce(&DidStartWorker, version, std::move(info_callback),
+                     std::move(failure_callback)));
 }
 
 void StatusCodeToBoolCallbackAdapter(
@@ -410,15 +419,15 @@ void ServiceWorkerContextWrapper::ClearAllServiceWorkersForTest(
   context_core_->ClearAllServiceWorkersForTest(std::move(callback));
 }
 
-void ServiceWorkerContextWrapper::StartActiveWorkerForPattern(
+void ServiceWorkerContextWrapper::StartWorkerForPattern(
     const GURL& pattern,
-    StartActiveWorkerCallback info_callback,
+    StartWorkerCallback info_callback,
     base::OnceClosure failure_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  FindReadyRegistrationForPattern(
+  FindRegistrationForPattern(
       pattern,
-      base::BindOnce(&FoundReadyRegistrationForStartActiveWorker,
-                     std::move(info_callback), std::move(failure_callback)));
+      base::BindOnce(&FoundRegistrationForStartWorker, std::move(info_callback),
+                     std::move(failure_callback)));
 }
 
 void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHint(
@@ -556,17 +565,16 @@ void ServiceWorkerContextWrapper::FindReadyRegistrationForPattern(
     const GURL& scope,
     FindRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  SERVICE_WORKER_ERROR_ABORT, nullptr));
-    return;
-  }
-  context_core_->storage()->FindRegistrationForPattern(
-      net::SimplifyUrlForRequest(scope),
-      base::BindOnce(
-          &ServiceWorkerContextWrapper::DidFindRegistrationForFindReady, this,
-          std::move(callback)));
+  FindRegistrationForPatternImpl(scope, false /* include_installing_version */,
+                                 std::move(callback));
+}
+
+void ServiceWorkerContextWrapper::FindRegistrationForPattern(
+    const GURL& scope,
+    FindRegistrationCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  FindRegistrationForPatternImpl(scope, true /* include_installing_version */,
+                                 std::move(callback));
 }
 
 void ServiceWorkerContextWrapper::FindReadyRegistrationForId(
@@ -863,13 +871,32 @@ void ServiceWorkerContextWrapper::InitInternal(
       this);
 }
 
+void ServiceWorkerContextWrapper::FindRegistrationForPatternImpl(
+    const GURL& scope,
+    bool include_installing_version,
+    FindRegistrationCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  SERVICE_WORKER_ERROR_ABORT, nullptr));
+    return;
+  }
+  context_core_->storage()->FindRegistrationForPattern(
+      net::SimplifyUrlForRequest(scope),
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::DidFindRegistrationForFindImpl, this,
+          include_installing_version, std::move(callback)));
+}
+
 void ServiceWorkerContextWrapper::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   resource_context_ = nullptr;
   context_core_.reset();
 }
 
-void ServiceWorkerContextWrapper::DidFindRegistrationForFindReady(
+void ServiceWorkerContextWrapper::DidFindRegistrationForFindImpl(
+    bool include_installing_version,
     FindRegistrationCallback callback,
     ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
@@ -886,21 +913,35 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForFindReady(
 
   scoped_refptr<ServiceWorkerVersion> active_version =
       registration->active_version();
-  if (!active_version) {
-    std::move(callback).Run(SERVICE_WORKER_ERROR_NOT_FOUND, nullptr);
+  if (active_version) {
+    if (active_version->status() == ServiceWorkerVersion::ACTIVATING) {
+      // Wait until the version is activated.
+      active_version->RegisterStatusChangeCallback(base::BindOnce(
+          &ServiceWorkerContextWrapper::OnStatusChangedForFindReadyRegistration,
+          this, std::move(callback), std::move(registration)));
+      return;
+    }
+    DCHECK_EQ(ServiceWorkerVersion::ACTIVATED, active_version->status());
+    std::move(callback).Run(SERVICE_WORKER_OK, std::move(registration));
     return;
   }
 
-  if (active_version->status() == ServiceWorkerVersion::ACTIVATING) {
-    // Wait until the version is activated.
-    active_version->RegisterStatusChangeCallback(base::BindOnce(
-        &ServiceWorkerContextWrapper::OnStatusChangedForFindReadyRegistration,
-        this, std::move(callback), std::move(registration)));
+  if (include_installing_version && registration->installing_version()) {
+    std::move(callback).Run(SERVICE_WORKER_OK, std::move(registration));
     return;
   }
 
-  DCHECK_EQ(ServiceWorkerVersion::ACTIVATED, active_version->status());
-  std::move(callback).Run(SERVICE_WORKER_OK, std::move(registration));
+  std::move(callback).Run(SERVICE_WORKER_ERROR_NOT_FOUND, nullptr);
+}
+
+void ServiceWorkerContextWrapper::DidFindRegistrationForFindReady(
+    FindRegistrationCallback callback,
+    ServiceWorkerStatusCode status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DidFindRegistrationForFindImpl(false /* include_installing_version */,
+                                 std::move(callback), status,
+                                 std::move(registration));
 }
 
 void ServiceWorkerContextWrapper::OnStatusChangedForFindReadyRegistration(
