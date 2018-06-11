@@ -145,6 +145,31 @@ build/camera.crx: build/camera
 # Alias for build/camera.crx.
 camera: build/camera.crx
 
+# Canary build
+canary: build/camera-canary
+
+# Dev build
+dev: build/camera-dev.crx
+
+# Builds the canary version.
+build/camera-canary: $(SRC_RESOURCES) $(SRC_MANIFEST)
+	mkdir -p build/camera-canary
+	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
+	  $(SRC_RESOURCES)) ../build/camera-canary
+	utils/generate_manifest.py --canary
+
+# Builds the dev version.
+build/camera-dev: $(SRC_RESOURCES) $(SRC_MANIFEST)
+	mkdir -p build/camera-dev
+	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
+	  $(SRC_RESOURCES)) ../build/camera-dev
+	utils/generate_manifest.py --dev
+
+# Builds the camera-dev.crx package.
+build/camera-dev.crx: build/camera-dev
+	$(CHROME) --pack-extension=build/camera-dev \
+	  --pack-extension-key=dev-keys/camera.pem
+
 # Builds the tests version.
 build/tests: $(SRC_RESOURCES) $(SRC_TESTS_MANIFEST)
 	mkdir -p build/tests
