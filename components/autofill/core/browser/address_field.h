@@ -47,10 +47,6 @@ class AddressField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCountry);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseTwoLineAddressMissingLabel);
   FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseCompany);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseSearchTermFirst);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseSearchTermSecond);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseSearchTermIsolated);
-  FRIEND_TEST_ALL_PREFIXES(AddressFieldTest, ParseNonSearchTermWithSearch);
 
   static const int kZipCodeMatchType;
   static const int kCityMatchType;
@@ -64,7 +60,6 @@ class AddressField : public FormField {
   bool ParseZipCode(AutofillScanner* scanner);
   bool ParseCity(AutofillScanner* scanner);
   bool ParseState(AutofillScanner* scanner);
-  bool ParseSearchTerm(AutofillScanner* scanner);
 
   // Parses the current field pointed to by |scanner|, if it exists, and tries
   // to figure out whether the field's type: city, state, zip, or none of those.
@@ -98,7 +93,6 @@ class AddressField : public FormField {
   AutofillField* zip_;
   AutofillField* zip4_;  // optional ZIP+4; we don't fill this yet.
   AutofillField* country_;
-  AutofillField* search_term_;
 
   DISALLOW_COPY_AND_ASSIGN(AddressField);
 };
