@@ -7,94 +7,6 @@
     "message": "Take pictures and record videos with your camera.",
     "description": "Short description of the Camera App."
   },
-  "andyEffect": {
-    "message": "Andy",
-    "description": "Andy effect's name."
-  },
-  "bigEyesEffect": {
-    "message": "Big Eyes",
-    "description": "Big Eyes effect's name."
-  },
-  "beautyEffect": {
-    "message": "Beauty",
-    "description": "Beauty effect's name. Smooths skin and increases brightness."
-  },
-  "colorizeEffect": {
-    "message": "Colorize",
-    "description": "Colorize effect's name."
-  },
-  "funkyEffect": {
-    "message": "Funky",
-    "description": "Funky effect's name."
-  },
-  "grayscaleEffect": {
-    "message": "Grayscale",
-    "description": "Grayscale effect's name. Makes the images in grayscale."
-  },
-  "newspaperEffect": {
-    "message": "Newspaper",
-    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
-  },
-  "normalEffect": {
-    "message": "Normal",
-    "description": "Name of the normal effect, which means that no effect will be applied."
-  },
-  "bigHeadEffect": {
-    "message": "Big Head",
-    "description": "Big Head effect's name."
-  },
-  "bigJawEffect": {
-    "message": "Big Jaw",
-    "description": "Big Jaw effect's name."
-  },
-  "bunnyHeadEffect": {
-    "message": "Bunny Head",
-    "description": "Bunny Head effect's name."
-  },
-  "sepiaEffect": {
-    "message": "Sepia",
-    "description": "Sepia effect's name. Makes the image look like an old picture."
-  },
-  "retro30Effect": {
-    "message": "Retro '30",
-    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
-  },
-  "retro50Effect": {
-    "message": "Retro '50",
-    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
-  },
-  "retro60Effect": {
-    "message": "Retro '60",
-    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
-  },
-  "photoLabEffect": {
-    "message": "Photo Lab",
-    "description": "Photo Lab effect's name. Makes the image look like developed in a home photo laboratory."
-  },
-  "modernEffect": {
-    "message": "Modern",
-    "description": "Modern effect's name. Colorizes parts of the image with different colors."
-  },
-  "swirlEffect": {
-    "message": "Swirl",
-    "description": "Swirl effect's name. Makes the image look like a whirlpool."
-  },
-  "tiltShiftEffect": {
-    "message": "Tilt Shift",
-    "description": "Tils Shift effect's name."
-  },
-  "cinemaEffect": {
-    "message": "Cinema",
-    "description": "Cinema effect's name. Makes the image look like from a movie."
-  },
-  "vintageEffect": {
-    "message": "Vintage",
-    "description": "Vintage effect's name. Makes the image look vintage."
-  },
-  "ghostEffect": {
-    "message": "Ghost",
-    "description": "Ghost effect's name. Duplicates face when moving."
-  },
   "errorMsgNoCamera": {
     "message": "Your camera is currently unavailable.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
@@ -136,10 +48,6 @@
   "galleryButton": {
     "message": "Go to gallery",
     "description": "Label for the gallery button."
-  },
-  "filtersButton": {
-    "message": "Toggle filters",
-    "description": "Label for the toggle filters button."
   },
   "deleteButton": {
     "message": "Delete",
