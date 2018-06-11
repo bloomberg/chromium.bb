@@ -44,8 +44,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   scoped_refptr<StaticBitmapImage> MakeAccelerated(
       base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper)
       override {
-    NOTREACHED();  // IsTextureBacked() is already true.
-    return nullptr;
+    return this;
   }
 
   void Draw(PaintCanvas*,
