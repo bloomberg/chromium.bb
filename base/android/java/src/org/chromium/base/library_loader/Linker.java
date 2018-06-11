@@ -496,40 +496,34 @@ public abstract class Linker {
     }
 
     /**
-     * Load a native shared library with the Chromium linker. If the zip file
-     * is not null, the shared library must be uncompressed and page aligned
-     * inside the zipfile. Note the crazy linker treats libraries and files as
-     * equivalent, so you can only open one library in a given zip file. The
-     * library must not be the Chromium linker library.
+     * Load a native shared library with the Chromium linker. Note the crazy linker treats
+     * libraries and files as equivalent, so you can only open one library in a given zip
+     * file. The library must not be the Chromium linker library.
      *
-     * @param zipFilePath The path of the zip file containing the library (or null).
      * @param libFilePath The path of the library (possibly in the zip file).
      */
-    public void loadLibrary(@Nullable String zipFilePath, String libFilePath) {
+    public void loadLibrary(String libFilePath) {
         if (DEBUG) {
-            Log.i(TAG, "loadLibrary: " + zipFilePath + ", " + libFilePath);
+            Log.i(TAG, "loadLibrary: " + libFilePath);
         }
         final boolean isFixedAddressPermitted = true;
-        loadLibraryImpl(zipFilePath, libFilePath, isFixedAddressPermitted);
+        loadLibraryImpl(libFilePath, isFixedAddressPermitted);
     }
 
     /**
      * Load a native shared library with the Chromium linker, ignoring any
-     * requested fixed address for RELRO sharing. If the zip file
-     * is not null, the shared library must be uncompressed and page aligned
-     * inside the zipfile. Note the crazy linker treats libraries and files as
-     * equivalent, so you can only open one library in a given zip file. The
+     * requested fixed address for RELRO sharing. Note the crazy linker treats libraries and
+     * files as equivalent, so you can only open one library in a given zip file. The
      * library must not be the Chromium linker library.
      *
-     * @param zipFilePath The path of the zip file containing the library (or null).
      * @param libFilePath The path of the library (possibly in the zip file).
      */
-    public void loadLibraryNoFixedAddress(@Nullable String zipFilePath, String libFilePath) {
+    public void loadLibraryNoFixedAddress(String libFilePath) {
         if (DEBUG) {
-            Log.i(TAG, "loadLibraryAtAnyAddress: " + zipFilePath + ", " + libFilePath);
+            Log.i(TAG, "loadLibraryAtAnyAddress: " + libFilePath);
         }
         final boolean isFixedAddressPermitted = false;
-        loadLibraryImpl(zipFilePath, libFilePath, isFixedAddressPermitted);
+        loadLibraryImpl(libFilePath, isFixedAddressPermitted);
     }
 
     /**
@@ -574,8 +568,11 @@ public abstract class Linker {
 
     /**
      * Call this method just before loading any native shared libraries in this process.
+     *
+     * @param zipFilePath Optional current APK file path. If provided, the linker
+     * will try to load libraries directly from it.
      */
-    public abstract void prepareLibraryLoad();
+    public abstract void prepareLibraryLoad(@Nullable String apkFilePath);
 
     /**
      * Call this method just after loading all native shared libraries in this process.
@@ -631,14 +628,11 @@ public abstract class Linker {
     /**
      * Implements loading a native shared library with the Chromium linker.
      *
-     * @param zipFilePath The path of the zip file containing the library (or null).
      * @param libFilePath The path of the library (possibly in the zip file).
      * @param isFixedAddressPermitted If true, uses a fixed load address if one was
      * supplied, otherwise ignores the fixed address and loads wherever available.
      */
-    abstract void loadLibraryImpl(@Nullable String zipFilePath,
-                                  String libFilePath,
-                                  boolean isFixedAddressPermitted);
+    abstract void loadLibraryImpl(String libFilePath, boolean isFixedAddressPermitted);
 
     /**
      * Record information for a given library.

@@ -349,15 +349,15 @@ public class LibraryLoader {
             // RELROs enabled, and if that fails then retry without.
             mIsUsingBrowserSharedRelros = true;
             try {
-                linker.loadLibrary(zipFilePath, libFilePath);
+                linker.loadLibrary(libFilePath);
             } catch (UnsatisfiedLinkError e) {
                 Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
                 mLoadAtFixedAddressFailed = true;
-                linker.loadLibraryNoFixedAddress(zipFilePath, libFilePath);
+                linker.loadLibraryNoFixedAddress(libFilePath);
             }
         } else {
             // No attempt to use shared RELROs in the browser, so load as normal.
-            linker.loadLibrary(zipFilePath, libFilePath);
+            linker.loadLibrary(libFilePath);
         }
 
         // Loaded successfully, so record if we loaded directly from an APK.
@@ -399,7 +399,10 @@ public class LibraryLoader {
                 if (Linker.isUsed()) {
                     // Load libraries using the Chromium linker.
                     Linker linker = Linker.getInstance();
-                    linker.prepareLibraryLoad();
+
+                    String apkFilePath =
+                            Linker.isInZipFile() ? appContext.getApplicationInfo().sourceDir : null;
+                    linker.prepareLibraryLoad(apkFilePath);
 
                     for (String library : NativeLibraries.LIBRARIES) {
                         // Don't self-load the linker. This is because the build system is
@@ -411,21 +414,17 @@ public class LibraryLoader {
                         }
 
                         // Determine where the library should be loaded from.
-                        String zipFilePath = null;
                         String libFilePath = System.mapLibraryName(library);
-                        if (Linker.isInZipFile()) {
-                            // Load directly from the APK.
-                            zipFilePath = appContext.getApplicationInfo().sourceDir;
-                            Log.i(TAG, "Loading " + library + " from within " + zipFilePath);
+                        if (apkFilePath != null) {
+                            Log.i(TAG, " Loading " + library + " from within " + apkFilePath);
                         } else {
-                            // The library is in its own file.
                             Log.i(TAG, "Loading " + library);
                         }
 
                         try {
                             // Load the library using this Linker. May throw UnsatisfiedLinkError.
                             loadLibraryWithCustomLinkerAlreadyLocked(
-                                    linker, zipFilePath, libFilePath);
+                                    linker, apkFilePath, libFilePath);
                             incrementRelinkerCountNotHitHistogram();
                         } catch (UnsatisfiedLinkError e) {
                             if (!Linker.isInZipFile()

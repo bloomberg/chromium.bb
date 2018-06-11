@@ -224,20 +224,6 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
                                   const char* lib_name,
                                   crazy_context_t* context) _CRAZY_PUBLIC;
 
-// Try to open or load a library with the crazy linker. The
-// library is in a zip file with the name |zipfile_name|. Within the zip
-// file the library must be uncompressed and page aligned. |zipfile_name|
-// should be an absolute path name and |lib_name| should be a relative
-// pathname. The library in the zip file is expected to have the name
-// lib/<abi_tag>/crazy.<lib_name> where abi_tag is the abi directory matching
-// the ABI for which the crazy linker was compiled. Note this does not support
-// opening multiple libraries in the same zipfile, see crbug/388223.
-crazy_status_t crazy_library_open_in_zip_file(crazy_library_t** library,
-                                              const char* zipfile_name,
-                                              const char* lib_name,
-                                              crazy_context_t* context)
-    _CRAZY_PUBLIC;
-
 // A structure used to hold information about a given library.
 // |load_address| is the library's actual (page-aligned) load address.
 // |load_size| is the library's actual (page-aligned) size.
