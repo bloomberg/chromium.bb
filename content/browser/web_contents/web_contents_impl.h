@@ -38,7 +38,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
-#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/color_chooser.h"
@@ -135,8 +134,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                        public blink::mojom::ColorChooserFactory,
                                        public NotificationObserver,
                                        public NavigationControllerDelegate,
-                                       public NavigatorDelegate,
-                                       public TextInputManager::Observer {
+                                       public NavigatorDelegate {
  public:
   class FriendWrapper;
 
@@ -1370,10 +1368,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RecursiveRequestAXTreeSnapshotOnFrame(FrameTreeNode* root_node,
                                              AXTreeSnapshotCombiner* combiner,
                                              ui::AXMode ax_mode);
-
-  // TextInputManager::Observer implementation.
-  void OnTextSelectionChanged(TextInputManager* text_input_manager,
-                              RenderWidgetHostViewBase* updated_view) override;
 
   // Data for core operation ---------------------------------------------------
 

@@ -73,6 +73,8 @@ split_static_library("ui") {
       "cocoa/autofill/autofill_popup_view_cocoa.mm",
       "cocoa/autofill/autofill_tooltip_controller.h",
       "cocoa/autofill/autofill_tooltip_controller.mm",
+      "cocoa/autofill/credit_card_autofill_touch_bar_controller.h",
+      "cocoa/autofill/credit_card_autofill_touch_bar_controller.mm",
       "cocoa/autofill/save_card_bubble_view_views.h",
       "cocoa/autofill/save_card_bubble_view_views.mm",
       "cocoa/background_gradient_view.h",
@@ -535,12 +537,6 @@ split_static_library("ui") {
       "cocoa/toolbar/toolbar_controller.mm",
       "cocoa/toolbar/toolbar_view_cocoa.h",
       "cocoa/toolbar/toolbar_view_cocoa.mm",
-      "cocoa/touchbar/credit_card_autofill_touch_bar_controller.h",
-      "cocoa/touchbar/credit_card_autofill_touch_bar_controller.mm",
-      "cocoa/touchbar/suggested_text_touch_bar_controller.h",
-      "cocoa/touchbar/suggested_text_touch_bar_controller.mm",
-      "cocoa/touchbar/web_textfield_touch_bar_controller.h",
-      "cocoa/touchbar/web_textfield_touch_bar_controller.mm",
       "cocoa/translate/translate_bubble_bridge_views.h",
       "cocoa/translate/translate_bubble_bridge_views.mm",
       "cocoa/translate/translate_bubble_controller.h",
@@ -554,6 +550,8 @@ split_static_library("ui") {
       "cocoa/view_resizer.h",
       "cocoa/web_contents_modal_dialog_manager_views_mac.h",
       "cocoa/web_contents_modal_dialog_manager_views_mac.mm",
+      "cocoa/web_textfield_touch_bar_controller.h",
+      "cocoa/web_textfield_touch_bar_controller.mm",
 
       # TODO(estade): this class should be deleted in favor of a combobox model.
       # See crbug.com/590850
