@@ -495,15 +495,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
                 gfx::Vector2d(0, 45), kShortJankTime);
 }
 
-#if defined(OS_MACOSX)
-#define MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky \
-  DISABLED_PanXYAtAutoYOverlapAreaMainThreadJanky
-#else
-#define MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky \
-  PanXYAtAutoYOverlapAreaMainThreadJanky
-#endif
+// Flaky on all platforms.  http://crbug.com/851619
 IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest,
-                       MAYBE_PanXYAtAutoYOverlapAreaMainThreadJanky) {
+                       DISABLED_PanXYAtAutoYOverlapAreaMainThreadJanky) {
   LoadURL(kTouchActionURLWithOverlapArea);
 
   DoTouchScroll(gfx::Point(75, 125), gfx::Vector2d(45, 45), false, 10000,
