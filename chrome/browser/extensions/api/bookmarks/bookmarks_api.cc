@@ -60,7 +60,6 @@ using bookmarks::ManagedBookmarkService;
 
 namespace extensions {
 
-namespace keys = bookmark_api_constants;
 namespace bookmarks = api::bookmarks;
 
 using bookmarks::BookmarkTreeNode;
@@ -123,7 +122,7 @@ bool BookmarksFunction::GetBookmarkIdAsInt64(const std::string& id_string,
   if (base::StringToInt64(id_string, id))
     return true;
 
-  error_ = keys::kInvalidIdError;
+  error_ = bookmark_api_constants::kInvalidIdError;
   return false;
 }
 
@@ -136,7 +135,7 @@ const BookmarkNode* BookmarksFunction::GetBookmarkNodeFromId(
   const BookmarkNode* node = ::bookmarks::GetBookmarkNodeByID(
       BookmarkModelFactory::GetForBrowserContext(GetProfile()), id);
   if (!node)
-    error_ = keys::kNoNodeError;
+    error_ = bookmark_api_constants::kNoNodeError;
 
   return node;
 }
@@ -165,7 +164,7 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
   } else {
     index = *details.index;
     if (index > parent->child_count() || index < 0) {
-      error_ = keys::kInvalidIndexError;
+      error_ = bookmark_api_constants::kInvalidIndexError;
       return NULL;
     }
   }
@@ -180,7 +179,7 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
 
   GURL url(url_string);
   if (!url_string.empty() && !url.is_valid()) {
-    error_ = keys::kInvalidUrlError;
+    error_ = bookmark_api_constants::kInvalidUrlError;
     return NULL;
   }
 
@@ -202,22 +201,22 @@ bool BookmarksFunction::EditBookmarksEnabled() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   if (prefs->GetBoolean(::bookmarks::prefs::kEditBookmarksEnabled))
     return true;
-  error_ = keys::kEditBookmarksDisabled;
+  error_ = bookmark_api_constants::kEditBookmarksDisabled;
   return false;
 }
 
 bool BookmarksFunction::CanBeModified(const BookmarkNode* node) {
   if (!node) {
-    error_ = keys::kNoParentError;
+    error_ = bookmark_api_constants::kNoParentError;
     return false;
   }
   if (node->is_root()) {
-    error_ = keys::kModifySpecialError;
+    error_ = bookmark_api_constants::kModifySpecialError;
     return false;
   }
   ManagedBookmarkService* managed = GetManagedBookmarkService();
   if (::bookmarks::IsDescendantOf(node, managed->managed_node())) {
-    error_ = keys::kModifyManagedError;
+    error_ = bookmark_api_constants::kModifyManagedError;
     return false;
   }
   return true;
@@ -622,7 +621,7 @@ bool BookmarksMoveFunction::RunOnReady() {
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(GetProfile());
   if (model->is_permanent_node(node)) {
-    error_ = keys::kModifySpecialError;
+    error_ = bookmark_api_constants::kModifySpecialError;
     return false;
   }
 
@@ -644,7 +643,7 @@ bool BookmarksMoveFunction::RunOnReady() {
   if (params->destination.index.get()) {  // Optional (defaults to end).
     index = *params->destination.index;
     if (index > parent->child_count() || index < 0) {
-      error_ = keys::kInvalidIndexError;
+      error_ = bookmark_api_constants::kInvalidIndexError;
       return false;
     }
   } else {
@@ -682,7 +681,7 @@ bool BookmarksUpdateFunction::RunOnReady() {
     url_string = *params->changes.url;
   GURL url(url_string);
   if (!url_string.empty() && !url.is_valid()) {
-    error_ = keys::kInvalidUrlError;
+    error_ = bookmark_api_constants::kInvalidUrlError;
     return false;
   }
 
@@ -693,11 +692,11 @@ bool BookmarksUpdateFunction::RunOnReady() {
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(GetProfile());
   if (model->is_permanent_node(node)) {
-    error_ = keys::kModifySpecialError;
+    error_ = bookmark_api_constants::kModifySpecialError;
     return false;
   }
   if (!url.is_empty() && node->is_folder()) {
-    error_ = keys::kCannotSetUrlOfFolderError;
+    error_ = bookmark_api_constants::kCannotSetUrlOfFolderError;
     return false;
   }
 

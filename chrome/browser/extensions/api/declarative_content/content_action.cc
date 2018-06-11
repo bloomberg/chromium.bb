@@ -30,8 +30,6 @@
 
 namespace extensions {
 
-namespace keys = declarative_content_constants;
-
 namespace {
 // Error messages.
 const char kInvalidIconDictionary[] =
@@ -194,12 +192,11 @@ struct ContentActionFactory {
   std::map<std::string, FactoryMethod> factory_methods;
 
   ContentActionFactory() {
-    factory_methods[keys::kShowPageAction] =
+    factory_methods[declarative_content_constants::kShowPageAction] =
         &ShowPageAction::Create;
-    factory_methods[keys::kRequestContentScript] =
+    factory_methods[declarative_content_constants::kRequestContentScript] =
         &RequestContentScript::Create;
-    factory_methods[keys::kSetIcon] =
-        &SetIcon::Create;
+    factory_methods[declarative_content_constants::kSetIcon] = &SetIcon::Create;
   }
 };
 
@@ -253,8 +250,10 @@ std::unique_ptr<ContentAction> RequestContentScript::CreateForTest(
   const base::DictionaryValue* action_dict = NULL;
   std::string instance_type;
   if (!(json_action.GetAsDictionary(&action_dict) &&
-        action_dict->GetString(keys::kInstanceType, &instance_type) &&
-        instance_type == std::string(keys::kRequestContentScript)))
+        action_dict->GetString(declarative_content_constants::kInstanceType,
+                               &instance_type) &&
+        instance_type ==
+            std::string(declarative_content_constants::kRequestContentScript)))
     return std::unique_ptr<ContentAction>();
 
   // Normal RequestContentScript data initialization.
@@ -274,30 +273,32 @@ bool RequestContentScript::InitScriptData(const base::DictionaryValue* dict,
                                           ScriptData* script_data) {
   const base::ListValue* list_value = NULL;
 
-  if (!dict->HasKey(keys::kCss) && !dict->HasKey(keys::kJs)) {
+  if (!dict->HasKey(declarative_content_constants::kCss) &&
+      !dict->HasKey(declarative_content_constants::kJs)) {
     *error = base::StringPrintf(kMissingParameter, "css or js");
     return false;
   }
-  if (dict->HasKey(keys::kCss)) {
-    if (!dict->GetList(keys::kCss, &list_value) ||
+  if (dict->HasKey(declarative_content_constants::kCss)) {
+    if (!dict->GetList(declarative_content_constants::kCss, &list_value) ||
         !AppendJSStringsToCPPStrings(*list_value,
                                      &script_data->css_file_names)) {
       return false;
     }
   }
-  if (dict->HasKey(keys::kJs)) {
-    if (!dict->GetList(keys::kJs, &list_value) ||
+  if (dict->HasKey(declarative_content_constants::kJs)) {
+    if (!dict->GetList(declarative_content_constants::kJs, &list_value) ||
         !AppendJSStringsToCPPStrings(*list_value,
                                      &script_data->js_file_names)) {
       return false;
     }
   }
-  if (dict->HasKey(keys::kAllFrames)) {
-    if (!dict->GetBoolean(keys::kAllFrames, &script_data->all_frames))
+  if (dict->HasKey(declarative_content_constants::kAllFrames)) {
+    if (!dict->GetBoolean(declarative_content_constants::kAllFrames,
+                          &script_data->all_frames))
       return false;
   }
-  if (dict->HasKey(keys::kMatchAboutBlank)) {
-    if (!dict->GetBoolean(keys::kMatchAboutBlank,
+  if (dict->HasKey(declarative_content_constants::kMatchAboutBlank)) {
+    if (!dict->GetBoolean(declarative_content_constants::kMatchAboutBlank,
                           &script_data->match_about_blank)) {
       return false;
     }
@@ -428,7 +429,8 @@ std::unique_ptr<ContentAction> ContentAction::Create(
   const base::DictionaryValue* action_dict = NULL;
   std::string instance_type;
   if (!(json_action.GetAsDictionary(&action_dict) &&
-        action_dict->GetString(keys::kInstanceType, &instance_type))) {
+        action_dict->GetString(declarative_content_constants::kInstanceType,
+                               &instance_type))) {
     *error = kMissingInstanceTypeError;
     return std::unique_ptr<ContentAction>();
   }

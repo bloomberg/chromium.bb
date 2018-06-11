@@ -30,7 +30,6 @@ using content::BrowserContext;
 
 namespace extensions {
 
-namespace keys = extensions::tabs_constants;
 namespace windows = extensions::api::windows;
 
 namespace {
@@ -44,7 +43,8 @@ bool ControllerVisibleToListener(WindowController* window_controller,
   // If there is no filter the visibility is based on the extension.
   const base::ListValue* filter_value = nullptr;
   if (listener_filter)
-    listener_filter->GetList(keys::kWindowTypesKey, &filter_value);
+    listener_filter->GetList(extensions::tabs_constants::kWindowTypesKey,
+                             &filter_value);
 
   // TODO(https://crbug.com/807313): Remove this.
   bool allow_dev_tools_windows = !!filter_value;
@@ -64,7 +64,8 @@ bool WillDispatchWindowEvent(WindowController* window_controller,
                              Event* event,
                              const base::DictionaryValue* listener_filter) {
   bool has_filter =
-      listener_filter && listener_filter->HasKey(keys::kWindowTypesKey);
+      listener_filter &&
+      listener_filter->HasKey(extensions::tabs_constants::kWindowTypesKey);
   // TODO(https://crbug.com/807313): Remove this.
   bool allow_dev_tools_windows = has_filter;
   if (!window_controller->IsVisibleToTabsAPIForExtension(
@@ -93,7 +94,8 @@ bool WillDispatchWindowFocusedEvent(
   int window_id = extension_misc::kUnknownWindowId;
   Profile* new_active_context = nullptr;
   bool has_filter =
-      listener_filter && listener_filter->HasKey(keys::kWindowTypesKey);
+      listener_filter &&
+      listener_filter->HasKey(extensions::tabs_constants::kWindowTypesKey);
 
   // We might not have a window controller if the focus moves away
   // from chromium's windows.
@@ -111,7 +113,7 @@ bool WillDispatchWindowFocusedEvent(
   if (has_filter) {
     event->filter_info.window_type =
         window_controller ? window_controller->GetWindowTypeText()
-                          : keys::kWindowTypeValueNormal;
+                          : extensions::tabs_constants::kWindowTypeValueNormal;
   } else {
     event->filter_info.window_exposed_by_default = true;
   }

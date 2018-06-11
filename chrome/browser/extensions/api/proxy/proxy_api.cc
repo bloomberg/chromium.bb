@@ -22,9 +22,6 @@
 
 namespace extensions {
 
-namespace helpers = proxy_api_helpers;
-namespace keys = proxy_api_constants;
-
 // static
 ProxyEventRouter* ProxyEventRouter::GetInstance() {
   return base::Singleton<ProxyEventRouter>::get();
@@ -42,19 +39,21 @@ void ProxyEventRouter::OnProxyError(
     int error_code) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetBoolean(keys::kProxyEventFatal, true);
-  dict->SetString(keys::kProxyEventError, net::ErrorToString(error_code));
-  dict->SetString(keys::kProxyEventDetails, std::string());
+  dict->SetBoolean(proxy_api_constants::kProxyEventFatal, true);
+  dict->SetString(proxy_api_constants::kProxyEventError,
+                  net::ErrorToString(error_code));
+  dict->SetString(proxy_api_constants::kProxyEventDetails, std::string());
   args->Append(std::move(dict));
 
   if (profile) {
     event_router->DispatchEventToRenderers(
-        events::PROXY_ON_PROXY_ERROR, keys::kProxyEventOnProxyError,
-        std::move(args), profile, true, GURL());
+        events::PROXY_ON_PROXY_ERROR,
+        proxy_api_constants::kProxyEventOnProxyError, std::move(args), profile,
+        true, GURL());
   } else {
-    event_router->BroadcastEventToRenderers(events::PROXY_ON_PROXY_ERROR,
-                                            keys::kProxyEventOnProxyError,
-                                            std::move(args), GURL());
+    event_router->BroadcastEventToRenderers(
+        events::PROXY_ON_PROXY_ERROR,
+        proxy_api_constants::kProxyEventOnProxyError, std::move(args), GURL());
   }
 }
 
@@ -65,8 +64,8 @@ void ProxyEventRouter::OnPACScriptError(
     const base::string16& error) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetBoolean(keys::kProxyEventFatal, false);
-  dict->SetString(keys::kProxyEventError,
+  dict->SetBoolean(proxy_api_constants::kProxyEventFatal, false);
+  dict->SetString(proxy_api_constants::kProxyEventError,
                   net::ErrorToString(net::ERR_PAC_SCRIPT_FAILED));
   std::string error_msg;
   if (line_number != -1) {
@@ -76,17 +75,18 @@ void ProxyEventRouter::OnPACScriptError(
   } else {
     error_msg = base::UTF16ToUTF8(error);
   }
-  dict->SetString(keys::kProxyEventDetails, error_msg);
+  dict->SetString(proxy_api_constants::kProxyEventDetails, error_msg);
   args->Append(std::move(dict));
 
   if (profile) {
     event_router->DispatchEventToRenderers(
-        events::PROXY_ON_PROXY_ERROR, keys::kProxyEventOnProxyError,
-        std::move(args), profile, true, GURL());
+        events::PROXY_ON_PROXY_ERROR,
+        proxy_api_constants::kProxyEventOnProxyError, std::move(args), profile,
+        true, GURL());
   } else {
-    event_router->BroadcastEventToRenderers(events::PROXY_ON_PROXY_ERROR,
-                                            keys::kProxyEventOnProxyError,
-                                            std::move(args), GURL());
+    event_router->BroadcastEventToRenderers(
+        events::PROXY_ON_PROXY_ERROR,
+        proxy_api_constants::kProxyEventOnProxyError, std::move(args), GURL());
   }
 }
 
@@ -118,24 +118,24 @@ std::unique_ptr<base::Value> ProxyPrefTransformer::ExtensionToBrowserPref(
   std::string pac_data;
   std::string proxy_rules_string;
   std::string bypass_list;
-  if (!helpers::GetProxyModeFromExtensionPref(
-          config, &mode_enum, error, bad_message) ||
-      !helpers::GetPacMandatoryFromExtensionPref(
+  if (!proxy_api_helpers::GetProxyModeFromExtensionPref(config, &mode_enum,
+                                                        error, bad_message) ||
+      !proxy_api_helpers::GetPacMandatoryFromExtensionPref(
           config, &pac_mandatory, error, bad_message) ||
-      !helpers::GetPacUrlFromExtensionPref(
-          config, &pac_url, error, bad_message) ||
-      !helpers::GetPacDataFromExtensionPref(
-          config, &pac_data, error, bad_message) ||
-      !helpers::GetProxyRulesStringFromExtensionPref(
+      !proxy_api_helpers::GetPacUrlFromExtensionPref(config, &pac_url, error,
+                                                     bad_message) ||
+      !proxy_api_helpers::GetPacDataFromExtensionPref(config, &pac_data, error,
+                                                      bad_message) ||
+      !proxy_api_helpers::GetProxyRulesStringFromExtensionPref(
           config, &proxy_rules_string, error, bad_message) ||
-      !helpers::GetBypassListFromExtensionPref(
-          config, &bypass_list, error, bad_message)) {
+      !proxy_api_helpers::GetBypassListFromExtensionPref(config, &bypass_list,
+                                                         error, bad_message)) {
     return nullptr;
   }
 
-  return helpers::CreateProxyConfigDict(mode_enum, pac_mandatory, pac_url,
-                                        pac_data, proxy_rules_string,
-                                        bypass_list, error);
+  return proxy_api_helpers::CreateProxyConfigDict(
+      mode_enum, pac_mandatory, pac_url, pac_data, proxy_rules_string,
+      bypass_list, error);
 }
 
 std::unique_ptr<base::Value> ProxyPrefTransformer::BrowserToExtensionPref(
@@ -158,7 +158,7 @@ std::unique_ptr<base::Value> ProxyPrefTransformer::BrowserToExtensionPref(
   std::unique_ptr<base::DictionaryValue> extension_pref(
       new base::DictionaryValue);
 
-  extension_pref->SetString(keys::kProxyConfigMode,
+  extension_pref->SetString(proxy_api_constants::kProxyConfigMode,
                             ProxyPrefs::ProxyModeToString(mode));
 
   switch (mode) {
@@ -172,19 +172,21 @@ std::unique_ptr<base::Value> ProxyPrefTransformer::BrowserToExtensionPref(
       // PAC script. In either case we build a PacScript dictionary as defined
       // in the extension API.
       std::unique_ptr<base::DictionaryValue> pac_dict =
-          helpers::CreatePacScriptDict(config);
+          proxy_api_helpers::CreatePacScriptDict(config);
       if (!pac_dict)
         return nullptr;
-      extension_pref->Set(keys::kProxyConfigPacScript, std::move(pac_dict));
+      extension_pref->Set(proxy_api_constants::kProxyConfigPacScript,
+                          std::move(pac_dict));
       break;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
       // Build ProxyRules dictionary according to the extension API.
       std::unique_ptr<base::DictionaryValue> proxy_rules_dict =
-          helpers::CreateProxyRulesDict(config);
+          proxy_api_helpers::CreateProxyRulesDict(config);
       if (!proxy_rules_dict)
         return nullptr;
-      extension_pref->Set(keys::kProxyConfigRules, std::move(proxy_rules_dict));
+      extension_pref->Set(proxy_api_constants::kProxyConfigRules,
+                          std::move(proxy_rules_dict));
       break;
     }
     case ProxyPrefs::kModeCount:

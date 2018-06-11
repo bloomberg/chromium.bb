@@ -14,7 +14,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/error_utils.h"
 
-namespace helpers = extensions::context_menus_api_helpers;
 namespace webview = extensions::api::chrome_web_view_internal;
 
 namespace extensions {
@@ -40,8 +39,8 @@ ChromeWebViewInternalContextMenusCreateFunction::Run() {
     // The Generated Id is added by web_view_internal_custom_bindings.js.
     base::DictionaryValue* properties = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &properties));
-    EXTENSION_FUNCTION_VALIDATE(
-        properties->GetInteger(helpers::kGeneratedIdKey, &id.uid));
+    EXTENSION_FUNCTION_VALIDATE(properties->GetInteger(
+        extensions::context_menus_api_helpers::kGeneratedIdKey, &id.uid));
   }
 
   std::string error;

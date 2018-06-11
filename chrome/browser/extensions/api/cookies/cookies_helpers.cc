@@ -37,8 +37,6 @@ namespace GetAll = extensions::api::cookies::GetAll;
 
 namespace extensions {
 
-namespace keys = cookies_api_constants;
-
 namespace cookies_helpers {
 
 static const char kOriginalProfileStoreId[] = "0";
@@ -109,8 +107,8 @@ CookieStore CreateCookieStore(Profile* profile,
   DCHECK(profile);
   DCHECK(tab_ids);
   base::DictionaryValue dict;
-  dict.SetString(keys::kIdKey, GetStoreIdFromProfile(profile));
-  dict.Set(keys::kTabIdsKey, std::move(tab_ids));
+  dict.SetString(cookies_api_constants::kIdKey, GetStoreIdFromProfile(profile));
+  dict.Set(cookies_api_constants::kTabIdsKey, std::move(tab_ids));
 
   CookieStore cookie_store;
   bool rv = CookieStore::Populate(dict, &cookie_store);

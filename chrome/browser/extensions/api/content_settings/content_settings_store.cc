@@ -31,9 +31,6 @@ using content_settings::ResourceIdentifier;
 
 namespace extensions {
 
-namespace helpers = content_settings_helpers;
-namespace keys = content_settings_api_constants;
-
 struct ContentSettingsStore::ExtensionEntry {
   // Extension id.
   std::string id;
@@ -267,15 +264,19 @@ std::unique_ptr<base::ListValue> ContentSettingsStore::GetSettingsForExtension(
       const Rule& rule = rule_iterator->Next();
       std::unique_ptr<base::DictionaryValue> setting_dict(
           new base::DictionaryValue());
-      setting_dict->SetString(keys::kPrimaryPatternKey,
-                              rule.primary_pattern.ToString());
-      setting_dict->SetString(keys::kSecondaryPatternKey,
-                              rule.secondary_pattern.ToString());
       setting_dict->SetString(
-          keys::kContentSettingsTypeKey,
-          helpers::ContentSettingsTypeToString(key.content_type));
-      setting_dict->SetString(keys::kResourceIdentifierKey,
-                              key.resource_identifier);
+          content_settings_api_constants::kPrimaryPatternKey,
+          rule.primary_pattern.ToString());
+      setting_dict->SetString(
+          content_settings_api_constants::kSecondaryPatternKey,
+          rule.secondary_pattern.ToString());
+      setting_dict->SetString(
+          content_settings_api_constants::kContentSettingsTypeKey,
+          content_settings_helpers::ContentSettingsTypeToString(
+              key.content_type));
+      setting_dict->SetString(
+          content_settings_api_constants::kResourceIdentifierKey,
+          key.resource_identifier);
       ContentSetting content_setting =
           content_settings::ValueToContentSetting(rule.value.get());
       DCHECK_NE(CONTENT_SETTING_DEFAULT, content_setting);
@@ -284,7 +285,8 @@ std::unique_ptr<base::ListValue> ContentSettingsStore::GetSettingsForExtension(
           content_settings::ContentSettingToString(content_setting);
       DCHECK(!setting_string.empty());
 
-      setting_dict->SetString(keys::kContentSettingKey, setting_string);
+      setting_dict->SetString(
+          content_settings_api_constants::kContentSettingKey, setting_string);
       settings->Append(std::move(setting_dict));
     }
   }
@@ -302,21 +304,25 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
       continue;
     }
     std::string primary_pattern_str;
-    dict->GetString(keys::kPrimaryPatternKey, &primary_pattern_str);
+    dict->GetString(content_settings_api_constants::kPrimaryPatternKey,
+                    &primary_pattern_str);
     ContentSettingsPattern primary_pattern =
         ContentSettingsPattern::FromString(primary_pattern_str);
     DCHECK(primary_pattern.IsValid());
 
     std::string secondary_pattern_str;
-    dict->GetString(keys::kSecondaryPatternKey, &secondary_pattern_str);
+    dict->GetString(content_settings_api_constants::kSecondaryPatternKey,
+                    &secondary_pattern_str);
     ContentSettingsPattern secondary_pattern =
         ContentSettingsPattern::FromString(secondary_pattern_str);
     DCHECK(secondary_pattern.IsValid());
 
     std::string content_settings_type_str;
-    dict->GetString(keys::kContentSettingsTypeKey, &content_settings_type_str);
+    dict->GetString(content_settings_api_constants::kContentSettingsTypeKey,
+                    &content_settings_type_str);
     ContentSettingsType content_settings_type =
-        helpers::StringToContentSettingsType(content_settings_type_str);
+        content_settings_helpers::StringToContentSettingsType(
+            content_settings_type_str);
     if (content_settings_type == CONTENT_SETTINGS_TYPE_DEFAULT) {
       // We'll end up with DEFAULT here if the type string isn't recognised.
       // This could be if it's a string from an old settings type that has been
@@ -331,10 +337,12 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
     }
 
     std::string resource_identifier;
-    dict->GetString(keys::kResourceIdentifierKey, &resource_identifier);
+    dict->GetString(content_settings_api_constants::kResourceIdentifierKey,
+                    &resource_identifier);
 
     std::string content_setting_string;
-    dict->GetString(keys::kContentSettingKey, &content_setting_string);
+    dict->GetString(content_settings_api_constants::kContentSettingKey,
+                    &content_setting_string);
     ContentSetting setting;
     bool result = content_settings::ContentSettingFromString(
         content_setting_string, &setting);
