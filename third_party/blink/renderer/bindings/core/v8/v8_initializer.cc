@@ -709,8 +709,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInMainThread);
 
   if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
-    profiler->SetBuildEmbedderGraphCallback(
-        &V8EmbedderGraphBuilder::BuildEmbedderGraphCallback);
+    profiler->AddBuildEmbedderGraphCallback(
+        &V8EmbedderGraphBuilder::BuildEmbedderGraphCallback, nullptr);
   }
 
   DCHECK(ThreadState::MainThreadState());

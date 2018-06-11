@@ -19,7 +19,9 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
 
   V8EmbedderGraphBuilder(v8::Isolate*, Graph*);
 
-  static void BuildEmbedderGraphCallback(v8::Isolate*, v8::EmbedderGraph*);
+  static void BuildEmbedderGraphCallback(v8::Isolate*,
+                                         v8::EmbedderGraph*,
+                                         void* data);
   void BuildEmbedderGraph();
 
   // v8::PersistentHandleVisitor override.
