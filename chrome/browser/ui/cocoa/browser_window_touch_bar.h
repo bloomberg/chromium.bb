@@ -24,11 +24,14 @@ class Browser;
 @property(nonatomic, assign) BOOL isStarred;
 
 // Designated initializer.
-- (instancetype)initWithBrowser:(Browser*)browser
-        browserWindowController:(BrowserWindowController*)bwc;
+- (instancetype)initWithBrowser:(Browser*)browser window:(NSWindow*)window;
 
 // Creates and returns a touch bar for the browser window.
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2));
+
+// Invalidate the browser window touch bar by setting |window_|'s touch bar to
+// nil.
+- (void)invalidateTouchBar;
 
 // Updates the back/forward button. Called when creating the touch bar or when
 // the back and forward commands have changed.

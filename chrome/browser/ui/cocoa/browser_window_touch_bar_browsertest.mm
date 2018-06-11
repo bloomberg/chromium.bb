@@ -19,22 +19,8 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest_mac.h"
 
-@interface TestingBrowserWindowTouchBar : BrowserWindowTouchBar
-
-@property(nonatomic, assign) BOOL hasUpdatedReloadStop;
-
-@end
-
-@implementation TestingBrowserWindowTouchBar
-
-@synthesize hasUpdatedReloadStop = hasUpdatedReloadStop_;
-
-- (void)updateReloadStopButton {
-  [super updateReloadStopButton];
-  hasUpdatedReloadStop_ = YES;
-}
-
-@end
+// TODO(spqchan): Write tests that will check for page load and bookmark
+// updates.
 
 class BrowserWindowTouchBarTest : public InProcessBrowserTest {
  public:
@@ -43,10 +29,15 @@ class BrowserWindowTouchBarTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     // Ownership is passed to BrowserWindowController in
     // -setBrowserWindowTouchBar:
-    browser_touch_bar_ = [[TestingBrowserWindowTouchBar alloc]
-                initWithBrowser:browser()
-        browserWindowController:browser_window_controller()];
+    browser_touch_bar_ = [[BrowserWindowTouchBar alloc]
+        initWithBrowser:browser()
+                 window:[browser_window_controller() window]];
     [browser_window_controller() setBrowserWindowTouchBar:browser_touch_bar_];
+  }
+
+  void TearDownOnMainThread() override {
+    [browser_window_controller() setBrowserWindowTouchBar:nil];
+    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   BrowserWindowController* browser_window_controller() {
@@ -56,36 +47,17 @@ class BrowserWindowTouchBarTest : public InProcessBrowserTest {
                                              ->GetNativeWindow()];
   }
 
-  TestingBrowserWindowTouchBar* browser_touch_bar() const {
+  BrowserWindowTouchBar* browser_touch_bar() const {
     return browser_touch_bar_;
   }
 
  private:
-  TestingBrowserWindowTouchBar* browser_touch_bar_;
+  BrowserWindowTouchBar* browser_touch_bar_;
 
   test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowTouchBarTest);
 };
-
-// Test if the proper controls gets updated when the page loads.
-IN_PROC_BROWSER_TEST_F(BrowserWindowTouchBarTest, PageLoadInvalidate) {
-  if (@available(macOS 10.12.2, *)) {
-    NSButton* reload_stop = [browser_touch_bar() reloadStopButton];
-    EXPECT_TRUE(reload_stop);
-
-    browser()->window()->UpdateReloadStopState(true, false);
-    EXPECT_TRUE([browser_touch_bar() hasUpdatedReloadStop]);
-    EXPECT_EQ(IDC_STOP, [reload_stop tag]);
-
-    // Reset the flag.
-    [browser_touch_bar() setHasUpdatedReloadStop:NO];
-
-    browser()->window()->UpdateReloadStopState(false, false);
-    EXPECT_TRUE([browser_touch_bar() hasUpdatedReloadStop]);
-    EXPECT_EQ(IDC_RELOAD, [reload_stop tag]);
-  }
-}
 
 // Test if the touch bar gets invalidated when the active tab is changed.
 IN_PROC_BROWSER_TEST_F(BrowserWindowTouchBarTest, TabChanges) {
@@ -95,22 +67,12 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowTouchBarTest, TabChanges) {
     [window setTouchBar:touch_bar];
     EXPECT_TRUE([window touchBar]);
 
-    // The window should have a new touch bar.
-    [browser_window_controller() onActiveTabChanged:nullptr to:nullptr];
-    EXPECT_NE(touch_bar, [window touchBar]);
-  }
-}
-
-// Test if the touch bar gets invalidated when the starred state is changed.
-IN_PROC_BROWSER_TEST_F(BrowserWindowTouchBarTest, StarredChanges) {
-  if (@available(macOS 10.12.2, *)) {
-    NSWindow* window = [browser_window_controller() window];
-    NSTouchBar* touch_bar = [browser_touch_bar() makeTouchBar];
-    [window setTouchBar:touch_bar];
-    EXPECT_TRUE([window touchBar]);
-
-    // The window should have a new touch bar.
-    [browser_window_controller() setStarredState:YES];
+    // Insert a new tab in the foreground. The window should have a new touch
+    // bar.
+    std::unique_ptr<content::WebContents> contents =
+        content::WebContents::Create(
+            content::WebContents::CreateParams(browser()->profile()));
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents), true);
     EXPECT_NE(touch_bar, [window touchBar]);
   }
 }
