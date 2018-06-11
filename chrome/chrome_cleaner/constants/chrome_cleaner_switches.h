@@ -31,6 +31,7 @@ extern const char kPostRebootSwitch[];
 extern const char kPostRebootSwitchesInOtherRegistryKeySwitch[];
 extern const char kPostRebootTriggerSwitch[];
 extern const char kRemoveScanOnlyUwS[];
+extern const char kReportExtensionsSwitch[];
 extern const char kSandboxMojoPipeTokenSwitch[];
 extern const char kSandboxedProcessIdSwitch[];
 extern const char kScanningTimeoutMinutesSwitch[];
