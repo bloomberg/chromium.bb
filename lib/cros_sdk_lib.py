@@ -53,7 +53,7 @@ def GetChrootVersion(chroot=None, buildroot=None):
     chroot_version = osutils.ReadFile(ver_path).strip()
     return int(chroot_version)
   except IOError:
-    logging.warning('could not read %s', ver_path)
+    logging.debug('could not read %s', ver_path)
     return None
   except ValueError as e:
     logging.warning('chroot %s contains invalid version %s: %s', chroot,
