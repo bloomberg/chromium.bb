@@ -698,19 +698,43 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
 
   gl_->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
 
+  auto webgl_preferences =
+      ContextProvider()->GetGpuFeatureInfo().webgl_preferences;
+
   int max_sample_count = 0;
-  anti_aliasing_mode_ = kNone;
-  if (use_multisampling) {
-    gl_->GetIntegerv(GL_MAX_SAMPLES_ANGLE, &max_sample_count);
-    anti_aliasing_mode_ = kMSAAExplicitResolve;
-    if (extensions_util_->SupportsExtension(
-            "GL_EXT_multisampled_render_to_texture")) {
-      anti_aliasing_mode_ = kMSAAImplicitResolve;
-    } else if (extensions_util_->SupportsExtension(
-                   "GL_CHROMIUM_screen_space_antialiasing")) {
-      anti_aliasing_mode_ = kScreenSpaceAntialiasing;
+  gl_->GetIntegerv(GL_MAX_SAMPLES_ANGLE, &max_sample_count);
+  if (webgl_preferences.anti_aliasing_mode ==
+      gpu::kAntialiasingModeUnspecified) {
+    if (use_multisampling) {
+      anti_aliasing_mode_ = gpu::kAntialiasingModeMSAAExplicitResolve;
+      if (extensions_util_->SupportsExtension(
+              "GL_EXT_multisampled_render_to_texture")) {
+        anti_aliasing_mode_ = gpu::kAntialiasingModeMSAAImplicitResolve;
+      } else if (extensions_util_->SupportsExtension(
+                     "GL_CHROMIUM_screen_space_antialiasing") &&
+                 !ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+                     gpu::DISABLE_FRAMEBUFFER_CMAA)) {
+        anti_aliasing_mode_ = gpu::kAntialiasingModeScreenSpaceAntialiasing;
+      }
+    } else {
+      anti_aliasing_mode_ = gpu::kAntialiasingModeNone;
+      max_sample_count = 0;
     }
+  } else {
+    if ((webgl_preferences.anti_aliasing_mode ==
+             gpu::kAntialiasingModeMSAAImplicitResolve &&
+         !extensions_util_->SupportsExtension(
+             "GL_EXT_multisampled_render_to_texture")) ||
+        (webgl_preferences.anti_aliasing_mode ==
+             gpu::kAntialiasingModeScreenSpaceAntialiasing &&
+         !extensions_util_->SupportsExtension(
+             "GL_CHROMIUM_screen_space_antialiasing"))) {
+      DLOG(ERROR) << "Invalid anti-aliasing mode specified.";
+      return false;
+    }
+    anti_aliasing_mode_ = webgl_preferences.anti_aliasing_mode;
   }
+
   // TODO(dshwang): Enable storage textures on all platforms. crbug.com/557848
   // The Linux ATI bot fails
   // WebglConformance.conformance_textures_misc_tex_image_webgl, so use storage
@@ -719,14 +743,10 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   storage_texture_supported_ =
       (webgl_version_ > kWebGL1 ||
        extensions_util_->SupportsExtension("GL_EXT_texture_storage")) &&
-      anti_aliasing_mode_ == kScreenSpaceAntialiasing;
-  // Performance regreses by 30% in WebGL apps for AMD Stoney
-  // if sample count is 8x
-  if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
-          gpu::MAX_MSAA_SAMPLE_COUNT_4))
-    sample_count_ = std::min(4, max_sample_count);
-  else
-    sample_count_ = std::min(8, max_sample_count);
+      anti_aliasing_mode_ == gpu::kAntialiasingModeScreenSpaceAntialiasing;
+
+  sample_count_ = std::min(
+      static_cast<int>(webgl_preferences.msaa_sample_count), max_sample_count);
 
   texture_target_ = GL_TEXTURE_2D;
 #if defined(OS_MACOSX)
@@ -1038,11 +1058,12 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
     if (!depth_stencil_buffer_)
       gl_->GenRenderbuffers(1, &depth_stencil_buffer_);
     gl_->BindRenderbuffer(GL_RENDERBUFFER, depth_stencil_buffer_);
-    if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
+    if (anti_aliasing_mode_ == gpu::kAntialiasingModeMSAAImplicitResolve) {
       gl_->RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, sample_count_,
                                              GL_DEPTH24_STENCIL8_OES,
                                              size.Width(), size.Height());
-    } else if (anti_aliasing_mode_ == kMSAAExplicitResolve) {
+    } else if (anti_aliasing_mode_ ==
+               gpu::kAntialiasingModeMSAAExplicitResolve) {
       gl_->RenderbufferStorageMultisampleCHROMIUM(
           GL_RENDERBUFFER, sample_count_, GL_DEPTH24_STENCIL8_OES, size.Width(),
           size.Height());
@@ -1197,12 +1218,13 @@ void DrawingBuffer::ResolveMultisampleFramebufferInternal() {
   }
 
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  if (anti_aliasing_mode_ == kScreenSpaceAntialiasing)
+  if (anti_aliasing_mode_ == gpu::kAntialiasingModeScreenSpaceAntialiasing)
     gl_->ApplyScreenSpaceAntialiasingCHROMIUM();
 }
 
 void DrawingBuffer::ResolveIfNeeded() {
-  if (anti_aliasing_mode_ != kNone && !contents_change_resolved_)
+  if (anti_aliasing_mode_ != gpu::kAntialiasingModeNone &&
+      !contents_change_resolved_)
     ResolveMultisampleFramebufferInternal();
   contents_change_resolved_ = true;
 }
@@ -1223,7 +1245,7 @@ void DrawingBuffer::RestoreAllState() {
 }
 
 bool DrawingBuffer::Multisample() const {
-  return anti_aliasing_mode_ != kNone;
+  return anti_aliasing_mode_ != gpu::kAntialiasingModeNone;
 }
 
 void DrawingBuffer::Bind(GLenum target) {
@@ -1489,7 +1511,7 @@ void DrawingBuffer::AttachColorBufferToReadFramebuffer() {
 
   gl_->BindTexture(texture_target, id);
 
-  if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
+  if (anti_aliasing_mode_ == gpu::kAntialiasingModeMSAAImplicitResolve) {
     gl_->FramebufferTexture2DMultisampleEXT(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_target, id, 0,
         sample_count_);
@@ -1500,7 +1522,7 @@ void DrawingBuffer::AttachColorBufferToReadFramebuffer() {
 }
 
 bool DrawingBuffer::WantExplicitResolve() {
-  return anti_aliasing_mode_ == kMSAAExplicitResolve;
+  return anti_aliasing_mode_ == gpu::kAntialiasingModeMSAAExplicitResolve;
 }
 
 bool DrawingBuffer::WantDepthOrStencil() {
@@ -1519,7 +1541,7 @@ bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer(
     return false;
   }
 
-  if (anti_aliasing_mode_ != kNone)
+  if (anti_aliasing_mode_ != gpu::kAntialiasingModeNone)
     return false;
 
   bool has_emulated_rgb = !allocate_alpha_channel_ && have_alpha_channel_;
