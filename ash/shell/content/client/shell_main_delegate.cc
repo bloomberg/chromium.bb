@@ -16,7 +16,6 @@
 #include "base/path_service.h"
 #include "components/services/font/font_service_app.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/utility/content_utility_client.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ui/ime/test_ime_driver/public/mojom/constants.mojom.h"
@@ -94,13 +93,7 @@ ShellMainDelegate::ShellMainDelegate() = default;
 ShellMainDelegate::~ShellMainDelegate() = default;
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
   content::SetContentClient(&content_client_);
-
   return false;
 }
 
