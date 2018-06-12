@@ -26,13 +26,6 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
       token_service_observer_(this),
       access_token_retried_(false),
       mode_(mode) {
-  Start();
-}
-
-PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() {
-}
-
-void PrimaryAccountAccessTokenFetcher::Start() {
   if (mode_ == Mode::kImmediate || AreCredentialsAvailable()) {
     StartAccessTokenRequest();
     return;
@@ -44,6 +37,8 @@ void PrimaryAccountAccessTokenFetcher::Start() {
   signin_manager_observer_.Add(signin_manager_);
   token_service_observer_.Add(token_service_);
 }
+
+PrimaryAccountAccessTokenFetcher::~PrimaryAccountAccessTokenFetcher() {}
 
 bool PrimaryAccountAccessTokenFetcher::AreCredentialsAvailable() const {
   DCHECK_EQ(Mode::kWaitUntilAvailable, mode_);

@@ -57,8 +57,6 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   ~PrimaryAccountAccessTokenFetcher() override;
 
  private:
-  void Start();
-
   // Returns true iff there is a primary account with a refresh token. Should
   // only be called in mode |kWaitUntilAvailable|.
   bool AreCredentialsAvailable() const;
