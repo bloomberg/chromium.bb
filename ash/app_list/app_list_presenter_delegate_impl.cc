@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_presenter_delegate.h"
+#include "ash/app_list/app_list_presenter_delegate_impl.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
@@ -50,22 +50,22 @@ bool IsSideShelf(aura::Window* root_window) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListPresenterDelegate, public:
+// AppListPresenterDelegateImpl, public:
 
-AppListPresenterDelegate::AppListPresenterDelegate() = default;
+AppListPresenterDelegateImpl::AppListPresenterDelegateImpl() = default;
 
-AppListPresenterDelegate::~AppListPresenterDelegate() {
+AppListPresenterDelegateImpl::~AppListPresenterDelegateImpl() {
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
-void AppListPresenterDelegate::SetPresenter(
+void AppListPresenterDelegateImpl::SetPresenter(
     app_list::AppListPresenterImpl* presenter) {
   presenter_ = presenter;
 }
 
-void AppListPresenterDelegate::Init(app_list::AppListView* view,
-                                    int64_t display_id,
-                                    int current_apps_page) {
+void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
+                                        int64_t display_id,
+                                        int current_apps_page) {
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
   Shell::GetPrimaryRootWindowController()
@@ -101,17 +101,17 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
       shelf->shelf_widget()->GetDragAndDropHostForAppList());
 }
 
-void AppListPresenterDelegate::OnShown(int64_t display_id) {
+void AppListPresenterDelegateImpl::OnShown(int64_t display_id) {
   is_visible_ = true;
 }
 
-void AppListPresenterDelegate::OnDismissed() {
+void AppListPresenterDelegateImpl::OnDismissed() {
   DCHECK(is_visible_);
   DCHECK(view_);
   is_visible_ = false;
 }
 
-gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
+gfx::Vector2d AppListPresenterDelegateImpl::GetVisibilityAnimationOffset(
     aura::Window* root_window) {
   DCHECK(Shell::HasInstance());
 
@@ -125,7 +125,7 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
                               : shelf->GetIdealBounds().y() - app_list_y);
 }
 
-base::TimeDelta AppListPresenterDelegate::GetVisibilityAnimationDuration(
+base::TimeDelta AppListPresenterDelegateImpl::GetVisibilityAnimationDuration(
     aura::Window* root_window,
     bool is_visible) {
   // If the view is below the shelf, just hide immediately.
@@ -138,9 +138,10 @@ base::TimeDelta AppListPresenterDelegate::GetVisibilityAnimationDuration(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListPresenterDelegate, private:
+// AppListPresenterDelegateImpl, private:
 
-void AppListPresenterDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
+void AppListPresenterDelegateImpl::ProcessLocatedEvent(
+    ui::LocatedEvent* event) {
   if (!view_ || !is_visible_)
     return;
 
@@ -193,14 +194,14 @@ void AppListPresenterDelegate::ProcessLocatedEvent(ui::LocatedEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListPresenterDelegate, aura::EventFilter implementation:
+// AppListPresenterDelegateImpl, aura::EventFilter implementation:
 
-void AppListPresenterDelegate::OnMouseEvent(ui::MouseEvent* event) {
+void AppListPresenterDelegateImpl::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     ProcessLocatedEvent(event);
 }
 
-void AppListPresenterDelegate::OnGestureEvent(ui::GestureEvent* event) {
+void AppListPresenterDelegateImpl::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TWO_FINGER_TAP ||
       event->type() == ui::ET_GESTURE_LONG_PRESS) {

@@ -11,15 +11,15 @@
 
 namespace aura {
 class Window;
-}
+}  // namespace aura
 
 namespace base {
 class TimeDelta;
-}
+}  // namespace base
 
 namespace gfx {
 class Vector2d;
-}
+}  // namespace gfx
 
 namespace app_list {
 
@@ -59,9 +59,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
       bool is_visible) = 0;
 
  protected:
-  // Gets the duration for the show/hide animation in Ms.
-  static base::TimeDelta animation_duration();
-
   // Gets the duration for the hide animation for the fullscreen version of
   // the app list in Ms.
   static base::TimeDelta GetAnimationDurationFullscreen(bool is_side_shelf,
@@ -72,8 +69,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
 
   // Offset for the hide animation for the fullscreen app list in DIPs.
   static const int kAnimationOffsetFullscreen = 400;
-
-  int GetMinimumBoundsHeightForAppList(const app_list::AppListView* app_list);
 };
 
 }  // namespace app_list
