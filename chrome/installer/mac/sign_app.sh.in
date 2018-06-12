@@ -9,7 +9,7 @@
 # verified. Inner bundle components are expected to be signed before this
 # script is called. See sign_versioned_dir.sh.in.
 
-set -eu
+set -eux
 
 # Environment sanitization. Set a known-safe PATH. Clear environment variables
 # that might impact the interpreter's operation. The |bash -p| invocation
@@ -24,18 +24,20 @@ export -n SHELLOPTS
 ME="$(basename "${0}")"
 readonly ME
 
-if [[ ${#} -ne 3 && ${#} -ne 4 ]]; then
+if [[ ${#} -ne 5 && ${#} -ne 6 ]]; then
   echo "usage: ${ME} app_path codesign_keychain codesign_id \
-[--development]" >& 2
+provisioning_profile entitlements_plist [--development]" >& 2
   exit 1
 fi
 
 app_path="${1}"
 codesign_keychain="${2}"
 codesign_id="${3}"
+provisioning_profile="${4}"
+entitlements_plist="${5}"
 is_development=
 
-if [[ ${#} == 4 && "${4}" == "--development" ]]; then
+if [[ ${#} == 6 && "${6}" == "--development" ]]; then
   is_development=1
 fi
 
@@ -45,7 +47,8 @@ source "${script_dir}/variables.sh"
 # Use custom resource rules for the browser application.
 browser_app_rules="${script_dir}/app_resource_rules.plist"
 
-versioned_dir="${app_path}/Contents/Versions/@VERSION@"
+contents_dir="${app_path}/Contents"
+versioned_dir="${contents_dir}/Versions/@VERSION@"
 
 browser_app="${app_path}"
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
@@ -54,6 +57,9 @@ crashpad_handler="${framework}/Helpers/crashpad_handler"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
 app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
+
+# Embed the supplied provisioning profile.
+cp "${provisioning_profile}" "${contents_dir}/embedded.provisionprofile"
 
 requirement="\
 designated => \
@@ -69,6 +75,7 @@ codesign_cmd=(
   "${browser_app}"
   --options "${enforcement_flags_app}"
   --resource-rules "${browser_app_rules}"
+  --entitlements "${entitlements_plist}"
 )
 if [[ -z "${is_development}" ]]; then
   codesign_cmd+=( -r="${requirement}" )
