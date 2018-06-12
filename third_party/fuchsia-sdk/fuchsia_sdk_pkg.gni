@@ -69,12 +69,6 @@ template("fuchsia_sdk_pkg") {
   config("${target_name}_config") {
     visibility = [ ":${invoker.target_name}" ]
     include_dirs = [ "sdk/pkg/${_package_name}/include" ]
-
-    # TODO(https://crbug.com/850757): Remove this once FDIO includes are
-    # updated in dependencies.
-    if (target_name == "fdio") {
-      include_dirs += [ "sdk/pkg/${_package_name}/include/lib" ]
-    }
   }
 
   static_library(target_name) {
