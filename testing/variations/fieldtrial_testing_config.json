@@ -3084,6 +3084,28 @@
             ]
         }
     ],
+    "RecurrentSSLInterstitial": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "RecurrentInterstitialWithUIEnabled",
+                    "params": {
+                        "show_error_ui": "true"
+                    },
+                    "enable_features": [
+                        "RecurrentInterstitialFeature"
+                    ]
+                }
+            ]
+        }
+    ],
     "RemoveNavigationHistory": [
         {
             "platforms": [
