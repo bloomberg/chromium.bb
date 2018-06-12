@@ -1943,7 +1943,7 @@ void NetworkHandler::OnResponseBodyPipeTaken(
 std::string NetworkHandler::ExtractFragment(const GURL& url,
                                             std::string* fragment) {
   if (!url.has_ref()) {
-    *fragment = "#";
+    *fragment = std::string();
     return url.spec();
   }
   *fragment = "#" + url.ref();
