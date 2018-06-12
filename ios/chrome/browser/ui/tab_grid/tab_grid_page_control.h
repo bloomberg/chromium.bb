@@ -14,6 +14,14 @@
 // This is a fixed-size control; it's an error to set  or change its size.
 // The sections are arranged in leading-to-trailing order:
 //   incognito tabs, regular tabs, remote tabs.
+//
+// Dragging the slider will change the value of the control's |sliderPosition|
+// property, and will trigger any UIControlEventValueChanged actions. Once a
+// drag is completed, the UIControlEventTouchUpInside actions are triggered.
+//
+// Tapping on sections of the slider will change the value of the control's
+// |selectedPage| property and will trigger any UIControlEventTouchUpInside
+// actions.
 @interface TabGridPageControl : UIControl
 
 // The currently selected page in the control. When this value is changed by

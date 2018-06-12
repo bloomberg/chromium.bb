@@ -483,8 +483,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.topToolbar = topToolbar;
   // Configure and initialize the page control.
   [self.topToolbar.pageControl addTarget:self
-                                  action:@selector(pageControlChanged:)
+                                  action:@selector(pageControlChangedValue:)
                         forControlEvents:UIControlEventValueChanged];
+  [self.topToolbar.pageControl addTarget:self
+                                  action:@selector(pageControlChangedPage:)
+                        forControlEvents:UIControlEventTouchUpInside];
+
   NSArray* constraints = @[
     [topToolbar.topAnchor constraintEqualToAnchor:self.view.topAnchor],
     [topToolbar.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
@@ -830,7 +834,25 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
 }
 
-- (void)pageControlChanged:(id)sender {
+- (void)pageControlChangedValue:(id)sender {
+  // Map the page control slider position (in the range 0.0-1.0) to an
+  // x-offset for the scroll view.
+  CGFloat offset = self.topToolbar.pageControl.sliderPosition;
+  // In RTL, flip the offset.
+  if (UseRTLLayout())
+    offset = 1.0 - offset;
+
+  // Total space available for the scroll view to scroll (horizontally).
+  CGFloat offsetWidth =
+      self.scrollView.contentSize.width - self.scrollView.frame.size.width;
+  CGPoint contentOffset = self.scrollView.contentOffset;
+  // Find the final offset by using |offset| as a fraction of the available
+  // scroll width.
+  contentOffset.x = offsetWidth * offset;
+  self.scrollView.contentOffset = contentOffset;
+}
+
+- (void)pageControlChangedPage:(id)sender {
   [self setCurrentPage:self.topToolbar.pageControl.selectedPage animated:YES];
 }
 
