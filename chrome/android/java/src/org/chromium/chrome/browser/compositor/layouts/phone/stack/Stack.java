@@ -190,7 +190,7 @@ public abstract class Stack implements ChromeAnimation.Animatable<Stack.Property
     protected boolean mInSwipe;
 
     // Discard
-    private StackTab mDiscardingTab;
+    protected StackTab mDiscardingTab;
 
     // We can't initialize mDiscardDirection here using LocalizationUtils.isRtl() because it will
     // involve a jni call. Instead, mDiscardDirection will be initialized in Show().
