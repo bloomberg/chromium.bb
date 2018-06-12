@@ -802,10 +802,13 @@ base::string16 CreditCard::NetworkOrBankNameAndLastFourDigits() const {
 base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
   base::string16 month = ExpirationMonthAsString();
   base::string16 year = Expiration2DigitYearAsString();
-  return month.empty() || year.empty()
-             ? base::string16()
-             : l10n_util::GetStringFUTF16(
-                   IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR, month, year);
+  if (month.empty() || year.empty())
+    return base::string16();
+
+  return l10n_util::GetStringFUTF16(
+      ShouldUseNativeViews() ? IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR_V2
+                             : IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR,
+      month, year);
 }
 
 base::string16 CreditCard::GetLastUsedDateForDisplay(
