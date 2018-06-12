@@ -6,10 +6,10 @@ Tests the signed exchange information are available when the navigation succeede
   resourceType: signed-exchange
   SignedExchangeInfo
     Request URL: https://www.127.0.0.1/test.html
-    Certificate URL: http://localhost:8000/loading/htxg/resources/127.0.0.1.pem.cbor
+    Certificate URL: http://localhost:8000/loading/htxg/resources/127.0.0.1.sxg.pem.cbor
     Certificate Subject: 127.0.0.1
     Certificate Issuer: web-platform-tests
-* http://localhost:8000/loading/htxg/resources/127.0.0.1.pem.cbor
+* http://localhost:8000/loading/htxg/resources/127.0.0.1.sxg.pem.cbor
   failed: false
   statusCode: 200
   resourceType: other
