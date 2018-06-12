@@ -10,32 +10,9 @@ import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum VideoCapturePixelFormat {
-  UNKNOWN,
   I420,
-  YV12,
-  I422,
-  I420A,
-  I444,
-  NV12,
-  NV21,
-  UYVY,
-  YUY2,
-  ARGB,
-  XRGB,
-  RGB24,
-  RGB32,
-  MJPEG,
-  MT21,
-  YUV420P9,
-  YUV420P10,
-  YUV422P9,
-  YUV422P10,
-  YUV444P9,
-  YUV444P10,
-  YUV420P12,
-  YUV422P12,
-  YUV444P12,
-  Y16
+  Y16,
+  ARGB
 };
 
 enum ResolutionChangePolicy {
