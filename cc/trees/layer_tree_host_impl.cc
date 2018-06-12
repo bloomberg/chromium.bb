@@ -171,9 +171,12 @@ viz::ResourceFormat TileRasterBufferFormat(
 // it and resets to the same location.
 class ViewportAnchor {
  public:
-  ViewportAnchor(LayerImpl* inner_scroll, LayerImpl* outer_scroll)
-      : inner_(inner_scroll), outer_(outer_scroll) {
-    viewport_in_content_coordinates_ = inner_->CurrentScrollOffset();
+  ViewportAnchor(ScrollNode* inner_scroll,
+                 LayerImpl* outer_scroll,
+                 LayerTreeImpl* tree_impl)
+      : inner_(inner_scroll), outer_(outer_scroll), tree_impl_(tree_impl) {
+    viewport_in_content_coordinates_ =
+        scroll_tree().current_scroll_offset(inner_->element_id);
 
     if (outer_)
       viewport_in_content_coordinates_ += outer_->CurrentScrollOffset();
@@ -182,22 +185,28 @@ class ViewportAnchor {
   void ResetViewportToAnchoredPosition() {
     DCHECK(outer_);
 
-    inner_->ClampScrollToMaxScrollOffset();
+    scroll_tree().ClampScrollToMaxScrollOffset(inner_, tree_impl_);
     outer_->ClampScrollToMaxScrollOffset();
 
     gfx::ScrollOffset viewport_location =
-        inner_->CurrentScrollOffset() + outer_->CurrentScrollOffset();
+        scroll_tree().current_scroll_offset(inner_->element_id) +
+        outer_->CurrentScrollOffset();
 
     gfx::Vector2dF delta =
         viewport_in_content_coordinates_.DeltaFrom(viewport_location);
 
-    delta = inner_->ScrollBy(delta);
+    delta = scroll_tree().ScrollBy(inner_, delta, tree_impl_);
     outer_->ScrollBy(delta);
   }
 
  private:
-  LayerImpl* inner_;
+  ScrollTree& scroll_tree() {
+    return tree_impl_->property_trees()->scroll_tree;
+  }
+
+  ScrollNode* inner_;
   LayerImpl* outer_;
+  LayerTreeImpl* tree_impl_;
   gfx::ScrollOffset viewport_in_content_coordinates_;
 };
 
@@ -623,7 +632,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
     bool anchor_point,
     float page_scale,
     base::TimeDelta duration) {
-  if (!InnerViewportScrollLayer())
+  if (!InnerViewportScrollNode())
     return;
 
   gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
@@ -2376,13 +2385,19 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
 }
 
 void LayerTreeHostImpl::UpdateViewportContainerSizes() {
+  // TODO(bokan): Make URL-bar bounds deltas work with Blink-generated property
+  // trees. https://crbug.com/850135.
+  if (!InnerViewportScrollNode())
+    return;
+
   LayerImpl* inner_container = active_tree_->InnerViewportContainerLayer();
   LayerImpl* outer_container = active_tree_->OuterViewportContainerLayer();
 
   if (!inner_container)
     return;
 
-  ViewportAnchor anchor(InnerViewportScrollLayer(), OuterViewportScrollLayer());
+  ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollLayer(),
+                        active_tree_.get());
 
   float top_controls_layout_height =
       active_tree_->browser_controls_shrink_blink_size()
@@ -2412,8 +2427,7 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
     gfx::Vector2dF amount_to_expand_scaled = gfx::ScaleVector2d(
         amount_to_expand, 1.f / active_tree_->min_page_scale_factor());
     outer_container->SetViewportBoundsDelta(amount_to_expand_scaled);
-    active_tree_->InnerViewportScrollLayer()->SetViewportBoundsDelta(
-        amount_to_expand_scaled);
+    InnerViewportScrollLayer()->SetViewportBoundsDelta(amount_to_expand_scaled);
 
     anchor.ResetViewportToAnchoredPosition();
   }
@@ -2530,8 +2544,8 @@ void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
   client_->DidLoseLayerTreeFrameSinkOnImplThread();
 }
 
-bool LayerTreeHostImpl::HaveRootScrollLayer() const {
-  return !!InnerViewportScrollLayer();
+bool LayerTreeHostImpl::HaveRootScrollNode() const {
+  return InnerViewportScrollNode();
 }
 
 LayerImpl* LayerTreeHostImpl::InnerViewportContainerLayer() const {
@@ -2543,11 +2557,7 @@ LayerImpl* LayerTreeHostImpl::InnerViewportScrollLayer() const {
 }
 
 ScrollNode* LayerTreeHostImpl::InnerViewportScrollNode() const {
-  const auto* inner_viewport_scroll_layer = InnerViewportScrollLayer();
-  if (!inner_viewport_scroll_layer)
-    return nullptr;
-  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
-  return scroll_tree.Node(inner_viewport_scroll_layer->scroll_tree_index());
+  return active_tree_->InnerViewportScrollNode();
 }
 
 LayerImpl* LayerTreeHostImpl::OuterViewportContainerLayer() const {
@@ -2559,12 +2569,7 @@ LayerImpl* LayerTreeHostImpl::OuterViewportScrollLayer() const {
 }
 
 ScrollNode* LayerTreeHostImpl::OuterViewportScrollNode() const {
-  // TODO(pdr): Refactor this to work like InnerViewportScrollNode and access
-  // OuterViewportScrollLayer instead of MainScrollLayer.
-  if (!viewport()->MainScrollLayer())
-    return nullptr;
-  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
-  return scroll_tree.Node(viewport()->MainScrollLayer()->scroll_tree_index());
+  return active_tree_->OuterViewportScrollNode();
 }
 
 ScrollNode* LayerTreeHostImpl::CurrentlyScrollingNode() {
@@ -4415,8 +4420,8 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
       scroll_element_id = scroll_node->element_id;
 
     // Scrollbars for the viewport are registered with the outer viewport layer.
-    if (InnerViewportScrollLayer() && OuterViewportScrollLayer() &&
-        scroll_element_id == InnerViewportScrollLayer()->element_id())
+    if (InnerViewportScrollNode() && OuterViewportScrollLayer() &&
+        scroll_element_id == InnerViewportScrollNode()->element_id)
       scroll_element_id = OuterViewportScrollLayer()->element_id();
   }
 
@@ -4464,7 +4469,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
                                            const gfx::Point& anchor) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::PinchGestureUpdate");
-  if (!InnerViewportScrollLayer())
+  if (!InnerViewportScrollNode())
     return;
   viewport()->PinchUpdate(magnify_delta, anchor);
   client_->SetNeedsCommitOnImplThread();
@@ -4492,27 +4497,23 @@ void LayerTreeHostImpl::PinchGestureEnd(const gfx::Point& anchor,
   SetNeedsRedraw();
 }
 
-static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
-                                LayerTreeImpl* tree_impl) {
-  if (tree_impl->LayerListIsEmpty())
+void LayerTreeHostImpl::CollectScrollDeltas(
+    ScrollAndScaleSet* scroll_info) const {
+  if (active_tree_->LayerListIsEmpty())
     return;
 
   ElementId inner_viewport_scroll_element_id =
-      tree_impl->InnerViewportScrollLayer()
-          ? tree_impl->InnerViewportScrollLayer()->element_id()
-          : ElementId();
+      InnerViewportScrollNode() ? InnerViewportScrollNode()->element_id
+                                : ElementId();
 
-  tree_impl->property_trees()->scroll_tree.CollectScrollDeltas(
+  active_tree_->property_trees()->scroll_tree.CollectScrollDeltas(
       scroll_info, inner_viewport_scroll_element_id);
 }
 
-static void CollectScrollbarUpdates(
-    ScrollAndScaleSet* scroll_info,
-    std::unordered_map<ElementId,
-                       std::unique_ptr<ScrollbarAnimationController>,
-                       ElementIdHash>* controllers) {
-  scroll_info->scrollbars.reserve(controllers->size());
-  for (auto& pair : *controllers) {
+void LayerTreeHostImpl::CollectScrollbarUpdates(
+    ScrollAndScaleSet* scroll_info) const {
+  scroll_info->scrollbars.reserve(scrollbar_animation_controllers_.size());
+  for (auto& pair : scrollbar_animation_controllers_) {
     scroll_info->scrollbars.push_back(LayerTreeHostCommon::ScrollbarsUpdateInfo(
         pair.first, pair.second->ScrollbarsHidden()));
   }
@@ -4521,8 +4522,8 @@ static void CollectScrollbarUpdates(
 std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
 
-  CollectScrollDeltas(scroll_info.get(), active_tree_.get());
-  CollectScrollbarUpdates(scroll_info.get(), &scrollbar_animation_controllers_);
+  CollectScrollDeltas(scroll_info.get());
+  CollectScrollbarUpdates(scroll_info.get());
   scroll_info->page_scale_delta =
       active_tree_->page_scale_factor()->PullDeltaForMainThread();
   scroll_info->top_controls_delta =
@@ -4691,11 +4692,11 @@ LayerTreeHostImpl::ScrollbarAnimationControllerForElementId(
   // The viewport layers have only one set of scrollbars. On Android, these are
   // registered with the inner viewport, otherwise they're registered with the
   // outer viewport. If a controller for one exists, the other shouldn't.
-  if (InnerViewportScrollLayer() && OuterViewportScrollLayer()) {
-    if (scroll_element_id == InnerViewportScrollLayer()->element_id() ||
+  if (InnerViewportScrollNode() && OuterViewportScrollLayer()) {
+    if (scroll_element_id == InnerViewportScrollNode()->element_id ||
         scroll_element_id == OuterViewportScrollLayer()->element_id()) {
       auto itr = scrollbar_animation_controllers_.find(
-          InnerViewportScrollLayer()->element_id());
+          InnerViewportScrollNode()->element_id);
       if (itr != scrollbar_animation_controllers_.end())
         return itr->second.get();
 

@@ -228,9 +228,10 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
         scrolling_size = gfx::SizeF(scroll_node->bounds);
       } else {
         // Add offset and bounds contribution of inner viewport.
-        current_offset += InnerViewportScrollLayer()->CurrentScrollOffset();
-        gfx::SizeF inner_viewport_bounds(scroll_tree.container_bounds(
-            InnerViewportScrollLayer()->scroll_tree_index()));
+        current_offset += scroll_tree.current_scroll_offset(
+            InnerViewportScrollNode()->element_id);
+        gfx::SizeF inner_viewport_bounds(
+            scroll_tree.container_bounds(InnerViewportScrollNode()->id));
         viewport_bounds.SetToMin(inner_viewport_bounds);
       }
       viewport_bounds.Scale(1 / current_page_scale_factor());
@@ -249,7 +250,7 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
       }
       if (is_viewport_scrollbar) {
         scrollbar->SetVerticalAdjust(
-            InnerViewportContainerLayer()->ViewportBoundsDelta().y());
+            property_trees_.inner_viewport_container_bounds_delta().y());
       }
     }
   }
@@ -339,9 +340,12 @@ bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
 
 gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
   gfx::ScrollOffset offset;
+  auto& scroll_tree = property_trees()->scroll_tree;
 
-  if (InnerViewportScrollLayer())
-    offset += InnerViewportScrollLayer()->CurrentScrollOffset();
+  if (InnerViewportScrollNode()) {
+    offset += scroll_tree.current_scroll_offset(
+        InnerViewportScrollNode()->element_id);
+  }
 
   if (OuterViewportScrollLayer())
     offset += OuterViewportScrollLayer()->CurrentScrollOffset();
@@ -351,12 +355,13 @@ gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
 
 gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
   gfx::ScrollOffset offset;
+  const ScrollTree& scroll_tree = property_trees()->scroll_tree;
 
-  if (InnerViewportScrollLayer())
-    offset += InnerViewportScrollLayer()->MaxScrollOffset();
+  if (auto* inner_node = InnerViewportScrollNode())
+    offset += scroll_tree.MaxScrollOffset(inner_node->id);
 
-  if (OuterViewportScrollLayer())
-    offset += OuterViewportScrollLayer()->MaxScrollOffset();
+  if (auto* outer_node = OuterViewportScrollNode())
+    offset += scroll_tree.MaxScrollOffset(outer_node->id);
 
   return offset;
 }
@@ -1036,10 +1041,11 @@ const SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() const {
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
-  if (!InnerViewportContainerLayer())
+  auto* inner_node = InnerViewportScrollNode();
+  if (!inner_node)
     return gfx::SizeF();
 
-  return gfx::ScaleSize(InnerViewportContainerLayer()->BoundsForScrolling(),
+  return gfx::ScaleSize(gfx::SizeF(inner_node->container_bounds),
                         1.0f / current_page_scale_factor());
 }
 
@@ -1086,6 +1092,20 @@ void LayerTreeImpl::SetViewportLayersFromIds(const ViewportLayerIds& ids) {
 
 void LayerTreeImpl::ClearViewportLayers() {
   SetViewportLayersFromIds(ViewportLayerIds());
+}
+
+const ScrollNode* LayerTreeImpl::InnerViewportScrollNode() const {
+  if (!InnerViewportScrollLayer())
+    return nullptr;
+  return property_trees()->scroll_tree.Node(
+      InnerViewportScrollLayer()->scroll_tree_index());
+}
+
+const ScrollNode* LayerTreeImpl::OuterViewportScrollNode() const {
+  if (!OuterViewportScrollLayer())
+    return nullptr;
+  return property_trees()->scroll_tree.Node(
+      OuterViewportScrollLayer()->scroll_tree_index());
 }
 
 // For unit tests, we use the layer's id as its element id.
@@ -1626,13 +1646,15 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
 bool LayerTreeImpl::DistributeRootScrollOffset(
     const gfx::ScrollOffset& root_offset) {
-  if (!InnerViewportScrollLayer() || !OuterViewportScrollLayer())
+  if (!InnerViewportScrollNode() || !OuterViewportScrollLayer())
     return false;
+
+  ScrollTree& scroll_tree = property_trees()->scroll_tree;
 
   // If we get here, we have both inner/outer viewports, and need to distribute
   // the scroll offset between them.
   gfx::ScrollOffset inner_viewport_offset =
-      InnerViewportScrollLayer()->CurrentScrollOffset();
+      scroll_tree.current_scroll_offset(InnerViewportScrollNode()->element_id);
   gfx::ScrollOffset outer_viewport_offset =
       OuterViewportScrollLayer()->CurrentScrollOffset();
 
@@ -1650,7 +1672,9 @@ bool LayerTreeImpl::DistributeRootScrollOffset(
 
   OuterViewportScrollLayer()->SetCurrentScrollOffset(outer_viewport_offset);
   inner_viewport_offset = root_offset - outer_viewport_offset;
-  InnerViewportScrollLayer()->SetCurrentScrollOffset(inner_viewport_offset);
+  if (scroll_tree.SetScrollOffset(InnerViewportScrollNode()->element_id,
+                                  inner_viewport_offset))
+    DidUpdateScrollOffset(InnerViewportScrollNode()->element_id);
   return true;
 }
 

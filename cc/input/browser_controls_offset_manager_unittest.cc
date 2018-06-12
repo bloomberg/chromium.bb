@@ -50,7 +50,7 @@ class MockBrowserControlsOffsetManagerClient
     update_draw_properties_needed_ = true;
   }
 
-  bool HaveRootScrollLayer() const override { return true; }
+  bool HaveRootScrollNode() const override { return true; }
 
   float BottomControlsHeight() const override {
     return bottom_controls_height_;

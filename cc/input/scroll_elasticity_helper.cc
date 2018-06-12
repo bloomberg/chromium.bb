@@ -67,11 +67,14 @@ gfx::ScrollOffset ScrollElasticityHelperImpl::MaxScrollOffset() const {
 }
 
 void ScrollElasticityHelperImpl::ScrollBy(const gfx::Vector2dF& delta) {
-  LayerImpl* root_scroll_layer = host_impl_->OuterViewportScrollLayer()
-                                     ? host_impl_->OuterViewportScrollLayer()
-                                     : host_impl_->InnerViewportScrollLayer();
-  if (root_scroll_layer)
-    root_scroll_layer->ScrollBy(delta);
+  ScrollNode* root_scroll_node = host_impl_->OuterViewportScrollNode()
+                                     ? host_impl_->OuterViewportScrollNode()
+                                     : host_impl_->InnerViewportScrollNode();
+  if (root_scroll_node) {
+    LayerTreeImpl* tree_impl = host_impl_->active_tree();
+    tree_impl->property_trees()->scroll_tree.ScrollBy(root_scroll_node, delta,
+                                                      tree_impl);
+  }
 }
 
 void ScrollElasticityHelperImpl::RequestOneBeginFrame() {

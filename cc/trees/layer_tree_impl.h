@@ -273,6 +273,17 @@ class CC_EXPORT LayerTreeImpl {
     return LayerById(viewport_layer_ids_.outer_viewport_scroll);
   }
 
+  const ScrollNode* InnerViewportScrollNode() const;
+  ScrollNode* InnerViewportScrollNode() {
+    return const_cast<ScrollNode*>(
+        const_cast<const LayerTreeImpl*>(this)->InnerViewportScrollNode());
+  }
+  const ScrollNode* OuterViewportScrollNode() const;
+  ScrollNode* OuterViewportScrollNode() {
+    return const_cast<ScrollNode*>(
+        const_cast<const LayerTreeImpl*>(this)->OuterViewportScrollNode());
+  }
+
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
 
   SkColor background_color() const { return background_color_; }
