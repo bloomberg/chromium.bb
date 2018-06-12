@@ -40,12 +40,24 @@ enable_built_in_dns = !is_ios && !is_proto_quic
 # Unix sockets are not supported on iOS or NaCl.
 enable_unix_sockets = is_posix && !is_ios && !is_nacl
 
-# Android and Fuchsia can't run testserver.py directly, so they use remote
-# test server.
-use_remote_test_server = is_android || is_fuchsia
+# x86/x64 cast_shell builds run on regular trybots and can use python runtime
+# and remote test server. ARM cast_shell builds don't have python runtime.
+is_arm_cast_shell_build =
+    is_chromecast && (current_cpu == "arm" || current_cpu == "arm64")
 
 # Python works only on Linux, MacOS and Windows.
-enable_python_utils = !is_android && !is_fuchsia && !is_ios
+enable_python_utils =
+    !is_arm_cast_shell_build && !is_android && !is_fuchsia && !is_ios
+
+# Android, Chromecast and Fuchsia can't run testserver.py directly, so they
+# use remote test server.
+use_remote_test_server = !enable_python_utils
+
+config("net_test_config") {
+  if (use_remote_test_server) {
+    defines = [ "USE_REMOTE_TEST_SERVER" ]
+  }
+}
 
 buildflag_header("buildflags") {
   header = "net_buildflags.h"
@@ -2729,6 +2741,8 @@ static_library("test_support") {
       "test/spawned_test_server/spawned_test_server.h",
     ]
   }
+
+  public_configs = [ ":net_test_config" ]
 
   if (use_remote_test_server) {
     sources += [
