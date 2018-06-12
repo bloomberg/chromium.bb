@@ -39,8 +39,7 @@ class LocalDeviceLinkerTestRun(local_device_test_run.LocalDeviceTestRun):
     return tests
 
   def _GetTests(self):
-    min_device_sdk = min(d.build_version_sdk for d in self._env.devices)
-    return self._test_instance.GetTests(min_device_sdk)
+    return self._test_instance.GetTests()
 
   def _GetUniqueTestName(self, test):
     return test.qualified_name

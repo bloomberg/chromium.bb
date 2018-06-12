@@ -30,7 +30,7 @@
    To build and run the linker tests, do the following:
 
      ninja -C out/Debug chromium_linker_test_apk
-     build/android/test_runner.py linker
+     out/Debug/bin/run_chromium_linker_test_apk
 
 """
 # pylint: disable=R0201
@@ -161,7 +161,7 @@ class LinkerTestCaseBase(object):
     print '[ %-*s ] %s' % (margin, 'RUN', self.tagged_name)
     logging.info('Running linker test: %s', self.tagged_name)
 
-    command_line_flags = '--use-linker=legacy'
+    command_line_flags = ''
     if self.is_low_memory:
       command_line_flags += ' --low-memory-device'
     device.WriteFile(_COMMAND_LINE_FILE, command_line_flags)
