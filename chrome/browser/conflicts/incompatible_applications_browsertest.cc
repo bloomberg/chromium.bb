@@ -25,6 +25,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/viz/common/features.h"
 
 // This class allows to wait until the kIncompatibleApplications preference is
 // modified. This can only happen if a new incompatible application is found,
@@ -195,6 +196,12 @@ IN_PROC_BROWSER_TEST_F(IncompatibleApplicationsBrowserTest,
                        InjectIncompatibleDLL) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10)
     return;
+
+#if defined(OFFICIAL_BUILD)
+  // TODO(crbug.com/850517) This fails in viz_browser_tests in official builds.
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return;
+#endif
 
   ModuleDatabase* module_database = ModuleDatabase::GetInstance();
 
