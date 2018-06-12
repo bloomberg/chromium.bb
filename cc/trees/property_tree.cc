@@ -982,12 +982,13 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
       // copy of the exact source pixels. If the adjustment to the scale ratio
       // would produce out-of-range values, drop the copy request.
       if (request->is_scaled() || request->has_result_selection()) {
-        float scale_from_x = request->scale_from().x() * surface_rect.width();
-        float scale_from_y = request->scale_from().y() * surface_rect.height();
-        if (std::isnan(scale_from_x) ||
-            !base::IsValueInRangeForNumericType<int>(scale_from_x) ||
-            std::isnan(scale_from_y) ||
-            !base::IsValueInRangeForNumericType<int>(scale_from_y)) {
+        float scale_from_x_f = request->scale_from().x() * surface_rect.width();
+        float scale_from_y_f =
+            request->scale_from().y() * surface_rect.height();
+        if (std::isnan(scale_from_x_f) ||
+            !base::IsValueInRangeForNumericType<int>(scale_from_x_f) ||
+            std::isnan(scale_from_y_f) ||
+            !base::IsValueInRangeForNumericType<int>(scale_from_y_f)) {
           continue;
         }
         int scale_to_x = request->scale_to().x();
@@ -998,8 +999,15 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
                  .AssignIfValid(&scale_to_y)) {
           continue;
         }
-        request->SetScaleRatio(gfx::Vector2d(gfx::ToRoundedInt(scale_from_x),
-                                             gfx::ToRoundedInt(scale_from_y)),
+        int scale_from_x = gfx::ToRoundedInt(scale_from_x_f);
+        int scale_from_y = gfx::ToRoundedInt(scale_from_y_f);
+        if (scale_from_x <= 0 || scale_from_y <= 0 || scale_to_x <= 0 ||
+            scale_to_y <= 0) {
+          // Transformed scaling ratio became illegal. Drop the request to
+          // provide an empty response.
+          continue;
+        }
+        request->SetScaleRatio(gfx::Vector2d(scale_from_x, scale_from_y),
                                gfx::Vector2d(scale_to_x, scale_to_y));
       }
 

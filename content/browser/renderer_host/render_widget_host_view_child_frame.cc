@@ -921,6 +921,12 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
   }
 
   if (!output_size.IsEmpty()) {
+    if (request->area().IsEmpty()) {
+      // Viz would normally return an empty result for an empty source area.
+      // However, this guard here is still necessary to protect against setting
+      // an illegal scaling ratio.
+      return;
+    }
     request->set_result_selection(gfx::Rect(output_size));
     request->SetScaleRatio(
         gfx::Vector2d(request->area().width(), request->area().height()),
