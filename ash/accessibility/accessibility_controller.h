@@ -55,6 +55,16 @@ class ASH_EXPORT AccessibilityController
   // Binds the mojom::AccessibilityController interface to this object.
   void BindRequest(mojom::AccessibilityControllerRequest request);
 
+  // The following functions read and write to their associated preference.
+  // These values are then used to determine whether the accelerator
+  // confirmation dialog for the respective preference has been accepted before.
+  void SetHighContrastAcceleratorDialogAccepted();
+  bool HasHighContrastAcceleratorDialogBeenAccepted() const;
+  void SetScreenMagnifierAcceleratorDialogAccepted();
+  bool HasScreenMagnifierAcceleratorDialogBeenAccepted() const;
+  void SetDockedMagnifierAcceleratorDialogAccepted();
+  bool HasDockedMagnifierAcceleratorDialogBeenAccepted() const;
+
   void SetAutoclickEnabled(bool enabled);
   bool IsAutoclickEnabled() const;
 

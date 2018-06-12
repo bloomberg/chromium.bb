@@ -1151,6 +1151,27 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGOUT_CONFIRMATION_BUTTON" desc="The text for okay button of the logout confirmation dialog.">
         Sign out now
       </message>
+      <message name="IDS_ASH_HIGH_CONTRAST_TITLE" desc="Dialog title for the hight contrast confirmation dialog.">
+        High contrast
+      </message>
+      <message name="IDS_ASH_HIGH_CONTRAST_BODY" desc="The text for the high contrast confirmation dialog.">
+        You pressed the shortcut for high contrast. Do you want to turn it on?
+      </message>
+      <message name="IDS_ASH_DOCKED_MAGNIFIER_TITLE" desc="Dialog title when docked magnifier is enabled.">
+        Docked magnifier
+      </message>
+      <message name="IDS_ASH_DOCKED_MAGNIFIER_BODY" desc="The text for the docked magnifier dialog.">
+       You pressed the shortcut for the docked magnifier. Do you want to turn it on?
+      </message>
+      <message name="IDS_ASH_SCREEN_MAGNIFIER_TITLE" desc="Dialog title when screen magnifier is enabled.">
+        Full-screen magnifier
+      </message>
+      <message name="IDS_ASH_SCREEN_MAGNIFIER_BODY" desc="The text for the screen magnifier dialog.">
+       You pressed the shortcut for the full-screen magnifier. Do you want to turn it on?
+      </message>
+      <message name="IDS_ASH_CONTINUE_BUTTON" desc="The text for continue button on accessibility confirmation dialogs.">
+        Continue
+      </message>
 
       <message name="IDS_ASH_IME_MENU_ACCESSIBLE_NAME" desc="The accessible text for opt-in IME menu icon in status tray.">
         IME menu button

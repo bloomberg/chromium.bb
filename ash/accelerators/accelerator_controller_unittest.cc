@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/accelerators/accelerator_confirmation_dialog.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
@@ -56,6 +57,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace ash {
 
@@ -179,6 +181,26 @@ class AcceleratorControllerTest : public AshTestBase {
   bool ContainsHighContrastNotification() const {
     return nullptr != message_center()->FindVisibleNotificationById(
                           kHighContrastToggleAccelNotificationId);
+  }
+
+  bool IsConfirmationDialogOpen() {
+    return !!(GetController()->confirmation_dialog_for_testing());
+  }
+
+  void AcceptConfirmationDialog() {
+    DCHECK(GetController()->confirmation_dialog_for_testing());
+    GetController()
+        ->confirmation_dialog_for_testing()
+        ->GetDialogClientView()
+        ->AcceptWindow();
+  }
+
+  void CancelConfirmationDialog() {
+    DCHECK(GetController()->confirmation_dialog_for_testing());
+    GetController()
+        ->confirmation_dialog_for_testing()
+        ->GetDialogClientView()
+        ->CancelWindow();
   }
 
   void RemoveAllNotifications() const {
@@ -1188,22 +1210,54 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   }
 }
 
+TEST_F(AcceleratorControllerTest, TestDialogCancel) {
+  ui::Accelerator accelerator(ui::VKEY_H,
+                              ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  // Pressing cancel on the dialog should have no effect.
+  EXPECT_FALSE(
+      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(IsConfirmationDialogOpen());
+  EXPECT_TRUE(ProcessInController(accelerator));
+  EXPECT_TRUE(IsConfirmationDialogOpen());
+  CancelConfirmationDialog();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(IsConfirmationDialogOpen());
+}
+
 TEST_F(AcceleratorControllerTest, TestToggleHighContrast) {
   ui::Accelerator accelerator(ui::VKEY_H,
                               ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
-  // High Contrast Mode Enabled notification should be shown.
+  // High Contrast Mode Enabled dialog and notification should be shown.
+  EXPECT_FALSE(IsConfirmationDialogOpen());
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(
+      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
   EXPECT_TRUE(ProcessInController(accelerator));
+  EXPECT_TRUE(IsConfirmationDialogOpen());
+  AcceptConfirmationDialog();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ContainsHighContrastNotification());
+  EXPECT_TRUE(
+      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(IsConfirmationDialogOpen());
 
-  // High Contrast Mode Enabled notification should be hidden as the feature is
-  // disabled.
+  // High Contrast Mode Enabled dialog and notification should be hidden as the
+  // feature is disabled.
   EXPECT_TRUE(ProcessInController(accelerator));
   EXPECT_FALSE(ContainsHighContrastNotification());
+  EXPECT_TRUE(
+      accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
 
-  // It should be shown again when toggled.
+  // Notification should be shown again when toggled, but dialog will not be
+  // shown.
   EXPECT_TRUE(ProcessInController(accelerator));
+  EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_TRUE(ContainsHighContrastNotification());
-
   RemoveAllNotifications();
 }
 
@@ -1346,28 +1400,73 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
 
 }  // namespace
 
-TEST_F(MagnifiersAcceleratorsTester, TestToggleMagnifiers) {
+TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_FALSE(IsConfirmationDialogOpen());
 
-  // Toggle the fullscreen magnifier on/off.
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  // Toggle the fullscreen magnifier on/off, dialog should be shown on first use
+  // of accelerator.
   const ui::Accelerator fullscreen_magnifier_accelerator(
       ui::VKEY_M, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
+  EXPECT_FALSE(accessibility_controller
+                   ->HasScreenMagnifierAcceleratorDialogBeenAccepted());
   EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
+  EXPECT_TRUE(IsConfirmationDialogOpen());
+  AcceptConfirmationDialog();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_TRUE(fullscreen_magnifier_controller()->IsEnabled());
+
   EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_TRUE(accessibility_controller
+                  ->HasScreenMagnifierAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(IsConfirmationDialogOpen());
 
-  // Toggle the docked magnifier on/off.
+  // Dialog will not be shown the second time the accelerator is used.
+  EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
+  EXPECT_FALSE(IsConfirmationDialogOpen());
+  EXPECT_TRUE(accessibility_controller
+                  ->HasScreenMagnifierAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
+  EXPECT_TRUE(fullscreen_magnifier_controller()->IsEnabled());
+}
+
+TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
+  EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
+  EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_FALSE(IsConfirmationDialogOpen());
+
+  AccessibilityController* accessibility_controller =
+      Shell::Get()->accessibility_controller();
+  // Toggle the docked magnifier on/off, dialog should be shown on first use of
+  // accelerator.
   const ui::Accelerator docked_magnifier_accelerator(
       ui::VKEY_D, ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(ProcessInController(docked_magnifier_accelerator));
+  EXPECT_TRUE(IsConfirmationDialogOpen());
+  AcceptConfirmationDialog();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_TRUE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+
   EXPECT_TRUE(ProcessInController(docked_magnifier_accelerator));
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
+  EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_TRUE(accessibility_controller
+                  ->HasDockedMagnifierAcceleratorDialogBeenAccepted());
+  EXPECT_FALSE(IsConfirmationDialogOpen());
+
+  // Dialog will not be shown the second time accelerator is used.
+  EXPECT_TRUE(ProcessInController(docked_magnifier_accelerator));
+  EXPECT_FALSE(IsConfirmationDialogOpen());
+  EXPECT_TRUE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
 }
 

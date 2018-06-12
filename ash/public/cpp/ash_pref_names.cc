@@ -75,6 +75,19 @@ const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
 // which the screen is magnified.
 const char kDockedMagnifierScale[] = "ash.docked_magnifier.scale";
 
+// A boolean pref which indicates whether the docked magnifier confirmation
+// dialog has ever been shown.
+const char kDockedMagnifierAcceleratorDialogHasBeenAccepted[] =
+    "settings.a11y.docked_magnifier_accelerator_dialog_has_been_accepted";
+// A boolean pref which indicates whether the high contrast magnifier
+// confirmation dialog has ever been shown.
+const char kHighContrastAcceleratorDialogHasBeenAccepted[] =
+    "settings.a11y.high_contrast_accelerator_dialog_has_been_accepted";
+// A boolean pref which indicates whether the screen magnifier confirmation
+// dialog has ever been shown.
+const char kScreenMagnifierAcceleratorDialogHasBeenAccepted[] =
+    "settings.a11y.screen_magnifier_accelerator_dialog_has_been_accepted";
+
 // A dictionary pref that stores the mixed mirror mode parameters.
 const char kDisplayMixedMirrorModeParams[] =
     "settings.display.mixed_mirror_mode_param";

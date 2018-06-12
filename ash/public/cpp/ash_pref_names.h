@@ -33,6 +33,12 @@ ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 
 ASH_PUBLIC_EXPORT extern const char kDockedMagnifierEnabled[];
 ASH_PUBLIC_EXPORT extern const char kDockedMagnifierScale[];
+ASH_PUBLIC_EXPORT extern const char
+    kDockedMagnifierAcceleratorDialogHasBeenAccepted[];
+ASH_PUBLIC_EXPORT extern const char
+    kHighContrastAcceleratorDialogHasBeenAccepted[];
+ASH_PUBLIC_EXPORT extern const char
+    kScreenMagnifierAcceleratorDialogHasBeenAccepted[];
 
 ASH_PUBLIC_EXPORT extern const char kDisplayMixedMirrorModeParams[];
 ASH_PUBLIC_EXPORT extern const char kDisplayPowerState[];
