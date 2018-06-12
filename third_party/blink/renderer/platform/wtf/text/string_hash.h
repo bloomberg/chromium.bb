@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -102,7 +103,7 @@ class CaseFoldingHash {
 
   static inline unsigned GetHash(const char* data) {
     return CaseFoldingHash::GetHash(reinterpret_cast<const LChar*>(data),
-                                    strlen(data));
+                                    strlen_unsigned(data));
   }
 
   static inline bool Equal(const StringImpl* a, const StringImpl* b) {
