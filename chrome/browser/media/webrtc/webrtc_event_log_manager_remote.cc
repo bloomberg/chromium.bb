@@ -104,7 +104,7 @@ static_assert(kMaxActiveRemoteBoundWebRtcEventLogs <=
               "This assumption affects unit test coverage.");
 
 const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention =
-    base::TimeDelta::FromDays(3);
+    base::TimeDelta::FromDays(7);
 
 const base::FilePath::CharType kRemoteBoundLogExtension[] =
     FILE_PATH_LITERAL("log");
