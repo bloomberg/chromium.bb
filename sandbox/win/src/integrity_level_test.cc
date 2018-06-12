@@ -6,6 +6,7 @@
 
 #include <atlsecurity.h>
 
+#include "base/process/process_info.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
@@ -14,6 +15,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
+
+SBOX_TESTS_COMMAND int CheckUntrustedIntegrityLevel(int argc, wchar_t** argv) {
+  return (base::GetCurrentProcessIntegrityLevel() == base::UNTRUSTED_INTEGRITY)
+             ? SBOX_TEST_SUCCEEDED
+             : SBOX_TEST_FAILED;
+}
+
+SBOX_TESTS_COMMAND int CheckLowIntegrityLevel(int argc, wchar_t** argv) {
+  return (base::GetCurrentProcessIntegrityLevel() == base::LOW_INTEGRITY)
+             ? SBOX_TEST_SUCCEEDED
+             : SBOX_TEST_FAILED;
+}
 
 SBOX_TESTS_COMMAND int CheckIntegrityLevel(int argc, wchar_t** argv) {
   ATL::CAccessToken token;
@@ -77,6 +90,29 @@ TEST(IntegrityLevelTest, TestNoILChange) {
   runner.SetTimeout(INFINITE);
 
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"CheckIntegrityLevel"));
+}
+
+TEST(IntegrityLevelTest, TestUntrustedIL) {
+  TestRunner runner(JOB_LOCKDOWN, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  runner.GetPolicy()->SetIntegrityLevel(INTEGRITY_LEVEL_LOW);
+  runner.GetPolicy()->SetDelayedIntegrityLevel(INTEGRITY_LEVEL_UNTRUSTED);
+  runner.GetPolicy()->SetLockdownDefaultDacl();
+
+  runner.SetTimeout(INFINITE);
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
+            runner.RunTest(L"CheckUntrustedIntegrityLevel"));
+}
+
+TEST(IntegrityLevelTest, TestLowIL) {
+  TestRunner runner(JOB_LOCKDOWN, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  runner.GetPolicy()->SetIntegrityLevel(INTEGRITY_LEVEL_LOW);
+  runner.GetPolicy()->SetDelayedIntegrityLevel(INTEGRITY_LEVEL_LOW);
+  runner.GetPolicy()->SetLockdownDefaultDacl();
+
+  runner.SetTimeout(INFINITE);
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"CheckLowIntegrityLevel"));
 }
 
 }  // namespace sandbox

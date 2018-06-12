@@ -23,6 +23,7 @@ class BASE_EXPORT CurrentProcessInfo {
 #if defined(OS_WIN)
 enum IntegrityLevel {
   INTEGRITY_UNKNOWN,
+  UNTRUSTED_INTEGRITY,
   LOW_INTEGRITY,
   MEDIUM_INTEGRITY,
   HIGH_INTEGRITY,
