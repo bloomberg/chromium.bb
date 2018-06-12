@@ -285,40 +285,6 @@ lib_list="\
   $chromeos_lib_list
 "
 
-# *-dbg packages are deprecated in favor of *-dbgsym
-# (cf https://wiki.debian.org/AutomaticDebugPackages)
-# So we should try *-dbgsym first.
-dbg_package_name() {
-  if package_exists "$1-dbgsym"; then
-    echo "$1-dbgsym"
-  elif package_exists "$1-dbg"; then
-    echo "$1-dbg"
-  fi
-}
-
-# Debugging symbols for all of the run-time libraries
-dbg_list=""
-for p in $common_lib_list; do
-  dbg_list="$dbg_list $(dbg_package_name $p)"
-done
-
-# Debugging symbols packages not following common naming scheme
-if test "$(dbg_package_name libstdc++6)" == ""; then
-  if package_exists libstdc++6-6-dbg; then
-    dbg_list="${dbg_list} libstdc++6-6-dbg"
-  elif package_exists libstdc++6-4.9-dbg; then
-    dbg_list="${dbg_list} libstdc++6-4.9-dbg"
-  else
-    dbg_list="${dbg_list} libstdc++6-4.8-dbg"
-  fi
-fi
-if test "$(dbg_package_name libatk1.0-0)" == ""; then
-  dbg_list="$dbg_list $(dbg_package_name libatk1.0)"
-fi
-if test "$(dbg_package_name libpango1.0-0)" == ""; then
-  dbg_list="$dbg_list $(dbg_package_name libpango1.0-dev)"
-fi
-
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
 lib32_list="linux-libc-dev:i386 libpci3:i386"
 
@@ -429,10 +395,8 @@ else
   lib_list="${lib_list} libpng12-0"
 fi
 if package_exists libnspr4-dbg; then
-  dbg_list="${dbg_list} libnspr4-dbg libnss3-dbg"
   lib_list="${lib_list} libnspr4 libnss3"
 else
-  dbg_list="${dbg_list} libnspr4-0d-dbg libnss3-1d-dbg"
   lib_list="${lib_list} libnspr4-0d libnss3-1d"
 fi
 if package_exists libjpeg-dev; then
@@ -517,6 +481,39 @@ then
 fi
 if test "$do_inst_syms" = "1"; then
   echo "Including debugging symbols."
+
+  # Debian is in the process of transitioning to automatic debug packages, which
+  # have the -dbgsym suffix (https://wiki.debian.org/AutomaticDebugPackages).
+  # Untransitioned packages have the -dbg suffix.  And on some systems, neither
+  # will be available, so exclude the ones that are missing.
+  dbg_package_name() {
+    if package_exists "$1-dbgsym"; then
+      echo "$1-dbgsym"
+    elif package_exists "$1-dbg"; then
+      echo "$1-dbg"
+    fi
+  }
+
+  for package in "${common_lib_list}"; do
+    dbg_list="$dbg_list $(dbg_package_name ${package})"
+  done
+
+  # Debugging symbols packages not following common naming scheme
+  if test "$(dbg_package_name libstdc++6)" == ""; then
+    if package_exists libstdc++6-6-dbg; then
+      dbg_list="${dbg_list} libstdc++6-6-dbg"
+    elif package_exists libstdc++6-4.9-dbg; then
+      dbg_list="${dbg_list} libstdc++6-4.9-dbg"
+    else
+      dbg_list="${dbg_list} libstdc++6-4.8-dbg"
+    fi
+  fi
+  if test "$(dbg_package_name libatk1.0-0)" == ""; then
+    dbg_list="$dbg_list $(dbg_package_name libatk1.0)"
+  fi
+  if test "$(dbg_package_name libpango1.0-0)" == ""; then
+    dbg_list="$dbg_list $(dbg_package_name libpango1.0-dev)"
+  fi
 else
   echo "Skipping debugging symbols."
   dbg_list=
