@@ -241,6 +241,7 @@ source_set("perf_tests") {
 
   sources = [
     "base/task_queue_manager_perftest.cc",
+    "test/scheduler_perftest.cc",
   ]
 
   deps = [
