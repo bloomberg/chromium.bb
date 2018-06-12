@@ -301,9 +301,9 @@ TEST_P(PrePaintTreeWalkTest, ClipChangeHasRadius) {
 }
 
 namespace {
-class MockEventListener final : public EventListener {
+class PrePaintTreeWalkMockEventListener final : public EventListener {
  public:
-  MockEventListener() : EventListener(kCPPEventListenerType) {}
+  PrePaintTreeWalkMockEventListener() : EventListener(kCPPEventListenerType) {}
 
   bool operator==(const EventListener& other) const final {
     return this == &other;
@@ -341,7 +341,8 @@ TEST_P(PrePaintTreeWalkTest, InsideBlockingTouchEventHandlerUpdate) {
   EXPECT_FALSE(handler.InsideBlockingTouchEventHandler());
   EXPECT_FALSE(descendant.InsideBlockingTouchEventHandler());
 
-  MockEventListener* callback = new MockEventListener();
+  PrePaintTreeWalkMockEventListener* callback =
+      new PrePaintTreeWalkMockEventListener();
   auto* handler_element = GetDocument().getElementById("handler");
   handler_element->addEventListener(EventTypeNames::touchstart, callback);
 
