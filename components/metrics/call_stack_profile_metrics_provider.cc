@@ -36,6 +36,14 @@ namespace metrics {
 
 namespace {
 
+// Cap the number of pending profiles to avoid excessive memory usage when
+// profile uploads are delayed (e.g. due to being offline). 1250 profiles
+// corresponds to 80MB of storage. Capping at this threshold loses approximately
+// 0.5% of profiles on canary and dev.
+// TODO(chengx): Remove this threshold after moving to a more memory-efficient
+// profile representation.
+const size_t kMaxPendingProfiles = 1250;
+
 // Provide a mapping from the C++ "enum" definition of various process mile-
 // stones to the equivalent protobuf "enum" definition. This table-lookup
 // conversion allows for the implementation to evolve and still be compatible
@@ -181,7 +189,8 @@ void PendingProfiles::CollectProfilesIfCollectionEnabled(ProfileState profile) {
     return;
   }
 
-  profiles_.push_back(std::move(profile));
+  if (profiles_.size() < kMaxPendingProfiles)
+    profiles_.push_back(std::move(profile));
 }
 
 void PendingProfiles::ResetToDefaultStateForTesting() {
