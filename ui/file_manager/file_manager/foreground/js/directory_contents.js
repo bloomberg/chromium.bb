@@ -364,19 +364,25 @@ CrostiniMounter.prototype.scan = function(
  * This class manages filters and determines a file should be shown or not.
  * When filters are changed, a 'changed' event is fired.
  *
- * @param {boolean} showHidden If files starting with '.' or ending with
- *     '.crdownlaod' are shown.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function FileFilter(showHidden) {
+function FileFilter() {
   /**
    * @type {Object<Function>}
    * @private
    */
   this.filters_ = {};
-  this.setFilterHidden(!showHidden);
+  this.setHiddenFilesVisible(false);
+  this.setAllAndroidFoldersVisible(false);
 }
+
+/**
+ * Top-level Android folders which are visible by default.
+ * @const {!Array<string>}
+ */
+FileFilter.DEFAULT_ANDROID_FOLDERS =
+    ['Documents', 'Movies', 'Music', 'Pictures'];
 
 /*
  * FileFilter extends cr.EventTarget.
@@ -402,28 +408,57 @@ FileFilter.prototype.removeFilter = function(name) {
 };
 
 /**
- * @param {boolean} value If do not show hidden files.
+ * Show/Hide hidden files (i.e. files starting with '.' or ending with
+ * '.crdownload').
+ * @param {boolean} visible True if hidden files should be visible to the user.
  */
-FileFilter.prototype.setFilterHidden = function(value) {
+FileFilter.prototype.setHiddenFilesVisible = function(visible) {
   var regexpCrdownloadExtension = /\.crdownload$/i;
-  if (value) {
-    this.addFilter(
-        'hidden',
-        function(entry) {
-          return entry.name.substr(0, 1) !== '.' &&
-                 !regexpCrdownloadExtension.test(entry.name);
-        }
-    );
+  if (!visible) {
+    this.addFilter('hidden', entry => {
+      return entry.name.substr(0, 1) !== '.' &&
+          !regexpCrdownloadExtension.test(entry.name);
+    });
   } else {
     this.removeFilter('hidden');
   }
 };
 
 /**
- * @return {boolean} If the files with names starting with "." are not shown.
+ * @return {boolean} True if hidden files are visible to the user now.
  */
-FileFilter.prototype.isFilterHiddenOn = function() {
-  return 'hidden' in this.filters_;
+FileFilter.prototype.isHiddenFilesVisible = function() {
+  return !('hidden' in this.filters_);
+};
+
+/**
+ * Show/Hide uncommon Android folders which are not whitelisted.
+ * @param {boolean} visible True if uncommon folders should be visible to the
+ *     user.
+ */
+FileFilter.prototype.setAllAndroidFoldersVisible = function(visible) {
+  if (!visible) {
+    this.addFilter('android_hidden', entry => {
+      if (entry.filesystem.name !== 'android_files')
+        return true;
+      // If |entry| is an Android top-level folder which is not whitelisted, it
+      // should be hidden.
+      if (entry.fullPath.substr(1) == entry.name &&
+          FileFilter.DEFAULT_ANDROID_FOLDERS.indexOf(entry.name) == -1) {
+        return false;
+      }
+      return true;
+    });
+  } else {
+    this.removeFilter('android_hidden');
+  }
+};
+
+/**
+ * @return {boolean} True if uncommon folders is visible to the user now.
+ */
+FileFilter.prototype.isAllAndroidFoldersVisible = function() {
+  return !('android_hidden' in this.filters_);
 };
 
 /**

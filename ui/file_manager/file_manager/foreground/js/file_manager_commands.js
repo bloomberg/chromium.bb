@@ -753,10 +753,10 @@ CommandHandler.COMMANDS_['toggle-hidden-files'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    var isFilterHiddenOn = !fileManager.fileFilter.isFilterHiddenOn();
-    fileManager.fileFilter.setFilterHidden(isFilterHiddenOn);
-    event.command.checked = /* is show hidden files */!isFilterHiddenOn;
-    if (isFilterHiddenOn) {
+    var visible = !fileManager.fileFilter.isHiddenFilesVisible();
+    fileManager.fileFilter.setHiddenFilesVisible(visible);
+    event.command.checked = visible;  // Checkmark for "Show hidden files".
+    if (visible) {
       CommandHandler.recordMenuItemSelected_(
           CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_SHOW);
     } else {

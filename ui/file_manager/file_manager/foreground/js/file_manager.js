@@ -80,8 +80,7 @@ function FileManager() {
    * @private {!FileFilter}
    * @const
    */
-  this.fileFilter_ = new FileFilter(
-      false  /* Don't show dot files and *.crdownload by default. */);
+  this.fileFilter_ = new FileFilter();
 
   /**
    * Model of current directory.
