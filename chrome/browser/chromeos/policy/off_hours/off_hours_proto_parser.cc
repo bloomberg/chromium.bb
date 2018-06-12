@@ -36,9 +36,9 @@ std::unique_ptr<WeeklyTime> ExtractWeeklyTimeFromProto(
   return std::make_unique<WeeklyTime>(container.day_of_week(), time_of_day);
 }
 
-std::vector<OffHoursInterval> ExtractOffHoursIntervalsFromProto(
+std::vector<WeeklyTimeInterval> ExtractWeeklyTimeIntervalsFromProto(
     const em::DeviceOffHoursProto& container) {
-  std::vector<OffHoursInterval> intervals;
+  std::vector<WeeklyTimeInterval> intervals;
   for (const auto& entry : container.intervals()) {
     if (!entry.has_start() || !entry.has_end()) {
       LOG(WARNING) << "Skipping interval without start or/and end.";
@@ -47,7 +47,7 @@ std::vector<OffHoursInterval> ExtractOffHoursIntervalsFromProto(
     auto start = ExtractWeeklyTimeFromProto(entry.start());
     auto end = ExtractWeeklyTimeFromProto(entry.end());
     if (start && end)
-      intervals.push_back(OffHoursInterval(*start, *end));
+      intervals.push_back(WeeklyTimeInterval(*start, *end));
   }
   return intervals;
 }
@@ -73,8 +73,8 @@ std::unique_ptr<base::DictionaryValue> ConvertOffHoursProtoToValue(
     return nullptr;
   auto off_hours = std::make_unique<base::DictionaryValue>();
   off_hours->SetString("timezone", *timezone);
-  std::vector<OffHoursInterval> intervals =
-      ExtractOffHoursIntervalsFromProto(container);
+  std::vector<WeeklyTimeInterval> intervals =
+      ExtractWeeklyTimeIntervalsFromProto(container);
   auto intervals_value = std::make_unique<base::ListValue>();
   for (const auto& interval : intervals)
     intervals_value->Append(interval.ToValue());

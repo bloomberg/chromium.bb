@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/off_hours/weekly_time.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
 #include "base/time/time.h"
 
 namespace policy {
-namespace off_hours {
 namespace {
 
 constexpr base::TimeDelta kWeek = base::TimeDelta::FromDays(7);
@@ -24,6 +23,10 @@ WeeklyTime::WeeklyTime(int day_of_week, int milliseconds)
   DCHECK_GE(milliseconds, 0);
   DCHECK_LT(milliseconds, kDay.InMilliseconds());
 }
+
+WeeklyTime::WeeklyTime(const WeeklyTime& rhs) = default;
+
+WeeklyTime& WeeklyTime::operator=(const WeeklyTime& rhs) = default;
 
 std::unique_ptr<base::DictionaryValue> WeeklyTime::ToValue() const {
   auto weekly_time = std::make_unique<base::DictionaryValue>();
@@ -69,5 +72,4 @@ WeeklyTime WeeklyTime::GetCurrentWeeklyTime(base::Clock* clock) {
                         exploded.second * kSecond.InMilliseconds());
 }
 
-}  // namespace off_hours
 }  // namespace policy

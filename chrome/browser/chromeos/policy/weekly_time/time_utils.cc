@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/off_hours/time_utils.h"
+#include "chrome/browser/chromeos/policy/weekly_time/time_utils.h"
 
 #include <algorithm>
 #include <memory>
@@ -16,7 +16,7 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace policy {
-namespace off_hours {
+namespace weekly_time_utils {
 namespace {
 constexpr base::TimeDelta kWeek = base::TimeDelta::FromDays(7);
 }  // namespace
@@ -63,8 +63,8 @@ bool GetOffsetFromTimezoneToGmt(const std::string& timezone,
   return true;
 }
 
-std::vector<off_hours::OffHoursInterval> ConvertIntervalsToGmt(
-    const std::vector<off_hours::OffHoursInterval>& intervals,
+std::vector<WeeklyTimeInterval> ConvertIntervalsToGmt(
+    const std::vector<WeeklyTimeInterval>& intervals,
     base::Clock* clock,
     const std::string& timezone) {
   int gmt_offset = 0;
@@ -72,28 +72,28 @@ std::vector<off_hours::OffHoursInterval> ConvertIntervalsToGmt(
       GetOffsetFromTimezoneToGmt(timezone, clock, &gmt_offset);
   if (!no_offset_error)
     return {};
-  std::vector<OffHoursInterval> gmt_intervals;
+  std::vector<WeeklyTimeInterval> gmt_intervals;
   for (const auto& interval : intervals) {
     // |gmt_offset| is added to input time to get GMT time.
     auto gmt_start = interval.start().AddMilliseconds(gmt_offset);
     auto gmt_end = interval.end().AddMilliseconds(gmt_offset);
-    gmt_intervals.push_back(OffHoursInterval(gmt_start, gmt_end));
+    gmt_intervals.push_back(WeeklyTimeInterval(gmt_start, gmt_end));
   }
   return gmt_intervals;
 }
 
-base::TimeDelta GetDeltaTillNextOffHours(
+base::TimeDelta GetDeltaTillNextTimeInterval(
     const WeeklyTime& current_time,
-    const std::vector<OffHoursInterval>& off_hours_intervals) {
-  // "OffHours" intervals repeat every week, therefore the maximum duration till
-  // next "OffHours" interval is one week.
-  base::TimeDelta till_off_hours = kWeek;
-  for (const auto& interval : off_hours_intervals) {
-    till_off_hours =
-        std::min(till_off_hours, current_time.GetDurationTo(interval.start()));
+    const std::vector<WeeklyTimeInterval>& weekly_time_intervals) {
+  // Weekly intervals repeat every week, therefore the maximum duration till
+  // next weekly interval is one week.
+  base::TimeDelta till_next_interval = kWeek;
+  for (const auto& interval : weekly_time_intervals) {
+    till_next_interval = std::min(till_next_interval,
+                                  current_time.GetDurationTo(interval.start()));
   }
-  return till_off_hours;
+  return till_next_interval;
 }
 
-}  // namespace off_hours
+}  // namespace weekly_time_utils
 }  // namespace policy
