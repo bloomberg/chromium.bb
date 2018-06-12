@@ -1849,6 +1849,7 @@ jumbo_source_set("browser") {
       "gpu/ca_transaction_gpu_coordinator.cc",
       "gpu/ca_transaction_gpu_coordinator.h",
     ]
+    deps += [ "//ui/events:dom_keyboard_layout" ]
   }
 
   if (!is_mac) {

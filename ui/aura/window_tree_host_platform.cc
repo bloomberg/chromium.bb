@@ -17,6 +17,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keyboard_hook.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 
 #if defined(OS_ANDROID)
 #include "ui/platform_window/android/platform_window_android.h"
@@ -152,13 +153,15 @@ bool WindowTreeHostPlatform::IsKeyLocked(ui::DomCode dom_code) {
   return keyboard_hook_ && keyboard_hook_->IsKeyLocked(dom_code);
 }
 
-#if !defined(USE_OZONE)
 base::flat_map<std::string, std::string>
 WindowTreeHostPlatform::GetKeyboardLayoutMap() {
+#if !defined(X11)
+  return ui::GenerateDomKeyboardLayoutMap();
+#else
   NOTIMPLEMENTED();
   return {};
-}
 #endif
+}
 
 void WindowTreeHostPlatform::SetCursorNative(gfx::NativeCursor cursor) {
   if (cursor == current_cursor_)

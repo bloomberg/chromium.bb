@@ -689,6 +689,7 @@ jumbo_component("views") {
           "widget/desktop_aura/desktop_window_tree_host_win.cc",
           "widget/desktop_aura/desktop_window_tree_host_win.h",
         ]
+        deps += [ "//ui/events:dom_keyboard_layout" ]
       } else if (use_ozone) {
         public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
         sources += [ "widget/desktop_aura/desktop_screen_ozone.cc" ]
