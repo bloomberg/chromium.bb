@@ -1916,7 +1916,7 @@ LayerRectList* Internals::touchEventTargetLayerRects(
           document->GetPage()->GetScrollingCoordinator()) {
     FrameView* view = document->GetPage()->MainFrame()->View();
     if (view->IsLocalFrameView()) {
-      scrolling_coordinator->UpdateAfterCompositingChangeIfNeeded(
+      scrolling_coordinator->UpdateAfterPrePaint(
           static_cast<LocalFrameView*>(view));
     } else {
       NOTREACHED();
