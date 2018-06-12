@@ -105,6 +105,8 @@ bool CanvasResource::PrepareTransferableResource(
 bool CanvasResource::PrepareAcceleratedTransferableResource(
     viz::TransferableResource* out_resource,
     MailboxSyncMode sync_mode) {
+  TRACE_EVENT0("blink",
+               "CanvasResource::PrepareAcceleratedTransferableResource");
   // Gpu compositing is a prerequisite for compositing an accelerated resource
   DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
   auto* gl = ContextGL();
@@ -126,6 +128,9 @@ bool CanvasResource::PrepareAcceleratedTransferableResource(
 
 bool CanvasResource::PrepareUnacceleratedTransferableResource(
     viz::TransferableResource* out_resource) {
+  TRACE_EVENT0("blink",
+               "CanvasResource::PrepareUnacceleratedTransferableResource");
+
   // TODO: add support for shared bitmap
   NOTREACHED();
   return false;
@@ -184,6 +189,9 @@ scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeAccelerated(
         context_provider_wrapper) {
   if (IsAccelerated())
     return base::WrapRefCounted(this);
+
+  TRACE_EVENT0("blink", "CanvasResourceBitmap::MakeAccelerated");
+
   if (!context_provider_wrapper)
     return nullptr;
   scoped_refptr<StaticBitmapImage> accelerated_image =
@@ -201,6 +209,9 @@ scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeAccelerated(
 scoped_refptr<CanvasResource> CanvasResourceBitmap::MakeUnaccelerated() {
   if (!IsAccelerated())
     return base::WrapRefCounted(this);
+
+  TRACE_EVENT0("blink", "CanvasResourceBitmap::MakeUnaccelerated");
+
   scoped_refptr<StaticBitmapImage> unaccelerated_image =
       image_->MakeUnaccelerated();
   // passing nullptr for the resource provider argument creates an orphan
@@ -349,6 +360,8 @@ CanvasResourceGpuMemoryBuffer::Create(
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality,
     bool is_accelerated) {
+  TRACE_EVENT0("blink", "CanvasResourceGpuMemoryBuffer::Create");
+
   scoped_refptr<CanvasResourceGpuMemoryBuffer> resource =
       AdoptRef(new CanvasResourceGpuMemoryBuffer(
           size, color_params, std::move(context_provider_wrapper), provider,
@@ -421,6 +434,8 @@ void CanvasResourceGpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
   if (!IsValid())
     return;
 
+  TRACE_EVENT0("blink", "CanvasResourceGpuMemoryBuffer::CopyFromTexture");
+
   ContextGL()->CopyTextureCHROMIUM(
       source_texture, 0 /*sourceLevel*/, TextureTarget(), texture_id_,
       0 /*destLevel*/, format, type, false /*unpackFlipY*/,
@@ -429,6 +444,8 @@ void CanvasResourceGpuMemoryBuffer::CopyFromTexture(GLuint source_texture,
 }
 
 void CanvasResourceGpuMemoryBuffer::TakeSkImage(sk_sp<SkImage> image) {
+  TRACE_EVENT0("blink", "CanvasResourceGpuMemoryBuffer::CopyFromTexture");
+
   WillPaint();
   if (!surface_)
     return;
@@ -441,6 +458,9 @@ void CanvasResourceGpuMemoryBuffer::WillPaint() {
     surface_ = nullptr;
     return;
   }
+
+  TRACE_EVENT1("blink", "CanvasResourceGpuMemoryBuffer::WillPaint",
+               "accelerated", is_accelerated_);
 
   if (is_accelerated_) {
     if (!surface_) {  // When accelerated it is okay to re-use previous
@@ -475,6 +495,9 @@ void CanvasResourceGpuMemoryBuffer::WillPaint() {
 }
 
 void CanvasResourceGpuMemoryBuffer::DidPaint() {
+  TRACE_EVENT1("blink", "CanvasResourceGpuMemoryBuffer::DidPaint",
+               "accelerated", is_accelerated_);
+
   if (is_accelerated_) {
     auto* gr = context_provider_wrapper_->ContextProvider()->GetGrContext();
     if (gr)

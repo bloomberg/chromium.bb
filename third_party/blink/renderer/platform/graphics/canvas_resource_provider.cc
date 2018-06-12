@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -60,6 +61,7 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
 
  protected:
   scoped_refptr<CanvasResource> ProduceFrame() override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderTexture::ProduceFrame");
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -101,6 +103,8 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderTexture::CreateSkSurface");
+
     if (IsGpuContextLost())
       return nullptr;
     auto* gr = GetGrContext();
@@ -142,6 +146,9 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
+    TRACE_EVENT0(
+        "blink",
+        "CanvasResourceProviderTextureGpuMemoreBuffer::CreateResource");
     constexpr bool is_accelerated = true;
     return CanvasResourceGpuMemoryBuffer::Create(
         Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
@@ -149,6 +156,9 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
   }
 
   scoped_refptr<CanvasResource> ProduceFrame() final {
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderTextureGpuMemoreBuffer::ProduceFrame");
+
     DCHECK(GetSkSurface());
 
     if (IsGpuContextLost())
@@ -207,6 +217,8 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderBitmap::CreateSkSurface");
+
     SkImageInfo info = SkImageInfo::Make(
         Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
         kPremul_SkAlphaType, ColorParams().GetSkColorSpaceForSkSurfaces());
@@ -232,6 +244,9 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
 
  private:
   scoped_refptr<CanvasResource> CreateResource() final {
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderRamGpuMemoryBuffer::CreateResource");
+
     constexpr bool is_accelerated = false;
     return CanvasResourceGpuMemoryBuffer::Create(
         Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
@@ -239,6 +254,9 @@ class CanvasResourceProviderRamGpuMemoryBuffer final
   }
 
   scoped_refptr<CanvasResource> ProduceFrame() final {
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderRamGpuMemoryBuffer::ProduceFrame");
+
     DCHECK(GetSkSurface());
 
     scoped_refptr<CanvasResource> output_resource = NewOrRecycledResource();
@@ -427,6 +445,8 @@ SkSurface* CanvasResourceProvider::GetSkSurface() const {
 
 PaintCanvas* CanvasResourceProvider::Canvas() {
   if (!canvas_) {
+    TRACE_EVENT0("blink", "CanvasResourceProvider::Canvas");
+
     DCHECK(!canvas_image_provider_);
 
     gfx::ColorSpace target_color_space =
@@ -529,6 +549,8 @@ bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,
                                          size_t row_bytes,
                                          int x,
                                          int y) {
+  TRACE_EVENT0("blink", "CanvasResourceProvider::WritePixels");
+
   DCHECK(IsValid());
   return GetSkSurface()->getCanvas()->writePixels(orig_info, pixels, row_bytes,
                                                   x, y);
