@@ -44,8 +44,37 @@ class SyncPrefObserver {
 class SessionSyncPrefs {
  public:
   virtual ~SessionSyncPrefs();
+
   virtual std::string GetSyncSessionsGUID() const = 0;
   virtual void SetSyncSessionsGUID(const std::string& guid) = 0;
+};
+
+// Use this for crypto/passphrase-related parts of sync prefs.
+class CryptoSyncPrefs {
+ public:
+  virtual ~CryptoSyncPrefs();
+
+  // Use this encryption bootstrap token if we're using an explicit passphrase.
+  virtual std::string GetEncryptionBootstrapToken() const = 0;
+  virtual void SetEncryptionBootstrapToken(const std::string& token) = 0;
+
+  // Use this keystore bootstrap token if we're not using an explicit
+  // passphrase.
+  virtual std::string GetKeystoreEncryptionBootstrapToken() const = 0;
+  virtual void SetKeystoreEncryptionBootstrapToken(
+      const std::string& token) = 0;
+
+  // Get/set for flag indicating that passphrase encryption transition is in
+  // progress.
+  virtual void SetPassphraseEncryptionTransitionInProgress(bool value) = 0;
+  virtual bool GetPassphraseEncryptionTransitionInProgress() const = 0;
+
+  // Get/set for saved Nigori specifics that must be passed to backend
+  // initialization after transition.
+  virtual void SetNigoriSpecificsForPassphraseTransition(
+      const sync_pb::NigoriSpecifics& nigori_specifics) = 0;
+  virtual void GetNigoriSpecificsForPassphraseTransition(
+      sync_pb::NigoriSpecifics* nigori_specifics) const = 0;
 };
 
 // SyncPrefs is a helper class that manages getting, setting, and
@@ -62,6 +91,7 @@ class SessionSyncPrefs {
 //   sync_setup_wizard_unittest.cc
 //   two_client_preferences_sync_test.cc
 class SyncPrefs : public SessionSyncPrefs,
+                  public CryptoSyncPrefs,
                   public base::SupportsWeakPtr<SyncPrefs> {
  public:
   // |pref_service| may not be null.
@@ -124,13 +154,13 @@ class SyncPrefs : public SessionSyncPrefs,
   bool IsManaged() const;
 
   // Use this encryption bootstrap token if we're using an explicit passphrase.
-  std::string GetEncryptionBootstrapToken() const;
-  void SetEncryptionBootstrapToken(const std::string& token);
+  std::string GetEncryptionBootstrapToken() const override;
+  void SetEncryptionBootstrapToken(const std::string& token) override;
 
   // Use this keystore bootstrap token if we're not using an explicit
   // passphrase.
-  std::string GetKeystoreEncryptionBootstrapToken() const;
-  void SetKeystoreEncryptionBootstrapToken(const std::string& token);
+  std::string GetKeystoreEncryptionBootstrapToken() const override;
+  void SetKeystoreEncryptionBootstrapToken(const std::string& token) override;
 
   // Use this for the unique machine tag used for session sync.
   std::string GetSyncSessionsGUID() const override;
@@ -184,15 +214,15 @@ class SyncPrefs : public SessionSyncPrefs,
 
   // Get/set for flag indicating that passphrase encryption transition is in
   // progress.
-  void SetPassphraseEncryptionTransitionInProgress(bool value);
-  bool GetPassphraseEncryptionTransitionInProgress() const;
+  void SetPassphraseEncryptionTransitionInProgress(bool value) override;
+  bool GetPassphraseEncryptionTransitionInProgress() const override;
 
   // Get/set for saved Nigori specifics that must be passed to backend
   // initialization after transition.
   void SetNigoriSpecificsForPassphraseTransition(
-      const sync_pb::NigoriSpecifics& nigori_specifics);
+      const sync_pb::NigoriSpecifics& nigori_specifics) override;
   void GetNigoriSpecificsForPassphraseTransition(
-      sync_pb::NigoriSpecifics* nigori_specifics) const;
+      sync_pb::NigoriSpecifics* nigori_specifics) const override;
 
   // Gets the local sync backend enabled state and its database location.
   bool IsLocalSyncEnabled() const;
