@@ -2841,7 +2841,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",
       "android/java/src/org/chromium/base/annotations/RemovableInRelease.java",
       "android/java/src/org/chromium/base/annotations/UsedByReflection.java",
-      "android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/library_loader/Linker.java",
       "android/java/src/org/chromium/base/library_loader/LoaderErrors.java",

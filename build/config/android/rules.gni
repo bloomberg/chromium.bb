@@ -407,9 +407,7 @@ if (enable_java_templates) {
   #     target = ":chrome_public_apk"
   #     output = "$root_gen_dir/chrome/browser/android/${target_name}.h"
   #     exception_files = [
-  #       "//base/android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
   #       "//base/android/java/src/org/chromium/base/library_loader/Linker.java",
-  #       "//base/android/java/src/org/chromium/base/library_loader/ModernLinker.java",
   #     ]
   #   }
   template("generate_jni_registration") {
