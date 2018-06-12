@@ -15,9 +15,14 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/feature_list.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #endif
 
 namespace {
@@ -176,6 +181,24 @@ void ModuleDatabase::IncreaseInspectionPriority() {
   module_inspector_.IncreaseInspectionPriority();
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
+// static
+void ModuleDatabase::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  // Register the pref used to disable the Incompatible Applications warning and
+  // the blocking of third-party modules using group policy. Enabled by default.
+  registry->RegisterBooleanPref(prefs::kThirdPartyBlockingEnabled, true);
+}
+
+// static
+bool ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() {
+  const PrefService::Preference* third_party_blocking_enabled_pref =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kThirdPartyBlockingEnabled);
+  return !third_party_blocking_enabled_pref->IsManaged() ||
+         third_party_blocking_enabled_pref->GetValue()->GetBool();
+}
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
 // static
 uint32_t ModuleDatabase::ProcessTypeToBit(content::ProcessType process_type) {
   uint32_t bit_index =
@@ -266,12 +289,28 @@ void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
 #if defined(GOOGLE_CHROME_BUILD)
 void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-      ThirdPartyConflictsManager::IsThirdPartyBlockingPolicyEnabled() &&
+      IsThirdPartyBlockingPolicyEnabled() &&
       base::FeatureList::IsEnabled(
           features::kIncompatibleApplicationsWarning)) {
     third_party_conflicts_manager_ =
         std::make_unique<ThirdPartyConflictsManager>(this);
     AddObserver(third_party_conflicts_manager_.get());
+
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    pref_change_registrar_->Init(g_browser_process->local_state());
+    pref_change_registrar_->Add(
+        prefs::kThirdPartyBlockingEnabled,
+        base::Bind(&ModuleDatabase::OnThirdPartyBlockingPolicyChanged,
+                   base::Unretained(this)));
+  }
+}
+
+void ModuleDatabase::OnThirdPartyBlockingPolicyChanged() {
+  if (!IsThirdPartyBlockingPolicyEnabled()) {
+    DCHECK(third_party_conflicts_manager_);
+    ThirdPartyConflictsManager::ShutdownAndDestroy(
+        std::move(third_party_conflicts_manager_));
+    pref_change_registrar_ = nullptr;
   }
 }
 #endif

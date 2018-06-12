@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -527,10 +528,14 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   // module blacklist cache file. This means that to disable the feature, the
   // cache must be deleted and the browser relaunched.
   if (!base::FeatureList::IsEnabled(features::kModuleDatabase) ||
-      !ThirdPartyConflictsManager::IsThirdPartyBlockingPolicyEnabled() ||
-      !base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
-    ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking();
-  }
+      !ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
+      !base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking))
+    ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
+        base::CreateTaskRunnerWithTraits(
+            {base::TaskPriority::BACKGROUND,
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+             base::MayBlock()})
+            .get());
 #endif
 
   // Create the module database and hook up the in-process module watcher. This

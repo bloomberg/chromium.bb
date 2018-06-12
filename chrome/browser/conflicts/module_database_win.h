@@ -21,6 +21,8 @@
 class ModuleDatabaseObserver;
 
 #if defined(GOOGLE_CHROME_BUILD)
+class PrefChangeRegistrar;
+class PrefRegistrySimple;
 class ThirdPartyConflictsManager;
 #endif
 
@@ -114,6 +116,12 @@ class ModuleDatabase {
   void IncreaseInspectionPriority();
 
 #if defined(GOOGLE_CHROME_BUILD)
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Returns true if the ThirdPartyBlocking policy is enabled. This can only
+  // return false if it is disabled via admin policy.
+  static bool IsThirdPartyBlockingPolicyEnabled();
+
   // Accessor for the third party conflicts manager. This is exposed so that the
   // manager can be wired up to the ThirdPartyModuleListComponentInstaller.
   // Returns null if the tracking of incompatible applications is disabled.
@@ -177,6 +185,8 @@ class ModuleDatabase {
   // group policy. Note that it is also not initialized on Windows version
   // 8.1 and less.
   void MaybeInitializeThirdPartyConflictsManager();
+
+  void OnThirdPartyBlockingPolicyChanged();
 #endif
 
   // The task runner to which this object is bound.
@@ -204,6 +214,8 @@ class ModuleDatabase {
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::unique_ptr<ThirdPartyConflictsManager> third_party_conflicts_manager_;
+
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 #endif
 
   // Records metrics on third-party modules.

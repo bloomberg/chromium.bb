@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
@@ -21,6 +22,8 @@ struct CertificateInfo;
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
+class TaskRunner;
 }
 
 // This class owns all the third-party conflicts-related classes and is
@@ -32,14 +35,20 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-  // Returns true if the ThirdPartyBlocking policy is enabled. This can only
-  // return false if it is disabled via admin policy.
-  static bool IsThirdPartyBlockingPolicyEnabled();
-
   // Explicitely disables the third-party module blocking feature. This is
   // needed because simply turning off the feature using either the Feature List
-  // API or via group policy is not sufficient.
-  static void DisableThirdPartyModuleBlocking();
+  // API or via group policy is not sufficient. Disabling the blocking requires
+  // the deletion of the module blacklist cache. This task is executed on
+  // |background_sequence|.
+  static void DisableThirdPartyModuleBlocking(
+      base::TaskRunner* background_sequence);
+
+  // Explicitely disables the blocking of third-party modules for the next
+  // browser launch and prevent |instance| from reenabling it. Basically calls
+  // the above function in the background sequence of |instance| and then
+  // deletes that instance.
+  static void ShutdownAndDestroy(
+      std::unique_ptr<ThirdPartyConflictsManager> instance);
 
   // ModuleDatabaseObserver:
   void OnModuleDatabaseIdle() override;
@@ -75,6 +84,8 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
       const ModuleBlacklistCacheUpdater::CacheUpdateResult& result);
 
   ModuleDatabase* module_database_;
+
+  scoped_refptr<base::SequencedTaskRunner> background_sequence_;
 
   // Indicates if the initial Module List has been received. Used to prevent the
   // creation of multiple ModuleListFilter instances.
