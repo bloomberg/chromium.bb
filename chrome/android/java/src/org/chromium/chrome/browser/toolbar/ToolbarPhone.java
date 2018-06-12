@@ -303,7 +303,6 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     protected VisualState mVisualState = VisualState.NORMAL;
-    private VisualState mOverlayDrawablesVisualState;
     protected boolean mUseLightToolbarDrawables;
 
     private NewTabPage mVisibleNewTabPage;
@@ -376,8 +375,6 @@ public class ToolbarPhone extends ToolbarLayout
             mBrowsingModeViews.add(mLocationBar);
 
             mToolbarBackground =
-                    new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
-            mTabSwitcherAnimationBgOverlay =
                     new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
 
             initLocationBarBackground();
@@ -549,6 +546,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         if (mLocationBar.useModernDesign()) mNewTabButton.setIsModern();
 
+        setTabSwitcherAnimationMenuDrawable();
         updateVisualsForToolbarState();
     }
 
@@ -692,14 +690,6 @@ public class ToolbarPhone extends ToolbarLayout
         mUnfocusedLocationBarLayoutWidth = rightViewBounds - leftViewBounds;
         mUnfocusedLocationBarLayoutLeft = leftViewBounds;
         mUnfocusedLocationBarLayoutRight = rightViewBounds;
-    }
-
-    /**
-     * @return The background drawable for the fullscreen overlay.
-     */
-    @VisibleForTesting
-    ColorDrawable getOverlayDrawable() {
-        return mTabSwitcherAnimationBgOverlay;
     }
 
     /**
@@ -2009,35 +1999,6 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
-    private void updateOverlayDrawables() {
-        if (!isNativeLibraryReady()) return;
-
-        VisualState overlayState = computeVisualState(false);
-        boolean visualStateChanged = mOverlayDrawablesVisualState != overlayState;
-
-        if (!visualStateChanged && mVisualState == VisualState.BRAND_COLOR
-                && getToolbarDataProvider().getPrimaryColor()
-                        != mTabSwitcherAnimationBgOverlay.getColor()) {
-            visualStateChanged = true;
-        }
-        if (!visualStateChanged) return;
-
-        mOverlayDrawablesVisualState = overlayState;
-        mTabSwitcherAnimationBgOverlay.setColor(getToolbarColorForVisualState(
-                mOverlayDrawablesVisualState));
-
-        setTabSwitcherAnimationMenuDrawable();
-        setUseLightDrawablesForTextureCapture();
-
-        if (mTabSwitcherState == STATIC_TAB && !mTextureCaptureMode && mLayoutUpdateHost != null) {
-            // Request a layout update to trigger a texture capture if the tint color is changing
-            // and we're not already in texture capture mode. This is necessary if the tab switcher
-            // is entered immediately after a change to the tint color without any user interactions
-            // that would normally trigger a texture capture.
-            mLayoutUpdateHost.requestUpdate();
-        }
-    }
-
     @Override
     public void destroy() {
         dismissTabSwitcherCallout();
@@ -2596,7 +2557,11 @@ public class ToolbarPhone extends ToolbarLayout
 
         mVisualState = newVisualState;
 
-        updateOverlayDrawables();
+        // Refresh the toolbar texture.
+        if ((mVisualState == VisualState.BRAND_COLOR || visualStateChanged)
+                && mLayoutUpdateHost != null) {
+            mLayoutUpdateHost.requestUpdate();
+        }
         updateShadowVisibility();
         updateUrlExpansionAnimation();
 
@@ -2763,10 +2728,6 @@ public class ToolbarPhone extends ToolbarLayout
     private void setTabSwitcherAnimationMenuDrawable() {
         mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(
                 getResources(), R.drawable.ic_more_vert_black_24dp);
-        mTabSwitcherAnimationMenuDrawable.mutate();
-        mTabSwitcherAnimationMenuDrawable.setColorFilter(
-                isIncognito() ? mLightModeDefaultColor : mDarkModeDefaultColor,
-                PorterDuff.Mode.SRC_IN);
         ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
     }
 
