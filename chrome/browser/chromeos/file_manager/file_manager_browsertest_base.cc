@@ -515,16 +515,24 @@ class DriveTestVolume : public TestVolume {
     ASSERT_EQ(drive::FILE_ERROR_OK, error);
     ASSERT_TRUE(parent_entry);
 
+    // Create the capabilities object.
+    google_apis::FileResourceCapabilities capabilities;
+    capabilities.set_can_copy(entry.capabilities.can_copy);
+    capabilities.set_can_delete(entry.capabilities.can_delete);
+    capabilities.set_can_rename(entry.capabilities.can_rename);
+    capabilities.set_can_add_children(entry.capabilities.can_add_children);
+    capabilities.set_can_share(entry.capabilities.can_share);
+
     switch (entry.type) {
       case AddEntriesMessage::FILE:
         CreateFile(entry.source_file_name, parent_entry->resource_id(),
                    target_name, entry.mime_type,
                    entry.shared_option == AddEntriesMessage::SHARED,
-                   entry.last_modified_time);
+                   entry.last_modified_time, capabilities);
         break;
       case AddEntriesMessage::DIRECTORY:
         CreateDirectory(parent_entry->resource_id(), target_name,
-                        entry.last_modified_time);
+                        entry.last_modified_time, capabilities);
         break;
     }
 
@@ -535,9 +543,11 @@ class DriveTestVolume : public TestVolume {
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.
-  void CreateDirectory(const std::string& parent_id,
-                       const std::string& target_name,
-                       const base::Time& modification_time) {
+  void CreateDirectory(
+      const std::string& parent_id,
+      const std::string& target_name,
+      const base::Time& modification_time,
+      const google_apis::FileResourceCapabilities& capabilities) {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
 
     std::unique_ptr<google_apis::FileResource> entry;
@@ -555,6 +565,13 @@ class DriveTestVolume : public TestVolume {
     ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
     ASSERT_TRUE(entry);
 
+    fake_drive_service_->SetFileCapabilities(
+        entry->file_id(), capabilities,
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
+    ASSERT_TRUE(entry);
+
     CheckForUpdates();
   }
 
@@ -565,7 +582,8 @@ class DriveTestVolume : public TestVolume {
                   const std::string& target_name,
                   const std::string& mime_type,
                   bool shared_with_me,
-                  const base::Time& modification_time) {
+                  const base::Time& modification_time,
+                  const google_apis::FileResourceCapabilities& capabilities) {
     google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
 
     std::string content_data;
@@ -588,6 +606,13 @@ class DriveTestVolume : public TestVolume {
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+    ASSERT_TRUE(entry);
+
+    fake_drive_service_->SetFileCapabilities(
+        entry->file_id(), capabilities,
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(error == google_apis::HTTP_SUCCESS);
     ASSERT_TRUE(entry);
 
     CheckForUpdates();

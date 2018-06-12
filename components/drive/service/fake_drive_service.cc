@@ -1668,6 +1668,39 @@ void FakeDriveService::SetLastModifiedTime(
                                 std::make_unique<FileResource>(*file)));
 }
 
+void FakeDriveService::SetFileCapabilities(
+    const std::string& resource_id,
+    const google_apis::FileResourceCapabilities& capabilities,
+    const FileResourceCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(callback);
+
+  if (offline_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION,
+                                  std::unique_ptr<FileResource>()));
+    return;
+  }
+
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
+  if (!entry) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND,
+                                  std::unique_ptr<FileResource>()));
+    return;
+  }
+
+  ChangeResource& change = entry->change_resource;
+  FileResource* file = change.mutable_file();
+  file->set_capabilities(capabilities);
+
+  AddNewChangestamp(&change, file->team_drive_id());
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS,
+                                std::make_unique<FileResource>(*file)));
+}
+
 google_apis::DriveApiErrorCode FakeDriveService::SetUserPermission(
     const std::string& resource_id,
     google_apis::drive::PermissionRole user_permission) {
