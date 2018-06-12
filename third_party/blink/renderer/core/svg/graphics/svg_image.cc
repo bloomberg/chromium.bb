@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
@@ -490,6 +491,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const IntRect& bounds,
   DCHECK(page_);
   LocalFrameView* view = ToLocalFrame(page_->MainFrame())->View();
   view->Resize(ContainerSize());
+  page_->GetVisualViewport().SetSize(ContainerSize());
 
   // Always call processUrlFragment, even if the url is empty, because
   // there may have been a previous url/fragment that needs to be reset.

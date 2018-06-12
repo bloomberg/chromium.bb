@@ -242,6 +242,7 @@ class CORE_EXPORT SVGImage final : public Image {
   Persistent<SVGImageLocalFrameClient> frame_client_;
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SupportsSubsequenceCaching);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, JankTrackerDisabled);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SetSizeOnVisualViewport);
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);
