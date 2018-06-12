@@ -687,11 +687,11 @@ void FakeCryptohomeClient::IsQuotaSupported(DBusMethodCallback<bool> callback) {
 }
 
 void FakeCryptohomeClient::GetCurrentSpaceForUid(
-    uid_t uid,
+    uid_t android_uid,
     DBusMethodCallback<int64_t> callback) {}
 
 void FakeCryptohomeClient::GetCurrentSpaceForGid(
-    gid_t gid,
+    gid_t android_gid,
     DBusMethodCallback<int64_t> callback) {}
 
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {

@@ -944,13 +944,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   }
 
-  void GetCurrentSpaceForUid(const uid_t uid,
+  void GetCurrentSpaceForUid(const uid_t android_uid,
                              DBusMethodCallback<int64_t> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetCurrentSpaceForUid);
 
     dbus::MessageWriter writer(&method_call);
-    writer.AppendUint32(uid);
+    writer.AppendUint32(android_uid);
 
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -958,13 +958,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetCurrentSpaceForGid(const gid_t gid,
+  void GetCurrentSpaceForGid(const gid_t android_gid,
                              DBusMethodCallback<int64_t> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetCurrentSpaceForGid);
 
     dbus::MessageWriter writer(&method_call);
-    writer.AppendUint32(gid);
+    writer.AppendUint32(android_gid);
 
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
