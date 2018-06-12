@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 
+#include "components/autofill/core/browser/password_requirements_spec_printer.h"
+
 namespace {
 constexpr size_t kCacheSizeForDomainKeyedSpecs = 200;
 constexpr size_t kCacheSizeForSignatureKeyedSpecs = 500;
@@ -53,10 +55,16 @@ autofill::PasswordRequirementsSpec PasswordRequirementsService::GetSpec(
     }
   }
 
+  VLOG(1) << "PasswordRequirementsService::GetSpec(" << main_frame_domain
+          << ", " << form_signature << ", " << field_signature
+          << ") = " << result;
+
   return result;
 }
 
 void PasswordRequirementsService::PrefetchSpec(const GURL& main_frame_domain) {
+  VLOG(1) << "PasswordRequirementsService::PrefetchSpec(" << main_frame_domain
+          << ")";
   // Using base::Unretained(this) is safe here because the
   // PasswordRequirementsService owns fetcher_. If |this| is deleted, so is
   // the |fetcher_|, and no callback can happen.
@@ -69,6 +77,8 @@ void PasswordRequirementsService::PrefetchSpec(const GURL& main_frame_domain) {
 void PasswordRequirementsService::OnFetchedRequirements(
     const GURL& main_frame_domain,
     const autofill::PasswordRequirementsSpec& spec) {
+  VLOG(1) << "PasswordRequirementsService::OnFetchedRequirements("
+          << main_frame_domain << ", " << spec << ")";
   specs_for_domains_.Put(main_frame_domain, spec);
 }
 
@@ -76,6 +86,8 @@ void PasswordRequirementsService::AddSpec(
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,
     const autofill::PasswordRequirementsSpec& spec) {
+  VLOG(1) << "PasswordRequirementsService::AddSpec(" << form_signature << ", "
+          << field_signature << ", " << spec << ")";
   specs_for_signatures_.Put(std::make_pair(form_signature, field_signature),
                             spec);
 }

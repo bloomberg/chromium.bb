@@ -118,6 +118,8 @@ static_library("browser") {
     "password_requirements_spec_fetcher.h",
     "password_requirements_spec_fetcher_impl.cc",
     "password_requirements_spec_fetcher_impl.h",
+    "password_requirements_spec_printer.cc",
+    "password_requirements_spec_printer.h",
     "payments/full_card_request.cc",
     "payments/full_card_request.h",
     "payments/payments_client.cc",

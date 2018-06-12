@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/password_requirements_spec_printer.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/browser/proto/password_requirements_shard.pb.h"
 #include "net/base/load_flags.h"
@@ -92,6 +93,14 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(
     GURL origin,
     FetchCallback callback) {
   DCHECK(origin.is_valid());
+  VLOG(1) << "Fetching password requirements spec for " << origin;
+
+  if (!url_loader_factory_) {
+    VLOG(1) << "No url_logger_factory_ available";
+    TriggerCallback(std::move(callback), ResultCode::kErrorNoUrlLoader,
+                    PasswordRequirementsSpec());
+    return;
+  }
 
   if (!url_loader_factory_) {
     TriggerCallback(std::move(callback), ResultCode::kErrorNoUrlLoader,
@@ -101,6 +110,7 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(
 
   if (!origin.is_valid() || origin.HostIsIPAddress() ||
       !origin.SchemeIsHTTPOrHTTPS()) {
+    VLOG(1) << "No valid origin";
     TriggerCallback(std::move(callback), ResultCode::kErrorInvalidOrigin,
                     PasswordRequirementsSpec());
     return;
@@ -122,6 +132,7 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(
   if (iter != lookups_in_flight_.end()) {
     iter->second->callbacks.push_back(
         std::make_pair(origin, std::move(callback)));
+    VLOG(1) << "Lookup already in flight";
     return;
   }
 
@@ -179,6 +190,8 @@ void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
   lookup->download_timer.Stop();
 
   if (!response_body || lookup->url_loader->NetError() != net::Error::OK) {
+    VLOG(1) << "Fetch for " << hash_prefix << ": failed to fetch "
+            << lookup->url_loader->NetError();
     TriggerCallbackToAll(&lookup->callbacks, ResultCode::kErrorFailedToFetch,
                          PasswordRequirementsSpec());
     return;
@@ -186,6 +199,7 @@ void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
 
   PasswordRequirementsShard shard;
   if (!shard.ParseFromString(*response_body)) {
+    VLOG(1) << "Fetch for " << hash_prefix << ": failed to parse response";
     TriggerCallbackToAll(&lookup->callbacks, ResultCode::kErrorFailedToParse,
                          PasswordRequirementsSpec());
     return;
@@ -203,6 +217,7 @@ void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
     auto host_iter = shard.specs().find(host);
     if (host_iter != shard.specs().end()) {
       const PasswordRequirementsSpec& spec = host_iter->second;
+      VLOG(1) << "Found for " << host << ": " << spec;
       TriggerCallback(std::move(callback_function), ResultCode::kFoundSpec,
                       spec);
       continue;
@@ -225,6 +240,7 @@ void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
       if (it != shard.specs().end()) {
         const PasswordRequirementsSpec& spec = it->second;
         found_entry = true;
+        VLOG(1) << "Found for " << host << ": " << spec;
         TriggerCallback(std::move(callback_function), ResultCode::kFoundSpec,
                         spec);
         break;
@@ -232,6 +248,7 @@ void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
     }
 
     if (!found_entry) {
+      VLOG(1) << "Found no entry for " << host;
       TriggerCallback(std::move(callback_function), ResultCode::kFoundNoSpec,
                       PasswordRequirementsSpec());
     }
