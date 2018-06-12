@@ -18,8 +18,8 @@
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::_;
-using RegisterResult = policy::ChromeBrowserPolicyConnector::
-    MachineLevelUserCloudPolicyRegisterResult;
+using RegisterResult =
+    policy::MachineLevelUserCloudPolicyController::RegisterResult;
 
 namespace policy {
 
@@ -54,17 +54,18 @@ class FakeDMTokenStorage : public BrowserDMTokenStorage {
   DISALLOW_COPY_AND_ASSIGN(FakeDMTokenStorage);
 };
 
-// A mock ChromeBrowserPolicyConnector that notifies all observers the machine
-// level user cloud policy enrollment process has been finihsed.
-class FakeChromeBrowserPolicyConnector : public ChromeBrowserPolicyConnector {
+// A fake MachineLevelUserCloudPolicyController that notifies all observers the
+// machine level user cloud policy enrollment process has been finished.
+class FakeMachineLevelUserCloudPolicyController
+    : public MachineLevelUserCloudPolicyController {
  public:
-  FakeChromeBrowserPolicyConnector() = default;
+  FakeMachineLevelUserCloudPolicyController() = default;
   void FireNotification(bool succeeded) {
-    NotifyMachineLevelUserCloudPolicyRegisterFinished(succeeded);
+    NotifyPolicyRegisterFinished(succeeded);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeChromeBrowserPolicyConnector);
+  DISALLOW_COPY_AND_ASSIGN(FakeMachineLevelUserCloudPolicyController);
 };
 
 // A mock EnterpriseStartDialog to mimic the behavior of real dialog.
@@ -108,7 +109,7 @@ class MockEnterpriseStartupDialog : public EnterpriseStartupDialog {
 class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
  public:
   MachineLevelUserCloudPolicyRegisterWatcherTest()
-      : watcher_(&connector_),
+      : watcher_(&controller_),
         dialog_(std::make_unique<MockEnterpriseStartupDialog>()),
         dialog_ptr_(dialog_.get()) {
     BrowserDMTokenStorage::SetForTesting(&storage_);
@@ -122,7 +123,9 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
 
  protected:
   FakeDMTokenStorage* storage() { return &storage_; }
-  FakeChromeBrowserPolicyConnector* connector() { return &connector_; }
+  FakeMachineLevelUserCloudPolicyController* controller() {
+    return &controller_;
+  }
   MachineLevelUserCloudPolicyRegisterWatcher* watcher() { return &watcher_; }
   MockEnterpriseStartupDialog* dialog() { return dialog_ptr_; }
 
@@ -135,7 +138,7 @@ class MachineLevelUserCloudPolicyRegisterWatcherTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle browser_thread_bundle_;
 
-  FakeChromeBrowserPolicyConnector connector_;
+  FakeMachineLevelUserCloudPolicyController controller_;
   MachineLevelUserCloudPolicyRegisterWatcher watcher_;
   FakeDMTokenStorage storage_;
   std::unique_ptr<MockEnterpriseStartupDialog> dialog_;
@@ -164,8 +167,9 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest, EnrollmentSucceed) {
   EXPECT_CALL(*dialog(), IsShowing()).WillOnce(Return(true));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&FakeChromeBrowserPolicyConnector::FireNotification,
-                     base::Unretained(connector()), true));
+      base::BindOnce(
+          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          base::Unretained(controller()), true));
   EXPECT_EQ(RegisterResult::kEnrollmentSuccess,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }
@@ -179,8 +183,9 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_CALL(*dialog(), IsShowing()).WillOnce(Return(true));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&FakeChromeBrowserPolicyConnector::FireNotification,
-                     base::Unretained(connector()), false));
+      base::BindOnce(
+          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          base::Unretained(controller()), false));
   EXPECT_EQ(RegisterResult::kQuitDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }
@@ -194,8 +199,9 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_CALL(*dialog(), IsShowing()).WillOnce(Return(true));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&FakeChromeBrowserPolicyConnector::FireNotification,
-                     base::Unretained(connector()), false));
+      base::BindOnce(
+          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          base::Unretained(controller()), false));
   EXPECT_EQ(RegisterResult::kRestartDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }
@@ -216,7 +222,7 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
   EXPECT_CALL(*dialog(), DisplayErrorMessage(_, _))
       .WillOnce(
           InvokeWithoutArgs([this] { dialog()->UserClickedTheButton(false); }));
-  connector()->FireNotification(false);
+  controller()->FireNotification(false);
   EXPECT_EQ(RegisterResult::kQuitDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
 }

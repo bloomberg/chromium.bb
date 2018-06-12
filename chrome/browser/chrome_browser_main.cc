@@ -205,6 +205,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util.h"
+#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -725,18 +726,17 @@ bool IsSiteIsolationEnterprisePolicyApplicable() {
 bool WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
     policy::ChromeBrowserPolicyConnector* connector) {
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  switch (connector->WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished()) {
-    case policy::ChromeBrowserPolicyConnector::
-        MachineLevelUserCloudPolicyRegisterResult::kNoEnrollmentNeeded:
-    case policy::ChromeBrowserPolicyConnector::
-        MachineLevelUserCloudPolicyRegisterResult::kEnrollmentSuccess:
+  using RegisterResult =
+      policy::MachineLevelUserCloudPolicyController::RegisterResult;
+  switch (connector->machine_level_user_cloud_policy_controller()
+              ->WaitUntilPolicyEnrollmentFinished()) {
+    case RegisterResult::kNoEnrollmentNeeded:
+    case RegisterResult::kEnrollmentSuccess:
       return true;
-    case policy::ChromeBrowserPolicyConnector::
-        MachineLevelUserCloudPolicyRegisterResult::kRestartDueToFailure:
+    case RegisterResult::kRestartDueToFailure:
       chrome::AttemptRestart();
       return false;
-    case policy::ChromeBrowserPolicyConnector::
-        MachineLevelUserCloudPolicyRegisterResult::kQuitDueToFailure:
+    case RegisterResult::kQuitDueToFailure:
       chrome::AttemptExit();
       return false;
   }
