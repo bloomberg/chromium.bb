@@ -9,7 +9,6 @@
 
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-#include "gpu/vulkan/vulkan_platform.h"
 
 namespace gpu {
 

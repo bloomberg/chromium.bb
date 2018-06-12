@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define VK_USE_PLATFORM_XLIB_KHR
-
 #include "gpu/vulkan/x/vulkan_implementation_x11.h"
 
 #include "base/files/file_path.h"

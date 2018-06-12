@@ -41,7 +41,6 @@ if (enable_vulkan) {
         "vulkan_implementation.h",
         "vulkan_instance.cc",
         "vulkan_instance.h",
-        "vulkan_platform.h",
         "vulkan_render_pass.cc",
         "vulkan_render_pass.h",
         "vulkan_sampler.cc",
@@ -57,6 +56,10 @@ if (enable_vulkan) {
       configs += [ "//build/config:precompiled_headers" ]
 
       defines = [ "VULKAN_IMPLEMENTATION" ]
+
+      if (use_x11) {
+        defines += [ "VK_USE_PLATFORM_XLIB_KHR" ]
+      }
 
       all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
 

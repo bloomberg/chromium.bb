@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-#include "gpu/vulkan/vulkan_platform.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
 
 namespace gpu {
