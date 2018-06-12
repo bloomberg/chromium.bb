@@ -75,6 +75,16 @@ class HttpResponseHeadersCacheControlTest : public HttpResponseHeadersTest {
     return max_age_value;
   }
 
+  // Get the stale-while-revalidate value. This should only be used in tests
+  // where a valid max-age parameter is expected to be present.
+  TimeDelta GetStaleWhileRevalidateValue() {
+    DCHECK(headers_.get()) << "Call InitializeHeadersWithCacheControl() first";
+    TimeDelta stale_while_revalidate_value;
+    EXPECT_TRUE(
+        headers()->GetStaleWhileRevalidateValue(&stale_while_revalidate_value));
+    return stale_while_revalidate_value;
+  }
+
  private:
   scoped_refptr<HttpResponseHeaders> headers_;
   TimeDelta delta_;
@@ -811,7 +821,7 @@ INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
 
 struct RequiresValidationTestData {
   const char* headers;
-  bool requires_validation;
+  ValidationType validation_type;
 };
 
 class RequiresValidationTest
@@ -834,153 +844,173 @@ TEST_P(RequiresValidationTest, RequiresValidation) {
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
 
-  bool requires_validation =
+  ValidationType validation_type =
       parsed->RequiresValidation(request_time, response_time, current_time);
-  EXPECT_EQ(test.requires_validation, requires_validation);
+  EXPECT_EQ(test.validation_type, validation_type);
 }
 
 const struct RequiresValidationTestData requires_validation_tests[] = {
-  // No expiry info: expires immediately.
-  { "HTTP/1.1 200 OK\n"
-    "\n",
-    true
-  },
-  // No expiry info: expires immediately.
-  { "HTTP/1.1 200 OK\n"
-    "\n",
-    true
-  },
-  // Valid for a little while.
-  { "HTTP/1.1 200 OK\n"
-    "cache-control: max-age=10000\n"
-    "\n",
-    false
-  },
-  // Expires in the future.
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "expires: Wed, 28 Nov 2007 01:00:00 GMT\n"
-    "\n",
-    false
-  },
-  // Already expired.
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "expires: Wed, 28 Nov 2007 00:00:00 GMT\n"
-    "\n",
-    true
-  },
-  // Max-age trumps expires.
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "expires: Wed, 28 Nov 2007 00:00:00 GMT\n"
-    "cache-control: max-age=10000\n"
-    "\n",
-    false
-  },
-  // Last-modified heuristic: modified a while ago.
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "last-modified: Wed, 27 Nov 2007 08:00:00 GMT\n"
-    "\n",
-    false
-  },
-  { "HTTP/1.1 203 Non-Authoritative Information\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "last-modified: Wed, 27 Nov 2007 08:00:00 GMT\n"
-    "\n",
-    false
-  },
-  { "HTTP/1.1 206 Partial Content\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "last-modified: Wed, 27 Nov 2007 08:00:00 GMT\n"
-    "\n",
-    false
-  },
-  // Last-modified heuristic: modified recently.
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "last-modified: Wed, 28 Nov 2007 00:40:10 GMT\n"
-    "\n",
-    true
-  },
-  { "HTTP/1.1 203 Non-Authoritative Information\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "last-modified: Wed, 28 Nov 2007 00:40:10 GMT\n"
-    "\n",
-    true
-  },
-  { "HTTP/1.1 206 Partial Content\n"
-  "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "last-modified: Wed, 28 Nov 2007 00:40:10 GMT\n"
-    "\n",
-    true
-  },
-  // Cached permanent redirect.
-  { "HTTP/1.1 301 Moved Permanently\n"
-    "\n",
-    false
-  },
-  // Another cached permanent redirect.
-  { "HTTP/1.1 308 Permanent Redirect\n"
-    "\n",
-    false
-  },
-  // Cached redirect: not reusable even though by default it would be.
-  { "HTTP/1.1 300 Multiple Choices\n"
-    "Cache-Control: no-cache\n"
-    "\n",
-    true
-  },
-  // Cached forever by default.
-  { "HTTP/1.1 410 Gone\n"
-    "\n",
-    false
-  },
-  // Cached temporary redirect: not reusable.
-  { "HTTP/1.1 302 Found\n"
-    "\n",
-    true
-  },
-  // Cached temporary redirect: reusable.
-  { "HTTP/1.1 302 Found\n"
-    "cache-control: max-age=10000\n"
-    "\n",
-    false
-  },
-  // Cache-control: max-age=N overrides expires: date in the past.
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "expires: Wed, 28 Nov 2007 00:20:11 GMT\n"
-    "cache-control: max-age=10000\n"
-    "\n",
-    false
-  },
-  // Cache-control: no-store overrides expires: in the future.
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "expires: Wed, 29 Nov 2007 00:40:11 GMT\n"
-    "cache-control: no-store,private,no-cache=\"foo\"\n"
-    "\n",
-    true
-  },
-  // Pragma: no-cache overrides last-modified heuristic.
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "last-modified: Wed, 27 Nov 2007 08:00:00 GMT\n"
-    "pragma: no-cache\n"
-    "\n",
-    true
-  },
-  // max-age has expired, needs synchronous revalidation
-  { "HTTP/1.1 200 OK\n"
-    "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
-    "cache-control: max-age=300\n"
-    "\n",
-    true
-  },
+    // No expiry info: expires immediately.
+    {"HTTP/1.1 200 OK\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // No expiry info: expires immediately.
+    {"HTTP/1.1 200 OK\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // Valid for a little while.
+    {"HTTP/1.1 200 OK\n"
+     "cache-control: max-age=10000\n"
+     "\n",
+     VALIDATION_NONE},
+    // Expires in the future.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "expires: Wed, 28 Nov 2007 01:00:00 GMT\n"
+     "\n",
+     VALIDATION_NONE},
+    // Already expired.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "expires: Wed, 28 Nov 2007 00:00:00 GMT\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // Max-age trumps expires.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "expires: Wed, 28 Nov 2007 00:00:00 GMT\n"
+     "cache-control: max-age=10000\n"
+     "\n",
+     VALIDATION_NONE},
+    // Last-modified heuristic: modified a while ago.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "last-modified: Wed, 27 Nov 2007 08:00:00 GMT\n"
+     "\n",
+     VALIDATION_NONE},
+    {"HTTP/1.1 203 Non-Authoritative Information\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "last-modified: Wed, 27 Nov 2007 08:00:00 GMT\n"
+     "\n",
+     VALIDATION_NONE},
+    {"HTTP/1.1 206 Partial Content\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "last-modified: Wed, 27 Nov 2007 08:00:00 GMT\n"
+     "\n",
+     VALIDATION_NONE},
+    // Last-modified heuristic: modified recently.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "last-modified: Wed, 28 Nov 2007 00:40:10 GMT\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    {"HTTP/1.1 203 Non-Authoritative Information\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "last-modified: Wed, 28 Nov 2007 00:40:10 GMT\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    {"HTTP/1.1 206 Partial Content\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "last-modified: Wed, 28 Nov 2007 00:40:10 GMT\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // Cached permanent redirect.
+    {"HTTP/1.1 301 Moved Permanently\n"
+     "\n",
+     VALIDATION_NONE},
+    // Another cached permanent redirect.
+    {"HTTP/1.1 308 Permanent Redirect\n"
+     "\n",
+     VALIDATION_NONE},
+    // Cached redirect: not reusable even though by default it would be.
+    {"HTTP/1.1 300 Multiple Choices\n"
+     "Cache-Control: no-cache\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // Cached forever by default.
+    {"HTTP/1.1 410 Gone\n"
+     "\n",
+     VALIDATION_NONE},
+    // Cached temporary redirect: not reusable.
+    {"HTTP/1.1 302 Found\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // Cached temporary redirect: reusable.
+    {"HTTP/1.1 302 Found\n"
+     "cache-control: max-age=10000\n"
+     "\n",
+     VALIDATION_NONE},
+    // Cache-control: max-age=N overrides expires: date in the past.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "expires: Wed, 28 Nov 2007 00:20:11 GMT\n"
+     "cache-control: max-age=10000\n"
+     "\n",
+     VALIDATION_NONE},
+    // Cache-control: no-store overrides expires: in the future.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "expires: Wed, 29 Nov 2007 00:40:11 GMT\n"
+     "cache-control: no-store,private,no-cache=\"foo\"\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // Pragma: no-cache overrides last-modified heuristic.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "last-modified: Wed, 27 Nov 2007 08:00:00 GMT\n"
+     "pragma: no-cache\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // max-age has expired, needs synchronous revalidation
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "cache-control: max-age=300\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // max-age has expired, stale-while-revalidate has not, eligible for
+    // asynchronous revalidation
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "cache-control: max-age=300, stale-while-revalidate=3600\n"
+     "\n",
+     VALIDATION_ASYNCHRONOUS},
+    // max-age and stale-while-revalidate have expired, needs synchronous
+    // revalidation
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "cache-control: max-age=300, stale-while-revalidate=5\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // max-age is 0, stale-while-revalidate is large enough to permit
+    // asynchronous revalidation
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "cache-control: max-age=0, stale-while-revalidate=360\n"
+     "\n",
+     VALIDATION_ASYNCHRONOUS},
+    // stale-while-revalidate must not override no-cache or similar directives.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "cache-control: no-cache, stale-while-revalidate=360\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
+    // max-age has not expired, so no revalidation is needed.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "cache-control: max-age=3600, stale-while-revalidate=3600\n"
+     "\n",
+     VALIDATION_NONE},
+    // must-revalidate overrides stale-while-revalidate, so synchronous
+    // validation
+    // is needed.
+    {"HTTP/1.1 200 OK\n"
+     "date: Wed, 28 Nov 2007 00:40:11 GMT\n"
+     "cache-control: must-revalidate, max-age=300, "
+     "stale-while-revalidate=3600\n"
+     "\n",
+     VALIDATION_SYNCHRONOUS},
 
-  // TODO(darin): Add many many more tests here.
+    // TODO(darin): Add many many more tests here.
 };
 
 INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
@@ -2127,6 +2157,36 @@ const MaxAgeTestData max_age_tests[] = {
 INSTANTIATE_TEST_CASE_P(HttpResponseHeadersCacheControl,
                         MaxAgeEdgeCasesTest,
                         testing::ValuesIn(max_age_tests));
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       AbsentStaleWhileRevalidateReturnsFalse) {
+  InitializeHeadersWithCacheControl("max-age=3600");
+  EXPECT_FALSE(headers()->GetStaleWhileRevalidateValue(TimeDeltaPointer()));
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       StaleWhileRevalidateWithoutValueRejected) {
+  InitializeHeadersWithCacheControl("max-age=3600,stale-while-revalidate=");
+  EXPECT_FALSE(headers()->GetStaleWhileRevalidateValue(TimeDeltaPointer()));
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       StaleWhileRevalidateWithInvalidValueTreatedAsZero) {
+  InitializeHeadersWithCacheControl("max-age=3600,stale-while-revalidate=true");
+  EXPECT_EQ(TimeDelta(), GetStaleWhileRevalidateValue());
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest, StaleWhileRevalidateValueReturned) {
+  InitializeHeadersWithCacheControl("max-age=3600,stale-while-revalidate=7200");
+  EXPECT_EQ(TimeDelta::FromSeconds(7200), GetStaleWhileRevalidateValue());
+}
+
+TEST_F(HttpResponseHeadersCacheControlTest,
+       FirstStaleWhileRevalidateValueUsed) {
+  InitializeHeadersWithCacheControl(
+      "stale-while-revalidate=1,stale-while-revalidate=7200");
+  EXPECT_EQ(TimeDelta::FromSeconds(1), GetStaleWhileRevalidateValue());
+}
 
 struct GetCurrentAgeTestData {
   const char* headers;
