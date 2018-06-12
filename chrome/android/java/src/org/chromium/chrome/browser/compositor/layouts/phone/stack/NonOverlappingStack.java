@@ -181,6 +181,11 @@ public class NonOverlappingStack extends Stack {
     }
 
     @Override
+    public void onLongPress(long time, float x, float y) {
+        // Ignore long presses
+    }
+
+    @Override
     public void onPinch(long time, float x0, float y0, float x1, float y1, boolean firstEvent) {
         return;
     }
