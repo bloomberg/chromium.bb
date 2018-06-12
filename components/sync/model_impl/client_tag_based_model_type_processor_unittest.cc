@@ -16,7 +16,8 @@
 #include "base/run_loop.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/data_type_activation_request.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/fake_model_type_sync_bridge.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -213,10 +214,14 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   void OnCommitDataLoaded() { bridge()->OnCommitDataLoaded(); }
 
   void OnSyncStarting() {
+    DataTypeActivationRequest request;
+    request.error_handler = base::BindRepeating(
+        &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
+        base::Unretained(this));
+    request.cache_guid = "TestCacheGuid";
+    request.authenticated_account_id = "SomeAccountId";
     type_processor()->OnSyncStarting(
-        base::BindRepeating(
-            &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
-            base::Unretained(this)),
+        request,
         base::Bind(&ClientTagBasedModelTypeProcessorTest::OnReadyToConnect,
                    base::Unretained(this)));
   }
@@ -314,7 +319,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
  protected:
   void CheckPostConditions() { EXPECT_FALSE(expect_error_); }
 
-  void OnReadyToConnect(std::unique_ptr<ActivationContext> context) {
+  void OnReadyToConnect(std::unique_ptr<DataTypeActivationResponse> context) {
     std::unique_ptr<MockModelTypeWorker> worker(
         new MockModelTypeWorker(context->model_type_state, type_processor()));
     // Keep an unsafe pointer to the commit queue the processor will use.

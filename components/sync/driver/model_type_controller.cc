@@ -9,10 +9,14 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/data_type_histogram.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/sync_client.h"
-#include "components/sync/engine/activation_context.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/engine/data_type_activation_request.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
 #include "components/sync/model/model_type_change_processor.h"
@@ -26,11 +30,10 @@ using ModelTask = ModelTypeController::ModelTask;
 namespace {
 
 void OnSyncStartingHelperOnModelThread(
-    const ModelErrorHandler& error_handler,
+    const DataTypeActivationRequest& request,
     ModelTypeControllerDelegate::StartCallback callback_bound_to_ui_thread,
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
-  delegate->OnSyncStarting(std::move(error_handler),
-                           std::move(callback_bound_to_ui_thread));
+  delegate->OnSyncStarting(request, std::move(callback_bound_to_ui_thread));
 }
 
 void GetAllNodesForDebuggingHelperOnModelThread(
@@ -121,16 +124,25 @@ void ModelTypeController::LoadModels(
       BindToCurrentSequence(base::BindOnce(
           &ModelTypeController::OnProcessorStarted, base::AsWeakPtr(this)));
 
-  ModelErrorHandler error_handler = base::BindRepeating(
+  DataTypeActivationRequest request;
+  request.error_handler = base::BindRepeating(
       &ReportError, type(), base::SequencedTaskRunnerHandle::Get(),
       base::Bind(&ModelTypeController::ReportModelError,
                  base::AsWeakPtr(this)));
+  request.authenticated_account_id =
+      sync_client_->GetSyncService()->GetAuthenticatedAccountInfo().account_id;
+  request.cache_guid = sync_client_->GetSyncService()
+                           ->GetLocalDeviceInfoProvider()
+                           ->GetLocalSyncCacheGUID();
+
+  DCHECK(!request.authenticated_account_id.empty());
+  DCHECK(!request.cache_guid.empty());
 
   // Start the type processor on the model thread.
-  PostModelTask(FROM_HERE,
-                base::BindOnce(&OnSyncStartingHelperOnModelThread,
-                               std::move(error_handler),
-                               std::move(callback_bound_to_ui_thread)));
+  PostModelTask(
+      FROM_HERE,
+      base::BindOnce(&OnSyncStartingHelperOnModelThread, std::move(request),
+                     std::move(callback_bound_to_ui_thread)));
 }
 
 void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
@@ -159,11 +171,11 @@ void ModelTypeController::LoadModelsDone(ConfigureResult result,
 }
 
 void ModelTypeController::OnProcessorStarted(
-    std::unique_ptr<ActivationContext> activation_context) {
+    std::unique_ptr<DataTypeActivationResponse> activation_response) {
   DCHECK(CalledOnValidThread());
   // Hold on to the activation context until ActivateDataType is called.
   if (state_ == MODEL_STARTING) {
-    activation_context_ = std::move(activation_context);
+    activation_response_ = std::move(activation_response);
   }
   LoadModelsDone(OK, SyncError());
 }
@@ -175,14 +187,15 @@ void ModelTypeController::RegisterWithBackend(
   if (activated_)
     return;
   DCHECK(configurer);
-  DCHECK(activation_context_);
+  DCHECK(activation_response_);
   DCHECK_EQ(MODEL_LOADED, state_);
   // Inform the DataTypeManager whether our initial download is complete.
-  set_downloaded.Run(activation_context_->model_type_state.initial_sync_done());
+  set_downloaded.Run(
+      activation_response_->model_type_state.initial_sync_done());
   // Pass activation context to ModelTypeRegistry, where ModelTypeWorker gets
   // created and connected with ModelTypeProcessor.
   configurer->ActivateNonBlockingDataType(type(),
-                                          std::move(activation_context_));
+                                          std::move(activation_response_));
   activated_ = true;
 }
 
@@ -204,9 +217,9 @@ void ModelTypeController::ActivateDataType(ModelTypeConfigurer* configurer) {
   DCHECK(configurer);
   DCHECK_EQ(RUNNING, state_);
   // In contrast with directory datatypes, non-blocking data types should be
-  // activated in RegisterWithBackend. activation_context_ should be passed
-  // to backend before call to ActivateDataType.
-  DCHECK(!activation_context_);
+  // activated in RegisterWithBackend. activation_response_ should be
+  // passed to backend before call to ActivateDataType.
+  DCHECK(!activation_response_);
 }
 
 void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {

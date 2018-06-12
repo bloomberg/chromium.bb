@@ -11,7 +11,7 @@
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
-struct ActivationContext;
+struct DataTypeActivationResponse;
 
 // An interface into the core parts of sync for model types. By adding/removing
 // types through methods of this interface consumer controls which types will be
@@ -25,12 +25,12 @@ class ModelTypeConnector {
   virtual ~ModelTypeConnector();
 
   // Connect a worker on the sync thread and |type|'s processor on the model
-  // thread. Note that in production |activation_context| actually owns a
-  // processor proxy that forwards calls to the model thread and is safe to call
-  // from the sync thread.
+  // thread. Note that in production |activation_response| actually
+  // owns a processor proxy that forwards calls to the model thread and is safe
+  // to call from the sync thread.
   virtual void ConnectNonBlockingType(
       ModelType type,
-      std::unique_ptr<ActivationContext> activation_context) = 0;
+      std::unique_ptr<DataTypeActivationResponse> activation_response) = 0;
 
   // Disconnects the worker from |type|'s processor and stop syncing the type.
   //

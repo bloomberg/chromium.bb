@@ -17,22 +17,30 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/driver/fake_sync_client.h"
-#include "components/sync/engine/activation_context.h"
+#include "components/sync/device_info/local_device_info_provider_mock.h"
+#include "components/sync/driver/fake_sync_service.h"
+#include "components/sync/driver/sync_client_mock.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
 #include "components/sync/model/fake_model_type_controller_delegate.h"
 #include "components/sync/model/stub_model_type_sync_bridge.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 namespace {
 
+using testing::_;
+
 const ModelType kTestModelType = AUTOFILL;
+const char kCacheGuid[] = "SomeCacheGuid";
+const char kAccountId[] = "SomeAccountId";
 
 void SetBool(bool* called, bool* out, bool in) {
   *called = true;
@@ -52,16 +60,16 @@ class TestModelTypeProcessor : public FakeModelTypeControllerDelegate,
         weak_factory_(this) {}
 
   // ModelTypeChangeProcessor implementation.
-  void OnSyncStarting(const ModelErrorHandler& error_handler,
+  void OnSyncStarting(const DataTypeActivationRequest& request,
                       StartCallback callback) override {
-    std::unique_ptr<ActivationContext> activation_context =
-        std::make_unique<ActivationContext>();
-    activation_context->model_type_state.set_initial_sync_done(
+    std::unique_ptr<DataTypeActivationResponse> activation_response =
+        std::make_unique<DataTypeActivationResponse>();
+    activation_response->model_type_state.set_initial_sync_done(
         initial_sync_done_);
-    activation_context->type_processor =
+    activation_response->type_processor =
         std::make_unique<ModelTypeProcessorProxy>(
             weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
-    std::move(callback).Run(std::move(activation_context));
+    std::move(callback).Run(std::move(activation_response));
   }
   void DisableSync() override { (*disable_sync_call_count_)++; }
 
@@ -114,12 +122,12 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
     NOTREACHED() << "Not implemented.";
   }
 
-  void ActivateNonBlockingDataType(
-      ModelType type,
-      std::unique_ptr<ActivationContext> activation_context) override {
+  void ActivateNonBlockingDataType(ModelType type,
+                                   std::unique_ptr<DataTypeActivationResponse>
+                                       activation_response) override {
     DCHECK_EQ(kTestModelType, type);
     DCHECK(!processor_);
-    processor_ = std::move(activation_context->type_processor);
+    processor_ = std::move(activation_response->type_processor);
     processor_->ConnectSync(nullptr);
   }
 
@@ -134,28 +142,55 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
   std::unique_ptr<ModelTypeProcessor> processor_;
 };
 
+class TestSyncService : public FakeSyncService {
+ public:
+  TestSyncService() {
+    local_device_info_provider_.Initialize(kCacheGuid,
+                                           /*signin_scoped_device_id=*/"");
+  }
+
+  ~TestSyncService() override {}
+
+  const LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override {
+    return &local_device_info_provider_;
+  }
+
+ private:
+  LocalDeviceInfoProviderMock local_device_info_provider_;
+};
+
 }  // namespace
 
-class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
+class ModelTypeControllerTest : public testing::Test {
  public:
-  ModelTypeControllerTest()
-      : model_thread_("modelthread"), sync_prefs_(GetPrefService()) {}
+  ModelTypeControllerTest() : model_thread_("modelthread") {
+    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+    sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
+  }
 
   void SetUp() override {
     model_thread_.Start();
     InitializeModelTypeSyncBridge();
+
+    AccountInfo account_info;
+    account_info.account_id = kAccountId;
+    sync_service_.SetAuthenticatedAccountInfo(account_info);
+
+    ON_CALL(sync_client_mock_, GetSyncService())
+        .WillByDefault(testing::Return(&sync_service_));
+    ON_CALL(sync_client_mock_, GetPrefService())
+        .WillByDefault(testing::Return(&pref_service_));
+    ON_CALL(sync_client_mock_, GetControllerDelegateForModelType(_))
+        .WillByDefault(testing::Return(
+            bridge_->change_processor()->GetControllerDelegateOnUIThread()));
+
     controller_ = std::make_unique<ModelTypeController>(
-        kTestModelType, this, model_thread_.task_runner());
+        kTestModelType, &sync_client_mock_, model_thread_.task_runner());
   }
 
   void TearDown() override {
     ClearModelTypeSyncBridge();
     PumpUIThread();
-  }
-
-  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateForModelType(
-      ModelType type) override {
-    return bridge_->change_processor()->GetControllerDelegateOnUIThread();
   }
 
   void LoadModels() {
@@ -216,7 +251,7 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
     processor_->set_initial_sync_done(initial_sync_done);
   }
 
-  SyncPrefs* sync_prefs() { return &sync_prefs_; }
+  SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
   DataTypeController* controller() { return controller_.get(); }
   int load_models_done_count() { return load_models_done_count_; }
   int disable_sync_call_count() { return disable_sync_call_count_; }
@@ -277,7 +312,12 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
 
   base::MessageLoop message_loop_;
   base::Thread model_thread_;
-  SyncPrefs sync_prefs_;
+  // TODO(mastiz): Remove all preferences-related dependencies once
+  // ModelTypeController doesn't actually read from preferences.
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
+  std::unique_ptr<SyncPrefs> sync_prefs_;
+  TestSyncService sync_service_;
+  testing::NiceMock<SyncClientMock> sync_client_mock_;
   TestModelTypeConfigurer configurer_;
   std::unique_ptr<StubModelTypeSyncBridge> bridge_;
   std::unique_ptr<ModelTypeController> controller_;

@@ -162,7 +162,7 @@ std::string GetSyncCacheGuid() {
       chrome_test_util::GetOriginalBrowserState();
   browser_sync::ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
-  syncer::LocalDeviceInfoProvider* info_provider =
+  const syncer::LocalDeviceInfoProvider* info_provider =
       profile_sync_service->GetLocalDeviceInfoProvider();
   return info_provider->GetLocalSyncCacheGUID();
 }

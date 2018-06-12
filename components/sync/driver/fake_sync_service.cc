@@ -148,7 +148,8 @@ UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }
 
-LocalDeviceInfoProvider* FakeSyncService::GetLocalDeviceInfoProvider() const {
+const LocalDeviceInfoProvider* FakeSyncService::GetLocalDeviceInfoProvider()
+    const {
   return nullptr;
 }
 

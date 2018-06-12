@@ -21,7 +21,7 @@
 #include "components/sync/driver/glue/sync_backend_host_core.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/engine_components_factory.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
 #include "components/sync/engine/events/protocol_event.h"
@@ -206,12 +206,12 @@ void SyncBackendHostImpl::DeactivateDirectoryDataType(ModelType type) {
 
 void SyncBackendHostImpl::ActivateNonBlockingDataType(
     ModelType type,
-    std::unique_ptr<ActivationContext> activation_context) {
+    std::unique_ptr<DataTypeActivationResponse> activation_response) {
   registrar_->RegisterNonBlockingType(type);
-  if (activation_context->model_type_state.initial_sync_done())
+  if (activation_response->model_type_state.initial_sync_done())
     registrar_->AddRestoredNonBlockingType(type);
   model_type_connector_->ConnectNonBlockingType(type,
-                                                std::move(activation_context));
+                                                std::move(activation_response));
 }
 
 void SyncBackendHostImpl::DeactivateNonBlockingDataType(ModelType type) {

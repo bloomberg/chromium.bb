@@ -261,7 +261,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual UserShare* GetUserShare() const = 0;
 
   // Returns DeviceInfo provider for the local device.
-  virtual LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const = 0;
+  virtual const LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const = 0;
 
   // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
   // not change the preferred state of a datatype, and is not persisted across

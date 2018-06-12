@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_ENGINE_ACTIVATION_CONTEXT_H_
-#define COMPONENTS_SYNC_ENGINE_ACTIVATION_CONTEXT_H_
+#ifndef COMPONENTS_SYNC_ENGINE_DATA_TYPE_ACTIVATION_RESPONSE_H_
+#define COMPONENTS_SYNC_ENGINE_DATA_TYPE_ACTIVATION_RESPONSE_H_
 
 #include <memory>
 
@@ -18,9 +18,9 @@ namespace syncer {
 
 // The state passed from ModelTypeProcessor to Sync thread during DataType
 // activation.
-struct ActivationContext {
-  ActivationContext();
-  ~ActivationContext();
+struct DataTypeActivationResponse {
+  DataTypeActivationResponse();
+  ~DataTypeActivationResponse();
 
   // Initial ModelTypeState at the moment of activation.
   sync_pb::ModelTypeState model_type_state;
@@ -32,4 +32,4 @@ struct ActivationContext {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_ENGINE_ACTIVATION_CONTEXT_H_
+#endif  // COMPONENTS_SYNC_ENGINE_DATA_TYPE_ACTIVATION_RESPONSE_H_

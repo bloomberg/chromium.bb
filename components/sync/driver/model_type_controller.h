@@ -22,7 +22,7 @@
 namespace syncer {
 
 class SyncClient;
-struct ActivationContext;
+struct DataTypeActivationResponse;
 
 // DataTypeController implementation for Unified Sync and Storage model types.
 class ModelTypeController : public DataTypeController {
@@ -70,7 +70,7 @@ class ModelTypeController : public DataTypeController {
   // The function will do the real work when OnProcessorStarted got called. This
   // is called on the UI thread.
   void OnProcessorStarted(
-      std::unique_ptr<ActivationContext> activation_context);
+      std::unique_ptr<DataTypeActivationResponse> activation_response);
 
   // Delegate accessor that can be overridden. This will be called on the UI
   // thread, but the callback will only be run on the model thread.
@@ -96,10 +96,10 @@ class ModelTypeController : public DataTypeController {
   // Callbacks for use when starting the datatype.
   ModelLoadCallback model_load_callback_;
 
-  // Controller receives |activation_context_| from
+  // Controller receives |activation_response_| from
   // ClientTagBasedModelTypeProcessor callback and must temporarily own it until
   // ActivateDataType is called.
-  std::unique_ptr<ActivationContext> activation_context_;
+  std::unique_ptr<DataTypeActivationResponse> activation_response_;
 
   // This is a hack to prevent reconfigurations from crashing, because USS
   // activation is not idempotent. RegisterWithBackend only needs to actually do

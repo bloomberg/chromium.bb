@@ -15,8 +15,8 @@
 #include "components/sync/driver/data_type_status_table.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/fake_sync_client.h"
-#include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/configure_reason.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -99,9 +99,9 @@ class FakeModelTypeConfigurer : public ModelTypeConfigurer {
     activated_types_.Remove(type);
   }
 
-  void ActivateNonBlockingDataType(
-      ModelType type,
-      std::unique_ptr<ActivationContext> activation_context) override {
+  void ActivateNonBlockingDataType(ModelType type,
+                                   std::unique_ptr<DataTypeActivationResponse>
+                                       activation_response) override {
     // TODO(stanisc): crbug.com/515962: Add test coverage.
   }
 

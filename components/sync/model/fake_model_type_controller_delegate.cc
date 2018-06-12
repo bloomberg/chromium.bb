@@ -17,7 +17,7 @@ FakeModelTypeControllerDelegate::FakeModelTypeControllerDelegate(ModelType type)
 FakeModelTypeControllerDelegate::~FakeModelTypeControllerDelegate() {}
 
 void FakeModelTypeControllerDelegate::OnSyncStarting(
-    const ModelErrorHandler& error_handler,
+    const DataTypeActivationRequest& request,
     StartCallback callback) {
   if (!callback.is_null()) {
     std::move(callback).Run(nullptr);

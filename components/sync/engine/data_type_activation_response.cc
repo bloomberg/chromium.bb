@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/data_type_activation_response.h"
 
 namespace syncer {
 
-ActivationContext::ActivationContext() {}
+DataTypeActivationResponse::DataTypeActivationResponse() {}
 
-ActivationContext::~ActivationContext() {}
+DataTypeActivationResponse::~DataTypeActivationResponse() {}
 
 }  // namespace syncer

@@ -102,7 +102,8 @@ std::unique_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
     return std::unique_ptr<DeviceInfo>();
   }
 
-  LocalDeviceInfoProvider* local_device = pss->GetLocalDeviceInfoProvider();
+  const LocalDeviceInfoProvider* local_device =
+      pss->GetLocalDeviceInfoProvider();
   DCHECK(local_device);
   std::string guid = local_device->GetLocalSyncCacheGUID();
   std::unique_ptr<DeviceInfo> device =
@@ -140,4 +141,3 @@ ExtensionFunction::ResponseAction SignedInDevicesGetFunction::Run() {
 }
 
 }  // namespace extensions
-
