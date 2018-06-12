@@ -42,7 +42,7 @@ SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
 void SpeechRecognitionDispatcherHost::Create(
     int render_process_id,
     int render_frame_id,
-    mojom::SpeechRecognizerRequest request) {
+    blink::mojom::SpeechRecognizerRequest request) {
   mojo::MakeStrongBinding(std::make_unique<SpeechRecognitionDispatcherHost>(
                               render_process_id, render_frame_id),
                           std::move(request));
@@ -55,10 +55,10 @@ SpeechRecognitionDispatcherHost::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-// -------- mojom::SpeechRecognizer interface implementation ------------------
+// -------- blink::mojom::SpeechRecognizer interface implementation ------------
 
 void SpeechRecognitionDispatcherHost::Start(
-    mojom::StartSpeechRecognitionRequestParamsPtr params) {
+    blink::mojom::StartSpeechRecognitionRequestParamsPtr params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Check that the origin specified by the renderer process is one
@@ -84,7 +84,7 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
         speech_recognition_dispatcher_host,
     int render_process_id,
     int render_frame_id,
-    mojom::StartSpeechRecognitionRequestParamsPtr params) {
+    blink::mojom::StartSpeechRecognitionRequestParamsPtr params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int embedder_render_process_id = 0;
   int embedder_render_frame_id = MSG_ROUTING_NONE;
@@ -146,7 +146,7 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
 }
 
 void SpeechRecognitionDispatcherHost::StartSessionOnIO(
-    mojom::StartSpeechRecognitionRequestParamsPtr params,
+    blink::mojom::StartSpeechRecognitionRequestParamsPtr params,
     int embedder_render_process_id,
     int embedder_render_frame_id,
     bool filter_profanities,
@@ -179,7 +179,8 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   config.interim_results = params->interim_results;
   config.event_listener = session->AsWeakPtr();
 
-  for (mojom::SpeechRecognitionGrammarPtr& grammar_ptr : params->grammars) {
+  for (blink::mojom::SpeechRecognitionGrammarPtr& grammar_ptr :
+       params->grammars) {
     config.grammars.push_back(*grammar_ptr);
   }
 
@@ -196,7 +197,7 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
 // ---------------------- SpeechRecognizerSession -----------------------------
 
 SpeechRecognitionSession::SpeechRecognitionSession(
-    mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info)
+    blink::mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info)
     : session_id_(SpeechRecognitionManager::kSessionIDInvalid),
       client_(std::move(client_ptr_info)),
       weak_factory_(this) {}
@@ -244,8 +245,8 @@ void SpeechRecognitionSession::OnRecognitionEnd(int session_id) {
 
 void SpeechRecognitionSession::OnRecognitionResults(
     int session_id,
-    const std::vector<mojom::SpeechRecognitionResultPtr>& results) {
-  std::vector<mojom::SpeechRecognitionResultPtr> results_copy;
+    const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results) {
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results_copy;
   for (auto& result : results)
     results_copy.push_back(result.Clone());
   client_->ResultRetrieved(std::move(results_copy));
@@ -253,8 +254,8 @@ void SpeechRecognitionSession::OnRecognitionResults(
 
 void SpeechRecognitionSession::OnRecognitionError(
     int session_id,
-    const mojom::SpeechRecognitionError& error) {
-  client_->ErrorOccurred(mojom::SpeechRecognitionError::New(error));
+    const blink::mojom::SpeechRecognitionError& error) {
+  client_->ErrorOccurred(blink::mojom::SpeechRecognitionError::New(error));
 }
 
 // The events below are currently not used by speech JS APIs implementation.

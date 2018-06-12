@@ -6,13 +6,15 @@
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_EVENT_LISTENER_H_
 
 #include "content/common/content_export.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
-namespace content {
-
+namespace blink {
 namespace mojom {
 class SpeechRecognitionError;
 }
+}  // namespace blink
+
+namespace content {
 
 // The interface to be implemented by consumers interested in receiving
 // speech recognition events.
@@ -44,14 +46,14 @@ class CONTENT_EXPORT SpeechRecognitionEventListener {
   // Invoked when a result is retrieved.
   virtual void OnRecognitionResults(
       int session_id,
-      const std::vector<mojom::SpeechRecognitionResultPtr>& results) = 0;
+      const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results) = 0;
 
   // Invoked if there was an error while capturing or recognizing audio.
   // The recognition has already been cancelled when this call is made and
   // no more events will be raised.
   virtual void OnRecognitionError(
       int session_id,
-      const mojom::SpeechRecognitionError& error) = 0;
+      const blink::mojom::SpeechRecognitionError& error) = 0;
 
   // Informs of a change in the captured audio level, useful if displaying
   // a microphone volume indicator while recording.

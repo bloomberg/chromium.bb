@@ -18,11 +18,11 @@
 #include "content/browser/speech/chunked_byte_buffer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
-#include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_grammar.mojom.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_grammar.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -69,10 +69,11 @@ class CONTENT_EXPORT SpeechRecognitionEngine {
    public:
     // Called whenever a result is retrieved.
     virtual void OnSpeechRecognitionEngineResults(
-        const std::vector<mojom::SpeechRecognitionResultPtr>& results) = 0;
+        const std::vector<blink::mojom::SpeechRecognitionResultPtr>&
+            results) = 0;
     virtual void OnSpeechRecognitionEngineEndOfUtterance() = 0;
     virtual void OnSpeechRecognitionEngineError(
-        const mojom::SpeechRecognitionError& error) = 0;
+        const blink::mojom::SpeechRecognitionError& error) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -84,7 +85,7 @@ class CONTENT_EXPORT SpeechRecognitionEngine {
     ~Config();
 
     std::string language;
-    std::vector<mojom::SpeechRecognitionGrammar> grammars;
+    std::vector<blink::mojom::SpeechRecognitionGrammar> grammars;
     bool filter_profanities;
     bool continuous;
     bool interim_results;
@@ -199,7 +200,7 @@ class CONTENT_EXPORT SpeechRecognitionEngine {
   FSMState CloseDownstream(const FSMEventArgs& event_args);
   FSMState AbortSilently(const FSMEventArgs& event_args);
   FSMState AbortWithError(const FSMEventArgs& event_args);
-  FSMState Abort(content::mojom::SpeechRecognitionErrorCode error);
+  FSMState Abort(blink::mojom::SpeechRecognitionErrorCode error);
   FSMState DoNothing(const FSMEventArgs& event_args);
   FSMState NotFeasible(const FSMEventArgs& event_args);
 

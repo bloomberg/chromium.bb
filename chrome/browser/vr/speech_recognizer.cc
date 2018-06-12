@@ -16,9 +16,9 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/speech_recognition_error.mojom.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace vr {
@@ -82,11 +82,11 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
   void OnRecognitionEnd(int session_id) override;
   void OnRecognitionResults(
       int session_id,
-      const std::vector<content::mojom::SpeechRecognitionResultPtr>& results)
+      const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results)
       override;
   void OnRecognitionError(
       int session_id,
-      const content::mojom::SpeechRecognitionError& error) override;
+      const blink::mojom::SpeechRecognitionError& error) override;
   void OnSoundStart(int session_id) override;
   void OnSoundEnd(int session_id) override;
   void OnAudioLevelsChange(int session_id,
@@ -218,7 +218,7 @@ void SpeechRecognizerOnIO::OnRecognitionEnd(int session_id) {
 
 void SpeechRecognizerOnIO::OnRecognitionResults(
     int session_id,
-    const std::vector<content::mojom::SpeechRecognitionResultPtr>& results) {
+    const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results) {
   base::string16 result_str;
   size_t final_count = 0;
   // The number of results with |is_provisional| false. If |final_count| ==
@@ -243,13 +243,13 @@ void SpeechRecognizerOnIO::OnRecognitionResults(
 
 void SpeechRecognizerOnIO::OnRecognitionError(
     int session_id,
-    const content::mojom::SpeechRecognitionError& error) {
+    const blink::mojom::SpeechRecognitionError& error) {
   switch (error.code) {
-    case content::mojom::SpeechRecognitionErrorCode::kNetwork:
+    case blink::mojom::SpeechRecognitionErrorCode::kNetwork:
       NotifyRecognitionStateChanged(SPEECH_RECOGNITION_NETWORK_ERROR);
       break;
-    case content::mojom::SpeechRecognitionErrorCode::kNoSpeech:
-    case content::mojom::SpeechRecognitionErrorCode::kNoMatch:
+    case blink::mojom::SpeechRecognitionErrorCode::kNoSpeech:
+    case blink::mojom::SpeechRecognitionErrorCode::kNoMatch:
       NotifyRecognitionStateChanged(SPEECH_RECOGNITION_TRY_AGAIN);
       break;
     default:

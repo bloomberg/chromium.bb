@@ -10,12 +10,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/speech_recognizer.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 
 namespace network {
 class SharedURLLoaderFactoryInfo;
@@ -30,17 +30,18 @@ class SpeechRecognitionManager;
 // interface that allows a RenderFrame to start a speech recognition session
 // in the browser process, by communicating with SpeechRecognitionManager.
 class CONTENT_EXPORT SpeechRecognitionDispatcherHost
-    : public mojom::SpeechRecognizer {
+    : public blink::mojom::SpeechRecognizer {
  public:
   SpeechRecognitionDispatcherHost(int render_process_id, int render_frame_id);
   ~SpeechRecognitionDispatcherHost() override;
   static void Create(int render_process_id,
                      int render_frame_id,
-                     mojom::SpeechRecognizerRequest request);
+                     blink::mojom::SpeechRecognizerRequest request);
   base::WeakPtr<SpeechRecognitionDispatcherHost> AsWeakPtr();
 
-  // mojom::SpeechRecognizer implementation
-  void Start(mojom::StartSpeechRecognitionRequestParamsPtr params) override;
+  // blink::mojom::SpeechRecognizer implementation
+  void Start(
+      blink::mojom::StartSpeechRecognitionRequestParamsPtr params) override;
 
  private:
   static void StartRequestOnUI(
@@ -48,10 +49,9 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
           speech_recognition_dispatcher_host,
       int render_process_id,
       int render_frame_id,
-      mojom::StartSpeechRecognitionRequestParamsPtr params);
-
+      blink::mojom::StartSpeechRecognitionRequestParamsPtr params);
   void StartSessionOnIO(
-      mojom::StartSpeechRecognitionRequestParamsPtr params,
+      blink::mojom::StartSpeechRecognitionRequestParamsPtr params,
       int embedder_render_process_id,
       int embedder_render_frame_id,
       bool filter_profanities,
@@ -70,21 +70,22 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionDispatcherHost);
 };
 
-// SpeechRecognitionSession implements the mojom::SpeechRecognitionSession
-// interface for a particular session. It also acts as a proxy for events sent
-// from SpeechRecognitionManager, and forwards the events to the renderer using
-// a SpeechRecognitionSessionClientPtr (that is passed from the render process).
-class SpeechRecognitionSession : public mojom::SpeechRecognitionSession,
+// SpeechRecognitionSession implements the
+// blink::mojom::SpeechRecognitionSession interface for a particular session. It
+// also acts as a proxy for events sent from SpeechRecognitionManager, and
+// forwards the events to the renderer using a SpeechRecognitionSessionClientPtr
+// (that is passed from the render process).
+class SpeechRecognitionSession : public blink::mojom::SpeechRecognitionSession,
                                  public SpeechRecognitionEventListener {
  public:
   explicit SpeechRecognitionSession(
-      mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info);
+      blink::mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info);
   ~SpeechRecognitionSession() override;
   base::WeakPtr<SpeechRecognitionSession> AsWeakPtr();
 
   void SetSessionId(int session_id) { session_id_ = session_id; }
 
-  // mojom::SpeechRecognitionSession implementation.
+  // blink::mojom::SpeechRecognitionSession implementation.
   void Abort() override;
   void StopCapture() override;
 
@@ -98,16 +99,18 @@ class SpeechRecognitionSession : public mojom::SpeechRecognitionSession,
   void OnRecognitionEnd(int session_id) override;
   void OnRecognitionResults(
       int session_id,
-      const std::vector<mojom::SpeechRecognitionResultPtr>& results) override;
-  void OnRecognitionError(int session_id,
-                          const mojom::SpeechRecognitionError& error) override;
+      const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results)
+      override;
+  void OnRecognitionError(
+      int session_id,
+      const blink::mojom::SpeechRecognitionError& error) override;
   void OnAudioLevelsChange(int session_id,
                            float volume,
                            float noise_volume) override;
 
  private:
   int session_id_;
-  mojom::SpeechRecognitionSessionClientPtr client_;
+  blink::mojom::SpeechRecognitionSessionClientPtr client_;
 
   base::WeakPtrFactory<SpeechRecognitionSession> weak_factory_;
 };

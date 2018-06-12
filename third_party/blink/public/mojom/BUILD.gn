@@ -42,11 +42,16 @@ mojom("mojom_platform") {
     "service_worker/service_worker_state.mojom",
     "service_worker/service_worker_stream_handle.mojom",
     "shared_worker/shared_worker_creation_context_type.mojom",
+    "speech/speech_recognition_error.mojom",
+    "speech/speech_recognition_grammar.mojom",
+    "speech/speech_recognition_result.mojom",
+    "speech/speech_recognizer.mojom",
     "use_counter/css_property_id.mojom",
     "web_package/web_package_internals.mojom",
   ]
 
   public_deps = [
+    ":speech_recognition_error_code",
     "//mojo/public/mojom/base",
     "//services/device/public/mojom",
     "//services/network/public/mojom",
@@ -67,6 +72,14 @@ mojom("mojom_platform") {
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
+}
+
+# Kept separate from "mojom_platform" because the Java bindings are needed by
+# Android's implementation of speech recognition.
+mojom("speech_recognition_error_code") {
+  sources = [
+    "speech/speech_recognition_error_code.mojom",
+  ]
 }
 
 # This target can include mojom interfaces which do use types that are

@@ -68,10 +68,11 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager,
   void OnRecognitionEnd(int session_id) override {}
   void OnRecognitionResults(
       int session_id,
-      const std::vector<mojom::SpeechRecognitionResultPtr>& result) override {}
-  void OnRecognitionError(int session_id,
-                          const mojom::SpeechRecognitionError& error) override {
-  }
+      const std::vector<blink::mojom::SpeechRecognitionResultPtr>& result)
+      override {}
+  void OnRecognitionError(
+      int session_id,
+      const blink::mojom::SpeechRecognitionError& error) override {}
   void OnAudioLevelsChange(int session_id,
                            float volume,
                            float noise_volume) override {}

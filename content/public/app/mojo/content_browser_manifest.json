@@ -161,9 +161,11 @@
           "blink.mojom.PrefetchURLLoaderService",
           "blink.mojom.PresentationService",
           "blink.mojom.QuotaDispatcherHost",
+          "blink.mojom.SpeechRecognizer",
           "blink.mojom.TextSuggestionHost",
           "blink.mojom.UnhandledTapNotifier",
           "blink.mojom.WebBluetoothService",
+
 
           // TODO(beng): figure out how to overlay test interfaces like this.
           "content.mojom.BrowserTarget",
@@ -175,7 +177,6 @@
           "content.mojom.RendererAudioInputStreamFactory",
           "content.mojom.RendererAudioOutputStreamFactory",
           "content.mojom.SharedWorkerConnector",
-          "content.mojom.SpeechRecognizer",
           "device.mojom.Geolocation",
           "device.mojom.NFC",
           "device.mojom.SensorProvider",
