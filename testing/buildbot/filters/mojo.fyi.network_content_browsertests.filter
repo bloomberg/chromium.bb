@@ -2,9 +2,6 @@
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
 
-# https://crbug.com/715640
--ServiceWorkerNavigationPreloadTest.RespondWithNavigationPreloadWithMimeSniffing
-
 # https://crbug.com/721398
 -ClearSiteDataThrottleBrowserTest.CacheIntegrationTest
 -ClearSiteDataThrottleBrowserTest.CookiesIntegrationTest
