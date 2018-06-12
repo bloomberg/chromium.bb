@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/platform/decimal.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -483,9 +484,9 @@ Error BuildValue(Cursor<CharType>* cursor,
         *cursor = token_start;
         return Error::kSyntaxError;
       }
-      int number = static_cast<int>(value);
-      if (number == value)
-        *result = JSONBasicValue::Create(number);
+      if (base::IsValueInRangeForNumericType<int>(value) &&
+          static_cast<int>(value) == value)
+        *result = JSONBasicValue::Create(static_cast<int>(value));
       else
         *result = JSONBasicValue::Create(value);
       break;
