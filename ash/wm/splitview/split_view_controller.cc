@@ -25,6 +25,7 @@
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
@@ -177,6 +178,16 @@ class SplitViewController::TabDraggedWindowObserver
       dragged_window_->RemoveObserver(this);
       dragged_window_ = nullptr;
 
+      // If the newly created window has been added to overview window, do
+      // nothing.
+      WindowSelectorController* window_selector_controller =
+          Shell::Get()->window_selector_controller();
+      if (window_selector_controller->IsSelecting() &&
+          window_selector_controller->window_selector()->IsWindowInOverview(
+              window)) {
+        return;
+      }
+
       const bool was_splitview_active =
           split_view_controller_->IsSplitViewModeActive();
       if (desired_snap_position_ != SplitViewController::NONE) {
@@ -205,7 +216,7 @@ class SplitViewController::TabDraggedWindowObserver
           // overview window grid.
           if (split_view_controller_->state() !=
               SplitViewController::BOTH_SNAPPED) {
-            DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
+            DCHECK(window_selector_controller->IsSelecting());
             split_view_controller_->InsertWindowToOverview(
                 previous_snapped_window);
           }
@@ -222,7 +233,7 @@ class SplitViewController::TabDraggedWindowObserver
           split_view_controller_->SnapWindow(window, snap_position);
           if (split_view_controller_->state() !=
               SplitViewController::BOTH_SNAPPED) {
-            DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
+            DCHECK(window_selector_controller->IsSelecting());
             split_view_controller_->InsertWindowToOverview(
                 previous_snapped_window);
           }

@@ -45,6 +45,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -98,6 +99,13 @@ constexpr SkColor kNoItemsIndicatorBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 constexpr float kNoItemsIndicatorBackgroundOpacity = 0.8f;
 
+// Values for the new selector item (+) in overview.
+constexpr SkColor kNewSelectorItemColor = SK_ColorWHITE;
+constexpr float kNewSelectorItemOpacity = 0.1f;
+constexpr float kNewSelectorPlusSignLongRatio = 0.2f;
+constexpr float kNewSelectorPlusSignShortRatio = 0.03f;
+constexpr int kNewSelectorItemTransitionMilliseconds = 250;
+
 // Returns the vector for the fade in animation.
 gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
                                       const gfx::Rect& bounds) {
@@ -113,6 +121,90 @@ gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
       break;
   }
   return vector;
+}
+
+// The views implementaion for |new_selector_item_widget_|.
+class NewSelectorItemView : public views::View {
+ public:
+  NewSelectorItemView() {
+    background_view_ = new views::View();
+    background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    background_view_->layer()->SetColor(kNewSelectorItemColor);
+    background_view_->layer()->SetOpacity(kNewSelectorItemOpacity);
+    AddChildView(background_view_);
+
+    vertical_line_ = new views::View();
+    vertical_line_->SetPaintToLayer();
+    vertical_line_->SetBackground(
+        views::CreateSolidBackground(kNewSelectorItemColor));
+
+    horizontal_line_ = new views::View();
+    horizontal_line_->SetPaintToLayer();
+    horizontal_line_->SetBackground(
+        views::CreateSolidBackground(kNewSelectorItemColor));
+
+    AddChildView(vertical_line_);
+    AddChildView(horizontal_line_);
+  }
+  ~NewSelectorItemView() override = default;
+
+  // views::View:
+  void Layout() override {
+    const gfx::Rect local_bounds = GetLocalBounds();
+    background_view_->SetBoundsRect(local_bounds);
+
+    gfx::Rect vertical_bounds = local_bounds;
+    vertical_bounds.ClampToCenteredSize(
+        gfx::Size(local_bounds.height() * kNewSelectorPlusSignShortRatio,
+                  local_bounds.height() * kNewSelectorPlusSignLongRatio));
+    vertical_line_->SetBoundsRect(vertical_bounds);
+
+    gfx::Rect horizontal_bounds = local_bounds;
+    horizontal_bounds.ClampToCenteredSize(
+        gfx::Size(local_bounds.height() * kNewSelectorPlusSignLongRatio,
+                  local_bounds.height() * kNewSelectorPlusSignShortRatio));
+    horizontal_line_->SetBoundsRect(horizontal_bounds);
+  }
+
+ private:
+  views::View* background_view_;
+  views::View* vertical_line_;    // The vertical line of the plus sign (+)
+  views::View* horizontal_line_;  // The horizontal line of the plus sign (+)
+
+  DISALLOW_COPY_AND_ASSIGN(NewSelectorItemView);
+};
+
+// Creates |new_selector_item_widget_|. It's created when a window (not from
+// overview) is dragged around and destroyed when the drag ends.
+std::unique_ptr<views::Widget> CreateNewSelectorItemWidget(
+    aura::Window* dragged_window) {
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.accept_events = false;
+  params.parent = dragged_window->parent();
+  params.bounds = display::Screen::GetScreen()
+                      ->GetDisplayNearestWindow(dragged_window)
+                      .work_area();
+  std::unique_ptr<views::Widget> widget(new views::Widget);
+  widget->set_focus_on_creation(false);
+  widget->Init(params);
+
+  widget->SetContentsView(new NewSelectorItemView());
+  widget->Show();
+
+  widget->SetOpacity(0.f);
+  ui::ScopedLayerAnimationSettings animation_settings(
+      widget->GetNativeWindow()->layer()->GetAnimator());
+  animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      kNewSelectorItemTransitionMilliseconds));
+  animation_settings.SetTweenType(gfx::Tween::EASE_IN);
+  animation_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  widget->SetOpacity(1.f);
+  return widget;
 }
 
 }  // namespace
@@ -477,6 +569,13 @@ void WindowGrid::AddItem(aura::Window* window) {
       std::make_unique<WindowSelectorItem>(window, window_selector_, this));
   window_list_.back()->PrepareForOverview();
 
+  if (IsNewSelectorItemWindow(window)) {
+    // If we're adding the new selector item, don't do the layout animation.
+    // We'll do opacity animation by ourselves.
+    window_list_.back()->set_should_animate_when_entering(false);
+    window_list_.back()->set_should_animate_when_exiting(false);
+  }
+
   PositionWindows(/*animate=*/true);
 }
 
@@ -489,6 +588,8 @@ void WindowGrid::RemoveItem(WindowSelectorItem* selector_item) {
         wm::GetWindowState(selector_item->GetWindow()));
     window_list_.erase(iter);
   }
+
+  PositionWindows(/*animate=*/true);
 }
 
 void WindowGrid::FilterItems(const base::string16& pattern) {
@@ -564,6 +665,89 @@ void WindowGrid::OnSelectorItemDragEnded() {
     window_selector_item->OnSelectorItemDragEnded();
 }
 
+void WindowGrid::OnWindowDragStarted(aura::Window* dragged_window) {
+  DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
+  DCHECK(!new_selector_item_widget_);
+  new_selector_item_widget_ = CreateNewSelectorItemWidget(dragged_window);
+  window_selector_->AddItem(new_selector_item_widget_->GetNativeWindow());
+
+  // Stack the newly added window item below |dragged_window|.
+  DCHECK_EQ(dragged_window->parent(),
+            new_selector_item_widget_->GetNativeWindow()->parent());
+  dragged_window->parent()->StackChildBelow(
+      new_selector_item_widget_->GetNativeWindow(), dragged_window);
+
+  // Called to set caption and title visibility during dragging.
+  OnSelectorItemDragStarted(/*item=*/nullptr);
+}
+
+void WindowGrid::OnWindowDragContinued(aura::Window* dragged_window,
+                                       const gfx::Point& location_in_screen) {
+  DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
+  // Find the window selector item that contains |location_in_screen|.
+  auto iter = std::find_if(
+      window_list_.begin(), window_list_.end(),
+      [location_in_screen](std::unique_ptr<WindowSelectorItem>& item) {
+        return item->target_bounds().Contains(location_in_screen);
+      });
+
+  aura::Window* target_window =
+      (iter != window_list_.end()) ? (*iter)->GetWindow() : nullptr;
+  // If |location_in_screen| is contained by one of the eligible window selector
+  // item in overview, show the selection widget.
+  if (target_window && (IsNewSelectorItemWindow(target_window) ||
+                        target_window->GetProperty(
+                            ash::kIsDeferredTabDraggingTargetWindowKey))) {
+    size_t previous_selected_index = selected_index_;
+    selected_index_ = iter - window_list_.begin();
+    if (previous_selected_index == selected_index_ && selection_widget_)
+      return;
+
+    if (previous_selected_index != selected_index_)
+      selection_widget_.reset();
+
+    const WindowSelector::Direction direction =
+        (selected_index_ - previous_selected_index > 0) ? WindowSelector::RIGHT
+                                                        : WindowSelector::LEFT;
+    MoveSelectionWidget(direction,
+                        /*recreate_selection_widget=*/true,
+                        /*out_of_bounds=*/false,
+                        /*animate=*/false);
+    return;
+  }
+
+  if (SelectedWindow()) {
+    SelectedWindow()->set_selected(false);
+    selection_widget_.reset();
+  }
+}
+
+void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
+                                   const gfx::Point& location_in_screen) {
+  DCHECK_EQ(dragged_window->GetRootWindow(), root_window_);
+  DCHECK(new_selector_item_widget_.get());
+
+  // Check to see if the dragged window needs to be added to overview.
+  if (SelectedWindow()) {
+    if (IsNewSelectorItemWindow(SelectedWindow()->GetWindow()))
+      window_selector_->AddItem(dragged_window);
+    SelectedWindow()->set_selected(false);
+    selection_widget_.reset();
+  }
+
+  window_selector_->RemoveWindowSelectorItem(GetWindowSelectorItemContaining(
+      new_selector_item_widget_->GetNativeWindow()));
+  new_selector_item_widget_.reset();
+
+  // Called to reset caption and title visibility after dragging.
+  OnSelectorItemDragEnded();
+}
+
+bool WindowGrid::IsNewSelectorItemWindow(aura::Window* window) const {
+  return new_selector_item_widget_ &&
+         new_selector_item_widget_->GetNativeWindow() == window;
+}
+
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
   window_observer_.Remove(window);
   window_state_observer_.Remove(wm::GetWindowState(window));
@@ -611,34 +795,6 @@ void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
       ui::LayerAnimationElement::BOUNDS);
   (*iter)->UpdateWindowDimensionsType();
   PositionWindows(false);
-}
-
-void WindowGrid::OnWindowPropertyChanged(aura::Window* window,
-                                         const void* key,
-                                         intptr_t old) {
-  if (key == ash::kIsDeferredTabDraggingTargetWindowKey) {
-    if (window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
-      // Show the selection widget.
-      auto iter = GetWindowSelectorItemIterContainingWindow(window);
-      size_t previous_selected_index = selected_index_;
-      selected_index_ = iter - window_list_.begin();
-      if (previous_selected_index == selected_index_ && selection_widget_)
-        return;
-
-      const WindowSelector::Direction direction =
-          (selected_index_ - previous_selected_index > 0)
-              ? WindowSelector::RIGHT
-              : WindowSelector::LEFT;
-      MoveSelectionWidget(direction,
-                          /*recreate_selection_widget=*/true,
-                          /*out_of_bounds=*/false,
-                          /*animate=*/false);
-    } else {
-      // Remove the selection widget.
-      SelectedWindow()->set_selected(false);
-      selection_widget_.reset();
-    }
-  }
 }
 
 void WindowGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,

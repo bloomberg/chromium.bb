@@ -134,6 +134,18 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   void OnSelectorItemDragStarted(WindowSelectorItem* item);
   void OnSelectorItemDragEnded();
 
+  // Called when a window's tab(s) start/continue/end being dragged around in
+  // WindowGrid.
+  void OnWindowDragStarted(aura::Window* dragged_window);
+  void OnWindowDragContinued(aura::Window* dragged_window,
+                             const gfx::Point& location_in_screen);
+  void OnWindowDragEnded(aura::Window* dragged_window,
+                         const gfx::Point& location_in_screen);
+
+  // Returns true if |window| is the placeholder window from the new selector
+  // item.
+  bool IsNewSelectorItemWindow(aura::Window* window) const;
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -157,9 +169,6 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
@@ -177,6 +186,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   }
   base::WeakPtr<OverviewWindowAnimationObserver> window_animation_observer() {
     return window_animation_observer_;
+  }
+
+  views::Widget* new_selector_item_widget_for_testing() {
+    return new_selector_item_widget_.get();
   }
 
   // Sets |should_animate_when_entering_| and |should_animate_when_exiting_|
@@ -276,6 +289,13 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // Shadow around the selector.
   std::unique_ptr<ui::Shadow> selector_shadow_;
+
+  // The new selector item widget. It has a plus sign in the middle. It's
+  // created when a window (not from overview) is being dragged, and is
+  // destroyed when the drag ends or overview mode is ended. When the dragged
+  // window is dropped onto the new item widget, the dragged window is added
+  // to the overview.
+  std::unique_ptr<views::Widget> new_selector_item_widget_;
 
   // Current selected window position.
   size_t selected_index_;

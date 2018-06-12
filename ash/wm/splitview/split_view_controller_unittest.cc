@@ -16,7 +16,9 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_resizer.h"
@@ -1893,12 +1895,18 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   EXPECT_TRUE(window_selector->IsWindowInOverview(window3.get()));
 
   // 2. If the dragged window is not the source window:
-  // Prepare the testing senario first.
+  // Prepare the testing senario first. Remove |window2| from overview first
+  // before tab-dragging.
+  WindowGrid* current_grid =
+      window_selector->GetGridWithRootWindow(window2->GetRootWindow());
+  ASSERT_TRUE(current_grid);
+  window_selector->RemoveWindowSelectorItem(
+      current_grid->GetWindowSelectorItemContaining(window2.get()));
   resizer = StartDrag(window2.get(), window1.get());
   ASSERT_TRUE(resizer.get());
   // 2.a. The dragged window can replace the only snapped window in the split
   // screen. After that, the old snapped window will be put back in overview.
-  DragWindowTo(std::move(resizer), gfx::Point(0, 300));
+  DragWindowTo(std::move(resizer), gfx::Point(0, 500));
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());
@@ -1909,14 +1917,69 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   EXPECT_TRUE(window_selector->IsWindowInOverview(window3.get()));
   // 2.b. The dragged window can snap to the other side of the splitscreen,
   // causing overview mode to end.
+  // Remove |window1| from overview first before tab dragging.
+  window_selector->RemoveWindowSelectorItem(
+      current_grid->GetWindowSelectorItemContaining(window1.get()));
   resizer = StartDrag(window1.get(), window2.get());
   ASSERT_TRUE(resizer.get());
-  DragWindowTo(std::move(resizer), gfx::Point(500, 300));
+  DragWindowTo(std::move(resizer), gfx::Point(500, 500));
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());
   EXPECT_EQ(split_view_controller()->right_window(), window1.get());
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+}
+
+// Test that if a window is in tab-dragging process when overview is open, the
+// new window item widget shows up when the drag starts, and is destroyed after
+// the drag ends.
+TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  // Now drags |window1|.
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window1.get(), window1.get());
+  // Overview should have been opened.
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+
+  // Test that the new window item widget shows up.
+  WindowSelector* window_selector =
+      Shell::Get()->window_selector_controller()->window_selector();
+  WindowGrid* current_grid =
+      window_selector->GetGridWithRootWindow(window1->GetRootWindow());
+  ASSERT_TRUE(current_grid);
+  views::Widget* new_selector_widget =
+      current_grid->new_selector_item_widget_for_testing();
+  EXPECT_TRUE(new_selector_widget);
+
+  WindowSelectorItem* new_selector_item =
+      current_grid->GetWindowSelectorItemContaining(
+          new_selector_widget->GetNativeWindow());
+  ASSERT_TRUE(new_selector_item);
+  const gfx::Rect new_selector_bounds = new_selector_item->target_bounds();
+  DragWindowTo(std::move(resizer), new_selector_bounds.CenterPoint());
+
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+  // Test that the dragged window has been added to the overview mode.
+  EXPECT_EQ(current_grid->window_list().size(), 2u);
+  EXPECT_TRUE(window_selector->IsWindowInOverview(window1.get()));
+  EXPECT_TRUE(window_selector->IsWindowInOverview(window3.get()));
+  // Test that the new window item widget has been destroyed.
+  EXPECT_FALSE(current_grid->new_selector_item_widget_for_testing());
 }
 
 }  // namespace ash
