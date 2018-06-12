@@ -669,12 +669,6 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
 
   frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (LocalFrameView* frame_view = frame_->View()) {
-    if (frame_view->IsPointInScrollbarCorner(
-            FlooredIntPoint(event.Event().PositionInRootFrame())))
-      return WebInputEventResult::kNotHandled;
-  }
-
   bool single_click = event.Event().click_count <= 1;
 
   mouse_down_may_start_drag_ =

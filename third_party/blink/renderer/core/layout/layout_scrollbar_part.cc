@@ -233,13 +233,6 @@ void LayoutScrollbarPart::SetNeedsPaintInvalidation() {
 
   // This LayoutScrollbarPart is a scroll corner or a resizer.
   DCHECK_EQ(part_, kNoPart);
-  if (LocalFrameView* frame_view = View()->GetFrameView()) {
-    if (frame_view->IsFrameViewScrollCorner(this)) {
-      frame_view->SetScrollCornerNeedsPaintInvalidation();
-      return;
-    }
-  }
-
   scrollable_area_->SetScrollCornerNeedsPaintInvalidation();
 }
 

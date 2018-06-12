@@ -144,19 +144,6 @@ bool LayoutView::HitTestNoLifecycleUpdate(HitTestResult& result) {
   } else {
     hit_layer = Layer()->HitTest(result);
 
-    // LocalFrameView scrollbars are not the same as Layer scrollbars tested by
-    // Layer::hitTestOverflowControls, so we need to test LocalFrameView
-    // scrollbars separately here. Note that it's important we do this after the
-    // hit test above, because that may overwrite the entire HitTestResult when
-    // it finds a hit.
-    IntPoint frame_point = GetFrameView()->ContentsToFrame(
-        result.GetHitTestLocation().RoundedPoint());
-    if (Scrollbar* frame_scrollbar =
-            GetFrameView()->ScrollbarAtFramePoint(frame_point)) {
-      result.SetScrollbar(frame_scrollbar);
-      hit_layer = true;
-    }
-
     // If hitTestResult include scrollbar, innerNode should be the parent of the
     // scrollbar.
     if (result.GetScrollbar()) {

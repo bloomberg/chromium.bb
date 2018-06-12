@@ -256,12 +256,6 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
   if (!embedded_content_view)
     return;
 
-  // If the iframe has custom scrollbars, recalculate their style.
-  if (FrameView* frame_view = ChildFrameView()) {
-    if (frame_view->IsLocalFrameView())
-      ToLocalFrameView(frame_view)->RecalculateCustomScrollbarStyle();
-  }
-
   if (Style()->Visibility() != EVisibility::kVisible) {
     embedded_content_view->Hide();
   } else {
