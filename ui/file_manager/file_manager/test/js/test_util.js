@@ -272,13 +272,14 @@ test.BASIC_DRIVE_ENTRY_SET = [
 ];
 
 /**
- * Basic entry set for the local volume.
+ * Basic entry set for the local crostini volume.
  * @type {!Array<!TestEntryInfo>}
  * @const
  */
-test.CROSTINI_ENTRY_SET = [
+test.BASIC_CROSTINI_ENTRY_SET = [
   test.ENTRIES.hello,
   test.ENTRIES.world,
+  test.ENTRIES.desktop,
 ];
 
 /**
@@ -394,8 +395,9 @@ test.waitForElementLost = function(query) {
  *
  * @param {!Array<!TestEntryInfo>} downloads Entries for downloads.
  * @param {!Array<!TestEntryInfo>} drive Entries for drive.
+ * @param {!Array<!TestEntryInfo>} crostini Entries for crostini.
  */
-test.addEntries = function(downloads, drive) {
+test.addEntries = function(downloads, drive, crostini) {
   var fsDownloads =
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
@@ -410,12 +412,36 @@ test.addEntries = function(downloads, drive) {
   fsDrive.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(drive, '/root/'), true);
 
+  var crostiniVolumeInfo = mockVolumeManager.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.CROSTINI, 'crostini',
+      str('LINUX_FILES_ROOT_LABEL'));
+  crostiniVolumeInfo.fileSystem.populate(
+      test.TestEntryInfo.getMockFileSystemPopulateRows(crostini, '/'), true);
+
   // Send onDirectoryChanged events.
   chrome.fileManagerPrivate.dispatchEvent_(
       'onDirectoryChanged', {eventType: 'changed', entry: fsDownloads.root});
   chrome.fileManagerPrivate.dispatchEvent_(
       'onDirectoryChanged',
       {eventType: 'changed', entry: fsDrive.entries['/root']});
+};
+
+/**
+ * Sends mount event for crostini volume.
+ */
+test.mountCrostini = function() {
+  chrome.fileManagerPrivate.dispatchEvent_('onMountCompleted', {
+    status: 'success',
+    eventType: 'mount',
+    volumeMetadata: {
+      volumeType: VolumeManagerCommon.VolumeType.CROSTINI,
+      volumeId: 'crostini',
+      isReadOnly: false,
+      iconSet: {},
+      profile: {isCurrentProfile: true, displayName: ''},
+      mountContext: 'user',
+    },
+  });
 };
 
 /**
@@ -485,7 +511,9 @@ test.setupAndWaitUntilReady = function(resolve) {
 
   return test.loadData()
       .then(() => {
-        test.addEntries(test.BASIC_LOCAL_ENTRY_SET, test.BASIC_DRIVE_ENTRY_SET);
+        test.addEntries(
+            test.BASIC_LOCAL_ENTRY_SET, test.BASIC_DRIVE_ENTRY_SET,
+            test.BASIC_CROSTINI_ENTRY_SET);
         return test.waitForElement(
             '#directory-tree [volume-type-icon="downloads"]');
       })

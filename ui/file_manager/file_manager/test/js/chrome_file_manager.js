@@ -124,8 +124,10 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, false);
   },
   mountCrostiniContainer: (callback) => {
-    // Simulate startup of vm and container by taking 3s.
-    setTimeout(callback, 3000);
+    // Simulate startup of vm and container by taking 1s.
+    setTimeout(() => {
+      test.mountCrostini();
+    }, 1000);
   },
   onAppsUpdated: {
     addListener: () => {},
