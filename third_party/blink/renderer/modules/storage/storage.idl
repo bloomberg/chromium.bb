@@ -25,6 +25,7 @@
 
 // https://html.spec.whatwg.org/multipage/webstorage.html#the-storage-interface
 
+[ImplementedAs=StorageArea]
 interface Storage {
     [RaisesException=Getter] readonly attribute unsigned long length;
     [RaisesException] DOMString? key(unsigned long index);

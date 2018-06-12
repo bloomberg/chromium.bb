@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class Storage;
+class StorageArea;
 class StorageEventInit;
 
 class StorageEvent final : public Event {
@@ -45,7 +45,7 @@ class StorageEvent final : public Event {
                               const String& old_value,
                               const String& new_value,
                               const String& url,
-                              Storage* storage_area);
+                              StorageArea* storage_area);
   static StorageEvent* Create(const AtomicString&, const StorageEventInit&);
   ~StorageEvent() override;
 
@@ -53,7 +53,7 @@ class StorageEvent final : public Event {
   const String& oldValue() const { return old_value_; }
   const String& newValue() const { return new_value_; }
   const String& url() const { return url_; }
-  Storage* storageArea() const { return storage_area_.Get(); }
+  StorageArea* storageArea() const { return storage_area_.Get(); }
 
   void initStorageEvent(const AtomicString& type,
                         bool bubbles,
@@ -62,13 +62,13 @@ class StorageEvent final : public Event {
                         const String& old_value,
                         const String& new_value,
                         const String& url,
-                        Storage* storage_area);
+                        StorageArea* storage_area);
 
   // Needed once we support init<blank>EventNS
   // void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg,
   //     in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg,
   //     in DOMString oldValueArg, in DOMString newValueArg,
-  //     in DOMString urlArg, Storage storageAreaArg);
+  //     in DOMString urlArg, StorageArea storageAreaArg);
 
   const AtomicString& InterfaceName() const override;
 
@@ -81,14 +81,14 @@ class StorageEvent final : public Event {
                const String& old_value,
                const String& new_value,
                const String& url,
-               Storage* storage_area);
+               StorageArea* storage_area);
   StorageEvent(const AtomicString&, const StorageEventInit&);
 
   String key_;
   String old_value_;
   String new_value_;
   String url_;
-  Member<Storage> storage_area_;
+  Member<StorageArea> storage_area_;
 };
 
 }  // namespace blink

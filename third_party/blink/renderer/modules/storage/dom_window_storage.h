@@ -12,7 +12,7 @@ namespace blink {
 
 class ExceptionState;
 class LocalDOMWindow;
-class Storage;
+class StorageArea;
 
 class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
                                public Supplement<LocalDOMWindow> {
@@ -22,21 +22,21 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
   static const char kSupplementName[];
 
   static DOMWindowStorage& From(LocalDOMWindow&);
-  static Storage* sessionStorage(LocalDOMWindow&, ExceptionState&);
-  static Storage* localStorage(LocalDOMWindow&, ExceptionState&);
+  static StorageArea* sessionStorage(LocalDOMWindow&, ExceptionState&);
+  static StorageArea* localStorage(LocalDOMWindow&, ExceptionState&);
 
-  Storage* sessionStorage(ExceptionState&) const;
-  Storage* localStorage(ExceptionState&) const;
-  Storage* OptionalSessionStorage() const { return session_storage_.Get(); }
-  Storage* OptionalLocalStorage() const { return local_storage_.Get(); }
+  StorageArea* sessionStorage(ExceptionState&) const;
+  StorageArea* localStorage(ExceptionState&) const;
+  StorageArea* OptionalSessionStorage() const { return session_storage_.Get(); }
+  StorageArea* OptionalLocalStorage() const { return local_storage_.Get(); }
 
   void Trace(blink::Visitor*) override;
 
  private:
   explicit DOMWindowStorage(LocalDOMWindow&);
 
-  mutable Member<Storage> session_storage_;
-  mutable Member<Storage> local_storage_;
+  mutable Member<StorageArea> session_storage_;
+  mutable Member<StorageArea> local_storage_;
 };
 
 }  // namespace blink

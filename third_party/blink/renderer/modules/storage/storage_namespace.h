@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_NAMESPACE_H_
 
 #include <memory>
+#include "third_party/blink/public/platform/web_storage_area.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -34,7 +35,6 @@ namespace blink {
 
 class WebStorageNamespace;
 class SecurityOrigin;
-class StorageArea;
 
 class MODULES_EXPORT StorageNamespace {
   USING_FAST_MALLOC(StorageNamespace);
@@ -43,9 +43,10 @@ class MODULES_EXPORT StorageNamespace {
   explicit StorageNamespace(std::unique_ptr<WebStorageNamespace>);
   ~StorageNamespace();
 
-  static StorageArea* LocalStorageArea(const SecurityOrigin*);
+  static std::unique_ptr<WebStorageArea> LocalStorageArea(
+      const SecurityOrigin*);
+  std::unique_ptr<WebStorageArea> GetStorageArea(const SecurityOrigin*);
 
-  StorageArea* GetStorageArea(const SecurityOrigin*);
   bool IsSameNamespace(const WebStorageNamespace& session_namespace) const;
 
  private:

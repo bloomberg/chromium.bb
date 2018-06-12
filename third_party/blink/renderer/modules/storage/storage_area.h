@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All Rights Reserved.
+ * Copyright (C) 2008 Apple Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,10 +10,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL GOOGLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -26,43 +26,47 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_AREA_H_
 
-#include <memory>
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/modules_export.h"
+#include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
 class ExceptionState;
-class KURL;
-class SecurityOrigin;
-class Storage;
+class LocalFrame;
 class WebStorageArea;
 class WebStorageNamespace;
 
-class MODULES_EXPORT StorageArea final
-    : public GarbageCollectedFinalized<StorageArea> {
+class StorageArea final : public ScriptWrappable, public ContextClient {
+  DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
+
  public:
-  enum StorageType { kLocalStorage, kSessionStorage };
+  enum class StorageType { kLocalStorage, kSessionStorage };
 
-  static StorageArea* Create(std::unique_ptr<WebStorageArea>, StorageType);
+  static StorageArea* Create(LocalFrame*,
+                             std::unique_ptr<WebStorageArea>,
+                             StorageType);
 
-  virtual ~StorageArea();
+  unsigned length(ExceptionState&) const;
+  String key(unsigned index, ExceptionState&) const;
+  String getItem(const String& key, ExceptionState&) const;
+  bool setItem(const String& key, const String& value, ExceptionState&);
+  DeleteResult removeItem(const String& key, ExceptionState&);
+  void clear(ExceptionState&);
+  bool Contains(const String& key, ExceptionState& ec) const;
 
-  // The HTML5 DOM Storage API
-  unsigned length(ExceptionState&, LocalFrame* source_frame);
-  String Key(unsigned index, ExceptionState&, LocalFrame* source_frame);
-  String GetItem(const String& key, ExceptionState&, LocalFrame* source_frame);
-  void SetItem(const String& key,
-               const String& value,
-               ExceptionState&,
-               LocalFrame* source_frame);
-  void RemoveItem(const String& key, ExceptionState&, LocalFrame* source_frame);
-  void Clear(ExceptionState&, LocalFrame* source_frame);
-  bool Contains(const String& key, ExceptionState&, LocalFrame* source_frame);
+  WebStorageArea* Area() const { return storage_area_.get(); }
 
-  bool CanAccessStorage(LocalFrame*);
+  void NamedPropertyEnumerator(Vector<String>&, ExceptionState&);
+  bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
+
+  bool CanAccessStorage() const;
+
+  void Trace(blink::Visitor*) override;
 
   static void DispatchLocalStorageEvent(const String& key,
                                         const String& old_value,
@@ -78,17 +82,14 @@ class MODULES_EXPORT StorageArea final
                                           const WebStorageNamespace&,
                                           WebStorageArea* source_area_instance);
 
-  void Trace(blink::Visitor*);
-
  private:
-  StorageArea(std::unique_ptr<WebStorageArea>, StorageType);
-
-  static bool IsEventSource(Storage*, WebStorageArea* source_area_instance);
+  StorageArea(LocalFrame*, std::unique_ptr<WebStorageArea>, StorageType);
 
   std::unique_ptr<WebStorageArea> storage_area_;
   StorageType storage_type_;
-  WeakMember<LocalFrame> frame_used_for_can_access_storage_;
-  bool can_access_storage_cached_result_;
+
+  mutable bool did_check_can_access_storage_ = false;
+  mutable bool can_access_storage_cached_result_;
 };
 
 }  // namespace blink
