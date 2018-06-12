@@ -147,9 +147,9 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(adjusted_arrow, shadow(), color());
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    border->SetCornerRadius(provider->GetCornerRadiusMetric(EMPHASIS_MEDIUM));
+    border->SetCornerRadius(provider->GetCornerRadiusMetric(EMPHASIS_HIGH));
     border->set_md_shadow_elevation(
-        provider->GetShadowElevationMetric(EMPHASIS_MEDIUM));
+        provider->GetShadowElevationMetric(EMPHASIS_HIGH));
   }
   frame->SetBubbleBorder(std::move(border));
   return frame;

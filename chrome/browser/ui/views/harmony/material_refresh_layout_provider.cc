@@ -31,30 +31,33 @@ int MaterialRefreshLayoutProvider::GetCornerRadiusMetric(
     views::EmphasisMetric emphasis_metric,
     const gfx::Size& size) const {
   switch (emphasis_metric) {
-    case views::EMPHASIS_LOW:
-      return 4;
-    case views::EMPHASIS_MEDIUM:
-      return 8;
-    case views::EMPHASIS_HIGH:
-      return std::min(size.width(), size.height()) / 2;
-    default:
+    case views::EMPHASIS_NONE:
       NOTREACHED();
       return 0;
+    case views::EMPHASIS_LOW:
+    case views::EMPHASIS_MEDIUM:
+      return 4;
+    case views::EMPHASIS_HIGH:
+      return 8;
+    case views::EMPHASIS_MAXIMUM:
+      return std::min(size.width(), size.height()) / 2;
   }
 }
 
 int MaterialRefreshLayoutProvider::GetShadowElevationMetric(
     views::EmphasisMetric emphasis_metric) const {
   switch (emphasis_metric) {
+    case views::EMPHASIS_NONE:
+      NOTREACHED();
+      return 0;
     case views::EMPHASIS_LOW:
       return 1;
     case views::EMPHASIS_MEDIUM:
-      return 3;
+      return 2;
     case views::EMPHASIS_HIGH:
+      return 3;
+    case views::EMPHASIS_MAXIMUM:
       return 16;
-    default:
-      NOTREACHED();
-      return 0;
   }
 }
 

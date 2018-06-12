@@ -892,7 +892,7 @@ void Tab::OnThemeChanged() {
 int Tab::GetCornerRadius() const {
   // TODO(pkasting): This should vary as the tab width decreases.
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
+      views::EMPHASIS_HIGH);
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {

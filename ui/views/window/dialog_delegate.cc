@@ -214,9 +214,9 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
       BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor);
   border->set_use_theme_background_color(true);
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    border->SetCornerRadius(provider->GetCornerRadiusMetric(EMPHASIS_MEDIUM));
+    border->SetCornerRadius(provider->GetCornerRadiusMetric(EMPHASIS_HIGH));
     border->set_md_shadow_elevation(
-        provider->GetShadowElevationMetric(EMPHASIS_MEDIUM));
+        provider->GetShadowElevationMetric(EMPHASIS_HIGH));
   }
   frame->SetBubbleBorder(std::move(border));
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
