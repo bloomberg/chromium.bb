@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -940,10 +941,20 @@ void ArcSessionManager::StartArc() {
   std::string locale;
   std::string preferred_lanaguages;
   GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_lanaguages);
+
+  chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
+  base::FilePath demo_session_apps_path;
+  if (demo_session && demo_session->started()) {
+    DCHECK(demo_session->offline_resources_loaded());
+    demo_session_apps_path = demo_session->GetDemoAppsPath();
+  }
+
   // Empty |preferred_lanaguages| is converted to empty array.
   arc_session_runner_->RequestUpgrade(
-      locale, base::SplitString(preferred_lanaguages, ",",
-                                base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
+      locale,
+      base::SplitString(preferred_lanaguages, ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_ALL),
+      demo_session_apps_path);
 }
 
 void ArcSessionManager::StopArc() {

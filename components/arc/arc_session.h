@@ -13,6 +13,10 @@
 #include "base/observer_list.h"
 #include "components/arc/arc_stop_reason.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace arc {
 
 class ArcBridgeService;
@@ -52,10 +56,14 @@ class ArcSession {
   // possible. This might be done asynchronously; the message might only be sent
   // after other operations have completed. |locale| and |preferred_languages|
   // define language configuration set during Android container boot.
-  // |preferred_languages| may be empty.
+  // |preferred_languages| may be empty. |demo_session_apps_path| is a file path
+  // to the image containing set of demo apps that should be added to the
+  // Android container for demo sessions. It might be empty, in which case no
+  // demo apps will be added to the container.
   virtual void RequestUpgrade(
       const std::string& locale,
-      const std::vector<std::string>& preferred_languages) = 0;
+      const std::vector<std::string>& preferred_languages,
+      const base::FilePath& demo_session_apps_path) = 0;
 
   // Requests to stop the currently-running instance regardless of its mode.
   // The completion is notified via OnSessionStopped() of the Observer.
