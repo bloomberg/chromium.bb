@@ -802,6 +802,10 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
     HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
     TreeOrderedMap::RemoveScope tree_remove_scope;
     {
+#if DCHECK_IS_ON()
+      NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
+          GetDocument().SlotAssignmentRecalcForbiddenRecursionDepth());
+#endif
       EventDispatchForbiddenScope assert_no_event_dispatch;
       ScriptForbiddenScope forbid_script;
 
