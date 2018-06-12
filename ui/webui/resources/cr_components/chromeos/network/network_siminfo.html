@@ -95,7 +95,7 @@
         on-close="onEnterPinDialogClose_">
       <div slot="title">[[i18n('networkSimEnterPinTitle')]]</div>
       <div slot="body">
-        <network-password-input id="enterPin"
+        <network-password-input id="enterPin" value="{{pin_}}"
             label="[[i18n('networkSimEnterPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendEnterPin_">
           </iron-a11y-keys>
@@ -108,7 +108,8 @@
         <paper-button class="cancel-button" on-tap="closeDialogs_">
           [[i18n('cancel')]]
         </paper-button>
-        <paper-button on-tap="sendEnterPin_" disabled="[[inProgress_]]">
+        <paper-button class="action-button" on-tap="sendEnterPin_"
+            disabled="[[!enterPinEnabled_]]">
           [[i18n('networkSimEnter')]]
         </paper-button>
       </div>
@@ -119,13 +120,13 @@
         on-close="onChangePinDialogClose_">
       <div slot="title">[[i18n('networkSimChangePinTitle')]]</div>
       <div slot="body">
-        <network-password-input id="changePinOld"
+        <network-password-input id="changePinOld" value="{{pin_}}"
             label="[[i18n('networkSimEnterOldPin')]]">
         </network-password-input>
-        <network-password-input id="changePinNew1"
+        <network-password-input id="changePinNew1" value="{{pin_new1_}}"
             label="[[i18n('networkSimEnterNewPin')]]">
         </network-password-input>
-        <network-password-input id="changePinNew2"
+        <network-password-input id="changePinNew2" value="{{pin_new2_}}"
             label="[[i18n('networkSimReEnterNewPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendChangePin_">
           </iron-a11y-keys>
@@ -139,7 +140,7 @@
           [[i18n('cancel')]]
         </paper-button>
         <paper-button class="action-button" on-tap="sendChangePin_"
-            disabled="[[inProgress_]]">
+            disabled="[[!changePinEnabled_]]">
           [[i18n('networkSimChange')]]
         </paper-button>
       </div>
@@ -150,7 +151,7 @@
         on-close="onUnlockPinDialogClose_">
       <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
-        <network-password-input id="unlockPin"
+        <network-password-input id="unlockPin" value="{{pin_}}"
             label="[[i18n('networkSimEnterPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPin_">
           </iron-a11y-keys>
@@ -163,7 +164,8 @@
         <paper-button class="cancel-button" on-tap="closeDialogs_">
           [[i18n('cancel')]]
         </paper-button>
-        <paper-button on-tap="sendUnlockPin_" disabled="[[inProgress_]]">
+        <paper-button class="action-button" on-tap="sendUnlockPin_"
+            disabled="[[!enterPinEnabled_]]">
           [[i18n('networkSimUnlock')]]
         </paper-button>
       </div>
@@ -177,13 +179,13 @@
         <div>
           Enter the 8-digit PIN Unblocking Key provided by your carrier
         </div>
-        <network-password-input id="unlockPuk"
+        <network-password-input id="unlockPuk" value="{{puk_}}"
             label="[[i18n('networkSimEnterPuk')]]">
         </network-password-input>
-        <network-password-input id="unlockPin1"
+        <network-password-input id="unlockPin1" value="{{pin_new1_}}"
             label="[[i18n('networkSimEnterNewPin')]]">
         </network-password-input>
-        <network-password-input id="unlockPin2"
+        <network-password-input id="unlockPin2" value="{{pin_new2_}}"
             label="[[i18n('networkSimReEnterNewPin')]]">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPuk_">
           </iron-a11y-keys>
@@ -199,7 +201,8 @@
         <paper-button class="cancel-button" on-tap="closeDialogs_">
           [[i18n('cancel')]]
         </paper-button>
-        <paper-button on-tap="sendUnlockPuk_" disabled="[[inProgress_]]">
+        <paper-button class="action-button" on-tap="sendUnlockPuk_"
+            disabled="[[!enterPukEnabled_]]">
           [[i18n('networkSimUnlock')]]
         </paper-button>
       </div>
