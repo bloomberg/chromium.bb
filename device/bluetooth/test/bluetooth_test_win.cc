@@ -658,6 +658,11 @@ BluetoothTestWinrt::BluetoothTestWinrt() {
   }
 }
 
+bool BluetoothTestWinrt::PlatformSupportsLowEnergy() {
+  return GetParam() ? base::win::GetVersion() >= base::win::VERSION_WIN10
+                    : BluetoothTestWin::PlatformSupportsLowEnergy();
+}
+
 BluetoothTestWinrt::~BluetoothTestWinrt() = default;
 
 }  // namespace device

@@ -32,6 +32,7 @@
 #elif defined(OS_MACOSX)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
 #elif defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "device/bluetooth/test/bluetooth_test_win.h"
 #elif defined(USE_CAST_BLUETOOTH_ADAPTER)
 #include "device/bluetooth/test/bluetooth_test_cast.h"
@@ -752,19 +753,17 @@ TEST_F(BluetoothTest, MAYBE_DiscoverMultipleLowEnergyDevices) {
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }
 
-// TODO(https://crbug.com/804356): Enable this test on Windows as well.
+// TODO(https://crbug.com/804356): Enable this test on old Windows versions as
+// well.
 #if defined(OS_WIN)
-#define MAYBE_TogglePowerFakeAdapter DISABLED_TogglePowerFakeAdapter
+TEST_P(BluetoothTestWinrtOnly, TogglePowerFakeAdapter) {
 #else
-#define MAYBE_TogglePowerFakeAdapter TogglePowerFakeAdapter
+TEST_F(BluetoothTest, TogglePowerFakeAdapter) {
 #endif
-TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter) {
-#if defined(OS_MACOSX)
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
   }
-#endif  // defined(OS_MACOSX)
 
   InitWithFakeAdapter();
   TestBluetoothAdapterObserver observer(adapter_);
@@ -793,10 +792,15 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter) {
 #else
 #define MAYBE_TogglePowerFakeAdapter_Twice DISABLED_TogglePowerFakeAdapter_Twice
 #endif
-// These tests are not relevant for BlueZ and Windows. On these platforms the
-// corresponding system APIs are blocking or use callbacks, so that it is not
-// necessary to store pending callbacks and wait for the appropriate events.
+// These tests are not relevant for BlueZ and old Windows versions. On these
+// platforms the corresponding system APIs are blocking or use callbacks, so
+// that it is not necessary to store pending callbacks and wait for the
+// appropriate events.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, TogglePowerFakeAdapter_Twice) {
+#else
 TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_Twice) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -837,7 +841,12 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_Twice) {
 #define MAYBE_TogglePowerFakeAdapter_WithinCallback_On_Off \
   DISABLED_TogglePowerFakeAdapter_WithinCallback_On_Off
 #endif
+
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, TogglePowerFakeAdapter_WithinCallback_On_Off) {
+#else
 TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_WithinCallback_On_Off) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -869,7 +878,12 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_WithinCallback_On_Off) {
 #define MAYBE_TogglePowerFakeAdapter_WithinCallback_Off_On \
   DISABLED_TogglePowerFakeAdapter_WithinCallback_Off_On
 #endif
+
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, TogglePowerFakeAdapter_WithinCallback_Off_On) {
+#else
 TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_WithinCallback_Off_On) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -908,7 +922,12 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_WithinCallback_Off_On) {
 #define MAYBE_TogglePowerFakeAdapter_DestroyWithPending \
   DISABLED_TogglePowerFakeAdapter_DestroyWithPending
 #endif
+
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, TogglePowerFakeAdapter_DestroyWithPending) {
+#else
 TEST_F(BluetoothTest, MAYBE_TogglePowerFakeAdapter_DestroyWithPending) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1361,6 +1380,11 @@ INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     BluetoothTestWinrt,
     ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    BluetoothTestWinrtOnly,
+    ::testing::Values(true));
 #endif  // defined(OS_WIN)
 
 }  // namespace device
