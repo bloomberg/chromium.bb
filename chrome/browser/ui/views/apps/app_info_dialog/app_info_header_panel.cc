@@ -42,7 +42,7 @@
 namespace {
 
 // Size of extension icon in top left of dialog.
-const int kIconSize = 64;
+const int kAppIconSize = 64;
 
 }  // namespace
 
@@ -65,7 +65,7 @@ AppInfoHeaderPanel::~AppInfoHeaderPanel() {
 
 void AppInfoHeaderPanel::CreateControls() {
   app_icon_view_ = new views::ImageView();
-  app_icon_view_->SetImageSize(gfx::Size(kIconSize, kIconSize));
+  app_icon_view_->SetImageSize(gfx::Size(kAppIconSize, kAppIconSize));
   AddChildView(app_icon_view_);
 
   app_icon_ = extensions::ChromeAppIconService::Get(profile_)->CreateIcon(

@@ -61,7 +61,7 @@ using extensions::Extension;
 
 namespace {
 
-const int kIconSize = 43;
+const int kExtensionInstalledIconSize = 43;
 
 const int kRightColumnWidth = 285;
 
@@ -162,7 +162,7 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // Gets the size of the icon, capped at kIconSize.
+  // Gets the size of the icon, capped at kExtensionInstalledIconSize.
   gfx::Size GetIconSize() const;
 
   ExtensionInstalledBubble* controller_;
@@ -345,8 +345,10 @@ gfx::Size ExtensionInstalledBubbleView::GetIconSize() const {
   const SkBitmap& bitmap = controller_->icon();
   // Scale down to 43x43, but allow smaller icons (don't scale up).
   gfx::Size size(bitmap.width(), bitmap.height());
-  return size.width() > kIconSize || size.height() > kIconSize
-             ? gfx::Size(kIconSize, kIconSize)
+  return size.width() > kExtensionInstalledIconSize ||
+                 size.height() > kExtensionInstalledIconSize
+             ? gfx::Size(kExtensionInstalledIconSize,
+                         kExtensionInstalledIconSize)
              : size;
 }
 

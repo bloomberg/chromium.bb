@@ -18,7 +18,7 @@ namespace libgtkui {
 namespace {
 
 // gtkheaderbar.c uses GTK_ICON_SIZE_MENU, which is 16px.
-const int kIconSize = 16;
+const int kNavButtonIconSize = 16;
 
 // Specified in GtkHeaderBar spec.
 const int kHeaderSpacing = 6;
@@ -102,7 +102,7 @@ ScopedGObject<GdkPixbuf> LoadNavButtonIcon(chrome::FrameButtonDisplayType type,
                                            int scale) {
   const char* icon_name = IconNameFromButtonType(type);
   ScopedGObject<GtkIconInfo> icon_info(gtk_icon_theme_lookup_icon_for_scale(
-      gtk_icon_theme_get_default(), icon_name, kIconSize, scale,
+      gtk_icon_theme_get_default(), icon_name, kNavButtonIconSize, scale,
       static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_USE_BUILTIN |
                                       GTK_ICON_LOOKUP_GENERIC_FALLBACK)));
   return ScopedGObject<GdkPixbuf>(gtk_icon_info_load_symbolic_for_context(

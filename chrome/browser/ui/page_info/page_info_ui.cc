@@ -47,7 +47,7 @@ const int kInvalidResourceID = -1;
 // The icon size is actually 16, but the vector icons being used generally all
 // have additional internal padding. Account for this difference by asking for
 // the vectors in 18x18dip sizes.
-constexpr int kIconSize = 18;
+constexpr int kVectorIconSize = 18;
 #endif
 
 // The resource IDs for the strings that are displayed on the permissions
@@ -491,12 +491,12 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
                                : info.setting;
   if (setting == CONTENT_SETTING_BLOCK) {
     return gfx::CreateVectorIconWithBadge(
-        *icon, kIconSize,
+        *icon, kVectorIconSize,
         color_utils::DeriveDefaultIconColor(related_text_color),
         kBlockedBadgeIcon);
   }
   return gfx::CreateVectorIcon(
-      *icon, kIconSize,
+      *icon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 
@@ -510,12 +510,12 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
   const gfx::VectorIcon* icon = &vector_icons::kUsbIcon;
   if (deleted) {
     return gfx::CreateVectorIconWithBadge(
-        *icon, kIconSize,
+        *icon, kVectorIconSize,
         color_utils::DeriveDefaultIconColor(related_text_color),
         kBlockedBadgeIcon);
   }
   return gfx::CreateVectorIcon(
-      *icon, kIconSize,
+      *icon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 
@@ -523,7 +523,7 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
 const gfx::ImageSkia PageInfoUI::GetCertificateIcon(
     const SkColor related_text_color) {
   return gfx::CreateVectorIcon(
-      kCertificateIcon, kIconSize,
+      kCertificateIcon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 
@@ -531,7 +531,7 @@ const gfx::ImageSkia PageInfoUI::GetCertificateIcon(
 const gfx::ImageSkia PageInfoUI::GetSiteSettingsIcon(
     const SkColor related_text_color) {
   return gfx::CreateVectorIcon(
-      kSettingsIcon, kIconSize,
+      kSettingsIcon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 #endif

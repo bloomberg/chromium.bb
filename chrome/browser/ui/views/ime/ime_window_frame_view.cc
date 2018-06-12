@@ -25,7 +25,7 @@ namespace {
 // The distance values for layout in DIPs.
 const int kButtonSize = 24;
 const int kBorderThickness = 1;
-const int kIconSize = 16;
+const int kTitleIconSize = 16;
 const int kTitlebarHeight = 32;
 const int kTitlebarLeftPadding = 8;
 const int kTitlebarRightPadding = 6;
@@ -157,11 +157,11 @@ gfx::Size ImeWindowFrameView::GetMaximumSize() const {
 void ImeWindowFrameView::Layout() {
   // Layout the icon.
   // TODO(shuchen): Consider the RTL case.
-  int icon_y = (kTitlebarHeight - kIconSize) / 2;
+  int icon_y = (kTitlebarHeight - kTitleIconSize) / 2;
   bool follow_cursor = in_follow_cursor_mode();
   title_icon_->SetBounds(follow_cursor ? icon_y : kTitlebarLeftPadding,
                          follow_cursor ? kTitlebarLeftPadding : icon_y,
-                         kIconSize, kIconSize);
+                         kTitleIconSize, kTitleIconSize);
 
   if (follow_cursor) {
     close_button_->SetVisible(false);

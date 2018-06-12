@@ -41,7 +41,7 @@
 namespace {
 
 // (Square) pixel size of icon.
-constexpr int kIconSize = 18;
+constexpr int kPermissionIconSize = 18;
 
 // The type of arrow to display on the permission bubble.
 constexpr views::BubbleBorder::Arrow kPermissionAnchorArrow =
@@ -129,8 +129,8 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
         provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
     views::ImageView* icon = new views::ImageView();
     const gfx::VectorIcon& vector_id = requests[index]->GetIconId();
-    icon->SetImage(
-        gfx::CreateVectorIcon(vector_id, kIconSize, gfx::kChromeIconGrey));
+    icon->SetImage(gfx::CreateVectorIcon(vector_id, kPermissionIconSize,
+                                         gfx::kChromeIconGrey));
     icon->SetTooltipText(base::string16());  // Redundant with the text fragment
     label_container->AddChildView(icon);
     views::Label* label =
