@@ -119,6 +119,7 @@
 #include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
@@ -2461,6 +2462,10 @@ void Element::RemoveCallbackSelectors() {
 }
 
 ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
+#if DCHECK_IS_ON()
+  NestingLevelIncrementer slot_assignment_recalc_forbidden_scope(
+      GetDocument().SlotAssignmentRecalcForbiddenRecursionDepth());
+#endif
   EventDispatchForbiddenScope assert_no_event_dispatch;
   ScriptForbiddenScope forbid_script;
 
