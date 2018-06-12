@@ -3607,9 +3607,6 @@ void WebViewImpl::ApplyViewportDeltas(
   }
 
   elastic_overscroll_ += elastic_overscroll_delta;
-
-  if (MainFrameImpl() && MainFrameImpl()->GetFrameView())
-    MainFrameImpl()->GetFrameView()->DidUpdateElasticOverscroll();
 }
 
 void WebViewImpl::RecordWheelAndTouchScrollingCount(

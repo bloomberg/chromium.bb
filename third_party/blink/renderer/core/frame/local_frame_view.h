@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
-#include "third_party/blink/renderer/core/paint/scrollbar_manager.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -57,7 +56,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/ukm_time_aggregator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -154,8 +152,6 @@ class CORE_EXPORT LocalFrameView final
   void SetCanHaveScrollbars(bool);
   bool CanHaveScrollbars() const { return can_have_scrollbars_; }
 
-  Scrollbar* CreateScrollbar(ScrollbarOrientation) override;
-
   void SnapAfterScrollbarDragging(ScrollbarOrientation) override;
 
   void SetLayoutOverflowSize(const IntSize&);
@@ -223,8 +219,6 @@ class CORE_EXPORT LocalFrameView final
   void UpdateCountersAfterStyleChange();
 
   void Dispose() override;
-  void DetachScrollbars();
-  void RecalculateCustomScrollbarStyle();
   void InvalidateAllCustomScrollbarsOnActiveChanged();
 
   // True if the LocalFrameView's base background color is completely opaque.
@@ -244,7 +238,6 @@ class CORE_EXPORT LocalFrameView final
   void SetInputEventsScaleForEmulation(float);
 
   void DidChangeScrollOffset();
-  void DidUpdateElasticOverscroll();
 
   void ViewportSizeChanged(bool width_changed, bool height_changed);
   void MarkViewportConstrainedObjectsForLayout(bool width_changed,
@@ -389,10 +382,6 @@ class CORE_EXPORT LocalFrameView final
   FloatPoint ConvertToLayoutObject(const LayoutObject&,
                                    const FloatPoint&) const;
 
-  bool IsFrameViewScrollCorner(LayoutScrollbarPart* scroll_corner) const {
-    return scroll_corner_ == scroll_corner;
-  }
-
   enum ScrollingReasons {
     kScrollable,
     kNotScrollableNoOverflow,
@@ -402,7 +391,6 @@ class CORE_EXPORT LocalFrameView final
 
   ScrollingReasons GetScrollingReasons() const;
   bool IsScrollable() const override;
-  bool IsProgrammaticallyScrollable() override;
 
   IntPoint LastKnownMousePosition() const override;
   bool ShouldSetCursor() const;
@@ -473,7 +461,7 @@ class CORE_EXPORT LocalFrameView final
   bool ShouldScrollOnMainThread() const override;
   PaintLayer* Layer() const override;
   int ScrollSize(ScrollbarOrientation) const override;
-  bool IsScrollCornerVisible() const override;
+  bool IsScrollCornerVisible() const override { return false; }
   bool UpdateAfterCompositingChange() override;
   bool UserInputScrollable(ScrollbarOrientation) const override {
     return false;
@@ -521,18 +509,7 @@ class CORE_EXPORT LocalFrameView final
   void RemoveScrollbar(Scrollbar*);
   void AddScrollbar(Scrollbar*);
 
-  // If the scroll view does not use a native widget, then it will have
-  // cross-platform Scrollbars. These functions can be used to obtain those
-  // scrollbars.
-  Scrollbar* HorizontalScrollbar() const override {
-    return scrollbar_manager_.HorizontalScrollbar();
-  }
-  Scrollbar* VerticalScrollbar() const override {
-    return scrollbar_manager_.VerticalScrollbar();
-  }
-  LayoutScrollbarPart* ScrollCorner() const override { return scroll_corner_; }
-
-  void PositionScrollbarLayers();
+  LayoutScrollbarPart* ScrollCorner() const override { return nullptr; }
 
   // Functions for setting and retrieving the scrolling mode in each axis
   // (horizontal/vertical). The mode has values of AlwaysOff, AlwaysOn, and
@@ -639,10 +616,6 @@ class CORE_EXPORT LocalFrameView final
   // Functions for converting to screen coordinates.
   IntRect ContentsToScreen(const IntRect&) const;
 
-  // For platforms that need to hit test scrollbars from within the engine's
-  // event handlers (like Win32).
-  Scrollbar* ScrollbarAtFramePoint(const IntPoint&);
-
   // Converts from/to local "frame" coordinates to the root "frame"
   // coordinates. Note: with root-layer-scrolls, "frame" coordinates become
   // equivalent to "absoltue" coordinates since the LayoutView (same size and
@@ -702,9 +675,7 @@ class CORE_EXPORT LocalFrameView final
   void Show() override;
   void Hide() override;
 
-  bool IsPointInScrollbarCorner(const IntPoint&);
-  bool ScrollbarCornerPresent() const;
-  IntRect ScrollCornerRect() const override;
+  IntRect ScrollCornerRect() const override { return IntRect(); }
 
   IntPoint ConvertFromContainingEmbeddedContentViewToScrollbar(
       const Scrollbar&,
@@ -820,8 +791,7 @@ class CORE_EXPORT LocalFrameView final
 
   void CrossOriginStatusChanged();
 
-  // The visual viewport can supply scrollbars which affect the existence of
-  // our scrollbars (see: computeScrollbarExistence).
+  // The visual viewport can supply scrollbars.
   void VisualViewportScrollbarsChanged();
 
   LayoutUnit CaretWidth() const;
@@ -876,44 +846,8 @@ class CORE_EXPORT LocalFrameView final
 
   void NotifyFrameRectsChangedIfNeeded();
 
-  enum ComputeScrollbarExistenceOption { kFirstPass, kIncremental };
-  void ComputeScrollbarExistence(bool& new_has_horizontal_scrollbar,
-                                 bool& new_has_vertical_scrollbar,
-                                 const IntSize& doc_size,
-                                 ComputeScrollbarExistenceOption = kFirstPass);
-  void UpdateScrollbarGeometry();
-
-  class InUpdateScrollbarsScope {
-    STACK_ALLOCATED();
-
-   public:
-    explicit InUpdateScrollbarsScope(LocalFrameView* view)
-        : scope_(&view->in_update_scrollbars_, true) {}
-
-   private:
-    base::AutoReset<bool> scope_;
-  };
-
  private:
   explicit LocalFrameView(LocalFrame&, IntRect);
-  class ScrollbarManager : public blink::ScrollbarManager {
-    DISALLOW_NEW();
-
-    // Helper class to manage the life cycle of Scrollbar objects.
-   public:
-    ScrollbarManager(LocalFrameView& scroller)
-        : blink::ScrollbarManager(scroller) {}
-
-    void SetHasHorizontalScrollbar(bool has_scrollbar) override;
-    void SetHasVerticalScrollbar(bool has_scrollbar) override;
-
-    // TODO(ymalik): This should be hidden and all calls should go through
-    // setHas*Scrollbar functions above.
-    Scrollbar* CreateScrollbar(ScrollbarOrientation) override;
-
-   protected:
-    void DestroyScrollbar(ScrollbarOrientation) override;
-  };
 
   void PaintInternal(GraphicsContext&,
                      const GlobalPaintFlags,
@@ -923,8 +857,6 @@ class CORE_EXPORT LocalFrameView final
   LayoutSVGRoot* EmbeddedReplacedContent() const;
 
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
-
-  void UpdateScrollbarEnabledState();
 
   void DispatchEventsForPrintingOnAllFrames();
 
@@ -961,7 +893,6 @@ class CORE_EXPORT LocalFrameView final
   DocumentLifecycle& Lifecycle() const;
 
   void ContentsResized() override;
-  void ScrollbarExistenceMaybeChanged();
 
   // Methods to do point conversion via layoutObjects, in order to take
   // transforms into account.
@@ -993,28 +924,17 @@ class CORE_EXPORT LocalFrameView final
   void UpdateCompositedSelectionIfNeeded();
   void SetNeedsCompositingUpdate(CompositingUpdateType);
 
-  // Returns true if the LocalFrameView's own scrollbars overlay its content
-  // when visible.
-  bool HasOverlayScrollbars() const;
-
   // Returns true if the frame should use custom scrollbars. If true, sets
   // customScrollbarElement to the element that supplies the scrollbar's style
   // information.
   bool ShouldUseCustomScrollbars(Element*& custom_scrollbar_element) const;
 
-  // Returns true if a scrollbar needs to go from native -> custom or vice
-  // versa, or if a custom scrollbar has a stale owner.
-  bool NeedsScrollbarReconstruction() const;
-
   bool ShouldIgnoreOverflowHidden() const;
-
-  void UpdateScrollCorner();
 
   AXObjectCache* ExistingAXObjectCache() const;
 
   void SetLayoutSizeInternal(const IntSize&);
 
-  void AdjustScrollbarOpacity();
   bool VisualViewportSuppliesScrollbars();
 
   ScrollingCoordinator* GetScrollingCoordinator() const;
@@ -1101,9 +1021,6 @@ class CORE_EXPORT LocalFrameView final
 
   Member<Node> fragment_anchor_;
 
-  // layoutObject to hold our custom scroll corner.
-  LayoutScrollbarPart* scroll_corner_;
-
   Member<ScrollableAreaSet> scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;
   std::unique_ptr<ResizerAreaSet> resizer_areas_;
@@ -1141,7 +1058,6 @@ class CORE_EXPORT LocalFrameView final
 
   bool scrollbars_suppressed_;
   bool root_layer_did_scroll_;
-  bool in_update_scrollbars_;
 
   std::unique_ptr<LayoutAnalyzer> analyzer_;
 
@@ -1170,9 +1086,6 @@ class CORE_EXPORT LocalFrameView final
   using AnchoringAdjustmentQueue =
       HeapLinkedHashSet<WeakMember<ScrollableArea>>;
   AnchoringAdjustmentQueue anchoring_adjustment_queue_;
-
-  // ScrollbarManager holds the Scrollbar instances.
-  ScrollbarManager scrollbar_manager_;
 
   bool suppress_adjust_view_size_;
   bool allows_layout_invalidation_after_layout_clean_;

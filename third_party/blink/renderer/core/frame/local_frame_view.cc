@@ -71,8 +71,6 @@
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
-#include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
-#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
@@ -127,7 +125,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
-#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -209,7 +206,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       base_background_color_(Color::kWhite),
       media_type_(MediaTypeNames::screen),
       safe_to_propagate_scroll_to_parent_(true),
-      scroll_corner_(nullptr),
       sticky_position_object_count_(0),
       input_events_scale_factor_for_emulation_(1),
       layout_size_fixed_to_frame_size_(true),
@@ -221,7 +217,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       vertical_scrollbar_mode_(kScrollbarAuto),
       scrollbars_suppressed_(false),
       root_layer_did_scroll_(false),
-      in_update_scrollbars_(false),
       frame_timing_requests_dirty_(true),
       hidden_for_throttling_(false),
       subtree_throttled_(false),
@@ -230,7 +225,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
           DocumentLifecycle::kUninitialized),
       past_layout_lifecycle_update_(false),
       scroll_anchor_(this),
-      scrollbar_manager_(*this),
       suppress_adjust_view_size_(false),
       allows_layout_invalidation_after_layout_clean_(true),
       needs_intersection_observation_(false),
@@ -278,7 +272,6 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(visibility_observer_);
   visitor->Trace(scroll_anchor_);
   visitor->Trace(anchoring_adjustment_queue_);
-  visitor->Trace(scrollbar_manager_);
   visitor->Trace(print_context_);
   ScrollableArea::Trace(visitor);
 }
@@ -401,8 +394,6 @@ void LocalFrameView::Dispose() {
     scroll_animator->CancelAnimation();
   CancelProgrammaticScrollAnimation();
 
-  DetachScrollbars();
-
   if (ScrollingCoordinator* scrolling_coordinator =
           this->GetScrollingCoordinator())
     scrolling_coordinator->WillDestroyScrollableArea(this);
@@ -449,75 +440,6 @@ void LocalFrameView::Dispose() {
 #endif
 }
 
-void LocalFrameView::DetachScrollbars() {
-  // Previously, we detached custom scrollbars as early as possible to prevent
-  // Document::detachLayoutTree() from messing with the view such that its
-  // scroll bars won't be torn down. However, scripting in
-  // Document::detachLayoutTree() is forbidden
-  // now, so it's not clear if these edge cases can still happen.
-  // However, for Oilpan, we still need to remove the native scrollbars before
-  // we lose the connection to the ChromeClient, so we just unconditionally
-  // detach any scrollbars now.
-  scrollbar_manager_.Dispose();
-
-  if (scroll_corner_) {
-    scroll_corner_->Destroy();
-    scroll_corner_ = nullptr;
-  }
-}
-
-void LocalFrameView::ScrollbarManager::SetHasHorizontalScrollbar(
-    bool has_scrollbar) {
-  if (has_scrollbar == HasHorizontalScrollbar())
-    return;
-
-  if (has_scrollbar) {
-    h_bar_ = CreateScrollbar(kHorizontalScrollbar);
-    h_bar_is_attached_ = 1;
-    scrollable_area_->DidAddScrollbar(*h_bar_, kHorizontalScrollbar);
-    h_bar_->StyleChanged();
-  } else {
-    h_bar_is_attached_ = 0;
-    DestroyScrollbar(kHorizontalScrollbar);
-  }
-
-  scrollable_area_->SetScrollCornerNeedsPaintInvalidation();
-}
-
-void LocalFrameView::ScrollbarManager::SetHasVerticalScrollbar(
-    bool has_scrollbar) {
-  if (has_scrollbar == HasVerticalScrollbar())
-    return;
-
-  if (has_scrollbar) {
-    v_bar_ = CreateScrollbar(kVerticalScrollbar);
-    v_bar_is_attached_ = 1;
-    scrollable_area_->DidAddScrollbar(*v_bar_, kVerticalScrollbar);
-    v_bar_->StyleChanged();
-  } else {
-    v_bar_is_attached_ = 0;
-    DestroyScrollbar(kVerticalScrollbar);
-  }
-
-  scrollable_area_->SetScrollCornerNeedsPaintInvalidation();
-}
-
-Scrollbar* LocalFrameView::ScrollbarManager::CreateScrollbar(
-    ScrollbarOrientation orientation) {
-  Element* custom_scrollbar_element = nullptr;
-  LayoutBox* box = scrollable_area_->GetLayoutBox();
-  if (box->GetDocument().View()->ShouldUseCustomScrollbars(
-          custom_scrollbar_element)) {
-    return LayoutScrollbar::CreateCustomScrollbar(
-        scrollable_area_.Get(), orientation, custom_scrollbar_element);
-  }
-
-  // Nobody set a custom style, so we just use a native scrollbar.
-  return Scrollbar::Create(scrollable_area_.Get(), orientation,
-                           kRegularScrollbar,
-                           &box->GetFrame()->GetPage()->GetChromeClient());
-}
-
 void LocalFrameView::SnapAfterScrollbarDragging(
     ScrollbarOrientation orientation) {
   SnapCoordinator* snap_coordinator =
@@ -527,37 +449,6 @@ void LocalFrameView::SnapAfterScrollbarDragging(
   snap_coordinator->PerformSnapping(*GetLayoutBox(),
                                     orientation == kHorizontalScrollbar,
                                     orientation == kVerticalScrollbar);
-}
-
-void LocalFrameView::ScrollbarManager::DestroyScrollbar(
-    ScrollbarOrientation orientation) {
-  Member<Scrollbar>& scrollbar =
-      orientation == kHorizontalScrollbar ? h_bar_ : v_bar_;
-  DCHECK(orientation == kHorizontalScrollbar ? !h_bar_is_attached_
-                                             : !v_bar_is_attached_);
-  if (!scrollbar)
-    return;
-
-  scrollable_area_->WillRemoveScrollbar(*scrollbar, orientation);
-  scrollbar->DisconnectFromScrollableArea();
-  scrollbar = nullptr;
-}
-
-void LocalFrameView::RecalculateCustomScrollbarStyle() {
-  bool did_style_change = false;
-  if (HorizontalScrollbar() && HorizontalScrollbar()->IsCustomScrollbar()) {
-    HorizontalScrollbar()->StyleChanged();
-    did_style_change = true;
-  }
-  if (VerticalScrollbar() && VerticalScrollbar()->IsCustomScrollbar()) {
-    VerticalScrollbar()->StyleChanged();
-    did_style_change = true;
-  }
-  if (did_style_change) {
-    UpdateScrollbarGeometry();
-    UpdateScrollCorner();
-    PositionScrollbarLayers();
-  }
 }
 
 void LocalFrameView::InvalidateAllCustomScrollbarsOnActiveChanged() {
@@ -572,9 +463,6 @@ void LocalFrameView::InvalidateAllCustomScrollbarsOnActiveChanged() {
     if (uses_window_inactive_selector && scrollbar->IsCustomScrollbar())
       scrollbar->StyleChanged();
   }
-
-  if (uses_window_inactive_selector)
-    RecalculateCustomScrollbarStyle();
 }
 
 bool LocalFrameView::DidFirstLayout() const {
@@ -759,10 +647,6 @@ bool LocalFrameView::ShouldUseCustomScrollbars(
   return false;
 }
 
-Scrollbar* LocalFrameView::CreateScrollbar(ScrollbarOrientation orientation) {
-  return scrollbar_manager_.CreateScrollbar(orientation);
-}
-
 void LocalFrameView::SetLayoutOverflowSize(const IntSize& size) {
   if (size == layout_overflow_size_)
     return;
@@ -826,33 +710,10 @@ void LocalFrameView::RecalcOverflowAfterStyleChange() {
   if (NeedsLayout())
     return;
 
-  // If the visualViewport supplies scrollbars, we won't get a paint
-  // invalidation from computeScrollbarExistence so we need to force one.
   if (VisualViewportSuppliesScrollbars())
     layout_view->SetMayNeedPaintInvalidation();
 
-  // TODO(pdr): This should be refactored to just block scrollbar updates as
-  // we are not in a scrollbar update here and m_inUpdateScrollbars has other
-  // side effects. This scope is only for preventing a synchronous layout from
-  // scroll origin changes which would not be allowed during style recalc.
-  InUpdateScrollbarsScope in_update_scrollbars_scope(this);
-
-  bool should_have_horizontal_scrollbar = false;
-  bool should_have_vertical_scrollbar = false;
-  ComputeScrollbarExistence(should_have_horizontal_scrollbar,
-                            should_have_vertical_scrollbar,
-                            document_rect.Size());
-
-  bool has_horizontal_scrollbar = HorizontalScrollbar();
-  bool has_vertical_scrollbar = VerticalScrollbar();
-  if (has_horizontal_scrollbar != should_have_horizontal_scrollbar ||
-      has_vertical_scrollbar != should_have_vertical_scrollbar) {
-    SetNeedsLayout();
-    return;
-  }
-
   AdjustViewSize();
-  UpdateScrollbarGeometry();
   SetNeedsPaintPropertyUpdate();
 
   if (ScrollOriginChanged())
@@ -1394,7 +1255,7 @@ void LocalFrameView::UpdateGeometry() {
   // frame's page to make sure that the frame isn't in the process of being
   // destroyed. If iframe scrollbars needs reconstruction from native to custom
   // scrollbar, then also we need to layout the frameview.
-  if (bounds_will_change || NeedsScrollbarReconstruction())
+  if (bounds_will_change)
     SetNeedsLayout();
 
   layout->UpdateGeometry(*this);
@@ -1860,33 +1721,6 @@ void LocalFrameView::ClearFragmentAnchor() {
   fragment_anchor_ = nullptr;
 }
 
-void LocalFrameView::DidUpdateElasticOverscroll() {
-  Page* page = GetFrame().GetPage();
-  if (!page)
-    return;
-  FloatSize elastic_overscroll = page->GetChromeClient().ElasticOverscroll();
-  if (HorizontalScrollbar()) {
-    float delta =
-        elastic_overscroll.Width() - HorizontalScrollbar()->ElasticOverscroll();
-    if (delta != 0) {
-      HorizontalScrollbar()->SetElasticOverscroll(elastic_overscroll.Width());
-      GetScrollAnimator().NotifyContentAreaScrolled(FloatSize(delta, 0),
-                                                    kCompositorScroll);
-      SetScrollbarNeedsPaintInvalidation(kHorizontalScrollbar);
-    }
-  }
-  if (VerticalScrollbar()) {
-    float delta =
-        elastic_overscroll.Height() - VerticalScrollbar()->ElasticOverscroll();
-    if (delta != 0) {
-      VerticalScrollbar()->SetElasticOverscroll(elastic_overscroll.Height());
-      GetScrollAnimator().NotifyContentAreaScrolled(FloatSize(0, delta),
-                                                    kCompositorScroll);
-      SetScrollbarNeedsPaintInvalidation(kVerticalScrollbar);
-    }
-  }
-}
-
 IntSize LocalFrameView::GetLayoutSize(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   return scrollbar_inclusion == kExcludeScrollbars
@@ -1995,25 +1829,6 @@ void LocalFrameView::ContentsResized() {
 
   ScrollableArea::ContentsResized();
   SetNeedsLayout();
-}
-
-void LocalFrameView::ScrollbarExistenceMaybeChanged() {
-  // We check to make sure the view is attached to a frame() as this method can
-  // be triggered before the view is attached by LocalFrame::createView(...)
-  // setting various values such as setScrollBarModes(...) for example.  An
-  // ASSERT is triggered when a view is layout before being attached to a
-  // frame().
-  if (!GetFrame().View())
-    return;
-
-  Element* custom_scrollbar_element = nullptr;
-
-  bool uses_overlay_scrollbars =
-      GetPageScrollbarTheme().UsesOverlayScrollbars() &&
-      !ShouldUseCustomScrollbars(custom_scrollbar_element);
-
-  if (!uses_overlay_scrollbars && NeedsLayout())
-    UpdateLayout();
 }
 
 void LocalFrameView::HandleLoadCompleted() {
@@ -2256,12 +2071,6 @@ void LocalFrameView::ScrollAndFocusFragmentAnchor() {
   if (!anchor_node)
     return;
 
-  // Scrolling is disabled during updateScrollbars (see
-  // isProgrammaticallyScrollable).  Bail now to avoid clearing m_fragmentAnchor
-  // before we actually have a chance to scroll.
-  if (in_update_scrollbars_)
-    return;
-
   if (anchor_node->GetLayoutObject()) {
     LayoutRect rect;
     if (anchor_node != frame_->GetDocument()) {
@@ -2494,7 +2303,6 @@ bool LocalFrameView::ScrollbarsCanBeActive() const {
 }
 
 void LocalFrameView::ScrollbarVisibilityChanged() {
-  UpdateScrollbarEnabledState();
   if (auto* layout_view = GetLayoutView())
     layout_view->ClearHitTestCache();
 }
@@ -2516,10 +2324,6 @@ IntRect LocalFrameView::ScrollableAreaBoundingBox() const {
 
 bool LocalFrameView::IsScrollable() const {
   return GetScrollingReasons() == kScrollable;
-}
-
-bool LocalFrameView::IsProgrammaticallyScrollable() {
-  return !in_update_scrollbars_;
 }
 
 LocalFrameView::ScrollingReasons LocalFrameView::GetScrollingReasons() const {
@@ -2567,9 +2371,7 @@ void LocalFrameView::ScrollbarStyleChanged() {
   // FIXME: Why does this only apply to the main frame?
   if (!frame_->IsMainFrame())
     return;
-  AdjustScrollbarOpacity();
   ContentsResized();
-  PositionScrollbarLayers();
 }
 
 bool LocalFrameView::ScheduleAnimation() {
@@ -2641,55 +2443,6 @@ void LocalFrameView::DidAttachDocument() {
   }
 }
 
-void LocalFrameView::UpdateScrollCorner() {
-  scoped_refptr<ComputedStyle> corner_style;
-  IntRect corner_rect = ScrollCornerRect();
-  Document* doc = frame_->GetDocument();
-
-  if (doc && !corner_rect.IsEmpty()) {
-    // Try the <body> element first as a scroll corner source.
-    if (Element* body = doc->body()) {
-      if (LayoutObject* layout_object = body->GetLayoutObject()) {
-        corner_style = layout_object->GetUncachedPseudoStyle(
-            PseudoStyleRequest(kPseudoIdScrollbarCorner),
-            layout_object->Style());
-      }
-    }
-
-    if (!corner_style) {
-      // If the <body> didn't have a custom style, then the root element might.
-      if (Element* doc_element = doc->documentElement()) {
-        if (LayoutObject* layout_object = doc_element->GetLayoutObject()) {
-          corner_style = layout_object->GetUncachedPseudoStyle(
-              PseudoStyleRequest(kPseudoIdScrollbarCorner),
-              layout_object->Style());
-        }
-      }
-    }
-
-    if (!corner_style) {
-      // If we have an owning ipage/LocalFrame element, then it can set the
-      // custom scrollbar also.
-      auto* layout_object = frame_->OwnerLayoutObject();
-      if (layout_object) {
-        corner_style = layout_object->GetUncachedPseudoStyle(
-            PseudoStyleRequest(kPseudoIdScrollbarCorner),
-            layout_object->Style());
-      }
-    }
-  }
-
-  if (corner_style) {
-    if (!scroll_corner_)
-      scroll_corner_ = LayoutScrollbarPart::CreateAnonymous(doc, this);
-    scroll_corner_->SetStyleWithWritingModeOfParent(std::move(corner_style));
-    SetScrollCornerNeedsPaintInvalidation();
-  } else if (scroll_corner_) {
-    scroll_corner_->Destroy();
-    scroll_corner_ = nullptr;
-  }
-}
-
 Color LocalFrameView::DocumentBackgroundColor() const {
   // The LayoutView's background color is set in
   // Document::inheritHtmlAndBodyElementStyles.  Blend this with the base
@@ -2734,24 +2487,6 @@ void LocalFrameView::DidChangeGlobalRootScroller() {
 }
 
 void LocalFrameView::VisualViewportScrollbarsChanged() {
-  bool has_horizontal_scrollbar = HorizontalScrollbar();
-  bool has_vertical_scrollbar = VerticalScrollbar();
-  bool should_have_horizontal_scrollbar = false;
-  bool should_have_vertical_scrollbar = false;
-  ComputeScrollbarExistence(should_have_horizontal_scrollbar,
-                            should_have_vertical_scrollbar, ContentsSize());
-  scrollbar_manager_.SetHasHorizontalScrollbar(
-      should_have_horizontal_scrollbar);
-  scrollbar_manager_.SetHasVerticalScrollbar(should_have_vertical_scrollbar);
-
-  if (has_horizontal_scrollbar != should_have_horizontal_scrollbar ||
-      has_vertical_scrollbar != should_have_vertical_scrollbar) {
-    ScrollbarExistenceMaybeChanged();
-
-    if (!VisualViewportSuppliesScrollbars())
-      UpdateScrollbarGeometry();
-  }
-
   if (LayoutView* layout_view = GetLayoutView())
     layout_view->Layer()->ClearClipRects();
 }
@@ -4191,31 +3926,11 @@ IntSize LocalFrameView::MinimumScrollOffsetInt() const {
   return ToIntSize(-ScrollOrigin());
 }
 
-void LocalFrameView::AdjustScrollbarOpacity() {
-  if (HorizontalScrollbar() && LayerForHorizontalScrollbar()) {
-    bool is_opaque_scrollbar = !HorizontalScrollbar()->IsOverlayScrollbar();
-    LayerForHorizontalScrollbar()->SetContentsOpaque(is_opaque_scrollbar);
-  }
-  if (VerticalScrollbar() && LayerForVerticalScrollbar()) {
-    bool is_opaque_scrollbar = !VerticalScrollbar()->IsOverlayScrollbar();
-    LayerForVerticalScrollbar()->SetContentsOpaque(is_opaque_scrollbar);
-  }
-}
-
 int LocalFrameView::ScrollSize(ScrollbarOrientation orientation) const {
-  Scrollbar* scrollbar =
-      ((orientation == kHorizontalScrollbar) ? HorizontalScrollbar()
-                                             : VerticalScrollbar());
-
-  // If no scrollbars are present, the content may still be scrollable.
-  if (!scrollbar) {
-    IntSize scroll_size = ContentsSize() - VisibleContentSize();
-    scroll_size.ClampNegativeToZero();
-    return orientation == kHorizontalScrollbar ? scroll_size.Width()
-                                               : scroll_size.Height();
-  }
-
-  return scrollbar->TotalSize() - scrollbar->VisibleSize();
+  IntSize scroll_size = ContentsSize() - VisibleContentSize();
+  scroll_size.ClampNegativeToZero();
+  return orientation == kHorizontalScrollbar ? scroll_size.Width()
+                                             : scroll_size.Height();
 }
 
 void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
@@ -4232,123 +3947,6 @@ void LocalFrameView::DidChangeScrollOffset() {
 
 void LocalFrameView::ClearScrollAnchor() {
   scroll_anchor_.Clear();
-}
-
-bool LocalFrameView::HasOverlayScrollbars() const {
-  return (HorizontalScrollbar() &&
-          HorizontalScrollbar()->IsOverlayScrollbar()) ||
-         (VerticalScrollbar() && VerticalScrollbar()->IsOverlayScrollbar());
-}
-
-void LocalFrameView::ComputeScrollbarExistence(
-    bool& new_has_horizontal_scrollbar,
-    bool& new_has_vertical_scrollbar,
-    const IntSize& doc_size,
-    ComputeScrollbarExistenceOption option) {
-  if ((frame_->GetSettings() && frame_->GetSettings()->GetHideScrollbars()) ||
-      VisualViewportSuppliesScrollbars()) {
-    new_has_horizontal_scrollbar = false;
-    new_has_vertical_scrollbar = false;
-    return;
-  }
-
-  bool has_horizontal_scrollbar = HorizontalScrollbar();
-  bool has_vertical_scrollbar = VerticalScrollbar();
-
-  new_has_horizontal_scrollbar = has_horizontal_scrollbar;
-  new_has_vertical_scrollbar = has_vertical_scrollbar;
-}
-
-void LocalFrameView::UpdateScrollbarEnabledState() {
-  bool force_disabled =
-      GetPageScrollbarTheme().ShouldDisableInvisibleScrollbars() &&
-      ScrollbarsHiddenIfOverlay();
-
-  if (HorizontalScrollbar()) {
-    HorizontalScrollbar()->SetEnabled(ContentsWidth() > VisibleWidth() &&
-                                      !force_disabled);
-  }
-  if (VerticalScrollbar()) {
-    VerticalScrollbar()->SetEnabled(ContentsHeight() > VisibleHeight() &&
-                                    !force_disabled);
-  }
-}
-
-void LocalFrameView::UpdateScrollbarGeometry() {
-  UpdateScrollbarEnabledState();
-  if (HorizontalScrollbar()) {
-    int thickness = HorizontalScrollbar()->ScrollbarThickness();
-    IntRect old_rect(HorizontalScrollbar()->FrameRect());
-    IntRect h_bar_rect(
-        (ShouldPlaceVerticalScrollbarOnLeft() && VerticalScrollbar())
-            ? VerticalScrollbar()->Width()
-            : 0,
-        Height() - thickness,
-        Width() - (VerticalScrollbar() ? VerticalScrollbar()->Width() : 0),
-        thickness);
-    HorizontalScrollbar()->SetFrameRect(h_bar_rect);
-    if (old_rect != HorizontalScrollbar()->FrameRect())
-      SetScrollbarNeedsPaintInvalidation(kHorizontalScrollbar);
-
-    HorizontalScrollbar()->SetProportion(VisibleWidth(), ContentsWidth());
-    HorizontalScrollbar()->OffsetDidChange();
-  }
-
-  if (VerticalScrollbar()) {
-    int thickness = VerticalScrollbar()->ScrollbarThickness();
-    IntRect old_rect(VerticalScrollbar()->FrameRect());
-    IntRect v_bar_rect(
-        ShouldPlaceVerticalScrollbarOnLeft() ? 0 : (Width() - thickness), 0,
-        thickness,
-        Height() -
-            (HorizontalScrollbar() ? HorizontalScrollbar()->Height() : 0));
-    VerticalScrollbar()->SetFrameRect(v_bar_rect);
-    if (old_rect != VerticalScrollbar()->FrameRect())
-      SetScrollbarNeedsPaintInvalidation(kVerticalScrollbar);
-
-    VerticalScrollbar()->SetProportion(VisibleHeight(), ContentsHeight());
-    VerticalScrollbar()->OffsetDidChange();
-  }
-}
-
-bool LocalFrameView::NeedsScrollbarReconstruction() const {
-  // We have no scrollbar to reconstruct.
-  if (!HorizontalScrollbar() && !VerticalScrollbar())
-    return false;
-
-  Element* style_source = nullptr;
-  bool needs_custom = ShouldUseCustomScrollbars(style_source);
-
-  Scrollbar* scrollbars[] = {HorizontalScrollbar(), VerticalScrollbar()};
-
-  for (Scrollbar* scrollbar : scrollbars) {
-    if (!scrollbar)
-      continue;
-
-    // We have a native scrollbar that should be custom, or vice versa.
-    if (scrollbar->IsCustomScrollbar() != needs_custom)
-      return true;
-
-    if (needs_custom) {
-      DCHECK(scrollbar->IsCustomScrollbar());
-      // We have a custom scrollbar with a stale m_owner.
-      if (ToLayoutScrollbar(scrollbar)->StyleSource() !=
-          style_source->GetLayoutObject())
-        return true;
-
-      // Should use custom scrollbar and nothing should change.
-      continue;
-    }
-
-    // Check if native scrollbar should change.
-    Page* page = frame_->GetPage();
-    DCHECK(page);
-    ScrollbarTheme* current_theme = &page->GetScrollbarTheme();
-
-    if (current_theme != &scrollbar->GetTheme())
-      return true;
-  }
-  return false;
 }
 
 bool LocalFrameView::ShouldIgnoreOverflowHidden() const {
@@ -4500,62 +4098,6 @@ IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
   return FrameToContents(point_in_this_frame);
 }
 
-Scrollbar* LocalFrameView::ScrollbarAtFramePoint(
-    const IntPoint& point_in_frame) {
-  if (HorizontalScrollbar() &&
-      HorizontalScrollbar()->ShouldParticipateInHitTesting() &&
-      HorizontalScrollbar()->FrameRect().Contains(point_in_frame))
-    return HorizontalScrollbar();
-  if (VerticalScrollbar() &&
-      VerticalScrollbar()->ShouldParticipateInHitTesting() &&
-      VerticalScrollbar()->FrameRect().Contains(point_in_frame))
-    return VerticalScrollbar();
-  return nullptr;
-}
-
-static void PositionScrollbarLayer(GraphicsLayer* graphics_layer,
-                                   Scrollbar* scrollbar) {
-  if (!graphics_layer || !scrollbar)
-    return;
-
-  IntRect scrollbar_rect = scrollbar->FrameRect();
-  graphics_layer->SetPosition(scrollbar_rect.Location());
-  graphics_layer->SetOffsetFromLayoutObject(
-      ToIntSize(scrollbar_rect.Location()));
-
-  if (scrollbar_rect.Size() == graphics_layer->Size())
-    return;
-
-  graphics_layer->SetSize(scrollbar_rect.Size());
-
-  if (graphics_layer->HasContentsLayer()) {
-    graphics_layer->SetContentsRect(
-        IntRect(0, 0, scrollbar_rect.Width(), scrollbar_rect.Height()));
-    return;
-  }
-
-  graphics_layer->SetDrawsContent(true);
-  graphics_layer->SetNeedsDisplay();
-}
-
-static void PositionScrollCornerLayer(GraphicsLayer* graphics_layer,
-                                      const IntRect& corner_rect) {
-  if (!graphics_layer)
-    return;
-  graphics_layer->SetDrawsContent(!corner_rect.IsEmpty());
-  graphics_layer->SetPosition(corner_rect.Location());
-  graphics_layer->SetOffsetFromLayoutObject(ToIntSize(corner_rect.Location()));
-  if (corner_rect.Size() != graphics_layer->Size())
-    graphics_layer->SetNeedsDisplay();
-  graphics_layer->SetSize(corner_rect.Size());
-}
-
-void LocalFrameView::PositionScrollbarLayers() {
-  PositionScrollbarLayer(LayerForHorizontalScrollbar(), HorizontalScrollbar());
-  PositionScrollbarLayer(LayerForVerticalScrollbar(), VerticalScrollbar());
-  PositionScrollCornerLayer(LayerForScrollCorner(), ScrollCornerRect());
-}
-
 bool LocalFrameView::UpdateAfterCompositingChange() {
   if (ScrollOriginChanged())
     ResetScrollOriginChanged();
@@ -4608,37 +4150,6 @@ LayoutRect LocalFrameView::ScrollIntoView(
   // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
   // value to the visible content rect, but this does not.
   return rect_in_absolute;
-}
-
-IntRect LocalFrameView::ScrollCornerRect() const {
-  IntRect corner_rect;
-
-  if (HasOverlayScrollbars())
-    return corner_rect;
-
-  if (HorizontalScrollbar() && Width() - HorizontalScrollbar()->Width() > 0) {
-    corner_rect.Unite(IntRect(ShouldPlaceVerticalScrollbarOnLeft()
-                                  ? 0
-                                  : HorizontalScrollbar()->Width(),
-                              Height() - HorizontalScrollbar()->Height(),
-                              Width() - HorizontalScrollbar()->Width(),
-                              HorizontalScrollbar()->Height()));
-  }
-
-  if (VerticalScrollbar() && Height() - VerticalScrollbar()->Height() > 0) {
-    corner_rect.Unite(IntRect(ShouldPlaceVerticalScrollbarOnLeft()
-                                  ? 0
-                                  : (Width() - VerticalScrollbar()->Width()),
-                              VerticalScrollbar()->Height(),
-                              VerticalScrollbar()->Width(),
-                              Height() - VerticalScrollbar()->Height()));
-  }
-
-  return corner_rect;
-}
-
-bool LocalFrameView::IsScrollCornerVisible() const {
-  return !ScrollCornerRect().IsEmpty();
 }
 
 ScrollBehavior LocalFrameView::ScrollBehaviorStyle() const {
@@ -4694,43 +4205,6 @@ void LocalFrameView::PaintContents(GraphicsContext& context,
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
   });
-}
-
-bool LocalFrameView::IsPointInScrollbarCorner(
-    const IntPoint& point_in_root_frame) {
-  if (!ScrollbarCornerPresent())
-    return false;
-
-  IntPoint frame_point = ConvertFromRootFrame(point_in_root_frame);
-
-  if (HorizontalScrollbar()) {
-    int horizontal_scrollbar_y_min = HorizontalScrollbar()->FrameRect().Y();
-    int horizontal_scrollbar_y_max =
-        HorizontalScrollbar()->FrameRect().Y() +
-        HorizontalScrollbar()->FrameRect().Height();
-    int horizontal_scrollbar_x_min = HorizontalScrollbar()->FrameRect().X() +
-                                     HorizontalScrollbar()->FrameRect().Width();
-
-    return frame_point.Y() > horizontal_scrollbar_y_min &&
-           frame_point.Y() < horizontal_scrollbar_y_max &&
-           frame_point.X() > horizontal_scrollbar_x_min;
-  }
-
-  int vertical_scrollbar_x_min = VerticalScrollbar()->FrameRect().X();
-  int vertical_scrollbar_x_max = VerticalScrollbar()->FrameRect().X() +
-                                 VerticalScrollbar()->FrameRect().Width();
-  int vertical_scrollbar_y_min = VerticalScrollbar()->FrameRect().Y() +
-                                 VerticalScrollbar()->FrameRect().Height();
-
-  return frame_point.X() > vertical_scrollbar_x_min &&
-         frame_point.X() < vertical_scrollbar_x_max &&
-         frame_point.Y() > vertical_scrollbar_y_min;
-}
-
-bool LocalFrameView::ScrollbarCornerPresent() const {
-  return (HorizontalScrollbar() &&
-          Width() - HorizontalScrollbar()->Width() > 0) ||
-         (VerticalScrollbar() && Height() - VerticalScrollbar()->Height() > 0);
 }
 
 IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {
