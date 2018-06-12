@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -98,6 +99,9 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     }
 
     private static int getMaxTileRows() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EXPLORE_SITES)) {
+            return 1;
+        }
         return 2;
     }
 
