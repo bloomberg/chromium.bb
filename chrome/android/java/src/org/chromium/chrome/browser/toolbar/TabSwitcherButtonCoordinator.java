@@ -33,20 +33,15 @@ public class TabSwitcherButtonCoordinator {
      */
     private final TabSwitcherButtonModel mTabSwitcherButtonModel;
 
-    private final TabModelSelector mTabModelSelector;
-    private final TabModelSelectorObserver mTabModelSelectorObserver;
-    private final TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
+    private TabModelSelector mTabModelSelector;
+    private TabModelSelectorObserver mTabModelSelectorObserver;
+    private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
 
     /**
      * Build the controller that manages the tab switcher button.
      * @param root The root {@link ViewGroup} for locating the view to inflate.
-     * @param onClickListener An {@link OnClickListener} that is triggered when the tab switcher
-     *                        button is clicked.
-     * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
-     *                         keep its tab count updated.
      */
-    public TabSwitcherButtonCoordinator(
-            ViewGroup root, OnClickListener onClickListener, TabModelSelector tabModelSelector) {
+    public TabSwitcherButtonCoordinator(ViewGroup root) {
         mTabSwitcherButtonModel = new TabSwitcherButtonModel();
 
         final TabSwitcherButtonView view =
@@ -56,6 +51,24 @@ public class TabSwitcherButtonCoordinator {
                         mTabSwitcherButtonModel, view, new TabSwitcherButtonViewBinder());
         mTabSwitcherButtonModel.addObserver(processor);
 
+        CharSequence description = root.getResources().getString(R.string.open_tabs);
+        mTabSwitcherButtonModel.setOnLongClickListener(
+                v -> AccessibilityUtil.showAccessibilityToast(root.getContext(), v, description));
+    }
+
+    /**
+     * @param onClickListener An {@link OnClickListener} that is triggered when the tab switcher
+     *                        button is clicked.
+     */
+    public void setTabSwitcherListener(OnClickListener onClickListener) {
+        mTabSwitcherButtonModel.setOnClickListener(onClickListener);
+    }
+
+    /**
+     * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
+     *                         keep its tab count updated.
+     */
+    public void setTabModelSelector(TabModelSelector tabModelSelector) {
         mTabModelSelector = tabModelSelector;
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
@@ -104,11 +117,6 @@ public class TabSwitcherButtonCoordinator {
         };
 
         updateTabCount();
-
-        mTabSwitcherButtonModel.setOnClickListener(onClickListener);
-        CharSequence description = root.getResources().getString(R.string.open_tabs);
-        mTabSwitcherButtonModel.setOnLongClickListener(
-                v -> AccessibilityUtil.showAccessibilityToast(root.getContext(), v, description));
     }
 
     public void destroy() {

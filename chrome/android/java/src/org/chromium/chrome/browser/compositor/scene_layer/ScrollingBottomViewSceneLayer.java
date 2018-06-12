@@ -40,17 +40,14 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
 
     /**
      * Build a composited bottom view layer.
-     * @param resourceManager A resource manager for dynamic resource creation.
      * @param bottomView The view used to generate the composited version.
      * @param topShadowHeightPx The height of the shadow on the top of the view in px if it exists.
      */
-    public ScrollingBottomViewSceneLayer(ResourceManager resourceManager,
+    public ScrollingBottomViewSceneLayer(
             ViewResourceFrameLayout bottomView, int topShadowHeightPx) {
         mBottomView = bottomView;
         mResourceId = mBottomView.getId();
         mTopShadowHeightPx = topShadowHeightPx;
-        resourceManager.getDynamicResourceLoader().registerResource(
-                mResourceId, mBottomView.getResourceAdapter());
     }
 
     /**

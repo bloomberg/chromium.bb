@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.toolbar;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 
 /**
@@ -19,6 +20,7 @@ public class BottomToolbarModel extends PropertyObservable<BottomToolbarModel.Pr
         public static final PropertyKey ANDROID_VIEW_VISIBILITY = new PropertyKey();
         public static final PropertyKey SEARCH_ACCELERATOR_LISTENER = new PropertyKey();
         public static final PropertyKey MENU_BUTTON_LISTENER = new PropertyKey();
+        public static final PropertyKey LAYOUT_MANAGER = new PropertyKey();
 
         private PropertyKey() {}
     }
@@ -34,6 +36,9 @@ public class BottomToolbarModel extends PropertyObservable<BottomToolbarModel.Pr
 
     /** The touch listener for the menu button. */
     private OnTouchListener mMenuButtonListener;
+
+    /** A {@link LayoutManager} to attach overlays to. */
+    private LayoutManager mLayoutManager;
 
     /** Default constructor. */
     public BottomToolbarModel() {}
@@ -96,5 +101,20 @@ public class BottomToolbarModel extends PropertyObservable<BottomToolbarModel.Pr
      */
     public OnTouchListener getMenuButtonListener() {
         return mMenuButtonListener;
+    }
+
+    /**
+     * @param layoutManager A {@link LayoutManager} to attach overlays to.
+     */
+    public void setLayoutManager(LayoutManager layoutManager) {
+        mLayoutManager = layoutManager;
+        notifyPropertyChanged(PropertyKey.LAYOUT_MANAGER);
+    }
+
+    /**
+     * @return A {@link LayoutManager} to attach overlays to.
+     */
+    public LayoutManager getLayoutManager() {
+        return mLayoutManager;
     }
 }

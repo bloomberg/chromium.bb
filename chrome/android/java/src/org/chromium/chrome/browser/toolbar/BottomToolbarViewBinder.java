@@ -59,6 +59,8 @@ public class BottomToolbarViewBinder
         } else if (PropertyKey.MENU_BUTTON_LISTENER == propertyKey) {
             view.toolbarRoot.findViewById(R.id.menu_button)
                     .setOnTouchListener(model.getMenuButtonListener());
+        } else if (PropertyKey.LAYOUT_MANAGER == propertyKey) {
+            model.getLayoutManager().addSceneOverlayToBack(view.sceneLayer);
         } else {
             assert false : "Unhandled property detected in BottomToolbarViewBinder!";
         }

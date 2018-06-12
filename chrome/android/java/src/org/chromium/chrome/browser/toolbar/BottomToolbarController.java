@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarModel.PropertyKey;
 import org.chromium.chrome.browser.toolbar.BottomToolbarViewBinder.ViewHolder;
 import org.chromium.ui.resources.ResourceManager;
+import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
  * The controller for the bottom toolbar. This class handles all interactions that the bottom
@@ -28,31 +29,24 @@ import org.chromium.ui.resources.ResourceManager;
  */
 public class BottomToolbarController {
     /** The mediator that handles events from outside the bottom toolbar. */
-    private BottomToolbarMediator mMediator;
+    private final BottomToolbarMediator mMediator;
 
     /** The tab switcher button component that lives in the bottom toolbar. */
-    private TabSwitcherButtonCoordinator mTabSwitcherButtonCoordinator;
+    private final TabSwitcherButtonCoordinator mTabSwitcherButtonCoordinator;
+
+    /** The resource ID used to reference the view bitmap in native. */
+    private final int mResourceId;
+
+    /** The resource adapter for the composited bottom toolbar view. */
+    private final ViewResourceAdapter mViewResourceAdapter;
 
     /**
      * Build the controller that manages the bottom toolbar.
      * @param fullscreenManager A {@link ChromeFullscreenManager} to update the bottom controls
      *                          height for the renderer.
-     * @param resourceManager A {@link ResourceManager} for loading textures into the compositor.
-     * @param layoutManager A {@link LayoutManager} to attach overlays to.
      * @param root The root {@link ViewGroup} for locating the vies to inflate.
-     * @param tabSwitcherButtonListener An {@link OnClickListener} that is triggered when the
-     *                                  tab switcher button is clicked.
-     * @param searchAcceleratorListener An {@link OnClickListener} that is triggered when the
-     *                                  search accelerator is clicked.
-     * @param menuButtonListener An {@link OnTouchListener} that is triggered when the
-     *                           menu button is clicked.
-     * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
-     *                         keep its tab count updated.
      */
-    public BottomToolbarController(ChromeFullscreenManager fullscreenManager,
-            ResourceManager resourceManager, LayoutManager layoutManager, ViewGroup root,
-            OnClickListener tabSwitcherListener, OnClickListener searchAcceleratorListener,
-            OnTouchListener menuButtonListener, TabModelSelector tabModelSelector) {
+    public BottomToolbarController(ChromeFullscreenManager fullscreenManager, ViewGroup root) {
         BottomToolbarModel model = new BottomToolbarModel();
         mMediator = new BottomToolbarMediator(model, fullscreenManager, root.getResources());
 
@@ -65,19 +59,47 @@ public class BottomToolbarController {
                 (ScrollingBottomViewResourceFrameLayout) inflatedView;
         toolbarRoot.setTopShadowHeight(shadowHeight);
 
+        mResourceId = toolbarRoot.getId();
+        mViewResourceAdapter = toolbarRoot.getResourceAdapter();
+
         // This is the compositor component of the bottom toolbar views.
         final ScrollingBottomViewSceneLayer sceneLayer =
-                new ScrollingBottomViewSceneLayer(resourceManager, toolbarRoot, shadowHeight);
-        layoutManager.addSceneOverlayToBack(sceneLayer);
+                new ScrollingBottomViewSceneLayer(toolbarRoot, shadowHeight);
 
         PropertyModelChangeProcessor<BottomToolbarModel, ViewHolder, PropertyKey> processor =
                 new PropertyModelChangeProcessor<>(model, new ViewHolder(sceneLayer, toolbarRoot),
                         new BottomToolbarViewBinder());
         model.addObserver(processor);
-        mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(
-                toolbarRoot, tabSwitcherListener, tabModelSelector);
+        mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
+    }
 
+    /**
+     * Initialize the bottom toolbar with the components that had native initialization
+     * dependencies.
+     * <p>
+     * Calling this must occur after the native library have completely loaded.
+     * @param resourceManager A {@link ResourceManager} for loading textures into the compositor.
+     * @param layoutManager A {@link LayoutManager} to attach overlays to.
+     * @param tabSwitcherListener An {@link OnClickListener} that is triggered when the
+     *                                  tab switcher button is clicked.
+     * @param searchAcceleratorListener An {@link OnClickListener} that is triggered when the
+     *                                  search accelerator is clicked.
+     * @param menuButtonListener An {@link OnTouchListener} that is triggered when the
+     *                           menu button is clicked.
+     * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
+     *                         keep its tab count updated.
+     */
+    public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
+            OnClickListener tabSwitcherListener, OnClickListener searchAcceleratorListener,
+            OnTouchListener menuButtonListener, TabModelSelector tabModelSelector) {
         mMediator.setButtonListeners(searchAcceleratorListener, menuButtonListener);
+        mMediator.setLayoutManager(layoutManager);
+
+        mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
+        mTabSwitcherButtonCoordinator.setTabModelSelector(tabModelSelector);
+
+        resourceManager.getDynamicResourceLoader().registerResource(
+                mResourceId, mViewResourceAdapter);
     }
 
     /**
