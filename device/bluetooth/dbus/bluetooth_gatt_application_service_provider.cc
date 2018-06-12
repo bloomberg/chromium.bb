@@ -22,8 +22,9 @@ namespace bluez {
 
 namespace {
 
-const std::vector<std::string> FlagsFromProperties(
-    device::BluetoothGattCharacteristic::Properties properties) {
+const std::vector<std::string> FlagsFromPropertiesAndPermissions(
+    device::BluetoothGattCharacteristic::Properties properties,
+    device::BluetoothGattCharacteristic::Permissions permissions) {
   static_assert(
       device::BluetoothGattCharacteristic::NUM_PROPERTY == 1 << 14,
       "Update required if the number of characteristic properties changes.");
@@ -66,6 +67,24 @@ const std::vector<std::string> FlagsFromProperties(
                        PROPERTY_WRITE_ENCRYPTED_AUTHENTICATED)
     flags.push_back(
         bluetooth_gatt_characteristic::kFlagEncryptAuthenticatedWrite);
+  if (permissions & device::BluetoothGattCharacteristic::PERMISSION_READ)
+    flags.push_back(bluetooth_gatt_characteristic::kFlagPermissionRead);
+  if (permissions & device::BluetoothGattCharacteristic::PERMISSION_WRITE)
+    flags.push_back(bluetooth_gatt_characteristic::kFlagPermissionWrite);
+  if (permissions &
+      device::BluetoothGattCharacteristic::PERMISSION_READ_ENCRYPTED)
+    flags.push_back(bluetooth_gatt_characteristic::kFlagPermissionEncryptRead);
+  if (permissions &
+      device::BluetoothGattCharacteristic::PERMISSION_WRITE_ENCRYPTED)
+    flags.push_back(bluetooth_gatt_characteristic::kFlagPermissionEncryptWrite);
+  if (permissions & device::BluetoothGattCharacteristic::
+                        PERMISSION_READ_ENCRYPTED_AUTHENTICATED)
+    flags.push_back(
+        bluetooth_gatt_characteristic::kFlagPermissionAuthenticatedRead);
+  if (permissions & device::BluetoothGattCharacteristic::
+                        PERMISSION_WRITE_ENCRYPTED_AUTHENTICATED)
+    flags.push_back(
+        bluetooth_gatt_characteristic::kFlagPermissionAuthenticatedWrite);
   return flags;
 }
 
@@ -119,7 +138,9 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
               std::make_unique<BluetoothGattCharacteristicDelegateWrapper>(
                   service.second, characteristic.second.get()),
               characteristic.second->GetUUID().value(),
-              FlagsFromProperties(characteristic.second->GetProperties()),
+              FlagsFromPropertiesAndPermissions(
+                  characteristic.second->GetProperties(),
+                  characteristic.second->GetPermissions()),
               service.second->object_path())));
       for (const auto& descriptor : characteristic.second->GetDescriptors()) {
         descriptor_providers_.push_back(
