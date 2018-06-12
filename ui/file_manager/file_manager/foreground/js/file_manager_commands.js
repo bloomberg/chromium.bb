@@ -917,9 +917,19 @@ CommandHandler.COMMANDS_['delete'] = (function() {
         return;
       }
 
+      // Check if canDelete is true or undefined, but not false. canDelete can
+      // be undefined if the metadata is not fetched from the server yet (e.g.
+      // if we create a new file in offline mode), or if there is a problem with
+      // the cache and we don't have data on canDelete. For this reason, we need
+      // to allow deletion functionality even if it's not set.
+      // TODO(sashab): Re-work the capabilities model to store restrictions
+      // instead, see https://crbug.com/849999.
+      var metadata =
+          fileManager.metadataModel_.getCache(entries, ['canDelete']);
       event.canExecute = entries.length > 0 &&
           !this.containsReadOnlyEntry_(entries, fileManager) &&
-          !fileManager.directoryModel.isReadOnly();
+          !fileManager.directoryModel.isReadOnly() &&
+          metadata.every(item => item.canDelete !== false);
       event.command.setHidden(false);
     },
 

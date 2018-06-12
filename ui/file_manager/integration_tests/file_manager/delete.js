@@ -83,3 +83,88 @@ testcase.deleteEntryWithToolbar = function() {
         });
       }));
 };
+
+/**
+ * Tests that the Delete menu item is in |deleteEnabledState| when the entry
+ * at |path| is selected.
+ *
+ * @param {string} path Path to the file to try and delete.
+ * @param {boolean} deleteEnabledState True if the delete command should be
+ *     enabled in the context menu, false if not.
+ */
+function deleteContextMenu(path, deleteEnabledState) {
+  var appId;
+  StepsRunner.run([
+    // Set up Files App.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, BASIC_LOCAL_ENTRY_SET,
+          COMPLEX_DRIVE_ENTRY_SET);
+    },
+    // Select the read-only file.
+    function(results) {
+      appId = results.windowId;
+      remoteCall.callRemoteTestUtil('selectFile', appId, [path], this.next);
+    },
+    // Wait for the file to be selected.
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
+    },
+    // Right-click on the file.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, ['.table-row[selected]'], this.next);
+    },
+    // Wait for the context menu to appear.
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])')
+          .then(this.next);
+    },
+    // Wait for the "Delete" option to appear.
+    function() {
+      var query;
+      if (deleteEnabledState) {
+        query = '[command="#delete"]:not([hidden]):not([disabled])';
+      } else {
+        query = '[command="#delete"][disabled]:not([hidden])';
+      }
+      remoteCall.waitForElement(appId, query).then(this.next);
+    },
+    // Check for Javascript errors.
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
+/**
+ * Tests that the Delete menu item is disabled if a read-only document is
+ * selected.
+ */
+testcase.deleteContextMenuItemDisabledForReadOnlyDocument = function() {
+  deleteContextMenu('Read-Only Doc.gdoc', false);
+};
+
+/**
+ * Tests that the Delete menu item is disabled if a read-only file is selected.
+ */
+testcase.deleteContextMenuItemDisabledForReadOnlyFile = function() {
+  deleteContextMenu('Read-Only File.jpg', false);
+};
+
+/**
+ * Tests that the Delete menu item is disabled if a read-only folder is
+ * selected.
+ */
+testcase.deleteContextMenuItemDisabledForReadOnlyFolder = function() {
+  deleteContextMenu('Read-Only Folder', false);
+};
+
+/**
+ * Tests that the Delete menu item is enabled if a read-write entry is selected.
+ */
+testcase.deleteContextMenuItemEnabledForReadWriteFile = function() {
+  deleteContextMenu('hello.txt', true);
+};
