@@ -2248,10 +2248,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin-arcnext',
   ])
   _pi_hwtest_experimental_boards = frozenset([])
-  _pi_vmtest_boards = frozenset([])
-  _pi_vmtest_experimental_boards = frozenset([
-      'betty-arcnext',
+  _pi_vmtest_boards = frozenset([
+      'betty-arcnext'
   ])
+  _pi_vmtest_experimental_boards = frozenset([])
 
   # Android NYC master.
   nyc_master_config = site_config.Add(
@@ -2491,6 +2491,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'beaglebone',
       'betty',
       'betty-arc64',
+      'betty-arcnext',
       'bob',
       'caroline',
       'caroline-arcnext',
@@ -2562,7 +2563,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron',
       'auron_paine',
-      'betty-arcnext',
       'cheza', #contact: philipchen@
       'eve-campfire', # contact:yueherngl@
       'nami',
@@ -2600,14 +2600,17 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_simple_vmtest_boards = frozenset([
       'betty',
+      'betty-arcnext',
   ])
 
   _paladin_devmode_vmtest_boards = frozenset([
       'betty',
+      'betty-arcnext',
   ])
 
   _paladin_cros_vmtest_boards = frozenset([
       'betty',
+      'betty-arcnext',
   ])
 
   _paladin_smoke_vmtest_boards = frozenset([
@@ -2618,6 +2621,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_default_vmtest_boards = frozenset([
       'betty',
+      'betty-arcnext',
   ])
 
   # Jetstream devices run unique hw tests
@@ -3293,6 +3297,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'betty',
+      'betty-arcnext',
   ])
 
   site_config.AddForBoards(
@@ -3371,6 +3376,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
 
   _chrome_pfq_important_boards = frozenset([
       'betty',
+      'betty-arcnext',
       'caroline',
       'caroline-arcnext',
       'chell',
@@ -3389,7 +3395,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
-      'betty-arcnext',
       'bob',
       'hana',
       'nyan_big',

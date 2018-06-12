@@ -626,6 +626,7 @@ betty-arcnext-release-afdo-generate-tryjob (baremetal)
   betty-arcnext-release-afdo-use
 betty-arcnext-release-afdo-use-tryjob (baremetal)
 betty-arcnext-release-tryjob (baremetal)
+betty-arcnext-telemetry-tryjob (baremetal)
 betty-arcnext-tot-chrome-pfq-informational-tryjob (baremetal)
 betty-arcnext-tot-chromium-pfq-informational-tryjob (baremetal)
 betty-arcnext-unittest-stress (gce_beefy)
