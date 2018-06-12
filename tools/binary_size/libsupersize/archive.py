@@ -35,6 +35,8 @@ import path_util
 sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
 from grit.format import data_pack
 
+_OWNERS_FILENAME = 'OWNERS'
+_COMPONENT_REGEX = re.compile('\s*#\s*COMPONENT\s*:\s*(\S+)')
 
 # Holds computation state that is live only when an output directory exists.
 _OutputDirectoryContext = collections.namedtuple('_OutputDirectoryContext', [
@@ -91,6 +93,8 @@ class SectionSizeKnobs(object):
       'META-INF/CHROMIUM.RSA',
       'META-INF/MANIFEST.MF',
     ])
+
+    self.src_root = path_util.SRC_ROOT
 
 
 def _OpenMaybeGz(path):
@@ -215,6 +219,11 @@ def _NormalizeNames(raw_symbols):
 
 
 def _NormalizeObjectPath(path):
+  """Normalizes object paths.
+
+  Prefixes are removed: obj/, ../../
+  Archive names made more pathy: foo/bar.a(baz.o) -> foo/bar.a/baz.o
+  """
   if path.startswith('obj/'):
     # Convert obj/third_party/... -> third_party/...
     path = path[4:]
@@ -538,6 +547,73 @@ def _CalculatePadding(raw_symbols):
         '%r\nprev symbol: %r' % (symbol, prev_symbol))
 
 
+def _ParseComponentFromOwners(filename):
+  """Searches an OWNERS file for lines that start with `# COMPONENT:`.
+
+  Args:
+    filename: Path to the file to parse.
+  Returns:
+    The text that follows the `# COMPONENT:` prefix, such as 'component>name'
+ """
+  with open(filename) as f:
+    for line in f:
+      component_matches = _COMPONENT_REGEX.match(line)
+      if component_matches:
+        return component_matches.group(1)
+  return ''
+
+
+def _FindComponentRoot(start_path, cache, knobs):
+  """Searches all parent directories for COMPONENT in OWNERS files.
+
+  Args:
+    start_path: Path of directory to start searching from. Must be relative to
+      SRC_ROOT.
+    cache: Dict of OWNERS paths. Used instead of filesystem if paths are present
+      in the dict.
+    knobs: Instance of SectionSizeKnobs. Tunable knobs and options.
+
+  Returns:
+    COMPONENT belonging to |start_path|, or empty string if not found.
+  """
+  prev_dir = None
+  test_dir = start_path
+  # This loop will traverse the directory structure upwards until reaching
+  # SRC_ROOT, where test_dir and prev_dir will both equal an empty string.
+  while test_dir != prev_dir:
+    cached_component = cache.get(test_dir)
+    if cached_component:
+      return cached_component
+    elif cached_component is None:
+      owners_path = os.path.join(knobs.src_root, test_dir, _OWNERS_FILENAME)
+      if os.path.isfile(owners_path):
+        component = _ParseComponentFromOwners(owners_path)
+        cache[test_dir] = component
+        if component:
+          return component
+      else:
+        cache[test_dir] = ''
+    prev_dir = test_dir
+    test_dir = os.path.dirname(test_dir)
+  return ''
+
+
+def _PopulateComponents(raw_symbols, knobs):
+  """Populates the |component| field based on |source_path|.
+
+  Symbols without a |source_path| are skipped.
+
+  Args:
+    raw_symbols: list of Symbol objects.
+    knobs: Instance of SectionSizeKnobs. Tunable knobs and options.
+  """
+  seen_paths = {}
+  for symbol in raw_symbols:
+    if symbol.source_path:
+      folder_path = os.path.dirname(symbol.source_path)
+      symbol.component = _FindComponentRoot(folder_path, seen_paths, knobs)
+
+
 def _AddNmAliases(raw_symbols, names_by_address):
   """Adds symbols that were removed by identical code folding."""
   # Step 1: Create list of (index_of_symbol, name_list).
@@ -608,6 +684,23 @@ def LoadAndPostProcessSizeInfo(path):
 
 def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory,
                    linker_name):
+  """Creates metadata dict.
+
+  Args:
+    map_path: Path to the linker .map(.gz) file to parse.
+    elf_path: Path to the corresponding unstripped ELF file. Used to find symbol
+        aliases and inlined functions. Can be None.
+    apk_path: Path to the .apk file to measure.
+    tool_prefix: Prefix for c++filt & nm.
+    output_directory: Build output directory.
+    linker_name: "gold", "lld", or None
+
+  Returns:
+    None if |elf_path| is not supplied. Otherwise returns dict mapping string
+    constants to values.
+    If |elf_path| is supplied, git revision and elf info are included.
+    If |output_directory| is also supplied, then filenames will be included.
+  """
   metadata = None
   if elf_path:
     logging.debug('Constructing metadata')
@@ -813,7 +906,7 @@ class _ResourceSourceMapper(object):
       for dest, renamed_dest in renames.iteritems():
         # Allow one more level of indirection due to renaming renamed files
         renamed_dest = renames.get(renamed_dest, renamed_dest)
-        actual_source = res_info.get(renamed_dest);
+        actual_source = res_info.get(renamed_dest)
         if actual_source:
           res_info[dest] = actual_source
     return res_info
@@ -1045,6 +1138,11 @@ def CreateSectionSizesAndSymbols(
         alias information will not be recorded.
     track_string_literals: Whether to break down "** merge string" sections into
         smaller symbols (requires output_directory).
+
+  Returns:
+    A tuple of (section_sizes, raw_symbols).
+    section_sizes is a dict mapping section names to their size
+    raw_symbols is a list of Symbol objects
   """
   if apk_path and elf_path:
     # Extraction takes around 1 second, so do it in parallel.
@@ -1119,6 +1217,7 @@ def CreateSectionSizesAndSymbols(
     raw_symbols.extend(pak_raw_symbols)
 
   _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper)
+  _PopulateComponents(raw_symbols, knobs)
   logging.info('Converting excessive aliases into shared-path symbols')
   _CompactLargeAliasesIntoSharedSymbols(raw_symbols, knobs)
   logging.debug('Connecting nm aliases')
@@ -1153,6 +1252,14 @@ def CreateSizeInfo(
 
 
 def _DetectGitRevision(directory):
+  """Runs git rev-parse to get the SHA1 hash of the current revision.
+
+  Args:
+    directory: Path to directory where rev-parse command will be run.
+
+  Returns:
+    A string with the SHA1 hash, or None if an error occured.
+  """
   try:
     git_rev = subprocess.check_output(
         ['git', '-C', directory, 'rev-parse', 'HEAD'])
@@ -1282,6 +1389,8 @@ def AddArguments(parser):
                       default=True, action='store_false',
                       help='Disable breaking down "** merge strings" into more '
                            'granular symbols.')
+  parser.add_argument('--source-directory',
+                      help='Custom path to the root source directory.')
   AddMainPathsArguments(parser)
 
 
@@ -1352,12 +1461,16 @@ def Run(args, parser):
   metadata = CreateMetadata(map_path, elf_path, apk_path, tool_prefix,
                             output_directory, linker_name)
 
+  knobs = SectionSizeKnobs()
+  if args.source_directory:
+    knobs.src_root = args.source_directory
+
   section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
       map_path=map_path, tool_prefix=tool_prefix, elf_path=elf_path,
       apk_path=apk_path, output_directory=output_directory,
       track_string_literals=args.track_string_literals,
       metadata=metadata, apk_so_path=apk_so_path,
-      pak_files=args.pak_file, pak_info_file=args.pak_info_file)
+      pak_files=args.pak_file, pak_info_file=args.pak_info_file, knobs=knobs)
   size_info = CreateSizeInfo(
       section_sizes, raw_symbols, metadata=metadata, normalize_names=False)
 

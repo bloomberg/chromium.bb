@@ -24,6 +24,8 @@ Description of common properties:
         are removed from both full_name and name during normalization).
   * section_name: E.g. ".text", ".rodata", ".data.rel.local"
   * section: The second character of |section_name|. E.g. "t", "r", "d".
+  * component: The team that owns this feature.
+        Never None, but will be '' when no component exists.
 """
 
 import collections
@@ -339,6 +341,7 @@ class Symbol(BaseSymbol):
       'section_name',
       'source_path',
       'size',
+      'component',
   )
 
   def __init__(self, section_name, size_without_padding, address=None,
@@ -355,14 +358,16 @@ class Symbol(BaseSymbol):
     self.flags = flags
     self.aliases = aliases
     self.padding = 0
+    self.component = ''
 
   def __repr__(self):
     template = ('{}@{:x}(size_without_padding={},padding={},full_name={},'
-                'object_path={},source_path={},flags={},num_aliases={})')
+                'object_path={},source_path={},flags={},num_aliases={},'
+                'component={})')
     return template.format(
         self.section_name, self.address, self.size_without_padding,
         self.padding, self.full_name, self.object_path, self.source_path,
-        self.FlagsString(), self.num_aliases)
+        self.FlagsString(), self.num_aliases, self.component)
 
   @property
   def pss(self):
@@ -460,6 +465,10 @@ class DeltaSymbol(BaseSymbol):
   @property
   def section_name(self):
     return (self.after_symbol or self.before_symbol).section_name
+
+  @property
+  def component(self):
+    return (self.after_symbol or self.before_symbol).component
 
   @property
   def padding_pss(self):
@@ -628,6 +637,11 @@ class SymbolGroup(BaseSymbol):
     return self._size
 
   @property
+  def component(self):
+    first = self._symbols[0].component if self else ''
+    return first if all(s.component == first for s in self._symbols) else ''
+
+  @property
   def pss(self):
     if self._pss is None:
       if self.IsBss():
@@ -754,6 +768,9 @@ class SymbolGroup(BaseSymbol):
   def WhereIsTemplate(self):
     return self.Filter(lambda s: s.template_name is not s.name)
 
+  def WhereHasComponent(self):
+    return self.Filter(lambda s: s.component)
+
   def WhereSourceIsGenerated(self):
     return self.Filter(lambda s: s.generated_source)
 
@@ -784,6 +801,10 @@ class SymbolGroup(BaseSymbol):
     regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
     return self.Filter(lambda s: (regex.search(s.source_path) or
                                   regex.search(s.object_path)))
+
+  def WhereComponentMatches(self, pattern):
+    regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
+    return self.Filter(lambda s: regex.search(s.component))
 
   def WhereMatches(self, pattern):
     """Looks for |pattern| within all paths & names."""
@@ -841,6 +862,9 @@ class SymbolGroup(BaseSymbol):
           Use a negative value to omit symbols entirely rather than
           include them outside of a group.
       group_factory: Function to create SymbolGroup from a list of Symbols.
+
+    Returns:
+      SymbolGroup of SymbolGroups
     """
     if group_factory is None:
       group_factory = lambda token, symbols: self._CreateTransformed(
@@ -961,6 +985,9 @@ class SymbolGroup(BaseSymbol):
 
   def GroupedBySectionName(self):
     return self.GroupedBy(lambda s: s.section_name)
+
+  def GroupedByComponent(self):
+    return self.GroupedBy(lambda s: s.component)
 
   def GroupedByFullName(self, min_count=2):
     """Groups by symbol.full_name.

@@ -27,7 +27,8 @@ import models
 
 _SCRIPT_DIR = os.path.dirname(__file__)
 _TEST_DATA_DIR = os.path.join(_SCRIPT_DIR, 'testdata')
-_TEST_OUTPUT_DIR = os.path.join(_TEST_DATA_DIR, 'mock_output_directory')
+_TEST_SOURCE_DIR = os.path.join(_TEST_DATA_DIR, 'mock_source_directory')
+_TEST_OUTPUT_DIR = os.path.join(_TEST_SOURCE_DIR, 'out', 'Release')
 _TEST_TOOL_PREFIX = os.path.join(
     os.path.abspath(_TEST_DATA_DIR), 'mock_toolchain', '')
 _TEST_APK_ROOT_DIR = os.path.join(_TEST_DATA_DIR, 'mock_apk')
@@ -170,6 +171,7 @@ class IntegrationTest(unittest.TestCase):
       # Override for testing. Lower the bar for compacting symbols, to allow
       # smaller test cases to be created.
       knobs.max_same_name_alias_count = 3
+      knobs.src_root = _TEST_SOURCE_DIR
       apk_path = None
       apk_so_path = None
       if use_apk:
@@ -197,7 +199,11 @@ class IntegrationTest(unittest.TestCase):
 
   def _DoArchive(self, archive_path, use_output_directory=True, use_elf=True,
                  use_apk=False, use_pak=False, debug_measures=False):
-    args = [archive_path, '--map-file', _TEST_MAP_PATH]
+    args = [
+      archive_path,
+      '--map-file', _TEST_MAP_PATH,
+      '--source-directory', _TEST_SOURCE_DIR,
+    ]
     if use_output_directory:
       # Let autodetection find output_directory when --elf-file is used.
       if not use_elf:
