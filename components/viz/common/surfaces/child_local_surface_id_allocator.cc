@@ -17,8 +17,10 @@ ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
 
 bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id) {
-  if (parent_allocated_local_surface_id.parent_sequence_number() >
-      current_local_surface_id_.parent_sequence_number()) {
+  if ((parent_allocated_local_surface_id.parent_sequence_number() >
+       current_local_surface_id_.parent_sequence_number()) ||
+      parent_allocated_local_surface_id.embed_token() !=
+          current_local_surface_id_.embed_token()) {
     current_local_surface_id_.parent_sequence_number_ =
         parent_allocated_local_surface_id.parent_sequence_number_;
     current_local_surface_id_.embed_token_ =

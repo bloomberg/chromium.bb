@@ -4,6 +4,7 @@
 
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // ChildLocalSurfaceIdAllocator has 1 accessor which does not alter state:
@@ -103,6 +104,26 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
             parent_allocated_local_surface_id.child_sequence_number());
   EXPECT_EQ(postupdate_local_surface_id.embed_token(),
             parent_allocated_local_surface_id.embed_token());
+}
+
+// UpdateFromParent() on a child allocator should accept the parent's
+// LocalSurfaceId if only the embed_token changed.
+TEST(ChildLocalSurfaceIdAllocatorTest, UpdateFromParentEmbedTokenChanged) {
+  ParentLocalSurfaceIdAllocator parent_allocator;
+  ParentLocalSurfaceIdAllocator parent_allocator2;
+  ChildLocalSurfaceIdAllocator child_allocator;
+
+  EXPECT_TRUE(parent_allocator.GenerateId().is_valid());
+  EXPECT_TRUE(child_allocator.UpdateFromParent(
+      parent_allocator.GetCurrentLocalSurfaceId()));
+  EXPECT_LE(
+      parent_allocator2.GetCurrentLocalSurfaceId().parent_sequence_number(),
+      parent_allocator.GetCurrentLocalSurfaceId().parent_sequence_number());
+  EXPECT_NE(parent_allocator2.GetCurrentLocalSurfaceId().embed_token(),
+            parent_allocator.GetCurrentLocalSurfaceId().embed_token());
+
+  EXPECT_TRUE(child_allocator.UpdateFromParent(
+      parent_allocator2.GetCurrentLocalSurfaceId()));
 }
 
 // GenerateId() on a child allocator should monotonically increment the child
