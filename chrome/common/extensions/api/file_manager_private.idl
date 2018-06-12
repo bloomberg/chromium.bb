@@ -151,7 +151,7 @@ enum DriveShareType {
   can_view
 };
 
-// Names of properies for getEntryProperties().
+// Names of properties for getEntryProperties().
 enum EntryPropertyName {
   size,
   modificationTime,
@@ -174,7 +174,12 @@ enum EntryPropertyName {
   starred,
   externalFileUrl,
   alternateUrl,
-  shareUrl
+  shareUrl,
+  canCopy,
+  canDelete,
+  canRename,
+  canAddChildren,
+  canShare
 };
 
 // Entry property visibility for setEntryTag();
@@ -309,6 +314,22 @@ dictionary EntryProperties {
   // https:// URL to open the file or folder in the Drive website with the
   // sharing dialog open.
   DOMString? shareUrl;
+
+  // True if the entry can be copied by the user.
+  boolean? canCopy;
+
+  // True if the entry can be deleted by the user.
+  boolean? canDelete;
+
+  // True if the entry can be renamed by the user.
+  boolean? canRename;
+
+  // True if the entry can have children added to it by the user (directories
+  // only).
+  boolean? canAddChildren;
+
+  // True if the entry can be shared by the user.
+  boolean? canShare;
 };
 
 // Information about total and remaining size on the mount point.

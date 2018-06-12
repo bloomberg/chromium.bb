@@ -116,68 +116,102 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
         new std::string(share_url.ReplaceComponents(replacements).spec()));
   }
 
-  if (!entry_proto.has_file_specific_info())
-    return;
+  if (entry_proto.has_file_specific_info()) {
+    const drive::FileSpecificInfo& file_specific_info =
+        entry_proto.file_specific_info();
 
-  const drive::FileSpecificInfo& file_specific_info =
-      entry_proto.file_specific_info();
+    if (!entry_proto.resource_id().empty()) {
+      DriveApiUrlGenerator url_generator(
+          (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
+          (GURL(google_apis::DriveApiUrlGenerator::
+                    kBaseThumbnailUrlForProduction)),
+          google_apis::GetTeamDrivesIntegrationSwitch());
+      properties->thumbnail_url.reset(new std::string(
+          url_generator
+              .GetThumbnailUrl(entry_proto.resource_id(), 500 /* width */,
+                               500 /* height */, false /* not cropped */)
+              .spec()));
+      properties->cropped_thumbnail_url.reset(new std::string(
+          url_generator
+              .GetThumbnailUrl(
+                  entry_proto.resource_id(),
+                  kFileManagerMaximumThumbnailDimension /* width */,
+                  kFileManagerMaximumThumbnailDimension /* height */,
+                  true /* cropped */)
+              .spec()));
+    }
+    if (file_specific_info.has_image_width()) {
+      properties->image_width.reset(new int(file_specific_info.image_width()));
+    }
+    if (file_specific_info.has_image_height()) {
+      properties->image_height.reset(
+          new int(file_specific_info.image_height()));
+    }
+    if (file_specific_info.has_image_rotation()) {
+      properties->image_rotation.reset(
+          new int(file_specific_info.image_rotation()));
+    }
+    properties->hosted.reset(new bool(file_specific_info.is_hosted_document()));
+    properties->content_mime_type.reset(
+        new std::string(file_specific_info.content_mime_type()));
+    properties->pinned.reset(
+        new bool(file_specific_info.cache_state().is_pinned()));
+    properties->dirty.reset(
+        new bool(file_specific_info.cache_state().is_dirty()));
+    properties->present.reset(
+        new bool(file_specific_info.cache_state().is_present()));
 
-  if (!entry_proto.resource_id().empty()) {
-    DriveApiUrlGenerator url_generator(
-        (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
-        (GURL(google_apis::DriveApiUrlGenerator::
-                  kBaseThumbnailUrlForProduction)),
-        google_apis::GetTeamDrivesIntegrationSwitch());
-    properties->thumbnail_url.reset(new std::string(
-        url_generator.GetThumbnailUrl(entry_proto.resource_id(),
-                                      500 /* width */, 500 /* height */,
-                                      false /* not cropped */).spec()));
-    properties->cropped_thumbnail_url.reset(new std::string(
-        url_generator.GetThumbnailUrl(
-                          entry_proto.resource_id(),
-                          kFileManagerMaximumThumbnailDimension /* width */,
-                          kFileManagerMaximumThumbnailDimension /* height */,
-                          true /* cropped */).spec()));
-  }
-  if (file_specific_info.has_image_width()) {
-    properties->image_width.reset(
-        new int(file_specific_info.image_width()));
-  }
-  if (file_specific_info.has_image_height()) {
-    properties->image_height.reset(
-        new int(file_specific_info.image_height()));
-  }
-  if (file_specific_info.has_image_rotation()) {
-    properties->image_rotation.reset(
-        new int(file_specific_info.image_rotation()));
-  }
-  properties->hosted.reset(new bool(file_specific_info.is_hosted_document()));
-  properties->content_mime_type.reset(
-      new std::string(file_specific_info.content_mime_type()));
-  properties->pinned.reset(
-      new bool(file_specific_info.cache_state().is_pinned()));
-  properties->dirty.reset(
-      new bool(file_specific_info.cache_state().is_dirty()));
-  properties->present.reset(
-      new bool(file_specific_info.cache_state().is_present()));
+    if (file_specific_info.cache_state().is_present()) {
+      properties->available_offline.reset(new bool(true));
+    } else if (file_specific_info.is_hosted_document() &&
+               file_specific_info.has_document_extension()) {
+      const std::string file_extension =
+          file_specific_info.document_extension();
+      // What's available offline? See the 'Web' column at:
+      // https://support.google.com/drive/answer/1628467
+      properties->available_offline.reset(new bool(
+          file_extension == ".gdoc" || file_extension == ".gdraw" ||
+          file_extension == ".gsheet" || file_extension == ".gslides"));
+    } else {
+      properties->available_offline.reset(new bool(false));
+    }
 
-  if (file_specific_info.cache_state().is_present()) {
-    properties->available_offline.reset(new bool(true));
-  } else if (file_specific_info.is_hosted_document() &&
-             file_specific_info.has_document_extension()) {
-    const std::string file_extension = file_specific_info.document_extension();
-    // What's available offline? See the 'Web' column at:
-    // https://support.google.com/drive/answer/1628467
-    properties->available_offline.reset(
-        new bool(file_extension == ".gdoc" || file_extension == ".gdraw" ||
-                 file_extension == ".gsheet" || file_extension == ".gslides"));
-  } else {
-    properties->available_offline.reset(new bool(false));
+    properties->available_when_metered.reset(
+        new bool(file_specific_info.cache_state().is_present() ||
+                 file_specific_info.is_hosted_document()));
   }
 
-  properties->available_when_metered.reset(
-      new bool(file_specific_info.cache_state().is_present() ||
-               file_specific_info.is_hosted_document()));
+  if (entry_proto.has_capabilities_info()) {
+    const drive::CapabilitiesInfo& capabilities_info =
+        entry_proto.capabilities_info();
+
+    // Only set the |can_copy| capability for hosted documents; for other files,
+    // we must have read access, so |can_copy| is implicitly true.
+    bool can_copy = true;
+    if (entry_proto.has_file_specific_info() &&
+        entry_proto.file_specific_info().is_hosted_document() &&
+        capabilities_info.has_can_copy()) {
+      can_copy = capabilities_info.can_copy();
+    }
+    properties->can_copy.reset(new bool(can_copy));
+
+    properties->can_delete.reset(new bool(capabilities_info.has_can_delete()
+                                              ? capabilities_info.can_delete()
+                                              : true));
+    properties->can_rename.reset(new bool(capabilities_info.has_can_rename()
+                                              ? capabilities_info.can_rename()
+                                              : true));
+
+    // |can_add_children| defaults to true for directories, and false for files.
+    properties->can_add_children.reset(
+        new bool(capabilities_info.has_can_add_children()
+                     ? capabilities_info.can_add_children()
+                     : file_info.is_directory()));
+
+    properties->can_share.reset(new bool(capabilities_info.has_can_share()
+                                             ? capabilities_info.can_share()
+                                             : true));
+  }
 }
 
 // Creates entry definition list for (metadata) search result info list.
