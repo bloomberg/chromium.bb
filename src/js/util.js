@@ -140,6 +140,147 @@ camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
 };
 
 /**
+ * Gets the clockwise rotation and flip that can orient a photo to its upright
+ * position.
+ * @param {Blob} blob JPEG blob that might contain EXIF orientation field.
+ * @return {Promise<Object{rotation: number, flip: boolean}>}
+ */
+camera.util.getPhotoOrientation = function(blob) {
+  let getOrientation = new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    reader.onload = function(event) {
+      let view = new DataView(event.target.result);
+      if (view.getUint16(0, false) != 0xFFD8) {
+        resolve(1);
+        return;
+      }
+      let length = view.byteLength, offset = 2;
+      while (offset < length) {
+        if (view.getUint16(offset + 2, false) <= 8) {
+          break;
+        }
+        let marker = view.getUint16(offset, false);
+        offset += 2;
+        if (marker == 0xFFE1) {
+          if (view.getUint32(offset += 2, false) != 0x45786966) {
+            break;
+          }
+
+          let little = view.getUint16(offset += 6, false) == 0x4949;
+          offset += view.getUint32(offset + 4, little);
+          let tags = view.getUint16(offset, little);
+          offset += 2;
+          for (let i = 0; i < tags; i++) {
+            if (view.getUint16(offset + (i * 12), little) == 0x0112) {
+              resolve(view.getUint16(offset + (i * 12) + 8, little));
+              return;
+            }
+          }
+        } else if ((marker & 0xFF00) != 0xFF00) {
+          break;
+        } else {
+          offset += view.getUint16(offset, false);
+        }
+      }
+      resolve(1);
+    };
+    reader.readAsArrayBuffer(blob);
+  });
+
+  return getOrientation.then(orientation => {
+    switch (orientation) {
+      case 1:
+        return {rotation: 0, flip: false};
+      case 2:
+        return {rotation: 0, flip: true};
+      case 3:
+        return {rotation: 180, flip: false};
+      case 4:
+        return {rotation: 180, flip: true};
+      case 5:
+        return {rotation: 90, flip: true};
+      case 6:
+        return {rotation: 90, flip: false};
+      case 7:
+        return {rotation: 270, flip: true};
+      case 8:
+        return {rotation: 270, flip: false};
+      default:
+        return {rotation: 0, flip: false};
+    }
+  });
+};
+
+/**
+ * Orients a photo to the upright orientation.
+ * @param {Blob} blob Photo as a blob.
+ * @param {function(Blob)} onSuccess Success callback with the result photo as
+ *     a blob.
+ * @param {function()} onFailure Failure callback.
+ */
+camera.util.orientPhoto = function(blob, onSuccess, onFailure) {
+  // TODO(shenghao): Revise or remove this function if it's no longer
+  // applicable.
+  let drawPhoto = function(original, orientation, onSuccess, onFailure) {
+    let canvas = document.createElement('canvas');
+    let context = canvas.getContext('2d');
+    let canvasSquareLength = Math.max(original.width, original.height);
+    canvas.width = canvasSquareLength;
+    canvas.height = canvasSquareLength;
+
+    let centerX = canvas.width / 2, centerY = canvas.height / 2;
+    context.translate(centerX, centerY);
+    context.rotate(orientation.rotation * Math.PI / 180);
+    if (orientation.flip) {
+      context.scale(-1, 1);
+    }
+    context.drawImage(original, -original.width / 2, -original.height / 2,
+        original.width, original.height);
+    if (orientation.flip) {
+      context.scale(-1, 1);
+    }
+    context.rotate(-orientation.rotation * Math.PI / 180);
+    context.translate(-centerX, -centerY);
+
+    let outputCanvas = document.createElement('canvas');
+    if (orientation.rotation == 90 || orientation.rotation == 270) {
+      outputCanvas.width = original.height;
+      outputCanvas.height = original.width;
+    } else {
+      outputCanvas.width = original.width;
+      outputCanvas.height = original.height;
+    }
+    let imageData = context.getImageData(
+        (canvasSquareLength - outputCanvas.width) / 2,
+        (canvasSquareLength - outputCanvas.height) / 2,
+        outputCanvas.width, outputCanvas.height);
+    let outputContext = outputCanvas.getContext('2d');
+    outputContext.putImageData(imageData, 0, 0);
+
+    outputCanvas.toBlob(function(blob) {
+      if (blob) {
+        onSuccess(blob);
+      } else {
+        onFailure();
+      }
+    }, 'image/jpeg');
+  };
+
+  camera.util.getPhotoOrientation(blob).then(orientation => {
+    if (orientation.rotation == 0 && !orientation.flip) {
+      onSuccess(blob);
+    } else {
+      let original = document.createElement('img');
+      original.onload = function() {
+        drawPhoto(original, orientation, onSuccess, onFailure);
+      };
+      original.onerror = onFailure;
+      original.src = URL.createObjectURL(blob);
+    }
+  });
+};
+
+/**
  * Checks the board name if the user is using a chromebook.
  * @param {string} name Board name.
  * @return {!Promise<boolean>} promise Promise with result.
