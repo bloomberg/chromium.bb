@@ -85,7 +85,11 @@ HRESULT FakeBluetoothAdapterWinrt::get_IsAdvertisementOffloadSupported(
 
 HRESULT FakeBluetoothAdapterWinrt::GetRadioAsync(
     IAsyncOperation<Radio*>** operation) {
-  return E_NOTIMPL;
+  auto async_op = Make<base::win::AsyncOperation<Radio*>>();
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(async_op->callback(), radio_));
+  *operation = async_op.Detach();
+  return S_OK;
 }
 
 FakeBluetoothAdapterStaticsWinrt::FakeBluetoothAdapterStaticsWinrt(

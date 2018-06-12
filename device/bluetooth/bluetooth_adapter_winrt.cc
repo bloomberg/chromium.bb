@@ -55,6 +55,17 @@ using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
 using ABI::Windows::Devices::Enumeration::DeviceInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationStatics;
+using ABI::Windows::Devices::Radios::IRadio;
+using ABI::Windows::Devices::Radios::IRadioStatics;
+using ABI::Windows::Devices::Radios::Radio;
+using ABI::Windows::Devices::Radios::RadioAccessStatus;
+using ABI::Windows::Devices::Radios::RadioAccessStatus_Allowed;
+using ABI::Windows::Devices::Radios::RadioAccessStatus_DeniedBySystem;
+using ABI::Windows::Devices::Radios::RadioAccessStatus_DeniedByUser;
+using ABI::Windows::Devices::Radios::RadioAccessStatus_Unspecified;
+using ABI::Windows::Devices::Radios::RadioState;
+using ABI::Windows::Devices::Radios::RadioState_Off;
+using ABI::Windows::Devices::Radios::RadioState_On;
 using ABI::Windows::Foundation::Collections::IVector;
 using ABI::Windows::Foundation::IAsyncOperation;
 using Microsoft::WRL::ComPtr;
@@ -62,6 +73,23 @@ using Microsoft::WRL::ComPtr;
 bool ResolveCoreWinRT() {
   return base::win::ResolveCoreWinRTDelayload() &&
          base::win::ScopedHString::ResolveCoreWinRTStringDelayload();
+}
+
+// Utility functions to pretty print enum values.
+constexpr const char* ToCString(RadioAccessStatus access_status) {
+  switch (access_status) {
+    case RadioAccessStatus_Unspecified:
+      return "RadioAccessStatus::Unspecified";
+    case RadioAccessStatus_Allowed:
+      return "RadioAccessStatus::Allowed";
+    case RadioAccessStatus_DeniedByUser:
+      return "RadioAccessStatus::DeniedByUser";
+    case RadioAccessStatus_DeniedBySystem:
+      return "RadioAccessStatus::DeniedBySystem";
+  }
+
+  NOTREACHED();
+  return "";
 }
 
 base::Optional<BluetoothDevice::UUIDList> ExtractAdvertisedUUIDs(
@@ -173,25 +201,26 @@ bool BluetoothAdapterWinrt::IsInitialized() const {
 }
 
 bool BluetoothAdapterWinrt::IsPresent() const {
-  return is_present_;
+  // Obtaining the default adapter will fail if no physical adapter is present.
+  // Thus a non-zero |adapter| implies that a physical adapter is present.
+  return adapter_ != nullptr;
 }
 
 bool BluetoothAdapterWinrt::IsPowered() const {
-  // Note: While the UWP APIs can provide access to the underlying radio [1] and
-  // its power state [2], this feature is not available for x86 Apps [3]. Thus
-  // we simply assume the adapter is powered if it is present.
-  //
-  // [1]
-  // https://docs.microsoft.com/en-us/uwp/api/windows.devices.bluetooth.bluetoothadapter.getradioasync
-  // [2]
-  // https://docs.microsoft.com/en-us/uwp/api/windows.devices.radios.radiostate
-  // [3] https://github.com/Microsoft/cppwinrt/issues/47#issuecomment-335181782
-  if (IsPresent()) {
-    LOG(WARNING) << "Optimistically assuming the adapter is powered since it "
-                    "is present. This might not actually be true.";
+  // Due to an issue on WoW64 we might fail to obtain the radio in OnGetRadio().
+  // This is why it can be null here.
+  if (!radio_)
+    return false;
+
+  RadioState state;
+  HRESULT hr = radio_->get_State(&state);
+  if (FAILED(hr)) {
+    VLOG(2) << "Getting Radio State failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
   }
 
-  return IsPresent();
+  return state == RadioState_On;
 }
 
 bool BluetoothAdapterWinrt::IsDiscoverable() const {
@@ -296,8 +325,31 @@ void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
 }
 
 bool BluetoothAdapterWinrt::SetPoweredImpl(bool powered) {
-  NOTIMPLEMENTED();
-  return false;
+  // Due to an issue on WoW64 we might fail to obtain the radio in OnGetRadio().
+  // This is why it can be null here.
+  if (!radio_)
+    return false;
+
+  const RadioState state = powered ? RadioState_On : RadioState_Off;
+  ComPtr<IAsyncOperation<RadioAccessStatus>> set_state_op;
+  HRESULT hr = radio_->SetStateAsync(state, &set_state_op);
+  if (FAILED(hr)) {
+    VLOG(2) << "Radio::SetStateAsync failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  hr = PostAsyncResults(std::move(set_state_op),
+                        base::BindOnce(&BluetoothAdapterWinrt::OnSetState,
+                                       weak_ptr_factory_.GetWeakPtr()));
+
+  if (FAILED(hr)) {
+    VLOG(2) << "PostAsyncResults failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return false;
+  }
+
+  return true;
 }
 
 void BluetoothAdapterWinrt::AddDiscoverySession(
@@ -441,6 +493,12 @@ HRESULT BluetoothAdapterWinrt::GetDeviceInformationStaticsActivationFactory(
       RuntimeClass_Windows_Devices_Enumeration_DeviceInformation>(statics);
 }
 
+HRESULT BluetoothAdapterWinrt::GetRadioStaticsActivationFactory(
+    IRadioStatics** statics) const {
+  return base::win::GetActivationFactory<
+      IRadioStatics, RuntimeClass_Windows_Devices_Radios_Radio>(statics);
+}
+
 HRESULT
 BluetoothAdapterWinrt::ActivateBluetoothAdvertisementLEWatcherInstance(
     IBluetoothLEAdvertisementWatcher** instance) const {
@@ -478,11 +536,9 @@ void BluetoothAdapterWinrt::OnGetDefaultAdapter(
     return;
   }
 
-  // Obtaining the default adapter will fail if no physical adapter is present.
-  // Thus a non-zero |adapter| implies that a physical adapter is present.
-  is_present_ = true;
+  adapter_ = std::move(adapter);
   uint64_t raw_address;
-  HRESULT hr = adapter->get_BluetoothAddress(&raw_address);
+  HRESULT hr = adapter_->get_BluetoothAddress(&raw_address);
   if (FAILED(hr)) {
     VLOG(2) << "Getting BluetoothAddress failed: "
             << logging::SystemErrorCodeToString(hr);
@@ -494,7 +550,7 @@ void BluetoothAdapterWinrt::OnGetDefaultAdapter(
   DCHECK(!address_.empty());
 
   HSTRING device_id;
-  hr = adapter->get_DeviceId(&device_id);
+  hr = adapter_->get_DeviceId(&device_id);
   if (FAILED(hr)) {
     VLOG(2) << "Getting DeviceId failed: "
             << logging::SystemErrorCodeToString(hr);
@@ -546,6 +602,83 @@ void BluetoothAdapterWinrt::OnCreateFromIdAsync(
   }
 
   name_ = base::win::ScopedHString(name).GetAsUTF8();
+
+  ComPtr<IRadioStatics> radio_statics;
+  hr = GetRadioStaticsActivationFactory(&radio_statics);
+  if (FAILED(hr)) {
+    VLOG(2) << "GetRadioStaticsActivationFactory failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  ComPtr<IAsyncOperation<RadioAccessStatus>> request_access_op;
+  hr = radio_statics->RequestAccessAsync(&request_access_op);
+  if (FAILED(hr)) {
+    VLOG(2) << "RequestAccessAsync failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  hr = PostAsyncResults(
+      std::move(request_access_op),
+      base::BindOnce(&BluetoothAdapterWinrt::OnRequestAccess,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
+
+  if (FAILED(hr)) {
+    VLOG(2) << "PostAsyncResults failed: "
+            << logging::SystemErrorCodeToString(hr);
+  }
+}
+
+void BluetoothAdapterWinrt::OnRequestAccess(base::ScopedClosureRunner on_init,
+                                            RadioAccessStatus access_status) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (access_status != RadioAccessStatus_Allowed) {
+    VLOG(2) << "Got unexpected Radio Access Status: "
+            << ToCString(access_status);
+    return;
+  }
+
+  ComPtr<IAsyncOperation<Radio*>> get_radio_op;
+  HRESULT hr = adapter_->GetRadioAsync(&get_radio_op);
+  if (FAILED(hr)) {
+    VLOG(2) << "GetRadioAsync failed: " << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  hr = PostAsyncResults(
+      std::move(get_radio_op),
+      base::BindOnce(&BluetoothAdapterWinrt::OnGetRadio,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
+
+  if (FAILED(hr)) {
+    VLOG(2) << "PostAsyncResults failed: "
+            << logging::SystemErrorCodeToString(hr);
+  }
+}
+
+void BluetoothAdapterWinrt::OnGetRadio(base::ScopedClosureRunner on_init,
+                                       ComPtr<IRadio> radio) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!radio) {
+    // This happens within WoW64, due to an issue with non-native APIs.
+    VLOG(2) << "Getting Radio failed.";
+    return;
+  }
+
+  radio_ = std::move(radio);
+}
+
+void BluetoothAdapterWinrt::OnSetState(RadioAccessStatus access_status) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (access_status != RadioAccessStatus_Allowed) {
+    VLOG(2) << "Got unexpected Radio Access Status: "
+            << ToCString(access_status);
+  } else {
+    NotifyAdapterPoweredChanged(IsPowered());
+  }
+
+  DidChangePoweredState();
 }
 
 void BluetoothAdapterWinrt::OnAdvertisementReceived(

@@ -358,6 +358,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   //
   // Platforms that natively support a callback based API (e.g. BlueZ and Win)
   // should override this method and provide their own implementation instead.
+  //
+  // Due to an issue with non-native APIs on Windows 10, both IsPowered() and
+  // SetPowered() don't work correctly when run from a x86 Chrome on a x64 CPU.
+  // See https://github.com/Microsoft/cppwinrt/issues/47 for more details.
   virtual void SetPowered(bool powered,
                           const base::Closure& callback,
                           const ErrorCallback& error_callback);

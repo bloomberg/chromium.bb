@@ -115,7 +115,9 @@ class BluetoothTestWinrt : public BluetoothTestWin,
                            public ::testing::WithParamInterface<bool> {
  public:
   BluetoothTestWinrt();
-  ~BluetoothTestWinrt();
+  ~BluetoothTestWinrt() override;
+
+  bool PlatformSupportsLowEnergy() override;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -123,6 +125,8 @@ class BluetoothTestWinrt : public BluetoothTestWin,
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothTestWinrt);
 };
+
+using BluetoothTestWinrtOnly = BluetoothTestWinrt;
 
 }  // namespace device
 

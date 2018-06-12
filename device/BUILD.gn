@@ -293,6 +293,8 @@ test("device_unittests") {
       "bluetooth/test/fake_bluetooth_le_advertisement_winrt.h",
       "bluetooth/test/fake_device_information_winrt.cc",
       "bluetooth/test/fake_device_information_winrt.h",
+      "bluetooth/test/fake_radio_winrt.cc",
+      "bluetooth/test/fake_radio_winrt.h",
     ]
   }
 
