@@ -1455,16 +1455,6 @@
         "test": "events_unittests"
       },
       {
-        "args": [
-          "--enable-features=NetworkService"
-        ],
-        "name": "network_service_extensions_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "extensions_browsertests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1541,6 +1531,7 @@
         "args": [
           "--enable-features=NetworkService"
         ],
+        "experiment_percentage": 100,
         "name": "network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
