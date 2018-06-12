@@ -80,6 +80,10 @@ public class ChromiumLinkerTestActivity extends Activity {
         Linker linker = Linker.getInstance();
         linker.setMemoryDeviceConfigForTesting(memoryDeviceConfig);
 
+        // Setup the TestRunner class name.
+        linker.setTestRunnerClassNameForTesting(
+                "org.chromium.chromium_linker_test_apk.LinkerTests");
+
         // Load the library in the browser process, this will also run the test
         // runner in this process.
         try {
@@ -98,7 +102,7 @@ public class ChromiumLinkerTestActivity extends Activity {
                 (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.test_activity, null);
         mShellManager = (ShellManager) view.findViewById(R.id.shell_container);
-        mWindowAndroid = new ActivityWindowAndroid(this);
+        mWindowAndroid = new ActivityWindowAndroid(this, false);
         mShellManager.setWindow(mWindowAndroid);
 
         mShellManager.setStartupUrl("about:blank");
