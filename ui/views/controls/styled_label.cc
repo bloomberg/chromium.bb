@@ -123,9 +123,7 @@ StyledLabel::StyledLabel(const base::string16& text,
       width_at_last_layout_(0),
       displayed_on_background_color_(SkColorSetRGB(0xFF, 0xFF, 0xFF)),
       displayed_on_background_color_set_(false),
-      auto_color_readability_enabled_(true),
-      horizontal_alignment_(base::i18n::IsRTL() ? gfx::ALIGN_RIGHT
-                                                : gfx::ALIGN_LEFT) {
+      auto_color_readability_enabled_(true) {
   base::TrimWhitespace(text, base::TRIM_TRAILING, &text_);
 }
 
@@ -271,7 +269,7 @@ void StyledLabel::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   if (horizontal_alignment_ == alignment)
     return;
   horizontal_alignment_ = alignment;
-  SchedulePaint();
+  PreferredSizeChanged();
 }
 
 void StyledLabel::ClearStyleRanges() {
