@@ -41,14 +41,8 @@ class GlobalKeyboardShortcutsTest : public InProcessBrowserTest {
 
 namespace {
 
-void ActivateAccelerator(NSWindow* window, NSEvent* ns_event) {
-  if ([window performKeyEquivalent:ns_event])
-    return;
-
-  // This is consistent with the way AppKit dispatches events when
-  // -performKeyEquivalent: returns NO. See "The Path of Key Events" in the
-  // Cocoa Event Architecture documentation.
-  [window sendEvent:ns_event];
+void SendEvent(NSEvent* ns_event) {
+  [NSApp sendEvent:ns_event];
 }
 
 }  // namespace
@@ -64,20 +58,24 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
   EXPECT_TRUE(tab_strip->IsTabSelected(1));
 
   // Ctrl+Tab goes to the next tab, which loops back to the first tab.
-  ActivateAccelerator(
-      ns_window,
+  SendEvent(
       SynthesizeKeyEvent(ns_window, true, ui::VKEY_TAB, NSControlKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(0));
 
   // Cmd+2 goes to the second tab.
-  ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,
-                                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, true, ui::VKEY_2, NSCommandKeyMask));
+
+  // Wait for the tab to activate to be selected.
+  while (true) {
+    if (tab_strip->IsTabSelected(1))
+      break;
+    base::RunLoop().RunUntilIdle();
+  }
   EXPECT_TRUE(tab_strip->IsTabSelected(1));
 
   // Cmd+{ goes to the previous tab.
-  ActivateAccelerator(ns_window,
-                      SynthesizeKeyEvent(ns_window, true, ui::VKEY_OEM_4,
-                                         NSShiftKeyMask | NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, true, ui::VKEY_OEM_4,
+                               NSShiftKeyMask | NSCommandKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(0));
 }
 
@@ -93,39 +91,32 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, CopyPasteOmnibox) {
   NSWindow* ns_window = browser()->window()->GetNativeWindow();
 
   // Cmd+L focuses the omnibox and selects all the text.
-  ActivateAccelerator(
-      ns_window, SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_L,
-                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_L,
+                               NSCommandKeyMask));
 
   // The first typed letter overrides the existing contents.
-  [ns_window
-      sendEvent:SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_A,
-                                   /*flags=*/0)];
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_A,
+                               /*flags=*/0));
   // The second typed letter just appends.
-  [ns_window
-      sendEvent:SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_B,
-                                   /*flags=*/0)];
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_B,
+                               /*flags=*/0));
   ASSERT_EQ(omnibox_view->GetText(), base::ASCIIToUTF16("ab"));
 
   // Cmd+A selects the contents.
-  ActivateAccelerator(
-      ns_window, SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_A,
-                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_A,
+                               NSCommandKeyMask));
 
   // Cmd+C copies the contents.
-  ActivateAccelerator(
-      ns_window, SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_C,
-                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_C,
+                               NSCommandKeyMask));
 
   // Right arrow moves to the end.
-  [ns_window
-      sendEvent:SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_RIGHT,
-                                   /*flags=*/0)];
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_RIGHT,
+                               /*flags=*/0));
 
   // Cmd+V pastes the contents.
-  ActivateAccelerator(
-      ns_window, SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_V,
-                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_V,
+                               NSCommandKeyMask));
   EXPECT_EQ(omnibox_view->GetText(), base::ASCIIToUTF16("abab"));
 }
 
@@ -150,9 +141,8 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, ReopenPreviousTab) {
   content::WindowedNotificationObserver wait_for_closed_tab(
       chrome::NOTIFICATION_TAB_CLOSING,
       content::NotificationService::AllSources());
-  ActivateAccelerator(
-      ns_window, SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_W,
-                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_W,
+                               NSCommandKeyMask));
   wait_for_closed_tab.Wait();
   EXPECT_EQ(1, tab_strip->count());
   ASSERT_NE(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
@@ -161,9 +151,8 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, ReopenPreviousTab) {
   content::WindowedNotificationObserver wait_for_added_tab(
       chrome::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
-  ActivateAccelerator(
-      ns_window, SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_T,
-                                    NSCommandKeyMask | NSShiftKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_T,
+                               NSCommandKeyMask | NSShiftKeyMask));
   wait_for_added_tab.Wait();
   EXPECT_EQ(2, tab_strip->count());
   ASSERT_EQ(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
@@ -183,8 +172,7 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, MenuCommandPriority) {
   EXPECT_TRUE(tab_strip->IsTabSelected(3));
 
   // Use the cmd-2 hotkey to switch to the second tab.
-  ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,
-                                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, true, ui::VKEY_2, NSCommandKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(1));
 
   // Change the "Select Next Tab" menu item's key equivalent to be cmd-2, to
@@ -203,10 +191,8 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, MenuCommandPriority) {
   ASSERT_TRUE([next_item isEnabled]);
 
   // Send cmd-2 again, and ensure the tab switches.
-  ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,
-                                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, true, ui::VKEY_2, NSCommandKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(2));
-  ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,
-                                                    NSCommandKeyMask));
+  SendEvent(SynthesizeKeyEvent(ns_window, true, ui::VKEY_2, NSCommandKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(3));
 }
