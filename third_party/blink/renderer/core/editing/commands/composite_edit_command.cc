@@ -304,6 +304,7 @@ void CompositeEditCommand::InsertNodeBefore(
 void CompositeEditCommand::InsertNodeAfter(Node* insert_child,
                                            Node* ref_child,
                                            EditingState* editing_state) {
+  ABORT_EDITING_COMMAND_IF(!ref_child->parentNode());
   DCHECK(insert_child);
   DCHECK(ref_child);
   DCHECK_NE(GetDocument().body(), ref_child);

@@ -23,6 +23,7 @@ class SampleCommand final : public CompositeEditCommand {
                         EditingState*,
                         ShouldAssumeContentIsAlwaysEditable =
                             kDoNotAssumeContentIsAlwaysEditable);
+  void InsertNodeAfter(Node*, Node*, EditingState*);
 
   void MoveParagraphContentsToNewBlockIfNecessary(const Position&,
                                                   EditingState*);
@@ -46,6 +47,12 @@ void SampleCommand::InsertNodeBefore(
   CompositeEditCommand::InsertNodeBefore(
       insert_child, ref_child, editing_state,
       should_assume_content_is_always_editable);
+}
+
+void SampleCommand::InsertNodeAfter(Node* insert_child,
+                                    Node* ref_child,
+                                    EditingState* editing_state) {
+  CompositeEditCommand::InsertNodeAfter(insert_child, ref_child, editing_state);
 }
 
 void SampleCommand::MoveParagraphContentsToNewBlockIfNecessary(
@@ -140,10 +147,15 @@ TEST_F(CompositeEditCommandTest, InsertNodeOnDisconnectedParent) {
   Node* insert_child = GetDocument().QuerySelector("b");
   Element* ref_child = GetDocument().QuerySelector("p");
   ref_child->remove();
-  EditingState editing_state;
+  EditingState editing_state_before;
   // editing state should abort here.
-  sample.InsertNodeBefore(insert_child, ref_child, &editing_state);
-  EXPECT_TRUE(editing_state.IsAborted());
+  sample.InsertNodeBefore(insert_child, ref_child, &editing_state_before);
+  EXPECT_TRUE(editing_state_before.IsAborted());
+
+  EditingState editing_state_after;
+  // editing state should abort here.
+  sample.InsertNodeAfter(insert_child, ref_child, &editing_state_after);
+  EXPECT_TRUE(editing_state_after.IsAborted());
 }
 
 }  // namespace blink
