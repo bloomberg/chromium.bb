@@ -698,6 +698,14 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE" desc="Notification shown when a Bluetooth adapter is discoverable.">
         Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME">$1<ex>Chromebook</ex></ph>" with address <ph name="ADDRESS">$2<ex>01:23:45:67:89:0A</ex></ph>
       </message>
+      <message name="IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_TITLE" desc="Title used for the system notification shown when a network has been auto-connected (e.g., when an enterprise policy is applied which initiates a connection to a corporate network like Google-A).">
+        Switched network connection
+      </message>
+      <message name="IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_MESSAGE" desc="Message displayed in the system notification shown when a network has been auto-connected (e.g., when an enterprise policy is applied which initiates a connection to a corporate network like Google-A).">
+        Your connection has switched to a more secure network
+      </message>
+
+      <!-- Status Tray Network strings -->
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISPLAY_PINCODE" desc="Bluetooth pairing message typically shown on a request from a 2.0 device that has a keyboard.">
         Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE">$2<ex>123456</ex></ph>
       </message>

@@ -11,6 +11,8 @@
 
 namespace ash {
 
+class AutoConnectNotifier;
+class AutoConnectNotifierTest;
 class CapsLockNotificationController;
 class CastNotificationController;
 class PowerNotificationController;
@@ -28,6 +30,8 @@ class SystemNotificationController {
   ~SystemNotificationController();
 
  private:
+  friend class AutoConnectNotifierTest;
+  const std::unique_ptr<AutoConnectNotifier> auto_connect_;
   const std::unique_ptr<CapsLockNotificationController> caps_lock_;
   const std::unique_ptr<CastNotificationController> cast_;
   const std::unique_ptr<PowerNotificationController> power_;

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/auto_connect_notifier.h"
+#include "ash/system/network/auto_connect_notifier.h"
 
 #include "ash/public/cpp/network_icon_image_source.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -19,21 +18,18 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "url/gurl.h"
 
+using chromeos::NetworkHandler;
+
+namespace ash {
+
 namespace {
-
-const char kNotifierAutoConnect[] = "ash.auto-connect";
-
-// Signal strength to use for the notification icon. The network icon should be
-// at full signal strength (4 out of 4).
-const int kSignalStrength = 4;
-
-// Dimensions of notification icon in pixels.
-constexpr gfx::Size kSignalIconSize(18, 18);
 
 // Timeout used for connecting to a managed network. When an auto-connection is
 // initiated, we expect the connection to occur within this amount of time. If
@@ -42,30 +38,37 @@ constexpr gfx::Size kSignalIconSize(18, 18);
 constexpr const base::TimeDelta kNetworkConnectionTimeout =
     base::TimeDelta::FromSeconds(3);
 
-const char kAutoConnectNotificationId[] =
-    "cros_auto_connect_notifier_ids.connected_to_network";
+const char kNotifierAutoConnect[] = "ash.auto-connect";
 
 }  // namespace
 
-AutoConnectNotifier::AutoConnectNotifier(
-    Profile* profile,
-    chromeos::NetworkConnectionHandler* network_connection_handler,
-    chromeos::NetworkStateHandler* network_state_handler,
-    chromeos::AutoConnectHandler* auto_connect_handler)
-    : profile_(profile),
-      network_connection_handler_(network_connection_handler),
-      network_state_handler_(network_state_handler),
-      auto_connect_handler_(auto_connect_handler),
-      timer_(std::make_unique<base::OneShotTimer>()) {
-  network_connection_handler_->AddObserver(this);
-  network_state_handler_->AddObserver(this, FROM_HERE);
-  auto_connect_handler_->AddObserver(this);
+// static
+const char AutoConnectNotifier::kAutoConnectNotificationId[] =
+    "cros_auto_connect_notifier_ids.connected_to_network";
+
+AutoConnectNotifier::AutoConnectNotifier()
+    : timer_(std::make_unique<base::OneShotTimer>()) {
+  // NetworkHandler may not be initialized in tests.
+  if (NetworkHandler::IsInitialized()) {
+    auto* network_handler = NetworkHandler::Get();
+    network_handler->network_connection_handler()->AddObserver(this);
+    network_handler->network_state_handler()->AddObserver(this, FROM_HERE);
+    // AutoConnectHandler may not be initialized in tests with NetworkHandler.
+    if (network_handler->auto_connect_handler())
+      network_handler->auto_connect_handler()->AddObserver(this);
+  }
 }
 
 AutoConnectNotifier::~AutoConnectNotifier() {
-  network_connection_handler_->RemoveObserver(this);
-  network_state_handler_->RemoveObserver(this, FROM_HERE);
-  auto_connect_handler_->RemoveObserver(this);
+  // NetworkHandler may not be initialized in tests.
+  if (NetworkHandler::IsInitialized()) {
+    auto* network_handler = NetworkHandler::Get();
+    // AutoConnectHandler may not be initialized in tests with NetworkHandler.
+    if (network_handler->auto_connect_handler())
+      network_handler->auto_connect_handler()->RemoveObserver(this);
+    network_handler->network_state_handler()->RemoveObserver(this, FROM_HERE);
+    network_handler->network_connection_handler()->RemoveObserver(this);
+  }
 }
 
 void AutoConnectNotifier::ConnectToNetworkRequested(
@@ -125,8 +128,9 @@ void AutoConnectNotifier::DisplayNotification() {
   auto notification = message_center::Notification::CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
       kAutoConnectNotificationId,
-      l10n_util::GetStringUTF16(IDS_NETWORK_AUTOCONNECT_NOTIFICATION_TITLE),
-      l10n_util::GetStringUTF16(IDS_NETWORK_AUTOCONNECT_NOTIFICATION_MESSAGE),
+      l10n_util::GetStringUTF16(IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_MESSAGE),
       gfx::Image() /* icon */, base::string16() /* display_source */,
       GURL() /* origin_url */,
       message_center::NotifierId(
@@ -137,17 +141,16 @@ void AutoConnectNotifier::DisplayNotification() {
       gfx::VectorIcon() /* small_image */,
       message_center::SystemNotificationWarningLevel::NORMAL);
 
-  notification->set_small_image(
-      gfx::Image(gfx::CanvasImageSource::MakeImageSkia<
-                 ash::network_icon::SignalStrengthImageSource>(
-          ash::network_icon::ARCS, notification->accent_color(),
-          kSignalIconSize, kSignalStrength)));
+  notification->set_small_image(gfx::Image(network_icon::GetImageForWifiNetwork(
+      notification->accent_color(),
+      gfx::Size(message_center::kSmallImageSizeMD,
+                message_center::kSmallImageSizeMD))));
 
-  NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  if (message_center->FindVisibleNotificationById(kAutoConnectNotificationId))
+    message_center->RemoveNotification(kAutoConnectNotificationId, false);
+  message_center->AddNotification(std::move(notification));
 }
 
-void AutoConnectNotifier::SetTimerForTesting(
-    std::unique_ptr<base::Timer> test_timer) {
-  timer_ = std::move(test_timer);
-}
+}  // namespace ash

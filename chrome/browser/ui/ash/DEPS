@@ -34,10 +34,6 @@ specific_include_rules = {
     "+ash/accelerators/accelerator_controller.h",
     "+ash/shell.h",
   ],
-  # https://crbug.com/826370
-  "auto_connect_notifier\.cc": [
-    "+ash/system/network/network_icon.h",
-  ],
   # For ash::Shell::SetIsBrowserProcessWithMash()
   "chrome_browser_main_extra_parts_ash\.cc": [
     "+ash/shell.h",

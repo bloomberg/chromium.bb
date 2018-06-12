@@ -91,6 +91,11 @@ class ASH_PUBLIC_EXPORT SignalStrengthImageSource
   DISALLOW_COPY_AND_ASSIGN(SignalStrengthImageSource);
 };
 
+// Returns the sized full strength unbadged image for a Wi-Fi network. Used
+// for wireless network notifications.
+ASH_PUBLIC_EXPORT gfx::ImageSkia GetImageForWifiNetwork(SkColor color,
+                                                        gfx::Size size);
+
 }  // namespace network_icon
 }  // namespace ash
 
