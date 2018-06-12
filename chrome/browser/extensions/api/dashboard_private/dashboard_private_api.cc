@@ -25,9 +25,9 @@ namespace ShowPermissionPromptForDelegatedInstall =
 namespace {
 
 // Error messages that can be returned by the API.
-const char kInvalidIconUrlError[] = "Invalid icon url";
-const char kInvalidIdError[] = "Invalid id";
-const char kInvalidManifestError[] = "Invalid manifest";
+const char kDashboardInvalidIconUrlError[] = "Invalid icon url";
+const char kDashboardInvalidIdError[] = "Invalid id";
+const char kDashboardInvalidManifestError[] = "Invalid manifest";
 const char kUserCancelledError[] = "User cancelled install";
 
 api::dashboard_private::Result WebstoreInstallHelperResultToApiResult(
@@ -61,16 +61,16 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::Run() {
 
   if (!crx_file::id_util::IdIsValid(params_->details.id)) {
     return RespondNow(BuildResponse(api::dashboard_private::RESULT_INVALID_ID,
-                                    kInvalidIdError));
+                                    kDashboardInvalidIdError));
   }
 
   GURL icon_url;
   if (params_->details.icon_url) {
     icon_url = source_url().Resolve(*params_->details.icon_url);
     if (!icon_url.is_valid()) {
-      return RespondNow(BuildResponse(
-          api::dashboard_private::RESULT_INVALID_ICON_URL,
-          kInvalidIconUrlError));
+      return RespondNow(
+          BuildResponse(api::dashboard_private::RESULT_INVALID_ICON_URL,
+                        kDashboardInvalidIconUrlError));
     }
   }
 
@@ -120,7 +120,7 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
   if (!dummy_extension_.get()) {
     OnWebstoreParseFailure(params_->details.id,
                            WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
-                           kInvalidManifestError);
+                           kDashboardInvalidManifestError);
     return;
   }
 

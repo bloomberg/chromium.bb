@@ -94,7 +94,7 @@ const char kNameKey[] = "name";
 const char kMetadataKey[] = "metadata";
 const char kAttachedImagesBlobInfoKey[] = "attachedImagesBlobInfo";
 const char kBlobUUIDKey[] = "blobUUID";
-const char kTypeKey[] = "type";
+const char kMediaGalleriesApiTypeKey[] = "type";
 const char kSizeKey[] = "size";
 
 const char kInvalidGalleryId[] = "-1";
@@ -752,7 +752,7 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
   std::unique_ptr<base::DictionaryValue> attached_image(
       new base::DictionaryValue);
   attached_image->SetString(kBlobUUIDKey, current_blob->GetUUID());
-  attached_image->SetString(kTypeKey, current_image->type);
+  attached_image->SetString(kMediaGalleriesApiTypeKey, current_image->type);
   attached_image->SetInteger(
       kSizeKey, base::checked_cast<int>(current_image->data.size()));
   attached_images_list->Append(std::move(attached_image));
