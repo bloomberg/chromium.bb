@@ -201,11 +201,8 @@ bool WaitForExitWithTimeoutImpl(base::ProcessHandle handle,
   }
 
   int status;
-  if (!WaitpidWithTimeout(handle, &status, timeout)) {
-    // If multiple threads wait on the same |handle| then one wait will succeed
-    // and the other will fail with errno set to ECHILD.
-    return exited || (errno == ECHILD);
-  }
+  if (!WaitpidWithTimeout(handle, &status, timeout))
+    return exited;
   if (WIFSIGNALED(status)) {
     if (exit_code)
       *exit_code = -1;
