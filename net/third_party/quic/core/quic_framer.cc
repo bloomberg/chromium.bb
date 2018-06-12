@@ -1066,7 +1066,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
     // operating on aligned memory.
     QUIC_CACHELINE_ALIGNED char buffer[kMaxPacketSize];
     if (last_packet_is_ietf_quic_) {
-      rv = ProcessIetfDataPacket(&reader, header, packet, buffer,
+      rv = ProcessIetfDataPacket(&reader, &header, packet, buffer,
                                  kMaxPacketSize);
     } else {
       rv = ProcessDataPacket(&reader, &header, packet, buffer, kMaxPacketSize);
@@ -1074,7 +1074,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
   } else {
     std::unique_ptr<char[]> large_buffer(new char[packet.length()]);
     if (last_packet_is_ietf_quic_) {
-      rv = ProcessIetfDataPacket(&reader, header, packet, large_buffer.get(),
+      rv = ProcessIetfDataPacket(&reader, &header, packet, large_buffer.get(),
                                  packet.length());
     } else {
       rv = ProcessDataPacket(&reader, &header, packet, large_buffer.get(),
@@ -1110,23 +1110,77 @@ bool QuicFramer::ProcessVersionNegotiationPacket(
 }
 
 bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
-                                       const QuicPacketHeader& header,
+                                       QuicPacketHeader* header,
                                        const QuicEncryptedPacket& packet,
                                        char* decrypted_buffer,
                                        size_t buffer_length) {
-  if (!visitor_->OnUnauthenticatedHeader(header)) {
+  if (header->form == SHORT_HEADER) {
+    // Peak possible stateless reset token. Will only be used on decryption
+    // failure.
+    QuicStringPiece remaining = encrypted_reader->PeekRemainingPayload();
+    if (remaining.length() >= sizeof(header->possible_stateless_reset_token)) {
+      remaining.copy(
+          reinterpret_cast<char*>(&header->possible_stateless_reset_token),
+          sizeof(header->possible_stateless_reset_token),
+          remaining.length() - sizeof(header->possible_stateless_reset_token));
+    }
+  }
+
+  if (header->form == SHORT_HEADER ||
+      header->long_packet_type != VERSION_NEGOTIATION) {
+    // Process packet number.
+    QuicPacketNumber base_packet_number = largest_packet_number_;
+
+    if (!ProcessAndCalculatePacketNumber(
+            encrypted_reader, header->packet_number_length, base_packet_number,
+            &header->packet_number)) {
+      set_detailed_error("Unable to read packet number.");
+      return RaiseError(QUIC_INVALID_PACKET_HEADER);
+    }
+
+    if (header->packet_number == 0u) {
+      if (IsIetfStatelessResetPacket(*header)) {
+        // This is a stateless reset packet.
+        QuicIetfStatelessResetPacket packet(
+            *header, header->possible_stateless_reset_token);
+        visitor_->OnAuthenticatedIetfStatelessResetPacket(packet);
+        return true;
+      }
+      set_detailed_error("packet numbers cannot be 0.");
+      return RaiseError(QUIC_INVALID_PACKET_HEADER);
+    }
+  }
+
+  // A nonce should only present in SHLO from the server to the client when
+  // using QUIC crypto.
+  if (header->form == LONG_HEADER &&
+      header->long_packet_type == ZERO_RTT_PROTECTED &&
+      perspective_ == Perspective::IS_CLIENT) {
+    if (!encrypted_reader->ReadBytes(
+            reinterpret_cast<uint8_t*>(last_nonce_.data()),
+            last_nonce_.size())) {
+      set_detailed_error("Unable to read nonce.");
+      return RaiseError(QUIC_INVALID_PACKET_HEADER);
+    }
+
+    header->nonce = &last_nonce_;
+  } else {
+    header->nonce = nullptr;
+  }
+
+  if (!visitor_->OnUnauthenticatedHeader(*header)) {
     set_detailed_error(
         "Visitor asked to stop processing of unauthenticated header.");
     return false;
   }
 
   size_t decrypted_length = 0;
-  if (!DecryptPayload(encrypted_reader, header, packet, decrypted_buffer,
+  if (!DecryptPayload(encrypted_reader, *header, packet, decrypted_buffer,
                       buffer_length, &decrypted_length)) {
-    if (IsIetfStatelessResetPacket(header)) {
+    if (IsIetfStatelessResetPacket(*header)) {
       // This is a stateless reset packet.
       QuicIetfStatelessResetPacket packet(
-          header, header.possible_stateless_reset_token);
+          *header, header->possible_stateless_reset_token);
       visitor_->OnAuthenticatedIetfStatelessResetPacket(packet);
       return true;
     }
@@ -1138,9 +1192,9 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
   // Update the largest packet number after we have decrypted the packet
   // so we are confident is not attacker controlled.
   largest_packet_number_ =
-      std::max(header.packet_number, largest_packet_number_);
+      std::max(header->packet_number, largest_packet_number_);
 
-  if (!visitor_->OnPacketHeader(header)) {
+  if (!visitor_->OnPacketHeader(*header)) {
     // The visitor suppresses further processing of the packet.
     return true;
   }
@@ -1153,7 +1207,7 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
 
   // Handle the payload.
   if (version_.transport_version == QUIC_VERSION_99) {
-    if (!ProcessIetfFrameData(&reader, header)) {
+    if (!ProcessIetfFrameData(&reader, *header)) {
       DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessIetfFrameData sets the error.
       DCHECK_NE("", detailed_error_);
       QUIC_DLOG(WARNING) << ENDPOINT << "Unable to process frame data. Error: "
@@ -1161,7 +1215,7 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
       return false;
     }
   } else {
-    if (!ProcessFrameData(&reader, header)) {
+    if (!ProcessFrameData(&reader, *header)) {
       DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessFrameData sets the error.
       DCHECK_NE("", detailed_error_);
       QUIC_DLOG(WARNING) << ENDPOINT << "Unable to process frame data. Error: "
@@ -1697,6 +1751,10 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
       return false;
     }
     header->version = ParseQuicVersionLabel(version_label);
+    if (header->long_packet_type != VERSION_NEGOTIATION) {
+      // Do not save version of version negotiation packet.
+      last_version_label_ = version_label;
+    }
 
     // Read and validate connection ID length.
     uint8_t connection_id_length;
@@ -1740,70 +1798,6 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     // Set destination connection ID to source connection ID.
     DCHECK_EQ(0u, header->destination_connection_id);
     header->destination_connection_id = header->source_connection_id;
-  }
-
-  if (header->form == SHORT_HEADER) {
-    // Peak possible stateless reset token. Will only be used on decryption
-    // failure.
-    QuicStringPiece remaining = reader->PeekRemainingPayload();
-    if (remaining.length() >= sizeof(header->possible_stateless_reset_token)) {
-      remaining.copy(
-          reinterpret_cast<char*>(&header->possible_stateless_reset_token),
-          sizeof(header->possible_stateless_reset_token),
-          remaining.length() - sizeof(header->possible_stateless_reset_token));
-    }
-  }
-
-  if (header->form == SHORT_HEADER ||
-      header->long_packet_type != VERSION_NEGOTIATION) {
-    // Process packet number.
-    QuicPacketNumber base_packet_number = largest_packet_number_;
-
-    if (!ProcessAndCalculatePacketNumber(reader, header->packet_number_length,
-                                         base_packet_number,
-                                         &header->packet_number)) {
-      set_detailed_error("Unable to read packet number.");
-      return RaiseError(QUIC_INVALID_PACKET_HEADER);
-    }
-
-    if (header->packet_number == 0u) {
-      if (IsIetfStatelessResetPacket(*header)) {
-        // This is a stateless reset packet.
-        QuicIetfStatelessResetPacket packet(
-            *header, header->possible_stateless_reset_token);
-        visitor_->OnAuthenticatedIetfStatelessResetPacket(packet);
-        return true;
-      }
-      set_detailed_error("packet numbers cannot be 0.");
-      return false;
-    }
-  }
-
-  if (header->form == SHORT_HEADER) {
-    return true;
-  }
-
-  if (header->long_packet_type == VERSION_NEGOTIATION) {
-    // Do not save version of version negotiation packet.
-    DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
-    return true;
-  }
-  last_version_label_ = version_label;
-  header->version = ParseQuicVersionLabel(version_label);
-
-  // A nonce should only present in SHLO from the server to the client when
-  // using QUIC crypto.
-  if (header->long_packet_type == ZERO_RTT_PROTECTED &&
-      perspective_ == Perspective::IS_CLIENT) {
-    if (!reader->ReadBytes(reinterpret_cast<uint8_t*>(last_nonce_.data()),
-                           last_nonce_.size())) {
-      set_detailed_error("Unable to read nonce.");
-      return false;
-    }
-
-    header->nonce = &last_nonce_;
-  } else {
-    header->nonce = nullptr;
   }
 
   return true;

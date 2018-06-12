@@ -501,7 +501,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                          size_t buffer_length);
 
   bool ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
-                             const QuicPacketHeader& header,
+                             QuicPacketHeader* header,
                              const QuicEncryptedPacket& packet,
                              char* decrypted_buffer,
                              size_t buffer_length);
