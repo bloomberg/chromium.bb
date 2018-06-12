@@ -17,7 +17,7 @@
 namespace syncer {
 
 class DataTypeManager;
-class SyncPrefs;
+class CryptoSyncPrefs;
 
 // This class functions as mostly independent component of SyncServiceBase that
 // handles things related to encryption, including holding lots of state and
@@ -27,7 +27,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   SyncServiceCrypto(base::RepeatingClosure notify_observers,
                     base::RepeatingCallback<ModelTypeSet()> get_preferred_types,
                     base::RepeatingCallback<bool()> can_configure_data_types,
-                    SyncPrefs* sync_prefs);
+                    CryptoSyncPrefs* sync_prefs);
   ~SyncServiceCrypto() override;
 
   // See the SyncService header.
@@ -103,8 +103,9 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   // setup has not been completed). Never null.
   const base::RepeatingCallback<bool()> can_configure_data_types_;
 
-  // A pointer to the sync prefs. Never null and guaranteed to outlive us.
-  SyncPrefs* const sync_prefs_;
+  // A pointer to the crypto-relevant sync prefs. Never null and guaranteed to
+  // outlive us.
+  CryptoSyncPrefs* const sync_prefs_;
 
   // These are only not-null when the engine is initialized.
   SyncEngine* engine_ = nullptr;

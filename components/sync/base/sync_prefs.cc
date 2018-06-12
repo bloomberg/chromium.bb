@@ -18,6 +18,8 @@ namespace syncer {
 
 SessionSyncPrefs::~SessionSyncPrefs() {}
 
+CryptoSyncPrefs::~CryptoSyncPrefs() {}
+
 SyncPrefObserver::~SyncPrefObserver() {}
 
 SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {

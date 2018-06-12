@@ -105,7 +105,7 @@ SyncServiceCrypto::SyncServiceCrypto(
     base::RepeatingClosure notify_observers,
     base::RepeatingCallback<ModelTypeSet()> get_preferred_types,
     base::RepeatingCallback<bool()> can_configure_data_types,
-    SyncPrefs* sync_prefs)
+    CryptoSyncPrefs* sync_prefs)
     : notify_observers_(std::move(notify_observers)),
       get_preferred_types_(std::move(get_preferred_types)),
       can_configure_data_types_(std::move(can_configure_data_types)),
@@ -350,8 +350,9 @@ void SyncServiceCrypto::OnLocalSetPassphraseEncryption(
     const SyncEncryptionHandler::NigoriState& nigori_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!base::FeatureList::IsEnabled(
-          switches::kSyncClearDataOnPassphraseEncryption))
+          switches::kSyncClearDataOnPassphraseEncryption)) {
     return;
+  }
 
   // At this point the user has set a custom passphrase and we have received the
   // updated nigori state. Time to cache the nigori state, and catch up the
