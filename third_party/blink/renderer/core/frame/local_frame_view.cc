@@ -226,7 +226,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       hidden_for_throttling_(false),
       subtree_throttled_(false),
       lifecycle_updates_throttled_(false),
-      needs_paint_property_update_(true),
       current_update_lifecycle_phases_target_state_(
           DocumentLifecycle::kUninitialized),
       past_layout_lifecycle_update_(false),
@@ -1295,17 +1294,11 @@ void LocalFrameView::UpdateLayout() {
 }
 
 void LocalFrameView::SetNeedsPaintPropertyUpdate() {
-  needs_paint_property_update_ = true;
-  if (auto* layout_view = this->GetLayoutView()) {
+  if (auto* layout_view = GetLayoutView())
     layout_view->SetNeedsPaintPropertyUpdate();
-    return;
-  }
-  if (LayoutObject* owner = GetFrame().OwnerLayoutObject())
-    owner->SetNeedsPaintPropertyUpdate();
 }
 
 void LocalFrameView::SetSubtreeNeedsPaintPropertyUpdate() {
-  SetNeedsPaintPropertyUpdate();
   if (auto* layout_view = GetLayoutView())
     layout_view->SetSubtreeNeedsPaintPropertyUpdate();
 }

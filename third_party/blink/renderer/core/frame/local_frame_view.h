@@ -751,30 +751,8 @@ class CORE_EXPORT LocalFrameView final
 
   void BeginLifecycleUpdates();
 
-  // TODO(pdr): Remove the paint property update bits from LocalFrameView in
-  // favor of using LayoutView.
-  // Paint properties (e.g., m_preTranslation, etc.) are built from the
-  // LocalFrameView's state (e.g., x(), y(), etc.) as well as inherited context.
-  // When these inputs change, setNeedsPaintPropertyUpdate will cause a paint
-  // property tree update during the next document lifecycle update.
-  // setNeedsPaintPropertyUpdate also sets the owning layout tree as needing a
-  // paint property update.
+  // Shorthands of LayoutView's corresponding methods.
   void SetNeedsPaintPropertyUpdate();
-#if DCHECK_IS_ON()
-  // Similar to setNeedsPaintPropertyUpdate() but does not set the owning layout
-  // tree as needing a paint property update.
-  void SetOnlyThisNeedsPaintPropertyUpdateForTesting() {
-    needs_paint_property_update_ = true;
-  }
-#endif
-  void ClearNeedsPaintPropertyUpdate() {
-    DCHECK_EQ(Lifecycle().GetState(), DocumentLifecycle::kInPrePaint);
-    needs_paint_property_update_ = false;
-  }
-  bool NeedsPaintPropertyUpdate() const { return needs_paint_property_update_; }
-
-  // Set when the whole frame subtree needs full paint property update,
-  // e.g. when beginning or finishing printing.
   void SetSubtreeNeedsPaintPropertyUpdate();
 
   // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
@@ -1182,10 +1160,6 @@ class CORE_EXPORT LocalFrameView final
   bool hidden_for_throttling_;
   bool subtree_throttled_;
   bool lifecycle_updates_throttled_;
-
-  // Whether the paint properties need to be updated. For more details, see
-  // LocalFrameView::needsPaintPropertyUpdate().
-  bool needs_paint_property_update_;
 
   // This is set on the local root frame view only.
   DocumentLifecycle::LifecycleState

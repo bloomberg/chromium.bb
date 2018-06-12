@@ -93,7 +93,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
     return context_storage_.back();
   };
 
-  // ancestorOverflowLayer does not cross frame boundaries.
+  // ancestor_overflow_paint_layer does not cross frame boundaries.
   context().ancestor_overflow_paint_layer = nullptr;
   if (context().tree_builder_context) {
     PaintPropertyTreeBuilder::SetupContextForFrame(
@@ -122,9 +122,9 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
 #endif
   }
 
-  frame_view.ClearNeedsPaintPropertyUpdate();
   if (RuntimeEnabledFeatures::JankTrackingEnabled())
     frame_view.GetJankTracker().NotifyPrePaintFinished();
+
   context_storage_.pop_back();
 }
 
@@ -241,9 +241,8 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
     const LocalFrameView& frame_view,
     const PrePaintTreeWalkContext& context) {
-  return frame_view.NeedsPaintPropertyUpdate() ||
-         (frame_view.GetLayoutView() &&
-          NeedsTreeBuilderContextUpdate(*frame_view.GetLayoutView(), context));
+  return frame_view.GetLayoutView() &&
+         NeedsTreeBuilderContextUpdate(*frame_view.GetLayoutView(), context);
 }
 
 bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
