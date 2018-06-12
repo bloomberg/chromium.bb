@@ -126,7 +126,6 @@ class WebSocketHandshakeThrottle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
-class WebSyncProvider;
 struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
@@ -703,10 +702,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Push API------------------------------------------------------------
 
   virtual WebPushProvider* PushProvider() { return nullptr; }
-
-  // Background Sync API-------------------------------------------------
-
-  virtual WebSyncProvider* BackgroundSyncProvider() { return nullptr; }
 
   // Media Capabilities --------------------------------------------------
 
