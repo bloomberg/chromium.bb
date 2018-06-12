@@ -515,7 +515,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     const ResourceRequest& request,
     Document* origin_document,
     DocumentLoader* document_loader,
-    NavigationType type,
+    WebNavigationType type,
     NavigationPolicy policy,
     bool replaces_current_history_item,
     bool is_client_redirect,
@@ -538,7 +538,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
   WrappedResourceRequest wrapped_resource_request(request);
   WebLocalFrameClient::NavigationPolicyInfo navigation_info(
       wrapped_resource_request);
-  navigation_info.navigation_type = static_cast<WebNavigationType>(type);
+  navigation_info.navigation_type = type;
   navigation_info.default_policy = static_cast<WebNavigationPolicy>(policy);
   navigation_info.extra_data =
       web_document_loader ? web_document_loader->GetExtraData() : nullptr;

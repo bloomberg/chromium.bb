@@ -51,9 +51,9 @@ unsigned short PerformanceNavigation::type() const {
     return kTypeNavigate;
 
   switch (document_loader->GetNavigationType()) {
-    case kNavigationTypeReload:
+    case kWebNavigationTypeReload:
       return kTypeReload;
-    case kNavigationTypeBackForward:
+    case kWebNavigationTypeBackForward:
       return kTypeBackForward;
     default:
       return kTypeNavigate;

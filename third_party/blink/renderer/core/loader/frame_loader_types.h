@@ -31,15 +31,6 @@
 
 namespace blink {
 
-enum NavigationType {
-  kNavigationTypeLinkClicked,
-  kNavigationTypeFormSubmitted,
-  kNavigationTypeBackForward,
-  kNavigationTypeReload,
-  kNavigationTypeFormResubmitted,
-  kNavigationTypeOther
-};
-
 enum ShouldSendReferrer { kMaybeSendReferrer, kNeverSendReferrer };
 
 enum ShouldSetOpener { kMaybeSetOpener, kNeverSetOpener };

@@ -36,6 +36,7 @@
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_global_object_reuse_policy.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -164,8 +165,8 @@ class CORE_EXPORT DocumentLoader
   WebFrameLoadType LoadType() const { return load_type_; }
   void SetLoadType(WebFrameLoadType load_type) { load_type_ = load_type; }
 
-  NavigationType GetNavigationType() const { return navigation_type_; }
-  void SetNavigationType(NavigationType navigation_type) {
+  WebNavigationType GetNavigationType() const { return navigation_type_; }
+  void SetNavigationType(WebNavigationType navigation_type) {
     navigation_type_ = navigation_type;
   }
 
@@ -364,7 +365,7 @@ class CORE_EXPORT DocumentLoader
   bool replaces_current_history_item_;
   bool data_received_;
 
-  NavigationType navigation_type_;
+  WebNavigationType navigation_type_;
 
   DocumentLoadTiming document_load_timing_;
 

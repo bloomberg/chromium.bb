@@ -88,21 +88,21 @@ unsigned long long PerformanceNavigationTiming::GetDecodedBodySize() const {
 }
 
 AtomicString PerformanceNavigationTiming::GetNavigationType(
-    NavigationType type,
+    WebNavigationType type,
     const Document* document) {
   if (document && document->GetPageVisibilityState() ==
                       mojom::PageVisibilityState::kPrerender) {
     return "prerender";
   }
   switch (type) {
-    case kNavigationTypeReload:
+    case kWebNavigationTypeReload:
       return "reload";
-    case kNavigationTypeBackForward:
+    case kWebNavigationTypeBackForward:
       return "back_forward";
-    case kNavigationTypeLinkClicked:
-    case kNavigationTypeFormSubmitted:
-    case kNavigationTypeFormResubmitted:
-    case kNavigationTypeOther:
+    case kWebNavigationTypeLinkClicked:
+    case kWebNavigationTypeFormSubmitted:
+    case kWebNavigationTypeFormResubmitted:
+    case kWebNavigationTypeOther:
       return "navigate";
   }
   NOTREACHED();

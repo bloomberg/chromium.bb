@@ -121,7 +121,7 @@ DocumentLoader::DocumentLoader(
                           ClientRedirectPolicy::kClientRedirect),
       replaces_current_history_item_(false),
       data_received_(false),
-      navigation_type_(kNavigationTypeOther),
+      navigation_type_(kWebNavigationTypeOther),
       document_load_timing_(*this),
       application_cache_host_(ApplicationCacheHost::Create(this)),
       was_blocked_after_csp_(false),

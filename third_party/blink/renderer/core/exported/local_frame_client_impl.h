@@ -116,7 +116,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       const ResourceRequest&,
       Document* origin_document,
       DocumentLoader*,
-      NavigationType,
+      WebNavigationType,
       NavigationPolicy,
       bool should_replace_current_entry,
       bool is_client_redirect,
