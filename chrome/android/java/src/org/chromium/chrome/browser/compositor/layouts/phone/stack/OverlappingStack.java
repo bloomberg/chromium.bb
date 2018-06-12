@@ -135,11 +135,13 @@ public class OverlappingStack extends Stack {
 
     @Override
     public void onLongPress(long time, float x, float y) {
-        if (mOverviewAnimationType == OverviewAnimationType.NONE
-                && getTabIndexAtPositon(x, y) >= 0) {
-            mEvenOutProgress = 0.0f;
+        if (mOverviewAnimationType == OverviewAnimationType.NONE) {
+            int longPressSelected = getTabIndexAtPositon(x, y);
+            if (longPressSelected >= 0) {
+                startAnimation(time, OverviewAnimationType.VIEW_MORE, longPressSelected, false);
+                mEvenOutProgress = 0.0f;
+            }
         }
-        super.onLongPress(time, x, y);
     }
 
     @Override
