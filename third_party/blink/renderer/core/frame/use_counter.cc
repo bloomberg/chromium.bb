@@ -538,13 +538,13 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 268;
     case CSSPropertyWebkitMarginCollapse:
       return 269;
-    case CSSPropertyWebkitMarginAfter:
+    case CSSPropertyAliasWebkitMarginAfter:
       return 270;
-    case CSSPropertyWebkitMarginBefore:
+    case CSSPropertyAliasWebkitMarginBefore:
       return 271;
-    case CSSPropertyWebkitMarginEnd:
+    case CSSPropertyAliasWebkitMarginEnd:
       return 272;
-    case CSSPropertyWebkitMarginStart:
+    case CSSPropertyAliasWebkitMarginStart:
       return 273;
     // CSSPropertyWebkitMarquee was 274.
     // CSSPropertyInternalMarquee* were 275-279.
@@ -1138,6 +1138,14 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 592;
     case CSSPropertyViewportFit:
       return 593;
+    case CSSPropertyMarginBlockStart:
+      return 594;
+    case CSSPropertyMarginBlockEnd:
+      return 595;
+    case CSSPropertyMarginInlineStart:
+      return 596;
+    case CSSPropertyMarginInlineEnd:
+      return 597;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in
