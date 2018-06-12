@@ -29,7 +29,7 @@ class MODULES_EXPORT StorageNamespaceController final
   StorageNamespace* SessionStorage(bool optional_create = true);
   ~StorageNamespaceController();
 
-  bool CanAccessStorage(LocalFrame*, StorageArea::StorageType) const;
+  bool CanAccessStorageArea(LocalFrame*, StorageArea::StorageType) const;
 
   static void ProvideStorageNamespaceTo(Page&, WebViewClient*);
   static StorageNamespaceController* From(Page* page) {

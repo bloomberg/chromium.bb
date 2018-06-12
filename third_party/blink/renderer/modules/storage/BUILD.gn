@@ -12,8 +12,6 @@ blink_modules_sources("storage") {
     "dom_window_storage_controller.h",
     "inspector_dom_storage_agent.cc",
     "inspector_dom_storage_agent.h",
-    "storage.cc",
-    "storage.h",
     "storage_area.cc",
     "storage_area.h",
     "storage_event.cc",

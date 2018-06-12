@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/modules/storage/storage_event.h"
 
 #include "third_party/blink/renderer/modules/event_modules.h"
-#include "third_party/blink/renderer/modules/storage/storage.h"
+#include "third_party/blink/renderer/modules/storage/storage_area.h"
 #include "third_party/blink/renderer/modules/storage/storage_event_init.h"
 
 namespace blink {
@@ -44,7 +44,7 @@ StorageEvent* StorageEvent::Create(const AtomicString& type,
                                    const String& old_value,
                                    const String& new_value,
                                    const String& url,
-                                   Storage* storage_area) {
+                                   StorageArea* storage_area) {
   return new StorageEvent(type, key, old_value, new_value, url, storage_area);
 }
 
@@ -58,7 +58,7 @@ StorageEvent::StorageEvent(const AtomicString& type,
                            const String& old_value,
                            const String& new_value,
                            const String& url,
-                           Storage* storage_area)
+                           StorageArea* storage_area)
     : Event(type, Bubbles::kNo, Cancelable::kNo),
       key_(key),
       old_value_(old_value),
@@ -88,7 +88,7 @@ void StorageEvent::initStorageEvent(const AtomicString& type,
                                     const String& old_value,
                                     const String& new_value,
                                     const String& url,
-                                    Storage* storage_area) {
+                                    StorageArea* storage_area) {
   if (IsBeingDispatched())
     return;
 

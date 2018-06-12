@@ -32,7 +32,6 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_storage_area.h"
 #include "third_party/blink/public/platform/web_storage_namespace.h"
-#include "third_party/blink/renderer/modules/storage/storage_area.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -43,23 +42,21 @@ StorageNamespace::StorageNamespace(
 
 StorageNamespace::~StorageNamespace() = default;
 
-StorageArea* StorageNamespace::LocalStorageArea(const SecurityOrigin* origin) {
+std::unique_ptr<WebStorageArea> StorageNamespace::LocalStorageArea(
+    const SecurityOrigin* origin) {
   DCHECK(IsMainThread());
   static std::unique_ptr<WebStorageNamespace> local_storage_namespace = nullptr;
   if (!local_storage_namespace)
     local_storage_namespace =
         Platform::Current()->CreateLocalStorageNamespace();
-  return StorageArea::Create(
-      base::WrapUnique(local_storage_namespace->CreateStorageArea(
-          WebSecurityOrigin(origin))),
-      StorageArea::kLocalStorage);
+  return base::WrapUnique(
+      local_storage_namespace->CreateStorageArea(WebSecurityOrigin(origin)));
 }
 
-StorageArea* StorageNamespace::GetStorageArea(const SecurityOrigin* origin) {
-  return StorageArea::Create(
-      base::WrapUnique(
-          web_storage_namespace_->CreateStorageArea(WebSecurityOrigin(origin))),
-      StorageArea::kSessionStorage);
+std::unique_ptr<WebStorageArea> StorageNamespace::GetStorageArea(
+    const SecurityOrigin* origin) {
+  return base::WrapUnique(
+      web_storage_namespace_->CreateStorageArea(WebSecurityOrigin(origin)));
 }
 
 bool StorageNamespace::IsSameNamespace(
