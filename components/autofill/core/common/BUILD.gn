@@ -52,6 +52,7 @@ static_library("common") {
     "//base",
     "//base:i18n",
     "//components/variations",
+    "//ui/base",
     "//ui/gfx/geometry",
     "//url",
   ]
