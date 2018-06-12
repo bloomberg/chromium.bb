@@ -32,6 +32,7 @@ CHROMEOS_EXPORT extern const char kAppOemManifestFile[];
 CHROMEOS_EXPORT extern const char kArcAvailability[];
 CHROMEOS_EXPORT extern const char kArcAvailable[];
 CHROMEOS_EXPORT extern const char kArcDataCleanupOnStart[];
+CHROMEOS_EXPORT extern const char kArcForceShowOptInUi[];
 CHROMEOS_EXPORT extern const char kArcPackagesCacheMode[];
 CHROMEOS_EXPORT extern const char kArcStartMode[];
 CHROMEOS_EXPORT extern const char kArcTransitionMigrationRequired[];

@@ -96,6 +96,9 @@ const char kArcAvailable[] = "arc-available";
 // Flag that forces ARC data be cleaned on each start.
 const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 
+// Flag that forces the OptIn ui to be shown. Used in tests.
+const char kArcForceShowOptInUi[] = "arc-force-show-optin-ui";
+
 // Used in autotest to specifies how to handle packages cache. Can be
 // copy - copy resulting packages.xml to the temporary directory.
 // skip-copy - skip initial packages cache setup and copy resulting packages.xml
