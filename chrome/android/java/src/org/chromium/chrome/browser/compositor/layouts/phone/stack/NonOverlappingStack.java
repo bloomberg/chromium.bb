@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandl
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
+import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation.OverviewAnimationType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -333,6 +334,11 @@ public class NonOverlappingStack extends Stack {
             mLayout.onSwitchAwayFinished();
             return;
         }
+
+        // Make sure we don't leave any tabs stuck in a partially-discarded
+        // state.
+        startAnimation(0, OverviewAnimationType.UNDISCARD);
+        mDiscardingTab = null;
 
         mSwitchedAway = true;
 
