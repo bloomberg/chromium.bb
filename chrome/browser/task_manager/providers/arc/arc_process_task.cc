@@ -37,19 +37,19 @@ std::string FirstPackage(const std::vector<std::string>& packages) {
 base::string16 MakeTitle(const arc::ArcProcess& arc_process) {
   int name_template = IDS_TASK_MANAGER_ARC_PREFIX;
   switch (arc_process.process_state()) {
-    case arc::mojom::ProcessStateDeprecated::PERSISTENT:
-    case arc::mojom::ProcessStateDeprecated::PERSISTENT_UI:
-    case arc::mojom::ProcessStateDeprecated::TOP:
+    case arc::mojom::ProcessState::PERSISTENT:
+    case arc::mojom::ProcessState::PERSISTENT_UI:
+    case arc::mojom::ProcessState::TOP:
       name_template = IDS_TASK_MANAGER_ARC_SYSTEM;
       break;
-    case arc::mojom::ProcessStateDeprecated::BOUND_FOREGROUND_SERVICE:
-    case arc::mojom::ProcessStateDeprecated::FOREGROUND_SERVICE:
-    case arc::mojom::ProcessStateDeprecated::SERVICE:
-    case arc::mojom::ProcessStateDeprecated::IMPORTANT_FOREGROUND:
-    case arc::mojom::ProcessStateDeprecated::IMPORTANT_BACKGROUND:
+    case arc::mojom::ProcessState::BOUND_FOREGROUND_SERVICE:
+    case arc::mojom::ProcessState::FOREGROUND_SERVICE:
+    case arc::mojom::ProcessState::SERVICE:
+    case arc::mojom::ProcessState::IMPORTANT_FOREGROUND:
+    case arc::mojom::ProcessState::IMPORTANT_BACKGROUND:
       name_template = IDS_TASK_MANAGER_ARC_PREFIX_BACKGROUND_SERVICE;
       break;
-    case arc::mojom::ProcessStateDeprecated::RECEIVER:
+    case arc::mojom::ProcessState::RECEIVER:
       name_template = IDS_TASK_MANAGER_ARC_PREFIX_RECEIVER;
       break;
     default:
@@ -156,8 +156,7 @@ void ArcProcessTask::OnConnectionReady() {
                                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcProcessTask::SetProcessStateDeprecated(
-    arc::mojom::ProcessStateDeprecated process_state) {
+void ArcProcessTask::SetProcessState(arc::mojom::ProcessState process_state) {
   arc_process_.set_process_state(process_state);
 }
 

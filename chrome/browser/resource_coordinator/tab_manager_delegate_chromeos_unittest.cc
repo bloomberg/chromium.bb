@@ -36,17 +36,13 @@ constexpr bool kNotFocused = false;
 
 TEST_F(TabManagerDelegateTest, CandidatesSorted) {
   std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(1, 10, "focused",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
                              kIsFocused, 100);
-  arc_processes.emplace_back(2, 20, "visible1",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(2, 20, "visible1", arc::mojom::ProcessState::TOP,
                              kNotFocused, 200);
-  arc_processes.emplace_back(3, 30, "service",
-                             arc::mojom::ProcessStateDeprecated::SERVICE,
-                             kNotFocused, 500);
-  arc_processes.emplace_back(4, 40, "visible2",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(
+      3, 30, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
+  arc_processes.emplace_back(4, 40, "visible2", arc::mojom::ProcessState::TOP,
                              kNotFocused, 150);
 
   TestLifecycleUnit focused_lifecycle_unit(base::TimeTicks::Max());
@@ -91,8 +87,7 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
 // Test that Chrome treats the former as a more important process.
 TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
   std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(1, 10, "focused",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
                              kIsFocused, 100);
 
   TestLifecycleUnit focused_lifecycle_unit(base::TimeTicks::Max());
@@ -202,23 +197,19 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   MockTabManagerDelegate tab_manager_delegate;
 
   std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(1, 10, "focused",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
                              kIsFocused, 100);
-  arc_processes.emplace_back(2, 20, "visible1",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(2, 20, "visible1", arc::mojom::ProcessState::TOP,
                              kNotFocused, 200);
-  arc_processes.emplace_back(3, 30, "service",
-                             arc::mojom::ProcessStateDeprecated::SERVICE,
-                             kNotFocused, 500);
-  arc_processes.emplace_back(4, 40, "visible2",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(
+      3, 30, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
+  arc_processes.emplace_back(4, 40, "visible2", arc::mojom::ProcessState::TOP,
                              kNotFocused, 150);
   arc_processes.emplace_back(5, 50, "persistent",
-                             arc::mojom::ProcessStateDeprecated::PERSISTENT,
-                             kNotFocused, 600);
+                             arc::mojom::ProcessState::PERSISTENT, kNotFocused,
+                             600);
   arc_processes.emplace_back(6, 60, "persistent_ui",
-                             arc::mojom::ProcessStateDeprecated::PERSISTENT_UI,
+                             arc::mojom::ProcessState::PERSISTENT_UI,
                              kNotFocused, 700);
 
   TestLifecycleUnit tab1(base::TimeTicks() + base::TimeDelta::FromSeconds(3),
@@ -330,9 +321,8 @@ TEST_F(TabManagerDelegateTest, DoNotKillRecentlyKilledArcProcesses) {
   tab_manager_delegate.set_always_return_true_from_is_recently_killed(true);
 
   std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(1, 10, "service",
-                             arc::mojom::ProcessStateDeprecated::SERVICE,
-                             kNotFocused, 500);
+  arc_processes.emplace_back(
+      1, 10, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
 
   memory_stat->SetTargetMemoryToFreeKB(250000);
   memory_stat->SetProcessPss(30, 10000);
@@ -351,26 +341,21 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
   MockTabManagerDelegate tab_manager_delegate(memory_stat);
 
   std::vector<arc::ArcProcess> arc_processes;
-  arc_processes.emplace_back(1, 10, "focused",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(1, 10, "focused", arc::mojom::ProcessState::TOP,
                              kIsFocused, 100);
-  arc_processes.emplace_back(2, 20, "visible1",
-                             arc::mojom::ProcessStateDeprecated::TOP,
+  arc_processes.emplace_back(2, 20, "visible1", arc::mojom::ProcessState::TOP,
                              kNotFocused, 200);
-  arc_processes.emplace_back(3, 30, "service",
-                             arc::mojom::ProcessStateDeprecated::SERVICE,
-                             kNotFocused, 500);
   arc_processes.emplace_back(
-      4, 40, "visible2",
-      arc::mojom::ProcessStateDeprecated::IMPORTANT_FOREGROUND, kNotFocused,
-      150);
-  arc_processes.emplace_back(
-      5, 50, "not-visible",
-      arc::mojom::ProcessStateDeprecated::IMPORTANT_BACKGROUND, kNotFocused,
-      300);
+      3, 30, "service", arc::mojom::ProcessState::SERVICE, kNotFocused, 500);
+  arc_processes.emplace_back(4, 40, "visible2",
+                             arc::mojom::ProcessState::IMPORTANT_FOREGROUND,
+                             kNotFocused, 150);
+  arc_processes.emplace_back(5, 50, "not-visible",
+                             arc::mojom::ProcessState::IMPORTANT_BACKGROUND,
+                             kNotFocused, 300);
   arc_processes.emplace_back(6, 60, "persistent",
-                             arc::mojom::ProcessStateDeprecated::PERSISTENT,
-                             kNotFocused, 400);
+                             arc::mojom::ProcessState::PERSISTENT, kNotFocused,
+                             400);
 
   TestLifecycleUnit tab1(base::TimeTicks() + base::TimeDelta::FromSeconds(3),
                          11);
