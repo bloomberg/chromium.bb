@@ -190,9 +190,6 @@ class MobileActivator
   // due to detected connectivity issue to kick off reconnection.
   void ContinueConnecting();
 
-  // Sends message to host registration page with system/user info data.
-  void SendDeviceInfo();
-
   // Starts OTASP process.
   void StartOTASP();
   // Called when an OTASP attempt times out.
@@ -222,9 +219,6 @@ class MobileActivator
   // Check the current cellular network for error conditions.
   bool GotActivationError(const NetworkState* network,
                           std::string* error) const;
-  // Sends status updates to WebUI page.
-  void UpdatePage(const NetworkState* network,
-                  const std::string& error_description);
 
   // Callback used to handle an activation error.
   void HandleActivationFailure(
@@ -256,12 +250,6 @@ class MobileActivator
   // Return error message for a given code.
   std::string GetErrorMessage(const std::string& code) const;
 
-  // Performs activation state cellular device evaluation.
-  // Returns false if device activation failed. In this case |error|
-  // will contain error message to be reported to Web UI.
-  static bool EvaluateCellularDeviceState(bool* report_status,
-                                          std::string* state,
-                                          std::string* error);
   // Starts the OTASP timeout timer.  If the timer fires, we'll force a
   // disconnect/reconnect cycle on this network.
   virtual void StartOTASPTimer();

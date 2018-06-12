@@ -123,7 +123,6 @@ class WifiConfigView : public ChildNetworkConfigView,
   std::string GetEapServerCaCertPEM() const;
   bool GetEapUseSystemCas() const;
   std::string GetEapSubjectMatch() const;
-  std::string GetEapClientCertPkcs11Id() const;
   std::string GetEapIdentity() const;
   std::string GetEapAnonymousIdentity() const;
 
@@ -207,7 +206,6 @@ class WifiConfigView : public ChildNetworkConfigView,
   views::Textfield* identity_anonymous_textfield_;
   views::Checkbox* save_credentials_checkbox_;
   views::Checkbox* share_network_checkbox_;
-  views::Label* shared_network_label_;
   std::unique_ptr<internal::SecurityComboboxModel> security_combobox_model_;
   views::Combobox* security_combobox_;
   views::Label* passphrase_label_;
