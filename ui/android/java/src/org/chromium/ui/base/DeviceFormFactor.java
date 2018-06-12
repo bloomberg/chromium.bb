@@ -92,8 +92,7 @@ public class DeviceFormFactor {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1
                 // TODO(agrieve): Remove thread check and audit for background usages.
                 //     https://crbug.com/669974
-                && ThreadUtils.runningOnUiThread()
-                && !isTabletDisplay(DisplayAndroid.getNonMultiDisplay(context))) {
+                && ThreadUtils.runningOnUiThread()) {
             // There have been no cases where tablet resources end up being used on phone-sized
             // displays. Short-circuit this common-case since checking resources is slower (and
             // triggers a strict-mode violation when value is not cached).
@@ -105,9 +104,7 @@ public class DeviceFormFactor {
     private static int detectScreenWidthBucket(WindowAndroid windowAndroid) {
         ThreadUtils.assertOnUiThread();
         Context context = windowAndroid.getContext().get();
-        if (context == null || !isTabletDisplay(windowAndroid.getDisplay())) {
-            return 0;
-        }
+        if (context == null) return 0;
         return context.getResources().getInteger(R.integer.min_screen_width_bucket);
     }
 
@@ -126,10 +123,5 @@ public class DeviceFormFactor {
      */
     public static int getMinimumTabletWidthPx(DisplayAndroid display) {
         return DisplayUtil.dpToPx(display, DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP);
-    }
-
-    // Function is private to ensure that Context is also consulted when answering this query.
-    private static boolean isTabletDisplay(DisplayAndroid display) {
-        return DisplayUtil.getSmallestWidth(display) >= getMinimumTabletWidthPx(display);
     }
 }
