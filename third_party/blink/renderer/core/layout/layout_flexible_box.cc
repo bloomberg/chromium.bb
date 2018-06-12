@@ -77,6 +77,9 @@ LayoutFlexibleBox* LayoutFlexibleBox::CreateAnonymous(
 void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
+  if (ShouldApplySizeContainment())
+    return;
+
   // FIXME: We're ignoring flex-basis here and we shouldn't. We can't start
   // honoring it though until the flex shorthand stops setting it to 0. See
   // https://bugs.webkit.org/show_bug.cgi?id=116117 and
@@ -183,7 +186,8 @@ LayoutUnit LayoutFlexibleBox::BaselinePosition(FontBaseline,
 }
 
 LayoutUnit LayoutFlexibleBox::FirstLineBoxBaseline() const {
-  if (IsWritingModeRoot() || number_of_in_flow_children_on_first_line_ <= 0)
+  if (IsWritingModeRoot() || number_of_in_flow_children_on_first_line_ <= 0 ||
+      ShouldApplySizeContainment())
     return LayoutUnit(-1);
   LayoutBox* baseline_child = nullptr;
   int child_number = 0;
