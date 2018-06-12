@@ -218,7 +218,6 @@ fuchsia_sdk_fidl_pkg("media") {
   sources = [
     "audio_capturer.fidl",
     "audio_renderer.fidl",
-    "audio_server.fidl",
     "media_renderer.fidl",
     "media_result.fidl",
     "media_transport.fidl",
