@@ -41,7 +41,7 @@ class UiElementContainerView : public views::View,
   void InitLayout();
 
   void OnCardElementAdded(const AssistantCardElement* card_element);
-  void OnCardReady(const base::UnguessableToken& embed_token);
+  void OnCardReady(const base::Optional<base::UnguessableToken>& embed_token);
   void OnTextElementAdded(const AssistantTextElement* text_element);
 
   // Assistant cards are rendered asynchronously before being added to the view

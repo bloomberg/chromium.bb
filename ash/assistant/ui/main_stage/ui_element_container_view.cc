@@ -16,6 +16,12 @@
 
 namespace ash {
 
+namespace {
+
+constexpr char kDataUriPrefix[] = "data:text/html,";
+
+}  // namespace
+
 UiElementContainerView::UiElementContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
@@ -101,15 +107,16 @@ void UiElementContainerView::OnCardElementAdded(
   base::UnguessableToken id_token = base::UnguessableToken::Create();
 
   // Configure parameters for the card.
-  ash::mojom::AssistantCardParamsPtr params(
-      ash::mojom::AssistantCardParams::New());
-  params->html = card_element->html();
-  params->min_width_dip = kPreferredWidthDip - 2 * kPaddingDip;
-  params->max_width_dip = kPreferredWidthDip - 2 * kPaddingDip;
+  ash::mojom::ManagedWebContentsParamsPtr params(
+      ash::mojom::ManagedWebContentsParams::New());
+  params->url = GURL(kDataUriPrefix + card_element->html());
+  params->min_size_dip = gfx::Size(kPreferredWidthDip - 2 * kPaddingDip, 1);
+  params->max_size_dip =
+      gfx::Size(kPreferredWidthDip - 2 * kPaddingDip, INT_MAX);
 
   // The card will be rendered by AssistantCardRenderer, running the specified
   // callback when the card is ready for embedding.
-  assistant_controller_->RenderCard(
+  assistant_controller_->ManageWebContents(
       id_token, std::move(params),
       base::BindOnce(&UiElementContainerView::OnCardReady,
                      render_request_weak_factory_.GetWeakPtr()));
@@ -120,13 +127,22 @@ void UiElementContainerView::OnCardElementAdded(
 }
 
 void UiElementContainerView::OnCardReady(
-    const base::UnguessableToken& embed_token) {
+    const base::Optional<base::UnguessableToken>& embed_token) {
+  if (!embed_token.has_value()) {
+    // TODO(dmblack): Maybe show a fallback view here?
+    // Something went wrong when processing this card so we'll have to abort
+    // the attempt. We should still resume processing any UI elements that are
+    // in the pending queue.
+    SetProcessingUiElement(false);
+    return;
+  }
+
   // When the card has been rendered in the same process, its view is
   // available in the AnswerCardContentsRegistry's token-to-view map.
   if (app_list::AnswerCardContentsRegistry::Get()) {
     RemoveChildView(assistant_query_view_.get());
-    AddChildView(
-        app_list::AnswerCardContentsRegistry::Get()->GetView(embed_token));
+    AddChildView(app_list::AnswerCardContentsRegistry::Get()->GetView(
+        embed_token.value()));
   }
   // TODO(dmblack): Handle Mash case.
 
@@ -174,7 +190,7 @@ void UiElementContainerView::ReleaseAllCards() {
 
   // Release any resources associated with the cards identified in
   // |id_token_list_| owned by AssistantCardRenderer.
-  assistant_controller_->ReleaseCards(id_token_list_);
+  assistant_controller_->ReleaseWebContents(id_token_list_);
   id_token_list_.clear();
 }
 
