@@ -70,16 +70,16 @@ cr.define('settings_subpage', function() {
   });
 
   suite('SettingsSubpageSearch', function() {
-    test('host autofocus propagates to <input>', function() {
+    test('host autofocus propagates to <cr-input>', function() {
       PolymerTest.clearBody();
       const element = document.createElement('settings-subpage-search');
       element.setAttribute('autofocus', true);
       document.body.appendChild(element);
 
-      assertTrue(element.$$('input').hasAttribute('autofocus'));
+      assertTrue(element.$$('cr-input').hasAttribute('autofocus'));
 
       element.removeAttribute('autofocus');
-      assertFalse(element.$$('input').hasAttribute('autofocus'));
+      assertFalse(element.$$('cr-input').hasAttribute('autofocus'));
     });
   });
 });
