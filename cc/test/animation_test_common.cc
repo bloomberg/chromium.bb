@@ -28,11 +28,12 @@ using cc::TransformKeyframe;
 
 namespace cc {
 
-int AddOpacityTransition(SingleKeyframeEffectAnimation* target,
+int AddOpacityTransition(Animation* target,
                          double duration,
                          float start_opacity,
                          float end_opacity,
-                         bool use_timing_function) {
+                         bool use_timing_function,
+                         KeyframeEffectId effect_id) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
 
@@ -54,14 +55,15 @@ int AddOpacityTransition(SingleKeyframeEffectAnimation* target,
   keyframe_model->set_needs_synchronized_start_time(true);
 
   target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                            target->keyframe_effect()->id());
+                                            effect_id);
   return id;
 }
 
-int AddAnimatedTransform(SingleKeyframeEffectAnimation* target,
+int AddAnimatedTransform(Animation* target,
                          double duration,
                          TransformOperations start_operations,
-                         TransformOperations operations) {
+                         TransformOperations operations,
+                         KeyframeEffectId effect_id) {
   std::unique_ptr<KeyframedTransformAnimationCurve> curve(
       KeyframedTransformAnimationCurve::Create());
 
@@ -81,14 +83,15 @@ int AddAnimatedTransform(SingleKeyframeEffectAnimation* target,
   keyframe_model->set_needs_synchronized_start_time(true);
 
   target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                            target->keyframe_effect()->id());
+                                            effect_id);
   return id;
 }
 
-int AddAnimatedTransform(SingleKeyframeEffectAnimation* target,
+int AddAnimatedTransform(Animation* target,
                          double duration,
                          int delta_x,
-                         int delta_y) {
+                         int delta_y,
+                         KeyframeEffectId effect_id) {
   TransformOperations start_operations;
   if (duration > 0.0) {
     start_operations.AppendTranslate(0, 0, 0.0);
@@ -96,13 +99,15 @@ int AddAnimatedTransform(SingleKeyframeEffectAnimation* target,
 
   TransformOperations operations;
   operations.AppendTranslate(delta_x, delta_y, 0.0);
-  return AddAnimatedTransform(target, duration, start_operations, operations);
+  return AddAnimatedTransform(target, duration, start_operations, operations,
+                              effect_id);
 }
 
-int AddAnimatedFilter(SingleKeyframeEffectAnimation* target,
+int AddAnimatedFilter(Animation* target,
                       double duration,
                       float start_brightness,
-                      float end_brightness) {
+                      float end_brightness,
+                      KeyframeEffectId effect_id) {
   std::unique_ptr<KeyframedFilterAnimationCurve> curve(
       KeyframedFilterAnimationCurve::Create());
 
@@ -127,7 +132,7 @@ int AddAnimatedFilter(SingleKeyframeEffectAnimation* target,
   keyframe_model->set_needs_synchronized_start_time(true);
 
   target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                            target->keyframe_effect()->id());
+                                            effect_id);
   return id;
 }
 
@@ -211,10 +216,10 @@ std::unique_ptr<AnimationCurve> FakeFloatTransition::Clone() const {
   return base::WrapUnique(new FakeFloatTransition(*this));
 }
 
-int AddScrollOffsetAnimationToAnimation(
-    SingleKeyframeEffectAnimation* animation,
-    gfx::ScrollOffset initial_value,
-    gfx::ScrollOffset target_value) {
+int AddScrollOffsetAnimationToAnimation(Animation* animation,
+                                        gfx::ScrollOffset initial_value,
+                                        gfx::ScrollOffset target_value,
+                                        KeyframeEffectId effect_id) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurve::Create(
           target_value, CubicBezierTimingFunction::CreatePreset(
@@ -228,49 +233,54 @@ int AddScrollOffsetAnimationToAnimation(
       TargetProperty::SCROLL_OFFSET));
   keyframe_model->SetIsImplOnly();
 
-  animation->AddKeyframeModelForKeyframeEffect(
-      std::move(keyframe_model), animation->keyframe_effect()->id());
+  animation->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
+                                               effect_id);
 
   return id;
 }
 
-int AddAnimatedTransformToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddAnimatedTransformToAnimation(Animation* animation,
                                     double duration,
                                     int delta_x,
-                                    int delta_y) {
-  return AddAnimatedTransform(animation, duration, delta_x, delta_y);
+                                    int delta_y,
+                                    KeyframeEffectId effect_id) {
+  return AddAnimatedTransform(animation, duration, delta_x, delta_y, effect_id);
 }
 
-int AddAnimatedTransformToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddAnimatedTransformToAnimation(Animation* animation,
                                     double duration,
                                     TransformOperations start_operations,
-                                    TransformOperations operations) {
-  return AddAnimatedTransform(animation, duration, start_operations,
-                              operations);
+                                    TransformOperations operations,
+                                    KeyframeEffectId effect_id) {
+  return AddAnimatedTransform(animation, duration, start_operations, operations,
+                              effect_id);
 }
 
-int AddOpacityTransitionToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddOpacityTransitionToAnimation(Animation* animation,
                                     double duration,
                                     float start_opacity,
                                     float end_opacity,
-                                    bool use_timing_function) {
+                                    bool use_timing_function,
+                                    KeyframeEffectId effect_id) {
   return AddOpacityTransition(animation, duration, start_opacity, end_opacity,
-                              use_timing_function);
+                              use_timing_function, effect_id);
 }
 
-int AddAnimatedFilterToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddAnimatedFilterToAnimation(Animation* animation,
                                  double duration,
                                  float start_brightness,
-                                 float end_brightness) {
+                                 float end_brightness,
+                                 KeyframeEffectId effect_id) {
   return AddAnimatedFilter(animation, duration, start_brightness,
-                           end_brightness);
+                           end_brightness, effect_id);
 }
 
-int AddOpacityStepsToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddOpacityStepsToAnimation(Animation* animation,
                                double duration,
                                float start_opacity,
                                float end_opacity,
-                               int num_steps) {
+                               int num_steps,
+                               KeyframeEffectId effect_id) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
 
@@ -289,8 +299,8 @@ int AddOpacityStepsToAnimation(SingleKeyframeEffectAnimation* animation,
       TargetProperty::OPACITY));
   keyframe_model->set_needs_synchronized_start_time(true);
 
-  animation->AddKeyframeModelForKeyframeEffect(
-      std::move(keyframe_model), animation->keyframe_effect()->id());
+  animation->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
+                                               effect_id);
   return id;
 }
 

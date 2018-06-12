@@ -7,6 +7,7 @@
 
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_timeline.h"
+#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframe_model.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/paint/filter_operations.h"
@@ -18,8 +19,6 @@ class ScrollOffset;
 }
 
 namespace cc {
-
-class SingleKeyframeEffectAnimation;
 
 class FakeFloatAnimationCurve : public FloatAnimationCurve {
  public:
@@ -71,37 +70,42 @@ class FakeFloatTransition : public FloatAnimationCurve {
   float to_;
 };
 
-int AddScrollOffsetAnimationToAnimation(
-    SingleKeyframeEffectAnimation* animation,
-    gfx::ScrollOffset initial_value,
-    gfx::ScrollOffset target_value);
+int AddScrollOffsetAnimationToAnimation(Animation* animation,
+                                        gfx::ScrollOffset initial_value,
+                                        gfx::ScrollOffset target_value,
+                                        KeyframeEffectId effect_id = 0);
 
-int AddAnimatedTransformToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddAnimatedTransformToAnimation(Animation* animation,
                                     double duration,
                                     int delta_x,
-                                    int delta_y);
+                                    int delta_y,
+                                    KeyframeEffectId effect_id = 0);
 
-int AddAnimatedTransformToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddAnimatedTransformToAnimation(Animation* animation,
                                     double duration,
                                     TransformOperations start_operations,
-                                    TransformOperations operations);
+                                    TransformOperations operations,
+                                    KeyframeEffectId effect_id = 0);
 
-int AddOpacityTransitionToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddOpacityTransitionToAnimation(Animation* animation,
                                     double duration,
                                     float start_opacity,
                                     float end_opacity,
-                                    bool use_timing_function);
+                                    bool use_timing_function,
+                                    KeyframeEffectId effect_id = 0);
 
-int AddAnimatedFilterToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddAnimatedFilterToAnimation(Animation* animation,
                                  double duration,
                                  float start_brightness,
-                                 float end_brightness);
+                                 float end_brightness,
+                                 KeyframeEffectId effect_id = 0);
 
-int AddOpacityStepsToAnimation(SingleKeyframeEffectAnimation* animation,
+int AddOpacityStepsToAnimation(Animation* animation,
                                double duration,
                                float start_opacity,
                                float end_opacity,
-                               int num_steps);
+                               int num_steps,
+                               KeyframeEffectId effect_id = 0);
 
 void AddKeyframeModelToElementWithAnimation(
     ElementId element_id,
