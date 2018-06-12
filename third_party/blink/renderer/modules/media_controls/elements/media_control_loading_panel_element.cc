@@ -21,6 +21,11 @@ namespace {
 static const char kAnimationIterationCountName[] = "animation-iteration-count";
 static const char kInfinite[] = "infinite";
 
+bool IsInLoadingState(blink::MediaControlsImpl& controls) {
+  return controls.State() == blink::MediaControlsImpl::kLoadingMetadata ||
+         controls.State() == blink::MediaControlsImpl::kBuffering;
+}
+
 }  // namespace
 
 namespace blink {
@@ -141,8 +146,7 @@ void MediaControlLoadingPanelElement::UpdateDisplayState() {
     case State::kHidden:
       // If the media controls are loading metadata then we should show the
       // loading panel and insert it into the DOM.
-      if (GetMediaControls().State() == MediaControlsImpl::kLoadingMetadata &&
-          !controls_hidden_) {
+      if (IsInLoadingState(GetMediaControls()) && !controls_hidden_) {
         PopulateShadowDOM();
         SetIsWanted(true);
         SetAnimationIterationCount(kInfinite);
@@ -152,7 +156,7 @@ void MediaControlLoadingPanelElement::UpdateDisplayState() {
     case State::kPlaying:
       // If the media controls are stopped then we should hide the loading
       // panel, but not until the current cycle of animations is complete.
-      if (GetMediaControls().State() != MediaControlsImpl::kLoadingMetadata) {
+      if (!IsInLoadingState(GetMediaControls())) {
         SetAnimationIterationCount(WTF::String::Number(animation_count_ + 1));
         state_ = State::kCoolingDown;
       }
@@ -188,7 +192,7 @@ void MediaControlLoadingPanelElement::OnControlsShown() {
 void MediaControlLoadingPanelElement::OnAnimationEnd() {
   // If we have gone back to the loading metadata state (e.g. the source
   // changed). Then we should jump back to playing.
-  if (GetMediaControls().State() == MediaControlsImpl::kLoadingMetadata) {
+  if (IsInLoadingState(GetMediaControls())) {
     state_ = State::kPlaying;
     SetAnimationIterationCount(kInfinite);
     return;

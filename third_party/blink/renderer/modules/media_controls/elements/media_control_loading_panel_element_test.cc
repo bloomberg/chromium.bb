@@ -60,6 +60,13 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
     loading_element_->UpdateDisplayState();
   }
 
+  void SimulateBuffering() {
+    SetMediaElementState(HTMLMediaElement::kHaveCurrentData,
+                         HTMLMediaElement::kNetworkLoading, false);
+    EXPECT_EQ(media_controls_->State(), MediaControlsImpl::kBuffering);
+    loading_element_->UpdateDisplayState();
+  }
+
   void SimulateStopped() {
     SetMediaElementState(HTMLMediaElement::kHaveCurrentData,
                          HTMLMediaElement::kNetworkIdle);
@@ -107,6 +114,21 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
 
     // Show the panel when we are loading metadata.
     SimulateLoadingMetadata();
+    ExpectStateIsPlaying();
+
+    // Simulate some animations.
+    SimulateAnimationIterations(3);
+    ExpectAnimationIterationInfinite();
+
+    // Transition the media controls to a playing state and expect the loading
+    // panel to hide immediately.
+    SimulatePlaying();
+
+    // Make sure the loading panel is hidden now.
+    ExpectStateIsHidden();
+
+    // Show the panel when we are buffering.
+    SimulateBuffering();
     ExpectStateIsPlaying();
 
     // Simulate some animations.

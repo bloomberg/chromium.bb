@@ -2,30 +2,6 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file.*/
 
-div[pseudo="-internal-track-segment-buffering"] {
-  --buffer-duration: 900ms;
-  animation: buffer-head var(--buffer-duration) cubic-bezier(0.00, 0.00, 0.20, 1.00) infinite,
-    buffer-tail var(--buffer-duration) cubic-bezier(0.90, 0.00, 0.10, 1.00) infinite;
-}
-
-div[pseudo="-internal-track-segment-buffering"]:nth-of-type(2) {
-  animation-delay: 465ms;
-}
-
-div[pseudo="-internal-track-segment-buffering"]:nth-of-type(3) {
-  animation-delay: 930ms;
-}
-
-@keyframes buffer-head {
-  0% { left: 100%; }
-  100% { left: 0%; }
-}
-
-@keyframes buffer-tail {
-  0% { right: 0%; }
-  100% { right: 100%; }
-}
-
 /**
  * Scrubbing
  */

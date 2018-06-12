@@ -457,24 +457,21 @@ video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-
 video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i],
 video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
 video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
-video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
-video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background {
   height: 4px;
 }
 
 video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i],
 video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
 video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background {
   height: 8px;
 }
 
 video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i],
 video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
 video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
-video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
-video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background {
   height: 12px;
 }
 
@@ -599,25 +596,6 @@ video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-contr
 audio::-webkit-media-controls-volume-slider,
 video::-webkit-media-controls-volume-slider {
   display: none;
-}
-
-input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
-  position: absolute;
-  background: rgba(0, 0, 0, .54);
-  border-radius: 100px;
-  height: 4px;
-
-  right: 0;
-  left: 0;
-  top: 0;
-  display: none;
-}
-video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
-  background: rgba(255, 255, 255, .54);
-}
-
-.state-buffering input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
-  display: block;
 }
 
 /**
@@ -1087,8 +1065,7 @@ video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-
 
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background,
-video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-background {
   height: 5px;
 }
 
