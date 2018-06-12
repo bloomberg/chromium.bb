@@ -36,6 +36,7 @@ include_rules = [
   "+components/safe_browsing/web_ui/constants.h",
   "+components/translate/core/common",
   "+components/url_formatter",
+  "+components/variations/net",
   "+components/version_info",
   "+device/vr/buildflags/buildflags.h",
   "+extensions/buildflags",

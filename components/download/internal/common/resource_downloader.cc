@@ -214,7 +214,7 @@ void ResourceDownloader::OnResponseStarted(
 }
 
 void ResourceDownloader::OnReceiveRedirect() {
-  url_loader_->FollowRedirect(base::nullopt);
+  url_loader_->FollowRedirect(base::nullopt, base::nullopt);
 }
 
 }  // namespace download

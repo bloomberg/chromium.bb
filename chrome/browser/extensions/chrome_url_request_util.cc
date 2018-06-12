@@ -149,7 +149,9 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
   }
 
   // mojom::URLLoader implementation:
-  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+  void FollowRedirect(const base::Optional<std::vector<std::string>>&
+                          to_be_removed_request_headers,
+                      const base::Optional<net::HttpRequestHeaders>&
                           modified_request_headers) override {
     NOTREACHED() << "No redirects for local file loads.";
   }

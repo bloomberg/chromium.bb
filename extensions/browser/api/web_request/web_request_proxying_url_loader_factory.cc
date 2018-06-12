@@ -100,6 +100,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
+    const base::Optional<std::vector<std::string>>&
+        to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
@@ -110,7 +112,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
   }
 
   if (target_loader_.is_bound())
-    target_loader_->FollowRedirect(base::nullopt);
+    target_loader_->FollowRedirect(base::nullopt, base::nullopt);
   Restart();
 }
 

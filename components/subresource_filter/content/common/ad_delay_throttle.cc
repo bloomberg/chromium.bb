@@ -154,7 +154,8 @@ void AdDelayThrottle::WillStartRequest(network::ResourceRequest* request,
 void AdDelayThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head,
-    bool* defer) {
+    bool* defer,
+    std::vector<std::string>* to_be_removed_headers) {
   // Note: some MetadataProviders may not be able to distinguish requests that
   // are only tagged as ads after a redirect.
   *defer = MaybeDefer(redirect_info.new_url);

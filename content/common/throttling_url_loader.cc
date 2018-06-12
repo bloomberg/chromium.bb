@@ -179,8 +179,15 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
 
 void ThrottlingURLLoader::FollowRedirect(
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
-  if (url_loader_)
-    url_loader_->FollowRedirect(modified_request_headers);
+  if (url_loader_) {
+    if (to_be_removed_request_headers_.empty()) {
+      url_loader_->FollowRedirect(base::nullopt, modified_request_headers);
+    } else {
+      url_loader_->FollowRedirect(to_be_removed_request_headers_,
+                                  modified_request_headers);
+    }
+    to_be_removed_request_headers_.clear();
+  }
 }
 
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
@@ -346,12 +353,16 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
       auto weak_ptr = weak_factory_.GetWeakPtr();
+      std::vector<std::string> headers;
       throttle->WillRedirectRequest(redirect_info, response_head,
-                                    &throttle_deferred);
+                                    &throttle_deferred, &headers);
       if (!weak_ptr)
         return;
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
+
+      to_be_removed_request_headers_.insert(
+          to_be_removed_request_headers_.end(), headers.begin(), headers.end());
     }
 
     if (deferred) {

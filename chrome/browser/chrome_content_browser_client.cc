@@ -149,6 +149,7 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/variations_header_url_loader_throttle.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -4036,6 +4037,16 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
           base::BindOnce(GetPrerenderCanceller, wc_getter),
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
     }
+
+    ProfileIOData* io_data =
+        ProfileIOData::FromResourceContext(resource_context);
+    bool is_off_the_record = io_data->IsOffTheRecord();
+    bool is_signed_in =
+        !is_off_the_record &&
+        !io_data->google_services_account_id()->GetValue().empty();
+
+    result.push_back(std::make_unique<VariationsHeaderURLLoaderThrottle>(
+        is_off_the_record, is_signed_in));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

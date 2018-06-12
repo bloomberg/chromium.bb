@@ -94,7 +94,9 @@ class FileSystemEntryURLLoader
       : binding_(this), params_(std::move(params)) {}
 
   // network::mojom::URLLoader:
-  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+  void FollowRedirect(const base::Optional<std::vector<std::string>>&
+                          to_be_removed_request_headers,
+                      const base::Optional<net::HttpRequestHeaders>&
                           modified_request_headers) override {}
   void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,

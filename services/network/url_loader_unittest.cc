@@ -353,7 +353,7 @@ class URLLoaderTest : public testing::Test {
 
     if (expect_redirect_) {
       client_.RunUntilRedirectReceived();
-      loader->FollowRedirect(base::nullopt);
+      loader->FollowRedirect(base::nullopt, base::nullopt);
     }
 
     if (body) {
@@ -1511,7 +1511,7 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   net::HttpRequestHeaders redirect_headers;
   redirect_headers.SetHeader("Header2", "");
   redirect_headers.SetHeader("Header3", "Value3");
-  loader->FollowRedirect(redirect_headers);
+  loader->FollowRedirect(base::nullopt, redirect_headers);
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
@@ -1521,6 +1521,88 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   EXPECT_EQ("Value1", request_headers2.find("Header1")->second);
   EXPECT_EQ("", request_headers2.find("Header2")->second);
   EXPECT_EQ("Value3", request_headers2.find("Header3")->second);
+}
+
+// Test the client can remove headers during a redirect.
+TEST_F(URLLoaderTest, RedirectRemoveHeader) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", test_server()->GetURL("/redirect307-to-echo"));
+  request.headers.AddHeadersFromString("Header1: Value1\r\nHeader2: Value2");
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  client()->RunUntilRedirectReceived();
+
+  // Initial request should only have initial headers.
+  const auto& request_headers1 = sent_request().headers;
+  EXPECT_EQ("Value1", request_headers1.find("Header1")->second);
+  EXPECT_EQ("Value2", request_headers1.find("Header2")->second);
+
+  // Remove Header1.
+  std::vector<std::string> to_be_removed_request_headers = {"Header1"};
+  loader->FollowRedirect(to_be_removed_request_headers, base::nullopt);
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  // Redirected request should have the updated headers.
+  const auto& request_headers2 = sent_request().headers;
+  EXPECT_EQ(request_headers2.end(), request_headers2.find("Header1"));
+  EXPECT_EQ("Value2", request_headers2.find("Header2")->second);
+}
+
+// Test the client can remove headers and add headers back during a redirect.
+TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", test_server()->GetURL("/redirect307-to-echo"));
+  request.headers.AddHeadersFromString("Header1: Value1\r\nHeader2: Value2");
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  client()->RunUntilRedirectReceived();
+
+  // Initial request should only have initial headers.
+  const auto& request_headers1 = sent_request().headers;
+  EXPECT_EQ("Value1", request_headers1.find("Header1")->second);
+  EXPECT_EQ("Value2", request_headers1.find("Header2")->second);
+
+  // Remove Header1 and add it back using a different value.
+  std::vector<std::string> to_be_removed_request_headers = {"Header1"};
+  net::HttpRequestHeaders redirect_headers;
+  redirect_headers.SetHeader("Header1", "NewValue1");
+  loader->FollowRedirect(to_be_removed_request_headers, redirect_headers);
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  // Redirected request should have the updated headers.
+  const auto& request_headers2 = sent_request().headers;
+  EXPECT_EQ("NewValue1", request_headers2.find("Header1")->second);
+  EXPECT_EQ("Value2", request_headers2.find("Header2")->second);
 }
 
 // A mock URLRequestJob which simulates an HTTPS request with a certificate

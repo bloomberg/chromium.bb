@@ -56,7 +56,9 @@ class CONTENT_EXPORT NavigationURLLoader {
 
   // Called in response to OnRequestRedirected to continue processing the
   // request.
-  virtual void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+  virtual void FollowRedirect(const base::Optional<std::vector<std::string>>&
+                                  to_be_removed_request_headers,
+                              const base::Optional<net::HttpRequestHeaders>&
                                   modified_request_headers) = 0;
 
   // Called in response to OnResponseStarted to process the response.
