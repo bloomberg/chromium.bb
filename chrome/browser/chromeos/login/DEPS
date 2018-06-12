@@ -16,3 +16,10 @@ include_rules = [
   # Library used for calculating CRC-32 needed for HWID verification.
   "+third_party/zlib",
 ]
+
+specific_include_rules = {
+  "login_browsertest\.cc": [
+    "+ash/system/status_area_widget.h",
+    "+ash/system/unified/unified_system_tray.h",
+  ],
+}
