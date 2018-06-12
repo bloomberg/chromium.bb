@@ -11,18 +11,12 @@
  */
 var TREEITEM_DRIVE;
 var TREEITEM_DOWNLOADS;
-var NEWFOLDER;
-var TESTFOLDER;
 if (!chrome.extension.inIncognitoContext) {
   TREEITEM_DRIVE = '#directory-tree > div:nth-child(1) ';
   TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(2) ';
-  NEWFOLDER = '#tree-item-autogen-id-9';
-  TESTFOLDER = '#tree-item-autogen-id-10';
 } else {
   // In guest mode Google Drive is not mounted so the folder indices differ.
   TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(1) ';
-  NEWFOLDER = '#tree-item-autogen-id-3';
-  TESTFOLDER = '#tree-item-autogen-id-4';
 }
 var EXPAND_ICON = '> .tree-row > .expand-icon';
 var EXPANDED_SUBTREE = '> .tree-children[expanded]';
@@ -90,7 +84,10 @@ function createNewFolder(windowId, path, initialEntrySet) {
     chrome.test.assertTrue('renaming' in elements[0].attributes);
   }).then(function() {
     // Check directory tree for new folder.
-    return remoteCall.waitForElement(windowId, NEWFOLDER);
+    var expectedRows = [['New Folder', '--', 'Folder', '']].concat(
+        TestEntryInfo.getExpectedRows(initialEntrySet));
+    return remoteCall.waitForFiles(
+        windowId, expectedRows, {ignoreLastModifiedTime: true});
   }).then(function() {
     // Type new folder name.
     return remoteCall.callRemoteTestUtil(
@@ -105,11 +102,11 @@ function createNewFolder(windowId, path, initialEntrySet) {
     // Wait until rename completes.
     return remoteCall.waitForElementLost(windowId, 'input.rename');
   }).then(function() {
-     // Once it is renamed, the original 'New Folder' item is removed.
-     return remoteCall.waitForElementLost(windowId, NEWFOLDER);
-  }).then(function() {
     // A newer entry is then added for the renamed folder.
-    return remoteCall.waitForElement(windowId, TESTFOLDER);
+    var expectedRows = [['Test Folder Name', '--', 'Folder', '']].concat(
+        TestEntryInfo.getExpectedRows(initialEntrySet));
+    return remoteCall.waitForFiles(
+        windowId, expectedRows, {ignoreLastModifiedTime: true});
   }).then(function() {
     var expectedEntryRows = TestEntryInfo.getExpectedRows(initialEntrySet);
     expectedEntryRows.push(['Test Folder Name', '--', 'Folder', '']);
