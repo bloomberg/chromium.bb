@@ -16,8 +16,6 @@
 #include "base/time/time.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
-#include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
 #include "google_apis/google_api_keys.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -32,6 +30,8 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
 namespace content {
 namespace {
@@ -592,7 +592,8 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
                             base::UintToString(max_alternatives));
   }
   upstream_args.push_back("app=chromium");
-  for (const mojom::SpeechRecognitionGrammar& grammar : config_.grammars) {
+  for (const blink::mojom::SpeechRecognitionGrammar& grammar :
+       config_.grammars) {
     std::string grammar_value(base::NumberToString(grammar.weight) + ":" +
                               grammar.url.spec());
     upstream_args.push_back(
@@ -723,21 +724,23 @@ SpeechRecognitionEngine::ProcessDownstreamResponse(
       case proto::SpeechRecognitionEvent::STATUS_SUCCESS:
         break;
       case proto::SpeechRecognitionEvent::STATUS_NO_SPEECH:
-        return Abort(mojom::SpeechRecognitionErrorCode::kNoSpeech);
+        return Abort(blink::mojom::SpeechRecognitionErrorCode::kNoSpeech);
       case proto::SpeechRecognitionEvent::STATUS_ABORTED:
-        return Abort(mojom::SpeechRecognitionErrorCode::kAborted);
+        return Abort(blink::mojom::SpeechRecognitionErrorCode::kAborted);
       case proto::SpeechRecognitionEvent::STATUS_AUDIO_CAPTURE:
-        return Abort(mojom::SpeechRecognitionErrorCode::kAudioCapture);
+        return Abort(blink::mojom::SpeechRecognitionErrorCode::kAudioCapture);
       case proto::SpeechRecognitionEvent::STATUS_NETWORK:
-        return Abort(mojom::SpeechRecognitionErrorCode::kNetwork);
+        return Abort(blink::mojom::SpeechRecognitionErrorCode::kNetwork);
       case proto::SpeechRecognitionEvent::STATUS_NOT_ALLOWED:
-        return Abort(mojom::SpeechRecognitionErrorCode::kNotAllowed);
+        return Abort(blink::mojom::SpeechRecognitionErrorCode::kNotAllowed);
       case proto::SpeechRecognitionEvent::STATUS_SERVICE_NOT_ALLOWED:
-        return Abort(mojom::SpeechRecognitionErrorCode::kServiceNotAllowed);
+        return Abort(
+            blink::mojom::SpeechRecognitionErrorCode::kServiceNotAllowed);
       case proto::SpeechRecognitionEvent::STATUS_BAD_GRAMMAR:
-        return Abort(mojom::SpeechRecognitionErrorCode::kBadGrammar);
+        return Abort(blink::mojom::SpeechRecognitionErrorCode::kBadGrammar);
       case proto::SpeechRecognitionEvent::STATUS_LANGUAGE_NOT_SUPPORTED:
-        return Abort(mojom::SpeechRecognitionErrorCode::kLanguageNotSupported);
+        return Abort(
+            blink::mojom::SpeechRecognitionErrorCode::kLanguageNotSupported);
     }
   }
 
@@ -746,11 +749,11 @@ SpeechRecognitionEngine::ProcessDownstreamResponse(
     delegate_->OnSpeechRecognitionEngineEndOfUtterance();
   }
 
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
   for (int i = 0; i < ws_event.result_size(); ++i) {
     const proto::SpeechRecognitionResult& ws_result = ws_event.result(i);
-    results.push_back(mojom::SpeechRecognitionResult::New());
-    mojom::SpeechRecognitionResultPtr& result = results.back();
+    results.push_back(blink::mojom::SpeechRecognitionResult::New());
+    blink::mojom::SpeechRecognitionResultPtr& result = results.back();
     result->is_provisional = !(ws_result.has_final() && ws_result.final());
 
     if (!result->is_provisional)
@@ -759,8 +762,8 @@ SpeechRecognitionEngine::ProcessDownstreamResponse(
     for (int j = 0; j < ws_result.alternative_size(); ++j) {
       const proto::SpeechRecognitionAlternative& ws_alternative =
           ws_result.alternative(j);
-      mojom::SpeechRecognitionHypothesisPtr hypothesis =
-          mojom::SpeechRecognitionHypothesis::New();
+      blink::mojom::SpeechRecognitionHypothesisPtr hypothesis =
+          blink::mojom::SpeechRecognitionHypothesis::New();
       if (ws_alternative.has_confidence())
         hypothesis->confidence = ws_alternative.confidence();
       else if (ws_result.has_stability())
@@ -787,7 +790,7 @@ SpeechRecognitionEngine::RaiseNoMatchErrorIfGotNoResults(
     // Provide an empty result to notify that recognition is ended with no
     // errors, yet neither any further results.
     delegate_->OnSpeechRecognitionEngineResults(
-        std::vector<mojom::SpeechRecognitionResultPtr>());
+        std::vector<blink::mojom::SpeechRecognitionResultPtr>());
   }
   return AbortSilently(event_args);
 }
@@ -832,21 +835,22 @@ SpeechRecognitionEngine::CloseDownstream(const FSMEventArgs&) {
 
 SpeechRecognitionEngine::FSMState
 SpeechRecognitionEngine::AbortSilently(const FSMEventArgs&) {
-  return Abort(mojom::SpeechRecognitionErrorCode::kNone);
+  return Abort(blink::mojom::SpeechRecognitionErrorCode::kNone);
 }
 
 SpeechRecognitionEngine::FSMState
 SpeechRecognitionEngine::AbortWithError(const FSMEventArgs&) {
-  return Abort(mojom::SpeechRecognitionErrorCode::kNetwork);
+  return Abort(blink::mojom::SpeechRecognitionErrorCode::kNetwork);
 }
 
 SpeechRecognitionEngine::FSMState SpeechRecognitionEngine::Abort(
-    mojom::SpeechRecognitionErrorCode error_code) {
+    blink::mojom::SpeechRecognitionErrorCode error_code) {
   DVLOG(1) << "Aborting with error " << error_code;
 
-  if (error_code != mojom::SpeechRecognitionErrorCode::kNone) {
-    delegate_->OnSpeechRecognitionEngineError(mojom::SpeechRecognitionError(
-        error_code, mojom::SpeechAudioErrorDetails::kNone));
+  if (error_code != blink::mojom::SpeechRecognitionErrorCode::kNone) {
+    delegate_->OnSpeechRecognitionEngineError(
+        blink::mojom::SpeechRecognitionError(
+            error_code, blink::mojom::SpeechAudioErrorDetails::kNone));
   }
   downstream_loader_.reset();
   upstream_loader_.reset();

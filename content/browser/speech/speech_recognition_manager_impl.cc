@@ -32,9 +32,9 @@
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
 #include "media/audio/audio_device_description.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -363,10 +363,10 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
         base::BindOnce(&SpeechRecognitionManagerImpl::DispatchEvent,
                        weak_factory_.GetWeakPtr(), session_id, EVENT_START));
   } else {
-    OnRecognitionError(session_id,
-                       mojom::SpeechRecognitionError(
-                           mojom::SpeechRecognitionErrorCode::kNotAllowed,
-                           mojom::SpeechAudioErrorDetails::kNone));
+    OnRecognitionError(
+        session_id, blink::mojom::SpeechRecognitionError(
+                        blink::mojom::SpeechRecognitionErrorCode::kNotAllowed,
+                        blink::mojom::SpeechAudioErrorDetails::kNone));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&SpeechRecognitionManagerImpl::DispatchEvent,
@@ -545,7 +545,7 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
 
 void SpeechRecognitionManagerImpl::OnRecognitionResults(
     int session_id,
-    const std::vector<mojom::SpeechRecognitionResultPtr>& results) {
+    const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
@@ -558,7 +558,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionResults(
 
 void SpeechRecognitionManagerImpl::OnRecognitionError(
     int session_id,
-    const mojom::SpeechRecognitionError& error) {
+    const blink::mojom::SpeechRecognitionError& error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;

@@ -17,13 +17,13 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
-#include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
 namespace vr {
 
@@ -151,9 +151,9 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
       return;
     }
     DCHECK(GetActiveListener());
-    content::mojom::SpeechRecognitionError error(
-        content::mojom::SpeechRecognitionErrorCode::kNetwork,
-        content::mojom::SpeechAudioErrorDetails::kNone);
+    blink::mojom::SpeechRecognitionError error(
+        blink::mojom::SpeechRecognitionErrorCode::kNetwork,
+        blink::mojom::SpeechAudioErrorDetails::kNone);
     switch (event) {
       case RECOGNITION_START:
         GetActiveListener()->OnRecognitionStart(kTestSessionId);
@@ -215,13 +215,12 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
     listener->OnAudioStart(session_id_);
     listener->OnAudioEnd(session_id_);
 
-    content::mojom::SpeechRecognitionResultPtr result =
-        content::mojom::SpeechRecognitionResult::New();
-    result->hypotheses.push_back(
-        content::mojom::SpeechRecognitionHypothesis::New(
-            base::ASCIIToUTF16(string), 1.0));
+    blink::mojom::SpeechRecognitionResultPtr result =
+        blink::mojom::SpeechRecognitionResult::New();
+    result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
+        base::ASCIIToUTF16(string), 1.0));
     result->is_provisional = is_provisional;
-    std::vector<content::mojom::SpeechRecognitionResultPtr> results;
+    std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
     results.push_back(std::move(result));
 
     listener->OnRecognitionResults(session_id_, results);

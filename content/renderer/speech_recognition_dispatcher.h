@@ -9,10 +9,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/common/speech_recognizer.mojom.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognizer.mojom.h"
 #include "third_party/blink/public/web/web_speech_recognition_handle.h"
 #include "third_party/blink/public/web/web_speech_recognizer.h"
 #include "third_party/blink/public/web/web_speech_recognizer_client.h"
@@ -46,17 +46,17 @@ class SpeechRecognitionDispatcher : public RenderFrameObserver,
 
   // Methods to interact with |session_map_|
   void AddHandle(const blink::WebSpeechRecognitionHandle& handle,
-                 mojom::SpeechRecognitionSessionPtr session);
+                 blink::mojom::SpeechRecognitionSessionPtr session);
   bool HandleExists(const blink::WebSpeechRecognitionHandle& handle);
   void RemoveHandle(const blink::WebSpeechRecognitionHandle& handle);
-  mojom::SpeechRecognitionSession* GetSession(
+  blink::mojom::SpeechRecognitionSession* GetSession(
       const blink::WebSpeechRecognitionHandle& handle);
 
-  mojom::SpeechRecognizer& GetSpeechRecognitionHost();
+  blink::mojom::SpeechRecognizer& GetSpeechRecognitionHost();
 
   // InterfacePtr used to communicate with SpeechRecognitionDispatcherHost to
   // start a session for each WebSpeechRecognitionHandle.
-  mojom::SpeechRecognizerPtr speech_recognition_host_;
+  blink::mojom::SpeechRecognizerPtr speech_recognition_host_;
 
   // The Blink client class that we use to send events back to the JS world.
   // This is passed to each SpeechRecognitionSessionClientImpl instance.
@@ -69,13 +69,14 @@ class SpeechRecognitionDispatcher : public RenderFrameObserver,
   // SpeechRecognitionSessionClientImpl holds a pointer to its parent
   // SpeechRecognitionDispatcher, and we need to clean up the
   // SpeechRecognitionSessionClientImpl objects when |this| is deleted.
-  mojo::StrongBindingSet<mojom::SpeechRecognitionSessionClient> bindings_;
+  mojo::StrongBindingSet<blink::mojom::SpeechRecognitionSessionClient>
+      bindings_;
 
   // Owns a SpeechRecognitionSessionPtr per session created. Each
   // WebSpeechRecognitionHandle has its own speech recognition session, and is
   // used as a key for the map.
   using SessionMap = std::map<blink::WebSpeechRecognitionHandle,
-                              mojom::SpeechRecognitionSessionPtr>;
+                              blink::mojom::SpeechRecognitionSessionPtr>;
   SessionMap session_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionDispatcher);
@@ -86,7 +87,7 @@ class SpeechRecognitionDispatcher : public RenderFrameObserver,
 // and is cleaned up either when the end point is closed by the browser process,
 // or if SpeechRecognitionDispatcher is deleted.
 class SpeechRecognitionSessionClientImpl
-    : public mojom::SpeechRecognitionSessionClient {
+    : public blink::mojom::SpeechRecognitionSessionClient {
  public:
   SpeechRecognitionSessionClientImpl(
       SpeechRecognitionDispatcher* dispatcher,
@@ -94,16 +95,17 @@ class SpeechRecognitionSessionClientImpl
       const blink::WebSpeechRecognizerClient& client);
   ~SpeechRecognitionSessionClientImpl() override = default;
 
-  // mojom::SpeechRecognitionSessionClient implementation
+  // blink::mojom::SpeechRecognitionSessionClient implementation
   void Started() override;
   void AudioStarted() override;
   void SoundStarted() override;
   void SoundEnded() override;
   void AudioEnded() override;
-  void ErrorOccurred(const mojom::SpeechRecognitionErrorPtr error) override;
+  void ErrorOccurred(
+      const blink::mojom::SpeechRecognitionErrorPtr error) override;
   void Ended() override;
   void ResultRetrieved(
-      std::vector<mojom::SpeechRecognitionResultPtr> results) override;
+      std::vector<blink::mojom::SpeechRecognitionResultPtr> results) override;
 
  private:
   // Not owned, |parent_dispatcher_| owns |this|.

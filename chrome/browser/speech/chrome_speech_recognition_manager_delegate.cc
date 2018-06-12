@@ -19,8 +19,8 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -63,11 +63,11 @@ void ChromeSpeechRecognitionManagerDelegate::OnAudioEnd(int session_id) {
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionResults(
     int session_id,
-    const std::vector<content::mojom::SpeechRecognitionResultPtr>& result) {}
+    const std::vector<blink::mojom::SpeechRecognitionResultPtr>& result) {}
 
 void ChromeSpeechRecognitionManagerDelegate::OnRecognitionError(
     int session_id,
-    const content::mojom::SpeechRecognitionError& error) {}
+    const blink::mojom::SpeechRecognitionError& error) {}
 
 void ChromeSpeechRecognitionManagerDelegate::OnAudioLevelsChange(
     int session_id, float volume, float noise_volume) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 // Used by the browser's speech recognition engine to indicate the reason for a
 // speech recognition error.

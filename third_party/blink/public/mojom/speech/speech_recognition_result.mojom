@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 
@@ -20,7 +20,7 @@ struct SpeechRecognitionHypothesis {
 // Group of recognition hypotheses for a particular speech segment.
 struct SpeechRecognitionResult {
   // An N-best list of hypotheses.
-  array<content.mojom.SpeechRecognitionHypothesis> hypotheses;
+  array<blink.mojom.SpeechRecognitionHypothesis> hypotheses;
 
   // False if this is the final time the speech service will return this
   // particular result. If true, then this represents an interim result that

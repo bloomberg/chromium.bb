@@ -16,8 +16,8 @@
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
 #include "jni/SpeechRecognitionImpl_jni.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
@@ -174,12 +174,12 @@ void SpeechRecognizerImplAndroid::OnRecognitionResults(
   std::vector<float> scores(options.size(), 0.0);
   if (floats != NULL)
     JavaFloatArrayToFloatVector(env, floats, &scores);
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
-  results.push_back(mojom::SpeechRecognitionResult::New());
-  mojom::SpeechRecognitionResultPtr& result = results.back();
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(blink::mojom::SpeechRecognitionResult::New());
+  blink::mojom::SpeechRecognitionResultPtr& result = results.back();
   CHECK_EQ(options.size(), scores.size());
   for (size_t i = 0; i < options.size(); ++i) {
-    result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+    result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
         options[i], static_cast<double>(scores[i])));
   }
   result->is_provisional = provisional;
@@ -191,7 +191,7 @@ void SpeechRecognizerImplAndroid::OnRecognitionResults(
 }
 
 void SpeechRecognizerImplAndroid::OnRecognitionResultsOnIOThread(
-    std::vector<mojom::SpeechRecognitionResultPtr> results) {
+    std::vector<blink::mojom::SpeechRecognitionResultPtr> results) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   listener()->OnRecognitionResults(session_id(), results);
 }
@@ -209,9 +209,10 @@ void SpeechRecognizerImplAndroid::OnRecognitionError(
   }
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   listener()->OnRecognitionError(
-      session_id(), mojom::SpeechRecognitionError(
-                        static_cast<mojom::SpeechRecognitionErrorCode>(error),
-                        mojom::SpeechAudioErrorDetails::kNone));
+      session_id(),
+      blink::mojom::SpeechRecognitionError(
+          static_cast<blink::mojom::SpeechRecognitionErrorCode>(error),
+          blink::mojom::SpeechAudioErrorDetails::kNone));
 }
 
 void SpeechRecognizerImplAndroid::OnRecognitionEnd(

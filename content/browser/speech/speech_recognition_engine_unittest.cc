@@ -17,8 +17,6 @@
 #include "base/sys_byteorder.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
-#include "content/public/common/speech_recognition_error.mojom.h"
-#include "content/public/common/speech_recognition_result.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -28,6 +26,8 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
+#include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
 
 using base::HostToNet32;
 using base::checked_cast;
@@ -47,13 +47,14 @@ class SpeechRecognitionEngineTest
  public:
   SpeechRecognitionEngineTest()
       : last_number_of_upstream_chunks_seen_(0U),
-        error_(mojom::SpeechRecognitionErrorCode::kNone),
+        error_(blink::mojom::SpeechRecognitionErrorCode::kNone),
         end_of_utterance_counter_(0) {}
 
   // SpeechRecognitionRequestDelegate methods.
   void OnSpeechRecognitionEngineResults(
-      const std::vector<mojom::SpeechRecognitionResultPtr>& results) override {
-    std::vector<mojom::SpeechRecognitionResultPtr> results_copy;
+      const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results)
+      override {
+    std::vector<blink::mojom::SpeechRecognitionResultPtr> results_copy;
     for (auto& result : results)
       results_copy.push_back(result.Clone());
     results_.push(std::move(results_copy));
@@ -62,7 +63,7 @@ class SpeechRecognitionEngineTest
     ++end_of_utterance_counter_;
   }
   void OnSpeechRecognitionEngineError(
-      const mojom::SpeechRecognitionError& error) override {
+      const blink::mojom::SpeechRecognitionError& error) override {
     error_ = error.code;
   }
 
@@ -78,8 +79,8 @@ class SpeechRecognitionEngineTest
     DOWNSTREAM_ERROR_WEBSERVICE_NO_MATCH
   };
   static bool ResultsAreEqual(
-      const std::vector<mojom::SpeechRecognitionResultPtr>& a,
-      const std::vector<mojom::SpeechRecognitionResultPtr>& b);
+      const std::vector<blink::mojom::SpeechRecognitionResultPtr>& a,
+      const std::vector<blink::mojom::SpeechRecognitionResultPtr>& b);
   static std::string SerializeProtobufResponse(
       const proto::SpeechRecognitionEvent& msg);
 
@@ -92,9 +93,9 @@ class SpeechRecognitionEngineTest
   void ProvideMockProtoResultDownstream(
       const proto::SpeechRecognitionEvent& result);
   void ProvideMockResultDownstream(
-      const mojom::SpeechRecognitionResultPtr& result);
+      const blink::mojom::SpeechRecognitionResultPtr& result);
   void ExpectResultsReceived(
-      const std::vector<mojom::SpeechRecognitionResultPtr>& result);
+      const std::vector<blink::mojom::SpeechRecognitionResultPtr>& result);
   void ExpectFramedChunk(const std::string& chunk, uint32_t type);
   // Reads and returns all pending upload data from |upstream_data_pipe_|,
   // initializing the pipe from |GetUpstreamRequest()|, if needed.
@@ -111,9 +112,9 @@ class SpeechRecognitionEngineTest
   std::unique_ptr<SpeechRecognitionEngine> engine_under_test_;
   size_t last_number_of_upstream_chunks_seen_;
   std::string response_buffer_;
-  mojom::SpeechRecognitionErrorCode error_;
+  blink::mojom::SpeechRecognitionErrorCode error_;
   int end_of_utterance_counter_;
-  base::queue<std::vector<mojom::SpeechRecognitionResultPtr>> results_;
+  base::queue<std::vector<blink::mojom::SpeechRecognitionResultPtr>> results_;
 };
 
 TEST_F(SpeechRecognitionEngineTest, SingleDefinitiveResult) {
@@ -135,13 +136,13 @@ TEST_F(SpeechRecognitionEngineTest, SingleDefinitiveResult) {
 
   // Simulate a protobuf message streamed from the server containing a single
   // result with two hypotheses.
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
-  results.push_back(mojom::SpeechRecognitionResult::New());
-  mojom::SpeechRecognitionResultPtr& result = results.back();
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(blink::mojom::SpeechRecognitionResult::New());
+  blink::mojom::SpeechRecognitionResultPtr& result = results.back();
   result->is_provisional = false;
-  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+  result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
       base::UTF8ToUTF16("hypothesis 1"), 0.1F));
-  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+  result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
       base::UTF8ToUTF16("hypothesis 2"), 0.2F));
 
   ProvideMockResultDownstream(result);
@@ -152,7 +153,7 @@ TEST_F(SpeechRecognitionEngineTest, SingleDefinitiveResult) {
   CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
+  ASSERT_EQ(blink::mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -165,12 +166,12 @@ TEST_F(SpeechRecognitionEngineTest, SeveralStreamingResults) {
     InjectDummyAudioChunk();
     ASSERT_NE("", ConsumeChunkedUploadData());
 
-    std::vector<mojom::SpeechRecognitionResultPtr> results;
-    results.push_back(mojom::SpeechRecognitionResult::New());
-    mojom::SpeechRecognitionResultPtr& result = results.back();
+    std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+    results.push_back(blink::mojom::SpeechRecognitionResult::New());
+    blink::mojom::SpeechRecognitionResultPtr& result = results.back();
     result->is_provisional = (i % 2 == 0);  // Alternate result types.
     float confidence = result->is_provisional ? 0.0F : (i * 0.1F);
-    result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+    result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
         base::UTF8ToUTF16("hypothesis"), confidence));
 
     ProvideMockResultDownstream(result);
@@ -184,11 +185,11 @@ TEST_F(SpeechRecognitionEngineTest, SeveralStreamingResults) {
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Simulate a final definitive result.
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
-  results.push_back(mojom::SpeechRecognitionResult::New());
-  mojom::SpeechRecognitionResultPtr& result = results.back();
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(blink::mojom::SpeechRecognitionResult::New());
+  blink::mojom::SpeechRecognitionResultPtr& result = results.back();
   result->is_provisional = false;
-  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+  result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
       base::UTF8ToUTF16("The final result"), 1.0F));
   ProvideMockResultDownstream(result);
   ExpectResultsReceived(results);
@@ -198,7 +199,7 @@ TEST_F(SpeechRecognitionEngineTest, SeveralStreamingResults) {
   CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
+  ASSERT_EQ(blink::mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -212,10 +213,10 @@ TEST_F(SpeechRecognitionEngineTest, NoFinalResultAfterAudioChunksEnded) {
   ASSERT_NE("", ConsumeChunkedUploadData());
 
   // Simulate the corresponding definitive result.
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
-  results.push_back(mojom::SpeechRecognitionResult::New());
-  mojom::SpeechRecognitionResultPtr& result = results.back();
-  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(blink::mojom::SpeechRecognitionResult::New());
+  blink::mojom::SpeechRecognitionResultPtr& result = results.back();
+  result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
       base::UTF8ToUTF16("hypothesis"), 1.0F));
   ProvideMockResultDownstream(result);
   ExpectResultsReceived(results);
@@ -229,13 +230,13 @@ TEST_F(SpeechRecognitionEngineTest, NoFinalResultAfterAudioChunksEnded) {
 
   // Expect an empty result, aimed at notifying recognition ended with no
   // actual results nor errors.
-  std::vector<mojom::SpeechRecognitionResultPtr> empty_results;
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> empty_results;
   ExpectResultsReceived(empty_results);
 
   // Ensure everything is closed cleanly after the downstream is closed.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
+  ASSERT_EQ(blink::mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -258,10 +259,10 @@ TEST_F(SpeechRecognitionEngineTest, ReRequestData) {
   ASSERT_EQ(uploaded_data, ConsumeChunkedUploadData());
 
   // Simulate the corresponding definitive result.
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
-  results.push_back(mojom::SpeechRecognitionResult::New());
-  mojom::SpeechRecognitionResultPtr& result = results.back();
-  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(blink::mojom::SpeechRecognitionResult::New());
+  blink::mojom::SpeechRecognitionResultPtr& result = results.back();
+  result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
       base::UTF8ToUTF16("hypothesis"), 1.0F));
   ProvideMockResultDownstream(result);
   ExpectResultsReceived(results);
@@ -284,13 +285,13 @@ TEST_F(SpeechRecognitionEngineTest, ReRequestData) {
 
   // Expect an empty result, aimed at notifying recognition ended with no
   // actual results nor errors.
-  std::vector<mojom::SpeechRecognitionResultPtr> empty_results;
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> empty_results;
   ExpectResultsReceived(empty_results);
 
   // Ensure everything is closed cleanly after the downstream is closed.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
+  ASSERT_EQ(blink::mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -308,11 +309,11 @@ TEST_F(SpeechRecognitionEngineTest, NoMatchError) {
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
 
   // Simulate only a provisional result.
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
-  results.push_back(mojom::SpeechRecognitionResult::New());
-  mojom::SpeechRecognitionResultPtr& result = results.back();
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(blink::mojom::SpeechRecognitionResult::New());
+  blink::mojom::SpeechRecognitionResultPtr& result = results.back();
   result->is_provisional = true;
-  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+  result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
       base::UTF8ToUTF16("The final result"), 0.0F));
   ProvideMockResultDownstream(result);
   ExpectResultsReceived(results);
@@ -323,7 +324,7 @@ TEST_F(SpeechRecognitionEngineTest, NoMatchError) {
   // Expect an empty result.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  std::vector<mojom::SpeechRecognitionResultPtr> empty_result;
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> empty_result;
   ExpectResultsReceived(empty_result);
 }
 
@@ -338,10 +339,11 @@ TEST_F(SpeechRecognitionEngineTest, HTTPError) {
   // Close the downstream with a HTTP 500 error.
   CloseMockDownstream(DOWNSTREAM_ERROR_HTTP500);
 
-  // Expect a mojom::SpeechRecognitionErrorCode::kNetwork error to be raised.
+  // Expect a blink::mojom::SpeechRecognitionErrorCode::kNetwork error to be
+  // raised.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNetwork, error_);
+  ASSERT_EQ(blink::mojom::SpeechRecognitionErrorCode::kNetwork, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -356,10 +358,11 @@ TEST_F(SpeechRecognitionEngineTest, NetworkError) {
   // Close the downstream fetcher simulating a network failure.
   CloseMockDownstream(DOWNSTREAM_ERROR_NETWORK);
 
-  // Expect a mojom::SpeechRecognitionErrorCode::kNetwork error to be raised.
+  // Expect a blink::mojom::SpeechRecognitionErrorCode::kNetwork error to be
+  // raised.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNetwork, error_);
+  ASSERT_EQ(blink::mojom::SpeechRecognitionErrorCode::kNetwork, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -385,12 +388,12 @@ TEST_F(SpeechRecognitionEngineTest, Stability) {
   ProvideMockProtoResultDownstream(proto_event);
 
   // Set up expectations.
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
-  results.push_back(mojom::SpeechRecognitionResult::New());
-  mojom::SpeechRecognitionResultPtr& result = results.back();
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(blink::mojom::SpeechRecognitionResult::New());
+  blink::mojom::SpeechRecognitionResultPtr& result = results.back();
   result->is_provisional = true;
-  result->hypotheses.push_back(
-      mojom::SpeechRecognitionHypothesis::New(base::UTF8ToUTF16("foo"), 0.5));
+  result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
+      base::UTF8ToUTF16("foo"), 0.5));
 
   // Check that the protobuf generated the expected result.
   ExpectResultsReceived(results);
@@ -404,9 +407,9 @@ TEST_F(SpeechRecognitionEngineTest, Stability) {
   EndMockRecognition();
 
   // Since there was no final result, we get an empty "no match" result.
-  std::vector<mojom::SpeechRecognitionResultPtr> empty_result;
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> empty_result;
   ExpectResultsReceived(empty_result);
-  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
+  ASSERT_EQ(blink::mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -466,11 +469,11 @@ TEST_F(SpeechRecognitionEngineTest, SendPreamble) {
 
   // Simulate a protobuf message streamed from the server containing a single
   // result with one hypotheses.
-  std::vector<mojom::SpeechRecognitionResultPtr> results;
-  results.push_back(mojom::SpeechRecognitionResult::New());
-  mojom::SpeechRecognitionResultPtr& result = results.back();
+  std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
+  results.push_back(blink::mojom::SpeechRecognitionResult::New());
+  blink::mojom::SpeechRecognitionResultPtr& result = results.back();
   result->is_provisional = false;
-  result->hypotheses.push_back(mojom::SpeechRecognitionHypothesis::New(
+  result->hypotheses.push_back(blink::mojom::SpeechRecognitionHypothesis::New(
       base::UTF8ToUTF16("hypothesis 1"), 0.1F));
 
   ProvideMockResultDownstream(result);
@@ -481,7 +484,7 @@ TEST_F(SpeechRecognitionEngineTest, SendPreamble) {
   CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(mojom::SpeechRecognitionErrorCode::kNone, error_);
+  ASSERT_EQ(blink::mojom::SpeechRecognitionErrorCode::kNone, error_);
   ASSERT_EQ(0U, results_.size());
 }
 
@@ -601,7 +604,7 @@ void SpeechRecognitionEngineTest::ProvideMockProtoResultDownstream(
 }
 
 void SpeechRecognitionEngineTest::ProvideMockResultDownstream(
-    const mojom::SpeechRecognitionResultPtr& result) {
+    const blink::mojom::SpeechRecognitionResultPtr& result) {
   proto::SpeechRecognitionEvent proto_event;
   proto_event.set_status(proto::SpeechRecognitionEvent::STATUS_SUCCESS);
   proto::SpeechRecognitionResult* proto_result = proto_event.add_result();
@@ -609,7 +612,7 @@ void SpeechRecognitionEngineTest::ProvideMockResultDownstream(
   for (size_t i = 0; i < result->hypotheses.size(); ++i) {
     proto::SpeechRecognitionAlternative* proto_alternative =
         proto_result->add_alternative();
-    const mojom::SpeechRecognitionHypothesisPtr& hypothesis =
+    const blink::mojom::SpeechRecognitionHypothesisPtr& hypothesis =
         result->hypotheses[i];
     proto_alternative->set_confidence(hypothesis->confidence);
     proto_alternative->set_transcript(base::UTF16ToUTF8(hypothesis->utterance));
@@ -654,21 +657,21 @@ void SpeechRecognitionEngineTest::CloseMockDownstream(
 }
 
 void SpeechRecognitionEngineTest::ExpectResultsReceived(
-    const std::vector<mojom::SpeechRecognitionResultPtr>& results) {
+    const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results) {
   ASSERT_GE(1U, results_.size());
   ASSERT_TRUE(ResultsAreEqual(results, results_.front()));
   results_.pop();
 }
 
 bool SpeechRecognitionEngineTest::ResultsAreEqual(
-    const std::vector<mojom::SpeechRecognitionResultPtr>& a,
-    const std::vector<mojom::SpeechRecognitionResultPtr>& b) {
+    const std::vector<blink::mojom::SpeechRecognitionResultPtr>& a,
+    const std::vector<blink::mojom::SpeechRecognitionResultPtr>& b) {
   if (a.size() != b.size())
     return false;
 
-  std::vector<mojom::SpeechRecognitionResultPtr>::const_iterator it_a =
+  std::vector<blink::mojom::SpeechRecognitionResultPtr>::const_iterator it_a =
       a.begin();
-  std::vector<mojom::SpeechRecognitionResultPtr>::const_iterator it_b =
+  std::vector<blink::mojom::SpeechRecognitionResultPtr>::const_iterator it_b =
       b.begin();
   for (; it_a != a.end() && it_b != b.end(); ++it_a, ++it_b) {
     if ((*it_a)->is_provisional != (*it_b)->is_provisional ||
@@ -676,9 +679,9 @@ bool SpeechRecognitionEngineTest::ResultsAreEqual(
       return false;
     }
     for (size_t i = 0; i < (*it_a)->hypotheses.size(); ++i) {
-      const mojom::SpeechRecognitionHypothesisPtr& hyp_a =
+      const blink::mojom::SpeechRecognitionHypothesisPtr& hyp_a =
           (*it_a)->hypotheses[i];
-      const mojom::SpeechRecognitionHypothesisPtr& hyp_b =
+      const blink::mojom::SpeechRecognitionHypothesisPtr& hyp_b =
           (*it_b)->hypotheses[i];
       if (hyp_a->utterance != hyp_b->utterance ||
           hyp_a->confidence != hyp_b->confidence) {

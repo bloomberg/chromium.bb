@@ -22,7 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.mojom.SpeechRecognitionErrorCode;
+import org.chromium.blink.mojom.SpeechRecognitionErrorCode;
 import org.chromium.content_public.browser.SpeechRecognition;
 
 import java.util.ArrayList;
