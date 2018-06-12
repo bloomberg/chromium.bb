@@ -6,12 +6,13 @@ import("//build/config/features.gni")
 import("//testing/test.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/browser/resources/chromeos/chromevox/run_jsbundler.gni")
+import("//third_party/closure_compiler/compile_js.gni")
 
 assert(is_chromeos)
 
 select_to_speak_out_dir = "$root_out_dir/resources/chromeos/select_to_speak"
 
-group("select_to_speak") {
+group("build") {
   deps = [
     ":select_to_speak_copied_files",
     ":select_to_speak_guest_manifest",
@@ -159,4 +160,122 @@ js2gtest("select_to_speak_extjs_tests") {
     "pipe.jpg",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+}
+
+js_type_check("closure_compile") {
+  deps = [
+    ":../chromevox/cvox2/background/automation_predicate",
+    ":../chromevox/cvox2/background/automation_util",
+    ":../chromevox/cvox2/background/constants",
+    ":../chromevox/cvox2/background/tree_walker",
+    ":closure_shim",
+    ":node_utils",
+    ":paragraph_utils",
+    ":rect_utils",
+    ":select_to_speak",
+    ":select_to_speak_options",
+    ":word_utils",
+  ]
+}
+
+js_library("select_to_speak") {
+  deps = [
+    ":../chromevox/cvox2/background/automation_util",
+    ":../chromevox/cvox2/background/constants",
+    ":node_utils",
+    ":paragraph_utils",
+    ":rect_utils",
+    ":word_utils",
+  ]
+  externs_list = [
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/clipboard.js",
+    "$externs_path/command_line_private.js",
+    "$externs_path/metrics_private.js",
+    "externs.js",
+  ]
+}
+
+js_library("select_to_speak_options") {
+  externs_list = [
+    "externs.js",
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/metrics_private.js",
+  ]
+}
+
+js_library("node_utils") {
+  deps = [
+    ":paragraph_utils",
+    ":rect_utils",
+  ]
+  externs_list = [
+    "externs.js",
+    "$externs_path/automation.js",
+  ]
+}
+
+js_library("word_utils") {
+  deps = [
+    ":paragraph_utils",
+  ]
+  externs_list = [
+    "externs.js",
+    "$externs_path/automation.js",
+  ]
+}
+
+js_library("paragraph_utils") {
+  externs_list = [
+    "externs.js",
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("rect_utils") {
+}
+
+js_library("../chromevox/cvox2/background/automation_util") {
+  deps = [
+    ":../chromevox/cvox2/background/automation_predicate",
+    ":../chromevox/cvox2/background/constants",
+    ":../chromevox/cvox2/background/tree_walker",
+  ]
+  externs_list = [
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("../chromevox/cvox2/background/tree_walker") {
+  deps = [
+    ":../chromevox/cvox2/background/automation_predicate",
+    ":../chromevox/cvox2/background/constants",
+  ]
+  externs_list = [
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("../chromevox/cvox2/background/automation_predicate") {
+  deps = [
+    ":../chromevox/cvox2/background/constants",
+  ]
+  externs_list = [
+    "$externs_path/automation.js",
+    "$externs_path/chrome_extensions.js",
+  ]
+}
+
+js_library("../chromevox/cvox2/background/constants") {
+}
+
+js_library("closure_shim") {
 }
