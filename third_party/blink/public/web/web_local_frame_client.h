@@ -102,7 +102,6 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
 class WebMediaPlayerSource;
-class WebMediaSession;
 class WebServiceWorkerProvider;
 class WebPlugin;
 class WebPushClient;
@@ -149,9 +148,6 @@ class BLINK_EXPORT WebLocalFrameClient {
                                             WebLayerTreeView*) {
     return nullptr;
   }
-
-  // May return null.
-  virtual WebMediaSession* CreateMediaSession() { return nullptr; }
 
   // May return null.
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
