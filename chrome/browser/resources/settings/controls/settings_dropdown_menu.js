@@ -92,6 +92,10 @@ Polymer({
       if (prefValue !== undefined)
         this.set('pref.value', prefValue);
     }
+
+    // settings-control-change only fires when the selection is changed to
+    // a valid property.
+    this.fire('settings-control-change');
   },
 
   /**
