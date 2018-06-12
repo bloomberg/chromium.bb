@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
@@ -20,7 +19,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.annotation.Nullable;
 import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -29,7 +27,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -66,7 +63,6 @@ import org.chromium.net.test.EmbeddedTestServerRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
@@ -89,8 +85,6 @@ public class TileGridLayoutTest {
     @Rule
     public RenderTestRule mRenderTestRule = new RenderTestRule();
 
-    private static final String HOME_PAGE_URL = "http://ho.me/";
-
     private static final String[] FAKE_MOST_VISITED_URLS = new String[] {
             "/chrome/test/data/android/navigate/one.html",
             "/chrome/test/data/android/navigate/two.html",
@@ -109,60 +103,11 @@ public class TileGridLayoutTest {
     private final CallbackHelper mLoadCompleteHelper = new CallbackHelper();
 
     @Test
-    @SmallTest
-    @Feature({"NewTabPage"})
-    public void testHomePageIsMovedToFirstPositionWhenMultipleRowsExist() throws Exception {
-        // Contructs a home page tile in the second row. Assuming a row contains <= 6 tiles.
-        NewTabPage ntp =
-                setUpFakeDataToShowOnNtp(/* homePagePosition = */ 7, FAKE_MOST_VISITED_URLS.length);
-        TileGridLayout grid = getTileGridLayout(ntp);
-        TileView homePageTileView = (TileView) grid.getChildAt(7);
-
-        assertNotNull(homePageTileView);
-        assertTrue(isTileViewFirstInGrid(homePageTileView, grid));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage"})
-    public void testHomePageRemainsAsLastElementInOnlyRow() throws Exception {
-        NewTabPage ntp =
-                setUpFakeDataToShowOnNtp(/* homePagePosition = */ 4, /* suggestionCount = */ 4);
-        TileGridLayout grid = getTileGridLayout(ntp);
-        TileView homePageTileView = (TileView) grid.getChildAt(4);
-        grid.setMaxColumns(4);
-        grid.setMaxRows(1);
-
-        // This should cause the grid to update its tile layout.
-        ThreadUtils.runOnUiThreadBlocking(() -> ntp.getNewTabPageView().requestLayout());
-
-        assertNotNull(homePageTileView);
-        assertTrue(isTileViewOnFirstRow(homePageTileView));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"NewTabPage"})
-    public void testHomePageKeepsPositionInOnlyRow() throws Exception {
-        NewTabPage ntp =
-                setUpFakeDataToShowOnNtp(/* homePagePosition = */ 2, /* suggestionCount = */ 3);
-        TileGridLayout grid = getTileGridLayout(ntp);
-
-        // The home page tile stays at the third position as we have only one row.
-        TileView homePageTileView = (TileView) grid.getChildAt(2);
-
-        assertNotNull(homePageTileView);
-        assertTrue(isTileViewOnFirstRow(homePageTileView));
-        assertFalse(isTileViewFirstInGrid(homePageTileView, grid));
-    }
-
-    @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeModernDesign.Disable
     public void testTileGridAppearance() throws Exception {
-        NewTabPage ntp =
-                setUpFakeDataToShowOnNtp(/*homePagePosition=*/2, FAKE_MOST_VISITED_URLS.length);
+        NewTabPage ntp = setUpFakeDataToShowOnNtp(FAKE_MOST_VISITED_URLS.length);
         mRenderTestRule.render(getTileGridLayout(ntp), "ntp_tile_grid_layout");
     }
 
@@ -288,12 +233,8 @@ public class TileGridLayoutTest {
         return siteSuggestions;
     }
 
-    private NewTabPage setUpFakeDataToShowOnNtp(int homePagePosition, int suggestionCount)
-            throws InterruptedException {
+    private NewTabPage setUpFakeDataToShowOnNtp(int suggestionCount) throws InterruptedException {
         List<SiteSuggestion> siteSuggestions = makeSuggestions(suggestionCount);
-        siteSuggestions.add(homePagePosition,
-                new SiteSuggestion("HOMEPAGE", HOME_PAGE_URL, "", TileTitleSource.TITLE_TAG,
-                        TileSource.HOMEPAGE, TileSectionType.PERSONALIZED, new Date()));
 
         FakeMostVisitedSites mMostVisitedSites = new FakeMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(siteSuggestions);
@@ -353,44 +294,6 @@ public class TileGridLayoutTest {
         TileGridLayout tileGridLayout = ntp.getNewTabPageView().findViewById(R.id.tile_grid_layout);
         assertNotNull("Unable to retrieve the TileGridLayout.", tileGridLayout);
         return tileGridLayout;
-    }
-
-    /** {@link TileView}s on the first row have a top margin equal to 0. */
-    private boolean isTileViewOnFirstRow(TileView tileView) {
-        ViewGroup.MarginLayoutParams marginLayoutParams =
-                (ViewGroup.MarginLayoutParams) tileView.getLayoutParams();
-        return marginLayoutParams.topMargin == 0;
-    }
-
-    private int getMarginStart(TileView view) {
-        return ApiCompatibilityUtils.getMarginStart(
-                (ViewGroup.MarginLayoutParams) view.getLayoutParams());
-    }
-
-    /**
-     * Independently of left-to-right or right-to-left layout, this function returns whether the
-     * given |tileView| is visually positioned at the top position in the given |tileGrid|.
-     *
-     * @param tileView The tile view that should be in the first position.
-     * @param tileGrid The grid that contains the given |tileView|.
-     * @return whether the |tileView| is in the first position of the |tileGrid|.
-     */
-    private boolean isTileViewFirstInGrid(TileView tileView, TileGridLayout tileGrid) {
-        TileView startingChild = null;
-        for (int i = 0; i < tileGrid.getChildCount(); ++i) {
-            TileView nextChild = (TileView) tileGrid.getChildAt(i);
-            if (nextChild.getVisibility() != View.VISIBLE) {
-                continue; // Ignore invisible children.
-            }
-            if (!isTileViewOnFirstRow(nextChild)) {
-                continue; // Only elements in the first row may claim the first position.
-            }
-            if (startingChild == null
-                    || getMarginStart(nextChild) <= getMarginStart(startingChild)) {
-                startingChild = nextChild;
-            }
-        }
-        return startingChild == tileView;
     }
 
     /**

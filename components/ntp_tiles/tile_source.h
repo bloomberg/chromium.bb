@@ -21,10 +21,8 @@ enum class TileSource {
   POPULAR_BAKED_IN,
   // Tile is on a custodian-managed whitelist.
   WHITELIST,
-  // Tile containing the user-set home page is replacing the home page button.
-  HOMEPAGE,
 
-  LAST = HOMEPAGE
+  LAST = WHITELIST
 };
 
 }  // namespace ntp_tiles
