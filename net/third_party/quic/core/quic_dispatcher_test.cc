@@ -439,6 +439,43 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
   ProcessPacket(client_address, 1, false, "data");
 }
 
+// Regression test of b/93325907.
+TEST_F(QuicDispatcherTest, DispatcherDoesNotRejectPacketNumberZero) {
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
+
+  EXPECT_CALL(*dispatcher_,
+              CreateQuicSession(1, client_address, QuicStringPiece("hq")))
+      .WillOnce(testing::Return(CreateSession(
+          dispatcher_.get(), config_, 1, client_address, &mock_helper_,
+          &mock_alarm_factory_, &crypto_config_,
+          QuicDispatcherPeer::GetCache(dispatcher_.get()), &session1_)));
+  // Verify both packets 1 and 2 are processed by connection 1.
+  EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
+              ProcessUdpPacket(_, _, _))
+      .Times(2)
+      .WillRepeatedly(
+          WithArg<2>(Invoke([this](const QuicEncryptedPacket& packet) {
+            ValidatePacket(1, packet);
+          })));
+  EXPECT_CALL(*dispatcher_, ShouldCreateOrBufferPacketForConnection(1));
+  ProcessPacket(
+      client_address, 1, true,
+      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO,
+                        CurrentSupportedVersions().front().transport_version),
+      SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER,
+      1);
+  // Packet number 256 with packet number length 1 would be considered as 0 in
+  // dispatcher.
+  ProcessPacket(
+      client_address, 1, false,
+      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO,
+                        CurrentSupportedVersions().front().transport_version),
+      "", PACKET_8BYTE_CONNECTION_ID, PACKET_1BYTE_PACKET_NUMBER, 256);
+  EXPECT_EQ(client_address, dispatcher_->current_peer_address());
+  EXPECT_EQ(server_address_, dispatcher_->current_self_address());
+}
+
 TEST_F(QuicDispatcherTest, StatelessVersionNegotiation) {
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);

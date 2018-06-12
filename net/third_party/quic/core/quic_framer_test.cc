@@ -2711,11 +2711,7 @@ TEST_P(QuicFramerTest, RejectPublicHeader) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  if (framer_.transport_version() > QUIC_VERSION_43) {
-    EXPECT_EQ(1u, visitor_.header_->packet_number);
-  } else {
-    EXPECT_EQ(0u, visitor_.header_->packet_number);
-  }
+  EXPECT_EQ(0u, visitor_.header_->packet_number);
 }
 
 TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
