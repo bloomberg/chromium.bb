@@ -370,6 +370,13 @@ shared_library("main_unittest_dll_1") {
   sources = [
     "third_party_dlls/main_unittest_dll_1.cc",
   ]
+
+  # Disable sanitizer instrumentation in the test DLLs to avoid unwanted
+  # exports.
+  configs -= [
+    "//build/config/sanitizers:default_sanitizer_flags",
+    "//build/config:shared_library_config",
+  ]
 }
 
 shared_library("main_unittest_dll_2") {
@@ -377,6 +384,13 @@ shared_library("main_unittest_dll_2") {
   sources = [
     "third_party_dlls/main_unittest_dll_2.cc",
     "third_party_dlls/main_unittest_dll_2.def",
+  ]
+
+  # Disable sanitizer instrumentation in the test DLLs to avoid unwanted
+  # exports.
+  configs -= [
+    "//build/config/sanitizers:default_sanitizer_flags",
+    "//build/config:shared_library_config",
   ]
 }
 
