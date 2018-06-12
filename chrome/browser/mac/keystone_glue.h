@@ -69,16 +69,16 @@ extern NSString* const kAutoupdateStatusErrorMessages;
  @protected
 
   // Data for Keystone registration
-  NSString* productID_;
-  NSString* appPath_;
-  NSString* url_;
-  NSString* version_;
+  base::scoped_nsobject<NSString> productID_;
+  base::scoped_nsobject<NSString> appPath_;
+  base::scoped_nsobject<NSString> url_;
+  base::scoped_nsobject<NSString> version_;
   std::string channel_;  // Logically: dev, beta, or stable.
   // Cached location of the brand file.
   base::scoped_nsobject<NSString> brandFile_;
 
   // And the Keystone registration itself, with the active timer
-  KSRegistration* registration_;  // strong
+  base::scoped_nsobject<KSRegistration> registration_;
   NSTimer* timer_;  // strong
   BOOL registrationActive_;
   Class ksUnsignedReportingAttributeClass_;
@@ -164,8 +164,8 @@ extern NSString* const kAutoupdateStatusErrorMessages;
 // be installed if necessary.  If synchronous is NO, the promotion may occur
 // in the background.  synchronous should be YES for promotion during
 // installation. The KeystoneGlue object assumes ownership of
-// authorization_arg.
-- (void)promoteTicketWithAuthorization:(AuthorizationRef)authorization_arg
+// |anAuthorization|.
+- (void)promoteTicketWithAuthorization:(AuthorizationRef)anAuthorization
                            synchronous:(BOOL)synchronous;
 
 // Requests authorization and calls -promoteTicketWithAuthorization: in
