@@ -3109,8 +3109,14 @@ void WebContentsImpl::ResetAutoResizeSize() {
 }
 
 WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
-  if (!delegate_)
+  if (!delegate_) {
+    // Embedder can delay setting a delegate on new WebContents with
+    // WebContentsDelegate::ShouldResumeRequestsForCreatedWindow. In the mean
+    // time, navigations, including the initial one, that goes through OpenURL
+    // should be delayed until embedder is ready to resume loading.
+    delayed_open_url_params_ = std::make_unique<OpenURLParams>(params);
     return nullptr;
+  }
 
   WebContents* new_contents = delegate_->OpenURLFromTab(this, params);
 

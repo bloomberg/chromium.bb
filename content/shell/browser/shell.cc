@@ -72,7 +72,8 @@ class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(DevToolsWebContentsObserver);
 };
 
-Shell::Shell(std::unique_ptr<WebContents> web_contents)
+Shell::Shell(std::unique_ptr<WebContents> web_contents,
+             bool should_set_delegate)
     : WebContentsObserver(web_contents.get()),
       web_contents_(std::move(web_contents)),
       devtools_frontend_(nullptr),
@@ -83,7 +84,8 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents)
 #endif
       headless_(false),
       hide_toolbar_(false) {
-  web_contents_->SetDelegate(this);
+  if (should_set_delegate)
+    web_contents_->SetDelegate(this);
 
   if (switches::IsRunWebTestsSwitchPresent()) {
     headless_ = true;
@@ -131,9 +133,10 @@ Shell::~Shell() {
 }
 
 Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
-                          const gfx::Size& initial_size) {
+                          const gfx::Size& initial_size,
+                          bool should_set_delegate) {
   WebContents* raw_web_contents = web_contents.get();
-  Shell* shell = new Shell(std::move(web_contents));
+  Shell* shell = new Shell(std::move(web_contents), should_set_delegate);
   shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
 
   shell->PlatformSetContents();
@@ -213,7 +216,8 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   std::unique_ptr<WebContents> web_contents =
       WebContents::Create(create_params);
   Shell* shell =
-      CreateShell(std::move(web_contents), create_params.initial_size);
+      CreateShell(std::move(web_contents), create_params.initial_size,
+                  true /* should_set_delegate */);
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;
@@ -238,7 +242,8 @@ Shell* Shell::CreateNewWindowWithSessionStorageNamespace(
   std::unique_ptr<WebContents> web_contents =
       WebContents::CreateWithSessionStorage(create_params, session_storages);
   Shell* shell =
-      CreateShell(std::move(web_contents), create_params.initial_size);
+      CreateShell(std::move(web_contents), create_params.initial_size,
+                  true /* should_set_delegate */);
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;
@@ -312,7 +317,9 @@ void Shell::AddNewContents(WebContents* source,
                            bool user_gesture,
                            bool* was_blocked) {
   WebContents* raw_new_contents = new_contents.get();
-  CreateShell(std::move(new_contents), AdjustWindowSize(initial_rect.size()));
+  CreateShell(
+      std::move(new_contents), AdjustWindowSize(initial_rect.size()),
+      !delay_popup_contents_delegate_for_testing_ /* should_set_delegate */);
   if (switches::IsRunWebTestsSwitchPresent())
     SecondaryTestWindowObserver::CreateForWebContents(raw_new_contents);
 }
@@ -571,6 +578,10 @@ gfx::Size Shell::EnterPictureInPicture(const viz::SurfaceId& surface_id,
   // created and allow tests to run accordingly.
   return switches::IsRunWebTestsSwitchPresent() ? gfx::Size(42, 42)
                                                 : gfx::Size(0, 0);
+}
+
+bool Shell::ShouldResumeRequestsForCreatedWindow() {
+  return !delay_popup_contents_delegate_for_testing_;
 }
 
 gfx::Size Shell::GetShellDefaultSize() {

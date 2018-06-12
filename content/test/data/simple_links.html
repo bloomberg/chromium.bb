@@ -39,6 +39,10 @@
   function clickViewSourceLink() {
     return simulateClick(document.getElementById("view_source_link"));
   }
+
+  function clickDeadFileNewWindowLink() {
+    return simulateClick(document.getElementById("dead_file_new_window_link"));
+  }
  </script>
  </head>
 
@@ -47,5 +51,6 @@
 <a href="view-source:about:blank" id="view_source_link">view-source:</a><br>
 <a href="title2.html" id="same_site_new_window_link" target="_blank">same-site new window</a>
 <a href="http://foo.com/title2.html" id="cross_site_new_window_link" target="_blank">cross-site new window</a>
+<a href="file://" id="dead_file_new_window_link" target="_blank">dead-file new window</a>
 
 </html>

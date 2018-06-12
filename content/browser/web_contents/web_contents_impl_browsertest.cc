@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -2479,6 +2480,47 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PausePageScheduledTasks) {
       "value.length)",
       &next_text_length));
   EXPECT_GT(next_text_length, text_length);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       PopupWindowBrowserNavResumeLoad) {
+  // This test verifies a pop up that requires navigation from browser side
+  // works with a delegate that delays navigations of pop ups.
+  // Create a file: scheme pop up from a file: scheme page, which requires
+  // requires an OpenURL IPC to the browser process.
+  base::FilePath test_data_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  base::FilePath simple_links_path =
+      test_data_dir.Append(GetTestDataFilePath())
+          .Append(FILE_PATH_LITERAL("simple_links.html"));
+  GURL url(base::FilePath::StringType(FILE_PATH_LITERAL("file://")) +
+           simple_links_path.value());
+
+  shell()->set_delay_popup_contents_delegate_for_testing(true);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  Shell* new_shell = nullptr;
+  WebContents* new_contents = nullptr;
+  {
+    ShellAddedObserver new_shell_observer;
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell(),
+        "window.domAutomationController.send(clickDeadFileNewWindowLink());",
+        &success));
+    new_shell = new_shell_observer.GetShell();
+    new_contents = new_shell->web_contents();
+    // Delaying popup holds the initial load.
+    EXPECT_FALSE(WaitForLoadStop(new_contents));
+  }
+
+  EXPECT_FALSE(new_contents->GetDelegate());
+  new_contents->SetDelegate(new_shell);
+  new_contents->ResumeLoadingCreatedWebContents();
+  // Dead file link may or may not load depending on OS. The result is not
+  // relevant for this test, so not checking the the result.
+  WaitForLoadStop(new_contents);
+  EXPECT_TRUE(new_contents->GetLastCommittedURL().SchemeIs("file"));
 }
 
 }  // namespace content
