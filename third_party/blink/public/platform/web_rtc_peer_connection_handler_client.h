@@ -64,10 +64,6 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
     kICEGatheringStateComplete = 3
   };
 
-  struct WebRTCOriginTrials {
-    bool vaapi_hwvp8_encoding_enabled = false;
-  };
-
   virtual ~WebRTCPeerConnectionHandlerClient();
 
   virtual void NegotiationNeeded() = 0;
@@ -81,7 +77,6 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
   virtual void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
   virtual void ReleasePeerConnectionHandler() = 0;
   virtual void ClosePeerConnection();
-  virtual WebRTCOriginTrials GetOriginTrials() = 0;
 };
 
 }  // namespace blink

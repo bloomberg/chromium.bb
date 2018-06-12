@@ -1899,7 +1899,6 @@ enum WebFeature {
   kUserTiming = 2430,
   kCSSSelectorPseudoIS = 2431,
   kKeyboardApiGetLayoutMap = 2432,
-  kWebRtcVaapiHWVP8Encoding = 2433,
   kPerformanceResourceTimingInitiatorType = 2434,
   kV8ArraySortNoElementsProtector = 2436,
   kV8ArrayPrototypeSortJSArrayModifiedPrototype = 2437,
