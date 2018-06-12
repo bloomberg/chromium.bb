@@ -61,10 +61,10 @@ bool VideoCaptureDeviceDescriptor::operator<(
                 "FACING_ENVIRONMENT has a wrong value");
   static_assert(kFacingMapping[MEDIA_VIDEO_FACING_USER] == 2,
                 "FACING_USER has a wrong value");
-  if (kFacingMapping[facing] > kFacingMapping[other.facing])
-    return true;
-  if (device_id < other.device_id)
-    return true;
+  if (kFacingMapping[facing] != kFacingMapping[other.facing])
+    return kFacingMapping[facing] > kFacingMapping[other.facing];
+  if (device_id != other.device_id)
+    return device_id < other.device_id;
   return capture_api < other.capture_api;
 }
 
