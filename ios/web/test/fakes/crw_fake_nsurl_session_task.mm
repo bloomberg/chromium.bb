@@ -39,9 +39,13 @@
   self.state = NSURLSessionTaskStateRunning;
 }
 
-// A private method, called by -[NSHTTPCookieStorage storeCookies:forTask:].
-// Requires stubbing in order to use NSHTTPCookieStorage API.
+// Below are private methods, called by
+// -[NSHTTPCookieStorage storeCookies:forTask:]. Require stubbing in order to
+// use NSHTTPCookieStorage API.
 - (NSString*)_storagePartitionIdentifier {
+  return nil;
+}
+- (NSURL*)_siteForCookies {
   return nil;
 }
 
