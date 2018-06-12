@@ -259,16 +259,6 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   CompositingReasons reasons_to_composite = CompositingReason::kNone;
   CompositingReasons direct_reasons = CompositingReason::kNone;
 
-  // Video is special. It's the only PaintLayer type that can both have
-  // PaintLayer children and whose children can't use its backing to render
-  // into. These children (the controls) always need to be promoted into their
-  // own layers to draw on top of the accelerated video.
-
-  // TODO(chrishtr): Fix this Don't mess with direct reasons in this method.
-  if (current_recursion_data.compositing_ancestor_ &&
-      current_recursion_data.compositing_ancestor_->GetLayoutObject().IsVideo())
-    direct_reasons |= CompositingReason::kVideoOverlay;
-
   bool has_composited_scrolling_ancestor =
       layer->AncestorScrollingLayer() &&
       layer->AncestorScrollingLayer()->GetScrollableArea() &&

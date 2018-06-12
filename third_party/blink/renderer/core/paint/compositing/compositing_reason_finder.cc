@@ -185,6 +185,14 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
     direct_reasons |= CompositingReason::kScrollTimelineTarget;
   }
 
+  // Video is special. It's the only PaintLayer type that can both have
+  // PaintLayer children and whose children can't use its backing to render
+  // into. These children (the controls) always need to be promoted into their
+  // own layers to draw on top of the accelerated video.
+  if (layer->CompositingContainer() &&
+      layer->CompositingContainer()->GetLayoutObject().IsVideo())
+    direct_reasons |= CompositingReason::kVideoOverlay;
+
   if (layer->IsRootLayer() && (RequiresCompositingForScrollableFrame() ||
                                layout_view_.GetFrame()->IsLocalRoot())) {
     direct_reasons |= CompositingReason::kRoot;
