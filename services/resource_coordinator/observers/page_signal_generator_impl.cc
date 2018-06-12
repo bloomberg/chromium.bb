@@ -241,11 +241,10 @@ void PageSignalGeneratorImpl::OnSystemEventReceived(
       if (data->GetLoadIdleState() == kLoadedAndIdle &&
           !data->performance_estimate_issued &&
           data->last_state_change < measurement_start) {
-        DISPATCH_PAGE_SIGNAL(
-            receivers_, OnLoadTimePerformanceEstimate, page->id(),
-            std::string(),  // TODO(siggi): Plumb the origin here!
-            page->cumulative_cpu_usage_estimate(),
-            page->private_footprint_kb_estimate());
+        DISPATCH_PAGE_SIGNAL(receivers_, OnLoadTimePerformanceEstimate,
+                             page->id(), page->main_frame_url(),
+                             page->cumulative_cpu_usage_estimate(),
+                             page->private_footprint_kb_estimate());
         data->performance_estimate_issued = true;
       }
     }

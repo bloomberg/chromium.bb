@@ -88,7 +88,7 @@ interface PageCoordinationUnit {
   // Event signals.
   OnFaviconUpdated();
   OnTitleUpdated();
-  OnMainFrameNavigationCommitted();
+  OnMainFrameNavigationCommitted(string url);
 };
 
 interface ProcessCoordinationUnit {

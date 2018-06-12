@@ -38,7 +38,7 @@ class PageSignalObserver {
   // this notification arrives - hence the |site| parameter.
   virtual void OnLoadTimePerformanceEstimate(
       content::WebContents* web_contents,
-      const std::string& origin,
+      const std::string& url,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) {}
 };
@@ -70,7 +70,7 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
       const CoordinationUnitID& page_cu_id) override;
   void OnLoadTimePerformanceEstimate(
       const CoordinationUnitID& page_cu_id,
-      const std::string& origin,
+      const std::string& url,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) override;
 

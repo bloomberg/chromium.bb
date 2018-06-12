@@ -173,13 +173,16 @@ TEST_F(PageCoordinationUnitImplTest, TimeSinceLastNavigation) {
   EXPECT_TRUE(cu_graph.page->TimeSinceLastNavigation().is_zero());
 
   // 1st navigation.
-  cu_graph.page->OnMainFrameNavigationCommitted();
+  cu_graph.page->OnMainFrameNavigationCommitted("http://www.example.org");
+  EXPECT_EQ("http://www.example.org", cu_graph.page->main_frame_url());
   AdvanceClock(base::TimeDelta::FromSeconds(11));
   EXPECT_EQ(base::TimeDelta::FromSeconds(11),
             cu_graph.page->TimeSinceLastNavigation());
 
   // 2nd navigation.
-  cu_graph.page->OnMainFrameNavigationCommitted();
+  cu_graph.page->OnMainFrameNavigationCommitted(
+      "http://www.example.org/bobcat");
+  EXPECT_EQ("http://www.example.org/bobcat", cu_graph.page->main_frame_url());
   AdvanceClock(base::TimeDelta::FromSeconds(17));
   EXPECT_EQ(base::TimeDelta::FromSeconds(17),
             cu_graph.page->TimeSinceLastNavigation());

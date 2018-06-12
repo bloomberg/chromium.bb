@@ -25,7 +25,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT PageResourceCoordinator
   void SetUKMSourceId(int64_t ukm_source_id);
   void OnFaviconUpdated();
   void OnTitleUpdated();
-  void OnMainFrameNavigationCommitted();
+  void OnMainFrameNavigationCommitted(const std::string& url);
 
   void AddFrame(const FrameResourceCoordinator& frame);
   void RemoveFrame(const FrameResourceCoordinator& frame);

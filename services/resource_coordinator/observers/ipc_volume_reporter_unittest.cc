@@ -55,7 +55,7 @@ TEST_F(IPCVolumeReporterTest, Basic) {
   cu_graph.page->SetUKMSourceId(1);
   cu_graph.page->OnFaviconUpdated();
   cu_graph.page->OnTitleUpdated();
-  cu_graph.page->OnMainFrameNavigationCommitted();
+  cu_graph.page->OnMainFrameNavigationCommitted("http://example.org");
 
   cu_graph.process->SetCPUUsage(1.0);
   cu_graph.process->SetExpectedTaskQueueingDuration(

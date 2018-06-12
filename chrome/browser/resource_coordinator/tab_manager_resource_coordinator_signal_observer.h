@@ -29,7 +29,7 @@ class TabManager::ResourceCoordinatorSignalObserver
       content::WebContents* web_contents) override;
   void OnLoadTimePerformanceEstimate(
       content::WebContents* web_contents,
-      const std::string& origin,
+      const std::string& url,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) override;
 
