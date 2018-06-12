@@ -112,36 +112,26 @@ public class EmulatedVrController {
      * @param steps the number of intermediate steps to send while scrolling
      * @param speed how long to wait between steps in the scroll, with higher
      * numbers resulting in a faster scroll
-     * @param fling whether fling scrolling is allowed. Enabling this more closely emulates how a
-     * user will scroll, but is less precise, so only enable if you actually need it.
      */
-    public void scroll(ScrollDirection direction, int steps, int speed, boolean fling) {
+    public void scroll(ScrollDirection direction, int steps, int speed) {
         float startX, startY, endX, endY;
-        // We need to perform the scroll over a shorter area of the touchpad in order for flinging
-        // to work properly.
-        // There's technically nothing that prevents fling scrolling if fling is set to false, but
-        // we have yet to find any combination of steps and speed that results in a fling with the
-        // larger scroll area that setting fling to false uses.
-        // TODO(https://crbug.com/820281): Figure out why this is the case - not fling scrolling
-        // because we're using more of the touchpad doesn't make sense.
-        float offset = fling ? 0.5f : 0.1f;
         startX = startY = endX = endY = 0.5f;
         switch (direction) {
             case UP:
-                startY = offset;
+                startY = 0.1f;
                 endY = 0.9f;
                 break;
             case DOWN:
                 startY = 0.9f;
-                endY = offset;
+                endY = 0.1f;
                 break;
             case LEFT:
-                startX = offset;
+                startX = 0.1f;
                 endX = 0.9f;
                 break;
             case RIGHT:
                 startX = 0.9f;
-                endX = offset;
+                endX = 0.1f;
                 break;
             default:
                 Assert.fail("Unknown scroll direction enum given");
