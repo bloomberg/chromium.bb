@@ -21,122 +21,10 @@ namespace {
 
 class AnimationTest : public AnimationTimelinesTest {
  public:
-  AnimationTest()
-      : animation_(Animation::Create(animation_id_)),
-        group_id_(100),
-        keyframe_model_id_(100) {
+  AnimationTest() : animation_(Animation::Create(animation_id_)) {
     keyframe_effect_id_ = animation_->NextKeyframeEffectId();
   }
   ~AnimationTest() override = default;
-
-  int NextGroupId() { return ++group_id_; }
-
-  int NextKeyframeModelId() { return ++keyframe_model_id_; }
-
-  int AddOpacityTransition(Animation* target,
-                           double duration,
-                           float start_opacity,
-                           float end_opacity,
-                           bool use_timing_function,
-                           KeyframeEffectId keyframe_effect_id) {
-    std::unique_ptr<KeyframedFloatAnimationCurve> curve(
-        KeyframedFloatAnimationCurve::Create());
-
-    std::unique_ptr<TimingFunction> func;
-    if (!use_timing_function)
-      func = CubicBezierTimingFunction::CreatePreset(
-          CubicBezierTimingFunction::EaseType::EASE);
-    if (duration > 0.0)
-      curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), start_opacity,
-                                               std::move(func)));
-    curve->AddKeyframe(FloatKeyframe::Create(
-        base::TimeDelta::FromSecondsD(duration), end_opacity, nullptr));
-
-    int id = NextKeyframeModelId();
-
-    std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
-        std::move(curve), id, NextGroupId(), TargetProperty::OPACITY));
-    keyframe_model->set_needs_synchronized_start_time(true);
-
-    target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                              keyframe_effect_id);
-    return id;
-  }
-
-  int AddAnimatedTransform(Animation* target,
-                           double duration,
-                           TransformOperations start_operations,
-                           TransformOperations operations,
-                           KeyframeEffectId keyframe_effect_id) {
-    std::unique_ptr<KeyframedTransformAnimationCurve> curve(
-        KeyframedTransformAnimationCurve::Create());
-
-    if (duration > 0.0) {
-      curve->AddKeyframe(TransformKeyframe::Create(base::TimeDelta(),
-                                                   start_operations, nullptr));
-    }
-
-    curve->AddKeyframe(TransformKeyframe::Create(
-        base::TimeDelta::FromSecondsD(duration), operations, nullptr));
-
-    int id = NextKeyframeModelId();
-
-    std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
-        std::move(curve), id, NextGroupId(), TargetProperty::TRANSFORM));
-    keyframe_model->set_needs_synchronized_start_time(true);
-
-    target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                              keyframe_effect_id);
-    return id;
-  }
-
-  int AddAnimatedTransform(Animation* target,
-                           double duration,
-                           int delta_x,
-                           int delta_y,
-                           KeyframeEffectId keyframe_effect_id) {
-    TransformOperations start_operations;
-    if (duration > 0.0) {
-      start_operations.AppendTranslate(0, 0, 0.0);
-    }
-
-    TransformOperations operations;
-    operations.AppendTranslate(delta_x, delta_y, 0.0);
-    return AddAnimatedTransform(target, duration, start_operations, operations,
-                                keyframe_effect_id);
-  }
-
-  int AddAnimatedFilter(Animation* target,
-                        double duration,
-                        float start_brightness,
-                        float end_brightness,
-                        KeyframeEffectId keyframe_effect_id) {
-    std::unique_ptr<KeyframedFilterAnimationCurve> curve(
-        KeyframedFilterAnimationCurve::Create());
-
-    if (duration > 0.0) {
-      FilterOperations start_filters;
-      start_filters.Append(
-          FilterOperation::CreateBrightnessFilter(start_brightness));
-      curve->AddKeyframe(
-          FilterKeyframe::Create(base::TimeDelta(), start_filters, nullptr));
-    }
-
-    FilterOperations filters;
-    filters.Append(FilterOperation::CreateBrightnessFilter(end_brightness));
-    curve->AddKeyframe(FilterKeyframe::Create(
-        base::TimeDelta::FromSecondsD(duration), filters, nullptr));
-
-    int id = NextKeyframeModelId();
-
-    std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
-        std::move(curve), id, NextGroupId(), TargetProperty::FILTER));
-    keyframe_model->set_needs_synchronized_start_time(true);
-
-    target->AddKeyframeModelForKeyframeEffect(std::move(keyframe_model),
-                                              keyframe_effect_id);
-    return id;
-  }
 
   void CheckKeyframeEffectAndTimelineNeedsPushProperties(
       bool needs_push_properties,
@@ -150,9 +38,7 @@ class AnimationTest : public AnimationTimelinesTest {
  protected:
   scoped_refptr<Animation> animation_;
   scoped_refptr<Animation> animation_impl_;
-  int group_id_;
   KeyframeEffectId keyframe_effect_id_;
-  int keyframe_model_id_;
 };
 // See element_animations_unittest.cc for active/pending observers tests.
 
@@ -310,13 +196,13 @@ TEST_F(AnimationTest, PropertiesMutate) {
 
   const double duration = 1.;
 
-  AddOpacityTransition(animation_.get(), duration, start_opacity, end_opacity,
-                       false, keyframe_effect_id_);
+  AddOpacityTransitionToAnimation(animation_.get(), duration, start_opacity,
+                                  end_opacity, false, keyframe_effect_id_);
 
-  AddAnimatedTransform(animation_.get(), duration, transform_x, transform_y,
-                       keyframe_effect_id_);
-  AddAnimatedFilter(animation_.get(), duration, start_brightness,
-                    end_brightness, keyframe_effect_id_);
+  AddAnimatedTransformToAnimation(animation_.get(), duration, transform_x,
+                                  transform_y, keyframe_effect_id_);
+  AddAnimatedFilterToAnimation(animation_.get(), duration, start_brightness,
+                               end_brightness, keyframe_effect_id_);
   CheckKeyframeEffectAndTimelineNeedsPushProperties(true, keyframe_effect_id_);
 
   host_->PushPropertiesTo(host_impl_);
@@ -412,10 +298,10 @@ TEST_F(AnimationTest, AttachTwoAnimationsToOneLayer) {
 
   const double duration = 1.;
 
-  AddOpacityTransition(animation1.get(), duration, start_opacity, end_opacity,
-                       false, keyframe_effect_id1);
-  AddAnimatedTransform(animation2.get(), duration, transform_x, transform_y,
-                       keyframe_effect_id2);
+  AddOpacityTransitionToAnimation(animation1.get(), duration, start_opacity,
+                                  end_opacity, false, keyframe_effect_id1);
+  AddAnimatedTransformToAnimation(animation2.get(), duration, transform_x,
+                                  transform_y, keyframe_effect_id2);
 
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
@@ -481,10 +367,10 @@ TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
   const float start_opacity = .7f;
   const float end_opacity = .3f;
 
-  const int filter_id = AddAnimatedFilter(animation_.get(), duration, 0.1f,
-                                          0.9f, keyframe_effect_id_);
-  AddOpacityTransition(animation_.get(), duration, start_opacity, end_opacity,
-                       false, keyframe_effect_id_);
+  const int filter_id = AddAnimatedFilterToAnimation(
+      animation_.get(), duration, 0.1f, 0.9f, keyframe_effect_id_);
+  AddOpacityTransitionToAnimation(animation_.get(), duration, start_opacity,
+                                  end_opacity, false, keyframe_effect_id_);
 
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id_)
                    ->needs_push_properties());
@@ -560,7 +446,7 @@ TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
 
   EXPECT_FALSE(client_.mutators_need_commit());
 
-  const int keyframe_model_id = AddOpacityTransition(
+  const int keyframe_model_id = AddOpacityTransitionToAnimation(
       animation_.get(), 1., .7f, .3f, false, keyframe_effect_id_);
 
   EXPECT_TRUE(client_.mutators_need_commit());
@@ -973,10 +859,10 @@ TEST_F(AnimationTest, TickingAnimationsFromTwoKeyframeEffects) {
 
   const double duration = 1.;
 
-  AddOpacityTransition(animation_.get(), duration, start_opacity, end_opacity,
-                       false, keyframe_effect_id1);
-  AddAnimatedTransform(animation_.get(), duration, transform_x, transform_y,
-                       keyframe_effect_id2);
+  AddOpacityTransitionToAnimation(animation_.get(), duration, start_opacity,
+                                  end_opacity, false, keyframe_effect_id1);
+  AddAnimatedTransformToAnimation(animation_.get(), duration, transform_x,
+                                  transform_y, keyframe_effect_id2);
   host_->PushPropertiesTo(host_impl_);
   host_impl_->ActivateAnimations();
 
