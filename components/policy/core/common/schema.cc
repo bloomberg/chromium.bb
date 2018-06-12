@@ -156,11 +156,11 @@ class Schema::InternalStorage
     return schema(0);
   }
 
+  // Returns the validation_schema root node if one was generated, or nullptr.
   const SchemaNode* validation_schema_root_node() const {
-    // Fail fast if no validation_schema root node has been generated.
-    // A valid index should be greater than zero (since zero is the root node).
-    CHECK_GT(schema_data_.validation_schema_root_index, 0);
-    return schema(schema_data_.validation_schema_root_index);
+    return schema_data_.validation_schema_root_index >= 0
+               ? schema(schema_data_.validation_schema_root_index)
+               : nullptr;
   }
 
   const SchemaNode* schema(int index) const {
@@ -1114,6 +1114,15 @@ bool Schema::ValidateStringRestriction(int index, const char* str) const {
     re2::RE2* regex = storage_->CompileRegex(*storage_->string_enums(index));
     return re2::RE2::PartialMatch(str, *regex);
   }
+}
+
+Schema Schema::GetValidationSchema() const {
+  CHECK(valid());
+  const SchemaNode* validation_schema_root_node =
+      storage_->validation_schema_root_node();
+  if (!validation_schema_root_node)
+    return Schema();
+  return Schema(storage_, validation_schema_root_node);
 }
 
 }  // namespace policy
