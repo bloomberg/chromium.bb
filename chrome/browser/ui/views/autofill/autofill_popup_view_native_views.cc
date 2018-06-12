@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -71,7 +72,20 @@ class AutofillPopupItemView : public AutofillPopupRowView {
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->SetName(controller_->GetSuggestionAt(line_number_).value);
+    auto suggestion = controller_->GetSuggestionAt(line_number_);
+    std::vector<base::string16> text;
+    text.push_back(suggestion.value);
+    text.push_back(suggestion.label);
+
+    base::string16 icon_description;
+    if (!suggestion.icon.empty()) {
+      const int id =
+          controller_->layout_model().GetIconAccessibleNameResourceId(
+              suggestion.icon);
+      if (id > 0)
+        text.push_back(l10n_util::GetStringUTF16(id));
+    }
+    node_data->SetName(base::JoinString(text, base::ASCIIToUTF16(" ")));
 
     // Options are selectable.
     node_data->role = ax::mojom::Role::kMenuItem;

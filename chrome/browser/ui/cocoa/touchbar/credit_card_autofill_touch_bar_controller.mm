@@ -32,7 +32,7 @@ constexpr int maxTouchBarItems = 3;
 
 // Returns the credit card image.
 NSImage* GetCreditCardTouchBarImage(int iconId) {
-  if (iconId == -1)
+  if (iconId < 1)
     return nil;
 
   // If it's a generic card image, use the vector icon instead.
