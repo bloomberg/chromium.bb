@@ -497,6 +497,9 @@ LayoutUnit LayoutGrid::GuttersSize(
 void LayoutGrid::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
+  if (ShouldApplySizeContainment())
+    return;
+
   std::unique_ptr<Grid> grid = Grid::Create(this);
   GridTrackSizingAlgorithm algorithm(this, *grid);
   PlaceItemsOnGrid(algorithm, base::nullopt);
@@ -1619,7 +1622,8 @@ LayoutUnit LayoutGrid::BaselinePosition(FontBaseline,
 }
 
 LayoutUnit LayoutGrid::FirstLineBoxBaseline() const {
-  if (IsWritingModeRoot() || !grid_->HasGridItems())
+  if (IsWritingModeRoot() || !grid_->HasGridItems() ||
+      ShouldApplySizeContainment())
     return LayoutUnit(-1);
   const LayoutBox* baseline_child = nullptr;
   const LayoutBox* first_child = nullptr;
