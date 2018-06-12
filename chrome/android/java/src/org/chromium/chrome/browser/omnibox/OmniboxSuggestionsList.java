@@ -23,6 +23,8 @@ import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultIt
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 
+import java.util.ArrayList;
+
 /**
  * A widget for showing a list of omnibox suggestions.
  */
@@ -312,5 +314,13 @@ public class OmniboxSuggestionsList extends ListView {
             if (!(childView instanceof SuggestionView)) continue;
             ApiCompatibilityUtils.setLayoutDirection(childView, layoutDirection);
         }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        // Ensure none of the views are reused when re-attaching as the TextViews in the suggestions
+        // do not handle it in all cases.  https://crbug.com/851839
+        reclaimViews(new ArrayList<>());
     }
 }
