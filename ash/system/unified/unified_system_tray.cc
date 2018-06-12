@@ -224,6 +224,10 @@ void UnifiedSystemTray::CloseBubble() {
   ui_delegate_->ui_controller()->HideMessageCenterBubble();
 }
 
+base::string16 UnifiedSystemTray::GetAccessibleNameForBubble() {
+  return GetAccessibleNameForTray();
+}
+
 base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
   base::string16 time = base::TimeFormatTimeOfDayWithHourClockType(
       base::Time::Now(),

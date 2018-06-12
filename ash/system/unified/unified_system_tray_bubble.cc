@@ -67,6 +67,8 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
         kUnifiedMenuBackgroundBlur);
   }
 
+  unified_view->RequestInitFocus();
+
   tray->tray_event_filter()->AddBubble(this);
 }
 

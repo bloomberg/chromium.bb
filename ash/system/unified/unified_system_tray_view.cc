@@ -180,6 +180,10 @@ void UnifiedSystemTrayView::RestoreFeaturePodFocus() {
   feature_pods_container_->RestoreFocus();
 }
 
+void UnifiedSystemTrayView::RequestInitFocus() {
+  top_shortcuts_view_->RequestInitFocus();
+}
+
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
   if (expanded_amount == 1.0 || expanded_amount == 0.0)

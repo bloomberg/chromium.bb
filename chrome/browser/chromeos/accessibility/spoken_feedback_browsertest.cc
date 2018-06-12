@@ -8,8 +8,12 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/ash_features.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/pattern.h"
@@ -622,7 +626,15 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TouchExploreStatusTray) {
 
   // Send an accessibility hover event on the system tray, which is
   // what we get when you tap it on a touch screen when ChromeVox is on.
-  ash::SystemTray* tray = ash::Shell::Get()->GetPrimarySystemTray();
+  ash::TrayBackgroundView* tray =
+      ash::features::IsSystemTrayUnifiedEnabled()
+          ? static_cast<ash::TrayBackgroundView*>(
+                ash::Shell::Get()
+                    ->GetPrimaryRootWindowController()
+                    ->GetStatusAreaWidget()
+                    ->unified_system_tray())
+          : static_cast<ash::TrayBackgroundView*>(
+                ash::Shell::Get()->GetPrimarySystemTray());
   tray->NotifyAccessibilityEvent(ax::mojom::Event::kHover, true);
 
   EXPECT_EQ("Status tray,", speech_monitor_.GetNextUtterance());

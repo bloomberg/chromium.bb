@@ -5,3 +5,11 @@ include_rules = [
   # Public interfaces are OK.
   "+ash/public",
 ]
+
+specific_include_rules = {
+  ".*browsertest\.cc": [
+    "+ash/root_window_controller.h",
+    "+ash/system/status_area_widget.h",
+    "+ash/system/unified/unified_system_tray.h",
+  ],
+}

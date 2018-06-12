@@ -68,6 +68,10 @@ class UnifiedSystemTrayView : public views::View {
   void SaveFeaturePodFocus();
   void RestoreFeaturePodFocus();
 
+  // Request focus of the element that should initially have focus after opening
+  // the bubble.
+  void RequestInitFocus();
+
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
