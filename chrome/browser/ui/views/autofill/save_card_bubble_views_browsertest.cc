@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "build/build_config.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views_browsertest_base.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_navigation_observer.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -71,17 +69,10 @@ IN_PROC_BROWSER_TEST_F(
       FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
 }
 
-// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
-#if defined(OS_MACOSX)
-#define MAYBE_Local_ClickingSaveClosesBubble \
-  DISABLED_Local_ClickingSaveClosesBubble
-#else
-#define MAYBE_Local_ClickingSaveClosesBubble Local_ClickingSaveClosesBubble
-#endif
 // Tests the local save bubble. Ensures that clicking the [Save] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       MAYBE_Local_ClickingSaveClosesBubble) {
+                       Local_ClickingSaveClosesBubble) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -99,31 +90,18 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
   // Clicking [Save] should accept and close it.
   base::HistogramTester histogram_tester;
-  content::TestNavigationObserver nav_observer(GetActiveWebContents(), 1);
   ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-  // The bubble should be closed.
-  // (Must wait for page navigation to complete before checking.)
-  nav_observer.Wait();
-  EXPECT_FALSE(GetSaveCardBubbleViews());
   // UMA should have recorded bubble acceptance.
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
-// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
-#if defined(OS_MACOSX)
-#define MAYBE_Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff \
-  DISABLED_Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff
-#else
-#define MAYBE_Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff \
-  Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff
-#endif
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
-    MAYBE_Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
+    Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
   // Disable the SecondaryUiMd experiment.
   scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
@@ -144,12 +122,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Clicking [No thanks] should cancel and close it.
   base::HistogramTester histogram_tester;
-  content::TestNavigationObserver nav_observer(GetActiveWebContents(), 1);
   ClickOnDialogViewWithIdAndWait(DialogViewId::CANCEL_BUTTON);
-  // The bubble should be closed.
-  // (Must wait for page navigation to complete before checking.)
-  nav_observer.Wait();
-  EXPECT_FALSE(GetSaveCardBubbleViews());
   // UMA should have recorded bubble rejection.
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
@@ -182,17 +155,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
 
-#if defined(OS_MACOSX)
-#define MAYBE_Local_ClickingLearnMoreClosesBubble \
-  DISABLED_Local_ClickingLearnMoreClosesBubble
-#else
-#define MAYBE_Local_ClickingLearnMoreClosesBubble \
-  Local_ClickingLearnMoreClosesBubble
-#endif
 // Tests the local save bubble. Ensures that clicking the [Learn more] link
 // causes the bubble to go away and opens the relevant help page.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       MAYBE_Local_ClickingLearnMoreClosesBubble) {
+                       Local_ClickingLearnMoreClosesBubble) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -211,10 +177,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Click the [Learn more] link.
   content::WebContentsAddedObserver web_contents_added_observer;
   ClickOnDialogViewWithIdAndWait(DialogViewId::LEARN_MORE_LINK);
-
-  // The bubble should be hidden after clicking the link (not preferred
-  // behavior, but it's what we've got.)
-  EXPECT_FALSE(GetSaveCardBubbleViews());
   // A new support page tab should have been spawned.
   content::WebContents* new_tab_contents =
       web_contents_added_observer.GetWebContents();
@@ -263,18 +225,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   base::RunLoop().RunUntilIdle();
 }
 
-// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
-#if defined(OS_MACOSX)
-#define MAYBE_Upload_ClickingSaveClosesBubble \
-  DISABLED_Upload_ClickingSaveClosesBubble
-#else
-#define MAYBE_Upload_ClickingSaveClosesBubble Upload_ClickingSaveClosesBubble
-#endif
 // Tests the upload save bubble. Ensures that clicking the [Save] button
 // successfully causes the bubble to go away and sends an UploadCardRequest RPC
 // to Google Payments.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       MAYBE_Upload_ClickingSaveClosesBubble) {
+                       Upload_ClickingSaveClosesBubble) {
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 
@@ -293,31 +248,18 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // to Google Payments.
   ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST});
   base::HistogramTester histogram_tester;
-  content::TestNavigationObserver nav_observer(GetActiveWebContents(), 1);
   ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-  // The bubble should be closed.
-  // (Must wait for page navigation to complete before checking.)
-  nav_observer.Wait();
-  EXPECT_FALSE(GetSaveCardBubbleViews());
   // UMA should have recorded bubble acceptance.
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
-// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
-#if defined(OS_MACOSX)
-#define MAYBE_Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff \
-  DISABLED_Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff
-#else
-#define MAYBE_Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff \
-  Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff
-#endif
 // Tests the upload save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
-    MAYBE_Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
+    Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
   // Disable the SecondaryUiMd experiment.
   scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
@@ -337,12 +279,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Clicking [No thanks] should cancel and close it.
   base::HistogramTester histogram_tester;
-  content::TestNavigationObserver nav_observer(GetActiveWebContents(), 1);
   ClickOnDialogViewWithIdAndWait(DialogViewId::CANCEL_BUTTON);
-  // The bubble should be closed.
-  // (Must wait for page navigation to complete before checking.)
-  nav_observer.Wait();
-  EXPECT_FALSE(GetSaveCardBubbleViews());
   // UMA should have recorded bubble rejection.
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
@@ -374,19 +311,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
 
-// Disabled. Failing on Mac 10.11. See https://crbug.com/849129.
-#if defined(OS_MACOSX)
-#define MAYBE_Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn \
-  DISABLED_Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn
-#else
-#define MAYBE_Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn \
-  Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn
-#endif
 // Tests the upload save bubble. Ensures that clicking the top-right [X] close
 // button successfully causes the bubble to go away.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTest,
-    MAYBE_Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn) {
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn) {
   // Enable the SecondaryUiMd experiment.
   scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
 
@@ -406,13 +334,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // Clicking the [X] close button should dismiss the bubble.
   base::HistogramTester histogram_tester;
-  content::TestNavigationObserver nav_observer(GetActiveWebContents(), 1);
-  ClickOnDialogView(
+  ClickOnDialogViewAndWait(
       GetSaveCardBubbleViews()->GetBubbleFrameView()->GetCloseButtonForTest());
-  // The bubble should be closed.
-  // (Must wait for page navigation to complete before checking.)
-  nav_observer.Wait();
-  EXPECT_FALSE(GetSaveCardBubbleViews());
 }
 
 // Tests the upload save bubble. Ensures that the upload save version of the
@@ -521,10 +444,7 @@ IN_PROC_BROWSER_TEST_F(
       kAutofillUpstreamSendDetectedValues);
 
   // Submit first shipping address form with a conflicting street address.
-  content::TestNavigationObserver shipping_form_nav_observer(
-      GetActiveWebContents(), 1);
   FillAndSubmitFormWithConflictingStreetAddress();
-  shipping_form_nav_observer.Wait();
 
   // Submitting the second form should start the flow of asking Payments if
   // Chrome should offer to save the Google, because conflicting street
@@ -645,10 +565,7 @@ IN_PROC_BROWSER_TEST_F(
       kAutofillUpstreamSendDetectedValues);
 
   // Submit first shipping address form with a conflicting name.
-  content::TestNavigationObserver shipping_form_nav_observer(
-      GetActiveWebContents(), 1);
   FillAndSubmitFormWithConflictingName();
-  shipping_form_nav_observer.Wait();
 
   // Submitting the second form should not show the upload save bubble because
   // the name conflicts with the previous form.
@@ -668,10 +585,7 @@ IN_PROC_BROWSER_TEST_F(
       kAutofillUpstreamSendDetectedValues);
 
   // Submit first shipping address form with a conflicting name.
-  content::TestNavigationObserver shipping_form_nav_observer(
-      GetActiveWebContents(), 1);
   FillAndSubmitFormWithConflictingName();
-  shipping_form_nav_observer.Wait();
 
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though the name
@@ -725,10 +639,7 @@ IN_PROC_BROWSER_TEST_F(
       kAutofillUpstreamSendDetectedValues);
 
   // Submit first shipping address form with a conflicting postal code.
-  content::TestNavigationObserver shipping_form_nav_observer(
-      GetActiveWebContents(), 1);
   FillAndSubmitFormWithConflictingPostalCode();
-  shipping_form_nav_observer.Wait();
 
   // Submitting the second form should not show the upload save bubble because
   // the postal code conflicts with the previous form.
@@ -748,10 +659,7 @@ IN_PROC_BROWSER_TEST_F(
       kAutofillUpstreamSendDetectedValues);
 
   // Submit first shipping address form with a conflicting postal code.
-  content::TestNavigationObserver shipping_form_nav_observer(
-      GetActiveWebContents(), 1);
   FillAndSubmitFormWithConflictingPostalCode();
-  shipping_form_nav_observer.Wait();
 
   // Submitting the form should still start the flow of asking Payments if
   // Chrome should offer to save the card to Google, even though the postal code
@@ -786,8 +694,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
 
   // Clicking the [X] close button should dismiss the bubble.
-  content::TestNavigationObserver nav_observer(GetActiveWebContents(), 1);
-  ClickOnDialogView(
+  ClickOnDialogViewAndWait(
       GetSaveCardBubbleViews()->GetBubbleFrameView()->GetCloseButtonForTest());
 
   // Ensure that UMA was logged correctly.
