@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define VK_USE_PLATFORM_ANDROID_KHR
-
 #include "gpu/vulkan/vulkan_implementation_android.h"
 
 #include "base/files/file_path.h"
