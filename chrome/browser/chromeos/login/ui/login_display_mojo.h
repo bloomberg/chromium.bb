@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
@@ -19,7 +18,6 @@ class LoginDisplayHostMojo;
 // Interface used by UI-agnostic code to send messages to views-based login
 // screen.
 class LoginDisplayMojo : public LoginDisplay,
-                         public SigninScreenHandlerDelegate,
                          public user_manager::UserManager::Observer {
  public:
   LoginDisplayMojo(Delegate* delegate, LoginDisplayHostMojo* host);
@@ -43,36 +41,11 @@ class LoginDisplayMojo : public LoginDisplay,
   void ShowWhitelistCheckFailedError() override;
   void ShowUnrecoverableCrypthomeErrorDialog() override;
 
-  // SigninScreenHandlerDelegate:
-  void Login(const UserContext& user_context,
-             const SigninSpecifics& specifics) override;
-  bool IsSigninInProgress() const override;
-  void Signout() override;
-  void OnSigninScreenReady() override;
-  void ShowEnterpriseEnrollmentScreen() override;
-  void ShowEnableDebuggingScreen() override;
-  void ShowKioskEnableScreen() override;
-  void ShowKioskAutolaunchScreen() override;
-  void ShowWrongHWIDScreen() override;
-  void ShowUpdateRequiredScreen() override;
-  void CancelUserAdding() override;
-  void RemoveUser(const AccountId& account_id) override;
-  void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
-  bool IsShowGuest() const override;
-  bool IsShowUsers() const override;
-  bool ShowUsersHasChanged() const override;
-  bool IsAllowNewUser() const override;
-  bool AllowNewUserChanged() const override;
-  bool IsUserSigninCompleted() const override;
-  void HandleGetUsers() override;
-  void CheckUserStatus(const AccountId& account_id) override;
-
   // user_manager::UserManager::Observer:
   void OnUserImageChanged(const user_manager::User& user) override;
 
  private:
   LoginDisplayHostMojo* const host_ = nullptr;
-  LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayMojo);
 };

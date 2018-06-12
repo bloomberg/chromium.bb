@@ -81,10 +81,7 @@ void LoginDisplayHostMojo::ShowUnrecoverableCrypthomeErrorDialog() {
 LoginDisplay* LoginDisplayHostMojo::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate) {
   user_selection_screen_->SetLoginDisplayDelegate(delegate);
-  LoginDisplayMojo* login_display = new LoginDisplayMojo(delegate, this);
-  if (GetOobeUI())
-    GetOobeUI()->signin_screen_handler()->SetDelegate(login_display);
-  return login_display;
+  return new LoginDisplayMojo(delegate, this);
 }
 
 gfx::NativeWindow LoginDisplayHostMojo::GetNativeWindow() const {
