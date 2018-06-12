@@ -322,7 +322,7 @@ public class SectionListTest {
         assertTrue(sectionList.isEmpty());
         // Verify that the section has been detached by notifying its parent about changes. If not
         // detached, it should crash.
-        section.notifyItemRangeChanged(0, 1);
+        section.notifyItemRangeChanged(0, 1, null);
     }
 
     @Test

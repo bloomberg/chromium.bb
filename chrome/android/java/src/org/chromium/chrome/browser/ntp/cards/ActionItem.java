@@ -124,6 +124,12 @@ public class ActionItem extends OptionalLeaf {
         return mState;
     }
 
+    public void maybeResetForDismiss() {
+        if (isVisible()) {
+            notifyItemChanged(0, NewTabPageRecyclerView::resetForDismissCallback);
+        }
+    }
+
     /**
      * Perform the Action associated with this ActionItem.
      * @param uiDelegate A {@link SuggestionsUiDelegate} to provide context.

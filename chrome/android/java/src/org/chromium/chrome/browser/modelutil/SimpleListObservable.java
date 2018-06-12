@@ -37,7 +37,7 @@ public class SimpleListObservable<T> extends ListObservable<Void> {
      */
     public void add(T item) {
         mItems.add(item);
-        notifyItemRangeInserted(mItems.size() - 1, 1);
+        notifyItemInserted(mItems.size() - 1);
     }
 
     /**
@@ -47,7 +47,7 @@ public class SimpleListObservable<T> extends ListObservable<Void> {
     public void remove(T item) {
         int position = mItems.indexOf(item);
         mItems.remove(position);
-        notifyItemRangeRemoved(position, 1);
+        notifyItemRemoved(position);
     }
 
     /**
@@ -72,7 +72,7 @@ public class SimpleListObservable<T> extends ListObservable<Void> {
         mItems.addAll(newItems);
 
         int min = Math.min(oldSize, newSize);
-        if (min > 0) notifyItemRangeChanged(0, min, null);
+        if (min > 0) notifyItemRangeChanged(0, min);
 
         if (newSize > oldSize) {
             notifyItemRangeInserted(min, newSize - oldSize);
@@ -88,6 +88,6 @@ public class SimpleListObservable<T> extends ListObservable<Void> {
      */
     public void update(int index, T item) {
         mItems.set(index, item);
-        notifyItemRangeChanged(index, 1, null);
+        notifyItemRangeChanged(index, 1);
     }
 }

@@ -76,6 +76,26 @@ public abstract class ListObservable<P> {
         assert success;
     }
 
+    protected final void notifyItemChanged(int index) {
+        notifyItemRangeChanged(index, 1, null);
+    }
+
+    protected final void notifyItemRangeChanged(int index, int count) {
+        notifyItemRangeChanged(index, count, null);
+    }
+
+    protected final void notifyItemChanged(int index, @Nullable P payload) {
+        notifyItemRangeChanged(index, 1, payload);
+    }
+
+    protected final void notifyItemInserted(int index) {
+        notifyItemRangeInserted(index, 1);
+    }
+
+    protected final void notifyItemRemoved(int index) {
+        notifyItemRangeRemoved(index, 1);
+    }
+
     /**
      * Notifies observers that {@code count} items starting at position {@code index} have been
      * added.

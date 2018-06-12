@@ -29,19 +29,19 @@ class ListItemModel extends BatchListObservable {
     /** Adds {@code item} to this list at {@code index}. */
     public void addItem(int index, ListItem item) {
         mItems.add(index, item);
-        notifyItemRangeInserted(index, 1);
+        notifyItemInserted(index);
     }
 
     /** Removes the {@link ListItem} at {@code index}. */
     public void removeItem(int index) {
         mItems.remove(index);
-        notifyItemRangeRemoved(index, 1);
+        notifyItemRemoved(index);
     }
 
     /** Sets the {@link ListItem} at {@code index} to {@code item}. */
     public void setItem(int index, ListItem item) {
         mItems.set(index, item);
-        notifyItemRangeChanged(index, 1, null);
+        notifyItemChanged(index);
     }
 
     /** @return The {@link ListItem} at {@code index}. */
