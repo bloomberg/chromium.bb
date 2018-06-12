@@ -4126,6 +4126,38 @@
       },
       keywords: ["auto"]
     },
+    {
+      name: "padding-inline-start",
+      property_methods: ["ParseSingleValue"],
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "paddingShorthand",
+      }
+    },
+    {
+      name: "padding-inline-end",
+      property_methods: ["ParseSingleValue"],
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "paddingShorthand",
+      }
+    },
+    {
+      name: "padding-block-start",
+      property_methods: ["ParseSingleValue"],
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "paddingShorthand",
+      }
+    },
+    {
+      name: "padding-block-end",
+      property_methods: ["ParseSingleValue"],
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "paddingShorthand",
+      }
+    },
 
     // Non-standard direction aware properties
 
@@ -4239,35 +4271,19 @@
     },
     {
       name: "-webkit-padding-end",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "end",
-        shorthand_for_physical_side: "paddingShorthand",
-      },
+      alias_for: "padding-inline-end",
     },
     {
       name: "-webkit-padding-start",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "start",
-        shorthand_for_physical_side: "paddingShorthand",
-      },
+      alias_for: "padding-inline-start",
     },
     {
       name: "-webkit-padding-before",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "before",
-        shorthand_for_physical_side: "paddingShorthand",
-      },
+      alias_for: "padding-block-start",
     },
     {
       name: "-webkit-padding-after",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "after",
-        shorthand_for_physical_side: "paddingShorthand",
-      },
+      alias_for: "padding-block-end",
     },
     {
       name: "-webkit-logical-width",

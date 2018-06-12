@@ -231,7 +231,11 @@ overscrollBehavior
 overscrollBehaviorX
 overscrollBehaviorY
 padding
+paddingBlockEnd
+paddingBlockStart
 paddingBottom
+paddingInlineEnd
+paddingInlineStart
 paddingLeft
 paddingRight
 paddingTop

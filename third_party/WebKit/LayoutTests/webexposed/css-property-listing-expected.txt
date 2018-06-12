@@ -58,10 +58,6 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-max-logical-width
     -webkit-min-logical-height
     -webkit-min-logical-width
-    -webkit-padding-after
-    -webkit-padding-before
-    -webkit-padding-end
-    -webkit-padding-start
     -webkit-perspective-origin-x
     -webkit-perspective-origin-y
     -webkit-print-color-adjust
@@ -267,7 +263,11 @@ All changes to this list should go through Blink's feature review process: http:
     overflow-y
     overscroll-behavior-x
     overscroll-behavior-y
+    padding-block-end
+    padding-block-start
     padding-bottom
+    padding-inline-end
+    padding-inline-start
     padding-left
     padding-right
     padding-top
@@ -771,6 +771,14 @@ All changes to this list should go through Blink's feature review process: http:
         opacity
     -webkit-order
         order
+    -webkit-padding-after
+        padding-block-end
+    -webkit-padding-before
+        padding-block-start
+    -webkit-padding-end
+        padding-inline-end
+    -webkit-padding-start
+        padding-inline-start
     -webkit-perspective
         perspective
     -webkit-perspective-origin

@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/properties/longhands/webkit_padding_before.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/padding_inline_start.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -12,7 +12,7 @@
 namespace blink {
 namespace CSSLonghand {
 
-const CSSValue* WebkitPaddingBefore::ParseSingleValue(
+const CSSValue* PaddingInlineStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
