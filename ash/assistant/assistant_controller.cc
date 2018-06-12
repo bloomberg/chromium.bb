@@ -53,9 +53,6 @@ AssistantController::AssistantController()
 AssistantController::~AssistantController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
   RemoveInteractionModelObserver(this);
-
-  assistant_controller_bindings_.CloseAllBindings();
-  assistant_event_subscriber_binding_.Close();
 }
 
 void AssistantController::BindRequest(
@@ -73,14 +70,14 @@ void AssistantController::SetAssistant(
   assistant_->AddAssistantEventSubscriber(std::move(ptr));
 }
 
-void AssistantController::SetAssistantCardRenderer(
-    mojom::AssistantCardRendererPtr assistant_card_renderer) {
-  assistant_card_renderer_ = std::move(assistant_card_renderer);
-}
-
 void AssistantController::SetAssistantImageDownloader(
     mojom::AssistantImageDownloaderPtr assistant_image_downloader) {
   assistant_image_downloader_ = std::move(assistant_image_downloader);
+}
+
+void AssistantController::SetWebContentsManager(
+    mojom::WebContentsManagerPtr web_contents_manager) {
+  web_contents_manager_ = std::move(web_contents_manager);
 }
 
 void AssistantController::RequestScreenshot(
@@ -101,34 +98,42 @@ void AssistantController::RequestScreenshot(
           base::Passed(&callback)));
 }
 
-void AssistantController::RenderCard(
+void AssistantController::ManageWebContents(
     const base::UnguessableToken& id_token,
-    mojom::AssistantCardParamsPtr params,
-    mojom::AssistantCardRenderer::RenderCallback callback) {
-  DCHECK(assistant_card_renderer_);
+    mojom::ManagedWebContentsParamsPtr params,
+    mojom::WebContentsManager::ManageWebContentsCallback callback) {
+  DCHECK(web_contents_manager_);
 
   const mojom::UserSession* user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
 
   if (!user_session) {
     LOG(WARNING) << "Unable to retrieve active user session.";
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
-  AccountId account_id = user_session->user_info->account_id;
-  assistant_card_renderer_->Render(account_id, id_token, std::move(params),
-                                   std::move(callback));
+  // Supply account ID.
+  params->account_id = user_session->user_info->account_id;
+
+  // Specify that we will handle top level browser requests.
+  ash::mojom::ManagedWebContentsOpenUrlDelegatePtr ptr;
+  web_contents_open_url_delegate_bindings_.AddBinding(this,
+                                                      mojo::MakeRequest(&ptr));
+  params->open_url_delegate_ptr_info = ptr.PassInterface();
+
+  web_contents_manager_->ManageWebContents(id_token, std::move(params),
+                                           std::move(callback));
 }
 
-void AssistantController::ReleaseCard(const base::UnguessableToken& id_token) {
-  DCHECK(assistant_card_renderer_);
-  assistant_card_renderer_->Release(id_token);
+void AssistantController::ReleaseWebContents(
+    const base::UnguessableToken& id_token) {
+  web_contents_manager_->ReleaseWebContents(id_token);
 }
 
-void AssistantController::ReleaseCards(
+void AssistantController::ReleaseWebContents(
     const std::vector<base::UnguessableToken>& id_tokens) {
-  DCHECK(assistant_card_renderer_);
-  assistant_card_renderer_->ReleaseAll(id_tokens);
+  web_contents_manager_->ReleaseAllWebContents(id_tokens);
 }
 
 void AssistantController::DownloadImage(
@@ -141,6 +146,7 @@ void AssistantController::DownloadImage(
 
   if (!user_session) {
     LOG(WARNING) << "Unable to retrieve active user session.";
+    std::move(callback).Run(gfx::ImageSkia());
     return;
   }
 
@@ -240,10 +246,6 @@ void AssistantController::OnInteractionFinished(
   }
 }
 
-void AssistantController::OnCardPressed(const GURL& url) {
-  OpenUrl(url);
-}
-
 void AssistantController::OnHtmlResponse(const std::string& response) {
   if (!has_active_interaction_)
     return;
@@ -325,6 +327,10 @@ void AssistantController::OnOpenUrlResponse(const GURL& url) {
   if (!has_active_interaction_)
     return;
 
+  OpenUrl(url);
+}
+
+void AssistantController::OnOpenUrlFromTab(const GURL& url) {
   OpenUrl(url);
 }
 

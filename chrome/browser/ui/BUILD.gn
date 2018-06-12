@@ -3716,8 +3716,6 @@ split_static_library("ui") {
     ]
 
     sources += [
-      "ash/assistant/assistant_card_renderer.cc",
-      "ash/assistant/assistant_card_renderer.h",
       "ash/assistant/assistant_client.cc",
       "ash/assistant/assistant_client.h",
       "ash/assistant/assistant_context.cc",
@@ -3728,6 +3726,8 @@ split_static_library("ui") {
       "ash/assistant/assistant_image_downloader.h",
       "ash/assistant/platform_audio_input_host.cc",
       "ash/assistant/platform_audio_input_host.h",
+      "ash/assistant/web_contents_manager.cc",
+      "ash/assistant/web_contents_manager.h",
     ]
   }
 
