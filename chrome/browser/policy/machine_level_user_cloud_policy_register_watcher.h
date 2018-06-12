@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/ui/enterprise_startup_dialog.h"
 
 namespace policy {
@@ -20,33 +20,33 @@ namespace policy {
 // Watches the status of machine level user cloud policy enrollment.
 // Shows the blocking dialog for ongoing enrollment and failed enrollment.
 class MachineLevelUserCloudPolicyRegisterWatcher
-    : public ChromeBrowserPolicyConnector::Observer {
+    : public MachineLevelUserCloudPolicyController::Observer {
  public:
   using DialogCreationCallback =
       base::OnceCallback<std::unique_ptr<EnterpriseStartupDialog>(
           EnterpriseStartupDialog::DialogResultCallback)>;
 
   explicit MachineLevelUserCloudPolicyRegisterWatcher(
-      ChromeBrowserPolicyConnector* connector);
+      MachineLevelUserCloudPolicyController* controller);
   ~MachineLevelUserCloudPolicyRegisterWatcher() override;
 
   // Blocks until the machine level user cloud policy enrollment process
   // finishes. Returns the result of enrollment.
-  ChromeBrowserPolicyConnector::MachineLevelUserCloudPolicyRegisterResult
+  MachineLevelUserCloudPolicyController::RegisterResult
   WaitUntilCloudPolicyEnrollmentFinished();
 
   void SetDialogCreationCallbackForTesting(DialogCreationCallback callback);
 
  private:
-  // ChromeBrowserPolicyConnector::Observer
-  void OnMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) override;
+  // MachineLevelUserCloudPolicyController::Observer
+  void OnPolicyRegisterFinished(bool succeeded) override;
 
   // EnterpriseStartupDialog callback.
   void OnDialogClosed(bool is_accepted, bool can_show_browser_window);
 
   void DisplayErrorMessage();
 
-  ChromeBrowserPolicyConnector* connector_;
+  MachineLevelUserCloudPolicyController* controller_;
 
   base::RunLoop run_loop_;
   std::unique_ptr<EnterpriseStartupDialog> dialog_;

@@ -16,18 +16,17 @@
 
 namespace policy {
 
-using RegisterResult =
-    ChromeBrowserPolicyConnector::MachineLevelUserCloudPolicyRegisterResult;
+using RegisterResult = MachineLevelUserCloudPolicyController::RegisterResult;
 
 MachineLevelUserCloudPolicyRegisterWatcher::
     MachineLevelUserCloudPolicyRegisterWatcher(
-        ChromeBrowserPolicyConnector* connector)
-    : connector_(connector) {
-  connector_->AddObserver(this);
+        MachineLevelUserCloudPolicyController* controller)
+    : controller_(controller) {
+  controller_->AddObserver(this);
 }
 MachineLevelUserCloudPolicyRegisterWatcher::
     ~MachineLevelUserCloudPolicyRegisterWatcher() {
-  connector_->RemoveObserver(this);
+  controller_->RemoveObserver(this);
 }
 
 RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
@@ -79,8 +78,8 @@ void MachineLevelUserCloudPolicyRegisterWatcher::
   dialog_creation_callback_ = std::move(callback);
 }
 
-void MachineLevelUserCloudPolicyRegisterWatcher::
-    OnMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) {
+void MachineLevelUserCloudPolicyRegisterWatcher::OnPolicyRegisterFinished(
+    bool succeeded) {
   register_result_ = succeeded;
 
   // If dialog still exists, dismiss the dialog for a success enrollment or

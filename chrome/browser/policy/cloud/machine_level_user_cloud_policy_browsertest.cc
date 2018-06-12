@@ -22,6 +22,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -64,10 +65,10 @@ const char kDMToken[] = "fake-dm-token";
 const char kEnrollmentResultMetrics[] =
     "Enterprise.MachineLevelUserCloudPolicyEnrollment.Result";
 
-class ChromeBrowserPolicyConnectorObserver
-    : public ChromeBrowserPolicyConnector::Observer {
+class MachineLevelUserCloudPolicyControllerObserver
+    : public MachineLevelUserCloudPolicyController::Observer {
  public:
-  void OnMachineLevelUserCloudPolicyRegisterFinished(bool succeeded) override {
+  void OnPolicyRegisterFinished(bool succeeded) override {
     if (!succeeded) {
       // Close the error dialog.
       ASSERT_EQ(1u, views::test::WidgetTest::GetAllWidgets().size());
@@ -77,7 +78,9 @@ class ChromeBrowserPolicyConnectorObserver
     is_finished_ = true;
     if (run_loop_)
       run_loop_->Quit();
-    g_browser_process->browser_policy_connector()->RemoveObserver(this);
+    g_browser_process->browser_policy_connector()
+        ->machine_level_user_cloud_policy_controller()
+        ->RemoveObserver(this);
   }
 
   void SetRunLoop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
@@ -132,14 +135,16 @@ class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
 class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
  public:
   explicit ChromeBrowserExtraSetUp(
-      ChromeBrowserPolicyConnectorObserver* observer)
+      MachineLevelUserCloudPolicyControllerObserver* observer)
       : observer_(observer) {}
   void PreMainMessageLoopStart() override {
-    g_browser_process->browser_policy_connector()->AddObserver(observer_);
+    g_browser_process->browser_policy_connector()
+        ->machine_level_user_cloud_policy_controller()
+        ->AddObserver(observer_);
   }
 
  private:
-  ChromeBrowserPolicyConnectorObserver* observer_;
+  MachineLevelUserCloudPolicyControllerObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserExtraSetUp);
 };
@@ -324,7 +329,7 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
     policy_store->AddObserver(&observer);
 
     base::FilePath policy_dir =
-        user_data_dir.Append(ChromeBrowserPolicyConnector::kPolicyDir);
+        user_data_dir.Append(MachineLevelUserCloudPolicyController::kPolicyDir);
 
     std::unique_ptr<MachineLevelUserCloudPolicyManager> manager =
         std::make_unique<MachineLevelUserCloudPolicyManager>(
@@ -398,7 +403,7 @@ class MachineLevelUserCloudPolicyEnrollmentTest
  private:
   LocalPolicyTestServer test_server_;
   FakeBrowserDMTokenStorage storage_;
-  ChromeBrowserPolicyConnectorObserver observer_;
+  MachineLevelUserCloudPolicyControllerObserver observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyEnrollmentTest);
 };
