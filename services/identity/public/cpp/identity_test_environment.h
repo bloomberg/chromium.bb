@@ -34,6 +34,14 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // until the refresh token is set.
   void SetRefreshTokenForAccount(const std::string& account_id);
 
+  // Sets a special invalid refresh token that corresponds uniquely to
+  // |account_id|. Blocks until the refresh token is set.
+  void SetInvalidRefreshTokenForAccount(const std::string& account_id);
+
+  // Removes the refresh token that corresponds uniquely to |account_id|.
+  // Blocks until the refresh token is cleared.
+  void RemoveRefreshTokenForAccount(const std::string& account_id);
+
   // Makes the primary account available for the given email address, generating
   // a GAIA ID and refresh token that correspond uniquely to that email address.
   // On non-ChromeOS platforms, this will also result in the firing of the
@@ -76,6 +84,13 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // blundell@chromium.org
   void WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       const GoogleServiceAuthError& error);
+
+  // Sets a callback that will be invoked on the next incoming access token
+  // request. Note that this can not be combined with the
+  // WaitForAccessTokenRequestIfNecessaryAndRespondWith* methods - you must
+  // either wait for the callback to get called, or explicitly reset it by
+  // passing in a null callback, before the Wait* methods can be used again.
+  void SetCallbackForNextAccessTokenRequest(base::OnceClosure callback);
 
  private:
   // IdentityManager::DiagnosticsObserver:

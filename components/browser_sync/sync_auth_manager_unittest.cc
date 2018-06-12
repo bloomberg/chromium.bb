@@ -164,11 +164,17 @@ TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
   identity_env()->SetRefreshTokenForAccount(account_id);
   ASSERT_TRUE(auth_manager->GetCredentials().sync_token.empty());
 
-  // And finally, once a new token is available, there's another notification.
+  // Once a new token is available, there's another notification.
   EXPECT_CALL(credentials_changed, Run());
   identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
       "access_token_2", base::Time::Now() + base::TimeDelta::FromHours(1));
   ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token_2");
+
+  // Revoking the refresh token should also cause the access token to get
+  // dropped.
+  EXPECT_CALL(credentials_changed, Run());
+  identity_env()->RemoveRefreshTokenForAccount(account_id);
+  EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
 }
 
 TEST_F(SyncAuthManagerTest, RequestsAccessTokenOnSyncStartup) {
@@ -366,22 +372,106 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenAutonomously) {
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
   auth_manager->RegisterForAuthNotifications();
 
-  // Enable auto-granting of access tokens, so that we can later verify none was
-  // requested.
-  identity_env()->SetAutomaticIssueOfAccessTokens(true);
-
   // Do *not* call ConnectionStatusChanged here (which is what usually kicks off
   // the token fetch).
 
   // Now the refresh token gets updated. If we already had an access token
   // before, then this should trigger a new fetch. But since that initial fetch
   // never happened (e.g. because Sync is turned off), this should do nothing.
+  base::MockCallback<base::OnceClosure> access_token_requested;
+  EXPECT_CALL(access_token_requested, Run()).Times(0);
+  identity_env()->SetCallbackForNextAccessTokenRequest(
+      access_token_requested.Get());
   identity_env()->SetRefreshTokenForAccount(account_id);
 
-  // Spin the message loop to make sure no access token request was sent.
+  // Make sure no access token request was sent. Since the request goes through
+  // posted tasks, we have to spin the message loop.
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
+}
+
+TEST_F(SyncAuthManagerTest, ClearsCredentialsOnRefreshTokenRemoval) {
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+  auto auth_manager = CreateAuthManager();
+  ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
+
+  // During Sync startup, the SyncEngine attempts to connect to the server
+  // without an access token, resulting in a call to ConnectionStatusChanged
+  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
+  // fetch.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+
+  // Now everything is okay for a while.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_OK);
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+  ASSERT_EQ(auth_manager->GetLastAuthError(),
+            GoogleServiceAuthError::AuthErrorNone());
+
+  // But then the refresh token gets revoked. No new access token should get
+  // requested due to this.
+  base::MockCallback<base::OnceClosure> access_token_requested;
+  EXPECT_CALL(access_token_requested, Run()).Times(0);
+  identity_env()->SetCallbackForNextAccessTokenRequest(
+      access_token_requested.Get());
+  identity_env()->RemoveRefreshTokenForAccount(account_id);
+
+  // Should immediately drop the access token and expose an auth error.
+  EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
+  EXPECT_NE(auth_manager->GetLastAuthError(),
+            GoogleServiceAuthError::AuthErrorNone());
+
+  // No new access token should have been requested. Since the request goes
+  // through posted tasks, we have to spin the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(SyncAuthManagerTest, ClearsCredentialsOnInvalidRefreshToken) {
+  std::string account_id =
+      identity_env()->MakePrimaryAccountAvailable("test@email.com");
+  auto auth_manager = CreateAuthManager();
+  ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
+  auth_manager->RegisterForAuthNotifications();
+
+  // During Sync startup, the SyncEngine attempts to connect to the server
+  // without an access token, resulting in a call to ConnectionStatusChanged
+  // with CONNECTION_AUTH_ERROR. This is what kicks off the initial access token
+  // fetch.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_AUTH_ERROR);
+  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      "access_token", base::Time::Now() + base::TimeDelta::FromHours(1));
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+
+  // Now everything is okay for a while.
+  auth_manager->ConnectionStatusChanged(syncer::CONNECTION_OK);
+  ASSERT_EQ(auth_manager->GetCredentials().sync_token, "access_token");
+  ASSERT_EQ(auth_manager->GetLastAuthError(),
+            GoogleServiceAuthError::AuthErrorNone());
+
+  // But now an invalid refresh token gets set. No new access token should get
+  // requested due to this.
+  base::MockCallback<base::OnceClosure> access_token_requested;
+  EXPECT_CALL(access_token_requested, Run()).Times(0);
+  identity_env()->SetCallbackForNextAccessTokenRequest(
+      access_token_requested.Get());
+  identity_env()->SetInvalidRefreshTokenForAccount(account_id);
+
+  // Should immediately drop the access token and expose a special auth error.
+  EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
+  GoogleServiceAuthError invalid_token_error =
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_CLIENT);
+  EXPECT_EQ(auth_manager->GetLastAuthError(), invalid_token_error);
+
+  // No new access token should have been requested. Since the request goes
+  // through posted tasks, we have to spin the message loop.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace
