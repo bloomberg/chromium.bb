@@ -10,6 +10,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 
@@ -74,5 +75,9 @@ class BottomToolbarMediator implements FullscreenListener {
             OnClickListener searchAcceleratorListener, OnTouchListener menuButtonListener) {
         mModel.setSearchAcceleratorListener(searchAcceleratorListener);
         mModel.setMenuButtonListener(menuButtonListener);
+    }
+
+    public void setLayoutManager(LayoutManager layoutManager) {
+        mModel.setLayoutManager(layoutManager);
     }
 }

@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -237,6 +236,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mAppMenuPropertiesDelegate = appMenuPropertiesDelegate;
 
         HomepageManager.getInstance().addListener(mHomepageStateListener);
+
+        if (FeatureUtilities.isBottomToolbarEnabled()) {
+            mBottomToolbarController = new BottomToolbarController(
+                    mActivity.getFullscreenManager(), mActivity.findViewById(R.id.coordinator));
+        }
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -698,14 +702,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mLayoutManager.addSceneChangeObserver(mSceneChangeObserver);
         }
 
-        if (FeatureUtilities.isChromeDuplexEnabled()) {
-            ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
-            OnClickListener searchAcceleratorListener = v -> setUrlBarFocus(true);
-            mBottomToolbarController = new BottomToolbarController(mActivity.getFullscreenManager(),
+        if (mBottomToolbarController != null) {
+            final OnClickListener searchAcceleratorListener = v -> setUrlBarFocus(true);
+            mBottomToolbarController.initializeWithNative(
                     mActivity.getCompositorViewHolder().getResourceManager(),
-                    mActivity.getCompositorViewHolder().getLayoutManager(), coordinator,
-                    tabSwitcherClickHandler, searchAcceleratorListener, mAppMenuButtonHelper,
-                    mTabModelSelector);
+                    mActivity.getCompositorViewHolder().getLayoutManager(), tabSwitcherClickHandler,
+                    searchAcceleratorListener, mAppMenuButtonHelper, mTabModelSelector);
         }
 
         onNativeLibraryReady();

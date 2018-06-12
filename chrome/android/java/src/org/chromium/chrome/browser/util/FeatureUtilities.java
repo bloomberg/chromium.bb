@@ -283,14 +283,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * @return Whether Chrome Duplex, split toolbar Chrome Home, is enabled.
-     */
-    public static boolean isChromeDuplexEnabled() {
-        return ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUPLEX);
-    }
-
-    /**
      * @return The type of swipe logic used for opening the bottom sheet in Chrome Home. Null is
      *         returned if the command line is not initialized or no experiment is specified.
      */
