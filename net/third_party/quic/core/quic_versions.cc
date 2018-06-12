@@ -164,12 +164,12 @@ ParsedQuicVersionVector FilterSupportedVersions(
   for (ParsedQuicVersion version : versions) {
     if (version.transport_version == QUIC_VERSION_99) {
       if (GetQuicFlag(FLAGS_quic_enable_version_99) &&
-          GetQuicFlag(FLAGS_quic_enable_version_44) &&
+          GetQuicReloadableFlag(quic_enable_version_44) &&
           GetQuicReloadableFlag(quic_enable_version_43)) {
         filtered_versions.push_back(version);
       }
     } else if (version.transport_version == QUIC_VERSION_44) {
-      if (GetQuicFlag(FLAGS_quic_enable_version_44) &&
+      if (GetQuicReloadableFlag(quic_enable_version_44) &&
           GetQuicReloadableFlag(quic_enable_version_43)) {
         filtered_versions.push_back(version);
       }

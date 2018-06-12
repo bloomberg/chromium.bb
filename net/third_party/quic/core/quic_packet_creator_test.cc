@@ -97,7 +97,7 @@ class TestPacketCreator : public QuicPacketCreator {
   }
 
   void StopSendingVersion() {
-    if (version_ == QUIC_VERSION_99) {
+    if (version_ > QUIC_VERSION_43) {
       set_encryption_level(ENCRYPTION_FORWARD_SECURE);
       return;
     }
@@ -307,7 +307,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
 }
 
 TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
-  if (client_framer_.transport_version() == QUIC_VERSION_99) {
+  if (client_framer_.transport_version() > QUIC_VERSION_43) {
     creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
   }
   // If the original packet number length, the current packet number
@@ -699,8 +699,7 @@ TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_SERVER);
   ParsedQuicVersionVector versions;
   versions.push_back(test::QuicVersionMax());
-  const bool ietf_quic =
-      GetParam().version.transport_version == QUIC_VERSION_99;
+  const bool ietf_quic = GetParam().version.transport_version > QUIC_VERSION_43;
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       creator_.SerializeVersionNegotiationPacket(ietf_quic, versions));
 
@@ -740,7 +739,7 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
-  if (GetParam().version.transport_version == QUIC_VERSION_99) {
+  if (GetParam().version.transport_version > QUIC_VERSION_43) {
     EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
     creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
@@ -777,7 +776,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
-  if (GetParam().version.transport_version == QUIC_VERSION_99) {
+  if (GetParam().version.transport_version > QUIC_VERSION_43) {
     EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
     creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);

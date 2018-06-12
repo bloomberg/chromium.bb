@@ -1072,7 +1072,7 @@ void QuicTestPacketMaker::SetLongHeaderType(quic::QuicLongHeaderType type) {
 }
 
 bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_ > quic::QUIC_VERSION_43) {
     return encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE;
   }
   return include_version;
@@ -1080,7 +1080,7 @@ bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
 
 quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
     const {
-  if (version_ == quic::QUIC_VERSION_99 &&
+  if (version_ > quic::QUIC_VERSION_43 &&
       encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE) {
     return quic::PACKET_4BYTE_PACKET_NUMBER;
   }
@@ -1090,7 +1090,7 @@ quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
 quic::QuicConnectionIdLength
 QuicTestPacketMaker::GetDestinationConnectionIdLength() const {
   if (perspective_ == quic::Perspective::IS_SERVER &&
-      version_ == quic::QUIC_VERSION_99) {
+      version_ > quic::QUIC_VERSION_43) {
     return quic::PACKET_0BYTE_CONNECTION_ID;
   }
   return quic::PACKET_8BYTE_CONNECTION_ID;
@@ -1099,7 +1099,7 @@ QuicTestPacketMaker::GetDestinationConnectionIdLength() const {
 quic::QuicConnectionIdLength QuicTestPacketMaker::GetSourceConnectionIdLength()
     const {
   if (perspective_ == quic::Perspective::IS_SERVER &&
-      version_ == quic::QUIC_VERSION_99 &&
+      version_ > quic::QUIC_VERSION_43 &&
       encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE) {
     return quic::PACKET_8BYTE_CONNECTION_ID;
   }

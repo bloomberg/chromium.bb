@@ -41,6 +41,18 @@ class QuicTimeWaitListManagerPeer;
 // connection_id.
 class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
  public:
+  // Specifies what the time wait list manager should do when processing packets
+  // of a time wait connection.
+  enum TimeWaitAction : uint8_t {
+    // Send specified termination packets, error if termination packet is
+    // unavailable.
+    SEND_TERMINATION_PACKETS,
+    // Send stateless reset (public reset for GQUIC).
+    SEND_STATELESS_RESET,
+
+    DO_NOTHING,
+  };
+
   class Visitor : public QuicSession::Visitor {
    public:
     // Called after the given connection is added to the time-wait std::list.
@@ -63,11 +75,13 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // when a packet with this connection ID is processed. If no termination
   // packets are provided, then a PUBLIC_RESET will be sent with the specified
   // |version|. Any termination packets will be move from |termination_packets|
-  // and will become owned by the manager.
+  // and will become owned by the manager. |action| specifies what the time wait
+  // list manager should do when processing packets of the connection.
   virtual void AddConnectionIdToTimeWait(
       QuicConnectionId connection_id,
       ParsedQuicVersion version,
       bool ietf_quic,
+      TimeWaitAction action,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets);
 
   // Returns true if the connection_id is in time wait state, false otherwise.
@@ -172,7 +186,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
     ConnectionIdData(int num_packets,
                      ParsedQuicVersion version,
                      bool ietf_quic,
-                     QuicTime time_added);
+                     QuicTime time_added,
+                     TimeWaitAction action);
 
     ConnectionIdData(const ConnectionIdData& other) = delete;
     ConnectionIdData(ConnectionIdData&& other);
@@ -185,6 +200,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
     QuicTime time_added;
     // These packets may contain CONNECTION_CLOSE frames, or SREJ messages.
     std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+    TimeWaitAction action;
   };
 
   // QuicLinkedHashMap allows lookup by ConnectionId and traversal in add order.

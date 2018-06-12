@@ -571,10 +571,15 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
 
   // Client supports IETF QUIC, while it is not supported by server.
   bool ClientSupportsIetfQuicNotSupportedByServer() {
-    return GetParam().client_supported_versions[0].transport_version ==
-               QUIC_VERSION_99 &&
+    return GetParam().client_supported_versions[0].transport_version >
+               QUIC_VERSION_43 &&
            FilterSupportedVersions(GetParam().server_supported_versions)[0]
-                   .transport_version != QUIC_VERSION_99;
+                   .transport_version <= QUIC_VERSION_43;
+  }
+
+  bool SupportsIetfQuicWithTls(ParsedQuicVersion version) {
+    return version.transport_version > QUIC_VERSION_43 &&
+           version.handshake_protocol == PROTOCOL_TLS1_3;
   }
 
   void ExpectFlowControlsSynced(QuicFlowController* client,
@@ -1488,9 +1493,10 @@ TEST_P(EndToEndTest, 0ByteConnectionId) {
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-
-  QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
-      client_->client()->client_session()->connection());
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
+  QuicPacketHeader* header =
+      QuicConnectionPeer::GetLastHeader(client_connection);
   EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
             header->destination_connection_id_length);
 }
@@ -1501,10 +1507,17 @@ TEST_P(EndToEndTestWithTls, 8ByteConnectionId) {
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-  QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
-      client_->client()->client_session()->connection());
-  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
-            header->destination_connection_id_length);
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
+  QuicPacketHeader* header =
+      QuicConnectionPeer::GetLastHeader(client_connection);
+  if (client_connection->transport_version() > QUIC_VERSION_43) {
+    EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
+              header->destination_connection_id_length);
+  } else {
+    EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
+              header->destination_connection_id_length);
+  }
 }
 
 TEST_P(EndToEndTestWithTls, 15ByteConnectionId) {
@@ -1514,10 +1527,17 @@ TEST_P(EndToEndTestWithTls, 15ByteConnectionId) {
   // Our server is permissive and allows for out of bounds values.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
-  QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
-      client_->client()->client_session()->connection());
-  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
-            header->destination_connection_id_length);
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
+  QuicPacketHeader* header =
+      QuicConnectionPeer::GetLastHeader(client_connection);
+  if (client_connection->transport_version() > QUIC_VERSION_43) {
+    EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
+              header->destination_connection_id_length);
+  } else {
+    EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
+              header->destination_connection_id_length);
+  }
 }
 
 TEST_P(EndToEndTestWithTls, ResetConnection) {
@@ -2010,15 +2030,32 @@ TEST_P(EndToEndTestWithTls, ServerSendPublicReset) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
+  if (SupportsIetfQuicWithTls(client_connection->version())) {
+    // TLS handshake does not support stateless reset token yet.
+    return;
+  }
+  QuicUint128 stateless_reset_token = 0;
+  if (client_connection->version().handshake_protocol == PROTOCOL_QUIC_CRYPTO) {
+    QuicConfig* config = client_->client()->session()->config();
+    EXPECT_TRUE(config->HasReceivedStatelessResetToken());
+    stateless_reset_token = config->ReceivedStatelessResetToken();
+  }
+
   // Send the public reset.
-  QuicConnectionId connection_id =
-      client_->client()->client_session()->connection()->connection_id();
+  QuicConnectionId connection_id = client_connection->connection_id();
   QuicPublicResetPacket header;
   header.connection_id = connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
                     Perspective::IS_SERVER);
-  std::unique_ptr<QuicEncryptedPacket> packet(
-      framer.BuildPublicResetPacket(header));
+  std::unique_ptr<QuicEncryptedPacket> packet;
+  if (client_connection->transport_version() > QUIC_VERSION_43) {
+    packet = framer.BuildIetfStatelessResetPacket(connection_id,
+                                                  stateless_reset_token);
+  } else {
+    packet = framer.BuildPublicResetPacket(header);
+  }
   // We must pause the server's thread in order to call WritePacket without
   // race conditions.
   server_thread_->Pause();
@@ -2039,21 +2076,39 @@ TEST_P(EndToEndTestWithTls, ServerSendPublicResetWithDifferentConnectionId) {
   ASSERT_TRUE(Initialize());
 
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
-
+  QuicConnection* client_connection =
+      client_->client()->client_session()->connection();
+  if (SupportsIetfQuicWithTls(client_connection->version())) {
+    // TLS handshake does not support stateless reset token yet.
+    return;
+  }
+  QuicUint128 stateless_reset_token = 0;
+  if (client_connection->version().handshake_protocol == PROTOCOL_QUIC_CRYPTO) {
+    QuicConfig* config = client_->client()->session()->config();
+    EXPECT_TRUE(config->HasReceivedStatelessResetToken());
+    stateless_reset_token = config->ReceivedStatelessResetToken();
+  }
   // Send the public reset.
   QuicConnectionId incorrect_connection_id =
-      client_->client()->client_session()->connection()->connection_id() + 1;
+      client_connection->connection_id() + 1;
   QuicPublicResetPacket header;
   header.connection_id = incorrect_connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
                     Perspective::IS_SERVER);
-  std::unique_ptr<QuicEncryptedPacket> packet(
-      framer.BuildPublicResetPacket(header));
+  std::unique_ptr<QuicEncryptedPacket> packet;
   testing::NiceMock<MockQuicConnectionDebugVisitor> visitor;
   client_->client()->client_session()->connection()->set_debug_visitor(
       &visitor);
-  EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))
-      .Times(1);
+  if (client_connection->transport_version() > QUIC_VERSION_43) {
+    packet = framer.BuildIetfStatelessResetPacket(incorrect_connection_id,
+                                                  stateless_reset_token);
+    EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))
+        .Times(0);
+  } else {
+    packet = framer.BuildPublicResetPacket(header);
+    EXPECT_CALL(visitor, OnIncorrectConnectionId(incorrect_connection_id))
+        .Times(1);
+  }
   // We must pause the server's thread in order to call WritePacket without
   // race conditions.
   server_thread_->Pause();
@@ -2062,6 +2117,14 @@ TEST_P(EndToEndTestWithTls, ServerSendPublicResetWithDifferentConnectionId) {
       client_->client()->network_helper()->GetLatestClientAddress(), nullptr);
   server_thread_->Resume();
 
+  if (client_connection->transport_version() > QUIC_VERSION_43) {
+    // The request should fail. IETF stateless reset does not include connection
+    // ID.
+    EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+    EXPECT_TRUE(client_->response_headers()->empty());
+    EXPECT_EQ(QUIC_PUBLIC_RESET, client_->connection_error());
+    return;
+  }
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
@@ -2109,7 +2172,7 @@ TEST_P(EndToEndTestWithTls,
   std::unique_ptr<QuicEncryptedPacket> packet(
       QuicFramer::BuildVersionNegotiationPacket(
           incorrect_connection_id,
-          client_connection->transport_version() == QUIC_VERSION_99,
+          client_connection->transport_version() > QUIC_VERSION_43,
           server_supported_versions_));
   testing::NiceMock<MockQuicConnectionDebugVisitor> visitor;
   client_connection->set_debug_visitor(&visitor);

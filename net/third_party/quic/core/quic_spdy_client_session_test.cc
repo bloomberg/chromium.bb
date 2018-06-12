@@ -333,11 +333,7 @@ TEST_P(QuicSpdyClientSessionTest, InvalidPacketReceived) {
       .WillRepeatedly(Invoke(static_cast<MockQuicConnection*>(connection_),
                              &MockQuicConnection::ReallyProcessUdpPacket));
   EXPECT_CALL(*connection_, OnCanWrite()).Times(AnyNumber());
-  if (connection_->transport_version() == QUIC_VERSION_99) {
-    EXPECT_CALL(*connection_, OnError(_)).Times(3);
-  } else {
-    EXPECT_CALL(*connection_, OnError(_)).Times(1);
-  }
+  EXPECT_CALL(*connection_, OnError(_)).Times(1);
 
   // Verify that empty packets don't close the connection.
   QuicReceivedPacket zero_length_packet(nullptr, 0, QuicTime::Zero(), false);
@@ -348,34 +344,25 @@ TEST_P(QuicSpdyClientSessionTest, InvalidPacketReceived) {
   // Verifiy that small, invalid packets don't close the connection.
   char buf[2] = {0x00, 0x01};
   QuicConnectionId connection_id = session_->connection()->connection_id();
-  if (connection_->transport_version() == QUIC_VERSION_99) {
-    QuicFramerPeer::SetLastSerializedConnectionId(
-        QuicConnectionPeer::GetFramer(connection_), connection_id);
-  }
   QuicReceivedPacket valid_packet(buf, 2, QuicTime::Zero(), false);
   // Close connection shouldn't be called.
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   session_->ProcessUdpPacket(client_address, server_address, valid_packet);
 
   // Verify that a non-decryptable packet doesn't close the connection.
-  if (connection_->transport_version() < QUIC_VERSION_99) {
-    QuicFramerPeer::SetLastSerializedConnectionId(
-        QuicConnectionPeer::GetFramer(connection_), connection_id);
-  }
+  QuicFramerPeer::SetLastSerializedConnectionId(
+      QuicConnectionPeer::GetFramer(connection_), connection_id);
+  ParsedQuicVersionVector versions = SupportedVersions(GetParam());
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       connection_id, 0, false, false, 100, "data", PACKET_0BYTE_CONNECTION_ID,
-      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, nullptr,
+      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, &versions,
       Perspective::IS_SERVER));
   std::unique_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*packet, QuicTime::Zero()));
   // Change the last byte of the encrypted data.
   *(const_cast<char*>(received->data() + received->length() - 1)) += 1;
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-  if (connection_->transport_version() == QUIC_VERSION_99) {
-    EXPECT_CALL(*connection_, OnError(Truly(CheckForDecryptionError))).Times(0);
-  } else {
-    EXPECT_CALL(*connection_, OnError(Truly(CheckForDecryptionError))).Times(1);
-  }
+  EXPECT_CALL(*connection_, OnError(Truly(CheckForDecryptionError))).Times(1);
   session_->ProcessUdpPacket(client_address, server_address, *received);
 }
 

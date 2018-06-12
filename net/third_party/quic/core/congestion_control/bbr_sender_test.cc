@@ -215,7 +215,7 @@ class BbrSenderTest : public QuicTest {
     DoSimpleTransfer(1024 * 1024, QuicTime::Delta::FromSeconds(15));
     EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
     ExpectApproxEq(kTestLinkBandwidth,
-                   sender_->ExportDebugState().max_bandwidth, 0.01f);
+                   sender_->ExportDebugState().max_bandwidth, 0.02f);
   }
 
   // Send |bytes|-sized bursts of data |number_of_bursts| times, waiting for

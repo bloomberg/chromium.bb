@@ -370,6 +370,12 @@ enum SentPacketState : uint8_t {
   LAST_PACKET_STATE = PROBE_RETRANSMITTED,
 };
 
+enum PacketHeaderFormat : uint8_t {
+  IETF_QUIC_LONG_HEADER_PACKET,
+  IETF_QUIC_SHORT_HEADER_PACKET,
+  GOOGLE_QUIC_PACKET,
+};
+
 // Information about a newly acknowledged packet.
 struct AckedPacket {
   AckedPacket(QuicPacketNumber packet_number,

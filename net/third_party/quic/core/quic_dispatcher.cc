@@ -139,6 +139,7 @@ class StatelessConnectionTerminator {
     DCHECK_EQ(1u, collector_.packets()->size());
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         connection_id_, framer_->version(), framer_->last_packet_is_ietf_quic(),
+        QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
         collector_.packets());
   }
 
@@ -167,6 +168,7 @@ class StatelessConnectionTerminator {
     }
     time_wait_list_manager_->AddConnectionIdToTimeWait(
         connection_id_, framer_->version(), framer_->last_packet_is_ietf_quic(),
+        QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
         collector_.packets());
     DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id_));
   }
@@ -438,9 +440,10 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
         // future packets.
         QUIC_DLOG(INFO) << "Adding connection ID " << connection_id
                         << "to time-wait list.";
-        time_wait_list_manager_->AddConnectionIdToTimeWait(
-            connection_id, framer_.version(),
-            framer_.last_packet_is_ietf_quic(), nullptr);
+        StatelesslyTerminateConnection(
+            connection_id, framer_.version(), framer()->GetLastPacketFormat(),
+            QUIC_HANDSHAKE_FAILED, "Reject connection",
+            quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
       }
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
       time_wait_list_manager_->ProcessPacket(
@@ -523,8 +526,17 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
     DCHECK(connection->termination_packets() != nullptr &&
            !connection->termination_packets()->empty());
   }
+  QuicTimeWaitListManager::TimeWaitAction action =
+      QuicTimeWaitListManager::SEND_STATELESS_RESET;
+  if (connection->termination_packets() != nullptr &&
+      !connection->termination_packets()->empty()) {
+    action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
+  } else if (connection->transport_version() > QUIC_VERSION_43) {
+    action = QuicTimeWaitListManager::DO_NOTHING;
+  }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      it->first, connection->version(), false,
+      it->first, connection->version(),
+      connection->transport_version() > QUIC_VERSION_43, action,
       connection->termination_packets());
   session_map_.erase(it);
 }
@@ -627,6 +639,27 @@ void QuicDispatcher::OnConnectionAddedToTimeWaitList(
     QuicConnectionId connection_id) {
   QUIC_DLOG(INFO) << "Connection " << connection_id
                   << " added to time wait list.";
+}
+
+void QuicDispatcher::StatelesslyTerminateConnection(
+    QuicConnectionId connection_id,
+    const ParsedQuicVersion& version,
+    PacketHeaderFormat format,
+    QuicErrorCode error_code,
+    const QuicString& error_details,
+    QuicTimeWaitListManager::TimeWaitAction action) {
+  if (format == IETF_QUIC_LONG_HEADER_PACKET) {
+    // Send connection close for IETF long header packet, and this also adds
+    // connection to time wait list.
+    StatelessConnectionTerminator terminator(
+        connection_id, &framer_, helper_.get(), time_wait_list_manager_.get());
+    terminator.CloseConnection(error_code, error_details);
+    return;
+  }
+
+  time_wait_list_manager_->AddConnectionIdToTimeWait(
+      connection_id, version, format != GOOGLE_QUIC_PACKET, action,
+      /*termination_packets=*/nullptr);
 }
 
 void QuicDispatcher::OnPacket() {}
@@ -795,9 +828,12 @@ void QuicDispatcher::OnAuthenticatedIetfStatelessResetPacket(
 void QuicDispatcher::OnExpiredPackets(
     QuicConnectionId connection_id,
     BufferedPacketList early_arrived_packets) {
-  time_wait_list_manager_->AddConnectionIdToTimeWait(
-      connection_id, framer_.version(), early_arrived_packets.ietf_quic,
-      nullptr);
+  StatelesslyTerminateConnection(
+      connection_id, framer_.version(),
+      early_arrived_packets.ietf_quic ? IETF_QUIC_LONG_HEADER_PACKET
+                                      : GOOGLE_QUIC_PACKET,
+      QUIC_HANDSHAKE_FAILED, "Packets buffered for too long",
+      quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
 }
 
 void QuicDispatcher::ProcessBufferedChlos(size_t max_connections_to_create) {
@@ -872,11 +908,12 @@ void QuicDispatcher::BufferEarlyPacket(QuicConnectionId connection_id,
 void QuicDispatcher::ProcessChlo() {
   if (!accept_new_connections_) {
     // Don't any create new connection.
-    time_wait_list_manager()->AddConnectionIdToTimeWait(
-        current_connection_id(), framer()->version(),
-        framer()->last_packet_is_ietf_quic(),
-        /*termination_packets=*/nullptr);
-    // This will trigger sending Public Reset packet.
+    StatelesslyTerminateConnection(
+        current_connection_id(), framer_.version(),
+        framer()->GetLastPacketFormat(), QUIC_HANDSHAKE_FAILED,
+        "Stop accepting new connections",
+        quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
+    // Time wait list will reject the packet correspondingly.
     time_wait_list_manager()->ProcessPacket(current_self_address(),
                                             current_peer_address(),
                                             current_connection_id());

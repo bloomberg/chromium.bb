@@ -30,7 +30,7 @@ size_t GetPacketHeaderSize(
     bool include_version,
     bool include_diversification_nonce,
     QuicPacketNumberLength packet_number_length) {
-  if (version == QUIC_VERSION_99) {
+  if (version > QUIC_VERSION_43) {
     if (include_version) {
       // Long header.
       return kPacketHeaderTypeSize + kConnectionIdLengthSize +

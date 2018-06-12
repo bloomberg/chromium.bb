@@ -103,7 +103,10 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     QuicConnectionId connection_id,
     ParsedQuicVersion version,
     bool ietf_quic,
+    TimeWaitAction action,
     std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets) {
+  DCHECK(action != SEND_TERMINATION_PACKETS || termination_packets != nullptr);
+  DCHECK(action != DO_NOTHING || ietf_quic);
   int num_packets = 0;
   ConnectionIdMap::iterator it = connection_id_map_.find(connection_id);
   const bool new_connection_id = it == connection_id_map_.end();
@@ -115,7 +118,7 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
   DCHECK_LT(num_connections(),
             static_cast<size_t>(FLAGS_quic_time_wait_list_max_connections));
   ConnectionIdData data(num_packets, version, ietf_quic,
-                        clock_->ApproximateNow());
+                        clock_->ApproximateNow(), action);
   if (termination_packets != nullptr) {
     data.termination_packets.swap(*termination_packets);
   }
@@ -165,16 +168,24 @@ void QuicTimeWaitListManager::ProcessPacket(
     return;
   }
 
-  if (!connection_data->termination_packets.empty()) {
-    for (const auto& packet : connection_data->termination_packets) {
-      SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
-          server_address, client_address, packet->Clone()));
-    }
-    return;
+  switch (connection_data->action) {
+    case SEND_TERMINATION_PACKETS:
+      if (connection_data->termination_packets.empty()) {
+        QUIC_BUG << "There are no termination packets.";
+        return;
+      }
+      for (const auto& packet : connection_data->termination_packets) {
+        SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
+            server_address, client_address, packet->Clone()));
+      }
+      return;
+    case SEND_STATELESS_RESET:
+      SendPublicReset(server_address, client_address, connection_id,
+                      connection_data->ietf_quic);
+      return;
+    case DO_NOTHING:
+      DCHECK(connection_data->ietf_quic);
   }
-
-  SendPublicReset(server_address, client_address, connection_id,
-                  connection_data->ietf_quic);
 }
 
 void QuicTimeWaitListManager::SendVersionNegotiationPacket(
@@ -324,11 +335,13 @@ QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
     int num_packets,
     ParsedQuicVersion version,
     bool ietf_quic,
-    QuicTime time_added)
+    QuicTime time_added,
+    TimeWaitAction action)
     : num_packets(num_packets),
       version(version),
       ietf_quic(ietf_quic),
-      time_added(time_added) {}
+      time_added(time_added),
+      action(action) {}
 
 QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
     ConnectionIdData&& other) = default;
