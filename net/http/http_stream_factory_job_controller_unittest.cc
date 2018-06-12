@@ -196,6 +196,7 @@ class HttpStreamFactoryJobControllerTest
       : TestWithScopedTaskEnvironment(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
     session_deps_.enable_quic = true;
+    session_deps_.host_resolver->set_synchronous_mode(true);
   }
 
   void UseAlternativeProxy() {
@@ -1425,10 +1426,6 @@ TEST_F(HttpStreamFactoryJobControllerTest, HostResolutionHang) {
 }
 
 TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCP) {
-  auto immediate_resolver = std::make_unique<MockHostResolver>();
-  immediate_resolver->set_synchronous_mode(true);
-  session_deps_.host_resolver = std::move(immediate_resolver);
-
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
@@ -1568,10 +1565,6 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPWithLargeSrtt) {
   // The max delay time should be in sync with .cc file.
   base::TimeDelta kMaxDelayTimeForMainJob = base::TimeDelta::FromSeconds(3);
 
-  auto immediate_resolver = std::make_unique<MockHostResolver>();
-  immediate_resolver->set_synchronous_mode(true);
-  session_deps_.host_resolver = std::move(immediate_resolver);
-
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
@@ -1631,10 +1624,6 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPWithLargeSrtt) {
 
 TEST_F(HttpStreamFactoryJobControllerTest,
        ResumeMainJobImmediatelyOnStreamFailed) {
-  auto immediate_resolver = std::make_unique<MockHostResolver>();
-  immediate_resolver->set_synchronous_mode(true);
-  session_deps_.host_resolver = std::move(immediate_resolver);
-
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
@@ -1750,10 +1739,6 @@ TEST_F(HttpStreamFactoryJobControllerTest, HttpURLWithNoProxy) {
 // Verifies that the main job is resumed properly after a delay when the
 // alternative proxy server job hangs.
 TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPAlternativeProxy) {
-  auto immediate_resolver = std::make_unique<MockHostResolver>();
-  immediate_resolver->set_synchronous_mode(true);
-  session_deps_.host_resolver = std::move(immediate_resolver);
-
   UseAlternativeProxy();
 
   HttpRequestInfo request_info;

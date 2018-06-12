@@ -118,8 +118,6 @@ TEST_F(SpdySessionPoolTest, CloseCurrentSessions) {
   const char kTestHost[] = "www.foo.com";
   const int kTestPort = 80;
 
-  session_deps_.host_resolver->set_synchronous_mode(true);
-
   HostPortPair test_host_port_pair(kTestHost, kTestPort);
   SpdySessionKey test_key =
       SpdySessionKey(test_host_port_pair, ProxyServer::Direct(),
@@ -167,8 +165,6 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-
-  session_deps_.host_resolver->set_synchronous_mode(true);
 
   StaticSocketDataProvider data1(reads, base::span<MockWrite>());
   data1.set_connect_data(connect_data);
@@ -284,8 +280,6 @@ TEST_F(SpdySessionPoolTest, CloseCurrentIdleSessions) {
 TEST_F(SpdySessionPoolTest, CloseAllSessions) {
   const char kTestHost[] = "www.foo.com";
   const int kTestPort = 80;
-
-  session_deps_.host_resolver->set_synchronous_mode(true);
 
   HostPortPair test_host_port_pair(kTestHost, kTestPort);
   SpdySessionKey test_key =
