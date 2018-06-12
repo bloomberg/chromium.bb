@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -256,7 +257,7 @@ const NetLogWithSource& HttpCache::Transaction::net_log() const {
 }
 
 int HttpCache::Transaction::Start(const HttpRequestInfo* request,
-                                  const CompletionCallback& callback,
+                                  CompletionOnceCallback callback,
                                   const NetLogWithSource& net_log) {
   DCHECK(request);
   DCHECK(!callback.is_null());
@@ -281,13 +282,13 @@ int HttpCache::Transaction::Start(const HttpRequestInfo* request,
   // Setting this here allows us to check for the existence of a callback_ to
   // determine if we are still inside Start.
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return rv;
 }
 
 int HttpCache::Transaction::RestartIgnoringLastError(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
 
   // Ensure that we only have one asynchronous call at a time.
@@ -299,7 +300,7 @@ int HttpCache::Transaction::RestartIgnoringLastError(
   int rv = RestartNetworkRequest();
 
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return rv;
 }
@@ -307,7 +308,7 @@ int HttpCache::Transaction::RestartIgnoringLastError(
 int HttpCache::Transaction::RestartWithCertificate(
     scoped_refptr<X509Certificate> client_cert,
     scoped_refptr<SSLPrivateKey> client_private_key,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
 
   // Ensure that we only have one asynchronous call at a time.
@@ -320,14 +321,13 @@ int HttpCache::Transaction::RestartWithCertificate(
                                                 std::move(client_private_key));
 
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return rv;
 }
 
-int HttpCache::Transaction::RestartWithAuth(
-    const AuthCredentials& credentials,
-    const CompletionCallback& callback) {
+int HttpCache::Transaction::RestartWithAuth(const AuthCredentials& credentials,
+                                            CompletionOnceCallback callback) {
   DCHECK(auth_response_.headers.get());
   DCHECK(!callback.is_null());
 
@@ -343,7 +343,7 @@ int HttpCache::Transaction::RestartWithAuth(
   int rv = RestartNetworkRequestWithAuth(credentials);
 
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return rv;
 }
@@ -354,8 +354,9 @@ bool HttpCache::Transaction::IsReadyToRestartForAuth() {
   return network_trans_->IsReadyToRestartForAuth();
 }
 
-int HttpCache::Transaction::Read(IOBuffer* buf, int buf_len,
-                                 const CompletionCallback& callback) {
+int HttpCache::Transaction::Read(IOBuffer* buf,
+                                 int buf_len,
+                                 CompletionOnceCallback callback) {
   DCHECK_EQ(next_state_, STATE_NONE);
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
@@ -387,7 +388,7 @@ int HttpCache::Transaction::Read(IOBuffer* buf, int buf_len,
 
   if (rv == ERR_IO_PENDING) {
     DCHECK(callback_.is_null());
-    callback_ = callback;
+    callback_ = std::move(callback);
   }
   return rv;
 }

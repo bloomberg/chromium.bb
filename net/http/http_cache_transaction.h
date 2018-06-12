@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -133,18 +134,18 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
 
   // HttpTransaction methods:
   int Start(const HttpRequestInfo* request_info,
-            const CompletionCallback& callback,
+            CompletionOnceCallback callback,
             const NetLogWithSource& net_log) override;
-  int RestartIgnoringLastError(const CompletionCallback& callback) override;
+  int RestartIgnoringLastError(CompletionOnceCallback callback) override;
   int RestartWithCertificate(scoped_refptr<X509Certificate> client_cert,
                              scoped_refptr<SSLPrivateKey> client_private_key,
-                             const CompletionCallback& callback) override;
+                             CompletionOnceCallback callback) override;
   int RestartWithAuth(const AuthCredentials& credentials,
-                      const CompletionCallback& callback) override;
+                      CompletionOnceCallback callback) override;
   bool IsReadyToRestartForAuth() override;
   int Read(IOBuffer* buf,
            int buf_len,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   void StopCaching() override;
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override;
   int64_t GetTotalReceivedBytes() const override;
@@ -585,7 +586,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   HttpCache::ActiveEntry* entry_;
   HttpCache::ActiveEntry* new_entry_;
   std::unique_ptr<HttpTransaction> network_trans_;
-  CompletionCallback callback_;  // Consumer's callback.
+  CompletionOnceCallback callback_;  // Consumer's callback.
   HttpResponseInfo response_;
   HttpResponseInfo auth_response_;
   const HttpResponseInfo* new_response_;
