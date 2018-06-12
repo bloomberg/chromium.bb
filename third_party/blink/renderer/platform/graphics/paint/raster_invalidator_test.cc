@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidator.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
@@ -15,17 +15,16 @@ namespace blink {
 
 static const IntRect kDefaultLayerBounds(-9999, -7777, 18888, 16666);
 
-class CompositedLayerRasterInvalidatorTest
-    : public testing::Test,
-      private ScopedSlimmingPaintV2ForTest {
+class RasterInvalidatorTest : public testing::Test,
+                              private ScopedSlimmingPaintV2ForTest {
  public:
-  CompositedLayerRasterInvalidatorTest() : ScopedSlimmingPaintV2ForTest(true) {}
+  RasterInvalidatorTest() : ScopedSlimmingPaintV2ForTest(true) {}
 
   static PropertyTreeState DefaultPropertyTreeState() {
     return PropertyTreeState::Root();
   }
 
-  CompositedLayerRasterInvalidatorTest& Chunk(int type) {
+  RasterInvalidatorTest& Chunk(int type) {
     DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client, ());
     fake_client.ClearIsJustCreated();
     // The enum arithmetics and magic numbers are to produce different values
@@ -38,37 +37,34 @@ class CompositedLayerRasterInvalidatorTest
     return *this;
   }
 
-  CompositedLayerRasterInvalidatorTest& Properties(
-      const PropertyTreeState& state) {
+  RasterInvalidatorTest& Properties(const PropertyTreeState& state) {
     data_.chunks.back().properties = state;
     return *this;
   }
 
-  CompositedLayerRasterInvalidatorTest& Properties(
-      const RefCountedPropertyTreeState& state) {
+  RasterInvalidatorTest& Properties(const RefCountedPropertyTreeState& state) {
     data_.chunks.back().properties = state.GetPropertyTreeState();
     return *this;
   }
 
-  CompositedLayerRasterInvalidatorTest& Properties(
-      const TransformPaintPropertyNode& t,
-      const ClipPaintPropertyNode& c,
-      const EffectPaintPropertyNode& e) {
+  RasterInvalidatorTest& Properties(const TransformPaintPropertyNode& t,
+                                    const ClipPaintPropertyNode& c,
+                                    const EffectPaintPropertyNode& e) {
     Properties(PropertyTreeState(&t, &c, &e));
     return *this;
   }
 
-  CompositedLayerRasterInvalidatorTest& Uncacheable() {
+  RasterInvalidatorTest& Uncacheable() {
     data_.chunks.back().is_cacheable = false;
     return *this;
   }
 
-  CompositedLayerRasterInvalidatorTest& Bounds(const FloatRect& bounds) {
+  RasterInvalidatorTest& Bounds(const FloatRect& bounds) {
     data_.chunks.back().bounds = bounds;
     return *this;
   }
 
-  CompositedLayerRasterInvalidatorTest& RasterInvalidationCount(int count) {
+  RasterInvalidatorTest& RasterInvalidationCount(int count) {
     size_t size = data_.chunks.size();
     DCHECK_GT(size, 0u);
     data_.raster_invalidation_rects.resize(size);
@@ -93,7 +89,7 @@ class CompositedLayerRasterInvalidatorTest
   }
 
   static const Vector<RasterInvalidationInfo> TrackedRasterInvalidations(
-      CompositedLayerRasterInvalidator& invalidator) {
+      RasterInvalidator& invalidator) {
     DCHECK(invalidator.GetTracking());
     return invalidator.GetTracking()->Invalidations();
   }
@@ -105,8 +101,8 @@ class CompositedLayerRasterInvalidatorTest
     return EnclosingIntRect(r);
   }
 
-  CompositedLayerRasterInvalidator::RasterInvalidationFunction
-      kNoopRasterInvalidation = [this](const IntRect& rect) {};
+  RasterInvalidator::RasterInvalidationFunction kNoopRasterInvalidation =
+      [this](const IntRect& rect) {};
 
   PaintChunksAndRasterInvalidations data_;
 };
@@ -153,8 +149,8 @@ class CompositedLayerRasterInvalidatorTest
     EXPECT_EQ(PaintInvalidationReason::kIncremental, info.reason);           \
   } while (false)
 
-TEST_F(CompositedLayerRasterInvalidatorTest, LayerBounds) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, LayerBounds) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
   invalidator.SetTracksRasterInvalidations(true);
   auto artifact = Chunk(0).Build();
 
@@ -181,8 +177,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, LayerBounds) {
       PaintInvalidationReason::kPaintProperty, -new_layer_bounds.Location());
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunks) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, ReorderChunks) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
   auto artifact = Chunk(0).Chunk(1).Chunk(2).Build();
   invalidator.SetTracksRasterInvalidations(true);
   invalidator.Generate(artifact, kDefaultLayerBounds,
@@ -203,7 +199,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunks) {
   const auto& invalidations = TrackedRasterInvalidations(invalidator);
   ASSERT_EQ(8u, invalidations.size());
   // The first chunk should always match because otherwise we won't reuse the
-  // CompositedLayerRasterInvalidator (which is according to the first chunk's
+  // RasterInvalidator (which is according to the first chunk's
   // id). For matched chunk, we issue raster invalidations if any found by
   // PaintController.
   EXPECT_DISPLAY_ITEM_INVALIDATIONS(invalidations, 0, new_artifact, 0);
@@ -216,8 +212,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunks) {
                             PaintInvalidationReason::kChunkReordered);
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunkSubsequences) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, ReorderChunkSubsequences) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
   auto artifact = Chunk(0).Chunk(1).Chunk(2).Chunk(3).Chunk(4).Build();
   invalidator.SetTracksRasterInvalidations(true);
   invalidator.Generate(artifact, kDefaultLayerBounds,
@@ -243,7 +239,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunkSubsequences) {
   const auto& invalidations = TrackedRasterInvalidations(invalidator);
   ASSERT_EQ(12u, invalidations.size());
   // The first chunk should always match because otherwise we won't reuse the
-  // CompositedLayerRasterInvalidator (which is according to the first chunk's
+  // RasterInvalidator (which is according to the first chunk's
   // id). For matched chunk, we issue raster invalidations if any found by
   // PaintController.
   EXPECT_DISPLAY_ITEM_INVALIDATIONS(invalidations, 0, new_artifact, 0);
@@ -261,8 +257,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunkSubsequences) {
                             PaintInvalidationReason::kChunkReordered);
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, AppearAndDisappear) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, AppearAndDisappear) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
   auto artifact = Chunk(0).Chunk(1).Chunk(2).Build();
   invalidator.SetTracksRasterInvalidations(true);
   invalidator.Generate(artifact, kDefaultLayerBounds,
@@ -293,8 +289,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, AppearAndDisappear) {
                             PaintInvalidationReason::kChunkDisappeared);
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, AppearAtEnd) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, AppearAtEnd) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
   auto artifact = Chunk(0).Build();
   invalidator.SetTracksRasterInvalidations(true);
   invalidator.Generate(artifact, kDefaultLayerBounds,
@@ -319,8 +315,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, AppearAtEnd) {
                             PaintInvalidationReason::kChunkAppeared);
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, UncacheableChunks) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, UncacheableChunks) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
   auto artifact = Chunk(0).Chunk(1).Uncacheable().Chunk(2).Build();
 
   invalidator.SetTracksRasterInvalidations(true);
@@ -349,8 +345,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, UncacheableChunks) {
 }
 
 // Tests the path based on ClipPaintPropertyNode::Changed().
-TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, ClipPropertyChangeRounded) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
   FloatRoundedRect::Radii radii(FloatSize(1, 2), FloatSize(2, 3),
                                 FloatSize(3, 4), FloatSize(4, 5));
   FloatRoundedRect clip_rect(FloatRect(-1000, -1000, 2000, 2000), radii);
@@ -418,8 +414,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeRounded) {
 }
 
 // Tests the path detecting change of PaintChunkInfo::chunk_to_layer_clip.
-TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, ClipPropertyChangeSimple) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
   FloatRoundedRect clip_rect(-1000, -1000, 2000, 2000);
   auto clip0 = CreateClip(c0(), &t0(), clip_rect);
   auto clip1 = CreateClip(*clip0, &t0(), clip_rect);
@@ -516,8 +512,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChangeSimple) {
   clip1->ClearChangedToRoot();
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, TransformPropertyChange) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
 
   auto layer_transform = CreateTransform(t0(), TransformationMatrix().Scale(5));
   auto transform0 = CreateTransform(*layer_transform,
@@ -617,8 +613,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
   invalidator.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChange) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, TransformPropertyTinyChange) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
 
   auto layer_transform = CreateTransform(t0(), TransformationMatrix().Scale(5));
   auto chunk_transform = CreateTransform(
@@ -665,8 +661,8 @@ TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChange) {
   EXPECT_TRUE(invalidated);
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyTinyChangeScale) {
-  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+TEST_F(RasterInvalidatorTest, TransformPropertyTinyChangeScale) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
 
   auto layer_transform = CreateTransform(t0(), TransformationMatrix().Scale(5));
   auto chunk_transform =

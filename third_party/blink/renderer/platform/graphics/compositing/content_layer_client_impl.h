@@ -9,8 +9,8 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/picture_layer.h"
-#include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -82,7 +82,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
  private:
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;
   scoped_refptr<cc::DisplayItemList> cc_display_item_list_;
-  CompositedLayerRasterInvalidator raster_invalidator_;
+  RasterInvalidator raster_invalidator_;
   PropertyTreeState layer_state_;
 
   String debug_name_;

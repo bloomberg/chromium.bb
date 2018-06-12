@@ -65,12 +65,12 @@ class PictureLayer;
 namespace blink {
 
 class CompositorFilterOperations;
-class CompositedLayerRasterInvalidator;
 class Image;
 class JSONObject;
 class LinkHighlight;
 class PaintController;
 class RasterInvalidationTracking;
+class RasterInvalidator;
 class ScrollableArea;
 
 typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
@@ -371,7 +371,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void AddFlattenInheritedTransformJSON(JSONObject&) const;
   class LayersAsJSONArray;
 
-  CompositedLayerRasterInvalidator& EnsureRasterInvalidator();
+  RasterInvalidator& EnsureRasterInvalidator();
   void SetNeedsDisplayInRectInternal(const IntRect&);
 
   FloatSize VisualRectSubpixelOffset() const;
@@ -454,7 +454,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   };
   std::unique_ptr<LayerState> layer_state_;
 
-  std::unique_ptr<CompositedLayerRasterInvalidator> raster_invalidator_;
+  std::unique_ptr<RasterInvalidator> raster_invalidator_;
 
   base::WeakPtrFactory<GraphicsLayer> weak_ptr_factory_;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_COMPOSITED_LAYER_RASTER_INVALIDATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_COMPOSITED_LAYER_RASTER_INVALIDATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATOR_H_
 
 #include "third_party/blink/renderer/platform/graphics/compositing/chunk_to_layer_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
@@ -18,12 +18,11 @@ class PaintArtifact;
 class PaintChunkSubset;
 class IntRect;
 
-class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
+class PLATFORM_EXPORT RasterInvalidator {
  public:
   using RasterInvalidationFunction = std::function<void(const IntRect&)>;
 
-  CompositedLayerRasterInvalidator(
-      RasterInvalidationFunction raster_invalidation_function)
+  RasterInvalidator(RasterInvalidationFunction raster_invalidation_function)
       : raster_invalidation_function_(raster_invalidation_function) {}
 
   void SetTracksRasterInvalidations(bool);
@@ -58,10 +57,10 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
   size_t ApproximateUnsharedMemoryUsage() const;
 
  private:
-  friend class CompositedLayerRasterInvalidatorTest;
+  friend class RasterInvalidatorTest;
 
   struct PaintChunkInfo {
-    PaintChunkInfo(const CompositedLayerRasterInvalidator& invalidator,
+    PaintChunkInfo(const RasterInvalidator& invalidator,
                    const ChunkToLayerMapper& mapper,
                    const PaintChunk& chunk)
         : id(chunk.id),
@@ -141,4 +140,4 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_COMPOSITED_LAYER_RASTER_INVALIDATOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATOR_H_

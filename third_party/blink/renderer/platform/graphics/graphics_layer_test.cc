@@ -98,13 +98,12 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     return layer.PaintWithoutCommit(interest_rect);
   }
 
-  const CompositedLayerRasterInvalidator* GetInternalRasterInvalidator(
+  const RasterInvalidator* GetInternalRasterInvalidator(
       const GraphicsLayer& layer) {
     return layer.raster_invalidator_.get();
   }
 
-  CompositedLayerRasterInvalidator& EnsureRasterInvalidator(
-      GraphicsLayer& layer) {
+  RasterInvalidator& EnsureRasterInvalidator(GraphicsLayer& layer) {
     return layer.EnsureRasterInvalidator();
   }
 
