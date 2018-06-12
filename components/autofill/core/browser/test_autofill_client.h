@@ -33,6 +33,7 @@ class TestAutofillClient : public AutofillClient {
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
+  ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
@@ -75,16 +76,26 @@ class TestAutofillClient : public AutofillClient {
   bool IsAutofillSupported() override;
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
+  // Initializes UKM source from form_origin_. This needs to be called
+  // in unittests after calling Purge for ukm recorder to re-initialize
+  // sources.
+  void InitializeUKMSources();
 
   void SetPrefs(std::unique_ptr<PrefService> prefs) {
     prefs_ = std::move(prefs);
   }
 
-  void set_form_origin(const GURL& url) { form_origin_ = url; }
+  void set_form_origin(const GURL& url);
 
   void set_sync_service(syncer::SyncService* test_sync_service) {
     test_sync_service_ = test_sync_service;
   }
+
+  GURL form_origin() { return form_origin_; }
+
+  static void UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
+                              ukm::SourceId source_id,
+                              GURL url);
 
  private:
   identity::IdentityTestEnvironment identity_test_env_;
@@ -93,6 +104,7 @@ class TestAutofillClient : public AutofillClient {
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
   GURL form_origin_;
+  ukm::SourceId source_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

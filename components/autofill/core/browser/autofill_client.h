@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/risk_data_loader.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -109,6 +110,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets the UKM service associated with this client (for metrics).
   virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
+
+  // Gets the UKM source id associated with this client (for metrics).
+  virtual ukm::SourceId GetUkmSourceId() = 0;
 
   // Gets an AddressNormalizer instance (can be null).
   virtual AddressNormalizer* GetAddressNormalizer() = 0;

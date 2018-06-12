@@ -79,13 +79,6 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
   return previous_response;
 }
 
-ukm::SourceId NewUkmSourceWithUrl(ukm::UkmRecorder* ukm_recorder,
-                                  const GURL& url) {
-  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
-  AutofillMetrics::UpdateSourceURL(ukm_recorder, source_id, url);
-  return source_id;
-}
-
 // Reduce FormSignature space (in UKM) to a small range for privacy reasons.
 int64_t HashFormSignature(autofill::FormSignature form_signature) {
   return static_cast<uint64_t>(form_signature) % 1021;
@@ -623,14 +616,6 @@ AutofillMetrics::FormEvent GetCardNumberStatusFormEvent(
 }
 
 }  // namespace
-
-// static
-void AutofillMetrics::UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
-                                      ukm::SourceId source_id,
-                                      const GURL& url) {
-  if (ukm_recorder)
-    ukm_recorder->UpdateSourceURL(source_id, url);
-}
 
 // static
 void AutofillMetrics::LogSubmittedCardStateMetric(
@@ -1331,13 +1316,13 @@ void AutofillMetrics::LogShowedHttpNotSecureExplanation() {
 
 // static
 void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
+                                                ukm::SourceId source_id,
                                                 const GURL& url,
                                                 int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);
   DCHECK_LT(upload_decision_metrics, 1 << kNumCardUploadDecisionMetrics);
   if (!url.is_valid())
     return;
-  ukm::SourceId source_id = NewUkmSourceWithUrl(ukm_recorder, url);
   ukm::builders::Autofill_CardUploadDecision(source_id)
       .SetUploadDecision(upload_decision_metrics)
       .Record(ukm_recorder);
@@ -1346,6 +1331,7 @@ void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
 // static
 void AutofillMetrics::LogDeveloperEngagementUkm(
     ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
     const GURL& url,
     bool is_for_credit_card,
     std::set<FormType> form_types,
@@ -1356,7 +1342,7 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
             1 << NUM_DEVELOPER_ENGAGEMENT_METRICS);
   if (!url.is_valid())
     return;
-  ukm::SourceId source_id = NewUkmSourceWithUrl(ukm_recorder, url);
+
   ukm::builders::Autofill_DeveloperEngagement(source_id)
       .SetDeveloperEngagement(developer_engagement_metrics)
       .SetIsForCreditCard(is_for_credit_card)
@@ -1643,11 +1629,13 @@ AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
     : ukm_recorder_(ukm_recorder) {}
 
 void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
-    const GURL& url) {
+    const GURL& url,
+    const ukm::SourceId source_id) {
   if (ukm_recorder_ == nullptr)
     return;
 
   url_ = url;
+  source_id_ = source_id;
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
@@ -1657,9 +1645,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
     FormSignature form_signature) {
   if (!CanLog())
     return;
-
-  if (source_id_ == -1)
-    GetNewSourceID();
 
   ukm::builders::Autofill_InteractedWithForm(source_id_)
       .SetIsForCreditCard(is_for_credit_card)
@@ -1675,9 +1660,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
     const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
     return;
-
-  if (source_id_ == -1)
-    GetNewSourceID();
 
   ukm::builders::Autofill_SuggestionsShown(source_id_)
       .SetHeuristicType(static_cast<int>(field.heuristic_type()))
@@ -1695,9 +1677,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSelectedMaskedServerCard(
   if (!CanLog())
     return;
 
-  if (source_id_ == -1)
-    GetNewSourceID();
-
   ukm::builders::Autofill_SelectedMaskedServerCard(source_id_)
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form_parsed_timestamp))
@@ -1710,9 +1689,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
     const AutofillField& field) {
   if (!CanLog())
     return;
-
-  if (source_id_ == -1)
-    GetNewSourceID();
 
   ukm::builders::Autofill_SuggestionFilled(source_id_)
       .SetRecordType(record_type)
@@ -1728,9 +1704,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
     const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
     return;
-
-  if (source_id_ == -1)
-    GetNewSourceID();
 
   ukm::builders::Autofill_TextFieldDidChange(source_id_)
       .SetFieldTypeGroup(static_cast<int>(field.Type().group()))
@@ -1751,9 +1724,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldFillStatus(
     QualityMetricType metric_type) {
   if (!CanLog())
     return;
-
-  if (source_id_ == -1)
-    GetNewSourceID();
 
   ukm::builders::Autofill_FieldFillStatus(source_id_)
       .SetMillisecondsSinceFormParsed(
@@ -1780,9 +1750,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
   if (!CanLog())
     return;
 
-  if (source_id_ == -1)
-    GetNewSourceID();
-
   ukm::builders::Autofill_FieldTypeValidation(source_id_)
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form_parsed_timestamp))
@@ -1801,9 +1768,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::
                                                bool is_skipped) {
   if (!CanLog())
     return;
-
-  if (source_id_ == -1)
-    GetNewSourceID();
 
   ukm::builders::Autofill_HiddenRepresentationalFieldSkipDecision(source_id_)
       .SetFormSignature(HashFormSignature(form.form_signature()))
@@ -1837,9 +1801,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
   if (!CanLog())
     return;
 
-  if (source_id_ == -1)
-    GetNewSourceID();
-
   ukm::builders::Autofill_FormSubmitted builder(source_id_);
   builder.SetAutofillFormSubmittedState(static_cast<int>(state))
       .SetIsForCreditCard(is_for_credit_card)
@@ -1856,13 +1817,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
   builder.Record(ukm_recorder_);
 }
 
-void AutofillMetrics::FormInteractionsUkmLogger::UpdateSourceURL(
-    const GURL& url) {
-  url_ = url;
-  if (CanLog())
-    AutofillMetrics::UpdateSourceURL(ukm_recorder_, source_id_, url_);
-}
-
 bool AutofillMetrics::FormInteractionsUkmLogger::CanLog() const {
   return ukm_recorder_ && url_.is_valid();
 }
@@ -1874,11 +1828,6 @@ int64_t AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed(
   base::TimeTicks now =
       pinned_timestamp_.is_null() ? base::TimeTicks::Now() : pinned_timestamp_;
   return (now - form_parsed_timestamp).InMilliseconds();
-}
-
-void AutofillMetrics::FormInteractionsUkmLogger::GetNewSourceID() {
-  source_id_ = ukm_recorder_->GetNewSourceID();
-  AutofillMetrics::UpdateSourceURL(ukm_recorder_, source_id_, url_);
 }
 
 AutofillMetrics::UkmTimestampPin::UkmTimestampPin(

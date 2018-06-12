@@ -375,7 +375,8 @@ FormStructure::FormStructure(const FormData& form)
 
 FormStructure::~FormStructure() {}
 
-void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder) {
+void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder,
+                                            ukm::SourceId source_id) {
   const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
 
   // First, try to detect field types based on each field's |autocomplete|
@@ -419,8 +420,9 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder) {
 
   if (developer_engagement_metrics) {
     AutofillMetrics::LogDeveloperEngagementUkm(
-        ukm_recorder, main_frame_origin().GetURL(), IsCompleteCreditCardForm(),
-        GetFormTypes(), developer_engagement_metrics, form_signature());
+        ukm_recorder, source_id, main_frame_origin().GetURL(),
+        IsCompleteCreditCardForm(), GetFormTypes(),
+        developer_engagement_metrics, form_signature());
   }
 
   if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
@@ -869,9 +871,7 @@ void FormStructure::LogQualityMetrics(
             GetFormTypes(), did_autofill_some_possible_fields, elapsed);
       }
     }
-    if (form_interactions_ukm_logger->url() != main_frame_origin().GetURL())
-      form_interactions_ukm_logger->UpdateSourceURL(
-          main_frame_origin().GetURL());
+
     AutofillMetrics::LogAutofillFormSubmittedState(
         state, is_for_credit_card, GetFormTypes(), form_parsed_timestamp_,
         form_signature(), form_interactions_ukm_logger);

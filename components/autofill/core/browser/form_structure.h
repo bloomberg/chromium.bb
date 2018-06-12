@@ -59,9 +59,10 @@ class FormStructure {
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible
-  // types. If |ukm_recorder| is specified, logs UKM for the form structure
-  // corresponding to |source_url_|.
-  void DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder);
+  // types. If |ukm_recorder| and |source_id| is specified, logs UKM for
+  // the form structure corresponding to the source mapped from the |source_id|.
+  void DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder,
+                               ukm::SourceId source_id);
 
   // Encodes the proto |upload| request from this FormStructure.
   // In some cases, a |login_form_signature| is included as part of the upload.

@@ -1623,7 +1623,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
   // Setup the url for metrics that we will collect for this form.
   form_interactions_ukm_logger_->OnFormsParsed(
-      forms[0].main_frame_origin.GetURL());
+      forms[0].main_frame_origin.GetURL(), client_->GetUkmSourceId());
 
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;
@@ -1738,7 +1738,9 @@ bool AutofillManager::ParseForm(const FormData& form,
   form_structure->set_form_parsed_timestamp(TimeTicks::Now());
   form_structures_.push_back(std::move(form_structure));
   *parsed_form_structure = form_structures_.back().get();
-  (*parsed_form_structure)->DetermineHeuristicTypes(client_->GetUkmRecorder());
+  (*parsed_form_structure)
+      ->DetermineHeuristicTypes(client_->GetUkmRecorder(),
+                                client_->GetUkmSourceId());
   return true;
 }
 
