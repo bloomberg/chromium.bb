@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/optional.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 
@@ -153,11 +154,16 @@ void CrashMetricsReporter::CrashDumpProcessed(
                          &reported_counts);
       } else {
         DCHECK(android_oom_kill);
-        ReportCrashCount(
-            renderer_subframe
-                ? ProcessedCrashCounts::kRendererForegroundVisibleSubframeOom
-                : ProcessedCrashCounts::kRendererForegroundVisibleOom,
-            &reported_counts);
+        if (renderer_subframe) {
+          ReportCrashCount(
+              ProcessedCrashCounts::kRendererForegroundVisibleSubframeOom,
+              &reported_counts);
+        } else {
+          ReportCrashCount(ProcessedCrashCounts::kRendererForegroundVisibleOom,
+                           &reported_counts);
+          base::RecordAction(
+              base::UserMetricsAction("RendererForegroundMainFrameOOM"));
+        }
       }
     }
   }
