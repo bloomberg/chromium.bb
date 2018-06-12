@@ -1755,6 +1755,21 @@
             ]
         }
     ],
+    "IOSurfaceCapturer": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IOSurfaceCapturer"
+                    ]
+                }
+            ]
+        }
+    ],
     "ImportantSitesInCBD": [
         {
             "platforms": [
