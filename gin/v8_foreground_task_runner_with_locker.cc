@@ -71,7 +71,7 @@ void V8ForegroundTaskRunnerWithLocker::PostIdleTask(
     std::unique_ptr<v8::IdleTask> task) {
   DCHECK(IdleTasksEnabled());
   idle_task_runner()->PostIdleTask(
-      new IdleTaskWithLocker(isolate_, std::move(task)));
+      std::make_unique<IdleTaskWithLocker>(isolate_, std::move(task)));
 }
 
 }  // namespace gin

@@ -47,10 +47,10 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   explicit V8IdleTaskRunner(ThreadScheduler* scheduler)
       : scheduler_(scheduler) {}
   ~V8IdleTaskRunner() override = default;
-  void PostIdleTask(v8::IdleTask* task) override {
+  void PostIdleTask(std::unique_ptr<v8::IdleTask> task) override {
     DCHECK(RuntimeEnabledFeatures::V8IdleTasksEnabled());
-    scheduler_->PostIdleTask(
-        FROM_HERE, WTF::Bind(&v8::IdleTask::Run, base::WrapUnique(task)));
+    scheduler_->PostIdleTask(FROM_HERE,
+                             WTF::Bind(&v8::IdleTask::Run, std::move(task)));
   }
 
  private:
