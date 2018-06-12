@@ -24,12 +24,19 @@ const char kGetContainerAppIconMethod[] = "GetContainerAppIcon";
 const char kLaunchVshdMethod[] = "LaunchVshd";
 const char kGetLinuxPackageInfoMethod[] = "GetLinuxPackageInfo";
 const char kInstallLinuxPackageMethod[] = "InstallLinuxPackage";
+const char kCreateLxdContainerMethod[] = "CreateLxdContainer";
+const char kStartLxdContainerMethod[] = "StartLxdContainer";
+const char kGetLxdContainerUsernameMethod[] = "GetLxdContainerUsername";
+const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
 
 // Signals.
 const char kContainerStartedSignal[] = "ContainerStarted";
 const char kContainerShutdownSignal[] = "ContainerShutdown";
 const char kInstallLinuxPackageProgressSignal[] =
     "InstallLinuxPackageProgress";
+const char kLxdContainerCreatedSignal[] = "LxdContainerCreated";
+const char kLxdContainerDownloadingSignal[] = "LxdContainerDownloading";
+const char kTremplinStartedSignal[] = "TremplinStarted";
 
 }  // namespace cicerone
 }  // namespace vm_tools

@@ -79,6 +79,15 @@ message IsContainerRunningResponse {
   bool container_running = 1;
 }
 
+// Message used in the signal for when tremplin has started.
+message TremplinStartedSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+}
+
 // Message used in the signal for when a container has started up.
 message ContainerStartedSignal {
   // Name of the VM the container is in.
@@ -318,4 +327,214 @@ message InstallLinuxPackageProgressSignal {
   // some cases (that's how it comes out of PackageKit, for example in the case
   // of an unsatisfiable dependency).
   string failure_details = 6;
+}
+
+
+// Request for creating an LXD container.
+message CreateLxdContainerRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container to start within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // LXD image server URL. Only simplestreams is supported for now.
+  string image_server = 4;
+
+  // LXD image alias.
+  string image_alias = 5;
+}
+
+// Response for creating an LXD container.
+message CreateLxdContainerResponse {
+  enum Status {
+    // The status of creating the container is unknown.
+    UNKNOWN = 0;
+
+    // The container is now being created. An LxdContainerCreated signal will
+    // relay the final result.
+    CREATING = 1;
+
+    // A container with this name already exists.
+    EXISTS = 2;
+
+    // The container could not be created.
+    FAILED = 3;
+  }
+
+  // Container creation status.
+  Status status = 1;
+
+  // The failure_reason if the container could not be created.
+  string failure_reason = 2;
+}
+
+// Message used in the LxdContainerCreated signal for the outcome of an
+// LxdCreateContainer message.
+message LxdContainerCreatedSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // The container creation status is unknown.
+    UNKNOWN = 0;
+
+    // The container was successfully created.
+    CREATED = 1;
+
+    // The container download timed out.
+    DOWNLOAD_TIMED_OUT = 2;
+
+    // The container creation was cancelled.
+    CANCELLED = 3;
+
+    // The container creation failed for an unspecified reason.
+    FAILED = 4;
+  }
+
+  // Container creation status.
+  Status status = 4;
+
+  // The failure_reason if the container was not successfully created.
+  string failure_reason = 5;
+}
+
+// Message used in the signal for when a container is downloading.
+message LxdContainerDownloadingSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Container download progress, as a percentage.
+  int32 download_progress = 4;
+}
+
+// Request for starting an LXD container.
+message StartLxdContainerRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container to start within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+// Response for starting an LXD container.
+message StartLxdContainerResponse {
+  enum Status {
+    // The status of starting the container is unknown.
+    UNKNOWN = 0;
+
+    // The container has started.
+    STARTED = 1;
+
+    // The container was already running.
+    RUNNING = 2;
+
+    // The container could not be started.
+    FAILED = 3;
+  }
+
+  // Container startup status.
+  Status status = 1;
+
+  // The failure_reason if the container could not be started.
+  string failure_reason = 2;
+}
+
+// Request for getting the primary user for an LXD container.
+message GetLxdContainerUsernameRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container to get the primary user for.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+// Response for getting the primary user for an LXD container.
+message GetLxdContainerUsernameResponse {
+  enum Status {
+    // The status is unknown.
+    UNKNOWN = 0;
+
+    // The primary username is stored in the username field.
+    SUCCESS = 1;
+
+    // A container with the specified name doesn't exist.
+    CONTAINER_NOT_FOUND = 2;
+
+    // The container is not running, so the username could not be found.
+    CONTAINER_NOT_RUNNING = 3;
+
+    // The primary user doesn't exist.
+    USER_NOT_FOUND = 4;
+
+    // Some part of the operation failed.
+    FAILED = 5;
+  }
+
+  // Status of getting the primary username.
+  Status status = 1;
+
+  // The primary username of the container, if successful.
+  string username = 2;
+
+  // The failure_reason if the username could not be retrieved.
+  string failure_reason = 3;
+}
+// Request for setting up the user for an LXD container.
+message SetUpLxdContainerUserRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container to start within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Username for the first user in the container.
+  string container_username = 4;
+}
+
+// Response for setting up the user on an LXD container.
+message SetUpLxdContainerUserResponse {
+  enum Status {
+    // The status of setting up the user is unknown.
+    UNKNOWN = 0;
+
+    // The user has been set up sucessfully.
+    SUCCESS = 1;
+
+    // The user already exists.
+    EXISTS = 2;
+
+    // Setting up the user failed.
+    FAILED = 3;
+  }
+
+  // Status of setting up the user.
+  Status status = 1;
+
+  // The failure_reason if the user was not set up successfully.
+  string failure_reason = 2;
 }
