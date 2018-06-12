@@ -891,7 +891,7 @@ class HashTable final
   static const unsigned kMinLoad = 6;
 
   unsigned TableSizeMask() const {
-    size_t mask = table_size_ - 1;
+    unsigned mask = table_size_ - 1;
     DCHECK_EQ((mask & table_size_), 0u);
     return mask;
   }
