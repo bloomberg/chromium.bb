@@ -182,6 +182,7 @@
 # http://crbug.com/841309
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromResourceRequest
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
+-VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromSubresourceRequest
 
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
