@@ -348,9 +348,9 @@ void HTMLTableElement::CollectStyleForPresentationAttribute(
     if (!value.IsEmpty()) {
       if (DeprecatedEqualIgnoringCase(value, "center")) {
         AddPropertyToPresentationAttributeStyle(
-            style, CSSPropertyWebkitMarginStart, CSSValueAuto);
+            style, CSSPropertyMarginInlineStart, CSSValueAuto);
         AddPropertyToPresentationAttributeStyle(
-            style, CSSPropertyWebkitMarginEnd, CSSValueAuto);
+            style, CSSPropertyMarginInlineEnd, CSSValueAuto);
       } else {
         AddPropertyToPresentationAttributeStyle(style, CSSPropertyFloat, value);
       }

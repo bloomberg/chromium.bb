@@ -1434,6 +1434,10 @@ const std::string Converter::kPropertyLookupTable[] = {
     "stop-color",
     "stroke-dasharray",
     "-webkit-line-clamp",
+    "margin-block-start",
+    "margin-block-end",
+    "margin-inline-start",
+    "margin-inline-end",
     "INVALID_PROPERTY",
 };
 

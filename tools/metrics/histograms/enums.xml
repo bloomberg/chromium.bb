@@ -29308,10 +29308,10 @@ Called by update_use_counter_css.py.-->
   <int value="267" label="webkit-margin-bottom-collapse"/>
   <int value="268" label="webkit-margin-top-collapse"/>
   <int value="269" label="webkit-margin-collapse"/>
-  <int value="270" label="webkit-margin-after"/>
-  <int value="271" label="webkit-margin-before"/>
-  <int value="272" label="webkit-margin-end"/>
-  <int value="273" label="webkit-margin-start"/>
+  <int value="270" label="alias-webkit-margin-after"/>
+  <int value="271" label="alias-webkit-margin-before"/>
+  <int value="272" label="alias-webkit-margin-end"/>
+  <int value="273" label="alias-webkit-margin-start"/>
   <int value="274" label="webkit-marquee"/>
   <int value="275" label="webkit-marquee-direction"/>
   <int value="276" label="webkit-marquee-increment"/>
@@ -29632,6 +29632,10 @@ Called by update_use_counter_css.py.-->
   <int value="591" label="row-gap"/>
   <int value="592" label="gap"/>
   <int value="593" label="viewport-fit"/>
+  <int value="594" label="margin-block-start"/>
+  <int value="595" label="margin-block-end"/>
+  <int value="596" label="margin-inline-start"/>
+  <int value="597" label="margin-inline-end"/>
 </enum>
 
 <enum name="MappedEditingCommands">

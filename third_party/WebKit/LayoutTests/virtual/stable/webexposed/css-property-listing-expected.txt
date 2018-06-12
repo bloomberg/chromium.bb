@@ -36,13 +36,9 @@ All changes to this list should go through Blink's feature review process: http:
     -webkit-locale
     -webkit-logical-height
     -webkit-logical-width
-    -webkit-margin-after
     -webkit-margin-after-collapse
-    -webkit-margin-before
     -webkit-margin-before-collapse
     -webkit-margin-bottom-collapse
-    -webkit-margin-end
-    -webkit-margin-start
     -webkit-margin-top-collapse
     -webkit-mask-box-image-outset
     -webkit-mask-box-image-repeat
@@ -224,7 +220,11 @@ All changes to this list should go through Blink's feature review process: http:
     list-style-image
     list-style-position
     list-style-type
+    margin-block-end
+    margin-block-start
     margin-bottom
+    margin-inline-end
+    margin-inline-start
     margin-left
     margin-right
     margin-top
@@ -705,6 +705,14 @@ All changes to this list should go through Blink's feature review process: http:
         font-feature-settings
     -webkit-justify-content
         justify-content
+    -webkit-margin-after
+        margin-block-end
+    -webkit-margin-before
+        margin-block-start
+    -webkit-margin-end
+        margin-inline-end
+    -webkit-margin-start
+        margin-inline-start
     -webkit-opacity
         opacity
     -webkit-order

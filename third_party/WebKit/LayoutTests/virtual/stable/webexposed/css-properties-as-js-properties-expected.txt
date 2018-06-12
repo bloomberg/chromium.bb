@@ -175,7 +175,11 @@ listStyleImage
 listStylePosition
 listStyleType
 margin
+marginBlockEnd
+marginBlockStart
 marginBottom
+marginInlineEnd
+marginInlineStart
 marginLeft
 marginRight
 marginTop

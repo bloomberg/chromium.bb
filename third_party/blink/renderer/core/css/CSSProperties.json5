@@ -4090,6 +4090,42 @@
       keywords: ["none"],
       typedom_types: ["Keyword", "Length", "Percentage"],
     },
+    {
+      name: "margin-inline-start",
+      property_methods: ["ParseSingleValue"],
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "marginShorthand",
+      },
+      keywords: ["auto"]
+    },
+    {
+      name: "margin-inline-end",
+      property_methods: ["ParseSingleValue"],
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "marginShorthand",
+      },
+      keywords: ["auto"]
+    },
+    {
+      name: "margin-block-start",
+      property_methods: ["ParseSingleValue"],
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "marginShorthand",
+      },
+      keywords: ["auto"]
+    },
+    {
+      name: "margin-block-end",
+      property_methods: ["ParseSingleValue"],
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "marginShorthand",
+      },
+      keywords: ["auto"]
+    },
 
     // Non-standard direction aware properties
 
@@ -4187,35 +4223,19 @@
     },
     {
       name: "-webkit-margin-end",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "end",
-        shorthand_for_physical_side: "marginShorthand",
-      },
+      alias_for: "margin-inline-end",
     },
     {
       name: "-webkit-margin-start",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "start",
-        shorthand_for_physical_side: "marginShorthand",
-      },
+      alias_for: "margin-inline-start",
     },
     {
       name: "-webkit-margin-before",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "before",
-        shorthand_for_physical_side: "marginShorthand",
-      },
+      alias_for: "margin-block-start",
     },
     {
       name: "-webkit-margin-after",
-      property_methods: ["ParseSingleValue"],
-      direction_aware_options: {
-        logical_side: "after",
-        shorthand_for_physical_side: "marginShorthand",
-      },
+      alias_for: "margin-block-end",
     },
     {
       name: "-webkit-padding-end",
