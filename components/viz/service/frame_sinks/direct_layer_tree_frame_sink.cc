@@ -233,11 +233,6 @@ void DirectLayerTreeFrameSink::DidPresentCompositorFrame(
   client_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
-void DirectLayerTreeFrameSink::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  client_->DidDiscardCompositorFrame(presentation_token);
-}
-
 void DirectLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   begin_frame_source_->OnBeginFrame(args);
 }

@@ -188,12 +188,14 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   EXPECT_EQ(1, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS,
             last_swap_buffers_result_);
-  EXPECT_EQ(gfx::PresentationFeedback(), last_presentation_feedback_);
+  EXPECT_EQ(static_cast<uint32_t>(gfx::PresentationFeedback::Flags::kFailure),
+            last_presentation_feedback_.flags);
 
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(plane)),
       base::BindOnce(&DrmWindowTest::OnSwapBuffers, base::Unretained(this)));
   EXPECT_EQ(2, on_swap_buffers_count_);
   EXPECT_EQ(gfx::SwapResult::SWAP_FAILED, last_swap_buffers_result_);
-  EXPECT_EQ(gfx::PresentationFeedback(), last_presentation_feedback_);
+  EXPECT_EQ(static_cast<uint32_t>(gfx::PresentationFeedback::Flags::kFailure),
+            last_presentation_feedback_.flags);
 }

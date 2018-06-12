@@ -47,7 +47,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     virtual void DidPresentCompositorFrame(
         uint32_t presentation_token,
         const gfx::PresentationFeedback& feedback) = 0;
-    virtual void DidDiscardCompositorFrame(uint32_t presentation_token) = 0;
     virtual void ReclaimResources(
         const std::vector<viz::ReturnedResource>&) = 0;
     virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
@@ -118,7 +117,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
       const gfx::PresentationFeedback& feedback) override;
-  void DidDiscardCompositorFrame(uint32_t presentation_token) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;

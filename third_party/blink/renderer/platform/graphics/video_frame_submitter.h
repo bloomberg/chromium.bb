@@ -69,7 +69,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
       ::gfx::mojom::blink::PresentationFeedbackPtr feedback) final;
-  void DidDiscardCompositorFrame(uint32_t presentation_token) final;
   void OnBeginFrame(const viz::BeginFrameArgs&) override;
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(

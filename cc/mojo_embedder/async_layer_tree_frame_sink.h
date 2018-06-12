@@ -99,7 +99,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
       const gfx::PresentationFeedback& feedback) override;
-  void DidDiscardCompositorFrame(uint32_t presentation_token) override;
   void OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(

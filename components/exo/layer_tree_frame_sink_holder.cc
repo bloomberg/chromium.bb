@@ -158,12 +158,6 @@ void LayerTreeFrameSinkHolder::DidPresentCompositorFrame(
     surface_tree_host_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
-void LayerTreeFrameSinkHolder::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  if (surface_tree_host_)
-    surface_tree_host_->DidDiscardCompositorFrame(presentation_token);
-}
-
 void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
   last_frame_resources_.clear();
   for (auto& callback : release_callbacks_)

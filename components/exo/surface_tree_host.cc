@@ -174,10 +174,6 @@ void SurfaceTreeHost::DidPresentCompositorFrame(
   active_presentation_callbacks_.erase(it);
 }
 
-void SurfaceTreeHost::DidDiscardCompositorFrame(uint32_t presentation_token) {
-  DidPresentCompositorFrame(presentation_token, gfx::PresentationFeedback());
-}
-
 void SurfaceTreeHost::SetBeginFrameSource(
     viz::BeginFrameSource* begin_frame_source) {
   if (needs_begin_frame_) {

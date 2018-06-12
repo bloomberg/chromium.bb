@@ -29,7 +29,6 @@ class MockCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
                void(const std::vector<ReturnedResource>&));
   MOCK_METHOD2(DidPresentCompositorFrame,
                void(uint32_t, const gfx::PresentationFeedback&));
-  MOCK_METHOD1(DidDiscardCompositorFrame, void(uint32_t));
   MOCK_METHOD1(OnBeginFrame, void(const BeginFrameArgs&));
   MOCK_METHOD1(ReclaimResources, void(const std::vector<ReturnedResource>&));
   MOCK_METHOD2(WillDrawSurface, void(const LocalSurfaceId&, const gfx::Rect&));

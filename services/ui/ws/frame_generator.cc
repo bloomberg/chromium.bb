@@ -94,10 +94,6 @@ void FrameGenerator::DidPresentCompositorFrame(
   NOTIMPLEMENTED();
 }
 
-void FrameGenerator::DidDiscardCompositorFrame(uint32_t presentation_token) {
-  NOTIMPLEMENTED();
-}
-
 void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
   DCHECK(compositor_frame_sink_);
   current_begin_frame_ack_ = viz::BeginFrameAck(

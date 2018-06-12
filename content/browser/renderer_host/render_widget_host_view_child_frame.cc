@@ -601,11 +601,7 @@ void RenderWidgetHostViewChildFrame::DidPresentCompositorFrame(
   renderer_compositor_frame_sink_->DidPresentCompositorFrame(presentation_token,
                                                              feedback);
 }
-void RenderWidgetHostViewChildFrame::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  renderer_compositor_frame_sink_->DidDiscardCompositorFrame(
-      presentation_token);
-}
+
 void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   ResetCompositorFrameSinkSupport();

@@ -58,11 +58,6 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void DidPresentCompositorFrame(uint32_t presentation_token,
                                  const gfx::PresentationFeedback& feedback);
 
-  // Call this to indicate that the CompositorFrame with given
-  // |presentation_token| has been discard. It has not been and will not be
-  // presented to user.
-  void DidDiscardCompositorFrame(uint32_t presentation_token);
-
   // Called when the begin frame source has changed.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
 

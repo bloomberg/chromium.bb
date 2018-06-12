@@ -1785,11 +1785,6 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
       frame_token, std::move(all_callbacks), feedback);
 }
 
-void LayerTreeHostImpl::DidDiscardCompositorFrame(uint32_t frame_token) {
-  TRACE_EVENT_INSTANT0("cc,benchmark", "FrameDiscarded",
-                       TRACE_EVENT_SCOPE_THREAD);
-}
-
 void LayerTreeHostImpl::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   resource_provider_.ReceiveReturnsFromParent(resources);

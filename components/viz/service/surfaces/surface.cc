@@ -519,8 +519,10 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
   if (frame_data->draw_callback)
     std::move(frame_data->draw_callback).Run();
 
-  if (frame_data->presented_callback)
-    std::move(frame_data->presented_callback).Run(gfx::PresentationFeedback());
+  if (frame_data->presented_callback) {
+    std::move(frame_data->presented_callback)
+        .Run(gfx::PresentationFeedback::Failure());
+  }
 }
 
 void Surface::ClearCopyRequests() {

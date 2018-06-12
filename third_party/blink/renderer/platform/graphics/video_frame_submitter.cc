@@ -309,9 +309,6 @@ void VideoFrameSubmitter::DidPresentCompositorFrame(
     uint32_t presentation_token,
     ::gfx::mojom::blink::PresentationFeedbackPtr feedback) {}
 
-void VideoFrameSubmitter::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {}
-
 void VideoFrameSubmitter::DidAllocateSharedBitmap(
     mojo::ScopedSharedBufferHandle buffer,
     const viz::SharedBitmapId& id) {

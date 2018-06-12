@@ -332,11 +332,6 @@ void DelegatedFrameHostAndroid::DidPresentCompositorFrame(
   client_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
-void DelegatedFrameHostAndroid::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  client_->DidDiscardCompositorFrame(presentation_token);
-}
-
 void DelegatedFrameHostAndroid::OnBeginFrame(const viz::BeginFrameArgs& args) {
   if (enable_viz_) {
     NOTREACHED();

@@ -63,7 +63,6 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
       ::gfx::mojom::blink::PresentationFeedbackPtr feedback) final;
-  void DidDiscardCompositorFrame(uint32_t presentation_token) final;
   void OnBeginFrame(const viz::BeginFrameArgs&) final;
   void OnBeginFramePausedChanged(bool paused) final{};
   void ReclaimResources(

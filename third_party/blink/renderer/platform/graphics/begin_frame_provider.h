@@ -46,9 +46,6 @@ class PLATFORM_EXPORT BeginFrameProvider
       ::gfx::mojom::blink::PresentationFeedbackPtr feedback) final {
     NOTIMPLEMENTED();
   }
-  void DidDiscardCompositorFrame(uint32_t presentation_token) final {
-    NOTIMPLEMENTED();
-  }
   void OnBeginFrame(const viz::BeginFrameArgs&) final;
   void OnBeginFramePausedChanged(bool paused) final {}
   void ReclaimResources(

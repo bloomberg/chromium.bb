@@ -15,19 +15,6 @@ namespace gfx {
 // |SwapBuffersWithBounds|, |PostSubBuffer|, |PostSubBufferAsync|,
 // |CommitOverlayPlanes|,|CommitOverlayPlanesAsync|, etc.
 struct PresentationFeedback {
-  PresentationFeedback() = default;
-  PresentationFeedback(base::TimeTicks timestamp,
-                       base::TimeDelta interval,
-                       uint32_t flags)
-      : timestamp(timestamp), interval(interval), flags(flags) {}
-
-  // The time when a buffer begins scan-out. If a buffer is never presented on
-  // a screen, the |timestamp| will be set to 0.
-  base::TimeTicks timestamp;
-
-  // An estimated interval from the |timestamp| to the next refresh.
-  base::TimeDelta interval;
-
   enum Flags {
     // The presentation was synchronized to VSYNC.
     kVSync = 1 << 0,
@@ -45,7 +32,28 @@ struct PresentationFeedback {
     // cases include direct scanout of a fullscreen surface and a surface on a
     // hardware overlay.
     kZeroCopy = 1 << 3,
+
+    // The presentation of this update failed. |timestamp| is the time of the
+    // failure.
+    kFailure = 1 << 4,
   };
+
+  PresentationFeedback() = default;
+  PresentationFeedback(base::TimeTicks timestamp,
+                       base::TimeDelta interval,
+                       uint32_t flags)
+      : timestamp(timestamp), interval(interval), flags(flags) {}
+
+  static PresentationFeedback Failure() {
+    return {base::TimeTicks::Now(), base::TimeDelta(), Flags::kFailure};
+  }
+
+  // The time when a buffer begins scan-out. If a buffer is never presented on
+  // a screen, the |timestamp| will be set to the time of the failure.
+  base::TimeTicks timestamp;
+
+  // An estimated interval from the |timestamp| to the next refresh.
+  base::TimeDelta interval;
 
   // A combination of Flags. It indicates the kind of the |timestamp|.
   uint32_t flags = 0;

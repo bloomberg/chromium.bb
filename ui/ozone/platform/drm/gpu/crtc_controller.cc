@@ -39,7 +39,7 @@ CrtcController::~CrtcController() {
       // request with an empty presentation feedback which means the buffer
       // is never presented on a screen.
       SignalPageFlipRequest(gfx::SwapResult::SWAP_ACK,
-                            gfx::PresentationFeedback());
+                            gfx::PresentationFeedback::Failure());
     }
   }
 }
@@ -95,7 +95,7 @@ bool CrtcController::SchedulePageFlip(
             << primary->buffer->GetSize().ToString() << " for"
             << " crtc=" << crtc_ << " connector=" << connector_;
     page_flip_request->Signal(gfx::SwapResult::SWAP_ACK,
-                              gfx::PresentationFeedback());
+                              gfx::PresentationFeedback::Failure());
     return true;
   }
 
@@ -103,7 +103,7 @@ bool CrtcController::SchedulePageFlip(
                                                   this)) {
     PLOG(ERROR) << "Failed to assign overlay planes for crtc " << crtc_;
     page_flip_request->Signal(gfx::SwapResult::SWAP_FAILED,
-                              gfx::PresentationFeedback());
+                              gfx::PresentationFeedback::Failure());
     return false;
   }
 

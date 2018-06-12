@@ -470,11 +470,7 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
     const gfx::PresentationFeedback& feedback) {
   DCHECK(presentation_token);
   if (client_) {
-    bool presented = !feedback.timestamp.is_null();
-    if (presented)
-      client_->DidPresentCompositorFrame(presentation_token, feedback);
-    else
-      client_->DidDiscardCompositorFrame(presentation_token);
+    client_->DidPresentCompositorFrame(presentation_token, feedback);
   }
 }
 
@@ -487,7 +483,8 @@ void CompositorFrameSinkSupport::DidRejectCompositorFrame(
   ReturnResources(resources);
   DidReceiveCompositorFrameAck();
   if (request_presentation_feedback) {
-    DidPresentCompositorFrame(presentation_token, gfx::PresentationFeedback());
+    DidPresentCompositorFrame(presentation_token,
+                              gfx::PresentationFeedback::Failure());
   }
 }
 

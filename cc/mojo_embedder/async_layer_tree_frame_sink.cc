@@ -192,12 +192,6 @@ void AsyncLayerTreeFrameSink::DidPresentCompositorFrame(
   client_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
-void AsyncLayerTreeFrameSink::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->DidDiscardCompositorFrame(presentation_token);
-}
-
 void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
   if (!needs_begin_frames_) {
     // We had a race with SetNeedsBeginFrame(false) and still need to let the
