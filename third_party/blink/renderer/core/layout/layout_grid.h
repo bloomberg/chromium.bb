@@ -36,9 +36,19 @@
 
 namespace blink {
 
-struct ContentAlignmentData;
 struct GridArea;
 struct GridSpan;
+
+struct ContentAlignmentData {
+ public:
+  ContentAlignmentData() = default;
+  bool IsValid() { return position_offset >= 0 && distribution_offset >= 0; }
+
+  LayoutUnit position_offset = LayoutUnit(-1);
+  LayoutUnit distribution_offset = LayoutUnit(-1);
+
+  DISALLOW_COPY_AND_ASSIGN(ContentAlignmentData);
+};
 
 enum GridAxisPosition { kGridAxisStart, kGridAxisEnd, kGridAxisCenter };
 
@@ -230,10 +240,10 @@ class LayoutGrid final : public LayoutBlock {
   GridAxisPosition RowAxisPositionForChild(const LayoutBox&) const;
   LayoutUnit RowAxisOffsetForChild(const LayoutBox&) const;
   LayoutUnit ColumnAxisOffsetForChild(const LayoutBox&) const;
-  ContentAlignmentData ComputeContentPositionAndDistributionOffset(
+  void ComputeContentPositionAndDistributionOffset(
       GridTrackSizingDirection,
       const LayoutUnit& available_free_space,
-      unsigned number_of_grid_tracks) const;
+      unsigned number_of_grid_tracks);
   LayoutPoint GridAreaLogicalPosition(const GridArea&) const;
   LayoutPoint FindChildLogicalPosition(const LayoutBox&) const;
 
@@ -294,6 +304,7 @@ class LayoutGrid final : public LayoutBlock {
 
   size_t GridItemSpan(const LayoutBox&, GridTrackSizingDirection);
 
+  size_t NonCollapsedTracks(GridTrackSizingDirection) const;
   size_t NumTracks(GridTrackSizingDirection, const Grid&) const;
 
   static LayoutUnit OverrideContainingBlockContentSizeForChild(
@@ -310,8 +321,8 @@ class LayoutGrid final : public LayoutBlock {
 
   Vector<LayoutUnit> row_positions_;
   Vector<LayoutUnit> column_positions_;
-  LayoutUnit offset_between_columns_;
-  LayoutUnit offset_between_rows_;
+  ContentAlignmentData offset_between_columns_;
+  ContentAlignmentData offset_between_rows_;
   Vector<LayoutBox*> grid_items_overflowing_grid_area_;
 
   typedef HashMap<const LayoutBox*, base::Optional<size_t>>

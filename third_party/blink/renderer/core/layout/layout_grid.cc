@@ -42,21 +42,6 @@
 
 namespace blink {
 
-struct ContentAlignmentData {
-  STACK_ALLOCATED();
-
- public:
-  ContentAlignmentData() = default;
-  ;
-  ContentAlignmentData(LayoutUnit position, LayoutUnit distribution)
-      : position_offset(position), distribution_offset(distribution) {}
-
-  bool IsValid() { return position_offset >= 0 && distribution_offset >= 0; }
-
-  LayoutUnit position_offset = LayoutUnit(-1);
-  LayoutUnit distribution_offset = LayoutUnit(-1);
-};
-
 LayoutGrid::LayoutGrid(Element* element)
     : LayoutBlock(element),
       grid_(Grid::Create(this)),
@@ -330,6 +315,11 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     // resolve heights properly (like for positioned items for example).
     ComputeTrackSizesForDefiniteSize(kForColumns, available_space_for_columns);
 
+    // 1.5- Compute Content Distribution offsets for column tracks
+    ComputeContentPositionAndDistributionOffset(
+        kForColumns, track_sizing_algorithm_.FreeSpace(kForColumns).value(),
+        NonCollapsedTracks(kForColumns));
+
     // 2- Next, the track sizing algorithm resolves the sizes of the grid rows,
     // using the grid column sizes calculated in the previous step.
     if (CachedHasDefiniteLogicalHeight()) {
@@ -354,6 +344,11 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
       track_sizing_algorithm_.SetFreeSpace(
           kForRows, LogicalHeight() - track_based_logical_height);
     }
+
+    // 2.5- Compute Content Distribution offsets for rows tracks
+    ComputeContentPositionAndDistributionOffset(
+        kForRows, track_sizing_algorithm_.FreeSpace(kForRows).value(),
+        NonCollapsedTracks(kForRows));
 
     // 3- If the min-content contribution of any grid items have changed based
     // on the row sizes calculated in step 2, steps 1 and 2 are repeated with
@@ -1152,7 +1147,8 @@ Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
   auto& positions = is_row_axis ? column_positions_ : row_positions_;
   size_t num_positions = positions.size();
   LayoutUnit offset_between_tracks =
-      is_row_axis ? offset_between_columns_ : offset_between_rows_;
+      is_row_axis ? offset_between_columns_.distribution_offset
+                  : offset_between_rows_.distribution_offset;
 
   Vector<LayoutUnit> tracks;
   if (num_positions < 2)
@@ -1391,9 +1387,8 @@ void LayoutGrid::PopulateGridPositionsForDirection(
   size_t number_of_collapsed_tracks =
       has_collapsed_tracks ? grid_->AutoRepeatEmptyTracks(direction)->size()
                            : 0;
-  ContentAlignmentData offset = ComputeContentPositionAndDistributionOffset(
-      direction, track_sizing_algorithm_.FreeSpace(direction).value(),
-      number_of_tracks - number_of_collapsed_tracks);
+  const auto& offset =
+      direction == kForColumns ? offset_between_columns_ : offset_between_rows_;
   auto& positions = is_row_axis ? column_positions_ : row_positions_;
   positions.resize(number_of_lines);
   auto border_and_padding =
@@ -1437,9 +1432,6 @@ void LayoutGrid::PopulateGridPositionsForDirection(
       positions[last_line] += gap_accumulator - offset_accumulator;
     }
   }
-  auto& offset_between_tracks =
-      is_row_axis ? offset_between_columns_ : offset_between_rows_;
-  offset_between_tracks = offset.distribution_offset;
 }
 
 static LayoutUnit ComputeOverflowAlignmentOffset(OverflowAlignment overflow,
@@ -2028,7 +2020,8 @@ LayoutUnit LayoutGrid::GridAreaBreadthForOutOfFlowChild(
       DCHECK(!grid_->NeedsItemsPlacement());
       end -= GuttersSize(*grid_, direction, end_line - 1, 2,
                          available_size_for_gutters);
-      end -= is_row_axis ? offset_between_columns_ : offset_between_rows_;
+      end -= is_row_axis ? offset_between_columns_.distribution_offset
+                         : offset_between_rows_.distribution_offset;
     }
   }
   // TODO (lajava): Is expectable that in some cases 'end' is smaller than
@@ -2135,7 +2128,8 @@ ContentPosition static ResolveContentDistributionFallback(
   return ContentPosition::kNormal;
 }
 
-static ContentAlignmentData ContentDistributionOffset(
+static void ComputeContentDistributionOffset(
+    ContentAlignmentData& offset,
     const LayoutUnit& available_free_space,
     ContentPosition& fallback_position,
     ContentDistributionType distribution,
@@ -2144,30 +2138,41 @@ static ContentAlignmentData ContentDistributionOffset(
       fallback_position == ContentPosition::kNormal)
     fallback_position = ResolveContentDistributionFallback(distribution);
 
+  // Initialize to an invalid offset.
+  offset.position_offset = LayoutUnit(-1);
+  offset.distribution_offset = LayoutUnit(-1);
   if (available_free_space <= 0)
-    return {};
+    return;
 
+  LayoutUnit position_offset;
   LayoutUnit distribution_offset;
   switch (distribution) {
     case ContentDistributionType::kSpaceBetween:
       if (number_of_grid_tracks < 2)
-        return {};
-      return {LayoutUnit(), available_free_space / (number_of_grid_tracks - 1)};
+        return;
+      distribution_offset = available_free_space / (number_of_grid_tracks - 1);
+      position_offset = LayoutUnit();
+      break;
     case ContentDistributionType::kSpaceAround:
       if (number_of_grid_tracks < 1)
-        return {};
+        return;
       distribution_offset = available_free_space / number_of_grid_tracks;
-      return {distribution_offset / 2, distribution_offset};
+      position_offset = distribution_offset / 2;
+      break;
     case ContentDistributionType::kSpaceEvenly:
       distribution_offset = available_free_space / (number_of_grid_tracks + 1);
-      return {distribution_offset, distribution_offset};
+      position_offset = distribution_offset;
+      break;
     case ContentDistributionType::kStretch:
     case ContentDistributionType::kDefault:
-      return {};
+      return;
+    default:
+      NOTREACHED();
+      return;
   }
 
-  NOTREACHED();
-  return {};
+  offset.position_offset = position_offset;
+  offset.distribution_offset = distribution_offset;
 }
 
 StyleContentAlignmentData LayoutGrid::ContentAlignment(
@@ -2178,71 +2183,93 @@ StyleContentAlignmentData LayoutGrid::ContentAlignment(
                                         ContentAlignmentNormalBehavior());
 }
 
-ContentAlignmentData LayoutGrid::ComputeContentPositionAndDistributionOffset(
+void LayoutGrid::ComputeContentPositionAndDistributionOffset(
     GridTrackSizingDirection direction,
     const LayoutUnit& available_free_space,
-    unsigned number_of_grid_tracks) const {
+    unsigned number_of_grid_tracks) {
+  auto& offset =
+      direction == kForColumns ? offset_between_columns_ : offset_between_rows_;
   StyleContentAlignmentData content_alignment_data =
       ContentAlignment(direction);
   ContentPosition position = content_alignment_data.GetPosition();
   // If <content-distribution> value can't be applied, 'position' will become
   // the associated <content-position> fallback value.
-  ContentAlignmentData content_alignment = ContentDistributionOffset(
-      available_free_space, position, content_alignment_data.Distribution(),
-      number_of_grid_tracks);
-  if (content_alignment.IsValid())
-    return content_alignment;
+  ComputeContentDistributionOffset(offset, available_free_space, position,
+                                   content_alignment_data.Distribution(),
+                                   number_of_grid_tracks);
+  if (offset.IsValid())
+    return;
 
   // TODO (lajava): Default value for overflow isn't exaclty as 'unsafe'.
   // https://drafts.csswg.org/css-align/#overflow-values
   if (available_free_space == 0 ||
       (available_free_space < 0 &&
-       content_alignment_data.Overflow() == OverflowAlignment::kSafe))
-    return {LayoutUnit(), LayoutUnit()};
+       content_alignment_data.Overflow() == OverflowAlignment::kSafe)) {
+    offset.position_offset = LayoutUnit();
+    offset.distribution_offset = LayoutUnit();
+    return;
+  }
 
+  LayoutUnit position_offset;
   bool is_row_axis = direction == kForColumns;
   switch (position) {
     case ContentPosition::kLeft:
-      if (is_row_axis)
-        return {LayoutUnit(), LayoutUnit()};
+      DCHECK(is_row_axis);
+      position_offset = LayoutUnit();
       break;
     case ContentPosition::kRight:
-      if (is_row_axis)
-        return {available_free_space, LayoutUnit()};
+      DCHECK(is_row_axis);
+      position_offset = available_free_space;
       break;
     case ContentPosition::kCenter:
-      return {available_free_space / 2, LayoutUnit()};
+      position_offset = available_free_space / 2;
+      break;
     // Only used in flex layout, for other layout, it's equivalent to 'End'.
     case ContentPosition::kFlexEnd:
+      U_FALLTHROUGH;
     case ContentPosition::kEnd:
-      if (is_row_axis)
-        return {StyleRef().IsLeftToRightDirection() ? available_free_space
-                                                    : LayoutUnit(),
-                LayoutUnit()};
-      return {available_free_space, LayoutUnit()};
+      if (is_row_axis) {
+        position_offset = StyleRef().IsLeftToRightDirection()
+                              ? available_free_space
+                              : LayoutUnit();
+      } else {
+        position_offset = available_free_space;
+      }
+      break;
     // Only used in flex layout, for other layout, it's equivalent to 'Start'.
     case ContentPosition::kFlexStart:
+      U_FALLTHROUGH;
     case ContentPosition::kStart:
-      if (is_row_axis)
-        return {StyleRef().IsLeftToRightDirection() ? LayoutUnit()
-                                                    : available_free_space,
-                LayoutUnit()};
-      return {LayoutUnit(), LayoutUnit()};
+      if (is_row_axis) {
+        position_offset = StyleRef().IsLeftToRightDirection()
+                              ? LayoutUnit()
+                              : available_free_space;
+      } else {
+        position_offset = LayoutUnit();
+      }
+      break;
     case ContentPosition::kBaseline:
+      U_FALLTHROUGH;
     case ContentPosition::kLastBaseline:
       // FIXME: These two require implementing Baseline Alignment. For now, we
       // always 'start' align the child. crbug.com/234191
-      if (is_row_axis)
-        return {StyleRef().IsLeftToRightDirection() ? LayoutUnit()
-                                                    : available_free_space,
-                LayoutUnit()};
-      return {LayoutUnit(), LayoutUnit()};
-    case ContentPosition::kNormal:
+      if (is_row_axis) {
+        position_offset = StyleRef().IsLeftToRightDirection()
+                              ? LayoutUnit()
+                              : available_free_space;
+      } else {
+        position_offset = LayoutUnit();
+      }
       break;
+    case ContentPosition::kNormal:
+      U_FALLTHROUGH;
+    default:
+      NOTREACHED();
+      return;
   }
 
-  NOTREACHED();
-  return {LayoutUnit(), LayoutUnit()};
+  offset.position_offset = position_offset;
+  offset.distribution_offset = LayoutUnit();
 }
 
 LayoutUnit LayoutGrid::TranslateOutOfFlowRTLCoordinate(
@@ -2316,6 +2343,17 @@ bool LayoutGrid::CachedHasDefiniteLogicalHeight() const {
   return has_definite_logical_height_.value();
 }
 
+size_t LayoutGrid::NonCollapsedTracks(
+    GridTrackSizingDirection direction) const {
+  auto& tracks = track_sizing_algorithm_.Tracks(direction);
+  size_t number_of_tracks = tracks.size();
+  bool has_collapsed_tracks = grid_->HasAutoRepeatEmptyTracks(direction);
+  size_t number_of_collapsed_tracks =
+      has_collapsed_tracks ? grid_->AutoRepeatEmptyTracks(direction)->size()
+                           : 0;
+  return number_of_tracks - number_of_collapsed_tracks;
+}
+
 size_t LayoutGrid::NumTracks(GridTrackSizingDirection direction,
                              const Grid& grid) const {
   // Due to limitations in our internal representation, we cannot know the
@@ -2336,7 +2374,8 @@ size_t LayoutGrid::NumTracks(GridTrackSizingDirection direction,
 
 LayoutUnit LayoutGrid::GridItemOffset(
     GridTrackSizingDirection direction) const {
-  return direction == kForRows ? offset_between_rows_ : offset_between_columns_;
+  return direction == kForRows ? offset_between_rows_.distribution_offset
+                               : offset_between_columns_.distribution_offset;
 }
 
 }  // namespace blink
