@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
+#include "components/autofill/core/common/signatures_util.h"
+#include "url/gurl.h"
 
 namespace autofill {
 class FormStructure;
@@ -37,6 +40,11 @@ class PasswordGenerationManager {
                             PasswordManagerDriver* driver);
   virtual ~PasswordGenerationManager();
 
+  // Stores password requirements received from the autofill server for the
+  // |forms| and fetches domain-wide requirements.
+  void ProcessPasswordRequirements(
+      const std::vector<autofill::FormStructure*>& forms);
+
   // Detect account creation forms from forms with autofill type annotated.
   // Will send a message to the renderer if we find a correctly annotated form
   // and the feature is enabled.
@@ -44,13 +52,28 @@ class PasswordGenerationManager {
       const std::vector<autofill::FormStructure*>& forms);
 
   // Determines current state of password generation
-  bool IsGenerationEnabled() const;
+  // |log_debug_data| determines whether log entries are sent to the
+  // autofill::SavePasswordProgressLogger.
+  bool IsGenerationEnabled(bool log_debug_data) const;
 
   // Determine if the form classifier should run. If yes, sends a message to the
   // renderer.
   // TODO(crbug.com/621442): Remove client-side form classifier when server-side
   // classifier is ready.
   void CheckIfFormClassifierShouldRun();
+
+  // Returns a randomly generated password that should (but is not guaranteed
+  // to) match the requirements of the site.
+  // |last_committed_url| refers to the main frame URL and may impact the
+  // password generation rules that are imposed by the site.
+  // |form_signature| and |field_signature| identify the field for which a
+  // password shall be generated.
+  // |max_length| refers to the maximum allowed length according to the site and
+  // may be 0 if unset.
+  base::string16 GeneratePassword(const GURL& last_committed_url,
+                                  autofill::FormSignature form_signature,
+                                  autofill::FieldSignature field_signature,
+                                  uint32_t max_length);
 
  private:
   friend class PasswordGenerationManagerTest;

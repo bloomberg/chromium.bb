@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -160,6 +162,10 @@ std::string AutofillField::FieldSignatureAsStr() const {
 
 bool AutofillField::IsFieldFillable() const {
   return !Type().IsUnknown();
+}
+
+void AutofillField::SetPasswordRequirements(PasswordRequirementsSpec spec) {
+  password_requirements_ = std::move(spec);
 }
 
 bool AutofillField::IsCreditCardPrediction() const {

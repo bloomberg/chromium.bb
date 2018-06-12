@@ -10,11 +10,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
@@ -32,7 +34,6 @@ class PasswordManagerDriver;
 
 namespace autofill {
 
-class PasswordGeneratorFips181;
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupView;
 struct Suggestion;
@@ -48,14 +49,17 @@ class PasswordGenerationPopupControllerImpl
   // |previous| if it is not returned. |bounds| is the bounds of the element
   // that we are showing the dropdown for in screen space. |form| is the
   // identifier for the form that we are filling, and is used to notify
-  // |password_manager| if the password is generated. |max_length| is used to
-  // determine the length of the password shown. If not NULL, |observer| will
-  // be notified of changes of the popup state.
+  // |password_manager| if the password is generated. |generation_element| is
+  // the name of the element for which the password will be generated.
+  // |max_length| is used to determine the length of the password shown, 0 if
+  // unbound. If not NULL, |observer| will be notified of changes of the popup
+  // state.
   static base::WeakPtr<PasswordGenerationPopupControllerImpl> GetOrCreate(
       base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
       const gfx::RectF& bounds,
       const PasswordForm& form,
-      int max_length,
+      const base::string16& generation_element,
+      uint32_t max_length,
       password_manager::PasswordManager* password_manager,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
       PasswordGenerationPopupObserver* observer,
@@ -76,7 +80,8 @@ class PasswordGenerationPopupControllerImpl
   PasswordGenerationPopupControllerImpl(
       const gfx::RectF& bounds,
       const PasswordForm& form,
-      int max_length,
+      const base::string16& generation_element,
+      uint32_t max_length,
       const base::WeakPtr<password_manager::PasswordManagerDriver>& driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
@@ -134,8 +139,15 @@ class PasswordGenerationPopupControllerImpl
   // May be NULL.
   PasswordGenerationPopupObserver* observer_;
 
-  // Controls how passwords are generated.
-  std::unique_ptr<PasswordGeneratorFips181> generator_;
+  // Signature of the form for which password generation is triggered.
+  autofill::FormSignature form_signature_;
+
+  // Signature of the field for which password generation is triggered.
+  autofill::FieldSignature field_signature_;
+
+  // Maximum length of the password to be generated. 0 represents an unbound
+  // maximum length.
+  uint32_t max_length_;
 
   // Contains common popup data.
   const PopupControllerCommon controller_common_;

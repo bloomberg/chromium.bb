@@ -556,6 +556,9 @@ void FormStructure::ParseQueryResponse(
       if (heuristic_type != field->Type().GetStorableType())
         query_response_overrode_heuristics = true;
 
+      if (current_field->has_password_requirements())
+        field->SetPasswordRequirements(current_field->password_requirements());
+
       ++current_field;
     }
 
