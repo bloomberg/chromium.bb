@@ -14,12 +14,15 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/strings/grit/components_strings.h"
 #include "url/gurl.h"
@@ -509,6 +512,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckPolicySettings(
 bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckSingleJsonString(
     const base::Value* root_value,
     PolicyErrorMap* errors) {
+  // First validate the root value is a string.
   if (!root_value->is_string()) {
     if (errors) {
       errors->AddError(policy_name_, "(ROOT)", IDS_POLICY_TYPE_ERROR,
@@ -516,13 +520,22 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckSingleJsonString(
     }
     return false;
   }
+
+  // If that succeeds, validate the JSON inside the string.
   const std::string& json_string = root_value->GetString();
-  return ValidateJsonString(json_string, errors, 0);
+  if (!ValidateJsonString(json_string, errors, 0)) {
+    RecordJsonError();
+    if (!allow_errors_in_embedded_json_)
+      return false;
+  }
+
+  return true;
 }
 
 bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
     const base::Value* root_value,
     PolicyErrorMap* errors) {
+  // First validate the root value is a list.
   if (!root_value->is_list()) {
     if (errors) {
       errors->AddError(policy_name_, "(ROOT)", IDS_POLICY_TYPE_ERROR,
@@ -531,10 +544,9 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
     return false;
   }
 
-  // We validate every list value, so that if several values have errors, we can
-  // show the users all of the errors instead of one at a time.
-  bool error_seen = false;
-  const auto& list = root_value->GetList();
+  // If that succeeds, validate all the list items are strings.
+  const ::base::Value::ListStorage& list = root_value->GetList();
+  bool wrong_type_seen = false;
   for (size_t index = 0; index < list.size(); ++index) {
     const base::Value& entry = list[index];
     if (!entry.is_string()) {
@@ -542,14 +554,28 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
         errors->AddError(policy_name_, index, IDS_POLICY_TYPE_ERROR,
                          base::Value::GetTypeName(base::Value::Type::STRING));
       }
-      error_seen = true;
-      continue;
+      wrong_type_seen = true;
     }
-    const std::string& json_string = entry.GetString();
-    if (!ValidateJsonString(json_string, errors, index))
-      error_seen = true;
   }
-  return !error_seen;
+  if (wrong_type_seen)
+    return false;
+
+  // If that succeeds, validate the JSON inside the strings.
+  // We validate every list value, so that if several values have errors, we can
+  // show the users all of the errors instead of one at a time.
+  bool json_error_seen = false;
+  for (size_t index = 0; index < list.size(); ++index) {
+    const std::string& json_string = list[index].GetString();
+    if (!ValidateJsonString(json_string, errors, index))
+      json_error_seen = true;
+  }
+  if (json_error_seen) {
+    RecordJsonError();
+    if (!allow_errors_in_embedded_json_)
+      return false;
+  }
+
+  return true;
 }
 
 bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
@@ -560,34 +586,25 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
   std::unique_ptr<base::Value> parsed_value =
       base::JSONReader::ReadAndReturnError(
           json_string, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &parse_error);
-  if (!parse_error.empty()) {
-    // The string contained JSON that could not be parsed.
-    if (errors) {
-      errors->AddError(policy_name_, ErrorPath(index, ""),
-                       IDS_POLICY_INVALID_JSON_ERROR, parse_error);
-    }
-    // Return false - unless we allow JSON errors, in which case, return true.
-    return allow_errors_in_embedded_json_;
+  if (errors && !parse_error.empty()) {
+    errors->AddError(policy_name_, ErrorPath(index, ""),
+                     IDS_POLICY_INVALID_JSON_ERROR, parse_error);
   }
+  if (!parsed_value)
+    return false;
 
   std::string schema_error;
   std::string error_path;
   const Schema json_string_schema =
       IsListSchema() ? schema_.GetItems() : schema_;
-  bool result = json_string_schema.Validate(*parsed_value, strategy_,
-                                            &error_path, &schema_error);
-  if (!schema_error.empty()) {
-    // The JSON was parsed, but did not match the schema.
-    if (errors) {
-      errors->AddError(policy_name_, ErrorPath(index, error_path),
-                       schema_error);
-    }
-  }
+  bool validated = json_string_schema.Validate(*parsed_value, strategy_,
+                                               &error_path, &schema_error);
+  if (errors && !schema_error.empty())
+    errors->AddError(policy_name_, ErrorPath(index, error_path), schema_error);
+  if (!validated)
+    return false;
 
-  if (allow_errors_in_embedded_json_)
-    return true;
-
-  return result;
+  return true;
 }
 
 std::string SimpleJsonStringSchemaValidatingPolicyHandler::ErrorPath(
@@ -610,6 +627,13 @@ void SimpleJsonStringSchemaValidatingPolicyHandler::ApplyPolicySettings(
   const base::Value* value = policies.GetValue(policy_name_);
   if (value)
     prefs->SetValue(pref_path_, value->CreateDeepCopy());
+}
+
+void SimpleJsonStringSchemaValidatingPolicyHandler::RecordJsonError() {
+  const PolicyDetails* details = GetChromePolicyDetails(policy_name_);
+  if (details)
+    base::UmaHistogramSparse("EnterpriseCheck.InvalidJsonPolicies",
+                             details->id);
 }
 
 // LegacyPoliciesDeprecatingPolicyHandler implementation -----------------------

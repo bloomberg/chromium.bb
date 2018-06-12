@@ -414,8 +414,7 @@ class POLICY_EXPORT SimpleJsonStringSchemaValidatingPolicyHandler
 
   // Validates that the given JSON string matches the schema. |index| is used
   // only in error messages, it is the index of the given string in the list
-  // if the root value is a list, and ignored otherwise. Always returns true if
-  // |allow_errors_in_embedded_json_| is true, but still adds any errors it
+  // if the root value is a list, and ignored otherwise. Adds any errors it
   // finds to |errors|.
   bool ValidateJsonString(const std::string& json_string,
                           PolicyErrorMap* errors,
@@ -426,6 +425,10 @@ class POLICY_EXPORT SimpleJsonStringSchemaValidatingPolicyHandler
   // ignored otherwise. |json_error_path| describes where the error occurred
   // inside a JSON string (this can be empty).
   std::string ErrorPath(int index, std::string json_error_path);
+
+  // Record to UMA that this policy failed validation due to an error in one or
+  // more embedded JSON strings - either unparsable, or didn't match the schema.
+  void RecordJsonError();
 
   // Returns true if the schema root is a list.
   inline bool IsListSchema() {

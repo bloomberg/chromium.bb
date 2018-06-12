@@ -176,6 +176,15 @@ class POLICY_EXPORT Schema {
   // otherwise invalid memory will be read. A CHECK is currently enforcing this.
   Schema GetItems() const;
 
+  // Gets the validation schema associated with this |schema| - or if there
+  // isn't one, returns an empty invalid schema. There are a few policies that
+  // contain embedded JSON - these policies have a schema for validating that
+  // JSON that is more complicated than the regular schema. For other policies
+  // it is not defined. To get the validation schema for a policy, call
+  // |chrome_schema.GetValidationSchema().GetKnownProperty(policy_name)|, where
+  // |chrome_schema| is the root schema that has all policies as children.
+  Schema GetValidationSchema() const;
+
  private:
   // Builds a schema pointing to the inner structure of |storage|,
   // rooted at |node|.
