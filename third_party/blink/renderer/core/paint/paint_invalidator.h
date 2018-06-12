@@ -54,6 +54,14 @@ struct CORE_EXPORT PaintInvalidatorContext {
            (subtree_flags & PaintInvalidatorContext::kSubtreeVisualRectUpdate);
   }
 
+  bool NeedsSubtreeWalk() const {
+    return subtree_flags &
+           (kSubtreeInvalidationChecking | kSubtreeVisualRectUpdate |
+            kSubtreeFullInvalidation |
+            kSubtreeFullInvalidationForStackedContents |
+            kSubtreeSVGResourceChange);
+  }
+
   const PaintInvalidatorContext* ParentContext() const {
     return parent_context_accessor_.ParentContext();
   }
@@ -64,6 +72,7 @@ struct CORE_EXPORT PaintInvalidatorContext {
   ParentContextAccessor parent_context_accessor_;
 
  public:
+  // When adding new subtree flags, ensure |NeedsSubtreeWalk| is updated.
   enum SubtreeFlag {
     kSubtreeInvalidationChecking = 1 << 0,
     kSubtreeVisualRectUpdate = 1 << 1,
