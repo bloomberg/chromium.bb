@@ -528,6 +528,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int request_id,
       bool is_sync_load,
       const network::ResourceRequest& request_data,
+      uint32_t url_loader_options,
       network::mojom::URLLoaderRequest mojo_request,
       network::mojom::URLLoaderClientPtr url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
@@ -539,6 +540,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                     const network::ResourceRequest& request_data,
                     bool is_sync_load,
                     int route_id,
+                    uint32_t url_loader_options,
                     network::mojom::URLLoaderRequest mojo_request,
                     network::mojom::URLLoaderClientPtr url_loader_client,
                     const net::NetworkTrafficAnnotationTag& traffic_annotation);
@@ -558,6 +560,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool is_sync_load,
       int route_id,
       const net::HttpRequestHeaders& headers,
+      uint32_t url_loader_options,
       network::mojom::URLLoaderRequest mojo_request,
       network::mojom::URLLoaderClientPtr url_loader_client,
       BlobHandles blob_handles,
@@ -573,12 +576,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int route_id,
       int child_id,
       ResourceContext* resource_context,
+      uint32_t url_loader_options,
       network::mojom::URLLoaderRequest mojo_request,
       network::mojom::URLLoaderClientPtr url_loader_client);
 
   // Creates either MojoAsyncResourceHandler or AsyncResourceHandler.
   std::unique_ptr<ResourceHandler> CreateBaseResourceHandler(
       net::URLRequest* request,
+      uint32_t url_loader_options,
       network::mojom::URLLoaderRequest mojo_request,
       network::mojom::URLLoaderClientPtr url_loader_client,
       ResourceType resource_type);

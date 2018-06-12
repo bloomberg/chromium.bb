@@ -123,6 +123,7 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
       url_loader_client_(std::move(url_loader_client)),
       weak_factory_(this) {
   DCHECK(IsResourceTypeFrame(resource_type) ||
+         resource_type == RESOURCE_TYPE_SERVICE_WORKER ||
          !(url_loader_options_ &
            network::mojom::kURLLoadOptionSendSSLInfoWithResponse));
   DCHECK(resource_type == RESOURCE_TYPE_MAIN_FRAME ||
