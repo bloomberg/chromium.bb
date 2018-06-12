@@ -4,6 +4,8 @@
 
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 
+#include <utility>
+
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/launcher.h"
 #include "base/files/file_path.h"
@@ -95,7 +97,7 @@ bool FocusWindows(const AppWindowList& windows) {
   return true;
 }
 
-bool FocusHostedAppWindows(std::set<Browser*>& browsers) {
+bool FocusHostedAppWindows(const std::set<Browser*>& browsers) {
   if (browsers.empty())
     return false;
 
@@ -245,7 +247,7 @@ void ExtensionAppShimHandler::Delegate::LaunchShim(Profile* profile,
 
 void ExtensionAppShimHandler::Delegate::LaunchUserManager() {
   UserManager::Show(base::FilePath(),
-                    profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER);
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 }
 
 void ExtensionAppShimHandler::Delegate::MaybeTerminate() {
@@ -637,9 +639,9 @@ void ExtensionAppShimHandler::OnShimQuit(Host* host) {
   if (!extension)
     return;
 
-  if (extension->is_hosted_app())
+  if (extension->is_hosted_app()) {
     CloseBrowsersForApp(app_id);
-  else {
+  } else {
     const AppWindowList windows = delegate_->GetWindows(profile, app_id);
     for (AppWindowRegistry::const_iterator it = windows.begin();
          it != windows.end(); ++it) {

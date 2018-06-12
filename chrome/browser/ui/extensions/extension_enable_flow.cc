@@ -106,7 +106,7 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
   if (profiles::IsProfileLocked(profile_->GetPath())) {
 #if !defined(OS_CHROMEOS)
     UserManager::Show(base::FilePath(),
-                      profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER);
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 #endif  // !defined(OS_CHROMEOS)
     return;
   }
