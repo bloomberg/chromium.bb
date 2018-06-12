@@ -376,6 +376,13 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
     DCHECK(primary_result.verified_cert);
     DCHECK(trial_result.verified_cert);
 
+    if (primary_error == net::OK &&
+        primary_result.verified_cert->intermediate_buffers().empty()) {
+      // Platform may support trusting a leaf certificate directly. Builtin
+      // verifier does not. See https://crbug.com/814994.
+      return kIgnoredLocallyTrustedLeaf;
+    }
+
     const bool chains_equal =
         primary_result.verified_cert->EqualsIncludingChain(
             trial_result.verified_cert.get());

@@ -31,7 +31,8 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
     kIgnoredMacUndesiredRevocationChecking = 6,
     kIgnoredMultipleEVPoliciesAndOneMatchesRoot = 7,
     kIgnoredDifferentPathReVerifiesEquivalent = 8,
-    kMaxValue = kIgnoredDifferentPathReVerifiesEquivalent
+    kIgnoredLocallyTrustedLeaf = 9,
+    kMaxValue = kIgnoredLocallyTrustedLeaf
   };
 
   TrialComparisonCertVerifier(

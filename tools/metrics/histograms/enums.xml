@@ -5055,6 +5055,7 @@ histogram as enum -->
   <int value="7" label="Ignored Multiple EV Policies and One Matches Root"/>
   <int value="8"
       label="Ignored Differing Path After Reverifying With Trial Chain"/>
+  <int value="9" label="Ignored Locally Trusted Leaf Cert"/>
 </enum>
 
 <enum name="ChannelLayout">
