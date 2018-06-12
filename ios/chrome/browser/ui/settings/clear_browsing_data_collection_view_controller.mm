@@ -120,7 +120,8 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     _browserState = browserState;
     _dataManager = [[ClearBrowsingDataManager alloc]
         initWithBrowserState:browserState
-          managingListOfType:ClearBrowsingDataListType::CollectionView];
+                    listType:ClearBrowsingDataListType::
+                                 kListTypeCollectionView];
     _dataManager.linkDelegate = self;
     _dataManager.consumer = self;
 

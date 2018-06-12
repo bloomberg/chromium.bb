@@ -64,7 +64,8 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
     model_ = [[CollectionViewModel alloc] init];
     manager_ = [[ClearBrowsingDataManager alloc]
         initWithBrowserState:browser_state_.get()
-          managingListOfType:ClearBrowsingDataListType::CollectionView];
+                    listType:ClearBrowsingDataListType::
+                                 kListTypeCollectionView];
 
     signin_manager_ =
         ios::SigninManagerFactory::GetForBrowserState(browser_state_.get());

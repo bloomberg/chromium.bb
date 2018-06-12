@@ -85,7 +85,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 @synthesize listType = _listType;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                  managingListOfType:(ClearBrowsingDataListType)listType {
+                            listType:(ClearBrowsingDataListType)listType {
   self = [super init];
   if (self) {
     _browserState = browserState;
