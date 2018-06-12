@@ -53,11 +53,6 @@ namespace blink {
 //   (-webkit-media-controls-timeline)
 // +-div#thumb (created by the HTMLSliderElement)
 //
-//   The child elements are only present if MediaControlsImpl::IsModern() is
-//   enabled. These three <div>'s are used to show the buffering animation.
-// +-div (-internal-track-segment-buffering)
-// +-div (-internal-track-segment-buffering)
-// +-div (-internal-track-segment-buffering)
 // +-HTMLStyleElement
 MediaControlTimelineElement::MediaControlTimelineElement(
     MediaControlsImpl& media_controls)
@@ -66,13 +61,9 @@ MediaControlTimelineElement::MediaControlTimelineElement(
 
   if (MediaControlsImpl::IsModern()) {
     Element& track = GetTrackElement();
-    MediaControlElementsHelper::CreateDiv("-internal-track-segment-buffering",
-                                          &track);
-    MediaControlElementsHelper::CreateDiv("-internal-track-segment-buffering",
-                                          &track);
-    MediaControlElementsHelper::CreateDiv("-internal-track-segment-buffering",
-                                          &track);
 
+    // TODO(851144): This stylesheet no longer contains animations, so should
+    // be re-combined with the UA sheet.
     // This stylesheet element contains rules that cannot be present in the UA
     // stylesheet (e.g. animations).
     auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
