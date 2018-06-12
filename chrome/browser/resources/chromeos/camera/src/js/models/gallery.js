@@ -518,22 +518,30 @@ camera.models.Gallery.prototype.addPicture = function(
     blob, type, onFailure) {
   var fileNameBase = camera.models.Gallery.generateFileNameBase_(type, Date.now());
 
-  camera.models.FileSystem.savePicture(
-      fileNameBase + camera.models.Gallery.generateFileNameExt_(type),
-      blob, function(pictureEntry) {
-    this.createThumbnail_(
-        URL.createObjectURL(blob), type, function(thumbnailBlob) {
-      camera.models.FileSystem.saveThumbnail(
-          camera.models.Gallery.getThumbnailName(pictureEntry.name),
-          thumbnailBlob, function(thumbnailEntry) {
-        var picture = new camera.models.Gallery.Picture(
-            thumbnailEntry, pictureEntry, type);
-        this.pictures_.push(picture);
-        // Notify observers.
-        for (var i = 0; i < this.observers_.length; i++) {
-          this.observers_[i].onPictureAdded(picture);
-        }
+  var savePicture = function(pictureBlob) {
+    camera.models.FileSystem.savePicture(
+        fileNameBase + camera.models.Gallery.generateFileNameExt_(type),
+        pictureBlob, function(pictureEntry) {
+      this.createThumbnail_(
+          URL.createObjectURL(pictureBlob), type, function(thumbnailBlob) {
+        camera.models.FileSystem.saveThumbnail(
+            camera.models.Gallery.getThumbnailName(pictureEntry.name),
+            thumbnailBlob, function(thumbnailEntry) {
+          var picture = new camera.models.Gallery.Picture(
+              thumbnailEntry, pictureEntry, type);
+          this.pictures_.push(picture);
+          // Notify observers.
+          for (var i = 0; i < this.observers_.length; i++) {
+            this.observers_[i].onPictureAdded(picture);
+          }
+        }.bind(this), onFailure);
       }.bind(this), onFailure);
     }.bind(this), onFailure);
-  }.bind(this), onFailure);
+  }.bind(this);
+
+  if (type == camera.models.Gallery.PictureType.MOTION) {
+    savePicture(blob);
+  } else {
+    camera.util.orientPhoto(blob, savePicture, onFailure);
+  }
 };
