@@ -8,7 +8,6 @@
 
 #import "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"

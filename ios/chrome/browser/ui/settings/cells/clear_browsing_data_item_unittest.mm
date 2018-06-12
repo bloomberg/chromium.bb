@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
 
-#import "base/mac/bind_objc_block.h"
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"

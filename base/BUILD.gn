@@ -428,7 +428,6 @@ jumbo_component("base") {
     "mac/authorization_util.h",
     "mac/authorization_util.mm",
     "mac/availability.h",
-    "mac/bind_objc_block.h",
     "mac/bundle_locations.h",
     "mac/bundle_locations.mm",
     "mac/call_with_eh_frame.cc",

@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 
 #include "base/bind.h"
-#include "base/mac/bind_objc_block.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/feature_engagement/public/feature_constants.h"
