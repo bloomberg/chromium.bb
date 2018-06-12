@@ -18,8 +18,6 @@
 #include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
-class AutoConnectNotifierTest;
-
 namespace chromeos {
 
 class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
@@ -62,13 +60,11 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
- protected:
-  void NotifyAutoConnectInitiated(int auto_connect_reasons);
+  void NotifyAutoConnectInitiatedForTest(int auto_connect_reasons);
 
  private:
   friend class NetworkHandler;
   friend class AutoConnectHandlerTest;
-  friend class ::AutoConnectNotifierTest;
 
   AutoConnectHandler();
 
@@ -77,6 +73,8 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
             NetworkStateHandler* network_state_handler,
             ManagedNetworkConfigurationHandler*
                 managed_network_configuration_handler);
+
+  void NotifyAutoConnectInitiated(int auto_connect_reasons);
 
   // If the user logged in already and the policy to prevent unmanaged & shared
   // networks to autoconnect is enabled, then disconnects all such networks

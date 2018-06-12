@@ -205,5 +205,12 @@ void SignalStrengthImageSource::DrawBars(gfx::Canvas* canvas) {
   }
 }
 
+//------------------------------------------------------------------------------
+
+gfx::ImageSkia GetImageForWifiNetwork(SkColor color, gfx::Size size) {
+  return gfx::CanvasImageSource::MakeImageSkia<SignalStrengthImageSource>(
+      ARCS, color, size, kNumNetworkImages - 1);
+}
+
 }  // namespace network_icon
 }  // namespace ash

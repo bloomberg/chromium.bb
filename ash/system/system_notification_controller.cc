@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/cast/cast_notification_controller.h"
+#include "ash/system/network/auto_connect_notifier.h"
 #include "ash/system/network/wifi_toggle_notification_controller.h"
 #include "ash/system/power/power_notification_controller.h"
 #include "ash/system/screen_security/screen_security_notification_controller.h"
@@ -19,7 +20,8 @@
 namespace ash {
 
 SystemNotificationController::SystemNotificationController()
-    : caps_lock_(std::make_unique<CapsLockNotificationController>()),
+    : auto_connect_(std::make_unique<AutoConnectNotifier>()),
+      caps_lock_(std::make_unique<CapsLockNotificationController>()),
       cast_(std::make_unique<CastNotificationController>()),
       power_(std::make_unique<PowerNotificationController>(
           message_center::MessageCenter::Get())),

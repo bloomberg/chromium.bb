@@ -2,3 +2,10 @@ include_rules = [
   "+components/device_event_log",
   "+third_party/cros_system_api",
 ]
+
+specific_include_rules = {
+  "auto_connect_notifier_unittest.cc": [
+    "+chromeos",
+    "+dbus",
+  ],
+}

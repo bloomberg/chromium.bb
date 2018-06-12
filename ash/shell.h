@@ -515,6 +515,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   StickyKeysController* sticky_keys_controller() {
     return sticky_keys_controller_.get();
   }
+  SystemNotificationController* system_notification_controller() {
+    return system_notification_controller_.get();
+  }
   SystemTrayController* system_tray_controller() {
     return system_tray_controller_.get();
   }

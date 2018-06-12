@@ -3277,7 +3277,6 @@ test("unit_tests") {
       "../browser/sync/sync_error_notifier_ash_unittest.cc",
       "../browser/ui/ash/accessibility/accessibility_controller_client_unittest.cc",
       "../browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc",
-      "../browser/ui/ash/auto_connect_notifier_unittest.cc",
       "../browser/ui/ash/chrome_keyboard_ui_unittest.cc",
       "../browser/ui/ash/ime_controller_client_unittest.cc",
       "../browser/ui/ash/ksv/keyboard_shortcut_viewer_metadata_unittest.cc",

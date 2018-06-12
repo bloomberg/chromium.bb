@@ -202,6 +202,11 @@ void AutoConnectHandler::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void AutoConnectHandler::NotifyAutoConnectInitiatedForTest(
+    int auto_connect_reasons) {
+  NotifyAutoConnectInitiated(auto_connect_reasons);
+}
+
 void AutoConnectHandler::NotifyAutoConnectInitiated(int auto_connect_reasons) {
   for (auto& observer : observer_list_)
     observer.OnAutoConnectedInitiated(auto_connect_reasons);

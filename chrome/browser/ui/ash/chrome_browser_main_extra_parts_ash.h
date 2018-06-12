@@ -27,7 +27,6 @@ class UserActivityDetector;
 class AccessibilityControllerClient;
 class AppListClientImpl;
 class AshShellInit;
-class AutoConnectNotifier;
 class CastConfigClientMediaRouter;
 class ChromeNewWindowClient;
 class ChromeShellContentState;
@@ -124,7 +123,6 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<ChromeShellContentState> chrome_shell_content_state_;
 
   // Initialized in PostProfileInit in all configs:
-  std::unique_ptr<AutoConnectNotifier> auto_connect_notifier_;
   std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;
   std::unique_ptr<LoginScreenClient> login_screen_client_;
   std::unique_ptr<MediaClient> media_client_;
