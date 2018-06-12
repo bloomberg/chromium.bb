@@ -203,7 +203,7 @@ void OomInterventionTabHelper::OnCrashDumpProcessed(
         reported_counts) {
   if (rph_id != web_contents()->GetMainFrame()->GetProcess()->GetID())
     return;
-  if (reported_counts.count(
+  if (!reported_counts.count(
           crash_reporter::CrashMetricsReporter::ProcessedCrashCounts::
               kRendererForegroundVisibleOom)) {
     return;
