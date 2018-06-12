@@ -42,12 +42,11 @@ std::string SetPrimaryAccount(SigninManagerBase* signin_manager,
                               IdentityManager* identity_manager,
                               const std::string& email);
 
-// Sets a refresh token that corresponds uniquely to |account_id|. Blocks until
-// the refresh token is set.
+// Sets a refresh token for the primary account (which must already be set).
+// Blocks until the refresh token is set.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                               IdentityManager* identity_manager,
-                               const std::string& account_id);
+void SetRefreshTokenForPrimaryAccount(ProfileOAuth2TokenService* token_service,
+                                      IdentityManager* identity_manager);
 
 // Sets a special invalid refresh token. Blocks until the refresh token is set.
 // NOTE: See disclaimer at top of file re: direct usage.
