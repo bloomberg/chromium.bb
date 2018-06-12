@@ -4,7 +4,7 @@
 
 #include "components/sync/engine/fake_sync_engine.h"
 
-#include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/sync_engine_host.h"
 
 namespace syncer {
@@ -56,7 +56,7 @@ void FakeSyncEngine::DeactivateDirectoryDataType(ModelType type) {}
 
 void FakeSyncEngine::ActivateNonBlockingDataType(
     ModelType type,
-    std::unique_ptr<ActivationContext> activation_context) {}
+    std::unique_ptr<DataTypeActivationResponse> activation_response) {}
 
 void FakeSyncEngine::DeactivateNonBlockingDataType(ModelType type) {}
 

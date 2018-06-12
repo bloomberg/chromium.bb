@@ -22,7 +22,7 @@ class FakeModelTypeControllerDelegate : public ModelTypeControllerDelegate {
   ~FakeModelTypeControllerDelegate() override;
 
   // ModelTypeControllerDelegate overrides
-  void OnSyncStarting(const ModelErrorHandler& error_handler,
+  void OnSyncStarting(const DataTypeActivationRequest& request,
                       StartCallback callback) override;
   void DisableSync() override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;

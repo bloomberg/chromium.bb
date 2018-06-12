@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/gtest_util.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/syncable/directory.h"
@@ -57,9 +57,10 @@ class ModelTypeRegistryTest : public ::testing::Test {
     return state;
   }
 
-  static std::unique_ptr<ActivationContext> MakeActivationContext(
+  static std::unique_ptr<DataTypeActivationResponse>
+  MakeDataTypeActivationResponse(
       const sync_pb::ModelTypeState& model_type_state) {
-    auto context = std::make_unique<ActivationContext>();
+    auto context = std::make_unique<DataTypeActivationResponse>();
     context->model_type_state = model_type_state;
     context->type_processor = std::make_unique<FakeModelTypeProcessor>();
     return context;
@@ -147,11 +148,13 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
   registry()->ConnectNonBlockingType(
-      THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
+      THEMES,
+      MakeDataTypeActivationResponse(MakeInitialModelTypeState(THEMES)));
   EXPECT_EQ(ModelTypeSet(THEMES), registry()->GetEnabledTypes());
 
   registry()->ConnectNonBlockingType(
-      SESSIONS, MakeActivationContext(MakeInitialModelTypeState(SESSIONS)));
+      SESSIONS,
+      MakeDataTypeActivationResponse(MakeInitialModelTypeState(SESSIONS)));
   EXPECT_EQ(ModelTypeSet(THEMES, SESSIONS), registry()->GetEnabledTypes());
 
   registry()->DisconnectNonBlockingType(THEMES);
@@ -169,7 +172,8 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
 
   // Add the themes non-blocking type.
   registry()->ConnectNonBlockingType(
-      THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
+      THEMES,
+      MakeDataTypeActivationResponse(MakeInitialModelTypeState(THEMES)));
   current_types.Put(THEMES);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
@@ -181,7 +185,8 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
 
   // Add sessions non-blocking type.
   registry()->ConnectNonBlockingType(
-      SESSIONS, MakeActivationContext(MakeInitialModelTypeState(SESSIONS)));
+      SESSIONS,
+      MakeDataTypeActivationResponse(MakeInitialModelTypeState(SESSIONS)));
   current_types.Put(SESSIONS);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
@@ -209,11 +214,12 @@ TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
   // Add two non-blocking type.
   sync_pb::ModelTypeState model_type_state = MakeInitialModelTypeState(THEMES);
   model_type_state.set_initial_sync_done(true);
-  registry()->ConnectNonBlockingType(THEMES,
-                                     MakeActivationContext(model_type_state));
+  registry()->ConnectNonBlockingType(
+      THEMES, MakeDataTypeActivationResponse(model_type_state));
 
   registry()->ConnectNonBlockingType(
-      SESSIONS, MakeActivationContext(MakeInitialModelTypeState(SESSIONS)));
+      SESSIONS,
+      MakeDataTypeActivationResponse(MakeInitialModelTypeState(SESSIONS)));
 
   EXPECT_EQ(ModelTypeSet(AUTOFILL, THEMES),
             registry()->GetInitialSyncEndedTypes());
@@ -230,7 +236,8 @@ TEST_F(ModelTypeRegistryTest, UssMigration) {
   SetDummyProgressMarkerForType(THEMES);
   EXPECT_EQ(0u, metahandles_to_purge().size());
   registry()->ConnectNonBlockingType(
-      THEMES, MakeActivationContext(MakeInitialModelTypeState(THEMES)));
+      THEMES,
+      MakeDataTypeActivationResponse(MakeInitialModelTypeState(THEMES)));
 
   EXPECT_TRUE(migration_attempted());
   EXPECT_NE(0u, metahandles_to_purge().size());

@@ -60,8 +60,9 @@ class FakeSyncEngine : public SyncEngine {
                                  ChangeProcessor* change_processor) override;
   void DeactivateDirectoryDataType(ModelType type) override;
 
-  void ActivateNonBlockingDataType(ModelType type,
-                                   std::unique_ptr<ActivationContext>) override;
+  void ActivateNonBlockingDataType(
+      ModelType type,
+      std::unique_ptr<DataTypeActivationResponse>) override;
   void DeactivateNonBlockingDataType(ModelType type) override;
 
   UserShare* GetUserShare() const override;

@@ -4,7 +4,7 @@
 
 #include "components/sync/engine/fake_model_type_connector.h"
 
-#include "components/sync/engine/activation_context.h"
+#include "components/sync/engine/data_type_activation_response.h"
 
 namespace syncer {
 
@@ -14,7 +14,7 @@ FakeModelTypeConnector::~FakeModelTypeConnector() {}
 
 void FakeModelTypeConnector::ConnectNonBlockingType(
     ModelType type,
-    std::unique_ptr<ActivationContext> activation_context) {}
+    std::unique_ptr<DataTypeActivationResponse> activation_response) {}
 
 void FakeModelTypeConnector::DisconnectNonBlockingType(ModelType type) {}
 

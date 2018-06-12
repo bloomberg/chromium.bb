@@ -15,8 +15,9 @@
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine/data_type_activation_request.h"
+#include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model_impl/processor_entity_tracker.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
@@ -70,11 +71,11 @@ ClientTagBasedModelTypeProcessor::~ClientTagBasedModelTypeProcessor() {
 }
 
 void ClientTagBasedModelTypeProcessor::OnSyncStarting(
-    const ModelErrorHandler& error_handler,
+    const DataTypeActivationRequest& request,
     StartCallback start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsConnected());
-  DCHECK(error_handler);
+  DCHECK(request.error_handler);
   DCHECK(start_callback);
   DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
 
@@ -82,7 +83,7 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
   // which in turn creates the worker.
   bridge_->OnSyncStarting();
 
-  error_handler_ = error_handler;
+  error_handler_ = request.error_handler;
   start_callback_ = std::move(start_callback);
   ConnectIfReady();
 }
@@ -146,13 +147,13 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   if (model_error_) {
     error_handler_.Run(model_error_.value());
   } else {
-    auto activation_context = std::make_unique<ActivationContext>();
-    activation_context->model_type_state = model_type_state_;
-    activation_context->type_processor =
+    auto activation_response = std::make_unique<DataTypeActivationResponse>();
+    activation_response->model_type_state = model_type_state_;
+    activation_response->type_processor =
         std::make_unique<ModelTypeProcessorProxy>(
             weak_ptr_factory_.GetWeakPtr(),
             base::ThreadTaskRunnerHandle::Get());
-    std::move(start_callback_).Run(std::move(activation_context));
+    std::move(start_callback_).Run(std::move(activation_response));
   }
 
   start_callback_.Reset();

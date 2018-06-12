@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend_impl.h"
 #include "components/sync/base/hash_util.h"
+#include "components/sync/engine/data_type_activation_request.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -186,10 +187,12 @@ class AutocompleteSyncBridgeTest : public testing::Test {
 
   void StartSyncing(const std::vector<AutofillSpecifics>& remote_data = {}) {
     base::RunLoop loop;
+    syncer::DataTypeActivationRequest request;
+    request.error_handler = base::DoNothing();
     real_processor_->OnSyncStarting(
-        /*error_handler=*/base::DoNothing(),
+        request,
         base::BindLambdaForTesting(
-            [&loop](std::unique_ptr<syncer::ActivationContext>) {
+            [&loop](std::unique_ptr<syncer::DataTypeActivationResponse>) {
               loop.Quit();
             }));
     loop.Run();

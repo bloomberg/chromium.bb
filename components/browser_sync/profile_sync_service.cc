@@ -411,7 +411,7 @@ syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
   return device_info_sync_bridge_.get();
 }
 
-syncer::LocalDeviceInfoProvider*
+const syncer::LocalDeviceInfoProvider*
 ProfileSyncService::GetLocalDeviceInfoProvider() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return local_device_.get();

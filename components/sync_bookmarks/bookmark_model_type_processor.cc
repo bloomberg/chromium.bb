@@ -397,13 +397,14 @@ BookmarkModelTypeProcessor::GetWeakPtr() {
 }
 
 void BookmarkModelTypeProcessor::OnSyncStarting(
-    const syncer::ModelErrorHandler& error_handler,
+    const syncer::DataTypeActivationRequest& request,
     StartCallback start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(start_callback);
   DVLOG(1) << "Sync is starting for Bookmarks";
 
-  auto activation_context = std::make_unique<syncer::ActivationContext>();
+  auto activation_context =
+      std::make_unique<syncer::DataTypeActivationResponse>();
   // TODO(crbug.com/516866): Read the model type state from persisted sync
   // metadata instead of feeding an empty one.
   sync_pb::ModelTypeState model_type_state;

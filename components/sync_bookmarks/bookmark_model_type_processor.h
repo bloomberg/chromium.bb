@@ -44,7 +44,7 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
                         const syncer::UpdateResponseDataList& updates) override;
 
   // ModelTypeControllerDelegate implementation.
-  void OnSyncStarting(const syncer::ModelErrorHandler& error_handler,
+  void OnSyncStarting(const syncer::DataTypeActivationRequest& request,
                       StartCallback start_callback) override;
   void DisableSync() override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;

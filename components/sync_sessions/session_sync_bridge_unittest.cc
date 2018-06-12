@@ -19,6 +19,7 @@
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
+#include "components/sync/engine/data_type_activation_request.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -214,11 +215,16 @@ class SessionSyncBridgeTest : public ::testing::Test {
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
         "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
 
+    syncer::DataTypeActivationRequest request;
+    request.error_handler = base::DoNothing();
+    request.cache_guid = "TestCacheGuid";
+    request.authenticated_account_id = "SomeAccountId";
+
     base::RunLoop loop;
     real_processor_->OnSyncStarting(
-        /*error_handler=*/base::DoNothing(),
+        request,
         base::BindLambdaForTesting(
-            [&loop](std::unique_ptr<syncer::ActivationContext>) {
+            [&loop](std::unique_ptr<syncer::DataTypeActivationResponse>) {
               loop.Quit();
             }));
     loop.Run();

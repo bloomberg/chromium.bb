@@ -277,7 +277,8 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsCryptographerReady(
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
-  syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override;
+  const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider()
+      const override;
   void ReenableDatatype(syncer::ModelType type) override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   std::string QuerySyncStatusSummaryString() override;

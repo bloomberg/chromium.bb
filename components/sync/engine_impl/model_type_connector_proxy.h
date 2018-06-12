@@ -28,7 +28,7 @@ class ModelTypeConnectorProxy : public ModelTypeConnector {
   // ModelTypeConnector implementation
   void ConnectNonBlockingType(
       ModelType type,
-      std::unique_ptr<ActivationContext> activation_context) override;
+      std::unique_ptr<DataTypeActivationResponse> activation_response) override;
   void DisconnectNonBlockingType(ModelType type) override;
   void RegisterDirectoryType(ModelType type, ModelSafeGroup group) override;
   void UnregisterDirectoryType(ModelType type) override;
