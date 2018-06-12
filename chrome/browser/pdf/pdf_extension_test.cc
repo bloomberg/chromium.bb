@@ -1015,15 +1015,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenFromFTP) {
 }
 
 // For both PDFExtensionTest and PDFIsolatedExtensionTest, MultipleDomains case
-// flakily times out on Win7 Tests (dbg)(1) and win_chromium_dbg_ng bots.
+// is flaky.
 // https://crbug.com/825038
 // https://crbug.com/851805
-#if defined(OS_WIN) || defined(OS_WIN) || defined(OS_MACOSX) || \
-    defined(OS_LINUX) && !defined(NDEBUG)
 #define MAYBE_MultipleDomains DISABLED_MultipleDomains
-#else
-#define MAYBE_MultipleDomains MultipleDomains
-#endif
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_MultipleDomains) {
   for (const auto& url :
