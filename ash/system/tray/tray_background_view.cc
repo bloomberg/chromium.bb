@@ -308,7 +308,7 @@ void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ActionableView::GetAccessibleNodeData(node_data);
   node_data->SetName(GetAccessibleNameForTray());
 
-  if (LockScreen::IsShown()) {
+  if (LockScreen::HasInstance()) {
     int next_id = views::AXAuraObjCache::GetInstance()->GetID(
         static_cast<views::Widget*>(LockScreen::Get()->window()));
     node_data->AddIntAttribute(ax::mojom::IntAttribute::kNextFocusId, next_id);

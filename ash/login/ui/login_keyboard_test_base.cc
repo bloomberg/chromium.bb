@@ -10,6 +10,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/command_line.h"
 #include "base/strings/strcat.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -40,7 +41,7 @@ void LoginKeyboardTestBase::SetUp() {
 void LoginKeyboardTestBase::TearDown() {
   Shell::GetPrimaryRootWindowController()->DeactivateKeyboard(
       keyboard_controller_);
-  if (ash::LockScreen::IsShown())
+  if (ash::LockScreen::HasInstance())
     ash::LockScreen::Get()->Destroy();
   AshTestBase::TearDown();
 }
@@ -85,6 +86,8 @@ void LoginKeyboardTestBase::ShowLockScreen() {
 void LoginKeyboardTestBase::ShowLoginScreen() {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOGIN_PRIMARY);
+  // The login screen can't be shown without a wallpaper.
+  Shell::Get()->wallpaper_controller()->ShowDefaultWallpaperForTesting();
 
   base::Optional<bool> result;
   login_controller_->ShowLoginScreen(base::BindOnce(

@@ -1044,6 +1044,20 @@ bool WallpaperController::ShouldSetDevicePolicyWallpaper() const {
   return true;
 }
 
+void WallpaperController::AddFirstWallpaperAnimationEndCallback(
+    base::OnceClosure callback,
+    aura::Window* window) {
+  WallpaperWidgetController* wallpaper_widget_controller =
+      RootWindowController::ForWindow(window)->wallpaper_widget_controller();
+  if (!current_wallpaper_ ||
+      (is_first_wallpaper_ && wallpaper_widget_controller->IsAnimating())) {
+    // No wallpaper has been set, or the first wallpaper is still animating.
+    wallpaper_widget_controller->AddAnimationEndCallback(std::move(callback));
+  } else {
+    std::move(callback).Run();
+  }
+}
+
 void WallpaperController::Init(
     mojom::WallpaperControllerClientPtr client,
     const base::FilePath& user_data_path,
