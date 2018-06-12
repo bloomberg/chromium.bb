@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/logging.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -1083,6 +1084,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   media::SoundsManager::Shutdown();
 
   system::StatisticsProvider::GetInstance()->Shutdown();
+
+  chromeos::DemoSession::ShutDownIfInitialized();
 
   // Let the UserManager unregister itself as an observer of the CrosSettings
   // singleton before it is destroyed. This also ensures that the UserManager

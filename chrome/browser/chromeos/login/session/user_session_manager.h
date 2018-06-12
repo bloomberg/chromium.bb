@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_USER_SESSION_MANAGER_H_
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
@@ -348,6 +351,15 @@ class UserSessionManager
   // created yet and user services were not yet initialized. Can store
   // information in Local State like GAIA ID.
   void StoreUserContextDataBeforeProfileIsCreated();
+
+  // Initializes |chromeos::DemoSession| if starting user session for demo mode.
+  // Runs |callback| when demo session initialization finishes, i.e. when the
+  // offline demo session resources are loaded.
+  void InitDemoSessionIfNeeded(base::OnceClosure callback);
+
+  // Updates ARC file system compatibility pref, and then calls
+  // PrepareProfile().
+  void UpdateArcFileSystemCompatibilityAndPrepareProfile();
 
   void StartCrosSession();
   void PrepareProfile();
