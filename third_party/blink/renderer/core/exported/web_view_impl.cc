@@ -1850,12 +1850,14 @@ void WebViewImpl::PaintIgnoringCompositing(WebCanvas* canvas,
 #endif
 
 void WebViewImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
-  layer_tree_view_->LayoutAndPaintAsync(std::move(callback));
+  if (layer_tree_view_)
+    layer_tree_view_->LayoutAndPaintAsync(std::move(callback));
 }
 
 void WebViewImpl::CompositeAndReadbackAsync(
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  layer_tree_view_->CompositeAndReadbackAsync(std::move(callback));
+  if (layer_tree_view_)
+    layer_tree_view_->CompositeAndReadbackAsync(std::move(callback));
 }
 
 void WebViewImpl::ThemeChanged() {
