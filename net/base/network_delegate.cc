@@ -207,19 +207,4 @@ bool NetworkDelegate::CanUseReportingClient(const url::Origin& origin,
   return OnCanUseReportingClient(origin, endpoint);
 }
 
-void NetworkDelegate::OnResponseStarted(URLRequest* request, int net_error) {
-  NOTREACHED();
-}
-
-void NetworkDelegate::OnCompleted(URLRequest* request,
-                                  bool started,
-                                  int net_error) {
-  OnCompleted(request, started);
-}
-
-// Deprecated.
-void NetworkDelegate::OnCompleted(URLRequest* request, bool started) {
-  NOTREACHED();
-}
-
 }  // namespace net

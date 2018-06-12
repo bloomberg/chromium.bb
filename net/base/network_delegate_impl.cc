@@ -54,12 +54,7 @@ void NetworkDelegateImpl::OnNetworkBytesSent(URLRequest* request,
 
 void NetworkDelegateImpl::OnCompleted(URLRequest* request,
                                       bool started,
-                                      int net_error) {
-  OnCompleted(request, started);
-}
-
-// Deprecated.
-void NetworkDelegateImpl::OnCompleted(URLRequest* request, bool started) {}
+                                      int net_error) {}
 
 void NetworkDelegateImpl::OnURLRequestDestroyed(URLRequest* request) {
 }
