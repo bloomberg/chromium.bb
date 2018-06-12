@@ -366,6 +366,8 @@ CommandHandler.MenuCommandsForUMA = {
   MOBILE_DATA_OFF: 'drive-sync-settings-disabled',
   SHOW_GOOGLE_DOCS_FILES_OFF: 'drive-hosted-settings-disabled',
   SHOW_GOOGLE_DOCS_FILES_ON: 'drive-hosted-settings-enabled',
+  HIDDEN_ANDROID_FOLDERS_SHOW: 'toggle-hidden-android-folders-on',
+  HIDDEN_ANDROID_FOLDERS_HIDE: 'toggle-hidden-android-folders-off',
 };
 
 /**
@@ -388,6 +390,8 @@ CommandHandler.ValidMenuCommandsForUMA = [
   CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF,
   CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_ON,
   CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF,
+  CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_SHOW,
+  CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_HIDE,
 ];
 console.assert(
     Object.keys(CommandHandler.MenuCommandsForUMA).length ===
@@ -756,13 +760,9 @@ CommandHandler.COMMANDS_['toggle-hidden-files'] = /** @type {Command} */ ({
     var visible = !fileManager.fileFilter.isHiddenFilesVisible();
     fileManager.fileFilter.setHiddenFilesVisible(visible);
     event.command.checked = visible;  // Checkmark for "Show hidden files".
-    if (visible) {
-      CommandHandler.recordMenuItemSelected_(
-          CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_SHOW);
-    } else {
-      CommandHandler.recordMenuItemSelected_(
-          CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_HIDE);
-    }
+    CommandHandler.recordMenuItemSelected_(
+        visible ? CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_SHOW :
+                  CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_HIDE);
   },
   /**
    * @param {!Event} event Command event.
@@ -770,6 +770,33 @@ CommandHandler.COMMANDS_['toggle-hidden-files'] = /** @type {Command} */ ({
    */
   canExecute: CommandUtil.canExecuteAlways
 });
+
+/**
+ * Toggles visibility of top-level Android folders which are not visible by
+ * default.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['toggle-hidden-android-folders'] =
+    /** @type {Command} */ ({
+      /**
+       * @param {!Event} event Command event.
+       * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+       */
+      execute: function(event, fileManager) {
+        var visible = !fileManager.fileFilter.isAllAndroidFoldersVisible();
+        fileManager.fileFilter.setAllAndroidFoldersVisible(visible);
+        event.command.checked = visible;
+        CommandHandler.recordMenuItemSelected_(
+            visible ?
+                CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_SHOW :
+                CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_HIDE);
+      },
+      /**
+       * @param {!Event} event Command event.
+       * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+       */
+      canExecute: CommandUtil.canExecuteAlways
+    });
 
 /**
  * Toggles drive sync settings.
@@ -786,13 +813,10 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = /** @type {Command} */ ({
         fileManager.ui.gearMenu.syncButton.hasAttribute('checked');
     var changeInfo = {cellularDisabled: !nowCellularDisabled};
     chrome.fileManagerPrivate.setPreferences(changeInfo);
-    if (nowCellularDisabled) {
-      CommandHandler.recordMenuItemSelected_(
-          CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF);
-    } else {
-      CommandHandler.recordMenuItemSelected_(
-          CommandHandler.MenuCommandsForUMA.MOBILE_DATA_ON);
-    }
+    CommandHandler.recordMenuItemSelected_(
+        nowCellularDisabled ?
+            CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF :
+            CommandHandler.MenuCommandsForUMA.MOBILE_DATA_ON);
   },
   /**
    * @param {!Event} event Command event.
@@ -827,13 +851,10 @@ CommandHandler.COMMANDS_['drive-hosted-settings'] = /** @type {Command} */ ({
     var changeInfo = {};
     changeInfo['hostedFilesDisabled'] = !nowHostedFilesDisabled;
     chrome.fileManagerPrivate.setPreferences(changeInfo);
-    if (nowHostedFilesDisabled) {
-      CommandHandler.recordMenuItemSelected_(
-          CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF);
-    } else {
-      CommandHandler.recordMenuItemSelected_(
-          CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_ON);
-    }
+    CommandHandler.recordMenuItemSelected_(
+        nowHostedFilesDisabled ?
+            CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF :
+            CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_ON);
   },
   /**
    * @param {!Event} event Command event.
