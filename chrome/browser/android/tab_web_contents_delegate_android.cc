@@ -299,15 +299,15 @@ void TabWebContentsDelegateAndroid::AdjustPreviewsStateForNavigation(
 void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   if (vr::VrTabHelper::IsUiSuppressedInVr(
           web_contents, vr::UiSuppressedElement::kMediaPermission)) {
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
     return;
   }
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
-      web_contents, request, callback, nullptr);
+      web_contents, request, std::move(callback), nullptr);
 }
 
 bool TabWebContentsDelegateAndroid::CheckMediaAccessPermission(

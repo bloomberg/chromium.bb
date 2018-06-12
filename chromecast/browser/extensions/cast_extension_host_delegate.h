@@ -27,7 +27,7 @@ class CastExtensionHostDelegate : public ExtensionHostDelegate {
                  bool user_gesture) override;
   void ProcessMediaAccessRequest(content::WebContents* web_contents,
                                  const content::MediaStreamRequest& request,
-                                 const content::MediaResponseCallback& callback,
+                                 content::MediaResponseCallback callback,
                                  const Extension* extension) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,

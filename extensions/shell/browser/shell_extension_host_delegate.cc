@@ -48,11 +48,11 @@ void ShellExtensionHostDelegate::CreateTab(
 void ShellExtensionHostDelegate::ProcessMediaAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const Extension* extension) {
   // Allow access to the microphone and/or camera.
-  media_capture_util::GrantMediaStreamRequest(
-      web_contents, request, callback, extension);
+  media_capture_util::GrantMediaStreamRequest(web_contents, request,
+                                              std::move(callback), extension);
 }
 
 bool ShellExtensionHostDelegate::CheckMediaAccessPermission(

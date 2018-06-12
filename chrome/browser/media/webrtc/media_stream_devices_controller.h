@@ -37,9 +37,8 @@ class MediaStreamDevicesControllerTestApi;
 
 class MediaStreamDevicesController {
  public:
-  static void RequestPermissions(
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback);
+  static void RequestPermissions(const content::MediaStreamRequest& request,
+                                 content::MediaResponseCallback callback);
 
   static void RequestAndroidPermissionsIfNeeded(
       content::WebContents* web_contents,
@@ -72,7 +71,7 @@ class MediaStreamDevicesController {
 
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
-                               const content::MediaResponseCallback& callback);
+                               content::MediaResponseCallback callback);
 
   // Returns true if audio/video should be requested through the
   // PermissionManager. We won't try to request permission if the request is

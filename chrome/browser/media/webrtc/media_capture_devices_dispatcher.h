@@ -81,11 +81,10 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
   // Method called from WebCapturerDelegate implementations to process access
   // requests. |extension| is set to NULL if request was made from a drive-by
   // page.
-  void ProcessMediaAccessRequest(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension);
+  void ProcessMediaAccessRequest(content::WebContents* web_contents,
+                                 const content::MediaStreamRequest& request,
+                                 content::MediaResponseCallback callback,
+                                 const extensions::Extension* extension);
 
   // Method called from WebCapturerDelegate implementations to check media
   // access permission. Note that this does not query the user.

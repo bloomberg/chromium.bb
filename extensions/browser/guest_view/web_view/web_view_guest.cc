@@ -970,10 +970,9 @@ void WebViewGuest::RemoveWebViewStateFromIOThread(
 void WebViewGuest::RequestMediaAccessPermission(
     WebContents* source,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
-  web_view_permission_helper_->RequestMediaAccessPermission(source,
-                                                            request,
-                                                            callback);
+    content::MediaResponseCallback callback) {
+  web_view_permission_helper_->RequestMediaAccessPermission(
+      source, request, std::move(callback));
 }
 
 bool WebViewGuest::CheckMediaAccessPermission(

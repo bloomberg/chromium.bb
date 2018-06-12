@@ -218,7 +218,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void RequestMediaAccessPermission(
       content::WebContents* source,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) final;
+      content::MediaResponseCallback callback) final;
   void RequestPointerLockPermission(
       bool user_gesture,
       bool last_unlocked_by_target,

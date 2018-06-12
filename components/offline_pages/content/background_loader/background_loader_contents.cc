@@ -109,9 +109,9 @@ bool BackgroundLoaderContents::ShouldBlockMediaRequest(const GURL& url) {
 void BackgroundLoaderContents::RequestMediaAccessPermission(
     content::WebContents* contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   // No permissions granted, act as if dismissed.
-  callback.Run(
+  std::move(callback).Run(
       content::MediaStreamDevices(),
       content::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED,
       std::unique_ptr<content::MediaStreamUI>());

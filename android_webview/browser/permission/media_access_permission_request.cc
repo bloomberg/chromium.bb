@@ -39,8 +39,8 @@ const MediaStreamDevice* GetDeviceByIdOrFirstAvailable(
 
 MediaAccessPermissionRequest::MediaAccessPermissionRequest(
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback)
-    : request_(request), callback_(callback) {}
+    content::MediaResponseCallback callback)
+    : request_(request), callback_(std::move(callback)) {}
 
 MediaAccessPermissionRequest::~MediaAccessPermissionRequest() {}
 
@@ -48,8 +48,8 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
   std::unique_ptr<content::MediaStreamUI> ui;
   MediaStreamDevices devices;
   if (!allowed) {
-    callback_.Run(devices, content::MEDIA_DEVICE_PERMISSION_DENIED,
-                  std::move(ui));
+    std::move(callback_).Run(devices, content::MEDIA_DEVICE_PERMISSION_DENIED,
+                             std::move(ui));
     return;
   }
 
@@ -74,10 +74,10 @@ void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
     if (device)
       devices.push_back(*device);
   }
-  callback_.Run(devices,
-                devices.empty() ? content::MEDIA_DEVICE_NO_HARDWARE
-                                : content::MEDIA_DEVICE_OK,
-                std::move(ui));
+  std::move(callback_).Run(devices,
+                           devices.empty() ? content::MEDIA_DEVICE_NO_HARDWARE
+                                           : content::MEDIA_DEVICE_OK,
+                           std::move(ui));
 }
 
 const GURL& MediaAccessPermissionRequest::GetOrigin() {

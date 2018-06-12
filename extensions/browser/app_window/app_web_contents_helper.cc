@@ -84,13 +84,13 @@ void AppWebContentsHelper::RequestToLockMouse() const {
 
 void AppWebContentsHelper::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) const {
+    content::MediaResponseCallback callback) const {
   const Extension* extension = GetExtension();
   if (!extension)
     return;
 
-  app_delegate_->RequestMediaAccessPermission(
-      web_contents_, request, callback, extension);
+  app_delegate_->RequestMediaAccessPermission(web_contents_, request,
+                                              std::move(callback), extension);
 }
 
 bool AppWebContentsHelper::CheckMediaAccessPermission(

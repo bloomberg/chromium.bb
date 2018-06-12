@@ -225,9 +225,9 @@ class MediaStreamUI {
 
 // Callback used return results of media access requests.
 using MediaResponseCallback =
-    base::Callback<void(const MediaStreamDevices& devices,
-                        MediaStreamRequestResult result,
-                        std::unique_ptr<MediaStreamUI> ui)>;
+    base::OnceCallback<void(const MediaStreamDevices& devices,
+                            MediaStreamRequestResult result,
+                            std::unique_ptr<MediaStreamUI> ui)>;
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_MEDIA_STREAM_REQUEST_H_

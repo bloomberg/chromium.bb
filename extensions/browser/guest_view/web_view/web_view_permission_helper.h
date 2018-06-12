@@ -59,10 +59,9 @@ class WebViewPermissionHelper
       content::WebContents* web_contents);
   static WebViewPermissionHelper* FromFrameID(int render_process_id,
                                               int render_frame_id);
-  void RequestMediaAccessPermission(
-      content::WebContents* source,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback);
+  void RequestMediaAccessPermission(content::WebContents* source,
+                                    const content::MediaStreamRequest& request,
+                                    content::MediaResponseCallback callback);
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
                                   content::MediaStreamType type);
@@ -125,7 +124,7 @@ class WebViewPermissionHelper
 
  private:
   void OnMediaPermissionResponse(const content::MediaStreamRequest& request,
-                                 const content::MediaResponseCallback& callback,
+                                 content::MediaResponseCallback callback,
                                  bool allow,
                                  const std::string& user_input);
 

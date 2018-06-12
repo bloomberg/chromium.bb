@@ -15,7 +15,7 @@
 void MediaAccessHandler::CheckDevicesAndRunCallback(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     bool audio_allowed,
     bool video_allowed) {
   // TODO(vrk): This code is largely duplicated in
@@ -78,5 +78,5 @@ void MediaAccessHandler::CheckDevicesAndRunCallback(
              ->RegisterMediaStream(web_contents, devices);
   }
 
-  callback.Run(devices, result, std::move(ui));
+  std::move(callback).Run(devices, result, std::move(ui));
 }

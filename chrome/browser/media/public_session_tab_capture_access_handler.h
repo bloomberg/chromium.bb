@@ -40,7 +40,7 @@ class PublicSessionTabCaptureAccessHandler : public CaptureAccessHandlerBase {
       const extensions::Extension* extension) override;
   void HandleRequest(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,
-                     const content::MediaResponseCallback& callback,
+                     content::MediaResponseCallback callback,
                      const extensions::Extension* extension) override;
 
  private:
@@ -49,7 +49,7 @@ class PublicSessionTabCaptureAccessHandler : public CaptureAccessHandlerBase {
   void ChainHandleRequest(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
+      content::MediaResponseCallback callback,
       const extensions::Extension* extension,
       const extensions::PermissionIDSet& allowed_permissions);
 

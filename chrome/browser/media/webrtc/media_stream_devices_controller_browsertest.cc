@@ -72,11 +72,12 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
 
   void RequestPermissions(content::WebContents* web_contents,
                           const content::MediaStreamRequest& request,
-                          const content::MediaResponseCallback& callback) {
+                          content::MediaResponseCallback callback) {
     base::RunLoop run_loop;
     ASSERT_TRUE(quit_closure_.is_null());
     quit_closure_ = run_loop.QuitClosure();
-    MediaStreamDevicesController::RequestPermissions(request, callback);
+    MediaStreamDevicesController::RequestPermissions(request,
+                                                     std::move(callback));
     run_loop.Run();
   }
 

@@ -44,7 +44,7 @@ class MockShellAppDelegate : public extensions::ShellAppDelegate {
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
+      content::MediaResponseCallback callback,
       const extensions::Extension* extension) override {
     requested_ = true;
     if (request_message_loop_runner_.get())

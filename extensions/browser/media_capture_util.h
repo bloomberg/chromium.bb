@@ -25,7 +25,7 @@ namespace media_capture_util {
 // Usually used as a helper for media capture ProcessMediaAccessRequest().
 void GrantMediaStreamRequest(content::WebContents* web_contents,
                              const content::MediaStreamRequest& request,
-                             const content::MediaResponseCallback& callback,
+                             content::MediaResponseCallback callback,
                              const Extension* extension);
 
 // Verifies that the extension has permission for |type|. If not, crash.

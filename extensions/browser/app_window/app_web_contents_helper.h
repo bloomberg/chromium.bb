@@ -47,7 +47,7 @@ class AppWebContentsHelper {
   // WebContentsDelegate.
   void RequestMediaAccessPermission(
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) const;
+      content::MediaResponseCallback callback) const;
 
   // Checks permission to use the camera or microphone. See
   // WebContentsDelegate.

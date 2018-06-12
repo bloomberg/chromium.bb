@@ -48,7 +48,7 @@ namespace media_capture_util {
 // See also Chrome's MediaCaptureDevicesDispatcher.
 void GrantMediaStreamRequest(content::WebContents* web_contents,
                              const content::MediaStreamRequest& request,
-                             const content::MediaResponseCallback& callback,
+                             content::MediaResponseCallback callback,
                              const Extension* extension) {
   // app_shell only supports audio and video capture, not tab or screen capture.
   DCHECK(request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
@@ -76,9 +76,10 @@ void GrantMediaStreamRequest(content::WebContents* web_contents,
 
   // TODO(jamescook): Should we show a recording icon somewhere? If so, where?
   std::unique_ptr<MediaStreamUI> ui;
-  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
-                                        : content::MEDIA_DEVICE_OK,
-               std::move(ui));
+  std::move(callback).Run(devices,
+                          devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
+                                          : content::MEDIA_DEVICE_OK,
+                          std::move(ui));
 }
 
 void VerifyMediaAccessPermission(content::MediaStreamType type,

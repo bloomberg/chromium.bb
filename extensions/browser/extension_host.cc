@@ -432,9 +432,9 @@ void ExtensionHost::RenderViewReady() {
 void ExtensionHost::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
-  delegate_->ProcessMediaAccessRequest(
-      web_contents, request, callback, extension());
+    content::MediaResponseCallback callback) {
+  delegate_->ProcessMediaAccessRequest(web_contents, request,
+                                       std::move(callback), extension());
 }
 
 bool ExtensionHost::CheckMediaAccessPermission(

@@ -38,14 +38,14 @@ bool TabCaptureAccessHandler::CheckMediaAccessPermission(
 void TabCaptureAccessHandler::HandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   content::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
   if (!extension) {
-    callback.Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE,
-                 std::move(ui));
+    std::move(callback).Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE,
+                            std::move(ui));
     return;
   }
 
@@ -55,7 +55,8 @@ void TabCaptureAccessHandler::HandleRequest(
       extensions::TabCaptureRegistry::Get(profile);
   if (!tab_capture_registry) {
     NOTREACHED();
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
+    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE,
+                            std::move(ui));
     return;
   }
   const bool tab_capture_allowed = tab_capture_registry->VerifyRequest(
@@ -83,7 +84,8 @@ void TabCaptureAccessHandler::HandleRequest(
              ->RegisterMediaStream(web_contents, devices);
   }
   UpdateExtensionTrusted(request, extension);
-  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
-                                        : content::MEDIA_DEVICE_OK,
-               std::move(ui));
+  std::move(callback).Run(devices,
+                          devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
+                                          : content::MEDIA_DEVICE_OK,
+                          std::move(ui));
 }

@@ -223,13 +223,13 @@ const content::MediaStreamDevice* GetRequestedDeviceOrDefault(
 void CastWebViewDefault::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   if (!chromecast::IsFeatureEnabled(kAllowUserMediaAccess) &&
       !allow_media_access_) {
     LOG(WARNING) << __func__ << ": media access is disabled.";
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_NOT_SUPPORTED,
-                 std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_NOT_SUPPORTED,
+                            std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 
@@ -261,8 +261,8 @@ void CastWebViewDefault::RequestMediaAccessPermission(
     }
   }
 
-  callback.Run(devices, content::MEDIA_DEVICE_OK,
-               std::unique_ptr<content::MediaStreamUI>());
+  std::move(callback).Run(devices, content::MEDIA_DEVICE_OK,
+                          std::unique_ptr<content::MediaStreamUI>());
 }
 
 std::unique_ptr<content::BluetoothChooser>

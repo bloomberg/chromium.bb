@@ -232,17 +232,17 @@ bool AwWebContentsDelegate::ShouldResumeRequestsForCreatedWindow() {
 void AwWebContentsDelegate::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
   if (!aw_contents) {
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                 std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+                            std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   aw_contents->GetPermissionRequestHandler()->SendRequest(
       std::unique_ptr<AwPermissionRequestDelegate>(
-          new MediaAccessPermissionRequest(request, callback)));
+          new MediaAccessPermissionRequest(request, std::move(callback))));
 }
 
 void AwWebContentsDelegate::EnterFullscreenModeForTab(

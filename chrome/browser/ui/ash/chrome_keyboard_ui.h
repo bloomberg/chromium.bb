@@ -54,7 +54,7 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   // Requests the audio input from microphone for speech input.
   void RequestAudioInput(content::WebContents* web_contents,
                          const content::MediaStreamRequest& request,
-                         const content::MediaResponseCallback& callback);
+                         content::MediaResponseCallback callback);
 
   // Called when a window being observed changes bounds, to update its insets.
   void UpdateInsetsForWindow(aura::Window* window);

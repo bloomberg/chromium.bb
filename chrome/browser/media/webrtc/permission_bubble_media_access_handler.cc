@@ -32,16 +32,21 @@
 
 using content::BrowserThread;
 
+using RepeatingMediaResponseCallback =
+    base::RepeatingCallback<void(const content::MediaStreamDevices& devices,
+                                 content::MediaStreamRequestResult result,
+                                 std::unique_ptr<content::MediaStreamUI> ui)>;
+
 struct PermissionBubbleMediaAccessHandler::PendingAccessRequest {
   PendingAccessRequest(const content::MediaStreamRequest& request,
-                       const content::MediaResponseCallback& callback)
+                       RepeatingMediaResponseCallback callback)
       : request(request), callback(callback) {}
   ~PendingAccessRequest() {}
 
   // TODO(gbillock): make the MediaStreamDevicesController owned by
   // this object when we're using bubbles.
   content::MediaStreamRequest request;
-  content::MediaResponseCallback callback;
+  RepeatingMediaResponseCallback callback;
 };
 
 PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler() {
@@ -97,7 +102,7 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
 void PermissionBubbleMediaAccessHandler::HandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -107,14 +112,15 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
           chrome::android::kUserMediaScreenCapturing)) {
     // If screen capturing isn't enabled on Android, we'll use "invalid state"
     // as result, same as on desktop.
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_INVALID_STATE, nullptr);
     return;
   }
 #endif  // defined(OS_ANDROID)
 
   RequestsQueue& queue = pending_requests_[web_contents];
-  queue.push_back(PendingAccessRequest(request, callback));
+  queue.push_back(PendingAccessRequest(
+      request, base::AdaptCallbackForRepeating(std::move(callback))));
 
   // If this is the only request then show the infobar.
   if (queue.size() == 1)
@@ -198,7 +204,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
   if (queue.empty())
     return;
 
-  content::MediaResponseCallback callback = queue.front().callback;
+  RepeatingMediaResponseCallback callback = queue.front().callback;
   queue.pop_front();
 
   if (!queue.empty()) {
