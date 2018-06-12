@@ -72,7 +72,9 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void LoginAsGuest() override;
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) override;
   void FocusLockScreenApps(bool reverse) override;
-  void ShowGaiaSignin(const base::Optional<AccountId>& account_id) override;
+  void ShowGaiaSignin(
+      bool can_close,
+      const base::Optional<AccountId>& prefilled_account) override;
   void OnRemoveUserWarningShown() override;
   void RemoveUser(const AccountId& account_id) override;
   void LaunchPublicSession(const AccountId& account_id,

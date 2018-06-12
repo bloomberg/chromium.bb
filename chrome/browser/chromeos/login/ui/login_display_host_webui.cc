@@ -1151,7 +1151,8 @@ void LoginDisplayHostWebUI::StartVoiceInteractionOobe() {
 
 void LoginDisplayHostWebUI::UpdateGaiaDialogVisibility(
     bool visible,
-    const base::Optional<AccountId>& account) {
+    bool can_close,
+    const base::Optional<AccountId>& prefilled_account) {
   NOTREACHED();
 }
 

@@ -95,7 +95,7 @@ class LockDebugView : public views::View, public views::ButtonListener {
   std::unique_ptr<DebugDataDispatcherTransformer> const debug_data_dispatcher_;
   // Reference to the detachable base model passed to (and owned by) lock_.
   DebugLoginDetachableBaseModel* debug_detachable_base_model_ = nullptr;
-  size_t num_users_ = 1u;
+  int num_users_ = 1;
   size_t num_dev_channel_info_clicks_ = 0u;
   LoginScreenController::ForceFailAuth force_fail_auth_ =
       LoginScreenController::ForceFailAuth::kOff;

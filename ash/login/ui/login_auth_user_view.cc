@@ -719,7 +719,7 @@ void LoginAuthUserView::OnUserViewTap() {
 
 void LoginAuthUserView::OnOnlineSignInMessageTap() {
   Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-      current_user()->basic_user_info->account_id);
+      true /*can_close*/, current_user()->basic_user_info->account_id);
 }
 
 bool LoginAuthUserView::HasAuthMethod(AuthMethods auth_method) const {

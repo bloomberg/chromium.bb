@@ -183,10 +183,11 @@ void LoginScreenController::FocusLockScreenApps(bool reverse) {
 }
 
 void LoginScreenController::ShowGaiaSignin(
-    const base::Optional<AccountId>& account_id) {
+    bool can_close,
+    const base::Optional<AccountId>& prefilled_account) {
   if (!login_screen_client_)
     return;
-  login_screen_client_->ShowGaiaSignin(account_id);
+  login_screen_client_->ShowGaiaSignin(can_close, prefilled_account);
 }
 
 void LoginScreenController::OnRemoveUserWarningShown() {
