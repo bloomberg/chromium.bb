@@ -159,6 +159,11 @@ void MemEntryImpl::Doom() {
 void MemEntryImpl::Close() {
   DCHECK_EQ(PARENT_ENTRY, type());
   --ref_count_;
+  if (ref_count_ == 0 && !doomed_) {
+    // At this point the user is clearly done writing, so make sure there isn't
+    // wastage due to exponential growth of vector for main data stream.
+    data_[1].shrink_to_fit();
+  }
   DCHECK_GE(ref_count_, 0);
   if (!ref_count_ && doomed_)
     delete this;
