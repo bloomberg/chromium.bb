@@ -8,10 +8,12 @@
 #include <Carbon/Carbon.h>
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "build/buildflag.h"
 #include "chrome/app/chrome_command_ids.h"
+#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
 #include "chrome/browser/ui/views_mode_controller.h"
@@ -25,14 +27,6 @@ namespace {
 NSMenuItem* FindMenuItem(NSEvent* key, NSMenu* menu) {
   NSMenuItem* result = nil;
 
-  // Ask the delegate to update the menu first.
-  if ([[menu delegate] respondsToSelector:@selector(menuNeedsUpdate:)])
-    [[menu delegate] menuNeedsUpdate:menu];
-
-  // Then update the menu, which will validate every user interface item.
-  [menu update];
-
-  // Then look for a matching NSMenuItem.
   for (NSMenuItem* item in [menu itemArray]) {
     NSMenu* submenu = [item submenu];
     if (submenu) {
@@ -53,7 +47,16 @@ int MenuCommandForKeyEvent(NSEvent* event) {
   if ([event type] != NSKeyDown)
     return -1;
 
-  // Look in menu.
+  // We avoid calling -[NSMenuDelegate menuNeedsUpdate:] on each submenu's
+  // delegate as that can be slow. Instead, we update the relevant NSMenuItems
+  // if [NSApp delegate] is an instance of AppController. See
+  // https://crbug.com/851260#c4.
+  [base::mac::ObjCCast<AppController>([NSApp delegate])
+      updateMenuItemKeyEquivalents];
+
+  // Then call -[NSMenu update], which will validate every user interface item.
+  [[NSApp mainMenu] update];
+
   NSMenuItem* item = FindMenuItem(event, [NSApp mainMenu]);
 
   if (!item)
