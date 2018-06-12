@@ -16,6 +16,8 @@ source_set("cpp") {
     "device_factory.h",
     "input_ipc.cc",
     "input_ipc.h",
+    "output_device.cc",
+    "output_device.h",
   ]
 
   public_deps = [

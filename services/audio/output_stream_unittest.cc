@@ -137,6 +137,24 @@ class TestEnvironment {
     return stream_ptr;
   }
 
+  media::mojom::AudioOutputStreamPtr CreateStreamWithNullptrObserver() {
+    media::mojom::AudioOutputStreamPtr stream_ptr;
+    stream_factory_ptr_->CreateOutputStream(
+        mojo::MakeRequest(&stream_ptr), nullptr, log_.MakePtr(), "",
+        media::AudioParameters::UnavailableDeviceParams(),
+        base::UnguessableToken::Create(), created_callback_.Get());
+    return stream_ptr;
+  }
+
+  media::mojom::AudioOutputStreamPtr CreateStreamWithNullptrLog() {
+    media::mojom::AudioOutputStreamPtr stream_ptr;
+    stream_factory_ptr_->CreateOutputStream(
+        mojo::MakeRequest(&stream_ptr), observer_.MakePtrInfo(), nullptr, "",
+        media::AudioParameters::UnavailableDeviceParams(),
+        base::UnguessableToken::Create(), created_callback_.Get());
+    return stream_ptr;
+  }
+
   media::MockAudioManager& audio_manager() { return audio_manager_; }
 
   MockObserver& observer() { return observer_; }
@@ -182,6 +200,56 @@ TEST(AudioServiceOutputStreamTest, ConstructDestruct) {
   Mock::VerifyAndClear(&env.created_callback());
 
   EXPECT_CALL(env.log(), OnClosed());
+  EXPECT_CALL(mock_stream, Close());
+  EXPECT_CALL(env.observer(),
+              BindingConnectionError(kTerminatedByClientDisconnectReason, _));
+  stream_ptr.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST(AudioServiceOutputStreamTest, ConstructDestructNullptrObserver) {
+  TestEnvironment env;
+  MockStream mock_stream;
+  EXPECT_CALL(env.created_callback(), Created(successfully_));
+  env.audio_manager().SetMakeOutputStreamCB(base::BindRepeating(
+      [](media::AudioOutputStream* stream, const media::AudioParameters& params,
+         const std::string& device_id) { return stream; },
+      &mock_stream));
+
+  EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, SetVolume(1));
+  EXPECT_CALL(env.log(), OnCreated(_, _));
+
+  media::mojom::AudioOutputStreamPtr stream_ptr =
+      env.CreateStreamWithNullptrObserver();
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClear(&mock_stream);
+  Mock::VerifyAndClear(&env.created_callback());
+
+  EXPECT_CALL(env.log(), OnClosed());
+  EXPECT_CALL(mock_stream, Close());
+  stream_ptr.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST(AudioServiceOutputStreamTest, ConstructDestructNullptrLog) {
+  TestEnvironment env;
+  MockStream mock_stream;
+  EXPECT_CALL(env.created_callback(), Created(successfully_));
+  env.audio_manager().SetMakeOutputStreamCB(base::BindRepeating(
+      [](media::AudioOutputStream* stream, const media::AudioParameters& params,
+         const std::string& device_id) { return stream; },
+      &mock_stream));
+
+  EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, SetVolume(1));
+
+  media::mojom::AudioOutputStreamPtr stream_ptr =
+      env.CreateStreamWithNullptrLog();
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClear(&mock_stream);
+  Mock::VerifyAndClear(&env.created_callback());
+
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(env.observer(),
               BindingConnectionError(kTerminatedByClientDisconnectReason, _));
