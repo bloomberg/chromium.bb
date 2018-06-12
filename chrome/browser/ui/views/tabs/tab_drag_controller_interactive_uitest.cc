@@ -2572,11 +2572,10 @@ void DragToOverviewWindowStep2(DetachToBrowserTabDragControllerTest* test,
   // Test that the dragged tab did not attach to the overview window.
   EXPECT_EQ(3u, test->browser_list->size());
 
-  if (test->input_source() == INPUT_SOURCE_TOUCH) {
+  if (test->input_source() == INPUT_SOURCE_TOUCH)
     ASSERT_TRUE(test->ReleaseInput());
-  } else {
+  else
     ASSERT_TRUE(test->ReleaseMouseAsync());
-  }
 }
 
 }  // namespace
@@ -2608,6 +2607,61 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // the drag ends.
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ(2u, browser_list->size());
+}
+
+namespace {
+
+void DragToOverviewNewWindowItemStep2(
+    DetachToBrowserTabDragControllerTest* test,
+    TabStrip* attached_tab_strip) {
+  ASSERT_TRUE(attached_tab_strip->IsDragSessionActive());
+  ASSERT_TRUE(TabDragController::IsActive());
+  EXPECT_TRUE(attached_tab_strip->HasFocus());
+
+  // Put the attached window in overview to simulate the "drop on the new
+  // selector item" scenario.
+  attached_tab_strip->GetWidget()->GetNativeWindow()->SetProperty(
+      ash::kIsShowingInOverviewKey, true);
+  // At the same time we remove |attached_tab_strip|'s focus to simulate what
+  // happens in overview (In overview, the window items in overview don't have
+  // focus, it's the textfield in overview that has focus).
+  attached_tab_strip->GetFocusManager()->SetFocusedView(nullptr);
+
+  if (test->input_source() == INPUT_SOURCE_TOUCH)
+    ASSERT_TRUE(test->ReleaseInput());
+  else
+    ASSERT_TRUE(test->ReleaseMouseAsync());
+}
+
+}  // namespace
+
+// After dragging a window to drop it onto the new window selector item in
+// overview mode, the window should be added to overview window grid, and should
+// not restore its focus.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragToOverviewNewWindowItem) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Make |tab_strip| the focused view before dragging.
+  tab_strip->GetFocusManager()->SetFocusedView(tab_strip);
+  EXPECT_TRUE(tab_strip->HasFocus());
+
+  // Drag the tab long enough so that it moves.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::BindOnce(&DragToOverviewNewWindowItemStep2, this, tab_strip)));
+  QuitWhenNotDragging();
+
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ(1u, browser_list->size());
+
+  // Test that the attached tabstrip doesn't restore focuas as it's currently
+  // showing in overview.
+  EXPECT_TRUE(tab_strip->GetWidget()->GetNativeWindow()->GetProperty(
+      ash::kIsShowingInOverviewKey));
+  EXPECT_FALSE(tab_strip->HasFocus());
 }
 
 #endif  // OS_CHROMEOS

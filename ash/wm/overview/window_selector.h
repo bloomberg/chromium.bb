@@ -108,7 +108,13 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   WindowGrid* GetGridWithRootWindow(aura::Window* root_window);
 
   // Add |window| to the grid in |grid_list_| with the same root window. Does
-  // nothing if the grid already contains |window|.
+  // nothing if the grid already contains |window|. This may be called in two
+  // scenarioes: 1) when a item in split view mode was previously snapped but
+  // should now be returned to the window grid (e.g. split view divider dragged
+  // to either edge, or a window is snapped to a postion that already has a
+  // snapped window); 2) when a window (not from overview) is dragged while
+  // overview is open and the window is dropped on the new selector item, the
+  // dragged window is then added to the overview.
   void AddItem(aura::Window* window);
 
   // Removes the window selector item from the overview window grid.
@@ -126,6 +132,15 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
              float velocity_y);
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
+
+  // Called when a window's tab(s) start/continue/end being dragged around if
+  // overview mode is active.
+  // TODO(xdai): Currently it doesn't work for multi-display scenario.
+  void OnWindowDragStarted(aura::Window* dragged_window);
+  void OnWindowDragContinued(aura::Window* dragged_window,
+                             const gfx::Point& location_in_screen);
+  void OnWindowDragEnded(aura::Window* dragged_window,
+                         const gfx::Point& location_in_screen);
 
   // Positions all of the windows in the overview, except |ignored_item|.
   void PositionWindows(bool animate,

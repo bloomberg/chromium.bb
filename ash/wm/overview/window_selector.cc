@@ -533,12 +533,6 @@ void WindowSelector::AddItem(aura::Window* window) {
   if (!grid || grid->GetWindowSelectorItemContaining(window))
     return;
 
-  // This is meant to be called when a item in split view mode was previously
-  // snapped but should now be returned to the window grid (ie. split view
-  // divider dragged to either edge).
-  DCHECK(SplitViewController::ShouldAllowSplitView());
-  DCHECK(Shell::Get()->split_view_controller()->CanSnap(window));
-
   // The dimensions of |window| will be very slim because of dragging the
   // divider to the edge. Change the window dimensions to its tablet mode
   // dimensions. Note: if split view is no longer constrained to tablet mode
@@ -621,6 +615,33 @@ void WindowSelector::ActivateDraggedWindow() {
 
 void WindowSelector::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
+}
+
+void WindowSelector::OnWindowDragStarted(aura::Window* dragged_window) {
+  WindowGrid* target_grid =
+      GetGridWithRootWindow(dragged_window->GetRootWindow());
+  if (!target_grid)
+    return;
+  target_grid->OnWindowDragStarted(dragged_window);
+}
+
+void WindowSelector::OnWindowDragContinued(
+    aura::Window* dragged_window,
+    const gfx::Point& location_in_screen) {
+  WindowGrid* target_grid =
+      GetGridWithRootWindow(dragged_window->GetRootWindow());
+  if (!target_grid)
+    return;
+  target_grid->OnWindowDragContinued(dragged_window, location_in_screen);
+}
+
+void WindowSelector::OnWindowDragEnded(aura::Window* dragged_window,
+                                       const gfx::Point& location_in_screen) {
+  WindowGrid* target_grid =
+      GetGridWithRootWindow(dragged_window->GetRootWindow());
+  if (!target_grid)
+    return;
+  target_grid->OnWindowDragEnded(dragged_window, location_in_screen);
 }
 
 void WindowSelector::PositionWindows(bool animate,

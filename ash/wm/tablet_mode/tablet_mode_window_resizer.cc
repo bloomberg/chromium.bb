@@ -27,15 +27,21 @@ namespace {
 // the phantom window.
 constexpr float kThresholdRatio = 0.25;
 
+// Returns the window selector if overview mode is active, otherwise returns
+// nullptr.
+WindowSelector* GetWindowSelector() {
+  return Shell::Get()->window_selector_controller()->IsSelecting()
+             ? Shell::Get()->window_selector_controller()->window_selector()
+             : nullptr;
+}
+
 // Returns true if overview mode is active and |location_in_screen| is contained
 // inside of the overview window grid.
 bool OverviewGridBoundsContains(const gfx::Point& location_in_screen) {
   if (!Shell::Get()->window_selector_controller()->IsSelecting())
     return false;
 
-  WindowSelector* window_selector =
-      Shell::Get()->window_selector_controller()->window_selector();
-  WindowGrid* current_grid = window_selector->GetGridWithRootWindow(
+  WindowGrid* current_grid = GetWindowSelector()->GetGridWithRootWindow(
       wm::GetRootWindowAt(location_in_screen));
   if (!current_grid)
     return false;
@@ -68,6 +74,8 @@ TabletModeWindowResizer::TabletModeWindowResizer(wm::WindowState* window_state)
   original_backdrop_mode_ = GetTarget()->GetProperty(kBackdropWindowMode);
   GetTarget()->SetProperty(kBackdropWindowMode, BackdropWindowMode::kDisabled);
   split_view_controller_->OnWindowDragStarted(GetTarget());
+  if (GetWindowSelector())
+    GetWindowSelector()->OnWindowDragStarted(GetTarget());
 }
 
 TabletModeWindowResizer::~TabletModeWindowResizer() {
@@ -95,6 +103,11 @@ void TabletModeWindowResizer::Drag(const gfx::Point& location_in_parent,
   }
 
   previous_location_in_parent_ = location_in_parent;
+
+  gfx::Point location_in_screen = location_in_parent;
+  ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
+  if (GetWindowSelector())
+    GetWindowSelector()->OnWindowDragContinued(GetTarget(), location_in_screen);
 }
 
 void TabletModeWindowResizer::CompleteDrag() {
@@ -111,6 +124,10 @@ void TabletModeWindowResizer::CompleteDrag() {
   // Start observing it until we can decide what to do next.
   split_view_controller_->OnWindowDragEnded(GetTarget(), snap_position_,
                                             previous_location_in_screen);
+  if (GetWindowSelector()) {
+    GetWindowSelector()->OnWindowDragEnded(GetTarget(),
+                                           previous_location_in_screen);
+  }
 }
 
 void TabletModeWindowResizer::RevertDrag() {

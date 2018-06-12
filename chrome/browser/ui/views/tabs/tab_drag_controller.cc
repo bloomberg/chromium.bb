@@ -136,19 +136,28 @@ void StoreCurrentDraggedBrowserBoundsInTabletMode(
   }
 }
 
+// Returns true if |tabstrip| is currently showing in overview mode in Chrome
+// OS.
+bool IsShowingInOverview(TabStrip* tabstrip) {
+  return tabstrip && tabstrip->GetWidget()->GetNativeWindow()->GetProperty(
+                         ash::kIsShowingInOverviewKey);
+}
+
 // Returns true if we should attach the dragged tabs into |target_tabstrip|
 // after the drag ends. Currently it only happens on Chrome OS, when the dragged
 // tabs are dragged over an overview window, we should not try to attach it
 // to the overview window during dragging, but should wait to do so until the
 // drag ends.
 bool ShouldAttachOnEnd(TabStrip* target_tabstrip) {
-  return target_tabstrip &&
-         target_tabstrip->GetWidget()->GetNativeWindow()->GetProperty(
-             ash::kIsShowingInOverviewKey);
+  return IsShowingInOverview(target_tabstrip);
 }
 
 #else
 bool IsSnapped(const TabStrip* tab_strip) {
+  return false;
+}
+
+bool IsShowingInOverview(TabStrip* tabstrip) {
   return false;
 }
 
@@ -1430,7 +1439,12 @@ void TabDragController::EndDragImpl(EndDragType type) {
     // is false, the user just clicked and released and didn't move the mouse
     // enough to trigger a drag.
     if (started_drag_) {
-      RestoreFocus();
+      // After the drag ends, if |attached_tabstrip_| is showing in overview
+      // mode, do not restore focus, otherwise overview mode may be ended
+      // unexpectly because of the window activation.
+      if (!IsShowingInOverview(attached_tabstrip_))
+        RestoreFocus();
+
       if (type == CANCELED)
         RevertDrag();
       else

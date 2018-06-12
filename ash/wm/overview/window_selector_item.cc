@@ -866,8 +866,10 @@ void WindowSelectorItem::OnMinimizedStateChanged() {
 }
 
 void WindowSelectorItem::UpdateCannotSnapWarningVisibility() {
-  // Windows which can snap will never show this warning.
-  if (Shell::Get()->split_view_controller()->CanSnap(GetWindow())) {
+  // Windows which can snap will never show this warning. Or if the window is
+  // the new selector item window, also do not show this warning.
+  if (Shell::Get()->split_view_controller()->CanSnap(GetWindow()) ||
+      window_grid_->IsNewSelectorItemWindow(GetWindow())) {
     caption_container_view_->SetCannotSnapLabelVisibility(false);
     return;
   }
