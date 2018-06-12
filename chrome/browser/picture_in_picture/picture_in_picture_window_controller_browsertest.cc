@@ -13,10 +13,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/public/browser/overlay_window.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
+#include "net/dns/mock_host_resolver.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
@@ -34,6 +36,12 @@ class PictureInPictureWindowControllerBrowserTest
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void SetUpWindowController(content::WebContents* web_contents) {
@@ -507,4 +515,81 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   ASSERT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
 }
+
+// Checks that a video in Picture-in-Picture stops if its iframe is removed.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       FrameEnterLeaveClosesWindow) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/iframe-test.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents != nullptr);
+
+  SetUpWindowController(active_web_contents);
+
+  std::vector<content::RenderFrameHost*> render_frame_hosts =
+      active_web_contents->GetAllFrames();
+  ASSERT_EQ(2u, render_frame_hosts.size());
+
+  content::RenderFrameHost* iframe =
+      render_frame_hosts[0] == active_web_contents->GetMainFrame()
+          ? render_frame_hosts[1]
+          : render_frame_hosts[0];
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      iframe, "enterPictureInPicture();", &result));
+  EXPECT_EQ("done", result);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "removeFrame();"));
+
+  EXPECT_EQ(1u, active_web_contents->GetAllFrames().size());
+  EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+}
+
+// Same as above for a cross-origin iframe.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       CrossOriginFrameEnterLeaveCloseWindow) {
+  GURL embed_url = embedded_test_server()->GetURL(
+      "a.com", "/media/picture-in-picture/iframe-content.html");
+  GURL main_url = embedded_test_server()->GetURL(
+      "example.com", "/media/picture-in-picture/iframe-test.html?embed_url=" +
+                         embed_url.spec());
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents != nullptr);
+
+  SetUpWindowController(active_web_contents);
+
+  std::vector<content::RenderFrameHost*> render_frame_hosts =
+      active_web_contents->GetAllFrames();
+  ASSERT_EQ(2u, render_frame_hosts.size());
+
+  content::RenderFrameHost* iframe =
+      render_frame_hosts[0] == active_web_contents->GetMainFrame()
+          ? render_frame_hosts[1]
+          : render_frame_hosts[0];
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      iframe, "enterPictureInPicture();", &result));
+  EXPECT_EQ("done", result);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "removeFrame();"));
+
+  EXPECT_EQ(1u, active_web_contents->GetAllFrames().size());
+  EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
+}
+
 #endif  // !defined(OS_LINUX)

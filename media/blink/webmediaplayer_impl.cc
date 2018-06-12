@@ -813,10 +813,10 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 
 void WebMediaPlayerImpl::EnterPictureInPicture(
     blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
-  // When the pipeline is suspended, there will be no valid surface. In this
+  // When the pipeline is not stable, there will be no valid surface. In this
   // case, resuming the pipeline will auto-trigger Picture-in-Picture.
   if (!pip_surface_id_.is_valid()) {
-    DCHECK(pipeline_controller_.IsSuspended());
+    DCHECK(!pipeline_controller_.IsStable());
     enter_pip_callback_ = std::move(callback);
 
     // This will trigger the pipeline to resume now that the player is pending

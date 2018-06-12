@@ -162,6 +162,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
                                    ActiveMediaPlayerMap* player_map,
                                    std::set<MediaPlayerId>* removed_players);
 
+  // Internal method to exit Picture-in-Picture from an event received from the
+  // renderer process.
+  void ExitPictureInPictureInternal();
+
   // Convenience method that casts web_contents() to a WebContentsImpl*.
   WebContentsImpl* web_contents_impl() const;
 
