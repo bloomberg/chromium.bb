@@ -21,7 +21,7 @@ class DataDeleter {
   // threads, respectively. This function must be called from the UI thread.
   // This method only starts the deletion process in a fire-and-forget fashion;
   // the deletion will finish asynchronously.
-  static void StartDeleting(Profile* profile, const Extension* extenion);
+  static void StartDeleting(Profile* profile, const Extension* extension);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataDeleter);

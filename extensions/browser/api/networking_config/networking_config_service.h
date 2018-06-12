@@ -82,7 +82,7 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
 
   // Unregisters extension with the ID |extension_id| removing all associated
   // HexSSIDs from the map.
-  // |extension_id|: ID identifying the extenion to be removed
+  // |extension_id|: ID identifying the extension to be removed
   void UnregisterExtension(const std::string& extensionId);
 
   // Returns the current AuthenticationResult.

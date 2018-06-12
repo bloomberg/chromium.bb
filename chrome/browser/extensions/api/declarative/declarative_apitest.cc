@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, ExtensionLifetimeRulesHandling) {
   EXPECT_EQ(0u, NumberOfRegisteredRules(extension_id));
 }
 
-// When an extenion is uninstalled, the state store deletes all preferences
+// When an extension is uninstalled, the state store deletes all preferences
 // stored for that extension. We need to make sure we don't store anything after
 // that deletion occurs.
 IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, NoTracesAfterUninstalling) {

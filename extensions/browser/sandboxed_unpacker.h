@@ -258,7 +258,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   Manifest::Location location_;
 
   // Creation flags to use for the extension. These flags will be used
-  // when calling Extenion::Create() by the CRX installer.
+  // when calling Extension::Create() by the CRX installer.
   int creation_flags_;
 
   // Sequenced task runner where file I/O operations will be performed.
