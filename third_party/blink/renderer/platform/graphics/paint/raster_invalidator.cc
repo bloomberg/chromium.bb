@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidator.h"
 
 #include <algorithm>
 #include <memory>
@@ -14,8 +14,7 @@
 
 namespace blink {
 
-void CompositedLayerRasterInvalidator::SetTracksRasterInvalidations(
-    bool should_track) {
+void RasterInvalidator::SetTracksRasterInvalidations(bool should_track) {
   if (should_track) {
     if (!tracking_info_)
       tracking_info_ = std::make_unique<RasterInvalidationTrackingInfo>();
@@ -31,9 +30,8 @@ void CompositedLayerRasterInvalidator::SetTracksRasterInvalidations(
   }
 }
 
-size_t CompositedLayerRasterInvalidator::MatchNewChunkToOldChunk(
-    const PaintChunk& new_chunk,
-    size_t old_index) {
+size_t RasterInvalidator::MatchNewChunkToOldChunk(const PaintChunk& new_chunk,
+                                                  size_t old_index) {
   for (size_t i = old_index; i < paint_chunks_info_.size(); i++) {
     if (paint_chunks_info_[i].Matches(new_chunk))
       return i;
@@ -60,8 +58,7 @@ static bool ApproximatelyEqual(const SkMatrix& a, const SkMatrix& b) {
   return true;
 }
 
-PaintInvalidationReason
-CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
+PaintInvalidationReason RasterInvalidator::ChunkPropertiesChanged(
     const RefCountedPropertyTreeState& new_chunk_state,
     const PaintChunkInfo& new_chunk,
     const PaintChunkInfo& old_chunk,
@@ -110,10 +107,10 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
 // respectively. Normally both m and n are small numbers. The best caseis that
 // all old chunks have matching new chunks in the same order. The worst case is
 // that no matching chunks except the first one (which always matches otherwise
-// we won't reuse the CompositedLayerRasterInvalidator), which is rare. In
+// we won't reuse the RasterInvalidator), which is rare. In
 // common cases that most of the chunks can be matched in-order, the complexity
 // is slightly larger than O(n).
-void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
+void RasterInvalidator::GenerateRasterInvalidations(
     const PaintArtifact& paint_artifact,
     const PaintChunkSubset& new_chunks,
     const PropertyTreeState& layer_state,
@@ -197,7 +194,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
   }
 }
 
-void CompositedLayerRasterInvalidator::AddDisplayItemRasterInvalidations(
+void RasterInvalidator::AddDisplayItemRasterInvalidations(
     const PaintArtifact& paint_artifact,
     const PaintChunk& chunk,
     const ChunkToLayerMapper& mapper) {
@@ -222,7 +219,7 @@ void CompositedLayerRasterInvalidator::AddDisplayItemRasterInvalidations(
   }
 }
 
-void CompositedLayerRasterInvalidator::IncrementallyInvalidateChunk(
+void RasterInvalidator::IncrementallyInvalidateChunk(
     const PaintChunkInfo& old_chunk,
     const PaintChunkInfo& new_chunk) {
   SkRegion diff(old_chunk.bounds_in_layer);
@@ -235,22 +232,21 @@ void CompositedLayerRasterInvalidator::IncrementallyInvalidateChunk(
   }
 }
 
-void CompositedLayerRasterInvalidator::FullyInvalidateChunk(
-    const PaintChunkInfo& old_chunk,
-    const PaintChunkInfo& new_chunk,
-    PaintInvalidationReason reason) {
+void RasterInvalidator::FullyInvalidateChunk(const PaintChunkInfo& old_chunk,
+                                             const PaintChunkInfo& new_chunk,
+                                             PaintInvalidationReason reason) {
   FullyInvalidateOldChunk(old_chunk, reason);
   if (old_chunk.bounds_in_layer != new_chunk.bounds_in_layer)
     FullyInvalidateNewChunk(new_chunk, reason);
 }
 
-void CompositedLayerRasterInvalidator::FullyInvalidateNewChunk(
+void RasterInvalidator::FullyInvalidateNewChunk(
     const PaintChunkInfo& info,
     PaintInvalidationReason reason) {
   AddRasterInvalidation(info.bounds_in_layer, &info.id.client, reason);
 }
 
-void CompositedLayerRasterInvalidator::FullyInvalidateOldChunk(
+void RasterInvalidator::FullyInvalidateOldChunk(
     const PaintChunkInfo& info,
     PaintInvalidationReason reason) {
   String debug_name;
@@ -260,11 +256,10 @@ void CompositedLayerRasterInvalidator::FullyInvalidateOldChunk(
                         &debug_name);
 }
 
-void CompositedLayerRasterInvalidator::AddRasterInvalidation(
-    const IntRect& rect,
-    const DisplayItemClient* client,
-    PaintInvalidationReason reason,
-    const String* debug_name) {
+void RasterInvalidator::AddRasterInvalidation(const IntRect& rect,
+                                              const DisplayItemClient* client,
+                                              PaintInvalidationReason reason,
+                                              const String* debug_name) {
   raster_invalidation_function_(rect);
   if (tracking_info_) {
     tracking_info_->tracking.AddInvalidation(
@@ -272,27 +267,25 @@ void CompositedLayerRasterInvalidator::AddRasterInvalidation(
   }
 }
 
-RasterInvalidationTracking& CompositedLayerRasterInvalidator::EnsureTracking() {
+RasterInvalidationTracking& RasterInvalidator::EnsureTracking() {
   if (!tracking_info_)
     tracking_info_ = std::make_unique<RasterInvalidationTrackingInfo>();
   return tracking_info_->tracking;
 }
 
-void CompositedLayerRasterInvalidator::Generate(
-    const PaintArtifact& paint_artifact,
-    const gfx::Rect& layer_bounds,
-    const PropertyTreeState& layer_state,
-    const FloatSize& visual_rect_subpixel_offset) {
+void RasterInvalidator::Generate(const PaintArtifact& paint_artifact,
+                                 const gfx::Rect& layer_bounds,
+                                 const PropertyTreeState& layer_state,
+                                 const FloatSize& visual_rect_subpixel_offset) {
   Generate(paint_artifact, paint_artifact.PaintChunks(), layer_bounds,
            layer_state, visual_rect_subpixel_offset);
 }
 
-void CompositedLayerRasterInvalidator::Generate(
-    const PaintArtifact& paint_artifact,
-    const PaintChunkSubset& paint_chunks,
-    const gfx::Rect& layer_bounds,
-    const PropertyTreeState& layer_state,
-    const FloatSize& visual_rect_subpixel_offset) {
+void RasterInvalidator::Generate(const PaintArtifact& paint_artifact,
+                                 const PaintChunkSubset& paint_chunks,
+                                 const gfx::Rect& layer_bounds,
+                                 const PropertyTreeState& layer_state,
+                                 const FloatSize& visual_rect_subpixel_offset) {
   if (RasterInvalidationTracking::ShouldAlwaysTrack())
     EnsureTracking();
 
@@ -332,8 +325,7 @@ void CompositedLayerRasterInvalidator::Generate(
   }
 }
 
-size_t CompositedLayerRasterInvalidator::ApproximateUnsharedMemoryUsage()
-    const {
+size_t RasterInvalidator::ApproximateUnsharedMemoryUsage() const {
   return sizeof(*this) + paint_chunks_info_.capacity() * sizeof(PaintChunkInfo);
 }
 
