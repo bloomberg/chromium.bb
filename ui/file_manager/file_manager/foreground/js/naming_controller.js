@@ -79,9 +79,7 @@ function NamingController(
 NamingController.prototype.validateFileName = function(
     parentEntry, name, onDone) {
   var fileNameErrorPromise = util.validateFileName(
-      parentEntry,
-      name,
-      this.fileFilter_.isFilterHiddenOn());
+      parentEntry, name, !this.fileFilter_.isHiddenFilesVisible());
   fileNameErrorPromise.then(onDone.bind(null, true), function(message) {
     this.alertDialog_.show(message, onDone.bind(null, false));
   }.bind(this)).catch(function(error) {
