@@ -177,9 +177,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The render frame has requested access to media devices listed in
   // |request|, and the client should grant or deny that permission by
   // calling |callback|.
-  virtual void RequestMediaAccessPermission(
-      const MediaStreamRequest& request,
-      const MediaResponseCallback& callback);
+  virtual void RequestMediaAccessPermission(const MediaStreamRequest& request,
+                                            MediaResponseCallback callback);
 
   // Checks if we have permission to access the microphone or camera. Note that
   // this does not query the user. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE

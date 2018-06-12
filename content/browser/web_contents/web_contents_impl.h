@@ -626,9 +626,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                          int route_id,
                          const gfx::Rect& initial_rect) override;
   void ShowCreatedFullscreenWidget(int process_id, int route_id) override;
-  void RequestMediaAccessPermission(
-      const MediaStreamRequest& request,
-      const MediaResponseCallback& callback) override;
+  void RequestMediaAccessPermission(const MediaStreamRequest& request,
+                                    MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
                                   const url::Origin& security_origin,
                                   MediaStreamType type) override;

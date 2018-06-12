@@ -157,8 +157,8 @@ class ChromeKeyboardContentsDelegate : public content::WebContentsDelegate,
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) override {
-    ui_->RequestAudioInput(web_contents, request, callback);
+      content::MediaResponseCallback callback) override {
+    ui_->RequestAudioInput(web_contents, request, std::move(callback));
   }
 
   // content::WebContentsDelegate:
@@ -268,7 +268,7 @@ ChromeKeyboardUI::~ChromeKeyboardUI() {
 void ChromeKeyboardUI::RequestAudioInput(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   const extensions::Extension* extension = nullptr;
   GURL origin(request.security_origin);
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
@@ -279,7 +279,7 @@ void ChromeKeyboardUI::RequestAudioInput(
   }
 
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
-      web_contents, request, callback, extension);
+      web_contents, request, std::move(callback), extension);
 }
 
 void ChromeKeyboardUI::UpdateInsetsForWindow(aura::Window* window) {

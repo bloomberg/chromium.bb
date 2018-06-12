@@ -127,10 +127,10 @@ bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
 void AppViewGuest::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   if (!app_delegate_) {
     WebContentsDelegate::RequestMediaAccessPermission(web_contents, request,
-                                                      callback);
+                                                      std::move(callback));
     return;
   }
   const ExtensionSet& enabled_extensions =
@@ -138,8 +138,8 @@ void AppViewGuest::RequestMediaAccessPermission(
   const Extension* guest_extension =
       enabled_extensions.GetByID(guest_extension_id_);
 
-  app_delegate_->RequestMediaAccessPermission(web_contents, request, callback,
-                                              guest_extension);
+  app_delegate_->RequestMediaAccessPermission(
+      web_contents, request, std::move(callback), guest_extension);
 }
 
 bool AppViewGuest::CheckMediaAccessPermission(

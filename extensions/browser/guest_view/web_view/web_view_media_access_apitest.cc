@@ -27,7 +27,7 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) override {
+      content::MediaResponseCallback callback) override {
     requested_ = true;
     if (request_message_loop_runner_.get())
       request_message_loop_runner_->Quit();

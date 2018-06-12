@@ -42,21 +42,21 @@ bool PublicSessionMediaAccessHandler::CheckMediaAccessPermission(
 void PublicSessionMediaAccessHandler::HandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   // This class handles requests for Public Sessions only, outside of them just
   // pass the request through to the original class.
   if (!profiles::IsPublicSession() || !extension->is_platform_app()) {
-    return extension_media_access_handler_.HandleRequest(web_contents, request,
-                                                         callback, extension);
+    return extension_media_access_handler_.HandleRequest(
+        web_contents, request, std::move(callback), extension);
   }
 
   // This Unretained is safe because the lifetime of this object is until
   // process exit (living inside a base::Singleton object).
-  auto prompt_resolved_callback =
-      base::Bind(&PublicSessionMediaAccessHandler::ChainHandleRequest,
-                 base::Unretained(this), web_contents, request, callback,
-                 base::RetainedRef(extension));
+  auto prompt_resolved_callback = base::AdaptCallbackForRepeating(
+      base::BindOnce(&PublicSessionMediaAccessHandler::ChainHandleRequest,
+                     base::Unretained(this), web_contents, request,
+                     std::move(callback), base::RetainedRef(extension)));
 
   extensions::PermissionIDSet requested_permissions;
   if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE)
@@ -72,7 +72,7 @@ void PublicSessionMediaAccessHandler::HandleRequest(
 void PublicSessionMediaAccessHandler::ChainHandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension,
     const extensions::PermissionIDSet& allowed_permissions) {
   content::MediaStreamRequest request_copy(request);
@@ -86,5 +86,5 @@ void PublicSessionMediaAccessHandler::ChainHandleRequest(
 
   // Pass the request through to the original class.
   extension_media_access_handler_.HandleRequest(web_contents, request_copy,
-                                                callback, extension);
+                                                std::move(callback), extension);
 }

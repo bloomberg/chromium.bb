@@ -22,28 +22,31 @@
 void ScreenCaptureInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
 
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(
           new ScreenCaptureInfoBarDelegateAndroid(web_contents, request,
-                                                  callback))));
+                                                  std::move(callback)))));
 }
 
 ScreenCaptureInfoBarDelegateAndroid::ScreenCaptureInfoBarDelegateAndroid(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback)
-    : web_contents_(web_contents), request_(request), callback_(callback) {
+    content::MediaResponseCallback callback)
+    : web_contents_(web_contents),
+      request_(request),
+      callback_(std::move(callback)) {
   DCHECK_EQ(content::MEDIA_DESKTOP_VIDEO_CAPTURE, request.video_type);
 }
 
 ScreenCaptureInfoBarDelegateAndroid::~ScreenCaptureInfoBarDelegateAndroid() {
   if (!callback_.is_null()) {
-    callback_.Run(content::MediaStreamDevices(),
-                  content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN, nullptr);
+    std::move(callback_).Run(content::MediaStreamDevices(),
+                             content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+                             nullptr);
   }
 }
 
@@ -99,5 +102,5 @@ void ScreenCaptureInfoBarDelegateAndroid::RunCallback(
              ->RegisterMediaStream(web_contents_, devices);
   }
 
-  base::ResetAndReturn(&callback_).Run(devices, result, std::move(ui));
+  std::move(callback_).Run(devices, result, std::move(ui));
 }

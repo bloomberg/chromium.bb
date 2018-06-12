@@ -68,7 +68,7 @@ bool ExtensionMediaAccessHandler::CheckMediaAccessPermission(
 void ExtensionMediaAccessHandler::HandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -85,6 +85,6 @@ void ExtensionMediaAccessHandler::HandleRequest(
       GetDevicePolicy(profile, extension->url(), prefs::kVideoCaptureAllowed,
                       prefs::kVideoCaptureAllowedUrls) != ALWAYS_DENY;
 
-  CheckDevicesAndRunCallback(web_contents, request, callback, audio_allowed,
-                             video_allowed);
+  CheckDevicesAndRunCallback(web_contents, request, std::move(callback),
+                             audio_allowed, video_allowed);
 }

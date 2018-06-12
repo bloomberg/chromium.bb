@@ -467,10 +467,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   // request is denied, a call should be made to |callback| with an empty list
   // of devices. |request| has the details of the request (e.g. which of audio
   // and/or video devices are requested, and lists of available devices).
-  virtual void RequestMediaAccessPermission(
-      WebContents* web_contents,
-      const MediaStreamRequest& request,
-      const MediaResponseCallback& callback);
+  virtual void RequestMediaAccessPermission(WebContents* web_contents,
+                                            const MediaStreamRequest& request,
+                                            MediaResponseCallback callback);
 
   // Checks if we have permission to access the microphone or camera. Note that
   // this does not query the user. |type| must be MEDIA_DEVICE_AUDIO_CAPTURE

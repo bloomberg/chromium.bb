@@ -19,13 +19,13 @@ class ScreenCaptureInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // InfoBarService associated with |web_contents|.
   static void Create(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,
-                     const content::MediaResponseCallback& callback);
+                     content::MediaResponseCallback callback);
 
  private:
   ScreenCaptureInfoBarDelegateAndroid(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback);
+      content::MediaResponseCallback callback);
   ~ScreenCaptureInfoBarDelegateAndroid() override;
 
   // ConfirmInfoBarDelegate:

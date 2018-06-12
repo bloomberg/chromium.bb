@@ -23,7 +23,7 @@ class TestChromeKeyboardUI : public ChromeKeyboardUI {
   ui::InputMethod* GetInputMethod() override { return nullptr; }
   void RequestAudioInput(content::WebContents* web_contents,
                          const content::MediaStreamRequest& request,
-                         const content::MediaResponseCallback& callback) {}
+                         content::MediaResponseCallback callback) {}
 
   std::unique_ptr<content::WebContents> CreateWebContents() override {
     return std::move(contents_);

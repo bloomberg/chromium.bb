@@ -554,11 +554,11 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
 void WebUILoginView::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   // Note: This is needed for taking photos when selecting new user images
   // and SAML logins. Must work for all user types (including supervised).
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
-      web_contents, request, callback, nullptr /* extension */);
+      web_contents, request, std::move(callback), nullptr /* extension */);
 }
 
 bool WebUILoginView::CheckMediaAccessPermission(

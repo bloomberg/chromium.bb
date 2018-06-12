@@ -119,20 +119,21 @@ bool HasAvailableDevices(ContentSettingsType content_type,
 // static
 void MediaStreamDevicesController::RequestPermissions(
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       request.render_process_id, request.render_frame_id);
   // The RFH may have been destroyed by the time the request is processed.
   if (!rfh) {
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                 std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+                            std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   std::unique_ptr<MediaStreamDevicesController> controller(
-      new MediaStreamDevicesController(web_contents, request, callback));
+      new MediaStreamDevicesController(web_contents, request,
+                                       std::move(callback)));
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -262,9 +263,9 @@ void MediaStreamDevicesController::RegisterProfilePrefs(
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {
   if (!callback_.is_null()) {
-    callback_.Run(content::MediaStreamDevices(),
-                  content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                  std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback_).Run(content::MediaStreamDevices(),
+                             content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+                             std::unique_ptr<content::MediaStreamUI>());
   }
 }
 
@@ -302,8 +303,10 @@ void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
 MediaStreamDevicesController::MediaStreamDevicesController(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback)
-    : web_contents_(web_contents), request_(request), callback_(callback) {
+    content::MediaResponseCallback callback)
+    : web_contents_(web_contents),
+      request_(request),
+      callback_(std::move(callback)) {
   DCHECK(content::IsOriginSecure(request_.security_origin) ||
          request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY);
 
@@ -466,7 +469,7 @@ void MediaStreamDevicesController::RunCallback(bool blocked_by_feature_policy) {
              ->GetMediaStreamCaptureIndicator()
              ->RegisterMediaStream(web_contents_, devices);
   }
-  base::ResetAndReturn(&callback_).Run(devices, request_result, std::move(ui));
+  std::move(callback_).Run(devices, request_result, std::move(ui));
 }
 
 void MediaStreamDevicesController::UpdateTabSpecificContentSettings(

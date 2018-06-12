@@ -170,7 +170,7 @@ MediaCaptureDevicesDispatcher::GetVideoCaptureDevices() {
 void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -179,12 +179,13 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
                                     extension) ||
         handler->SupportsStreamType(web_contents, request.audio_type,
                                     extension)) {
-      handler->HandleRequest(web_contents, request, callback, extension);
+      handler->HandleRequest(web_contents, request, std::move(callback),
+                             extension);
       return;
     }
   }
-  callback.Run(content::MediaStreamDevices(),
-               content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
+  std::move(callback).Run(content::MediaStreamDevices(),
+                          content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
 }
 
 bool MediaCaptureDevicesDispatcher::CheckMediaAccessPermission(

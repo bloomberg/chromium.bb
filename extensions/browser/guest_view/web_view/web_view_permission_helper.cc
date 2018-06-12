@@ -193,16 +193,13 @@ bool WebViewPermissionHelper::OnMessageReceived(
 void WebViewPermissionHelper::RequestMediaAccessPermission(
     content::WebContents* source,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    content::MediaResponseCallback callback) {
   base::DictionaryValue request_info;
   request_info.SetString(guest_view::kUrl, request.security_origin.spec());
   RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_MEDIA,
-      request_info,
-      base::Bind(&WebViewPermissionHelper::OnMediaPermissionResponse,
-                 weak_factory_.GetWeakPtr(),
-                 request,
-                 callback),
+      WEB_VIEW_PERMISSION_TYPE_MEDIA, request_info,
+      base::BindOnce(&WebViewPermissionHelper::OnMediaPermissionResponse,
+                     weak_factory_.GetWeakPtr(), request, std::move(callback)),
       default_media_access_permission_);
 }
 
@@ -222,28 +219,28 @@ bool WebViewPermissionHelper::CheckMediaAccessPermission(
 
 void WebViewPermissionHelper::OnMediaPermissionResponse(
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     bool allow,
     const std::string& user_input) {
   if (!allow) {
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_PERMISSION_DENIED,
-                 std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_PERMISSION_DENIED,
+                            std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   if (!web_view_guest()->attached() ||
       !web_view_guest()->embedder_web_contents()->GetDelegate()) {
-    callback.Run(content::MediaStreamDevices(),
-                 content::MEDIA_DEVICE_INVALID_STATE,
-                 std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(content::MediaStreamDevices(),
+                            content::MEDIA_DEVICE_INVALID_STATE,
+                            std::unique_ptr<content::MediaStreamUI>());
     return;
   }
 
   web_view_guest()
       ->embedder_web_contents()
       ->GetDelegate()
-      ->RequestMediaAccessPermission(
-          web_view_guest()->embedder_web_contents(), request, callback);
+      ->RequestMediaAccessPermission(web_view_guest()->embedder_web_contents(),
+                                     request, std::move(callback));
 }
 
 void WebViewPermissionHelper::CanDownload(

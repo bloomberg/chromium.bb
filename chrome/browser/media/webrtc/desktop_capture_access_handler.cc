@@ -235,7 +235,7 @@ DesktopCaptureAccessHandler::~DesktopCaptureAccessHandler() {
 void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   content::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
@@ -350,7 +350,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
                              : content::MEDIA_DEVICE_OK;
   }
 
-  callback.Run(devices, result, std::move(ui));
+  std::move(callback).Run(devices, result, std::move(ui));
 }
 
 bool DesktopCaptureAccessHandler::IsDefaultApproved(
@@ -380,21 +380,22 @@ bool DesktopCaptureAccessHandler::CheckMediaAccessPermission(
 void DesktopCaptureAccessHandler::HandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   content::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
+    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE,
+                            std::move(ui));
     return;
   }
 
   // If the device id wasn't specified then this is a screen capture request
   // (i.e. chooseDesktopMedia() API wasn't used to generate device id).
   if (request.requested_video_device_id.empty()) {
-    ProcessScreenCaptureAccessRequest(web_contents, request, callback,
-                                      extension);
+    ProcessScreenCaptureAccessRequest(web_contents, request,
+                                      std::move(callback), extension);
     return;
   }
 
@@ -423,7 +424,8 @@ void DesktopCaptureAccessHandler::HandleRequest(
 
   // Received invalid device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
+    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE,
+                            std::move(ui));
     return;
   }
 
@@ -465,5 +467,5 @@ void DesktopCaptureAccessHandler::HandleRequest(
                                    GetApplicationTitle(web_contents, extension),
                                    base::UTF8ToUTF16(original_extension_name));
   UpdateExtensionTrusted(request, extension);
-  callback.Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
 }

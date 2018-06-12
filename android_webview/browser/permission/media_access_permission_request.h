@@ -19,7 +19,7 @@ namespace android_webview {
 class MediaAccessPermissionRequest : public AwPermissionRequestDelegate {
  public:
   MediaAccessPermissionRequest(const content::MediaStreamRequest& request,
-                               const content::MediaResponseCallback& callback);
+                               content::MediaResponseCallback callback);
   ~MediaAccessPermissionRequest() override;
 
   // AwPermissionRequestDelegate implementation.
@@ -31,7 +31,7 @@ class MediaAccessPermissionRequest : public AwPermissionRequestDelegate {
   friend class TestMediaAccessPermissionRequest;
 
   const content::MediaStreamRequest request_;
-  const content::MediaResponseCallback callback_;
+  content::MediaResponseCallback callback_;
 
   // For test only.
   content::MediaStreamDevices audio_test_devices_;

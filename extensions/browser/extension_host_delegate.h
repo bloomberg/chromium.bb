@@ -56,7 +56,7 @@ class ExtensionHostDelegate {
   virtual void ProcessMediaAccessRequest(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
+      content::MediaResponseCallback callback,
       const Extension* extension) = 0;
 
   // Checks if we have permission to access the microphone or camera. Note that

@@ -83,7 +83,7 @@ bool ChromeOSLoginMediaAccessHandler::CheckMediaAccessPermission(
 void ChromeOSLoginMediaAccessHandler::HandleRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
+    content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
   bool audio_allowed = false;
   bool video_allowed =
@@ -94,6 +94,6 @@ void ChromeOSLoginMediaAccessHandler::HandleRequest(
           request.security_origin, content::MEDIA_DEVICE_VIDEO_CAPTURE,
           extension);
 
-  CheckDevicesAndRunCallback(web_contents, request, callback, audio_allowed,
-                             video_allowed);
+  CheckDevicesAndRunCallback(web_contents, request, std::move(callback),
+                             audio_allowed, video_allowed);
 }

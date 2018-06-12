@@ -54,7 +54,7 @@ class AwWebContentsDelegate
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) override;
+      content::MediaResponseCallback callback) override;
   void EnterFullscreenModeForTab(
       content::WebContents* web_contents,
       const GURL& origin,

@@ -64,7 +64,7 @@ class AppDelegate {
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
+      content::MediaResponseCallback callback,
       const Extension* extension) = 0;
   virtual bool CheckMediaAccessPermission(
       content::RenderFrameHost* render_frame_host,

@@ -31,7 +31,7 @@ class PermissionBubbleMediaAccessHandler
       const extensions::Extension* extension) override;
   void HandleRequest(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,
-                     const content::MediaResponseCallback& callback,
+                     content::MediaResponseCallback callback,
                      const extensions::Extension* extension) override;
   void UpdateMediaRequestState(int render_process_id,
                                int render_frame_id,
