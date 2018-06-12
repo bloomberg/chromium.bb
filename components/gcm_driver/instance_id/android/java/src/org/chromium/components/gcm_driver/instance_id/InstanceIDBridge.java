@@ -7,7 +7,6 @@ package org.chromium.components.gcm_driver.instance_id;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -193,8 +192,7 @@ public class InstanceIDBridge {
                 protected Result doInBackground(Void... params) {
                     synchronized (InstanceIDBridge.this) {
                         if (mInstanceID == null) {
-                            mInstanceID = InstanceIDWithSubtype.getInstance(
-                                    ContextUtils.getApplicationContext(), mSubtype);
+                            mInstanceID = InstanceIDWithSubtype.getInstance(mSubtype);
                         }
                     }
                     return doBackgroundWork();
