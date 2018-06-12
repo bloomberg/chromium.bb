@@ -1046,6 +1046,9 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
                                    const AtomicString& qualified_name,
                                    const StringOrDictionary& string_or_options,
                                    ExceptionState& exception_state) {
+  if (string_or_options.IsNull())
+    return createElementNS(namespace_uri, qualified_name, exception_state);
+
   // 1. Validate and extract
   QualifiedName q_name(
       CreateQualifiedName(namespace_uri, qualified_name, exception_state));
