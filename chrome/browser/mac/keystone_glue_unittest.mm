@@ -85,7 +85,7 @@ namespace ksr = keystone_registration;
 @interface FakeKeystoneGlue : KeystoneGlue {
  @public
   BOOL upToDate_;
-  NSString *latestVersion_;
+  base::scoped_nsobject<NSString> latestVersion_;
   BOOL successful_;
   int installs_;
 }
@@ -100,7 +100,7 @@ namespace ksr = keystone_registration;
   if ((self = [super init])) {
     // some lies
     upToDate_ = YES;
-    latestVersion_ = @"foo bar";
+    latestVersion_.reset([@"foo bar" copy]);
     successful_ = YES;
     installs_ = 1010101010;
 
@@ -148,7 +148,7 @@ namespace ksr = keystone_registration;
 }
 
 - (void)addFakeRegistration {
-  registration_ = [[FakeKeystoneRegistration alloc] init];
+  registration_.reset([[FakeKeystoneRegistration alloc] init]);
 }
 
 - (void)fakeAboutWindowCallback:(NSNotification*)notification {
@@ -158,7 +158,8 @@ namespace ksr = keystone_registration;
 
   if (status == kAutoupdateAvailable) {
     upToDate_ = NO;
-    latestVersion_ = [dictionary objectForKey:kAutoupdateStatusVersion];
+    latestVersion_.reset(
+        [[dictionary objectForKey:kAutoupdateStatusVersion] copy]);
   } else if (status == kAutoupdateInstallFailed) {
     successful_ = NO;
     installs_ = 0;
