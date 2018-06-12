@@ -69,8 +69,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/download_location_dialog_checkbox"
+            android:textColor="@color/black_alpha_38"
             android:layout_marginTop="16dp" />
-
 
     </LinearLayout>
 
