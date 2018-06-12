@@ -48,8 +48,12 @@ struct CollectionImage {
   CollectionImage& operator=(const CollectionImage&);
   CollectionImage& operator=(CollectionImage&&);
 
-  static CollectionImage CreateFromProto(std::string collection_id,
-                                         const ntp::background::Image& image);
+  // default_image_options are applied to the image.image_url() if options
+  // (specifying resolution, cropping, etc) are not already present.
+  static CollectionImage CreateFromProto(
+      const std::string& collection_id,
+      const ntp::background::Image& image,
+      const std::string& default_image_options);
 
   // A unique identifier for the collection the image is in.
   std::string collection_id;

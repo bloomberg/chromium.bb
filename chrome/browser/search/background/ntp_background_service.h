@@ -29,7 +29,8 @@ class NtpBackgroundService : public KeyedService {
   NtpBackgroundService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const base::Optional<GURL>& collections_api_url_override,
-      const base::Optional<GURL>& collection_images_api_url_override);
+      const base::Optional<GURL>& collection_images_api_url_override,
+      const base::Optional<std::string>& image_options_override);
   ~NtpBackgroundService() override;
 
   // KeyedService implementation.
@@ -66,6 +67,7 @@ class NtpBackgroundService : public KeyedService {
  private:
   GURL collections_api_url_;
   GURL collection_images_api_url_;
+  std::string image_options_;
 
   // Used to download the proto from the Backdrop service.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

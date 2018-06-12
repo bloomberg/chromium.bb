@@ -20,6 +20,13 @@
 
 using testing::Eq;
 
+namespace {
+
+// The options to be added to end of an image URL, specifying resolution, etc.
+constexpr char kImageOptions[] = "=imageOptions";
+
+}  // namespace
+
 class NtpBackgroundServiceTest : public testing::Test {
  public:
   NtpBackgroundServiceTest()
@@ -34,7 +41,8 @@ class NtpBackgroundServiceTest : public testing::Test {
     testing::Test::SetUp();
 
     service_ = std::make_unique<NtpBackgroundService>(
-        test_shared_loader_factory_, base::nullopt, base::nullopt);
+        test_shared_loader_factory_, base::nullopt, base::nullopt,
+        kImageOptions);
   }
 
   void SetUpResponseWithData(const GURL& load_url,
@@ -161,7 +169,7 @@ TEST_F(NtpBackgroundServiceTest, GoodCollectionImagesResponse) {
   CollectionImage collection_image;
   collection_image.collection_id = "shapes";
   collection_image.asset_id = image.asset_id();
-  collection_image.image_url = GURL(image.image_url());
+  collection_image.image_url = GURL(image.image_url() + kImageOptions);
   collection_image.attribution.push_back(image.attribution(0).text());
 
   EXPECT_FALSE(service()->collection_images().empty());
@@ -210,7 +218,7 @@ TEST_F(NtpBackgroundServiceTest, MultipleRequests) {
   CollectionImage collection_image;
   collection_image.collection_id = "shapes";
   collection_image.asset_id = image.asset_id();
-  collection_image.image_url = GURL(image.image_url());
+  collection_image.image_url = GURL(image.image_url() + kImageOptions);
   collection_image.attribution.push_back(image.attribution(0).text());
 
   EXPECT_FALSE(service()->collection_info().empty());

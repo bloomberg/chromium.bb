@@ -26,18 +26,25 @@ constexpr char kCollectionsUrl[] =
 constexpr char kCollectionImagesUrl[] =
     "https://clients3.google.com/cast/chromecast/home/wallpaper/"
     "collection-images?rt=b";
+
+// The options to be added to an image URL, specifying resolution, cropping,
+// etc. Options appear on an image URL after the '=' character.
+constexpr char kImageOptions[] = "=w3840-h2160-p-k-no-nd-mv";
+
 }  // namespace
 
 NtpBackgroundService::NtpBackgroundService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const base::Optional<GURL>& collections_api_url_override,
-    const base::Optional<GURL>& collection_images_api_url_override)
+    const base::Optional<GURL>& collection_images_api_url_override,
+    const base::Optional<std::string>& image_options_override)
     : url_loader_factory_(url_loader_factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   collections_api_url_ =
       collections_api_url_override.value_or(GURL(kCollectionsUrl));
   collection_images_api_url_ =
       collection_images_api_url_override.value_or(GURL(kCollectionImagesUrl));
+  image_options_ = image_options_override.value_or(kImageOptions);
 }
 
 NtpBackgroundService::~NtpBackgroundService() = default;
@@ -221,7 +228,7 @@ void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
 
   for (int i = 0; i < images_response.images_size(); ++i) {
     collection_images_.push_back(CollectionImage::CreateFromProto(
-        requested_collection_id_, images_response.images(i)));
+        requested_collection_id_, images_response.images(i), image_options_));
   }
 
   NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
