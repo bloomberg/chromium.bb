@@ -114,11 +114,12 @@ public class InfoBarContainerLayout extends FrameLayout {
     /**
      * Creates an empty InfoBarContainerLayout.
      */
-    InfoBarContainerLayout(Context context) {
+    InfoBarContainerLayout(Context context, Runnable makeContainerVisibleRunnable) {
         super(context);
         Resources res = context.getResources();
         mBackInfobarHeight = res.getDimensionPixelSize(R.dimen.infobar_peeking_height);
         mFloatingBehavior = new FloatingBehavior(this);
+        mMakeContainerVisibleRunnable = makeContainerVisibleRunnable;
     }
 
     /**
@@ -367,6 +368,10 @@ public class InfoBarContainerLayout extends FrameLayout {
             }
             mFrontWrapper.setTranslationY(newFrontStart);
             mFrontContents.setAlpha(0f);
+
+            // Since we are adding the infobar to the top of the stack, make the container fully
+            // visible since it could be at hidden or partially hidden state.
+            mMakeContainerVisibleRunnable.run();
 
             AnimatorSet animator = new AnimatorSet();
             animator.play(createTranslationYAnimator(mFrontWrapper,
@@ -730,6 +735,9 @@ public class InfoBarContainerLayout extends FrameLayout {
     private InfoBarAnimation mAnimation;
 
     private FloatingBehavior mFloatingBehavior;
+
+    /** The runnable to make infobar container fully visible. */
+    private Runnable mMakeContainerVisibleRunnable;
 
     /**
      * Determines whether any animations need to run in order to make the visible views match the
