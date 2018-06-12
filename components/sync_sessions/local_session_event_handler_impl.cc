@@ -247,9 +247,12 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
       SessionID tab_id = window_delegate->GetTabIdAt(j);
       SyncedTabDelegate* synced_tab = window_delegate->GetTabAt(j);
 
-      // GetTabAt can return a null tab; in that case just skip it. Similarly,
-      // if for some reason the tab id is invalid, skip it.
-      if (!synced_tab || !tab_id.is_valid()) {
+      // IsWindowSyncable(), via ShouldSync(), guarantees that tabs are not
+      // null.
+      DCHECK(synced_tab);
+
+      // If for some reason the tab ID is invalid, skip it.
+      if (!tab_id.is_valid()) {
         continue;
       }
 
@@ -585,19 +588,9 @@ bool LocalSessionEventHandlerImpl::ScanForTabbedWindow() {
   for (const auto& window_iter_pair :
        sessions_client_->GetSyncedWindowDelegatesGetter()
            ->GetSyncedWindowDelegates()) {
-    if (window_iter_pair.second->IsTypeTabbed()) {
-      const SyncedWindowDelegate* window_delegate = window_iter_pair.second;
-      if (IsWindowSyncable(*window_delegate)) {
-        // When only custom tab windows are open, often we'll have a seemingly
-        // okay type tabbed window, but GetTabAt will return null for each
-        // index. This case is exactly what this method needs to protect
-        // against.
-        for (int j = 0; j < window_delegate->GetTabCount(); ++j) {
-          if (window_delegate->GetTabAt(j)) {
-            return true;
-          }
-        }
-      }
+    const SyncedWindowDelegate* window_delegate = window_iter_pair.second;
+    if (window_delegate->IsTypeTabbed() && IsWindowSyncable(*window_delegate)) {
+      return true;
     }
   }
   return false;
