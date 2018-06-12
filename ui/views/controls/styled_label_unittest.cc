@@ -9,8 +9,10 @@
 #include <memory>
 #include <string>
 
+#include "base/i18n/base_i18n_switches.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -714,48 +716,64 @@ TEST_F(StyledLabelTest, LineWrapperWithCustomView) {
             styled()->GetHeightForWidth(100));
 }
 
-TEST_F(StyledLabelTest, LeftAlignment) {
-  const std::string multiline_text("one\ntwo\nthree");
-  InitStyledLabel(multiline_text);
-  styled()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+TEST_F(StyledLabelTest, AlignmentInLTR) {
+  const std::string text("text");
+  InitStyledLabel(text);
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
-  ASSERT_EQ(3, styled()->child_count());
+  ASSERT_EQ(1, styled()->child_count());
+
+  // Test the default alignment puts the text on the leading side (left).
   EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
-  EXPECT_EQ(0, styled()->child_at(1)->bounds().x());
-  EXPECT_EQ(0, styled()->child_at(2)->bounds().x());
-}
 
-TEST_F(StyledLabelTest, RightAlignment) {
-  const std::string multiline_text("one\ntwo\nthree");
-  InitStyledLabel(multiline_text);
   styled()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
-  ASSERT_EQ(3, styled()->child_count());
   EXPECT_EQ(1000, styled()->child_at(0)->bounds().right());
-  EXPECT_EQ(1000, styled()->child_at(1)->bounds().right());
-  EXPECT_EQ(1000, styled()->child_at(2)->bounds().right());
+
+  styled()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  styled()->Layout();
+  EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
+
+  styled()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  styled()->Layout();
+  Label label(ASCIIToUTF16(text));
+  EXPECT_EQ((1000 - label.GetPreferredSize().width()) / 2,
+            styled()->child_at(0)->bounds().x());
 }
 
-TEST_F(StyledLabelTest, CenterAlignment) {
-  const std::string multiline_text("one\ntwo\nthree");
-  InitStyledLabel(multiline_text);
-  styled()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+TEST_F(StyledLabelTest, AlignmentInRTL) {
+  // |g_icu_text_direction| is cached to prevent reading new commandline switch.
+  // Set |g_icu_text_direction| to |UNKNOWN_DIRECTION| in order to read the new
+  // commandline switch.
+  base::test::ScopedRestoreICUDefaultLocale scoped_locale("en_US");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kForceUIDirection, switches::kForceDirectionRTL);
+
+  const std::string text("text");
+  InitStyledLabel(text);
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
+  ASSERT_EQ(1, styled()->child_count());
 
-  Label label_one(ASCIIToUTF16("one"));
-  Label label_two(ASCIIToUTF16("two"));
-  Label label_three(ASCIIToUTF16("three"));
+  // Test the default alignment puts the text on the leading side (right).
+  // Note that x-coordinates in RTL place the origin (0) on the right.
+  EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
 
-  ASSERT_EQ(3, styled()->child_count());
-  EXPECT_EQ((1000 - label_one.GetPreferredSize().width()) / 2,
+  // Setting |ALIGN_LEFT| should be flipped to |ALIGN_RIGHT|.
+  styled()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  styled()->Layout();
+  EXPECT_EQ(1000, styled()->child_at(0)->bounds().right());
+
+  // Setting |ALIGN_RIGHT| should be flipped to |ALIGN_LEFT|.
+  styled()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  styled()->Layout();
+  EXPECT_EQ(0, styled()->child_at(0)->bounds().x());
+
+  styled()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  styled()->Layout();
+  Label label(ASCIIToUTF16(text));
+  EXPECT_EQ((1000 - label.GetPreferredSize().width()) / 2,
             styled()->child_at(0)->bounds().x());
-  EXPECT_EQ((1000 - label_two.GetPreferredSize().width()) / 2,
-            styled()->child_at(1)->bounds().x());
-  EXPECT_EQ((1000 - label_three.GetPreferredSize().width()) / 2,
-            styled()->child_at(2)->bounds().x());
 }
 
 TEST_P(MDStyledLabelTest, ViewsCenteredWithLinkAndCustomView) {

@@ -219,7 +219,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // The horizontal alignment. This value is flipped for RTL. The default
   // behavior is to align left in LTR UI and right in RTL UI.
-  gfx::HorizontalAlignment horizontal_alignment_;
+  gfx::HorizontalAlignment horizontal_alignment_ = gfx::ALIGN_LEFT;
 
   DISALLOW_COPY_AND_ASSIGN(StyledLabel);
 };
