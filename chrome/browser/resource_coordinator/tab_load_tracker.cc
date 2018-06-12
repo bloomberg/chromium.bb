@@ -228,8 +228,12 @@ void TabLoadTracker::TransitionState(TabMap::iterator it,
   if (loading_state == LOADED)
     it->second.did_start_loading_seen = false;
 
+  // Store |it->first| instead of passing it directly in the loop below in case
+  // an observer starts/stops tracking a WebContents and invalidates |it|.
+  content::WebContents* web_contents = it->first;
+
   for (Observer& observer : observers_)
-    observer.OnLoadingStateChange(it->first, loading_state);
+    observer.OnLoadingStateChange(web_contents, loading_state);
 }
 
 TabLoadTracker::Observer::Observer() {}
