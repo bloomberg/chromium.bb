@@ -76,11 +76,13 @@ public class ApplicationStatus {
                         + ContextUtils.getProcessName();
     }
 
-    private static final Object sCachedApplicationStateLock = new Object();
+    private static final Object sCurrentApplicationStateLock = new Object();
 
     @SuppressLint("SupportAnnotationUsage")
     @ApplicationState
-    private static Integer sCachedApplicationState;
+    // The getStateForApplication() historically returned ApplicationState.HAS_DESTROYED_ACTIVITIES
+    // when no activity has been observed.
+    private static Integer sCurrentApplicationState = ApplicationState.HAS_DESTROYED_ACTIVITIES;
 
     /** Last activity that was shown (or null if none or it was destroyed). */
     @SuppressLint("StaticFieldLeak")
@@ -326,25 +328,25 @@ public class ApplicationStatus {
         }
 
         int oldApplicationState = getStateForApplication();
+        ActivityInfo info;
 
-        if (newState == ActivityState.CREATED) {
-            assert !sActivityInfo.containsKey(activity);
-            sActivityInfo.put(activity, new ActivityInfo());
-        }
+        synchronized (sCurrentApplicationStateLock) {
+            if (newState == ActivityState.CREATED) {
+                assert !sActivityInfo.containsKey(activity);
+                sActivityInfo.put(activity, new ActivityInfo());
+            }
 
-        // Invalidate the cached application state.
-        synchronized (sCachedApplicationStateLock) {
-            sCachedApplicationState = null;
-        }
+            info = sActivityInfo.get(activity);
+            info.setStatus(newState);
 
-        ActivityInfo info = sActivityInfo.get(activity);
-        info.setStatus(newState);
+            // Remove before calling listeners so that isEveryActivityDestroyed() returns false when
+            // this was the last activity.
+            if (newState == ActivityState.DESTROYED) {
+                sActivityInfo.remove(activity);
+                if (activity == sActivity) sActivity = null;
+            }
 
-        // Remove before calling listeners so that isEveryActivityDestroyed() returns false when
-        // this was the last activity.
-        if (newState == ActivityState.DESTROYED) {
-            sActivityInfo.remove(activity);
-            if (activity == sActivity) sActivity = null;
+            sCurrentApplicationState = determineApplicationState();
         }
 
         // Notify all state observers that are specifically listening to this activity.
@@ -451,11 +453,8 @@ public class ApplicationStatus {
     @ApplicationState
     @CalledByNative
     public static int getStateForApplication() {
-        synchronized (sCachedApplicationStateLock) {
-            if (sCachedApplicationState == null) {
-                sCachedApplicationState = determineApplicationState();
-            }
-            return sCachedApplicationState;
+        synchronized (sCurrentApplicationStateLock) {
+            return sCurrentApplicationState;
         }
     }
 
@@ -552,8 +551,8 @@ public class ApplicationStatus {
         sActivityInfo.clear();
         sWindowFocusListeners.clear();
         sIsInitialized = false;
-        synchronized (sCachedApplicationStateLock) {
-            sCachedApplicationState = null;
+        synchronized (sCurrentApplicationStateLock) {
+            sCurrentApplicationState = determineApplicationState();
         }
         sActivity = null;
         sNativeApplicationStateListener = null;
