@@ -22,17 +22,17 @@ constexpr base::TimeDelta kLongTaskDiscardingThreshold =
 MetricsHelper::MetricsHelper(WebThreadType thread_type)
     : thread_type_(thread_type),
       thread_task_duration_reporter_(
-          "RendererScheduler.TaskDurationPerThreadType"),
+          "RendererScheduler.TaskDurationPerThreadType2"),
       thread_task_cpu_duration_reporter_(
-          "RendererScheduler.TaskCPUDurationPerThreadType"),
+          "RendererScheduler.TaskCPUDurationPerThreadType2"),
       foreground_thread_task_duration_reporter_(
-          "RendererScheduler.TaskDurationPerThreadType.Foreground"),
+          "RendererScheduler.TaskDurationPerThreadType2.Foreground"),
       foreground_thread_task_cpu_duration_reporter_(
-          "RendererScheduler.TaskCPUDurationPerThreadType.Foreground"),
+          "RendererScheduler.TaskCPUDurationPerThreadType2.Foreground"),
       background_thread_task_duration_reporter_(
-          "RendererScheduler.TaskDurationPerThreadType.Background"),
+          "RendererScheduler.TaskDurationPerThreadType2.Background"),
       background_thread_task_cpu_duration_reporter_(
-          "RendererScheduler.TaskCPUDurationPerThreadType.Background") {}
+          "RendererScheduler.TaskCPUDurationPerThreadType2.Background") {}
 
 MetricsHelper::~MetricsHelper() {}
 

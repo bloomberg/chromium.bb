@@ -1078,16 +1078,18 @@ ScaledLinearHistogram::ScaledLinearHistogram(const char* name,
 ScaledLinearHistogram::~ScaledLinearHistogram() = default;
 
 void ScaledLinearHistogram::AddScaledCount(Sample value, int count) {
+  if (count == 0)
+    return;
+  if (count < 0) {
+    NOTREACHED();
+    return;
+  }
   const int32_t max_value =
       static_cast<int32_t>(histogram_->bucket_count() - 1);
   if (value > max_value)
     value = max_value;
   if (value < 0)
     value = 0;
-  if (count <= 0) {
-    NOTREACHED();
-    return;
-  }
 
   int scaled_count = count / scale_;
   subtle::Atomic32 remainder = count - scaled_count * scale_;

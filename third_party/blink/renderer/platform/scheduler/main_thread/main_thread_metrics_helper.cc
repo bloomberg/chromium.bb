@@ -16,19 +16,19 @@ namespace blink {
 namespace scheduler {
 
 #define DURATION_PER_QUEUE_TYPE_METRIC_NAME \
-  "RendererScheduler.TaskDurationPerQueueType2"
+  "RendererScheduler.TaskDurationPerQueueType3"
 #define COUNT_PER_QUEUE_TYPE_METRIC_NAME \
   "RendererScheduler.TaskCountPerQueueType"
 #define MAIN_THREAD_LOAD_METRIC_NAME "RendererScheduler.RendererMainThreadLoad5"
 #define EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME \
   MAIN_THREAD_LOAD_METRIC_NAME ".Extension"
 #define DURATION_PER_FRAME_TYPE_METRIC_NAME \
-  "RendererScheduler.TaskDurationPerFrameType2"
+  "RendererScheduler.TaskDurationPerFrameType3"
 #define DURATION_PER_TASK_TYPE_METRIC_NAME \
-  "RendererScheduler.TaskDurationPerTaskType"
+  "RendererScheduler.TaskDurationPerTaskType2"
 #define COUNT_PER_FRAME_METRIC_NAME "RendererScheduler.TaskCountPerFrameType"
 #define DURATION_PER_TASK_USE_CASE_NAME \
-  "RendererScheduler.TaskDurationPerUseCase"
+  "RendererScheduler.TaskDurationPerUseCase2"
 
 enum class MainThreadTaskLoadState { kLow, kHigh, kUnknown };
 

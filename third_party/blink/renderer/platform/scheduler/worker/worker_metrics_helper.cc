@@ -12,13 +12,13 @@ namespace scheduler {
 WorkerMetricsHelper::WorkerMetricsHelper(WebThreadType thread_type)
     : MetricsHelper(thread_type),
       dedicated_worker_per_task_type_duration_reporter_(
-          "RendererScheduler.TaskDurationPerTaskType.DedicatedWorker"),
+          "RendererScheduler.TaskDurationPerTaskType2.DedicatedWorker"),
       dedicated_worker_per_task_type_cpu_duration_reporter_(
-          "RendererScheduler.TaskCPUDurationPerTaskType.DedicatedWorker"),
+          "RendererScheduler.TaskCPUDurationPerTaskType2.DedicatedWorker"),
       dedicated_worker_per_parent_frame_status_duration_reporter_(
-          "RendererScheduler.TaskDurationPerFrameOriginType.DedicatedWorker"),
+          "RendererScheduler.TaskDurationPerFrameOriginType2.DedicatedWorker"),
       background_dedicated_worker_per_parent_frame_status_duration_reporter_(
-          "RendererScheduler.TaskDurationPerFrameOriginType.DedicatedWorker."
+          "RendererScheduler.TaskDurationPerFrameOriginType2.DedicatedWorker."
           "Background") {}
 
 WorkerMetricsHelper::~WorkerMetricsHelper() {}

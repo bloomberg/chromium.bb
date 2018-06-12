@@ -38,29 +38,24 @@ TEST(MetricsHelperTest, TaskDurationPerThreadType) {
       base::TimeTicks());
 
   main_thread_metrics.RecordCommonTaskMetrics(
-      nullptr, fake_task,
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(10),
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(50),
-      base::TimeDelta::FromMilliseconds(15));
+      nullptr, fake_task, base::TimeTicks() + base::TimeDelta::FromSeconds(10),
+      base::TimeTicks() + base::TimeDelta::FromSeconds(50),
+      base::TimeDelta::FromSeconds(15));
   compositor_metrics.RecordCommonTaskMetrics(
-      nullptr, fake_task,
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(10),
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(80),
-      base::TimeDelta::FromMilliseconds(5));
+      nullptr, fake_task, base::TimeTicks() + base::TimeDelta::FromSeconds(10),
+      base::TimeTicks() + base::TimeDelta::FromSeconds(80),
+      base::TimeDelta::FromSeconds(5));
   compositor_metrics.RecordCommonTaskMetrics(
-      nullptr, fake_task,
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100),
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(200),
-      base::nullopt);
+      nullptr, fake_task, base::TimeTicks() + base::TimeDelta::FromSeconds(100),
+      base::TimeTicks() + base::TimeDelta::FromSeconds(200), base::nullopt);
   worker_metrics.RecordCommonTaskMetrics(
-      nullptr, fake_task,
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(10),
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(125),
-      base::TimeDelta::FromMilliseconds(25));
+      nullptr, fake_task, base::TimeTicks() + base::TimeDelta::FromSeconds(10),
+      base::TimeTicks() + base::TimeDelta::FromSeconds(125),
+      base::TimeDelta::FromSeconds(25));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
-          "RendererScheduler.TaskDurationPerThreadType"),
+          "RendererScheduler.TaskDurationPerThreadType2"),
       testing::UnorderedElementsAre(
           base::Bucket(static_cast<int>(WebThreadType::kMainThread), 40),
           base::Bucket(static_cast<int>(WebThreadType::kCompositorThread), 170),
@@ -69,7 +64,7 @@ TEST(MetricsHelperTest, TaskDurationPerThreadType) {
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
-          "RendererScheduler.TaskCPUDurationPerThreadType"),
+          "RendererScheduler.TaskCPUDurationPerThreadType2"),
       testing::UnorderedElementsAre(
           base::Bucket(static_cast<int>(WebThreadType::kMainThread), 15),
           base::Bucket(static_cast<int>(WebThreadType::kCompositorThread), 5),
