@@ -12,12 +12,9 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "crypto/openssl_util.h"
-#include "crypto/random.h"
-#include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace {
-constexpr size_t kSyncPasswordSaltLength = 16;
+
 constexpr char kSeparator = '.';
 constexpr char kHashFieldKey[] = "hash";
 constexpr char kLastSignInTimeFieldKey[] = "last_signin";
@@ -27,6 +24,7 @@ constexpr char kIsGaiaFieldKey[] = "is_gaia";
 
 // The maximum number of password hash data we store in prefs.
 constexpr size_t kMaxPasswordHashDataDictSize = 5;
+
 }  // namespace
 
 namespace password_manager {
@@ -139,47 +137,6 @@ base::Optional<PasswordHashData> ConvertToPasswordHashData(
 }
 
 }  // namespace
-
-SyncPasswordData::SyncPasswordData(const base::string16& password,
-                                   bool force_update)
-    : length(password.size()),
-      salt(HashPasswordManager::CreateRandomSalt()),
-      hash(HashPasswordManager::CalculatePasswordHash(password, salt)),
-      force_update(force_update) {}
-
-bool SyncPasswordData::MatchesPassword(const base::string16& password) {
-  if (password.size() != this->length)
-    return false;
-  return HashPasswordManager::CalculatePasswordHash(password, this->salt) ==
-         this->hash;
-}
-
-PasswordHashData::PasswordHashData(const std::string& username,
-                                   const base::string16& password,
-                                   bool force_update,
-                                   bool is_gaia_password)
-    : username(username),
-      length(password.size()),
-      salt(HashPasswordManager::CreateRandomSalt()),
-      hash(HashPasswordManager::CalculatePasswordHash(password, salt)),
-      force_update(force_update),
-      is_gaia_password(is_gaia_password) {}
-
-PasswordHashData::PasswordHashData() = default;
-
-PasswordHashData::PasswordHashData(const PasswordHashData& other) = default;
-
-bool PasswordHashData::MatchesPassword(const std::string& username,
-                                       const base::string16& password,
-                                       bool is_gaia_password) {
-  if (password.size() != this->length || username != this->username ||
-      is_gaia_password != this->is_gaia_password) {
-    return false;
-  }
-
-  return HashPasswordManager::CalculatePasswordHash(password, this->salt) ==
-         this->hash;
-}
 
 HashPasswordManager::HashPasswordManager(PrefService* prefs) : prefs_(prefs) {}
 
@@ -387,52 +344,6 @@ void HashPasswordManager::MaybeMigrateExistingSyncPasswordHash(
   SavePasswordHash(password_hash_data);
   prefs_->ClearPref(prefs::kSyncPasswordHash);
   prefs_->ClearPref(prefs::kSyncPasswordLengthAndHashSalt);
-}
-
-// static
-std::string HashPasswordManager::CreateRandomSalt() {
-  char buffer[kSyncPasswordSaltLength];
-  crypto::RandBytes(buffer, kSyncPasswordSaltLength);
-  // Explicit std::string constructor with a string length must be used in order
-  // to avoid treating '\0' symbols as a string ends.
-  std::string result(buffer, kSyncPasswordSaltLength);
-  return result;
-}
-
-// static
-uint64_t HashPasswordManager::CalculatePasswordHash(
-    const base::StringPiece16& text,
-    const std::string& salt) {
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  constexpr size_t kBytesFromHash = 8;
-  constexpr uint64_t kScryptCost = 32;  // It must be power of 2.
-  constexpr uint64_t kScryptBlockSize = 8;
-  constexpr uint64_t kScryptParallelization = 1;
-  constexpr size_t kScryptMaxMemory = 1024 * 1024;
-
-  uint8_t hash[kBytesFromHash];
-  base::StringPiece text_8bits(reinterpret_cast<const char*>(text.data()),
-                               text.size() * 2);
-  const uint8_t* salt_ptr = reinterpret_cast<const uint8_t*>(salt.c_str());
-
-  int scrypt_ok = EVP_PBE_scrypt(text_8bits.data(), text_8bits.size(), salt_ptr,
-                                 salt.size(), kScryptCost, kScryptBlockSize,
-                                 kScryptParallelization, kScryptMaxMemory, hash,
-                                 kBytesFromHash);
-
-  // EVP_PBE_scrypt can only fail due to memory allocation error (which aborts
-  // Chromium) or invalid parameters. In case of a failure a hash could leak
-  // information from the stack, so using CHECK is better than DCHECK.
-  CHECK(scrypt_ok);
-
-  // Take 37 bits of |hash|.
-  uint64_t hash37 = ((static_cast<uint64_t>(hash[0]))) |
-                    ((static_cast<uint64_t>(hash[1])) << 8) |
-                    ((static_cast<uint64_t>(hash[2])) << 16) |
-                    ((static_cast<uint64_t>(hash[3])) << 24) |
-                    (((static_cast<uint64_t>(hash[4])) & 0x1F) << 32);
-
-  return hash37;
 }
 
 bool HashPasswordManager::EncryptAndSaveToPrefs(const std::string& pref_name,

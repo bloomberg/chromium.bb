@@ -9,6 +9,7 @@
 
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/password_hash_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -49,8 +50,8 @@ base::Optional<PasswordHashData> FindPasswordReuse(
     base::string16 reuse_candidate = input.substr(offset);
     // It is possible that input matches multiple passwords in the list,
     // we only return the first match due to simplicity.
-    if (HashPasswordManager::CalculatePasswordHash(
-            reuse_candidate, hash_data.salt) == hash_data.hash &&
+    if (CalculatePasswordHash(reuse_candidate, hash_data.salt) ==
+            hash_data.hash &&
         hash_data.length > longest_match_size) {
       longest_match_size = hash_data.length;
       longest_match = hash_data;

@@ -8,44 +8,11 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "components/password_manager/core/browser/password_hash_data.h"
 
 class PrefService;
 
 namespace password_manager {
-
-// SyncPasswordData is being deprecated. Please use PasswordHashData instead.
-struct SyncPasswordData {
-  SyncPasswordData() = default;
-  SyncPasswordData(const SyncPasswordData& other) = default;
-  SyncPasswordData(const base::string16& password, bool force_update);
-  bool MatchesPassword(const base::string16& password);
-
-  size_t length;
-  std::string salt;
-  uint64_t hash;
-  // Signal that we need to update password hash, salt, and length in profile
-  // prefs.
-  bool force_update;
-};
-
-struct PasswordHashData {
-  PasswordHashData();
-  PasswordHashData(const PasswordHashData& other);
-  PasswordHashData(const std::string& username,
-                   const base::string16& password,
-                   bool force_update,
-                   bool is_gaia_password = true);
-  bool MatchesPassword(const std::string& username,
-                       const base::string16& password,
-                       bool is_gaia_password);
-
-  std::string username;
-  size_t length;
-  std::string salt;
-  uint64_t hash;
-  bool force_update;
-  bool is_gaia_password = true;
-};
 
 // Responsible for saving, clearing, retrieving and encryption of a password
 // hash data in preferences.
@@ -90,13 +57,6 @@ class HashPasswordManager {
   // During the deprecation of SyncPasswordData, migrates the sync password hash
   // that has already been captured.
   void MaybeMigrateExistingSyncPasswordHash(const std::string& sync_username);
-
-  static std::string CreateRandomSalt();
-
-  // Calculates 37 bits hash for a password. The calculation is based on a slow
-  // hash function. The running time is ~10^{-4} seconds on Desktop.
-  static uint64_t CalculatePasswordHash(const base::StringPiece16& text,
-                                        const std::string& salt);
 
  private:
   // Saves encrypted string |s| in a preference |pref_name|. Returns true on

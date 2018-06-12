@@ -179,6 +179,7 @@ static_library("browser") {
   ]
   deps = [
     ":hash_password_manager",
+    ":password_hash_data",
     ":proto",
     "//base:i18n",
     "//components/autofill/core/browser",
@@ -236,17 +237,28 @@ proto_library("proto") {
   ]
 }
 
+static_library("password_hash_data") {
+  sources = [
+    "password_hash_data.cc",
+    "password_hash_data.h",
+  ]
+  deps = [
+    "//base",
+    "//crypto",
+  ]
+}
+
 static_library("hash_password_manager") {
   sources = [
     "hash_password_manager.cc",
     "hash_password_manager.h",
   ]
   deps = [
+    ":password_hash_data",
     "//base:base",
     "//components/os_crypt",
     "//components/password_manager/core/common",
     "//components/prefs",
-    "//crypto",
   ]
 }
 
@@ -367,6 +379,7 @@ source_set("unit_tests") {
     "password_form_manager_unittest.cc",
     "password_form_metrics_recorder_unittest.cc",
     "password_generation_manager_unittest.cc",
+    "password_hash_data_unittest.cc",
     "password_list_sorter_unittest.cc",
     "password_manager_metrics_recorder_unittest.cc",
     "password_manager_unittest.cc",
@@ -404,6 +417,7 @@ source_set("unit_tests") {
 
   deps = [
     ":hash_password_manager",
+    ":password_hash_data",
     ":test_support",
     ":unit_tests_bundle_data",
     "//base/test:test_support",

@@ -12,7 +12,7 @@
 #include "chromeos/login/auth/challenge_response_key.h"
 #include "chromeos/login/auth/key.h"
 #include "components/account_id/account_id.h"
-#include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/password_hash_data.h"
 #include "components/user_manager/user_type.h"
 
 class AccountId;
