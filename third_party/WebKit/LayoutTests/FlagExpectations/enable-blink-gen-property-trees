@@ -160,6 +160,8 @@ crbug.com/836897 virtual/threaded/animations/start-time-grouping.html [ Crash Fa
 crbug.com/836897 virtual/threaded/animations/element-animate-positive-delay.html [ Crash Failure Pass ]
 crbug.com/836897 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
 crbug.com/836897 virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Timeout ]
+crbug.com/836897 virtual/threaded/fast/animationworklet/animation-worklet-animator-with-options.html [ Failure ]
+crbug.com/836897 virtual/threaded/fast/animationworklet/worklet-animation-currentTime.html [ Failure ]
 
 # These scrollbar tests should pass.
 Bug(none) virtual/prefer_compositing_to_lcd_text/scrollbars/ [ Pass ]
@@ -287,7 +289,7 @@ crbug.com/836890 virtual/android/fullscreen/video-controls-timeline.html [ Crash
 crbug.com/836890 virtual/android/fullscreen/video-fail-to-enter-full-screen.html [ Crash ]
 crbug.com/836890 virtual/android/fullscreen/video-fixed-at-top-left.html [ Crash ]
 crbug.com/836890 virtual/android/fullscreen/video-fixed-background.html [ Crash ]
-crbug.com/836890 virtual/android/fullscreen/video-scrolled-iframe.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/video-scrolled-iframe.html [ Crash Failure ]
 crbug.com/836890 virtual/android/fullscreen/video-specified-size.html [ Crash ]
 crbug.com/836890 virtual/android/fullscreen/video-transform.html [ Crash ]
 crbug.com/836890 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Crash ]
@@ -299,6 +301,18 @@ crbug.com/836890 virtual/android/rootscroller/root-scroller-apply-filter-to-pare
 crbug.com/836890 virtual/android/rootscroller/rootscroller-during-fullscreen.html [ Crash ]
 crbug.com/836890 virtual/android/rootscroller/set-rootscroller-before-load.html [ Crash ]
 crbug.com/836890 virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/empty-anonymous-block-continuation-crash.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/full-screen-contentEditable-crash.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/full-screen-is-in-top-layer.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/full-screen-table-section.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/full-screen-with-css-reference-filter.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/notify-paint-crash.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/rendering/backdrop-iframe.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/rendering/backdrop-video.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/rendering/backdrop.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/rendering/overflow-root.html [ Crash ]
+crbug.com/836890 virtual/android/fullscreen/rendering/overflow.html [ Crash ]
 
 # Page scale related failures
 crbug.com/840017 compositing/background-color/background-color-outside-document.html [ Crash ]
