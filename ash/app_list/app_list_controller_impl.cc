@@ -10,6 +10,9 @@
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/contents_view.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/config.h"
@@ -22,9 +25,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "extensions/common/constants.h"
-#include "ui/app_list/views/app_list_main_view.h"
-#include "ui/app_list/views/app_list_view.h"
-#include "ui/app_list/views/contents_view.h"
 #include "ui/display/screen.h"
 
 namespace {

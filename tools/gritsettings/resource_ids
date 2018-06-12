@@ -357,7 +357,7 @@
     "messages": [25800],
   },
 
-  "ui/app_list/resources/app_list_resources.grd": {
+  "ash/app_list/resources/app_list_resources.grd": {
     "structures": [25900],
   },
   "ui/chromeos/resources/ui_chromeos_resources.grd": {

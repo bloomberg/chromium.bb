@@ -5,10 +5,12 @@
 #include "ash/wm/workspace/backdrop_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -20,7 +22,6 @@
 #include "ash/wm/workspace/backdrop_delegate.h"
 #include "base/auto_reset.h"
 #include "chromeos/audio/chromeos_sounds.h"
-#include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -80,7 +81,8 @@ BackdropController::~BackdropController() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-  // TODO: animations won't work right with mus: http://crbug.com/548396.
+  // TODO(oshima): animations won't work right with mus:
+  // http://crbug.com/548396.
   Hide();
 }
 

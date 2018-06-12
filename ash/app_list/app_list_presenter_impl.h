@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/pagination_model_observer.h"
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/app_list/pagination_model_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"

@@ -214,9 +214,9 @@ repack("repack_ui_test_pak_100_percent") {
   }
 
   if (use_aura && toolkit_views) {
-    deps += [ "//ui/app_list/resources" ]
+    deps += [ "//ash/app_list/resources" ]
     sources += [
-      "$root_gen_dir/ui/app_list/resources/app_list_resources_100_percent.pak",
+      "$root_gen_dir/ash/app_list/resources/app_list_resources_100_percent.pak",
     ]
   }
 }

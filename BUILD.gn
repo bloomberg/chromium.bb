@@ -384,14 +384,14 @@ group("gn_all") {
       "//ash:ash_content_unittests",
       "//ash:ash_shell_with_content",
       "//ash:ash_unittests",
+      "//ash/app_list:app_list_demo",
+      "//ash/app_list:app_list_unittests",
       "//ash/app_list/presenter:app_list_presenter_unittests",
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//chromeos/components/proximity_auth:proximity_auth_unittests",
       "//chromeos/services:chromeos_services_unittests",
       "//components/session_manager/core",
-      "//ui/app_list:app_list_demo",
-      "//ui/app_list:app_list_unittests",
       "//ui/chromeos:ui_chromeos_unittests",
     ]
   }

@@ -4448,9 +4448,9 @@ test("unit_tests") {
     deps += [
       # TODO(wutao): Put new icons resources to ash/public/cpp/vector_icons/
       # when UX provides them.
+      "//ash/app_list:test_support",
       "//ash/resources/vector_icons",
       "//components/arc:arc_test_support",
-      "//ui/app_list:test_support",
     ]
   }
 
@@ -5314,7 +5314,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/app_list/test/fake_app_list_model_updater.cc",
         "../browser/ui/app_list/test/fake_app_list_model_updater.h",
       ]
-      deps += [ "//ui/app_list:test_support" ]
+      deps += [ "//ash/app_list:test_support" ]
     } else {
       sources -= [
         "../browser/sync/test/integration/sync_app_list_helper.cc",

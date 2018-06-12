@@ -120,7 +120,7 @@
     "type": "console_test_launcher",
   },
   "app_list_unittests": {
-    "label": "//ui/app_list:app_list_unittests",
+    "label": "//ash/app_list:app_list_unittests",
     "type": "windowed_test_launcher",
   },
   "app_list_presenter_unittests": {

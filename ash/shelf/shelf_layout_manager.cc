@@ -11,6 +11,7 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -34,7 +35,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "ui/app_list/views/app_list_view.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -919,8 +919,8 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
   else
     show_shelf_region_in_screen.set_width(kMaxAutoHideShowShelfRegionSize);
 
-  // TODO: Figure out if we need any special handling when the keyboard is
-  // visible.
+  // TODO(pkotwicz): Figure out if we need any special handling when the
+  // keyboard is visible.
   return show_shelf_region_in_screen;
 }
 

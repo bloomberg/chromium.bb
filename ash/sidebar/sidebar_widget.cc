@@ -4,6 +4,10 @@
 
 #include "ash/sidebar/sidebar_widget.h"
 
+#include <memory>
+#include <utility>
+
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/message_center/message_center_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/root_window_controller.h"
@@ -16,7 +20,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

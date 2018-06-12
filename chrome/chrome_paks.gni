@@ -71,8 +71,8 @@ template("chrome_repack_percent") {
       deps += [ "//extensions:extensions_browser_resources" ]
     }
     if (enable_app_list) {
-      sources += [ "$root_gen_dir/ui/app_list/resources/app_list_resources_${percent}_percent.pak" ]
-      deps += [ "//ui/app_list/resources" ]
+      sources += [ "$root_gen_dir/ash/app_list/resources/app_list_resources_${percent}_percent.pak" ]
+      deps += [ "//ash/app_list/resources" ]
     }
 
     output = "${invoker.output_dir}/chrome_${percent}_percent.pak"

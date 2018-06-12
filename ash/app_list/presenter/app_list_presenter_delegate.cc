@@ -4,6 +4,7 @@
 
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 
+#include "ash/app_list/views/app_list_view.h"
 #include "base/time/time.h"
 
 namespace app_list {
