@@ -341,8 +341,11 @@ public class NonOverlappingStack extends Stack {
         mDiscardingTab = null;
 
         mSwitchedAway = true;
-
         mSuppressScrollClamping = true;
+
+        // Make sure the tabs are not scrolling so the centered tab does not change between the
+        // "switch away" and "switch to" animations.
+        forceScrollStop();
 
         CompositorAnimationHandler handler = mLayout.getAnimationHandler();
         Collection<Animator> animationList = new ArrayList<>();
