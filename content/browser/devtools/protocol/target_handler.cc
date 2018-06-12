@@ -87,9 +87,11 @@ class TargetHandler::Throttle : public content::NavigationThrottle {
   void Clear();
   // content::NavigationThrottle implementation:
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override;
+  NavigationThrottle::ThrottleCheckResult WillFailRequest() override;
   const char* GetNameForLogging() override;
 
  private:
+  NavigationThrottle::ThrottleCheckResult MaybeAttach();
   void CleanupPointers();
 
   base::WeakPtr<protocol::TargetHandler> target_handler_;
@@ -204,6 +206,15 @@ void TargetHandler::Throttle::CleanupPointers() {
 
 NavigationThrottle::ThrottleCheckResult
 TargetHandler::Throttle::WillProcessResponse() {
+  return MaybeAttach();
+}
+
+NavigationThrottle::ThrottleCheckResult
+TargetHandler::Throttle::WillFailRequest() {
+  return MaybeAttach();
+}
+
+NavigationThrottle::ThrottleCheckResult TargetHandler::Throttle::MaybeAttach() {
   if (!target_handler_)
     return PROCEED;
   agent_host_ = target_handler_->auto_attacher_.AutoAttachToFrame(
