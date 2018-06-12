@@ -648,7 +648,6 @@ static_library("test_support_without_gmock") {
     ":power_manager_proto",
     "//components/policy/proto",
     "//crypto",
-    "//url",
   ]
   sources = [
     "dbus/fake_cros_disks_client.cc",

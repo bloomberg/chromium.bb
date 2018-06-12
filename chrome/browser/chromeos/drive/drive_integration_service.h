@@ -8,12 +8,10 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/components/drivefs/drivefs_host.h"
 #include "components/drive/drive_notification_observer.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_system_core_util.h"
@@ -54,8 +52,6 @@ class ResourceMetadata;
 class ResourceMetadataStorage;
 }  // namespace internal
 
-extern const base::Feature kDriveFs;
-
 // Interface for classes that need to observe events from
 // DriveIntegrationService.  All events are notified on UI thread.
 class DriveIntegrationServiceObserver {
@@ -85,8 +81,6 @@ class DriveIntegrationService : public KeyedService,
                                 public content::NotificationObserver {
  public:
   class PreferenceWatcher;
-  using DriveFsMojoConnectionDelegateFactory = base::RepeatingCallback<
-      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>;
 
   // test_drive_service, test_mount_point_name, test_cache_root and
   // test_file_system are used by tests to inject customized instances.
@@ -100,9 +94,7 @@ class DriveIntegrationService : public KeyedService,
       DriveServiceInterface* test_drive_service,
       const std::string& test_mount_point_name,
       const base::FilePath& test_cache_root,
-      FileSystemInterface* test_file_system,
-      DriveFsMojoConnectionDelegateFactory
-          test_drivefs_mojo_connection_delegate_factory = {});
+      FileSystemInterface* test_file_system);
   ~DriveIntegrationService() override;
 
   // KeyedService override:
