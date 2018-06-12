@@ -1300,7 +1300,11 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
 
   if (context_ != kDisabledContext && !mute_count_) {
     FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
-    if (context_ != kExtensionContext) {
+    // The CSS properties are being recorded on the browser side.
+    // TODO(loonybear): Once confirmed that CSS properties for SVG documents
+    // are being recorded correctly on the browser side, remove these
+    // histograms.
+    if (context_ == kSVGImageContext) {
       CssHistogram().Count(mojom::blink::kTotalPagesMeasuredCSSSampleId);
       AnimatedCSSHistogram().Count(
           mojom::blink::kTotalPagesMeasuredCSSSampleId);
@@ -1390,7 +1394,11 @@ void UseCounter::Count(CSSParserMode css_parser_mode,
     if (context_ != kDisabledContext && context_ != kExtensionContext) {
       TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
                    "CSSFirstUsed", "feature", sample_id);
-      CssHistogram().Count(sample_id);
+      // The CSS properties are being recorded on the browser side.
+      // TODO(loonybear): Record CSS properties for SVG documents on the browser
+      // side.
+      if (context_ == kSVGImageContext)
+        CssHistogram().Count(sample_id);
       if (source_frame && source_frame->Client())
         source_frame->Client()->DidObserveNewCssPropertyUsage(sample_id, false);
     }
@@ -1446,7 +1454,11 @@ void UseCounter::CountAnimatedCSS(CSSPropertyID property,
     if (context_ != kDisabledContext && context_ != kExtensionContext) {
       TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
                    "AnimatedCSSFirstUsed", "feature", sample_id);
-      AnimatedCSSHistogram().Count(sample_id);
+      // The CSS properties are being recorded on the browser side.
+      // TODO(loonybear): Record CSS properties for SVG documents on the browser
+      // side.
+      if (context_ == kSVGImageContext)
+        AnimatedCSSHistogram().Count(sample_id);
       if (source_frame && source_frame->Client())
         source_frame->Client()->DidObserveNewCssPropertyUsage(sample_id, true);
     }
@@ -1497,27 +1509,21 @@ EnumerationHistogram& UseCounter::FeaturesHistogram() const {
 }
 
 EnumerationHistogram& UseCounter::CssHistogram() const {
-  DCHECK_NE(kExtensionContext, context_);
-  DCHECK_NE(kDisabledContext, context_);
-  DEFINE_STATIC_LOCAL(
-      blink::EnumerationHistogram, histogram,
-      ("Blink.UseCounter.CSSProperties", mojom::blink::kMaximumCSSSampleId));
+  DCHECK_EQ(kSVGImageContext, context_);
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svg_histogram,
                       ("Blink.UseCounter.SVGImage.CSSProperties",
                        mojom::blink::kMaximumCSSSampleId));
 
-  return context_ == kSVGImageContext ? svg_histogram : histogram;
+  return svg_histogram;
 }
 
 EnumerationHistogram& UseCounter::AnimatedCSSHistogram() const {
-  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram,
-                      ("Blink.UseCounter.AnimatedCSSProperties",
-                       mojom::blink::kMaximumCSSSampleId));
+  DCHECK_EQ(kSVGImageContext, context_);
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svg_histogram,
                       ("Blink.UseCounter.SVGImage.AnimatedCSSProperties",
                        mojom::blink::kMaximumCSSSampleId));
 
-  return context_ == kSVGImageContext ? svg_histogram : histogram;
+  return svg_histogram;
 }
 
 }  // namespace blink
