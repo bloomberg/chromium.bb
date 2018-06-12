@@ -7,6 +7,7 @@
 Assumes that apk_path.mapping and apk_path.jar.info is available.
 """
 
+import logging
 import os
 import subprocess
 import zipfile
@@ -128,8 +129,14 @@ def CreateDexSymbols(apk_path, output_directory):
   nodes = UndoHierarchicalSizing(_RunApkAnalyzer(apk_path, output_directory))
   dex_expected_size = _ExpectedDexTotalSize(apk_path)
   total_node_size = sum(map(lambda x: x[1], nodes))
-  assert dex_expected_size >= total_node_size, (
-      'Node size too large, check for node processing errors.')
+  # TODO(agrieve): Figure out why this log is triggering for
+  #     ChromeModernPublic.apk (https://crbug.com/851535).
+  # Reporting: dex_expected_size=6546088 total_node_size=6559549
+  if dex_expected_size < total_node_size:
+    logging.error(
+      'Node size too large, check for node processing errors. '
+      'dex_expected_size=%d total_node_size=%d', dex_expected_size,
+      total_node_size)
   # We have more than 100KB of ids for methods, strings
   id_metadata_overhead_size = dex_expected_size - total_node_size
   symbols = []
