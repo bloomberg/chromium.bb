@@ -85,6 +85,8 @@ jumbo_static_library("test_support") {
     "../public/test/find_test_utils.h",
     "../public/test/frame_load_waiter.cc",
     "../public/test/frame_load_waiter.h",
+    "../public/test/hit_test_region_observer.cc",
+    "../public/test/hit_test_region_observer.h",
     "../public/test/javascript_test_observer.cc",
     "../public/test/javascript_test_observer.h",
     "../public/test/memory_coordinator_test_utils.cc",

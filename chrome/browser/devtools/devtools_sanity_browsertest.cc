@@ -72,6 +72,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_registry.h"
@@ -2235,8 +2236,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
   navigation_manager_iframe.WaitForNavigationFinished();
   content::WaitForLoadStop(tab);
 
-  for (auto* frame : GetInspectedTab()->GetAllFrames())
-    content::WaitForChildFrameSurfaceReady(frame);
+  for (auto* frame : GetInspectedTab()->GetAllFrames()) {
+    content::WaitForHitTestDataOrChildSurfaceReady(frame);
+  }
   DevToolsWindow* window =
       DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);
   RunTestFunction(window, "testInputDispatchEventsToOOPIF");

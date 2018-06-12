@@ -1672,7 +1672,6 @@ RenderFrameMetadataProvider* RenderFrameMetadataProviderFromWebContents(
 
 }  // namespace
 
-#if defined(USE_AURA)
 void WaitForGuestSurfaceReady(content::WebContents* guest_web_contents) {
   RenderWidgetHostViewChildFrame* child_view =
       static_cast<RenderWidgetHostViewChildFrame*>(
@@ -1686,8 +1685,6 @@ void WaitForGuestSurfaceReady(content::WebContents* guest_web_contents) {
   SurfaceHitTestReadyNotifier notifier(child_view);
   notifier.WaitForSurfaceReady(root_view);
 }
-
-#endif
 
 void WaitForChildFrameSurfaceReady(content::RenderFrameHost* child_frame) {
   RenderWidgetHostViewBase* child_view =

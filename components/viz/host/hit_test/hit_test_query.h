@@ -92,6 +92,9 @@ class VIZ_HOST_EXPORT HitTestQuery {
   bool GetTransformToTarget(const FrameSinkId& target,
                             gfx::Transform* transform) const;
 
+  // Returns whether hit test data for |frame_sink_id| is available.
+  bool ContainsFrameSinkId(const FrameSinkId& frame_sink_id) const;
+
  private:
   // Helper function to find |target| for |location_in_parent| in the
   // |region_index|, returns true if a target is found and false otherwise.
