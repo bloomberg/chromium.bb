@@ -53,7 +53,13 @@ identity::IdentityManager* WebViewAutofillClientIOS::GetIdentityManager() {
 }
 
 ukm::UkmRecorder* WebViewAutofillClientIOS::GetUkmRecorder() {
+  // UKM recording is not supported for WebViews.
   return nullptr;
+}
+
+ukm::SourceId WebViewAutofillClientIOS::GetUkmSourceId() {
+  // UKM recording is not supported for WebViews.
+  return 0;
 }
 
 AddressNormalizer* WebViewAutofillClientIOS::GetAddressNormalizer() {

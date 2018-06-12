@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
+#include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -106,6 +107,10 @@ identity::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
 
 ukm::UkmRecorder* ChromeAutofillClientIOS::GetUkmRecorder() {
   return GetApplicationContext()->GetUkmRecorder();
+}
+
+ukm::SourceId ChromeAutofillClientIOS::GetUkmSourceId() {
+  return ukm::GetSourceIdForWebStateDocument(web_state_);
 }
 
 AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {

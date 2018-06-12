@@ -21,7 +21,8 @@ TestAutofillManager::TestAutofillManager(AutofillDriver* driver,
                                          TestPersonalDataManager* personal_data)
     : AutofillManager(driver, client, personal_data),
       personal_data_(personal_data),
-      context_getter_(driver->GetURLRequestContext()) {
+      context_getter_(driver->GetURLRequestContext()),
+      client_(client) {
   set_payments_client(new payments::PaymentsClient(
       context_getter_, client->GetPrefs(), client->GetIdentityManager(),
       /*unmask_delegate=*/this,
@@ -41,7 +42,8 @@ TestAutofillManager::TestAutofillManager(
                                    payments_client,
                                    std::move(credit_card_save_manager),
                                    personal_data,
-                                   "en-US")) {
+                                   "en-US")),
+      client_(client) {
   set_payments_client(payments_client);
   set_form_data_importer(test_form_data_importer_);
 }
@@ -135,8 +137,8 @@ void TestAutofillManager::AddSeenForm(
   form_structure->SetFieldTypes(heuristic_types, server_types);
   AddSeenFormStructure(std::move(form_structure));
 
-  form_interactions_ukm_logger()->OnFormsParsed(
-      form.main_frame_origin.GetURL());
+  form_interactions_ukm_logger()->OnFormsParsed(form.main_frame_origin.GetURL(),
+                                                client_->GetUkmSourceId());
 }
 
 void TestAutofillManager::AddSeenFormStructure(

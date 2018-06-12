@@ -4,12 +4,13 @@
 
 #include "components/autofill/core/browser/test_autofill_client.h"
 
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
 namespace autofill {
 
 TestAutofillClient::TestAutofillClient()
-    : form_origin_(GURL("https://example.test")) {}
+    : form_origin_(GURL("https://example.test")), source_id_(-1) {}
 
 TestAutofillClient::~TestAutofillClient() {
 }
@@ -36,6 +37,18 @@ identity::IdentityManager* TestAutofillClient::GetIdentityManager() {
 
 ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
   return ukm::UkmRecorder::Get();
+}
+
+ukm::SourceId TestAutofillClient::GetUkmSourceId() {
+  if (source_id_ == -1) {
+    source_id_ = ukm::UkmRecorder::GetNewSourceID();
+    UpdateSourceURL(GetUkmRecorder(), source_id_, form_origin_);
+  }
+  return source_id_;
+}
+
+void TestAutofillClient::InitializeUKMSources() {
+  UpdateSourceURL(GetUkmRecorder(), source_id_, form_origin_);
 }
 
 AddressNormalizer* TestAutofillClient::GetAddressNormalizer() {
@@ -134,6 +147,22 @@ bool TestAutofillClient::IsAutofillSupported() {
 
 bool TestAutofillClient::AreServerCardsSupported() {
   return true;
+}
+
+void TestAutofillClient::set_form_origin(const GURL& url) {
+  form_origin_ = url;
+  // Also reset source_id_.
+  source_id_ = ukm::UkmRecorder::GetNewSourceID();
+  UpdateSourceURL(GetUkmRecorder(), source_id_, form_origin_);
+}
+
+// static
+void TestAutofillClient::UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
+                                         ukm::SourceId source_id,
+                                         GURL url) {
+  if (ukm_recorder) {
+    ukm_recorder->UpdateSourceURL(source_id, url);
+  }
 }
 
 }  // namespace autofill

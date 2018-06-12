@@ -672,7 +672,9 @@ class AutofillMetrics {
 
     const GURL& url() const { return url_; }
 
-    void OnFormsParsed(const GURL& url);
+    // Initializes this logger with a valid url and source_id.
+    // Unless forms is parsed no autofill UKM can be recorded.
+    void OnFormsParsed(const GURL& url, const ukm::SourceId source_id);
     void LogInteractedWithForm(bool is_for_credit_card,
                                size_t local_record_type_count,
                                size_t server_record_type_count,
@@ -709,16 +711,10 @@ class AutofillMetrics {
                                                     const AutofillField& field,
                                                     bool is_skipped);
 
-    // We initialize |url_| with the form's URL when we log the first form
-    // interaction. Later, we may update |url_| with the |source_url()| for the
-    // submitted form.
-    void UpdateSourceURL(const GURL& url);
-
    private:
     bool CanLog() const;
     int64_t MillisecondsSinceFormParsed(
         const base::TimeTicks& form_parsed_timestamp) const;
-    void GetNewSourceID();
 
     ukm::UkmRecorder* ukm_recorder_;  // Weak reference.
     ukm::SourceId source_id_ = -1;
@@ -738,11 +734,6 @@ class AutofillMetrics {
     FormInteractionsUkmLogger* const logger_;
     DISALLOW_IMPLICIT_CONSTRUCTORS(UkmTimestampPin);
   };
-
-  // Friended Helper for recording main frame URLs to UKM.
-  static void UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
-                              ukm::SourceId source_id,
-                              const GURL& url);
 
   static void LogSubmittedCardStateMetric(SubmittedCardStateMetric metric);
 
@@ -980,6 +971,7 @@ class AutofillMetrics {
   // Logs the card upload decisions ukm for the specified |url|.
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
+                                        ukm::SourceId source_id,
                                         const GURL& url,
                                         int upload_decision_metrics);
 
@@ -990,6 +982,7 @@ class AutofillMetrics {
   // FormType recorded for the page. This will be stored as a bit vector
   // in UKM.
   static void LogDeveloperEngagementUkm(ukm::UkmRecorder* ukm_recorder,
+                                        ukm::SourceId source_id,
                                         const GURL& url,
                                         bool is_for_credit_card,
                                         std::set<FormType> form_types,

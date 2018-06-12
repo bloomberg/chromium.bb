@@ -100,6 +100,7 @@ class TestAutofillManager : public AutofillManager {
 
   std::string submitted_form_signature_;
   std::vector<ServerFieldTypeSet> expected_submitted_field_types_;
+  AutofillClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };

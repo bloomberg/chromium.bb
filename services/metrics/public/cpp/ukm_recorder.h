@@ -21,8 +21,7 @@ class MediaEngagementSession;
 class PluginInfoHostImpl;
 
 namespace autofill {
-class AutofillMetrics;
-class FormStructure;
+class TestAutofillClient;
 }  // namespace autofill
 
 namespace blink {
@@ -104,8 +103,7 @@ class METRICS_EXPORT UkmRecorder {
   friend MediaEngagementSession;
   friend PluginInfoHostImpl;
   friend TestRecordingHelper;
-  friend autofill::AutofillMetrics;
-  friend autofill::FormStructure;
+  friend autofill::TestAutofillClient;
   friend blink::Document;
   friend blink::NavigatorVR;
   friend cc::UkmManager;

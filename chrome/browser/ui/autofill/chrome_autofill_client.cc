@@ -45,6 +45,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -136,6 +137,10 @@ identity::IdentityManager* ChromeAutofillClient::GetIdentityManager() {
 
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {
   return ukm::UkmRecorder::Get();
+}
+
+ukm::SourceId ChromeAutofillClient::GetUkmSourceId() {
+  return ukm::GetSourceIdForWebContentsDocument(web_contents());
 }
 
 AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {

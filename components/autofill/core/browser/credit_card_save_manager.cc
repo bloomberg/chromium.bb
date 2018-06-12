@@ -523,8 +523,8 @@ void CreditCardSaveManager::LogCardUploadDecisions(
     int upload_decision_metrics) {
   AutofillMetrics::LogCardUploadDecisionMetrics(upload_decision_metrics);
   AutofillMetrics::LogCardUploadDecisionsUkm(
-      client_->GetUkmRecorder(), pending_upload_request_origin_.GetURL(),
-      upload_decision_metrics);
+      client_->GetUkmRecorder(), client_->GetUkmSourceId(),
+      pending_upload_request_origin_.GetURL(), upload_decision_metrics);
 }
 
 }  // namespace autofill

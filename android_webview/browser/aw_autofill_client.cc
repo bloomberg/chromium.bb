@@ -82,6 +82,11 @@ ukm::UkmRecorder* AwAutofillClient::GetUkmRecorder() {
   return nullptr;
 }
 
+ukm::SourceId AwAutofillClient::GetUkmSourceId() {
+  // UKM recording is not supported for WebViews.
+  return ukm::kInvalidSourceId;
+}
+
 autofill::AddressNormalizer* AwAutofillClient::GetAddressNormalizer() {
   return nullptr;
 }
