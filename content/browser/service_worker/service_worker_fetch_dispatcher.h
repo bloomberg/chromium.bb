@@ -80,9 +80,9 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
       base::OnceClosure on_response);
 
   // Dispatches a fetch event to the |version| given in ctor, and fires
-  // |fetch_callback| (also given in ctor) when finishes. It runs
-  // |prepare_callback| as an intermediate step once the version is activated
-  // and running.
+  // |fetch_callback_| (also given in ctor) once a response is received from the
+  // service worker. It runs |prepare_callback_| as an intermediate step once
+  // the version is activated and running.
   void Run();
 
  private:
@@ -107,6 +107,10 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                 blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
                 blink::mojom::BlobPtr body_as_blob);
 
+  // The fetch event stays open until all respondWith() and waitUntil() promises
+  // are settled. This function is called once the renderer signals that
+  // happened. |fetch_callback_| can run before this, once respondWith() is
+  // settled.
   static void OnFetchEventFinished(
       ServiceWorkerVersion* version,
       int event_finish_id,
