@@ -310,16 +310,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
 class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
                                 public testing::Test {};
 
-class LayerWithForcedDrawsContent : public Layer {
- public:
-  LayerWithForcedDrawsContent() = default;
-
-  bool DrawsContent() const override { return true; }
-
- private:
-  ~LayerWithForcedDrawsContent() override = default;
-};
-
 class LayerTreeSettingsScaleContent : public VerifyTreeCalcsLayerTreeSettings {
  public:
   LayerTreeSettingsScaleContent() {
@@ -8624,13 +8614,14 @@ TEST_F(LayerTreeHostCommonTest, HasCopyRequestsInTargetSubtree) {
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
-  scoped_refptr<Layer> root = Layer::Create();
   FakeContentLayerClient client;
+
+  scoped_refptr<Layer> root = Layer::Create();
   client.set_bounds(root->bounds());
-  scoped_refptr<LayerWithForcedDrawsContent> child =
-      base::MakeRefCounted<LayerWithForcedDrawsContent>();
-  scoped_refptr<LayerWithForcedDrawsContent> grandchild =
-      base::MakeRefCounted<LayerWithForcedDrawsContent>();
+  scoped_refptr<Layer> child = Layer::Create();
+  child->SetIsDrawable(true);
+  scoped_refptr<Layer> grandchild = Layer::Create();
+  grandchild->SetIsDrawable(true);
   scoped_refptr<FakePictureLayer> greatgrandchild(
       FakePictureLayer::Create(&client));
 
@@ -9744,8 +9735,8 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
 
 TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> child =
-      base::MakeRefCounted<LayerWithForcedDrawsContent>();
+  scoped_refptr<Layer> child = Layer::Create();
+  child->SetIsDrawable(true);
   root->AddChild(child);
   host()->SetRootLayer(root);
 
@@ -9786,8 +9777,8 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
 
 TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> animated =
-      base::MakeRefCounted<LayerWithForcedDrawsContent>();
+  scoped_refptr<Layer> animated = Layer::Create();
+  animated->SetIsDrawable(true);
   root->AddChild(animated);
   host()->SetRootLayer(root);
   host()->SetElementIdsForTesting();
@@ -9836,8 +9827,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
 
 TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> animated =
-      base::MakeRefCounted<LayerWithForcedDrawsContent>();
+  scoped_refptr<Layer> animated = Layer::Create();
+  animated->SetIsDrawable(true);
   root->AddChild(animated);
   host()->SetRootLayer(root);
   host()->SetElementIdsForTesting();

@@ -476,6 +476,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // if it has content to contribute, but when false, this prevents it from
   // doing so.
   void SetIsDrawable(bool is_drawable);
+  // Is true if the layer will contribute content to the compositor's output.
+  // Will be false if SetIsDrawable(false) is called. But will also be false if
+  // the layer itself has no content to contribute, even though the layer was
+  // given SetIsDrawable(true).
+  bool DrawsContent() const;
 
   void SetHideLayerAndSubtree(bool hide);
   bool hide_layer_and_subtree() const { return inputs_.hide_layer_and_subtree; }
@@ -484,14 +489,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   gfx::PointF filters_origin() const { return inputs_.filters_origin; }
 
   int NumDescendantsThatDrawContent() const;
-
-  // Is true if the layer will contribute content to the compositor's output.
-  // Will be false if SetIsDrawable(false) is called. But will also be false if
-  // the layer itself has no content to contribute, even though the layer was
-  // given SetIsDrawable(true).
-  // This is only virtual for tests.
-  // TODO(awoloszyn): Remove this once we no longer need it for tests
-  virtual bool DrawsContent() const;
 
   // This methods typically need to be overwritten by derived classes.
   // Returns true iff anything was updated that needs to be committed.

@@ -20,20 +20,6 @@
 namespace cc {
 namespace {
 
-class LayerWithForcedDrawsContent : public Layer {
- public:
-  LayerWithForcedDrawsContent() = default;
-
-  bool DrawsContent() const override;
-
- private:
-  ~LayerWithForcedDrawsContent() override = default;
-};
-
-bool LayerWithForcedDrawsContent::DrawsContent() const {
-  return true;
-}
-
 void SetLayerPropertiesForTesting(Layer* layer,
                                   const gfx::Transform& transform,
                                   const gfx::Point3F& transform_origin,
@@ -94,9 +80,10 @@ class LayerPositionConstraintTest : public testing::Test {
     outer_viewport_container_layer_ = Layer::Create();
     child_transform_layer_ = Layer::Create();
     child_ = Layer::Create();
-    grand_child_ = base::WrapRefCounted(new LayerWithForcedDrawsContent());
-    great_grand_child_ =
-        base::WrapRefCounted(new LayerWithForcedDrawsContent());
+    grand_child_ = Layer::Create();
+    grand_child_->SetIsDrawable(true);
+    great_grand_child_ = Layer::Create();
+    great_grand_child_->SetIsDrawable(true);
 
     gfx::Transform IdentityMatrix;
     gfx::Point3F transform_origin;
@@ -569,8 +556,8 @@ TEST_F(LayerPositionConstraintTest,
   // transform.
 
   // Add one more layer to the test tree for this scenario.
-  scoped_refptr<Layer> fixed_position_child =
-      base::WrapRefCounted(new LayerWithForcedDrawsContent());
+  scoped_refptr<Layer> fixed_position_child = Layer::Create();
+  fixed_position_child->SetIsDrawable(true);
   SetLayerPropertiesForTesting(fixed_position_child.get(), gfx::Transform(),
                                gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true);
@@ -729,8 +716,8 @@ TEST_F(
   // surfaces is accumulated properly in the final matrix transform.
 
   // Add one more layer to the test tree for this scenario.
-  scoped_refptr<Layer> fixed_position_child =
-      base::WrapRefCounted(new LayerWithForcedDrawsContent());
+  scoped_refptr<Layer> fixed_position_child = Layer::Create();
+  fixed_position_child->SetIsDrawable(true);
   SetLayerPropertiesForTesting(fixed_position_child.get(), gfx::Transform(),
                                gfx::Point3F(), gfx::PointF(),
                                gfx::Size(100, 100), true);
@@ -1066,8 +1053,8 @@ TEST_F(LayerPositionConstraintTest,
   // would still have to compensate with respect to its container.
 
   // Add one more layer to the hierarchy for this test.
-  scoped_refptr<Layer> great_great_grand_child =
-      base::WrapRefCounted(new LayerWithForcedDrawsContent());
+  scoped_refptr<Layer> great_great_grand_child = Layer::Create();
+  great_great_grand_child->SetIsDrawable(true);
   great_grand_child_->AddChild(great_great_grand_child);
 
   child_->SetIsContainerForFixedPositionLayers(true);
@@ -1122,8 +1109,8 @@ TEST_F(LayerPositionConstraintTest,
        ScrollCompensationForOuterViewportBoundsDelta) {
   // This test checks for correct scroll compensation when the fixed-position
   // container is the outer viewport scroll layer and has non-zero bounds delta.
-  scoped_refptr<Layer> fixed_child =
-      base::WrapRefCounted(new LayerWithForcedDrawsContent());
+  scoped_refptr<Layer> fixed_child = Layer::Create();
+  fixed_child->SetIsDrawable(true);
   fixed_child->SetBounds(gfx::Size(300, 300));
   child_->AddChild(fixed_child);
   fixed_child->SetPositionConstraint(fixed_to_top_left_);
