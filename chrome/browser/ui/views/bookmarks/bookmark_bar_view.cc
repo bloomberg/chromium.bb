@@ -174,7 +174,7 @@ gfx::Insets GetInkDropInsets() {
 
 int GetInkDropCornerRadius(const views::View* host_view) {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_HIGH, host_view->size());
+      views::EMPHASIS_MAXIMUM, host_view->size());
 }
 
 std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(

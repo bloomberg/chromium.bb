@@ -78,7 +78,7 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
 
   const int size = GetLayoutConstant(LOCATION_BAR_HEIGHT);
   const int radii = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_HIGH, gfx::Size(size, size));
+      views::EMPHASIS_MAXIMUM, gfx::Size(size, size));
   set_ink_drop_corner_radii(radii, radii);
 }
 

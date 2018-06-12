@@ -121,10 +121,12 @@ enum EmphasisMetric {
   // Use this to indicate low-emphasis interactive elements such as buttons and
   // text fields.
   EMPHASIS_LOW,
-  // Use this for components with medium emphasis, such as tabs or dialogs.
+  // Use this for components with medium emphasis, such the autofill dropdown.
   EMPHASIS_MEDIUM,
-  // High-emphasis components like the omnibox or rich suggestions.
+  // High-emphasis components, such as tabs or dialogs.
   EMPHASIS_HIGH,
+  // Maximum emphasis components like the omnibox or rich suggestions.
+  EMPHASIS_MAXIMUM,
 };
 
 class VIEWS_EXPORT LayoutProvider {

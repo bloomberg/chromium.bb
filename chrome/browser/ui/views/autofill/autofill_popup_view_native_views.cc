@@ -53,7 +53,7 @@ const SkColor kSeparatorColor = gfx::kGoogleGrey200;
 
 int GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_LOW);
+      views::EMPHASIS_MEDIUM);
 }
 
 }  // namespace
@@ -549,7 +549,7 @@ std::unique_ptr<views::Border> AutofillPopupViewNativeViews::CreateBorder() {
   border->SetCornerRadius(GetCornerRadius());
   border->set_md_shadow_elevation(
       ChromeLayoutProvider::Get()->GetShadowElevationMetric(
-          views::EMPHASIS_LOW));
+          views::EMPHASIS_MEDIUM));
   bubble_border_ = border.get();
   return border;
 }
