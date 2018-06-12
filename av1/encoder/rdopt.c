@@ -2020,22 +2020,25 @@ static int find_tx_size_rd_info(TXB_RD_RECORD *cur_record, const uint32_t hash);
 static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
                                    int blk_col, BLOCK_SIZE plane_bsize,
                                    TX_SIZE tx_size) {
-  int16_t hash_data[64 * 64];
-  int16_t *cur_hash_row = hash_data;
+  int16_t tmp_data[64 * 64];
   const int diff_stride = block_size_wide[plane_bsize];
   const int16_t *diff = x->plane[plane].src_diff;
   const int16_t *cur_diff_row = diff + 4 * blk_row * diff_stride + 4 * blk_col;
   const int txb_w = tx_size_wide[tx_size];
   const int txb_h = tx_size_high[tx_size];
-  for (int i = 0; i < txb_h; i++) {
-    memcpy(cur_hash_row, cur_diff_row, sizeof(*hash_data) * txb_w);
-    cur_hash_row += txb_w;
-    cur_diff_row += diff_stride;
+  uint8_t *hash_data = (uint8_t *)cur_diff_row;
+  if (txb_w != diff_stride) {
+    int16_t *cur_hash_row = tmp_data;
+    for (int i = 0; i < txb_h; i++) {
+      memcpy(cur_hash_row, cur_diff_row, sizeof(*diff) * txb_w);
+      cur_hash_row += txb_w;
+      cur_diff_row += diff_stride;
+    }
+    hash_data = (uint8_t *)tmp_data;
   }
-  return (av1_get_crc32c_value(&x->mb_rd_record.crc_calculator,
-                               (uint8_t *)hash_data, 2 * txb_w * txb_h)
-          << 5) +
-         tx_size;
+  CRC32C *crc = &x->mb_rd_record.crc_calculator;
+  const uint32_t hash = av1_get_crc32c_value(crc, hash_data, 2 * txb_w * txb_h);
+  return (hash << 5) + tx_size;
 }
 
 static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
