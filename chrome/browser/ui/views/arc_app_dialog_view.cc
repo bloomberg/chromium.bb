@@ -32,7 +32,7 @@ namespace arc {
 
 namespace {
 
-const int kIconSize = 64;
+const int kArcAppIconSize = 64;
 // Currenty ARC apps only support 48*48 native icon.
 const int kIconSourceSize = 48;
 
@@ -119,7 +119,7 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   icon_view_ = new views::ImageView();
-  icon_view_->SetPreferredSize(gfx::Size(kIconSize, kIconSize));
+  icon_view_->SetPreferredSize(gfx::Size(kArcAppIconSize, kArcAppIconSize));
   AddChildView(icon_view_);
 
   views::View* text_container = new views::View();

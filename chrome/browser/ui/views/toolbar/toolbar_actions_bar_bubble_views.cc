@@ -21,7 +21,7 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace {
-const int kIconSize = 16;
+const int kBubbleExtraIconSize = 16;
 }
 
 ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
@@ -63,7 +63,8 @@ views::View* ToolbarActionsBarBubbleViews::CreateExtraView() {
   std::unique_ptr<views::ImageView> icon;
   if (extra_view_info->resource) {
     icon = std::make_unique<views::ImageView>();
-    icon->SetImage(gfx::CreateVectorIcon(*extra_view_info->resource, kIconSize,
+    icon->SetImage(gfx::CreateVectorIcon(*extra_view_info->resource,
+                                         kBubbleExtraIconSize,
                                          gfx::kChromeIconGrey));
   }
 

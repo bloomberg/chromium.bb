@@ -27,10 +27,10 @@ typedef std::map<std::string, IconLoader::IconSize> QueryIconSizeMap;
 const char kFileIconPath[] = "fileicon";
 
 // URL parameter specifying icon size.
-const char kIconSize[] = "iconsize";
+const char kIconSizeParameter[] = "iconsize";
 
 // URL parameter specifying scale factor.
-const char kScaleFactor[] = "scale";
+const char kScaleFactorParameter[] = "scale";
 
 // Assuming the url is of the form '/path?query', convert the path portion into
 // a FilePath and return the resulting |file_path| and |query|.  The path
@@ -70,9 +70,9 @@ void ParseQueryParams(const std::string& query,
   base::SplitStringIntoKeyValuePairs(query, '=', '&', &parameters);
   for (base::StringPairs::const_iterator iter = parameters.begin();
        iter != parameters.end(); ++iter) {
-    if (icon_size && iter->first == kIconSize)
+    if (icon_size && iter->first == kIconSizeParameter)
       *icon_size = SizeStringToIconSize(iter->second);
-    else if (scale_factor && iter->first == kScaleFactor)
+    else if (scale_factor && iter->first == kScaleFactorParameter)
       webui::ParseScaleFactor(iter->second, scale_factor);
   }
 }
