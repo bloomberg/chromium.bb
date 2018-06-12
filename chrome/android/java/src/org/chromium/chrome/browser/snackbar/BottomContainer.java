@@ -54,8 +54,9 @@ public class BottomContainer extends FrameLayout implements FullscreenListener {
                 // state (the UI should stack). Once the sheet is opened, the bottom container
                 // stays in place, becoming obscured by the sheet.
                 if (heightFraction > sheet.getPeekRatio()) return;
-                mOffsetFromSheet = (sheet.getSheetContainerHeight() * heightFraction)
-                        - sheet.getToolbarShadowHeight();
+                mOffsetFromSheet = -(sheet.getSheetContainerHeight() * heightFraction);
+                // Only apply the shadow height if the sheet is actually visible.
+                if (heightFraction > 0) mOffsetFromSheet += sheet.getToolbarShadowHeight();
                 setTranslationY(mBaseYOffset);
             }
         });
@@ -74,8 +75,10 @@ public class BottomContainer extends FrameLayout implements FullscreenListener {
         float offsetFromControls = mFullscreenManager.getBottomControlOffset()
                 - mFullscreenManager.getBottomControlsHeight();
 
-        // Don't translate any lower than the bottom of the screen.
-        super.setTranslationY(Math.min(mBaseYOffset - (offsetFromControls + mOffsetFromSheet), 0));
+        // Sit on top of either the bottom sheet or the bottom toolbar depending on which is larger
+        // (offsets are negative).
+        super.setTranslationY(
+                Math.min(offsetFromControls - mBaseYOffset, mOffsetFromSheet - mBaseYOffset));
     }
 
     @Override
