@@ -9,6 +9,7 @@
 #include "components/password_manager/core/browser/password_hash_data.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -256,7 +257,7 @@ TEST_F(HashPasswordManagerTest, RetrievingPasswordHashData) {
   ASSERT_FALSE(non_existing_data);
 }
 
-TEST_F(HashPasswordManagerTest, MigrateCapturedPasswordHash) {
+TEST_F(HashPasswordManagerTest, MigrateCapturedPasswordHashFromOldPref) {
   ASSERT_FALSE(prefs_.HasPrefPath(prefs::kSyncPasswordHash));
   HashPasswordManager hash_password_manager;
   hash_password_manager.set_prefs(&prefs_);
@@ -271,6 +272,58 @@ TEST_F(HashPasswordManagerTest, MigrateCapturedPasswordHash) {
       "sync_username", /*is_gaia_password=*/false));
   EXPECT_FALSE(prefs_.HasPrefPath(prefs::kSyncPasswordHash));
   EXPECT_FALSE(prefs_.HasPrefPath(prefs::kSyncPasswordLengthAndHashSalt));
+}
+
+TEST_F(HashPasswordManagerTest,
+       MigrateCapturedPasswordHashWithoutIsGaiaPasswordField) {
+  HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(&prefs_);
+  hash_password_manager.SavePasswordHash("sync_username",
+                                         base::UTF8ToUTF16("sync_password"),
+                                         /*is_gaia_password=*/true);
+  EXPECT_TRUE(hash_password_manager.HasPasswordHash("sync_username",
+                                                    /*is_gaia_password=*/true));
+  EXPECT_FALSE(
+      hash_password_manager.HasPasswordHash("sync_username",
+                                            /*is_gaia_password=*/false));
+
+  // Remove the |is_gaia_password| value from the pref value.
+  ListPrefUpdate update(&prefs_, prefs::kPasswordHashDataList);
+  ASSERT_EQ(1u, update.Get()->GetList().size());
+  update.Get()->GetList()[0].RemoveKey("is_gaia");
+  EXPECT_FALSE(
+      hash_password_manager.HasPasswordHash("sync_username",
+                                            /*is_gaia_password=*/true));
+  EXPECT_FALSE(
+      hash_password_manager.HasPasswordHash("sync_username",
+                                            /*is_gaia_password=*/false));
+
+  // Trigger the migration code should set the |is_gaia_password| value to true.
+  hash_password_manager.MaybeMigrateExistingSyncPasswordHash("sync_username");
+
+  EXPECT_TRUE(hash_password_manager.HasPasswordHash("sync_username",
+                                                    /*is_gaia_password=*/true));
+  EXPECT_FALSE(hash_password_manager.HasPasswordHash(
+      "sync_username", /*is_gaia_password=*/false));
+  EXPECT_EQ(1u, update->GetList().size());
+
+  // Now remove the |is_gaia_password| again, and save a new captured Gaia
+  // password hash with same username.
+  update.Get()->GetList()[0].RemoveKey("is_gaia");
+  hash_password_manager.SavePasswordHash("sync_username",
+                                         base::UTF8ToUTF16("sync_password"),
+                                         /*is_gaia_password=*/true);
+  // There should be 2 entries in the pref.
+  EXPECT_EQ(2u, update->GetList().size());
+
+  // Trigger the migration code should remove the duplicated entry without
+  // |is_gaia_password| field.
+  hash_password_manager.MaybeMigrateExistingSyncPasswordHash("sync_username");
+  EXPECT_EQ(1u, update->GetList().size());
+  EXPECT_TRUE(hash_password_manager.HasPasswordHash("sync_username",
+                                                    /*is_gaia_password=*/true));
+  EXPECT_FALSE(hash_password_manager.HasPasswordHash(
+      "sync_username", /*is_gaia_password=*/false));
 }
 
 }  // namespace

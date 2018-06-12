@@ -321,12 +321,45 @@ bool HashPasswordManager::HasPasswordHash(const std::string& username,
 
 void HashPasswordManager::MaybeMigrateExistingSyncPasswordHash(
     const std::string& sync_username) {
-  if (!prefs_ || sync_username.empty() ||
-      !prefs_->HasPrefPath(prefs::kSyncPasswordHash) ||
+  if (!prefs_ || sync_username.empty())
+    return;
+
+  // For a very small portion of Canary and Dev users, there maybe a captured
+  // password hash with no |is_gaia_password| field.
+  // Note that, there's at most one such hash.
+  bool has_sync_password =
+      HasPasswordHash(sync_username, /*is_gaia_password=*/true);
+  if (prefs_->HasPrefPath(prefs::kPasswordHashDataList)) {
+    ListPrefUpdate update(prefs_, prefs::kPasswordHashDataList);
+    auto entry_to_remove = update->GetList().end();
+    for (auto it = update->GetList().begin(); it != update->GetList().end();
+         it++) {
+      if (it->FindKey(kIsGaiaFieldKey))
+        continue;
+      // If there's another hash matches |sync_username|, remove the entry
+      // without |is_gaia_password| field. Otherwise, set the missing
+      // |is_gaia_password| field to true.
+      if (has_sync_password) {
+        entry_to_remove = it;
+      } else {
+        std::string encrypted_is_gaia_value =
+            EncryptString(BooleanToString(true));
+        it->SetKey(kIsGaiaFieldKey, base::Value(encrypted_is_gaia_value));
+      }
+      break;
+    }
+    if (entry_to_remove != update->GetList().end())
+      update->GetList().erase(entry_to_remove);
+  }
+
+  if (!prefs_->HasPrefPath(prefs::kSyncPasswordHash) ||
       !prefs_->HasPrefPath(prefs::kSyncPasswordLengthAndHashSalt)) {
     return;
   }
 
+  // For users who are still use |kSyncPasswordHash| and
+  // |kSyncPasswordLengthAndHashSalt| to store password hashes, migrate them
+  // to |prefs::kPasswordHashDataList|.
   base::Optional<SyncPasswordData> captured_sync_password_hash =
       RetrievePasswordHash();
 
