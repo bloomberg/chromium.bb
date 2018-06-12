@@ -18,19 +18,30 @@ class TestWebState;
 // Decides the navigation policy for a web state.
 class WebStatePolicyDecider {
  public:
+  // Data Transfer Object for the additional information about navigation
+  // request passed to WebStatePolicyDecider::ShouldAllowRequest().
+  struct RequestInfo {
+    RequestInfo(ui::PageTransition transition_type, bool target_frame_is_main)
+        : transition_type(transition_type),
+          target_frame_is_main(target_frame_is_main) {}
+    // The navigation page transition type.
+    ui::PageTransition transition_type =
+        ui::PageTransition::PAGE_TRANSITION_FIRST;
+    // Indicates whether the navigation target frame is the main frame.
+    bool target_frame_is_main = false;
+  };
+
   // Removes self as a policy decider of |web_state_|.
   virtual ~WebStatePolicyDecider();
 
   // Asks the decider whether the navigation corresponding to |request| should
   // be allowed to continue. Defaults to true if not overriden.
-  // |from_main_frame| indicates whether the request is originating from the
-  // main frame. Called before WebStateObserver::DidStartNavigation.
+  // Called before WebStateObserver::DidStartNavigation.
   // Never called in the following cases:
   //  - same-document back-forward and state change navigations
   //  - CRWNativeContent navigations
   virtual bool ShouldAllowRequest(NSURLRequest* request,
-                                  ui::PageTransition transition,
-                                  bool from_main_frame);
+                                  const RequestInfo& request_info);
 
   // Asks the decider whether the navigation corresponding to |response| should
   // be allowed to continue. Defaults to true if not overriden.

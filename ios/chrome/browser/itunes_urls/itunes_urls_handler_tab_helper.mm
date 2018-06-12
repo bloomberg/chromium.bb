@@ -110,13 +110,14 @@ ITunesUrlsHandlerTabHelper::ITunesUrlsHandlerTabHelper(web::WebState* web_state)
 
 bool ITunesUrlsHandlerTabHelper::ShouldAllowRequest(
     NSURLRequest* request,
-    ui::PageTransition transition,
-    bool from_main_frame) {
+    const web::WebStatePolicyDecider::RequestInfo& request_info) {
   // Don't Handle URLS in Off The record mode as this will open StoreKit with
-  // Users' iTunes account. Also don't Handle requests from iframe because they
+  // Users' iTunes account. Also don't Handle navigations in iframe because they
   // may be spam, and they will be handled by other policy deciders.
-  if (web_state()->GetBrowserState()->IsOffTheRecord() || !from_main_frame)
+  if (web_state()->GetBrowserState()->IsOffTheRecord() ||
+      !request_info.target_frame_is_main) {
     return true;
+  }
 
   GURL request_url = net::GURLWithNSURL(request.URL);
   if (!CanHandleUrl(request_url))

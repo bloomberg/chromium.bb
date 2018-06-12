@@ -16,6 +16,7 @@
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "url/gurl.h"
 
 @class NSURLRequest;
@@ -107,9 +108,9 @@ class TestWebState : public WebState {
   CRWContentView* GetTransientContentView();
   // Uses |policy_deciders| to return whether the navigation corresponding to
   // |request| should be allowed. Defaults to true.
-  bool ShouldAllowRequest(NSURLRequest* request,
-                          ui::PageTransition transition,
-                          bool from_main_frame);
+  bool ShouldAllowRequest(
+      NSURLRequest* request,
+      const WebStatePolicyDecider::RequestInfo& request_info);
   // Uses |policy_deciders| to return whether the navigation corresponding to
   // |response| should be allowed. Defaults to true.
   bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);

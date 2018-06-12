@@ -78,6 +78,7 @@
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
+#import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/web_state/error_translation_util.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
@@ -4289,8 +4290,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   ui::PageTransition transition =
       [self pageTransitionFromNavigationType:action.navigationType];
-  BOOL allowLoad = self.webStateImpl->ShouldAllowRequest(
-      action.request, transition, [self isMainFrameNavigationAction:action]);
+  web::WebStatePolicyDecider::RequestInfo requestInfo(
+      transition, [self isMainFrameNavigationAction:action]);
+  BOOL allowLoad =
+      self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
   if (!allowLoad && action.targetFrame.mainFrame) {
     [_pendingNavigationInfo setCancelled:YES];
     // Discard the pending item to ensure that the current URL is not

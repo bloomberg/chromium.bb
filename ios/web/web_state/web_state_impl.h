@@ -24,6 +24,7 @@
 #include "ios/web/public/java_script_dialog_type.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
+#import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "url/gurl.h"
 
 @class CRWSessionStorage;
@@ -50,7 +51,6 @@ class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
 class WebStateInterfaceProvider;
-class WebStatePolicyDecider;
 class WebUIIOS;
 
 // Implementation of WebState.
@@ -165,9 +165,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Returns whether the navigation corresponding to |request| should be allowed
   // to continue by asking its policy deciders. Defaults to true.
-  bool ShouldAllowRequest(NSURLRequest* request,
-                          ui::PageTransition transition,
-                          bool from_main_frame);
+  bool ShouldAllowRequest(
+      NSURLRequest* request,
+      const WebStatePolicyDecider::RequestInfo& request_info);
   // Returns whether the navigation corresponding to |response| should be
   // allowed to continue by asking its policy deciders. Defaults to true.
   bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);

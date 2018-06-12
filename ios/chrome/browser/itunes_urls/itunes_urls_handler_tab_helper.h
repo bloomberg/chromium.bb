@@ -40,9 +40,9 @@ class ITunesUrlsHandlerTabHelper
   ~ITunesUrlsHandlerTabHelper() override;
   explicit ITunesUrlsHandlerTabHelper(web::WebState* web_state);
   // web::WebStatePolicyDecider implementation
-  bool ShouldAllowRequest(NSURLRequest* request,
-                          ui::PageTransition transition,
-                          bool from_main_frame) override;
+  bool ShouldAllowRequest(
+      NSURLRequest* request,
+      const web::WebStatePolicyDecider::RequestInfo& request_info) override;
 
  private:
   // Opens the StoreKit for the given iTunes app |url|.
