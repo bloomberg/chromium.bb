@@ -284,6 +284,18 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
   ~AuthenticatorImplTest() override {}
 
  protected:
+  void TearDown() override {
+    // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
+    authenticator_impl_.reset();
+    content::RenderViewHostTestHarness::TearDown();
+  }
+
+  void NavigateAndCommit(const GURL& url) {
+    // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
+    authenticator_impl_.reset();
+    content::RenderViewHostTestHarness::NavigateAndCommit(url);
+  }
+
   // Simulates navigating to a page and getting the page contents and language
   // for that navigation.
   void SimulateNavigation(const GURL& url) {
@@ -367,7 +379,7 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     return base::ContainsKey(authenticator_impl_->protocols_, protocol);
   }
 
- private:
+ protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
   service_manager::mojom::ConnectorRequest request_;
   std::unique_ptr<service_manager::Connector> connector_;
@@ -914,6 +926,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialPendingRequest) {
   callback_receiver2.WaitForCallback();
 
   EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver2.status());
+
+  callback_receiver.WaitForCallback();
 }
 
 TEST_F(AuthenticatorImplTest, GetAssertionPendingRequest) {
@@ -940,6 +954,41 @@ TEST_F(AuthenticatorImplTest, GetAssertionPendingRequest) {
   callback_receiver2.WaitForCallback();
 
   EXPECT_EQ(AuthenticatorStatus::PENDING_REQUEST, callback_receiver2.status());
+
+  callback_receiver.WaitForCallback();
+}
+
+TEST_F(AuthenticatorImplTest, NavigationDuringOperation) {
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  TestServiceManagerContext service_manager_context;
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  base::RunLoop run_loop;
+  authenticator.set_connection_error_handler(run_loop.QuitClosure());
+
+  // Make first request.
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  // Delete the |AuthenticatorImpl| during the registration operation to
+  // simulate a navigation while waiting for the user to press the token.
+  scoped_virtual_device.mutable_state()->simulate_press_callback =
+      base::BindRepeating(
+          [](std::unique_ptr<AuthenticatorImpl>* ptr) {
+            base::ThreadTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE, base::BindOnce(
+                               [](std::unique_ptr<AuthenticatorImpl>* ptr) {
+                                 ptr->reset();
+                               },
+                               ptr));
+          },
+          &authenticator_impl_);
+
+  run_loop.Run();
 }
 
 TEST_F(AuthenticatorImplTest, InvalidResponse) {

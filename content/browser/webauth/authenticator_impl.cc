@@ -334,11 +334,25 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
 #endif
 }
 
-AuthenticatorImpl::~AuthenticatorImpl() {}
+AuthenticatorImpl::~AuthenticatorImpl() {
+  // This call exists to assert that |render_frame_host_| outlives this object.
+  // If this is violated, ASAN should notice.
+  render_frame_host_->GetRoutingID();
+}
 
 void AuthenticatorImpl::Bind(webauth::mojom::AuthenticatorRequest request) {
+  // If |render_frame_host_| is being unloaded then binding requests are
+  // rejected.
+  if (!render_frame_host_->IsCurrent()) {
+    return;
+  }
+
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
+}
+
+bool AuthenticatorImpl::IsFocused() const {
+  return render_frame_host_->IsCurrent() && request_delegate_->IsFocused();
 }
 
 // static
@@ -414,7 +428,7 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  if (!request_delegate_->IsFocused()) {
+  if (!IsFocused()) {
     InvokeCallbackAndCleanup(std::move(callback),
                              webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                              nullptr, Focus::kDontCheck);
@@ -579,21 +593,14 @@ void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
 
 void AuthenticatorImpl::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
+  // If the RenderFrameHost itself is navigated then this function will cause
+  // request state to be cleaned up. It's also possible for a navigation in the
+  // same frame to use a fresh RenderFrameHost. In this case,
+  // |render_frame_host_->IsCurrent()| will start returning false, causing all
+  // focus checks to fail if any Mojo requests are made in that state.
   if (!navigation_handle->HasCommitted() ||
       navigation_handle->IsSameDocument() ||
       navigation_handle->GetRenderFrameHost() != render_frame_host_) {
-    return;
-  }
-
-  binding_.Close();
-  Cleanup();
-}
-
-void AuthenticatorImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
-  // In tests, the AuthenticatorImpl may outlive the RenderFrameHost, although
-  // this cannot happen in a non-test context because, normally,
-  // AuthenticatorImpl is owned by RenderFrameHost.
-  if (render_frame_host != render_frame_host_) {
     return;
   }
 
@@ -606,9 +613,9 @@ void AuthenticatorImpl::OnRegisterResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorMakeCredentialResponse> response_data) {
   if (!request_) {
-    // Either the callback has been called immediately (in which case
-    // |request_| won't have been set yet), or |RenderFrameDeleted| /
-    // |DidFinishNavigation| noticed that this object has been orphaned.
+    // Either the callback was called immediately and |request_| has not yet
+    // been assigned (this is a bug), or a navigation caused the request to be
+    // canceled while a callback was enqueued.
     return;
   }
 
@@ -639,7 +646,7 @@ void AuthenticatorImpl::OnRegisterResponse(
           webauth::mojom::AttestationConveyancePreference::NONE) {
         // Check for focus before (potentially) showing a permissions bubble
         // that might take focus.
-        if (!request_delegate_->IsFocused()) {
+        if (!IsFocused()) {
           InvokeCallbackAndCleanup(
               std::move(make_credential_response_callback_),
               webauth::mojom::AuthenticatorStatus::NOT_FOCUSED, nullptr,
@@ -670,14 +677,14 @@ void AuthenticatorImpl::OnRegisterResponse(
 void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
     device::AuthenticatorMakeCredentialResponse response_data,
     bool attestation_permitted) {
-  DCHECK(attestation_preference_ !=
-         webauth::mojom::AttestationConveyancePreference::NONE);
-
   if (!request_) {
-    // |DidFinishNavigation| / |RenderFrameDeleted| noticed that this object has
-    // been orphaned.
+    // The request has already been cleaned up, probably because a navigation
+    // occured while the permissions prompt was pending.
     return;
   }
+
+  DCHECK(attestation_preference_ !=
+         webauth::mojom::AttestationConveyancePreference::NONE);
 
   // At this point, the final focus check has already been done because it's
   // possible that a permissions bubble might have focus and thus, if we did a
@@ -723,10 +730,9 @@ void AuthenticatorImpl::OnSignResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorGetAssertionResponse> response_data) {
   if (!request_) {
-    // Either the callback has been called immediately (in which case
-    // |request_| won't have been set yet), or
-    // |DidFinishNavigation| / |RenderFrameDeleted| noticed that this object has
-    // been orphaned.
+    // Either the callback was called immediately and |request_| has not yet
+    // been assigned (this is a bug), or a navigation caused the request to be
+    // canceled while a callback was enqueued.
     return;
   }
 
@@ -782,8 +788,7 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
     webauth::mojom::AuthenticatorStatus status,
     webauth::mojom::MakeCredentialAuthenticatorResponsePtr response,
     Focus check_focus) {
-  if (check_focus != Focus::kDontCheck &&
-      !(request_delegate_ && request_delegate_->IsFocused())) {
+  if (check_focus != Focus::kDontCheck && !(request_delegate_ && IsFocused())) {
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
                             nullptr);
   } else {
