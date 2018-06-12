@@ -571,7 +571,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   // the pending base and active base must be the same at this stage.
   scoped_refptr<SyncedScrollOffset> scroll_layer_offset =
       new SyncedScrollOffset;
-  scroll_layer_offset->PushMainToPending(scroll_layer->scroll_offset());
+  scroll_layer_offset->PushMainToPending(scroll_layer->CurrentScrollOffset());
   scroll_layer_offset->PushPendingToActive();
   EXPECT_TRUE(AreScrollOffsetsEqual(
       scroll_layer_offset.get(),
@@ -582,7 +582,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   scoped_refptr<SyncedScrollOffset> transient_scroll_layer_offset =
       new SyncedScrollOffset;
   transient_scroll_layer_offset->PushMainToPending(
-      transient_scroll_layer->scroll_offset());
+      transient_scroll_layer->CurrentScrollOffset());
   transient_scroll_layer_offset->PushPendingToActive();
   EXPECT_TRUE(
       AreScrollOffsetsEqual(transient_scroll_layer_offset.get(),
@@ -604,7 +604,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
   scroll_tree.CollectScrollDeltas(scroll_info.get(), ElementId());
   host_->proxy()->SetNeedsCommit();
   host_->ApplyScrollAndScale(scroll_info.get());
-  EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->scroll_offset());
+  EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->CurrentScrollOffset());
   scroll_layer->SetScrollOffset(gfx::ScrollOffset(100, 100));
 
   // More update to ScrollOffset active delta: gfx::ScrollOffset(20, 20)

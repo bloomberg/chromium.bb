@@ -834,7 +834,7 @@ void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
   if (viewport_layers_.inner_viewport_scroll) {
     viewport_layers_.inner_viewport_scroll->SetScrollOffsetFromImplSide(
         gfx::ScrollOffsetWithDelta(
-            viewport_layers_.inner_viewport_scroll->scroll_offset(),
+            viewport_layers_.inner_viewport_scroll->CurrentScrollOffset(),
             inner_viewport_scroll_delta));
   }
 
@@ -875,7 +875,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
       if (!layer)
         continue;
       layer->SetScrollOffsetFromImplSide(gfx::ScrollOffsetWithDelta(
-          layer->scroll_offset(), info->scrolls[i].scroll_delta));
+          layer->CurrentScrollOffset(), info->scrolls[i].scroll_delta));
       SetNeedsUpdateLayers();
     }
     for (size_t i = 0; i < info->scrollbars.size(); ++i) {

@@ -150,7 +150,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_TRUE(root_scroll_layer->scrollable());
-  ASSERT_FALSE(root_scroll_layer->should_scroll_on_main_thread());
+  ASSERT_FALSE(root_scroll_layer->main_thread_scrolling_reasons());
   ASSERT_EQ(WebEventListenerProperties::kNothing,
             GetWebLayerTreeView()->EventListenerProperties(
                 WebEventListenerClass::kTouchStartOrMove));
@@ -161,7 +161,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   cc::Layer* inner_viewport_scroll_layer =
       page->GetVisualViewport().ScrollLayer()->CcLayer();
   ASSERT_TRUE(inner_viewport_scroll_layer->scrollable());
-  ASSERT_FALSE(inner_viewport_scroll_layer->should_scroll_on_main_thread());
+  ASSERT_FALSE(inner_viewport_scroll_layer->main_thread_scrolling_reasons());
 }
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
@@ -181,13 +181,13 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_TRUE(root_scroll_layer->scrollable());
-  ASSERT_TRUE(root_scroll_layer->should_scroll_on_main_thread());
+  ASSERT_TRUE(root_scroll_layer->main_thread_scrolling_reasons());
 
   // Main scrolling should also propagate to inner viewport layer.
   cc::Layer* inner_viewport_scroll_layer =
       page->GetVisualViewport().ScrollLayer()->CcLayer();
   ASSERT_TRUE(inner_viewport_scroll_layer->scrollable());
-  ASSERT_TRUE(inner_viewport_scroll_layer->should_scroll_on_main_thread());
+  ASSERT_TRUE(inner_viewport_scroll_layer->main_thread_scrolling_reasons());
 }
 
 TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
@@ -222,8 +222,8 @@ TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
   cc::Layer* cc_scroll_layer =
       composited_layer_mapping->ScrollingContentsLayer()->CcLayer();
   ASSERT_TRUE(cc_scroll_layer);
-  ASSERT_NEAR(1.2f, cc_scroll_layer->scroll_offset().x(), 0.01f);
-  ASSERT_NEAR(1.2f, cc_scroll_layer->scroll_offset().y(), 0.01f);
+  ASSERT_NEAR(1.2f, cc_scroll_layer->CurrentScrollOffset().x(), 0.01f);
+  ASSERT_NEAR(1.2f, cc_scroll_layer->CurrentScrollOffset().y(), 0.01f);
 }
 
 static cc::Layer* CcLayerFromElement(Element* element) {
@@ -253,7 +253,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   // Fixed position should not fall back to main thread scrolling.
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
-  ASSERT_FALSE(root_scroll_layer->should_scroll_on_main_thread());
+  ASSERT_FALSE(root_scroll_layer->main_thread_scrolling_reasons());
 
   Document* document = GetFrame()->GetDocument();
   {
@@ -346,7 +346,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   // Sticky position should not fall back to main thread scrolling.
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
-  EXPECT_FALSE(root_scroll_layer->should_scroll_on_main_thread());
+  EXPECT_FALSE(root_scroll_layer->main_thread_scrolling_reasons());
 
   Document* document = GetFrame()->GetDocument();
   {
@@ -1172,7 +1172,8 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
                      ->IsOverlayScrollbar()
                  ? 0
                  : 15);
-  ASSERT_EQ(expected_scroll_position, cc_scroll_layer->scroll_offset().x());
+  ASSERT_EQ(expected_scroll_position,
+            cc_scroll_layer->CurrentScrollOffset().x());
 }
 
 TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldNotCrash) {
@@ -1206,7 +1207,7 @@ TEST_P(ScrollingCoordinatorTest,
   bool has_cc_scrollbar_layer = !scrollbar_graphics_layer->DrawsContent();
   ASSERT_TRUE(
       has_cc_scrollbar_layer ||
-      scrollbar_graphics_layer->CcLayer()->should_scroll_on_main_thread());
+      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons());
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -1256,7 +1257,7 @@ TEST_P(ScrollingCoordinatorTest,
   EXPECT_TRUE(static_cast<LayoutBoxModelObject*>(fixed_pos->GetLayoutObject())
                   ->Layer()
                   ->HasCompositedLayerMapping());
-  EXPECT_FALSE(scroll_layer->should_scroll_on_main_thread());
+  EXPECT_FALSE(scroll_layer->main_thread_scrolling_reasons());
 
   fixed_pos->SetInlineStyleProperty(CSSPropertyTransform, CSSValueNone);
   ForceFullCompositingUpdate();
@@ -1264,7 +1265,7 @@ TEST_P(ScrollingCoordinatorTest,
   EXPECT_FALSE(static_cast<LayoutBoxModelObject*>(fixed_pos->GetLayoutObject())
                    ->Layer()
                    ->HasCompositedLayerMapping());
-  EXPECT_TRUE(scroll_layer->should_scroll_on_main_thread());
+  EXPECT_TRUE(scroll_layer->main_thread_scrolling_reasons());
 }
 
 TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
@@ -1291,7 +1292,7 @@ TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
       composited_layer_mapping->LayerForVerticalScrollbar();
   ASSERT_TRUE(scrollbar_graphics_layer);
   ASSERT_TRUE(
-      scrollbar_graphics_layer->CcLayer()->should_scroll_on_main_thread());
+      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons());
   ASSERT_TRUE(
       scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons() &
       MainThreadScrollingReason::kCustomScrollbarScrolling);
@@ -1303,7 +1304,7 @@ TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
   scrollbar_graphics_layer =
       composited_layer_mapping->LayerForVerticalScrollbar();
   ASSERT_FALSE(
-      scrollbar_graphics_layer->CcLayer()->should_scroll_on_main_thread());
+      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons());
   ASSERT_FALSE(
       scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons() &
       MainThreadScrollingReason::kCustomScrollbarScrolling);

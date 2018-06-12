@@ -2470,20 +2470,20 @@ TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
 
   cc::Layer* scrolling_layer = scrollable_area->LayerForScrolling()->CcLayer();
-  EXPECT_EQ(0, scrolling_layer->scroll_offset().y());
+  EXPECT_EQ(0, scrolling_layer->CurrentScrollOffset().y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
 
   scrollerElement->setScrollTop(300);
   scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 25px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(50, scrolling_layer->scroll_offset().y());
+  EXPECT_EQ(50, scrolling_layer->CurrentScrollOffset().y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(25, scrolling_layer->scroll_container_bounds().height());
 
   scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(50, scrolling_layer->scroll_offset().y());
+  EXPECT_EQ(50, scrolling_layer->CurrentScrollOffset().y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
 }

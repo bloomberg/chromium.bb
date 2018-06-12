@@ -981,7 +981,7 @@ gfx::ScrollOffset Layer::CurrentScrollOffset() const {
   if (compositor &&
       compositor->GetScrollOffsetForLayer(cc_layer_->id(), &offset))
     return offset;
-  return cc_layer_->scroll_offset();
+  return cc_layer_->CurrentScrollOffset();
 }
 
 void Layer::SetScrollOffset(const gfx::ScrollOffset& offset) {

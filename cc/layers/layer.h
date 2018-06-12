@@ -184,6 +184,17 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetMasksToBounds(bool masks_to_bounds);
   bool masks_to_bounds() const { return inputs_.masks_to_bounds; }
 
+  // Set or get a layer that is not an ancestor of this layer, but which should
+  // be clipped to this layer's bounds if SetMasksToBounds() is set to true.
+  // The parent layer does *not* retain ownership of a reference on this layer.
+  void SetClipParent(Layer* ancestor);
+  Layer* clip_parent() { return inputs_.clip_parent; }
+
+  // The set of layers which are not in this layers subtree but which should be
+  // clipped to only appear within this layer's bounds.
+  std::set<Layer*>* clip_children() { return clip_children_.get(); }
+  const std::set<Layer*>* clip_children() const { return clip_children_.get(); }
+
   // Set or get a layer that will mask the contents of this layer. The alpha
   // channel of the mask layer's content is used as an alpha mask of this
   // layer's content. IOW the mask's alpha is multiplied by this layer's alpha
@@ -325,42 +336,47 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.transform_origin;
   }
 
+  // Set or get a scroll parent layer. It is not an ancestor of this layer, but
+  // this layer will be moved by the scroll parent's scroll offset.
   void SetScrollParent(Layer* parent);
   Layer* scroll_parent() { return inputs_.scroll_parent; }
 
-  void SetClipParent(Layer* ancestor);
-  Layer* clip_parent() { return inputs_.clip_parent; }
-
-  std::set<Layer*>* clip_children() { return clip_children_.get(); }
-  const std::set<Layer*>* clip_children() const {
-    return clip_children_.get();
-  }
-
-  void set_num_unclipped_descendants(size_t descendants) {
-    num_unclipped_descendants_ = descendants;
-  }
-  size_t num_unclipped_descendants() const {
-    return num_unclipped_descendants_;
-  }
-
+  // Set or get the scroll offset of the layer. The content of the layer, and
+  // position of its subtree, as well as other layers for which this layer is
+  // their scroll parent, and their subtrees) is moved up by the amount of
+  // offset specified here.
   void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
-
-  const gfx::ScrollOffset& scroll_offset() const {
+  // Accessor named to match LayerImpl for templated code.
+  const gfx::ScrollOffset& CurrentScrollOffset() const {
     return inputs_.scroll_offset;
   }
+
   // Called internally during commit to update the layer with state from the
   // compositor thread. Not to be called externally by users of this class.
   void SetScrollOffsetFromImplSide(const gfx::ScrollOffset& scroll_offset);
 
-  // Marks this layer as being scrollable and needing an associated scroll node.
-  // The scroll node's bounds and container_bounds will be kept in sync
-  // with this layer. Once scrollable, a Layer cannot become un-scrollable.
+  // Marks this layer as being scrollable and needing an associated scroll node,
+  // and specifies the total size of the content to be scrolled (ie the max
+  // scroll offsets. The size should be a union of the layer and its subtree, as
+  // well as any layers for whom this layer is their scroll parent, and their
+  // subtrees, when they are transformed into this layer's space. Thus
+  // transforms of children affect the size of the |scroll_container_bounds|.
+  // Once scrollable, a Layer cannot become un-scrollable.
   void SetScrollable(const gfx::Size& scroll_container_bounds);
+  bool scrollable() const { return inputs_.scrollable; }
   const gfx::Size& scroll_container_bounds() const {
     return inputs_.scroll_container_bounds;
   }
-  bool scrollable() const { return inputs_.scrollable; }
 
+  // Set or get if this layer is able to be scrolled along each axis. These are
+  // independant of the scrollable state, or size of the scrollable area
+  // specified in SetScrollable(), as these may be enabled or disabled
+  // dynamically, while SetScrollable() defines what would be possible if these
+  // are enabled.
+  // When disabled, overscroll elasticity will not be used if the scroll offset
+  // ends up past the maximum range. And when enabled, with overlay scrollbars,
+  // the scrollbars will be shown when the scroll offset changes if these are
+  // set to true.
   void SetUserScrollable(bool horizontal, bool vertical);
   bool user_scrollable_horizontal() const {
     return inputs_.user_scrollable_horizontal;
@@ -369,14 +385,19 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.user_scrollable_vertical;
   }
 
+  // Set or get if this layer is able to be scrolled on the compositor thread.
+  // This only applies for layers that are marked as scrollable, not for layers
+  // that are moved by a scroll parent. When any reason is present, the layer
+  // will not be scrolled on the compositor thread. The reasons are a set of
+  // bitflags from MainThreadScrollingReason, used to track the reason for
+  // debugging and reporting.
+  // AddMainThreadScrollingReasons() is used to add flags to the current set,
+  // and ClearMainThreadScrollingReasons() removes flags from the current set.
   void AddMainThreadScrollingReasons(uint32_t main_thread_scrolling_reasons);
   void ClearMainThreadScrollingReasons(
       uint32_t main_thread_scrolling_reasons_to_clear);
   uint32_t main_thread_scrolling_reasons() const {
     return inputs_.main_thread_scrolling_reasons;
-  }
-  bool should_scroll_on_main_thread() const {
-    return !!inputs_.main_thread_scrolling_reasons;
   }
 
   void SetNonFastScrollableRegion(const Region& non_fast_scrollable_region);
@@ -395,18 +416,38 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     inputs_.did_scroll_callback = std::move(callback);
   }
 
+  // Set or get if the layer and its subtree should be cached as a texture in
+  // the display compositor. This is used as an optimization when it is known
+  // that the layer will be animated without changing its content, or any of its
+  // subtree.
+  //
+  // Note that this also disables occlusion culling, as the entire texture will
+  // be drawn so that it is not left with incomplete areas. This should only be
+  // used when paying the cost of creating an intermediate texture is worth it,
+  // even when the layer's subtree may be occluded, or not visible in the final
+  // output.
   void SetCacheRenderSurface(bool cache_render_surface);
   bool cache_render_surface() const { return cache_render_surface_; }
 
+  // Set or get if the layer and its subtree will be drawn through an
+  // intermediate texture, called a RenderSurface. This mimics the need
+  // for a RenderSurface that is caused by compositing effects such as masks
+  // without needing to set up such effects.
   void SetForceRenderSurfaceForTesting(bool force_render_surface);
   bool force_render_surface_for_testing() const {
     return force_render_surface_for_testing_;
   }
 
-  const gfx::ScrollOffset& CurrentScrollOffset() const {
-    return inputs_.scroll_offset;
-  }
-
+  // Set or get if this layer should continue to be visible when rotated such
+  // that its back face is facing toward the camera. If false, the layer will
+  // disappear when its back face is visible, but if true, the mirror image of
+  // its front face will be shown. For instance, with a 180deg rotation around
+  // the middle of the layer on the Y axis, if this is false then nothing is
+  // visible. But if true, the layer is seen with its contents flipped along the
+  // Y axis. Being single-sided applies transitively to the subtree of this
+  // layer. If it is hidden because of its back face being visible, then its
+  // subtree will be too (even if a subtree layer's front face would have been
+  // visible).
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return inputs_.double_sided; }
 
@@ -819,9 +860,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   std::unique_ptr<std::set<Layer*>> clip_children_;
 
-  // These all act like draw properties, so don't need push properties.
+  // This acts like draw properties, so don't need push properties.
   gfx::Rect visible_layer_rect_;
-  size_t num_unclipped_descendants_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };
