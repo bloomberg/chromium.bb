@@ -171,16 +171,16 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
     // This UMA metric tracks the performance of overall scrolling as a high
     // level metric.
-    UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
-        "Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin",
+    UMA_HISTOGRAM_INPUT_LATENCY_5_SECONDS_MAX_MICROSECONDS(
+        "Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin2",
         original_timestamp, gpu_swap_begin_timestamp);
 
     // This UMA metric tracks the time between the final frame swap for the
     // first scroll event in a sequence and the original timestamp of that
     // scroll event's underlying touch/wheel event.
-    UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
+    UMA_HISTOGRAM_INPUT_LATENCY_5_SECONDS_MAX_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
-            ".TimeToScrollUpdateSwapBegin3",
+            ".TimeToScrollUpdateSwapBegin4",
         original_timestamp, gpu_swap_begin_timestamp);
 
     // This is the same metric as above. But due to a change in rebucketing,
@@ -208,16 +208,16 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
     // This UMA metric tracks the performance of overall scrolling as a high
     // level metric.
-    UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
-        "Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin",
+    UMA_HISTOGRAM_INPUT_LATENCY_5_SECONDS_MAX_MICROSECONDS(
+        "Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2",
         original_timestamp, gpu_swap_begin_timestamp);
 
     // This UMA metric tracks the time from when the original touch/wheel event
     // is created to when the scroll gesture results in final frame swap.
     // First scroll events are excluded from this metric.
-    UMA_HISTOGRAM_INPUT_LATENCY_BROADER_RANGE_MICROSECONDS(
+    UMA_HISTOGRAM_INPUT_LATENCY_5_SECONDS_MAX_MICROSECONDS(
         "Event.Latency." + scroll_name + "." + input_modality +
-            ".TimeToScrollUpdateSwapBegin3",
+            ".TimeToScrollUpdateSwapBegin4",
         original_timestamp, gpu_swap_begin_timestamp);
 
     // This is the same metric as above. But due to a change in rebucketing,
