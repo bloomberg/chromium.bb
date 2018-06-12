@@ -1438,11 +1438,16 @@ public class LocationBarLayout
             final boolean isShowing = mSuggestionList.isShown();
             if (visible && !isShowing) {
                 mIgnoreOmniboxItemSelection = true; // Reset to default value.
-                mOmniboxResultsContainer.addView(mSuggestionList);
+
+                if (mSuggestionList.getParent() == null) {
+                    mOmniboxResultsContainer.addView(mSuggestionList);
+                }
+
                 mSuggestionList.show();
             } else if (!visible && isShowing) {
                 mSuggestionList.setVisibility(GONE);
-                mOmniboxResultsContainer.removeView(mSuggestionList);
+
+                UiUtils.removeViewFromParent(mSuggestionList);
             }
         }
         maybeShowOmniboxResultsContainer();
@@ -1704,7 +1709,11 @@ public class LocationBarLayout
         }
 
         if (mSuggestionItems.isEmpty()) {
-            if (mSuggestionsShown) hideSuggestions();
+            if (mSuggestionsShown) {
+                hideSuggestions();
+            } else {
+                mSuggestionListAdapter.notifySuggestionsChanged();
+            }
             return;
         }
 
@@ -1725,7 +1734,8 @@ public class LocationBarLayout
         if (itemsChanged) mSuggestionListAdapter.notifySuggestionsChanged();
 
         if (mUrlBar.hasFocus()) {
-            final boolean updateLayoutParams = itemCountChanged;
+            final boolean updateLayoutParams = itemCountChanged || mShowSuggestions != null;
+            if (mShowSuggestions != null) removeCallbacks(mShowSuggestions);
             mShowSuggestions = new Runnable() {
                 @Override
                 public void run() {
