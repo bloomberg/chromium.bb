@@ -254,10 +254,8 @@ TEST_F(ScreenManagerOzoneInternalTest, AddDisplay4k) {
                  .SetType(DISPLAY_CONNECTION_TYPE_DVI)
                  .Build());
 
-  // Check that display 2 has a device scale factor of 2 since it's a 4k
-  // display.
   EXPECT_EQ("Added(2)", delegate()->changes());
-  EXPECT_THAT(delegate()->added()[0], DisplayBoundsIs("1024,0 2048x1080"));
+  EXPECT_THAT(delegate()->added()[0], DisplayBoundsIs("1024,0 4096x2160"));
   EXPECT_THAT(delegate()->added()[0], DisplayPixelSizeIs("4096x2160"));
 }
 
