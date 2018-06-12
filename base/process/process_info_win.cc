@@ -45,6 +45,7 @@ IntegrityLevel GetCurrentProcessIntegrityLevel() {
   if (::GetTokenInformation(process_token, TokenIntegrityLevel, nullptr, 0,
                             &token_info_length) ||
       ::GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+    NOTREACHED();
     return INTEGRITY_UNKNOWN;
   }
 
@@ -53,6 +54,7 @@ IntegrityLevel GetCurrentProcessIntegrityLevel() {
       reinterpret_cast<TOKEN_MANDATORY_LABEL*>(token_label_bytes.get());
   if (!::GetTokenInformation(process_token, TokenIntegrityLevel, token_label,
                              token_info_length, &token_info_length)) {
+    NOTREACHED();
     return INTEGRITY_UNKNOWN;
   }
 
@@ -60,6 +62,9 @@ IntegrityLevel GetCurrentProcessIntegrityLevel() {
       token_label->Label.Sid,
       static_cast<DWORD>(*::GetSidSubAuthorityCount(token_label->Label.Sid) -
                          1));
+
+  if (integrity_level < SECURITY_MANDATORY_LOW_RID)
+    return UNTRUSTED_INTEGRITY;
 
   if (integrity_level < SECURITY_MANDATORY_MEDIUM_RID)
     return LOW_INTEGRITY;
