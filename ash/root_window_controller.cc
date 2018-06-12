@@ -886,6 +886,17 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(app_list_container);
   app_list_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
+  aura::Window* arc_ime_parent_container = CreateContainer(
+      kShellWindowId_ArcImeWindowParentContainer, "ArcImeWindowParentContainer",
+      non_lock_screen_containers);
+  wm::SetSnapsChildrenToPhysicalPixelBoundary(arc_ime_parent_container);
+  arc_ime_parent_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+  aura::Window* arc_vk_container =
+      CreateContainer(kShellWindowId_ArcVirtualKeyboardContainer,
+                      "ArcVirtualKeyboardContainer", arc_ime_parent_container);
+  wm::SetSnapsChildrenToPhysicalPixelBoundary(arc_vk_container);
+  arc_vk_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+
   aura::Window* shelf_container_parent = lock_screen_related_containers;
   aura::Window* shelf_container = CreateContainer(
       kShellWindowId_ShelfContainer, "ShelfContainer", shelf_container_parent);

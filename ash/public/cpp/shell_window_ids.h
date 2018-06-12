@@ -60,6 +60,15 @@ enum ShellWindowId {
   // The container for the app list in tablet mode.
   kShellWindowId_AppListTabletModeContainer,
 
+  // The parent container that holds the ARC IME container and windows created
+  // by ARC IME other than the virtual keyboard window.
+  // This container window is to ensure that the ARC IME window is stacked above
+  // top-level windows and the app list window but below the shelf.
+  kShellWindowId_ArcImeWindowParentContainer,
+
+  // The container for Virtual Keyboard from ARC IMEs.
+  kShellWindowId_ArcVirtualKeyboardContainer,
+
   // The container for the shelf.
   kShellWindowId_ShelfContainer,
 
@@ -156,6 +165,8 @@ const int32_t kAllShellContainerIds[] = {
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_AppListContainer,
     kShellWindowId_AppListTabletModeContainer,
+    kShellWindowId_ArcImeWindowParentContainer,
+    kShellWindowId_ArcVirtualKeyboardContainer,
     kShellWindowId_ShelfContainer,
     kShellWindowId_ShelfBubbleContainer,
     kShellWindowId_PanelContainer,
