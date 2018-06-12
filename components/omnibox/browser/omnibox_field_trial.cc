@@ -690,6 +690,18 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
 }
 
 bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled() {
+#if defined(OS_MACOSX)
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  // Disable Steady State Elisions on Mac if browser is in Cocoa mode.
+  if (features::IsViewsBrowserCocoa())
+    return false;
+#else   // !BUILDFLAG(MAC_VIEWS_BROWSER)
+  // If MacViews is not even built on Mac, we must be on Cocoa, so disable
+  // State State Elisions.
+  return false;
+#endif  // BUILDFLAG(MAC_VIEWS_BROWSER)
+#endif  // defined(OS_MACOSX)
+
   return base::FeatureList::IsEnabled(
              omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
