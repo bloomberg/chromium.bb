@@ -205,6 +205,7 @@ const char kMediaPerceptionInterface[] = "org.chromium.MediaPerception";
 const char kStateFunction[] = "State";
 const char kGetDiagnosticsFunction[] = "GetDiagnostics";
 const char kDetectionSignal[] = "MediaPerceptionDetection";
+const char kBootstrapMojoConnection[] = "BootstrapMojoConnection";
 
 }  // namespace media_perception
 
