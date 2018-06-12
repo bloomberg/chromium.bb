@@ -58,6 +58,10 @@
 #include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/html_table_caption_element.h"
+#include "third_party/blink/renderer/core/html/html_table_cell_element.h"
+#include "third_party/blink/renderer/core/html/html_table_col_element.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
@@ -72,6 +76,10 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_row.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/core/layout/layout_text_control.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -86,7 +94,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_inline_text_box.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_column.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -253,6 +261,12 @@ AccessibilityRole AXLayoutObject::NativeAccessibilityRoleIgnoringAria() const {
     return kLineBreakRole;
   if (layout_object_->IsText())
     return kStaticTextRole;
+  if (layout_object_->IsTable() && node)
+    return IsDataTable() ? kTableRole : kLayoutTableRole;
+  if (layout_object_->IsTableRow() && node)
+    return DetermineTableRowRole();
+  if (layout_object_->IsTableCell() && node)
+    return DetermineTableCellRole();
   if (css_box && IsImageOrAltText(css_box, node)) {
     if (node && node->IsLink())
       return kImageMapRole;
@@ -573,6 +587,9 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     }
     return true;
   }
+
+  if (IsTableLikeRole() || IsTableRowLikeRole() || IsTableCellLikeRole())
+    return false;
 
   // A LayoutEmbeddedContent is an iframe element or embedded object element or
   // something like that. We don't want to ignore those.
@@ -1665,6 +1682,15 @@ AXObject* AXLayoutObject::RawFirstChild() const {
   if (!layout_object_)
     return nullptr;
 
+  // Walk sections of a table (thead, tbody, tfoot) in visual order.
+  // Note: always call RecalcSectionsIfNeeded() before accessing
+  // the sections of a LayoutTable.
+  if (layout_object_->IsTable()) {
+    LayoutTable* table = ToLayoutTable(layout_object_);
+    table->RecalcSectionsIfNeeded();
+    return AXObjectCache().GetOrCreate(table->TopSection());
+  }
+
   LayoutObject* first_child = FirstChildConsideringContinuation(layout_object_);
 
   if (!first_child)
@@ -1676,6 +1702,13 @@ AXObject* AXLayoutObject::RawFirstChild() const {
 AXObject* AXLayoutObject::RawNextSibling() const {
   if (!layout_object_)
     return nullptr;
+
+  // Walk sections of a table (thead, tbody, tfoot) in visual order.
+  if (layout_object_->IsTableSection()) {
+    LayoutTableSection* section = ToLayoutTableSection(layout_object_);
+    return AXObjectCache().GetOrCreate(
+        section->Table()->SectionBelow(section, kSkipEmptySections));
+  }
 
   LayoutObject* next_sibling = nullptr;
 
@@ -1753,6 +1786,7 @@ void AXLayoutObject::AddChildren() {
   AddImageMapChildren();
   AddCanvasChildren();
   AddRemoteSVGChildren();
+  AddTableChildren();
   AddInlineTextBoxChildren(false);
   AddAccessibleNodeChildren();
 
@@ -2467,6 +2501,541 @@ void AXLayoutObject::LineBreaks(Vector<int>& line_breaks) const {
   }
 }
 
+// The following is a heuristic used to determine if a
+// <table> should be with kTableRole or kLayoutTableRole.
+bool AXLayoutObject::IsDataTable() const {
+  if (!layout_object_ || !GetNode())
+    return false;
+
+  // If it has an ARIA role, it's definitely a data table.
+  AtomicString role;
+  if (HasAOMPropertyOrARIAAttribute(AOMStringProperty::kRole, role))
+    return true;
+
+  if (!layout_object_->IsTable())
+    return false;
+
+  // When a section of the document is contentEditable, all tables should be
+  // treated as data tables, otherwise users may not be able to work with rich
+  // text editors that allow creating and editing tables.
+  if (GetNode() && HasEditableStyle(*GetNode()))
+    return true;
+
+  // If there's no node, it's definitely a layout table. This happens
+  // when table CSS styles are used without a complete table DOM structure.
+  LayoutTable* table = ToLayoutTable(layout_object_);
+  table->RecalcSectionsIfNeeded();
+  Node* table_node = table->GetNode();
+  if (!table_node || !IsHTMLTableElement(table_node))
+    return false;
+
+  // This employs a heuristic to determine if this table should appear.
+  // Only "data" tables should be exposed as tables.
+  // Unfortunately, there is no good way to determine the difference
+  // between a "layout" table and a "data" table.
+  HTMLTableElement* table_element = ToHTMLTableElement(table_node);
+
+  // If there is a caption element, summary, THEAD, or TFOOT section, it's most
+  // certainly a data table
+  if (!table_element->Summary().IsEmpty() || table_element->tHead() ||
+      table_element->tFoot() || table_element->caption())
+    return true;
+
+  // if someone used "rules" attribute than the table should appear
+  if (!table_element->Rules().IsEmpty())
+    return true;
+
+  // if there's a colgroup or col element, it's probably a data table.
+  if (Traversal<HTMLTableColElement>::FirstChild(*table_element))
+    return true;
+
+  // go through the cell's and check for tell-tale signs of "data" table status
+  // cells have borders, or use attributes like headers, abbr, scope or axis
+  table->RecalcSectionsIfNeeded();
+  LayoutTableSection* first_body = table->FirstBody();
+  if (!first_body)
+    return false;
+
+  int num_cols_in_first_body = first_body->NumEffectiveColumns();
+  int num_rows = first_body->NumRows();
+  // If there's only one cell, it's not a good AXTable candidate.
+  if (num_rows == 1 && num_cols_in_first_body == 1)
+    return false;
+
+  // If there are at least 20 rows, we'll call it a data table.
+  if (num_rows >= 20)
+    return true;
+
+  // Store the background color of the table to check against cell's background
+  // colors.
+  const ComputedStyle* table_style = table->Style();
+  if (!table_style)
+    return false;
+  Color table_bg_color =
+      table_style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
+
+  // check enough of the cells to find if the table matches our criteria
+  // Criteria:
+  //   1) must have at least one valid cell (and)
+  //   2) at least half of cells have borders (or)
+  //   3) at least half of cells have different bg colors than the table, and
+  //      there is cell spacing
+  unsigned valid_cell_count = 0;
+  unsigned bordered_cell_count = 0;
+  unsigned background_difference_cell_count = 0;
+  unsigned cells_with_top_border = 0;
+  unsigned cells_with_bottom_border = 0;
+  unsigned cells_with_left_border = 0;
+  unsigned cells_with_right_border = 0;
+
+  Color alternating_row_colors[5];
+  int alternating_row_color_count = 0;
+  for (int row = 0; row < num_rows; ++row) {
+    int n_cols = first_body->NumCols(row);
+    for (int col = 0; col < n_cols; ++col) {
+      LayoutTableCell* cell = first_body->PrimaryCellAt(row, col);
+      if (!cell)
+        continue;
+      Node* cell_node = cell->GetNode();
+      if (!cell_node)
+        continue;
+
+      if (cell->Size().Width() < 1 || cell->Size().Height() < 1)
+        continue;
+
+      valid_cell_count++;
+
+      // Any <th> tag -> treat as data table.
+      if (cell_node->HasTagName(thTag))
+        return true;
+
+      // In this case, the developer explicitly assigned a "data" table
+      // attribute.
+      if (IsHTMLTableCellElement(*cell_node)) {
+        HTMLTableCellElement& cell_element = ToHTMLTableCellElement(*cell_node);
+        if (!cell_element.Headers().IsEmpty() ||
+            !cell_element.Abbr().IsEmpty() || !cell_element.Axis().IsEmpty() ||
+            !cell_element.FastGetAttribute(scopeAttr).IsEmpty())
+          return true;
+      }
+
+      const ComputedStyle* computed_style = cell->Style();
+      if (!computed_style)
+        continue;
+
+      // If the empty-cells style is set, we'll call it a data table.
+      if (computed_style->EmptyCells() == EEmptyCells::kHide)
+        return true;
+
+      // If a cell has matching bordered sides, call it a (fully) bordered cell.
+      if ((cell->BorderTop() > 0 && cell->BorderBottom() > 0) ||
+          (cell->BorderLeft() > 0 && cell->BorderRight() > 0))
+        bordered_cell_count++;
+
+      // Also keep track of each individual border, so we can catch tables where
+      // most cells have a bottom border, for example.
+      if (cell->BorderTop() > 0)
+        cells_with_top_border++;
+      if (cell->BorderBottom() > 0)
+        cells_with_bottom_border++;
+      if (cell->BorderLeft() > 0)
+        cells_with_left_border++;
+      if (cell->BorderRight() > 0)
+        cells_with_right_border++;
+
+      // If the cell has a different color from the table and there is cell
+      // spacing, then it is probably a data table cell (spacing and colors take
+      // the place of borders).
+      Color cell_color = computed_style->VisitedDependentColor(
+          GetCSSPropertyBackgroundColor());
+      if (table->HBorderSpacing() > 0 && table->VBorderSpacing() > 0 &&
+          table_bg_color != cell_color && cell_color.Alpha() != 1)
+        background_difference_cell_count++;
+
+      // If we've found 10 "good" cells, we don't need to keep searching.
+      if (bordered_cell_count >= 10 || background_difference_cell_count >= 10)
+        return true;
+
+      // For the first 5 rows, cache the background color so we can check if
+      // this table has zebra-striped rows.
+      if (row < 5 && row == alternating_row_color_count) {
+        LayoutObject* layout_row = cell->Parent();
+        if (!layout_row || !layout_row->IsBoxModelObject() ||
+            !ToLayoutBoxModelObject(layout_row)->IsTableRow())
+          continue;
+        const ComputedStyle* row_computed_style = layout_row->Style();
+        if (!row_computed_style)
+          continue;
+        Color row_color = row_computed_style->VisitedDependentColor(
+            GetCSSPropertyBackgroundColor());
+        alternating_row_colors[alternating_row_color_count] = row_color;
+        alternating_row_color_count++;
+      }
+    }
+  }
+
+  // if there is less than two valid cells, it's not a data table
+  if (valid_cell_count <= 1)
+    return false;
+
+  // half of the cells had borders, it's a data table
+  unsigned needed_cell_count = valid_cell_count / 2;
+  if (bordered_cell_count >= needed_cell_count ||
+      cells_with_top_border >= needed_cell_count ||
+      cells_with_bottom_border >= needed_cell_count ||
+      cells_with_left_border >= needed_cell_count ||
+      cells_with_right_border >= needed_cell_count)
+    return true;
+
+  // half had different background colors, it's a data table
+  if (background_difference_cell_count >= needed_cell_count)
+    return true;
+
+  // Check if there is an alternating row background color indicating a zebra
+  // striped style pattern.
+  if (alternating_row_color_count > 2) {
+    Color first_color = alternating_row_colors[0];
+    for (int k = 1; k < alternating_row_color_count; k++) {
+      // If an odd row was the same color as the first row, its not alternating.
+      if (k % 2 == 1 && alternating_row_colors[k] == first_color)
+        return false;
+      // If an even row is not the same as the first row, its not alternating.
+      if (!(k % 2) && alternating_row_colors[k] != first_color)
+        return false;
+    }
+    return true;
+  }
+
+  return false;
+}
+
+unsigned AXLayoutObject::ColumnCount() const {
+  if (AriaRoleAttribute() != kUnknownRole)
+    return AXNodeObject::ColumnCount();
+
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->IsTable() || !layout_object->GetNode())
+    return AXNodeObject::ColumnCount();
+
+  LayoutTable* table = ToLayoutTable(layout_object);
+  table->RecalcSectionsIfNeeded();
+  LayoutTableSection* table_section = table->TopSection();
+  if (!table_section)
+    return AXNodeObject::ColumnCount();
+
+  return table_section->NumEffectiveColumns();
+}
+
+unsigned AXLayoutObject::RowCount() const {
+  if (AriaRoleAttribute() != kUnknownRole)
+    return AXNodeObject::RowCount();
+
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->IsTable() || !layout_object->GetNode())
+    return AXNodeObject::RowCount();
+
+  LayoutTable* table = ToLayoutTable(layout_object);
+  table->RecalcSectionsIfNeeded();
+
+  unsigned row_count = 0;
+  LayoutTableSection* table_section = table->TopSection();
+  if (!table_section)
+    return AXNodeObject::RowCount();
+
+  while (table_section) {
+    row_count += table_section->NumRows();
+    table_section = table->SectionBelow(table_section, kSkipEmptySections);
+  }
+  return row_count;
+}
+
+unsigned AXLayoutObject::ColumnIndex() const {
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->GetNode())
+    return AXNodeObject::ColumnIndex();
+
+  if (layout_object->IsTableCell()) {
+    LayoutTableCell* cell = ToLayoutTableCell(layout_object);
+    return cell->Table()->AbsoluteColumnToEffectiveColumn(
+        cell->AbsoluteColumnIndex());
+  }
+
+  return AXNodeObject::ColumnIndex();
+}
+
+unsigned AXLayoutObject::RowIndex() const {
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->GetNode())
+    return AXNodeObject::RowIndex();
+
+  unsigned row_index = 0;
+  LayoutTableSection* row_section = nullptr;
+  LayoutTable* table = nullptr;
+  if (layout_object->IsTableRow()) {
+    LayoutTableRow* row = ToLayoutTableRow(layout_object);
+    row_index = row->RowIndex();
+    row_section = row->Section();
+    table = row->Table();
+  } else if (layout_object->IsTableCell()) {
+    LayoutTableCell* cell = ToLayoutTableCell(layout_object);
+    row_index = cell->RowIndex();
+    row_section = cell->Section();
+    table = cell->Table();
+  } else {
+    return AXNodeObject::RowIndex();
+  }
+
+  if (!table || !row_section)
+    return AXNodeObject::RowIndex();
+
+  // Since our table might have multiple sections, we have to offset our row
+  // appropriately.
+  table->RecalcSectionsIfNeeded();
+  LayoutTableSection* section = table->TopSection();
+  while (section && section != row_section) {
+    row_index += section->NumRows();
+    section = table->SectionBelow(section, kSkipEmptySections);
+  }
+
+  return row_index;
+}
+
+unsigned AXLayoutObject::ColumnSpan() const {
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->IsTableCell())
+    return AXNodeObject::ColumnSpan();
+
+  LayoutTableCell* cell = ToLayoutTableCell(layout_object);
+  unsigned absolute_first_col = cell->AbsoluteColumnIndex();
+  unsigned absolute_last_col = absolute_first_col + cell->ColSpan() - 1;
+  unsigned effective_first_col =
+      cell->Table()->AbsoluteColumnToEffectiveColumn(absolute_first_col);
+  unsigned effective_last_col =
+      cell->Table()->AbsoluteColumnToEffectiveColumn(absolute_last_col);
+  return effective_last_col - effective_first_col + 1;
+}
+
+unsigned AXLayoutObject::RowSpan() const {
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->IsTableCell())
+    return AXNodeObject::ColumnSpan();
+
+  LayoutTableCell* cell = ToLayoutTableCell(layout_object);
+  return cell->ResolvedRowSpan();
+}
+
+SortDirection AXLayoutObject::GetSortDirection() const {
+  if (RoleValue() != kRowHeaderRole && RoleValue() != kColumnHeaderRole)
+    return kSortDirectionUndefined;
+
+  const AtomicString& aria_sort =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kSort);
+  if (aria_sort.IsEmpty())
+    return kSortDirectionUndefined;
+  if (EqualIgnoringASCIICase(aria_sort, "none"))
+    return kSortDirectionNone;
+  if (EqualIgnoringASCIICase(aria_sort, "ascending"))
+    return kSortDirectionAscending;
+  if (EqualIgnoringASCIICase(aria_sort, "descending"))
+    return kSortDirectionDescending;
+
+  // Technically, illegal values should be exposed as is, but this does
+  // not seem to be worth the implementation effort at this time.
+  return kSortDirectionOther;
+}
+
+static AccessibilityRole DecideRoleFromSibling(LayoutTableCell* sibling_cell) {
+  if (!sibling_cell)
+    return kCellRole;
+
+  if (Node* sibling_node = sibling_cell->GetNode()) {
+    if (sibling_node->HasTagName(thTag))
+      return kColumnHeaderRole;
+    if (sibling_node->HasTagName(tdTag))
+      return kRowHeaderRole;
+  }
+
+  return kCellRole;
+}
+
+AccessibilityRole AXLayoutObject::DetermineTableRowRole() const {
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent)
+    return kGenericContainerRole;
+
+  if (parent->RoleValue() == kLayoutTableRole)
+    return kLayoutTableRowRole;
+
+  if (parent->IsTableLikeRole())
+    return kRowRole;
+
+  return kGenericContainerRole;
+}
+
+AccessibilityRole AXLayoutObject::DetermineTableCellRole() const {
+  DCHECK(layout_object_);
+
+  AXObject* parent = ParentObjectUnignored();
+  if (!parent || !parent->IsTableRowLikeRole())
+    return kGenericContainerRole;
+
+  AXObject* grandparent = parent->ParentObjectUnignored();
+  if (!grandparent || !grandparent->IsTableLikeRole())
+    return kGenericContainerRole;
+
+  if (parent->RoleValue() == kLayoutTableRowRole)
+    return kLayoutTableCellRole;
+
+  if (!parent->IsTableRowLikeRole())
+    return kGenericContainerRole;
+
+  if (!GetNode() || !GetNode()->HasTagName(thTag))
+    return kCellRole;
+
+  const AtomicString& scope = GetAttribute(scopeAttr);
+  if (EqualIgnoringASCIICase(scope, "row") ||
+      EqualIgnoringASCIICase(scope, "rowgroup"))
+    return kRowHeaderRole;
+  if (EqualIgnoringASCIICase(scope, "col") ||
+      EqualIgnoringASCIICase(scope, "colgroup"))
+    return kColumnHeaderRole;
+
+  // Check the previous cell and the next cell on the same row.
+  LayoutTableCell* layout_cell = ToLayoutTableCell(layout_object_);
+  AccessibilityRole header_role = kCellRole;
+  // if header is preceded by header cells on the same row, then it is a
+  // column header. If it is preceded by other cells then it's a row header.
+  if ((header_role = DecideRoleFromSibling(layout_cell->PreviousCell())) !=
+      kCellRole)
+    return header_role;
+
+  // if header is followed by header cells on the same row, then it is a
+  // column header. If it is followed by other cells then it's a row header.
+  if ((header_role = DecideRoleFromSibling(layout_cell->NextCell())) !=
+      kCellRole)
+    return header_role;
+
+  // If there are no other cells on that row, then it is a column header.
+  return kColumnHeaderRole;
+}
+
+AXObject* AXLayoutObject::CellForColumnAndRow(unsigned target_column_index,
+                                              unsigned target_row_index) const {
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->IsTable()) {
+    return AXNodeObject::CellForColumnAndRow(target_column_index,
+                                             target_row_index);
+  }
+
+  LayoutTable* table = ToLayoutTable(layout_object);
+  table->RecalcSectionsIfNeeded();
+
+  LayoutTableSection* table_section = table->TopSection();
+  if (!table_section) {
+    return AXNodeObject::CellForColumnAndRow(target_column_index,
+                                             target_row_index);
+  }
+
+  unsigned row_offset = 0;
+  while (table_section) {
+    // Iterate backwards through the rows in case the desired cell has a rowspan
+    // and exists in a previous row.
+    for (LayoutTableRow* row = table_section->LastRow(); row;
+         row = row->PreviousRow()) {
+      unsigned row_index = row->RowIndex() + row_offset;
+      for (LayoutTableCell* cell = row->LastCell(); cell;
+           cell = cell->PreviousCell()) {
+        unsigned absolute_first_col = cell->AbsoluteColumnIndex();
+        unsigned absolute_last_col = absolute_first_col + cell->ColSpan() - 1;
+        unsigned effective_first_col =
+            cell->Table()->AbsoluteColumnToEffectiveColumn(absolute_first_col);
+        unsigned effective_last_col =
+            cell->Table()->AbsoluteColumnToEffectiveColumn(absolute_last_col);
+        unsigned row_span = cell->ResolvedRowSpan();
+        if (target_column_index >= effective_first_col &&
+            target_column_index <= effective_last_col &&
+            target_row_index >= row_index &&
+            target_row_index < row_index + row_span) {
+          return AXObjectCache().GetOrCreate(cell);
+        }
+      }
+    }
+
+    row_offset += table_section->NumRows();
+    table_section = table->SectionBelow(table_section, kSkipEmptySections);
+  }
+
+  return nullptr;
+}
+
+bool AXLayoutObject::FindAllTableCellsWithRole(AccessibilityRole role,
+                                               AXObjectVector& cells) const {
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->IsTable())
+    return false;
+
+  LayoutTable* table = ToLayoutTable(layout_object);
+  table->RecalcSectionsIfNeeded();
+
+  LayoutTableSection* table_section = table->TopSection();
+  if (!table_section)
+    return true;
+
+  while (table_section) {
+    for (LayoutTableRow* row = table_section->FirstRow(); row;
+         row = row->NextRow()) {
+      for (LayoutTableCell* cell = row->FirstCell(); cell;
+           cell = cell->NextCell()) {
+        AXObject* ax_cell = AXObjectCache().GetOrCreate(cell);
+        if (ax_cell && ax_cell->RoleValue() == role)
+          cells.push_back(ax_cell);
+      }
+    }
+
+    table_section = table->SectionBelow(table_section, kSkipEmptySections);
+  }
+
+  return true;
+}
+
+void AXLayoutObject::ColumnHeaders(AXObjectVector& headers) const {
+  if (!FindAllTableCellsWithRole(kColumnHeaderRole, headers))
+    AXNodeObject::ColumnHeaders(headers);
+}
+
+void AXLayoutObject::RowHeaders(AXObjectVector& headers) const {
+  if (!FindAllTableCellsWithRole(kRowHeaderRole, headers))
+    AXNodeObject::RowHeaders(headers);
+}
+
+AXObject* AXLayoutObject::HeaderContainer() {
+  for (const auto& child : Children()) {
+    if (child->RoleValue() == kTableHeaderContainerRole)
+      return child;
+  }
+
+  AXMockObject* header_container =
+      ToAXMockObject(AXObjectCache().GetOrCreate(kTableHeaderContainerRole));
+  header_container->SetParent(this);
+  return header_container;
+}
+
+AXObject* AXLayoutObject::HeaderObject() const {
+  LayoutObject* layout_object = GetLayoutObject();
+  if (!layout_object || !layout_object->IsTableRow())
+    return nullptr;
+
+  LayoutTableRow* row = ToLayoutTableRow(layout_object);
+  for (LayoutTableCell* cell = row->FirstCell(); cell;
+       cell = cell->NextCell()) {
+    AXObject* ax_cell = AXObjectCache().GetOrCreate(cell);
+    if (ax_cell && ax_cell->RoleValue() == kRowHeaderRole)
+      return ax_cell;
+  }
+
+  return nullptr;
+}
+
 //
 // Private.
 //
@@ -2730,6 +3299,41 @@ void AXLayoutObject::AddRemoteSVGChildren() {
       children_.push_back(child);
   } else {
     children_.push_back(root);
+  }
+}
+
+void AXLayoutObject::AddTableChildren() {
+  if (!IsTableLikeRole())
+    return;
+
+  AXObjectCacheImpl& ax_cache = AXObjectCache();
+  if (layout_object_->IsTable()) {
+    LayoutTable* table = ToLayoutTable(layout_object_);
+    table->RecalcSectionsIfNeeded();
+    Node* table_node = table->GetNode();
+    if (IsHTMLTableElement(table_node)) {
+      if (HTMLTableCaptionElement* caption =
+              ToHTMLTableElement(table_node)->caption()) {
+        AXObject* caption_object = ax_cache.GetOrCreate(caption);
+        if (caption_object && !caption_object->AccessibilityIsIgnored())
+          children_.push_front(caption_object);
+      }
+    }
+  }
+
+  for (unsigned i = 0; i < ColumnCount(); i++) {
+    AXTableColumn* column = ToAXTableColumn(ax_cache.GetOrCreate(kColumnRole));
+    column->SetColumnIndex(i);
+    column->SetParent(this);
+    if (!column->AccessibilityIsIgnored())
+      children_.push_back(column);
+  }
+
+  AXObject* header_container_object = HeaderContainer();
+  if (header_container_object &&
+      !header_container_object->AccessibilityIsIgnored()) {
+    children_.push_back(header_container_object);
+    header_container_object->SetParent(this);
   }
 }
 

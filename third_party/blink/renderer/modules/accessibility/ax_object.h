@@ -302,7 +302,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AccessibilityRole RoleValue() const { return role_; }
   bool IsARIATextControl() const;
   virtual bool IsARIARow() const { return false; }
-  virtual bool IsAXTable() const { return false; }
   virtual bool IsAnchor() const { return false; }
   bool IsButton() const;
   bool IsCanvas() const { return RoleValue() == kCanvasRole; }
@@ -310,7 +309,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool IsCheckboxOrRadio() const { return IsCheckbox() || IsRadioButton(); }
   bool IsColorWell() const { return RoleValue() == kColorWellRole; }
   virtual bool IsControl() const { return false; }
-  virtual bool IsDataTable() const { return false; }
   virtual bool IsEmbeddedObject() const { return false; }
   virtual bool IsFieldset() const { return false; }
   virtual bool IsHeading() const { return false; }
@@ -354,10 +352,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsMoveableSplitter() const { return false; }
   virtual bool IsSpinButton() const { return RoleValue() == kSpinButtonRole; }
   bool IsTabItem() const { return RoleValue() == kTabRole; }
-  virtual bool IsTableCell() const { return false; }
-  virtual bool IsTableRow() const { return false; }
   virtual bool IsTextControl() const { return false; }
-  virtual bool IsTableCol() const { return false; }
   bool IsTree() const { return RoleValue() == kTreeRole; }
   virtual bool IsVirtualObject() const { return false; }
   bool IsWebArea() const { return RoleValue() == kWebAreaRole; }
@@ -579,9 +574,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool SupportsARIAOwns() const { return false; }
   bool SupportsRangeValue() const;
   bool SupportsARIAReadOnly() const;
-  virtual SortDirection GetSortDirection() const {
-    return kSortDirectionUndefined;
-  }
 
   // Returns 0-based index.
   int IndexInParent() const;
@@ -708,6 +700,38 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   IntPoint MaximumScrollOffset() const;
   void SetScrollOffset(const IntPoint&) const;
 
+  // Tables and grids.
+  virtual bool IsTableLikeRole() const;
+  virtual bool IsTableRowLikeRole() const;
+  virtual bool IsTableCellLikeRole() const;
+  virtual bool IsDataTable() const { return false; }
+  virtual bool IsTableCol() const { return false; }
+
+  // For a table.
+  virtual unsigned ColumnCount() const;
+  virtual unsigned RowCount() const;
+  virtual void ColumnHeaders(AXObjectVector&) const;
+  virtual void RowHeaders(AXObjectVector&) const;
+  virtual AXObject* CellForColumnAndRow(unsigned column, unsigned row) const;
+  // an object that contains, as children, all the objects that act as headers
+  virtual AXObject* HeaderContainer() { return nullptr; }
+
+  // For a cell.
+  virtual unsigned ColumnIndex() const;
+  virtual unsigned RowIndex() const;
+  virtual unsigned ColumnSpan() const;
+  virtual unsigned RowSpan() const;
+  virtual unsigned AriaColumnIndex() const;
+  virtual unsigned AriaRowIndex() const;
+  virtual int AriaColumnCount() const;
+  virtual int AriaRowCount() const;
+  virtual SortDirection GetSortDirection() const {
+    return kSortDirectionUndefined;
+  }
+
+  // For a row or column.
+  virtual AXObject* HeaderObject() const { return nullptr; }
+
   // If this object itself scrolls, return its ScrollableArea.
   virtual ScrollableArea* GetScrollableAreaIfScrollable() const {
     return nullptr;
@@ -777,7 +801,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static bool IsARIAControl(AccessibilityRole);
   static bool IsARIAInput(AccessibilityRole);
   // Is this a widget that requires container widget.
-  static bool IsSubWidget(AccessibilityRole);
+  bool IsSubWidget() const;
   static AccessibilityRole AriaRoleToWebCoreRole(const String&);
   static const AtomicString& RoleName(AccessibilityRole);
   static const AtomicString& InternalRoleName(AccessibilityRole);
@@ -848,6 +872,13 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Returns true if the event was handled.
   bool DispatchEventToAOMEventListeners(Event&);
+
+  // Finds table, table row, and table cell parents and children
+  // skipping over generic containers.
+  AXObjectVector TableRowChildren() const;
+  AXObjectVector TableCellChildren() const;
+  const AXObject* TableRowParent() const;
+  const AXObject* TableParent() const;
 
   mutable Member<AXObject> parent_;
 

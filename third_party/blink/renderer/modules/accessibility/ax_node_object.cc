@@ -989,6 +989,21 @@ AXRestriction AXNodeObject::Restriction() const {
       return kReadOnly;
   }
 
+  // If a grid cell does not have it's own ARIA input restriction,
+  // fall back on parent grid's readonly state.
+  // See ARIA specification regarding grid/treegrid and readonly.
+  if (IsTableCellLikeRole()) {
+    AXObject* row = ParentObjectUnignored();
+    if (row->IsTableRowLikeRole()) {
+      AXObject* table = row->ParentObjectUnignored();
+      if (table->IsTableLikeRole() && (table->RoleValue() == kGridRole ||
+                                       table->RoleValue() == kTreeGridRole)) {
+        if (table->Restriction() == kReadOnly)
+          return kReadOnly;
+      }
+    }
+  }
+
   // This is a node that is not readonly and not disabled.
   return kNone;
 }

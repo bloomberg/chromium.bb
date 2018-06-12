@@ -177,8 +177,8 @@
         shouldBe("table2.rowHeadersCount", "3");
         // Column headers
         shouldBeTrue("table2.columnHeaderAtIndex(0).isEqual(table2.cellForColumnAndRow(0, 0))");
-        shouldBeTrue("table2.columnHeaderAtIndex(1).isEqual(table2.cellForColumnAndRow(0, 1))");
-        shouldBeTrue("table2.columnHeaderAtIndex(2).isEqual(table2.cellForColumnAndRow(2, 0))");
+        shouldBeTrue("table2.columnHeaderAtIndex(1).isEqual(table2.cellForColumnAndRow(2, 0))");
+        shouldBeTrue("table2.columnHeaderAtIndex(2).isEqual(table2.cellForColumnAndRow(0, 1))");
         shouldBeTrue("table2.columnHeaderAtIndex(3).isEqual(table2.cellForColumnAndRow(2, 2))");
         shouldBe("table2.columnHeadersCount", "4");
 
@@ -189,9 +189,9 @@
         shouldBeTrue("table3.rowHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(2, 2))");
         shouldBe("table3.rowHeadersCount", "3");
         // Column headers
-        shouldBeTrue("table3.columnHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(0, 1))");
-        shouldBeTrue("table3.columnHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(1, 1))");
-        shouldBeTrue("table3.columnHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(2, 0))");
+        shouldBeTrue("table3.columnHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(2, 0))");
+        shouldBeTrue("table3.columnHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(0, 1))");
+        shouldBeTrue("table3.columnHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(1, 1))");
         shouldBe("table3.columnHeadersCount", "3");
 
         var table4 = accessibilityController.accessibleElementById("table4");
@@ -220,10 +220,10 @@
         shouldBe("table6.rowHeadersCount", "1");
         // Column headers
         shouldBeTrue("table6.columnHeaderAtIndex(0).isEqual(table6.cellForColumnAndRow(0, 0))");
-        shouldBeTrue("table6.columnHeaderAtIndex(1).isEqual(table6.cellForColumnAndRow(0, 2))"); // colspan=2
-        shouldBeTrue("table6.columnHeaderAtIndex(1).isEqual(table6.cellForColumnAndRow(1, 2))"); // colspan=2
-        shouldBeTrue("table6.columnHeaderAtIndex(2).isEqual(table6.cellForColumnAndRow(1, 0))");
-        shouldBeTrue("table6.columnHeaderAtIndex(3).isEqual(table6.cellForColumnAndRow(2, 0))");
+        shouldBeTrue("table6.columnHeaderAtIndex(1).isEqual(table6.cellForColumnAndRow(1, 0))");
+        shouldBeTrue("table6.columnHeaderAtIndex(2).isEqual(table6.cellForColumnAndRow(2, 0))");
+        shouldBeTrue("table6.columnHeaderAtIndex(3).isEqual(table6.cellForColumnAndRow(0, 2))"); // colspan=2
+        shouldBeTrue("table6.columnHeaderAtIndex(3).isEqual(table6.cellForColumnAndRow(1, 2))"); // colspan=2
         shouldBeTrue("table6.columnHeaderAtIndex(4).isEqual(table6.cellForColumnAndRow(2, 2))");
         shouldBe("table6.columnHeadersCount", "5");
 

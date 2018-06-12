@@ -49,17 +49,17 @@ PASS table2.rowHeaderAtIndex(1).isEqual(table2.cellForColumnAndRow(2, 1)) is tru
 PASS table2.rowHeaderAtIndex(2).isEqual(table2.cellForColumnAndRow(0, 2)) is true
 PASS table2.rowHeadersCount is 3
 PASS table2.columnHeaderAtIndex(0).isEqual(table2.cellForColumnAndRow(0, 0)) is true
-PASS table2.columnHeaderAtIndex(1).isEqual(table2.cellForColumnAndRow(0, 1)) is true
-PASS table2.columnHeaderAtIndex(2).isEqual(table2.cellForColumnAndRow(2, 0)) is true
+PASS table2.columnHeaderAtIndex(1).isEqual(table2.cellForColumnAndRow(2, 0)) is true
+PASS table2.columnHeaderAtIndex(2).isEqual(table2.cellForColumnAndRow(0, 1)) is true
 PASS table2.columnHeaderAtIndex(3).isEqual(table2.cellForColumnAndRow(2, 2)) is true
 PASS table2.columnHeadersCount is 4
 PASS table3.rowHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(1, 0)) is true
 PASS table3.rowHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(0, 2)) is true
 PASS table3.rowHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(2, 2)) is true
 PASS table3.rowHeadersCount is 3
-PASS table3.columnHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(0, 1)) is true
-PASS table3.columnHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(1, 1)) is true
-PASS table3.columnHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(2, 0)) is true
+PASS table3.columnHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(2, 0)) is true
+PASS table3.columnHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(0, 1)) is true
+PASS table3.columnHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(1, 1)) is true
 PASS table3.columnHeadersCount is 3
 PASS table4.rowHeaderAtIndex(0).isEqual(table4.cellForColumnAndRow(0, 0)) is true
 PASS table4.rowHeadersCount is 1
@@ -76,10 +76,10 @@ PASS table5.columnHeadersCount is 1
 PASS table6.rowHeaderAtIndex(0).isEqual(table6.cellForColumnAndRow(2, 3)) is true
 PASS table6.rowHeadersCount is 1
 PASS table6.columnHeaderAtIndex(0).isEqual(table6.cellForColumnAndRow(0, 0)) is true
-PASS table6.columnHeaderAtIndex(1).isEqual(table6.cellForColumnAndRow(0, 2)) is true
-PASS table6.columnHeaderAtIndex(1).isEqual(table6.cellForColumnAndRow(1, 2)) is true
-PASS table6.columnHeaderAtIndex(2).isEqual(table6.cellForColumnAndRow(1, 0)) is true
-PASS table6.columnHeaderAtIndex(3).isEqual(table6.cellForColumnAndRow(2, 0)) is true
+PASS table6.columnHeaderAtIndex(1).isEqual(table6.cellForColumnAndRow(1, 0)) is true
+PASS table6.columnHeaderAtIndex(2).isEqual(table6.cellForColumnAndRow(2, 0)) is true
+PASS table6.columnHeaderAtIndex(3).isEqual(table6.cellForColumnAndRow(0, 2)) is true
+PASS table6.columnHeaderAtIndex(3).isEqual(table6.cellForColumnAndRow(1, 2)) is true
 PASS table6.columnHeaderAtIndex(4).isEqual(table6.cellForColumnAndRow(2, 2)) is true
 PASS table6.columnHeadersCount is 5
 PASS table7.rowHeaderAtIndex(0).isEqual(table7.cellForColumnAndRow(0, 1)) is true

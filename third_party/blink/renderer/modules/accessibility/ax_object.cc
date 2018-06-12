@@ -1252,19 +1252,44 @@ bool AXObject::AncestorExposesActiveDescendant() const {
 
 bool AXObject::CanSetSelectedAttribute() const {
   // Sub-widget elements can be selected if not disabled (native or ARIA)
-  return IsSubWidget(RoleValue()) && Restriction() != kDisabled;
+  return IsSubWidget() && Restriction() != kDisabled;
 }
 
-// static
-bool AXObject::IsSubWidget(AccessibilityRole role) {
-  switch (role) {
+bool AXObject::IsSubWidget() const {
+  switch (RoleValue()) {
     case kCellRole:
     case kColumnHeaderRole:
+    case kRowHeaderRole:
     case kColumnRole:
+    case kRowRole: {
+      // If it has an explicit ARIA role, it's a subwidget.
+      //
+      // Reasoning:
+      // Static table cells are not selectable, but ARIA grid cells
+      // and rows definitely are according to the spec. To support
+      // ARIA 1.0, it's sufficient to just check if there's any
+      // ARIA role at all, because if so then it must be a grid-related
+      // role so it must be selectable.
+      //
+      // TODO: an ARIA 1.1+ role of "cell", or a role of "row" inside
+      // an ARIA 1.1 role of "table", should not be selectable. We may
+      // need to create separate role enums for grid cells vs table cells
+      // to implement this.
+      if (AriaRoleAttribute() != kUnknownRole)
+        return true;
+
+      // Otherwise it's only a subwidget if it's in a grid or treegrid,
+      // not in a table.
+      AXObject* parent = ParentObjectUnignored();
+      while (parent && !parent->IsTableLikeRole())
+        parent = parent->ParentObjectUnignored();
+      if (parent && (parent->RoleValue() == kGridRole ||
+                     parent->RoleValue() == kTreeGridRole))
+        return true;
+      return false;
+    }
     case kListBoxOptionRole:
     case kMenuListOptionRole:
-    case kRowHeaderRole:
-    case kRowRole:
     case kTabRole:
     case kTreeItemRole:
       return true;
@@ -2271,6 +2296,301 @@ void AXObject::SetScrollOffset(const IntPoint& offset) const {
   // TODO(bokan): This should potentially be a UserScroll.
   area->SetScrollOffset(ScrollOffset(offset.X(), offset.Y()),
                         kProgrammaticScroll);
+}
+
+bool AXObject::IsTableLikeRole() const {
+  switch (RoleValue()) {
+    case kLayoutTableRole:
+    case kTableRole:
+    case kGridRole:
+    case kTreeGridRole:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool AXObject::IsTableRowLikeRole() const {
+  return RoleValue() == kRowRole || RoleValue() == kLayoutTableRowRole;
+}
+
+bool AXObject::IsTableCellLikeRole() const {
+  switch (RoleValue()) {
+    case kLayoutTableCellRole:
+    case kCellRole:
+    case kColumnHeaderRole:
+    case kRowHeaderRole:
+      return true;
+    default:
+      return false;
+  }
+}
+
+unsigned AXObject::ColumnCount() const {
+  if (!IsTableLikeRole())
+    return 0;
+
+  unsigned max_column_count = 0;
+  for (const auto& row : TableRowChildren()) {
+    unsigned column_count = row->TableCellChildren().size();
+    max_column_count = std::max(column_count, max_column_count);
+  }
+
+  return max_column_count;
+}
+
+unsigned AXObject::RowCount() const {
+  if (!IsTableLikeRole())
+    return 0;
+
+  return TableRowChildren().size();
+}
+
+void AXObject::ColumnHeaders(AXObjectVector& headers) const {
+  if (!IsTableLikeRole())
+    return;
+
+  for (const auto& row : TableRowChildren()) {
+    for (const auto& cell : row->TableCellChildren()) {
+      if (cell->RoleValue() == kColumnHeaderRole)
+        headers.push_back(cell);
+    }
+  }
+}
+
+void AXObject::RowHeaders(AXObjectVector& headers) const {
+  if (!IsTableLikeRole())
+    return;
+
+  for (const auto& row : TableRowChildren()) {
+    for (const auto& cell : row->TableCellChildren()) {
+      if (cell->RoleValue() == kRowHeaderRole)
+        headers.push_back(cell);
+    }
+  }
+}
+
+AXObject* AXObject::CellForColumnAndRow(unsigned target_column_index,
+                                        unsigned target_row_index) const {
+  if (!IsTableLikeRole())
+    return nullptr;
+
+  // Note that this code is only triggered if this is not a LayoutTable,
+  // i.e. it's an ARIA grid/table.
+  //
+  // TODO(dmazzoni): delete this code or rename it "for testing only"
+  // since it's only needed for Blink layout tests and not for production.
+  unsigned row_index = 0;
+  for (const auto& row : TableRowChildren()) {
+    unsigned column_index = 0;
+    for (const auto& cell : row->TableCellChildren()) {
+      if (target_column_index == column_index && target_row_index == row_index)
+        return cell;
+      column_index++;
+    }
+    row_index++;
+  }
+
+  return nullptr;
+}
+
+int AXObject::AriaColumnCount() const {
+  if (!IsTableLikeRole())
+    return 0;
+
+  int32_t col_count;
+  if (!HasAOMPropertyOrARIAAttribute(AOMIntProperty::kColCount, col_count))
+    return 0;
+
+  if (col_count > static_cast<int>(ColumnCount()))
+    return col_count;
+
+  // Spec says that if all of the columns are present in the DOM, it
+  // is not necessary to set this attribute as the user agent can
+  // automatically calculate the total number of columns.
+  // It returns 0 in order not to set this attribute.
+  if (col_count == static_cast<int>(ColumnCount()) || col_count != -1)
+    return 0;
+
+  return -1;
+}
+
+int AXObject::AriaRowCount() const {
+  if (!IsTableLikeRole())
+    return 0;
+
+  int32_t row_count;
+  if (!HasAOMPropertyOrARIAAttribute(AOMIntProperty::kRowCount, row_count))
+    return 0;
+
+  if (row_count > static_cast<int>(RowCount()))
+    return row_count;
+
+  // Spec says that if all of the rows are present in the DOM, it is
+  // not necessary to set this attribute as the user agent can
+  // automatically calculate the total number of rows.
+  // It returns 0 in order not to set this attribute.
+  if (row_count == (int)RowCount() || row_count != -1)
+    return 0;
+
+  // In the spec, -1 explicitly means an unknown number of rows.
+  return -1;
+}
+
+unsigned AXObject::ColumnIndex() const {
+  if (!IsTableCellLikeRole())
+    return 0;
+
+  const AXObject* row = TableRowParent();
+  if (!row)
+    return 0;
+
+  unsigned column_index = 0;
+  for (const auto& child : row->TableCellChildren()) {
+    if (child == this)
+      break;
+    column_index++;
+  }
+  return column_index;
+}
+
+unsigned AXObject::RowIndex() const {
+  const AXObject* row = nullptr;
+  if (IsTableRowLikeRole())
+    row = this;
+  else if (IsTableCellLikeRole())
+    row = TableRowParent();
+
+  if (!row)
+    return 0;
+
+  const AXObject* table = row->TableParent();
+  if (!table)
+    return 0;
+
+  unsigned row_index = 0;
+  for (const auto& child : table->TableRowChildren()) {
+    if (child == row)
+      break;
+    if (!child->IsTableRowLikeRole())
+      continue;
+    row_index++;
+  }
+  return row_index;
+}
+
+unsigned AXObject::ColumnSpan() const {
+  return IsTableCellLikeRole() ? 1 : 0;
+}
+
+unsigned AXObject::RowSpan() const {
+  return IsTableCellLikeRole() ? 1 : 0;
+}
+
+unsigned AXObject::AriaColumnIndex() const {
+  if (!IsTableCellLikeRole())
+    return 0;
+
+  uint32_t col_index;
+  if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kColIndex, col_index) &&
+      col_index >= 1) {
+    return col_index;
+  }
+
+  const AXObject* row = TableRowParent();
+  if (!row)
+    return 0;
+
+  if (!row->HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kColIndex,
+                                          col_index))
+    col_index = 0;
+  for (const auto& child : row->TableCellChildren()) {
+    if (child == this)
+      break;
+    unsigned child_aria_column_index = child->AriaColumnIndex();
+    if (child_aria_column_index)
+      col_index = child_aria_column_index;
+    if (col_index > 0)
+      col_index++;
+  }
+  return col_index;
+}
+
+unsigned AXObject::AriaRowIndex() const {
+  const AXObject* row;
+  if (IsTableCellLikeRole())
+    row = TableRowParent();
+  else if (IsTableRowLikeRole())
+    row = this;
+  else
+    return 0;
+
+  uint32_t row_index;
+  if (HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kRowIndex, row_index) &&
+      row_index >= 1) {
+    return row_index;
+  }
+
+  if (row != this &&
+      row->HasAOMPropertyOrARIAAttribute(AOMUIntProperty::kRowIndex,
+                                         row_index) &&
+      row_index >= 1) {
+    return row_index;
+  }
+
+  const AXObject* table = row->TableParent();
+  if (!table)
+    return 0;
+
+  row_index = 0;
+  for (const auto& child : table->TableRowChildren()) {
+    if (child == row)
+      break;
+    unsigned child_aria_row_index = child->AriaRowIndex();
+    if (child_aria_row_index)
+      row_index = child_aria_row_index;
+    if (row_index > 0)
+      row_index++;
+  }
+  return row_index;
+}
+
+AXObject::AXObjectVector AXObject::TableRowChildren() const {
+  AXObjectVector result;
+  for (const auto& child : Children()) {
+    if (child->IsTableRowLikeRole())
+      result.push_back(child);
+    else if (child->RoleValue() == kGenericContainerRole)
+      result.AppendVector(child->TableRowChildren());
+  }
+  return result;
+}
+
+AXObject::AXObjectVector AXObject::TableCellChildren() const {
+  AXObjectVector result;
+  for (const auto& child : Children()) {
+    if (child->IsTableCellLikeRole())
+      result.push_back(child);
+    else if (child->RoleValue() == kGenericContainerRole)
+      result.AppendVector(child->TableCellChildren());
+  }
+  return result;
+}
+
+const AXObject* AXObject::TableRowParent() const {
+  const AXObject* row = ParentObjectUnignored();
+  while (row && !row->IsTableRowLikeRole() &&
+         row->RoleValue() == kGenericContainerRole)
+    row = row->ParentObjectUnignored();
+  return row;
+}
+
+const AXObject* AXObject::TableParent() const {
+  const AXObject* table = ParentObjectUnignored();
+  while (table && !table->IsTableLikeRole() &&
+         table->RoleValue() == kGenericContainerRole)
+    table = table->ParentObjectUnignored();
+  return table;
 }
 
 void AXObject::GetRelativeBounds(AXObject** out_container,

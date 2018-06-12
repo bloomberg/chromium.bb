@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
 
 namespace blink {
 
@@ -51,7 +50,7 @@ void AXTableColumn::SetParent(AXObject* parent) {
   ClearChildren();
 }
 
-void AXTableColumn::HeaderObjectsForColumn(AXObjectVector& headers) {
+void AXTableColumn::HeaderObjectsForColumn(AXObjectVector& headers) const {
   if (!parent_)
     return;
 
@@ -59,45 +58,16 @@ void AXTableColumn::HeaderObjectsForColumn(AXObjectVector& headers) {
   if (!layout_object)
     return;
 
-  if (!parent_->IsAXTable())
+  if (!parent_->IsTableLikeRole())
     return;
 
-  if (ToAXTable(parent_)->IsAriaTable()) {
-    for (const auto& cell : Children()) {
-      if (cell->RoleValue() == kColumnHeaderRole)
-        headers.push_back(cell);
-    }
-    return;
-  }
-
-  if (!layout_object->IsTable())
-    return;
-
-  LayoutTable* table = ToLayoutTable(layout_object);
-  LayoutTableSection* table_section = table->TopSection();
-  for (; table_section;
-       table_section = table->SectionBelow(table_section, kSkipEmptySections)) {
-    unsigned num_cols = table_section->NumEffectiveColumns();
-    if (column_index_ >= num_cols)
-      continue;
-    unsigned num_rows = table_section->NumRows();
-    for (unsigned r = 0; r < num_rows; r++) {
-      LayoutTableCell* layout_cell =
-          table_section->PrimaryCellAt(r, column_index_);
-      if (!layout_cell)
-        continue;
-
-      AXObject* cell = AXObjectCache().GetOrCreate(layout_cell->GetNode());
-      if (!cell || !cell->IsTableCell() || headers.Contains(cell))
-        continue;
-
-      if (ToAXTableCell(cell)->ScanToDecideHeaderRole() == kColumnHeaderRole)
-        headers.push_back(cell);
-    }
+  for (const auto& cell : Children()) {
+    if (cell->RoleValue() == kColumnHeaderRole)
+      headers.push_back(cell);
   }
 }
 
-AXObject* AXTableColumn::HeaderObject() {
+AXObject* AXTableColumn::HeaderObject() const {
   AXObjectVector headers;
   HeaderObjectsForColumn(headers);
   if (!headers.size())
@@ -121,9 +91,8 @@ bool AXTableColumn::ComputeAccessibilityIsIgnored(
 }
 
 AccessibilityRole AXTableColumn::RoleValue() const {
-  return parent_ && parent_->IsAXTable() && ToAXTable(parent_)->IsDataTable()
-             ? kColumnRole
-             : kLayoutTableColumnRole;
+  return parent_ && parent_->IsDataTable() ? kColumnRole
+                                           : kLayoutTableColumnRole;
 }
 
 void AXTableColumn::AddChildren() {
@@ -131,14 +100,12 @@ void AXTableColumn::AddChildren() {
   DCHECK(!have_children_);
 
   have_children_ = true;
-  if (!parent_ || !parent_->IsAXTable())
+  if (!parent_ || !parent_->IsTableLikeRole())
     return;
 
-  AXTable* parent_table = ToAXTable(parent_);
-  int num_rows = parent_table->RowCount();
-
-  for (int i = 0; i < num_rows; i++) {
-    AXTableCell* cell = parent_table->CellForColumnAndRow(column_index_, i);
+  unsigned num_rows = parent_->RowCount();
+  for (unsigned i = 0; i < num_rows; i++) {
+    AXObject* cell = parent_->CellForColumnAndRow(column_index_, i);
     if (!cell)
       continue;
 

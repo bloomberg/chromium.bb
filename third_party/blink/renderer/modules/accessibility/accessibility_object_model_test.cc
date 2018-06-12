@@ -9,9 +9,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_row.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -228,17 +225,17 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
 
-  auto* ax_grid = static_cast<AXTable*>(cache->GetOrCreate(grid));
+  auto* ax_grid = cache->GetOrCreate(grid);
   EXPECT_EQ(16, ax_grid->AriaColumnCount());
   EXPECT_EQ(9, ax_grid->AriaRowCount());
 
-  auto* ax_cell = static_cast<AXTableCell*>(cache->GetOrCreate(cell));
-  EXPECT_TRUE(ax_cell->IsTableCell());
+  auto* ax_cell = cache->GetOrCreate(cell);
+  EXPECT_TRUE(ax_cell->IsTableCellLikeRole());
   EXPECT_EQ(8U, ax_cell->AriaColumnIndex());
   EXPECT_EQ(5U, ax_cell->AriaRowIndex());
 
-  auto* ax_cell2 = static_cast<AXTableCell*>(cache->GetOrCreate(cell2));
-  EXPECT_TRUE(ax_cell2->IsTableCell());
+  auto* ax_cell2 = cache->GetOrCreate(cell2);
+  EXPECT_TRUE(ax_cell2->IsTableCellLikeRole());
   EXPECT_EQ(10U, ax_cell2->AriaColumnIndex());
   EXPECT_EQ(7U, ax_cell2->AriaRowIndex());
 }
