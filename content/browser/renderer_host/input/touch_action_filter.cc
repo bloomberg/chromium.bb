@@ -138,6 +138,11 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       if (gesture_event->is_source_touch_event_set_non_blocking)
         SetTouchAction(cc::kTouchActionAuto);
       scrolling_touch_action_ = allowed_touch_action_;
+      // TODO(https://crbug.com/851644): The value may not set in the case when
+      // the gesture event is flushed due to touch ack time out after the finger
+      // is lifted up. Make sure the value is properly set.
+      if (!scrolling_touch_action_.has_value())
+        SetTouchAction(cc::kTouchActionAuto);
       DCHECK(!drop_current_tap_ending_event_);
       break;
 
@@ -195,6 +200,9 @@ void TouchActionFilter::ReportAndResetTouchAction() {
 }
 
 void TouchActionFilter::ReportTouchAction() {
+  // TODO(https://crbug.com/851644): make sure the value is properly set.
+  if (!scrolling_touch_action_.has_value())
+    SetTouchAction(cc::kTouchActionAuto);
   // Report the effective touch action computed by blink such as
   // kTouchActionNone, kTouchActionPanX, etc.
   // Since |cc::kTouchActionAuto| is equivalent to |cc::kTouchActionMax|, we
