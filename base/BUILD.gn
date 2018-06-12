@@ -2608,13 +2608,16 @@ test("base_unittests") {
     sources += [
       "files/dir_reader_posix_unittest.cc",
       "files/file_descriptor_watcher_posix_unittest.cc",
+      "fuchsia/async_dispatcher_unittest.cc",
       "fuchsia/services_directory_unittest.cc",
       "message_loop/message_loop_io_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
       "task_scheduler/task_tracker_posix_unittest.cc",
     ]
 
-    sources += [ "fuchsia/async_dispatcher_unittest.cc" ]
+    # TODO(crbug.com/851641): FilePatchWatcherImpl is not implemented.
+    sources -= [ "files/file_path_watcher_unittest.cc" ]
+
     deps += [
       ":test_fidl",
       "//third_party/fuchsia-sdk:async",
