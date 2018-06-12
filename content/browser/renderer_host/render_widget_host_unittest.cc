@@ -350,6 +350,8 @@ class TestView : public TestRenderWidgetHostView {
     local_surface_id_allocator_.GenerateId();
   }
 
+  void InvalidateLocalSurfaceId() { local_surface_id_allocator_.Invalidate(); }
+
   void GetScreenInfo(ScreenInfo* screen_info) const override {
     *screen_info = screen_info_;
   }
@@ -961,7 +963,7 @@ class RenderWidgetHostWithSourceTest
 
 // -----------------------------------------------------------------------------
 
-TEST_F(RenderWidgetHostTest, Resize) {
+TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // The initial bounds is the empty rect, so setting it to the same thing
   // shouldn't send the resize message.
   view_->SetBounds(gfx::Rect());
@@ -970,8 +972,8 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
       ViewMsg_SynchronizeVisualProperties::ID));
 
-  // No resize ack if the physical backing gets set, but the view bounds are
-  // zero.
+  // No visual properties ACK if the physical backing gets set, but the view
+  // bounds are zero.
   view_->SetMockCompositorViewportPixelSize(gfx::Size(200, 200));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
@@ -1011,7 +1013,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
 
   // Sending out a new notification should NOT send out a new IPC message since
-  // a resize ACK is pending.
+  // a visual properties ACK is pending.
   gfx::Rect third_size(0, 0, 120, 120);
   process_->sink().ClearMessages();
   view_->SetBounds(third_size);
@@ -1020,9 +1022,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
       ViewMsg_SynchronizeVisualProperties::ID));
 
-  // Send a update that's a resize ack, but for the original_size we sent. Since
-  // this isn't the second_size, the message handler should immediately send
-  // a new resize message for the new size to the renderer.
+  // Send a update that's a visual properties ACK, but for the original_size we
+  // sent. Since this isn't the second_size, the message handler should
+  // immediately send a new resize message for the new size to the renderer.
   process_->sink().ClearMessages();
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id = base::nullopt;
@@ -1032,7 +1034,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
       ViewMsg_SynchronizeVisualProperties::ID));
 
-  // Send the resize ack for the latest size.
+  // Send the visual properties ACK for the latest size.
   process_->sink().ClearMessages();
   metadata.viewport_size_in_pixels = third_size.size();
   metadata.local_surface_id = base::nullopt;
@@ -1043,8 +1045,9 @@ TEST_F(RenderWidgetHostTest, Resize) {
       ViewMsg_SynchronizeVisualProperties::ID));
 
   // Now clearing the bounds should send out a notification but we shouldn't
-  // expect a resize ack (since the renderer won't ack empty sizes). The message
-  // should contain the new size (0x0) and not the previous one that we skipped
+  // expect a visual properties ACK (since the renderer won't ack empty sizes).
+  // The message should contain the new size (0x0) and not the previous one that
+  // we skipped.
   process_->sink().ClearMessages();
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
@@ -1075,6 +1078,17 @@ TEST_F(RenderWidgetHostTest, Resize) {
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_visual_properties_->new_size);
+  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
+      ViewMsg_SynchronizeVisualProperties::ID));
+
+  // An invalid LocalSurfaceId should result in no change to the
+  // |visual_properties_ack_pending_| bit.
+  process_->sink().ClearMessages();
+  view_->SetBounds(gfx::Rect(25, 25));
+  view_->InvalidateLocalSurfaceId();
+  host_->SynchronizeVisualProperties();
+  EXPECT_FALSE(host_->visual_properties_ack_pending_);
+  EXPECT_EQ(gfx::Size(25, 25), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
       ViewMsg_SynchronizeVisualProperties::ID));
 }
@@ -1124,7 +1138,8 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
 }
 
 // Test for crbug.com/25097.  If a renderer crashes between a resize and the
-// corresponding update message, we must be sure to clear the resize ack logic.
+// corresponding update message, we must be sure to clear the visual properties
+// ACK logic.
 TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   // Clear the first Resize message that carried screen info.
   process_->sink().ClearMessages();
@@ -1139,8 +1154,8 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
       ViewMsg_SynchronizeVisualProperties::ID));
 
   // Simulate a renderer crash before the update message.  Ensure all the
-  // resize ack logic is cleared.  Must clear the view first so it doesn't get
-  // deleted.
+  // visual properties ACK logic is cleared.  Must clear the view first so it
+  // doesn't get deleted.
   host_->SetView(nullptr);
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
