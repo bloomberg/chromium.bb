@@ -42,8 +42,6 @@
 
 using base::RandDouble;
 using base::RandInt;
-using base::Time;
-using base::TimeDelta;
 using content::BrowserThread;
 
 typedef extensions::ExtensionDownloaderDelegate::Error Error;
@@ -76,21 +74,21 @@ int SanitizeDays(int days) {
 }
 
 // Calculates the value to use for the ping days parameter.
-int CalculatePingDays(const Time& last_ping_day) {
+int CalculatePingDaysForExtension(const base::Time& last_ping_day) {
   int days = extensions::ManifestFetchData::kNeverPinged;
   if (!last_ping_day.is_null()) {
-    days = SanitizeDays((Time::Now() - last_ping_day).InDays());
+    days = SanitizeDays((base::Time::Now() - last_ping_day).InDays());
   }
   return days;
 }
 
-int CalculateActivePingDays(const Time& last_active_ping_day,
+int CalculateActivePingDays(const base::Time& last_active_ping_day,
                             bool hasActiveBit) {
   if (!hasActiveBit)
     return 0;
   if (last_active_ping_day.is_null())
     return extensions::ManifestFetchData::kNeverPinged;
-  return SanitizeDays((Time::Now() - last_active_ping_day).InDays());
+  return SanitizeDays((base::Time::Now() - last_active_ping_day).InDays());
 }
 
 }  // namespace
@@ -178,33 +176,33 @@ void ExtensionUpdater::EnsureDownloaderCreated() {
 
 // The overall goal here is to balance keeping clients up to date while
 // avoiding a thundering herd against update servers.
-TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
+base::TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
   DCHECK(alive_);
   // If someone's testing with a quick frequency, just allow it.
   if (frequency_seconds_ < kStartupWaitSeconds)
-    return TimeDelta::FromSeconds(frequency_seconds_);
+    return base::TimeDelta::FromSeconds(frequency_seconds_);
 
   // If we've never scheduled a check before, start at a random time up to
   // frequency_seconds_ away.
   if (!prefs_->HasPrefPath(pref_names::kNextUpdateCheck))
-    return TimeDelta::FromSeconds(
+    return base::TimeDelta::FromSeconds(
         RandInt(kStartupWaitSeconds, frequency_seconds_));
 
   // Read the persisted next check time, and use that if it isn't in the past
   // or too far in the future (this can happen with system clock changes).
-  Time saved_next = Time::FromInternalValue(prefs_->GetInt64(
-      pref_names::kNextUpdateCheck));
-  Time now = Time::Now();
+  base::Time saved_next = base::Time::FromInternalValue(
+      prefs_->GetInt64(pref_names::kNextUpdateCheck));
+  base::Time now = base::Time::Now();
   base::Time earliest =
-      now + TimeDelta::FromSeconds(kScheduleNextCheckMinGapSecs);
-  base::Time latest = now + TimeDelta::FromSeconds(frequency_seconds_);
+      now + base::TimeDelta::FromSeconds(kScheduleNextCheckMinGapSecs);
+  base::Time latest = now + base::TimeDelta::FromSeconds(frequency_seconds_);
   if (saved_next > earliest && saved_next < latest) {
     return saved_next - now;
   }
 
   // In most cases we'll get here because the persisted next check time passed
   // while we weren't running, so pick something soon.
-  return TimeDelta::FromSeconds(
+  return base::TimeDelta::FromSeconds(
       RandInt(kStartupWaitSeconds, kStartupWaitSeconds * 5));
 }
 
@@ -235,20 +233,21 @@ void ExtensionUpdater::Stop() {
   update_service_ = nullptr;
 }
 
-void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
+void ExtensionUpdater::ScheduleNextCheck(const base::TimeDelta& target_delay) {
   DCHECK(alive_);
   DCHECK(!timer_.IsRunning());
-  DCHECK(target_delay >= TimeDelta::FromSeconds(kScheduleNextCheckMinGapSecs));
+  DCHECK(target_delay >=
+         base::TimeDelta::FromSeconds(kScheduleNextCheckMinGapSecs));
 
   // Add +/- 10% random jitter.
   double delay_ms = target_delay.InMillisecondsF();
   double jitter_factor = (RandDouble() * .2) - 0.1;
   delay_ms += delay_ms * jitter_factor;
-  TimeDelta actual_delay =
-      TimeDelta::FromMilliseconds(static_cast<int64_t>(delay_ms));
+  base::TimeDelta actual_delay =
+      base::TimeDelta::FromMilliseconds(static_cast<int64_t>(delay_ms));
 
   // Save the time of next check.
-  Time next = Time::Now() + actual_delay;
+  base::Time next = base::Time::Now() + actual_delay;
   prefs_->SetInt64(pref_names::kNextUpdateCheck, next.ToInternalValue());
 
   timer_.Start(FROM_HERE, actual_delay, this, &ExtensionUpdater::TimerFired);
@@ -261,22 +260,22 @@ void ExtensionUpdater::TimerFired() {
   // If the user has overridden the update frequency, don't bother reporting
   // this.
   if (frequency_seconds_ == kDefaultUpdateFrequencySeconds) {
-    Time last = Time::FromInternalValue(prefs_->GetInt64(
-        pref_names::kLastUpdateCheck));
+    base::Time last = base::Time::FromInternalValue(
+        prefs_->GetInt64(pref_names::kLastUpdateCheck));
     if (last.ToInternalValue() != 0) {
       // Use counts rather than time so we can use minutes rather than millis.
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.UpdateCheckGap",
-          (Time::Now() - last).InMinutes(),
-          TimeDelta::FromSeconds(kStartupWaitSeconds).InMinutes(),
-          TimeDelta::FromDays(40).InMinutes(),
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Extensions.UpdateCheckGap", (base::Time::Now() - last).InMinutes(),
+          base::TimeDelta::FromSeconds(kStartupWaitSeconds).InMinutes(),
+          base::TimeDelta::FromDays(40).InMinutes(),
           50);  // 50 buckets seems to be the default.
     }
   }
 
   // Save the last check time, and schedule the next check.
-  int64_t now = Time::Now().ToInternalValue();
+  int64_t now = base::Time::Now().ToInternalValue();
   prefs_->SetInt64(pref_names::kLastUpdateCheck, now);
-  ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
+  ScheduleNextCheck(base::TimeDelta::FromSeconds(frequency_seconds_));
 }
 
 void ExtensionUpdater::CheckSoon() {
@@ -523,8 +522,8 @@ bool ExtensionUpdater::GetPingDataForExtension(
     const std::string& id,
     ManifestFetchData::PingData* ping_data) {
   DCHECK(alive_);
-  ping_data->rollcall_days = CalculatePingDays(
-      extension_prefs_->LastPingDay(id));
+  ping_data->rollcall_days =
+      CalculatePingDaysForExtension(extension_prefs_->LastPingDay(id));
   ping_data->is_enabled = service_->IsExtensionEnabled(id);
   if (!ping_data->is_enabled)
     ping_data->disable_reasons = extension_prefs_->GetDisableReasons(id);
