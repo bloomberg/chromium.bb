@@ -35,6 +35,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
@@ -100,7 +101,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
                                   UserGestureStatus) = 0;
   // Synchronously begins a navigation.
   virtual void Navigate(const FrameLoadRequest&) = 0;
-  virtual void Reload(FrameLoadType, ClientRedirectPolicy) = 0;
+  virtual void Reload(WebFrameLoadType, ClientRedirectPolicy) = 0;
 
   // The base Detach() method must be the last line of overrides of Detach().
   virtual void Detach(FrameDetachType);

@@ -232,7 +232,7 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
       GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument() &&
       !GetFrame()->IsLoading();
   if (progress_notifications_needed)
-    GetFrame()->Loader().Progress().ProgressStarted(kFrameLoadTypeStandard);
+    GetFrame()->Loader().Progress().ProgressStarted();
 
   Document* owner_document = GetFrame()->GetDocument();
 

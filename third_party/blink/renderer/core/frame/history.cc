@@ -212,7 +212,7 @@ void History::go(ScriptState* script_state,
     // Otherwise, navigation happens on the root frame.
     // This behavior is designed in the following spec.
     // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
-    GetFrame()->Reload(kFrameLoadTypeReload,
+    GetFrame()->Reload(WebFrameLoadType::kReload,
                        ClientRedirectPolicy::kClientRedirect);
   }
 }
@@ -222,7 +222,7 @@ void History::pushState(scoped_refptr<SerializedScriptValue> data,
                         const String& url,
                         ExceptionState& exception_state) {
   StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
-                   kFrameLoadTypeStandard, exception_state);
+                   WebFrameLoadType::kStandard, exception_state);
 }
 
 KURL History::UrlForState(const String& url_string) {
@@ -268,7 +268,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
                                const String& /* title */,
                                const String& url_string,
                                HistoryScrollRestorationType restoration_type,
-                               FrameLoadType type,
+                               WebFrameLoadType type,
                                ExceptionState& exception_state) {
   if (!GetFrame() || !GetFrame()->GetPage() ||
       !GetFrame()->Loader().GetDocumentLoader()) {

@@ -31,17 +31,6 @@
 
 namespace blink {
 
-// See WebFrameLoadType in public/web/WebFrameLoadType.h for details.
-enum FrameLoadType {
-  kFrameLoadTypeStandard,
-  kFrameLoadTypeBackForward,
-  kFrameLoadTypeReload,
-  kFrameLoadTypeReplaceCurrentItem,
-  kFrameLoadTypeInitialInChildFrame,
-  kFrameLoadTypeInitialHistoryLoad,
-  kFrameLoadTypeReloadBypassingCache,
-};
-
 enum NavigationType {
   kNavigationTypeLinkClicked,
   kNavigationTypeFormSubmitted,

@@ -106,13 +106,13 @@ LocalFrameClient* ProgressTracker::GetLocalFrameClient() const {
   return frame_->Client();
 }
 
-void ProgressTracker::ProgressStarted(FrameLoadType type) {
+void ProgressTracker::ProgressStarted() {
   Reset();
   progress_value_ = kInitialProgressValue;
   if (!frame_->IsLoading()) {
     GetLocalFrameClient()->DidStartLoading(kNavigationToDifferentDocument);
     frame_->SetIsLoading(true);
-    probe::frameStartedLoading(frame_, type);
+    probe::frameStartedLoading(frame_);
   }
 }
 

@@ -380,7 +380,7 @@ void InspectorEmulationAgent::ApplyVirtualTimePolicy(
   }
 }
 
-void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*, FrameLoadType) {
+void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*) {
   if (pending_virtual_time_policy_) {
     state_->setBoolean(EmulationAgentState::kWaitForNavigation, false);
     ApplyVirtualTimePolicy(*pending_virtual_time_policy_);

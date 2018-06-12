@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LAZY_LOAD_FRAME_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LAZY_LOAD_FRAME_OBSERVER_H_
 
-#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -23,7 +23,7 @@ class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
  public:
   explicit LazyLoadFrameObserver(HTMLFrameOwnerElement&);
 
-  void DeferLoadUntilNearViewport(const ResourceRequest&, FrameLoadType);
+  void DeferLoadUntilNearViewport(const ResourceRequest&, WebFrameLoadType);
   bool IsLazyLoadPending() const { return lazy_load_intersection_observer_; }
   void CancelPendingLazyLoad();
 
@@ -35,7 +35,7 @@ class LazyLoadFrameObserver : public GarbageCollected<LazyLoadFrameObserver> {
  private:
   void LoadIfHiddenOrNearViewport(
       const ResourceRequest&,
-      FrameLoadType,
+      WebFrameLoadType,
       const HeapVector<Member<IntersectionObserverEntry>>&);
 
   void RecordMetricsOnVisibilityChanged(

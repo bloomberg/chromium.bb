@@ -648,10 +648,11 @@ Response InspectorPageAgent::reload(
       optional_script_to_evaluate_on_load.fromMaybe("");
   v8_session_->setSkipAllPauses(true);
   reloading_ = true;
-  inspected_frames_->Root()->Reload(optional_bypass_cache.fromMaybe(false)
-                                        ? kFrameLoadTypeReloadBypassingCache
-                                        : kFrameLoadTypeReload,
-                                    ClientRedirectPolicy::kNotClientRedirect);
+  inspected_frames_->Root()->Reload(
+      optional_bypass_cache.fromMaybe(false)
+          ? WebFrameLoadType::kReloadBypassingCache
+          : WebFrameLoadType::kReload,
+      ClientRedirectPolicy::kNotClientRedirect);
   return Response::OK();
 }
 
@@ -913,7 +914,7 @@ bool InspectorPageAgent::ScreencastEnabled() {
          state_->booleanProperty(PageAgentState::kScreencastEnabled, false);
 }
 
-void InspectorPageAgent::FrameStartedLoading(LocalFrame* frame, FrameLoadType) {
+void InspectorPageAgent::FrameStartedLoading(LocalFrame* frame) {
   GetFrontend()->frameStartedLoading(IdentifiersFactory::FrameId(frame));
 }
 

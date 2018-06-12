@@ -139,32 +139,32 @@ void MaybeRecordCTPolicyComplianceUseCounter(
 }
 
 // Determines FetchCacheMode for a main resource, or FetchCacheMode that is
-// corresponding to FrameLoadType.
-// TODO(toyoshim): Probably, we should split FrameLoadType to FetchCacheMode
+// corresponding to WebFrameLoadType.
+// TODO(toyoshim): Probably, we should split WebFrameLoadType to FetchCacheMode
 // conversion logic into a separate function.
 mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
                                          RequestType request_type,
                                          ResourceType resource_type,
-                                         FrameLoadType load_type) {
+                                         WebFrameLoadType load_type) {
   switch (load_type) {
-    case kFrameLoadTypeStandard:
-    case kFrameLoadTypeReplaceCurrentItem:
-    case kFrameLoadTypeInitialInChildFrame:
+    case WebFrameLoadType::kStandard:
+    case WebFrameLoadType::kReplaceCurrentItem:
+    case WebFrameLoadType::kInitialInChildFrame:
       return (request_type == RequestType::kIsConditional ||
               method == RequestMethod::kIsPost)
                  ? mojom::FetchCacheMode::kValidateCache
                  : mojom::FetchCacheMode::kDefault;
-    case kFrameLoadTypeBackForward:
-    case kFrameLoadTypeInitialHistoryLoad:
+    case WebFrameLoadType::kBackForward:
+    case WebFrameLoadType::kInitialHistoryLoad:
       // Mutates the policy for POST requests to avoid form resubmission.
       return method == RequestMethod::kIsPost
                  ? mojom::FetchCacheMode::kOnlyIfCached
                  : mojom::FetchCacheMode::kForceCache;
-    case kFrameLoadTypeReload:
+    case WebFrameLoadType::kReload:
       return resource_type == ResourceType::kIsMainResource
                  ? mojom::FetchCacheMode::kValidateCache
                  : mojom::FetchCacheMode::kDefault;
-    case kFrameLoadTypeReloadBypassingCache:
+    case WebFrameLoadType::kReloadBypassingCache:
       return mojom::FetchCacheMode::kBypassCache;
   }
   NOTREACHED();
@@ -185,7 +185,7 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
 
   // Does not propagate cache policy for subresources after the load event.
   // TODO(toyoshim): We should be able to remove following parents' policy check
-  // if each frame has a relevant FrameLoadType for reload and history
+  // if each frame has a relevant WebFrameLoadType for reload and history
   // navigations.
   if (resource_type == ResourceType::kIsNotMainResource &&
       ToLocalFrame(frame)->GetDocument()->LoadEventFinished()) {
@@ -193,9 +193,9 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
   }
 
   // Respects BypassingCache rather than parent's policy.
-  FrameLoadType load_type =
+  WebFrameLoadType load_type =
       ToLocalFrame(frame)->Loader().GetDocumentLoader()->LoadType();
-  if (load_type == kFrameLoadTypeReloadBypassingCache)
+  if (load_type == WebFrameLoadType::kReloadBypassingCache)
     return mojom::FetchCacheMode::kBypassCache;
 
   // Respects parent's policy if it has a special one.
@@ -204,7 +204,7 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
   if (parent_cache_mode != mojom::FetchCacheMode::kDefault)
     return parent_cache_mode;
 
-  // Otherwise, follows FrameLoadType. Use kIsNotPost, kIsNotConditional, and
+  // Otherwise, follows WebFrameLoadType. Use kIsNotPost, kIsNotConditional, and
   // kIsNotMainResource to obtain a representative policy for the frame.
   return DetermineCacheMode(RequestMethod::kIsNotPost,
                             RequestType::kIsNotConditional,
@@ -428,9 +428,9 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
                                 : RequestType::kIsNotConditional,
         ResourceType::kIsMainResource, MasterDocumentLoader()->LoadType());
     // Follows the parent frame's policy.
-    // TODO(toyoshim): Probably, FrameLoadType for each frame should have a
+    // TODO(toyoshim): Probably, WebFrameLoadType for each frame should have a
     // right type for reload or history navigations, and should not need to
-    // check parent's frame policy here. Once it has a right FrameLoadType,
+    // check parent's frame policy here. Once it has a right WebFrameLoadType,
     // we can remove Resource::Type argument from determineFrameCacheMode.
     // See also crbug.com/332602.
     if (cache_mode != mojom::FetchCacheMode::kDefault)
@@ -857,7 +857,8 @@ bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
     return false;
   // Do not report iframe navigation that restored from history, since its
   // location may have been changed after initial navigation.
-  if (MasterDocumentLoader()->LoadType() == kFrameLoadTypeInitialHistoryLoad)
+  if (MasterDocumentLoader()->LoadType() ==
+      WebFrameLoadType::kInitialHistoryLoad)
     return false;
   return true;
 }
