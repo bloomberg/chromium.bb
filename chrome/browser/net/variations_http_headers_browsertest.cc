@@ -84,7 +84,39 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
     return it->second.find(header) != it->second.end();
   }
 
+  bool FetchResource(const GURL& url) {
+    if (!url.is_valid())
+      return false;
+    std::string script(
+        "var xhr = new XMLHttpRequest();"
+        "xhr.open('GET', '");
+    script += url.spec() +
+              "', true);"
+              "xhr.onload = function (e) {"
+              "  if (xhr.readyState === 4) {"
+              "    window.domAutomationController.send(xhr.status === 200);"
+              "  }"
+              "};"
+              "xhr.onerror = function () {"
+              "  window.domAutomationController.send(false);"
+              "};"
+              "xhr.send(null)";
+    return ExecuteScript(script);
+  }
+
  private:
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  bool ExecuteScript(const std::string& script) {
+    bool xhr_result = false;
+    // The JS call will fail if disallowed because the process will be killed.
+    bool execute_result =
+        ExecuteScriptAndExtractBool(GetWebContents(), script, &xhr_result);
+    return xhr_result && execute_result;
+  }
+
   // Custom request handler that record request headers and simulates a redirect
   // from google.com to example.com.
   std::unique_ptr<net::test_server::HttpResponse> RequestHandler(
@@ -142,6 +174,7 @@ VariationsHttpHeadersBrowserTest::RequestHandler(
   // --> https://www.google.com:<port>/redirect2
   // --> https://www.example.com:<port>/
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
   if (request.relative_url == GetGoogleRedirectUrl1().path()) {
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", GetGoogleRedirectUrl2().spec());
@@ -218,4 +251,15 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   EXPECT_TRUE(HasReceivedHeader(GetExampleUrl(), "Host"));
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
   */
+}
+
+IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
+                       TestStrippingHeadersFromSubresourceRequest) {
+  GURL url = server()->GetURL("/simple_page.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(FetchResource(GetGoogleRedirectUrl1()));
+  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
+  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl2(), "X-Client-Data"));
+  EXPECT_TRUE(HasReceivedHeader(GetExampleUrl(), "Host"));
+  EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
