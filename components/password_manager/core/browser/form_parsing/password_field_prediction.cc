@@ -12,19 +12,33 @@ using autofill::FormData;
 using autofill::FormStructure;
 using autofill::ServerFieldType;
 
+namespace password_manager {
+
 namespace {
 
 // Returns true if the field is password or username prediction.
 bool IsCredentialRelatedPrediction(ServerFieldType type) {
-  return type == autofill::PASSWORD ||
-         type == autofill::ACCOUNT_CREATION_PASSWORD ||
-         type == autofill::NEW_PASSWORD ||
-         type == autofill::CONFIRMATION_PASSWORD || type == autofill::USERNAME;
+  return DeriveFromServerFieldType(type) != CredentialFieldType::kNone;
 }
 
 }  // namespace
 
-namespace password_manager {
+CredentialFieldType DeriveFromServerFieldType(ServerFieldType type) {
+  switch (type) {
+    case autofill::USERNAME:
+    case autofill::USERNAME_AND_EMAIL_ADDRESS:
+      return CredentialFieldType::kUsername;
+    case autofill::PASSWORD:
+      return CredentialFieldType::kCurrentPassword;
+    case autofill::ACCOUNT_CREATION_PASSWORD:
+    case autofill::NEW_PASSWORD:
+      return CredentialFieldType::kNewPassword;
+    case autofill::CONFIRMATION_PASSWORD:
+      return CredentialFieldType::kConfirmationPassword;
+    default:
+      return CredentialFieldType::kNone;
+  }
+}
 
 FormPredictions ConvertToFormPredictions(const FormData& observed_form,
                                          const FormStructure& form_structure) {

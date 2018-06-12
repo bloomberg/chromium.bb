@@ -17,6 +17,18 @@ class FormStructure;
 
 namespace password_manager {
 
+enum class CredentialFieldType {
+  kNone,
+  kUsername,
+  kCurrentPassword,
+  kNewPassword,
+  kConfirmationPassword
+};
+
+// Transforms the general field type to the information useful for password
+// forms.
+CredentialFieldType DeriveFromServerFieldType(autofill::ServerFieldType type);
+
 // Contains server predictions for a field.
 // This is the struct rather than using because it will be expanded soon with
 // additional information.

@@ -12,15 +12,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::AutofillField;
+using autofill::ACCOUNT_CREATION_PASSWORD;
 using autofill::CONFIRMATION_PASSWORD;
 using autofill::EMAIL_ADDRESS;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormStructure;
+using autofill::NEW_PASSWORD;
+using autofill::NO_SERVER_DATA;
 using autofill::PASSWORD;
 using autofill::ServerFieldType;
 using autofill::UNKNOWN_TYPE;
 using autofill::USERNAME;
+using autofill::USERNAME_AND_EMAIL_ADDRESS;
 using base::ASCIIToUTF16;
 
 namespace password_manager {
@@ -77,6 +81,33 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       ASSERT_NE(actual_predictions.end(), it);
       EXPECT_EQ(test_fields[i].expected_type, it->second.type);
     }
+  }
+}
+
+TEST(FormPredictionsTest, DeriveFromServerFieldType) {
+  struct TestCase {
+    const char* name;
+    // Input.
+    ServerFieldType server_type;
+    CredentialFieldType expected_result;
+  } test_cases[] = {
+      {"No prediction", NO_SERVER_DATA, CredentialFieldType::kNone},
+      {"Irrelevant type", EMAIL_ADDRESS, CredentialFieldType::kNone},
+      {"Username", USERNAME, CredentialFieldType::kUsername},
+      {"Username/Email", USERNAME_AND_EMAIL_ADDRESS,
+       CredentialFieldType::kUsername},
+      {"Password", PASSWORD, CredentialFieldType::kCurrentPassword},
+      {"New password", NEW_PASSWORD, CredentialFieldType::kNewPassword},
+      {"Account creation password", ACCOUNT_CREATION_PASSWORD,
+       CredentialFieldType::kNewPassword},
+      {"Confirmation password", CONFIRMATION_PASSWORD,
+       CredentialFieldType::kConfirmationPassword},
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    SCOPED_TRACE(test_case.name);
+    EXPECT_EQ(test_case.expected_result,
+              DeriveFromServerFieldType(test_case.server_type));
   }
 }
 
