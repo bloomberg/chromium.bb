@@ -25,7 +25,8 @@ namespace device_sync {
 class CryptAuthAccessTokenFetcherImpl
     : public cryptauth::CryptAuthAccessTokenFetcher {
  public:
-  CryptAuthAccessTokenFetcherImpl(identity::IdentityManager* identity_manager);
+  explicit CryptAuthAccessTokenFetcherImpl(
+      identity::IdentityManager* identity_manager);
 
   ~CryptAuthAccessTokenFetcherImpl() override;
 
@@ -34,8 +35,8 @@ class CryptAuthAccessTokenFetcherImpl
 
  private:
   void InvokeThenClearPendingCallbacks(const std::string& access_token);
-  void OnAccessTokenFetched(const GoogleServiceAuthError& error,
-                            const std::string& access_token);
+  void OnAccessTokenFetched(GoogleServiceAuthError error,
+                            std::string access_token);
 
   identity::IdentityManager* identity_manager_;
 

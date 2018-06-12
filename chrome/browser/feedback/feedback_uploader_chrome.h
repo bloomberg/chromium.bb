@@ -31,8 +31,8 @@ class FeedbackUploaderChrome : public FeedbackUploader {
   void StartDispatchingReport() override;
   void AppendExtraHeadersToUploadRequest(net::URLFetcher* fetcher) override;
 
-  void AccessTokenAvailable(const GoogleServiceAuthError& error,
-                            const std::string& access_token);
+  void AccessTokenAvailable(GoogleServiceAuthError error,
+                            std::string access_token);
 
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 

@@ -27,12 +27,10 @@ FeedbackUploaderChrome::FeedbackUploaderChrome(
 
 FeedbackUploaderChrome::~FeedbackUploaderChrome() = default;
 
-void FeedbackUploaderChrome::AccessTokenAvailable(
-    const GoogleServiceAuthError& error,
-    const std::string& access_token) {
+void FeedbackUploaderChrome::AccessTokenAvailable(GoogleServiceAuthError error,
+                                                  std::string access_token) {
   DCHECK(token_fetcher_);
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      token_fetcher_deleter(std::move(token_fetcher_));
+  token_fetcher_.reset();
   if (error.state() == GoogleServiceAuthError::NONE) {
     DCHECK(!access_token.empty());
     access_token_ = access_token;

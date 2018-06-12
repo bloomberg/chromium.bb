@@ -305,12 +305,10 @@ void SyncAuthManager::RequestAccessToken() {
               kWaitUntilAvailable);
 }
 
-void SyncAuthManager::AccessTokenFetched(const GoogleServiceAuthError& error,
-                                         const std::string& access_token) {
+void SyncAuthManager::AccessTokenFetched(GoogleServiceAuthError error,
+                                         std::string access_token) {
   DCHECK(ongoing_access_token_fetch_);
-
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> fetcher_deleter(
-      std::move(ongoing_access_token_fetch_));
+  ongoing_access_token_fetch_.reset();
 
   access_token_ = access_token;
   token_status_.last_get_token_error = error;

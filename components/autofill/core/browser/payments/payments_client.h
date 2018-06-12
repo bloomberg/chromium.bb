@@ -167,8 +167,8 @@ class PaymentsClient : public net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // Callback that handles a completed access token request.
-  void AccessTokenFetchFinished(const GoogleServiceAuthError& error,
-                                const std::string& access_token);
+  void AccessTokenFetchFinished(GoogleServiceAuthError error,
+                                std::string access_token);
 
   // Handles a completed access token request in the case of failure.
   void AccessTokenError(const GoogleServiceAuthError& error);

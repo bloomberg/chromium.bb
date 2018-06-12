@@ -101,8 +101,8 @@ class RequestImpl : public WebHistoryService::Request {
     DCHECK(url_loader_factory_);
   }
 
-  void OnAccessTokenFetchComplete(const GoogleServiceAuthError& error,
-                                  const std::string& access_token) {
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  std::string access_token) {
     access_token_fetcher_.reset();
 
     if (error.state() != GoogleServiceAuthError::NONE) {

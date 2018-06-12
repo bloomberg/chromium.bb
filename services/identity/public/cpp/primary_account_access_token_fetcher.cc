@@ -99,8 +99,9 @@ void PrimaryAccountAccessTokenFetcher::OnGetTokenSuccess(
   std::unique_ptr<OAuth2TokenService::Request> request_deleter(
       std::move(access_token_request_));
 
-  std::move(callback_).Run(GoogleServiceAuthError::AuthErrorNone(),
-                           access_token);
+  RunCallbackAndMaybeDie(GoogleServiceAuthError::AuthErrorNone(), access_token);
+
+  // Potentially dead after the above invocation; nothing to do except return.
 }
 
 void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
@@ -129,7 +130,18 @@ void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
     return;
   }
 
-  std::move(callback_).Run(error, std::string());
+  RunCallbackAndMaybeDie(error, std::string());
+
+  // Potentially dead after the above invocation; nothing to do except return.
+}
+
+void PrimaryAccountAccessTokenFetcher::RunCallbackAndMaybeDie(
+    const GoogleServiceAuthError& error,
+    const std::string& access_token) {
+  // Per the contract of this class, it is allowed for consumers to delete this
+  // object from within the callback that is run below. Hence, it is not safe to
+  // add any code below this call.
+  std::move(callback_).Run(error, access_token);
 }
 
 }  // namespace identity

@@ -668,14 +668,10 @@ void PaymentsClient::OnURLFetchComplete(const net::URLFetcher* source) {
   request_->RespondToDelegate(result);
 }
 
-void PaymentsClient::AccessTokenFetchFinished(
-    const GoogleServiceAuthError& error,
-    const std::string& access_token) {
-  // Delete the fetcher only after we leave this method (which is called from
-  // the fetcher itself).
+void PaymentsClient::AccessTokenFetchFinished(GoogleServiceAuthError error,
+                                              std::string access_token) {
   DCHECK(token_fetcher_);
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      token_fetcher_deleter(std::move(token_fetcher_));
+  token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     AccessTokenError(error);

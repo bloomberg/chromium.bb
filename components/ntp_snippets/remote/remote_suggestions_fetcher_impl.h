@@ -79,8 +79,8 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
 
   void StartTokenRequest();
 
-  void AccessTokenFetchFinished(const GoogleServiceAuthError& error,
-                                const std::string& access_token);
+  void AccessTokenFetchFinished(GoogleServiceAuthError error,
+                                std::string access_token);
   void AccessTokenError(const GoogleServiceAuthError& error);
 
   void JsonRequestDone(std::unique_ptr<internal::JsonRequest> request,

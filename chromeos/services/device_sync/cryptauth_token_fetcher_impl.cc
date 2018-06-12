@@ -56,15 +56,9 @@ void CryptAuthAccessTokenFetcherImpl::InvokeThenClearPendingCallbacks(
 }
 
 void CryptAuthAccessTokenFetcherImpl::OnAccessTokenFetched(
-    const GoogleServiceAuthError& error,
-    const std::string& access_token) {
-  // Move |access_token_fetcher_| to a temporary std::unique_ptr so that it is
-  // deleted at the end of this function. This is done instead of deleting
-  // |access_token_fetcher_| at the end of this function to ensure that if any
-  // observers invoke FetchAccessToken(), a new object will be created.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      token_fetcher_deleter = std::move(access_token_fetcher_);
-
+    GoogleServiceAuthError error,
+    std::string access_token) {
+  access_token_fetcher_.reset();
   InvokeThenClearPendingCallbacks(
       error == GoogleServiceAuthError::AuthErrorNone() ? access_token
                                                        : std::string());
