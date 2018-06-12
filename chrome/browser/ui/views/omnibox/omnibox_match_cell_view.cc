@@ -85,8 +85,10 @@ int GetIconAlignmentOffset() {
 
   // The touch-optimized popup selection always fills the results frame. So to
   // align icons, inset additionally by the frame alignment inset on the left.
-  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    offset += RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets.left();
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+    offset +=
+        RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets().left();
+  }
   return offset;
 }
 

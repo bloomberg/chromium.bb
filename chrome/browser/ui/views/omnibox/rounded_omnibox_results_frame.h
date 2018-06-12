@@ -16,9 +16,6 @@ enum class OmniboxTint;
 // A class that wraps a Widget's content view to provide a custom results frame.
 class RoundedOmniboxResultsFrame : public views::View {
  public:
-  // How the Widget is aligned relative to the location bar.
-  static constexpr gfx::Insets kLocationBarAlignmentInsets = gfx::Insets(4);
-
   RoundedOmniboxResultsFrame(views::View* contents, OmniboxTint tint);
   ~RoundedOmniboxResultsFrame() override;
 
@@ -27,6 +24,9 @@ class RoundedOmniboxResultsFrame : public views::View {
 
   // The height of the location bar view part of the omnibox popup.
   static int GetNonResultSectionHeight();
+
+  // How the Widget is aligned relative to the location bar.
+  static gfx::Insets GetLocationBarAlignmentInsets();
 
   // views::View:
   const char* GetClassName() const override;
