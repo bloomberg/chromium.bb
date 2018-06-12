@@ -300,7 +300,6 @@
   'aura_gtests': {
     'aura_unittests': {},
     'compositor_unittests': {},
-    'keyboard_unittests': {},
     'wm_unittests': {},
   },
 
@@ -1800,6 +1799,7 @@
     'aura_unittests': {},
     'chromeos_components_unittests': {},
     'chromeos_unittests': {},
+    'keyboard_unittests': {},
     'ui_chromeos_unittests': {},
   },
 

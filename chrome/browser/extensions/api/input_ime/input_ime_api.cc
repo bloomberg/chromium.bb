@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
@@ -229,20 +228,17 @@ std::string ImeObserver::ConvertInputContextType(
 
 bool ImeObserver::ConvertInputContextAutoCorrect(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
-  return keyboard::GetKeyboardConfig().auto_correct &&
-         !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
+  return !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
 }
 
 bool ImeObserver::ConvertInputContextAutoComplete(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
-  return keyboard::GetKeyboardConfig().auto_complete &&
-         !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCOMPLETE_OFF);
+  return !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCOMPLETE_OFF);
 }
 
 bool ImeObserver::ConvertInputContextSpellCheck(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
-  return keyboard::GetKeyboardConfig().spell_check &&
-         !(input_context.flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF);
+  return !(input_context.flags & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF);
 }
 
 }  // namespace ui

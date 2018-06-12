@@ -9,6 +9,8 @@ import("//third_party/google_input_tools/closure.gni")
 import("//third_party/google_input_tools/inputview.gni")
 import("//tools/grit/grit_rule.gni")
 
+assert(is_chromeos)
+
 jumbo_component("keyboard") {
   sources = [
     "container_behavior.h",

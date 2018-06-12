@@ -393,6 +393,7 @@ group("gn_all") {
       "//chromeos/services:chromeos_services_unittests",
       "//components/session_manager/core",
       "//ui/chromeos:ui_chromeos_unittests",
+      "//ui/keyboard:keyboard_unittests",
     ]
   }
 
@@ -543,7 +544,6 @@ group("gn_all") {
         "//skia:filter_fuzz_stub",
         "//skia:image_operations_bench",
         "//third_party/sqlite:sqlite_shell",
-        "//ui/keyboard:keyboard_unittests",
         "//ui/snapshot:snapshot_unittests",
       ]
 

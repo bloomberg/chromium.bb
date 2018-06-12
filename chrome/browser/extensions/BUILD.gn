@@ -1010,6 +1010,8 @@ static_library("extensions") {
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/file_manager",
+      "//ui/keyboard",
+      "//ui/keyboard:resources",
       "//ui/ozone",
       "//ui/views",
     ]
@@ -1148,11 +1150,7 @@ static_library("extensions") {
   }
 
   if (use_aura) {
-    deps += [
-      "//ui/aura",
-      "//ui/keyboard",
-      "//ui/keyboard:resources",
-    ]
+    deps += [ "//ui/aura" ]
   }
 
   if (use_brlapi) {

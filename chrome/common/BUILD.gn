@@ -384,8 +384,7 @@ static_library("common") {
         "extensions/api/input_ime/input_components_handler.cc",
         "extensions/api/input_ime/input_components_handler.h",
       ]
-    }
-    if (use_aura) {
+
       # This dependency is for a header used only by extensions code.
       public_deps += [ "//ui/keyboard:keyboard" ]
     }

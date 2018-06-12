@@ -1779,12 +1779,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "keyboard_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "wayland_client_perftests"
       },
       {
@@ -3114,12 +3108,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "keyboard_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "leveldb_service_unittests"
       },
       {
@@ -4159,12 +4147,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "keyboard_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "latency_unittests"
       },
       {
@@ -5086,12 +5068,6 @@
           "can_use_on_swarming_builders": false
         },
         "test": "jingle_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "keyboard_unittests"
       },
       {
         "swarming": {
@@ -6476,12 +6452,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "jingle_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "keyboard_unittests"
       },
       {
         "swarming": {

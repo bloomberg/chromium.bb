@@ -302,6 +302,27 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     }
   }
 
+  bool ConvertInputContextAutoCorrect(
+      ui::IMEEngineHandlerInterface::InputContext input_context) override {
+    if (!keyboard::GetKeyboardConfig().auto_correct)
+      return false;
+    return ImeObserver::ConvertInputContextAutoCorrect(input_context);
+  }
+
+  bool ConvertInputContextAutoComplete(
+      ui::IMEEngineHandlerInterface::InputContext input_context) override {
+    if (!keyboard::GetKeyboardConfig().auto_complete)
+      return false;
+    return ImeObserver::ConvertInputContextAutoComplete(input_context);
+  }
+
+  bool ConvertInputContextSpellCheck(
+      ui::IMEEngineHandlerInterface::InputContext input_context) override {
+    if (!keyboard::GetKeyboardConfig().spell_check)
+      return false;
+    return ImeObserver::ConvertInputContextSpellCheck(input_context);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(ImeObserverChromeOS);
 };
 

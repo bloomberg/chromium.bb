@@ -37,9 +37,12 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/keyboard/keyboard_controller.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
