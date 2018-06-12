@@ -392,7 +392,6 @@ void RuleBasedHostResolverProc::ClearRules() {
 }
 
 void RuleBasedHostResolverProc::DisableModifications() {
-  CHECK(modifications_allowed_);
   modifications_allowed_ = false;
 }
 

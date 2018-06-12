@@ -28,6 +28,7 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -332,6 +333,28 @@ bool BrowserTestBase::AllowFileAccessFromFiles() const {
   return true;
 }
 
+void BrowserTestBase::SimulateNetworkServiceCrash() {
+  CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  CHECK(!IsNetworkServiceRunningInProcess())
+      << "Can't crash the network service if it's running in-process!";
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  network_service_test.set_connection_error_handler(run_loop.QuitClosure());
+
+  network_service_test->SimulateCrash();
+  run_loop.Run();
+
+  // Make sure the cached NetworkServicePtr receives error notification.
+  FlushNetworkServiceInstanceForTesting();
+
+  // Need to re-initialize the network process.
+  initialized_network_process_ = false;
+  InitializeNetworkProcess();
+}
+
 void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
   g_browser_process_pid = base::GetCurrentProcId();
@@ -461,8 +484,9 @@ void BrowserTestBase::InitializeNetworkProcess() {
   // Send the host resolver rules to the network service if it's in use. No need
   // to do this if it's running in the browser process though.
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsNetworkServiceRunningInProcess())
+      IsNetworkServiceRunningInProcess()) {
     return;
+  }
 
   net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
   std::vector<network::mojom::RulePtr> mojo_rules;

@@ -490,7 +490,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   // complete, hopefully it happens before the cache has been cleared.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce([]() { content::SimulateNetworkServiceCrash(); }));
+      base::BindOnce(&content::BrowserTestBase::SimulateNetworkServiceCrash,
+                     base::Unretained(this)));
 
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
 }
