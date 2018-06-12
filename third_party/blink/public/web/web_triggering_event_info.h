@@ -21,7 +21,7 @@ enum class WebTriggeringEventInfo {
   // The navigation was triggered via a JS event with isTrusted() == false.
   kFromUntrustedEvent,
 
-  kLast,
+  kMaxValue = kFromUntrustedEvent,
 };
 
 }  // namespace blink

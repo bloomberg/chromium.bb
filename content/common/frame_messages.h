@@ -137,7 +137,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyFeature,
 IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDisposition,
                           content::CSPDisposition::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTriggeringEventInfo,
-                          blink::WebTriggeringEventInfo::kLast)
+                          blink::WebTriggeringEventInfo::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
 
