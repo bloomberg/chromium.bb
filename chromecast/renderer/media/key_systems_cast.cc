@@ -161,6 +161,7 @@ void AddCmaKeySystems(
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
       supported_encryption_schemes,          // Encryption schemes.
       codecs,                                // Regular codecs.
+      codecs,                                // Hardware secure codecs.
       Robustness::HW_SECURE_ALL,             // Max audio robustness.
       Robustness::HW_SECURE_ALL,             // Max video robustness.
       EmeSessionTypeSupport::SUPPORTED,      // persistent-license.

@@ -27,8 +27,8 @@ namespace media {
 // These are the (fake) key systems that are registered for these tests.
 // kUsesAes uses the AesDecryptor like Clear Key.
 // kExternal uses an external CDM, such as library CDM or Android platform CDM.
-const char kUsesAes[] = "x-org.example.clear";
-const char kExternal[] = "x-com.example.test";
+const char kUsesAes[] = "x-org.example.usesaes";
+const char kExternal[] = "x-com.example.external";
 
 const char kClearKey[] = "org.w3.clearkey";
 const char kExternalClearKey[] = "org.chromium.externalclearkey";
@@ -42,13 +42,16 @@ const char kRobustnessSupported[] = "supported";
 const char kRobustnessSecureCodecsRequired[] = "secure-codecs-required";
 const char kRobustnessNotSupported[] = "not-supported";
 
-// Pick some arbitrary bit fields as long as they are not in conflict with the
-// real ones.
+// Codecs only supported in FOO container. Pick some arbitrary bit fields as
+// long as they are not in conflict with the real ones (static_asserted below).
+// TODO(crbug.com/724362): Remove container type (FOO) from codec enums.
 enum TestCodec : uint32_t {
-  TEST_CODEC_FOO_AUDIO = 1 << 29,  // An audio codec for foo container.
+  TEST_CODEC_FOO_AUDIO = 1 << 25,
   TEST_CODEC_FOO_AUDIO_ALL = TEST_CODEC_FOO_AUDIO,
-  TEST_CODEC_FOO_VIDEO = 1 << 30,  // A video codec for foo container.
-  TEST_CODEC_FOO_VIDEO_ALL = TEST_CODEC_FOO_VIDEO,
+  TEST_CODEC_FOO_VIDEO = 1 << 26,
+  // Only supported by hardware secure codec in kExternal key system.
+  TEST_CODEC_FOO_SECURE_VIDEO = 1 << 27,
+  TEST_CODEC_FOO_VIDEO_ALL = TEST_CODEC_FOO_VIDEO | TEST_CODEC_FOO_SECURE_VIDEO,
   TEST_CODEC_FOO_ALL = TEST_CODEC_FOO_AUDIO_ALL | TEST_CODEC_FOO_VIDEO_ALL
 };
 
@@ -62,8 +65,9 @@ class TestKeySystemPropertiesBase : public KeySystemProperties {
     return init_data_type == EmeInitDataType::WEBM;
   }
 
+  // Note: TEST_CODEC_FOO_SECURE_VIDEO is not supported by default.
   SupportedCodecs GetSupportedCodecs() const override {
-    return EME_CODEC_WEBM_ALL | TEST_CODEC_FOO_ALL;
+    return EME_CODEC_WEBM_ALL | TEST_CODEC_FOO_AUDIO | TEST_CODEC_FOO_VIDEO;
   }
 
   EmeConfigRule GetRobustnessConfigRule(
@@ -118,12 +122,10 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
     return encryption_scheme != EncryptionMode::kUnencrypted;
   }
 
-#if defined(OS_ANDROID)
-  // We have hw-secure FOO_VIDEO codec support.
+  // We have hardware secure codec support for FOO_VIDEO and FOO_SECURE_VIDEO.
   SupportedCodecs GetSupportedSecureCodecs() const override {
-    return TEST_CODEC_FOO_VIDEO;
+    return TEST_CODEC_FOO_VIDEO | TEST_CODEC_FOO_SECURE_VIDEO;
   }
-#endif
 
   EmeConfigRule GetRobustnessConfigRule(
       EmeMediaType media_type,
@@ -213,6 +215,8 @@ static void AddContainerAndCodecMasksForTest() {
 
   AddCodecMask(EmeMediaType::AUDIO, "fooaudio", TEST_CODEC_FOO_AUDIO);
   AddCodecMask(EmeMediaType::VIDEO, "foovideo", TEST_CODEC_FOO_VIDEO);
+  AddCodecMask(EmeMediaType::VIDEO, "securefoovideo",
+               TEST_CODEC_FOO_SECURE_VIDEO);
   AddMimeTypeCodecMask("audio/foo", TEST_CODEC_FOO_AUDIO_ALL);
   AddMimeTypeCodecMask("video/foo", TEST_CODEC_FOO_VIDEO_ALL);
 
@@ -319,6 +323,8 @@ class KeySystemsTest : public testing::Test {
 
     foovideo_codec_.push_back("foovideo");
 
+    securefoovideo_codec_.push_back("securefoovideo");
+
     // KeySystems only do strict codec string comparison. Extended codecs are
     // not supported. Note that in production KeySystemConfigSelector will strip
     // codec extension before calling into KeySystems.
@@ -371,6 +377,9 @@ class KeySystemsTest : public testing::Test {
   }
 
   const CodecVector& foovideo_codec() const { return foovideo_codec_; }
+  const CodecVector& securefoovideo_codec() const {
+    return securefoovideo_codec_;
+  }
   const CodecVector& foovideo_extended_codec() const {
     return foovideo_extended_codec_;
   }
@@ -395,6 +404,7 @@ class KeySystemsTest : public testing::Test {
   CodecVector vp9_and_vorbis_codecs_;
 
   CodecVector foovideo_codec_;
+  CodecVector securefoovideo_codec_;
   CodecVector foovideo_extended_codec_;
   CodecVector foovideo_dot_codec_;
   CodecVector fooaudio_codec_;
@@ -769,7 +779,6 @@ TEST_F(KeySystemsTest, GetContentTypeConfigRule) {
             GetRobustnessConfigRule(kRobustnessSecureCodecsRequired));
 }
 
-#if defined(OS_ANDROID)
 TEST_F(KeySystemsTest, HardwareSecureCodecs) {
   if (!CanRunExternalKeySystemTests())
     return;
@@ -779,13 +788,22 @@ TEST_F(KeySystemsTest, HardwareSecureCodecs) {
   EXPECT_EQ(
       EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED,
       GetVideoContentTypeConfigRule(kVideoFoo, foovideo_codec(), kUsesAes));
+  EXPECT_EQ(EmeConfigRule::NOT_SUPPORTED,
+            GetVideoContentTypeConfigRule(kVideoFoo, securefoovideo_codec(),
+                                          kUsesAes));
 
   EXPECT_EQ(EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED,
             GetVideoContentTypeConfigRule(kVideoWebM, vp8_codec(), kExternal));
   EXPECT_EQ(
       EmeConfigRule::SUPPORTED,
       GetVideoContentTypeConfigRule(kVideoFoo, foovideo_codec(), kExternal));
+
+  // Codec that is supported by hardware secure codec but not otherwise is
+  // treated as NOT_SUPPORTED instead of HW_SECURE_CODECS_REQUIRED. See
+  // KeySystemsImpl::GetContentTypeConfigRule() for details.
+  EXPECT_EQ(EmeConfigRule::NOT_SUPPORTED,
+            GetVideoContentTypeConfigRule(kVideoFoo, securefoovideo_codec(),
+                                          kExternal));
 }
-#endif
 
 }  // namespace media

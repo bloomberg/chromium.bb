@@ -4,16 +4,11 @@
 
 #include "media/base/key_system_properties.h"
 
-#include "base/logging.h"
-#include "media/media_buildflags.h"
-
 namespace media {
 
-#if defined(OS_ANDROID)
 SupportedCodecs KeySystemProperties::GetSupportedSecureCodecs() const {
   return EME_CODEC_NONE;
 }
-#endif
 
 bool KeySystemProperties::UseAesDecryptor() const {
   return false;

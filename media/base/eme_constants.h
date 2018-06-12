@@ -153,29 +153,38 @@ enum class EmeMediaType {
 enum class EmeConfigRule {
   // The configuration option is not supported.
   NOT_SUPPORTED,
+
   // The configuration option prevents use of a distinctive identifier.
   IDENTIFIER_NOT_ALLOWED,
+
   // The configuration option is supported if a distinctive identifier is
   // available.
   IDENTIFIER_REQUIRED,
+
   // The configuration option is supported, but the user experience may be
   // improved if a distinctive identifier is available.
   IDENTIFIER_RECOMMENDED,
+
   // The configuration option prevents use of persistent state.
   PERSISTENCE_NOT_ALLOWED,
+
   // The configuration option is supported if persistent state is available.
   PERSISTENCE_REQUIRED,
+
   // The configuration option is supported if both a distinctive identifier and
   // persistent state are available.
   IDENTIFIER_AND_PERSISTENCE_REQUIRED,
+
   // The configuration option prevents use of hardware-secure codecs.
   // This rule only has meaning on platforms that distinguish hardware-secure
-  // codecs (ie. Android).
+  // codecs (i.e. Android and Windows).
   HW_SECURE_CODECS_NOT_ALLOWED,
+
   // The configuration option is supported if hardware-secure codecs are used.
   // This rule only has meaning on platforms that distinguish hardware-secure
-  // codecs (ie. Android).
+  // codecs (i.e. Android and Windows).
   HW_SECURE_CODECS_REQUIRED,
+
   // The configuration option is supported without conditions.
   SUPPORTED,
 };

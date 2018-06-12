@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "build/build_config.h"
 #include "media/base/key_system_properties.h"
 
 namespace cdm {
@@ -32,9 +31,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
   WidevineKeySystemProperties(
       base::flat_set<media::EncryptionMode> supported_encryption_schemes,
       media::SupportedCodecs supported_codecs,
-#if defined(OS_ANDROID)
       media::SupportedCodecs supported_secure_codecs,
-#endif  // defined(OS_ANDROID)
       Robustness max_audio_robustness,
       Robustness max_video_robustness,
       media::EmeSessionTypeSupport persistent_license_support,
@@ -50,9 +47,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
       media::EncryptionMode encryption_scheme) const override;
 
   media::SupportedCodecs GetSupportedCodecs() const override;
-#if defined(OS_ANDROID)
   media::SupportedCodecs GetSupportedSecureCodecs() const override;
-#endif
 
   media::EmeConfigRule GetRobustnessConfigRule(
       media::EmeMediaType media_type,
@@ -67,9 +62,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
  private:
   const base::flat_set<media::EncryptionMode> supported_encryption_schemes_;
   const media::SupportedCodecs supported_codecs_;
-#if defined(OS_ANDROID)
   const media::SupportedCodecs supported_secure_codecs_;
-#endif  // defined(OS_ANDROID)
   const Robustness max_audio_robustness_;
   const Robustness max_video_robustness_;
   const media::EmeSessionTypeSupport persistent_license_support_;

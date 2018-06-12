@@ -17,8 +17,8 @@ struct CdmConfig {
   // Allow access to persistent state.
   bool allow_persistent_state = false;
 
-  // Use hardware-secure codecs. This flag is only used on Android, it should
-  // always be false on other platforms.
+  // Use hardware-secure codecs. This flag is only used on Android and Windows,
+  // it should always be false on other platforms.
   bool use_hw_secure_codecs = false;
 };
 
