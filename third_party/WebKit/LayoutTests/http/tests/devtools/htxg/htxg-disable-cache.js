@@ -7,7 +7,7 @@
   const outerUrl =
       'http://localhost:8000/loading/htxg/resources/htxg-location.sxg';
   const certUrl =
-      'http://localhost:8000/loading/htxg/resources/127.0.0.1.pem.cbor';
+      'http://localhost:8000/loading/htxg/resources/127.0.0.1.sxg.pem.cbor';
   const innerUrl = 'https://www.127.0.0.1/test.html';
 
   await TestRunner.loadModule('network_test_runner');

@@ -251,6 +251,8 @@ class Port(object):
             #   base64
             #
             fingerprint = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
+            # Add one for 127.0.0.1.sxg.pem
+            fingerprint += ',55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
             flags += [
                 '--run-web-tests',
                 '--ignore-certificate-errors-spki-list=' + fingerprint,

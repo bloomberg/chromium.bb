@@ -99,6 +99,9 @@ index 5b571c0..223a18b 100644
 8. git commit -a
 9. git cl upload, etc.
 
+Please refer to third_party/WebKit/LayoutTests/http/tests/loading/htxg/resources/README.md
+for how to update the 127.0.0.1.sxg.* files.
+
 TODO(tkent): Make a script to re-generate keys and certificates.
 
 **
