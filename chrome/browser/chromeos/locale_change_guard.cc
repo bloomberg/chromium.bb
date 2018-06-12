@@ -94,11 +94,6 @@ void LocaleChangeGuard::RevertLocaleChange() {
   chrome::AttemptUserExit();
 }
 
-void LocaleChangeGuard::RevertLocaleChangeCallback(
-    const base::ListValue* list) {
-  RevertLocaleChange();
-}
-
 void LocaleChangeGuard::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {

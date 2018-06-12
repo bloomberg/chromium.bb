@@ -31,8 +31,6 @@ class Label;
 
 namespace chromeos {
 
-class NetworkState;
-
 namespace internal {
 class ProviderTypeComboboxModel;
 class VpnServerCACertComboboxModel;
@@ -79,7 +77,6 @@ class VPNConfigView : public ChildNetworkConfigView,
   // Callback to initialize fields from uncached network properties.
   void InitFromProperties(const std::string& service_path,
                           const base::DictionaryValue& dictionary);
-  void ParseUIProperties(const NetworkState* vpn);
   void GetPropertiesError(const std::string& error_name,
                           std::unique_ptr<base::DictionaryValue> error_data);
 
@@ -128,13 +125,6 @@ class VPNConfigView : public ChildNetworkConfigView,
   bool GetSaveCredentials() const;
   int GetProviderTypeIndex() const;
   std::string GetProviderTypeString() const;
-
-  // Parses a VPN UI |property| from the given |network|. |key| is the property
-  // name within the type-specific VPN subdictionary named |dict_key|.
-  void ParseVPNUIProperty(const NetworkState* network,
-                          const std::string& dict_key,
-                          const std::string& key,
-                          NetworkPropertyUIData* property_ui_data);
 
   base::string16 service_name_from_server_;
   bool service_text_modified_;

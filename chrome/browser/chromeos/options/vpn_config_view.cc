@@ -78,20 +78,6 @@ int ProviderTypeToIndex(const std::string& provider_type,
   }
 }
 
-// Translates the provider type to the name of the respective ONC dictionary
-// containing configuration data for the type.
-std::string ProviderTypeIndexToONCDictKey(int provider_type_index) {
-  switch (provider_type_index) {
-    case PROVIDER_TYPE_INDEX_L2TP_IPSEC_PSK:
-    case PROVIDER_TYPE_INDEX_L2TP_IPSEC_USER_CERT:
-      return onc::vpn::kIPsec;
-    case PROVIDER_TYPE_INDEX_OPEN_VPN:
-      return onc::vpn::kOpenVPN;
-  }
-  NOTREACHED() << "Unhandled provider type index " << provider_type_index;
-  return std::string();
-}
-
 std::string GetPemFromDictionary(
     const base::DictionaryValue* provider_properties,
     const std::string& key) {
@@ -791,34 +777,6 @@ void VPNConfigView::InitFromProperties(
   UpdateCanLogin();
 }
 
-void VPNConfigView::ParseUIProperties(const NetworkState* vpn) {
-  std::string type_dict_name =
-      ProviderTypeIndexToONCDictKey(provider_type_index_);
-  if (provider_type_index_ == PROVIDER_TYPE_INDEX_L2TP_IPSEC_PSK) {
-    ParseVPNUIProperty(vpn, type_dict_name, ::onc::ipsec::kServerCARef,
-                       &ca_cert_ui_data_);
-    ParseVPNUIProperty(vpn, type_dict_name, ::onc::ipsec::kPSK,
-                       &psk_passphrase_ui_data_);
-    ParseVPNUIProperty(vpn, type_dict_name, ::onc::ipsec::kGroup,
-                       &group_name_ui_data_);
-  } else if (provider_type_index_ == PROVIDER_TYPE_INDEX_OPEN_VPN) {
-    ParseVPNUIProperty(vpn, type_dict_name, ::onc::openvpn::kServerCARef,
-                       &ca_cert_ui_data_);
-  }
-  ParseVPNUIProperty(vpn, type_dict_name, ::onc::client_cert::kClientCertRef,
-                     &user_cert_ui_data_);
-
-  const std::string credentials_dict_name(
-      provider_type_index_ == PROVIDER_TYPE_INDEX_L2TP_IPSEC_PSK ?
-      ::onc::vpn::kL2TP : type_dict_name);
-  ParseVPNUIProperty(vpn, credentials_dict_name, ::onc::vpn::kUsername,
-                     &username_ui_data_);
-  ParseVPNUIProperty(vpn, credentials_dict_name, ::onc::vpn::kPassword,
-                     &user_passphrase_ui_data_);
-  ParseVPNUIProperty(vpn, credentials_dict_name, ::onc::vpn::kSaveCredentials,
-                     &save_credentials_ui_data_);
-}
-
 void VPNConfigView::GetPropertiesError(
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
@@ -1067,25 +1025,6 @@ const std::string VPNConfigView::GetPassphraseFromField(
   if (!textfield)
     return std::string();
   return textfield->GetPassphrase();
-}
-
-void VPNConfigView::ParseVPNUIProperty(
-    const NetworkState* network,
-    const std::string& dict_key,
-    const std::string& key,
-    NetworkPropertyUIData* property_ui_data) {
-  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
-  const base::DictionaryValue* onc =
-      onc::FindPolicyForActiveUser(network->guid(), &onc_source);
-
-  VLOG_IF(1, !onc) << "No ONC found for VPN network " << network->guid();
-  property_ui_data->ParseOncProperty(
-      onc_source,
-      onc,
-      base::StringPrintf("%s.%s.%s",
-                         ::onc::network_config::kVPN,
-                         dict_key.c_str(),
-                         key.c_str()));
 }
 
 }  // namespace chromeos
