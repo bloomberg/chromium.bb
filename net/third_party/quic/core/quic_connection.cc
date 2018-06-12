@@ -1737,14 +1737,6 @@ void QuicConnection::OnBlockedWriterCanWrite() {
 void QuicConnection::OnCanWrite() {
   DCHECK(!writer_->IsWriteBlocked());
 
-  // TODO(wub): Deprecate this histogram once crbug.com/818040 is fixed.
-  if (!queued_packets_.empty() &&
-      queued_packets_.front().packet_number <
-          sent_packet_manager_.GetLargestSentPacket()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Net.QuicSession.WriteOutOfOrderQueuedPacketAfterClose", !connected_);
-  }
-
   WriteQueuedPackets();
   if (!session_decides_what_to_write()) {
     WritePendingRetransmissions();
