@@ -224,4 +224,29 @@ function MetadataItem() {
    * @public {boolean|undefined}
    */
   this.exifLittleEndian;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.canCopy;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.canDelete;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.canRename;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.canAddChildren;
+
+  /**
+   * @public {boolean|undefined}
+   */
+  this.canShare;
 }
