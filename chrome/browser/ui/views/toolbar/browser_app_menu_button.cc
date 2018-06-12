@@ -233,7 +233,6 @@ void BrowserAppMenuButton::UpdateIcon(bool should_animate) {
           is_touch ? &kBrowserToolsUpdateTouchIcon : &kBrowserToolsUpdateIcon;
       break;
     case AppMenuIconController::IconType::GLOBAL_ERROR:
-    case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
       icon_id =
           is_touch ? &kBrowserToolsErrorTouchIcon : &kBrowserToolsErrorIcon;
       break;

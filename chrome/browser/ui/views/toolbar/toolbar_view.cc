@@ -73,7 +73,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/conflicting_module_view_win.h"
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #endif
 
@@ -652,10 +651,6 @@ void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
   if (!app_menu_button_)
     return;
 
-  // Showing the bubble requires |app_menu_button_| to be in a widget. See
-  // comment in ConflictingModuleView for details.
-  DCHECK(app_menu_button_->GetWidget());
-
   base::string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
   if (type == AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
     accname_app = l10n_util::GetStringFUTF16(
@@ -663,25 +658,6 @@ void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
   }
   app_menu_button_->SetAccessibleName(accname_app);
   app_menu_button_->SetSeverity(type, severity, animate);
-
-  // Keep track of whether we were showing the incompatibility icon before,
-  // so we don't send multiple UMA events for example when multiple Chrome
-  // windows are open.
-  static bool incompatibility_warning_showing = false;
-  // Save the old value before resetting it.
-  bool was_showing = incompatibility_warning_showing;
-  incompatibility_warning_showing = false;
-
-  if (type == AppMenuIconController::IconType::INCOMPATIBILITY_WARNING) {
-    if (!was_showing) {
-      base::RecordAction(UserMetricsAction("ConflictBadge"));
-#if defined(OS_WIN)
-      ConflictingModuleView::MaybeShow(browser_, app_menu_button_);
-#endif
-    }
-    incompatibility_warning_showing = true;
-    return;
-  }
 }
 
 // ToolbarButtonProvider:

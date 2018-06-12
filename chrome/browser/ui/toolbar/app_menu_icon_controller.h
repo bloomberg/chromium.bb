@@ -32,7 +32,6 @@ class AppMenuIconController :
     NONE,
     UPGRADE_NOTIFICATION,
     GLOBAL_ERROR,
-    INCOMPATIBILITY_WARNING,
   };
   enum class Severity {
     NONE,
@@ -67,12 +66,6 @@ class AppMenuIconController :
   void UpdateDelegate();
 
  private:
-#if defined(OS_WIN)
-  // EnumerateModulesModel::Observer:
-  void OnScanCompleted() override;
-  void OnConflictsAcknowledged() override;
-#endif
-
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,

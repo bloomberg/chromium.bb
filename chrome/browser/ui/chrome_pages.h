@@ -59,7 +59,6 @@ void ShowHistory(Browser* browser);
 void ShowDownloads(Browser* browser);
 void ShowExtensions(Browser* browser,
                     const std::string& extension_to_highlight);
-void ShowConflicts(Browser* browser);
 
 // ShowFeedbackPage() uses |browser| to determine the URL of the current tab.
 // |browser| should be NULL if there are no currently open browser windows.

@@ -1034,9 +1034,6 @@ are declared in build/common.gypi.
       </if>
 
       <!-- App menu -->
-      <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
-        Software incompatibility: Learn more
-      </message>
       <if expr="chromeos">
         <message name="IDS_TOGGLE_REQUEST_TABLET_SITE" desc="The toggle to request tablet site on a touch dev.">
           Request tablet site
@@ -4575,16 +4572,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_CONFLICTS_NOT_LOADED_YET" desc="Shown next to a module that has not been loaded into memory yet">
           Not loaded yet
         </message>
-        <if expr="use_titlecase">
-        <message name="IDS_CONFLICTS_LEARN_MORE" desc="The Learn More button in the conflicting module bubble">
-            Learn More
-        </message>
-        </if>
-        <if expr="not use_titlecase">
-        <message name="IDS_CONFLICTS_LEARN_MORE" desc="The Learn More button in the conflicting module bubble">
-            Learn more
-        </message>
-        </if>
       </if> <!-- is_win -->
 
       <!-- Plugin placeholders -->

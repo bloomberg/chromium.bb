@@ -45,10 +45,6 @@
 #include "net/base/url_util.h"
 #include "ui/base/window_open_disposition.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/win/enumerate_modules_model.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -242,14 +238,6 @@ void ShowExtensions(Browser* browser,
     params.url = params.url.ReplaceComponents(replacements);
   }
   ShowSingletonTabOverwritingNTP(browser, std::move(params));
-}
-
-void ShowConflicts(Browser* browser) {
-#if defined(OS_WIN)
-  EnumerateModulesModel::GetInstance()->AcknowledgeConflictNotification();
-#endif
-
-  ShowSingletonTab(browser, GURL(kChromeUIConflictsURL));
 }
 
 void ShowHelp(Browser* browser, HelpSource source) {

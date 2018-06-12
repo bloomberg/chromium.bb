@@ -3955,16 +3955,19 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ConflictBadge">
+  <obsolete>Deprecated as of 6/2018.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="ConflictingModuleNotificationDismissed">
+  <obsolete>Deprecated as of 6/2018.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="ConflictingModuleNotificationShown">
+  <obsolete>Deprecated as of 6/2018.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

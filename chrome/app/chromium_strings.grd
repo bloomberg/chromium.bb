@@ -802,13 +802,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
-      <!-- Chrome Conflicts bubble -->
-      <if expr="is_win">
-        <message name="IDS_OPTIONS_CONFLICTING_MODULE" desc="Shown in a bubble when a conflict has been detected.">
-          Software running on your computer is incompatible with Chromium.
-        </message>
-      </if>
-
       <!-- Chrome OS OOBE Terms of Service screen-->
       <if expr="chromeos">
         <message name="IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING" desc="Subheading at the top of the Terms of Service screen.">

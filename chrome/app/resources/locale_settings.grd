@@ -134,13 +134,6 @@
         55
       </message>
 
-      <if expr="is_win">
-        <!-- The width of the Conflicting Module bubble in characters (See above). -->
-        <message name="IDS_CONFLICTING_MODULE_BUBBLE_WIDTH_CHARS" use_name_for_id="true">
-          46
-        </message>
-      </if>
-
       <if expr="chromeos">
         <!-- The width and height of the Join Wi-Fi network dialog box in -->
         <!-- characters and lines (See above). -->
