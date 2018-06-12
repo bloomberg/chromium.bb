@@ -243,8 +243,9 @@ def PostUploadHook(cl, change, output_api):  # pylint: disable=C0103
     if _ArePaintOrCompositingDirectoriesModified(change):
         results.extend(output_api.EnsureCQIncludeTrybotsAreAdded(
             cl,
-            ['master.tryserver.chromium.linux:'
+            ['luci.chromium.try:'
              'linux_layout_tests_slimming_paint_v2',
+             # TODO(kojii): Update linux_trusty_blink_rel to luci when migrated.
              'master.tryserver.blink:linux_trusty_blink_rel'],
             'Automatically added linux_layout_tests_slimming_paint_v2 and '
             'linux_trusty_blink_rel to run on CQ due to changes in paint or '
@@ -252,7 +253,7 @@ def PostUploadHook(cl, change, output_api):  # pylint: disable=C0103
     if _AreLayoutNGDirectoriesModified(change):
         results.extend(output_api.EnsureCQIncludeTrybotsAreAdded(
             cl,
-            ['master.tryserver.chromium.linux:'
+            ['luci.chromium.try:'
              'linux_layout_tests_layout_ng'],
             'Automatically added linux_layout_tests_layout_ng to run on CQ due '
             'to changes in LayoutNG directories.'))
