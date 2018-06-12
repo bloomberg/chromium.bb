@@ -14,6 +14,7 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_controller_impl.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
@@ -72,16 +73,26 @@ void TtsHandler::OnVoicesChanged() {
   for (const auto& voice : voices) {
     base::DictionaryValue response;
     int language_score = GetVoiceLangMatchScore(&voice, app_locale);
-    std::string language_code = l10n_util::GetLanguage(voice.lang);
+    std::string language_code;
+    // TODO(katie): Find a way to put all these string constants into constants
+    // that can be accessed by the settings web UI as well.
+    if (voice.lang.empty()) {
+      language_code = "noLanguageCode";
+      response.SetPath({"displayLanguage"},
+                       base::Value(l10n_util::GetStringUTF8(
+                           IDS_TEXT_TO_SPEECH_SETTINGS_NO_LANGUAGE)));
+    } else {
+      language_code = l10n_util::GetLanguage(voice.lang);
+      response.SetPath(
+          {"displayLanguage"},
+          base::Value(l10n_util::GetDisplayNameForLocale(
+              language_code, g_browser_process->GetApplicationLocale(), true)));
+    }
     response.SetPath({"name"}, base::Value(voice.name));
     response.SetPath({"languageCode"}, base::Value(language_code));
     response.SetPath({"fullLanguageCode"}, base::Value(voice.lang));
     response.SetPath({"languageScore"}, base::Value(language_score));
     response.SetPath({"extensionId"}, base::Value(voice.extension_id));
-    response.SetPath(
-        {"displayLanguage"},
-        base::Value(l10n_util::GetDisplayNameForLocale(
-            language_code, g_browser_process->GetApplicationLocale(), true)));
     responses.GetList().push_back(std::move(response));
   }
   AllowJavascript();

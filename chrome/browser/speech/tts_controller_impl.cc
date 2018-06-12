@@ -28,8 +28,9 @@ namespace {
 const int kInvalidCharIndex = -1;
 
 #if defined(OS_CHROMEOS)
-bool VoiceMatches(const std::string& voice_id, const VoiceData& voice) {
-  if (voice_id.empty() || voice.name.empty() || voice.extension_id.empty())
+bool VoiceIdMatches(const std::string& voice_id, const VoiceData& voice) {
+  if (voice_id.empty() || voice.name.empty() ||
+      (voice.extension_id.empty() && !voice.native))
     return false;
   std::unique_ptr<base::DictionaryValue> json =
       base::DictionaryValue::From(base::JSONReader::Read(voice_id));
@@ -37,6 +38,8 @@ bool VoiceMatches(const std::string& voice_id, const VoiceData& voice) {
   std::string default_extension_id;
   json->GetString("name", &default_name);
   json->GetString("extension", &default_extension_id);
+  if (voice.native)
+    return default_name == voice.name && default_extension_id.empty();
   return default_name == voice.name &&
          default_extension_id == voice.extension_id;
 }
@@ -506,10 +509,10 @@ int TtsControllerImpl::GetMatchingVoice(
     if (!voice.lang.empty() && !utterance->lang().empty()) {
       // An exact language match is worth more than a partial match.
       if (voice.lang == utterance->lang()) {
-        score += 64;
+        score += 128;
       } else if (l10n_util::GetLanguage(voice.lang) ==
                  l10n_util::GetLanguage(utterance->lang())) {
-        score += 32;
+        score += 64;
       }
     }
 
@@ -517,7 +520,7 @@ int TtsControllerImpl::GetMatchingVoice(
     if (!voice.lang.empty()) {
       if (l10n_util::GetLanguage(voice.lang) ==
           l10n_util::GetLanguage(app_lang))
-        score += 16;
+        score += 32;
     }
 
     // Next, prefer required event types.
@@ -533,33 +536,43 @@ int TtsControllerImpl::GetMatchingVoice(
         }
       }
       if (has_all_required_event_types)
-        score += 8;
+        score += 16;
     }
 
     // Prefer the requested gender.
     if (voice.gender != TTS_GENDER_NONE &&
         utterance->gender() != TTS_GENDER_NONE &&
         voice.gender == utterance->gender()) {
-      score += 4;
+      score += 8;
     }
 
 #if defined(OS_CHROMEOS)
     // Finally, prefer the user's preference voice for the language:
     if (lang_to_voice_pref) {
-      // First prefer the user's preference voice for the utterance language.
+      // First prefer the user's preference voice for the utterance language,
+      // if the utterance language is specified.
+      std::string voice_id;
       if (!utterance->lang().empty()) {
-        std::string voice_id;
         lang_to_voice_pref->GetString(l10n_util::GetLanguage(utterance->lang()),
                                       &voice_id);
-        if (VoiceMatches(voice_id, voice))
-          score += 2;
+        if (VoiceIdMatches(voice_id, voice))
+          score += 4;
       }
 
       // Then prefer the user's preference voice for the system language.
-      std::string voice_id;
+      // This is a lower priority match than the utterance voice.
+      voice_id.clear();
       lang_to_voice_pref->GetString(l10n_util::GetLanguage(app_lang),
                                     &voice_id);
-      if (VoiceMatches(voice_id, voice))
+      if (VoiceIdMatches(voice_id, voice))
+        score += 2;
+
+      // Finally, prefer the user's preference voice for any language. This will
+      // pick the default voice if there is no better match for the current
+      // system language and utterance language.
+      voice_id.clear();
+      lang_to_voice_pref->GetString("noLanguageCode", &voice_id);
+      if (VoiceIdMatches(voice_id, voice))
         score += 1;
     }
 #endif  // defined(OS_CHROMEOS)
