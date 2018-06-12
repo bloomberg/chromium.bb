@@ -4803,15 +4803,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
     if (IsPlaceholderUrl(webViewURL)) {
       GURL originalURL = ExtractUrlFromPlaceholderUrl(webViewURL);
+      if (self.currentNavItem != item &&
+          self.currentNavItem->GetVirtualURL() != originalURL) {
+        // The |didFinishNavigation| callback can arrive after another
+        // navigation has started. Abort in this case.
+        return;
+      }
+
       if (item->GetURL() == webViewURL) {
         // Current navigation item is restored from a placeholder URL as part
         // of session restoration. It is now safe to update the navigation
         // item URL to the original app-specific URL.
         item->SetURL(originalURL);
-      } else if (item->GetVirtualURL() != originalURL) {
-        // The |didFinishNavigation| callback can arrive after another
-        // navigation has started. Abort in this case.
-        return;
       }
 
       const bool isWebUIURL =
