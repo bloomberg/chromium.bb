@@ -13,34 +13,36 @@ import tempfile
 
 QUERY_BY_BUILD_NUMBER = """
 SELECT
-  run.name,
-  run.time
+  run.name AS name,
+  SUM(run.times) AS duration
 FROM
   [test-results-hrd:events.test_results]
 WHERE
   buildbot_info.builder_name IN ({})
   AND buildbot_info.build_number = {}
+GROUP BY
+  name
 ORDER BY
-  run.name
+  name
 """
 
 
 QUERY_LAST_100_RUNS = """
 SELECT
   name,
-  AVG(run.time) AS avg_duration
+  AVG(run_durations) AS duration
 FROM (
   SELECT
     name,
     start_time,
-    run.time,
+    SUM(run.times) AS run_durations,
     ROW_NUMBER() OVER (PARTITION BY name ORDER BY start_time DESC)
       AS row_num
   FROM (
     SELECT
       run.name AS name,
       start_time,
-      run.time
+      run.times
     FROM
       [test-results-hrd:events.test_results]
     WHERE
@@ -51,9 +53,12 @@ FROM (
     GROUP BY
       name,
       start_time,
-      run.time
+      run.times
     ORDER BY
-      start_time DESC ))
+      start_time DESC )
+  GROUP BY
+    name,
+    start_time)
 WHERE
   row_num < 100
 GROUP BY

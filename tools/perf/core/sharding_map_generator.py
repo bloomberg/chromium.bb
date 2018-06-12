@@ -86,7 +86,8 @@ def main(args, benchmarks):
     json.dump(sharding_map, output_file, indent = 4, separators=(',', ': '))
 
   if args.test_data:
-    print test_sharding_map(args.output_file, args.test_data)
+    story_timing_dict = _load_timing_data_from_file(benchmarks, args.test_data)
+    print test_sharding_map(args.output_file, story_timing_dict, all_stories)
 
 
 def get_args():
@@ -103,8 +104,8 @@ def get_args():
       help='The file to read timing data from.')
   # This json file should contain a list of dicts containing
   #    the name and duration of the stories. For example:
-  #   [ { "avg_duration": "98.039", "name": "webrtc/multiple_connections"},
-  #     { "avg_duration": "85.118", "name": "webrtc/pause_connections"} ]
+  #   [ { "duration": "98.039", "name": "webrtc/multiple_connections"},
+  #     { "duration": "85.118", "name": "webrtc/pause_connections"} ]
 
   parser.add_argument(
       '--test-data', action='store',
@@ -138,7 +139,6 @@ def generate_sharding_map(story_timing_dict, all_stories, num_shards, debug):
   if debug:
     with open(debug, 'w') as output_file:
       json.dump(debug_map, output_file, indent = 4, separators=(',', ': '))
-
   return sharding_map
 
 
@@ -173,22 +173,13 @@ def _add_benchmarks_to_shard(sharding_map, shard_index, stories_in_shard,
 
 def _load_timing_data_from_file(benchmarks, timing_data_file):
   story_timing_dict = _init_timing_dict_for_benchmarks(benchmarks)
-  pageset_repeat_dict = _init_pageset_repeat_dict_for_benchmarks(benchmarks)
   with open(timing_data_file, 'r') as timing_data_file:
     story_timing = json.load(timing_data_file)
     for run in story_timing:
-      benchmark = run['name'].split('/', 1)[0]
       if run['name'] in story_timing_dict:
-        story_timing_dict[run['name']] = (float(run['avg_duration'])
-            * pageset_repeat_dict[benchmark])
+        if run['duration']:
+          story_timing_dict[run['name']] += float(run['duration'])
   return story_timing_dict
-
-
-def _init_pageset_repeat_dict_for_benchmarks(benchmarks):
-  pageset_repeat = {}
-  for b in benchmarks:
-    pageset_repeat[b.Name()] = b().options.get('pageset_repeat', 1)
-  return pageset_repeat
 
 
 def _init_timing_dict_for_benchmarks(benchmarks):
@@ -226,36 +217,27 @@ def _generate_empty_sharding_map(num_shards):
   return sharding_map
 
 
-def test_sharding_map(sharding_map_file, test_data):
+def test_sharding_map(sharding_map_file, timing_data, all_stories):
   results = OrderedDict()
-  timing_data = OrderedDict()
-  with open(test_data, 'r') as story_timing_file:
-    story_timing = json.load(story_timing_file)
-    last_story = None
-    for run in story_timing:
-      benchmark = run['run_name'].split('/', 1)[0]
-      if benchmark not in timing_data:
-        timing_data[benchmark] = []
-      if run['run_name'] == last_story:
-        timing_data[benchmark][-1] += float(run['run_time'])
-      else:
-        timing_data[benchmark].append(float(run['run_time']))
-      last_story = run['run_name']
 
   with open(sharding_map_file) as f:
     sharding_map = json.load(f, object_pairs_hook=OrderedDict)
     for shard in sharding_map:
+      results[shard] = OrderedDict()
       shard_total_time = 0
       for benchmark_name in sharding_map[shard]['benchmarks']:
-        if benchmark_name in timing_data:
-          benchmark = sharding_map[shard]['benchmarks'][benchmark_name]
-          begin = 0
-          end = len(timing_data[benchmark_name])
-          if 'begin' in benchmark:
-            begin = benchmark['begin']
-          if 'end' in benchmark:
-            end = benchmark['end']
-          time = sum(timing_data[benchmark_name][begin : end])
-          shard_total_time += time
-      results[shard] = shard_total_time
+        benchmark = sharding_map[shard]['benchmarks'][benchmark_name]
+        begin = 0
+        end = len(all_stories[benchmark_name])
+        if 'begin' in benchmark:
+          begin = benchmark['begin']
+        if 'end' in benchmark:
+          end = benchmark['end']
+        benchmark_timing = 0
+        for story in all_stories[benchmark_name][begin : end]:
+          story_timing = timing_data.get(benchmark_name + "/" + story, 0)
+          results[shard][benchmark_name + "/" + story] = str(story_timing)
+          benchmark_timing += story_timing
+        shard_total_time += benchmark_timing
+      results[shard]['full_time'] = shard_total_time
   return results
