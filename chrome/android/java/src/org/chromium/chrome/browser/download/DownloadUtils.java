@@ -32,6 +32,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
@@ -347,36 +348,28 @@ public class DownloadUtils {
 
         for (int i = 0; i < items.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem  = items.get(i);
+            String mimeType = Intent.normalizeMimeType(wrappedItem.getMimeType());
 
-            boolean shareUrl = false;
-            File file = null;
             if (wrappedItem.isOfflinePage()) {
-                if (OfflinePageBridge.isPageSharingEnabled()) {
-                    if (newOfflineFilePathMap != null) {
-                        OfflineItemWrapper wrappedOfflineItem = (OfflineItemWrapper) wrappedItem;
-                        String newFilePath = newOfflineFilePathMap.get(wrappedOfflineItem.getId());
-                        if (newFilePath != null) {
-                            file = new File(newFilePath);
-                        }
-                        RecordUserAction.record("OfflinePages.Sharing.SharePageFromDownloadHome");
-                    }
-                } else {
-                    // Share the URL, instead of the file, when the offline page sharing is
-                    // disabled.
-                    shareUrl = true;
-                }
-            }
+                // Attempt to share the mhtml file.  If that fails, share by URL.
+                OfflineItemWrapper wrappedOfflineItem = (OfflineItemWrapper) wrappedItem;
+                Uri uriToShare =
+                        getUriToShareOfflinePage(wrappedOfflineItem, newOfflineFilePathMap);
 
-            if (shareUrl) {
-                if (offlinePagesString.length() != 0) {
-                    offlinePagesString.append("\n");
+                if (uriToShare == null) {
+                    // Share the URL, instead of the file, if publishing the file failed.
+                    if (offlinePagesString.length() != 0) {
+                        offlinePagesString.append("\n");
+                    }
+                    offlinePagesString.append(wrappedItem.getUrl());
+                    mimeType = MIME_TYPE_SHARING_URL;
+                } else {
+                    itemUris.add(uriToShare);
+                    RecordUserAction.record("OfflinePages.Sharing.SharePageFromDownloadHome");
                 }
-                offlinePagesString.append(wrappedItem.getUrl());
             } else {
-                if (file == null) {
-                    file = wrappedItem.getFile();
-                }
-                itemUris.add(getUriForItem(file));
+                // If not sharing an offline page, generate the URI for the file being shared.
+                itemUris.add(getUriForItem(wrappedItem.getFile()));
             }
 
             if (selectedItemsFilterType != wrappedItem.getFilterType()) {
@@ -387,13 +380,6 @@ public class DownloadUtils {
                         "Android.DownloadManager.OtherExtensions.Share",
                         wrappedItem.getFileExtensionType(),
                         DownloadHistoryItemWrapper.FILE_EXTENSION_BOUNDARY);
-            }
-
-            String mimeType;
-            if (shareUrl) {
-                mimeType = MIME_TYPE_SHARING_URL;
-            } else {
-                mimeType = Intent.normalizeMimeType(wrappedItem.getMimeType());
             }
 
             // If a mime type was not retrieved from the backend or could not be normalized,
@@ -449,9 +435,9 @@ public class DownloadUtils {
             shareIntent.putExtra(Intent.EXTRA_TEXT, offlinePagesString.toString());
         }
 
+        // If there is exactly one item shared, set the mail title.
         if (items.size() == 1) {
-            shareIntent.putExtra(
-                    Intent.EXTRA_SUBJECT, new File(items.get(0).getFilePath()).getName());
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, items.get(0).getDisplayFileName());
         }
 
         shareIntent.setAction(intentAction);
@@ -461,6 +447,46 @@ public class DownloadUtils {
         recordShareHistograms(items.size(), selectedItemsFilterType);
 
         return shareIntent;
+    }
+
+    /**
+     * Compute the URI to use for sharing this page.
+     * @param wrappedOfflineItem OfflineItem to be shared.
+     * @param newOfflineFilePathMap map of offline id to the file path now that publishing is done.
+     * @return Uri to use for sharing this offline page, or null if we cannot build one.
+     */
+    private static Uri getUriToShareOfflinePage(
+            OfflineItemWrapper wrappedOfflineItem, Map<String, String> newOfflineFilePathMap) {
+        if (!OfflinePageBridge.isPageSharingEnabled()) {
+            return null;
+        }
+        String newFilePath = wrappedOfflineItem.getFilePath();
+
+        if (wrappedOfflineItem.isSuggested()) {
+            // If we have a temporary page, share it by content URI.  Today this only
+            // supports suggested pages, since they are the only type of temporary pages
+            // shown in DownloadsHome.  If we support other types of pages someday,
+            // we'll need to add support for them here too.
+            try {
+                return (new FileProviderHelper()).getContentUriFromFile(new File(newFilePath));
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        if (newOfflineFilePathMap == null) {
+            // If the file was already in the public directory, use the existing file path.
+            return getUriForItem(wrappedOfflineItem.getFile());
+        }
+
+        String publishedFilePath = newOfflineFilePathMap.get(wrappedOfflineItem.getId());
+        if (!TextUtils.isEmpty(publishedFilePath)) {
+            // If we moved the file to publish it, use the new path.
+            return getUriForItem(new File(publishedFilePath));
+        }
+
+        // If publishing failed, return null, and we will share by original URL.
+        return null;
     }
 
     /**
@@ -480,13 +506,15 @@ public class DownloadUtils {
                 OfflinePageBridge.getForProfile(Profile.getLastUsedProfile().getOriginalProfile());
 
         // If the sharing of offline pages is enabled, we need to publish the archive files if they
-        // are still located in the internal directory.
+        // are still located in the internal directory, and not temporary pages.
         List<OfflineItemWrapper> offlinePagesToPublish = new ArrayList<OfflineItemWrapper>();
         for (int i = 0; i < items.size(); i++) {
             DownloadHistoryItemWrapper wrappedItem = items.get(i);
             if (wrappedItem.isOfflinePage()) {
                 OfflineItemWrapper wrappedOfflineItem = (OfflineItemWrapper) wrappedItem;
-                if (offlinePageBridge.isInPrivateDirectory(wrappedOfflineItem.getFilePath())) {
+                if (!wrappedOfflineItem.isSuggested()
+                        && offlinePageBridge.isInPrivateDirectory(
+                                   wrappedOfflineItem.getFilePath())) {
                     offlinePagesToPublish.add(wrappedOfflineItem);
                 }
             }

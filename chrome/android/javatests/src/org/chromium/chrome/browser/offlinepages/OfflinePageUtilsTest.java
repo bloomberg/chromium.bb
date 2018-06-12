@@ -60,8 +60,12 @@ public class OfflinePageUtilsTest {
             new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, "1234");
     private static final ClientId ASYNC_ID =
             new ClientId(OfflinePageBridge.ASYNC_NAMESPACE, "5678");
+    private static final ClientId SUGGESTED_ARTICLES_ID =
+            new ClientId(OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE, "90");
     private static final String SHARED_URI = "http://127.0.0.1/chrome/test/data/android/about.html";
     private static final String CONTENT_URI = "content://chromium/some-content-id";
+    private static final String CONTENT_URI_PREFIX =
+            "content://org.chromium.chrome.FileProvider/offline-cache/";
     private static final String FILE_URI = "file://some-dir/some-file.mhtml";
     private static final String INVALID_URI = "This is not a uri.";
     private static final String EMPTY_URI = "";
@@ -312,7 +316,7 @@ public class OfflinePageUtilsTest {
     @MediumTest
     @CommandLineFlags.Add({"enable-features=OfflinePagesSharing"})
     public void testShareTemporaryOfflinePage() throws Exception {
-        loadOfflinePage(BOOKMARK_ID);
+        loadOfflinePage(SUGGESTED_ARTICLES_ID);
         final Semaphore semaphore = new Semaphore(0);
         final TestShareCallback shareCallback = new TestShareCallback(semaphore);
 
@@ -330,9 +334,7 @@ public class OfflinePageUtilsTest {
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Assert that URI is what we expected.
         String foundUri = shareCallback.getSharedUri();
-        Uri uri = Uri.parse(foundUri);
-        String uriPath = uri.getPath();
-        Assert.assertEquals(TEST_PAGE, uriPath);
+        Assert.assertTrue(foundUri.startsWith(CONTENT_URI_PREFIX));
     }
 
     // Checks on the UI thread if an offline path corresponds to a sharable file.

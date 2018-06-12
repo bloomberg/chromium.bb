@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
@@ -39,6 +40,9 @@ public class DownloadUtilsTest {
     private static final String OFFLINE_ITEM_TITLE = "Some Web Page Title.mhtml";
     private static final String OFFLINE_ITEM_DESCRIPTION = "Our web page";
     private static final String FILE_PATH = "/fake_sd_card/Download/Some Web Page Title.mhtml";
+    private static final String TEMP_FILE_PATH = "/offline-cache/1234.mhtml";
+    private static final String CONTENT_URI =
+            "content://org.chromium.chrome.FileProvider/offline-cache/1234.mhtml";
     private static final String MULTIPART_RELATED = "multipart/related";
     private static final String ITEM_ID = "42";
 
@@ -163,10 +167,43 @@ public class DownloadUtilsTest {
         // Call the share function.
         Intent shareIntent = DownloadUtils.createShareIntent(items, offlineFilePathMap);
 
+        // Check the resulting share intent.
+        Assert.assertEquals("multipart/related", shareIntent.getType());
+        Assert.assertEquals(Intent.ACTION_SEND, shareIntent.getAction());
+
         // Check that the resulting share intent has extra subject set for the title.
         Bundle extras = shareIntent.getExtras();
         Assert.assertNotNull(extras);
         String subject = extras.getString(Intent.EXTRA_SUBJECT);
         Assert.assertEquals(OFFLINE_ITEM_TITLE, subject);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Download"})
+    @CommandLineFlags.Add({"enable-features=OfflinePagesSharing"})
+    public void testCreateShareIntentOfflinePageWithContentUri() {
+        // Create an item list with a single item representing an offline page.
+        List<DownloadHistoryItemWrapper> items = new ArrayList<DownloadHistoryItemWrapper>();
+        // OfflineItem represents an offline page.
+        OfflineItem offlineItem = new OfflineItem();
+        offlineItem.title = OFFLINE_ITEM_TITLE;
+        offlineItem.description = OFFLINE_ITEM_DESCRIPTION;
+        offlineItem.filePath = TEMP_FILE_PATH;
+        offlineItem.mimeType = MULTIPART_RELATED;
+        offlineItem.isSuggested = true;
+        OfflineItemWrapper itemWrapper =
+                OfflineItemWrapper.createOfflineItemWrapperForTest(offlineItem);
+        items.add(itemWrapper);
+
+        // Create a map matching the id to a filename.
+        Map<String, String> offlineFilePathMap = new HashMap<String, String>();
+
+        // Call the share function.
+        Intent shareIntent = DownloadUtils.createShareIntent(items, offlineFilePathMap);
+
+        // Check the resulting share intent.
+        Assert.assertEquals("multipart/related", shareIntent.getType());
+        Assert.assertEquals(Intent.ACTION_SEND, shareIntent.getAction());
     }
 }
