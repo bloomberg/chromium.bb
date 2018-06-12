@@ -276,13 +276,15 @@ void ArcSessionImpl::StartMiniInstance() {
 
 void ArcSessionImpl::RequestUpgrade(
     const std::string& locale,
-    const std::vector<std::string>& preferred_languages) {
+    const std::vector<std::string>& preferred_languages,
+    const base::FilePath& demo_session_apps_path) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!locale.empty());
 
   upgrade_requested_ = true;
   locale_ = locale;
   preferred_languages_ = preferred_languages;
+  demo_session_apps_path_ = demo_session_apps_path;
 
   switch (state_) {
     case State::NOT_STARTED:
@@ -375,6 +377,9 @@ void ArcSessionImpl::DoUpgrade() {
   request.set_locale(locale_);
   for (const std::string& language : preferred_languages_)
     request.add_preferred_languages(language);
+
+  if (!demo_session_apps_path_.empty())
+    request.set_demo_session_apps_path(demo_session_apps_path_.value());
 
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   client->UpgradeArcContainer(

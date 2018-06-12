@@ -143,9 +143,11 @@ void ArcSessionRunner::RequestStartMiniInstance() {
 
 void ArcSessionRunner::RequestUpgrade(
     const std::string& locale,
-    const std::vector<std::string>& preferred_languages) {
+    const std::vector<std::string>& preferred_languages,
+    const base::FilePath& demo_session_apps_path) {
   locale_ = locale;
   preferred_languages_ = preferred_languages;
+  demo_session_apps_path_ = demo_session_apps_path;
 
   RequestStart(ArcInstanceMode::FULL_INSTANCE);
 }
@@ -245,8 +247,10 @@ void ArcSessionRunner::StartArcSession() {
     if (!restart_after_crash_count_)
       RecordInstanceCrashUma(ArcContainerLifetimeEvent::CONTAINER_STARTING);
   }
-  if (target_mode_ == ArcInstanceMode::FULL_INSTANCE)
-    arc_session_->RequestUpgrade(locale_, preferred_languages_);
+  if (target_mode_ == ArcInstanceMode::FULL_INSTANCE) {
+    arc_session_->RequestUpgrade(locale_, preferred_languages_,
+                                 demo_session_apps_path_);
+  }
 }
 
 void ArcSessionRunner::RestartArcSession() {

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -141,9 +142,9 @@ class ArcSessionImpl : public ArcSession,
 
   // ArcSession overrides:
   void StartMiniInstance() override;
-  void RequestUpgrade(
-      const std::string& locale,
-      const std::vector<std::string>& preferred_languages) override;
+  void RequestUpgrade(const std::string& locale,
+                      const std::vector<std::string>& preferred_languages,
+                      const base::FilePath& demo_session_apps_path) override;
   void Stop() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
@@ -206,6 +207,10 @@ class ArcSessionImpl : public ArcSession,
   // Locale and preferred languages to set in Android container during the boot.
   std::string locale_;
   std::vector<std::string> preferred_languages_;
+
+  // Path to squashfs image containing demo apps that should be loaded in the
+  // container.
+  base::FilePath demo_session_apps_path_;
 
   // Mojo endpoint.
   std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;
