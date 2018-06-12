@@ -211,9 +211,9 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchActionRectsWithoutPaint) {
 }
 
 namespace {
-class MockEventListener final : public EventListener {
+class BlockPainterMockEventListener final : public EventListener {
  public:
-  MockEventListener() : EventListener(kCPPEventListenerType) {}
+  BlockPainterMockEventListener() : EventListener(kCPPEventListenerType) {}
 
   bool operator==(const EventListener& other) const final {
     return this == &other;
@@ -245,7 +245,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction, TouchHandlerRectsWithoutPaint) {
 
   // Add an event listener to parent and ensure that hit test display items are
   // created for both the parent and child.
-  MockEventListener* callback = new MockEventListener();
+  BlockPainterMockEventListener* callback = new BlockPainterMockEventListener();
   auto* parent_element = GetElementById("parent");
   parent_element->addEventListener(EventTypeNames::touchstart, callback);
   GetDocument().View()->UpdateAllLifecyclePhases();
