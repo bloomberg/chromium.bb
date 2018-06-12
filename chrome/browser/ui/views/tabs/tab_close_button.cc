@@ -165,7 +165,8 @@ SkAlpha TabCloseButton::GetOpacity() {
   if (!MD::IsRefreshUi() || IsMouseHovered() || tab->IsActive())
     return SK_AlphaOPAQUE;
   const double animation_value = tab->hover_controller()->GetAnimationValue();
-  return gfx::Tween::IntValueBetween(animation_value, 0, 255);
+  return gfx::Tween::IntValueBetween(animation_value, SK_AlphaTRANSPARENT,
+                                     SK_AlphaOPAQUE);
 }
 
 void TabCloseButton::GenerateImages(bool is_touch,

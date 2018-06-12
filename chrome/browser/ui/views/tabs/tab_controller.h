@@ -133,6 +133,17 @@ class TabController {
   // state of the window.
   virtual SkColor GetToolbarTopSeparatorColor() const = 0;
 
+  // Under Refresh, returns the color of the separator between the tabs.
+  virtual SkColor GetTabSeparatorColor() const = 0;
+
+  // Returns the tab background color based on both the |state| of the tab and
+  // the activation state of the window.
+  virtual SkColor GetTabBackgroundColor(TabState state) const = 0;
+
+  // Returns the tab foreground color of the the text based on both the |state|
+  // of the tab and the activation state of the window.
+  virtual SkColor GetTabForegroundColor(TabState state) const = 0;
+
   // Returns the resource ID for the image to use as the tab background.
   // |custom_image| is an outparam set to true if either the tab or the frame
   // background images have been customized; see implementation comments.

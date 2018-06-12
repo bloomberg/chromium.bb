@@ -243,8 +243,8 @@ class Tab : public gfx::AnimationDelegate,
                                 SkColor color);
 
   // Paints the separator line on the left edge of the tab if in material
-  // refresh mode. The painted color is derived from the inactive tab color.
-  void PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color);
+  // refresh mode.
+  void PaintSeparator(gfx::Canvas* canvas);
 
   // Computes which icons are visible in the tab. Should be called everytime
   // before layout is performed.

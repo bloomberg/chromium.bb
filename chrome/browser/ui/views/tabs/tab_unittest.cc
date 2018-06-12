@@ -17,6 +17,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -80,6 +81,13 @@ class FakeTabController : public TabController {
     return paint_throbber_to_layer_;
   }
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
+  SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
+  SkColor GetTabBackgroundColor(TabState state) const override {
+    return gfx::kPlaceholderColor;
+  }
+  SkColor GetTabForegroundColor(TabState state) const override {
+    return gfx::kPlaceholderColor;
+  }
   int GetBackgroundResourceId(bool* custom_image) const override {
     *custom_image = false;
     return IDR_THEME_TAB_BACKGROUND;

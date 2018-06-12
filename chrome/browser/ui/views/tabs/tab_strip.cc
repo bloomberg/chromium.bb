@@ -1071,6 +1071,18 @@ SkColor TabStrip::GetToolbarTopSeparatorColor() const {
   return controller_->GetToolbarTopSeparatorColor();
 }
 
+SkColor TabStrip::GetTabSeparatorColor() const {
+  return controller_->GetTabSeparatorColor();
+}
+
+SkColor TabStrip::GetTabBackgroundColor(TabState state) const {
+  return controller_->GetTabBackgroundColor(state);
+}
+
+SkColor TabStrip::GetTabForegroundColor(TabState state) const {
+  return controller_->GetTabForegroundColor(state);
+}
+
 // Returns the accessible tab name for the tab.
 base::string16 TabStrip::GetAccessibleTabName(const Tab* tab) const {
   int model_index = GetModelIndexOfTab(tab);

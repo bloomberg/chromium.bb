@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserFrame;
@@ -70,6 +71,17 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
   SkColor GetToolbarTopSeparatorColor() const;
+
+  // Under Refresh, returns the color of the separator between the tabs.
+  SkColor GetTabSeparatorColor() const;
+
+  // Returns the tab background color based on both the |state| of the tab and
+  // the activation state of the window.
+  SkColor GetTabBackgroundColor(TabState state) const;
+
+  // Returns the tab foreground color of the for the text based on both the
+  // |state| of the tab and the activation state of the window.
+  SkColor GetTabForegroundColor(TabState state) const;
 
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
@@ -165,6 +177,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Returns true if |profile_indicator_icon_| should be shown.
   bool ShouldShowProfileIndicatorIcon() const;
+
+  // Returns the color of the given |color_id| from the theme provider or the
+  // default theme properties.
+  SkColor GetThemeOrDefaultColor(int color_id) const;
+
+  // Returns a color that contrasts well with the frame.
+  SkColor GetContrastingColorAgainstFrame(SkAlpha alpha) const;
 
   // The frame that hosts this view.
   BrowserFrame* frame_;

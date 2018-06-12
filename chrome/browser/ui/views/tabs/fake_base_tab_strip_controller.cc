@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "ui/gfx/color_palette.h"
 
 FakeBaseTabStripController::FakeBaseTabStripController() {}
 
@@ -145,6 +146,20 @@ void FakeBaseTabStripController::OnStoppedDraggingTabs() {
 
 SkColor FakeBaseTabStripController::GetToolbarTopSeparatorColor() const {
   return SK_ColorBLACK;
+}
+
+SkColor FakeBaseTabStripController::GetTabSeparatorColor() const {
+  return SK_ColorBLACK;
+}
+
+SkColor FakeBaseTabStripController::GetTabBackgroundColor(
+    TabState state) const {
+  return gfx::kPlaceholderColor;
+}
+
+SkColor FakeBaseTabStripController::GetTabForegroundColor(
+    TabState state) const {
+  return gfx::kPlaceholderColor;
 }
 
 base::string16 FakeBaseTabStripController::GetAccessibleTabName(
