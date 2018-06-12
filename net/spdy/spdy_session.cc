@@ -2550,7 +2550,7 @@ void SpdySession::DeleteStream(std::unique_ptr<SpdyStream> stream, int status) {
     in_flight_write_stream_.reset();
   }
 
-  write_queue_.RemovePendingWritesForStream(stream->GetWeakPtr());
+  write_queue_.RemovePendingWritesForStream(stream.get());
   stream->OnClose(status);
 
   if (availability_state_ == STATE_AVAILABLE) {

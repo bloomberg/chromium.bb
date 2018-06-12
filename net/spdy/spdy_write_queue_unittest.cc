@@ -221,7 +221,7 @@ TEST_F(SpdyWriteQueueTest, RemovePendingWritesForStream) {
                         IntToProducer(i), stream, TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
-  write_queue.RemovePendingWritesForStream(stream2->GetWeakPtr());
+  write_queue.RemovePendingWritesForStream(stream2.get());
 
   for (int i = 0; i < 100; i += 3) {
     spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
@@ -401,7 +401,7 @@ TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesForStream) {
                 std::make_unique<RequeingBufferProducer>(&queue),
                 stream->GetWeakPtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  queue.RemovePendingWritesForStream(stream->GetWeakPtr());
+  queue.RemovePendingWritesForStream(stream.get());
   EXPECT_FALSE(queue.IsEmpty());
 
   spdy::SpdyFrameType frame_type;
@@ -435,8 +435,7 @@ TEST_F(SpdyWriteQueueTest, ChangePriority) {
                       std::move(producer3), stream3->GetWeakPtr(),
                       TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  write_queue.ChangePriorityOfWritesForStream(stream3->GetWeakPtr(), LOW,
-                                              HIGHEST);
+  write_queue.ChangePriorityOfWritesForStream(stream3.get(), LOW, HIGHEST);
 
   spdy::SpdyFrameType frame_type = spdy::SpdyFrameType::DATA;
   std::unique_ptr<SpdyBufferProducer> frame_producer;
