@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/accelerators/accelerator_confirmation_dialog.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -801,17 +802,27 @@ void HandleToggleDockedMagnifier() {
   DockedMagnifierController* docked_magnifier_controller =
       Shell::Get()->docked_magnifier_controller();
   const bool current_enabled = docked_magnifier_controller->GetEnabled();
-  docked_magnifier_controller->SetEnabled(!current_enabled);
+  const bool dialog_ever_accepted =
+      Shell::Get()
+          ->accessibility_controller()
+          ->HasDockedMagnifierAcceleratorDialogBeenAccepted();
+
+  if (!current_enabled && !dialog_ever_accepted) {
+    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+        IDS_ASH_DOCKED_MAGNIFIER_TITLE, IDS_ASH_DOCKED_MAGNIFIER_BODY,
+        base::BindOnce([]() {
+          Shell::Get()
+              ->accessibility_controller()
+              ->SetDockedMagnifierAcceleratorDialogAccepted();
+          Shell::Get()->docked_magnifier_controller()->SetEnabled(true);
+        }));
+  } else {
+    docked_magnifier_controller->SetEnabled(!current_enabled);
+  }
 }
 
-void HandleToggleHighContrast() {
-  base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
-
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  bool will_be_enabled = !controller->IsHighContrastEnabled();
-
-  if (will_be_enabled) {
+void SetHighContrastEnabled(bool enabled) {
+  if (enabled) {
     // Show a notification so the user knows that this accelerator toggled
     // high contrast mode, and that they can press it again to toggle back.
     // The message center automatically only shows this once per session.
@@ -835,8 +846,32 @@ void HandleToggleHighContrast() {
     message_center::MessageCenter::Get()->RemoveNotification(
         kHighContrastToggleAccelNotificationId, false /* by_user */);
   }
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetHighContrastEnabled(enabled);
+}
 
-  controller->SetHighContrastEnabled(will_be_enabled);
+void HandleToggleHighContrast() {
+  base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
+
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  const bool current_enabled = controller->IsHighContrastEnabled();
+  const bool dialog_ever_accepted =
+      controller->HasHighContrastAcceleratorDialogBeenAccepted();
+
+  if (!current_enabled && !dialog_ever_accepted) {
+    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+        IDS_ASH_HIGH_CONTRAST_TITLE, IDS_ASH_HIGH_CONTRAST_BODY,
+        base::BindOnce([]() {
+          Shell::Get()
+              ->accessibility_controller()
+              ->SetHighContrastAcceleratorDialogAccepted();
+          SetHighContrastEnabled(true);
+        }));
+  } else {
+    SetHighContrastEnabled(!current_enabled);
+  }
 }
 
 bool CanHandleToggleFullscreenMagnifier() {
@@ -853,10 +888,25 @@ bool CanHandleToggleFullscreenMagnifier() {
 void HandleToggleFullscreenMagnifier() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Fullscreen_Magnifier"));
 
-  MagnificationController* fullscreen_magnifier_controller =
+  MagnificationController* controller =
       Shell::Get()->magnification_controller();
-  const bool current_enabled = fullscreen_magnifier_controller->IsEnabled();
-  fullscreen_magnifier_controller->SetEnabled(!current_enabled);
+  const bool current_enabled = controller->IsEnabled();
+  const bool dialog_ever_accepted =
+      Shell::Get()
+          ->accessibility_controller()
+          ->HasScreenMagnifierAcceleratorDialogBeenAccepted();
+  if (!current_enabled && !dialog_ever_accepted) {
+    Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
+        IDS_ASH_SCREEN_MAGNIFIER_TITLE, IDS_ASH_SCREEN_MAGNIFIER_BODY,
+        base::BindOnce([]() {
+          Shell::Get()
+              ->accessibility_controller()
+              ->SetScreenMagnifierAcceleratorDialogAccepted();
+          Shell::Get()->magnification_controller()->SetEnabled(true);
+        }));
+  } else {
+    controller->SetEnabled(!current_enabled);
+  }
 }
 
 void HandleToggleSpokenFeedback() {
@@ -1723,6 +1773,24 @@ AcceleratorController::MaybeDeprecatedAcceleratorPressed(
     return AcceleratorProcessingStatus::STOP;
 
   return AcceleratorProcessingStatus::PROCEED;
+}
+
+void AcceleratorController::MaybeShowConfirmationDialog(
+    int window_title_text_id,
+    int dialog_text_id,
+    base::OnceClosure on_accept_callback) {
+  // An active dialog exists already.
+  if (confirmation_dialog_)
+    return;
+
+  auto* dialog = new AcceleratorConfirmationDialog(
+      window_title_text_id, dialog_text_id, std::move(on_accept_callback));
+  confirmation_dialog_ = dialog->GetWeakPtr();
+}
+
+AcceleratorConfirmationDialog*
+AcceleratorController::confirmation_dialog_for_testing() {
+  return confirmation_dialog_.get();
 }
 
 }  // namespace ash

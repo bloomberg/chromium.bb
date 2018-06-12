@@ -85,6 +85,9 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityVirtualKeyboardEnabled,
     prefs::kDockedMagnifierEnabled,
     prefs::kDockedMagnifierScale,
+    prefs::kHighContrastAcceleratorDialogHasBeenAccepted,
+    prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
+    prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
 };
 
 // Returns true if |pref_service| is the one used for the signin screen.
@@ -268,6 +271,12 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityVirtualKeyboardEnabled,
                                   false);
+    registry->RegisterBooleanPref(
+        prefs::kHighContrastAcceleratorDialogHasBeenAccepted, false);
+    registry->RegisterBooleanPref(
+        prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted, false);
+    registry->RegisterBooleanPref(
+        prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, false);
     return;
   }
 
@@ -289,6 +298,57 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilitySelectToSpeakEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityStickyKeysEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityVirtualKeyboardEnabled);
+  registry->RegisterForeignPref(
+      prefs::kHighContrastAcceleratorDialogHasBeenAccepted);
+  registry->RegisterForeignPref(
+      prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted);
+  registry->RegisterForeignPref(
+      prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted);
+}
+
+void AccessibilityController::SetHighContrastAcceleratorDialogAccepted() {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(
+      prefs::kHighContrastAcceleratorDialogHasBeenAccepted, true);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityController::HasHighContrastAcceleratorDialogBeenAccepted()
+    const {
+  return active_user_prefs_ &&
+         active_user_prefs_->GetBoolean(
+             prefs::kHighContrastAcceleratorDialogHasBeenAccepted);
+}
+
+void AccessibilityController::SetScreenMagnifierAcceleratorDialogAccepted() {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(
+      prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted, true);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityController::HasScreenMagnifierAcceleratorDialogBeenAccepted()
+    const {
+  return active_user_prefs_ &&
+         active_user_prefs_->GetBoolean(
+             prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted);
+}
+
+void AccessibilityController::SetDockedMagnifierAcceleratorDialogAccepted() {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(
+      prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, true);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityController::HasDockedMagnifierAcceleratorDialogBeenAccepted()
+    const {
+  return active_user_prefs_ &&
+         active_user_prefs_->GetBoolean(
+             prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted);
 }
 
 void AccessibilityController::AddObserver(AccessibilityObserver* observer) {
