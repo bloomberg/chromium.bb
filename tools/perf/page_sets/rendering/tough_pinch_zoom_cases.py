@@ -1,42 +1,33 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry.page import shared_page_state
 from telemetry import story
 
 from page_sets.rendering import rendering_shared_state
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
+from page_sets.system_health import platforms
 
 
 class ToughPinchZoomPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
   TAGS = [story_tags.GPU_RASTERIZATION, story_tags.PINCH_ZOOM]
+  # TODO(crbug.com/851499): expand supported_platforms to both desktop & mobile
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
   def __init__(self,
                page_set,
                name_suffix='',
-               extra_browser_args=None,
-               shared_page_state_class=shared_page_state.SharedDesktopPageState):
+               shared_page_state_class=(
+                   rendering_shared_state.DesktopRenderingSharedState),
+               extra_browser_args=None):
     super(ToughPinchZoomPage, self).__init__(
         page_set=page_set,
         name_suffix=name_suffix,
         extra_browser_args=extra_browser_args,
         shared_page_state_class=shared_page_state_class)
 
-    # The maximum Android zoom level is chosen as 7x, which may seem to exceed
-    # the 5x value specified in WebPreferences::default_maximum_page_scale_factor.
-    # However, as desktop sites on Android start at less than 1x scale
-    # (up to 0.25x), a value of 7x does not exceed the 5x limit.
-    if self.IsMobilePlatform(shared_page_state_class):
-      self.target_scale_factor = 7.0
-    # The maximum Desktop zoom level is 4x
-    else:
-      self.target_scale_factor = 4.0
-
-  def IsMobilePlatform(self, shared_page_state_class):
-    return (shared_page_state_class ==
-            rendering_shared_state.MobileRenderingSharedState)
+    self.target_scale_factor = page_set.target_scale_factor
 
   def RunPinchGesture(self, action_runner, left_anchor_ratio=0.5,
                       top_anchor_ratio=0.5, scale_factor=None,
@@ -248,76 +239,68 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
 
   """ Set of pages that are tricky to pinch-zoom """
 
-  def __init__(self, shared_page_state_class):
+  def __init__(self, target_scale_factor):
     super(ToughPinchZoomCasesPageSet, self).__init__(
       archive_data_file='../data/tough_pinch_zoom_cases.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
 
+    self.target_scale_factor = target_scale_factor
+
     self.AddStory(GoogleSearchPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(GmailPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(GoogleCalendarPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(GoogleImagePinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(YoutubePinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(BlogSpotPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(FacebookPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(LinkedinPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(TwitterPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(ESPNPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(YahooGamePinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(YahooNewsPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(CnnPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(AmazonPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(EBayPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(WeatherDotComPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(YahooSportsPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
     self.AddStory(BookingPinchZoomPage(
-        page_set=self,
-        shared_page_state_class=shared_page_state_class))
+        page_set=self))
 
 
 class AndroidToughPinchZoomCasesPageSet(ToughPinchZoomCasesPageSet):
 
+  """
+  ToughPinchZoomCasesPageSet using the maximum Android zoom level. This is
+  chosen as 7x, which may seem to exceed the 5x value specified in
+  WebPreferences::default_maximum_page_scale_factor. However, as desktop sites
+  on Android start at less than 1x scale (up to 0.25x), a value of 7x does not
+  exceed the 5x limit.
+  """
+
   def __init__(self):
-    super(AndroidToughPinchZoomCasesPageSet, self).__init__(
-        rendering_shared_state.MobileRenderingSharedState)
+    super(AndroidToughPinchZoomCasesPageSet, self).__init__(7.0)
 
 
 class DesktopToughPinchZoomCasesPageSet(ToughPinchZoomCasesPageSet):
 
+  """ ToughPinchZoomCasesPageSet using the maximum desktop zoom level """
+
   def __init__(self):
-    super(DesktopToughPinchZoomCasesPageSet, self).__init__(
-        rendering_shared_state.DesktopRenderingSharedState)
+    super(DesktopToughPinchZoomCasesPageSet, self).__init__(4.0)

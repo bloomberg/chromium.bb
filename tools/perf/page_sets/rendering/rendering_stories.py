@@ -32,6 +32,9 @@ class RenderingStorySet(story.StorySet):
 
     self.scroll_forever = scroll_forever
 
+    # For pinch zoom page sets, set default to desktop scale factor
+    self.target_scale_factor = 4.0
+
     for story_class in _IterAllRenderingStoryClasses():
       if (story_class.ABSTRACT_STORY or
           platform not in story_class.SUPPORTED_PLATFORMS):
