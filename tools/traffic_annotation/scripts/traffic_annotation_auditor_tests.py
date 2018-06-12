@@ -87,9 +87,21 @@ class TrafficAnnotationTestsChecker():
     temp_file = tempfile.NamedTemporaryFile()
     temp_filename = temp_file.name
     temp_file.close()
+    # TODO(https://crbug.com/844014): Remove Debug data.
+    print(">> Trying to write output in %s " % temp_filename)
+    with open(temp_filename, "wt") as test_file:
+      test_file.write("Hello")
+      print(">> Writing to test file done.")
+    with open(temp_filename, "rt") as test_file:
+      print(">> Read from test file: %s" % test_file.read())
+    os.remove(temp_filename)
     _, stderr_text, return_code = self.tools.RunAuditor(
         args + ["--annotations-file=%s" % temp_filename])
 
+    # TODO(https://crbug.com/844014): Remove Debug data.
+    print(">> stderr: %s" % stderr_text)
+    print(">> Return Code: %i" % return_code)
+    print(">> Has file: %i" % os.path.exists(temp_filename))
     if os.path.exists(temp_filename):
       annotations = None if (return_code or stderr_text) \
                          else open(temp_filename).read()
