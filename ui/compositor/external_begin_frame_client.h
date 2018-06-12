@@ -14,7 +14,9 @@ class COMPOSITOR_EXPORT ExternalBeginFrameClient {
  public:
   virtual ~ExternalBeginFrameClient() {}
 
+  // Called when a BeginFrame was completed by the Display.
   virtual void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) = 0;
+  // Called to signal whether the client should generate BeginFrames.
   virtual void OnNeedsExternalBeginFrames(bool needs_begin_frames) = 0;
 };
 

@@ -30,6 +30,7 @@
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/compositor_lock.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/external_begin_frame_client.h"
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -198,7 +199,8 @@ class COMPOSITOR_EXPORT ContextFactory {
 class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
                                      public cc::LayerTreeHostSingleThreadClient,
                                      public CompositorLockManagerClient,
-                                     public viz::HostFrameSinkClient {
+                                     public viz::HostFrameSinkClient,
+                                     public ExternalBeginFrameClient {
  public:
   Compositor(const viz::FrameSinkId& frame_sink_id,
              ui::ContextFactory* context_factory,
@@ -333,14 +335,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // given |args|.
   void IssueExternalBeginFrame(const viz::BeginFrameArgs& args);
 
-  // Called by the ContextFactory when a BeginFrame was completed by the Display
-  // if the enable_external_begin_frames setting is true.
-  void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack);
-
-  // Called by the ContextFactory to signal whether BeginFrames are needed by
-  // the compositor if the enable_external_begin_frames setting is true.
-  void OnNeedsExternalBeginFrames(bool needs_begin_frames);
-
   // This flag is used to force a compositor into software compositing even tho
   // in general chrome is using gpu compositing. This allows the compositor to
   // be created without a gpu context, and does not go through the gpu path at
@@ -383,6 +377,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   using PresentationTimeCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
+
+  // ExternalBeginFrameClient implementation.
+  void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) override;
+  void OnNeedsExternalBeginFrames(bool needs_begin_frames) override;
 
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}

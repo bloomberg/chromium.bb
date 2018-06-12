@@ -59,6 +59,7 @@
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/compositor/external_begin_frame_controller_client_impl.h"
 #include "content/browser/compositor/in_process_display_client.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -178,10 +179,6 @@ class CompositorDependencies {
   // |host_frame_sink_manager_| instead which uses Mojo. See
   // http://crbug.com/657959.
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_impl;
-
-  // Viz-only members:
-  viz::mojom::DisplayPrivateAssociatedPtr display_private;
-  std::unique_ptr<AndroidInProcessDisplayClient> display_client;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider;
@@ -652,6 +649,9 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
 
 CompositorImpl::~CompositorImpl() {
   display::Screen::GetScreen()->RemoveObserver(this);
+  if (enable_viz_)
+    OnNeedsExternalBeginFrames(false);
+
   DetachRootWindow();
   // Clean-up any surface references.
   SetSurface(NULL);
@@ -827,8 +827,8 @@ void CompositorImpl::SetVisible(bool visible) {
     SendOnForegroundedToGpuService();
     low_end_background_cleanup_task_.Cancel();
   }
-  if (CompositorDependencies::Get().display_private)
-    CompositorDependencies::Get().display_private->SetDisplayVisible(visible);
+  if (display_private_)
+    display_private_->SetDisplayVisible(visible);
 }
 
 void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
@@ -844,8 +844,8 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   if (display_)
     display_->Resize(size);
 
-  if (CompositorDependencies::Get().display_private)
-    CompositorDependencies::Get().display_private->Resize(size);
+  if (display_private_)
+    display_private_->Resize(size);
 
   root_window_->GetLayer()->SetBounds(size);
 }
@@ -1223,7 +1223,6 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
     scoped_refptr<ui::ContextProviderCommandBuffer> context_provider) {
   DCHECK(enable_viz_);
 
-  auto& deps = CompositorDependencies::Get();
   pending_frames_ = 0;
   gpu_capabilities_ = context_provider->ContextCapabilities();
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -1239,12 +1238,20 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   root_params->compositor_frame_sink = mojo::MakeRequest(&sink_info);
   viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&root_params->compositor_frame_sink_client);
-  root_params->display_private = mojo::MakeRequest(&deps.display_private);
-  deps.display_client =
+  root_params->display_private = mojo::MakeRequest(&display_private_);
+  display_client_ =
       std::make_unique<AndroidInProcessDisplayClient>(base::BindRepeating(
           &CompositorImpl::DidSwapBuffers, weak_factory_.GetWeakPtr()));
   root_params->display_client =
-      deps.display_client->GetBoundPtr(task_runner).PassInterface();
+      display_client_->GetBoundPtr(task_runner).PassInterface();
+
+  // Initialize ExternalBeginFrameControllerClient.
+  external_begin_frame_controller_client_ =
+      std::make_unique<ExternalBeginFrameControllerClientImpl>(this);
+  root_params->external_begin_frame_controller =
+      external_begin_frame_controller_client_->GetControllerRequest();
+  root_params->external_begin_frame_controller_client =
+      external_begin_frame_controller_client_->GetBoundPtr().PassInterface();
 
   viz::RendererSettings renderer_settings;
   renderer_settings.allow_antialiasing = false;
@@ -1275,8 +1282,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider), nullptr, &params);
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
-  CompositorDependencies::Get().display_private->SetDisplayVisible(true);
-  CompositorDependencies::Get().display_private->Resize(size_);
+  display_private_->SetDisplayVisible(true);
+  display_private_->Resize(size_);
 }
 
 viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
@@ -1284,6 +1291,28 @@ viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
     return CompositorDependencies::Get().surface_id_allocator.GenerateId();
 
   return viz::LocalSurfaceId();
+}
+
+bool CompositorImpl::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
+  DCHECK(enable_viz_);
+  DCHECK(external_begin_frame_controller_client_);
+  external_begin_frame_controller_client_->GetController()
+      ->IssueExternalBeginFrame(args);
+  return true;
+}
+
+void CompositorImpl::OnNeedsExternalBeginFrames(bool needs_begin_frames) {
+  DCHECK(enable_viz_);
+
+  if (needs_begin_frames == needs_external_begin_frames_)
+    return;
+
+  needs_external_begin_frames_ = needs_begin_frames;
+  if (needs_begin_frames) {
+    root_window_->GetBeginFrameSource()->AddObserver(this);
+  } else {
+    root_window_->GetBeginFrameSource()->RemoveObserver(this);
+  }
 }
 
 }  // namespace content

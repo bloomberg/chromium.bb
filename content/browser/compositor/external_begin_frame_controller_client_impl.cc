@@ -9,8 +9,8 @@
 namespace content {
 
 ExternalBeginFrameControllerClientImpl::ExternalBeginFrameControllerClientImpl(
-    ui::Compositor* compositor)
-    : compositor_(compositor), binding_(this) {}
+    ui::ExternalBeginFrameClient* client)
+    : client_(client), binding_(this) {}
 
 ExternalBeginFrameControllerClientImpl::
     ~ExternalBeginFrameControllerClientImpl() = default;
@@ -34,12 +34,12 @@ ExternalBeginFrameControllerClientImpl::GetController() {
 
 void ExternalBeginFrameControllerClientImpl::OnNeedsBeginFrames(
     bool needs_begin_frames) {
-  compositor_->OnNeedsExternalBeginFrames(needs_begin_frames);
+  client_->OnNeedsExternalBeginFrames(needs_begin_frames);
 }
 
 void ExternalBeginFrameControllerClientImpl::OnDisplayDidFinishFrame(
     const viz::BeginFrameAck& ack) {
-  compositor_->OnDisplayDidFinishFrame(ack);
+  client_->OnDisplayDidFinishFrame(ack);
 }
 
 }  // namespace content
