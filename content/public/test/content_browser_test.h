@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
@@ -42,6 +43,9 @@ class ContentBrowserTest : public BrowserTestBase {
 
   // Returns the window for the test.
   Shell* shell() const { return shell_; }
+
+  // File path to test data, relative to DIR_SOURCE_ROOT.
+  base::FilePath GetTestDataFilePath();
 
  private:
   Shell* shell_;

@@ -183,8 +183,13 @@ class Shell : public WebContentsDelegate,
                                          const GURL& resource_url) override;
   gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
                                   const gfx::Size& natural_size) override;
+  bool ShouldResumeRequestsForCreatedWindow() override;
 
   static gfx::Size GetShellDefaultSize();
+
+  void set_delay_popup_contents_delegate_for_testing(bool delay) {
+    delay_popup_contents_delegate_for_testing_ = delay;
+  }
 
  private:
   enum UIControl {
@@ -195,11 +200,12 @@ class Shell : public WebContentsDelegate,
 
   class DevToolsWebContentsObserver;
 
-  explicit Shell(std::unique_ptr<WebContents> web_contents);
+  Shell(std::unique_ptr<WebContents> web_contents, bool should_set_delegate);
 
   // Helper to create a new Shell given a newly created WebContents.
   static Shell* CreateShell(std::unique_ptr<WebContents> web_contents,
-                            const gfx::Size& initial_size);
+                            const gfx::Size& initial_size,
+                            bool should_set_delegate);
 
   // Helper for one time initialization of application
   static void PlatformInitialize(const gfx::Size& default_window_size);
@@ -285,6 +291,7 @@ class Shell : public WebContentsDelegate,
 
   bool headless_;
   bool hide_toolbar_;
+  bool delay_popup_contents_delegate_for_testing_ = false;
 
   // A container of all the open windows. We use a vector so we can keep track
   // of ordering.
