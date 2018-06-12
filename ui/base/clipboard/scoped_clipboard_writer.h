@@ -61,16 +61,23 @@ class UI_BASE_EXPORT ScopedClipboardWriter {
   void WritePickledData(const base::Pickle& pickle,
                         const Clipboard::FormatType& format);
 
+  // Adds custom data to clipboard.
+  void WriteData(const std::string& type, const std::string& data);
+
   void WriteImage(const SkBitmap& bitmap);
 
   // Removes all objects that would be written to the clipboard.
   void Reset();
 
+  void set_type(ClipboardType type) { type_ = type; }
+
  private:
   // We accumulate the data passed to the various targets in the |objects_|
   // vector, and pass it to Clipboard::WriteObjects() during object destruction.
   Clipboard::ObjectMap objects_;
-  const ClipboardType type_;
+
+  // The type is set at construction, and can be changed before committing.
+  ClipboardType type_;
 
   SkBitmap bitmap_;
 

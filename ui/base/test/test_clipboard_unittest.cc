@@ -21,8 +21,6 @@ struct TestClipboardTraits {
 
   static Clipboard* Create() { return TestClipboard::CreateForCurrentThread(); }
 
-  static bool IsMusTest() { return false; }
-
   static void Destroy(Clipboard* clipboard) {
     ASSERT_EQ(Clipboard::GetForCurrentThread(), clipboard);
     Clipboard::DestroyClipboardForCurrentThread();

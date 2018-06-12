@@ -8,7 +8,6 @@ import("//testing/test.gni")
 mojom("interfaces") {
   sources = [
     "accessibility_manager.mojom",
-    "clipboard.mojom",
     "event_injector.mojom",
     "event_matcher.mojom",
     "gpu.mojom",
@@ -40,7 +39,7 @@ mojom("interfaces") {
     "//services/ui/public/interfaces/ime",
     "//services/viz/public/interfaces",
     "//skia/public/interfaces",
-    "//ui/base/mojo:mojo_bindings",
+    "//ui/base/mojo",
     "//ui/display/mojo:interfaces",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",

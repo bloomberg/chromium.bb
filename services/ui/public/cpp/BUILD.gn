@@ -5,7 +5,7 @@
 import("//build/config/ui.gni")
 
 # This is the public target. It contains only the public headers. The
-# implementation (and private haders) are in 'internal'.
+# implementation (and private headers) are in 'internal'.
 source_set("cpp") {
   sources = [
     "property_type_converters.h",

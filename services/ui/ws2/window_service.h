@@ -11,16 +11,15 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/ime/ime_driver_bridge.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
-#include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/screen_provider.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/ids.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/base/mojo/clipboard.mojom.h"
 
 namespace aura {
 class Window;
@@ -29,15 +28,13 @@ class FocusClient;
 }
 }
 
-namespace clipboard {
-class ClipboardImpl;
-}
-
 namespace gfx {
 class Insets;
 }
 
 namespace ui {
+
+class ClipboardHost;
 
 namespace mojom {
 class WindowTreeClient;
@@ -95,7 +92,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
                        mojo::ScopedMessagePipeHandle handle) override;
 
  private:
-  void BindClipboardRequest(mojom::ClipboardRequest request);
+  void BindClipboardHostRequest(mojom::ClipboardHostRequest request);
   void BindScreenProviderRequest(mojom::ScreenProviderRequest request);
   void BindImeRegistrarRequest(mojom::IMERegistrarRequest request);
   void BindImeDriverRequest(mojom::IMEDriverRequest request);
@@ -122,7 +119,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Provides info to InputDeviceClient users, via InputDeviceManager.
   ui::InputDeviceServer input_device_server_;
 
-  std::unique_ptr<clipboard::ClipboardImpl> clipboard_;
+  std::unique_ptr<ClipboardHost> clipboard_host_;
 
   // Id for the next WindowTree.
   ClientSpecificId next_client_id_ = kWindowServerClientId + 1;

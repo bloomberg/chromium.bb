@@ -340,4 +340,5 @@ service_manifest("unittests_manifest") {
 catalog("tests_catalog") {
   testonly = true
   embedded_services = [ ":unittests_manifest" ]
+  standalone_services = [ "//services/ui:manifest" ]
 }

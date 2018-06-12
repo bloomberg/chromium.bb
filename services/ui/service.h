@@ -25,7 +25,6 @@
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
-#include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
@@ -37,6 +36,7 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
 #include "services/ui/ws/window_server_delegate.h"
+#include "ui/base/mojo/clipboard.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "services/ui/input_devices/touch_device_server.h"
@@ -58,13 +58,10 @@ class Identity;
 
 namespace ui {
 
+class ClipboardHost;
 class ImageCursorsSet;
 class InputDeviceController;
 class PlatformEventSource;
-
-namespace clipboard {
-class ClipboardImpl;
-}
 
 namespace ws {
 class AccessibilityManager;
@@ -136,8 +133,9 @@ class Service : public service_manager::Service,
       mojom::AccessibilityManagerRequest request,
       const service_manager::BindSourceInfo& source_info);
 
-  void BindClipboardRequest(mojom::ClipboardRequest request,
-                            const service_manager::BindSourceInfo& source_info);
+  void BindClipboardHostRequest(
+      mojom::ClipboardHostRequest request,
+      const service_manager::BindSourceInfo& source_info);
 
   void BindScreenProviderRequest(
       mojom::ScreenProviderRequest request,
@@ -232,7 +230,7 @@ class Service : public service_manager::Service,
 
   bool in_destructor_ = false;
 
-  std::unique_ptr<clipboard::ClipboardImpl> clipboard_;
+  std::unique_ptr<ClipboardHost> clipboard_host_;
   std::unique_ptr<ws::AccessibilityManager> accessibility_;
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory_;
 

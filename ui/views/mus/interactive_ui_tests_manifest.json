@@ -4,7 +4,8 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "*": [ "app", "test" ]
+        "*": [ "app", "test" ],
+        "ui": [ "window_manager" ]
       }
     }
   }
