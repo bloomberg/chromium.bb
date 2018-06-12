@@ -62,10 +62,10 @@ void AXTableHeaderContainer::AddChildren() {
   DCHECK(!have_children_);
 
   have_children_ = true;
-  if (!parent_ || !parent_->IsAXTable())
+  if (!parent_ || !parent_->IsTableLikeRole())
     return;
 
-  ToAXTable(parent_)->ColumnHeaders(children_);
+  parent_->ColumnHeaders(children_);
 }
 
 }  // namespace blink

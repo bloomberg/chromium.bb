@@ -57,10 +57,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_column.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_row.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -1094,63 +1090,45 @@ int WebAXObject::AriaColumnCount() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsAXTable())
-    return 0;
-
-  return ToAXTable(private_.Get())->AriaColumnCount();
+  return private_->IsTableLikeRole() ? private_->AriaColumnCount() : 0;
 }
 
 unsigned WebAXObject::AriaColumnIndex() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsTableCell())
-    return 0;
-
-  return ToAXTableCell(private_.Get())->AriaColumnIndex();
+  return private_->IsTableCellLikeRole() ? private_->AriaColumnIndex() : 0;
 }
 
 int WebAXObject::AriaRowCount() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsAXTable())
-    return 0;
-
-  return ToAXTable(private_.Get())->AriaRowCount();
+  return private_->IsTableLikeRole() ? private_->AriaRowCount() : 0;
 }
 
 unsigned WebAXObject::AriaRowIndex() const {
   if (IsDetached())
     return 0;
 
-  if (private_->IsTableCell())
-    return ToAXTableCell(private_.Get())->AriaRowIndex();
-
-  if (private_->IsTableRow())
-    return ToAXTableRow(private_.Get())->AriaRowIndex();
-
-  return 0;
+  return private_->AriaRowIndex();
 }
 
 unsigned WebAXObject::ColumnCount() const {
   if (IsDetached())
     return false;
 
-  if (!private_->IsAXTable())
-    return 0;
-
-  return ToAXTable(private_.Get())->ColumnCount();
+  return private_->IsTableLikeRole() ? private_->ColumnCount() : 0;
 }
 
 unsigned WebAXObject::RowCount() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsAXTable())
+  if (!private_->IsTableLikeRole())
     return 0;
 
-  return ToAXTable(private_.Get())->RowCount();
+  return private_->RowCount();
 }
 
 WebAXObject WebAXObject::CellForColumnAndRow(unsigned column,
@@ -1158,71 +1136,37 @@ WebAXObject WebAXObject::CellForColumnAndRow(unsigned column,
   if (IsDetached())
     return WebAXObject();
 
-  if (!private_->IsAXTable())
+  if (!private_->IsTableLikeRole())
     return WebAXObject();
 
-  AXTableCell* cell =
-      ToAXTable(private_.Get())->CellForColumnAndRow(column, row);
-  return WebAXObject(static_cast<AXObject*>(cell));
+  return WebAXObject(private_->CellForColumnAndRow(column, row));
 }
 
 WebAXObject WebAXObject::HeaderContainerObject() const {
   if (IsDetached())
     return WebAXObject();
 
-  if (!private_->IsAXTable())
+  if (!private_->IsTableLikeRole())
     return WebAXObject();
 
-  return WebAXObject(ToAXTable(private_.Get())->HeaderContainer());
-}
-
-WebAXObject WebAXObject::RowAtIndex(unsigned row_index) const {
-  if (IsDetached())
-    return WebAXObject();
-
-  if (!private_->IsAXTable())
-    return WebAXObject();
-
-  const AXObject::AXObjectVector& rows = ToAXTable(private_.Get())->Rows();
-  if (row_index < rows.size())
-    return WebAXObject(rows[row_index]);
-
-  return WebAXObject();
-}
-
-WebAXObject WebAXObject::ColumnAtIndex(unsigned column_index) const {
-  if (IsDetached())
-    return WebAXObject();
-
-  if (!private_->IsAXTable())
-    return WebAXObject();
-
-  const AXObject::AXObjectVector& columns =
-      ToAXTable(private_.Get())->Columns();
-  if (column_index < columns.size())
-    return WebAXObject(columns[column_index]);
-
-  return WebAXObject();
+  return WebAXObject(private_->HeaderContainer());
 }
 
 unsigned WebAXObject::RowIndex() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsTableRow())
-    return 0;
-
-  return ToAXTableRow(private_.Get())->RowIndex();
+  return private_->IsTableRowLikeRole() ? private_->RowIndex() : 0;
 }
 
 WebAXObject WebAXObject::RowHeader() const {
   if (IsDetached())
     return WebAXObject();
 
-  if (!private_->IsTableRow())
+  if (!private_->IsTableRowLikeRole())
     return WebAXObject();
 
-  return WebAXObject(ToAXTableRow(private_.Get())->HeaderObject());
+  return WebAXObject(private_->HeaderObject());
 }
 
 void WebAXObject::RowHeaders(
@@ -1230,11 +1174,11 @@ void WebAXObject::RowHeaders(
   if (IsDetached())
     return;
 
-  if (!private_->IsAXTable())
+  if (!private_->IsTableLikeRole())
     return;
 
   AXObject::AXObjectVector headers;
-  ToAXTable(private_.Get())->RowHeaders(headers);
+  private_->RowHeaders(headers);
 
   size_t header_count = headers.size();
   WebVector<WebAXObject> result(header_count);
@@ -1252,7 +1196,7 @@ unsigned WebAXObject::ColumnIndex() const {
   if (private_->RoleValue() != kColumnRole)
     return 0;
 
-  return ToAXTableColumn(private_.Get())->ColumnIndex();
+  return private_->ColumnIndex();
 }
 
 WebAXObject WebAXObject::ColumnHeader() const {
@@ -1262,7 +1206,7 @@ WebAXObject WebAXObject::ColumnHeader() const {
   if (private_->RoleValue() != kColumnRole)
     return WebAXObject();
 
-  return WebAXObject(ToAXTableColumn(private_.Get())->HeaderObject());
+  return WebAXObject(private_->HeaderObject());
 }
 
 void WebAXObject::ColumnHeaders(
@@ -1270,11 +1214,11 @@ void WebAXObject::ColumnHeaders(
   if (IsDetached())
     return;
 
-  if (!private_->IsAXTable())
+  if (!private_->IsTableLikeRole())
     return;
 
   AXObject::AXObjectVector headers;
-  ToAXTable(private_.Get())->ColumnHeaders(headers);
+  private_->ColumnHeaders(headers);
 
   size_t header_count = headers.size();
   WebVector<WebAXObject> result(header_count);
@@ -1289,48 +1233,28 @@ unsigned WebAXObject::CellColumnIndex() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsTableCell())
-    return 0;
-
-  std::pair<unsigned, unsigned> column_range;
-  ToAXTableCell(private_.Get())->ColumnIndexRange(column_range);
-  return column_range.first;
+  return private_->IsTableCellLikeRole() ? private_->ColumnIndex() : 0;
 }
 
 unsigned WebAXObject::CellColumnSpan() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsTableCell())
-    return 0;
-
-  std::pair<unsigned, unsigned> column_range;
-  ToAXTableCell(private_.Get())->ColumnIndexRange(column_range);
-  return column_range.second;
+  return private_->IsTableCellLikeRole() ? private_->ColumnSpan() : 0;
 }
 
 unsigned WebAXObject::CellRowIndex() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsTableCell())
-    return 0;
-
-  std::pair<unsigned, unsigned> row_range;
-  ToAXTableCell(private_.Get())->RowIndexRange(row_range);
-  return row_range.first;
+  return private_->IsTableCellLikeRole() ? private_->RowIndex() : 0;
 }
 
 unsigned WebAXObject::CellRowSpan() const {
   if (IsDetached())
     return 0;
 
-  if (!private_->IsTableCell())
-    return 0;
-
-  std::pair<unsigned, unsigned> row_range;
-  ToAXTableCell(private_.Get())->RowIndexRange(row_range);
-  return row_range.second;
+  return private_->IsTableCellLikeRole() ? private_->RowSpan() : 0;
 }
 
 WebAXSortDirection WebAXObject::SortDirection() const {

@@ -189,6 +189,25 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   VisiblePosition VisiblePositionForIndex(int) const override;
   void LineBreaks(Vector<int>&) const final;
 
+  // For a table.
+  bool IsDataTable() const override;
+  unsigned ColumnCount() const override;
+  unsigned RowCount() const override;
+  void ColumnHeaders(AXObjectVector&) const override;
+  void RowHeaders(AXObjectVector&) const override;
+  AXObject* CellForColumnAndRow(unsigned column, unsigned row) const override;
+  AXObject* HeaderContainer() override;
+
+  // For a table cell.
+  unsigned ColumnIndex() const override;
+  unsigned RowIndex() const override;  // Also for a table row.
+  unsigned ColumnSpan() const override;
+  unsigned RowSpan() const override;
+  SortDirection GetSortDirection() const override;
+
+  // For a table row or column.
+  AXObject* HeaderObject() const override;
+
  private:
   bool IsTabItemSelected() const;
   bool IsValidSelectionBound(const AXObject*) const;
@@ -205,7 +224,11 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddCanvasChildren();
   void AddPopupChildren();
   void AddRemoteSVGChildren();
+  void AddTableChildren();
   void AddInlineTextBoxChildren(bool force);
+  AccessibilityRole DetermineTableCellRole() const;
+  AccessibilityRole DetermineTableRowRole() const;
+  bool FindAllTableCellsWithRole(AccessibilityRole, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;
   AXSelection TextControlSelection() const;

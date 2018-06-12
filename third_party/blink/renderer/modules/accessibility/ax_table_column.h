@@ -31,7 +31,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_mock_object.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -47,17 +46,18 @@ class MODULES_EXPORT AXTableColumn final : public AXMockObject {
   ~AXTableColumn() override;
 
   // retrieves the topmost "column" header (th)
-  AXObject* HeaderObject();
-  // retrieves the "column" headers (th, scope) from top to bottom
-  void HeaderObjectsForColumn(AXObjectVector&);
+  AXObject* HeaderObject() const override;
 
-  void SetColumnIndex(int column_index) { column_index_ = column_index; }
-  int ColumnIndex() const { return column_index_; }
+  void SetColumnIndex(unsigned column_index) { column_index_ = column_index; }
+  unsigned ColumnIndex() const override { return column_index_; }
 
   void AddChildren() override;
   void SetParent(AXObject*) override;
 
  protected:
+  // retrieves the "column" headers (th, scope) from top to bottom
+  void HeaderObjectsForColumn(AXObjectVector&) const;
+
   bool CanSetSelectedAttribute() const override { return false; }
 
   // Set the role via RoleValue() instead of DetermineAccessibilityRole(),

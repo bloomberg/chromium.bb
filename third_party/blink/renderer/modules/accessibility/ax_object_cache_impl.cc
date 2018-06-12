@@ -66,9 +66,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_aria_grid.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_aria_grid_cell.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_aria_grid_row.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_image_map_link.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_inline_text_box.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
@@ -84,11 +81,8 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_relation_cache.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_slider.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_table_column.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_table_header_container.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table_row.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_virtual_object.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 
@@ -309,16 +303,6 @@ static bool NodeHasRole(Node* node, const String& role) {
   return EqualIgnoringASCIICase(ToElement(node)->getAttribute(roleAttr), role);
 }
 
-static bool NodeHasGridRole(Node* node) {
-  return NodeHasRole(node, "grid") || NodeHasRole(node, "treegrid") ||
-         NodeHasRole(node, "table");
-}
-
-static bool NodeHasCellRole(Node* node) {
-  return NodeHasRole(node, "cell") || NodeHasRole(node, "gridcell") ||
-         NodeHasRole(node, "columnheader") || NodeHasRole(node, "rowheader");
-}
-
 AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   // FIXME: How could layoutObject->node() ever not be an Element?
   Node* node = layout_object->GetNode();
@@ -330,14 +314,6 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
        (IsHTMLUListElement(node) || IsHTMLOListElement(node) ||
         IsHTMLDListElement(node))))
     return AXList::Create(layout_object, *this);
-
-  // aria tables
-  if (NodeHasGridRole(node))
-    return AXARIAGrid::Create(layout_object, *this);
-  if (NodeHasRole(node, "row"))
-    return AXARIAGridRow::Create(layout_object, *this);
-  if (NodeHasCellRole(node))
-    return AXARIAGridCell::Create(layout_object, *this);
 
   // media controls
   if (node && node->IsMediaControlElement())
@@ -359,40 +335,6 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
       return AXListBox::Create(ToLayoutListBox(css_box), *this);
     if (css_box->IsMenuList())
       return AXMenuList::Create(ToLayoutMenuList(css_box), *this);
-
-    // standard tables
-    if (css_box->IsTable())
-      return AXTable::Create(ToLayoutTable(css_box), *this);
-    if (css_box->IsTableRow()) {
-      // In an ARIA [tree]grid, use an ARIA row, otherwise a table row.
-      LayoutTableRow* table_row = ToLayoutTableRow(css_box);
-      LayoutTable* containing_table = table_row->Table();
-      DCHECK(containing_table);
-      if (NodeHasGridRole(containing_table->GetNode())) {
-        if (node)
-          return AXARIAGridRow::Create(layout_object, *this);
-        // ARIA grids only create rows for non-anonymous nodes, because if
-        // the author accidentally leaves out some table CSS, extra unexpected
-        // anonymous layout cells exist that don't match the ARIA markup.
-        return AXLayoutObject::Create(layout_object, *this);
-      }
-      return AXTableRow::Create(ToLayoutTableRow(css_box), *this);
-    }
-    if (css_box->IsTableCell()) {
-      // In an ARIA [tree]grid, use an ARIA gridcell, otherwise a table cell.
-      LayoutTableCell* table_cell = ToLayoutTableCell(css_box);
-      LayoutTable* containing_table = table_cell->Table();
-      DCHECK(containing_table);
-      if (NodeHasGridRole(containing_table->GetNode())) {
-        if (node)
-          return AXARIAGridCell::Create(layout_object, *this);
-        // ARIA grids only create cells for non-anonymous nodes, because if
-        // the author accidentally leaves out some table CSS, extra unexpected
-        // anonymous layout cells exist that don't match the ARIA markup.
-        return AXLayoutObject::Create(layout_object, *this);
-      }
-      return AXTableCell::Create(ToLayoutTableCell(css_box), *this);
-    }
 
     // progress bar
     if (css_box->IsProgress())

@@ -59,11 +59,21 @@ AXRole: AXWebArea
     AXRole: AXGenericContainer
         AXRole: AXStaticText "The "Presentation th" has a static text role because it has a presentation role."
             AXRole: AXInlineTextBox "The "Presentation th" has a static text role because it has a presentation role."
-    AXRole: AXStaticText "Presentation th"
-        AXRole: AXInlineTextBox "Presentation th"
-    AXRole: AXGenericContainer
-        AXRole: AXStaticText "Normal td"
-            AXRole: AXInlineTextBox "Normal td"
+    AXRole: AXTable
+        AXRole: AXStaticText "Presentation th"
+            AXRole: AXInlineTextBox "Presentation th"
+        AXRole: AXRow
+            AXRole: AXCell "Normal td"
+                AXRole: AXStaticText "Normal td"
+                    AXRole: AXInlineTextBox "Normal td"
+        AXRole: AXColumn
+            AXRole: AXGenericContainer
+                AXRole: AXStaticText "Presentation th"
+                    AXRole: AXInlineTextBox "Presentation th"
+            AXRole: AXCell "Normal td"
+                AXRole: AXStaticText "Normal td"
+                    AXRole: AXInlineTextBox "Normal td"
+        AXRole: AXTableHeaderContainer
     AXRole: AXGenericContainer
         AXRole: AXStaticText "The row for "Explicit th" has a row role even if table has a presentation role because it has an explicit role."
             AXRole: AXInlineTextBox "The row for "Explicit th" has a row role even if table has a presentation role because it has an explicit role."

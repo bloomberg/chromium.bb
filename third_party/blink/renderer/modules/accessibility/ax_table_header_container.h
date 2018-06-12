@@ -31,12 +31,16 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_mock_object.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
+// This is an object only needed on macOS - on that platform it's a child of the
+// table, and it contains every column header cell in the entire table as its
+// children.
+//
+// TODO: remove this from Blink, implement it on the client side only for macOS.
 class AXTableHeaderContainer final : public AXMockObject {
  private:
   explicit AXTableHeaderContainer(AXObjectCacheImpl&);
