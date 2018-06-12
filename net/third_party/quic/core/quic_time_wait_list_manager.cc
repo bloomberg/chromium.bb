@@ -24,14 +24,6 @@
 
 namespace quic {
 
-namespace {
-
-// Stateless reset token used in IETF public reset packet.
-// TODO(fayang): use a real stateless reset token instead of a hard code one.
-const QuicUint128 kStatelessResetToken = 1010101;
-
-}  // namespace
-
 // A very simple alarm that just informs the QuicTimeWaitListManager to clean
 // up old connection_ids. This alarm should be cancelled and deleted before
 // the QuicTimeWaitListManager is deleted.
@@ -350,7 +342,7 @@ QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() = default;
 
 QuicUint128 QuicTimeWaitListManager::GetStatelessResetToken(
     QuicConnectionId connection_id) const {
-  return kStatelessResetToken;
+  return connection_id;
 }
 
 }  // namespace quic

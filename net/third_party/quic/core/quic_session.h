@@ -418,7 +418,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // stream to be promised before creating an active stream.
   virtual void HandleFrameOnNonexistentOutgoingStream(QuicStreamId stream_id);
 
-  bool MaybeIncreaseLargestPeerStreamId(const QuicStreamId stream_id);
+  virtual bool MaybeIncreaseLargestPeerStreamId(const QuicStreamId stream_id);
 
   void InsertLocallyClosedStreamsHighestOffset(const QuicStreamId id,
                                                QuicStreamOffset offset);

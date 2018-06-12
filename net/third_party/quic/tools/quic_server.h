@@ -17,8 +17,8 @@
 #include "net/quic/chromium/quic_chromium_connection_helper.h"
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quic/core/quic_config.h"
-#include "net/third_party/quic/core/quic_default_packet_writer.h"
 #include "net/third_party/quic/core/quic_framer.h"
+#include "net/third_party/quic/core/quic_packet_writer.h"
 #include "net/third_party/quic/core/quic_version_manager.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/tools/quic_simple_server_backend.h"
@@ -82,7 +82,7 @@ class QuicServer : public net::EpollCallbackInterface {
   int port() { return port_; }
 
  protected:
-  virtual QuicDefaultPacketWriter* CreateWriter(int fd);
+  virtual QuicPacketWriter* CreateWriter(int fd);
 
   virtual QuicDispatcher* CreateQuicDispatcher();
 

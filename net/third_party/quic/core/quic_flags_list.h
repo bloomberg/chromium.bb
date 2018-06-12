@@ -118,10 +118,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing,
     false)
 
-// If true, a separate QuicAlarm in QuicConnection is used to trigger
-// OnPathDegrading() instead of using retransmission_alarm_.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2, true)
-
 // If true, enable server proxy support in QUIC.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_server_proxy2, true)
 
@@ -147,19 +143,9 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_incremental_loss_detection,
           true)
 
-// If true, enable fast path in QuicStreamSendBuffer::FreeMemSlices.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fast_free_mem_slice, true)
-
 // Default enables QUIC ack decimation and adds a connection option to disable
 // it.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
-
-// If true, declare in flight packets lost via early retransmit, even though it
-// has no retransmittable frames.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_early_retransmit_detects_in_flight_packet_lost,
-    true)
 
 // Enables the 1RTO connection option which only sends one packet on QUIC
 // retransmission timeout, instead of 2.
@@ -215,4 +201,4 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_44, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_export_connection_write_packet_results,
-    false)
+    true)

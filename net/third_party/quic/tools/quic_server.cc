@@ -18,6 +18,7 @@
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quic/core/quic_data_reader.h"
+#include "net/third_party/quic/core/quic_default_packet_writer.h"
 #include "net/third_party/quic/core/quic_dispatcher.h"
 #include "net/third_party/quic/core/quic_epoll_alarm_factory.h"
 #include "net/third_party/quic/core/quic_epoll_connection_helper.h"
@@ -140,7 +141,7 @@ bool QuicServer::CreateUDPSocketAndListen(const QuicSocketAddress& address) {
   return true;
 }
 
-QuicDefaultPacketWriter* QuicServer::CreateWriter(int fd) {
+QuicPacketWriter* QuicServer::CreateWriter(int fd) {
   return new QuicDefaultPacketWriter(fd);
 }
 

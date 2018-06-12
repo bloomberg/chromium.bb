@@ -116,11 +116,26 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
   auto writer =
       QuicMakeUnique<QuartcPacketWriter>(quartc_session_config.packet_transport,
                                          quartc_session_config.max_packet_size);
+
+  // This setting fixes an issue with excessive ACKs being sent for reordered
+  // packets, and instead bundles those ACKs better together. Combined with
+  // ACK_DECIMATION_WITH_REORDERING we reduce the number of excessive ACKs
+  // significantly. (Each one of the two features reduces ACKs by ~20%, but
+  // together they reduce number of standalone acks by 25-30%).
+  // This flag must be set before quic connection is created.
+  SetQuicReloadableFlag(quic_deprecate_scoped_scheduler2, true);
+
   std::unique_ptr<QuicConnection> quic_connection =
       CreateQuicConnection(perspective, writer.get());
 
   QuicTagVector copt;
   copt.push_back(kNSTP);
+
+  // Enable ACK_DECIMATION_WITH_REORDERING. It requires ack_decimation to be
+  // false.
+  SetQuicReloadableFlag(quic_enable_ack_decimation, false);
+  copt.push_back(kAKD2);
+
   if (quartc_session_config.congestion_control ==
       QuartcCongestionControl::kBBR) {
     copt.push_back(kTBBR);

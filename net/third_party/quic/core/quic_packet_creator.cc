@@ -729,7 +729,7 @@ void QuicPacketCreator::SetConnectionIdLength(QuicConnectionIdLength length) {
 void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
   DCHECK(can_set_transmission_type_);
   QUIC_DVLOG_IF(1, type != packet_.transmission_type)
-      << "Setting Transmission type to "
+      << ENDPOINT << "Setting Transmission type to "
       << QuicUtils::TransmissionTypeToString(type);
   packet_.transmission_type = type;
 }
