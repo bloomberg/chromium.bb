@@ -763,6 +763,37 @@ TEST_P(ProxyResolvingClientSocketTest,
   base::RunLoop().RunUntilIdle();
 }
 
+// Regression test for crbug.com/849300. If proxy resolution is successful but
+// the proxy scheme is not supported, do not continue with connection
+// establishment.
+TEST_P(ProxyResolvingClientSocketTest, NoSupportedProxies) {
+  const GURL kDestination("https://example.com:443");
+
+  auto context = std::make_unique<net::TestURLRequestContext>(true);
+  net::ProxyConfig proxy_config;
+  // Use an unsupported proxy scheme.
+  proxy_config.proxy_rules().ParseFromString("quic://foopy:8080");
+  auto proxy_resolver_factory =
+      std::make_unique<net::MockAsyncProxyResolverFactory>(false);
+  net::ProxyResolutionService service(
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfigWithAnnotation(proxy_config,
+                                         TRAFFIC_ANNOTATION_FOR_TESTS)),
+      std::move(proxy_resolver_factory), nullptr);
+  context->set_proxy_resolution_service(&service);
+  context->Init();
+
+  ProxyResolvingClientSocketFactory proxy_resolving_socket_factory(
+      nullptr, context.get());
+  std::unique_ptr<ProxyResolvingClientSocket> socket =
+      proxy_resolving_socket_factory.CreateSocket(net::SSLConfig(),
+                                                  kDestination, use_tls_);
+  net::TestCompletionCallback callback;
+  int status = socket->Connect(callback.callback());
+  status = callback.GetResult(status);
+  EXPECT_EQ(net::ERR_NO_SUPPORTED_PROXIES, status);
+}
+
 class ReconsiderProxyAfterErrorTest
     : public testing::Test,
       public testing::WithParamInterface<::testing::tuple<bool, bool, int>> {
