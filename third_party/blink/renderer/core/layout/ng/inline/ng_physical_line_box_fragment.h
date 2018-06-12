@@ -50,10 +50,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // nullptr if the line box is empty.
   const NGPhysicalFragment* FirstLogicalLeaf() const;
   const NGPhysicalFragment* LastLogicalLeaf() const;
-  // TODO(yoichio): No one use this. Remove it.
-  // Returns the last leaf fragment in the line in logical order except line
-  // break. Returns nullptr if such fragment doesn't exist.
-  const NGPhysicalFragment* LastLogicalLeafIgnoringLineBreak() const;
 
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
