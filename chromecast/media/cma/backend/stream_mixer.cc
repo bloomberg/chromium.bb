@@ -28,8 +28,8 @@
 #include "chromecast/public/media/mixer_output_stream.h"
 #include "media/audio/audio_device_description.h"
 
-#define POST_THROUGH_SHIM_THREAD(method, ...)                                  \
-  shim_task_runner_->PostTask(                                                 \
+#define POST_THROUGH_INPUT_THREAD(method, ...)                                 \
+  input_task_runner_->PostTask(                                                \
       FROM_HERE, base::BindOnce(&PostTaskShim, mixer_task_runner_,             \
                                 base::BindOnce(method, base::Unretained(this), \
                                                ##__VA_ARGS__)));
@@ -234,8 +234,14 @@ StreamMixer::StreamMixer(
     shim_thread_->StartWithOptions(shim_options);
     shim_task_runner_ = shim_thread_->task_runner();
     shim_task_runner_->PostTask(FROM_HERE, base::BindOnce(&UseHighPriority));
+
+    input_thread_ = std::make_unique<base::Thread>("CMA mixer PI input");
+    input_thread_->StartWithOptions(shim_options);
+    input_task_runner_ = input_thread_->task_runner();
+    input_task_runner_->PostTask(FROM_HERE, base::BindOnce(&UseHighPriority));
   } else {
     shim_task_runner_ = mixer_task_runner_;
+    input_task_runner_ = mixer_task_runner_;
   }
 
   if (fixed_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
@@ -498,7 +504,7 @@ void StreamMixer::SignalError(MixerInput::Source::MixerError error) {
 }
 
 void StreamMixer::AddInput(MixerInput::Source* input_source) {
-  POST_THROUGH_SHIM_THREAD(&StreamMixer::AddInputOnThread, input_source);
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::AddInputOnThread, input_source);
 }
 
 void StreamMixer::AddInputOnThread(MixerInput::Source* input_source) {
@@ -564,7 +570,7 @@ void StreamMixer::AddInputOnThread(MixerInput::Source* input_source) {
 }
 
 void StreamMixer::RemoveInput(MixerInput::Source* input_source) {
-  POST_THROUGH_SHIM_THREAD(&StreamMixer::RemoveInputOnThread, input_source);
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::RemoveInputOnThread, input_source);
 }
 
 void StreamMixer::RemoveInputOnThread(MixerInput::Source* input_source) {
@@ -792,7 +798,7 @@ void StreamMixer::LoopbackInterrupted() {
 }
 
 void StreamMixer::SetVolume(AudioContentType type, float level) {
-  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetVolumeOnThread, type, level);
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::SetVolumeOnThread, type, level);
 }
 
 void StreamMixer::SetVolumeOnThread(AudioContentType type, float level) {
@@ -817,7 +823,7 @@ void StreamMixer::SetVolumeOnThread(AudioContentType type, float level) {
 }
 
 void StreamMixer::SetMuted(AudioContentType type, bool muted) {
-  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetMutedOnThread, type, muted);
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::SetMutedOnThread, type, muted);
 }
 
 void StreamMixer::SetMutedOnThread(AudioContentType type, bool muted) {
@@ -836,7 +842,7 @@ void StreamMixer::SetMutedOnThread(AudioContentType type, bool muted) {
 }
 
 void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
-  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetOutputLimitOnThread, type, limit);
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::SetOutputLimitOnThread, type, limit);
 }
 
 void StreamMixer::SetOutputLimitOnThread(AudioContentType type, float limit) {
@@ -868,8 +874,8 @@ void StreamMixer::SetOutputLimitOnThread(AudioContentType type, float limit) {
 
 void StreamMixer::SetVolumeMultiplier(MixerInput::Source* source,
                                       float multiplier) {
-  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetVolumeMultiplierOnThread, source,
-                           multiplier);
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::SetVolumeMultiplierOnThread, source,
+                            multiplier);
 }
 
 void StreamMixer::SetVolumeMultiplierOnThread(MixerInput::Source* source,
@@ -883,8 +889,8 @@ void StreamMixer::SetVolumeMultiplierOnThread(MixerInput::Source* source,
 
 void StreamMixer::SetPostProcessorConfig(const std::string& name,
                                          const std::string& config) {
-  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetPostProcessorConfigOnThread, name,
-                           config);
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::SetPostProcessorConfigOnThread, name,
+                            config);
 }
 
 void StreamMixer::SetPostProcessorConfigOnThread(const std::string& name,
