@@ -3,6 +3,7 @@ include_rules = [
   "+content/public",
   "+components/download/public/common",
   "+components/viz/common",
+  "+components/viz/host",
   "+components/viz/service",
   "+components/viz/test",
   "+device/geolocation/android/geolocation_jni_registrar.h",

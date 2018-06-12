@@ -72,6 +72,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_renderer_host.h"
@@ -1896,7 +1897,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialPageFocusedWidget) {
   content::RenderWidgetHost* interstitial_widget =
       interstitial_main_frame->GetRenderViewHost()->GetWidget();
 
-  content::WaitForChildFrameSurfaceReady(interstitial_main_frame);
+  content::WaitForHitTestDataOrChildSurfaceReady(interstitial_main_frame);
 
   EXPECT_NE(interstitial_widget,
             content::GetFocusedRenderWidgetHost(guest_web_contents));
@@ -4114,7 +4115,7 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestTouchFocusBrowserPluginSpecificTest,
 
   // Don't send events that need to be routed until we know the child's surface
   // is ready for hit testing.
-  WaitForGuestSurfaceReady(guest_contents);
+  content::WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
 
   // 1) BrowserPlugin should not be focused at start.
   EXPECT_FALSE(IsWebContentsBrowserPluginFocused(guest_contents));

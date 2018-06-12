@@ -19,6 +19,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
+#include "components/viz/host/hit_test/hit_test_region_observer.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/viz_host_export.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
@@ -162,6 +163,11 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void RequestCopyOfOutput(const SurfaceId& surface_id,
                            std::unique_ptr<CopyOutputRequest> request);
 
+  // Add/Remove an observer to receive notifications of when the host receives
+  // new hit test data.
+  void AddHitTestRegionObserver(HitTestRegionObserver* observer);
+  void RemoveHitTestRegionObserver(HitTestRegionObserver* observer);
+
   // CompositorFrameSinkSupportManager:
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       mojom::CompositorFrameSinkClient* client,
@@ -276,6 +282,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   base::RepeatingClosure bad_message_received_from_gpu_callback_;
 
   DisplayHitTestQueryMap display_hit_test_query_;
+
+  // TODO(jonross): Separate out all hit testing work into its own separate
+  // class.
+  base::ObserverList<HitTestRegionObserver> observers_;
 
   base::WeakPtrFactory<HostFrameSinkManager> weak_ptr_factory_;
 

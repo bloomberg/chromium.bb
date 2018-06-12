@@ -87,6 +87,14 @@ bool HitTestQuery::GetTransformToTarget(const FrameSinkId& target,
   return GetTransformToTargetRecursively(target, 0, transform);
 }
 
+bool HitTestQuery::ContainsFrameSinkId(const FrameSinkId& frame_sink_id) const {
+  for (auto& it : hit_test_data_) {
+    if (it.frame_sink_id == frame_sink_id)
+      return true;
+  }
+  return false;
+}
+
 bool HitTestQuery::FindTargetInRegionForLocation(
     EventSource event_source,
     const gfx::PointF& location_in_parent,

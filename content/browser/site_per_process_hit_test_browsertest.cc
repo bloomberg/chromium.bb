@@ -28,6 +28,7 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/common/shell_switches.h"
@@ -488,7 +489,8 @@ class SitePerProcessHitTestBrowserTest
       feature_list_.InitAndEnableFeature(
           features::kEnableVizHitTestSurfaceLayer);
     } else {
-      feature_list_.InitAndDisableFeature(features::kEnableVizHitTestDrawQuad);
+      feature_list_.InitWithFeatures({}, {features::kEnableVizHitTestDrawQuad,
+                                          features::kVizDisplayCompositor});
     }
   }
 
@@ -1398,7 +1400,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       static_cast<RenderWidgetHostViewAura*>(
           root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
 
   // Create listener for input events.
   TestInputEventObserver child_frame_monitor(
@@ -1609,6 +1611,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
   HitTestWatermark(shell(), embedded_test_server());
 }
 
+// TODO(jonross): Update this to use HitTestRegionObserver, then disable for /2
+// as currently that variant does not submit hit test regions for overlapping
+// surfaces. https://crbug.com/846798
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        HitTestStaleDataDeletedView) {
   // Have two iframes to avoid going to short circuit path during the second
@@ -4242,7 +4247,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
               ->GetRenderWidgetHost()
               ->GetView());
 
-  WaitForChildFrameSurfaceReady(grandchild_node->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(grandchild_node->current_frame_host());
 
   // Create two points to hit test: One in the child of the main frame, and
   // one in the frame nested within that. The hit test request is sent to the

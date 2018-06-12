@@ -534,14 +534,31 @@ void SendRoutedTouchTapSequence(content::WebContents* web_contents,
 // RenderWidgetHostViewAura.
 void SendRoutedGestureTapSequence(content::WebContents* web_contents,
                                   gfx::Point point);
+#endif  // defined(USE_AURA)
+
+// Deprecated: With upcoming changes to display compositing the signal of a
+// surface being activated is no longer matched to the submission of hit test
+// data.
+//
+// To wait for hit test data to be submitted see
+// HitTestRegionObserver::WaitForHitTestDataOrGuestSurfaceReady.
+//
+// To wait for frame submission see RenderFrameSubmissionObserver.
 //
 // Waits until the cc::Surface associated with a guest/cross-process-iframe
 // has been drawn for the first time. Once this method returns it should be
 // safe to assume that events sent to the top-level RenderWidgetHostView can
 // be expected to properly hit-test to this surface, if appropriate.
 void WaitForGuestSurfaceReady(content::WebContents* web_contents);
-#endif  // defined(USE_AURA)
 
+// Deprecated: With upcoming changes to display compositing the signal of a
+// surface being activated is no longer matched to the submission of hit test
+// data.
+//
+// To wait for hit test data to be submitted see
+// HitTestRegionObserver::WaitForHitTestDataOrChildSurfaceReady.
+//
+// To wait for frame submission see RenderFrameSubmissionObserver.
 // Waits until the cc::Surface associated with a cross-process child frame
 // has been drawn for the first time. Once this method returns it should be
 // safe to assume that events sent to the top-level RenderWidgetHostView can

@@ -8,14 +8,6 @@
 -TabCaptureApiPixelTest.OffscreenTabEndToEnd
 -TabCaptureApiPixelTest.OffscreenTabEvilTests
 
-#### Compositor Frame Observation Timeouts
-# WaitForChildFrameSurfaceReady crashes crbug.com/787945
--PDFExtensionHitTestTest.ContextMenuCoordinates*
--PDFExtensionHitTestTest.MouseLeave*
--SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
--WebViewTest.InterstitialPageFocusedWidget
--WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
-
 # Mac Flaking with missing browser. https://crbug.com/842664
 -IndependentOTRProfileManagerTest.DeleteImmediatelyWhenBrowsersAlreadyClosed
 

@@ -62,6 +62,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
@@ -1673,12 +1674,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, MouseLeave) {
   ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
       embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
-#if defined(USE_AURA)
-  // TODO(wjmaclean): In theory this should be used to make sure the hit testing
-  // for routing to the guest process works as intended. Not sure if not having
-  // this on Mac is an issue.
-  content::WaitForGuestSurfaceReady(guest_contents);
-#endif
+  content::WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
+
   gfx::Point point_in_parent(250, 25);
   gfx::Point point_in_pdf(250, 250);
 
@@ -1728,12 +1725,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
       embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
-#if defined(USE_AURA)
-  // TODO(wjmaclean): In theory this should be used to make sure the hit testing
-  // for routing to the guest process works as intended. Not sure if not having
-  // this on Mac is an issue.
-  content::WaitForGuestSurfaceReady(guest_contents);
-#endif
+  content::WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
+
   content::RenderProcessHost* guest_process_host =
       guest_contents->GetMainFrame()->GetProcess();
 

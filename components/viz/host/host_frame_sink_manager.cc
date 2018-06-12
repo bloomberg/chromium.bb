@@ -279,6 +279,16 @@ void HostFrameSinkManager::RequestCopyOfOutput(
   frame_sink_manager_->RequestCopyOfOutput(surface_id, std::move(request));
 }
 
+void HostFrameSinkManager::AddHitTestRegionObserver(
+    HitTestRegionObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void HostFrameSinkManager::RemoveHitTestRegionObserver(
+    HitTestRegionObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 std::unique_ptr<CompositorFrameSinkSupport>
 HostFrameSinkManager::CreateCompositorFrameSinkSupport(
     mojom::CompositorFrameSinkClient* client,
@@ -432,6 +442,11 @@ void HostFrameSinkManager::OnAggregatedHitTestRegionListUpdated(
     return;
 
   iter->second->OnAggregatedHitTestRegionListUpdated(hit_test_data);
+
+  // Ensure that HitTestQuery are updated so that observers are not working with
+  // stale data.
+  for (HitTestRegionObserver& observer : observers_)
+    observer.OnAggregatedHitTestRegionListUpdated(frame_sink_id, hit_test_data);
 }
 
 HostFrameSinkManager::FrameSinkData::FrameSinkData() = default;

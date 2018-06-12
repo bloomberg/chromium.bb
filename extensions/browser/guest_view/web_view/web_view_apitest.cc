@@ -25,6 +25,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -442,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContextMenu) {
 
   // Ensure the webview's surface is ready for hit testing.
   content::WebContents* guest_web_contents = GetGuestWebContents();
-  content::WaitForGuestSurfaceReady(guest_web_contents);
+  content::WaitForHitTestDataOrGuestSurfaceReady(guest_web_contents);
 
   // Register a ContextMenuFilter to wait for the context menu event to be sent.
   content::RenderProcessHost* guest_process_host =
