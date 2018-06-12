@@ -418,7 +418,7 @@ class BASE_EXPORT ThreadRestrictions {
 #endif
 
  private:
-  // DO NOT ADD ANY OTHER FRIEND STATEMENTS, talk to jam or brettw first.
+  // DO NOT ADD ANY OTHER FRIEND STATEMENTS.
   // BEGIN ALLOWED USAGE.
   friend class android_webview::AwFormDatabaseService;
   friend class android_webview::CookieManager;
@@ -483,8 +483,7 @@ class BASE_EXPORT ThreadRestrictions {
 
   // Constructing a ScopedAllowWait temporarily allows waiting on the current
   // thread.  Doing this is almost always incorrect, which is why we limit who
-  // can use this through friend. If you find yourself needing to use this, find
-  // another way. Talk to jam or brettw.
+  // can use this through friend.
   //
   // DEPRECATED. Use ScopedAllowBaseSyncPrimitives.
   class BASE_EXPORT ScopedAllowWait {
