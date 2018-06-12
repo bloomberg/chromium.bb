@@ -840,7 +840,7 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
     Release();
 
   if (codec_settings->codecType == webrtc::kVideoCodecVP8 &&
-      codec_settings->mode == webrtc::kScreensharing &&
+      codec_settings->mode == webrtc::VideoCodecMode::kScreensharing &&
       codec_settings->VP8().numberOfTemporalLayers > 1) {
     // This is a VP8 stream with screensharing using temporal layers for
     // temporal scalability. Since this implementation does not yet implement
