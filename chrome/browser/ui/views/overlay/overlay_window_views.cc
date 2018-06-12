@@ -10,6 +10,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/hit_test.h"
@@ -154,7 +155,10 @@ OverlayWindowViews::~OverlayWindowViews() = default;
 
 gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
   gfx::Rect work_area =
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(
+              controller_->GetInitiatorWebContents()->GetTopLevelNativeWindow())
+          .work_area();
 
   // Upper bound size of the window is 50% of the display width and height.
   max_size_ = gfx::Size(work_area.width() / 2, work_area.height() / 2);
@@ -187,24 +191,15 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
     window_size = video_bounds_.size();
   }
 
-  // The size is only empty the first time the window is shown. gfx::Point
-  // cannot be checked for being unset as the default (0,0) is the valid
-  // origin.
-  if (!window_bounds_.size().IsEmpty()) {
-    window_bounds_.set_size(window_size);
-  } else {
-    // The initial positioning is on the bottom right quadrant
-    // of the primary display work area.
-    int window_diff_width = work_area.width() - window_size.width();
-    int window_diff_height = work_area.height() - window_size.height();
+  int window_diff_width = work_area.right() - window_size.width();
+  int window_diff_height = work_area.bottom() - window_size.height();
 
-    // Keep a margin distance of 2% the average of the two window size
-    // differences, keeping the margins consistent.
-    int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
-    window_bounds_ = gfx::Rect(
-        gfx::Point(window_diff_width - buffer, window_diff_height - buffer),
-        window_size);
-  }
+  // Keep a margin distance of 2% the average of the two window size
+  // differences, keeping the margins consistent.
+  int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
+  window_bounds_ = gfx::Rect(
+      gfx::Point(window_diff_width - buffer, window_diff_height - buffer),
+      window_size);
 
   return window_bounds_;
 }
