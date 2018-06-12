@@ -14,16 +14,17 @@ namespace cc {
 class LayerTreeSettings;
 }
 
-namespace viz {
-class ContextProvider;
-}  // namespace viz
+namespace ui {
+class ContextProviderCommandBuffer;
+}  // namespace ui
 
 namespace blink {
 
 // Callback to obtain the media ContextProvider and a bool indicating whether
 // we are in software compositing mode.
 using WebContextProviderCallback = base::RepeatingCallback<void(
-    base::OnceCallback<void(bool, viz::ContextProvider*)>)>;
+    base::OnceCallback<void(bool,
+                            scoped_refptr<ui::ContextProviderCommandBuffer>)>)>;
 using WebFrameSinkDestroyedCallback = base::RepeatingCallback<void()>;
 
 // Exposes the VideoFrameSubmitter, which submits CompositorFrames containing
