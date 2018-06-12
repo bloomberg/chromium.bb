@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/off_hours/off_hours_interval.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time_interval.h"
 
 #include <tuple>
 #include <utility>
@@ -12,8 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
-namespace off_hours {
-
 namespace {
 
 enum {
@@ -32,7 +30,7 @@ constexpr base::TimeDelta kMinute = base::TimeDelta::FromMinutes(1);
 
 }  // namespace
 
-class SingleOffHoursIntervalTest
+class SingleWeeklyTimeIntervalTest
     : public testing::TestWithParam<std::tuple<int, int, int, int>> {
  protected:
   int start_day_of_week() const { return std::get<0>(GetParam()); }
@@ -41,12 +39,12 @@ class SingleOffHoursIntervalTest
   int end_time() const { return std::get<3>(GetParam()); }
 };
 
-TEST_P(SingleOffHoursIntervalTest, Constructor) {
+TEST_P(SingleWeeklyTimeIntervalTest, Constructor) {
   WeeklyTime start =
       WeeklyTime(start_day_of_week(), start_time() * kMinute.InMilliseconds());
   WeeklyTime end =
       WeeklyTime(end_day_of_week(), end_time() * kMinute.InMilliseconds());
-  OffHoursInterval interval = OffHoursInterval(start, end);
+  WeeklyTimeInterval interval = WeeklyTimeInterval(start, end);
   EXPECT_EQ(interval.start().day_of_week(), start_day_of_week());
   EXPECT_EQ(interval.start().milliseconds(),
             start_time() * kMinute.InMilliseconds());
@@ -55,10 +53,10 @@ TEST_P(SingleOffHoursIntervalTest, Constructor) {
             end_time() * kMinute.InMilliseconds());
 }
 
-TEST_P(SingleOffHoursIntervalTest, ToValue) {
+TEST_P(SingleWeeklyTimeIntervalTest, ToValue) {
   WeeklyTime start = WeeklyTime(start_day_of_week(), start_time());
   WeeklyTime end = WeeklyTime(end_day_of_week(), end_time());
-  OffHoursInterval interval = OffHoursInterval(start, end);
+  WeeklyTimeInterval interval = WeeklyTimeInterval(start, end);
   std::unique_ptr<base::DictionaryValue> interval_value = interval.ToValue();
   base::DictionaryValue expected_interval_value;
   expected_interval_value.SetDictionary("start", start.ToValue());
@@ -67,26 +65,26 @@ TEST_P(SingleOffHoursIntervalTest, ToValue) {
 }
 
 INSTANTIATE_TEST_CASE_P(OneMinuteInterval,
-                        SingleOffHoursIntervalTest,
+                        SingleWeeklyTimeIntervalTest,
                         testing::Values(std::make_tuple(kWednesday,
                                                         kMinutesInHour,
                                                         kWednesday,
                                                         kMinutesInHour + 1)));
 INSTANTIATE_TEST_CASE_P(
     TheLongestInterval,
-    SingleOffHoursIntervalTest,
+    SingleWeeklyTimeIntervalTest,
     testing::Values(
         std::make_tuple(kMonday, 0, kSunday, 24 * kMinutesInHour - 1)));
 
 INSTANTIATE_TEST_CASE_P(RandomInterval,
-                        SingleOffHoursIntervalTest,
+                        SingleWeeklyTimeIntervalTest,
                         testing::Values(std::make_tuple(kTuesday,
                                                         10 * kMinutesInHour,
                                                         kFriday,
                                                         14 * kMinutesInHour +
                                                             15)));
 
-class OffHoursIntervalAndWeeklyTimeTest
+class WeeklyTimeIntervalAndWeeklyTimeTest
     : public testing::TestWithParam<
           std::tuple<int, int, int, int, int, int, bool>> {
  protected:
@@ -99,19 +97,19 @@ class OffHoursIntervalAndWeeklyTimeTest
   bool expected_contains() const { return std::get<6>(GetParam()); }
 };
 
-TEST_P(OffHoursIntervalAndWeeklyTimeTest, Contains) {
+TEST_P(WeeklyTimeIntervalAndWeeklyTimeTest, Contains) {
   WeeklyTime start =
       WeeklyTime(start_day_of_week(), start_time() * kMinute.InMilliseconds());
   WeeklyTime end =
       WeeklyTime(end_day_of_week(), end_time() * kMinute.InMilliseconds());
-  OffHoursInterval interval = OffHoursInterval(start, end);
+  WeeklyTimeInterval interval = WeeklyTimeInterval(start, end);
   WeeklyTime weekly_time = WeeklyTime(
       current_day_of_week(), current_time() * kMinute.InMilliseconds());
   EXPECT_EQ(interval.Contains(weekly_time), expected_contains());
 }
 
 INSTANTIATE_TEST_CASE_P(TheLongestInterval,
-                        OffHoursIntervalAndWeeklyTimeTest,
+                        WeeklyTimeIntervalAndWeeklyTimeTest,
                         testing::Values(std::make_tuple(kMonday,
                                                         0,
                                                         kSunday,
@@ -129,7 +127,7 @@ INSTANTIATE_TEST_CASE_P(TheLongestInterval,
 
 INSTANTIATE_TEST_CASE_P(
     TheShortestInterval,
-    OffHoursIntervalAndWeeklyTimeTest,
+    WeeklyTimeIntervalAndWeeklyTimeTest,
     testing::Values(std::make_tuple(kMonday,
                                     0,
                                     kMonday,
@@ -142,7 +140,7 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
     CheckStartInterval,
-    OffHoursIntervalAndWeeklyTimeTest,
+    WeeklyTimeIntervalAndWeeklyTimeTest,
     testing::Values(std::make_tuple(kTuesday,
                                     10 * kMinutesInHour + 30,
                                     kFriday,
@@ -153,7 +151,7 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
     CheckEndInterval,
-    OffHoursIntervalAndWeeklyTimeTest,
+    WeeklyTimeIntervalAndWeeklyTimeTest,
     testing::Values(std::make_tuple(kTuesday,
                                     10 * kMinutesInHour + 30,
                                     kFriday,
@@ -163,7 +161,7 @@ INSTANTIATE_TEST_CASE_P(
                                     false)));
 
 INSTANTIATE_TEST_CASE_P(RandomInterval,
-                        OffHoursIntervalAndWeeklyTimeTest,
+                        WeeklyTimeIntervalAndWeeklyTimeTest,
                         testing::Values(std::make_tuple(kFriday,
                                                         17 * kMinutesInHour +
                                                             60,
@@ -180,5 +178,4 @@ INSTANTIATE_TEST_CASE_P(RandomInterval,
                                                         14 * kMinutesInHour,
                                                         false)));
 
-}  // namespace off_hours
 }  // namespace policy

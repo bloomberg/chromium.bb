@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
-#include "chrome/browser/chromeos/policy/off_hours/time_utils.h"
+#include "chrome/browser/chromeos/policy/weekly_time/time_utils.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -99,14 +99,14 @@ bool DeviceOffHoursController::IsCurrentSessionAllowedOnlyForOffHours() const {
 void DeviceOffHoursController::UpdateOffHoursPolicy(
     const em::ChromeDeviceSettingsProto& device_settings_proto) {
   device_settings_proto_ = device_settings_proto;
-  std::vector<OffHoursInterval> off_hours_intervals;
+  std::vector<WeeklyTimeInterval> off_hours_intervals;
   if (device_settings_proto.has_device_off_hours()) {
     const em::DeviceOffHoursProto& container(
         device_settings_proto.device_off_hours());
     base::Optional<std::string> timezone = ExtractTimezoneFromProto(container);
     if (timezone) {
-      off_hours_intervals = ConvertIntervalsToGmt(
-          ExtractOffHoursIntervalsFromProto(container), clock_, *timezone);
+      off_hours_intervals = weekly_time_utils::ConvertIntervalsToGmt(
+          ExtractWeeklyTimeIntervalsFromProto(container), clock_, *timezone);
     }
   }
   off_hours_intervals_.swap(off_hours_intervals);
@@ -152,8 +152,8 @@ void DeviceOffHoursController::UpdateOffHoursMode() {
       return;
     }
   }
-  StartOffHoursTimer(
-      GetDeltaTillNextOffHours(current_time, off_hours_intervals_));
+  StartOffHoursTimer(weekly_time_utils::GetDeltaTillNextTimeInterval(
+      current_time, off_hours_intervals_));
   SetOffHoursMode(false);
 }
 

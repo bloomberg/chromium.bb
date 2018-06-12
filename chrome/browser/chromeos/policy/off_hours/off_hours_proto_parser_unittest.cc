@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/off_hours/off_hours_interval.h"
-#include "chrome/browser/chromeos/policy/off_hours/weekly_time.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time_interval.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,26 +42,26 @@ const std::vector<int> kDefaultIgnoredPolicies = {kDeviceAllowNewUsersTag,
 
 struct OffHoursPolicy {
   std::string timezone;
-  std::vector<OffHoursInterval> intervals;
+  std::vector<WeeklyTimeInterval> intervals;
   std::vector<int> ignored_policy_proto_tags;
 
   OffHoursPolicy(const std::string& timezone,
-                 const std::vector<OffHoursInterval>& intervals,
+                 const std::vector<WeeklyTimeInterval>& intervals,
                  const std::vector<int>& ignored_policy_proto_tags)
       : timezone(timezone),
         intervals(intervals),
         ignored_policy_proto_tags(ignored_policy_proto_tags) {}
 };
 
-em::DeviceOffHoursIntervalProto ConvertOffHoursIntervalToProto(
-    const OffHoursInterval& off_hours_interval) {
-  em::DeviceOffHoursIntervalProto interval_proto;
+em::WeeklyTimeIntervalProto ConvertWeeklyTimeIntervalToProto(
+    const WeeklyTimeInterval& weekly_time_interval) {
+  em::WeeklyTimeIntervalProto interval_proto;
   em::WeeklyTimeProto* start = interval_proto.mutable_start();
   em::WeeklyTimeProto* end = interval_proto.mutable_end();
-  start->set_day_of_week(kWeekdays[off_hours_interval.start().day_of_week()]);
-  start->set_time(off_hours_interval.start().milliseconds());
-  end->set_day_of_week(kWeekdays[off_hours_interval.end().day_of_week()]);
-  end->set_time(off_hours_interval.end().milliseconds());
+  start->set_day_of_week(kWeekdays[weekly_time_interval.start().day_of_week()]);
+  start->set_time(weekly_time_interval.start().milliseconds());
+  end->set_day_of_week(kWeekdays[weekly_time_interval.end().day_of_week()]);
+  end->set_time(weekly_time_interval.end().milliseconds());
   return interval_proto;
 }
 
@@ -74,7 +74,7 @@ void SetOffHoursPolicyToProto(em::ChromeDeviceSettingsProto* proto,
   RemoveOffHoursPolicyFromProto(proto);
   auto* off_hours = proto->mutable_device_off_hours();
   for (auto interval : off_hours_policy.intervals) {
-    auto interval_proto = ConvertOffHoursIntervalToProto(interval);
+    auto interval_proto = ConvertWeeklyTimeIntervalToProto(interval);
     auto* cur = off_hours->add_intervals();
     *cur = interval_proto;
   }
@@ -97,7 +97,7 @@ class ConvertOffHoursProtoToValueTest : public testing::Test {
 TEST_F(ConvertOffHoursProtoToValueTest, Test) {
   WeeklyTime start = WeeklyTime(1, kHour.InMilliseconds());
   WeeklyTime end = WeeklyTime(3, kHour.InMilliseconds() * 2);
-  std::vector<OffHoursInterval> intervals = {OffHoursInterval(start, end)};
+  std::vector<WeeklyTimeInterval> intervals = {WeeklyTimeInterval(start, end)};
 
   em::ChromeDeviceSettingsProto proto;
   SetOffHoursPolicyToProto(

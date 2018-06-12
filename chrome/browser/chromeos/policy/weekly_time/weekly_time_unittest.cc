@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/off_hours/weekly_time.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
 
 #include <tuple>
 #include <utility>
@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
-namespace off_hours {
 
 namespace {
 
@@ -198,5 +197,4 @@ INSTANTIATE_TEST_CASE_P(
                                     kThursday,
                                     15 * kMinutesInHour + 24)));
 
-}  // namespace off_hours
 }  // namespace policy

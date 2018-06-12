@@ -11052,7 +11052,7 @@
             'type': 'array',
             'items': {
               'type': 'object',
-              'id': 'DeviceOffHoursIntervals',
+              'id': 'WeeklyTimeIntervals',
               'properties': {
                 'start': {
                   'type': 'object',

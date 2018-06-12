@@ -1,18 +1,19 @@
+
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_TIME_UTILS_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_TIME_UTILS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_TIME_UTILS_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_TIME_UTILS_H_
 
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/policy/off_hours/off_hours_interval.h"
-#include "chrome/browser/chromeos/policy/off_hours/weekly_time.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
+#include "chrome/browser/chromeos/policy/weekly_time/weekly_time_interval.h"
 
 namespace policy {
-namespace off_hours {
+namespace weekly_time_utils {
 
 // Put time in milliseconds which is added to local time to get GMT time to
 // |offset| considering daylight from |clock|. Return true if there was no
@@ -22,17 +23,17 @@ bool GetOffsetFromTimezoneToGmt(const std::string& timezone,
                                 int* offset);
 
 // Convert time intervals from |timezone| to GMT timezone.
-std::vector<OffHoursInterval> ConvertIntervalsToGmt(
-    const std::vector<OffHoursInterval>& intervals,
+std::vector<WeeklyTimeInterval> ConvertIntervalsToGmt(
+    const std::vector<WeeklyTimeInterval>& intervals,
     base::Clock* clock,
     const std::string& timezone);
 
-// Return duration till next "OffHours" time interval.
-base::TimeDelta GetDeltaTillNextOffHours(
+// Return duration till next weekly time interval.
+base::TimeDelta GetDeltaTillNextTimeInterval(
     const WeeklyTime& current_time,
-    const std::vector<OffHoursInterval>& off_hours_intervals);
+    const std::vector<WeeklyTimeInterval>& weekly_time_intervals);
 
-}  // namespace off_hours
+}  // namespace weekly_time_utils
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_TIME_UTILS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_TIME_UTILS_H_

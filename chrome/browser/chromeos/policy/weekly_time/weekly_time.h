@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_WEEKLY_TIME_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_WEEKLY_TIME_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_
 
 #include <memory>
 
@@ -12,7 +12,6 @@
 #include "base/values.h"
 
 namespace policy {
-namespace off_hours {
 
 // WeeklyTime class contains day of week and time. Day of week is number from 1
 // to 7 (1 = Monday, 2 = Tuesday, etc.) Time is in milliseconds from the
@@ -20,6 +19,10 @@ namespace off_hours {
 class WeeklyTime {
  public:
   WeeklyTime(int day_of_week, int milliseconds);
+
+  WeeklyTime(const WeeklyTime& rhs);
+
+  WeeklyTime& operator=(const WeeklyTime& rhs);
 
   // Return DictionaryValue in format:
   // { "day_of_week" : int # value is from 1 to 7 (1 = Monday, 2 = Tuesday,
@@ -51,7 +54,6 @@ class WeeklyTime {
   int milliseconds_;
 };
 
-}  // namespace off_hours
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_WEEKLY_TIME_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_WEEKLY_TIME_WEEKLY_TIME_H_
