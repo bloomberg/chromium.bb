@@ -10,10 +10,28 @@
     android:layout_height="match_parent"
     style="@style/ModernToolbar" >
 
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
     <android.support.v7.widget.AppCompatSpinner
         android:id="@+id/spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:backgroundTint="@color/dark_mode_tint" />
+        app:backgroundTint="@color/dark_mode_tint"
+        android:layout_centerVertical="true" />
+
+        <TextView
+            android:id="@+id/storage_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textAppearance="@style/BlackDisabledText2"
+            android:layout_below="@id/spinner"
+            android:paddingTop="9dp"
+            android:maxLines="1" />
+
+</RelativeLayout>
 
 </org.chromium.chrome.browser.download.ui.DownloadManagerToolbar>
