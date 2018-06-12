@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -21,6 +21,8 @@ namespace secure_channel {
 namespace {
 
 const char kTestFailureReason[] = "testFailureReason";
+const char kTestRemoteDeviceId[] = "testRemoteDeviceId";
+const char kTestLocalDeviceId[] = "testLocalDeviceId";
 
 // Since ConnectToDeviceOperationBase is templatized, a concrete implementation
 // is needed for its test.
@@ -32,13 +34,12 @@ class TestConnectToDeviceOperation
           success_callback,
       ConnectToDeviceOperation<std::string>::ConnectionFailedCallback
           failure_callback,
-      const cryptauth::RemoteDeviceRef& device_to_connect_to,
+      const DeviceIdPair& device_id_pair,
       base::OnceClosure destructor_callback) {
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     auto operation = base::WrapUnique(new TestConnectToDeviceOperation(
         std::move(success_callback), std::move(failure_callback),
-        device_to_connect_to, std::move(destructor_callback),
-        test_task_runner));
+        device_id_pair, std::move(destructor_callback), test_task_runner));
     test_task_runner->RunUntilIdle();
     return operation;
   }
@@ -49,16 +50,11 @@ class TestConnectToDeviceOperation
   bool has_canceled_connection() { return has_canceled_connection_; }
 
   // ConnectToDeviceOperationBase<std::string>:
-  void AttemptConnectionToDevice(
-      const cryptauth::RemoteDeviceRef& device_to_connect_to) override {
-    EXPECT_EQ(remote_device_, device_to_connect_to);
+  void AttemptConnectionToDevice() override {
     has_attempted_connection_ = true;
   }
 
-  void CancelConnectionAttemptToDevice(
-      const cryptauth::RemoteDeviceRef& device_to_cancel_connection_to)
-      override {
-    EXPECT_EQ(remote_device_, device_to_cancel_connection_to);
+  void CancelConnectionAttemptToDevice() override {
     has_canceled_connection_ = true;
   }
 
@@ -72,18 +68,16 @@ class TestConnectToDeviceOperation
           success_callback,
       ConnectToDeviceOperation<std::string>::ConnectionFailedCallback
           failure_callback,
-      const cryptauth::RemoteDeviceRef& device_to_connect_to,
+      const DeviceIdPair& device_id_pair,
       base::OnceClosure destructor_callback,
       scoped_refptr<base::TestSimpleTaskRunner> test_task_runner)
       : ConnectToDeviceOperationBase<std::string>(
             std::move(success_callback),
             std::move(failure_callback),
-            device_to_connect_to,
+            device_id_pair,
             std::move(destructor_callback),
-            test_task_runner),
-        remote_device_(device_to_connect_to) {}
+            test_task_runner) {}
 
-  const cryptauth::RemoteDeviceRef remote_device_;
   bool has_attempted_connection_ = false;
   bool has_canceled_connection_ = false;
 };
@@ -93,7 +87,7 @@ class TestConnectToDeviceOperation
 class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
  protected:
   SecureChannelConnectToDeviceOperationBaseTest()
-      : test_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
+      : test_device_id_pair_(kTestRemoteDeviceId, kTestLocalDeviceId) {}
 
   ~SecureChannelConnectToDeviceOperationBaseTest() override = default;
 
@@ -105,7 +99,7 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
         base::BindOnce(&SecureChannelConnectToDeviceOperationBaseTest::
                            OnFailedConnectionAttempt,
                        base::Unretained(this)),
-        test_device_,
+        test_device_id_pair_,
         base::BindOnce(
             &SecureChannelConnectToDeviceOperationBaseTest::OnOperationDeleted,
             base::Unretained(this)));
@@ -130,8 +124,6 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
     return last_failure_detail_;
   }
 
-  const cryptauth::RemoteDeviceRef& test_device() const { return test_device_; }
-
  private:
   void OnSuccessfulConnectionAttempt(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
@@ -145,7 +137,7 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
   void OnOperationDeleted() { destructor_callback_called_ = true; }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceRef test_device_;
+  const DeviceIdPair test_device_id_pair_;
 
   std::unique_ptr<AuthenticatedChannel> last_authenticated_channel_;
   std::string last_failure_detail_;

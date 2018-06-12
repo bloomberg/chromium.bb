@@ -10,8 +10,9 @@
 
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
+#include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/connection_details.h"
-#include "chromeos/services/secure_channel/connection_role.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/pending_connection_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
@@ -26,10 +27,8 @@ class FakePendingConnectionManager : public PendingConnectionManager {
   ~FakePendingConnectionManager() override;
 
   using HandledRequestsList =
-      std::vector<std::tuple<ConnectionDetails,
-                             std::string,  // Local device ID.
+      std::vector<std::tuple<ConnectionAttemptDetails,
                              std::unique_ptr<ClientConnectionParameters>,
-                             ConnectionRole,
                              ConnectionPriority>>;
   HandledRequestsList& handled_requests() { return handled_requests_; }
 
@@ -46,10 +45,8 @@ class FakePendingConnectionManager : public PendingConnectionManager {
 
  private:
   void HandleConnectionRequest(
-      const ConnectionDetails& connection_details,
-      const std::string& local_device_id,
+      const ConnectionAttemptDetails& connection_attempt_details,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
-      ConnectionRole connection_role,
       ConnectionPriority connection_priority) override;
 
   HandledRequestsList handled_requests_;

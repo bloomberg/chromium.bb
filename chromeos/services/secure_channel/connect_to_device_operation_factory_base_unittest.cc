@@ -8,9 +8,9 @@
 
 #include "base/bind_helpers.h"
 #include "base/test/gtest_util.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,15 +20,17 @@ namespace secure_channel {
 
 namespace {
 
+const char kTestRemoteDeviceId[] = "testRemoteDeviceId";
+const char kTestLocalDeviceId[] = "testLocalDeviceId";
+
 // Since ConnectToDeviceOperationFactoryBase is templatized, a concrete
 // implementation is needed for its test.
 class TestConnectToDeviceOperationFactory
     : public ConnectToDeviceOperationFactoryBase<std::string> {
  public:
-  TestConnectToDeviceOperationFactory(
-      const cryptauth::RemoteDeviceRef& device_to_connect_to)
-      : ConnectToDeviceOperationFactoryBase<std::string>(device_to_connect_to),
-        remote_device_(device_to_connect_to) {}
+  TestConnectToDeviceOperationFactory(const DeviceIdPair& device_id_pair)
+      : ConnectToDeviceOperationFactoryBase<std::string>(device_id_pair),
+        device_id_pair_(device_id_pair) {}
 
   ~TestConnectToDeviceOperationFactory() override = default;
 
@@ -43,21 +45,21 @@ class TestConnectToDeviceOperationFactory
           success_callback,
       typename ConnectToDeviceOperation<std::string>::ConnectionFailedCallback
           failure_callback,
-      const cryptauth::RemoteDeviceRef& device_to_connect_to,
+      const DeviceIdPair& device_id_pair,
       base::OnceClosure destructor_callback) override {
     // The previous destructor callback should have been invoked by the time
     // this function runs.
     EXPECT_FALSE(last_destructor_callback_);
     last_destructor_callback_ = std::move(destructor_callback);
 
-    EXPECT_EQ(remote_device_, device_to_connect_to);
+    EXPECT_EQ(device_id_pair_, device_id_pair);
 
     return std::make_unique<FakeConnectToDeviceOperation>(
         std::move(success_callback), std::move(failure_callback));
   }
 
  private:
-  const cryptauth::RemoteDeviceRef remote_device_;
+  const DeviceIdPair device_id_pair_;
 
   base::OnceClosure last_destructor_callback_;
 };
@@ -68,13 +70,13 @@ class SecureChannelConnectToDeviceOperationFactoryBaseTest
     : public testing::Test {
  protected:
   SecureChannelConnectToDeviceOperationFactoryBaseTest()
-      : test_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
+      : test_device_id_pair_(kTestRemoteDeviceId, kTestLocalDeviceId) {}
 
   ~SecureChannelConnectToDeviceOperationFactoryBaseTest() override = default;
 
   void SetUp() override {
-    test_factory_ =
-        std::make_unique<TestConnectToDeviceOperationFactory>(test_device_);
+    test_factory_ = std::make_unique<TestConnectToDeviceOperationFactory>(
+        test_device_id_pair_);
   }
 
   std::unique_ptr<ConnectToDeviceOperation<std::string>> CallCreateOperation() {
@@ -101,7 +103,7 @@ class SecureChannelConnectToDeviceOperationFactoryBaseTest
   }
 
  private:
-  const cryptauth::RemoteDeviceRef test_device_;
+  const DeviceIdPair test_device_id_pair_;
 
   std::unique_ptr<TestConnectToDeviceOperationFactory> test_factory_;
 

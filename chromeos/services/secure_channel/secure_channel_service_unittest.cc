@@ -348,11 +348,12 @@ class SecureChannelServiceTest : public testing::Test {
       return;
 
     for (size_t i = 0; i < pending_metadata_list.size(); ++i) {
-      VerifyHandledRequest(connection_details,
-                           std::get<0>(pending_metadata_list[i]),
-                           std::get<1>(pending_metadata_list[i]),
-                           std::get<2>(pending_metadata_list[i]),
-                           std::get<3>(pending_metadata_list[i]), i);
+      VerifyHandledRequest(
+          DeviceIdPair(device_id, std::get<1>(pending_metadata_list[i])),
+          std::get<0>(pending_metadata_list[i]),
+          std::get<2>(pending_metadata_list[i]),
+          std::get<3>(pending_metadata_list[i]),
+          connection_details.connection_medium(), i);
     }
   }
 
@@ -388,13 +389,14 @@ class SecureChannelServiceTest : public testing::Test {
         fake_pending_connection_manager()->handled_requests();
     EXPECT_EQ(num_handled_requests_before_call + 1u, handled_requests.size());
 
-    VerifyHandledRequest(
-        ConnectionDetails(device_to_connect.GetDeviceId(),
-                          ConnectionMedium::kBluetoothLowEnergy),
-        id, local_device.GetDeviceId(),
-        is_listener ? ConnectionRole::kListenerRole
-                    : ConnectionRole::kInitiatorRole,
-        connection_priority, handled_requests.size() - 1);
+    VerifyHandledRequest(DeviceIdPair(device_to_connect.GetDeviceId(),
+                                      local_device.GetDeviceId()),
+                         id,
+                         is_listener ? ConnectionRole::kListenerRole
+                                     : ConnectionRole::kInitiatorRole,
+                         connection_priority,
+                         ConnectionMedium::kBluetoothLowEnergy,
+                         handled_requests.size() - 1);
   }
 
   void AttemptConnectionAndVerifyActiveConnection(
@@ -457,21 +459,22 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void VerifyHandledRequest(
-      const ConnectionDetails& expected_connection_details,
+      const DeviceIdPair& expected_device_id_pair,
       const base::UnguessableToken& expected_client_parameters_id,
-      const std::string& expected_local_device_id,
       ConnectionRole expected_connection_role,
       ConnectionPriority expected_connection_priority,
+      ConnectionMedium expected_connection_medium,
       size_t expected_pending_connection_manager_index) {
     const auto& request =
         fake_pending_connection_manager()->handled_requests().at(
             expected_pending_connection_manager_index);
 
-    EXPECT_EQ(expected_connection_details, std::get<0>(request));
-    EXPECT_EQ(expected_local_device_id, std::get<1>(request));
-    EXPECT_EQ(expected_client_parameters_id, std::get<2>(request)->id());
-    EXPECT_EQ(expected_connection_role, std::get<3>(request));
-    EXPECT_EQ(expected_connection_priority, std::get<4>(request));
+    EXPECT_EQ(ConnectionAttemptDetails(expected_device_id_pair,
+                                       expected_connection_medium,
+                                       expected_connection_role),
+              std::get<0>(request));
+    EXPECT_EQ(expected_client_parameters_id, std::get<1>(request)->id());
+    EXPECT_EQ(expected_connection_priority, std::get<2>(request));
   }
 
   void AttemptConnectionAndVerifyRejection(

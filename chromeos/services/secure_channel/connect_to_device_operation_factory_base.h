@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation_factory.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 
 namespace chromeos {
 
@@ -26,9 +26,8 @@ class ConnectToDeviceOperationFactoryBase
   ~ConnectToDeviceOperationFactoryBase() override = default;
 
  protected:
-  ConnectToDeviceOperationFactoryBase(
-      const cryptauth::RemoteDeviceRef& device_to_connect_to)
-      : device_to_connect_to_(device_to_connect_to), weak_ptr_factory_(this) {}
+  ConnectToDeviceOperationFactoryBase(const DeviceIdPair& device_id_pair)
+      : device_id_pair_(device_id_pair), weak_ptr_factory_(this) {}
 
   // Derived types should overload this function, passing the provided
   // parameters to the constructor of a type derived from
@@ -39,7 +38,7 @@ class ConnectToDeviceOperationFactoryBase
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionFailedCallback failure_callback,
-      const cryptauth::RemoteDeviceRef& device_to_connect_to,
+      const DeviceIdPair& device_id_pair,
       base::OnceClosure destructor_callback) = 0;
 
  private:
@@ -60,7 +59,7 @@ class ConnectToDeviceOperationFactoryBase
     is_last_operation_active_ = true;
     return PerformCreateOperation(
         std::move(success_callback), std::move(failure_callback),
-        device_to_connect_to_,
+        device_id_pair_,
         base::BindOnce(&ConnectToDeviceOperationFactoryBase<
                            FailureDetailType>::OnPreviousOperationDeleted,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -68,7 +67,7 @@ class ConnectToDeviceOperationFactoryBase
 
   void OnPreviousOperationDeleted() { is_last_operation_active_ = false; }
 
-  const cryptauth::RemoteDeviceRef device_to_connect_to_;
+  const DeviceIdPair device_id_pair_;
   bool is_last_operation_active_ = false;
 
   base::WeakPtrFactory<ConnectToDeviceOperationFactoryBase> weak_ptr_factory_;

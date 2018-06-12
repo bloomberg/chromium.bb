@@ -13,6 +13,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/active_connection_manager_impl.h"
 #include "chromeos/services/secure_channel/client_connection_parameters_impl.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/pending_connection_manager_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 
@@ -47,12 +48,10 @@ SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
     ConnectionRequestWaitingForDisconnection(
         std::unique_ptr<ClientConnectionParameters>
             client_connection_parameters,
-        const std::string& local_device_id,
-        ConnectionRole connection_role,
+        ConnectionAttemptDetails connection_attempt_details,
         ConnectionPriority connection_priority)
     : client_connection_parameters(std::move(client_connection_parameters)),
-      local_device_id(local_device_id),
-      connection_role(connection_role),
+      connection_attempt_details(connection_attempt_details),
       connection_priority(connection_priority) {}
 
 SecureChannelImpl::ConnectionRequestWaitingForDisconnection::
@@ -87,7 +86,8 @@ void SecureChannelImpl::ListenForConnectionFromDevice(
       ApiFunctionName::kListenForConnection, device_to_connect, local_device,
       ClientConnectionParametersImpl::Factory::Get()->BuildInstance(
           feature, std::move(delegate)),
-      ConnectionRole::kListenerRole, connection_priority);
+      ConnectionRole::kListenerRole, connection_priority,
+      ConnectionMedium::kBluetoothLowEnergy);
 }
 
 void SecureChannelImpl::InitiateConnectionToDevice(
@@ -100,7 +100,8 @@ void SecureChannelImpl::InitiateConnectionToDevice(
       ApiFunctionName::kInitiateConnection, device_to_connect, local_device,
       ClientConnectionParametersImpl::Factory::Get()->BuildInstance(
           feature, std::move(delegate)),
-      ConnectionRole::kInitiatorRole, connection_priority);
+      ConnectionRole::kInitiatorRole, connection_priority,
+      ConnectionMedium::kBluetoothLowEnergy);
 }
 
 void SecureChannelImpl::OnDisconnected(
@@ -123,17 +124,11 @@ void SecureChannelImpl::OnDisconnected(
     PA_LOG(INFO) << "SecureChannelImpl::OnDisconnected(): Disconnection "
                  << "completed; starting pending connection attempt. Request: "
                  << *details.client_connection_parameters
-                 << ", Local device ID: \""
-                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                        details.local_device_id)
-                 << "\""
-                 << ", Role: " << details.connection_role
-                 << ", Priority: " << details.connection_priority
-                 << ", Details: " << connection_details;
+                 << ", Attempt details: " << details.connection_attempt_details;
     pending_connection_manager_->HandleConnectionRequest(
-        connection_details, details.local_device_id,
+        details.connection_attempt_details,
         std::move(details.client_connection_parameters),
-        details.connection_role, details.connection_priority);
+        details.connection_priority);
   }
 
   // Now that each item has been passed on, remove the map entry.
@@ -174,7 +169,8 @@ void SecureChannelImpl::ProcessConnectionRequest(
     const cryptauth::RemoteDevice& local_device,
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
     ConnectionRole connection_role,
-    ConnectionPriority connection_priority) {
+    ConnectionPriority connection_priority,
+    ConnectionMedium connection_medium) {
   // Check 1: Is the provided ConnectionDelegate valid? If not, return early.
   if (CheckForInvalidRequest(api_fn_name, client_connection_parameters.get()))
     return;
@@ -196,8 +192,11 @@ void SecureChannelImpl::ProcessConnectionRequest(
   }
 
   // At this point, the request has been deemed valid.
-  ConnectionDetails connection_details(device_to_connect.GetDeviceId(),
-                                       ConnectionMedium::kBluetoothLowEnergy);
+  ConnectionAttemptDetails connection_attempt_details(
+      device_to_connect.GetDeviceId(), local_device.GetDeviceId(),
+      connection_medium, connection_role);
+  ConnectionDetails connection_details =
+      connection_attempt_details.GetAssociatedConnectionDetails();
   switch (active_connection_manager_->GetConnectionState(connection_details)) {
     case ActiveConnectionManager::ConnectionState::kActiveConnectionExists:
       PA_LOG(INFO) << "SecureChannelImpl::" << api_fn_name << "(): Adding "
@@ -224,8 +223,7 @@ void SecureChannelImpl::ProcessConnectionRequest(
                    << ", Priority: " << connection_priority
                    << ", Details: " << connection_details;
       pending_connection_manager_->HandleConnectionRequest(
-          connection_details, local_device.GetDeviceId(),
-          std::move(client_connection_parameters), connection_role,
+          connection_attempt_details, std::move(client_connection_parameters),
           connection_priority);
       break;
 
@@ -243,8 +241,8 @@ void SecureChannelImpl::ProcessConnectionRequest(
                    << ", Priority: " << connection_priority
                    << ", Details: " << connection_details;
       disconnecting_details_to_requests_map_[connection_details].emplace_back(
-          std::move(client_connection_parameters), local_device.GetDeviceId(),
-          connection_role, connection_priority);
+          std::move(client_connection_parameters), connection_attempt_details,
+          connection_priority);
       break;
   }
 }

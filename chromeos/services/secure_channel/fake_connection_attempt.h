@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_attempt.h"
+#include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 
 namespace chromeos {
@@ -24,8 +25,9 @@ class ConnectionAttemptDelegate;
 // std::string.
 class FakeConnectionAttempt : public ConnectionAttempt<std::string> {
  public:
-  FakeConnectionAttempt(ConnectionAttemptDelegate* delegate,
-                        const ConnectionDetails& connection_details);
+  FakeConnectionAttempt(
+      ConnectionAttemptDelegate* delegate,
+      const ConnectionAttemptDetails& connection_attempt_details);
   ~FakeConnectionAttempt() override;
 
   using IdToRequestMap =
