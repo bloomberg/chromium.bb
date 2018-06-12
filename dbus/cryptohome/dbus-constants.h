@@ -45,10 +45,6 @@ const char kCryptohomeRemoveTrackedSubdirectories[] =
     "RemoveTrackedSubdirectories";
 const char kCryptohomeAsyncRemoveTrackedSubdirectories[] =
     "AsyncRemoveTrackedSubdirectories";
-const char kCryptohomeDoAutomaticFreeDiskSpaceControl[] =
-    "DoAutomaticFreeDiskSpaceControl";
-const char kCryptohomeAsyncDoAutomaticFreeDiskSpaceControl[] =
-    "AsyncDoAutomaticFreeDiskSpaceControl";
 const char kCryptohomeAsyncDoesUsersExist[] = "AsyncDoesUsersExist";
 const char kCryptohomeInstallAttributesGet[] = "InstallAttributesGet";
 const char kCryptohomeInstallAttributesSet[] = "InstallAttributesSet";
