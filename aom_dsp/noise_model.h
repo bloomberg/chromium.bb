@@ -261,6 +261,25 @@ void aom_noise_model_save_latest(aom_noise_model_t *noise_model);
 int aom_noise_model_get_grain_parameters(aom_noise_model_t *const noise_model,
                                          aom_film_grain_t *film_grain);
 
+/*!\brief Perform a Wiener filter denoising in 2D using the provided noise psd.
+ *
+ * \param[in]     data            Raw frame data
+ * \param[out]    denoised        Denoised frame data
+ * \param[in]     w               Frame width
+ * \param[in]     h               Frame height
+ * \param[in]     stride          Stride of the planes
+ * \param[in]     chroma_sub_log2 Chroma subsampling for planes != 0.
+ * \param[in]     noise_psd       The power spectral density of the noise
+ * \param[in]     block_size      The size of blocks
+ * \param[in]     bit_depth       Bit depth of the image
+ * \param[in]     use_highbd      If true, uint8 pointers are interpreted as
+ *                                uint16 and stride is measured in uint16.
+ *                                This must be true when bit_depth >= 10.
+ */
+int aom_wiener_denoise_2d(const uint8_t *const data[3], uint8_t *denoised[3],
+                          int w, int h, int stride[3], int chroma_sub_log2[2],
+                          float *noise_psd[3], int block_size, int bit_depth,
+                          int use_highbd);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
