@@ -54,10 +54,7 @@ class SpeechRecognitionEngineTest
   void OnSpeechRecognitionEngineResults(
       const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results)
       override {
-    std::vector<blink::mojom::SpeechRecognitionResultPtr> results_copy;
-    for (auto& result : results)
-      results_copy.push_back(result.Clone());
-    results_.push(std::move(results_copy));
+    results_.push(mojo::Clone(results));
   }
   void OnSpeechRecognitionEngineEndOfUtterance() override {
     ++end_of_utterance_counter_;
