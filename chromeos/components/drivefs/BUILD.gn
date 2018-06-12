@@ -30,21 +30,6 @@ component("drivefs") {
   defines = [ "IS_DRIVEFS_IMPL" ]
 }
 
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "fake_drivefs.cc",
-    "fake_drivefs.h",
-  ]
-  deps = [
-    ":drivefs",
-    "//base",
-    "//chromeos",
-    "//chromeos/components/drivefs/mojom",
-    "//net",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [

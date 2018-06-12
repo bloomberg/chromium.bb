@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "url/gurl.h"
 
 namespace chromeos {
 
@@ -22,9 +21,6 @@ namespace {
 // Performs fake mounting by creating a directory with a dummy file.
 MountError PerformFakeMount(const std::string& source_path,
                             const base::FilePath& mounted_path) {
-  if (mounted_path.empty())
-    return MOUNT_ERROR_INVALID_ARGUMENT;
-
   // Just create an empty directory and shows it as the mounted directory.
   if (!base::CreateDirectory(mounted_path)) {
     DLOG(ERROR) << "Failed to create directory at " << mounted_path.value();
@@ -82,10 +78,6 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
   MountType type =
       source_format.empty() ? MOUNT_TYPE_DEVICE : MOUNT_TYPE_ARCHIVE;
 
-  // Network storage source paths are URIs.
-  if (GURL(source_path).is_valid())
-    type = MOUNT_TYPE_NETWORK_STORAGE;
-
   base::FilePath mounted_path;
   switch (type) {
     case MOUNT_TYPE_ARCHIVE:
@@ -97,11 +89,9 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
           base::FilePath::FromUTF8Unsafe(mount_label));
       break;
     case MOUNT_TYPE_NETWORK_STORAGE:
-      if (custom_mount_point_callback_) {
-        mounted_path =
-            custom_mount_point_callback_.Run(source_path, mount_options);
-      }
-      break;
+      // TODO(sammc): Support mounting fake network storage.
+      NOTREACHED();
+      return;
     case MOUNT_TYPE_INVALID:
       NOTREACHED();
       return;
@@ -225,11 +215,6 @@ void FakeCrosDisksClient::NotifyRenameCompleted(
     const std::string& device_path) {
   for (auto& observer : observer_list_)
     observer.OnRenameCompleted(error_code, device_path);
-}
-
-void FakeCrosDisksClient::SetCustomMountPointCallback(
-    FakeCrosDisksClient::CustomMountPointCallback custom_mount_point_callback) {
-  custom_mount_point_callback_ = std::move(custom_mount_point_callback);
 }
 
 }  // namespace chromeos
