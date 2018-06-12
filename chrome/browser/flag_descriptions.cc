@@ -1148,7 +1148,8 @@ const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsName[] =
     "Omnibox UI Hide Steady-State URL Scheme and Trivial Subdomains";
 const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription[] =
     "In the Omnibox, hide the scheme and trivial subdomains from steady state "
-    "displayed URLs. Hidden portions are restored during editing.";
+    "displayed URLs. Hidden portions are restored during editing. For Mac, "
+    "this flag will have no effect unless MacViews is enabled.";
 
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
