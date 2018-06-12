@@ -4038,6 +4038,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     context = web::NavigationContextImpl::CreateNavigationContext(
         _webStateImpl, URL, /*has_user_gesture=*/true, loadHTMLTransition,
         /*is_renderer_initiated=*/false);
+    context->SetNavigationItemUniqueID(self.currentNavItem->GetUniqueID());
   } else {
     context = [self registerLoadRequestForURL:URL
                                      referrer:web::Referrer()
