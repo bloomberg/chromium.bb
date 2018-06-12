@@ -19,7 +19,8 @@ namespace extensions {
 
 namespace {
 
-const char kInvalidTypeOfParameter[] = "Attribute '%s' has an invalid type";
+const char kIsBookmarkedInvalidTypeOfParameter[] =
+    "Attribute '%s' has an invalid type";
 const char kIsBookmarkedRequiresBookmarkPermission[] =
     "Property 'isBookmarked' requires 'bookmarks' permission";
 
@@ -59,7 +60,7 @@ DeclarativeContentIsBookmarkedPredicate::Create(
           evaluator, extension, is_bookmarked));
     }
   } else {
-    *error = base::StringPrintf(kInvalidTypeOfParameter,
+    *error = base::StringPrintf(kIsBookmarkedInvalidTypeOfParameter,
                                 declarative_content_constants::kIsBookmarked);
     return std::unique_ptr<DeclarativeContentIsBookmarkedPredicate>();
   }

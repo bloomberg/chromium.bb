@@ -54,12 +54,12 @@ const char kCheckedKey[] = "checked";
 const char kContextsKey[] = "contexts";
 const char kDocumentURLPatternsKey[] = "document_url_patterns";
 const char kEnabledKey[] = "enabled";
-const char kIncognitoKey[] = "incognito";
+const char kMenuManagerIncognitoKey[] = "incognito";
 const char kParentUIDKey[] = "parent_uid";
 const char kStringUIDKey[] = "string_uid";
 const char kTargetURLPatternsKey[] = "target_url_patterns";
 const char kTitleKey[] = "title";
-const char kTypeKey[] = "type";
+const char kMenuManagerTypeKey[] = "type";
 const char kVisibleKey[] = "visible";
 
 void SetIdKeyValue(base::DictionaryValue* properties,
@@ -205,8 +205,8 @@ std::unique_ptr<base::DictionaryValue> MenuItem::ToValue() const {
   // string IDs for items.
   DCHECK_EQ(0, id_.uid);
   value->SetString(kStringUIDKey, id_.string_uid);
-  value->SetBoolean(kIncognitoKey, id_.incognito);
-  value->SetInteger(kTypeKey, type_);
+  value->SetBoolean(kMenuManagerIncognitoKey, id_.incognito);
+  value->SetInteger(kMenuManagerTypeKey, type_);
   if (type_ != SEPARATOR)
     value->SetString(kTitleKey, title_);
   if (type_ == CHECKBOX || type_ == RADIO)
@@ -228,14 +228,14 @@ std::unique_ptr<MenuItem> MenuItem::Populate(const std::string& extension_id,
                                              const base::DictionaryValue& value,
                                              std::string* error) {
   bool incognito = false;
-  if (!value.GetBoolean(kIncognitoKey, &incognito))
+  if (!value.GetBoolean(kMenuManagerIncognitoKey, &incognito))
     return nullptr;
   Id id(incognito, MenuItem::ExtensionKey(extension_id));
   if (!value.GetString(kStringUIDKey, &id.string_uid))
     return nullptr;
   int type_int;
   Type type = NORMAL;
-  if (!value.GetInteger(kTypeKey, &type_int))
+  if (!value.GetInteger(kMenuManagerTypeKey, &type_int))
     return nullptr;
   type = static_cast<Type>(type_int);
   std::string title;

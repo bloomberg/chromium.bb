@@ -26,7 +26,7 @@ namespace extensions {
 
 namespace {
 
-const char kInvalidTypeOfParameter[] = "Attribute '%s' has an invalid type";
+const char kCssInvalidTypeOfParameter[] = "Attribute '%s' has an invalid type";
 
 }  // namespace
 
@@ -48,14 +48,14 @@ DeclarativeContentCssPredicate::Create(ContentPredicateEvaluator* evaluator,
     for (size_t i = 0; i < css_rules_value->GetSize(); ++i) {
       std::string css_rule;
       if (!css_rules_value->GetString(i, &css_rule)) {
-        *error = base::StringPrintf(kInvalidTypeOfParameter,
+        *error = base::StringPrintf(kCssInvalidTypeOfParameter,
                                     declarative_content_constants::kCss);
         return std::unique_ptr<DeclarativeContentCssPredicate>();
       }
       css_rules.push_back(css_rule);
     }
   } else {
-    *error = base::StringPrintf(kInvalidTypeOfParameter,
+    *error = base::StringPrintf(kCssInvalidTypeOfParameter,
                                 declarative_content_constants::kCss);
     return std::unique_ptr<DeclarativeContentCssPredicate>();
   }

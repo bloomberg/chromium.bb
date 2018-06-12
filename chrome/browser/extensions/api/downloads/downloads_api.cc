@@ -161,7 +161,7 @@ const char kFileSizeKey[] = "fileSize";
 const char kFilenameKey[] = "filename";
 const char kFilenameRegexKey[] = "filenameRegex";
 const char kIdKey[] = "id";
-const char kIncognitoKey[] = "incognito";
+const char kDownloadsApiIncognitoKey[] = "incognito";
 const char kMimeKey[] = "mime";
 const char kPausedKey[] = "paused";
 const char kQueryKey[] = "query";
@@ -266,7 +266,8 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
                   base::TimeToISO8601(download_item->GetStartTime()));
   json->SetDouble(kBytesReceivedKey, download_item->GetReceivedBytes());
   json->SetDouble(kTotalBytesKey, download_item->GetTotalBytes());
-  json->SetBoolean(kIncognitoKey, browser_context->IsOffTheRecord());
+  json->SetBoolean(kDownloadsApiIncognitoKey,
+                   browser_context->IsOffTheRecord());
   if (download_item->GetState() == DownloadItem::INTERRUPTED) {
     json->SetString(kErrorKey, download::DownloadInterruptReasonToString(
                                    download_item->GetLastReason()));

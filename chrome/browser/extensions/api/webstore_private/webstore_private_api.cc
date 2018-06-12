@@ -137,9 +137,9 @@ const char kWebstoreLogin[] = "extensions.webstore_login";
 
 // Error messages that can be returned by the API.
 const char kAlreadyInstalledError[] = "This item is already installed";
-const char kInvalidIconUrlError[] = "Invalid icon url";
-const char kInvalidIdError[] = "Invalid id";
-const char kInvalidManifestError[] = "Invalid manifest";
+const char kWebstoreInvalidIconUrlError[] = "Invalid icon url";
+const char kWebstoreInvalidIdError[] = "Invalid id";
+const char kWebstoreInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
 const char kUserCancelledError[] = "User cancelled install";
@@ -202,16 +202,16 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
 
   if (!crx_file::id_util::IdIsValid(details().id)) {
     return RespondNow(BuildResponse(api::webstore_private::RESULT_INVALID_ID,
-                                    kInvalidIdError));
+                                    kWebstoreInvalidIdError));
   }
 
   GURL icon_url;
   if (details().icon_url) {
     icon_url = source_url().Resolve(*details().icon_url);
     if (!icon_url.is_valid()) {
-      return RespondNow(BuildResponse(
-          api::webstore_private::RESULT_INVALID_ICON_URL,
-          kInvalidIconUrlError));
+      return RespondNow(
+          BuildResponse(api::webstore_private::RESULT_INVALID_ICON_URL,
+                        kWebstoreInvalidIconUrlError));
     }
   }
 
@@ -275,7 +275,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   if (!dummy_extension_.get()) {
     OnWebstoreParseFailure(details().id,
                            WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
-                           kInvalidManifestError);
+                           kWebstoreInvalidManifestError);
     return;
   }
 
@@ -437,7 +437,7 @@ WebstorePrivateCompleteInstallFunction::Run() {
   }
 
   if (!crx_file::id_util::IdIsValid(params->expected_id))
-    return RespondNow(Error(kInvalidIdError));
+    return RespondNow(Error(kWebstoreInvalidIdError));
 
   approval_ = g_pending_approvals.Get().PopApproval(
       chrome_details_.GetProfile(), params->expected_id);
