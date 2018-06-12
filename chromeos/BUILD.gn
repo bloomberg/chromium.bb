@@ -39,7 +39,7 @@ component("chromeos") {
     "//components/account_id",
     "//components/device_event_log",
     "//components/onc",
-    "//components/password_manager/core/browser:hash_password_manager",
+    "//components/password_manager/core/browser:password_hash_data",
     "//components/policy:cloud_policy_proto_generated_compile",
     "//components/policy/proto",
     "//components/pref_registry",

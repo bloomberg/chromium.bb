@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/os_crypt/os_crypt_mocker.h"
+#include "components/password_manager/core/browser/password_hash_data.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -223,7 +224,7 @@ TEST_F(HashPasswordManagerTest, RetrievingSyncPasswordData) {
   ASSERT_TRUE(sync_password_data);
   EXPECT_EQ(13u, sync_password_data->length);
   EXPECT_EQ(16u, sync_password_data->salt.size());
-  uint64_t expected_hash = HashPasswordManager::CalculatePasswordHash(
+  uint64_t expected_hash = CalculatePasswordHash(
       base::UTF8ToUTF16("sync_password"), sync_password_data->salt);
   EXPECT_EQ(expected_hash, sync_password_data->hash);
 }
@@ -246,35 +247,13 @@ TEST_F(HashPasswordManagerTest, RetrievingPasswordHashData) {
   ASSERT_TRUE(password_hash_data);
   EXPECT_EQ(8u, password_hash_data->length);
   EXPECT_EQ(16u, password_hash_data->salt.size());
-  uint64_t expected_hash = HashPasswordManager::CalculatePasswordHash(
-      base::UTF8ToUTF16("password"), password_hash_data->salt);
+  uint64_t expected_hash = CalculatePasswordHash(base::UTF8ToUTF16("password"),
+                                                 password_hash_data->salt);
   EXPECT_EQ(expected_hash, password_hash_data->hash);
 
   base::Optional<PasswordHashData> non_existing_data =
       hash_password_manager.RetrievePasswordHash("non_existing_user", true);
   ASSERT_FALSE(non_existing_data);
-}
-
-TEST_F(HashPasswordManagerTest, CalculatePasswordHash) {
-  const char* kPlainText[] = {"", "password", "password", "secret"};
-  const char* kSalt[] = {"", "salt", "123", "456"};
-
-  constexpr uint64_t kExpectedHash[] = {
-      UINT64_C(0x1c610a7950), UINT64_C(0x1927dc525e), UINT64_C(0xf72f81aa6),
-      UINT64_C(0x3645af77f),
-  };
-
-  static_assert(arraysize(kPlainText) == arraysize(kSalt),
-                "Arrays must have the same size");
-  static_assert(arraysize(kPlainText) == arraysize(kExpectedHash),
-                "Arrays must have the same size");
-
-  for (size_t i = 0; i < arraysize(kPlainText); ++i) {
-    SCOPED_TRACE(i);
-    base::string16 text = base::UTF8ToUTF16(kPlainText[i]);
-    EXPECT_EQ(kExpectedHash[i],
-              HashPasswordManager::CalculatePasswordHash(text, kSalt[i]));
-  }
 }
 
 TEST_F(HashPasswordManagerTest, MigrateCapturedPasswordHash) {
