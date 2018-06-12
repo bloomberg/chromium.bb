@@ -42,9 +42,11 @@ class ITunesUrlsHandlerTabHelperTest : public PlatformTest {
   bool VerifyStoreKitLaunched(NSString* url_string, bool main_frame) {
     fake_launcher_.launchedProductID = nil;
     fake_launcher_.launchedProductParams = nil;
+    web::WebStatePolicyDecider::RequestInfo request_info(
+        ui::PageTransition::PAGE_TRANSITION_LINK, main_frame);
     bool request_allowed = web_state_.ShouldAllowRequest(
         [NSURLRequest requestWithURL:[NSURL URLWithString:url_string]],
-        ui::PageTransition::PAGE_TRANSITION_LINK, main_frame);
+        request_info);
     return !request_allowed && (fake_launcher_.launchedProductID != nil ||
                                 fake_launcher_.launchedProductParams != nil);
   }

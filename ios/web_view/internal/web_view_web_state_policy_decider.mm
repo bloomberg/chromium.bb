@@ -21,8 +21,7 @@ WebViewWebStatePolicyDecider::WebViewWebStatePolicyDecider(
 
 bool WebViewWebStatePolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
-    ui::PageTransition transition,
-    bool from_main_frame) {
+    const web::WebStatePolicyDecider::RequestInfo& request_info) {
   id<CWVNavigationDelegate> delegate = web_view_.navigationDelegate;
   if ([delegate respondsToSelector:@selector
                 (webView:shouldStartLoadWithRequest:navigationType:)]) {
@@ -31,7 +30,7 @@ bool WebViewWebStatePolicyDecider::ShouldAllowRequest(
     // because its API must be in pure Objective-C. It cannot use a type defined
     // in a C++ header //ui/base/page_transition_types.h.
     CWVNavigationType navigation_type =
-        CWVNavigationTypeFromPageTransition(transition);
+        CWVNavigationTypeFromPageTransition(request_info.transition_type);
     return [delegate webView:web_view_
         shouldStartLoadWithRequest:request
                     navigationType:navigation_type];
