@@ -475,22 +475,21 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
  private:
   void OnBlocked();
 
-  void RunCallback(int response, const CompletionCallback& callback);
-  void RunAuthCallback(AuthRequiredResponse response,
-                       const AuthCallback& callback);
+  void RunCallback(int response, CompletionOnceCallback callback);
+  void RunAuthCallback(AuthRequiredResponse response, AuthCallback callback);
 
   // TestNetworkDelegate implementation.
   int OnBeforeURLRequest(URLRequest* request,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          GURL* new_url) override;
 
   int OnBeforeStartTransaction(URLRequest* request,
-                               const CompletionCallback& callback,
+                               CompletionOnceCallback callback,
                                HttpRequestHeaders* headers) override;
 
   int OnHeadersReceived(
       URLRequest* request,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;
@@ -498,7 +497,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
   NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
+      AuthCallback callback,
       AuthCredentials* credentials) override;
 
   // Resets the callbacks and |stage_blocked_for_callback_|.
@@ -506,8 +505,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
 
   // Checks whether we should block in |stage|. If yes, returns an error code
   // and optionally sets up callback based on |block_mode_|. If no, returns OK.
-  int MaybeBlockStage(Stage stage,
-                      const CompletionCallback& callback);
+  int MaybeBlockStage(Stage stage, CompletionOnceCallback callback);
 
   // Configuration parameters, can be adjusted by public methods:
   const BlockMode block_mode_;
@@ -531,7 +529,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
   Stage stage_blocked_for_callback_;
 
   // Callback objects stored during blocking stages.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   AuthCallback auth_callback_;
 
   // Closure to run to exit RunUntilBlocked().
@@ -562,24 +560,24 @@ void BlockingNetworkDelegate::DoCallback(int response) {
   ASSERT_EQ(USER_CALLBACK, block_mode_);
   ASSERT_NE(NOT_BLOCKED, stage_blocked_for_callback_);
   ASSERT_NE(ON_AUTH_REQUIRED, stage_blocked_for_callback_);
-  CompletionCallback callback = callback_;
+  CompletionOnceCallback callback = std::move(callback_);
   Reset();
 
   // |callback| may trigger completion of a request, so post it as a task, so
   // it will run under a subsequent TestDelegate::RunUntilComplete() loop.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BlockingNetworkDelegate::RunCallback,
-                     weak_factory_.GetWeakPtr(), response, callback));
+      FROM_HERE, base::BindOnce(&BlockingNetworkDelegate::RunCallback,
+                                weak_factory_.GetWeakPtr(), response,
+                                std::move(callback)));
 }
 
 void BlockingNetworkDelegate::DoAuthCallback(
     NetworkDelegate::AuthRequiredResponse response) {
   ASSERT_EQ(USER_CALLBACK, block_mode_);
   ASSERT_EQ(ON_AUTH_REQUIRED, stage_blocked_for_callback_);
-  AuthCallback auth_callback = auth_callback_;
+  AuthCallback auth_callback = std::move(auth_callback_);
   Reset();
-  RunAuthCallback(response, auth_callback);
+  RunAuthCallback(response, std::move(auth_callback));
 }
 
 void BlockingNetworkDelegate::OnBlocked() {
@@ -590,65 +588,70 @@ void BlockingNetworkDelegate::OnBlocked() {
 }
 
 void BlockingNetworkDelegate::RunCallback(int response,
-                                          const CompletionCallback& callback) {
-  callback.Run(response);
+                                          CompletionOnceCallback callback) {
+  std::move(callback).Run(response);
 }
 
 void BlockingNetworkDelegate::RunAuthCallback(AuthRequiredResponse response,
-                                              const AuthCallback& callback) {
+                                              AuthCallback callback) {
   if (auth_retval_ == AUTH_REQUIRED_RESPONSE_SET_AUTH) {
     ASSERT_TRUE(target_auth_credentials_ != NULL);
     *target_auth_credentials_ = auth_credentials_;
   }
-  callback.Run(response);
+  std::move(callback).Run(response);
 }
 
-int BlockingNetworkDelegate::OnBeforeURLRequest(
-    URLRequest* request,
-    const CompletionCallback& callback,
-    GURL* new_url) {
+int BlockingNetworkDelegate::OnBeforeURLRequest(URLRequest* request,
+                                                CompletionOnceCallback callback,
+                                                GURL* new_url) {
   if (redirect_url_ == request->url())
     return OK;  // We've already seen this request and redirected elsewhere.
 
-  TestNetworkDelegate::OnBeforeURLRequest(request, callback, new_url);
+  // TestNetworkDelegate always completes synchronously.
+  CHECK_NE(ERR_IO_PENDING, TestNetworkDelegate::OnBeforeURLRequest(
+                               request, base::NullCallback(), new_url));
 
   if (!redirect_url_.is_empty())
     *new_url = redirect_url_;
 
-  return MaybeBlockStage(ON_BEFORE_URL_REQUEST, callback);
+  return MaybeBlockStage(ON_BEFORE_URL_REQUEST, std::move(callback));
 }
 
 int BlockingNetworkDelegate::OnBeforeStartTransaction(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     HttpRequestHeaders* headers) {
-  TestNetworkDelegate::OnBeforeStartTransaction(request, callback, headers);
+  // TestNetworkDelegate always completes synchronously.
+  CHECK_NE(ERR_IO_PENDING, TestNetworkDelegate::OnBeforeStartTransaction(
+                               request, base::NullCallback(), headers));
 
-  return MaybeBlockStage(ON_BEFORE_SEND_HEADERS, callback);
+  return MaybeBlockStage(ON_BEFORE_SEND_HEADERS, std::move(callback));
 }
 
 int BlockingNetworkDelegate::OnHeadersReceived(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  TestNetworkDelegate::OnHeadersReceived(request,
-                                         callback,
-                                         original_response_headers,
-                                         override_response_headers,
-                                         allowed_unsafe_redirect_url);
+  // TestNetworkDelegate always completes synchronously.
+  CHECK_NE(ERR_IO_PENDING,
+           TestNetworkDelegate::OnHeadersReceived(
+               request, base::NullCallback(), original_response_headers,
+               override_response_headers, allowed_unsafe_redirect_url));
 
-  return MaybeBlockStage(ON_HEADERS_RECEIVED, callback);
+  return MaybeBlockStage(ON_HEADERS_RECEIVED, std::move(callback));
 }
 
 NetworkDelegate::AuthRequiredResponse BlockingNetworkDelegate::OnAuthRequired(
     URLRequest* request,
     const AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
+    AuthCallback callback,
     AuthCredentials* credentials) {
-  TestNetworkDelegate::OnAuthRequired(request, auth_info, callback,
-                                      credentials);
+  // TestNetworkDelegate always completes synchronously.
+  CHECK_NE(AUTH_REQUIRED_RESPONSE_IO_PENDING,
+           TestNetworkDelegate::OnAuthRequired(
+               request, auth_info, base::NullCallback(), credentials));
   // Check that the user has provided callback for the previous blocked stage.
   EXPECT_EQ(NOT_BLOCKED, stage_blocked_for_callback_);
 
@@ -666,13 +669,13 @@ NetworkDelegate::AuthRequiredResponse BlockingNetworkDelegate::OnAuthRequired(
 
     case AUTO_CALLBACK:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&BlockingNetworkDelegate::RunAuthCallback,
-                         weak_factory_.GetWeakPtr(), auth_retval_, callback));
+          FROM_HERE, base::BindOnce(&BlockingNetworkDelegate::RunAuthCallback,
+                                    weak_factory_.GetWeakPtr(), auth_retval_,
+                                    std::move(callback)));
       return AUTH_REQUIRED_RESPONSE_IO_PENDING;
 
     case USER_CALLBACK:
-      auth_callback_ = callback;
+      auth_callback_ = std::move(callback);
       stage_blocked_for_callback_ = ON_AUTH_REQUIRED;
       // We may reach here via a callback prior to RunUntilBlocked(), so post
       // a task to fetch and run the |on_blocked_| closure.
@@ -694,7 +697,7 @@ void BlockingNetworkDelegate::Reset() {
 
 int BlockingNetworkDelegate::MaybeBlockStage(
     BlockingNetworkDelegate::Stage stage,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   // Check that the user has provided callback for the previous blocked stage.
   EXPECT_EQ(NOT_BLOCKED, stage_blocked_for_callback_);
 
@@ -709,13 +712,13 @@ int BlockingNetworkDelegate::MaybeBlockStage(
 
     case AUTO_CALLBACK:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&BlockingNetworkDelegate::RunCallback,
-                         weak_factory_.GetWeakPtr(), retval_, callback));
+          FROM_HERE, base::BindOnce(&BlockingNetworkDelegate::RunCallback,
+                                    weak_factory_.GetWeakPtr(), retval_,
+                                    std::move(callback)));
       return ERR_IO_PENDING;
 
     case USER_CALLBACK:
-      callback_ = callback;
+      callback_ = std::move(callback);
       stage_blocked_for_callback_ = stage;
       // We may reach here via a callback prior to RunUntilBlocked(), so post
       // a task to fetch and run the |on_blocked_| closure.
@@ -3810,7 +3813,7 @@ class FixedDateNetworkDelegate : public TestNetworkDelegate {
   // NetworkDelegate implementation
   int OnHeadersReceived(
       URLRequest* request,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;
@@ -3823,7 +3826,7 @@ class FixedDateNetworkDelegate : public TestNetworkDelegate {
 
 int FixedDateNetworkDelegate::OnHeadersReceived(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
@@ -3834,11 +3837,9 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
   new_response_headers->AddHeader("Date: " + fixed_date_);
 
   *override_response_headers = new_response_headers;
-  return TestNetworkDelegate::OnHeadersReceived(request,
-                                                callback,
-                                                original_response_headers,
-                                                override_response_headers,
-                                                allowed_unsafe_redirect_url);
+  return TestNetworkDelegate::OnHeadersReceived(
+      request, std::move(callback), original_response_headers,
+      override_response_headers, allowed_unsafe_redirect_url);
 }
 
 // Test that cookie expiration times are adjusted for server/client clock
@@ -5603,7 +5604,7 @@ const char kSecondDelegateInfo[] = "Exciting delegate";
 // before calling a callback.  The object then deletes itself.
 class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
  public:
-  typedef base::Callback<void()> Callback;
+  using Callback = base::OnceCallback<void()>;
 
   // Each time delegate information is added to the URLRequest, the resulting
   // load state is checked.  The expected load state after each request is
@@ -5612,13 +5613,10 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
                   LoadState expected_first_load_state,
                   LoadState expected_second_load_state,
                   LoadState expected_third_load_state,
-                  const Callback& callback) {
+                  Callback callback) {
     AsyncDelegateLogger* logger = new AsyncDelegateLogger(
-        url_request,
-        expected_first_load_state,
-        expected_second_load_state,
-        expected_third_load_state,
-        callback);
+        url_request, expected_first_load_state, expected_second_load_state,
+        expected_third_load_state, std::move(callback));
     logger->Start();
   }
 
@@ -5665,13 +5663,12 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
                       LoadState expected_first_load_state,
                       LoadState expected_second_load_state,
                       LoadState expected_third_load_state,
-                      const Callback& callback)
+                      Callback callback)
       : url_request_(url_request),
         expected_first_load_state_(expected_first_load_state),
         expected_second_load_state_(expected_second_load_state),
         expected_third_load_state_(expected_third_load_state),
-        callback_(callback) {
-  }
+        callback_(std::move(callback)) {}
 
   ~AsyncDelegateLogger() = default;
 
@@ -5704,14 +5701,14 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
     EXPECT_EQ(expected_third_load_state_, load_state.state);
     if (expected_second_load_state_ == LOAD_STATE_WAITING_FOR_DELEGATE)
       EXPECT_EQ(base::string16(), load_state.param);
-    callback_.Run();
+    std::move(callback_).Run();
   }
 
   URLRequest* url_request_;
   const int expected_first_load_state_;
   const int expected_second_load_state_;
   const int expected_third_load_state_;
-  const Callback callback_;
+  Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncDelegateLogger);
 };
@@ -5726,65 +5723,64 @@ class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
 
   // NetworkDelegate implementation.
   int OnBeforeURLRequest(URLRequest* request,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          GURL* new_url) override {
-    TestNetworkDelegate::OnBeforeURLRequest(request, callback, new_url);
-    return RunCallbackAsynchronously(request, callback);
+    // TestNetworkDelegate always completes synchronously.
+    CHECK_NE(ERR_IO_PENDING, TestNetworkDelegate::OnBeforeURLRequest(
+                                 request, base::NullCallback(), new_url));
+    return RunCallbackAsynchronously(request, std::move(callback));
   }
 
   int OnBeforeStartTransaction(URLRequest* request,
-                               const CompletionCallback& callback,
+                               CompletionOnceCallback callback,
                                HttpRequestHeaders* headers) override {
-    TestNetworkDelegate::OnBeforeStartTransaction(request, callback, headers);
-    return RunCallbackAsynchronously(request, callback);
+    // TestNetworkDelegate always completes synchronously.
+    CHECK_NE(ERR_IO_PENDING, TestNetworkDelegate::OnBeforeStartTransaction(
+                                 request, base::NullCallback(), headers));
+    return RunCallbackAsynchronously(request, std::move(callback));
   }
 
   int OnHeadersReceived(
       URLRequest* request,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override {
-    TestNetworkDelegate::OnHeadersReceived(request,
-                                           callback,
-                                           original_response_headers,
-                                           override_response_headers,
-                                           allowed_unsafe_redirect_url);
-    return RunCallbackAsynchronously(request, callback);
+    // TestNetworkDelegate always completes synchronously.
+    CHECK_NE(ERR_IO_PENDING,
+             TestNetworkDelegate::OnHeadersReceived(
+                 request, base::NullCallback(), original_response_headers,
+                 override_response_headers, allowed_unsafe_redirect_url));
+    return RunCallbackAsynchronously(request, std::move(callback));
   }
 
   NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
+      AuthCallback callback,
       AuthCredentials* credentials) override {
     AsyncDelegateLogger::Run(
-        request,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        base::Bind(&AsyncLoggingNetworkDelegate::SetAuthAndResume,
-                   callback, credentials));
+        request, LOAD_STATE_WAITING_FOR_DELEGATE,
+        LOAD_STATE_WAITING_FOR_DELEGATE, LOAD_STATE_WAITING_FOR_DELEGATE,
+        base::BindOnce(&AsyncLoggingNetworkDelegate::SetAuthAndResume,
+                       std::move(callback), credentials));
     return AUTH_REQUIRED_RESPONSE_IO_PENDING;
   }
 
  private:
-  static int RunCallbackAsynchronously(
-      URLRequest* request,
-      const CompletionCallback& callback) {
-    AsyncDelegateLogger::Run(
-        request,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        LOAD_STATE_WAITING_FOR_DELEGATE,
-        base::Bind(callback, OK));
+  static int RunCallbackAsynchronously(URLRequest* request,
+                                       CompletionOnceCallback callback) {
+    AsyncDelegateLogger::Run(request, LOAD_STATE_WAITING_FOR_DELEGATE,
+                             LOAD_STATE_WAITING_FOR_DELEGATE,
+                             LOAD_STATE_WAITING_FOR_DELEGATE,
+                             base::BindOnce(std::move(callback), OK));
     return ERR_IO_PENDING;
   }
 
-  static void SetAuthAndResume(const AuthCallback& callback,
+  static void SetAuthAndResume(AuthCallback callback,
                                AuthCredentials* credentials) {
     *credentials = AuthCredentials(kUser, kSecret);
-    callback.Run(NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH);
+    std::move(callback).Run(NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH);
   }
 
   DISALLOW_COPY_AND_ASSIGN(AsyncLoggingNetworkDelegate);

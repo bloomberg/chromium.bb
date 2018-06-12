@@ -104,16 +104,16 @@ class ChromeExtensionsNetworkDelegateImpl
   void ForwardStartRequestStatus(net::URLRequest* request) override;
   void ForwardDoneRequestStatus(net::URLRequest* request) override;
   int OnBeforeURLRequest(net::URLRequest* request,
-                         const net::CompletionCallback& callback,
+                         net::CompletionOnceCallback callback,
                          GURL* new_url) override;
   int OnBeforeStartTransaction(net::URLRequest* request,
-                               const net::CompletionCallback& callback,
+                               net::CompletionOnceCallback callback,
                                net::HttpRequestHeaders* headers) override;
   void OnStartTransaction(net::URLRequest* request,
                           const net::HttpRequestHeaders& headers) override;
   int OnHeadersReceived(
       net::URLRequest* request,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;
@@ -128,7 +128,7 @@ class ChromeExtensionsNetworkDelegateImpl
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
+      AuthCallback callback,
       net::AuthCredentials* credentials) override;
 
   extensions::WebRequestInfo* GetWebRequestInfo(net::URLRequest* request) {
@@ -185,7 +185,7 @@ void ChromeExtensionsNetworkDelegateImpl::ForwardDoneRequestStatus(
 
 int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     GURL* new_url) {
   // NOTE: A redirected URLRequest results in another invocation of
   // OnBeforeURLRequest for the same URLRequest object but in a different state.
@@ -196,17 +196,17 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
   *web_request_info = std::make_unique<extensions::WebRequestInfo>(request);
 
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      profile_, extension_info_map_.get(), web_request_info->get(), callback,
-      new_url);
+      profile_, extension_info_map_.get(), web_request_info->get(),
+      std::move(callback), new_url);
 }
 
 int ChromeExtensionsNetworkDelegateImpl::OnBeforeStartTransaction(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-      profile_, extension_info_map_.get(), GetWebRequestInfo(request), callback,
-      headers);
+      profile_, extension_info_map_.get(), GetWebRequestInfo(request),
+      std::move(callback), headers);
 }
 
 void ChromeExtensionsNetworkDelegateImpl::OnStartTransaction(
@@ -218,13 +218,13 @@ void ChromeExtensionsNetworkDelegateImpl::OnStartTransaction(
 
 int ChromeExtensionsNetworkDelegateImpl::OnHeadersReceived(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      profile_, extension_info_map_.get(), GetWebRequestInfo(request), callback,
-      original_response_headers, override_response_headers,
+      profile_, extension_info_map_.get(), GetWebRequestInfo(request),
+      std::move(callback), original_response_headers, override_response_headers,
       allowed_unsafe_redirect_url);
 }
 
@@ -288,12 +288,12 @@ net::NetworkDelegate::AuthRequiredResponse
 ChromeExtensionsNetworkDelegateImpl::OnAuthRequired(
     net::URLRequest* request,
     const net::AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
+    AuthCallback callback,
     net::AuthCredentials* credentials) {
   auto* info = GetWebRequestInfo(request);
   info->AddResponseInfoFromURLRequest(request);
   return ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
-      profile_, extension_info_map_.get(), info, auth_info, callback,
+      profile_, extension_info_map_.get(), info, auth_info, std::move(callback),
       credentials);
 }
 
@@ -334,64 +334,6 @@ void ChromeExtensionsNetworkDelegate::ForwardStartRequestStatus(
 
 void ChromeExtensionsNetworkDelegate::ForwardDoneRequestStatus(
     net::URLRequest* request) {
-}
-
-int ChromeExtensionsNetworkDelegate::OnBeforeURLRequest(
-    net::URLRequest* request,
-    const net::CompletionCallback& callback,
-    GURL* new_url) {
-  return net::OK;
-}
-
-int ChromeExtensionsNetworkDelegate::OnBeforeStartTransaction(
-    net::URLRequest* request,
-    const net::CompletionCallback& callback,
-    net::HttpRequestHeaders* headers) {
-  return net::OK;
-}
-
-void ChromeExtensionsNetworkDelegate::OnStartTransaction(
-    net::URLRequest* request,
-    const net::HttpRequestHeaders& headers) {}
-
-int ChromeExtensionsNetworkDelegate::OnHeadersReceived(
-    net::URLRequest* request,
-    const net::CompletionCallback& callback,
-    const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    GURL* allowed_unsafe_redirect_url) {
-  return net::OK;
-}
-
-void ChromeExtensionsNetworkDelegate::OnBeforeRedirect(
-    net::URLRequest* request,
-    const GURL& new_location) {
-}
-
-void ChromeExtensionsNetworkDelegate::OnResponseStarted(
-    net::URLRequest* request,
-    int net_error) {}
-
-void ChromeExtensionsNetworkDelegate::OnCompleted(net::URLRequest* request,
-                                                  bool started,
-                                                  int net_error) {}
-
-void ChromeExtensionsNetworkDelegate::OnURLRequestDestroyed(
-    net::URLRequest* request) {
-}
-
-void ChromeExtensionsNetworkDelegate::OnPACScriptError(
-    int line_number,
-    const base::string16& error) {
-}
-
-net::NetworkDelegate::AuthRequiredResponse
-ChromeExtensionsNetworkDelegate::OnAuthRequired(
-    net::URLRequest* request,
-    const net::AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
-    net::AuthCredentials* credentials) {
-  return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
 
 // Notifies the extensions::ProcessManager that a request has started or stopped

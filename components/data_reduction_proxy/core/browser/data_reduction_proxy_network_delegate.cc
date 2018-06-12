@@ -282,7 +282,6 @@ void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
 
 void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
     GURL* new_url) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -296,7 +295,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
 
 void DataReductionProxyNetworkDelegate::OnBeforeStartTransactionInternal(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -528,7 +526,6 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
 
 void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {

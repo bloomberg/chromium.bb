@@ -30,7 +30,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/url_pattern_set.h"
 #include "ipc/ipc_sender.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/network_delegate.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -273,7 +273,7 @@ class ExtensionWebRequestEventRouter {
   int OnBeforeRequest(void* browser_context,
                       const extensions::InfoMap* extension_info_map,
                       WebRequestInfo* request,
-                      const net::CompletionCallback& callback,
+                      net::CompletionOnceCallback callback,
                       GURL* new_url);
 
   // Dispatches the onBeforeSendHeaders event. This is fired for HTTP(s)
@@ -283,7 +283,7 @@ class ExtensionWebRequestEventRouter {
   int OnBeforeSendHeaders(void* browser_context,
                           const extensions::InfoMap* extension_info_map,
                           const WebRequestInfo* request,
-                          const net::CompletionCallback& callback,
+                          net::CompletionOnceCallback callback,
                           net::HttpRequestHeaders* headers);
 
   // Dispatches the onSendHeaders event. This is fired for HTTP(s) requests
@@ -306,7 +306,7 @@ class ExtensionWebRequestEventRouter {
       void* browser_context,
       const extensions::InfoMap* extension_info_map,
       const WebRequestInfo* request,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url);
@@ -321,7 +321,7 @@ class ExtensionWebRequestEventRouter {
       const extensions::InfoMap* extension_info_map,
       const WebRequestInfo* request,
       const net::AuthChallengeInfo& auth_info,
-      const net::NetworkDelegate::AuthCallback& callback,
+      net::NetworkDelegate::AuthCallback callback,
       net::AuthCredentials* credentials);
 
   // Dispatches the onBeforeRedirect event. This is fired for HTTP(s) requests

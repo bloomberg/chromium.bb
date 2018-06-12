@@ -11,7 +11,7 @@
 #include <set>
 
 #include "base/strings/string16.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
 #include "net/cookies/canonical_cookie.h"
@@ -43,10 +43,10 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   // NetworkDelegate implementation:
   int OnBeforeURLRequest(URLRequest* request,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          GURL* new_url) final;
   int OnBeforeStartTransaction(URLRequest* request,
-                               const CompletionCallback& callback,
+                               CompletionOnceCallback callback,
                                HttpRequestHeaders* headers) final;
   void OnBeforeSendHeaders(URLRequest* request,
                            const ProxyInfo& proxy_info,
@@ -56,7 +56,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                           const HttpRequestHeaders& headers) final;
   int OnHeadersReceived(
       URLRequest* request,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) final;
@@ -71,7 +71,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   void OnPACScriptError(int line_number, const base::string16& error) final;
   AuthRequiredResponse OnAuthRequired(URLRequest* request,
                                       const AuthChallengeInfo& auth_info,
-                                      const AuthCallback& callback,
+                                      AuthCallback callback,
                                       AuthCredentials* credentials) final;
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list) final;
@@ -102,13 +102,10 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
                                const GURL& endpoint) const final;
 
  protected:
-  virtual void OnBeforeURLRequestInternal(URLRequest* request,
-                                          const CompletionCallback& callback,
-                                          GURL* new_url);
+  virtual void OnBeforeURLRequestInternal(URLRequest* request, GURL* new_url);
 
   virtual void OnBeforeStartTransactionInternal(
       URLRequest* request,
-      const CompletionCallback& callback,
       HttpRequestHeaders* headers);
 
   virtual void OnBeforeSendHeadersInternal(
@@ -122,7 +119,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   virtual void OnHeadersReceivedInternal(
       URLRequest* request,
-      const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url);
@@ -154,7 +150,6 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   virtual void OnAuthRequiredInternal(URLRequest* request,
                                       const AuthChallengeInfo& auth_info,
-                                      const AuthCallback& callback,
                                       AuthCredentials* credentials);
 
   virtual void OnCanAccessFileInternal(

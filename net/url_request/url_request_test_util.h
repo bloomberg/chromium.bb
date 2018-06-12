@@ -357,10 +357,10 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
  protected:
   // NetworkDelegate:
   int OnBeforeURLRequest(URLRequest* request,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          GURL* new_url) override;
   int OnBeforeStartTransaction(URLRequest* request,
-                               const CompletionCallback& callback,
+                               CompletionOnceCallback callback,
                                HttpRequestHeaders* headers) override;
   void OnBeforeSendHeaders(URLRequest* request,
                            const ProxyInfo& proxy_info,
@@ -370,7 +370,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
                           const HttpRequestHeaders& headers) override;
   int OnHeadersReceived(
       URLRequest* request,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;
@@ -385,7 +385,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
+      AuthCallback callback,
       AuthCredentials* credentials) override;
   bool OnCanGetCookies(const URLRequest& request,
                        const CookieList& cookie_list) override;

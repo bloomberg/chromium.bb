@@ -4,6 +4,8 @@
 
 #include "net/base/network_delegate.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/load_flags.h"
@@ -18,9 +20,9 @@ NetworkDelegate::~NetworkDelegate() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-int NetworkDelegate::NotifyBeforeURLRequest(
-    URLRequest* request, const CompletionCallback& callback,
-    GURL* new_url) {
+int NetworkDelegate::NotifyBeforeURLRequest(URLRequest* request,
+                                            CompletionOnceCallback callback,
+                                            GURL* new_url) {
   TRACE_EVENT0(kNetTracingCategory, "NetworkDelegate::NotifyBeforeURLRequest");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(request);
@@ -28,19 +30,19 @@ int NetworkDelegate::NotifyBeforeURLRequest(
 
   // ClusterFuzz depends on the following VLOG. See: crbug.com/715656
   VLOG(1) << "NetworkDelegate::NotifyBeforeURLRequest: " << request->url();
-  return OnBeforeURLRequest(request, callback, new_url);
+  return OnBeforeURLRequest(request, std::move(callback), new_url);
 }
 
 int NetworkDelegate::NotifyBeforeStartTransaction(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     HttpRequestHeaders* headers) {
   TRACE_EVENT0(kNetTracingCategory,
                "NetworkDelegate::NotifyBeforeStartTransation");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(headers);
   DCHECK(!callback.is_null());
-  return OnBeforeStartTransaction(request, callback, headers);
+  return OnBeforeStartTransaction(request, std::move(callback), headers);
 }
 
 void NetworkDelegate::NotifyBeforeSendHeaders(
@@ -63,7 +65,7 @@ void NetworkDelegate::NotifyStartTransaction(
 
 int NetworkDelegate::NotifyHeadersReceived(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
@@ -71,10 +73,8 @@ int NetworkDelegate::NotifyHeadersReceived(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(original_response_headers);
   DCHECK(!callback.is_null());
-  return OnHeadersReceived(request,
-                           callback,
-                           original_response_headers,
-                           override_response_headers,
+  return OnHeadersReceived(request, std::move(callback),
+                           original_response_headers, override_response_headers,
                            allowed_unsafe_redirect_url);
 }
 
@@ -135,10 +135,10 @@ void NetworkDelegate::NotifyPACScriptError(int line_number,
 NetworkDelegate::AuthRequiredResponse NetworkDelegate::NotifyAuthRequired(
     URLRequest* request,
     const AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
+    AuthCallback callback,
     AuthCredentials* credentials) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return OnAuthRequired(request, auth_info, callback, credentials);
+  return OnAuthRequired(request, auth_info, std::move(callback), credentials);
 }
 
 bool NetworkDelegate::CanGetCookies(const URLRequest& request,

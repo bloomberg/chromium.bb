@@ -38,10 +38,10 @@ class CastNetworkDelegate : public net::NetworkDelegateImpl {
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;
   int OnBeforeURLRequest(net::URLRequest* request,
-                         const net::CompletionCallback& callback,
+                         net::CompletionOnceCallback callback,
                          GURL* new_url) override;
   int OnBeforeStartTransaction(net::URLRequest* request,
-                               const net::CompletionCallback& callback,
+                               net::CompletionOnceCallback callback,
                                net::HttpRequestHeaders* headers) override;
   void OnURLRequestDestroyed(net::URLRequest* request) override;
 

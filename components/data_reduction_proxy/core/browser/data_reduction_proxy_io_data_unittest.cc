@@ -46,7 +46,7 @@ class CountingNetworkDelegate : public net::NetworkDelegateImpl {
   }
 
   int OnBeforeURLRequest(net::URLRequest* request,
-                         const net::CompletionCallback& callback,
+                         net::CompletionOnceCallback callback,
                          GURL* new_url) final {
     created_requests_++;
     return net::OK;

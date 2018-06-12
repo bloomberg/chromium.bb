@@ -39,11 +39,11 @@ class MockCastNetworkRequestInterceptor : public CastNetworkRequestInterceptor {
                int(net::URLRequest* request,
                    const std::string& session_id,
                    int render_process_id,
-                   const net::CompletionCallback& callback,
+                   net::CompletionOnceCallback callback,
                    GURL* new_url));
   MOCK_METHOD3(OnBeforeStartTransaction,
                int(net::URLRequest* request,
-                   const net::CompletionCallback& callback,
+                   net::CompletionOnceCallback callback,
                    net::HttpRequestHeaders* headers));
   MOCK_METHOD1(OnURLRequestDestroyed, void(net::URLRequest* request));
 

@@ -23,16 +23,16 @@ class ShellNetworkDelegate : public net::NetworkDelegateImpl {
  private:
   // NetworkDelegate implementation.
   int OnBeforeURLRequest(net::URLRequest* request,
-                         const net::CompletionCallback& callback,
+                         net::CompletionOnceCallback callback,
                          GURL* new_url) override;
   int OnBeforeStartTransaction(net::URLRequest* request,
-                               const net::CompletionCallback& callback,
+                               net::CompletionOnceCallback callback,
                                net::HttpRequestHeaders* headers) override;
   void OnStartTransaction(net::URLRequest* request,
                           const net::HttpRequestHeaders& headers) override;
   int OnHeadersReceived(
       net::URLRequest* request,
-      const net::CompletionCallback& callback,
+      net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;
@@ -47,7 +47,7 @@ class ShellNetworkDelegate : public net::NetworkDelegateImpl {
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
+      AuthCallback callback,
       net::AuthCredentials* credentials) override;
 
   void* browser_context_;

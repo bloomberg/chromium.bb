@@ -14,33 +14,28 @@ LayeredNetworkDelegate::LayeredNetworkDelegate(
 
 LayeredNetworkDelegate::~LayeredNetworkDelegate() = default;
 
-int LayeredNetworkDelegate::OnBeforeURLRequest(
-    URLRequest* request,
-    const CompletionCallback& callback,
-    GURL* new_url) {
-  OnBeforeURLRequestInternal(request, callback, new_url);
-  return nested_network_delegate_->NotifyBeforeURLRequest(request, callback,
-                                                          new_url);
+int LayeredNetworkDelegate::OnBeforeURLRequest(URLRequest* request,
+                                               CompletionOnceCallback callback,
+                                               GURL* new_url) {
+  OnBeforeURLRequestInternal(request, new_url);
+  return nested_network_delegate_->NotifyBeforeURLRequest(
+      request, std::move(callback), new_url);
 }
 
-void LayeredNetworkDelegate::OnBeforeURLRequestInternal(
-    URLRequest* request,
-    const CompletionCallback& callback,
-    GURL* new_url) {
-}
+void LayeredNetworkDelegate::OnBeforeURLRequestInternal(URLRequest* request,
+                                                        GURL* new_url) {}
 
 int LayeredNetworkDelegate::OnBeforeStartTransaction(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     HttpRequestHeaders* headers) {
-  OnBeforeStartTransactionInternal(request, callback, headers);
+  OnBeforeStartTransactionInternal(request, headers);
   return nested_network_delegate_->NotifyBeforeStartTransaction(
-      request, callback, headers);
+      request, std::move(callback), headers);
 }
 
 void LayeredNetworkDelegate::OnBeforeStartTransactionInternal(
     URLRequest* request,
-    const CompletionCallback& callback,
     HttpRequestHeaders* headers) {}
 
 void LayeredNetworkDelegate::OnBeforeSendHeaders(
@@ -72,21 +67,20 @@ void LayeredNetworkDelegate::OnStartTransactionInternal(
 
 int LayeredNetworkDelegate::OnHeadersReceived(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  OnHeadersReceivedInternal(request, callback, original_response_headers,
+  OnHeadersReceivedInternal(request, original_response_headers,
                             override_response_headers,
                             allowed_unsafe_redirect_url);
   return nested_network_delegate_->NotifyHeadersReceived(
-      request, callback, original_response_headers, override_response_headers,
-      allowed_unsafe_redirect_url);
+      request, std::move(callback), original_response_headers,
+      override_response_headers, allowed_unsafe_redirect_url);
 }
 
 void LayeredNetworkDelegate::OnHeadersReceivedInternal(
     URLRequest* request,
-    const CompletionCallback& callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
@@ -164,19 +158,17 @@ void LayeredNetworkDelegate::OnPACScriptErrorInternal(
 NetworkDelegate::AuthRequiredResponse LayeredNetworkDelegate::OnAuthRequired(
     URLRequest* request,
     const AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
+    AuthCallback callback,
     AuthCredentials* credentials) {
-  OnAuthRequiredInternal(request, auth_info, callback, credentials);
-  return nested_network_delegate_->NotifyAuthRequired(request, auth_info,
-                                                      callback, credentials);
+  OnAuthRequiredInternal(request, auth_info, credentials);
+  return nested_network_delegate_->NotifyAuthRequired(
+      request, auth_info, std::move(callback), credentials);
 }
 
 void LayeredNetworkDelegate::OnAuthRequiredInternal(
     URLRequest* request,
     const AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
-    AuthCredentials* credentials) {
-}
+    AuthCredentials* credentials) {}
 
 bool LayeredNetworkDelegate::OnCanGetCookies(const URLRequest& request,
                                              const CookieList& cookie_list) {

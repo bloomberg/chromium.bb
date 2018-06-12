@@ -83,7 +83,7 @@ void IOSChromeNetworkDelegate::InitializePrefsOnUIThread(
 
 int IOSChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     GURL* new_url) {
   if (enable_do_not_track_ && enable_do_not_track_->GetValue())
     request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
@@ -94,15 +94,6 @@ void IOSChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                            bool started,
                                            int net_error) {
   RecordNetworkErrorHistograms(request, net_error);
-}
-
-net::NetworkDelegate::AuthRequiredResponse
-IOSChromeNetworkDelegate::OnAuthRequired(
-    net::URLRequest* request,
-    const net::AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
-    net::AuthCredentials* credentials) {
-  return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 }
 
 bool IOSChromeNetworkDelegate::OnCanGetCookies(

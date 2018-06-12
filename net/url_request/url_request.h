@@ -904,10 +904,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   base::debug::LeakTracker<URLRequest> leak_tracker_;
 
-  // Callback passed to the network delegate to notify us when a blocked request
-  // is ready to be resumed or canceled.
-  CompletionCallback before_request_callback_;
-
   // Safe-guard to ensure that we do not send multiple "I am completed"
   // messages to network delegate.
   // TODO(battre): Remove this. http://crbug.com/89049

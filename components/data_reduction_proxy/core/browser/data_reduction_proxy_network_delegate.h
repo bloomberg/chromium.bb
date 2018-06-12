@@ -79,7 +79,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   // Resets if Lo-Fi has been used for the last main frame load to false.
   void OnBeforeURLRequestInternal(net::URLRequest* request,
-                                  const net::CompletionCallback& callback,
                                   GURL* new_url) override;
 
   // Called before an HTTP transaction is started. Allows the delegate to
@@ -87,7 +86,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // content transformations.
   void OnBeforeStartTransactionInternal(
       net::URLRequest* request,
-      const net::CompletionCallback& callback,
       net::HttpRequestHeaders* headers) override;
 
   // Called after connection. Allows the delegate to read/write
@@ -114,7 +112,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // DataReductionProxyData for |request|.
   void OnHeadersReceivedInternal(
       net::URLRequest* request,
-      const net::CompletionCallback& callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;

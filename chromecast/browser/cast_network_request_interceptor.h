@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 
 class GURL;
 
@@ -40,11 +40,11 @@ class CastNetworkRequestInterceptor {
   virtual int OnBeforeURLRequest(net::URLRequest* request,
                                  const std::string& session_id,
                                  int render_process_id,
-                                 const net::CompletionCallback& callback,
+                                 net::CompletionOnceCallback callback,
                                  GURL* new_url);
 
   virtual int OnBeforeStartTransaction(net::URLRequest* request,
-                                       const net::CompletionCallback& callback,
+                                       net::CompletionOnceCallback callback,
                                        net::HttpRequestHeaders* headers);
 
   virtual void OnURLRequestDestroyed(net::URLRequest* request);
