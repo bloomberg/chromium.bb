@@ -16,7 +16,7 @@
 #include "ui/views/view.h"
 
 namespace views {
-class MdTextButton;
+class LabelButton;
 }
 
 namespace ash {
@@ -49,53 +49,42 @@ class LockDebugView : public views::View, public views::ButtonListener {
   class DebugLoginDetachableBaseModel;
 
   // Rebuilds the debug user column which contains per-user actions.
-  void RebuildDebugUserColumn();
-
-  // Initializes the detachable base column - used for overriding detachable
-  // base pairing state.
-  void BuildDetachableBaseColumn();
+  void UpdatePerUserActionContainer();
+  void UpdatePerUserActionContainerAndLayout();
 
   // Updates buttons provided in detachable base column, depending on detected
-  // detachable base pairing state..
+  // detachable base pairing state.
   void UpdateDetachableBaseColumn();
 
   // Creates a button on the debug row that cannot be focused.
-  views::MdTextButton* AddButton(const std::string& text,
-                                 bool add_to_debug_row = true);
+  views::LabelButton* AddButton(const std::string& text,
+                                int id,
+                                views::View* container);
 
   LockContentsView* lock_ = nullptr;
 
-  // User column which contains per-user actions.
-  views::View* per_user_action_column_ = nullptr;
-  std::vector<views::View*> per_user_action_column_toggle_pin_;
-  std::vector<views::View*> per_user_action_column_cycle_easy_unlock_state_;
-  std::vector<views::View*> per_user_action_column_force_online_sign_in_;
-  std::vector<views::View*> per_user_action_column_toggle_auth_enabled_;
-  std::vector<views::View*> per_user_action_column_use_detachable_base_;
+  // Debug container which holds the entire debug UI.
+  views::View* container_ = nullptr;
 
-  // Debug row which contains buttons that affect the entire UI.
-  views::View* debug_row_ = nullptr;
-  views::MdTextButton* toggle_blur_ = nullptr;
-  views::MdTextButton* toggle_note_action_ = nullptr;
-  views::MdTextButton* toggle_caps_lock_ = nullptr;
-  views::MdTextButton* add_dev_channel_info_ = nullptr;
-  views::MdTextButton* add_user_ = nullptr;
-  views::MdTextButton* remove_user_ = nullptr;
-  views::MdTextButton* toggle_auth_ = nullptr;
-  views::MdTextButton* add_kiosk_app_ = nullptr;
-  views::MdTextButton* remove_kiosk_app_ = nullptr;
+  // Container which holds global actions. Each child button has an id which can
+  // be used to identify it.
+  views::View* global_action_view_container_ = nullptr;
+  // Global toggle auth button. Reference is needed to update the string.
+  views::LabelButton* global_action_toggle_auth_ = nullptr;
 
-  // Cloumn that contains buttons for debuggon detachable base state.
-  views::View* detachable_base_column_ = nullptr;
-  views::MdTextButton* toggle_debug_detachable_base_ = nullptr;
-  views::MdTextButton* cycle_detachable_base_status_ = nullptr;
-  views::MdTextButton* cycle_detachable_base_id_ = nullptr;
+  // Row that contains buttons for debugging detachable base state.
+  views::View* global_action_detachable_base_group_ = nullptr;
+
+  // Container which contains rows of buttons, one row associated with one user.
+  // Each button in the row has an id which can be used to identify it. The
+  // button also has a tag which identifies which user index the button applies
+  // to.
+  views::View* per_user_action_view_container_ = nullptr;
 
   // Debug dispatcher and cached data for the UI.
   std::unique_ptr<DebugDataDispatcherTransformer> const debug_data_dispatcher_;
   // Reference to the detachable base model passed to (and owned by) lock_.
   DebugLoginDetachableBaseModel* debug_detachable_base_model_ = nullptr;
-  int num_users_ = 1;
   size_t num_dev_channel_info_clicks_ = 0u;
   LoginScreenController::ForceFailAuth force_fail_auth_ =
       LoginScreenController::ForceFailAuth::kOff;
