@@ -45118,6 +45118,22 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Native Speech"/>
 </enum>
 
+<enum name="TextToSpeechVoiceIdHashes">
+  <int value="-2140886774" label="patts: Chrome OS UK English"/>
+  <int value="-1258442847" label="patts: Chrome OS Nederlands"/>
+  <int value="-1065336279" label="patts: Chrome OS espanol"/>
+  <int value="-1000148973" label="patts: Chrome OS Deutsch"/>
+  <int value="-691354709" label="patts: Chrome OS portugues do Brasil"/>
+  <int value="6716838" label="patts: Chrome OS Hindi"/>
+  <int value="130099200" label="patts: Chrome OS Bahasa Indonesia"/>
+  <int value="437696625" label="patts: Chrome OS Korean"/>
+  <int value="992554727" label="patts: Chrome OS French"/>
+  <int value="1016507512" label="patts: Chrome OS espanol de Estados Unidos"/>
+  <int value="1208419825" label="patts: Chrome OS US English"/>
+  <int value="1417057269" label="patts: Chrome OS italiano"/>
+  <int value="1835109015" label="patts: Chrome OS Indian English"/>
+</enum>
+
 <enum name="ThreadType">
   <int value="0" label="UI"/>
   <int value="1" label="Blocking"/>
@@ -48430,6 +48446,7 @@ Full version information for the fingerprint enum values:
   <int value="-1820397898" label="/manageAccessibility"/>
   <int value="-1737559358" label="/flash"/>
   <int value="-1688600161" label="/manageProfile"/>
+  <int value="-1569772500" label="/manageAccessibility/tts"/>
   <int value="-1351149930" label="/backgroundSync"/>
   <int value="-1312744606" label="/knownNetworks"/>
   <int value="-1297176639" label="/fonts"/>
