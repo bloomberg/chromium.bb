@@ -603,8 +603,8 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
   // Look up the key system's supported codecs and secure codecs.
   SupportedCodecs key_system_codec_mask =
       key_system_iter->second->GetSupportedCodecs();
-  SupportedCodecs key_system_secure_codec_mask =
-      key_system_iter->second->GetSupportedSecureCodecs();
+  SupportedCodecs key_system_hw_secure_codec_mask =
+      key_system_iter->second->GetSupportedHwSecureCodecs();
 
   // Check that the container is supported by the key system. (This check is
   // necessary because |codecs| may be empty.)
@@ -639,7 +639,7 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
     // to consider codecs that are only supported in hardware-secure mode. We
     // could do so, and make use of HW_SECURE_CODECS_REQUIRED, if it turns out
     // that hardware-secure-only codecs actually exist and are useful.
-    if ((codec & key_system_secure_codec_mask) == 0)
+    if ((codec & key_system_hw_secure_codec_mask) == 0)
       support = EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED;
   }
 

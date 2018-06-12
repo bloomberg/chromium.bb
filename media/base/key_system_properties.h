@@ -34,7 +34,7 @@ class MEDIA_EXPORT KeySystemProperties {
   virtual SupportedCodecs GetSupportedCodecs() const = 0;
 
   // Returns the codecs with hardware-secure support in this key system.
-  virtual SupportedCodecs GetSupportedSecureCodecs() const;
+  virtual SupportedCodecs GetSupportedHwSecureCodecs() const;
 
   // Returns the configuration rule for supporting a robustness requirement.
   virtual EmeConfigRule GetRobustnessConfigRule(

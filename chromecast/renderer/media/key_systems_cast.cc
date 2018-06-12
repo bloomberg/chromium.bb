@@ -56,7 +56,7 @@ class PlayReadyKeySystemProperties : public ::media::KeySystemProperties {
   }
 
 #if defined(OS_ANDROID)
-  SupportedCodecs GetSupportedSecureCodecs() const override {
+  SupportedCodecs GetSupportedHwSecureCodecs() const override {
     return supported_secure_codecs_;
   }
 #endif  // defined(OS_ANDROID)
