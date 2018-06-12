@@ -4,10 +4,14 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/ash_features.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/sticky_keys/sticky_keys_overlay.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -47,8 +51,26 @@ class StickyKeysBrowserTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  ash::SystemTray* GetSystemTray() {
-    return ash::Shell::Get()->GetPrimarySystemTray();
+  bool IsSystemTrayBubbleOpen() {
+    return ash::features::IsSystemTrayUnifiedEnabled()
+               ? ash::Shell::Get()
+                     ->GetPrimaryRootWindowController()
+                     ->GetStatusAreaWidget()
+                     ->unified_system_tray()
+                     ->IsBubbleShown()
+               : ash::Shell::Get()->GetPrimarySystemTray()->HasSystemBubble();
+  }
+
+  void CloseSystemTrayBubble() {
+    if (ash::features::IsSystemTrayUnifiedEnabled()) {
+      ash::Shell::Get()
+          ->GetPrimaryRootWindowController()
+          ->GetStatusAreaWidget()
+          ->unified_system_tray()
+          ->CloseBubble();
+    } else {
+      ash::Shell::Get()->GetPrimarySystemTray()->CloseBubble();
+    }
   }
 
   void SendKeyPress(ui::KeyboardCode key) {
@@ -71,22 +93,22 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OpenTrayMenu) {
   SendKeyPress(ui::VKEY_MENU);  // alt key.
   SendKeyPress(ui::VKEY_SHIFT);
   SendKeyPress(ui::VKEY_S);
-  EXPECT_TRUE(GetSystemTray()->HasSystemBubble());
+  EXPECT_TRUE(IsSystemTrayBubbleOpen());
 
   // Hide system bubble.
-  GetSystemTray()->CloseBubble();
-  EXPECT_FALSE(GetSystemTray()->HasSystemBubble());
+  CloseSystemTrayBubble();
+  EXPECT_FALSE(IsSystemTrayBubbleOpen());
 
   // Pressing S again should not reopen the bubble.
   SendKeyPress(ui::VKEY_S);
-  EXPECT_FALSE(GetSystemTray()->HasSystemBubble());
+  EXPECT_FALSE(IsSystemTrayBubbleOpen());
 
   // With sticky keys disabled, we will fail to perform the shortcut.
   SetStickyKeysEnabled(false);
   SendKeyPress(ui::VKEY_MENU);  // alt key.
   SendKeyPress(ui::VKEY_SHIFT);
   SendKeyPress(ui::VKEY_S);
-  EXPECT_FALSE(GetSystemTray()->HasSystemBubble());
+  EXPECT_FALSE(IsSystemTrayBubbleOpen());
 }
 
 IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OpenNewTabs) {

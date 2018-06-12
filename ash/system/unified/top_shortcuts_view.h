@@ -48,6 +48,10 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   // Change the expanded state. CollapseButton icon will change.
   void SetExpanded(bool expanded);
 
+  // Request focus of the element that should initially have focus after opening
+  // the bubble.
+  void RequestInitFocus();
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

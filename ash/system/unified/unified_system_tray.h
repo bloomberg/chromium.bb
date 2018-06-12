@@ -66,6 +66,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;
   void CloseBubble() override;
+  base::string16 GetAccessibleNameForBubble() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;

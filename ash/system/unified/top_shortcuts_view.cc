@@ -184,6 +184,15 @@ void TopShortcutsView::SetExpanded(bool expanded) {
   collapse_button_->UpdateIcon(expanded);
 }
 
+void TopShortcutsView::RequestInitFocus() {
+  if (user_avatar_button_) {
+    user_avatar_button_->RequestFocus();
+    return;
+  }
+
+  sign_out_button_->RequestFocus();
+}
+
 void TopShortcutsView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == user_avatar_button_)
