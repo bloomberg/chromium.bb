@@ -138,7 +138,32 @@ MediaPerceptionPrivateSetComponentProcessStateFunction::
 
 ExtensionFunction::ResponseAction
 MediaPerceptionPrivateSetComponentProcessStateFunction::Run() {
-  return RespondNow(Error("Not implemented."));
+  std::unique_ptr<media_perception::SetComponentProcessState::Params> params =
+      media_perception::SetComponentProcessState::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  if (params->process_state.status !=
+          media_perception::PROCESS_STATUS_STARTED &&
+      params->process_state.status !=
+          media_perception::PROCESS_STATUS_STOPPED) {
+    return RespondNow(
+        Error("Cannot set process_state to something other than STARTED or "
+              "STOPPED."));
+  }
+
+  MediaPerceptionAPIManager* manager =
+      MediaPerceptionAPIManager::Get(browser_context());
+  manager->SetComponentProcessState(
+      params->process_state,
+      base::BindOnce(&MediaPerceptionPrivateSetComponentProcessStateFunction::
+                         OnComponentProcessStateSet,
+                     this));
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void MediaPerceptionPrivateSetComponentProcessStateFunction::
+    OnComponentProcessStateSet(
+        extensions::api::media_perception_private::ProcessState process_state) {
+  Respond(OneArgument(process_state.ToValue()));
 }
 
 }  // namespace extensions
