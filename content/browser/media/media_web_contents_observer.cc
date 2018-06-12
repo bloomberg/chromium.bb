@@ -75,6 +75,11 @@ void MediaWebContentsObserver::RenderFrameDeleted(
     picture_in_picture_allowed_in_fullscreen_.reset();
     fullscreen_player_.reset();
   }
+
+  // Usually the frame will exit PIP before it is deleted but for OOPIF, it
+  // seems that the player never notifies the browser process.
+  if (pip_player_ && pip_player_->first == render_frame_host)
+    ExitPictureInPictureInternal();
 }
 
 void MediaWebContentsObserver::MaybeUpdateAudibleState() {
@@ -327,17 +332,7 @@ void MediaWebContentsObserver::OnPictureInPictureModeEnded(
     RenderFrameHost* render_frame_host,
     int delegate_id,
     int request_id) {
-  // TODO(mlamouri): must be a DCHECK but can't at the moment because we do not
-  // correctly notify players when switching PIP video in the same tab.
-  if (pip_player_) {
-    web_contents_impl()->ExitPictureInPicture();
-
-    // Reset must happen after notifying the WebContents because it may interact
-    // with it.
-    pip_player_.reset();
-
-    UpdateVideoLock();
-  }
+  ExitPictureInPictureInternal();
 
   render_frame_host->Send(
       new MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK(
@@ -497,6 +492,18 @@ void MediaWebContentsObserver::RemoveAllMediaPlayerEntries(
     removed_players->insert(MediaPlayerId(render_frame_host, delegate_id));
 
   player_map->erase(it);
+}
+
+void MediaWebContentsObserver::ExitPictureInPictureInternal() {
+  DCHECK(pip_player_);
+
+  web_contents_impl()->ExitPictureInPicture();
+
+  // Reset must happen after notifying the WebContents because it may interact
+  // with it.
+  pip_player_.reset();
+
+  UpdateVideoLock();
 }
 
 WebContentsImpl* MediaWebContentsObserver::web_contents_impl() const {
