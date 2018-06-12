@@ -73,6 +73,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Manages interactions with the VR Shell.
@@ -486,35 +487,41 @@ public class VrShellDelegate
         if (sInstance != null) return; // Will be handled in onResume.
         if (!activitySupportsVrBrowsing(activity) && sRegisteredVrAssetsComponent) return;
 
-        // Reading VR support level and version can be slow, so do it asynchronously.
-        new AsyncTask<Void, Void, Integer>() {
-            @Override
-            protected Integer doInBackground(Void... params) {
-                VrClassesWrapper wrapper = getVrClassesWrapper();
-                if (wrapper == null) return VrSupportLevel.VR_NOT_AVAILABLE;
-                updateDayreamIconComponentState(activity);
-                int vrSupportLevel = getVrSupportLevel(null);
-                return vrSupportLevel;
-            }
-
-            @Override
-            protected void onPostExecute(Integer vrSupportLevel) {
-                if (vrSupportLevel != VrSupportLevel.VR_DAYDREAM) return;
-
-                if (!sRegisteredVrAssetsComponent) {
-                    registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
+        try {
+            // Reading VR support level and version can be slow, so do it asynchronously.
+            new AsyncTask<Void, Void, Integer>() {
+                @Override
+                protected Integer doInBackground(Void... params) {
+                    VrClassesWrapper wrapper = getVrClassesWrapper();
+                    if (wrapper == null) return VrSupportLevel.VR_NOT_AVAILABLE;
+                    updateDayreamIconComponentState(activity);
+                    int vrSupportLevel = getVrSupportLevel(null);
+                    return vrSupportLevel;
                 }
 
-                // Registering the daydream intent has to be done on the UI thread. Note that this
-                // call is slow (~10ms at time of writing).
-                if (isVrBrowsingEnabled(activity, vrSupportLevel)
-                        && ApplicationStatus.getStateForActivity(activity)
-                                == ActivityState.RESUMED) {
-                    registerDaydreamIntent(activity);
+                @Override
+                protected void onPostExecute(Integer vrSupportLevel) {
+                    if (vrSupportLevel != VrSupportLevel.VR_DAYDREAM) return;
+
+                    if (!sRegisteredVrAssetsComponent) {
+                        registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
+                    }
+
+                    // Registering the daydream intent has to be done on the UI thread. Note that
+                    // this call is slow (~10ms at time of writing).
+                    if (isVrBrowsingEnabled(activity, vrSupportLevel)
+                            && ApplicationStatus.getStateForActivity(activity)
+                                    == ActivityState.RESUMED) {
+                        registerDaydreamIntent(activity);
+                    }
                 }
             }
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (RejectedExecutionException ex) {
+            // This isn't critical work, so it's okay to fail silently. If the user does try to
+            // enter VR the asset component may not be available, and headset insertion will go to
+            // Daydream rather than Chrome.
         }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
