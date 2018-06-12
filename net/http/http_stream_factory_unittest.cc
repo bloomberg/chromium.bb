@@ -1572,10 +1572,6 @@ TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
 TEST_F(HttpStreamFactoryTest, GetLoadState) {
   SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
 
-  // Force asynchronous host resolutions, so that the LoadState will be
-  // resolving the host.
-  session_deps.host_resolver->set_synchronous_mode(false);
-
   StaticSocketDataProvider socket_data;
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
@@ -1650,6 +1646,7 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStream) {
 // the job.
 TEST_F(HttpStreamFactoryTest, ReprioritizeAfterStreamReceived) {
   SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
+  session_deps.host_resolver->set_synchronous_mode(true);
 
   MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
   StaticSocketDataProvider socket_data(base::make_span(&mock_read, 1),

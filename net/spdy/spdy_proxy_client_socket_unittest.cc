@@ -194,8 +194,6 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
   ASSERT_TRUE(ssl.ssl_info.cert);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
-  session_deps_.host_resolver->set_synchronous_mode(true);
-
   session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
 
   // Creates the SPDY session and stream.
