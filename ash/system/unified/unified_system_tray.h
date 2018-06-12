@@ -46,6 +46,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // accelerator is shown.
   bool IsSliderBubbleShown() const;
 
+  // True if the bubble is active.
+  bool IsBubbleActive() const;
+
   // Activates the system tray bubble.
   void ActivateBubble();
 

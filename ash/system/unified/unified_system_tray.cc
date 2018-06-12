@@ -182,6 +182,10 @@ bool UnifiedSystemTray::IsSliderBubbleShown() const {
   return slider_bubble_controller_->IsBubbleShown();
 }
 
+bool UnifiedSystemTray::IsBubbleActive() const {
+  return bubble_ && bubble_->IsBubbleActive();
+}
+
 void UnifiedSystemTray::ActivateBubble() {
   if (bubble_)
     bubble_->ActivateBubble();

@@ -83,6 +83,10 @@ gfx::Rect UnifiedSystemTrayBubble::GetBoundsInScreen() const {
   return bubble_view_->GetBoundsInScreen();
 }
 
+bool UnifiedSystemTrayBubble::IsBubbleActive() const {
+  return bubble_widget_ && bubble_widget_->IsActive();
+}
+
 void UnifiedSystemTrayBubble::ActivateBubble() {
   DCHECK(bubble_widget_);
   bubble_widget_->widget_delegate()->set_can_activate(true);

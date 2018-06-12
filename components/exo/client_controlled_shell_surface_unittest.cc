@@ -10,11 +10,13 @@
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -587,6 +589,10 @@ TEST_F(ClientControlledShellSurfaceTest, CompositorLockInRotation) {
 // If system tray is shown by click. It should be activated if user presses tab
 // key while shell surface is active.
 TEST_F(ClientControlledShellSurfaceTest, KeyboardNavigationWithSystemTray) {
+  // This is old SystemTray version.
+  if (ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
   const gfx::Size buffer_size(800, 600);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -620,6 +626,47 @@ TEST_F(ClientControlledShellSurfaceTest, KeyboardNavigationWithSystemTray) {
   EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
   EXPECT_TRUE(
       system_tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+}
+
+// If system tray is shown by click. It should be activated if user presses tab
+// key while shell surface is active.
+TEST_F(ClientControlledShellSurfaceTest,
+       KeyboardNavigationWithUnifiedSystemTray) {
+  // This is UnifiedSystemTray version.
+  if (!ash::features::IsSystemTrayUnifiedEnabled())
+    return;
+
+  const gfx::Size buffer_size(800, 600);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
+
+  // Show system tray by perfoming a gesture tap at tray.
+  ash::UnifiedSystemTray* system_tray = GetPrimaryUnifiedSystemTray();
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  system_tray->PerformAction(tap);
+  ASSERT_TRUE(system_tray->GetWidget());
+
+  // Confirm that system tray is not active at this time.
+  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
+  EXPECT_FALSE(system_tray->IsBubbleActive());
+
+  // Send tab key event.
+  ui::test::EventGenerator& event_generator = GetEventGenerator();
+  event_generator.PressKey(ui::VKEY_TAB, ui::EF_NONE);
+  event_generator.ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
+
+  // Confirm that system tray is activated.
+  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
+  EXPECT_TRUE(system_tray->IsBubbleActive());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, Maximize) {
