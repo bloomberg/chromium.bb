@@ -315,9 +315,9 @@ ExternalInstallError::GetDefaultDialogButton(
   }
 
   if (base::FeatureList::IsEnabled(
-          features::kExternalExtensionDefaultButtonControl)) {
+          ::features::kExternalExtensionDefaultButtonControl)) {
     std::string default_button = base::GetFieldTrialParamValueByFeature(
-        features::kExternalExtensionDefaultButtonControl,
+        ::features::kExternalExtensionDefaultButtonControl,
         kExternalInstallDefaultButtonKey);
     if (!default_button.empty()) {
       return MapDefaultButtonStringToSetting(default_button);

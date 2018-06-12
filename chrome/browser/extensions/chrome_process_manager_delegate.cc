@@ -72,7 +72,7 @@ bool ChromeProcessManagerDelegate::IsExtensionBackgroundPageAllowed(
   if (is_signin_profile) {
     // Check for flag.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableLoginScreenApps)) {
+            ::switches::kDisableLoginScreenApps)) {
       return false;
     }
 
@@ -114,7 +114,7 @@ bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(
   // via NOTIFICATION_BROWSER_OPENED. http://crbug.com/178260
   return chrome::GetBrowserCount(profile) == 0 &&
          base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kShowAppList);
+             ::switches::kShowAppList);
 }
 
 void ChromeProcessManagerDelegate::Observe(

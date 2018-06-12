@@ -77,8 +77,9 @@ void ContextMenuMatcher::AppendExtensionItems(
   // items in the menu, and the last item is not a separator add a separator.
   // Separators are not required when the context menu is a touchable app
   // context menu.
-  const bool prepend_separator = *index == 0 && menu_model_->GetItemCount() &&
-                                 !features::IsTouchableAppContextMenuEnabled();
+  const bool prepend_separator =
+      *index == 0 && menu_model_->GetItemCount() &&
+      !::features::IsTouchableAppContextMenuEnabled();
 
   // Extensions (other than platform apps) are only allowed one top-level slot
   // (and it can't be a radio or checkbox item because we are going to put the
@@ -265,7 +266,8 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
 
   // Separators are not required when the context menu is a touchable app
   // context menu.
-  const bool enable_separators = !features::IsTouchableAppContextMenuEnabled();
+  const bool enable_separators =
+      !::features::IsTouchableAppContextMenuEnabled();
 
   for (auto i = items.begin(); i != items.end(); ++i) {
     MenuItem* item = *i;

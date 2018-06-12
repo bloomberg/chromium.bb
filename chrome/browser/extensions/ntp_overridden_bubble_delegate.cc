@@ -160,7 +160,7 @@ bool NtpOverriddenBubbleDelegate::ShouldCloseOnDeactivate() const {
 
 bool NtpOverriddenBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
   return base::FeatureList::IsEnabled(
-      features::kAcknowledgeNtpOverrideOnDeactivate);
+      ::features::kAcknowledgeNtpOverrideOnDeactivate);
 }
 
 bool NtpOverriddenBubbleDelegate::ShouldShowExtensionList() const {

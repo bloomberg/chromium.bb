@@ -64,7 +64,7 @@ VerifyStatus GetExperimentStatus() {
 
   std::string forced_trials =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kForceFieldTrials);
+          ::switches::kForceFieldTrials);
   if (forced_trials.find(kExperimentName) != std::string::npos) {
     // We don't want to allow turning off enforcement by forcing the field
     // trial group to something other than enforcement.
@@ -94,9 +94,9 @@ VerifyStatus GetCommandLineStatus() {
   if (!InstallSigner::GetForcedNotFromWebstore().empty())
     return ENFORCE;
 
-  if (cmdline->HasSwitch(switches::kExtensionsInstallVerification)) {
+  if (cmdline->HasSwitch(::switches::kExtensionsInstallVerification)) {
     std::string value = cmdline->GetSwitchValueASCII(
-        switches::kExtensionsInstallVerification);
+        ::switches::kExtensionsInstallVerification);
     if (value == "bootstrap")
       return BOOTSTRAP;
     else if (value == "enforce_strict")

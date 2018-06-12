@@ -543,7 +543,7 @@ BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
 
   // Use the last bookmark app creation type. The launch container is decided by
   // the system for desktop PWAs.
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
+  if (!base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing)) {
     web_app_info_.open_as_window =
         profile_->GetPrefs()->GetInteger(
             pref_names::kBookmarkAppCreationLaunchType) == LAUNCH_TYPE_WINDOW;
@@ -610,7 +610,7 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
   // TODO(mgiuca): Web Share Target should have its own flag, rather than using
   // the experimental-web-platform-features flag. https://crbug.com/736178.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+          ::switches::kEnableExperimentalWebPlatformFeatures)) {
     UpdateShareTargetInPrefs(data.manifest_url, *data.manifest,
                              profile_->GetPrefs());
   }
@@ -703,7 +703,7 @@ void BookmarkAppHelper::OnIconsDownloaded(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
       for_installable_site_ == ForInstallableSite::kYes) {
     web_app_info_.open_as_window = true;
     chrome::ShowPWAInstallDialog(
@@ -740,7 +740,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   LaunchType launch_type =
       web_app_info_.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
+  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing)) {
     DCHECK_NE(ForInstallableSite::kUnknown, for_installable_site_);
     launch_type = for_installable_site_ == ForInstallableSite::kYes
                       ? LAUNCH_TYPE_WINDOW
@@ -804,7 +804,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 #endif  // !defined(OS_CHROMEOS)
 
   // Reparent the tab into an app window immediately when opening as a window.
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
       launch_type == LAUNCH_TYPE_WINDOW && !profile_->IsOffTheRecord()) {
     ReparentWebContentsIntoAppBrowser(contents_, extension);
   }

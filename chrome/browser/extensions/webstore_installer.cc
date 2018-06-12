@@ -205,9 +205,9 @@ GURL WebstoreInstaller::GetWebstoreInstallURL(
   }
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kAppsGalleryDownloadURL)) {
+  if (cmd_line->HasSwitch(::switches::kAppsGalleryDownloadURL)) {
     std::string download_url =
-        cmd_line->GetSwitchValueASCII(switches::kAppsGalleryDownloadURL);
+        cmd_line->GetSwitchValueASCII(::switches::kAppsGalleryDownloadURL);
     return GURL(base::StringPrintf(download_url.c_str(),
                                    extension_id.c_str()));
   }

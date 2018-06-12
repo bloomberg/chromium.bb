@@ -60,10 +60,8 @@ using bookmarks::ManagedBookmarkService;
 
 namespace extensions {
 
-namespace bookmarks = api::bookmarks;
-
-using bookmarks::BookmarkTreeNode;
-using bookmarks::CreateDetails;
+using api::bookmarks::BookmarkTreeNode;
+using api::bookmarks::CreateDetails;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::WebContents;
@@ -132,7 +130,7 @@ const BookmarkNode* BookmarksFunction::GetBookmarkNodeFromId(
   if (!GetBookmarkIdAsInt64(id_string, &id))
     return NULL;
 
-  const BookmarkNode* node = ::bookmarks::GetBookmarkNodeByID(
+  const BookmarkNode* node = bookmarks::GetBookmarkNodeByID(
       BookmarkModelFactory::GetForBrowserContext(GetProfile()), id);
   if (!node)
     error_ = bookmark_api_constants::kNoNodeError;
@@ -153,8 +151,7 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
     if (!GetBookmarkIdAsInt64(*details.parent_id, &parentId))
       return NULL;
   }
-  const BookmarkNode* parent =
-      ::bookmarks::GetBookmarkNodeByID(model, parentId);
+  const BookmarkNode* parent = bookmarks::GetBookmarkNodeByID(model, parentId);
   if (!CanBeModified(parent))
     return NULL;
 
@@ -199,7 +196,7 @@ const BookmarkNode* BookmarksFunction::CreateBookmarkNode(
 
 bool BookmarksFunction::EditBookmarksEnabled() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
-  if (prefs->GetBoolean(::bookmarks::prefs::kEditBookmarksEnabled))
+  if (prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled))
     return true;
   error_ = bookmark_api_constants::kEditBookmarksDisabled;
   return false;
@@ -215,7 +212,7 @@ bool BookmarksFunction::CanBeModified(const BookmarkNode* node) {
     return false;
   }
   ManagedBookmarkService* managed = GetManagedBookmarkService();
-  if (::bookmarks::IsDescendantOf(node, managed->managed_node())) {
+  if (bookmarks::IsDescendantOf(node, managed->managed_node())) {
     error_ = bookmark_api_constants::kModifyManagedError;
     return false;
   }
@@ -283,15 +280,15 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
                                             const BookmarkNode* new_parent,
                                             int new_index) {
   const BookmarkNode* node = new_parent->GetChild(new_index);
-  bookmarks::OnMoved::MoveInfo move_info;
+  api::bookmarks::OnMoved::MoveInfo move_info;
   move_info.parent_id = base::Int64ToString(new_parent->id());
   move_info.index = new_index;
   move_info.old_parent_id = base::Int64ToString(old_parent->id());
   move_info.old_index = old_index;
 
-  DispatchEvent(
-      events::BOOKMARKS_ON_MOVED, bookmarks::OnMoved::kEventName,
-      bookmarks::OnMoved::Create(base::Int64ToString(node->id()), move_info));
+  DispatchEvent(events::BOOKMARKS_ON_MOVED, api::bookmarks::OnMoved::kEventName,
+                api::bookmarks::OnMoved::Create(base::Int64ToString(node->id()),
+                                                move_info));
 }
 
 void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
@@ -300,9 +297,10 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   const BookmarkNode* node = parent->GetChild(index);
   BookmarkTreeNode tree_node =
       bookmark_api_helpers::GetBookmarkTreeNode(managed_, node, false, false);
-  DispatchEvent(
-      events::BOOKMARKS_ON_CREATED, bookmarks::OnCreated::kEventName,
-      bookmarks::OnCreated::Create(base::Int64ToString(node->id()), tree_node));
+  DispatchEvent(events::BOOKMARKS_ON_CREATED,
+                api::bookmarks::OnCreated::kEventName,
+                api::bookmarks::OnCreated::Create(
+                    base::Int64ToString(node->id()), tree_node));
 }
 
 void BookmarkEventRouter::BookmarkNodeRemoved(
@@ -311,15 +309,16 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
     int index,
     const BookmarkNode* node,
     const std::set<GURL>& removed_urls) {
-  bookmarks::OnRemoved::RemoveInfo remove_info;
+  api::bookmarks::OnRemoved::RemoveInfo remove_info;
   remove_info.parent_id = base::Int64ToString(parent->id());
   remove_info.index = index;
   bookmark_api_helpers::PopulateBookmarkTreeNode(managed_, node, true, false,
                                                  &remove_info.node);
 
-  DispatchEvent(events::BOOKMARKS_ON_REMOVED, bookmarks::OnRemoved::kEventName,
-                bookmarks::OnRemoved::Create(base::Int64ToString(node->id()),
-                                             remove_info));
+  DispatchEvent(events::BOOKMARKS_ON_REMOVED,
+                api::bookmarks::OnRemoved::kEventName,
+                api::bookmarks::OnRemoved::Create(
+                    base::Int64ToString(node->id()), remove_info));
 }
 
 void BookmarkEventRouter::BookmarkAllUserNodesRemoved(
@@ -338,14 +337,15 @@ void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
   // ignoring favicon and since the notification doesn't say which one anyway,
   // for now we only include title and url.  The ideal thing would be to change
   // BookmarkModel to indicate what changed.
-  bookmarks::OnChanged::ChangeInfo change_info;
+  api::bookmarks::OnChanged::ChangeInfo change_info;
   change_info.title = base::UTF16ToUTF8(node->GetTitle());
   if (node->is_url())
     change_info.url.reset(new std::string(node->url().spec()));
 
-  DispatchEvent(events::BOOKMARKS_ON_CHANGED, bookmarks::OnChanged::kEventName,
-                bookmarks::OnChanged::Create(base::Int64ToString(node->id()),
-                                             change_info));
+  DispatchEvent(events::BOOKMARKS_ON_CHANGED,
+                api::bookmarks::OnChanged::kEventName,
+                api::bookmarks::OnChanged::Create(
+                    base::Int64ToString(node->id()), change_info));
 }
 
 void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -356,7 +356,7 @@ void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
 void BookmarkEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model,
     const BookmarkNode* node) {
-  bookmarks::OnChildrenReordered::ReorderInfo reorder_info;
+  api::bookmarks::OnChildrenReordered::ReorderInfo reorder_info;
   int childCount = node->child_count();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
@@ -364,35 +364,37 @@ void BookmarkEventRouter::BookmarkNodeChildrenReordered(
   }
 
   DispatchEvent(events::BOOKMARKS_ON_CHILDREN_REORDERED,
-                bookmarks::OnChildrenReordered::kEventName,
-                bookmarks::OnChildrenReordered::Create(
+                api::bookmarks::OnChildrenReordered::kEventName,
+                api::bookmarks::OnChildrenReordered::Create(
                     base::Int64ToString(node->id()), reorder_info));
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesBeginning(
     BookmarkModel* model) {
   DispatchEvent(events::BOOKMARKS_ON_IMPORT_BEGAN,
-                bookmarks::OnImportBegan::kEventName,
-                bookmarks::OnImportBegan::Create());
+                api::bookmarks::OnImportBegan::kEventName,
+                api::bookmarks::OnImportBegan::Create());
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   DispatchEvent(events::BOOKMARKS_ON_IMPORT_ENDED,
-                bookmarks::OnImportEnded::kEventName,
-                bookmarks::OnImportEnded::Create());
+                api::bookmarks::OnImportEnded::kEventName,
+                api::bookmarks::OnImportEnded::Create());
 }
 
 BookmarksAPI::BookmarksAPI(BrowserContext* context)
     : browser_context_(context) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
-  event_router->RegisterObserver(this, bookmarks::OnCreated::kEventName);
-  event_router->RegisterObserver(this, bookmarks::OnRemoved::kEventName);
-  event_router->RegisterObserver(this, bookmarks::OnChanged::kEventName);
-  event_router->RegisterObserver(this, bookmarks::OnMoved::kEventName);
+  event_router->RegisterObserver(this, api::bookmarks::OnCreated::kEventName);
+  event_router->RegisterObserver(this, api::bookmarks::OnRemoved::kEventName);
+  event_router->RegisterObserver(this, api::bookmarks::OnChanged::kEventName);
+  event_router->RegisterObserver(this, api::bookmarks::OnMoved::kEventName);
+  event_router->RegisterObserver(
+      this, api::bookmarks::OnChildrenReordered::kEventName);
   event_router->RegisterObserver(this,
-                                 bookmarks::OnChildrenReordered::kEventName);
-  event_router->RegisterObserver(this, bookmarks::OnImportBegan::kEventName);
-  event_router->RegisterObserver(this, bookmarks::OnImportEnded::kEventName);
+                                 api::bookmarks::OnImportBegan::kEventName);
+  event_router->RegisterObserver(this,
+                                 api::bookmarks::OnImportEnded::kEventName);
 }
 
 BookmarksAPI::~BookmarksAPI() {
@@ -418,8 +420,8 @@ void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
 }
 
 bool BookmarksGetFunction::RunOnReady() {
-  std::unique_ptr<bookmarks::Get::Params> params(
-      bookmarks::Get::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::Get::Params> params(
+      api::bookmarks::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::vector<BookmarkTreeNode> nodes;
@@ -442,13 +444,13 @@ bool BookmarksGetFunction::RunOnReady() {
     bookmark_api_helpers::AddNode(managed, node, &nodes, false);
   }
 
-  results_ = bookmarks::Get::Results::Create(nodes);
+  results_ = api::bookmarks::Get::Results::Create(nodes);
   return true;
 }
 
 bool BookmarksGetChildrenFunction::RunOnReady() {
-  std::unique_ptr<bookmarks::GetChildren::Params> params(
-      bookmarks::GetChildren::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::GetChildren::Params> params(
+      api::bookmarks::GetChildren::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
@@ -463,19 +465,19 @@ bool BookmarksGetChildrenFunction::RunOnReady() {
                                   false);
   }
 
-  results_ = bookmarks::GetChildren::Results::Create(nodes);
+  results_ = api::bookmarks::GetChildren::Results::Create(nodes);
   return true;
 }
 
 bool BookmarksGetRecentFunction::RunOnReady() {
-  std::unique_ptr<bookmarks::GetRecent::Params> params(
-      bookmarks::GetRecent::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::GetRecent::Params> params(
+      api::bookmarks::GetRecent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   if (params->number_of_items < 1)
     return false;
 
   std::vector<const BookmarkNode*> nodes;
-  ::bookmarks::GetMostRecentlyAddedEntries(
+  bookmarks::GetMostRecentlyAddedEntries(
       BookmarkModelFactory::GetForBrowserContext(GetProfile()),
       params->number_of_items, &nodes);
 
@@ -485,7 +487,7 @@ bool BookmarksGetRecentFunction::RunOnReady() {
                                   &tree_nodes, false);
   }
 
-  results_ = bookmarks::GetRecent::Results::Create(tree_nodes);
+  results_ = api::bookmarks::GetRecent::Results::Create(tree_nodes);
   return true;
 }
 
@@ -495,13 +497,13 @@ bool BookmarksGetTreeFunction::RunOnReady() {
       BookmarkModelFactory::GetForBrowserContext(GetProfile())->root_node();
   bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node, &nodes,
                                 true);
-  results_ = bookmarks::GetTree::Results::Create(nodes);
+  results_ = api::bookmarks::GetTree::Results::Create(nodes);
   return true;
 }
 
 bool BookmarksGetSubTreeFunction::RunOnReady() {
-  std::unique_ptr<bookmarks::GetSubTree::Params> params(
-      bookmarks::GetSubTree::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::GetSubTree::Params> params(
+      api::bookmarks::GetSubTree::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
@@ -511,28 +513,28 @@ bool BookmarksGetSubTreeFunction::RunOnReady() {
   std::vector<BookmarkTreeNode> nodes;
   bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node, &nodes,
                                 true);
-  results_ = bookmarks::GetSubTree::Results::Create(nodes);
+  results_ = api::bookmarks::GetSubTree::Results::Create(nodes);
   return true;
 }
 
 bool BookmarksSearchFunction::RunOnReady() {
-  std::unique_ptr<bookmarks::Search::Params> params(
-      bookmarks::Search::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::Search::Params> params(
+      api::bookmarks::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::vector<const BookmarkNode*> nodes;
   if (params->query.as_string) {
-    ::bookmarks::QueryFields query;
+    bookmarks::QueryFields query;
     query.word_phrase_query.reset(
         new base::string16(base::UTF8ToUTF16(*params->query.as_string)));
-    ::bookmarks::GetBookmarksMatchingProperties(
+    bookmarks::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForBrowserContext(GetProfile()), query,
         std::numeric_limits<int>::max(), &nodes);
   } else {
     DCHECK(params->query.as_object);
-    const bookmarks::Search::Params::Query::Object& object =
+    const api::bookmarks::Search::Params::Query::Object& object =
         *params->query.as_object;
-    ::bookmarks::QueryFields query;
+    bookmarks::QueryFields query;
     if (object.query) {
       query.word_phrase_query.reset(
           new base::string16(base::UTF8ToUTF16(*object.query)));
@@ -541,7 +543,7 @@ bool BookmarksSearchFunction::RunOnReady() {
       query.url.reset(new base::string16(base::UTF8ToUTF16(*object.url)));
     if (object.title)
       query.title.reset(new base::string16(base::UTF8ToUTF16(*object.title)));
-    ::bookmarks::GetBookmarksMatchingProperties(
+    bookmarks::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForBrowserContext(GetProfile()), query,
         std::numeric_limits<int>::max(), &nodes);
   }
@@ -551,7 +553,7 @@ bool BookmarksSearchFunction::RunOnReady() {
   for (const BookmarkNode* node : nodes)
     bookmark_api_helpers::AddNode(managed, node, &tree_nodes, false);
 
-  results_ = bookmarks::Search::Results::Create(tree_nodes);
+  results_ = api::bookmarks::Search::Results::Create(tree_nodes);
   return true;
 }
 
@@ -559,8 +561,8 @@ bool BookmarksRemoveFunctionBase::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
-  std::unique_ptr<bookmarks::Remove::Params> params(
-      bookmarks::Remove::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::Remove::Params> params(
+      api::bookmarks::Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   int64_t id;
@@ -589,8 +591,8 @@ bool BookmarksCreateFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
-  std::unique_ptr<bookmarks::Create::Params> params(
-      bookmarks::Create::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::Create::Params> params(
+      api::bookmarks::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   BookmarkModel* model =
@@ -601,7 +603,7 @@ bool BookmarksCreateFunction::RunOnReady() {
 
   BookmarkTreeNode ret = bookmark_api_helpers::GetBookmarkTreeNode(
       GetManagedBookmarkService(), node, false, false);
-  results_ = bookmarks::Create::Results::Create(ret);
+  results_ = api::bookmarks::Create::Results::Create(ret);
 
   return true;
 }
@@ -610,8 +612,8 @@ bool BookmarksMoveFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
-  std::unique_ptr<bookmarks::Move::Params> params(
-      bookmarks::Move::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::Move::Params> params(
+      api::bookmarks::Move::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   const BookmarkNode* node = GetBookmarkNodeFromId(params->id);
@@ -634,7 +636,7 @@ bool BookmarksMoveFunction::RunOnReady() {
     if (!GetBookmarkIdAsInt64(*params->destination.parent_id, &parentId))
       return false;
 
-    parent = ::bookmarks::GetBookmarkNodeByID(model, parentId);
+    parent = bookmarks::GetBookmarkNodeByID(model, parentId);
   }
   if (!CanBeModified(parent) || !CanBeModified(node))
     return false;
@@ -654,7 +656,7 @@ bool BookmarksMoveFunction::RunOnReady() {
 
   BookmarkTreeNode tree_node = bookmark_api_helpers::GetBookmarkTreeNode(
       GetManagedBookmarkService(), node, false, false);
-  results_ = bookmarks::Move::Results::Create(tree_node);
+  results_ = api::bookmarks::Move::Results::Create(tree_node);
 
   return true;
 }
@@ -663,8 +665,8 @@ bool BookmarksUpdateFunction::RunOnReady() {
   if (!EditBookmarksEnabled())
     return false;
 
-  std::unique_ptr<bookmarks::Update::Params> params(
-      bookmarks::Update::Params::Create(*args_));
+  std::unique_ptr<api::bookmarks::Update::Params> params(
+      api::bookmarks::Update::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Optional but we need to distinguish non present from an empty title.
@@ -707,7 +709,7 @@ bool BookmarksUpdateFunction::RunOnReady() {
 
   BookmarkTreeNode tree_node = bookmark_api_helpers::GetBookmarkTreeNode(
       GetManagedBookmarkService(), node, false, false);
-  results_ = bookmarks::Update::Results::Create(tree_node);
+  results_ = api::bookmarks::Update::Results::Create(tree_node);
   return true;
 }
 

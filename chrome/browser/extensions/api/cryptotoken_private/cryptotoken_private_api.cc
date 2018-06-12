@@ -168,7 +168,8 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
 
   // If prompting is disabled, allow attestation because that is the historical
   // behavior.
-  if (!base::FeatureList::IsEnabled(features::kSecurityKeyAttestationPrompt)) {
+  if (!base::FeatureList::IsEnabled(
+          ::features::kSecurityKeyAttestationPrompt)) {
     return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
   }
 

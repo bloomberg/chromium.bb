@@ -42,8 +42,6 @@
 
 namespace extensions {
 
-namespace identity = api::identity;
-
 IdentityTokenCacheValue::IdentityTokenCacheValue()
     : status_(CACHE_STATUS_NOTFOUND) {}
 

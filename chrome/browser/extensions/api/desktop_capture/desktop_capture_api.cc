@@ -66,7 +66,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
     }
 
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAllowHttpScreenCapture) &&
+            ::switches::kAllowHttpScreenCapture) &&
         !content::IsOriginSecure(origin)) {
       error_ = kTabUrlNotSecure;
       return false;
