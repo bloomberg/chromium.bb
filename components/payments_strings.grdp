@@ -385,7 +385,7 @@
     Cards and addresses are from Chrome. You can manage them in <ph name="BEGIN_LINK">BEGIN_LINK</ph>Settings<ph name="END_LINK">END_LINK</ph>.
   </message>
   <message name="IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL" desc="Label of the toggle which disables canMakePayment" formatter_data="android_java">
-    Allow websites to know whether you have payment methods available
+    Allow sites to check if you have payment methods saved
   </message>
 
   <!-- iOS Credit Card form -->
