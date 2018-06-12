@@ -733,6 +733,7 @@ bool Validators::QueryTargetValidator::IsValid(const GLenum value) const {
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     case GL_COMMANDS_COMPLETED_CHROMIUM:
+    case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
       return true;
   }
   return false;

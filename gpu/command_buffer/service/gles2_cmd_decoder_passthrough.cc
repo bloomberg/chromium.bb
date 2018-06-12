@@ -1231,6 +1231,8 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
+  // TODO(crbug.com/828135): implement and enable this cap on passthrough
+  caps.chromium_nonblocking_readback = false;
 
   return caps;
 }
@@ -1842,6 +1844,9 @@ bool GLES2DecoderPassthroughImpl::IsRobustnessSupported() {
 bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
   // GL_COMMANDS_COMPLETED_CHROMIUM is implemented in ANGLE
   switch (target) {
+    // TODO(crbug.com/828135): implement
+    // READBACK_SHADOW_COPIES_UPDATED_CHROMIUM in ANGLE somehow
+    case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
@@ -1859,6 +1864,13 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
     GLuint result_available = GL_FALSE;
     GLuint64 result = 0;
     switch (query.target) {
+      // TODO(crbug.com/828135): implement
+      // READBACK_SHADOW_COPIES_UPDATED_CHROMIUM in ANGLE somehow
+      case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
+        result_available = GL_TRUE;
+        result = 0;
+        break;
+
       case GL_COMMANDS_ISSUED_CHROMIUM:
         result_available = GL_TRUE;
         result = GL_TRUE;

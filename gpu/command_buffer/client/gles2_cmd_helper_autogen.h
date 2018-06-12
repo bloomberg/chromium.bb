@@ -3318,4 +3318,14 @@ void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) {
   }
 }
 
+void SetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
+                                               GLint shm_id,
+                                               GLuint shm_offset) {
+  gles2::cmds::SetReadbackBufferShadowAllocationINTERNAL* c =
+      GetCmdSpace<gles2::cmds::SetReadbackBufferShadowAllocationINTERNAL>();
+  if (c) {
+    c->Init(buffer_id, shm_id, shm_offset);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

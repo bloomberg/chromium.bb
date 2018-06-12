@@ -16335,4 +16335,51 @@ static_assert(offsetof(DestroyGpuFenceCHROMIUM, header) == 0,
 static_assert(offsetof(DestroyGpuFenceCHROMIUM, gpu_fence_id) == 4,
               "offset of DestroyGpuFenceCHROMIUM gpu_fence_id should be 4");
 
+struct SetReadbackBufferShadowAllocationINTERNAL {
+  typedef SetReadbackBufferShadowAllocationINTERNAL ValueType;
+  static const CommandId kCmdId = kSetReadbackBufferShadowAllocationINTERNAL;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _buffer_id, GLint _shm_id, GLuint _shm_offset) {
+    SetHeader();
+    buffer_id = _buffer_id;
+    shm_id = _shm_id;
+    shm_offset = _shm_offset;
+  }
+
+  void* Set(void* cmd, GLuint _buffer_id, GLint _shm_id, GLuint _shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_buffer_id, _shm_id, _shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t buffer_id;
+  int32_t shm_id;
+  uint32_t shm_offset;
+};
+
+static_assert(sizeof(SetReadbackBufferShadowAllocationINTERNAL) == 16,
+              "size of SetReadbackBufferShadowAllocationINTERNAL should be 16");
+static_assert(
+    offsetof(SetReadbackBufferShadowAllocationINTERNAL, header) == 0,
+    "offset of SetReadbackBufferShadowAllocationINTERNAL header should be 0");
+static_assert(offsetof(SetReadbackBufferShadowAllocationINTERNAL, buffer_id) ==
+                  4,
+              "offset of SetReadbackBufferShadowAllocationINTERNAL buffer_id "
+              "should be 4");
+static_assert(
+    offsetof(SetReadbackBufferShadowAllocationINTERNAL, shm_id) == 8,
+    "offset of SetReadbackBufferShadowAllocationINTERNAL shm_id should be 8");
+static_assert(offsetof(SetReadbackBufferShadowAllocationINTERNAL, shm_offset) ==
+                  12,
+              "offset of SetReadbackBufferShadowAllocationINTERNAL shm_offset "
+              "should be 12");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

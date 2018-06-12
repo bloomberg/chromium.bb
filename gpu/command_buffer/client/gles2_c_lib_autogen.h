@@ -1795,6 +1795,10 @@ void GL_APIENTRY GLES2WaitGpuFenceCHROMIUM(GLuint gpu_fence_id) {
 void GL_APIENTRY GLES2DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) {
   gles2::GetGLContext()->DestroyGpuFenceCHROMIUM(gpu_fence_id);
 }
+void GL_APIENTRY
+GLES2InvalidateReadbackBufferShadowDataCHROMIUM(GLuint buffer_id) {
+  gles2::GetGLContext()->InvalidateReadbackBufferShadowDataCHROMIUM(buffer_id);
+}
 
 namespace gles2 {
 
@@ -3146,6 +3150,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glDestroyGpuFenceCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glDestroyGpuFenceCHROMIUM),
+    },
+    {
+        "glInvalidateReadbackBufferShadowDataCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glInvalidateReadbackBufferShadowDataCHROMIUM),
     },
     {
         NULL, NULL,

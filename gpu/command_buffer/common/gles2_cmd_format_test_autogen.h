@@ -5418,4 +5418,19 @@ TEST_F(GLES2FormatTest, DestroyGpuFenceCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, SetReadbackBufferShadowAllocationINTERNAL) {
+  cmds::SetReadbackBufferShadowAllocationINTERNAL& cmd =
+      *GetBufferAs<cmds::SetReadbackBufferShadowAllocationINTERNAL>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11),
+                           static_cast<GLint>(12), static_cast<GLuint>(13));
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::SetReadbackBufferShadowAllocationINTERNAL::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.buffer_id);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.shm_id);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

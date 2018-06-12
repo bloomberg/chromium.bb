@@ -191,6 +191,8 @@ struct GPU_EXPORT Capabilities {
 
   bool use_gpu_fences_for_overlay_planes = false;
 
+  bool chromium_nonblocking_readback = false;
+
   int major_version = 2;
   int minor_version = 0;
 

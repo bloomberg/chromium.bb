@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/client/logging.h"
 #include "gpu/command_buffer/client/mapped_memory.h"
 #include "gpu/command_buffer/client/query_tracker.h"
+#include "gpu/command_buffer/client/readback_buffer_shadow_tracker.h"
 #include "gpu/command_buffer/client/ref_counted.h"
 #include "gpu/command_buffer/client/share_group.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
@@ -48,6 +49,7 @@ namespace gles2 {
 
 class GLES2CmdHelper;
 class VertexArrayObjectManager;
+class ReadbackBufferShadowTracker;
 
 // This class emulates GLES2 over command buffers. It can be used by a client
 // program so that the program does not need deal with shared memory and command
@@ -349,6 +351,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final;
 
+  void SendErrorMessage(const char* message, int32_t id);
+
   bool IsChromiumFramebufferMultisampleAvailable();
 
   bool IsExtensionAvailableHelper(
@@ -365,6 +369,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   const std::string& GetLastError() {
     return last_error_;
   }
+
+  void AllocateShadowCopiesForReadback();
+  static void BufferShadowWrittenCallback(
+      const ReadbackBufferShadowTracker::BufferList& buffers,
+      uint64_t serial);
 
   // Returns true if id is reserved.
   bool IsBufferReservedId(GLuint id);
@@ -554,6 +563,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
       GLuint buffer_id,
       const char* function_name, GLuint offset, GLsizei size);
 
+  void OnBufferWrite(GLenum target);
+
   // Pack 2D arrays of char into a bucket.
   // Helper function for ShaderSource(), TransformFeedbackVaryings(), etc.
   bool PackStringsToBucket(GLsizei count,
@@ -732,6 +743,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
       id_allocators_[static_cast<int>(IdNamespaces::kNumIdNamespaces)];
 
   std::unique_ptr<BufferTracker> buffer_tracker_;
+  std::unique_ptr<ReadbackBufferShadowTracker> readback_buffer_shadow_tracker_;
 
   base::Optional<ScopedMappedMemoryPtr> font_mapped_buffer_;
   base::Optional<ScopedTransferBufferPtr> raster_mapped_buffer_;

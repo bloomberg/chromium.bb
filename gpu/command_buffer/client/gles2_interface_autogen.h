@@ -938,4 +938,5 @@ virtual GLuint CreateGpuFenceCHROMIUM() = 0;
 virtual GLuint CreateClientGpuFenceCHROMIUM(ClientGpuFence source) = 0;
 virtual void WaitGpuFenceCHROMIUM(GLuint gpu_fence_id) = 0;
 virtual void DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) = 0;
+virtual void InvalidateReadbackBufferShadowDataCHROMIUM(GLuint buffer_id) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

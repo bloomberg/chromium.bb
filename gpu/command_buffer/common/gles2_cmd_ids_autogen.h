@@ -340,7 +340,8 @@
   OP(WindowRectanglesEXTImmediate)                         /* 581 */ \
   OP(CreateGpuFenceINTERNAL)                               /* 582 */ \
   OP(WaitGpuFenceCHROMIUM)                                 /* 583 */ \
-  OP(DestroyGpuFenceCHROMIUM)                              /* 584 */
+  OP(DestroyGpuFenceCHROMIUM)                              /* 584 */ \
+  OP(SetReadbackBufferShadowAllocationINTERNAL)            /* 585 */
 
 enum CommandId {
   kOneBeforeStartPoint =

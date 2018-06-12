@@ -4606,5 +4606,25 @@ error::Error GLES2DecoderPassthroughImpl::HandleWindowRectanglesEXTImmediate(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2OrES3Context())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::SetReadbackBufferShadowAllocationINTERNAL& c =
+      *static_cast<const volatile gles2::cmds::
+                       SetReadbackBufferShadowAllocationINTERNAL*>(cmd_data);
+  GLuint buffer_id = c.buffer_id;
+  GLint shm_id = static_cast<GLint>(c.shm_id);
+  GLuint shm_offset = static_cast<GLuint>(c.shm_offset);
+  error::Error error = DoSetReadbackBufferShadowAllocationINTERNAL(
+      buffer_id, shm_id, shm_offset);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

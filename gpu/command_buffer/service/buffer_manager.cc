@@ -181,6 +181,8 @@ void Buffer::SetInfo(GLsizeiptr size,
   size_ = size;
 
   mapped_range_.reset(nullptr);
+  readback_shm_ = nullptr;
+  readback_shm_offset_ = 0;
 }
 
 bool Buffer::CheckRange(GLintptr offset, GLsizeiptr size) const {
@@ -343,6 +345,20 @@ void Buffer::SetMappedRange(GLintptr offset, GLsizeiptr size, GLenum access,
 
 void Buffer::RemoveMappedRange() {
   mapped_range_.reset(nullptr);
+}
+
+void Buffer::SetReadbackShadowAllocation(scoped_refptr<gpu::Buffer> shm,
+                                         uint32_t shm_offset) {
+  DCHECK(shm);
+  readback_shm_ = std::move(shm);
+  readback_shm_offset_ = shm_offset;
+}
+
+scoped_refptr<gpu::Buffer> Buffer::TakeReadbackShadowAllocation(void** data) {
+  DCHECK(readback_shm_);
+  *data = readback_shm_->GetDataAddress(readback_shm_offset_, size_);
+  readback_shm_offset_ = 0;
+  return std::move(readback_shm_);
 }
 
 bool BufferManager::GetClientId(GLuint service_id, GLuint* client_id) const {

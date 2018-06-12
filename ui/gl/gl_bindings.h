@@ -405,6 +405,11 @@
 #define GL_NUM_WINDOW_RECTANGLES_EXT 0x8F15
 #endif /* GL_EXT_window_rectangles */
 
+#ifndef GL_CHROMIUM_nonblocking_readback
+#define GL_CHROMIUM_nonblocking_readback 1
+#define GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM 0x84F8
+#endif /* GL_CHROMIUM_nonblocking_readback */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

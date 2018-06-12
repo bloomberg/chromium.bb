@@ -402,5 +402,7 @@
   GLES2_GET_FUN(CreateClientGpuFenceCHROMIUM)
 #define glWaitGpuFenceCHROMIUM GLES2_GET_FUN(WaitGpuFenceCHROMIUM)
 #define glDestroyGpuFenceCHROMIUM GLES2_GET_FUN(DestroyGpuFenceCHROMIUM)
+#define glInvalidateReadbackBufferShadowDataCHROMIUM \
+  GLES2_GET_FUN(InvalidateReadbackBufferShadowDataCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

@@ -20,6 +20,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/debug/alias.h"
@@ -27,6 +28,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_math.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -2062,6 +2064,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoWindowRectanglesEXT(GLenum mode, GLsizei n, const volatile GLint* box);
 
+  void DoSetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
+                                                   GLuint shm_id,
+                                                   GLuint shm_offset);
+
   // Returns false if textures were replaced.
   bool PrepareTexturesForRender();
   void RestoreStateForTextures();
@@ -2365,6 +2371,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void OnAbstractTextureDestroyed(ValidatingAbstractTextureImpl* texture,
                                   scoped_refptr<TextureRef> texture_ref);
 
+  void ReadBackBuffersIntoShadowCopies(
+      base::flat_set<scoped_refptr<Buffer>> buffers_to_shadow_copy);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -2489,6 +2498,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   std::unique_ptr<GpuFenceManager> gpu_fence_manager_;
 
   std::unique_ptr<VertexArrayManager> vertex_array_manager_;
+
+  base::flat_set<scoped_refptr<Buffer>> writes_submitted_but_not_completed_;
 
   // The format of the back buffer_
   GLenum back_buffer_color_format_;
@@ -4096,6 +4107,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       group_->gpu_preferences().texture_target_exception_list;
   caps.separate_stencil_ref_mask_writemask =
       feature_info_->feature_flags().separate_stencil_ref_mask_writemask;
+  caps.chromium_nonblocking_readback =
+      feature_info_->context_type() == CONTEXT_TYPE_WEBGL2;
 
   return caps;
 }
@@ -16593,6 +16606,7 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     case GL_GET_ERROR_QUERY_CHROMIUM:
       break;
+    case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
     case GL_COMMANDS_COMPLETED_CHROMIUM:
       if (!features().chromium_sync_query) {
         LOCAL_SET_GL_ERROR(
@@ -16683,6 +16697,59 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
   return error::kNoError;
 }
 
+void GLES2DecoderImpl::ReadBackBuffersIntoShadowCopies(
+    base::flat_set<scoped_refptr<Buffer>> buffers_to_shadow_copy) {
+  GLuint old_binding =
+      state_.bound_array_buffer ? state_.bound_array_buffer->service_id() : 0;
+
+  base::Optional<error::ContextLostReason> error;
+  for (scoped_refptr<Buffer>& buffer : buffers_to_shadow_copy) {
+    if (buffer->IsDeleted()) {
+      continue;
+    }
+    void* shadow = nullptr;
+    scoped_refptr<gpu::Buffer> gpu_buffer =
+        buffer->TakeReadbackShadowAllocation(&shadow);
+    if (!shadow) {
+      continue;
+    }
+
+    if (buffer->GetMappedRange()) {
+      // The buffer is already mapped by the client. It's okay that the shadow
+      // copy will be out-of-date, because the client will never read it:
+      // * Client issues READBACK_SHADOW_COPIES_UPDATED_CHROMIUM query
+      // * Client maps buffer
+      // * Client receives signal that the query completed
+      // * Client unmaps buffer - invalidating the shadow copy
+      // * Client maps buffer to read back - hits the round-trip path
+      continue;
+    }
+
+    api()->glBindBufferFn(GL_ARRAY_BUFFER, buffer->service_id());
+    void* mapped = api()->glMapBufferRangeFn(GL_ARRAY_BUFFER, 0, buffer->size(),
+                                             GL_MAP_READ_BIT);
+    if (!mapped) {
+      DLOG(ERROR) << "glMapBufferRange unexpectedly returned NULL";
+      error = error::kOutOfMemory;
+      break;
+    }
+    memcpy(shadow, mapped, buffer->size());
+    bool unmap_ok = api()->glUnmapBufferFn(GL_ARRAY_BUFFER);
+    if (unmap_ok == GL_FALSE) {
+      DLOG(ERROR) << "glUnmapBuffer unexpectedly returned GL_FALSE";
+      error = error::kUnknown;
+      break;
+    }
+  }
+
+  api()->glBindBufferFn(GL_ARRAY_BUFFER, old_binding);
+
+  if (error.has_value()) {
+    MarkContextLost(error.value());
+    group_->LoseContexts(error::kUnknown);
+  }
+}
+
 error::Error GLES2DecoderImpl::HandleEndQueryEXT(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -16696,6 +16763,20 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glEndQueryEXT", "No active query");
     return error::kNoError;
+  }
+
+  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM) {
+    base::flat_set<scoped_refptr<Buffer>> buffers_to_shadow_copy;
+    std::swap(buffers_to_shadow_copy, writes_submitted_but_not_completed_);
+    // - This callback will be called immediately by MarkAsCompleted, so it's
+    //   okay that it's called after UnmarkAsPending. (It's guaranteed to not be
+    //   called immediately here, because the query has not even ended yet.)
+    //
+    // - It's okay to capture Unretained(this) because the callback is called by
+    //   the query, which is owned by query_manager_, which is owned by `this`.
+    query->AddCallback(base::BindOnce(
+        &GLES2DecoderImpl::ReadBackBuffersIntoShadowCopies,
+        base::Unretained(this), std::move(buffers_to_shadow_copy)));
   }
 
   query_manager_->EndQuery(query, submit_count);
@@ -20282,6 +20363,24 @@ void GLES2DecoderImpl::OnAbstractTextureDestroyed(
   abstract_textures_.erase(abstract_texture);
   // Keep |texture_ref| until we have a current context to destroy it.
   texture_refs_pending_destruction_.insert(std::move(texture_ref));
+}
+
+void GLES2DecoderImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
+    GLuint buffer_id,
+    GLuint shm_id,
+    GLuint shm_offset) {
+  static const char kFunctionName[] = "glSetBufferShadowAllocationINTERNAL";
+  scoped_refptr<Buffer> buffer = buffer_manager()->GetBuffer(buffer_id);
+  if (!buffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "unknown buffer");
+    return;
+  }
+
+  scoped_refptr<gpu::Buffer> shm = GetSharedMemoryBuffer(shm_id);
+  buffer->SetReadbackShadowAllocation(shm, shm_offset);
+  // All buffers in writes_submitted_but_not_completed_ should have shm
+  // allocations.
+  writes_submitted_but_not_completed_.insert(buffer);
 }
 
 // Include the auto-generated part of this file. We split this because it means
