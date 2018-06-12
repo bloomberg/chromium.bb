@@ -144,8 +144,13 @@ public class VrShellDialogTest {
                 VrTestFramework.getFileUrlForHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue(TransitionUtils.forceEnterVr());
         TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
-        NativeUiUtils.clickElement(elementName, new PointF(0, 0));
         Thread.sleep(VR_ENTRY_SLEEP_MS);
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(elementName, new PointF(0, 0));
+        // Technically not necessary, but clicking on native elements causes the laser to originate
+        // from the head, not the controller, which looks strange. Since the point of most of these
+        // tests is to verify that things look correct, better to have the laser in a normal
+        // position before taking screenshots.
+        NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
     }
 
     /**
@@ -262,6 +267,7 @@ public class VrShellDialogTest {
         Assert.assertTrue(captureScreen("JavaScriptConfirm_Visible"));
 
         NativeUiUtils.clickFallbackUiNegativeButton();
+        NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
         // Ensure the cancel button was clicked.
         Assert.assertTrue("Negative button clicked",
                 VrTestFramework
@@ -288,6 +294,7 @@ public class VrShellDialogTest {
         // Capture image
         Assert.assertTrue(captureScreen("JavaScriptPrompt_Visible"));
         NativeUiUtils.clickFallbackUiPositiveButton();
+        NativeUiUtils.revertToRealControllerAndWaitForUiQuiescence();
         // This JavaScript will only run once the prompt has been dismissed, and the return value
         // will only be what we expect if the positive button was actually clicked (as opposed to
         // canceled).

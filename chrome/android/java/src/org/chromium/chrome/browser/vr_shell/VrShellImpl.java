@@ -1215,8 +1215,9 @@ public class VrShellImpl
     }
 
     @Override
-    public void performUiActionForTesting(int elementName, int actionType, PointF position) {
-        nativePerformUiActionForTesting(
+    public void performControllerActionForTesting(
+            int elementName, int actionType, PointF position) {
+        nativePerformControllerActionForTesting(
                 mNativeVrShell, elementName, actionType, position.x, position.y);
     }
 
@@ -1284,7 +1285,7 @@ public class VrShellImpl
             int selectionEnd, int compositionStart, int compositionEnd);
     private native VrInputConnection nativeGetVrInputConnectionForTesting(long nativeVrShell);
     private native void nativeAcceptDoffPromptForTesting(long nativeVrShell);
-    private native void nativePerformUiActionForTesting(
+    private native void nativePerformControllerActionForTesting(
             long nativeVrShell, int elementName, int actionType, float x, float y);
     private native void nativeSetUiExpectingActivityForTesting(
             long nativeVrShell, int quiescenceTimeoutMs);

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_VR_SHELL_GL_H_
 
 #include <memory>
+#include <queue>
 #include <utility>
 #include <vector>
 
@@ -320,9 +321,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void CancelToast();
 
   void AcceptDoffPromptForTesting();
-  void PerformUiActionForTesting(UiTestInput test_input);
   void SetUiExpectingActivityForTesting(
       UiTestActivityExpectation ui_expectation);
+  void PerformControllerActionForTesting(ControllerTestInput controller_input);
 
  private:
   void GvrInit(gvr_context* gvr_api);
@@ -605,6 +606,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
   bool showing_vr_dialog_ = false;
   std::unique_ptr<UiTestState> ui_test_state_;
+  std::queue<ControllerModel> test_controller_model_queue_;
+  ControllerModel cached_test_controller_model_;
+  bool using_test_controller_model_ = false;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

@@ -14,9 +14,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.UserFriendlyElementName;
+import org.chromium.chrome.browser.vr_shell.VrControllerTestAction;
 import org.chromium.chrome.browser.vr_shell.VrDialog;
 import org.chromium.chrome.browser.vr_shell.VrShellImpl;
-import org.chromium.chrome.browser.vr_shell.VrUiTestAction;
 import org.chromium.chrome.browser.vr_shell.VrUiTestActivityResult;
 import org.chromium.chrome.browser.vr_shell.VrViewContainer;
 
@@ -32,26 +32,40 @@ public class NativeUiUtils {
     private static final int DEFAULT_UI_QUIESCENCE_TIMEOUT_MS = 1000;
 
     /**
-     * Clicks on a UI element as if done via a controller click.
+     * Clicks on a UI element as if done via a controller.
      * @param elementName The UserFriendlyElementName that will be clicked on.
-     * @param position The position within the element to click on.
      */
     public static void clickElement(int elementName, PointF position) {
-        TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
-        instance.performUiActionForTesting(elementName, VrUiTestAction.HOVER_ENTER, position);
-        instance.performUiActionForTesting(elementName, VrUiTestAction.BUTTON_DOWN, position);
-        instance.performUiActionForTesting(elementName, VrUiTestAction.BUTTON_UP, position);
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                elementName, VrControllerTestAction.CLICK, position);
     }
 
     /**
-     * Clicks on a UI element as if done via a controller click and waits until all resulting
+     * Sets the native code to start using the real controller data again instead of fake testing
+     * data.
+     */
+    public static void revertToRealController() {
+        TestVrShellDelegate.getInstance().performControllerActionForTesting(
+                0 /* elementName, unused */, VrControllerTestAction.REVERT_TO_REAL_CONTROLLER,
+                new PointF() /* position, unused */);
+    }
+
+    /**
+     * Clicks on a UI element as if done via a controller and waits until all resulting
      * animations have finished and propogated to the point of being visible in screenshots.
      * @param elementName The UserFriendlyElementName that will be clicked on.
-     * @param position The position within the element to click on.
      */
     public static void clickElementAndWaitForUiQuiescence(
             final int elementName, final PointF position) throws InterruptedException {
         performActionAndWaitForUiQuiescence(() -> { clickElement(elementName, position); });
+    }
+
+    /**
+     * Sets the native code to start using the real controller data again and waits for the UI to
+     * update as a result.
+     */
+    public static void revertToRealControllerAndWaitForUiQuiescence() throws InterruptedException {
+        performActionAndWaitForUiQuiescence(() -> { revertToRealController(); });
     }
 
     /**
@@ -115,12 +129,11 @@ public class NativeUiUtils {
         VrDialog vrDialog = (VrDialog) viewContainer.getChildAt(viewContainer.getChildCount() - 1);
         View button = vrDialog.findViewById(buttonId);
         Assert.assertNotNull("Found a View with matching ID", button);
-        // We need to flip the Y axis since this calculates from the bottom left, but Android seems
-        // to process input events from the top left?
-        // We also need to scale by the VrDialog's width/height since the native code will later
-        // multiply by the same amount.
-        float x = (button.getX() + button.getWidth() / 2) / vrDialog.getWidth();
-        float y = (vrDialog.getHeight() - (button.getY() + button.getHeight() / 2))
+        // Calculate the center of the button we want to click on and scale it to fit a unit square
+        // centered on (0,0).
+        float x = ((button.getX() + button.getWidth() / 2) - vrDialog.getWidth() / 2)
+                / vrDialog.getWidth();
+        float y = ((button.getY() + button.getHeight() / 2) - vrDialog.getHeight() / 2)
                 / vrDialog.getHeight();
         PointF buttonCenter = new PointF(x, y);
         clickElementAndWaitForUiQuiescence(UserFriendlyElementName.BROWSING_DIALOG, buttonCenter);

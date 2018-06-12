@@ -2214,8 +2214,9 @@ public class VrShellDelegate
 
     protected void setExpectingIntent(boolean expectingIntent) {}
 
-    protected void performUiActionForTesting(int elementName, int actionType, PointF position) {
-        mVrShell.performUiActionForTesting(elementName, actionType, position);
+    protected void performControllerActionForTesting(
+            int elementName, int actionType, PointF position) {
+        mVrShell.performControllerActionForTesting(elementName, actionType, position);
     }
 
     protected void setUiExpectingActivityForTesting(

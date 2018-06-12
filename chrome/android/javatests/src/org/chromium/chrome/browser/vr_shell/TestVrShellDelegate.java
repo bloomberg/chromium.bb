@@ -85,8 +85,9 @@ public class TestVrShellDelegate extends VrShellDelegate {
     }
 
     @Override
-    public void performUiActionForTesting(int elementName, int actionType, PointF position) {
-        super.performUiActionForTesting(elementName, actionType, position);
+    public void performControllerActionForTesting(
+            int elementName, int actionType, PointF position) {
+        super.performControllerActionForTesting(elementName, actionType, position);
     }
 
     @Override

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_UI_H_
 
 #include <memory>
+#include <queue>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -179,7 +180,9 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnKeyboardHidden() override;
 
   void AcceptDoffPromptForTesting();
-  void PerformUiActionForTesting(UiTestInput test_input);
+  void PerformControllerActionForTesting(
+      ControllerTestInput controller_input,
+      std::queue<ControllerModel>& controller_model_queue);
 
   bool IsContentVisibleAndOpaque();
   bool IsContentOverlayTextureEmpty();
