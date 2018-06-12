@@ -5,7 +5,7 @@
 package org.chromium.content_public.browser;
 
 import org.chromium.base.Callback;
-import org.chromium.content.browser.ChildProcessLauncherHelper;
+import org.chromium.content.browser.ChildProcessLauncherHelperImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +22,6 @@ public final class ChildProcessUtils {
      *                 {@link android.os.Looper}.
      */
     public static void getProcessIdsByType(Callback < Map < String, List<Integer>>> callback) {
-        ChildProcessLauncherHelper.getProcessIdsByType(callback);
+        ChildProcessLauncherHelperImpl.getProcessIdsByType(callback);
     }
 }

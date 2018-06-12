@@ -9,9 +9,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
-import android.os.RemoteException;
 import android.text.TextUtils;
 
+import org.chromium.base.ApplicationState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
@@ -46,7 +47,7 @@ import java.util.Map;
  * Each public or jni methods should have explicit documentation on what threads they are called.
  */
 @JNINamespace("content::internal")
-public class ChildProcessLauncherHelper {
+public final class ChildProcessLauncherHelperImpl {
     private static final String TAG = "ChildProcLH";
 
     // Manifest values used to specify the service names.
@@ -67,7 +68,8 @@ public class ChildProcessLauncherHelper {
     private static ChildProcessRanking sSandboxedChildConnectionRanking;
 
     // Map from PID to ChildProcessLauncherHelper.
-    private static final Map<Integer, ChildProcessLauncherHelper> sLauncherByPid = new HashMap<>();
+    private static final Map<Integer, ChildProcessLauncherHelperImpl> sLauncherByPid =
+            new HashMap<>();
 
     // Allocator used for non-sandboxed services.
     private static ChildConnectionAllocator sPrivilegedChildConnectionAllocator;
@@ -80,7 +82,7 @@ public class ChildProcessLauncherHelper {
     private static BindingManager sBindingManager;
 
     // Whether the main application is currently brought to the foreground.
-    private static boolean sApplicationInForeground = true;
+    private static boolean sApplicationInForegroundOnUiThread;
 
     // TODO(boliu): Generalize these so they work for all connections, not just sandboxed.
     // Whether the connection is managed by the BindingManager.
@@ -130,7 +132,7 @@ public class ChildProcessLauncherHelper {
                     int pid = connection.getPid();
                     assert pid > 0;
 
-                    sLauncherByPid.put(pid, ChildProcessLauncherHelper.this);
+                    sLauncherByPid.put(pid, ChildProcessLauncherHelperImpl.this);
                     if (mRanking != null) {
                         mRanking.addConnection(connection, false /* foreground */,
                                 1 /* frameDepth */, ChildProcessImportance.MODERATE);
@@ -188,9 +190,8 @@ public class ChildProcessLauncherHelper {
         return new FileDescriptorInfo(id, pFd, offset, size);
     }
 
-    @VisibleForTesting
     @CalledByNative
-    public static ChildProcessLauncherHelper createAndStart(
+    private static ChildProcessLauncherHelperImpl createAndStart(
             long nativePointer, String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
         assert LauncherThread.runningOnLauncherThread();
         String processType =
@@ -216,16 +217,14 @@ public class ChildProcessLauncherHelper {
                 ? new GpuProcessCallback()
                 : null;
 
-        ChildProcessLauncherHelper helper = new ChildProcessLauncherHelper(
+        ChildProcessLauncherHelperImpl helper = new ChildProcessLauncherHelperImpl(
                 nativePointer, commandLine, filesToBeMapped, sandboxed, binderCallback);
         helper.start();
         return helper;
     }
 
     /**
-     * Creates a ready to use sandboxed child process. Should be called early during startup so the
-     * child process is created while other startup work is happening.
-     * @param context the application context used for the connection.
+     * @see {@link ChildProcessLauncherHelper#warmUp(Context)}.
      */
     public static void warmUp(final Context context) {
         assert ThreadUtils.runningOnUiThread();
@@ -248,12 +247,7 @@ public class ChildProcessLauncherHelper {
     }
 
     /**
-     * Starts the moderate binding management that adjust a process priority in response to various
-     * signals (app sent to background/foreground for example).
-     * Note: WebAPKs and non WebAPKs share the same moderate binding pool, so the size of the
-     * shared moderate binding pool is always set based on the number of sandboxes processes
-     * used by Chrome.
-     * @param context Android's context.
+     * @see {@link ChildProcessLauncherHelper#startModerateBindingManagement(Context)}.
      */
     public static void startModerateBindingManagement(final Context context) {
         assert ThreadUtils.runningOnUiThread();
@@ -266,6 +260,25 @@ public class ChildProcessLauncherHelper {
                         context, allocator.getNumberOfServices(), false /* onTesting */);
             }
         });
+
+        sApplicationInForegroundOnUiThread = ApplicationStatus.getStateForApplication()
+                        == ApplicationState.HAS_RUNNING_ACTIVITIES
+                || ApplicationStatus.getStateForApplication()
+                        == ApplicationState.HAS_PAUSED_ACTIVITIES;
+
+        ApplicationStatus.registerApplicationStateListener(newState -> {
+            switch (newState) {
+                case ApplicationState.UNKNOWN:
+                    break;
+                case ApplicationState.HAS_RUNNING_ACTIVITIES:
+                case ApplicationState.HAS_PAUSED_ACTIVITIES:
+                    if (!sApplicationInForegroundOnUiThread) onBroughtToForeground();
+                    break;
+                default:
+                    if (sApplicationInForegroundOnUiThread) onSentToBackground();
+                    break;
+            }
+        });
     }
 
     // May return null.
@@ -274,12 +287,9 @@ public class ChildProcessLauncherHelper {
         return sBindingManager;
     }
 
-    /**
-     * Called when the embedding application is sent to background.
-     */
-    public static void onSentToBackground() {
+    private static void onSentToBackground() {
         assert ThreadUtils.runningOnUiThread();
-        sApplicationInForeground = false;
+        sApplicationInForegroundOnUiThread = false;
         LauncherThread.post(new Runnable() {
             @Override
             public void run() {
@@ -291,12 +301,9 @@ public class ChildProcessLauncherHelper {
         });
     }
 
-    /**
-     * Called when the embedding application is brought to foreground.
-     */
-    public static void onBroughtToForeground() {
+    private static void onBroughtToForeground() {
         assert ThreadUtils.runningOnUiThread();
-        sApplicationInForeground = true;
+        sApplicationInForegroundOnUiThread = true;
         LauncherThread.post(new Runnable() {
             @Override
             public void run() {
@@ -374,7 +381,7 @@ public class ChildProcessLauncherHelper {
         return sSandboxedChildConnectionAllocator;
     }
 
-    private ChildProcessLauncherHelper(long nativePointer, String[] commandLine,
+    private ChildProcessLauncherHelperImpl(long nativePointer, String[] commandLine,
             FileDescriptorInfo[] filesToBeMapped, boolean sandboxed, IBinder binderCallback) {
         assert LauncherThread.runningOnLauncherThread();
 
@@ -405,13 +412,8 @@ public class ChildProcessLauncherHelper {
      * @return The type of process as specified in the command line at
      * {@link ContentSwitches#SWITCH_PROCESS_TYPE}.
      */
-    public String getProcessType() {
+    private String getProcessType() {
         return TextUtils.isEmpty(mProcessType) ? "" : mProcessType;
-    }
-
-    public int getPid() {
-        assert LauncherThread.runningOnLauncherThread();
-        return mLauncher.getPid();
     }
 
     // Called on client (UI or IO) thread.
@@ -428,13 +430,6 @@ public class ChildProcessLauncherHelper {
         return !connection.isWaivedBoundOnlyOrWasWhenDied();
     }
 
-    // Called on client (UI or IO) thread.
-    @CalledByNative
-    private boolean isApplicationInForeground() {
-        return sApplicationInForeground;
-    }
-
-    // Called on client (UI or IO) thread.
     @CalledByNative
     private boolean isKilledByUs() {
         ChildProcessConnection connection = mLauncher.getConnection();
@@ -535,7 +530,7 @@ public class ChildProcessLauncherHelper {
     static void stop(int pid) {
         assert LauncherThread.runningOnLauncherThread();
         Log.d(TAG, "stopping child connection: pid=%d", pid);
-        ChildProcessLauncherHelper launcher = getByPid(pid);
+        ChildProcessLauncherHelperImpl launcher = getByPid(pid);
         // launcher can be null for single process.
         if (launcher != null) {
             // Can happen for single process.
@@ -588,7 +583,7 @@ public class ChildProcessLauncherHelper {
         return bundle;
     }
 
-    public static ChildProcessLauncherHelper getByPid(int pid) {
+    private static ChildProcessLauncherHelperImpl getByPid(int pid) {
         return sLauncherByPid.get(pid);
     }
 
@@ -620,15 +615,21 @@ public class ChildProcessLauncherHelper {
     // Testing only related methods.
 
     @VisibleForTesting
-    public static Map<Integer, ChildProcessLauncherHelper> getAllProcessesForTesting() {
+    int getPidForTesting() {
+        assert LauncherThread.runningOnLauncherThread();
+        return mLauncher.getPid();
+    }
+
+    @VisibleForTesting
+    public static Map<Integer, ChildProcessLauncherHelperImpl> getAllProcessesForTesting() {
         return sLauncherByPid;
     }
 
     @VisibleForTesting
-    public static ChildProcessLauncherHelper createAndStartForTesting(String[] commandLine,
+    public static ChildProcessLauncherHelperImpl createAndStartForTesting(String[] commandLine,
             FileDescriptorInfo[] filesToBeMapped, boolean sandboxed, IBinder binderCallback,
             boolean doSetupConnection) {
-        ChildProcessLauncherHelper launcherHelper = new ChildProcessLauncherHelper(
+        ChildProcessLauncherHelperImpl launcherHelper = new ChildProcessLauncherHelperImpl(
                 0L, commandLine, filesToBeMapped, sandboxed, binderCallback);
         launcherHelper.mLauncher.start(doSetupConnection, true /* queueIfNoFreeConnection */);
         return launcherHelper;
@@ -663,19 +664,5 @@ public class ChildProcessLauncherHelper {
     @VisibleForTesting
     public static ChildProcessConnection getWarmUpConnectionForTesting() {
         return sSpareSandboxedConnection == null ? null : sSpareSandboxedConnection.getConnection();
-    }
-
-    @VisibleForTesting
-    public static boolean crashProcessForTesting(int pid) {
-        if (sLauncherByPid.get(pid) == null) return false;
-
-        ChildProcessConnection connection = sLauncherByPid.get(pid).mLauncher.getConnection();
-        if (connection == null) return false;
-        try {
-            connection.crashServiceForTesting();
-            return true;
-        } catch (RemoteException ex) {
-            return false;
-        }
     }
 }

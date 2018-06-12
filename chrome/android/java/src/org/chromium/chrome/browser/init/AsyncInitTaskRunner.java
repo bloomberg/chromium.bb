@@ -16,7 +16,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
-import org.chromium.content.browser.ChildProcessLauncherHelper;
+import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 
 import java.util.concurrent.Executor;
 

@@ -20,7 +20,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.content.browser.ChildProcessLauncherHelper;
+import org.chromium.content.browser.ChildProcessLauncherHelperImpl;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 
 /**
@@ -53,7 +53,7 @@ public class ChildProcessLauncherTestHelperService extends Service {
 
     private final HandlerThread mHandlerThread = new HandlerThread("Helper Service Handler");
 
-    private ChildProcessLauncherHelper mProcessLauncher;
+    private ChildProcessLauncherHelperImpl mProcessLauncher;
 
     @Override
     public void onCreate() {

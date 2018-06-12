@@ -118,14 +118,14 @@ class BindingManager implements ComponentCallbacks2 {
      *  - every onBroughtToForeground() is followed by onSentToBackground()
      *  - pairs of consecutive onBroughtToForeground() / onSentToBackground() calls do not overlap
      */
-    public void onSentToBackground() {
+    void onSentToBackground() {
         assert LauncherThread.runningOnLauncherThread();
         if (mConnections.isEmpty()) return;
         LauncherThread.postDelayed(mDelayedClearer, MODERATE_BINDING_POOL_CLEARER_DELAY_MILLIS);
     }
 
     /** Called when the embedding application is brought to foreground. */
-    public void onBroughtToForeground() {
+    void onBroughtToForeground() {
         assert LauncherThread.runningOnLauncherThread();
         LauncherThread.removeCallbacks(mDelayedClearer);
     }

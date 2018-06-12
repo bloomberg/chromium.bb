@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/android/apk_assets.h"
+#include "base/android/application_status_listener.h"
 #include "base/android/jni_array.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
@@ -19,7 +20,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "jni/ChildProcessLauncherHelper_jni.h"
+#include "jni/ChildProcessLauncherHelperImpl_jni.h"
 #include "services/service_manager/sandbox/switches.h"
 
 using base::android::AttachCurrentThread;
@@ -37,7 +38,7 @@ void StopChildProcess(base::ProcessHandle handle) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
-  Java_ChildProcessLauncherHelper_stop(env, static_cast<jint>(handle));
+  Java_ChildProcessLauncherHelperImpl_stop(env, static_cast<jint>(handle));
 }
 
 }  // namespace
@@ -124,8 +125,8 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     const auto& region = files_to_register->GetRegionAt(i);
     bool auto_close = files_to_register->OwnsFD(fd);
     ScopedJavaLocalRef<jobject> j_file_info =
-        Java_ChildProcessLauncherHelper_makeFdInfo(env, id, fd, auto_close,
-                                                   region.offset, region.size);
+        Java_ChildProcessLauncherHelperImpl_makeFdInfo(
+            env, id, fd, auto_close, region.offset, region.size);
     PCHECK(j_file_info.obj());
     env->SetObjectArrayElement(j_file_infos.obj(), i, j_file_info.obj());
     if (auto_close) {
@@ -133,7 +134,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     }
   }
 
-  java_peer_.Reset(Java_ChildProcessLauncherHelper_createAndStart(
+  java_peer_.Reset(Java_ChildProcessLauncherHelperImpl_createAndStart(
       env, reinterpret_cast<intptr_t>(this), j_argv, j_file_infos));
   AddRef();  // Balanced by OnChildProcessStarted.
   BrowserThread::PostTask(
@@ -156,16 +157,19 @@ ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
   ChildProcessTerminationInfo info;
   info.has_oom_protection_bindings =
       java_peer_avaiable_on_client_thread_ &&
-      Java_ChildProcessLauncherHelper_hasOomProtectionBindings(
+      Java_ChildProcessLauncherHelperImpl_hasOomProtectionBindings(
           AttachCurrentThread(), java_peer_);
   info.was_killed_intentionally_by_browser =
       java_peer_avaiable_on_client_thread_ &&
-      Java_ChildProcessLauncherHelper_isKilledByUs(AttachCurrentThread(),
-                                                   java_peer_);
+      Java_ChildProcessLauncherHelperImpl_isKilledByUs(AttachCurrentThread(),
+                                                       java_peer_);
   bool app_foreground =
       java_peer_avaiable_on_client_thread_ &&
-      Java_ChildProcessLauncherHelper_isApplicationInForeground(
-          AttachCurrentThread(), java_peer_);
+      (base::android::ApplicationStatusListener::GetState() ==
+           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
+       base::android::ApplicationStatusListener::GetState() ==
+           base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
+
   if (app_foreground && info.has_oom_protection_bindings) {
     info.status = base::TERMINATION_STATUS_OOM_PROTECTED;
   } else {
@@ -198,7 +202,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     const ChildProcessLauncherPriority& priority) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
-  return Java_ChildProcessLauncherHelper_setPriority(
+  return Java_ChildProcessLauncherHelperImpl_setPriority(
       env, java_peer_, process.Handle(), !priority.background,
       priority.frame_depth, priority.boost_for_pending_views,
       static_cast<jint>(priority.importance));
