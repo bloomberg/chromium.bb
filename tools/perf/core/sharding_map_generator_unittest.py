@@ -9,6 +9,8 @@ import os
 import tempfile
 import unittest
 
+from telemetry import decorators
+
 
 class TestShardingMapGenerator(unittest.TestCase):
 
@@ -27,6 +29,8 @@ class TestShardingMapGenerator(unittest.TestCase):
           "run_name": 'benchmark_' + str(i) + '/' + 'story_' + str(j)})
     return timing_data, all_stories, timing_list
 
+  # TODO(eyaich@, ashleymarie@): fix & reenable this test
+  @decorators.Disabled('all')
   def testGenerateAndTestShardingMap(self):
     timing_data, all_stories, timing_list = self._init_sample_timing_data(
         [[60, 56, 57], [66, 54, 80, 4], [2, 8, 7, 37, 2]])
