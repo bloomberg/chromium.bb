@@ -57,6 +57,11 @@ enum ClearBrowsingDataItemType {
   ItemTypeTimeRange,
 };
 
+enum class ClearBrowsingDataListType {
+  TableView = 0,
+  CollectionView,
+};
+
 // Manager that serves as the bulk of the logic for
 // ClearBrowsingDataConsumer.
 @interface ClearBrowsingDataManager
@@ -67,8 +72,10 @@ enum ClearBrowsingDataItemType {
 // Reference to the LinkDelegate for CollectionViewFooterItem.
 @property(nonatomic, strong) id<CollectionViewFooterLinkDelegate> linkDelegate;
 
-// Default init method with |browserState| that can't be nil.
+// Default init method. |browserState| can't be nil and
+// |managingList| determines what kind of items to populate model with.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                  managingListOfType:(ClearBrowsingDataListType)listType
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

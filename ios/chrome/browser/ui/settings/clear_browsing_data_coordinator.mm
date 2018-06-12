@@ -14,9 +14,9 @@
 @implementation ClearBrowsingDataCoordinator
 
 - (void)start {
-  ClearBrowsingDataTableViewController* clearBrowsingDataTVC =
+  ClearBrowsingDataTableViewController* clearBrowsingDataTableViewController =
       [[ClearBrowsingDataTableViewController alloc] init];
-  clearBrowsingDataTVC.extendedLayoutIncludesOpaqueBars = YES;
+  clearBrowsingDataTableViewController.extendedLayoutIncludesOpaqueBars = YES;
   // We currently know for sure that baseViewController is a
   // Navigation Controller.
   // Todo: there should be a way to stop coordinators once they've been pushed
@@ -24,8 +24,9 @@
   UINavigationController* tableViewNavigationController =
       base::mac::ObjCCastStrict<UINavigationController>(
           self.baseViewController);
-  [tableViewNavigationController pushViewController:clearBrowsingDataTVC
-                                           animated:YES];
+  [tableViewNavigationController
+      pushViewController:clearBrowsingDataTableViewController
+                animated:YES];
 }
 
 @end

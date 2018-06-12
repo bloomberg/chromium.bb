@@ -67,6 +67,9 @@ const int kMaxTimesHistoryNoticeShown = 1;
 // Whether to show popup other forms of browsing history.
 @property(nonatomic, assign)
     BOOL shouldPopupDialogAboutOtherFormsOfBrowsingHistory;
+// Whether the mediator is managing a TableViewController or a
+// CollectionsViewController.
+@property(nonatomic, assign) ClearBrowsingDataListType listType;
 
 @end
 
@@ -79,11 +82,14 @@ const int kMaxTimesHistoryNoticeShown = 1;
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
 @synthesize shouldPopupDialogAboutOtherFormsOfBrowsingHistory =
     _shouldPopupDialogAboutOtherFormsOfBrowsingHistory;
+@synthesize listType = _listType;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                  managingListOfType:(ClearBrowsingDataListType)listType {
   self = [super init];
   if (self) {
     _browserState = browserState;
+    _listType = listType;
 
     _timePeriod = browsing_data::TimePeriod::ALL_TIME;
     if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
