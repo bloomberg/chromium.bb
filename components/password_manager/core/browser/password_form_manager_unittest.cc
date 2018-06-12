@@ -4935,4 +4935,51 @@ TEST_F(PasswordFormManagerTest, UploadPasswordAttributesVote) {
   form_manager.Save();
 }
 
+TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_UnknownUsername) {
+  // Checks whether the generated password is presaved with the captured
+  // username. The username is new, so there will be no credentail override.
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  PasswordForm credentials = *observed_form();
+  credentials.username_value = ASCIIToUTF16("new_user");
+  credentials.password_value = ASCIIToUTF16("generatated_password");
+
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              PresaveGeneratedPassword(credentials));
+  form_manager()->PresaveGeneratedPassword(credentials);
+}
+
+TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_KnownUsername) {
+  // Checks whether the generated password is presaved with empty username if
+  // there is already an entry with the captured username in the store.
+  PasswordForm saved_form_without_username(*saved_match());
+  saved_form_without_username.username_value.clear();
+  fake_form_fetcher()->SetNonFederated(
+      {saved_match(), &saved_form_without_username}, 0u);
+  PasswordForm credentials = *observed_form();
+  credentials.username_value = saved_match()->username_value;
+  credentials.password_value = ASCIIToUTF16("generatated_password");
+
+  PasswordForm credentials_without_username(credentials);
+  credentials_without_username.username_value.clear();
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              PresaveGeneratedPassword(credentials_without_username));
+  form_manager()->PresaveGeneratedPassword(credentials);
+}
+
+TEST_F(PasswordFormManagerTest, PresaveGeneratedPassword_EmptyUsername) {
+  // Checks whether the generated password is presaved even if the captured
+  // username is empty.
+  PasswordForm saved_form_without_username(*saved_match());
+  saved_form_without_username.username_value.clear();
+  fake_form_fetcher()->SetNonFederated(
+      {saved_match(), &saved_form_without_username}, 0u);
+  PasswordForm credentials = *observed_form();
+  credentials.username_value.clear();
+  credentials.password_value = ASCIIToUTF16("generatated_password");
+
+  EXPECT_CALL(MockFormSaver::Get(form_manager()),
+              PresaveGeneratedPassword(credentials));
+  form_manager()->PresaveGeneratedPassword(credentials);
+}
+
 }  // namespace password_manager

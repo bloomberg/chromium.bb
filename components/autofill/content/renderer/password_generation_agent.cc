@@ -418,9 +418,6 @@ PasswordGenerationAgent::CreatePasswordFormToPresave() {
   }
   if (password_form) {
     password_form->type = PasswordForm::TYPE_GENERATED;
-    // TODO(kolos): when we are good in username detection, save username
-    // as well.
-    password_form->username_value = base::string16();
     password_form->password_value = generation_element_.Value().Utf16();
   }
 
@@ -586,8 +583,17 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
 
 bool PasswordGenerationAgent::TextDidChangeInTextField(
     const blink::WebInputElement& element) {
-  if (element != generation_element_)
+  if (element != generation_element_) {
+    // Presave the username if it has been changed.
+    if (password_is_generated_ &&
+        (element.Form() == generation_element_.Form())) {
+      std::unique_ptr<PasswordForm> presaved_form(
+          CreatePasswordFormToPresave());
+      if (presaved_form)
+        GetPasswordManagerDriver()->PresaveGeneratedPassword(*presaved_form);
+    }
     return false;
+  }
 
   if (element.Value().IsEmpty()) {
     if (password_is_generated_) {

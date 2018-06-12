@@ -1790,12 +1790,15 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
     // The user accepts generated password and makes successful login.
-    EXPECT_CALL(*store_, AddLogin(form)).WillOnce(Return());
+    PasswordForm presaved_form(form);
+    if (found_matched_logins_in_store)
+      presaved_form.username_value.clear();
+    EXPECT_CALL(*store_, AddLogin(presaved_form)).WillOnce(Return());
     manager()->OnPresaveGeneratedPassword(form);
     ::testing::Mock::VerifyAndClearExpectations(store_.get());
 
     if (!found_matched_logins_in_store)
-      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, form));
+      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, presaved_form));
     OnPasswordFormSubmitted(form);
     observed.clear();
     manager()->DidNavigateMainFrame();
@@ -1806,8 +1809,9 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
     if (found_matched_logins_in_store) {
       // Credentials should be updated only when the user explicitly chooses.
       ASSERT_TRUE(form_manager);
-      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, form));
+      EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, presaved_form));
       form_manager->Update(form_manager->GetPendingCredentials());
+      ::testing::Mock::VerifyAndClearExpectations(store_.get());
     }
   }
 }
