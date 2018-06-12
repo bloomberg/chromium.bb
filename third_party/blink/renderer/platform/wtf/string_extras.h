@@ -28,6 +28,7 @@
 
 #include <string.h>
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 #if defined(OS_POSIX)
 #include <strings.h>
@@ -45,5 +46,12 @@ inline int strcasecmp(const char* s1, const char* s2) {
 }
 
 #endif  // defined(COMPILER_MSVC)
+
+namespace WTF {
+
+// Wrapper around strlen with a SafeCast to unsigned from size_t.
+WTF_EXPORT unsigned strlen_unsigned(const char* string);
+
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STRING_EXTRAS_H_

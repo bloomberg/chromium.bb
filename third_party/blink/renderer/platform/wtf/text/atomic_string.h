@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -58,8 +59,9 @@ class WTF_EXPORT AtomicString {
 
   AtomicString() = default;
   AtomicString(const LChar* chars)
-      : AtomicString(chars,
-                     chars ? strlen(reinterpret_cast<const char*>(chars)) : 0) {
+      : AtomicString(
+            chars,
+            chars ? strlen_unsigned(reinterpret_cast<const char*>(chars)) : 0) {
   }
   AtomicString(const char* chars)
       : AtomicString(reinterpret_cast<const LChar*>(chars)) {}

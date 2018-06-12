@@ -28,6 +28,7 @@
 
 #include <string.h>
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
 
 #ifndef WTFString_h
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -101,7 +102,7 @@ class WTF_EXPORT StringTypeAdapter<char*> {
 
  public:
   explicit StringTypeAdapter<char*>(char* buffer)
-      : buffer_(buffer), length_(strlen(buffer)) {}
+      : buffer_(buffer), length_(strlen_unsigned(buffer)) {}
 
   unsigned length() const { return length_; }
   bool Is8Bit() const { return true; }
