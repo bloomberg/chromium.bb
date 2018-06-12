@@ -246,6 +246,7 @@
 
 # Focus traversal problem. http://crbug.com/814019
 -StatusAreaWidgetFocusTest.FocusOutObserver
+-StatusAreaWidgetFocusTest.FocusOutObserverUnified
 
 # TODO: Needs virtual keyboard. http://crbug.com/698892
 -SystemModalContainerLayoutManagerTest.SystemModalDialogGetPushedButNotCroppedFromKeyboard
