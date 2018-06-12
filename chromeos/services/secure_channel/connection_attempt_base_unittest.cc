@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chromeos/services/secure_channel/ble_initiator_failure_type.h"
 #include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/connection_medium.h"
@@ -33,17 +34,18 @@ namespace {
 
 const char kTestRemoteDeviceId[] = "testRemoteDeviceId";
 const char kTestLocalDeviceId[] = "testLocalDeviceId";
-const char kTestFailureDetail[] = "testFailureDetail";
 
 // Since ConnectionAttemptBase is templatized, a concrete implementation
 // is needed for its test.
-class TestConnectionAttempt : public ConnectionAttemptBase<std::string> {
+class TestConnectionAttempt
+    : public ConnectionAttemptBase<BleInitiatorFailureType> {
  public:
-  TestConnectionAttempt(std::unique_ptr<FakeConnectToDeviceOperationFactory>
-                            connect_to_device_operation_factory,
-                        FakeConnectionAttemptDelegate* delegate,
-                        scoped_refptr<base::TestSimpleTaskRunner> task_runner)
-      : ConnectionAttemptBase<std::string>(
+  TestConnectionAttempt(
+      std::unique_ptr<FakeConnectToDeviceOperationFactory<
+          BleInitiatorFailureType>> connect_to_device_operation_factory,
+      FakeConnectionAttemptDelegate* delegate,
+      scoped_refptr<base::TestSimpleTaskRunner> task_runner)
+      : ConnectionAttemptBase<BleInitiatorFailureType>(
             std::move(connect_to_device_operation_factory),
             delegate,
             ConnectionAttemptDetails(kTestRemoteDeviceId,
@@ -64,7 +66,8 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   void SetUp() override {
     fake_authenticated_channel_ = std::make_unique<FakeAuthenticatedChannel>();
 
-    auto factory = std::make_unique<FakeConnectToDeviceOperationFactory>();
+    auto factory = std::make_unique<
+        FakeConnectToDeviceOperationFactory<BleInitiatorFailureType>>();
     fake_operation_factory_ = factory.get();
 
     fake_delegate_ = std::make_unique<FakeConnectionAttemptDelegate>();
@@ -102,13 +105,15 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
     test_task_runner_->RunUntilIdle();
   }
 
-  FakePendingConnectionRequest* AddNewRequest() {
-    auto request = std::make_unique<FakePendingConnectionRequest>(
-        connection_attempt_.get());
-    FakePendingConnectionRequest* request_raw = request.get();
+  FakePendingConnectionRequest<BleInitiatorFailureType>* AddNewRequest() {
+    auto request =
+        std::make_unique<FakePendingConnectionRequest<BleInitiatorFailureType>>(
+            connection_attempt_.get());
+    FakePendingConnectionRequest<BleInitiatorFailureType>* request_raw =
+        request.get();
     active_requests_.insert(request_raw);
 
-    ConnectionAttempt<std::string>* connection_attempt =
+    ConnectionAttempt<BleInitiatorFailureType>* connection_attempt =
         connection_attempt_.get();
     connection_attempt->AddPendingConnectionRequest(std::move(request));
 
@@ -116,14 +121,14 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   }
 
   void FinishRequestWithoutConnection(
-      FakePendingConnectionRequest* request,
+      FakePendingConnectionRequest<BleInitiatorFailureType>* request,
       PendingConnectionRequestDelegate::FailedConnectionReason reason) {
     request->NotifyRequestFinishedWithoutConnection(reason);
     EXPECT_EQ(1u, active_requests_.erase(request));
   }
 
-  FakeConnectToDeviceOperation* GetLastCreatedOperation(
-      size_t expected_num_created) {
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>*
+  GetLastCreatedOperation(size_t expected_num_created) {
     VerifyNumOperationsCreated(expected_num_created);
     active_operation_ = fake_operation_factory_->last_created_instance();
     return active_operation_;
@@ -137,8 +142,9 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   // If |should_run_next_operation| is true, the next operation is started
   // after the current one has failed. |should_run_next_operation| should be
   // false if the test requires that request failures be processed.
-  void FailOperation(FakeConnectToDeviceOperation* operation,
-                     bool should_run_next_operation = true) {
+  void FailOperation(
+      FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation,
+      bool should_run_next_operation = true) {
     // Before failing the operation, check to see how many failure details each
     // request has been passed.
     std::unordered_map<base::UnguessableToken, size_t,
@@ -150,22 +156,25 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
     }
 
     EXPECT_EQ(active_operation_, operation);
-    operation->OnFailedConnectionAttempt(kTestFailureDetail);
+    operation->OnFailedConnectionAttempt(
+        BleInitiatorFailureType::kAuthenticationError);
     active_operation_ = nullptr;
 
     // Now, ensure that each active request had one additional failure detail
-    // added, and verify that it was |kTestFailureDetail|.
+    // added, and verify that it was kAuthenticationError.
     for (const auto* request : active_requests_) {
       EXPECT_EQ(id_to_num_details_map[request->GetRequestId()] + 1,
                 request->handled_failure_details().size());
-      EXPECT_EQ(kTestFailureDetail, request->handled_failure_details().back());
+      EXPECT_EQ(BleInitiatorFailureType::kAuthenticationError,
+                request->handled_failure_details().back());
     }
 
     if (should_run_next_operation)
       RunNextOperationTask();
   }
 
-  void FinishOperationSuccessfully(FakeConnectToDeviceOperation* operation) {
+  void FinishOperationSuccessfully(
+      FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation) {
     EXPECT_TRUE(fake_authenticated_channel_);
     auto* fake_authenticated_channel_raw = fake_authenticated_channel_.get();
 
@@ -206,8 +215,8 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   std::vector<std::unique_ptr<ClientConnectionParameters>>
   ExtractClientConnectionParameters() {
     is_extract_client_data_test_ = true;
-    return ConnectionAttempt<std::string>::ExtractClientConnectionParameters(
-        std::move(connection_attempt_));
+    return ConnectionAttempt<BleInitiatorFailureType>::
+        ExtractClientConnectionParameters(std::move(connection_attempt_));
   }
 
  private:
@@ -217,13 +226,16 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  FakeConnectToDeviceOperationFactory* fake_operation_factory_;
+  FakeConnectToDeviceOperationFactory<BleInitiatorFailureType>*
+      fake_operation_factory_;
   std::unique_ptr<FakeConnectionAttemptDelegate> fake_delegate_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::unique_ptr<FakeAuthenticatedChannel> fake_authenticated_channel_;
-  std::set<FakePendingConnectionRequest*> active_requests_;
-  FakeConnectToDeviceOperation* active_operation_ = nullptr;
+  std::set<FakePendingConnectionRequest<BleInitiatorFailureType>*>
+      active_requests_;
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* active_operation_ =
+      nullptr;
   bool was_active_operation_canceled_in_teardown_ = false;
 
   bool is_extract_client_data_test_ = false;
@@ -235,14 +247,15 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Success) {
   AddNewRequest();
-  FakeConnectToDeviceOperation* operation =
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
       GetLastCreatedOperation(1u /* expected_num_created */);
   FinishOperationSuccessfully(operation);
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Fails) {
-  FakePendingConnectionRequest* request = AddNewRequest();
-  FakeConnectToDeviceOperation* operation =
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request =
+      AddNewRequest();
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
       GetLastCreatedOperation(1u /* expected_num_created */);
 
   // Fail the operation; the delegate should not have been notified since no
@@ -258,7 +271,8 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Fails) {
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Canceled) {
   // Simulate the request being canceled.
-  FakePendingConnectionRequest* request = AddNewRequest();
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request =
+      AddNewRequest();
   FinishRequestWithoutConnection(
       request, PendingConnectionRequestDelegate::FailedConnectionReason::
                    kRequestCanceledByClient);
@@ -267,7 +281,7 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Canceled) {
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_FailThenSuccess) {
   AddNewRequest();
-  FakeConnectToDeviceOperation* operation1 =
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation1 =
       GetLastCreatedOperation(1u /* expected_num_created */);
 
   // Fail the operation; the delegate should not have been notified since no
@@ -275,14 +289,14 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_FailThenSuccess) {
   FailOperation(operation1);
   VerifyDelegateNotNotified();
 
-  FakeConnectToDeviceOperation* operation2 =
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation2 =
       GetLastCreatedOperation(2u /* expected_num_created */);
   FinishOperationSuccessfully(operation2);
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Success) {
   AddNewRequest();
-  FakeConnectToDeviceOperation* operation =
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
       GetLastCreatedOperation(1u /* expected_num_created */);
 
   // Add a second request; the first operation should still be active.
@@ -293,12 +307,14 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Success) {
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Fails) {
-  FakePendingConnectionRequest* request1 = AddNewRequest();
-  FakeConnectToDeviceOperation* operation =
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request1 =
+      AddNewRequest();
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
       GetLastCreatedOperation(1u /* expected_num_created */);
 
   // Add a second request; the first operation should still be active.
-  FakePendingConnectionRequest* request2 = AddNewRequest();
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request2 =
+      AddNewRequest();
   VerifyNumOperationsCreated(1u /* expected_num_created */);
 
   // Fail the operation; the delegate should not have been notified since no
@@ -321,9 +337,11 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Fails) {
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Canceled) {
-  FakePendingConnectionRequest* request1 = AddNewRequest();
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request1 =
+      AddNewRequest();
   VerifyNumOperationsCreated(1u /* expected_num_created */);
-  FakePendingConnectionRequest* request2 = AddNewRequest();
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request2 =
+      AddNewRequest();
   VerifyNumOperationsCreated(1u /* expected_num_created */);
 
   FinishRequestWithoutConnection(
@@ -338,14 +356,15 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Canceled) {
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_FailThenSuccess) {
-  FakePendingConnectionRequest* request1 = AddNewRequest();
-  FakeConnectToDeviceOperation* operation1 =
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request1 =
+      AddNewRequest();
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation1 =
       GetLastCreatedOperation(1u /* expected_num_created */);
 
   // Fail the operation; a new operation should have been created.
   FailOperation(operation1);
   VerifyDelegateNotNotified();
-  FakeConnectToDeviceOperation* operation2 =
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation2 =
       GetLastCreatedOperation(2u /* expected_num_created */);
 
   // Add a second request; this should not result in a new operation.
@@ -365,20 +384,22 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_FailThenSuccess) {
 
   // Start the next operation running, and simulate it finishing successfully.
   RunNextOperationTask();
-  FakeConnectToDeviceOperation* operation3 =
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation3 =
       GetLastCreatedOperation(3u /* expected_num_created */);
   FinishOperationSuccessfully(operation3);
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest,
        ExtractClientConnectionParameters) {
-  FakePendingConnectionRequest* request1 = AddNewRequest();
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request1 =
+      AddNewRequest();
   auto fake_parameters_1 =
       std::make_unique<FakeClientConnectionParameters>("request1Feature");
   auto* fake_parameters_1_raw = fake_parameters_1.get();
   request1->set_client_data_for_extraction(std::move(fake_parameters_1));
 
-  FakePendingConnectionRequest* request2 = AddNewRequest();
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request2 =
+      AddNewRequest();
   auto fake_parameters_2 =
       std::make_unique<FakeClientConnectionParameters>("request2Feature");
   auto* fake_parameters_2_raw = fake_parameters_2.get();

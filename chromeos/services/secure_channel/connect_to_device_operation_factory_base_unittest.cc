@@ -54,7 +54,7 @@ class TestConnectToDeviceOperationFactory
 
     EXPECT_EQ(device_id_pair_, device_id_pair);
 
-    return std::make_unique<FakeConnectToDeviceOperation>(
+    return std::make_unique<FakeConnectToDeviceOperation<std::string>>(
         std::move(success_callback), std::move(failure_callback));
   }
 
@@ -94,8 +94,9 @@ class SecureChannelConnectToDeviceOperationFactoryBaseTest
 
     // Use a pointer to FakeConnectToDeviceOperation, since
     // ConnectToDeviceOperation makes OnSuccessfulConnectionAttempt() protected.
-    FakeConnectToDeviceOperation* operation =
-        static_cast<FakeConnectToDeviceOperation*>(operation_to_finish.get());
+    FakeConnectToDeviceOperation<std::string>* operation =
+        static_cast<FakeConnectToDeviceOperation<std::string>*>(
+            operation_to_finish.get());
     operation->OnFailedConnectionAttempt(
         "arbitraryFailureDetail" /* failure_detail */);
 
