@@ -12,6 +12,12 @@
 // website, the URL and a timestamp of a previously visited website.
 @interface HistoryEntryItem : TableViewItem<HistoryEntryItemInterface>
 
+// Identifier to match a URLItem with its URLCell. Uses URL.host() as "unique"
+// identifier. Ensures that cell still is displaying item's contents before
+// setting favicon in async callback. Even if there is a case of cells with the
+// same identifier, it would be still valid to set that favicon for the cell.
+@property(nonatomic, readonly) NSString* uniqueIdentifier;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_ENTRY_ITEM_H_

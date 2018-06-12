@@ -16,16 +16,19 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
+#import "ios/chrome/browser/ui/history/history_image_data_source.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
@@ -55,7 +58,7 @@ const NSInteger kEntriesStatusSectionIdentifier = kSectionIdentifierEnumZero;
 const int kMaxFetchCount = 100;
 // Separation space between sections.
 const CGFloat kSeparationSpaceBetweenSections = 9;
-}
+}  // namespace
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
                                          HistoryEntryInserterDelegate,
@@ -105,6 +108,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 @synthesize filterQueryResult = _filterQueryResult;
 @synthesize finishedLoading = _finishedLoading;
 @synthesize historyService = _historyService;
+@synthesize imageDataSource = _imageDataSource;
 @synthesize loader = _loader;
 @synthesize loading = _loading;
 @synthesize localDispatcher = _localDispatcher;
@@ -467,6 +471,23 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   if (item.type == ItemTypeEntriesStatus) {
     cellToReturn.userInteractionEnabled = NO;
+  } else if (item.type == ItemTypeHistoryEntry) {
+    HistoryEntryItem* URLItem =
+        base::mac::ObjCCastStrict<HistoryEntryItem>(item);
+    TableViewURLCell* URLCell =
+        base::mac::ObjCCastStrict<TableViewURLCell>(cellToReturn);
+    FaviconAttributes* cachedAttributes = [self.imageDataSource
+        faviconForURL:URLItem.URL
+           completion:^(FaviconAttributes* attributes) {
+             // Only set favicon if the cell hasn't been reused.
+             if ([URLCell.cellUniqueIdentifier
+                     isEqualToString:URLItem.uniqueIdentifier]) {
+               DCHECK(attributes);
+               [URLCell.faviconView configureWithAttributes:attributes];
+             }
+           }];
+    DCHECK(cachedAttributes);
+    [URLCell.faviconView configureWithAttributes:cachedAttributes];
   }
   return cellToReturn;
 }

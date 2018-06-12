@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/history/history_local_commands.h"
+#import "ios/chrome/browser/ui/history/history_mediator.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
@@ -34,6 +35,9 @@
 @property(nonatomic, strong)
     TableViewNavigationController* historyNavigationController;
 
+// Mediator being managed by this Coordinator.
+@property(nonatomic, strong) HistoryMediator* mediator;
+
 // The transitioning delegate used by the history view controller.
 @property(nonatomic, strong)
     HistoryTransitioningDelegate* historyTransitioningDelegate;
@@ -44,11 +48,12 @@
 @end
 
 @implementation HistoryCoordinator
+@synthesize clearBrowsingDataCoordinator = _clearBrowsingDataCoordinator;
 @synthesize dispatcher = _dispatcher;
 @synthesize historyNavigationController = _historyNavigationController;
 @synthesize historyTransitioningDelegate = _historyTransitioningDelegate;
 @synthesize loader = _loader;
-@synthesize clearBrowsingDataCoordinator = _clearBrowsingDataCoordinator;
+@synthesize mediator = _mediator;
 @synthesize presentationDelegate = _presentationDelegate;
 
 - (void)start {
@@ -57,6 +62,11 @@
       [[HistoryTableViewController alloc] init];
   historyTableViewController.browserState = self.browserState;
   historyTableViewController.loader = self.loader;
+
+  // Initialize and set HistoryMediator
+  self.mediator =
+      [[HistoryMediator alloc] initWithBrowserState:self.browserState];
+  historyTableViewController.imageDataSource = self.mediator;
 
   // Initialize and configure HistoryServices.
   _browsingHistoryDriver = std::make_unique<IOSBrowsingHistoryDriver>(
