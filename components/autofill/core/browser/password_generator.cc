@@ -21,11 +21,18 @@ const uint32_t kDefaultPasswordLength = 15;
 namespace {
 
 // Default character sets used if the spec does not override the character set.
-constexpr char kLowerCaseChars[] = "abcdefghijklmnopqrstuvwxyz";
-constexpr char kUpperCaseChars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+// Removed characters due to visual similarity:
+// - l (lowercase L)
+// - I (capital i)
+// - 1 (one)
+// - O (capital o)
+// - 0 (zero)
+// - o (lowercase O)
+constexpr char kLowerCaseChars[] = "abcdefghijkmnpqrstuvwxyz";
+constexpr char kUpperCaseChars[] = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 constexpr char kAlphabeticChars[] =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-constexpr char kDigits[] = "0123456789";
+    "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+constexpr char kDigits[] = "23456789";
 constexpr char kSymbols[] = "-_.";
 
 // Returns a default password requirements specification that requires:
