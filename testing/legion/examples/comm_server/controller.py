@@ -47,6 +47,7 @@ class CommServerTestController(legion_test_case.TestCase):
     cls.task.WaitForConnection()
 
   def testCommServerTest(self):
+    # This command is run on the Swarming bot.
     cmd = [
         'python',
         'task.py',
