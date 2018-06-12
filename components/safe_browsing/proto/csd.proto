@@ -272,6 +272,9 @@ message LoginReputationClientRequest {
 
   // If user clicked through safe browsing interstitial on this page.
   optional bool clicked_through_interstitial = 7;
+
+  // The MIME type of the page, e.g. "application/pdf".
+  optional string content_type = 8;
 }
 
 // The message is used for client response for login reputation requests.
