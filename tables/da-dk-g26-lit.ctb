@@ -23,6 +23,9 @@
 
 ### Table Metadata
 
+#-name: Dansk forkortet 6-punkt
+#-display-name: Danish 6-dot fully contracted braille
+
 #+locale: da
 #+type: literary
 #+contraction: full

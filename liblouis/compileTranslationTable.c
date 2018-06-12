@@ -145,7 +145,10 @@ static const char *opcodeNames[CTO_None] = {
 static short gOpcodeLengths[CTO_None] = { 0 };
 
 static void
-compileError(FileInfo *nested, char *format, ...);
+compileError(FileInfo *nested, const char *format, ...);
+
+static void
+free_tablefiles(char **tables);
 
 static int
 getAChar(FileInfo *nested) {
@@ -261,7 +264,7 @@ getToken(FileInfo *nested, CharsString *result, const char *description, int *la
 }
 
 static void
-compileError(FileInfo *nested, char *format, ...) {
+compileError(FileInfo *nested, const char *format, ...) {
 #ifndef __SYMBIAN32__
 	char buffer[MAXSTRING];
 	va_list arguments;
@@ -278,7 +281,7 @@ compileError(FileInfo *nested, char *format, ...) {
 }
 
 static void
-compileWarning(FileInfo *nested, char *format, ...) {
+compileWarning(FileInfo *nested, const char *format, ...) {
 #ifndef __SYMBIAN32__
 	char buffer[MAXSTRING];
 	va_list arguments;
@@ -582,10 +585,10 @@ getPartName(int actionPart) {
 }
 
 static int
-passFindCharacters(FileInfo *nested, int actionPart, widechar *instructions, int end,
+passFindCharacters(FileInfo *nested, widechar *instructions, int end,
 		widechar **characters, int *length) {
 	int IC = 0;
-	int finding = !actionPart;
+	int lookback = 0;
 
 	*characters = NULL;
 	*length = 0;
@@ -598,24 +601,28 @@ passFindCharacters(FileInfo *nested, int actionPart, widechar *instructions, int
 		case pass_dots: {
 			int count = instructions[IC + 1];
 			IC += 2;
-
-			if (finding) {
-				*characters = &instructions[IC];
-				*length = count;
+			if (count > lookback) {
+				*characters = &instructions[IC + lookback];
+				*length = count - lookback;
 				return 1;
+			} else {
+				lookback -= count;
 			}
-
 			IC += count;
 			continue;
 		}
 
 		case pass_attributes:
 			IC += 5;
+			if (instructions[IC - 2] == instructions[IC - 1] &&
+					instructions[IC - 1] <= lookback) {
+				lookback -= instructions[IC - 1];
+				continue;
+			}
 			goto NO_CHARACTERS;
 
 		case pass_swap:
-			/* swap has a range in the test part but not in the action part */
-			if (!actionPart != !finding) IC += 2;
+			IC += 2;
 		/* fall through */
 
 		case pass_groupstart:
@@ -623,10 +630,7 @@ passFindCharacters(FileInfo *nested, int actionPart, widechar *instructions, int
 		case pass_groupreplace:
 			IC += 3;
 
-		NO_CHARACTERS : {
-			if (finding) return 1;
-			continue;
-		}
+		NO_CHARACTERS : { return 1; }
 
 		case pass_eq:
 		case pass_lt:
@@ -637,6 +641,7 @@ passFindCharacters(FileInfo *nested, int actionPart, widechar *instructions, int
 			continue;
 
 		case pass_lookback:
+			lookback = instructions[IC + 1];
 			IC += 2;
 			continue;
 
@@ -653,22 +658,17 @@ passFindCharacters(FileInfo *nested, int actionPart, widechar *instructions, int
 			continue;
 
 		case pass_endTest:
-			if (finding) goto NOT_FOUND;
-			finding = 1;
-			IC += 1;
-			continue;
+			goto NOT_FOUND;
 
 		default:
-			compileError(nested, "unhandled %s suboperand: \\x%02x",
-					getPartName(actionPart), instruction);
+			compileError(nested, "unhandled test suboperand: \\x%02x", instruction);
 			return 0;
 		}
 	}
 
 NOT_FOUND:
-	compileError(nested,
-			"characters, dots, attributes, or class swap not found in %s part",
-			getPartName(actionPart));
+	compileError(
+			nested, "characters, dots, attributes, or class swap not found in test part");
 
 	return 0;
 }
@@ -1018,7 +1018,7 @@ _lou_findOpcodeName(TranslationTableOpcode opcode) {
 	static char scratchBuf[MAXSTRING];
 	/* Used by tools such as lou_debug */
 	if (opcode < 0 || opcode >= CTO_None) {
-		sprintf(scratchBuf, "%d", opcode);
+		sprintf(scratchBuf, "%u", opcode);
 		return scratchBuf;
 	}
 	return opcodeNames[opcode];
@@ -1127,11 +1127,11 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 				}
 				in++;
 			}
-			result->chars[out++] = (widechar)ch;
 			if (out >= MAXSTRING) {
 				result->length = out;
 				return 1;
 			}
+			result->chars[out++] = (widechar)ch;
 			continue;
 		}
 		lastOutSize = out;
@@ -1141,6 +1141,10 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 		utf32 = ch & (0XFF - first0Bit[numBytes]);
 		for (k = 0; k < numBytes; k++) {
 			if (in >= MAXSTRING) break;
+			if (out >= MAXSTRING) {
+				result->length = lastOutSize;
+				return 1;
+			}
 			if (token->chars[in] < 128 || (token->chars[in] & 0x0040)) {
 				compileWarning(nested, "invalid UTF-8. Assuming Latin-1.");
 				result->chars[out++] = token->chars[lastIn];
@@ -1149,12 +1153,12 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 			}
 			utf32 = (utf32 << 6) + (token->chars[in++] & 0x3f);
 		}
-		if (CHARSIZE == 2 && utf32 > 0xffff) utf32 = 0xffff;
-		result->chars[out++] = (widechar)utf32;
 		if (out >= MAXSTRING) {
 			result->length = lastOutSize;
 			return 1;
 		}
+		if (CHARSIZE == 2 && utf32 > 0xffff) utf32 = 0xffff;
+		result->chars[out++] = (widechar)utf32;
 	}
 	result->length = out;
 	return 1;
@@ -1413,8 +1417,7 @@ deallocateRuleNames(RuleName **ruleNames) {
 }
 
 static int
-compileSwapDots(FileInfo *nested, CharsString *source, CharsString *dest,
-		TranslationTableHeader *table) {
+compileSwapDots(FileInfo *nested, CharsString *source, CharsString *dest) {
 	int k = 0;
 	int kk = 0;
 	CharsString dotsSource;
@@ -1451,12 +1454,12 @@ compileSwap(FileInfo *nested, TranslationTableOpcode opcode, int *lastToken,
 	if (opcode == CTO_SwapCc || opcode == CTO_SwapCd) {
 		if (!parseChars(nested, &ruleChars, &matches)) return 0;
 	} else {
-		if (!compileSwapDots(nested, &matches, &ruleChars, *table)) return 0;
+		if (!compileSwapDots(nested, &matches, &ruleChars)) return 0;
 	}
 	if (opcode == CTO_SwapCc) {
 		if (!parseChars(nested, &ruleDots, &replacements)) return 0;
 	} else {
-		if (!compileSwapDots(nested, &replacements, &ruleDots, *table)) return 0;
+		if (!compileSwapDots(nested, &replacements, &ruleDots)) return 0;
 	}
 	if (!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0, newRuleOffset, newRule,
 				noback, nofor, table))
@@ -2373,6 +2376,10 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		passLine.chars[endTest] = pass_endTest;
 		passLinepos = 0;
 		while (passLinepos <= endTest) {
+			if (passIC >= MAXSTRING) {
+				compileError(passNested, "Test part in multipass operand too long");
+				return 0;
+			}
 			switch ((passSubOp = passLine.chars[passLinepos])) {
 			case pass_lookback:
 				passInstructions[passIC++] = pass_lookback;
@@ -2548,6 +2555,10 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 		while (passLinepos < passLine.length && passLine.chars[passLinepos] <= 32)
 			passLinepos++;
 		while (passLinepos < passLine.length && passLine.chars[passLinepos] > 32) {
+			if (passIC >= MAXSTRING) {
+				compileError(passNested, "Action part in multipass operand too long");
+				return 0;
+			}
 			switch ((passSubOp = passLine.chars[passLinepos])) {
 			case pass_string:
 				if (!verifyStringOrDots(nested, opcode, 1, 1, nofor)) {
@@ -2567,8 +2578,14 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 			actionDoCharsDots:
 				if (passHoldString.length == 0) return 0;
 				passInstructions[passIC++] = passHoldString.length;
-				for (kk = 0; kk < passHoldString.length; kk++)
+				for (kk = 0; kk < passHoldString.length; kk++) {
+					if (passIC >= MAXSTRING) {
+						compileError(passNested,
+								"@ operand in action part of multipass operand too long");
+						return 0;
+					}
 					passInstructions[passIC++] = passHoldString.chars[kk];
+				}
 				break;
 			case pass_variable:
 				passLinepos++;
@@ -2649,8 +2666,8 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 	{
 		widechar *characters;
 		int length;
-		int found = passFindCharacters(passNested, 0, passInstructions,
-				passRuleDots.length, &characters, &length);
+		int found = passFindCharacters(
+				passNested, passInstructions, passRuleDots.length, &characters, &length);
 
 		if (!found) return 0;
 
@@ -2669,8 +2686,8 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 /* End of multipass compiler */
 
 static int
-compileBrailleIndicator(FileInfo *nested, char *ermsg, TranslationTableOpcode opcode,
-		TranslationTableOffset *rule, int *lastToken,
+compileBrailleIndicator(FileInfo *nested, const char *ermsg,
+		TranslationTableOpcode opcode, TranslationTableOffset *rule, int *lastToken,
 		TranslationTableOffset *newRuleOffset, TranslationTableRule **newRule, int noback,
 		int nofor, TranslationTableHeader **table) {
 	CharsString token;
@@ -2974,7 +2991,7 @@ compileHyphenation(FileInfo *nested, CharsString *encoding, int *lastToken,
 	HyphenationTrans *holdPointer;
 	HyphenHashTab *hashTab;
 	CharsString word;
-	char pattern[MAXSTRING];
+	char pattern[MAXSTRING + 1];
 	unsigned int stateNum = 0, lastState = 0;
 	int i, j, k = encoding->length;
 	widechar ch;
@@ -4019,10 +4036,13 @@ doOpcode:
 				ok = 0;
 		}
 		if (getToken(nested, &token, "character class name", &lastToken)) {
-			if ((class = findCharacterClass(&token, *characterClasses))) {
-				compileError(nested, "character class already defined.");
-			} else if ((class = addCharacterClass(nested, &token.chars[0], token.length,
-								characterClasses, characterClassAttribute))) {
+			class = findCharacterClass(&token, *characterClasses);
+			if (!class)
+				// no class with that name: create one
+				class = addCharacterClass(nested, &token.chars[0], token.length,
+						characterClasses, characterClassAttribute);
+			if (class) {
+				// there is a class with that name or a new class was successfully created
 				if (getCharacters(nested, &characters, &lastToken)) {
 					int index;
 					for (index = 0; index < characters.length; ++index) {
@@ -4242,39 +4262,11 @@ compileString(const char *inString, CharacterClass **characterClasses,
 }
 
 static int
-makeDoubleRule(TranslationTableOpcode opcode, TranslationTableOffset *singleRule,
-		TranslationTableOffset *doubleRule, TranslationTableOffset *newRuleOffset,
-		TranslationTableRule **newRule, int noback, int nofor,
-		TranslationTableHeader **table) {
-	CharsString dots;
-	TranslationTableRule *rule;
-	if (!*singleRule || *doubleRule) return 1;
-	rule = (TranslationTableRule *)&(*table)->ruleArea[*singleRule];
-	memcpy(dots.chars, &rule->charsdots[0], rule->dotslen * CHARSIZE);
-	memcpy(&dots.chars[rule->dotslen], &rule->charsdots[0], rule->dotslen * CHARSIZE);
-	dots.length = 2 * rule->dotslen;
-	if (!addRule(NULL, opcode, NULL, &dots, 0, 0, newRuleOffset, newRule, noback, nofor,
-				table))
-		return 0;
-	*doubleRule = *newRuleOffset;
-	return 1;
-}
-
-static int
 setDefaults(TranslationTableHeader *table) {
-	//  makeDoubleRule (CTO_FirstWordItalRule,
-	//  &table->emphRules[emph1Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph1Rule][firstWordOffset]);
 	if (!table->emphRules[emph1Rule][lenPhraseOffset])
 		table->emphRules[emph1Rule][lenPhraseOffset] = 4;
-	//  makeDoubleRule (CTO_FirstWordUnderRule,
-	//  &table->emphRules[emph2Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph2Rule][firstWordOffset]);
 	if (!table->emphRules[emph2Rule][lenPhraseOffset])
 		table->emphRules[emph2Rule][lenPhraseOffset] = 4;
-	//  makeDoubleRule (CTO_FirstWordBoldRule,
-	//  &table->emphRules[emph3Rule][lastWordBeforeOffset],
-	//		  &table->emphRules[emph3Rule][firstWordOffset]);
 	if (!table->emphRules[emph3Rule][lenPhraseOffset])
 		table->emphRules[emph3Rule][lenPhraseOffset] = 4;
 	if (table->numPasses == 0) table->numPasses = 1;
@@ -4381,7 +4373,7 @@ resolveSubtable(const char *table, const char *base, const char *searchPath) {
 }
 
 char *EXPORT_CALL
-_lou_getTablePath() {
+_lou_getTablePath(void) {
 	char searchPath[MAXSTRING];
 	char *path;
 	char *cp;
@@ -4489,7 +4481,10 @@ copyStringArray(char **array) {
 
 char **EXPORT_CALL
 _lou_resolveTable(const char *tableList, const char *base) {
-	return copyStringArray((*tableResolver)(tableList, base));
+	char **tableFiles = (*tableResolver)(tableList, base);
+	char **result = copyStringArray(tableFiles);
+	if (tableResolver == &_lou_defaultTableResolver) free_tablefiles(tableFiles);
+	return result;
 }
 
 /**
@@ -4562,6 +4557,10 @@ includeFile(FileInfo *nested, CharsString *includedFile,
 	int rv;
 	for (k = 0; k < includedFile->length; k++)
 		includeThis[k] = (char)includedFile->chars[k];
+	if (k >= MAXSTRING) {
+		compileError(nested, "Include statement too long: 'include %s'", includeThis);
+		return 0;
+	}
 	includeThis[k] = 0;
 	tableFiles = _lou_resolveTable(includeThis, nested->fileName);
 	if (tableFiles == NULL) {
@@ -4569,9 +4568,8 @@ includeFile(FileInfo *nested, CharsString *includedFile,
 		return 0;
 	}
 	if (tableFiles[1] != NULL) {
-		errorCount++;
 		free_tablefiles(tableFiles);
-		_lou_logMessage(LOG_ERROR,
+		compileError(nested,
 				"Table list not supported in include statement: 'include %s'",
 				includeThis);
 		return 0;
@@ -4732,7 +4730,7 @@ lou_getTable(const char *tableList) {
 		lastTrans = newEntry;
 		return (gTable = newEntry->table);
 	}
-	_lou_logMessage(LOG_ERROR, "%s could not be found", tableList);
+	_lou_logMessage(LOG_ERROR, "%s could not be compiled", tableList);
 	return NULL;
 }
 
@@ -4756,13 +4754,10 @@ static unsigned char *destSpacing = NULL;
 static int sizeDestSpacing = 0;
 static formtype *typebuf = NULL;
 static unsigned int *wordBuffer = NULL;
-static unsigned int *emphasisBuffer = NULL;
-static unsigned int *transNoteBuffer = NULL;
+static EmphasisInfo *emphasisBuffer = NULL;
 static int sizeTypebuf = 0;
-static widechar *passbuf1 = NULL;
-static int sizePassbuf1 = 0;
-static widechar *passbuf2 = NULL;
-static int sizePassbuf2 = 0;
+static widechar *passbuf[MAXPASSBUF] = { NULL };
+static int sizePassbuf[MAXPASSBUF] = { 0 };
 static int *posMapping1 = NULL;
 static int sizePosMapping1 = 0;
 static int *posMapping2 = NULL;
@@ -4770,7 +4765,7 @@ static int sizePosMapping2 = 0;
 static int *posMapping3 = NULL;
 static int sizePosMapping3 = 0;
 void *EXPORT_CALL
-_lou_allocMem(AllocBuf buffer, int srcmax, int destmax) {
+_lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax) {
 	if (srcmax < 1024) srcmax = 1024;
 	if (destmax < 1024) destmax = 1024;
 	switch (buffer) {
@@ -4794,16 +4789,9 @@ _lou_allocMem(AllocBuf buffer, int srcmax, int destmax) {
 	case alloc_emphasisBuffer:
 
 		if (emphasisBuffer != NULL) free(emphasisBuffer);
-		emphasisBuffer = malloc((srcmax + 4) * sizeof(unsigned int));
+		emphasisBuffer = malloc((srcmax + 4) * sizeof(EmphasisInfo));
 		if (!emphasisBuffer) _lou_outOfMemory();
 		return emphasisBuffer;
-
-	case alloc_transNoteBuffer:
-
-		if (transNoteBuffer != NULL) free(transNoteBuffer);
-		transNoteBuffer = malloc((srcmax + 4) * sizeof(unsigned int));
-		if (!transNoteBuffer) _lou_outOfMemory();
-		return transNoteBuffer;
 
 	case alloc_destSpacing:
 		if (destmax > sizeDestSpacing) {
@@ -4813,22 +4801,18 @@ _lou_allocMem(AllocBuf buffer, int srcmax, int destmax) {
 			sizeDestSpacing = destmax;
 		}
 		return destSpacing;
-	case alloc_passbuf1:
-		if (destmax > sizePassbuf1) {
-			if (passbuf1 != NULL) free(passbuf1);
-			passbuf1 = malloc((destmax + 4) * CHARSIZE);
-			if (!passbuf1) _lou_outOfMemory();
-			sizePassbuf1 = destmax;
+	case alloc_passbuf:
+		if (index < 0 || index >= MAXPASSBUF) {
+			_lou_logMessage(LOG_FATAL, "Index out of bounds: %d\n", index);
+			exit(3);
 		}
-		return passbuf1;
-	case alloc_passbuf2:
-		if (destmax > sizePassbuf2) {
-			if (passbuf2 != NULL) free(passbuf2);
-			passbuf2 = malloc((destmax + 4) * CHARSIZE);
-			if (!passbuf2) _lou_outOfMemory();
-			sizePassbuf2 = destmax;
+		if (destmax > sizePassbuf[index]) {
+			if (passbuf[index] != NULL) free(passbuf[index]);
+			passbuf[index] = malloc((destmax + 4) * CHARSIZE);
+			if (!passbuf[index]) _lou_outOfMemory();
+			sizePassbuf[index] = destmax;
 		}
-		return passbuf2;
+		return passbuf[index];
 	case alloc_posMapping1: {
 		int mapSize;
 		if (srcmax >= destmax)
@@ -4901,18 +4885,18 @@ lou_free(void) {
 	wordBuffer = NULL;
 	if (emphasisBuffer != NULL) free(emphasisBuffer);
 	emphasisBuffer = NULL;
-	if (transNoteBuffer != NULL) free(transNoteBuffer);
-	transNoteBuffer = NULL;
 	sizeTypebuf = 0;
 	if (destSpacing != NULL) free(destSpacing);
 	destSpacing = NULL;
 	sizeDestSpacing = 0;
-	if (passbuf1 != NULL) free(passbuf1);
-	passbuf1 = NULL;
-	sizePassbuf1 = 0;
-	if (passbuf2 != NULL) free(passbuf2);
-	passbuf2 = NULL;
-	sizePassbuf2 = 0;
+	{
+		int k;
+		for (k = 0; k < MAXPASSBUF; k++) {
+			if (passbuf[k] != NULL) free(passbuf[k]);
+			passbuf[k] = NULL;
+			sizePassbuf[k] = 0;
+		}
+	}
 	if (posMapping1 != NULL) free(posMapping1);
 	posMapping1 = NULL;
 	sizePosMapping1 = 0;

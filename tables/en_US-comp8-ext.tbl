@@ -1,7 +1,8 @@
+#-name: U.S. English 8-dot computer braille for Windows
+#-display-name: U.S. English (EBAE) computer braille
+
 #+locale:en-US
 #+type:computer
-#+contraction:no
-#+grade:0
 #+dots:8
 #+hyphenation:no
 #+direction:both

@@ -6,4 +6,3 @@ table: |
 tests:
   - - abc
     - ABC
-    - xfail: true # see https://github.com/liblouis/liblouis/issues/238

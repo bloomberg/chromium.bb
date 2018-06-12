@@ -1,5 +1,8 @@
+#-display-name: Arabic braille
+
 #+locale:ar
 #+type:literary
+#+contraction:no
 #+grade:1
 
 # TODO: Please correct the metadata above. It is not meant to be

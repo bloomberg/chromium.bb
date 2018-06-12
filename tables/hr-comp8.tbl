@@ -1,3 +1,5 @@
+#-display-name: Croatian computer braille
+
 #+locale:hr
 #+type:computer
 #+dots:8

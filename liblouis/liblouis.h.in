@@ -99,8 +99,8 @@ typedef enum {
 	noContractions = 1,
 	compbrlAtCursor = 2,
 	dotsIO = 4,
-	comp8Dots = 8,
-	pass1Only = 16,
+	// for historic reasons 8 is free
+	pass1Only = 16,  // defunct
 	compbrlLeftCursor = 32,
 	ucBrl = 64,
 	noUndefinedDots = 128,
@@ -139,6 +139,19 @@ LIBLOUIS_API
 int EXPORT_CALL
 lou_hyphenate(
 		const char *tableList, const widechar *inbuf, int inlen, char *hyphens, int mode);
+
+/**
+ * Convert a string of dot patterns to a string of chars
+ *
+ * @param[in]  tableList comma separated list of braille tables
+ * @param[in]  inbuf widechar string of dot patterns, either in liblouis format or Unicode
+ * braille
+ * @param[out] outbuf widechar string corresponding to the dot patterns in `inbuf`
+ * @param[in,out] length of both `inbuf` and `outbuf`
+ * @param[in] mode (deprecated)
+ *
+ * @return 1 on success and 0 on failure.
+ */
 LIBLOUIS_API
 int EXPORT_CALL
 lou_dotsToChar(
@@ -339,6 +352,20 @@ char *EXPORT_CALL
 lou_findTable(const char *query);
 
 /**
+ * Find all matches for a query, best match first.
+ *
+ * Returns the names of the matched table as a NULL-terminated array
+ * of string. If lou_indexTables() has not been previously called, the
+ * table search path specified with LOUIS_TABLEPATH will be indexed
+ * first. An error message is given when the query is invalid. Freeing
+ * the memory of the returned array and strings is the responsibility
+ * of the caller.
+ */
+LIBLOUIS_API
+char **EXPORT_CALL
+lou_findTables(const char *query);
+
+/**
  * Read metadata from a file.
  *
  * Returns the value of the metadata field specified by `key' in
@@ -361,7 +388,7 @@ lou_getTableInfo(const char *table, const char *key);
  */
 LIBLOUIS_API
 const char **EXPORT_CALL
-lou_listTables();
+lou_listTables(void);
 
 /* ====================== END OF BETA API ====================== */
 

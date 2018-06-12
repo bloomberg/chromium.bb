@@ -39,6 +39,7 @@ typedef struct {
 	const int *expected_inputPos;
 	const int *expected_outputPos;
 	const int expected_cursorPos;
+	const int max_outlen;
 } optional_test_params;
 
 /** Check a translation
@@ -59,8 +60,11 @@ typedef struct {
  * it defaults to -1.
  * @param expected_cursorPos (optional) the expected cursor position after this
  * translation. If not specified it defaults to -1.
- * @param direction (optional) 0 for forward translation, 1 for backwards translation. If
- * not specified it defaults to 0.
+ * @param max_outlen (optional) the maximum length of the output. If not specified it
+ * defaults to -1.
+  * @param direction (optional) 0 for forward translation, 1 for backwards translation,
+ * 2 for both directions. If
+* not specified it defaults to 0.
  * @param diagnostics (optional) Print diagnostic output on failure if diagnostics is not
  * 0. If not specified it defaults to 1.
  * @return Return 0 if the translation is as expected and 1 otherwise.
@@ -78,6 +82,7 @@ typedef struct {
 												.expected_cursorPos = -1,        \
 												.expected_inputPos = NULL,       \
 												.expected_outputPos = NULL,      \
+												.max_outlen = -1,                \
 												.mode = 0,                       \
 												.direction = 0,                  \
 												.diagnostics = 1,                \
@@ -105,6 +110,14 @@ check_base(const char *tableList, const char *input, const char *expected,
  */
 int
 check_cursor_pos(const char *tableList, const char *str, const int *expected_pos);
+
+/* Check if a string is hyphenated as expected, by passing the
+ * expected hyphenation position array.
+ *
+ * @return 0 if the hyphenation is as expected and 1 otherwise.
+ */
+int
+check_hyphenation_pos(const char *tableList, const char *str, const char *expected);
 
 /** Check if a string is hyphenated as expected.
  *

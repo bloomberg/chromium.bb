@@ -1,3 +1,5 @@
+#-display-name: Estonian computer braille
+
 #+locale:et
 #+type:computer
 #+dots:8

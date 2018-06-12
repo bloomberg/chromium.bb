@@ -1,0 +1,77 @@
+display: unicode.dis
+table:
+  locale: en
+  grade: 2
+  system: ueb
+  __assert-match: en-ueb-g2.ctb
+flags: {testmode: backward}
+tests:
+  # Patterns used for both punctuation and contractions.
+  - [⠁⠖, a!]
+  - [⠁⠖⠁, affa]
+  - [⠦, his]
+  - [⠁⠦, "a?"]
+  - [⠦⠁, '"a']
+  - [⠴, was]
+  - [⠁⠴, 'a"']
+  - [⠦⠁⠴, '"a"']
+  - [⠶, were]
+  - [⠁⠶⠁, agga]
+  - [⠆, be]
+  - [⠆⠁, bea]
+  - [⠁⠆⠁, abba]
+  - [⠁⠆, a;]
+  - [⠒, ":"]
+  - [⠒⠁, cona]
+  - [⠁⠒, "a:"]
+  - [⠁⠒⠁, acca]
+  # Contractions prefixed by an indicator which means nothing on its own.
+  # These indicators are tested by themselves with no following cell in en-ueb-g1.
+  - [⠘⠺, word]
+  - [⠸⠍, many]
+  - [⠐⠝, name]
+  - [⠁⠰⠝, ation]
+  # #311: The grade 1 symbol indicator.
+  - [⠰⠃, b]
+  - [⠰⠠⠃, B]
+  - [⠰⠁⠃, ab]
+  - [⠰⠠⠁⠃, Ab]
+  - [⠼⠁⠰⠁, 1a]
+  - [⠼⠁⠰⠠⠁, 1A]
+  # #309: Ensure correct back-translation to "this".
+  - [⠹, this]
+
+  # #360: Contractions followed by punctuation
+  # 1-letter contractions
+  - [⠃⠂, "but,"]
+  - [⠃⠲, "but."]
+  - [⠉⠂, "can,"]
+  - [⠙⠂, "do,"]
+  # multi-letter contractions
+  - [⠁⠃⠂, "about,"]
+  - [⠁⠃⠲, "about."]
+  - [⠁⠃⠧⠂, "above,"]
+
+  # Make sure back-translation for words with "ea" after letters that
+  # have contractions associated, such as words like meat, head and
+  # others works properly.
+  # See https://github.com/liblouis/liblouis/pull/350
+  - [⠍⠂⠞, "meat"]
+  - [⠓⠂⠙, "head"]
+
+  # #364: Whole word contractions followed by other contractions.
+  # In this case, the whole word contraction should not apply.
+  - [⠁⠇⠐⠕, alone]
+  - [⠃⠜, bar]
+  - [⠃⠢, ben]
+  - [⠠⠃⠢, Ben]
+  - [⠙⠨⠑, dance]
+  - [⠋⠰⠑, fence]
+  - [⠓⠻, her]
+  - [⠎⠯, sand]
+  - [⠎⠔, sin]
+  - [⠎⠬, sing]
+  - [⠠⠎⠬, Sing]
+  - [⠎⠷, sof]
+  - [⠎⠰⠛, song]
+  - [⠹⠬, thing]

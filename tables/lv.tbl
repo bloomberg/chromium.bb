@@ -1,3 +1,5 @@
+#-display-name: Latvian braille
+
 #+locale:lv
 #+type:literary
 #+dots:6

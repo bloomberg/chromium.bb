@@ -1,3 +1,5 @@
+#-display-name: Punjabi braille
+
 #+locale:pa
 #+type:literary
 #+grade:1

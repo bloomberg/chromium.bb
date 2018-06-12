@@ -269,7 +269,7 @@ show_backRules(int startHash) {
 }
 
 static int
-print_brailleIndicator(TranslationTableOffset offset, char *opcode) {
+print_brailleIndicator(TranslationTableOffset offset, const char *opcode) {
 	TranslationTableRule *thisRule;
 	if (!offset) return 0;
 	thisRule = (TranslationTableRule *)&table->ruleArea[offset];
@@ -278,20 +278,21 @@ print_brailleIndicator(TranslationTableOffset offset, char *opcode) {
 }
 
 static int
-print_phraseLength(TranslationTableOffset offset, char *opcode) {
+print_phraseLength(TranslationTableOffset offset, const char *opcode) {
 	if (!offset) return 0;
-	printf("%s %d\n", opcode, offset);
+	printf("%s %u\n", opcode, offset);
 	return 1;
 }
 
 static int
 show_brailleIndicators(void) {
 	char name[BUFSIZE];
-	char *emphNames[] = { "begemphphrase %s", "endemphphrase %s before",
+	const char *emphNames[] = { "begemphphrase %s", "endemphphrase %s before",
 		"endemphphrase %s after", "begemphword %s", "endemphword %s", "emphletter %s",
 		"begemph %s", "endemph %s", NULL };
-	char *capsNames[] = { "firstwordcaps", "lastwordcapsbefore", "lastwordcapsafter",
-		"begcaps", "endcaps", "capsletter", "capsword", "capswordstop", NULL };
+	const char *capsNames[] = { "firstwordcaps", "lastwordcapsbefore",
+		"lastwordcapsafter", "begcaps", "endcaps", "capsletter", "capsword",
+		"capswordstop", NULL };
 
 	// FIXME: update to include all UEB opcodes.
 
@@ -324,7 +325,7 @@ show_brailleIndicators(void) {
 	return 1;
 }
 
-static char *
+static const char *
 pickYN(int a) {
 	if (!a) return "no";
 	return "yes";
@@ -332,8 +333,8 @@ pickYN(int a) {
 
 static int
 show_misc(void) {
-	printf("Table size: %d\n", table->tableSize);
-	printf("Bytes used: %d\n", table->bytesUsed);
+	printf("Table size: %u\n", table->tableSize);
+	printf("Bytes used: %u\n", table->bytesUsed);
 	printf("Number of passes: %d\n", table->numPasses);
 	printf("'correct' opcodes: %s\n", pickYN(table->corrections));
 	printf("'syllable' opcodes: %s\n", pickYN(table->syllables));
