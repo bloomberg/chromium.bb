@@ -463,7 +463,7 @@ class ItemReferenceReader : public ReferenceReader {
 //   NTTT|NTT|NTTTT|N|NTT...
 // where |N| is an uint32_t representing the number of items in each sub-list,
 // and "T" is a fixed-size item (|item_width|) of type "T". On success, stores
-// the offset of each |T| into |reference_list|, and returns true. Otherwise
+// the offset of each |T| into |item_offsets|, and returns true. Otherwise
 // (e.g., on finding any structural problem) returns false.
 bool ParseItemOffsets(ConstBufferView image,
                       const dex::MapItem& map_item,
@@ -493,13 +493,86 @@ bool ParseItemOffsets(ConstBufferView image,
   return true;
 }
 
+// Parses AnnotationDirectoryItems of the format (using RegEx) "(AF*M*P*)*",
+// where:
+//   A = AnnotationsDirectoryItem (contains class annotation),
+//   F = FieldAnnotation,
+//   M = MethodAnnotation,
+//   P = ParameterAnnotation.
+// On success, stores the offsets of each class, field, method and parameter
+// annotation for each item into |*_annotation_offsets|. Otherwise on finding
+// structural issues returns false.
+bool ParseAnnotationsDirectoryItems(
+    ConstBufferView image,
+    const dex::MapItem& annotations_directory_map_item,
+    std::vector<offset_t>* annotations_directory_item_offsets,
+    std::vector<offset_t>* field_annotation_offsets,
+    std::vector<offset_t>* method_annotation_offsets,
+    std::vector<offset_t>* parameter_annotation_offsets) {
+  // Sanity check: |image| should at least fit
+  // |annotations_directory_map_item.size| copies of "A".
+  if (!image.covers_array(annotations_directory_map_item.offset,
+                          annotations_directory_map_item.size,
+                          sizeof(dex::AnnotationsDirectoryItem))) {
+    return false;
+  }
+  BufferSource source = std::move(
+      BufferSource(image).Skip(annotations_directory_map_item.offset));
+  annotations_directory_item_offsets->clear();
+  field_annotation_offsets->clear();
+  method_annotation_offsets->clear();
+  parameter_annotation_offsets->clear();
+
+  // Helper to process sublists.
+  auto parse_list = [&source, image](uint32_t unsafe_size, size_t item_width,
+                                     std::vector<offset_t>* item_offsets) {
+    DCHECK(Is32BitAligned(
+        base::checked_cast<offset_t>(source.begin() - image.begin())));
+    if (!source.covers_array(0, unsafe_size, item_width))
+      return false;
+    item_offsets->reserve(item_offsets->size() + unsafe_size);
+    for (uint32_t i = 0; i < unsafe_size; ++i) {
+      item_offsets->push_back(
+          base::checked_cast<offset_t>(source.begin() - image.begin()));
+      source.Skip(item_width);
+    }
+    return true;
+  };
+
+  annotations_directory_item_offsets->reserve(
+      annotations_directory_map_item.size);
+  for (uint32_t i = 0; i < annotations_directory_map_item.size; ++i) {
+    if (!source.AlignOn(image, 4U))
+      return false;
+    // Parse header.
+    annotations_directory_item_offsets->push_back(
+        base::checked_cast<offset_t>(source.begin() - image.begin()));
+    dex::AnnotationsDirectoryItem unsafe_annotations_directory_item;
+    if (!source.GetValue(&unsafe_annotations_directory_item))
+      return false;
+    // Parse sublists.
+    if (!(parse_list(unsafe_annotations_directory_item.fields_size,
+                     sizeof(dex::FieldAnnotation), field_annotation_offsets) &&
+          parse_list(unsafe_annotations_directory_item.annotated_methods_size,
+                     sizeof(dex::MethodAnnotation),
+                     method_annotation_offsets) &&
+          parse_list(
+              unsafe_annotations_directory_item.annotated_parameters_size,
+              sizeof(dex::ParameterAnnotation),
+              parameter_annotation_offsets))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /******** CachedItemListReferenceReader ********/
 
 // A class that takes sorted |item_offsets|, and emits all member variable of
 // interest (MVIs) that fall inside |[lo, hi)|. The MVI of each item has
 // location of |rel_location| from item offset, and has target extracted with
-// |mapper| (which performs validation). By the "atomicity assumption", [|lo,
-// hi)| never cut across an MVI.
+// |mapper| (which performs validation). By the "atomicity assumption",
+// [|lo, hi)| never cut across an MVI.
 class CachedItemListReferenceReader : public ReferenceReader {
  public:
   // A function that takes an MVI's location and emit its target offset.
@@ -515,7 +588,9 @@ class CachedItemListReferenceReader : public ReferenceReader {
         end_it_(item_offsets.cend()),
         mapper_(mapper) {
     cur_it_ = std::upper_bound(item_offsets.cbegin(), item_offsets.cend(), lo);
-    if (cur_it_ != item_offsets.begin() && *(cur_it_ - 1) >= lo)
+    // Adding |rel_location_| is necessary as references can be offset from the
+    // start of the item.
+    if (cur_it_ != item_offsets.begin() && *(cur_it_ - 1) + rel_location_ >= lo)
       --cur_it_;
   }
 
@@ -752,18 +827,45 @@ std::vector<ReferenceGroup> DisassemblerDex::MakeReferenceGroups() const {
       {{2, TypeTag(kCodeToFieldId), PoolTag(kFieldId)},
        &DisassemblerDex::MakeReadCodeToFieldId16,
        &DisassemblerDex::MakeWriteFieldId16},
+      {{4, TypeTag(kAnnotationsDirectoryToFieldId), PoolTag(kFieldId)},
+       &DisassemblerDex::MakeReadAnnotationsDirectoryToFieldId32,
+       &DisassemblerDex::MakeWriteFieldId32},
       {{2, TypeTag(kCodeToMethodId), PoolTag(kMethodId)},
        &DisassemblerDex::MakeReadCodeToMethodId16,
        &DisassemblerDex::MakeWriteMethodId16},
+      {{4, TypeTag(kAnnotationsDirectoryToMethodId), PoolTag(kMethodId)},
+       &DisassemblerDex::MakeReadAnnotationsDirectoryToMethodId32,
+       &DisassemblerDex::MakeWriteMethodId32},
+      {{4, TypeTag(kAnnotationsDirectoryToParameterMethodId),
+        PoolTag(kMethodId)},
+       &DisassemblerDex::MakeReadAnnotationsDirectoryToParameterMethodId32,
+       &DisassemblerDex::MakeWriteMethodId32},
       {{4, TypeTag(kProtoIdToParametersTypeList), PoolTag(kTypeList)},
        &DisassemblerDex::MakeReadProtoIdToParametersTypeList,
        &DisassemblerDex::MakeWriteAbs32},
       {{4, TypeTag(kClassDefToInterfacesTypeList), PoolTag(kTypeList)},
        &DisassemblerDex::MakeReadClassDefToInterfacesTypeList,
        &DisassemblerDex::MakeWriteAbs32},
+      {{4, TypeTag(kAnnotationsDirectoryToParameterAnnotationSetRef),
+        PoolTag(kAnnotationSetRefList)},
+       &DisassemblerDex::
+           MakeReadAnnotationsDirectoryToParameterAnnotationSetRef,
+       &DisassemblerDex::MakeWriteAbs32},
       {{4, TypeTag(kAnnotationSetRefListToAnnotationSet),
         PoolTag(kAnnotionSet)},
        &DisassemblerDex::MakeReadAnnotationSetRefListToAnnotationSet,
+       &DisassemblerDex::MakeWriteAbs32},
+      {{4, TypeTag(kAnnotationsDirectoryToClassAnnotationSet),
+        PoolTag(kAnnotionSet)},
+       &DisassemblerDex::MakeReadAnnotationsDirectoryToClassAnnotationSet,
+       &DisassemblerDex::MakeWriteAbs32},
+      {{4, TypeTag(kAnnotationsDirectoryToFieldAnnotationSet),
+        PoolTag(kAnnotionSet)},
+       &DisassemblerDex::MakeReadAnnotationsDirectoryToFieldAnnotationSet,
+       &DisassemblerDex::MakeWriteAbs32},
+      {{4, TypeTag(kAnnotationsDirectoryToMethodAnnotationSet),
+        PoolTag(kAnnotionSet)},
+       &DisassemblerDex::MakeReadAnnotationsDirectoryToMethodAnnotationSet,
        &DisassemblerDex::MakeWriteAbs32},
       {{4, TypeTag(kClassDefToClassData), PoolTag(kClassData)},
        &DisassemblerDex::MakeReadClassDefToClassData,
@@ -1008,6 +1110,84 @@ DisassemblerDex::MakeReadAnnotationSetRefListToAnnotationSet(offset_t lo,
   return std::make_unique<CachedItemListReferenceReader>(
       lo, hi, offsetof(dex::AnnotationSetRefItem, annotations_off),
       annotation_set_ref_list_offsets_, std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationsDirectoryToClassAnnotationSet(offset_t lo,
+                                                                  offset_t hi) {
+  // dex::AnnotationsDirectoryItem::class_annotations_off mapper.
+  auto mapper = base::BindRepeating(ReadTargetOffset32, image_);
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::AnnotationsDirectoryItem, class_annotations_off),
+      annotations_directory_item_offsets_, std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationsDirectoryToFieldId32(offset_t lo,
+                                                         offset_t hi) {
+  auto mapper = base::BindRepeating(
+      ReadTargetIndex<decltype(dex::FieldAnnotation::field_idx)>, image_,
+      field_map_item_, sizeof(dex::FieldIdItem));
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::FieldAnnotation, field_idx),
+      annotations_directory_item_field_annotation_offsets_, std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationsDirectoryToFieldAnnotationSet(offset_t lo,
+                                                                  offset_t hi) {
+  // dex::FieldAnnotation::annotations_off mapper.
+  auto mapper = base::BindRepeating(ReadTargetOffset32, image_);
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::FieldAnnotation, annotations_off),
+      annotations_directory_item_field_annotation_offsets_, std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationsDirectoryToMethodId32(offset_t lo,
+                                                          offset_t hi) {
+  auto mapper = base::BindRepeating(
+      ReadTargetIndex<decltype(dex::MethodAnnotation::method_idx)>, image_,
+      method_map_item_, sizeof(dex::MethodIdItem));
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::MethodAnnotation, method_idx),
+      annotations_directory_item_method_annotation_offsets_, std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationsDirectoryToMethodAnnotationSet(
+    offset_t lo,
+    offset_t hi) {
+  // dex::MethodAnnotation::annotations_off mapper.
+  auto mapper = base::BindRepeating(ReadTargetOffset32, image_);
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::MethodAnnotation, annotations_off),
+      annotations_directory_item_method_annotation_offsets_, std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationsDirectoryToParameterMethodId32(
+    offset_t lo,
+    offset_t hi) {
+  auto mapper = base::BindRepeating(
+      ReadTargetIndex<decltype(dex::ParameterAnnotation::method_idx)>, image_,
+      method_map_item_, sizeof(dex::MethodIdItem));
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::ParameterAnnotation, method_idx),
+      annotations_directory_item_parameter_annotation_offsets_,
+      std::move(mapper));
+}
+
+std::unique_ptr<ReferenceReader>
+DisassemblerDex::MakeReadAnnotationsDirectoryToParameterAnnotationSetRef(
+    offset_t lo,
+    offset_t hi) {
+  // dex::ParameterAnnotation::annotations_off mapper.
+  auto mapper = base::BindRepeating(ReadTargetOffset32, image_);
+  return std::make_unique<CachedItemListReferenceReader>(
+      lo, hi, offsetof(dex::ParameterAnnotation, annotations_off),
+      annotations_directory_item_parameter_annotation_offsets_,
+      std::move(mapper));
 }
 
 std::unique_ptr<ReferenceReader> DisassemblerDex::MakeReadCodeToStringId16(
@@ -1376,29 +1556,31 @@ bool DisassemblerDex::ParseHeader() {
   }
   if (map_item_map_.count(dex::kTypeAnnotationSetItem))
     annotation_set_map_item_ = *map_item_map_[dex::kTypeAnnotationSetItem];
-
-  // Iteratively extract variable length lists. Any failure would indicate
-  // invalid DEX. Success indicates that no structural problem is found.
-  // However, contained references data read from parsed items still require
-  // validation.
-  if (!ParseItemOffsets(image_, type_list_map_item_, sizeof(dex::TypeItem),
-                        &type_list_offsets_)) {
-    return false;
-  }
-  if (!ParseItemOffsets(image_, annotation_set_ref_list_map_item_,
-                        sizeof(dex::AnnotationSetRefItem),
-                        &annotation_set_ref_list_offsets_)) {
-    return false;
-  }
-  if (!ParseItemOffsets(image_, annotation_set_map_item_,
-                        sizeof(dex::AnnotationOffItem),
-                        &annotation_set_offsets_)) {
-    return false;
+  if (map_item_map_.count(dex::kTypeAnnotationsDirectoryItem)) {
+    annotations_directory_map_item_ =
+        *map_item_map_[dex::kTypeAnnotationsDirectoryItem];
   }
 
-  // Iteratively extract variable-length code items blocks. Any failure would
-  // indicate invalid DEX. Success indicates that no structural problem is
-  // found. However, contained instructions still need validation on use.
+  // Iteratively parse variable length lists, annotations directory items, and
+  // code items blocks. Any failure would indicate invalid DEX. Success
+  // indicates that no structural problem is found. However, contained
+  // references data read from parsed items still require validation.
+  if (!(ParseItemOffsets(image_, type_list_map_item_, sizeof(dex::TypeItem),
+                         &type_list_offsets_) &&
+        ParseItemOffsets(image_, annotation_set_ref_list_map_item_,
+                         sizeof(dex::AnnotationSetRefItem),
+                         &annotation_set_ref_list_offsets_) &&
+        ParseItemOffsets(image_, annotation_set_map_item_,
+                         sizeof(dex::AnnotationOffItem),
+                         &annotation_set_offsets_) &&
+        ParseAnnotationsDirectoryItems(
+            image_, annotations_directory_map_item_,
+            &annotations_directory_item_offsets_,
+            &annotations_directory_item_field_annotation_offsets_,
+            &annotations_directory_item_method_annotation_offsets_,
+            &annotations_directory_item_parameter_annotation_offsets_))) {
+    return false;
+  }
   CodeItemParser code_item_parser(image_);
   if (!code_item_parser.Init(code_map_item_))
     return false;

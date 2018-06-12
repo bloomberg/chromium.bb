@@ -73,21 +73,21 @@ class DisassemblerDex : public Disassembler {
     kMethodIdToProtoId,  // kProtoId
 
     kCodeToFieldId,  // kFieldId
-    // kAnnotationsDirectoryToFieldId,
+    kAnnotationsDirectoryToFieldId,
 
     kCodeToMethodId,  // kMethodId
-    // kAnnotationsDirectoryToMethodId,
-    // kAnnotationsDirectoryToParameterMethodId,
+    kAnnotationsDirectoryToMethodId,
+    kAnnotationsDirectoryToParameterMethodId,
 
     kProtoIdToParametersTypeList,  // kTypeList
     kClassDefToInterfacesTypeList,
 
-    // kAnnotationsDirectoryToParameterAnnotationSetRef,  // kAnnotationSetRef,
+    kAnnotationsDirectoryToParameterAnnotationSetRef,  // kAnnotationSetRef,
 
     kAnnotationSetRefListToAnnotationSet,  // kAnnotationSet,
-    // kAnnotationsDirectoryToClassAnnotationSet,
-    // kAnnotationsDirectoryToFieldAnnotationSet,
-    // kAnnotationsDirectoryToMethodAnnotationSet,
+    kAnnotationsDirectoryToClassAnnotationSet,
+    kAnnotationsDirectoryToFieldAnnotationSet,
+    kAnnotationsDirectoryToMethodAnnotationSet,
 
     kClassDefToClassData,  // kClassData
 
@@ -179,6 +179,23 @@ class DisassemblerDex : public Disassembler {
   std::unique_ptr<ReferenceReader> MakeReadAnnotationSetRefListToAnnotationSet(
       offset_t lo,
       offset_t hi);
+  std::unique_ptr<ReferenceReader>
+  MakeReadAnnotationsDirectoryToClassAnnotationSet(offset_t lo, offset_t hi);
+  std::unique_ptr<ReferenceReader> MakeReadAnnotationsDirectoryToFieldId32(
+      offset_t lo,
+      offset_t hi);
+  std::unique_ptr<ReferenceReader>
+  MakeReadAnnotationsDirectoryToFieldAnnotationSet(offset_t lo, offset_t hi);
+  std::unique_ptr<ReferenceReader> MakeReadAnnotationsDirectoryToMethodId32(
+      offset_t lo,
+      offset_t hi);
+  std::unique_ptr<ReferenceReader>
+  MakeReadAnnotationsDirectoryToMethodAnnotationSet(offset_t lo, offset_t hi);
+  std::unique_ptr<ReferenceReader>
+  MakeReadAnnotationsDirectoryToParameterMethodId32(offset_t lo, offset_t hi);
+  std::unique_ptr<ReferenceReader>
+  MakeReadAnnotationsDirectoryToParameterAnnotationSetRef(offset_t lo,
+                                                          offset_t hi);
   std::unique_ptr<ReferenceReader> MakeReadCodeToStringId16(offset_t lo,
                                                             offset_t hi);
   std::unique_ptr<ReferenceReader> MakeReadCodeToStringId32(offset_t lo,
@@ -236,12 +253,18 @@ class DisassemblerDex : public Disassembler {
   // Optionally supported (not all DEX files have these).
   dex::MapItem annotation_set_ref_list_map_item_ = {};
   dex::MapItem annotation_set_map_item_ = {};
+  dex::MapItem annotations_directory_map_item_ = {};
 
   // Sorted list of offsets of parsed items in |image_|.
   std::vector<offset_t> code_item_offsets_;
   std::vector<offset_t> type_list_offsets_;
   std::vector<offset_t> annotation_set_ref_list_offsets_;
   std::vector<offset_t> annotation_set_offsets_;
+  std::vector<offset_t> annotations_directory_item_offsets_;
+  std::vector<offset_t> annotations_directory_item_field_annotation_offsets_;
+  std::vector<offset_t> annotations_directory_item_method_annotation_offsets_;
+  std::vector<offset_t>
+      annotations_directory_item_parameter_annotation_offsets_;
 
   DISALLOW_COPY_AND_ASSIGN(DisassemblerDex);
 };
