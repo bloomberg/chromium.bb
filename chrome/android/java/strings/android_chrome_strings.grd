@@ -1254,7 +1254,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         SD Card <ph name="sd_card_number">%1$d<ex>2</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_PROMPT_ENABLED_TITLE" desc="Title for preference that allows the user to indicate whether they want to show a change downloads location prompt every time they download.">
-        Ask where to save each file before downloading
+        Ask where to save files
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_DIALOG_TITLE" desc="Title for the dialog that asks where the user wants to save the download file before the download begins.">
         Download file
