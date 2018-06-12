@@ -4278,8 +4278,6 @@ crbug.com/669329 http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.
 crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js [ Pass Failure Crash ]
 
 crbug.com/799619 [ Debug ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
-# The following test is flaky since 2018-06-08, timing out on chromium.webkit/WebKit Linux Trusty MSAN.
-crbug.com/851497 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
 
 crbug.com/769347 [ Mac ] fast/dom/inert/inert-node-is-uneditable.html [ Failure ]
 

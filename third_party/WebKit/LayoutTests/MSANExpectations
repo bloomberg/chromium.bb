@@ -113,3 +113,6 @@ crbug.com/838057 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/
 
 # Crashes on Linux Trusty MSAN
 crbug.com/842262 [ Linux ] virtual/enable_wasm/external/wpt/wasm/wasm_indexeddb_test.https.html [ Crash ]
+
+# The following test is flaky and timing out on chromium.webkit/WebKit Linux Trusty MSAN.
+crbug.com/851497 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
