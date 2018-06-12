@@ -15,6 +15,7 @@
 namespace cc {
 
 class LayerTreeHostImpl;
+struct ScrollNode;
 
 // Encapsulates gesture handling logic on the viewport layers. The "viewport"
 // is made up of two scrolling layers, the inner viewport (visual) and the
@@ -87,8 +88,9 @@ class CC_EXPORT Viewport {
 
   gfx::ScrollOffset MaxTotalScrollOffset() const;
 
-  LayerImpl* InnerScrollLayer() const;
-  LayerImpl* OuterScrollLayer() const;
+  ScrollNode* InnerScrollNode() const;
+  ScrollNode* OuterScrollNode() const;
+  ScrollTree& scroll_tree() const;
 
   void SnapPinchAnchorIfWithinMargin(const gfx::Point& anchor);
 

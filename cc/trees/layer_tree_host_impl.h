@@ -290,7 +290,7 @@ class CC_EXPORT LayerTreeHostImpl
   void SetCurrentBrowserControlsShownRatio(float offset) override;
   float CurrentBrowserControlsShownRatio() const override;
   void DidChangeBrowserControlsPosition() override;
-  bool HaveRootScrollLayer() const override;
+  bool HaveRootScrollNode() const override;
 
   void UpdateViewportContainerSizes();
 
@@ -735,6 +735,9 @@ class CC_EXPORT LayerTreeHostImpl
   BeginFrameTracker current_begin_frame_tracker_;
 
  private:
+  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info) const;
+  void CollectScrollbarUpdates(ScrollAndScaleSet* scroll_info) const;
+
   // Transforms viewport start point and scroll delta to local start point and
   // local delta, respectively. If the transformation of either the start or end
   // point of a scroll is clipped, the function returns false.

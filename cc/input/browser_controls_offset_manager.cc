@@ -189,7 +189,7 @@ void BrowserControlsOffsetManager::MainThreadHasStoppedFlinging() {
 
 gfx::Vector2dF BrowserControlsOffsetManager::Animate(
     base::TimeTicks monotonic_time) {
-  if (!has_animation() || !client_->HaveRootScrollLayer())
+  if (!has_animation() || !client_->HaveRootScrollNode())
     return gfx::Vector2dF();
 
   float old_offset = ContentTopOffset();
