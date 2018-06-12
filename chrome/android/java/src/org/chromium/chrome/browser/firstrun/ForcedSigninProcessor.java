@@ -112,7 +112,6 @@ public final class ForcedSigninProcessor {
     // TODO(bauerb): Once external dependencies reliably use policy to force sign-in,
     // consider removing the child account / EDU checks.
     public static void checkCanSignIn(final ChromeActivity activity) {
-        final Context appContext = activity.getApplicationContext();
         if (SigninManager.get().isForceSigninEnabled()) {
             ExternalAuthUtils.getInstance().canUseGooglePlayServices(
                     new UserRecoverableErrorHandler.ModalDialog(activity, false));
