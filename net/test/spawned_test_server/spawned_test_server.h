@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(USE_REMOTE_TEST_SERVER)
 #include "net/test/spawned_test_server/remote_test_server.h"
 #else
 #include "net/test/spawned_test_server/local_test_server.h"
@@ -15,7 +15,7 @@
 
 namespace net {
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(USE_REMOTE_TEST_SERVER)
 typedef RemoteTestServer SpawnedTestServer;
 #else
 typedef LocalTestServer SpawnedTestServer;

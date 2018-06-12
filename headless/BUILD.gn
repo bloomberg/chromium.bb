@@ -748,6 +748,7 @@ if (is_linux) {
 }
 
 test("headless_browsertests") {
+  configs += [ "//net:net_test_config" ]
   sources = [
     "lib/frame_id_browsertest.cc",
     "lib/headless_browser_browsertest.cc",
