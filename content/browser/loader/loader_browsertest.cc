@@ -871,6 +871,19 @@ class RequestDataBrowserTest : public ContentBrowserTest {
     return copy;
   }
 
+  void WaitForRequests(size_t count) {
+    while (true) {
+      base::RunLoop run_loop;
+      {
+        base::AutoLock auto_lock(requests_lock_);
+        if (requests_.size() == count)
+          return;
+        requests_closure_ = run_loop.QuitClosure();
+      }
+      run_loop.Run();
+    }
+  }
+
  private:
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
@@ -893,10 +906,13 @@ class RequestDataBrowserTest : public ContentBrowserTest {
   void RequestCreated(RequestData data) {
     base::AutoLock auto_lock(requests_lock_);
     requests_.push_back(data);
+    if (requests_closure_)
+      requests_closure_.Run();
   }
 
   base::Lock requests_lock_;
   std::vector<RequestData> requests_;
+  base::Closure requests_closure_;
   std::unique_ptr<URLLoaderInterceptor> interceptor_;
 };
 
@@ -928,6 +944,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, LinkRelPrefetch) {
   url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+  WaitForRequests(2u);
 
   auto requests = data();
   EXPECT_EQ(2u, requests.size());
@@ -944,6 +961,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataBrowserTest, LinkRelPrefetchReferrerPolicy) {
   url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+  WaitForRequests(2u);
 
   auto requests = data();
   EXPECT_EQ(2u, requests.size());
