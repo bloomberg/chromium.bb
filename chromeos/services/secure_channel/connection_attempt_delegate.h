@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/connection_details.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 
 namespace chromeos {
 
@@ -34,7 +36,7 @@ class ConnectionAttemptDelegate {
   // connection failures). |attempt_id| corresponds to the ID returned by
   // ConnectionAttempt::attempt_id().
   virtual void OnConnectionAttemptFinishedWithoutConnection(
-      const ConnectionDetails& connection_details) = 0;
+      const ConnectionAttemptDetails& connection_attempt_details) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionAttemptDelegate);

@@ -31,14 +31,20 @@ class FakeConnectionAttemptDelegate : public ConnectionAttemptDelegate {
     return connection_details_;
   }
 
+  const base::Optional<ConnectionAttemptDetails>& connection_attempt_details()
+      const {
+    return connection_attempt_details_;
+  }
+
  private:
   // ConnectionAttemptDelegate:
   void OnConnectionAttemptSucceeded(
       const ConnectionDetails& connection_details,
       std::unique_ptr<AuthenticatedChannel> authenticated_channel) override;
   void OnConnectionAttemptFinishedWithoutConnection(
-      const ConnectionDetails& connection_details) override;
+      const ConnectionAttemptDetails& connection_attempt_details) override;
 
+  base::Optional<ConnectionAttemptDetails> connection_attempt_details_;
   base::Optional<ConnectionDetails> connection_details_;
   std::unique_ptr<AuthenticatedChannel> authenticated_channel_;
 

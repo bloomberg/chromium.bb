@@ -14,6 +14,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
+#include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 
@@ -41,8 +42,8 @@ class ConnectionAttempt {
 
   virtual ~ConnectionAttempt() = default;
 
-  const ConnectionDetails& connection_details() const {
-    return connection_details_;
+  const ConnectionAttemptDetails& connection_attempt_details() const {
+    return connection_attempt_details_;
   }
 
   // Associates |request| with this attempt. If the attempt succeeds, |request|
@@ -69,8 +70,9 @@ class ConnectionAttempt {
 
  protected:
   ConnectionAttempt(ConnectionAttemptDelegate* delegate,
-                    const ConnectionDetails& connection_details)
-      : delegate_(delegate), connection_details_(connection_details) {
+                    const ConnectionAttemptDetails& connection_attempt_details)
+      : delegate_(delegate),
+        connection_attempt_details_(connection_attempt_details) {
     DCHECK(delegate);
   }
 
@@ -94,8 +96,9 @@ class ConnectionAttempt {
     }
 
     has_notified_delegate_ = true;
-    delegate_->OnConnectionAttemptSucceeded(connection_details_,
-                                            std::move(authenticated_channel));
+    delegate_->OnConnectionAttemptSucceeded(
+        connection_attempt_details_.GetAssociatedConnectionDetails(),
+        std::move(authenticated_channel));
   }
 
   void OnConnectionAttemptFinishedWithoutConnection() {
@@ -109,12 +112,12 @@ class ConnectionAttempt {
 
     has_notified_delegate_ = true;
     delegate_->OnConnectionAttemptFinishedWithoutConnection(
-        connection_details_);
+        connection_attempt_details_);
   }
 
  private:
   ConnectionAttemptDelegate* delegate_;
-  const ConnectionDetails connection_details_;
+  const ConnectionAttemptDetails connection_attempt_details_;
 
   bool has_notified_delegate_ = false;
 

@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/active_connection_manager.h"
+#include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/pending_connection_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
@@ -64,8 +65,7 @@ class SecureChannelImpl : public SecureChannelBase,
     ConnectionRequestWaitingForDisconnection(
         std::unique_ptr<ClientConnectionParameters>
             client_connection_parameters,
-        const std::string& local_device_id,
-        ConnectionRole connection_role,
+        ConnectionAttemptDetails connection_attempt_details,
         ConnectionPriority connection_priority);
     ConnectionRequestWaitingForDisconnection(
         ConnectionRequestWaitingForDisconnection&& other) noexcept;
@@ -74,8 +74,7 @@ class SecureChannelImpl : public SecureChannelBase,
     ~ConnectionRequestWaitingForDisconnection();
 
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters;
-    std::string local_device_id;
-    ConnectionRole connection_role;
+    ConnectionAttemptDetails connection_attempt_details;
     ConnectionPriority connection_priority;
   };
 
@@ -108,7 +107,8 @@ class SecureChannelImpl : public SecureChannelBase,
       const cryptauth::RemoteDevice& local_device,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionRole connection_role,
-      ConnectionPriority connection_priority);
+      ConnectionPriority connection_priority,
+      ConnectionMedium connection_medium);
   void RejectRequestForReason(
       ApiFunctionName api_fn_name,
       mojom::ConnectionAttemptFailureReason reason,

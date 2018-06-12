@@ -10,8 +10,11 @@
 
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
+#include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/connection_details.h"
+#include "chromeos/services/secure_channel/connection_medium.h"
 #include "chromeos/services/secure_channel/connection_role.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
@@ -36,15 +39,13 @@ class PendingConnectionManager {
 
   virtual ~PendingConnectionManager();
 
-  // Attempts a connection according to the provided |connection_details|. If
-  // other clients have requested a connection with the same details, a single
+  // Attempts a connection according to the provided parameters. If other
+  // clients have requested a connection with the same details, a single
   // connection attempt is created which combines all clients which would like
   // to connect to the same device.
   virtual void HandleConnectionRequest(
-      const ConnectionDetails& connection_details,
-      const std::string& local_device_id,
+      const ConnectionAttemptDetails& connection_attempt_details,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
-      ConnectionRole connection_role,
       ConnectionPriority connection_priority) = 0;
 
  protected:

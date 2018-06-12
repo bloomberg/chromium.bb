@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 
 namespace chromeos {
 
@@ -31,14 +31,14 @@ class ConnectToDeviceOperationBase
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionFailedCallback failure_callback,
-      const cryptauth::RemoteDeviceRef& device_to_connect_to,
+      const DeviceIdPair& device_id_pair,
       base::OnceClosure destructor_callback,
       scoped_refptr<base::TaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get())
       : ConnectToDeviceOperation<FailureDetailType>(
             std::move(success_callback),
             std::move(failure_callback)),
-        device_to_connect_to_(device_to_connect_to),
+        device_id_pair_(device_id_pair),
         destructor_callback_(std::move(destructor_callback)),
         task_runner_(task_runner),
         weak_ptr_factory_(this) {
@@ -49,25 +49,23 @@ class ConnectToDeviceOperationBase
         FROM_HERE,
         base::BindOnce(&ConnectToDeviceOperationBase<
                            FailureDetailType>::AttemptConnectionToDevice,
-                       weak_ptr_factory_.GetWeakPtr(), device_to_connect_to_));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~ConnectToDeviceOperationBase() override {
     std::move(destructor_callback_).Run();
   }
 
-  virtual void AttemptConnectionToDevice(
-      const cryptauth::RemoteDeviceRef& device_to_connect_to) = 0;
-  virtual void CancelConnectionAttemptToDevice(
-      const cryptauth::RemoteDeviceRef& device_to_cancel_connection_to) = 0;
+  virtual void AttemptConnectionToDevice() = 0;
+  virtual void CancelConnectionAttemptToDevice() = 0;
+
+  const DeviceIdPair& device_id_pair() const { return device_id_pair_; }
 
  private:
   // ConnectToDeviceOperation<FailureDetailType>:
-  void PerformCancellation() override {
-    CancelConnectionAttemptToDevice(device_to_connect_to_);
-  }
+  void PerformCancellation() override { CancelConnectionAttemptToDevice(); }
 
-  const cryptauth::RemoteDeviceRef device_to_connect_to_;
+  const DeviceIdPair& device_id_pair_;
   base::OnceClosure destructor_callback_;
   scoped_refptr<base::TaskRunner> task_runner_;
   base::WeakPtrFactory<ConnectToDeviceOperationBase> weak_ptr_factory_;

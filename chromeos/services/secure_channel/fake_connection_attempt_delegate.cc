@@ -25,9 +25,9 @@ void FakeConnectionAttemptDelegate::OnConnectionAttemptSucceeded(
 
 void FakeConnectionAttemptDelegate::
     OnConnectionAttemptFinishedWithoutConnection(
-        const ConnectionDetails& connection_details) {
-  DCHECK(!connection_details_);
-  connection_details_ = connection_details;
+        const ConnectionAttemptDetails& connection_attempt_details) {
+  DCHECK(!connection_attempt_details_);
+  connection_attempt_details_ = connection_attempt_details;
 }
 
 }  // namespace secure_channel

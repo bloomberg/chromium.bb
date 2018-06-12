@@ -44,10 +44,8 @@ PendingConnectionManagerImpl::PendingConnectionManagerImpl(Delegate* delegate)
 PendingConnectionManagerImpl::~PendingConnectionManagerImpl() = default;
 
 void PendingConnectionManagerImpl::HandleConnectionRequest(
-    const ConnectionDetails& connection_details,
-    const std::string& local_device_id,
+    const ConnectionAttemptDetails& connection_attempt_details,
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
-    ConnectionRole connection_role,
     ConnectionPriority connection_priority) {
   NOTIMPLEMENTED();
 }

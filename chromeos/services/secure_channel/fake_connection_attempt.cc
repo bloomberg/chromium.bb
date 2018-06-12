@@ -12,8 +12,8 @@ namespace secure_channel {
 
 FakeConnectionAttempt::FakeConnectionAttempt(
     ConnectionAttemptDelegate* delegate,
-    const ConnectionDetails& connection_details)
-    : ConnectionAttempt<std::string>(delegate, connection_details) {}
+    const ConnectionAttemptDetails& connection_attempt_details)
+    : ConnectionAttempt<std::string>(delegate, connection_attempt_details) {}
 
 FakeConnectionAttempt::~FakeConnectionAttempt() = default;
 

@@ -48,6 +48,8 @@ static_library("secure_channel") {
     "connection_attempt.h",
     "connection_attempt_base.h",
     "connection_attempt_delegate.h",
+    "connection_attempt_details.cc",
+    "connection_attempt_details.h",
     "connection_details.cc",
     "connection_details.h",
     "connection_medium.cc",

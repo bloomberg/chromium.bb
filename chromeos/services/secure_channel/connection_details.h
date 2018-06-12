@@ -15,7 +15,9 @@ namespace chromeos {
 namespace secure_channel {
 
 // Fields describing a connection. At any given time, at most one connection
-// with a given set of ConnectionDetails should exist.
+// with a given set of ConnectionDetails should exist. Note that for all host
+// devices (i.e., Android phones), a single device ID applies to every logged-in
+// user on the device.
 class ConnectionDetails {
  public:
   ConnectionDetails(const std::string& device_id,
