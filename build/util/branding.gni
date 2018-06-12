@@ -20,7 +20,8 @@ _branding_dictionary_template =
     "bundle_id = \"@MAC_BUNDLE_ID@\" " +
     "creator_code = \"@MAC_CREATOR_CODE@\" " +
     "installer_full_name = \"@PRODUCT_INSTALLER_FULLNAME@\" " +
-    "installer_short_name = \"@PRODUCT_INSTALLER_SHORTNAME@\" "
+    "installer_short_name = \"@PRODUCT_INSTALLER_SHORTNAME@\" " +
+    "team_id = \"@MAC_TEAM_ID@\" "
 
 _branding_file = "//chrome/app/theme/$branding_path_component/BRANDING"
 _result = exec_script("version.py",
@@ -41,4 +42,5 @@ chrome_product_installer_short_name = _result.installer_short_name
 if (is_mac) {
   chrome_mac_bundle_id = _result.bundle_id
   chrome_mac_creator_code = _result.creator_code
+  chrome_mac_team_id = _result.team_id
 }
