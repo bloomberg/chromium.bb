@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -99,9 +100,12 @@ class WebPackageRequestHandlerBrowserTest : public ContentBrowserTest {
   static scoped_refptr<net::X509Certificate> LoadCertificate(
       const std::string& cert_file) {
     base::ScopedAllowBlockingForTesting allow_io;
+    base::FilePath dir_path;
+    base::PathService::Get(content::DIR_TEST_DATA, &dir_path);
+    dir_path = dir_path.AppendASCII("htxg");
+
     return net::CreateCertificateChainFromFile(
-        net::GetTestCertsDirectory(), cert_file,
-        net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+        dir_path, cert_file, net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   }
 
   void InstallUrlInterceptor(const GURL& url, const std::string& data_path) {
@@ -161,19 +165,19 @@ class WebPackageRequestHandlerWithNetworkServiceBrowserTest
 IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, Simple) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/htxg/wildcard_example.org.public.pem.cbor");
+      "content/test/data/htxg/test.example.org.public.pem.cbor");
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
-                                               dummy_result, net::OK);
+  mock_cert_verifier_->AddResultForCertAndHost(
+      original_cert, "test.example.org", dummy_result, net::OK);
 
   embedded_test_server()->RegisterRequestMonitor(
       base::BindRepeating([](const net::test_server::HttpRequest& request) {
@@ -198,8 +202,9 @@ IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, Simple) {
                   SSLStatus::DISPLAYED_INSECURE_CONTENT));
   ASSERT_TRUE(entry->GetSSL().certificate);
 
-  // "wildcard_example.org.public.pem.cbor" is generated from "wildcard.pem". So
-  // the SHA256 of the certificates must match.
+  // "test.example.org.public.pem.cbor" is generated from
+  // "prime256v1-sha256.public.pem". So the SHA256 of the certificates must
+  // match.
   const net::SHA256HashValue fingerprint =
       net::X509Certificate::CalculateFingerprint256(
           entry->GetSSL().certificate->cert_buffer());
@@ -213,19 +218,19 @@ IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest,
                        InvalidContentType) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/htxg/wildcard_example.org.public.pem.cbor");
+      "content/test/data/htxg/test.example.org.public.pem.cbor");
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
-                                               dummy_result, net::OK);
+  mock_cert_verifier_->AddResultForCertAndHost(
+      original_cert, "test.example.org", dummy_result, net::OK);
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -259,20 +264,20 @@ IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, CertNotFound) {
 IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerWithNetworkServiceBrowserTest,
                        NetworkServiceEnabled) {
   InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/htxg/wildcard_example.org.public.pem.cbor");
+      GURL("https://test.example.org/cert.msg"),
+      "content/test/data/htxg/test.example.org.public.pem.cbor");
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier_->AddResultForCertAndHost(original_cert, "*.example.org",
-                                               dummy_result, net::OK);
+  mock_cert_verifier_->AddResultForCertAndHost(
+      original_cert, "test.example.org", dummy_result, net::OK);
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());

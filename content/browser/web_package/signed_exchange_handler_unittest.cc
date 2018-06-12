@@ -51,10 +51,13 @@ std::string GetTestFileContents(base::StringPiece name) {
 
 scoped_refptr<net::X509Certificate> LoadCertificate(
     const std::string& cert_file) {
+  base::FilePath dir_path;
+  base::PathService::Get(content::DIR_TEST_DATA, &dir_path);
+  dir_path = dir_path.AppendASCII("htxg");
+
   base::ScopedAllowBlockingForTesting allow_io;
   return net::CreateCertificateChainFromFile(
-      net::GetTestCertsDirectory(), cert_file,
-      net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+      dir_path, cert_file, net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
 }
 
 class MockSignedExchangeCertFetcherFactory
@@ -232,19 +235,19 @@ TEST_P(SignedExchangeHandlerTest, Empty) {
 TEST_P(SignedExchangeHandlerTest, Simple) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
+      GetTestFileContents("test.example.org.public.pem.cbor"));
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
@@ -277,19 +280,19 @@ TEST_P(SignedExchangeHandlerTest, Simple) {
 TEST_P(SignedExchangeHandlerTest, MimeType) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
+      GetTestFileContents("test.example.org.public.pem.cbor"));
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
@@ -366,21 +369,21 @@ TEST_P(SignedExchangeHandlerTest, CertSha256Mismatch) {
 TEST_P(SignedExchangeHandlerTest, VerifyCertFailure) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
+      GetTestFileContents("test.example.org.public.pem.cbor"));
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
-  // The certificate is for "*.example.com". But the request URL of the htxg
+  // The certificate is for "test.example.org". But the request URL of the htxg
   // file is "https://test.example.com/test/". So the certification verification
   // must fail.
   std::string contents =
@@ -399,18 +402,18 @@ TEST_P(SignedExchangeHandlerTest, VerifyCertFailure) {
 TEST_P(SignedExchangeHandlerTest, OCSPNotChecked) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
+      GetTestFileContents("test.example.org.public.pem.cbor"));
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::NOT_CHECKED;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
@@ -429,18 +432,18 @@ TEST_P(SignedExchangeHandlerTest, OCSPNotChecked) {
 TEST_P(SignedExchangeHandlerTest, OCSPNotProvided) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
+      GetTestFileContents("test.example.org.public.pem.cbor"));
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::MISSING;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
@@ -459,19 +462,19 @@ TEST_P(SignedExchangeHandlerTest, OCSPNotProvided) {
 TEST_P(SignedExchangeHandlerTest, OCSPInvalid) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
+      GetTestFileContents("test.example.org.public.pem.cbor"));
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status =
       net::OCSPVerifyResult::INVALID_DATE;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
@@ -490,12 +493,12 @@ TEST_P(SignedExchangeHandlerTest, OCSPInvalid) {
 TEST_P(SignedExchangeHandlerTest, OCSPRevoked) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
+      GetTestFileContents("test.example.org.public.pem.cbor"));
 
-  // Make the MockCertVerifier treat the certificate "wildcard.pem" as valid for
-  // "*.example.org".
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult dummy_result;
   dummy_result.verified_cert = original_cert;
   dummy_result.cert_status = net::OK;
@@ -503,7 +506,7 @@ TEST_P(SignedExchangeHandlerTest, OCSPRevoked) {
   dummy_result.ocsp_result.revocation_status =
       net::OCSPRevocationStatus::REVOKED;
   auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
-  mock_cert_verifier->AddResultForCertAndHost(original_cert, "*.example.org",
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
                                               dummy_result, net::OK);
   SetCertVerifier(std::move(mock_cert_verifier));
 
@@ -524,17 +527,17 @@ TEST_P(SignedExchangeHandlerTest, OCSPRevoked) {
 TEST_P(SignedExchangeHandlerTest, CertVerifierParams) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("wildcard_example.org.public.pem.cbor"));
+      GetTestFileContents("test.example.org.public.pem.cbor"));
 
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("wildcard.pem");
+      LoadCertificate("prime256v1-sha256.public.pem");
   net::CertVerifyResult fake_result;
   fake_result.verified_cert = original_cert;
   fake_result.cert_status = net::OK;
   fake_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   fake_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
 
-  // "wildcard_example.org.public.pem.cbor" has this dummy data instead of a
+  // "test.example.org.public.pem.cbor" has this dummy data instead of a
   // real OCSP response.
   constexpr base::StringPiece kExpectedOCSPDer = "OCSP";
 
