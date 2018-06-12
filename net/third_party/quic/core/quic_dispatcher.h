@@ -325,6 +325,18 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Return true if the blocked writer should be added to blocked list.
   virtual bool ShouldAddToBlockedList();
 
+  // Called to terminate a connection statelessly. Depending on |format|, either
+  // 1) send connection close with |error_code| and |error_details| and add
+  // connection to time wait list or 2) directly add connection to time wait
+  // list with |action|.
+  void StatelesslyTerminateConnection(
+      QuicConnectionId connection_id,
+      const ParsedQuicVersion& version,
+      PacketHeaderFormat format,
+      QuicErrorCode error_code,
+      const QuicString& error_details,
+      QuicTimeWaitListManager::TimeWaitAction action);
+
   // Save/Restore per packet context. Used by async stateless rejector.
   virtual std::unique_ptr<PerPacketContext> GetPerPacketContext() const;
   virtual void RestorePerPacketContext(

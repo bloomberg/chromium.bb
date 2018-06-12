@@ -250,6 +250,7 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       last_serialized_connection_id_(0),
       last_version_label_(0),
       last_packet_is_ietf_quic_(false),
+      last_header_form_(LONG_HEADER),
       version_(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
       supported_versions_(supported_versions),
       decrypter_level_(ENCRYPTION_NONE),
@@ -1016,7 +1017,7 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
 
   last_packet_is_ietf_quic_ = false;
   if (perspective_ == Perspective::IS_CLIENT) {
-    last_packet_is_ietf_quic_ = version_.transport_version == QUIC_VERSION_99;
+    last_packet_is_ietf_quic_ = version_.transport_version > QUIC_VERSION_43;
   } else if (GetQuicReloadableFlag(quic_respect_ietf_header) &&
              !reader.IsDoneReading()) {
     uint8_t type = reader.PeekByte();
@@ -1151,12 +1152,22 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
   }
 
   // Handle the payload.
-  if (!ProcessIetfFrameData(&reader, header)) {
-    DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessIetfFrameData sets the error.
-    DCHECK_NE("", detailed_error_);
-    QUIC_DLOG(WARNING) << ENDPOINT << "Unable to process frame data. Error: "
-                       << detailed_error_;
-    return false;
+  if (version_.transport_version == QUIC_VERSION_99) {
+    if (!ProcessIetfFrameData(&reader, header)) {
+      DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessIetfFrameData sets the error.
+      DCHECK_NE("", detailed_error_);
+      QUIC_DLOG(WARNING) << ENDPOINT << "Unable to process frame data. Error: "
+                         << detailed_error_;
+      return false;
+    }
+  } else {
+    if (!ProcessFrameData(&reader, header)) {
+      DCHECK_NE(QUIC_NO_ERROR, error_);  // ProcessFrameData sets the error.
+      DCHECK_NE("", detailed_error_);
+      QUIC_DLOG(WARNING) << ENDPOINT << "Unable to process frame data. Error: "
+                         << detailed_error_;
+      return false;
+    }
   }
 
   visitor_->OnPacketComplete();
@@ -1259,7 +1270,7 @@ bool QuicFramer::IsIetfStatelessResetPacket(
 
 bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
                                     QuicDataWriter* writer) {
-  if (transport_version() == QUIC_VERSION_99) {
+  if (transport_version() > QUIC_VERSION_43) {
     return AppendIetfPacketHeader(header, writer);
   }
   QUIC_DVLOG(1) << ENDPOINT << "Appending header: " << header;
@@ -1618,6 +1629,7 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
   }
   // Determine whether this is a long or short header.
   header->form = type & FLAGS_LONG_HEADER ? LONG_HEADER : SHORT_HEADER;
+  last_header_form_ = header->form;
   if (header->form == LONG_HEADER) {
     // Get long packet type.
     header->long_packet_type =
@@ -1633,6 +1645,15 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     header->version_flag = true;
     // Packet number is 4 bytes in long headers.
     header->packet_number_length = PACKET_4BYTE_PACKET_NUMBER;
+    // Long header packets received by client must include 8-byte source
+    // connection ID, and those received by server must include 8-byte
+    // destination connection ID.
+    header->destination_connection_id_length =
+        perspective_ == Perspective::IS_CLIENT ? PACKET_0BYTE_CONNECTION_ID
+                                               : PACKET_8BYTE_CONNECTION_ID;
+    header->source_connection_id_length = perspective_ == Perspective::IS_CLIENT
+                                              ? PACKET_8BYTE_CONNECTION_ID
+                                              : PACKET_0BYTE_CONNECTION_ID;
   } else {
     QUIC_DVLOG(1) << ENDPOINT << "Received IETF short header";
     QuicShortHeaderType short_type =
@@ -1713,6 +1734,12 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
       !reader->ReadConnectionId(&header->source_connection_id)) {
     set_detailed_error("Unable to read Source ConnectionId.");
     return false;
+  }
+
+  if (header->source_connection_id_length == PACKET_8BYTE_CONNECTION_ID) {
+    // Set destination connection ID to source connection ID.
+    DCHECK_EQ(0u, header->destination_connection_id);
+    header->destination_connection_id = header->source_connection_id;
   }
 
   if (header->form == SHORT_HEADER) {
@@ -4223,6 +4250,14 @@ bool QuicFramer::StartsWithChlo(QuicStreamId id,
 
   return strncmp(buf, reinterpret_cast<const char*>(&kCHLO), sizeof(kCHLO)) ==
          0;
+}
+
+PacketHeaderFormat QuicFramer::GetLastPacketFormat() const {
+  if (!last_packet_is_ietf_quic_) {
+    return GOOGLE_QUIC_PACKET;
+  }
+  return last_header_form_ == LONG_HEADER ? IETF_QUIC_LONG_HEADER_PACKET
+                                          : IETF_QUIC_SHORT_HEADER_PACKET;
 }
 
 bool QuicFramer::AppendIetfConnectionCloseFrame(

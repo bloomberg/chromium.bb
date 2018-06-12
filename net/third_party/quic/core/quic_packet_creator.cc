@@ -82,7 +82,7 @@ void QuicPacketCreator::SetMaxPacketLength(QuicByteCount length) {
 // maximum packet size if we stop sending version before it is serialized.
 void QuicPacketCreator::StopSendingVersion() {
   DCHECK(send_version_in_packet_);
-  DCHECK_NE(framer_->transport_version(), QUIC_VERSION_99);
+  DCHECK_LE(framer_->transport_version(), QUIC_VERSION_43);
   send_version_in_packet_ = false;
   if (packet_size_ > 0) {
     DCHECK_LT(kQuicVersionSize, packet_size_);
@@ -551,7 +551,7 @@ SerializedPacket QuicPacketCreator::NoPacket() {
 
 QuicConnectionIdLength QuicPacketCreator::GetDestinationConnectionIdLength()
     const {
-  if (framer_->transport_version() == QUIC_VERSION_99) {
+  if (framer_->transport_version() > QUIC_VERSION_43) {
     // Packets sent by client always include destination connection ID, and
     // those sent by the server do not include destination connection ID.
     return framer_->perspective() == Perspective::IS_CLIENT
@@ -701,7 +701,7 @@ bool QuicPacketCreator::IncludeNonceInPublicHeader() const {
 }
 
 bool QuicPacketCreator::IncludeVersionInHeader() const {
-  if (framer_->transport_version() == QUIC_VERSION_99) {
+  if (framer_->transport_version() > QUIC_VERSION_43) {
     return packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
   }
   return send_version_in_packet_;
@@ -739,7 +739,7 @@ void QuicPacketCreator::SetLongHeaderType(QuicLongHeaderType type) {
 }
 
 bool QuicPacketCreator::HasIetfLongHeader() const {
-  return framer_->transport_version() == QUIC_VERSION_99 &&
+  return framer_->transport_version() > QUIC_VERSION_43 &&
          packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
 }
 

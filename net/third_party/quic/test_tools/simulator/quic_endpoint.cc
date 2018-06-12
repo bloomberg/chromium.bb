@@ -12,6 +12,7 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_test_output.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
+#include "net/third_party/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/test_tools/simulator/simulator.h"
 
@@ -90,6 +91,10 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
   connection_.SetDecrypter(ENCRYPTION_FORWARD_SECURE,
                            QuicMakeUnique<NullDecrypter>(perspective));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  if (perspective == Perspective::IS_SERVER) {
+    // Skip version negotiation.
+    test::QuicConnectionPeer::SetNegotiatedVersion(&connection_);
+  }
   connection_.SetDataProducer(&producer_);
   connection_.SetSessionNotifier(this);
   if (connection_.session_decides_what_to_write()) {

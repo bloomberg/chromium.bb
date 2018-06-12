@@ -127,6 +127,7 @@ class QuicConnectionPeer {
   static void SetMaxTrackedPackets(QuicConnection* connection,
                                    QuicPacketCount max_tracked_packets);
   static void SetSessionDecidesWhatToWrite(QuicConnection* connection);
+  static void SetNegotiatedVersion(QuicConnection* connection);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);

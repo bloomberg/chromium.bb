@@ -307,5 +307,10 @@ void QuicConnectionPeer::SetSessionDecidesWhatToWrite(
   connection->packet_generator_.SetCanSetTransmissionType(true);
 }
 
+// static
+void QuicConnectionPeer::SetNegotiatedVersion(QuicConnection* connection) {
+  connection->version_negotiation_state_ = QuicConnection::NEGOTIATED_VERSION;
+}
+
 }  // namespace test
 }  // namespace quic

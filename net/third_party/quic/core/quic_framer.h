@@ -446,6 +446,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns true if |header| is considered as an stateless reset packet.
   bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
 
+  // Returns header wire format of last received packet.
+  PacketHeaderFormat GetLastPacketFormat() const;
+
   void set_validate_flags(bool value) { validate_flags_ = value; }
 
   Perspective perspective() const { return perspective_; }
@@ -746,6 +749,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicVersionLabel last_version_label_;
   // Whether last received packet is IETF QUIC packet.
   bool last_packet_is_ietf_quic_;
+  // Whether last received IETF QUIC packet has long or short header. Only used
+  // when last_packet_is_ietf_quic_ is true.
+  QuicIetfPacketHeaderForm last_header_form_;
   // Version of the protocol being used.
   ParsedQuicVersion version_;
   // This vector contains QUIC versions which we currently support.
