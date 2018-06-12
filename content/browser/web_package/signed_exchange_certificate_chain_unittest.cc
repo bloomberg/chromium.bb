@@ -195,8 +195,8 @@ TEST(SignedExchangeCertificateParseB1Test, HavingOCSPInSecondCert) {
 TEST(SignedExchangeCertificateParseB1Test, ParseGoldenFile) {
   base::FilePath path;
   base::PathService::Get(content::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("htxg").AppendASCII(
-      "wildcard_example.org.public.pem.cbor");
+  path =
+      path.AppendASCII("htxg").AppendASCII("test.example.org.public.pem.cbor");
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(path, &contents));
 
