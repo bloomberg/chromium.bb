@@ -145,7 +145,7 @@ void OomInterventionImpl::StartDetection(
 
 OomInterventionMetrics OomInterventionImpl::GetCurrentMemoryMetrics() {
   OomInterventionMetrics metrics = {};
-  metrics.current_blink_usage_kb = BlinkMemoryWorkloadCaculator();
+  metrics.current_blink_usage_kb = BlinkMemoryWorkloadCaculator() / 1024;
   uint64_t private_footprint, swap, vm_size;
   if (CalculateProcessMemoryFootprint(statm_fd_.get(), status_fd_.get(),
                                       &private_footprint, &swap, &vm_size)) {
