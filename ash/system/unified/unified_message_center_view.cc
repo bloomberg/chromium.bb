@@ -45,8 +45,11 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
+  scroller_->set_draw_overflow_indicator(false);
   AddChildView(scroller_);
 
+  message_list_view_->SetBorder(
+      views::CreateEmptyBorder(0, 0, kUnifiedNotificationCenterSpacing, 0));
   message_list_view_->set_use_fixed_height(false);
   message_list_view_->set_scroller(scroller_);
   scroller_->SetContents(message_list_view_);
@@ -71,9 +74,10 @@ void UnifiedMessageCenterView::SetNotifications(
       break;
     }
 
-    AddNotificationAt(*notification, index++);
+    AddNotificationAt(*notification, 0);
     message_center_->DisplayedNotification(
         notification->id(), message_center::DISPLAY_SOURCE_MESSAGE_CENTER);
+    index++;
   }
 
   Update();
@@ -81,6 +85,7 @@ void UnifiedMessageCenterView::SetNotifications(
 
 void UnifiedMessageCenterView::Layout() {
   scroller_->SetBounds(0, 0, width(), height());
+  ScrollToBottom();
 }
 
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
@@ -91,17 +96,17 @@ void UnifiedMessageCenterView::OnNotificationAdded(const std::string& id) {
   if (message_list_view_->GetNotificationCount() >= kMaxVisibleNotifications)
     return;
 
-  int index = 0;
   const NotificationList::Notifications& notifications =
       message_center_->GetVisibleNotifications();
   for (const Notification* notification : notifications) {
     if (notification->id() == id) {
-      AddNotificationAt(*notification, index);
+      AddNotificationAt(*notification,
+                        message_list_view_->GetNotificationCount());
       break;
     }
-    ++index;
   }
   Update();
+  ScrollToBottom();
 }
 
 void UnifiedMessageCenterView::OnNotificationRemoved(const std::string& id,
@@ -175,6 +180,12 @@ void UnifiedMessageCenterView::UpdateNotification(const std::string& id) {
       view->GetPinned() != old_pinned) {
     Update();
   }
+}
+
+void UnifiedMessageCenterView::ScrollToBottom() {
+  scroller_->ScrollToPosition(
+      const_cast<views::ScrollBar*>(scroller_->vertical_scroll_bar()),
+      scroller_->GetPreferredSize().height());
 }
 
 }  // namespace ash
