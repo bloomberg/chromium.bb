@@ -1386,6 +1386,8 @@ NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
 }
 
 void NavigationURLLoaderImpl::FollowRedirect(
+    const base::Optional<std::vector<std::string>>&
+        to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

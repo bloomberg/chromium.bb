@@ -228,7 +228,9 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   }
 
   // network::mojom::URLLoader methods
-  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+  void FollowRedirect(const base::Optional<std::vector<std::string>>&
+                          to_be_removed_request_headers,
+                      const base::Optional<net::HttpRequestHeaders>&
                           modified_request_headers) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
@@ -1082,6 +1084,8 @@ void InterceptionJob::Shutdown() {
 
 // URLLoader methods
 void InterceptionJob::FollowRedirect(
+    const base::Optional<std::vector<std::string>>&
+        to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
@@ -1102,7 +1106,7 @@ void InterceptionJob::FollowRedirect(
   }
   if (state_ == State::kRedirectReceived) {
     state_ = State::kRequestSent;
-    loader_->FollowRedirect(base::nullopt);
+    loader_->FollowRedirect(base::nullopt, base::nullopt);
     return;
   }
 

@@ -96,6 +96,8 @@ void SharedWorkerScriptLoader::LoadFromNetwork() {
 // the new URL.
 
 void SharedWorkerScriptLoader::FollowRedirect(
+    const base::Optional<std::vector<std::string>>&
+        to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "

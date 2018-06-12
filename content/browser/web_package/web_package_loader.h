@@ -76,7 +76,9 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   // network::mojom::URLLoader implementation
-  void FollowRedirect(const base::Optional<net::HttpRequestHeaders>&
+  void FollowRedirect(const base::Optional<std::vector<std::string>>&
+                          to_be_removed_request_headers,
+                      const base::Optional<net::HttpRequestHeaders>&
                           modified_request_headers) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,

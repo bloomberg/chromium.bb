@@ -395,11 +395,18 @@ URLLoader::~URLLoader() {
 }
 
 void URLLoader::FollowRedirect(
+    const base::Optional<std::vector<std::string>>&
+        to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   if (!url_request_) {
     NotifyCompleted(net::ERR_UNEXPECTED);
     // |this| may have been deleted.
     return;
+  }
+
+  if (to_be_removed_request_headers.has_value()) {
+    for (const std::string& key : to_be_removed_request_headers.value())
+      url_request_->RemoveRequestHeaderByName(key);
   }
 
   url_request_->FollowDeferredRedirect(modified_request_headers);

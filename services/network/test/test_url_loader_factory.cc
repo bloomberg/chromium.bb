@@ -131,9 +131,8 @@ bool TestURLLoaderFactory::CreateLoaderAndStartInternal(
   if (it == responses_.end())
     return false;
 
-  for (const auto& redirect : it->second.redirects) {
+  for (const auto& redirect : it->second.redirects)
     client->OnReceiveRedirect(redirect.first, redirect.second);
-  }
 
   if (it->second.status.error_code == net::OK) {
     client->OnReceiveResponse(it->second.head);

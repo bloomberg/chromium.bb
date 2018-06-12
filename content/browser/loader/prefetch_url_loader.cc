@@ -53,6 +53,8 @@ PrefetchURLLoader::PrefetchURLLoader(
 PrefetchURLLoader::~PrefetchURLLoader() = default;
 
 void PrefetchURLLoader::FollowRedirect(
+    const base::Optional<std::vector<std::string>>&
+        to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
@@ -64,7 +66,7 @@ void PrefetchURLLoader::FollowRedirect(
     return;
   }
 
-  loader_->FollowRedirect(base::nullopt);
+  loader_->FollowRedirect(base::nullopt, base::nullopt);
 }
 
 void PrefetchURLLoader::ProceedWithResponse() {

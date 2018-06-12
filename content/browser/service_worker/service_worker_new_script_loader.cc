@@ -136,6 +136,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 ServiceWorkerNewScriptLoader::~ServiceWorkerNewScriptLoader() = default;
 
 void ServiceWorkerNewScriptLoader::FollowRedirect(
+    const base::Optional<std::vector<std::string>>&
+        to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   // Resource requests for service worker scripts should not follow redirects.
   // See comments in OnReceiveRedirect().

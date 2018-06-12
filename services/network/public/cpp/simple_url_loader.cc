@@ -1362,7 +1362,7 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
   }
 
   final_url_ = redirect_info.new_url;
-  url_loader_->FollowRedirect(base::nullopt);
+  url_loader_->FollowRedirect(base::nullopt, base::nullopt);
 }
 
 void SimpleURLLoaderImpl::OnReceiveCachedMetadata(

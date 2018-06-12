@@ -180,7 +180,6 @@
 
 # Requires a replacement for ChromeNetworkDelegate.
 # http://crbug.com/841309
--VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromResourceRequest
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromSubresourceRequest
 

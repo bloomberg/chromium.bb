@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_COMMON_URL_LOADER_THROTTLE_H_
 #define CONTENT_PUBLIC_COMMON_URL_LOADER_THROTTLE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -88,7 +91,8 @@ class CONTENT_EXPORT URLLoaderThrottle {
   virtual void WillRedirectRequest(
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head,
-      bool* defer);
+      bool* defer,
+      std::vector<std::string>* to_be_removed_request_headers);
 
   // Called when the response headers and meta data are available.
   // TODO(776312): Migrate this URL to ResourceResponseHead.

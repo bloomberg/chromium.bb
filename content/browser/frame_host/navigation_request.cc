@@ -1392,7 +1392,7 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(*this);
 
-  loader_->FollowRedirect(base::nullopt);
+  loader_->FollowRedirect(base::nullopt, base::nullopt);
 }
 
 void NavigationRequest::OnFailureChecksComplete(

@@ -231,6 +231,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   bool response_intercepted_ = false;
 
+  std::vector<std::string> to_be_removed_request_headers_;
+
   base::WeakPtrFactory<ThrottlingURLLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
