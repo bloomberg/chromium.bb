@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import("../build/crashpad_buildconfig.gni")
+import("../build/crashpad_fuzzer_test.gni")
 
 if (crashpad_is_in_chromium) {
   import("//build/config/compiler/compiler.gni")
@@ -121,6 +122,16 @@ static_library("snapshot") {
       "linux/system_snapshot_linux.h",
       "linux/thread_snapshot_linux.cc",
       "linux/thread_snapshot_linux.h",
+      "sanitized/memory_snapshot_sanitized.cc",
+      "sanitized/memory_snapshot_sanitized.h",
+      "sanitized/module_snapshot_sanitized.cc",
+      "sanitized/module_snapshot_sanitized.h",
+      "sanitized/process_snapshot_sanitized.cc",
+      "sanitized/process_snapshot_sanitized.h",
+      "sanitized/sanitization_information.cc",
+      "sanitized/sanitization_information.h",
+      "sanitized/thread_snapshot_sanitized.cc",
+      "sanitized/thread_snapshot_sanitized.h",
     ]
   }
 
@@ -238,6 +249,17 @@ if (crashpad_is_win) {
   }
 }
 
+fuzzer_test("elf_image_reader_fuzzer") {
+  sources = [
+    "elf/elf_image_reader_fuzzer.cc",
+  ]
+
+  deps = [
+    ":snapshot",
+    "../third_party/mini_chromium:base",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
 
@@ -317,6 +339,8 @@ source_set("snapshot_test") {
       "linux/exception_snapshot_linux_test.cc",
       "linux/process_reader_linux_test.cc",
       "linux/system_snapshot_linux_test.cc",
+      "sanitized/process_snapshot_sanitized_test.cc",
+      "sanitized/sanitization_information_test.cc",
     ]
   } else {
     sources += [ "crashpad_info_client_options_test.cc" ]
