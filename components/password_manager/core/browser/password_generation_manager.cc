@@ -120,7 +120,7 @@ bool PasswordGenerationManager::IsGenerationEnabled(bool log_debug_data) const {
     return false;
   }
 
-  if (client_->GetPasswordSyncState() != NOT_SYNCING_PASSWORDS)
+  if (client_->GetPasswordSyncState() != NOT_SYNCING)
     return true;
   if (logger)
     logger->LogMessage(Logger::STRING_GENERATION_DISABLED_NO_SYNC);

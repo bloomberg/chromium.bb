@@ -35,7 +35,7 @@
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordManagerMetricsRecorder;
 using password_manager::PasswordStore;
-using password_manager::PasswordSyncState;
+using password_manager::SyncState;
 
 namespace {
 
@@ -70,7 +70,7 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
 
 IOSChromePasswordManagerClient::~IOSChromePasswordManagerClient() = default;
 
-PasswordSyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
+SyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(delegate_.browserState);
   return password_manager_util::GetPasswordSyncState(sync_service);

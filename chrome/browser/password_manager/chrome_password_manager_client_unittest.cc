@@ -312,15 +312,13 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())
       .WillRepeatedly(Return(active_types));
 
-  EXPECT_EQ(password_manager::NOT_SYNCING_PASSWORDS,
-            client->GetPasswordSyncState());
+  EXPECT_EQ(password_manager::NOT_SYNCING, client->GetPasswordSyncState());
 
   // Again, without a custom passphrase.
   EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
 
-  EXPECT_EQ(password_manager::NOT_SYNCING_PASSWORDS,
-            client->GetPasswordSyncState());
+  EXPECT_EQ(password_manager::NOT_SYNCING, client->GetPasswordSyncState());
 }
 
 TEST_F(ChromePasswordManagerClientTest, IsIncognitoTest) {
