@@ -54,12 +54,16 @@ bool operator!=(const CollectionImage& lhs, const CollectionImage& rhs) {
 }
 
 CollectionImage CollectionImage::CreateFromProto(
-    std::string collection_id,
-    const ntp::background::Image& image) {
+    const std::string& collection_id,
+    const ntp::background::Image& image,
+    const std::string& default_image_options) {
   CollectionImage collection_image;
   collection_image.collection_id = collection_id;
   collection_image.asset_id = image.asset_id();
-  collection_image.image_url = GURL(image.image_url());
+  collection_image.image_url = GURL(
+      image.image_url() + ((image.image_url().find('=') == std::string::npos)
+                               ? default_image_options
+                               : std::string("")));
   for (const auto& attribution : image.attribution()) {
     collection_image.attribution.push_back(attribution.text());
   }
