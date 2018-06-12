@@ -161,7 +161,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     }
 
     /** @return String to display for the file. */
-    abstract String getDisplayFileName();
+    public abstract String getDisplayFileName();
 
     /** @return Size of the file. */
     abstract long getFileSize();

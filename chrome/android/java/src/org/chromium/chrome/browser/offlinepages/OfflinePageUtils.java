@@ -393,8 +393,9 @@ public class OfflinePageUtils {
         // We share temporary pages by content URI to prevent unanticipated side effects in the
         // public directory. Temporary pages are ones not in a user requested download namespace.
         Uri uri;
-        if (!offlinePageBridge.isUserRequestedDownloadNamespace(
-                    offlinePage.getClientId().getNamespace())) {
+        boolean isPageUserRequested = offlinePageBridge.isUserRequestedDownloadNamespace(
+                offlinePage.getClientId().getNamespace());
+        if (!isPageUserRequested) {
             File file = new File(offlinePage.getFilePath());
             uri = (new FileProviderHelper()).getContentUriFromFile(file);
         } else {
@@ -402,6 +403,15 @@ public class OfflinePageUtils {
         }
 
         if (!isOfflinePageShareable(offlinePageBridge, offlinePage, uri)) return false;
+
+        if (!isPageUserRequested || !offlinePageBridge.isInPrivateDirectory(offlinePath)) {
+            // Share pages temporary pages and pages already in a public location.
+            final String pageTitle = tab.getTitle();
+            final File offlinePageFile = new File(offlinePath);
+            sharePage(activity, uri.toString(), pageTitle, offlinePath, offlinePageFile,
+                    shareCallback);
+            return true;
+        }
 
         // The file access permission is needed since we may need to publish the archive file
         // if it resides in internal directory.
@@ -411,17 +421,9 @@ public class OfflinePageUtils {
                 return;
             }
 
-            // If the page is not in a public location, we must publish it before sharing it.
-            if (offlinePageBridge.isInPrivateDirectory(offlinePath)) {
-                publishThenShareInternalPage(
-                        activity, offlinePageBridge, offlinePage, shareCallback);
-                return;
-            }
-
-            final String pageTitle = tab.getTitle();
-            final File offlinePageFile = new File(offlinePath);
-            sharePage(activity, uri.toString(), pageTitle, offlinePath, offlinePageFile,
-                    shareCallback);
+            // If a user requested page is not in a public location, we must publish it before
+            // sharing it.
+            publishThenShareInternalPage(activity, offlinePageBridge, offlinePage, shareCallback);
         });
 
         return true;
