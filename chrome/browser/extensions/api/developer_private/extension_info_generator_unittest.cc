@@ -450,6 +450,20 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoLockedAllUrls) {
   EXPECT_FALSE(info->file_access.is_active);
 }
 
+// Tests that file:// access checkbox shows up for extensions with activeTab
+// permission. See crbug.com/850643.
+TEST_F(ExtensionInfoGeneratorUnitTest, ActiveTabFileUrls) {
+  scoped_refptr<const Extension> extension =
+      CreateExtension("activeTab", ListBuilder().Append("activeTab").Build(),
+                      Manifest::INTERNAL);
+  std::unique_ptr<developer::ExtensionInfo> info =
+      GenerateExtensionInfo(extension->id());
+
+  EXPECT_TRUE(extension->wants_file_access());
+  EXPECT_TRUE(info->file_access.is_enabled);
+  EXPECT_FALSE(info->file_access.is_active);
+}
+
 // Tests that blacklisted extensions are returned by the ExtensionInfoGenerator.
 TEST_F(ExtensionInfoGeneratorUnitTest, Blacklisted) {
   const scoped_refptr<const Extension> extension1 = CreateExtension(
