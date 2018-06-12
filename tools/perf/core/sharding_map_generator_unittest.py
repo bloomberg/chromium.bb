@@ -44,7 +44,8 @@ class TestShardingMapGenerator(unittest.TestCase):
         json.dump(sharding_map, f)
       with os.fdopen(fd_test_data, 'w') as f:
         json.dump(timing_list, f)
-      results = sharding_map_generator.test_sharding_map(map_path, test_path)
+      results = sharding_map_generator.test_sharding_map(map_path,
+          test_path, all_stories)
       self.assertEqual(results['0'], 173)
       self.assertEqual(results['1'], 120)
       self.assertEqual(results['2'], 140)
