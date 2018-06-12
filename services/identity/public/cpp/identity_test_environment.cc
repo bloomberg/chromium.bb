@@ -109,6 +109,18 @@ void IdentityTestEnvironment::SetRefreshTokenForAccount(
       internals_->token_service(), internals_->identity_manager(), account_id);
 }
 
+void IdentityTestEnvironment::SetInvalidRefreshTokenForAccount(
+    const std::string& account_id) {
+  identity::SetInvalidRefreshTokenForAccount(
+      internals_->token_service(), internals_->identity_manager(), account_id);
+}
+
+void IdentityTestEnvironment::RemoveRefreshTokenForAccount(
+    const std::string& account_id) {
+  identity::RemoveRefreshTokenForAccount(
+      internals_->token_service(), internals_->identity_manager(), account_id);
+}
+
 std::string IdentityTestEnvironment::MakePrimaryAccountAvailable(
     const std::string& email) {
   return identity::MakePrimaryAccountAvailable(
@@ -140,6 +152,11 @@ void IdentityTestEnvironment::
         const GoogleServiceAuthError& error) {
   WaitForAccessTokenRequestIfNecessary();
   internals_->token_service()->IssueErrorForAllPendingRequests(error);
+}
+
+void IdentityTestEnvironment::SetCallbackForNextAccessTokenRequest(
+    base::OnceClosure callback) {
+  on_access_token_requested_callback_ = std::move(callback);
 }
 
 void IdentityTestEnvironment::OnAccessTokenRequested(
