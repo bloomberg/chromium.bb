@@ -685,7 +685,13 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
         break;
       default:
         // The default clause is expected to be reached when new enum types are
-        // added.
+        // added. Log, but only once.
+        {
+          static bool log_once = false;
+          LOG_IF(ERROR, !log_once) << "New WebRTC enum counter found: "
+                                   << static_cast<int>(counter_type);
+          log_once = true;
+        }
         break;
     }
   }
@@ -726,9 +732,18 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
         base::UmaHistogramSparse("WebRTC.PeerConnection.SrtcpUnprotectError",
                                  counter);
         break;
+      case webrtc::kEnumCounterUsagePattern:
+        base::UmaHistogramSparse("WebRTC.PeerConnection.UsagePattern", counter);
+        break;
       default:
-        // The default clause is expected to reach when new enum types are
-        // added.
+        // The default clause is expected to be reached when new enum types are
+        // added. Log, but only once.
+        {
+          static bool log_once = false;
+          LOG_IF(ERROR, !log_once) << "New WebRTC sparse enum counter found: "
+                                   << static_cast<int>(counter_type);
+          log_once = true;
+        }
         break;
     }
   }
@@ -751,8 +766,14 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
                                  value);
         break;
       default:
-        // The default clause is expected to reach when new enum types are
-        // added.
+        // The default clause is expected to be reached when new enum types are
+        // added. Log, but only once.
+        {
+          static bool log_once = false;
+          LOG_IF(ERROR, !log_once) << "New WebRTC histogram counter found: "
+                                   << static_cast<int>(type);
+          log_once = true;
+        }
         break;
     }
   }
