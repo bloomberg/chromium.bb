@@ -87,6 +87,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
     kDontCheck,
   };
 
+  bool IsFocused() const;
+
   // Builds the CollectedClientData[1] dictionary with the given values,
   // serializes it to JSON, and returns the resulting string.
   // [1] https://w3c.github.io/webauthn/#dictdef-collectedclientdata
@@ -108,7 +110,6 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
 
   // WebContentsObserver:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
   // Callback to handle the async response from a U2fDevice.
   void OnRegisterResponse(
@@ -141,7 +142,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
       webauth::mojom::GetAssertionAuthenticatorResponsePtr response);
   void Cleanup();
 
-  RenderFrameHost* render_frame_host_;
+  RenderFrameHost* const render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
   base::flat_set<device::FidoTransportProtocol> protocols_;
 
