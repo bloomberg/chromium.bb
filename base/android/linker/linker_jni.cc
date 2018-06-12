@@ -398,7 +398,7 @@ Java_org_chromium_base_library_1loader_Linker_nativeGetRandomBaseLoadAddress(
 // Add a zip archive file path to the context's current search path
 // list. Making it possible to load libraries directly from it.
 JNI_GENERATOR_EXPORT bool
-Java_org_chromium_base_library_1loader_LegacyLinker_nativeAddZipArchivePath(
+Java_org_chromium_base_library_1loader_Linker_nativeAddZipArchivePath(
     JNIEnv* env,
     jclass clazz,
     jstring apk_path_obj) {
@@ -428,7 +428,7 @@ Java_org_chromium_base_library_1loader_LegacyLinker_nativeAddZipArchivePath(
 // with the Java side.
 // Return true on success.
 JNI_GENERATOR_EXPORT bool
-Java_org_chromium_base_library_1loader_LegacyLinker_nativeLoadLibrary(
+Java_org_chromium_base_library_1loader_Linker_nativeLoadLibrary(
     JNIEnv* env,
     jclass clazz,
     jstring lib_name_obj,
@@ -491,7 +491,7 @@ static JavaCallbackBindings_class s_java_callback_bindings;
 // and is ignored here.
 // |arg| is a pointer to an allocated crazy_callback_t, deleted after use.
 JNI_GENERATOR_EXPORT void
-Java_org_chromium_base_library_1loader_LegacyLinker_nativeRunCallbackOnUiThread(
+Java_org_chromium_base_library_1loader_Linker_nativeRunCallbackOnUiThread(
     JNIEnv* env,
     jclass clazz,
     jlong arg) {
@@ -553,7 +553,7 @@ static bool PostForLaterExecution(crazy_callback_t* callback_request,
 }
 
 JNI_GENERATOR_EXPORT jboolean
-Java_org_chromium_base_library_1loader_LegacyLinker_nativeCreateSharedRelro(
+Java_org_chromium_base_library_1loader_Linker_nativeCreateSharedRelro(
     JNIEnv* env,
     jclass clazz,
     jstring library_name,
@@ -594,7 +594,7 @@ Java_org_chromium_base_library_1loader_LegacyLinker_nativeCreateSharedRelro(
 }
 
 JNI_GENERATOR_EXPORT jboolean
-Java_org_chromium_base_library_1loader_LegacyLinker_nativeUseSharedRelro(
+Java_org_chromium_base_library_1loader_Linker_nativeUseSharedRelro(
     JNIEnv* env,
     jclass clazz,
     jstring library_name,
@@ -631,18 +631,7 @@ Java_org_chromium_base_library_1loader_LegacyLinker_nativeUseSharedRelro(
   return true;
 }
 
-// JNI_OnLoad() initialization hook.
 static bool LinkerJNIInit(JavaVM* vm, JNIEnv* env) {
-  // Find LibInfo field ids.
-  LOG_INFO("Caching field IDs");
-  if (!s_lib_info_fields.Init(env)) {
-    return false;
-  }
-
-  return true;
-}
-
-static bool LegacyLinkerJNIInit(JavaVM* vm, JNIEnv* env) {
   LOG_INFO("Entering");
 
   // Initialize SDK version info.
@@ -650,9 +639,15 @@ static bool LegacyLinkerJNIInit(JavaVM* vm, JNIEnv* env) {
   if (!InitSDKVersionInfo(env))
     return false;
 
+  // Find LibInfo field ids.
+  LOG_INFO("Caching field IDs");
+  if (!s_lib_info_fields.Init(env)) {
+    return false;
+  }
+
   // Register native methods.
   jclass linker_class;
-  if (!InitClassReference(env, "org/chromium/base/library_loader/LegacyLinker",
+  if (!InitClassReference(env, "org/chromium/base/library_loader/Linker",
                           &linker_class))
     return false;
 
@@ -686,7 +681,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   }
 
   // Initialize linker base and implementations.
-  if (!LinkerJNIInit(vm, env) || !LegacyLinkerJNIInit(vm, env)) {
+  if (!LinkerJNIInit(vm, env)) {
     return -1;
   }
 
