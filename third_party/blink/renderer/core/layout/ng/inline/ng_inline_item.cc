@@ -193,7 +193,7 @@ void NGInlineItem::SetFontOrientation(
   // Ensure the value can fit in the bit field.
   DCHECK_LT(static_cast<unsigned>(orientation), 1u << 1);
 
-  render_orientation_ = orientation;
+  render_orientation_ = orientation != 0;
 }
 
 unsigned NGInlineItem::PopulateItemsFromRun(
