@@ -4,11 +4,7 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import org.chromium.base.annotations.CalledByNative;
-
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Methods to provide most recent urls, titles and thumbnails.
@@ -28,30 +24,6 @@ public interface MostVisitedSites {
          * @param siteUrl URL of site with newly-cached icon.
          */
         void onIconMadeAvailable(String siteUrl);
-    }
-
-    /**
-     * An interface to provide {@link MostVisitedSites} with platform-specific home page data.
-     */
-    interface HomePageClient {
-        /**
-         * @return True if a home page is active and set.
-         */
-        @CalledByNative("HomePageClient")
-        boolean isHomePageEnabled();
-
-        /**
-         * @return True if the new tab page was set as home page.
-         */
-        @CalledByNative("HomePageClient")
-        boolean isNewTabPageUsedAsHomePage();
-
-        /**
-         * @return The raw URL of the currently set home page.
-         */
-        @CalledByNative("HomePageClient")
-        @Nullable
-        String getHomePageUrl();
     }
 
     /**
@@ -92,10 +64,7 @@ public interface MostVisitedSites {
 
     /**
      * Records the opening of a Most Visited Item.
-     * @param index The index of the item that was opened.
-     * @param type The visual type of the item as defined in {@link TileVisualType}.
-     * @param titleSource The {@link TileTitleSource} where the item's title originated from.
-     * @param source The {@link TileSource} that generated this item.
+     * @param tile Object holding the details of a tile.
      */
     void recordOpenedMostVisitedItem(Tile tile);
 }

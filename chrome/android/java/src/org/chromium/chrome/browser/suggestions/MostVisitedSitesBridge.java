@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNIAdditionalImport;
-import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
@@ -16,9 +14,7 @@ import java.util.List;
 /**
  * Methods to bridge into native history to provide most recent urls, titles and thumbnails.
  */
-@JNIAdditionalImport(MostVisitedSites.class) // Needed for the Observer usage in the native calls.
-public class MostVisitedSitesBridge
-        implements MostVisitedSites, HomepageManager.HomepageStateListener {
+public class MostVisitedSitesBridge implements MostVisitedSites {
     /**
      * Maximum number of tiles that is explicitly supported. UMA relies on this value, so even if
      * the UI supports it, getting more can raise unexpected issues.
@@ -43,8 +39,6 @@ public class MostVisitedSitesBridge
      */
     @Override
     public void destroy() {
-        // Stop listening even if it was not started in the first place. (Handled without errors.)
-        HomepageManager.getInstance().removeListener(this);
         assert mNativeMostVisitedSitesBridge != 0;
         nativeDestroy(mNativeMostVisitedSitesBridge);
         mNativeMostVisitedSitesBridge = 0;
@@ -85,16 +79,6 @@ public class MostVisitedSitesBridge
         nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, tile.getIndex(),
                 tile.getType(), tile.getTitleSource(), tile.getSource(),
                 tile.getData().dataGenerationTime.getTime());
-    }
-
-    @Override
-    public void onHomepageStateUpdated() {
-        assert mNativeMostVisitedSitesBridge != 0;
-        // Ensure even a blacklisted home page can be set as tile when (re-)enabling it.
-        if (HomepageManager.isHomepageEnabled()) {
-            removeBlacklistedUrl(HomepageManager.getHomepageUri());
-        }
-        nativeOnHomePageStateChanged(mNativeMostVisitedSitesBridge);
     }
 
     /**
@@ -155,11 +139,8 @@ public class MostVisitedSitesBridge
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeMostVisitedSitesBridge);
-    private native void nativeOnHomePageStateChanged(long nativeMostVisitedSitesBridge);
     private native void nativeSetObserver(
             long nativeMostVisitedSitesBridge, MostVisitedSitesBridge observer, int numSites);
-    private native void nativeSetHomePageClient(
-            long nativeMostVisitedSitesBridge, MostVisitedSites.HomePageClient homePageClient);
     private native void nativeAddOrRemoveBlacklistedUrl(
             long nativeMostVisitedSitesBridge, String url, boolean addUrl);
     private native void nativeRecordPageImpression(

@@ -28,7 +28,6 @@
 #include "components/ntp_tiles/section_type.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "jni/MostVisitedSitesBridge_jni.h"
-#include "jni/MostVisitedSites_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::AttachCurrentThread;
@@ -46,96 +45,6 @@ using ntp_tiles::SectionType;
 using ntp_tiles::TileTitleSource;
 using ntp_tiles::TileSource;
 using ntp_tiles::TileVisualType;
-
-namespace {
-
-class JavaHomePageClient : public MostVisitedSites::HomePageClient {
- public:
-  JavaHomePageClient(JNIEnv* env,
-                     const JavaParamRef<jobject>& obj,
-                     Profile* profile);
-
-  bool IsHomePageEnabled() const override;
-  bool IsNewTabPageUsedAsHomePage() const override;
-  GURL GetHomePageUrl() const override;
-  void QueryHomePageTitle(TitleCallback title_callback) override;
-
- private:
-  void OnTitleEntryFound(TitleCallback title_callback,
-                         bool success,
-                         const history::URLRow& row,
-                         const history::VisitVector& visits);
-
-  ScopedJavaGlobalRef<jobject> client_;
-  Profile* profile_;
-
-  // Used in loading titles.
-  base::CancelableTaskTracker task_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(JavaHomePageClient);
-};
-
-JavaHomePageClient::JavaHomePageClient(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj,
-                                       Profile* profile)
-    : client_(env, obj), profile_(profile) {
-  DCHECK(profile);
-}
-
-void JavaHomePageClient::QueryHomePageTitle(TitleCallback title_callback) {
-  DCHECK(!title_callback.is_null());
-  GURL url = GetHomePageUrl();
-  if (url.is_empty()) {
-    std::move(title_callback).Run(base::nullopt);
-    return;
-  }
-  history::HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfileIfExists(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  if (!history_service) {
-    std::move(title_callback).Run(base::nullopt);
-    return;
-  }
-  // If the client is destroyed, the tracker will cancel this task automatically
-  // and the callback will not be called. Therefore, base::Unretained works.
-  history_service->QueryURL(
-      url,
-      /*want_visits=*/false,
-      base::BindOnce(&JavaHomePageClient::OnTitleEntryFound,
-                     base::Unretained(this), std::move(title_callback)),
-      &task_tracker_);
-}
-
-void JavaHomePageClient::OnTitleEntryFound(TitleCallback title_callback,
-                                           bool success,
-                                           const history::URLRow& row,
-                                           const history::VisitVector& visits) {
-  if (!success) {
-    std::move(title_callback).Run(base::nullopt);
-    return;
-  }
-  std::move(title_callback).Run(row.title());
-}
-
-bool JavaHomePageClient::IsHomePageEnabled() const {
-  return Java_HomePageClient_isHomePageEnabled(AttachCurrentThread(), client_);
-}
-
-bool JavaHomePageClient::IsNewTabPageUsedAsHomePage() const {
-  return Java_HomePageClient_isNewTabPageUsedAsHomePage(AttachCurrentThread(),
-                                                        client_);
-}
-
-GURL JavaHomePageClient::GetHomePageUrl() const {
-  base::android::ScopedJavaLocalRef<jstring> url =
-      Java_HomePageClient_getHomePageUrl(AttachCurrentThread(), client_);
-  if (url.is_null()) {
-    return GURL();
-  }
-  return GURL(ConvertJavaStringToUTF8(url));
-}
-
-}  // namespace
 
 class MostVisitedSitesBridge::JavaObserver : public MostVisitedSites::Observer {
  public:
@@ -212,12 +121,6 @@ void MostVisitedSitesBridge::Destroy(JNIEnv* env,
   delete this;
 }
 
-void MostVisitedSitesBridge::OnHomePageStateChanged(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  most_visited_->OnHomePageStateChanged();
-}
-
 void MostVisitedSitesBridge::SetObserver(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -225,14 +128,6 @@ void MostVisitedSitesBridge::SetObserver(
     jint num_sites) {
   java_observer_.reset(new JavaObserver(env, j_observer));
   most_visited_->SetMostVisitedURLsObserver(java_observer_.get(), num_sites);
-}
-
-void MostVisitedSitesBridge::SetHomePageClient(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jobject>& j_client) {
-  most_visited_->SetHomePageClient(
-      std::make_unique<JavaHomePageClient>(env, j_client, profile_));
 }
 
 void MostVisitedSitesBridge::AddOrRemoveBlacklistedUrl(

@@ -62,15 +62,6 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
          url1.path_piece() == url2.path_piece();
 }
 
-bool HasHomeTile(const NTPTilesVector& tiles) {
-  for (const auto& tile : tiles) {
-    if (tile.source == TileSource::HOMEPAGE) {
-      return true;
-    }
-  }
-  return false;
-}
-
 std::string StripFirstGenericPrefix(const std::string& host) {
   for (const char* prefix : kKnownGenericPagePrefixes) {
     if (base::StartsWith(host, prefix, base::CompareCase::INSENSITIVE_ASCII)) {
@@ -143,17 +134,9 @@ bool MostVisitedSites::DoesSourceExist(TileSource source) const {
       return popular_sites_ != nullptr;
     case TileSource::WHITELIST:
       return supervisor_ != nullptr;
-    case TileSource::HOMEPAGE:
-      return home_page_client_ != nullptr;
   }
   NOTREACHED();
   return false;
-}
-
-void MostVisitedSites::SetHomePageClient(
-    std::unique_ptr<HomePageClient> client) {
-  DCHECK(client);
-  home_page_client_ = std::move(client);
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
@@ -197,10 +180,6 @@ void MostVisitedSites::Refresh() {
   }
 
   suggestions_service_->FetchSuggestionsData();
-}
-
-void MostVisitedSites::OnHomePageStateChanged() {
-  BuildCurrentTiles();
 }
 
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
@@ -303,7 +282,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   }
 
   mv_source_ = TileSource::TOP_SITES;
-  InitiateNotificationForNewTiles(std::move(tiles));
+  SaveTilesAndNotify(std::move(tiles));
 }
 
 void MostVisitedSites::OnSuggestionsProfileChanged(
@@ -365,7 +344,7 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
   }
 
   mv_source_ = TileSource::SUGGESTIONS_SERVICE;
-  InitiateNotificationForNewTiles(std::move(tiles));
+  SaveTilesAndNotify(std::move(tiles));
 }
 
 NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
@@ -476,70 +455,6 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
   return popular_sites_tiles;
 }
 
-void MostVisitedSites::OnHomePageTitleDetermined(
-    NTPTilesVector tiles,
-    const base::Optional<base::string16>& title) {
-  if (!title.has_value()) {
-    return;  // If there is no title, the most recent tile was already sent out.
-  }
-  SaveTilesAndNotify(InsertHomeTile(std::move(tiles), title.value()));
-}
-
-NTPTilesVector MostVisitedSites::InsertHomeTile(
-    NTPTilesVector tiles,
-    const base::string16& title) const {
-  DCHECK(home_page_client_);
-  DCHECK_GT(num_sites_, 0u);
-
-  const GURL& home_page_url = home_page_client_->GetHomePageUrl();
-  NTPTilesVector new_tiles;
-  bool home_tile_added = false;
-
-  for (auto& tile : tiles) {
-    if (new_tiles.size() >= num_sites_) {
-      break;
-    }
-
-    // TODO(fhorschig): Introduce a more sophisticated deduplication.
-    if (tile.url.host() == home_page_url.host()) {
-      tile.source = TileSource::HOMEPAGE;
-      home_tile_added = true;
-    }
-    new_tiles.push_back(std::move(tile));
-  }
-
-  // Add the home page tile if there are less than 4 tiles
-  // and none of them is the home page (and there is space left).
-  if (!home_tile_added) {
-    // Make room for the home page tile.
-    if (new_tiles.size() >= num_sites_) {
-      new_tiles.pop_back();
-    }
-
-    NTPTile home_tile;
-    home_tile.url = home_page_url;
-    home_tile.title = title;
-    home_tile.source = TileSource::HOMEPAGE;
-    home_tile.title_source = TileTitleSource::TITLE_TAG;  // From history.
-
-    new_tiles.push_back(std::move(home_tile));
-  }
-  return new_tiles;
-}
-
-void MostVisitedSites::InitiateNotificationForNewTiles(
-    NTPTilesVector new_tiles) {
-  if (ShouldAddHomeTile() && !HasHomeTile(new_tiles)) {
-    home_page_client_->QueryHomePageTitle(
-        base::BindOnce(&MostVisitedSites::OnHomePageTitleDetermined,
-                       base::Unretained(this), new_tiles));
-    // Don't wait for the homepage title from history but immediately serve a
-    // copy of new tiles.
-    new_tiles = InsertHomeTile(std::move(new_tiles), base::string16());
-  }
-  SaveTilesAndNotify(std::move(new_tiles));
-}
-
 void MostVisitedSites::SaveTilesAndNotify(NTPTilesVector personal_tiles) {
   std::set<std::string> used_hosts;
   size_t num_actual_tiles = 0u;
@@ -619,16 +534,6 @@ void MostVisitedSites::TopSitesChanged(TopSites* top_sites,
     // The displayed tiles are invalidated.
     InitiateTopSitesQuery();
   }
-}
-
-bool MostVisitedSites::ShouldAddHomeTile() const {
-  return num_sites_ > 0u &&
-         home_page_client_ &&  // No platform-specific implementation - no tile.
-         home_page_client_->IsHomePageEnabled() &&
-         !home_page_client_->IsNewTabPageUsedAsHomePage() &&
-         !home_page_client_->GetHomePageUrl().is_empty() &&
-         !(top_sites_ &&
-           top_sites_->IsBlacklisted(home_page_client_->GetHomePageUrl()));
 }
 
 void MostVisitedSites::AddToHostsAndTotalCount(const NTPTilesVector& new_tiles,
