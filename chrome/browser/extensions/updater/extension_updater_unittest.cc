@@ -2039,8 +2039,8 @@ class ExtensionUpdaterTest : public testing::Test {
 };
 
 // Because we test some private methods of ExtensionUpdater, it's easier for the
-// actual test code to live in ExtenionUpdaterTest methods instead of TEST_F
-// subclasses where friendship with ExtenionUpdater is not inherited.
+// actual test code to live in ExtensionUpdaterTest methods instead of TEST_F
+// subclasses where friendship with ExtensionUpdater is not inherited.
 
 TEST_F(ExtensionUpdaterTest, TestExtensionUpdateCheckRequests) {
   TestExtensionUpdateCheckRequests(false);

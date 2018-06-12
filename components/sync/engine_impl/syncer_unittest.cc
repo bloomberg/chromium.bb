@@ -5822,7 +5822,7 @@ TEST_P(MixedResult, ExtensionsActivity) {
     }
   }
 
-  // Put some extenions activity records into the monitor.
+  // Put some extensions activity records into the monitor.
   {
     ExtensionsActivity::Records records;
     records["ABC"].extension_id = "ABC";
