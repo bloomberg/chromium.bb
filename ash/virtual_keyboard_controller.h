@@ -18,6 +18,9 @@
 namespace ash {
 
 // This class observes input device changes for the virtual keyboard.
+// TODO(https://crbug.com/849995): Should rename this to not confuse it with
+// KeyboardController. |ForceShowKeyboardWithKeyset| also does not really
+// belong here based on the current class description.
 class ASH_EXPORT VirtualKeyboardController
     : public TabletModeObserver,
       public ui::InputDeviceEventObserver,
