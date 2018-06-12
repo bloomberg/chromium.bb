@@ -595,13 +595,13 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     // WebkitNbspMode has been deleted, was return 302;
     case CSSPropertyOrder:
       return 303;
-    case CSSPropertyWebkitPaddingAfter:
+    case CSSPropertyAliasWebkitPaddingAfter:
       return 304;
-    case CSSPropertyWebkitPaddingBefore:
+    case CSSPropertyAliasWebkitPaddingBefore:
       return 305;
-    case CSSPropertyWebkitPaddingEnd:
+    case CSSPropertyAliasWebkitPaddingEnd:
       return 306;
-    case CSSPropertyWebkitPaddingStart:
+    case CSSPropertyAliasWebkitPaddingStart:
       return 307;
     case CSSPropertyAliasWebkitPerspective:
       return 308;
@@ -1146,6 +1146,14 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 596;
     case CSSPropertyMarginInlineEnd:
       return 597;
+    case CSSPropertyPaddingBlockStart:
+      return 598;
+    case CSSPropertyPaddingBlockEnd:
+      return 599;
+    case CSSPropertyPaddingInlineStart:
+      return 600;
+    case CSSPropertyPaddingInlineEnd:
+      return 601;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in

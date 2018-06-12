@@ -1438,6 +1438,10 @@ const std::string Converter::kPropertyLookupTable[] = {
     "margin-block-end",
     "margin-inline-start",
     "margin-inline-end",
+    "padding-block-start",
+    "padding-block-end",
+    "padding-inline-start",
+    "padding-inline-end",
     "INVALID_PROPERTY",
 };
 

@@ -29344,10 +29344,10 @@ Called by update_use_counter_css.py.-->
   <int value="301" label="webkit-min-logical-height"/>
   <int value="302" label="webkit-nbsp-mode"/>
   <int value="303" label="order"/>
-  <int value="304" label="webkit-padding-after"/>
-  <int value="305" label="webkit-padding-before"/>
-  <int value="306" label="webkit-padding-end"/>
-  <int value="307" label="webkit-padding-start"/>
+  <int value="304" label="alias-webkit-padding-after"/>
+  <int value="305" label="alias-webkit-padding-before"/>
+  <int value="306" label="alias-webkit-padding-end"/>
+  <int value="307" label="alias-webkit-padding-start"/>
   <int value="308" label="alias-webkit-perspective"/>
   <int value="309" label="alias-webkit-perspective-origin"/>
   <int value="310" label="webkit-perspective-origin-x"/>
@@ -29638,6 +29638,10 @@ Called by update_use_counter_css.py.-->
   <int value="595" label="margin-block-end"/>
   <int value="596" label="margin-inline-start"/>
   <int value="597" label="margin-inline-end"/>
+  <int value="598" label="padding-block-start"/>
+  <int value="599" label="padding-block-end"/>
+  <int value="600" label="padding-inline-start"/>
+  <int value="601" label="padding-inline-end"/>
 </enum>
 
 <enum name="MappedEditingCommands">
