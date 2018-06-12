@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function testClickBreadcrumb(done) {
+const uma = {};
+
+uma.testClickBreadcrumb = (done) => {
   test.setupAndWaitUntilReady()
       .then(() => {
         // Reset metrics.
@@ -25,4 +27,4 @@ function testClickBreadcrumb(done) {
             chrome.metricsPrivate.userActions_);
         done();
       });
-}
+};

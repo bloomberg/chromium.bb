@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function testCancelCheckSelectModeAfterAction(done) {
+const checkselect = {};
+
+checkselect.testCancelCheckSelectModeAfterAction = (done) => {
   test.setupAndWaitUntilReady()
       .then(() => {
         // Click 2nd last file on checkmark to start check-select-mode.
@@ -45,4 +47,4 @@ function testCancelCheckSelectModeAfterAction(done) {
             1, document.querySelectorAll('#file-list li[selected]').length);
         done();
       });
-}
+};

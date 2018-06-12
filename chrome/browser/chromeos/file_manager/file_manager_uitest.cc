@@ -23,13 +23,13 @@ class FileManagerUITest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kDisableWebSecurity);
   }
 
-  void RunTest() {
+  void RunTest(std::string test_scope) {
     base::FilePath root_path;
-    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &root_path));
 
     // Load test.html.
     const GURL url = net::FilePathToFileURL(root_path.Append(
-        FILE_PATH_LITERAL("ui/file_manager/file_manager/test.html")));
+        FILE_PATH_LITERAL("gen/ui/file_manager/file_manager/test.html")));
     content::WebContents* const web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -44,7 +44,8 @@ class FileManagerUITest : public InProcessBrowserTest {
 
     // Load and run specified test file.
     content::DOMMessageQueue message_queue;
-    ExecuteScriptAsync(web_contents, "runTests()");
+    ExecuteScriptAsync(web_contents,
+                       base::StringPrintf("runTests(%s)", test_scope.c_str()));
 
     // Wait for JS to call domAutomationController.send("SUCCESS").
     std::string message;
@@ -56,8 +57,16 @@ class FileManagerUITest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, UI) {
-  RunTest();
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, CheckSelect) {
+  RunTest("checkselect");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, Crostini) {
+  RunTest("crostini");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, UMA) {
+  RunTest("uma");
 }
 
 }  // namespace file_manager

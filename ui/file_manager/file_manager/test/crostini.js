@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function testCrostiniNotEnabled(done) {
+const crostini = {};
+
+crostini.testCrostiniNotEnabled = (done) => {
   chrome.fileManagerPrivate.crostiniEnabled_ = false;
   fileManager.setupCrostini_();
   test.setupAndWaitUntilReady()
@@ -13,9 +15,9 @@ function testCrostiniNotEnabled(done) {
       .then(() => {
         done();
       });
-}
+};
 
-function testCrostiniSuccess(done) {
+crostini.testCrostiniSuccess = (done) => {
   chrome.fileManagerPrivate.crostiniEnabled_ = true;
   var oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
   var mountCallback = null;
@@ -71,9 +73,9 @@ function testCrostiniSuccess(done) {
       .then(() => {
         done();
       });
-}
+};
 
-function testCrostiniError(done) {
+crostini.testCrostiniError = (done) => {
   chrome.fileManagerPrivate.crostiniEnabled_ = true;
   var oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
   // Override fileManagerPrivate.mountCrostiniContainer to return error.
@@ -104,4 +106,4 @@ function testCrostiniError(done) {
         chrome.fileManagerPrivate.mountCrostiniContainer = oldMount;
         done();
       });
-}
+};

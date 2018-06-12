@@ -33,7 +33,9 @@ test.loadData = function() {
         resolve();
       };
       req.open(
-          'GET', '../../../chrome/test/data/chromeos/file_manager/' + filename);
+          'GET',
+          FILE_MANAGER_ROOT +
+              '../../../chrome/test/data/chromeos/file_manager/' + filename);
       req.send();
     });
   }));
