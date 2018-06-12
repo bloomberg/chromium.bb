@@ -202,7 +202,9 @@ VaapiJpegEncodeAccelerator::~VaapiJpegEncodeAccelerator() {
   VLOGF(2) << "Destroying VaapiJpegEncodeAccelerator";
 
   weak_this_factory_.InvalidateWeakPtrs();
-  encoder_task_runner_->DeleteSoon(FROM_HERE, std::move(encoder_));
+  if (encoder_task_runner_) {
+    encoder_task_runner_->DeleteSoon(FROM_HERE, std::move(encoder_));
+  }
 }
 
 void VaapiJpegEncodeAccelerator::NotifyError(int32_t buffer_id, Status status) {
