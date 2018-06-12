@@ -13,6 +13,7 @@
 #include "services/ui/ws2/window_tree.h"
 #include "services/ui/ws2/window_tree_factory.h"
 #include "ui/aura/env.h"
+#include "ui/base/mojo/clipboard_host.h"
 
 namespace ui {
 namespace ws2 {
@@ -77,7 +78,7 @@ void WindowService::OnStart() {
   window_tree_factory_ = std::make_unique<WindowTreeFactory>(this);
 
   registry_.AddInterface(base::BindRepeating(
-      &WindowService::BindClipboardRequest, base::Unretained(this)));
+      &WindowService::BindClipboardHostRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindScreenProviderRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
@@ -110,10 +111,11 @@ void WindowService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(handle));
 }
 
-void WindowService::BindClipboardRequest(mojom::ClipboardRequest request) {
-  if (!clipboard_)
-    clipboard_ = std::make_unique<clipboard::ClipboardImpl>();
-  clipboard_->AddBinding(std::move(request));
+void WindowService::BindClipboardHostRequest(
+    mojom::ClipboardHostRequest request) {
+  if (!clipboard_host_)
+    clipboard_host_ = std::make_unique<ClipboardHost>();
+  clipboard_host_->AddBinding(std::move(request));
 }
 
 void WindowService::BindScreenProviderRequest(

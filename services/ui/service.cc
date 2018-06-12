@@ -19,7 +19,6 @@
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/common/image_cursors_set.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/display/screen_manager.h"
@@ -42,6 +41,7 @@
 #include "services/ui/ws/window_tree_factory.h"
 #include "services/ui/ws/window_tree_host_factory.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/base/mojo/clipboard_host.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -280,8 +280,9 @@ void Service::OnStart() {
   registry_with_source_info_.AddInterface<mojom::AccessibilityManager>(
       base::BindRepeating(&Service::BindAccessibilityManagerRequest,
                           base::Unretained(this)));
-  registry_with_source_info_.AddInterface<mojom::Clipboard>(base::BindRepeating(
-      &Service::BindClipboardRequest, base::Unretained(this)));
+  registry_with_source_info_.AddInterface<mojom::ClipboardHost>(
+      base::BindRepeating(&Service::BindClipboardHostRequest,
+                          base::Unretained(this)));
   registry_with_source_info_.AddInterface<mojom::ScreenProvider>(
       base::BindRepeating(&Service::BindScreenProviderRequest,
                           base::Unretained(this)));
@@ -422,12 +423,12 @@ void Service::BindAccessibilityManagerRequest(
   accessibility_->Bind(std::move(request));
 }
 
-void Service::BindClipboardRequest(
-    mojom::ClipboardRequest request,
+void Service::BindClipboardHostRequest(
+    mojom::ClipboardHostRequest request,
     const service_manager::BindSourceInfo& source_info) {
-  if (!clipboard_)
-    clipboard_ = std::make_unique<clipboard::ClipboardImpl>();
-  clipboard_->AddBinding(std::move(request));
+  if (!clipboard_host_)
+    clipboard_host_ = std::make_unique<ClipboardHost>();
+  clipboard_host_->AddBinding(std::move(request));
 }
 
 void Service::BindScreenProviderRequest(

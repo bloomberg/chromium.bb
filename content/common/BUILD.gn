@@ -611,7 +611,7 @@ mojom("mojo_bindings") {
     "//third_party/blink/public:mojo_bindings",
     "//third_party/blink/public:web_feature_mojo_bindings",
     "//third_party/blink/public/mojom:mojom_core",
-    "//ui/base/mojo:mojo_bindings",
+    "//ui/base/mojo",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",

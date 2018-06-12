@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/base/mojo/clipboard.mojom"
+mojom = "//third_party/blink/public/mojom/clipboard/clipboard.mojom"
 public_headers = [ "//ui/base/clipboard/clipboard_types.h" ]
-traits_headers = [ "//ui/base/mojo/clipboard_struct_traits.h" ]
+traits_headers = [ "//ui/base/mojo/clipboard_blink_struct_traits.h" ]
 deps = [
   "//ui/base",
 ]
-type_mappings = [ "ui.mojom.ClipboardType=ui::ClipboardType" ]
+type_mappings = [ "blink.mojom.ClipboardBuffer=ui::ClipboardType" ]

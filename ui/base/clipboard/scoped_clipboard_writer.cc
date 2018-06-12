@@ -121,6 +121,16 @@ void ScopedClipboardWriter::WritePickledData(
   objects_[Clipboard::CBF_DATA] = parameters;
 }
 
+void ScopedClipboardWriter::WriteData(const std::string& type,
+                                      const std::string& data) {
+  Clipboard::ObjectMapParam type_parameter(type.begin(), type.end());
+  Clipboard::ObjectMapParam data_parameter(data.begin(), data.end());
+  Clipboard::ObjectMapParams parameters;
+  parameters.push_back(type_parameter);
+  parameters.push_back(data_parameter);
+  objects_[Clipboard::CBF_DATA] = parameters;
+}
+
 void ScopedClipboardWriter::Reset() {
   objects_.clear();
   bitmap_.reset();

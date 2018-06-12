@@ -4,9 +4,33 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("mojo_bindings") {
+mojom("mojo") {
   sources = [
+    "clipboard.mojom",
     "ui_base_types.mojom",
     "window_open_disposition.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//skia/public/interfaces",
+    "//url/mojom:url_mojom_gurl",
+  ]
+}
+
+source_set("lib") {
+  sources = [
+    "clipboard_client.cc",
+    "clipboard_client.h",
+    "clipboard_host.cc",
+    "clipboard_host.h",
+    "clipboard_host_mac.mm",
+  ]
+
+  public_deps = [
+    ":mojo",
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//ui/base",
   ]
 }

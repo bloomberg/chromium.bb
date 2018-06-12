@@ -24,8 +24,8 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/mojo/clipboard_client.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/clipboard_mus.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_property_mirror.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
@@ -133,9 +133,10 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     screen_ = std::make_unique<ScreenMus>(this);
     screen_->Init(connector);
 
-    std::unique_ptr<ClipboardMus> clipboard = std::make_unique<ClipboardMus>();
-    clipboard->Init(connector);
-    ui::Clipboard::SetClipboardForCurrentThread(std::move(clipboard));
+    ui::mojom::ClipboardHostPtr clipboard_host_ptr;
+    connector->BindInterface(ui::mojom::kServiceName, &clipboard_host_ptr);
+    ui::Clipboard::SetClipboardForCurrentThread(
+        std::make_unique<ui::ClipboardClient>(std::move(clipboard_host_ptr)));
   }
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(

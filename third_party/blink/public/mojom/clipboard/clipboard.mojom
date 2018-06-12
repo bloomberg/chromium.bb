@@ -59,6 +59,7 @@ interface ClipboardHost {
   // sender sends the different types of data it'd like to write to the
   // receiver. Then, it sends a commit message to commit the data to the system
   // clipboard.
+  // TODO(dcheng): Remove |buffer| parameters from Write* functions.
   WriteText(ClipboardBuffer buffer, mojo_base.mojom.BigString16 text);
 
   WriteHtml(ClipboardBuffer buffer,
