@@ -16,6 +16,9 @@
 
 namespace chromeos {
 class EasyUnlockServiceRegular;
+namespace secure_channel {
+class SecureChannelClientImpl;
+}  // namespace secure_channel
 namespace tether {
 class TetherHostFetcherImpl;
 class TetherHostFetcherImplTest;
@@ -89,6 +92,7 @@ class RemoteDeviceRef {
   friend class RemoteDeviceCache;
   friend class RemoteDeviceRefBuilder;
   friend class RemoteDeviceRefTest;
+  friend class chromeos::secure_channel::SecureChannelClientImpl;
   friend bool IsSameDevice(const cryptauth::RemoteDevice& remote_device,
                            cryptauth::RemoteDeviceRef remote_device_ref);
   friend RemoteDevice* GetMutableRemoteDevice(

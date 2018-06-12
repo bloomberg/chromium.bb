@@ -29,9 +29,9 @@ void ConnectionAttempt::NotifyConnectionAttemptFailure(
 }
 
 void ConnectionAttempt::NotifyConnection(
-    std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
+    std::unique_ptr<ClientChannel> channel) {
   if (delegate_) {
-    delegate_->OnConnection(std::move(authenticated_channel));
+    delegate_->OnConnection(std::move(channel));
   } else {
     PA_LOG(ERROR) << "NotifyConnection: No delegate added.";
     NOTREACHED();

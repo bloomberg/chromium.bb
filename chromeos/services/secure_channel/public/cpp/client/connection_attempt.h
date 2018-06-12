@@ -7,14 +7,12 @@
 
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
+#include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
 
 namespace secure_channel {
-
-class AuthenticatedChannel;
 
 // A handle for clients to own while waiting for a connection to establish (or
 // fail); it is returned by SecureChannelClient's InitiateConnectionToDevice()
@@ -22,7 +20,7 @@ class AuthenticatedChannel;
 // ConnectionAttempt::Delegate interface, and call AddDelegate() on the object
 // immediately after receiving it. To cancel a connection attempt, simply delete
 // the object. After receiving the OnConnection() callback, it is fine to delete
-// the ConnectionAttempt object; the returned AuthenticatedChannel object will
+// the ConnectionAttempt object; the returned ClientChannel object will
 // be the client's way to interface with the API moving forward.
 class ConnectionAttempt {
  public:
@@ -31,8 +29,7 @@ class ConnectionAttempt {
     virtual ~Delegate();
     virtual void OnConnectionAttemptFailure(
         mojom::ConnectionAttemptFailureReason reason) = 0;
-    virtual void OnConnection(
-        std::unique_ptr<AuthenticatedChannel> authenticated_channel) = 0;
+    virtual void OnConnection(std::unique_ptr<ClientChannel> channel) = 0;
   };
 
   ConnectionAttempt();
@@ -43,8 +40,7 @@ class ConnectionAttempt {
  protected:
   void NotifyConnectionAttemptFailure(
       mojom::ConnectionAttemptFailureReason reason);
-  void NotifyConnection(
-      std::unique_ptr<AuthenticatedChannel> authenticated_channel);
+  void NotifyConnection(std::unique_ptr<ClientChannel> channel);
 
  private:
   Delegate* delegate_;

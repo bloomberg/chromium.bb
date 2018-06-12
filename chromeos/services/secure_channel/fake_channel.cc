@@ -8,18 +8,23 @@ namespace chromeos {
 
 namespace secure_channel {
 
-FakeChannel::FakeChannel() = default;
+namespace {
+const char kDisconnectionDescription[] = "Remote device disconnected.";
+}  // namespace
+
+FakeChannel::FakeChannel() : binding_(this) {}
 
 FakeChannel::~FakeChannel() = default;
 
 mojom::ChannelPtr FakeChannel::GenerateInterfacePtr() {
   mojom::ChannelPtr interface_ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
+  binding_.Bind(mojo::MakeRequest(&interface_ptr));
   return interface_ptr;
 }
 
-void FakeChannel::DisconnectGeneratedPtrs() {
-  bindings_.CloseAllBindings();
+void FakeChannel::DisconnectGeneratedPtr() {
+  binding_.CloseWithReason(mojom::Channel::kConnectionDroppedReason,
+                           kDisconnectionDescription);
 }
 
 void FakeChannel::SendMessage(const std::string& message,

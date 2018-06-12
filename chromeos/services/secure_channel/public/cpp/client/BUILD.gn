@@ -4,8 +4,14 @@
 
 source_set("client") {
   sources = [
+    "client_channel.cc",
+    "client_channel.h",
+    "client_channel_impl.cc",
+    "client_channel_impl.h",
     "connection_attempt.cc",
     "connection_attempt.h",
+    "connection_attempt_impl.cc",
+    "connection_attempt_impl.h",
     "secure_channel_client.h",
     "secure_channel_client_impl.cc",
     "secure_channel_client_impl.h",
@@ -26,6 +32,12 @@ static_library("test_support") {
 
   sources = [
     ":shared",
+    "fake_client_channel.cc",
+    "fake_client_channel.h",
+    "fake_client_channel_observer.cc",
+    "fake_client_channel_observer.h",
+    "fake_connection_attempt.cc",
+    "fake_connection_attempt.h",
     "fake_secure_channel_client.cc",
     "fake_secure_channel_client.h",
   ]
@@ -42,6 +54,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "client_channel_impl_unittest.cc",
     "secure_channel_client_impl_unittest.cc",
   ]
 
@@ -50,7 +63,10 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//chromeos/services/secure_channel",
+    "//chromeos/services/secure_channel:test_support",
     "//chromeos/services/secure_channel/public/cpp/shared",
+    "//chromeos/services/secure_channel/public/mojom",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
     "//services/service_manager/public/cpp:service_test_support",
