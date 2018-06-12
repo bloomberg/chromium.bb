@@ -81,7 +81,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   // InspectorInstrumentation API
   void ApplyAcceptLanguageOverride(String* accept_lang);
   void ApplyUserAgentOverride(String* user_agent);
-  void FrameStartedLoading(LocalFrame*, FrameLoadType);
+  void FrameStartedLoading(LocalFrame*);
   void WillSendRequest(ExecutionContext*,
                        unsigned long identifier,
                        DocumentLoader*,

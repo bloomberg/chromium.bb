@@ -112,7 +112,7 @@ void DOMPluginArray::refresh(bool reload) {
   }
 
   if (reload) {
-    GetFrame()->Reload(kFrameLoadTypeReload,
+    GetFrame()->Reload(WebFrameLoadType::kReload,
                        ClientRedirectPolicy::kClientRedirect);
   }
 }

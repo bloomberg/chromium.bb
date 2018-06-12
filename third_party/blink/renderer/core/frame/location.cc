@@ -249,7 +249,7 @@ void Location::reload(LocalDOMWindow* current_window) {
     return;
   if (GetDocument()->Url().ProtocolIsJavaScript())
     return;
-  dom_window_->GetFrame()->Reload(kFrameLoadTypeReload,
+  dom_window_->GetFrame()->Reload(WebFrameLoadType::kReload,
                                   ClientRedirectPolicy::kClientRedirect);
 }
 

@@ -208,8 +208,7 @@ void InspectorTraceEvents::PaintTiming(Document* document,
                                    "frame", ToTraceValue(document->GetFrame()));
 }
 
-void InspectorTraceEvents::FrameStartedLoading(LocalFrame* frame,
-                                               FrameLoadType) {
+void InspectorTraceEvents::FrameStartedLoading(LocalFrame* frame) {
   TRACE_EVENT_INSTANT1("devtools.timeline", "FrameStartedLoading",
                        TRACE_EVENT_SCOPE_THREAD, "frame", ToTraceValue(frame));
 }

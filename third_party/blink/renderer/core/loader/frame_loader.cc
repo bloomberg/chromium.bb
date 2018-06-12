@@ -112,40 +112,40 @@ namespace blink {
 
 using namespace HTMLNames;
 
-bool IsBackForwardLoadType(FrameLoadType type) {
-  return type == kFrameLoadTypeBackForward ||
-         type == kFrameLoadTypeInitialHistoryLoad;
+bool IsBackForwardLoadType(WebFrameLoadType type) {
+  return type == WebFrameLoadType::kBackForward ||
+         type == WebFrameLoadType::kInitialHistoryLoad;
 }
 
-bool IsReloadLoadType(FrameLoadType type) {
-  return type == kFrameLoadTypeReload ||
-         type == kFrameLoadTypeReloadBypassingCache;
+bool IsReloadLoadType(WebFrameLoadType type) {
+  return type == WebFrameLoadType::kReload ||
+         type == WebFrameLoadType::kReloadBypassingCache;
 }
 
-static bool NeedsHistoryItemRestore(FrameLoadType type) {
-  // FrameLoadtypeInitialHistoryLoad is intentionally excluded.
-  return type == kFrameLoadTypeBackForward || IsReloadLoadType(type);
+static bool NeedsHistoryItemRestore(WebFrameLoadType type) {
+  // kInitialHistoryLoad is intentionally excluded.
+  return type == WebFrameLoadType::kBackForward || IsReloadLoadType(type);
 }
 
 static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
     SameDocumentNavigationSource same_document_navigation_source,
-    FrameLoadType frame_load_type) {
+    WebFrameLoadType frame_load_type) {
   // |SinglePageAppNavigationType| falls into this grid according to different
-  // combinations of |FrameLoadType| and |SameDocumentNavigationSource|:
+  // combinations of |WebFrameLoadType| and |SameDocumentNavigationSource|:
   //
-  //                              HistoryApi           Default
-  //  kFrameLoadTypeBackForward   illegal              otherFragmentNav
-  // !kFrameLoadTypeBackForward   sameDocBack/Forward  historyPushOrReplace
+  //                 HistoryApi           Default
+  //  kBackForward   illegal              otherFragmentNav
+  // !kBackForward   sameDocBack/Forward  historyPushOrReplace
   switch (same_document_navigation_source) {
     case kSameDocumentNavigationDefault:
-      if (frame_load_type == kFrameLoadTypeBackForward) {
+      if (frame_load_type == WebFrameLoadType::kBackForward) {
         return kSPANavTypeSameDocumentBackwardOrForward;
       }
       return kSPANavTypeOtherFragmentNavigation;
     case kSameDocumentNavigationHistoryApi:
       // It's illegal to have both kSameDocumentNavigationHistoryApi and
-      // kFrameLoadTypeBackForward.
-      DCHECK(frame_load_type != kFrameLoadTypeBackForward);
+      // WebFrameLoadType::kBackForward.
+      DCHECK(frame_load_type != WebFrameLoadType::kBackForward);
       return kSPANavTypeHistoryPushStateOrReplaceState;
   }
   NOTREACHED();
@@ -153,12 +153,13 @@ static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
 }
 
 ResourceRequest FrameLoader::ResourceRequestForReload(
-    FrameLoadType frame_load_type,
+    WebFrameLoadType frame_load_type,
     ClientRedirectPolicy client_redirect_policy) {
   DCHECK(IsReloadLoadType(frame_load_type));
-  const auto cache_mode = frame_load_type == kFrameLoadTypeReloadBypassingCache
-                              ? mojom::FetchCacheMode::kBypassCache
-                              : mojom::FetchCacheMode::kValidateCache;
+  const auto cache_mode =
+      frame_load_type == WebFrameLoadType::kReloadBypassingCache
+          ? mojom::FetchCacheMode::kBypassCache
+          : mojom::FetchCacheMode::kValidateCache;
   if (!document_loader_ || !document_loader_->GetHistoryItem())
     return ResourceRequest();
   ResourceRequest request =
@@ -181,7 +182,7 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   }
 
   request.SetSkipServiceWorker(frame_load_type ==
-                               kFrameLoadTypeReloadBypassingCache);
+                               WebFrameLoadType::kReloadBypassingCache);
   return request;
 }
 
@@ -343,7 +344,7 @@ void FrameLoader::DidExplicitOpen() {
     if ((parent->IsLocalFrame() &&
          ToLocalFrame(parent)->GetDocument()->LoadEventStillNeeded()) ||
         (parent->IsRemoteFrame() && parent->IsLoading())) {
-      progress_tracker_->ProgressStarted(document_loader_->LoadType());
+      progress_tracker_->ProgressStarted();
     }
   }
 
@@ -451,7 +452,7 @@ void FrameLoader::DidFinishNavigation() {
     // size clamping.
     RestoreScrollPositionAndViewState();
     if (document_loader_)
-      document_loader_->SetLoadType(kFrameLoadTypeStandard);
+      document_loader_->SetLoadType(WebFrameLoadType::kStandard);
     frame_->DomWindow()->FinishedLoading();
   }
 
@@ -487,7 +488,7 @@ void FrameLoader::UpdateForSameDocumentNavigation(
     SameDocumentNavigationSource same_document_navigation_source,
     scoped_refptr<SerializedScriptValue> data,
     HistoryScrollRestorationType scroll_restoration_type,
-    FrameLoadType type,
+    WebFrameLoadType type,
     Document* initiating_document) {
   SinglePageAppNavigationType single_page_app_navigation_type =
       CategorizeSinglePageAppNavigation(same_document_navigation_source, type);
@@ -533,12 +534,12 @@ void FrameLoader::ClearInitialScrollState() {
 void FrameLoader::LoadInSameDocument(
     const KURL& url,
     scoped_refptr<SerializedScriptValue> state_object,
-    FrameLoadType frame_load_type,
+    WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
     ClientRedirectPolicy client_redirect,
     Document* initiating_document) {
   // If we have a state object, we cannot also be a new navigation.
-  DCHECK(!state_object || frame_load_type == kFrameLoadTypeBackForward);
+  DCHECK(!state_object || frame_load_type == WebFrameLoadType::kBackForward);
 
   // If we have a provisional request for a different document, a fragment
   // scroll should cancel it.
@@ -618,22 +619,22 @@ void FrameLoader::SetReferrerForFrameRequest(FrameLoadRequest& frame_request) {
   request.SetHTTPOriginToMatchReferrerIfNeeded();
 }
 
-FrameLoadType FrameLoader::DetermineFrameLoadType(
+WebFrameLoadType FrameLoader::DetermineFrameLoadType(
     const FrameLoadRequest& request) {
   if (frame_->Tree().Parent() &&
       !state_machine_.CommittedFirstRealDocumentLoad())
-    return kFrameLoadTypeInitialInChildFrame;
+    return WebFrameLoadType::kInitialInChildFrame;
   if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
     if (Opener() && request.GetResourceRequest().Url().IsEmpty())
-      return kFrameLoadTypeReplaceCurrentItem;
-    return kFrameLoadTypeStandard;
+      return WebFrameLoadType::kReplaceCurrentItem;
+    return WebFrameLoadType::kStandard;
   }
   if (request.GetResourceRequest().GetCacheMode() ==
       mojom::FetchCacheMode::kValidateCache)
-    return kFrameLoadTypeReload;
+    return WebFrameLoadType::kReload;
   if (request.GetResourceRequest().GetCacheMode() ==
       mojom::FetchCacheMode::kBypassCache)
-    return kFrameLoadTypeReloadBypassingCache;
+    return WebFrameLoadType::kReloadBypassingCache;
   // From the HTML5 spec for location.assign():
   // "If the browsing context's session history contains only one Document,
   // and that was the about:blank Document created when the browsing context
@@ -641,31 +642,31 @@ FrameLoadType FrameLoader::DetermineFrameLoadType(
   if (request.ReplacesCurrentItem() ||
       (!state_machine_.CommittedMultipleRealLoads() &&
        DeprecatedEqualIgnoringCase(frame_->GetDocument()->Url(), BlankURL())))
-    return kFrameLoadTypeReplaceCurrentItem;
+    return WebFrameLoadType::kReplaceCurrentItem;
 
   if (request.GetResourceRequest().Url() == document_loader_->UrlForHistory()) {
     if (request.GetResourceRequest().HttpMethod() == HTTPNames::POST)
-      return kFrameLoadTypeStandard;
+      return WebFrameLoadType::kStandard;
     if (!request.OriginDocument())
-      return kFrameLoadTypeReload;
-    return kFrameLoadTypeReplaceCurrentItem;
+      return WebFrameLoadType::kReload;
+    return WebFrameLoadType::kReplaceCurrentItem;
   }
 
   if (request.GetSubstituteData().FailingURL() ==
           document_loader_->UrlForHistory() &&
-      document_loader_->LoadType() == kFrameLoadTypeReload)
-    return kFrameLoadTypeReload;
+      document_loader_->LoadType() == WebFrameLoadType::kReload)
+    return WebFrameLoadType::kReload;
 
   if (request.GetResourceRequest().Url().IsEmpty() &&
       request.GetSubstituteData().FailingURL().IsEmpty()) {
-    return kFrameLoadTypeReplaceCurrentItem;
+    return WebFrameLoadType::kReplaceCurrentItem;
   }
 
   if (request.OriginDocument() &&
       !request.OriginDocument()->CanCreateHistoryEntry())
-    return kFrameLoadTypeReplaceCurrentItem;
+    return WebFrameLoadType::kReplaceCurrentItem;
 
-  return kFrameLoadTypeStandard;
+  return WebFrameLoadType::kStandard;
 }
 
 bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
@@ -742,7 +743,7 @@ static bool ShouldNavigateTargetFrame(NavigationPolicy policy) {
   }
 }
 
-static NavigationType DetermineNavigationType(FrameLoadType frame_load_type,
+static NavigationType DetermineNavigationType(WebFrameLoadType frame_load_type,
                                               bool is_form_submission,
                                               bool have_event) {
   bool is_reload = IsReloadLoadType(frame_load_type);
@@ -826,7 +827,7 @@ static NavigationPolicy NavigationPolicyForRequest(
 }
 
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
-                                  FrameLoadType frame_load_type,
+                                  WebFrameLoadType frame_load_type,
                                   HistoryItem* history_item) {
   CHECK(!passed_request.GetSubstituteData().IsValid());
   CHECK(!IsBackForwardLoadType(frame_load_type));
@@ -894,7 +895,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 
   const KURL& url = request.GetResourceRequest().Url();
-  if (frame_load_type == kFrameLoadTypeStandard)
+  if (frame_load_type == WebFrameLoadType::kStandard)
     frame_load_type = DetermineFrameLoadType(request);
 
   bool same_document_navigation =
@@ -917,7 +918,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 }
 
 void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
-                                   FrameLoadType frame_load_type,
+                                   WebFrameLoadType frame_load_type,
                                    HistoryItem* history_item) {
   CHECK(!passed_request.OriginDocument());
   CHECK(passed_request.FrameName().IsEmpty());
@@ -940,7 +941,7 @@ void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
   request.GetResourceRequest().SetHasUserGesture(
       Frame::HasTransientUserActivation(frame_));
 
-  if (frame_load_type == kFrameLoadTypeStandard)
+  if (frame_load_type == WebFrameLoadType::kStandard)
     frame_load_type = DetermineFrameLoadType(request);
 
   // Note: we might actually classify this navigation as same document
@@ -957,7 +958,7 @@ void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
 
 mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
     const KURL& url,
-    FrameLoadType frame_load_type,
+    WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
     ClientRedirectPolicy client_redirect_policy,
     Document* origin_document,
@@ -992,7 +993,7 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
     document_loader_->SetNavigationType(
         DetermineNavigationType(frame_load_type, false, triggering_event));
     if (ShouldTreatURLAsSameAsCurrent(url))
-      frame_load_type = kFrameLoadTypeReplaceCurrentItem;
+      frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
 
   // Perform the same-document navigation.
@@ -1167,7 +1168,7 @@ void FrameLoader::RestoreScrollPositionAndViewState() {
 }
 
 void FrameLoader::RestoreScrollPositionAndViewState(
-    FrameLoadType load_type,
+    WebFrameLoadType load_type,
     bool is_same_document,
     HistoryItem::ViewState* view_state,
     HistoryScrollRestorationType scroll_restoration_type) {
@@ -1300,14 +1301,14 @@ void FrameLoader::DetachProvisionalDocumentLoader(DocumentLoader* loader) {
 
 bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
                                                   const String& http_method,
-                                                  FrameLoadType load_type,
+                                                  WebFrameLoadType load_type,
                                                   const KURL& url) {
   // We don't do this if we are submitting a form with method other than "GET",
   // explicitly reloading, currently displaying a frameset, or if the URL does
   // not have a fragment.
   return DeprecatedEqualIgnoringCase(http_method, HTTPNames::GET) &&
          !IsReloadLoadType(load_type) &&
-         load_type != kFrameLoadTypeBackForward &&
+         load_type != WebFrameLoadType::kBackForward &&
          url.HasFragmentIdentifier() &&
          // For provisional LocalFrame, there is no real document loaded and
          // the initial empty document should not be considered, so there is
@@ -1320,7 +1321,7 @@ bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
 }
 
 void FrameLoader::ProcessFragment(const KURL& url,
-                                  FrameLoadType frame_load_type,
+                                  WebFrameLoadType frame_load_type,
                                   LoadStartType load_start_type) {
   LocalFrameView* view = frame_->View();
   if (!view)
@@ -1408,7 +1409,7 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
         should_check_main_world_content_security_policy,
     NavigationType type,
     NavigationPolicy policy,
-    FrameLoadType frame_load_type,
+    WebFrameLoadType frame_load_type,
     bool is_client_redirect,
     WebTriggeringEventInfo triggering_event_info,
     HTMLFormElement* form,
@@ -1428,7 +1429,7 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
   }
 
   bool replaces_current_history_item =
-      frame_load_type == kFrameLoadTypeReplaceCurrentItem;
+      frame_load_type == WebFrameLoadType::kReplaceCurrentItem;
   policy = Client()->DecidePolicyForNavigation(
       request, origin_document, loader, type, policy,
       replaces_current_history_item, is_client_redirect, triggering_event_info,
@@ -1452,7 +1453,7 @@ NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
         should_check_main_world_content_security_policy,
     NavigationType type,
     NavigationPolicy policy,
-    FrameLoadType frame_load_type,
+    WebFrameLoadType frame_load_type,
     bool is_client_redirect,
     HTMLFormElement* form) {
   return ShouldContinueForNavigationPolicy(
@@ -1475,7 +1476,7 @@ void FrameLoader::ClientDroppedNavigation() {
 }
 
 void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
-                            FrameLoadType type,
+                            WebFrameLoadType type,
                             NavigationPolicy navigation_policy,
                             HistoryItem* history_item,
                             bool check_with_client) {
@@ -1558,7 +1559,7 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   // we also have to check whether the document was completed, so it's in a
   // defined state should the navigation fail.
   if (!had_placeholder_client_document_loader &&
-      type == kFrameLoadTypeStandard &&
+      type == WebFrameLoadType::kStandard &&
       (navigation_policy == kNavigationPolicyCurrentTab ||
        navigation_policy == kNavigationPolicyHandledByClient)) {
     frame_->GetDocument()->CheckCompleted();
@@ -1570,7 +1571,7 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   if (!frame_->GetPage())
     return;
 
-  progress_tracker_->ProgressStarted(type);
+  progress_tracker_->ProgressStarted();
   // TODO(japhet): This case wants to flag the frame as loading and do nothing
   // else. It'd be nice if it could go through the placeholder DocumentLoader
   // path, too.
@@ -1823,7 +1824,7 @@ inline void FrameLoader::TakeObjectSnapshot() const {
 DocumentLoader* FrameLoader::CreateDocumentLoader(
     const ResourceRequest& request,
     const FrameLoadRequest& frame_load_request,
-    FrameLoadType load_type,
+    WebFrameLoadType load_type,
     NavigationType navigation_type) {
   DocumentLoader* loader = Client()->CreateDocumentLoader(
       frame_, request,
@@ -1838,8 +1839,9 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
   // TODO(japhet): This is needed because the browser process DCHECKs if the
   // first entry we commit in a new frame has replacement set. It's unclear
   // whether the DCHECK is right, investigate removing this special case.
-  bool replace_current_item = load_type == kFrameLoadTypeReplaceCurrentItem &&
-                              (!Opener() || !request.Url().IsEmpty());
+  bool replace_current_item =
+      load_type == WebFrameLoadType::kReplaceCurrentItem &&
+      (!Opener() || !request.Url().IsEmpty());
   loader->SetReplacesCurrentHistoryItem(replace_current_item);
 
   probe::lifecycleEvent(frame_, loader, "init", CurrentTimeTicksInSeconds());
@@ -1849,17 +1851,5 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
 STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationManual,
                    kScrollRestorationManual);
 STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationAuto, kScrollRestorationAuto);
-
-STATIC_ASSERT_ENUM(WebFrameLoadType::kStandard, kFrameLoadTypeStandard);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kBackForward, kFrameLoadTypeBackForward);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kReload, kFrameLoadTypeReload);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kReplaceCurrentItem,
-                   kFrameLoadTypeReplaceCurrentItem);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kInitialInChildFrame,
-                   kFrameLoadTypeInitialInChildFrame);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kInitialHistoryLoad,
-                   kFrameLoadTypeInitialHistoryLoad);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kReloadBypassingCache,
-                   kFrameLoadTypeReloadBypassingCache);
 
 }  // namespace blink

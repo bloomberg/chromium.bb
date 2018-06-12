@@ -886,11 +886,10 @@ bool WebFrame::ScriptCanAccess(WebFrame* target) {
       ToCoreFrame(*target), BindingSecurity::ErrorReportOption::kDoNotReport);
 }
 
-void WebLocalFrameImpl::StartReload(WebFrameLoadType load_type) {
+void WebLocalFrameImpl::StartReload(WebFrameLoadType frame_load_type) {
   // TODO(clamy): Remove this function once RenderFrame calls StartNavigation
   // for all requests.
   DCHECK(GetFrame());
-  FrameLoadType frame_load_type = static_cast<FrameLoadType>(load_type);
   DCHECK(IsReloadLoadType(frame_load_type));
   ResourceRequest request =
       GetFrame()->Loader().ResourceRequestForReload(frame_load_type);
@@ -930,7 +929,7 @@ void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
       FrameLoadRequest(
           nullptr, request.ToResourceRequest(), /*frame_name=*/AtomicString(),
           kCheckContentSecurityPolicy, base::UnguessableToken::Create()),
-      kFrameLoadTypeStandard);
+      WebFrameLoadType::kStandard);
 }
 
 void WebLocalFrameImpl::CheckCompleted() {
@@ -2045,9 +2044,8 @@ void WebLocalFrameImpl::CommitNavigation(
   if (is_client_redirect)
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   HistoryItem* history_item = item;
-  GetFrame()->Loader().CommitNavigation(
-      frame_request, static_cast<FrameLoadType>(web_frame_load_type),
-      history_item);
+  GetFrame()->Loader().CommitNavigation(frame_request, web_frame_load_type,
+                                        history_item);
 }
 
 blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
@@ -2060,7 +2058,7 @@ blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
 
   HistoryItem* history_item = item;
   return GetFrame()->Loader().CommitSameDocumentNavigation(
-      url, static_cast<FrameLoadType>(web_frame_load_type), history_item,
+      url, web_frame_load_type, history_item,
       is_client_redirect ? ClientRedirectPolicy::kClientRedirect
                          : ClientRedirectPolicy::kNotClientRedirect);
 }
@@ -2130,7 +2128,8 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
     // When replacing a failed back/forward provisional navigation with an error
     // page, retain the HistoryItem for the failed provisional navigation
     // and reuse it for the error page navigation.
-    if (provisional_document_loader->LoadType() == kFrameLoadTypeBackForward &&
+    if (provisional_document_loader->LoadType() ==
+            WebFrameLoadType::kBackForward &&
         provisional_document_loader->GetHistoryItem()) {
       history_item = provisional_document_loader->GetHistoryItem();
       web_frame_load_type = WebFrameLoadType::kBackForward;
@@ -2147,9 +2146,8 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
   if (is_client_redirect)
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
 
-  GetFrame()->Loader().CommitNavigation(
-      frame_request, static_cast<FrameLoadType>(web_frame_load_type),
-      history_item);
+  GetFrame()->Loader().CommitNavigation(frame_request, web_frame_load_type,
+                                        history_item);
 }
 
 WebLocalFrame::FallbackContentResult

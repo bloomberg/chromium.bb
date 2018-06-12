@@ -111,7 +111,7 @@ class CORE_EXPORT InspectorTraceEvents
 
   void PaintTiming(Document*, const char* name, double timestamp);
 
-  void FrameStartedLoading(LocalFrame*, FrameLoadType);
+  void FrameStartedLoading(LocalFrame*);
 
   void Trace(blink::Visitor*) {}
 

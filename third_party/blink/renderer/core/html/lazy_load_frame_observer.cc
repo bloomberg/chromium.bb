@@ -82,7 +82,7 @@ LazyLoadFrameObserver::LazyLoadFrameObserver(HTMLFrameOwnerElement& element)
 
 void LazyLoadFrameObserver::DeferLoadUntilNearViewport(
     const ResourceRequest& resource_request,
-    FrameLoadType frame_load_type) {
+    WebFrameLoadType frame_load_type) {
   DCHECK(!lazy_load_intersection_observer_);
 
   lazy_load_intersection_observer_ = IntersectionObserver::Create(
@@ -106,7 +106,7 @@ void LazyLoadFrameObserver::CancelPendingLazyLoad() {
 
 void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
     const ResourceRequest& resource_request,
-    FrameLoadType frame_load_type,
+    WebFrameLoadType frame_load_type,
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
   DCHECK(!entries.IsEmpty());
   DCHECK_EQ(element_, entries.back()->target());

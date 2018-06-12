@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_HISTORY_H_
 
 #include "base/gtest_prod_util.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -69,7 +70,7 @@ class CORE_EXPORT History final : public ScriptWrappable,
                     const String& url,
                     ExceptionState& exception_state) {
     StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
-                     kFrameLoadTypeReplaceCurrentItem, exception_state);
+                     WebFrameLoadType::kReplaceCurrentItem, exception_state);
   }
 
   void setScrollRestoration(const String& value, ExceptionState&);
@@ -97,7 +98,7 @@ class CORE_EXPORT History final : public ScriptWrappable,
                         const String& title,
                         const String& url,
                         HistoryScrollRestorationType,
-                        FrameLoadType,
+                        WebFrameLoadType,
                         ExceptionState&);
   SerializedScriptValue* StateInternal() const;
   HistoryScrollRestorationType ScrollRestorationInternal() const;

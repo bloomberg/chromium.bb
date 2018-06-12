@@ -7904,7 +7904,7 @@ class TestSameDocumentWebFrameClient
     FrameLoader& frame_loader =
         ToWebLocalFrameImpl(Frame())->GetFrame()->Loader();
     if (frame_loader.GetProvisionalDocumentLoader()->LoadType() ==
-        kFrameLoadTypeReload)
+        WebFrameLoadType::kReload)
       frame_load_type_reload_seen_ = true;
   }
 
@@ -8137,7 +8137,7 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
   ToLocalFrame(web_view_impl->GetPage()->MainFrame())
       ->Loader()
       .CommitSameDocumentNavigation(
-          item->Url(), kFrameLoadTypeBackForward, item.Get(),
+          item->Url(), WebFrameLoadType::kBackForward, item.Get(),
           ClientRedirectPolicy::kNotClientRedirect, nullptr, nullptr);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
 }
@@ -12825,7 +12825,7 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
   tester.ExpectTotalCount(histogramName, 0);
   main_frame_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationHistoryApi, message,
-      kScrollRestorationAuto, kFrameLoadTypeInitialHistoryLoad,
+      kScrollRestorationAuto, WebFrameLoadType::kInitialHistoryLoad,
       frame->GetDocument());
   // The bucket index corresponds to the definition of
   // |SinglePageAppNavigationType|.
@@ -12833,17 +12833,17 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
                            kSPANavTypeHistoryPushStateOrReplaceState, 1);
   main_frame_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
-      kScrollRestorationManual, kFrameLoadTypeBackForward,
+      kScrollRestorationManual, WebFrameLoadType::kBackForward,
       frame->GetDocument());
   tester.ExpectBucketCount(histogramName,
                            kSPANavTypeSameDocumentBackwardOrForward, 1);
   main_frame_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
-      kScrollRestorationManual, kFrameLoadTypeInitialHistoryLoad,
+      kScrollRestorationManual, WebFrameLoadType::kInitialHistoryLoad,
       frame->GetDocument());
   tester.ExpectBucketCount(histogramName, kSPANavTypeOtherFragmentNavigation,
                            1);
-  // kSameDocumentNavigationHistoryApi and kFrameLoadTypeBackForward is an
+  // kSameDocumentNavigationHistoryApi and WebFrameLoadType::kBackForward is an
   // illegal combination, which has been caught by DCHECK in
   // UpdateForSameDocumentNavigation().
 

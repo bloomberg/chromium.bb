@@ -869,20 +869,20 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
           post_request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Re-post
-  document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
+  document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
   EXPECT_EQ(
       mojom::FetchCacheMode::kOnlyIfCached,
       fetch_context->ResourceRequestCachePolicy(
           post_request, Resource::kMainResource, FetchParameters::kNoDefer));
 
-  // FrameLoadTypeReload
-  document->Loader()->SetLoadType(kFrameLoadTypeReload);
+  // WebFrameLoadType::kReload
+  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Conditional request
-  document->Loader()->SetLoadType(kFrameLoadTypeStandard);
+  document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
   ResourceRequest conditional("http://www.example.com");
   conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
   EXPECT_EQ(
@@ -890,21 +890,21 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
       fetch_context->ResourceRequestCachePolicy(
           conditional, Resource::kMainResource, FetchParameters::kNoDefer));
 
-  // FrameLoadTypeReloadBypassingCache
-  document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
+  // WebFrameLoadType::kReloadBypassingCache
+  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
-  // FrameLoadTypeReloadBypassingCache with a conditional request
-  document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
+  // WebFrameLoadType::kReloadBypassingCache with a conditional request
+  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(
       mojom::FetchCacheMode::kBypassCache,
       fetch_context->ResourceRequestCachePolicy(
           conditional, Resource::kMainResource, FetchParameters::kNoDefer));
 
-  // FrameLoadTypeReloadBypassingCache with a post request
-  document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
+  // WebFrameLoadType::kReloadBypassingCache with a post request
+  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(
       mojom::FetchCacheMode::kBypassCache,
       fetch_context->ResourceRequestCachePolicy(
@@ -914,19 +914,19 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   FrameFetchContext* child_fetch_context = CreateChildFrame();
 
   // Child frame as part of back/forward
-  document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
+  document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
   EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             child_fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Child frame as part of reload
-  document->Loader()->SetLoadType(kFrameLoadTypeReload);
+  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
   EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             child_fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
 
   // Child frame as part of reload bypassing cache
-  document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
+  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             child_fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
@@ -934,9 +934,9 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   // Per-frame bypassing reload, but parent load type is different.
   // This is not the case users can trigger through user interfaces, but for
   // checking code correctness and consistency.
-  document->Loader()->SetLoadType(kFrameLoadTypeReload);
+  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
   child_frame->Loader().GetDocumentLoader()->SetLoadType(
-      kFrameLoadTypeReloadBypassingCache);
+      WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             child_fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMainResource, FetchParameters::kNoDefer));
@@ -954,40 +954,40 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMock, FetchParameters::kNoDefer));
 
-  // FrameLoadTypeReload should not affect sub-resources
-  document->Loader()->SetLoadType(kFrameLoadTypeReload);
+  // WebFrameLoadType::kReload should not affect sub-resources
+  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
   EXPECT_EQ(mojom::FetchCacheMode::kDefault,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMock, FetchParameters::kNoDefer));
 
   // Conditional request
-  document->Loader()->SetLoadType(kFrameLoadTypeStandard);
+  document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
   ResourceRequest conditional("http://www.example.com/mock");
   conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
                 conditional, Resource::kMock, FetchParameters::kNoDefer));
 
-  // FrameLoadTypeReloadBypassingCache
-  document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
+  // WebFrameLoadType::kReloadBypassingCache
+  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMock, FetchParameters::kNoDefer));
 
-  // FrameLoadTypeReloadBypassingCache with a conditional request
-  document->Loader()->SetLoadType(kFrameLoadTypeReloadBypassingCache);
+  // WebFrameLoadType::kReloadBypassingCache with a conditional request
+  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
   EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
             fetch_context->ResourceRequestCachePolicy(
                 conditional, Resource::kMock, FetchParameters::kNoDefer));
 
   // Back/forward navigation
-  document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
+  document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
   EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             fetch_context->ResourceRequestCachePolicy(
                 request, Resource::kMock, FetchParameters::kNoDefer));
 
   // Back/forward navigation with a conditional request
-  document->Loader()->SetLoadType(kFrameLoadTypeBackForward);
+  document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
   EXPECT_EQ(mojom::FetchCacheMode::kForceCache,
             fetch_context->ResourceRequestCachePolicy(
                 conditional, Resource::kMock, FetchParameters::kNoDefer));
@@ -1153,7 +1153,7 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(false);
   RecreateFetchContext();
-  document->Loader()->SetLoadType(kFrameLoadTypeReload);
+  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
   fetch_context->AddAdditionalRequestHeaders(resource_request,
                                              kFetchMainResource);
   EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));
@@ -1166,7 +1166,7 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(false);
   RecreateFetchContext();
-  document->Loader()->SetLoadType(kFrameLoadTypeReload);
+  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
   fetch_context->AddAdditionalRequestHeaders(resource_request,
                                              kFetchMainResource);
   EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));

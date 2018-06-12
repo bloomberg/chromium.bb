@@ -37,6 +37,7 @@
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/commit_result.mojom-shared.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/icon_url.h"
@@ -71,8 +72,8 @@ class SerializedScriptValue;
 class SubstituteData;
 struct FrameLoadRequest;
 
-CORE_EXPORT bool IsBackForwardLoadType(FrameLoadType);
-CORE_EXPORT bool IsReloadLoadType(FrameLoadType);
+CORE_EXPORT bool IsBackForwardLoadType(WebFrameLoadType);
+CORE_EXPORT bool IsReloadLoadType(WebFrameLoadType);
 
 class CORE_EXPORT FrameLoader final {
   DISALLOW_NEW();
@@ -84,28 +85,28 @@ class CORE_EXPORT FrameLoader final {
   void Init();
 
   ResourceRequest ResourceRequestForReload(
-      FrameLoadType,
+      WebFrameLoadType,
       ClientRedirectPolicy = ClientRedirectPolicy::kNotClientRedirect);
 
   ProgressTracker& Progress() const { return *progress_tracker_; }
 
   // Starts a navigation. It will eventually send the navigation to the
   // browser process, or call LoadInSameDocument for same-document navigation.
-  // For reloads, an appropriate FrameLoadType should be given. Otherwise,
-  // FrameLoadTypeStandard should be used (and the final FrameLoadType
+  // For reloads, an appropriate WebFrameLoadType should be given. Otherwise,
+  // kStandard should be used (and the final WebFrameLoadType
   // will be computed).
   // TODO(dgozman): remove history parameters.
   void StartNavigation(const FrameLoadRequest&,
-                       FrameLoadType = kFrameLoadTypeStandard,
+                       WebFrameLoadType = WebFrameLoadType::kStandard,
                        HistoryItem* = nullptr);
 
   // Called when the browser process has asked this renderer process to commit
   // a navigation in this frame. This method skips most of the checks assuming
   // that browser process has already performed any checks necessary.
   // For history navigations, a history item should be provided and
-  // an appropriate FrameLoadType should be given.
+  // an appropriate WebFrameLoadType should be given.
   void CommitNavigation(const FrameLoadRequest&,
-                        FrameLoadType = kFrameLoadTypeStandard,
+                        WebFrameLoadType = WebFrameLoadType::kStandard,
                         HistoryItem* = nullptr);
 
   // Called when the browser process has asked this renderer process to commit a
@@ -113,7 +114,7 @@ class CORE_EXPORT FrameLoader final {
   // cannot commit, true otherwise.
   mojom::CommitResult CommitSameDocumentNavigation(
       const KURL&,
-      FrameLoadType,
+      WebFrameLoadType,
       HistoryItem*,
       ClientRedirectPolicy,
       Document* origin_document = nullptr,
@@ -195,7 +196,7 @@ class CORE_EXPORT FrameLoader final {
                                        SameDocumentNavigationSource,
                                        scoped_refptr<SerializedScriptValue>,
                                        HistoryScrollRestorationType,
-                                       FrameLoadType,
+                                       WebFrameLoadType,
                                        Document*);
 
   bool ShouldSerializeScrollAnchor();
@@ -213,7 +214,7 @@ class CORE_EXPORT FrameLoader final {
       ContentSecurityPolicyDisposition,
       NavigationType,
       NavigationPolicy,
-      FrameLoadType,
+      WebFrameLoadType,
       bool is_client_redirect,
       WebTriggeringEventInfo,
       HTMLFormElement*,
@@ -229,7 +230,7 @@ class CORE_EXPORT FrameLoader final {
       ContentSecurityPolicyDisposition,
       NavigationType,
       NavigationPolicy,
-      FrameLoadType,
+      WebFrameLoadType,
       bool is_client_redirect,
       HTMLFormElement*);
 
@@ -251,18 +252,18 @@ class CORE_EXPORT FrameLoader final {
 
  private:
   bool PrepareRequestForThisFrame(FrameLoadRequest&);
-  FrameLoadType DetermineFrameLoadType(const FrameLoadRequest&);
+  WebFrameLoadType DetermineFrameLoadType(const FrameLoadRequest&);
 
   SubstituteData DefaultSubstituteDataForURL(const KURL&);
 
   bool ShouldPerformFragmentNavigation(bool is_form_submission,
                                        const String& http_method,
-                                       FrameLoadType,
+                                       WebFrameLoadType,
                                        const KURL&);
-  void ProcessFragment(const KURL&, FrameLoadType, LoadStartType);
+  void ProcessFragment(const KURL&, WebFrameLoadType, LoadStartType);
 
   void StartLoad(FrameLoadRequest&,
-                 FrameLoadType,
+                 WebFrameLoadType,
                  NavigationPolicy,
                  HistoryItem*,
                  bool check_with_client);
@@ -271,11 +272,11 @@ class CORE_EXPORT FrameLoader final {
 
   void LoadInSameDocument(const KURL&,
                           scoped_refptr<SerializedScriptValue> state_object,
-                          FrameLoadType,
+                          WebFrameLoadType,
                           HistoryItem*,
                           ClientRedirectPolicy,
                           Document*);
-  void RestoreScrollPositionAndViewState(FrameLoadType,
+  void RestoreScrollPositionAndViewState(WebFrameLoadType,
                                          bool is_same_document,
                                          HistoryItem::ViewState*,
                                          HistoryScrollRestorationType);
@@ -289,7 +290,7 @@ class CORE_EXPORT FrameLoader final {
 
   DocumentLoader* CreateDocumentLoader(const ResourceRequest&,
                                        const FrameLoadRequest&,
-                                       FrameLoadType,
+                                       WebFrameLoadType,
                                        NavigationType);
 
   LocalFrameClient* Client() const;

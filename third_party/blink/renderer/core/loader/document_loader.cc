@@ -116,7 +116,7 @@ DocumentLoader::DocumentLoader(
       original_request_(req),
       substitute_data_(substitute_data),
       request_(req),
-      load_type_(kFrameLoadTypeStandard),
+      load_type_(WebFrameLoadType::kStandard),
       is_client_redirect_(client_redirect_policy ==
                           ClientRedirectPolicy::kClientRedirect),
       replaces_current_history_item_(false),
@@ -284,17 +284,17 @@ void DocumentLoader::MarkAsCommitted() {
   state_ = kCommitted;
 }
 
-static WebHistoryCommitType LoadTypeToCommitType(FrameLoadType type) {
+static WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType type) {
   switch (type) {
-    case kFrameLoadTypeStandard:
+    case WebFrameLoadType::kStandard:
       return kWebStandardCommit;
-    case kFrameLoadTypeBackForward:
+    case WebFrameLoadType::kBackForward:
       return kWebBackForwardCommit;
-    case kFrameLoadTypeReload:
-    case kFrameLoadTypeReplaceCurrentItem:
-    case kFrameLoadTypeInitialInChildFrame:
-    case kFrameLoadTypeInitialHistoryLoad:
-    case kFrameLoadTypeReloadBypassingCache:
+    case WebFrameLoadType::kReload:
+    case WebFrameLoadType::kReplaceCurrentItem:
+    case WebFrameLoadType::kInitialInChildFrame:
+    case WebFrameLoadType::kInitialHistoryLoad:
+    case WebFrameLoadType::kReloadBypassingCache:
       return kWebHistoryInertCommit;
   }
   NOTREACHED();
@@ -306,17 +306,17 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     SameDocumentNavigationSource same_document_navigation_source,
     scoped_refptr<SerializedScriptValue> data,
     HistoryScrollRestorationType scroll_restoration_type,
-    FrameLoadType type,
+    WebFrameLoadType type,
     Document* initiating_document) {
-  if (type == kFrameLoadTypeStandard && initiating_document &&
+  if (type == WebFrameLoadType::kStandard && initiating_document &&
       !initiating_document->CanCreateHistoryEntry()) {
-    type = kFrameLoadTypeReplaceCurrentItem;
+    type = WebFrameLoadType::kReplaceCurrentItem;
   }
 
   KURL old_url = request_.Url();
   original_request_.SetURL(new_url);
   request_.SetURL(new_url);
-  SetReplacesCurrentHistoryItem(type != kFrameLoadTypeStandard);
+  SetReplacesCurrentHistoryItem(type != WebFrameLoadType::kStandard);
   if (same_document_navigation_source == kSameDocumentNavigationHistoryApi) {
     request_.SetHTTPMethod(HTTPNames::GET);
     request_.SetHTTPBody(nullptr);
@@ -338,7 +338,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   }
   WebHistoryCommitType commit_type = LoadTypeToCommitType(type);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
-      commit_type == kWebHistoryInertCommit, type == kFrameLoadTypeReload,
+      commit_type == kWebHistoryInertCommit, type == WebFrameLoadType::kReload,
       frame_->IsLocalRoot());
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, initiating_document);
@@ -351,7 +351,7 @@ const KURL& DocumentLoader::UrlForHistory() const {
 
 void DocumentLoader::SetHistoryItemStateForCommit(
     HistoryItem* old_item,
-    FrameLoadType load_type,
+    WebFrameLoadType load_type,
     HistoryNavigationType navigation_type) {
   if (!history_item_ || !IsBackForwardLoadType(load_type))
     history_item_ = HistoryItem::Create();
@@ -958,15 +958,15 @@ void DocumentLoader::DidCommitNavigation(
     return;
 
   if (!frame_->Loader().StateMachine()->CommittedMultipleRealLoads() &&
-      load_type_ == kFrameLoadTypeStandard) {
+      load_type_ == WebFrameLoadType::kStandard) {
     frame_->Loader().StateMachine()->AdvanceTo(
         FrameLoaderStateMachine::kCommittedMultipleRealLoads);
   }
 
   WebHistoryCommitType commit_type = LoadTypeToCommitType(load_type_);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
-      commit_type == kWebHistoryInertCommit, load_type_ == kFrameLoadTypeReload,
-      frame_->IsLocalRoot());
+      commit_type == kWebHistoryInertCommit,
+      load_type_ == WebFrameLoadType::kReload, frame_->IsLocalRoot());
   // When a new navigation commits in the frame, subresource loading should be
   // resumed.
   frame_->ResumeSubresourceLoading();

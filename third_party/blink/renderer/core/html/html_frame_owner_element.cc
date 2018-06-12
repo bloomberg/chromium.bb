@@ -366,11 +366,11 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
         policy, url, GetDocument().OutgoingReferrer()));
   }
 
-  FrameLoadType child_load_type = kFrameLoadTypeInitialInChildFrame;
+  WebFrameLoadType child_load_type = WebFrameLoadType::kInitialInChildFrame;
   if (!GetDocument().LoadEventFinished() &&
       GetDocument().Loader()->LoadType() ==
-          kFrameLoadTypeReloadBypassingCache) {
-    child_load_type = kFrameLoadTypeReloadBypassingCache;
+          WebFrameLoadType::kReloadBypassingCache) {
+    child_load_type = WebFrameLoadType::kReloadBypassingCache;
     request.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
   }
 

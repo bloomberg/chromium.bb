@@ -313,7 +313,7 @@ void LocalFrame::Navigate(const FrameLoadRequest& request) {
   loader_.StartNavigation(request);
 }
 
-void LocalFrame::Reload(FrameLoadType load_type,
+void LocalFrame::Reload(WebFrameLoadType load_type,
                         ClientRedirectPolicy client_redirect_policy) {
   DCHECK(IsReloadLoadType(load_type));
   if (client_redirect_policy == ClientRedirectPolicy::kNotClientRedirect) {
@@ -325,7 +325,7 @@ void LocalFrame::Reload(FrameLoadType load_type,
     request.SetClientRedirect(client_redirect_policy);
     loader_.StartNavigation(request, load_type);
   } else {
-    DCHECK_EQ(kFrameLoadTypeReload, load_type);
+    DCHECK_EQ(WebFrameLoadType::kReload, load_type);
     navigation_scheduler_->ScheduleReload();
   }
 }

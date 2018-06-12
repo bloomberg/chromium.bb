@@ -58,7 +58,7 @@ class CORE_EXPORT ProgressTracker final
 
   double EstimatedProgress() const;
 
-  void ProgressStarted(FrameLoadType);
+  void ProgressStarted();
   void ProgressCompleted();
 
   void FinishedParsing();

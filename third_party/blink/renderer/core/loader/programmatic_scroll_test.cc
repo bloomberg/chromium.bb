@@ -55,7 +55,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   web_view->UpdateAllLifecyclePhases();
 
   FrameLoader& loader = web_view->MainFrameImpl()->GetFrame()->Loader();
-  loader.GetDocumentLoader()->SetLoadType(kFrameLoadTypeBackForward);
+  loader.GetDocumentLoader()->SetLoadType(WebFrameLoadType::kBackForward);
 
   web_view->SetPageScaleFactor(3.0f);
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 500));
@@ -87,7 +87,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   web_view->UpdateAllLifecyclePhases();
 
   FrameLoader& loader = web_view->MainFrameImpl()->GetFrame()->Loader();
-  loader.GetDocumentLoader()->SetLoadType(kFrameLoadTypeBackForward);
+  loader.GetDocumentLoader()->SetLoadType(WebFrameLoadType::kBackForward);
 
   web_view->SetPageScaleFactor(3.0f);
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 500));

@@ -34,6 +34,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_global_object_reuse_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -132,7 +133,7 @@ class CORE_EXPORT DocumentLoader
                                        SameDocumentNavigationSource,
                                        scoped_refptr<SerializedScriptValue>,
                                        HistoryScrollRestorationType,
-                                       FrameLoadType,
+                                       WebFrameLoadType,
                                        Document*);
   const ResourceResponse& GetResponse() const { return response_; }
   bool IsClientRedirect() const { return is_client_redirect_; }
@@ -160,8 +161,8 @@ class CORE_EXPORT DocumentLoader
   void SetSentDidFinishLoad() { state_ = kSentDidFinishLoad; }
   bool SentDidFinishLoad() const { return state_ == kSentDidFinishLoad; }
 
-  FrameLoadType LoadType() const { return load_type_; }
-  void SetLoadType(FrameLoadType load_type) { load_type_ = load_type; }
+  WebFrameLoadType LoadType() const { return load_type_; }
+  void SetLoadType(WebFrameLoadType load_type) { load_type_ = load_type; }
 
   NavigationType GetNavigationType() const { return navigation_type_; }
   void SetNavigationType(NavigationType navigation_type) {
@@ -303,7 +304,7 @@ class CORE_EXPORT DocumentLoader
     kHistoryApi
   };
   void SetHistoryItemStateForCommit(HistoryItem* old_item,
-                                    FrameLoadType,
+                                    WebFrameLoadType,
                                     HistoryNavigationType);
 
   // RawResourceClient implementation
@@ -357,7 +358,7 @@ class CORE_EXPORT DocumentLoader
 
   ResourceResponse response_;
 
-  FrameLoadType load_type_;
+  WebFrameLoadType load_type_;
 
   bool is_client_redirect_;
   bool replaces_current_history_item_;

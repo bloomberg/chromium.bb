@@ -44,7 +44,7 @@ class ProgressTrackerTest : public PageTestBase {
   // to ProgressTracker with identifier 1, but tests are responsible for
   // emulating payload and load completion.
   void EmulateMainResourceRequestAndResponse() const {
-    Progress().ProgressStarted(kFrameLoadTypeStandard);
+    Progress().ProgressStarted();
     Progress().WillStartLoading(1ul, ResourceLoadPriority::kVeryHigh);
     EXPECT_EQ(0.0, LastProgress());
     Progress().IncrementProgress(1ul, ResponseHeaders());
@@ -57,7 +57,7 @@ class ProgressTrackerTest : public PageTestBase {
 };
 
 TEST_F(ProgressTrackerTest, Static) {
-  Progress().ProgressStarted(kFrameLoadTypeStandard);
+  Progress().ProgressStarted();
   EXPECT_EQ(0.0, LastProgress());
   Progress().ProgressCompleted();
   EXPECT_EQ(1.0, LastProgress());

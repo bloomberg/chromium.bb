@@ -122,7 +122,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
                           bool replace_current_item,
                           UserGestureStatus) override;
   void Navigate(const FrameLoadRequest&) override;
-  void Reload(FrameLoadType, ClientRedirectPolicy) override;
+  void Reload(WebFrameLoadType, ClientRedirectPolicy) override;
   void Detach(FrameDetachType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;

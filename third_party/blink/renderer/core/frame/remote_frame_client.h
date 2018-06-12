@@ -8,9 +8,9 @@
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
-#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 
 namespace blink {
@@ -28,7 +28,7 @@ class RemoteFrameClient : public FrameClient {
   virtual void Navigate(const ResourceRequest&,
                         bool should_replace_current_entry,
                         mojom::blink::BlobURLTokenPtr) = 0;
-  virtual void Reload(FrameLoadType, ClientRedirectPolicy) = 0;
+  virtual void Reload(WebFrameLoadType, ClientRedirectPolicy) = 0;
   unsigned BackForwardLength() override = 0;
 
   // Notifies the remote frame to check whether it is done loading, after one
