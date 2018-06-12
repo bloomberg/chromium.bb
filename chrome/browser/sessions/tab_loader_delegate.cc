@@ -6,7 +6,9 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/resource_coordinator/session_restore_policy.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
+#include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/network_change_notifier.h"
 
@@ -41,11 +43,27 @@ class TabLoaderDelegateImpl
     return resource_coordinator::GetTabLoadTimeout(timeout_);
   }
 
+  // TabLoaderDelegate:
+  size_t GetMaxSimultaneousTabLoads() const override {
+    return policy_.simultaneous_tab_loads();
+  }
+
+  // TabLoaderDelegate:
+  bool ShouldLoad(content::WebContents* contents) const override {
+    return policy_.ShouldLoad(contents);
+  }
+
+  // TabLoaderDelegate:
+  void NotifyTabLoadStarted() override { policy_.NotifyTabLoadStarted(); }
+
   // net::NetworkChangeNotifier::NetworkChangeObserver implementation:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:
+  // The policy engine used to implement ShouldLoad.
+  resource_coordinator::SessionRestorePolicy policy_;
+
   // The function to call when the connection type changes.
   TabLoaderCallback* callback_;
 

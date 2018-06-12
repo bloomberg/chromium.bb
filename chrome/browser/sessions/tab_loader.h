@@ -140,6 +140,11 @@ class TabLoader : public base::RefCounted<TabLoader>,
   // |tabs_loading_|. Can invalidate self-destroy and timer invariants.
   void MarkTabAsLoading(content::WebContents* contents);
 
+  // Stops tracking the tab, marking its load as deferred. This will remove it
+  // from all tab tracking containers and notify the stats delegate of the
+  // deferred load.
+  void MarkTabAsDeferred(content::WebContents* contents);
+
   // Maybes loads one of more tabs. This will cause one or more tabs (up to the
   // number of open loading slots) to load, while respecting the loading slot
   // cap.
@@ -151,6 +156,11 @@ class TabLoader : public base::RefCounted<TabLoader>,
 
   // Stops loading tabs.
   void StopLoadingTabs();
+
+  // Gets the next tab to load, returning nullptr if there are none. Note that
+  // this can cause |tabs_to_load_| to be drained due to policy decision made by
+  // the TabLoaderDelegate.
+  content::WebContents* GetNextTabToLoad();
 
   // Loads the next tab and restores invariants. This should only be called if
   // there is a next tab to load. This will always start loading a next tab even
@@ -196,8 +206,9 @@ class TabLoader : public base::RefCounted<TabLoader>,
   // The number of tabs to load simultaneously. This is a soft cap in that it
   // can be exceeded by tabs that timeout, visible tabs, and user interactions
   // forcing a tab load. However, normal session restore tab loads will not kick
-  // off a new load unless there is room below this cap.
-  size_t max_simultaneous_loads_;
+  // off a new load unless there is room below this cap. This is initialized via
+  // the delegate. The initial value of 0 is used to indicate "uninitialized".
+  size_t max_simultaneous_loads_ = 0;
 
   // The delay timer multiplier. See class description for details.
   size_t force_load_delay_multiplier_ = 1;
