@@ -150,7 +150,10 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
     // this, to better support hit tests that don't start at frame boundaries.
     LayoutPoint original_point_in_inner_node_frame =
         result.PointInInnerNodeFrame();
-    result = layer_result;
+    if (result.GetHitTestRequest().ListBased())
+      result.Append(layer_result);
+    else
+      result = layer_result;
     result.SetPointInInnerNodeFrame(original_point_in_inner_node_frame);
     return retval;
   }
