@@ -37,6 +37,7 @@
 
   TableViewURLCell* cell =
       base::mac::ObjCCastStrict<TableViewURLCell>(tableCell);
+  cell.cellUniqueIdentifier = self.uniqueIdentifier;
   cell.titleLabel.text = self.text;
   cell.URLLabel.text = self.detailText;
   cell.metadataLabel.text = self.timeText;
@@ -45,6 +46,10 @@
   cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;
+}
+
+- (NSString*)uniqueIdentifier {
+  return base::SysUTF8ToNSString(self.URL.host());
 }
 
 #pragma mark NSObject
