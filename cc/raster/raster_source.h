@@ -133,10 +133,10 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   explicit RasterSource(const RecordingSource* other);
   virtual ~RasterSource();
 
-  void ClearForFullRaster(SkCanvas* raster_canvas,
-                          const gfx::Size& content_size,
-                          const gfx::Rect& canvas_bitmap_rect,
-                          const gfx::Rect& canvas_playback_rect) const;
+  void ClearForOpaqueRaster(SkCanvas* raster_canvas,
+                            const gfx::Size& content_size,
+                            const gfx::Rect& canvas_bitmap_rect,
+                            const gfx::Rect& canvas_playback_rect) const;
 
   // These members are const as this raster source may be in use on another
   // thread and so should not be touched after construction.

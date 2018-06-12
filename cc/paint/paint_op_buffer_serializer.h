@@ -95,6 +95,9 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
                       const PaintOp::SerializeOptions& options,
                       const PlaybackParams& params);
   PaintOp::SerializeOptions MakeSerializeOptions();
+  void ClearForOpaqueRaster(const Preamble& preamble,
+                            const PaintOp::SerializeOptions& options,
+                            const PlaybackParams& params);
 
   SerializeCallback serialize_cb_;
   ImageProvider* image_provider_;
