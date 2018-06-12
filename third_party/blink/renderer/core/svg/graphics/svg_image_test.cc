@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
@@ -176,6 +177,21 @@ TEST_F(SVGImageTest, JankTrackerDisabled) {
   EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
   auto& jank_tracker = local_frame->View()->GetJankTracker();
   EXPECT_FALSE(jank_tracker.IsActive());
+}
+
+TEST_F(SVGImageTest, SetSizeOnVisualViewport) {
+  const bool kDontPause = false;
+  Load(
+      "<svg xmlns='http://www.w3.org/2000/svg'>"
+      "   <rect id='green' width='100%' height='100%' fill='green' />"
+      "</svg>",
+      kDontPause);
+  PumpFrame();
+  LocalFrame* local_frame =
+      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+  ASSERT_FALSE(local_frame->View()->VisibleContentRect().IsEmpty());
+  EXPECT_EQ(local_frame->View()->VisibleContentRect().Size(),
+            GetImage().GetPageForTesting()->GetVisualViewport().Size());
 }
 
 }  // namespace blink
