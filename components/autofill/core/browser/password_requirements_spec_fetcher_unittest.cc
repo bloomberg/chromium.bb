@@ -312,6 +312,30 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchDataInterleaved) {
   }
 }
 
+// In case of incognito mode, we won't have a URL loader factory.
+// Test that an empty spec is returned by the spec fetcher in this case.
+TEST(PasswordRequirementsSpecFetcherTest, FetchDataWithoutURLLoaderFactory) {
+  base::test::ScopedTaskEnvironment environment;
+
+  // Target into which data will be written by the callback.
+  PasswordRequirementsSpec received_spec;
+  // Set some values to see whether they get overridden by the callback.
+  received_spec.set_min_length(1);
+
+  const int kVersion = 1;
+  const size_t kPrefixLength = 0;
+  const int kTimeout = 1000;
+  PasswordRequirementsSpecFetcherImpl fetcher(nullptr, kVersion, kPrefixLength,
+                                              kTimeout);
+
+  fetcher.Fetch(
+      GURL("http://a.com"),
+      base::BindLambdaForTesting(
+          [&](const PasswordRequirementsSpec& spec) { received_spec = spec; }));
+  environment.RunUntilIdle();
+  EXPECT_FALSE(received_spec.has_min_length());
+}
+
 #undef SERVER_URL
 
 }  // namespace

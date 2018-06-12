@@ -93,6 +93,12 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(
     FetchCallback callback) {
   DCHECK(origin.is_valid());
 
+  if (!url_loader_factory_) {
+    TriggerCallback(std::move(callback), ResultCode::kErrorNoUrlLoader,
+                    PasswordRequirementsSpec());
+    return;
+  }
+
   if (!origin.is_valid() || origin.HostIsIPAddress() ||
       !origin.SchemeIsHTTPOrHTTPS()) {
     TriggerCallback(std::move(callback), ResultCode::kErrorInvalidOrigin,

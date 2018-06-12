@@ -45,7 +45,9 @@ class PasswordRequirementsSpecFetcherImpl
     kErrorTimeout = 4,
     // Server responded with a document but it could not be parsed.
     kErrorFailedToParse = 5,
-    kMaxValue = kErrorFailedToParse,
+    // No URL loader configured for the PasswordRequirementsSpecFetcher.
+    kErrorNoUrlLoader = 6,
+    kMaxValue = kErrorNoUrlLoader,
   };
 
   // See the member variables for explanations of these parameters.

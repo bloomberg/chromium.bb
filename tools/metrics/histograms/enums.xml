@@ -36225,6 +36225,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Failed to parse response">
     Server responded with a document but it could not be parsed.
   </int>
+  <int value="6" label="No URL Loader">No URL loader configured.</int>
 </enum>
 
 <enum name="PasswordReusePasswordFieldDetected">
