@@ -30,7 +30,6 @@
 #include "url/gurl.h"
 
 using base::FilePath;
-using base::Time;
 using base::Unretained;
 using content::BrowserThread;
 

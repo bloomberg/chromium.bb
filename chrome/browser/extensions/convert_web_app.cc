@@ -45,7 +45,6 @@ namespace extensions {
 
 namespace keys = manifest_keys;
 
-using base::Time;
 
 namespace {
 
@@ -120,16 +119,17 @@ GURL GetScopeURLFromBookmarkApp(const Extension* extension) {
 
 // Generates a version for the converted app using the current date. This isn't
 // really needed, but it seems like useful information.
-std::string ConvertTimeToExtensionVersion(const Time& create_time) {
-  Time::Exploded create_time_exploded;
+std::string ConvertTimeToExtensionVersion(const base::Time& create_time) {
+  base::Time::Exploded create_time_exploded;
   create_time.UTCExplode(&create_time_exploded);
 
   double micros = static_cast<double>(
-      (create_time_exploded.millisecond * Time::kMicrosecondsPerMillisecond) +
-      (create_time_exploded.second * Time::kMicrosecondsPerSecond) +
-      (create_time_exploded.minute * Time::kMicrosecondsPerMinute) +
-      (create_time_exploded.hour * Time::kMicrosecondsPerHour));
-  double day_fraction = micros / Time::kMicrosecondsPerDay;
+      (create_time_exploded.millisecond *
+       base::Time::kMicrosecondsPerMillisecond) +
+      (create_time_exploded.second * base::Time::kMicrosecondsPerSecond) +
+      (create_time_exploded.minute * base::Time::kMicrosecondsPerMinute) +
+      (create_time_exploded.hour * base::Time::kMicrosecondsPerHour));
+  double day_fraction = micros / base::Time::kMicrosecondsPerDay;
   int stamp =
       gfx::ToRoundedInt(day_fraction * std::numeric_limits<uint16_t>::max());
 
@@ -140,7 +140,7 @@ std::string ConvertTimeToExtensionVersion(const Time& create_time) {
 
 scoped_refptr<Extension> ConvertWebAppToExtension(
     const WebApplicationInfo& web_app,
-    const Time& create_time,
+    const base::Time& create_time,
     const base::FilePath& extensions_dir) {
   base::FilePath install_temp_dir =
       file_util::GetInstallTempDir(extensions_dir);

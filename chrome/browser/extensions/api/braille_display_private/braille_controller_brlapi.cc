@@ -23,8 +23,6 @@
 
 namespace extensions {
 using content::BrowserThread;
-using base::Time;
-using base::TimeDelta;
 namespace api {
 namespace braille_display_private {
 
@@ -250,18 +248,19 @@ void BrailleControllerImpl::TryToConnect() {
 
 void BrailleControllerImpl::ResetRetryConnectHorizon() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  retry_connect_horizon_ = Time::Now() + TimeDelta::FromMilliseconds(
-      kConnectRetryTimeout);
+  retry_connect_horizon_ =
+      base::Time::Now() +
+      base::TimeDelta::FromMilliseconds(kConnectRetryTimeout);
 }
 
 void BrailleControllerImpl::ScheduleTryToConnect() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  TimeDelta delay(TimeDelta::FromMilliseconds(kConnectionDelayMs));
+  base::TimeDelta delay(base::TimeDelta::FromMilliseconds(kConnectionDelayMs));
   // Don't reschedule if there's already a connect scheduled or
   // the next attempt would fall outside of the retry limit.
   if (connect_scheduled_)
     return;
-  if (Time::Now() + delay > retry_connect_horizon_) {
+  if (base::Time::Now() + delay > retry_connect_horizon_) {
     VLOG(1) << "Stopping to retry to connect to brlapi";
     return;
   }
