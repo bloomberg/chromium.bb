@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 19
+version_id: 20
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -2152,6 +2152,18 @@ file_types {
   # Used to find files landed surreptitiously w/o UI.
   extension: "search-ms"
   uma_value: 246
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Used to create shortcuts to various Windows 10 setting pages.
+  # Allows invoking any binary file with any parameters.
+  extension: "settingcontent-ms"
+  uma_value: 316
   ping_setting: FULL_PING
   platform_settings {
     platform: PLATFORM_WINDOWS
