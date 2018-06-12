@@ -5,16 +5,23 @@
 from typing import Dict
 
 # Fields for use when working with a physical linux device connected locally
-linux_device_hostname = "192.168.42.32"
+linux_device_ip = "192.168.42.32"
 linux_device_user = "potat"
 
-linux_out_dir = "out/default"
-fuchsia_out_dir = "out/fuchsia"
+fuchsia_device_ip = "192.168.42.64"
 
-# A map of test targets to custom filter files. Do not specify the fuchsia
-# filters in testing/buildbot/filters. Those are already incorporated into the
-# fuchsia filters. The file specified should use the same format as those files,
-# though.
+# The linux build directory.
+linux_out_dir = "out/default"
+# The fuchsia build directory.
+fuchsia_out_dir = "out/fuchsia"
+# The location in src that will store final statistical data on perftest results
+results_dir = "results"
+# The location in src that stores the information from each comparative
+# invocation of a perftest
+raw_linux_dir = "results/linux_raw"
+raw_fuchsia_dir = "results/fuchsia_raw"
+
+# A list of test targets to deploy to both devices. Stick to *_perftests.
 test_targets = [
     "base:base_perftests",
     "net:net_perftests",
