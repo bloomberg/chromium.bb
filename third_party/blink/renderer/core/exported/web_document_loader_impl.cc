@@ -111,7 +111,7 @@ bool WebDocumentLoaderImpl::ReplacesCurrentHistoryItem() const {
 }
 
 WebNavigationType WebDocumentLoaderImpl::GetNavigationType() const {
-  return ToWebNavigationType(DocumentLoader::GetNavigationType());
+  return DocumentLoader::GetNavigationType();
 }
 
 WebDocumentLoader::ExtraData* WebDocumentLoaderImpl::GetExtraData() const {
@@ -127,25 +127,6 @@ void WebDocumentLoaderImpl::SetExtraData(ExtraData* extra_data) {
 void WebDocumentLoaderImpl::SetNavigationStartTime(
     base::TimeTicks navigation_start) {
   GetTiming().SetNavigationStart(navigation_start);
-}
-
-WebNavigationType WebDocumentLoaderImpl::ToWebNavigationType(
-    NavigationType type) {
-  switch (type) {
-    case kNavigationTypeLinkClicked:
-      return kWebNavigationTypeLinkClicked;
-    case kNavigationTypeFormSubmitted:
-      return kWebNavigationTypeFormSubmitted;
-    case kNavigationTypeBackForward:
-      return kWebNavigationTypeBackForward;
-    case kNavigationTypeReload:
-      return kWebNavigationTypeReload;
-    case kNavigationTypeFormResubmitted:
-      return kWebNavigationTypeFormResubmitted;
-    case kNavigationTypeOther:
-    default:
-      return kWebNavigationTypeOther;
-  }
 }
 
 WebDocumentLoaderImpl::WebDocumentLoaderImpl(

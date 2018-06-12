@@ -743,39 +743,40 @@ static bool ShouldNavigateTargetFrame(NavigationPolicy policy) {
   }
 }
 
-static NavigationType DetermineNavigationType(WebFrameLoadType frame_load_type,
-                                              bool is_form_submission,
-                                              bool have_event) {
+static WebNavigationType DetermineNavigationType(
+    WebFrameLoadType frame_load_type,
+    bool is_form_submission,
+    bool have_event) {
   bool is_reload = IsReloadLoadType(frame_load_type);
   bool is_back_forward = IsBackForwardLoadType(frame_load_type);
   if (is_form_submission) {
-    return (is_reload || is_back_forward) ? kNavigationTypeFormResubmitted
-                                          : kNavigationTypeFormSubmitted;
+    return (is_reload || is_back_forward) ? kWebNavigationTypeFormResubmitted
+                                          : kWebNavigationTypeFormSubmitted;
   }
   if (have_event)
-    return kNavigationTypeLinkClicked;
+    return kWebNavigationTypeLinkClicked;
   if (is_reload)
-    return kNavigationTypeReload;
+    return kWebNavigationTypeReload;
   if (is_back_forward)
-    return kNavigationTypeBackForward;
-  return kNavigationTypeOther;
+    return kWebNavigationTypeBackForward;
+  return kWebNavigationTypeOther;
 }
 
 static WebURLRequest::RequestContext DetermineRequestContextFromNavigationType(
-    const NavigationType navigation_type) {
+    const WebNavigationType navigation_type) {
   switch (navigation_type) {
-    case kNavigationTypeLinkClicked:
+    case kWebNavigationTypeLinkClicked:
       return WebURLRequest::kRequestContextHyperlink;
 
-    case kNavigationTypeOther:
+    case kWebNavigationTypeOther:
       return WebURLRequest::kRequestContextLocation;
 
-    case kNavigationTypeFormResubmitted:
-    case kNavigationTypeFormSubmitted:
+    case kWebNavigationTypeFormResubmitted:
+    case kWebNavigationTypeFormSubmitted:
       return WebURLRequest::kRequestContextForm;
 
-    case kNavigationTypeBackForward:
-    case kNavigationTypeReload:
+    case kWebNavigationTypeBackForward:
+    case kWebNavigationTypeReload:
       return WebURLRequest::kRequestContextInternal;
   }
   NOTREACHED();
@@ -1407,7 +1408,7 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
     DocumentLoader* loader,
     ContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy,
-    NavigationType type,
+    WebNavigationType type,
     NavigationPolicy policy,
     WebFrameLoadType frame_load_type,
     bool is_client_redirect,
@@ -1451,7 +1452,7 @@ NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
     DocumentLoader* loader,
     ContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy,
-    NavigationType type,
+    WebNavigationType type,
     NavigationPolicy policy,
     WebFrameLoadType frame_load_type,
     bool is_client_redirect,
@@ -1482,7 +1483,7 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
                             bool check_with_client) {
   DCHECK(Client()->HasWebView());
   ResourceRequest& resource_request = frame_load_request.GetResourceRequest();
-  NavigationType navigation_type = DetermineNavigationType(
+  WebNavigationType navigation_type = DetermineNavigationType(
       type, resource_request.HttpBody() || frame_load_request.Form(),
       frame_load_request.TriggeringEvent());
   resource_request.SetRequestContext(
@@ -1825,7 +1826,7 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
     const ResourceRequest& request,
     const FrameLoadRequest& frame_load_request,
     WebFrameLoadType load_type,
-    NavigationType navigation_type) {
+    WebNavigationType navigation_type) {
   DocumentLoader* loader = Client()->CreateDocumentLoader(
       frame_, request,
       frame_load_request.GetSubstituteData().IsValid()

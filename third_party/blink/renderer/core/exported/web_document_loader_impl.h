@@ -90,8 +90,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   bool IsArchive() const override;
   WebArchiveInfo GetArchiveInfo() const override;
 
-  static WebNavigationType ToWebNavigationType(NavigationType);
-
   void Trace(blink::Visitor*) override;
 
  private:

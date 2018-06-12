@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_NAVIGATION_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_NAVIGATION_TIMING_H_
 
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
@@ -66,7 +67,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
  private:
   ~PerformanceNavigationTiming() override;
 
-  static AtomicString GetNavigationType(NavigationType, const Document*);
+  static AtomicString GetNavigationType(WebNavigationType, const Document*);
 
   const DocumentTiming* GetDocumentTiming() const;
   DocumentLoader* GetDocumentLoader() const;

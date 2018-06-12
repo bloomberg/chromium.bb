@@ -95,7 +95,7 @@ NavigationPolicy EmptyLocalFrameClient::DecidePolicyForNavigation(
     const ResourceRequest&,
     Document* origin_document,
     DocumentLoader*,
-    NavigationType,
+    WebNavigationType,
     NavigationPolicy,
     bool,
     bool,

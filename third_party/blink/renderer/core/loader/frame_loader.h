@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/commit_result.mojom-shared.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/icon_url.h"
@@ -212,7 +213,7 @@ class CORE_EXPORT FrameLoader final {
       const SubstituteData&,
       DocumentLoader*,
       ContentSecurityPolicyDisposition,
-      NavigationType,
+      WebNavigationType,
       NavigationPolicy,
       WebFrameLoadType,
       bool is_client_redirect,
@@ -228,7 +229,7 @@ class CORE_EXPORT FrameLoader final {
       const SubstituteData&,
       DocumentLoader*,
       ContentSecurityPolicyDisposition,
-      NavigationType,
+      WebNavigationType,
       NavigationPolicy,
       WebFrameLoadType,
       bool is_client_redirect,
@@ -291,7 +292,7 @@ class CORE_EXPORT FrameLoader final {
   DocumentLoader* CreateDocumentLoader(const ResourceRequest&,
                                        const FrameLoadRequest&,
                                        WebFrameLoadType,
-                                       NavigationType);
+                                       WebNavigationType);
 
   LocalFrameClient* Client() const;
 

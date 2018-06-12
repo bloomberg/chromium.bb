@@ -271,7 +271,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       const ResourceRequest&,
       Document* origin_document,
       DocumentLoader*,
-      NavigationType,
+      WebNavigationType,
       NavigationPolicy,
       bool,
       bool,
