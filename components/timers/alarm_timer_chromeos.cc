@@ -20,17 +20,17 @@
 
 namespace timers {
 
-AlarmTimer::AlarmTimer(bool retain_user_task, bool is_repeating)
-    : base::Timer(retain_user_task, is_repeating),
+SimpleAlarmTimer::SimpleAlarmTimer()
+    : base::Timer(true, false),
       alarm_fd_(timerfd_create(CLOCK_REALTIME_ALARM, 0)),
       weak_factory_(this) {}
 
-AlarmTimer::~AlarmTimer() {
+SimpleAlarmTimer::~SimpleAlarmTimer() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   Stop();
 }
 
-void AlarmTimer::Stop() {
+void SimpleAlarmTimer::Stop() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
 
   if (!base::Timer::is_running())
@@ -47,12 +47,9 @@ void AlarmTimer::Stop() {
   base::Timer::set_is_running(false);
   alarm_fd_watcher_.reset();
   pending_task_.reset();
-
-  if (!base::Timer::retain_user_task())
-    base::Timer::set_user_task(base::Closure());
 }
 
-void AlarmTimer::Reset() {
+void SimpleAlarmTimer::Reset() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!base::Timer::user_task().is_null());
 
@@ -93,20 +90,21 @@ void AlarmTimer::Reset() {
   // If the delay is zero, post the task now.
   if (delay.is_zero()) {
     origin_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&AlarmTimer::OnTimerFired, weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SimpleAlarmTimer::OnTimerFired,
+                                  weak_factory_.GetWeakPtr()));
   } else {
     // Otherwise, if the delay is not zero, generate a tracing event to indicate
     // that the task was posted and watch |alarm_fd_|.
-    base::debug::TaskAnnotator().DidQueueTask("AlarmTimer::Reset",
+    base::debug::TaskAnnotator().DidQueueTask("SimpleAlarmTimer::Reset",
                                               *pending_task_);
     alarm_fd_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-        alarm_fd_, base::Bind(&AlarmTimer::OnAlarmFdReadableWithoutBlocking,
-                              weak_factory_.GetWeakPtr()));
+        alarm_fd_,
+        base::BindRepeating(&SimpleAlarmTimer::OnAlarmFdReadableWithoutBlocking,
+                            weak_factory_.GetWeakPtr()));
   }
 }
 
-void AlarmTimer::OnAlarmFdReadableWithoutBlocking() {
+void SimpleAlarmTimer::OnAlarmFdReadableWithoutBlocking() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(base::Timer::IsRunning());
 
@@ -118,52 +116,29 @@ void AlarmTimer::OnAlarmFdReadableWithoutBlocking() {
   OnTimerFired();
 }
 
-void AlarmTimer::OnTimerFired() {
+void SimpleAlarmTimer::OnTimerFired() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(base::Timer::IsRunning());
   DCHECK(pending_task_.get());
 
   // Take ownership of the PendingTask to prevent it from being deleted if the
-  // AlarmTimer is deleted.
+  // SimpleAlarmTimer is deleted.
   const auto pending_user_task = std::move(pending_task_);
 
-  base::WeakPtr<AlarmTimer> weak_ptr = weak_factory_.GetWeakPtr();
+  base::WeakPtr<SimpleAlarmTimer> weak_ptr = weak_factory_.GetWeakPtr();
 
   // Run the task.
-  TRACE_TASK_EXECUTION("AlarmTimer::OnTimerFired", *pending_user_task);
-  base::debug::TaskAnnotator().RunTask("AlarmTimer::Reset",
+  TRACE_TASK_EXECUTION("SimpleAlarmTimer::OnTimerFired", *pending_user_task);
+  base::debug::TaskAnnotator().RunTask("SimpleAlarmTimer::Reset",
                                        pending_user_task.get());
 
-  // If the timer wasn't deleted, stopped or reset by the callback, reset or
-  // stop it.
-  if (weak_ptr.get()) {
-    if (base::Timer::is_repeating())
-      Reset();
-    else
-      Stop();
-  }
+  // If the timer wasn't deleted, stopped or reset by the callback, stop it.
+  if (weak_ptr)
+    Stop();
 }
 
-bool AlarmTimer::CanWakeFromSuspend() const {
+bool SimpleAlarmTimer::CanWakeFromSuspend() const {
   return alarm_fd_ != -1;
-}
-
-OneShotAlarmTimer::OneShotAlarmTimer() : AlarmTimer(false, false) {
-}
-
-OneShotAlarmTimer::~OneShotAlarmTimer() {
-}
-
-RepeatingAlarmTimer::RepeatingAlarmTimer() : AlarmTimer(true, true) {
-}
-
-RepeatingAlarmTimer::~RepeatingAlarmTimer() {
-}
-
-SimpleAlarmTimer::SimpleAlarmTimer() : AlarmTimer(true, false) {
-}
-
-SimpleAlarmTimer::~SimpleAlarmTimer() {
 }
 
 }  // namespace timers
