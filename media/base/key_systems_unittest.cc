@@ -123,7 +123,7 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
   }
 
   // We have hardware secure codec support for FOO_VIDEO and FOO_SECURE_VIDEO.
-  SupportedCodecs GetSupportedSecureCodecs() const override {
+  SupportedCodecs GetSupportedHwSecureCodecs() const override {
     return TEST_CODEC_FOO_VIDEO | TEST_CODEC_FOO_SECURE_VIDEO;
   }
 

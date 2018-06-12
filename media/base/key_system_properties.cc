@@ -6,7 +6,7 @@
 
 namespace media {
 
-SupportedCodecs KeySystemProperties::GetSupportedSecureCodecs() const {
+SupportedCodecs KeySystemProperties::GetSupportedHwSecureCodecs() const {
   return EME_CODEC_NONE;
 }
 

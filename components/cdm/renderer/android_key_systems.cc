@@ -113,8 +113,12 @@ SupportedKeySystemResponse QueryKeySystemSupport(
 
 void AddAndroidWidevine(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
-  SupportedKeySystemResponse response =
-      QueryKeySystemSupport(kWidevineKeySystem);
+  auto response = QueryKeySystemSupport(kWidevineKeySystem);
+
+  auto codecs = response.non_secure_codecs;
+
+  // On Android, ".secure" codecs are all hardware secure codecs.
+  auto hw_secure_codecs = response.secure_codecs;
 
   // Since we do not control the implementation of the MediaDrm API on Android,
   // we assume that it can and will make use of persistence no matter whether
@@ -125,7 +129,7 @@ void AddAndroidWidevine(
           ? EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER
           : EmeSessionTypeSupport::NOT_SUPPORTED;
 
-  if (response.non_secure_codecs != media::EME_CODEC_NONE) {
+  if (codecs != media::EME_CODEC_NONE) {
     DVLOG(3) << __func__ << " Widevine supported.";
 
     // TODO(crbug.com/813845): Determine 'cbcs' support, which may vary by
@@ -135,8 +139,8 @@ void AddAndroidWidevine(
 
     concrete_key_systems->emplace_back(new WidevineKeySystemProperties(
         supported_encryption_schemes,          // Encryption schemes.
-        response.non_secure_codecs,            // Regular codecs.
-        response.secure_codecs,                // Hardware-secure codecs.
+        codecs,                                // Regular codecs.
+        hw_secure_codecs,                      // Hardware-secure codecs.
         Robustness::HW_SECURE_CRYPTO,          // Max audio robustness.
         Robustness::HW_SECURE_ALL,             // Max video robustness.
         persistent_license_support,            // persistent-license.
@@ -144,9 +148,9 @@ void AddAndroidWidevine(
         EmeFeatureSupport::ALWAYS_ENABLED,     // Persistent state.
         EmeFeatureSupport::ALWAYS_ENABLED));   // Distinctive identifier.
   } else {
-    // It doesn't make sense to support secure codecs but not regular codecs.
+    // It doesn't make sense to support hw secure codecs but not regular codecs.
     DVLOG(3) << __func__ << " Widevine NOT supported.";
-    DCHECK(response.secure_codecs == media::EME_CODEC_NONE);
+    DCHECK(hw_secure_codecs == media::EME_CODEC_NONE);
   }
 }
 

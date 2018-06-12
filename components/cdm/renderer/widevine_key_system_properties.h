@@ -31,7 +31,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
   WidevineKeySystemProperties(
       base::flat_set<media::EncryptionMode> supported_encryption_schemes,
       media::SupportedCodecs supported_codecs,
-      media::SupportedCodecs supported_secure_codecs,
+      media::SupportedCodecs supported_hw_secure_codecs,
       Robustness max_audio_robustness,
       Robustness max_video_robustness,
       media::EmeSessionTypeSupport persistent_license_support,
@@ -47,7 +47,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
       media::EncryptionMode encryption_scheme) const override;
 
   media::SupportedCodecs GetSupportedCodecs() const override;
-  media::SupportedCodecs GetSupportedSecureCodecs() const override;
+  media::SupportedCodecs GetSupportedHwSecureCodecs() const override;
 
   media::EmeConfigRule GetRobustnessConfigRule(
       media::EmeMediaType media_type,
@@ -62,7 +62,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
  private:
   const base::flat_set<media::EncryptionMode> supported_encryption_schemes_;
   const media::SupportedCodecs supported_codecs_;
-  const media::SupportedCodecs supported_secure_codecs_;
+  const media::SupportedCodecs supported_hw_secure_codecs_;
   const Robustness max_audio_robustness_;
   const Robustness max_video_robustness_;
   const media::EmeSessionTypeSupport persistent_license_support_;

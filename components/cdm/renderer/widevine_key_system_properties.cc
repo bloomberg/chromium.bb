@@ -40,7 +40,7 @@ Robustness ConvertRobustness(const std::string& robustness) {
 WidevineKeySystemProperties::WidevineKeySystemProperties(
     base::flat_set<media::EncryptionMode> supported_encryption_schemes,
     media::SupportedCodecs supported_codecs,
-    media::SupportedCodecs supported_secure_codecs,
+    media::SupportedCodecs supported_hw_secure_codecs,
     Robustness max_audio_robustness,
     Robustness max_video_robustness,
     media::EmeSessionTypeSupport persistent_license_support,
@@ -49,14 +49,13 @@ WidevineKeySystemProperties::WidevineKeySystemProperties(
     media::EmeFeatureSupport distinctive_identifier_support)
     : supported_encryption_schemes_(std::move(supported_encryption_schemes)),
       supported_codecs_(supported_codecs),
-      supported_secure_codecs_(supported_secure_codecs),
+      supported_hw_secure_codecs_(supported_hw_secure_codecs),
       max_audio_robustness_(max_audio_robustness),
       max_video_robustness_(max_video_robustness),
       persistent_license_support_(persistent_license_support),
       persistent_release_message_support_(persistent_release_message_support),
       persistent_state_support_(persistent_state_support),
-      distinctive_identifier_support_(distinctive_identifier_support) {
-}
+      distinctive_identifier_support_(distinctive_identifier_support) {}
 
 WidevineKeySystemProperties::~WidevineKeySystemProperties() = default;
 
@@ -86,8 +85,9 @@ SupportedCodecs WidevineKeySystemProperties::GetSupportedCodecs() const {
   return supported_codecs_;
 }
 
-SupportedCodecs WidevineKeySystemProperties::GetSupportedSecureCodecs() const {
-  return supported_secure_codecs_;
+SupportedCodecs WidevineKeySystemProperties::GetSupportedHwSecureCodecs()
+    const {
+  return supported_hw_secure_codecs_;
 }
 
 EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(

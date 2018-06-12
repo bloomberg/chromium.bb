@@ -250,7 +250,7 @@ static void AddWidevine(
   // codecs. See WidevineKeySystemProperties::GetRobustnessConfigRule().
   // TODO(crbug.com/848532): Populate supported secure codecs if supported by
   // CDM and the platform.
-  auto supported_secure_codecs = media::EME_CODEC_NONE;
+  auto supported_hw_secure_codecs = media::EME_CODEC_NONE;
 
   auto persistent_license_support =
       GetPersistentLicenseSupport(supports_persistent_license);
@@ -258,7 +258,8 @@ static void AddWidevine(
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-      supported_encryption_schemes, supported_codecs, supported_secure_codecs,
+      supported_encryption_schemes, supported_codecs,
+      supported_hw_secure_codecs,
 #if defined(OS_CHROMEOS)
       Robustness::HW_SECURE_ALL,             // Maximum audio robustness.
       Robustness::HW_SECURE_ALL,             // Maximum video robustness.
