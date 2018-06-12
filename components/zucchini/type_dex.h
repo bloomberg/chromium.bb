@@ -227,6 +227,36 @@ struct AnnotationOffItem {
   uint32_t annotation_off;
 };
 
+// field_annotation
+struct FieldAnnotation {
+  uint32_t field_idx;
+  uint32_t annotations_off;
+};
+
+// method_annotation
+struct MethodAnnotation {
+  uint32_t method_idx;
+  uint32_t annotations_off;
+};
+
+// parameter_annotation
+struct ParameterAnnotation {
+  uint32_t method_idx;
+  uint32_t annotations_off;
+};
+
+// annotations_directory_item
+struct AnnotationsDirectoryItem {
+  uint32_t class_annotations_off;
+  uint32_t fields_size;
+  uint32_t annotated_methods_size;
+  uint32_t annotated_parameters_size;
+  // FieldAnnotation field_annotations[fields_size];
+  // MethodAnnotation method_annotations[annotated_methods_size];
+  // ParameterAnnotation parameter_annotations[annotated_parameters_size];
+  // All *Annotation are 8 bytes each.
+};
+
 // try_item
 struct TryItem {
   uint32_t start_addr;
