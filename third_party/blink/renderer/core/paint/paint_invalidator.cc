@@ -596,7 +596,7 @@ void PaintInvalidator::InvalidatePaint(
   UpdatePaintInvalidationContainer(object, context);
   UpdateEmptyVisualRectFlag(object, context);
 
-  if (!object.ShouldCheckForPaintInvalidation() && !context.subtree_flags)
+  if (!object.ShouldCheckForPaintInvalidation() && !context.NeedsSubtreeWalk())
     return;
 
   unsigned tree_builder_index = 0;

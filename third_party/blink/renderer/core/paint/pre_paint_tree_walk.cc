@@ -364,6 +364,7 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
   // Early out from the tree walk if possible.
   if (!needs_tree_builder_context_update &&
       !object.ShouldCheckForPaintInvalidation() &&
+      !parent_context().paint_invalidator_context.NeedsSubtreeWalk() &&
       !NeedsEffectiveWhitelistedTouchActionUpdate(object, parent_context()) &&
       !NeedsHitTestingPaintInvalidation(object, parent_context())) {
     return;
