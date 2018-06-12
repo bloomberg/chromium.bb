@@ -16,13 +16,15 @@ namespace {
 
 bool AbsoluteHorizontalNeedsEstimate(const ComputedStyle& style) {
   Length width = style.Width();
-  return width.IsIntrinsic() ||
+  return width.IsIntrinsic() || style.MinWidth().IsIntrinsic() ||
+         style.MaxWidth().IsIntrinsic() ||
          (width.IsAuto() && (style.Left().IsAuto() || style.Right().IsAuto()));
 }
 
 bool AbsoluteVerticalNeedsEstimate(const ComputedStyle& style) {
   Length height = style.Height();
-  return height.IsIntrinsic() ||
+  return height.IsIntrinsic() || style.MinHeight().IsIntrinsic() ||
+         style.MaxHeight().IsIntrinsic() ||
          (height.IsAuto() && (style.Top().IsAuto() || style.Bottom().IsAuto()));
 }
 
