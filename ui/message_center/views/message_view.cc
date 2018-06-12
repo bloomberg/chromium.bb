@@ -191,6 +191,7 @@ void MessageView::SetManuallyExpandedOrCollapsed(bool value) {
 void MessageView::UpdateCornerRadius(int top_radius, int bottom_radius) {
   background_view_->SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<BackgroundPainter>(top_radius, bottom_radius)));
+  SchedulePaint();
 }
 
 void MessageView::OnContainerAnimationStarted() {

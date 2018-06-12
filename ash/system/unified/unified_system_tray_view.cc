@@ -113,9 +113,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
           std::make_unique<InteractedByTapRecorder>(this)) {
   DCHECK(controller_);
 
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
-      kUnifiedNotificationCenterSpacing));
+  auto* layout = SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   SetBackground(CreateUnifiedBackground());
   SetPaintToLayer();

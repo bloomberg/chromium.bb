@@ -59,6 +59,9 @@ class ASH_EXPORT UnifiedMessageCenterView
                          int index);
   void UpdateNotification(const std::string& notification_id);
 
+  // Scroll the notification list to the bottom.
+  void ScrollToBottom();
+
   message_center::MessageCenter* message_center_;
 
   views::ScrollView* const scroller_;
