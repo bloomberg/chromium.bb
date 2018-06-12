@@ -1161,10 +1161,6 @@ WebContents* GetEmbedderForGuest(content::WebContents* guest);
 // browser process.
 bool IsNetworkServiceRunningInProcess();
 
-// Crash the Network Service process. Should only be called when out-of-process
-// Network Service is enabled.
-void SimulateNetworkServiceCrash();
-
 // Load the given |url| with |network_context| and return the |net::Error| code.
 int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,

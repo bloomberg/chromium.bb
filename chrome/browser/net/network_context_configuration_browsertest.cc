@@ -389,7 +389,7 @@ class NetworkContextConfigurationBrowserTest
 
     // Crash the NetworkService process. Existing interfaces should receive
     // error notifications at some point.
-    content::SimulateNetworkServiceCrash();
+    SimulateNetworkServiceCrash();
     // Flush the interface to make sure the error notification was received.
     FlushNetworkInterface();
   }

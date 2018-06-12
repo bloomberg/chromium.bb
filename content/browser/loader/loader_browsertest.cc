@@ -273,17 +273,20 @@ namespace {
 // Responds with a HungResponse for the specified URL to hang on the request.
 // If the network service is enabled, crashes the process. If it's disabled,
 // cancels all requests from specifield |child_id|.
+//
+// |crash_network_service_callback| crashes the network service when invoked,
+// and must be called on the UI thread.
 std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
     const std::string& relative_url,
     int child_id,
+    base::RepeatingClosure crash_network_service_callback,
     const net::test_server::HttpRequest& request) {
   if (request.relative_url != relative_url)
     return nullptr;
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::BindOnce(SimulateNetworkServiceCrash));
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     crash_network_service_callback);
   } else {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
@@ -303,7 +306,9 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
   embedded_test_server()->RegisterRequestHandler(base::Bind(
       &CancelOnRequest, "/hung",
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID()));
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      base::BindRepeating(&BrowserTestBase::SimulateNetworkServiceCrash,
+                          base::Unretained(this))));
 
   ASSERT_TRUE(embedded_test_server()->Start());
   WaitForLoadStop(shell()->web_contents());
