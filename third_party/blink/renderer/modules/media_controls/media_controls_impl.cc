@@ -554,7 +554,8 @@ void MediaControlsImpl::InitializeControls() {
       volume_slider_->SetIsWanted(false);
   }
 
-  if (RuntimeEnabledFeatures::PictureInPictureEnabled()) {
+  if (RuntimeEnabledFeatures::PictureInPictureEnabled() &&
+      MediaElement().IsHTMLVideoElement()) {
     picture_in_picture_button_ =
         new MediaControlPictureInPictureButtonElement(*this);
     picture_in_picture_button_->SetIsWanted(
@@ -596,7 +597,8 @@ void MediaControlsImpl::InitializeControls() {
   overflow_list_->ParserAppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
           new MediaControlToggleClosedCaptionsButtonElement(*this)));
-  if (RuntimeEnabledFeatures::PictureInPictureEnabled()) {
+  if (RuntimeEnabledFeatures::PictureInPictureEnabled() &&
+      MediaElement().IsHTMLVideoElement()) {
     overflow_list_->ParserAppendChild(
         picture_in_picture_button_->CreateOverflowElement(
             new MediaControlPictureInPictureButtonElement(*this)));
@@ -1676,6 +1678,10 @@ void MediaControlsImpl::OnExitedFullscreen() {
   fullscreen_button_->SetIsFullscreen(false);
   StopHideMediaControlsTimer();
   StartHideMediaControlsTimer();
+}
+
+void MediaControlsImpl::OnPictureInPictureChanged() {
+  picture_in_picture_button_->UpdateDisplayType();
 }
 
 void MediaControlsImpl::OnPanelKeypress() {

@@ -49,15 +49,13 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
                                  ScriptPromiseResolver*,
                                  const WebSize& picture_in_picture_window_size);
 
-  // Exit Picture-in-Picture for a video element and resolve promise if any.
-  void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*);
-
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
   Element* PictureInPictureElement(TreeScope&) const;
 
   // Implementation of PictureInPictureController.
   void EnterPictureInPicture(HTMLVideoElement*,
                              ScriptPromiseResolver*) override;
+  void ExitPictureInPicture(HTMLVideoElement*, ScriptPromiseResolver*) override;
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
   Status IsElementAllowed(const HTMLVideoElement&) const override;
   bool IsPictureInPictureElement(const Element*) const override;
