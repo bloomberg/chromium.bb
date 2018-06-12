@@ -11,6 +11,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -527,6 +528,139 @@ TEST(PropertyTreeTest, SingularTransformSnapTest) {
   rounded.RoundTranslationComponents();
   property_trees.GetToTarget(child, effect_parent, &to_target);
   EXPECT_NE(to_target, rounded);
+}
+
+// Tests that CopyOutputRequests are transformed by the EffectTree, such that
+// assumptions the original requestor made about coordinate spaces remains true
+// after the EffectTree transforms the requests.
+TEST(EffectTreeTest, CopyOutputRequestsAreTransformed) {
+  using viz::CopyOutputRequest;
+
+  PropertyTrees property_trees;
+
+  TransformTree& transform_tree = property_trees.transform_tree;
+  TransformNode contents_root;
+  contents_root.local.Scale(2, 2);
+  contents_root.source_node_id = 0;
+  contents_root.id = transform_tree.Insert(contents_root, 0);
+  transform_tree.UpdateTransforms(contents_root.id);
+
+  EffectTree& effect_tree = property_trees.effect_tree;
+  EffectNode effect_node;
+  effect_node.has_render_surface = true;
+  effect_node.has_copy_request = true;
+  effect_node.transform_id = contents_root.id;
+  effect_node.id = effect_tree.Insert(effect_node, 0);
+  effect_tree.UpdateEffects(effect_node.id);
+
+  // A CopyOutputRequest with only its area set should be transformed into one
+  // that is scaled by two. In this case, by specifying no result selection, the
+  // requestor has indicated they want all the pixels, regardless of size. Thus,
+  // the result selection and scale ratio should still be unset in the
+  // transformed request to carry-over those semantics.
+  auto request_in = CopyOutputRequest::CreateStubForTesting();
+  request_in->set_area(gfx::Rect(10, 20, 30, 40));
+  effect_tree.AddCopyRequest(effect_node.id, std::move(request_in));
+  std::vector<std::unique_ptr<CopyOutputRequest>> requests_out;
+  effect_tree.TakeCopyRequestsAndTransformToSurface(effect_node.id,
+                                                    &requests_out);
+  ASSERT_EQ(1u, requests_out.size());
+  const CopyOutputRequest* request_out = requests_out.front().get();
+  ASSERT_TRUE(request_out->has_area());
+  EXPECT_EQ(gfx::Rect(20, 40, 60, 80), request_out->area());
+  EXPECT_FALSE(request_out->has_result_selection());
+  EXPECT_FALSE(request_out->is_scaled());
+
+  // A CopyOutputRequest with its area and result selection set, but no scaling
+  // specified, should be transformed into one that has its area scaled by two,
+  // but now also includes a scale ratio of 1/2. This is because the requestor
+  // had originally specified a result selection under old assumptions about the
+  // source coordinate system.
+  request_in = CopyOutputRequest::CreateStubForTesting();
+  request_in->set_area(gfx::Rect(10, 20, 30, 40));
+  request_in->set_result_selection(gfx::Rect(1, 2, 3, 4));
+  effect_tree.AddCopyRequest(effect_node.id, std::move(request_in));
+  requests_out.clear();
+  effect_tree.TakeCopyRequestsAndTransformToSurface(effect_node.id,
+                                                    &requests_out);
+  ASSERT_EQ(1u, requests_out.size());
+  request_out = requests_out.front().get();
+  ASSERT_TRUE(request_out->has_area());
+  EXPECT_EQ(gfx::Rect(20, 40, 60, 80), request_out->area());
+  ASSERT_TRUE(request_out->has_result_selection());
+  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), request_out->result_selection());
+  ASSERT_TRUE(request_out->is_scaled());
+  EXPECT_NEAR(0.5f,
+              static_cast<float>(request_out->scale_to().x()) /
+                  request_out->scale_from().x(),
+              0.000001);
+  EXPECT_NEAR(0.5f,
+              static_cast<float>(request_out->scale_to().y()) /
+                  request_out->scale_from().y(),
+              0.000001);
+
+  // A CopyOutputRequest with all three of: area, result selection, and scale
+  // ratio; should be transformed into one with an updated area and combined
+  // scale ratio.
+  request_in = CopyOutputRequest::CreateStubForTesting();
+  request_in->set_area(gfx::Rect(10, 20, 30, 40));
+  request_in->set_result_selection(gfx::Rect(1, 2, 3, 4));
+  // Request has a 3X scale in X, and 5X scale in Y.
+  request_in->SetScaleRatio(gfx::Vector2d(1, 1), gfx::Vector2d(3, 5));
+  effect_tree.AddCopyRequest(effect_node.id, std::move(request_in));
+  requests_out.clear();
+  effect_tree.TakeCopyRequestsAndTransformToSurface(effect_node.id,
+                                                    &requests_out);
+  ASSERT_EQ(1u, requests_out.size());
+  request_out = requests_out.front().get();
+  ASSERT_TRUE(request_out->has_area());
+  EXPECT_EQ(gfx::Rect(20, 40, 60, 80), request_out->area());
+  ASSERT_TRUE(request_out->has_result_selection());
+  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), request_out->result_selection());
+  ASSERT_TRUE(request_out->is_scaled());
+  EXPECT_NEAR(3.0f / 2.0f,
+              static_cast<float>(request_out->scale_to().x()) /
+                  request_out->scale_from().x(),
+              0.000001);
+  EXPECT_NEAR(5.0f / 2.0f,
+              static_cast<float>(request_out->scale_to().y()) /
+                  request_out->scale_from().y(),
+              0.000001);
+}
+
+// Tests that a good CopyOutputRequest which becomes transformed into an invalid
+// one is dropped (i.e., the requestor would get an "empty response" in its
+// result callback). The scaling transform in this test is so extreme that it
+// would result in an illegal adjustment to the CopyOutputRequest's scale ratio.
+TEST(EffectTreeTest, CopyOutputRequestsThatBecomeIllegalAreDropped) {
+  using viz::CopyOutputRequest;
+
+  PropertyTrees property_trees;
+
+  TransformTree& transform_tree = property_trees.transform_tree;
+  TransformNode contents_root;
+  contents_root.local.Scale(1.0f / 1.0e9f, 1.0f / 1.0e9f);
+  contents_root.source_node_id = 0;
+  contents_root.id = transform_tree.Insert(contents_root, 0);
+  transform_tree.UpdateTransforms(contents_root.id);
+
+  EffectTree& effect_tree = property_trees.effect_tree;
+  EffectNode effect_node;
+  effect_node.has_render_surface = true;
+  effect_node.has_copy_request = true;
+  effect_node.transform_id = contents_root.id;
+  effect_node.id = effect_tree.Insert(effect_node, 0);
+  effect_tree.UpdateEffects(effect_node.id);
+
+  auto request_in = CopyOutputRequest::CreateStubForTesting();
+  request_in->set_area(gfx::Rect(10, 20, 30, 40));
+  request_in->set_result_selection(gfx::Rect(1, 2, 3, 4));
+  request_in->SetScaleRatio(gfx::Vector2d(1, 1), gfx::Vector2d(3, 5));
+  effect_tree.AddCopyRequest(effect_node.id, std::move(request_in));
+  std::vector<std::unique_ptr<CopyOutputRequest>> requests_out;
+  effect_tree.TakeCopyRequestsAndTransformToSurface(effect_node.id,
+                                                    &requests_out);
+  EXPECT_TRUE(requests_out.empty());
 }
 
 }  // namespace
