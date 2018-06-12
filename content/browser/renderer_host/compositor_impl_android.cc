@@ -113,6 +113,24 @@ class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
   ~SingleThreadTaskGraphRunner() override { Shutdown(); }
 };
 
+// An implementation of InProcessDisplayClient which handles swap callbacks.
+class AndroidInProcessDisplayClient : public InProcessDisplayClient {
+ public:
+  AndroidInProcessDisplayClient(
+      base::RepeatingCallback<void(const gfx::Size&)> on_swap)
+      : InProcessDisplayClient(gfx::kNullAcceleratedWidget),
+        on_swap_(std::move(on_swap)) {}
+
+  // viz::mojom::DisplayClient implementation:
+  void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override {
+    if (on_swap_)
+      on_swap_.Run(pixel_size);
+  }
+
+ private:
+  base::RepeatingCallback<void(const gfx::Size&)> on_swap_;
+};
+
 class CompositorDependencies {
  public:
   static CompositorDependencies& Get() {
@@ -163,7 +181,7 @@ class CompositorDependencies {
 
   // Viz-only members:
   viz::mojom::DisplayPrivateAssociatedPtr display_private;
-  std::unique_ptr<InProcessDisplayClient> display_client;
+  std::unique_ptr<AndroidInProcessDisplayClient> display_client;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider;
@@ -348,7 +366,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
  public:
   AndroidOutputSurface(
       scoped_refptr<ui::ContextProviderCommandBuffer> context_provider,
-      base::RepeatingCallback<void(gfx::Size)> swap_buffers_callback)
+      base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback)
       : viz::OutputSurface(std::move(context_provider)),
         swap_buffers_callback_(std::move(swap_buffers_callback)),
         overlay_candidate_validator_(
@@ -460,7 +478,7 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
  private:
   viz::OutputSurfaceClient* client_ = nullptr;
-  base::RepeatingCallback<void(gfx::Size)> swap_buffers_callback_;
+  base::RepeatingCallback<void(const gfx::Size&)> swap_buffers_callback_;
   std::unique_ptr<viz::OverlayCandidateValidator> overlay_candidate_validator_;
   ui::LatencyTracker latency_tracker_;
 
@@ -1037,8 +1055,11 @@ void CompositorImpl::InitializeDisplay(
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-void CompositorImpl::DidSwapBuffers(gfx::Size swap_size) {
+void CompositorImpl::DidSwapBuffers(const gfx::Size& swap_size) {
   client_->DidSwapBuffers(swap_size);
+
+  if (swap_completed_with_size_for_testing_)
+    swap_completed_with_size_for_testing_.Run(swap_size);
 }
 
 cc::UIResourceId CompositorImpl::CreateUIResource(
@@ -1067,12 +1088,6 @@ void CompositorImpl::DidReceiveCompositorFrameAck() {
   DCHECK_GT(pending_frames_, 0U);
   pending_frames_--;
   client_->DidSwapFrame(pending_frames_);
-
-  if (enable_viz_) {
-    // TODO(ericrk): Viz should use the actual swap callback from the Viz
-    // process. This is just a workaround until we wire that up.
-    DidSwapBuffers(size_);
-  }
 }
 
 void CompositorImpl::DidLoseLayerTreeFrameSink() {
@@ -1216,13 +1231,18 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
 
   auto root_params = viz::mojom::RootCompositorFrameSinkParams::New();
 
+  // Android requires swap size notifications.
+  root_params->send_swap_size_notifications = true;
+
   // Create interfaces for a root CompositorFrameSink.
   viz::mojom::CompositorFrameSinkAssociatedPtrInfo sink_info;
   root_params->compositor_frame_sink = mojo::MakeRequest(&sink_info);
   viz::mojom::CompositorFrameSinkClientRequest client_request =
       mojo::MakeRequest(&root_params->compositor_frame_sink_client);
   root_params->display_private = mojo::MakeRequest(&deps.display_private);
-  deps.display_client = std::make_unique<InProcessDisplayClient>(window_);
+  deps.display_client =
+      std::make_unique<AndroidInProcessDisplayClient>(base::BindRepeating(
+          &CompositorImpl::DidSwapBuffers, weak_factory_.GetWeakPtr()));
   root_params->display_client =
       deps.display_client->GetBoundPtr(task_runner).PassInterface();
 

@@ -46,6 +46,8 @@ class GLOutputSurface : public OutputSurface {
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
   unsigned UpdateGpuFence() override;
+  void SetNeedsSwapSizeNotifications(
+      bool needs_swap_size_notifications) override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }
@@ -56,6 +58,7 @@ class GLOutputSurface : public OutputSurface {
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
   void OnGpuSwapBuffersCompleted(std::vector<ui::LatencyInfo> latency_info,
+                                 const gfx::Size& pixel_size,
                                  const gpu::SwapBuffersCompleteParams& params);
   void OnVSyncParametersUpdated(base::TimeTicks timebase,
                                 base::TimeDelta interval);
@@ -71,6 +74,8 @@ class GLOutputSurface : public OutputSurface {
   gfx::Size size_;
   bool use_gpu_fence_;
   unsigned gpu_fence_id_ = 0;
+  // Whether to send OutputSurfaceClient::DidSwapWithSize notifications.
+  bool needs_swap_size_notifications_ = false;
 
   base::WeakPtrFactory<GLOutputSurface> weak_ptr_factory_;
 };

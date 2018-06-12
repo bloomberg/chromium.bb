@@ -184,6 +184,12 @@ void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
     display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
 }
 
+void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
+    const gfx::Size& pixel_size) {
+  if (display_client_)
+    display_client_->DidCompleteSwapWithSize(pixel_size);
+}
+
 void RootCompositorFrameSinkImpl::DidSwapAfterSnapshotRequestReceived(
     const std::vector<ui::LatencyInfo>& latency_info) {
   display_client_->DidSwapAfterSnapshotRequestReceived(latency_info);

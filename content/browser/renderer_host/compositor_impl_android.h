@@ -81,6 +81,10 @@ class CONTENT_EXPORT CompositorImpl
   // Test functions:
   bool IsLockedForTesting() const { return lock_manager_.IsLocked(); }
   void SetVisibleForTesting(bool visible) { SetVisible(visible); }
+  void SetSwapCompletedWithSizeCallbackForTesting(
+      base::RepeatingCallback<void(const gfx::Size&)> cb) {
+    swap_completed_with_size_for_testing_ = std::move(cb);
+  }
 
  private:
   // Compositor implementation.
@@ -162,7 +166,7 @@ class CONTENT_EXPORT CompositorImpl
   void InitializeDisplay(
       std::unique_ptr<viz::OutputSurface> display_output_surface,
       scoped_refptr<viz::ContextProvider> context_provider);
-  void DidSwapBuffers(gfx::Size swap_size);
+  void DidSwapBuffers(const gfx::Size& swap_size);
 
   bool HavePendingReadbacks();
 
@@ -237,6 +241,10 @@ class CONTENT_EXPORT CompositorImpl
 
   // If true, we are using a Viz process.
   const bool enable_viz_;
+
+  // Test-only. Called when we are notified of a swap.
+  base::RepeatingCallback<void(const gfx::Size&)>
+      swap_completed_with_size_for_testing_;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 

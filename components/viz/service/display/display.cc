@@ -453,6 +453,11 @@ void Display::DidReceiveCALayerParams(
     client_->DisplayDidReceiveCALayerParams(ca_layer_params);
 }
 
+void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
+  if (client_)
+    client_->DisplayDidCompleteSwapWithSize(pixel_size);
+}
+
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
   DCHECK(!pending_presented_callbacks_.empty());

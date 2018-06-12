@@ -57,4 +57,8 @@ interface DisplayClient {
   // Note: This will only be used when running Windows 7 and earlier with
   // software compositing and a transparent HWND.
   CreateLayeredWindowUpdater(LayeredWindowUpdater& layered_window_updater);
+
+  // ANDROID ONLY: Notifies that a swap has occurred and provides information
+  // about the pixel size of the swapped frame.
+  DidCompleteSwapWithSize(gfx.mojom.Size size);
 };

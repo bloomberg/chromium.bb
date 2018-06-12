@@ -33,6 +33,7 @@ class DisplayProvider {
       mojom::DisplayClient* display_client,
       ExternalBeginFrameControllerImpl* external_begin_frame_controller,
       const RendererSettings& renderer_settings,
+      bool send_swap_size_notifications,
       std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) = 0;
 };
 

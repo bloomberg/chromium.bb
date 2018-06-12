@@ -148,6 +148,13 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // can be passed directly to any related extension functions.
   virtual unsigned UpdateGpuFence() = 0;
 
+  // If set to true, the OutputSurface must deliver
+  // OutputSurfaceclient::DidSwapWithSize notifications to its client.
+  // OutputSurfaces which support delivering swap size notifications should
+  // override this.
+  virtual void SetNeedsSwapSizeNotifications(
+      bool needs_swap_size_notifications);
+
   // Returns true if any of the LatencyInfos provided contains a snapshot
   // request.
   static bool LatencyInfoHasSnapshotRequest(

@@ -23,6 +23,7 @@ std::unique_ptr<Display> TestDisplayProvider::CreateDisplay(
     mojom::DisplayClient* display_client,
     ExternalBeginFrameControllerImpl* external_begin_frame_controller,
     const RendererSettings& renderer_settings,
+    bool send_swap_size_notifications,
     std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) {
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner);

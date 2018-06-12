@@ -70,4 +70,10 @@ void InProcessDisplayClient::CreateLayeredWindowUpdater(
 #endif
 }
 
+void InProcessDisplayClient::DidCompleteSwapWithSize(
+    const gfx::Size& pixel_size) {
+  // Only used by Viz on Android, which overrides this.
+  NOTREACHED();
+}
+
 }  // namespace content

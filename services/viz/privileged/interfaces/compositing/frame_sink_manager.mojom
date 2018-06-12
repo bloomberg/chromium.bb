@@ -26,6 +26,7 @@ struct RootCompositorFrameSinkParams {
   gpu.mojom.SurfaceHandle widget;
   bool gpu_compositing = true;
   RendererSettings renderer_settings;
+  bool send_swap_size_notifications = false;
 
   associated CompositorFrameSink& compositor_frame_sink;
   CompositorFrameSinkClient compositor_frame_sink_client;

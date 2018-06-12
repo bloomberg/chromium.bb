@@ -204,6 +204,11 @@ void DirectLayerTreeFrameSink::DisplayDidReceiveCALayerParams(
     display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
 }
 
+void DirectLayerTreeFrameSink::DisplayDidCompleteSwapWithSize(
+    const gfx::Size& pixel_size) {
+  // Not needed in non-OOP-D mode.
+}
+
 void DirectLayerTreeFrameSink::DidSwapAfterSnapshotRequestReceived(
     const std::vector<ui::LatencyInfo>& latency_info) {
   // TODO(samans): Implement this method once the plumbing for latency info also

@@ -26,6 +26,7 @@ class DisplayClient {
   virtual void DisplayDidDrawAndSwap() = 0;
   virtual void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) = 0;
+  virtual void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) = 0;
 
   // Notifies that a swap has occured after some latency info with snapshot
   // component reached the display.

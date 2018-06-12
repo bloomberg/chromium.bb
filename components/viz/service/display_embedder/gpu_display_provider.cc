@@ -98,6 +98,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     mojom::DisplayClient* display_client,
     ExternalBeginFrameControllerImpl* external_begin_frame_controller,
     const RendererSettings& renderer_settings,
+    bool send_swap_size_notifications,
     std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) {
   BeginFrameSource* display_begin_frame_source = nullptr;
   std::unique_ptr<DelayBasedBeginFrameSource> synthetic_begin_frame_source;
@@ -176,6 +177,9 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 #endif
     }
   }
+
+  // If we need swap size notifications tell the output surface now.
+  output_surface->SetNeedsSwapSizeNotifications(send_swap_size_notifications);
 
   int max_frames_pending = output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);

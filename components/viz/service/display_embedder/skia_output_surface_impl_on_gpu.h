@@ -72,7 +72,8 @@ class YUVResourceMetadata {
 class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
  public:
   using DidSwapBufferCompleteCallback =
-      base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams)>;
+      base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
+                                   const gfx::Size& pixel_size)>;
   using BufferPresentedCallback =
       base::RepeatingCallback<void(const gfx::PresentationFeedback& feedback)>;
   SkiaOutputSurfaceImplOnGpu(
@@ -155,9 +156,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   // thread.
   base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_surfaces_;
 
-  // ID is pushed each time we begin a swap, and popped each time we present or
-  // complete a swap.
-  base::circular_deque<uint64_t> pending_swap_completed_ids_;
+  // Params are pushed each time we begin a swap, and popped each time we
+  // present or complete a swap.
+  base::circular_deque<std::pair<uint64_t, gfx::Size>>
+      pending_swap_completed_params_;
   uint64_t swap_id_ = 0;
 
   THREAD_CHECKER(thread_checker_);

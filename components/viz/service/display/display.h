@@ -111,6 +111,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
       const gpu::TextureInUseResponses& responses) override;
   void DidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
+  void DidSwapWithSize(const gfx::Size& pixel_size) override;
   void DidReceivePresentationFeedback(
       const gfx::PresentationFeedback& feedback) override;
   void DidFinishLatencyInfo(

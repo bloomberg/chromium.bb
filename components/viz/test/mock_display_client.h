@@ -24,6 +24,7 @@ class MockDisplayClient : public mojom::DisplayClient {
                void(const std::vector<ui::LatencyInfo>&));
   MOCK_METHOD1(CreateLayeredWindowUpdater,
                void(mojom::LayeredWindowUpdaterRequest));
+  MOCK_METHOD1(DidCompleteSwapWithSize, void(const gfx::Size&));
 
  private:
   mojo::Binding<mojom::DisplayClient> binding_;
