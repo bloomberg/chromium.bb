@@ -389,7 +389,7 @@ template("mojom") {
     } else if (is_chromeos) {
       enabled_features += [ "is_chromeos" ]
     } else if (is_fuchsia) {
-      enabled_features += [ "is_fuschia" ]
+      enabled_features += [ "is_fuchsia" ]
     } else if (is_ios) {
       enabled_features += [ "is_ios" ]
     } else if (is_linux) {
