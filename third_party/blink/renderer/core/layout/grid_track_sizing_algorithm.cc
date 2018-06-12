@@ -211,16 +211,27 @@ LayoutUnit GridTrackSizingAlgorithm::EstimatedGridAreaBreadthForChild(
 LayoutUnit GridTrackSizingAlgorithm::GridAreaBreadthForChild(
     const LayoutBox& child,
     GridTrackSizingDirection direction) const {
-  if (direction == kForRows && sizing_state_ == kColumnSizingFirstIteration) {
+  bool add_content_alignment_offset =
+      direction == kForColumns && sizing_state_ == kRowSizingFirstIteration;
+  if (direction == kForRows &&
+      (sizing_state_ == kColumnSizingFirstIteration ||
+       sizing_state_ == kColumnSizingSecondIteration)) {
     DCHECK(GridLayoutUtils::IsOrthogonalChild(*layout_grid_, child));
-    return EstimatedGridAreaBreadthForChild(child, kForRows);
+    // TODO (jfernandez) Content Alignment should account for this heuristic
+    // https://github.com/w3c/csswg-drafts/issues/2697
+    if (sizing_state_ == kColumnSizingFirstIteration)
+      return EstimatedGridAreaBreadthForChild(child, kForRows);
+    add_content_alignment_offset = true;
   }
 
   const Vector<GridTrack>& all_tracks = Tracks(direction);
   const GridSpan& span = grid_.GridItemSpan(child, direction);
   LayoutUnit grid_area_breadth;
-  for (const auto& track_position : span)
+  for (const auto& track_position : span) {
     grid_area_breadth += all_tracks[track_position].BaseSize();
+    if (add_content_alignment_offset)
+      grid_area_breadth += layout_grid_->GridItemOffset(direction);
+  }
 
   grid_area_breadth +=
       layout_grid_->GuttersSize(grid_, direction, span.StartLine(),
