@@ -22808,6 +22808,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Checked dont launch"/>
 </enum>
 
+<enum name="HeavyPageCappingInfoBarInteraction">
+  <int value="0" label="InfoBar shown">
+    The user was shown the capping heavy pages InfoBar.
+  </int>
+  <int value="1" label="Paused">
+    The user clicked the InfoBar button pausing subresource loading.
+  </int>
+  <int value="2" label="Resumed">
+    The user clicked the InfoBar again resuming subresource loading.
+  </int>
+</enum>
+
 <enum name="HIDContinueScenarioType">
   <summary>Possible detected devices combination on leaving dialog</summary>
   <int value="0" label="Pointing device only detected."/>

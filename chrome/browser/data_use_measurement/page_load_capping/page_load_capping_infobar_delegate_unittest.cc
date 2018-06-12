@@ -4,6 +4,7 @@
 
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/grit/generated_resources.h"
@@ -53,11 +54,19 @@ class PageLoadCappingInfoBarDelegateTest
 
 TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
   SetUpTest();
+
+  base::HistogramTester histogram_tester;
+
+  histogram_tester.ExpectTotalCount("HeavyPageCapping.InfoBarInteraction", 0);
   EXPECT_TRUE(PageLoadCappingInfoBarDelegate::Create(
       test_capping_threshold_bytes, web_contents(),
       base::BindRepeating(
           &PageLoadCappingInfoBarDelegateTest::PauseSubresourceLoading,
           base::Unretained(this))));
+  histogram_tester.ExpectUniqueSample(
+      "HeavyPageCapping.InfoBarInteraction",
+      PageLoadCappingInfoBarDelegate::InfoBarInteraction::kShowedInfoBar, 1);
+
   EXPECT_EQ(1u, InfoBarCount());
   infobars::InfoBar* infobar = infobar_at(0);
   EXPECT_TRUE(infobar);
@@ -72,6 +81,11 @@ TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
   EXPECT_FALSE(delegate->Accept());
   EXPECT_EQ(1u, InfoBarCount());
   EXPECT_EQ(1u, pause_subresource_loading_count_);
+
+  histogram_tester.ExpectBucketCount(
+      "HeavyPageCapping.InfoBarInteraction",
+      PageLoadCappingInfoBarDelegate::InfoBarInteraction::kPausedPage, 1);
+  histogram_tester.ExpectTotalCount("HeavyPageCapping.InfoBarInteraction", 2);
 
   infobar = infobar_at(0);
   ConfirmInfoBarDelegate* stopped_delegate = nullptr;
@@ -89,4 +103,9 @@ TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
   // If this is true, the infobar will be closed by the infobar manager.
   EXPECT_TRUE(stopped_delegate->Accept());
   EXPECT_EQ(2u, pause_subresource_loading_count_);
+
+  histogram_tester.ExpectBucketCount(
+      "HeavyPageCapping.InfoBarInteraction",
+      PageLoadCappingInfoBarDelegate::InfoBarInteraction::kResumedPage, 1);
+  histogram_tester.ExpectTotalCount("HeavyPageCapping.InfoBarInteraction", 3);
 }
