@@ -17,6 +17,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/hashing.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -186,6 +187,23 @@ void StabilityMetricsHelper::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void StabilityMetricsHelper::IncreaseRendererCrashCount() {
   IncrementPrefValue(prefs::kStabilityRendererCrashCount);
+}
+
+void StabilityMetricsHelper::BrowserUtilityProcessLaunched(
+    const std::string& metrics_name) {
+  uint32_t hash = variations::HashName(metrics_name);
+  base::UmaHistogramSparse("ChildProcess.Launched.UtilityProcessHash", hash);
+}
+
+void StabilityMetricsHelper::BrowserUtilityProcessCrashed(
+    const std::string& metrics_name,
+    int exit_code) {
+  // TODO(wfh): there doesn't appear to be a good way to log these exit_codes
+  // without adding something into the stability proto, so for now only log the
+  // crash and if the numbers are high enough, logging exit codes can be added
+  // later.
+  uint32_t hash = variations::HashName(metrics_name);
+  base::UmaHistogramSparse("ChildProcess.Crashed.UtilityProcessHash", hash);
 }
 
 void StabilityMetricsHelper::BrowserChildProcessCrashed() {

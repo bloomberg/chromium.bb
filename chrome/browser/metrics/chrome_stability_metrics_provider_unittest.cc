@@ -13,6 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/variations/hashing.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
@@ -34,6 +35,9 @@
 
 namespace {
 
+const char kTestGpuProcessName[] = "content_gpu";
+const char kTestUtilityProcessName[] = "test_utility_process";
+
 class ChromeStabilityMetricsProviderTest : public testing::Test {
  protected:
   ChromeStabilityMetricsProviderTest() : prefs_(new TestingPrefServiceSimple) {
@@ -51,10 +55,14 @@ class ChromeStabilityMetricsProviderTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(ChromeStabilityMetricsProviderTest, BrowserChildProcessObserver) {
+TEST_F(ChromeStabilityMetricsProviderTest, BrowserChildProcessObserverGpu) {
+  base::HistogramTester histogram_tester;
   ChromeStabilityMetricsProvider provider(prefs());
 
-  content::ChildProcessData child_process_data(content::PROCESS_TYPE_RENDERER);
+  content::ChildProcessData child_process_data(content::PROCESS_TYPE_GPU);
+  child_process_data.metrics_name = kTestGpuProcessName;
+
+  provider.BrowserChildProcessLaunchedAndConnected(child_process_data);
   content::ChildProcessTerminationInfo abnormal_termination_info{
       base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 1};
   provider.BrowserChildProcessCrashed(child_process_data,
@@ -73,6 +81,45 @@ TEST_F(ChromeStabilityMetricsProviderTest, BrowserChildProcessObserver) {
       system_profile.stability();
 
   EXPECT_EQ(2, stability.child_process_crash_count());
+  EXPECT_TRUE(
+      histogram_tester.GetTotalCountsForPrefix("ChildProcess.").empty());
+}
+
+TEST_F(ChromeStabilityMetricsProviderTest, BrowserChildProcessObserverUtility) {
+  base::HistogramTester histogram_tester;
+  ChromeStabilityMetricsProvider provider(prefs());
+
+  content::ChildProcessData child_process_data(content::PROCESS_TYPE_UTILITY);
+  child_process_data.metrics_name = kTestUtilityProcessName;
+
+  provider.BrowserChildProcessLaunchedAndConnected(child_process_data);
+  content::ChildProcessTerminationInfo abnormal_termination_info{
+      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 1};
+  provider.BrowserChildProcessCrashed(child_process_data,
+                                      abnormal_termination_info);
+  provider.BrowserChildProcessCrashed(child_process_data,
+                                      abnormal_termination_info);
+
+  // Call ProvideStabilityMetrics to check that it will force pending tasks to
+  // be executed immediately.
+  metrics::SystemProfileProto system_profile;
+
+  provider.ProvideStabilityMetrics(&system_profile);
+
+  // Check current number of instances created.
+  const metrics::SystemProfileProto_Stability& stability =
+      system_profile.stability();
+
+  EXPECT_EQ(2, stability.child_process_crash_count());
+
+  // Utility processes also log an entries for the hashed name of the process
+  // for launches and crashes.
+  histogram_tester.ExpectUniqueSample(
+      "ChildProcess.Launched.UtilityProcessHash",
+      variations::HashName(kTestUtilityProcessName), 1);
+  histogram_tester.ExpectUniqueSample(
+      "ChildProcess.Crashed.UtilityProcessHash",
+      variations::HashName(kTestUtilityProcessName), 2);
 }
 
 TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
