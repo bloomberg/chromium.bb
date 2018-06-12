@@ -19,8 +19,6 @@ static const char kChromiumDomainRedirectUrlPattern[] =
 
 }  // namespace
 
-namespace identity = api::identity;
-
 IdentityLaunchWebAuthFlowFunction::IdentityLaunchWebAuthFlowFunction() {}
 
 IdentityLaunchWebAuthFlowFunction::~IdentityLaunchWebAuthFlowFunction() {
@@ -34,8 +32,8 @@ bool IdentityLaunchWebAuthFlowFunction::RunAsync() {
     return false;
   }
 
-  std::unique_ptr<identity::LaunchWebAuthFlow::Params> params(
-      identity::LaunchWebAuthFlow::Params::Create(*args_));
+  std::unique_ptr<api::identity::LaunchWebAuthFlow::Params> params(
+      api::identity::LaunchWebAuthFlow::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   GURL auth_url(params->details.url);

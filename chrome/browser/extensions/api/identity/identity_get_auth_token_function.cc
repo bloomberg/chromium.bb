@@ -58,8 +58,6 @@ const char* const kPublicSessionAllowedOrigins[] = {
 
 }  // namespace
 
-namespace identity = api::identity;
-
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
     :
 #if defined(OS_CHROMEOS)
@@ -86,8 +84,8 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
     return false;
   }
 
-  std::unique_ptr<identity::GetAuthToken::Params> params(
-      identity::GetAuthToken::Params::Create(*args_));
+  std::unique_ptr<api::identity::GetAuthToken::Params> params(
+      api::identity::GetAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   interactive_ = params->details.get() &&
       params->details->interactive.get() &&

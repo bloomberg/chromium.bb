@@ -634,7 +634,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   // In tests don't install extensions from default external sources.
   // It would only slowdown tests and make them flaky.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDefaultApps))
+          ::switches::kDisableDefaultApps))
     return;
 
   // On Mac OS, items in /Library/... should be written by the superuser.

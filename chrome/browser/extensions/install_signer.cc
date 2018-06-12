@@ -271,7 +271,7 @@ bool InstallSigner::VerifySignature(const InstallSignature& signature) {
 ExtensionIdSet InstallSigner::GetForcedNotFromWebstore() {
   std::string value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kExtensionsNotWebstore);
+          ::switches::kExtensionsNotWebstore);
   if (value.empty())
     return ExtensionIdSet();
 

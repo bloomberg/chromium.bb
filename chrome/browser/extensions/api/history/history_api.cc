@@ -364,7 +364,7 @@ ExtensionFunction::ResponseAction HistoryDeleteUrlFunction::Run() {
   // set then don't clean so testers can see what potentially malicious
   // extensions have been trying to clean from their logs.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionActivityLogTesting)) {
+          ::switches::kEnableExtensionActivityLogTesting)) {
     ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
     DCHECK(activity_log);
     activity_log->RemoveURL(url);
@@ -398,7 +398,7 @@ ExtensionFunction::ResponseAction HistoryDeleteRangeFunction::Run() {
 
   // Also clean from the activity log unless in testing mode.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionActivityLogTesting)) {
+          ::switches::kEnableExtensionActivityLogTesting)) {
     ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
     DCHECK(activity_log);
     activity_log->RemoveURLs(restrict_urls);
@@ -431,7 +431,7 @@ ExtensionFunction::ResponseAction HistoryDeleteAllFunction::Run() {
 
   // Also clean from the activity log unless in testing mode.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionActivityLogTesting)) {
+          ::switches::kEnableExtensionActivityLogTesting)) {
     ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
     DCHECK(activity_log);
     activity_log->RemoveURLs(restrict_urls);

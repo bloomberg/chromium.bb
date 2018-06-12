@@ -193,7 +193,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 
   navigation_observer_.reset(new NavigationObserver(profile_));
 
-  bool allow_noisy_errors = !command_line->HasSwitch(switches::kNoErrorDialogs);
+  bool allow_noisy_errors =
+      !command_line->HasSwitch(::switches::kNoErrorDialogs);
   LoadErrorReporter::Init(allow_noisy_errors);
 
   content_verifier_ = new ContentVerifier(

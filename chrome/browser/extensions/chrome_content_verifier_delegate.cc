@@ -87,24 +87,24 @@ ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::GetDefaultMode() {
   // to find out what the server-provided value is in this case, so we
   // conservatively default to the strictest mode if we detect our experiment
   // name being overridden.
-  if (command_line->HasSwitch(switches::kForceFieldTrials)) {
+  if (command_line->HasSwitch(::switches::kForceFieldTrials)) {
     std::string forced_trials =
-        command_line->GetSwitchValueASCII(switches::kForceFieldTrials);
+        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials);
     if (forced_trials.find(kContentVerificationExperimentName) !=
         std::string::npos)
       experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
   }
 
   Mode cmdline_value = NONE;
-  if (command_line->HasSwitch(switches::kExtensionContentVerification)) {
+  if (command_line->HasSwitch(::switches::kExtensionContentVerification)) {
     std::string switch_value = command_line->GetSwitchValueASCII(
-        switches::kExtensionContentVerification);
-    if (switch_value == switches::kExtensionContentVerificationBootstrap)
+        ::switches::kExtensionContentVerification);
+    if (switch_value == ::switches::kExtensionContentVerificationBootstrap)
       cmdline_value = ContentVerifierDelegate::BOOTSTRAP;
-    else if (switch_value == switches::kExtensionContentVerificationEnforce)
+    else if (switch_value == ::switches::kExtensionContentVerificationEnforce)
       cmdline_value = ContentVerifierDelegate::ENFORCE;
     else if (switch_value ==
-             switches::kExtensionContentVerificationEnforceStrict)
+             ::switches::kExtensionContentVerificationEnforceStrict)
       cmdline_value = ContentVerifierDelegate::ENFORCE_STRICT;
     else
       // If no value was provided (or the wrong one), just default to enforce.

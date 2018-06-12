@@ -51,7 +51,6 @@ using content::BrowserThread;
 namespace extensions {
 class ExtensionRegistry;
 
-namespace storage = api::storage;
 
 namespace {
 

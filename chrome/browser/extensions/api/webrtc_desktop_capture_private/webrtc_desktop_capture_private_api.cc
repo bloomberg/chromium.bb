@@ -61,7 +61,7 @@ bool WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::RunAsync() {
 
   GURL origin = rfh->GetLastCommittedURL().GetOrigin();
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowHttpScreenCapture) &&
+          ::switches::kAllowHttpScreenCapture) &&
       !content::IsOriginSecure(origin)) {
     error_ = kUrlNotSecure;
     return false;

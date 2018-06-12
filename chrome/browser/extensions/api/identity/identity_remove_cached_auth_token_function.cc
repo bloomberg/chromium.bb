@@ -11,8 +11,6 @@
 
 namespace extensions {
 
-namespace identity = api::identity;
-
 IdentityRemoveCachedAuthTokenFunction::IdentityRemoveCachedAuthTokenFunction() {
 }
 
@@ -23,8 +21,8 @@ ExtensionFunction::ResponseAction IdentityRemoveCachedAuthTokenFunction::Run() {
   if (Profile::FromBrowserContext(browser_context())->IsOffTheRecord())
     return RespondNow(Error(identity_constants::kOffTheRecord));
 
-  std::unique_ptr<identity::RemoveCachedAuthToken::Params> params(
-      identity::RemoveCachedAuthToken::Params::Create(*args_));
+  std::unique_ptr<api::identity::RemoveCachedAuthToken::Params> params(
+      api::identity::RemoveCachedAuthToken::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   IdentityAPI::GetFactoryInstance()
       ->Get(browser_context())

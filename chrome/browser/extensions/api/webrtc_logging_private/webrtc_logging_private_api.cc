@@ -42,7 +42,7 @@ bool CanEnableAudioDebugRecordingsFromExtension(
   }
 #endif
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableAudioDebugRecordingsFromExtension) ||
+             ::switches::kEnableAudioDebugRecordingsFromExtension) ||
          enabled_by_permissions;
 }
 

@@ -79,8 +79,8 @@ namespace {
 bool g_did_chrome_update_for_testing = false;
 
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
-  return command_line.HasSwitch(switches::kDisableExtensions) ||
-         command_line.HasSwitch(switches::kDisableExtensionsExcept);
+  return command_line.HasSwitch(::switches::kDisableExtensions) ||
+         command_line.HasSwitch(::switches::kDisableExtensionsExcept);
 }
 
 }  // namespace
@@ -261,7 +261,7 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
     return true;
 
   // If we're inside a browser test, then assume prefs are all up to date.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
     return false;
 
   PrefService* pref_service = extension_prefs->pref_service();
@@ -374,7 +374,7 @@ ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
 
 bool ChromeExtensionsBrowserClient::IsBackgroundUpdateAllowed() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBackgroundNetworking);
+      ::switches::kDisableBackgroundNetworking);
 }
 
 bool ChromeExtensionsBrowserClient::IsMinBrowserVersionSupported(
