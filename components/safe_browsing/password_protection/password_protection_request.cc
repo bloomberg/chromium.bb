@@ -156,6 +156,8 @@ void PasswordProtectionRequest::FillRequestProto() {
   request_proto_->set_clicked_through_interstitial(
       clicked_through_interstitial);
 
+  request_proto_->set_content_type(web_contents_->GetContentsMimeType());
+
   switch (trigger_type_) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE: {
       UMA_HISTOGRAM_BOOLEAN(

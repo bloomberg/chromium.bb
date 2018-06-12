@@ -18,7 +18,10 @@
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/web_contents_tester.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -147,15 +150,17 @@ class PasswordProtectionServiceTest
   void TearDown() override { content_setting_map_->ShutdownOnUIThread(); }
 
   // Sets up |database_manager_| and |pending_requests_| as needed.
-  void InitializeAndStartPasswordOnFocusRequest(bool match_whitelist,
-                                                int timeout_in_ms) {
+  void InitializeAndStartPasswordOnFocusRequest(
+      bool match_whitelist,
+      int timeout_in_ms,
+      content::WebContents* web_contents) {
     GURL target_url(kTargetUrl);
     EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url, _))
         .WillRepeatedly(
             Return(match_whitelist ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH));
 
     request_ = new PasswordProtectionRequest(
-        nullptr, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
+        web_contents, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
         false /* matches_sync_password */, {},
         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true,
         password_protection_service_.get(), timeout_in_ms);
@@ -166,14 +171,15 @@ class PasswordProtectionServiceTest
       bool matches_sync_password,
       const std::vector<std::string>& matching_domains,
       bool match_whitelist,
-      int timeout_in_ms) {
+      int timeout_in_ms,
+      content::WebContents* web_contents) {
     GURL target_url(kTargetUrl);
     EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url, _))
         .WillRepeatedly(
             Return(match_whitelist ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH));
 
     request_ = new PasswordProtectionRequest(
-        nullptr, target_url, GURL(), GURL(), matches_sync_password,
+        web_contents, target_url, GURL(), GURL(), matches_sync_password,
         matching_domains, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
         true, password_protection_service_.get(), timeout_in_ms);
     request_->Start();
@@ -226,6 +232,11 @@ class PasswordProtectionServiceTest
     return password_protection_service_->GetStoredVerdictCount(type);
   }
 
+  content::WebContents* GetWebContents() {
+    return content::WebContentsTester::CreateTestWebContents(
+        content::WebContents::CreateParams(&browser_context_));
+  }
+
  protected:
   // |thread_bundle_| is needed here because this test involves both UI and IO
   // threads.
@@ -238,6 +249,7 @@ class PasswordProtectionServiceTest
   std::unique_ptr<TestPasswordProtectionService> password_protection_service_;
   scoped_refptr<PasswordProtectionRequest> request_;
   base::HistogramTester histograms_;
+  content::TestBrowserContext browser_context_;
 };
 
 TEST_P(PasswordProtectionServiceTest, TestParseInvalidVerdictEntry) {
@@ -580,8 +592,8 @@ TEST_P(PasswordProtectionServiceTest, VerifyCanGetReputationOfURL) {
 
 TEST_P(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
-  InitializeAndStartPasswordOnFocusRequest(true /* match whitelist */,
-                                           10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(
+      true /* match whitelist */, 10000 /* timeout in ms */, GetWebContents());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
@@ -595,8 +607,8 @@ TEST_P(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
                LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
                LoginReputationClientResponse::LOW_REPUTATION, 10 * kMinute,
                GURL(kTargetUrl).host().append("/"), base::Time::Now());
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(
+      false /* match whitelist */, 10000 /* timeout in ms*/, GetWebContents());
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
@@ -612,8 +624,8 @@ TEST_P(PasswordProtectionServiceTest, TestResponseFetchFailed) {
   network::URLLoaderCompletionStatus status(net::ERR_FAILED);
   test_url_loader_factory_.AddResponse(url_, head, std::string(), status);
 
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(
+      false /* match whitelist */, 10000 /* timeout in ms */, GetWebContents());
   password_protection_service_->WaitForResponse();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
@@ -626,8 +638,8 @@ TEST_P(PasswordProtectionServiceTest, TestMalformedResponse) {
   // Set up malformed response.
   test_url_loader_factory_.AddResponse(url_.spec(), "invalid response");
 
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(
+      false /* match whitelist */, 10000 /* timeout in ms */, GetWebContents());
   password_protection_service_->WaitForResponse();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
@@ -638,7 +650,8 @@ TEST_P(PasswordProtectionServiceTest, TestMalformedResponse) {
 TEST_P(PasswordProtectionServiceTest, TestRequestTimedout) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           0 /* timeout immediately */);
+                                           0 /* timeout immediately */,
+                                           GetWebContents());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
@@ -656,8 +669,8 @@ TEST_P(PasswordProtectionServiceTest,
   test_url_loader_factory_.AddResponse(url_.spec(),
                                        expected_response.SerializeAsString());
 
-  InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           10000 /* timeout in ms*/);
+  InitializeAndStartPasswordOnFocusRequest(
+      false /* match whitelist */, 10000 /* timeout in ms */, GetWebContents());
   password_protection_service_->WaitForResponse();
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogram),
@@ -689,7 +702,7 @@ TEST_P(PasswordProtectionServiceTest,
   // Initiate a saved password entry request (w/ no sync password).
   InitializeAndStartPasswordEntryRequest(
       false /* matches_sync_password */, {"example.com"},
-      false /* match whitelist */, 10000 /* timeout in ms*/);
+      false /* match whitelist */, 10000 /* timeout in ms*/, GetWebContents());
   password_protection_service_->WaitForResponse();
 
   // UMA: request outcomes
@@ -727,9 +740,9 @@ TEST_P(PasswordProtectionServiceTest,
                                        expected_response.SerializeAsString());
 
   // Initiate a sync password entry request (w/ no saved password).
-  InitializeAndStartPasswordEntryRequest(true /* matches_sync_password */, {},
-                                         false /* match whitelist */,
-                                         10000 /* timeout in ms*/);
+  InitializeAndStartPasswordEntryRequest(
+      true /* matches_sync_password */, {}, false /* match whitelist */,
+      10000 /* timeout in ms*/, GetWebContents());
   password_protection_service_->WaitForResponse();
 
   // UMA: request outcomes
@@ -879,7 +892,8 @@ TEST_P(PasswordProtectionServiceTest, VerifyPasswordOnFocusRequestProto) {
                                        expected_response.SerializeAsString());
 
   InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,
-                                           100000 /* timeout in ms*/);
+                                           100000 /* timeout in ms */,
+                                           GetWebContents());
   password_protection_service_->WaitForResponse();
 
   const LoginReputationClientRequest* actual_request =
@@ -905,9 +919,9 @@ TEST_P(PasswordProtectionServiceTest,
                                        expected_response.SerializeAsString());
 
   // Initialize request triggered by chrome sync password reuse.
-  InitializeAndStartPasswordEntryRequest(true /* matches_sync_password */, {},
-                                         false /* match whitelist */,
-                                         100000 /* timeout in ms*/);
+  InitializeAndStartPasswordEntryRequest(
+      true /* matches_sync_password */, {}, false /* match whitelist */,
+      100000 /* timeout in ms*/, GetWebContents());
   password_protection_service_->WaitForResponse();
 
   const LoginReputationClientRequest* actual_request =
@@ -936,7 +950,7 @@ TEST_P(PasswordProtectionServiceTest,
   // Initialize request triggered by saved password reuse.
   InitializeAndStartPasswordEntryRequest(
       false /* matches_sync_password */, {kSavedDomain, kSavedDomain2},
-      false /* match whitelist */, 100000 /* timeout in ms*/);
+      false /* match whitelist */, 100000 /* timeout in ms*/, GetWebContents());
   password_protection_service_->WaitForResponse();
 
   const LoginReputationClientRequest* actual_request =
@@ -1035,6 +1049,22 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
   EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
             password_protection_service_->GetSyncAccountType());
   EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
+}
+
+TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
+  content::WebContents* web_contents = GetWebContents();
+
+  content::WebContentsTester::For(web_contents)
+      ->SetMainFrameMimeType("application/pdf");
+
+  InitializeAndStartPasswordOnFocusRequest(
+      false /* match whitelist */, 10000 /* timeout in ms */, web_contents);
+
+  password_protection_service_->WaitForResponse();
+
+  EXPECT_EQ(
+      "application/pdf",
+      password_protection_service_->GetLatestRequestProto()->content_type());
 }
 
 INSTANTIATE_TEST_CASE_P(
