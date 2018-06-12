@@ -438,7 +438,9 @@ verify_xdg_runtime_dir(void)
 static int
 usage(int error_code)
 {
-	fprintf(error_code == EXIT_SUCCESS ? stdout : stderr,
+	FILE *out = error_code == EXIT_SUCCESS ? stdout : stderr;
+
+	fprintf(out,
 		"Usage: weston [OPTIONS]\n\n"
 		"This is weston version " VERSION ", the Wayland reference compositor.\n"
 		"Weston supports multiple backends, and depending on which backend is in use\n"
@@ -478,7 +480,7 @@ usage(int error_code)
 		"  -h, --help\t\tThis help message\n\n");
 
 #if defined(BUILD_DRM_COMPOSITOR)
-	fprintf(stderr,
+	fprintf(out,
 		"Options for drm-backend.so:\n\n"
 		"  --seat=SEAT\t\tThe seat that weston should run on\n"
 		"  --tty=TTY\t\tThe tty to use\n"
@@ -488,7 +490,7 @@ usage(int error_code)
 #endif
 
 #if defined(BUILD_FBDEV_COMPOSITOR)
-	fprintf(stderr,
+	fprintf(out,
 		"Options for fbdev-backend.so:\n\n"
 		"  --tty=TTY\t\tThe tty to use\n"
 		"  --device=DEVICE\tThe framebuffer device to use\n"
@@ -496,7 +498,7 @@ usage(int error_code)
 #endif
 
 #if defined(BUILD_HEADLESS_COMPOSITOR)
-	fprintf(stderr,
+	fprintf(out,
 		"Options for headless-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of memory surface\n"
 		"  --height=HEIGHT\tHeight of memory surface\n"
@@ -508,7 +510,7 @@ usage(int error_code)
 #endif
 
 #if defined(BUILD_RDP_COMPOSITOR)
-	fprintf(stderr,
+	fprintf(out,
 		"Options for rdp-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of desktop\n"
 		"  --height=HEIGHT\tHeight of desktop\n"
@@ -523,7 +525,7 @@ usage(int error_code)
 #endif
 
 #if defined(BUILD_WAYLAND_COMPOSITOR)
-	fprintf(stderr,
+	fprintf(out,
 		"Options for wayland-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of Wayland surface\n"
 		"  --height=HEIGHT\tHeight of Wayland surface\n"
@@ -536,7 +538,7 @@ usage(int error_code)
 #endif
 
 #if defined(BUILD_X11_COMPOSITOR)
-	fprintf(stderr,
+	fprintf(out,
 		"Options for x11-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of X window\n"
 		"  --height=HEIGHT\tHeight of X window\n"
