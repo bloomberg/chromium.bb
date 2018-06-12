@@ -200,9 +200,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete, /* delete.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("deleteMenuItemNoEntrySelected"),
-                      TestCase("deleteEntryWithToolbar").InGuestMode(),
-                      TestCase("deleteEntryWithToolbar")));
+    ::testing::Values(
+        TestCase("deleteMenuItemNoEntrySelected"),
+        TestCase("deleteEntryWithToolbar").InGuestMode(),
+        TestCase("deleteEntryWithToolbar"),
+        TestCase("deleteContextMenuItemDisabledForReadOnlyDocument"),
+        TestCase("deleteContextMenuItemDisabledForReadOnlyFile"),
+        TestCase("deleteContextMenuItemDisabledForReadOnlyFolder"),
+        TestCase("deleteContextMenuItemEnabledForReadWriteFile")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(QuickView, /* quick_view.js */
                                 FilesAppBrowserTest,
