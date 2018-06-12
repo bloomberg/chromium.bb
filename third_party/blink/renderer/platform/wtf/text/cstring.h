@@ -55,7 +55,7 @@ class WTF_EXPORT CStringImpl : public RefCounted<CStringImpl> {
   size_t length() const { return length_; }
 
  private:
-  explicit CStringImpl(size_t length) : length_(length) {}
+  explicit CStringImpl(unsigned length) : length_(length) {}
 
   const unsigned length_;
 
