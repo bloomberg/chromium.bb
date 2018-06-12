@@ -84,12 +84,13 @@ public interface VrShell extends VrDialogManager, VrToastManager {
     void acceptDoffPromptForTesting();
 
     /**
-     * Performs a UI action that doesn't require a position argument on a UI element.
-     * @param elementName The UserFriendlyElementName to perform the UI action on.
-     * @param actionType The VrUiTestAction to perform on the specified element.
-     * @param position The position on the element to perform the action.
+     * Performs an action on a UI element using simulated controller input.
+     * @param elementName The UserFriendlyElementName to perform the action on.
+     * @param actionType The VrControllerTestAction to perform on the specified element.
+     * @param position The position on the element to click on, scaled to fit a unit square centered
+     *    on (0,0).
      */
-    void performUiActionForTesting(int elementName, int actionType, PointF position);
+    void performControllerActionForTesting(int elementName, int actionType, PointF position);
 
     /**
      * Notifies the native UI that it should start tracking UI activity, reporting a result

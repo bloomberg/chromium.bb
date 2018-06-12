@@ -1263,22 +1263,6 @@ void VrShell::AcceptDoffPromptForTesting(
                                 gl_thread_->GetVrShellGl()));
 }
 
-void VrShell::PerformUiActionForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jint element_name,
-    jint action_type,
-    jfloat x,
-    jfloat y) {
-  UiTestInput test_input;
-  test_input.element_name = static_cast<UserFriendlyElementName>(element_name);
-  test_input.action = static_cast<VrUiTestAction>(action_type);
-  test_input.position = gfx::PointF(x, y);
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::PerformUiActionForTesting,
-                                gl_thread_->GetVrShellGl(), test_input));
-}
-
 void VrShell::SetUiExpectingActivityForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -1294,6 +1278,23 @@ void VrShell::ReportUiActivityResultForTesting(VrUiTestActivityResult result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_reportUiActivityResultForTesting(env, j_vr_shell_,
                                                     static_cast<int>(result));
+}
+
+void VrShell::PerformControllerActionForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint element_name,
+    jint action_type,
+    jfloat x,
+    jfloat y) {
+  ControllerTestInput controller_input;
+  controller_input.element_name =
+      static_cast<UserFriendlyElementName>(element_name);
+  controller_input.action = static_cast<VrControllerTestAction>(action_type);
+  controller_input.position = gfx::PointF(x, y);
+  PostToGlThread(FROM_HERE,
+                 base::BindOnce(&VrShellGl::PerformControllerActionForTesting,
+                                gl_thread_->GetVrShellGl(), controller_input));
 }
 
 std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {

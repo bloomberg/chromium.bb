@@ -1262,6 +1262,14 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.touchpad_touch_position =
       gfx::PointF(controller_->TouchPosX(), controller_->TouchPosY());
   controller_model.app_button_long_pressed = app_button_long_pressed_;
+
+  if (!test_controller_model_queue_.empty()) {
+    cached_test_controller_model_ = test_controller_model_queue_.front();
+    test_controller_model_queue_.pop();
+  }
+  if (using_test_controller_model_) {
+    controller_model = cached_test_controller_model_;
+  }
   controller_model_ = controller_model;
 
   ReticleModel reticle_model;
@@ -2524,10 +2532,6 @@ void VrShellGl::AcceptDoffPromptForTesting() {
   ui_->AcceptDoffPromptForTesting();
 }
 
-void VrShellGl::PerformUiActionForTesting(UiTestInput test_input) {
-  ui_->PerformUiActionForTesting(test_input);
-}
-
 void VrShellGl::SetUiExpectingActivityForTesting(
     UiTestActivityExpectation ui_expectation) {
   DCHECK(ui_test_state_ == nullptr)
@@ -2535,6 +2539,21 @@ void VrShellGl::SetUiExpectingActivityForTesting(
   ui_test_state_ = std::make_unique<UiTestState>();
   ui_test_state_->quiescence_timeout_ms =
       base::TimeDelta::FromMilliseconds(ui_expectation.quiescence_timeout_ms);
+}
+
+void VrShellGl::PerformControllerActionForTesting(
+    ControllerTestInput controller_input) {
+  if (controller_input.action ==
+      VrControllerTestAction::kRevertToRealController) {
+    DCHECK(test_controller_model_queue_.empty()) << "Attempted to revert to "
+                                                    "using real controller "
+                                                    "with actions still queued";
+    using_test_controller_model_ = false;
+    return;
+  }
+  ui_->PerformControllerActionForTesting(controller_input,
+                                         test_controller_model_queue_);
+  using_test_controller_model_ = true;
 }
 
 void VrShellGl::ReportUiStatusForTesting(const base::TimeTicks& current_time,

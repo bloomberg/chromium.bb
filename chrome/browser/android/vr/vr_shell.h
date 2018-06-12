@@ -280,20 +280,20 @@ class VrShell : device::GvrGamepadDataProvider,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void PerformUiActionForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jint element_name,
-      jint action_type,
-      jfloat x,
-      jfloat y);
-
   void SetUiExpectingActivityForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint quiescence_timeout_ms);
 
   void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
+
+  void PerformControllerActionForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint element_name,
+      jint action_type,
+      jfloat x,
+      jfloat y);
 
  private:
   ~VrShell() override;

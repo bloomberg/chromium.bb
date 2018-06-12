@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <iomanip>
+#include <queue>
 #include <sstream>
 
 #include "chrome/browser/vr/ui.h"
@@ -562,28 +563,42 @@ void Ui::AcceptDoffPromptForTesting() {
   button->OnHoverLeave();
 }
 
-void Ui::PerformUiActionForTesting(UiTestInput test_input) {
-  auto* element = scene()->GetUiElementByName(
-      UserFriendlyElementNameToUiElementName(test_input.element_name));
-  DCHECK(element) << "Unsupported test element";
-  switch (test_input.action) {
-    case VrUiTestAction::kHoverEnter:
-      element->OnHoverEnter(test_input.position);
+void Ui::PerformControllerActionForTesting(
+    ControllerTestInput controller_input,
+    std::queue<ControllerModel>& controller_model_queue) {
+  auto* target_element = scene()->GetUiElementByName(
+      UserFriendlyElementNameToUiElementName(controller_input.element_name));
+  DCHECK(target_element) << "Unsupported test element";
+  // The position to click is provided for a unit square, so scale it to match
+  // the actual element.
+  controller_input.position.Scale(target_element->size().width(),
+                                  target_element->size().height());
+  auto target = gfx::Point3F(controller_input.position.x(),
+                             controller_input.position.y(), 0.0f);
+  target_element->ComputeTargetWorldSpaceTransform().TransformPoint(&target);
+  gfx::Point3F origin;
+  gfx::Vector3dF direction(target - origin);
+  direction.GetNormalized(&direction);
+  ControllerModel controller_model;
+  controller_model.laser_direction = direction;
+  controller_model.laser_origin = origin;
+
+  switch (controller_input.action) {
+    case VrControllerTestAction::kClick:
+      // Add in the button down action
+      controller_model.touchpad_button_state =
+          UiInputManager::ButtonState::DOWN;
+      controller_model_queue.push(controller_model);
+      // Add in the button up action
+      controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
+      controller_model_queue.push(controller_model);
       break;
-    case VrUiTestAction::kHoverLeave:
-      element->OnHoverLeave();
-      break;
-    case VrUiTestAction::kMove:
-      element->OnHoverMove(test_input.position);
-      break;
-    case VrUiTestAction::kButtonDown:
-      element->OnButtonDown(test_input.position);
-      break;
-    case VrUiTestAction::kButtonUp:
-      element->OnButtonUp(test_input.position);
+    case VrControllerTestAction::kHover:
+      controller_model.touchpad_button_state = UiInputManager::ButtonState::UP;
+      controller_model_queue.push(controller_model);
       break;
     default:
-      NOTREACHED() << "Given unsupported action";
+      NOTREACHED() << "Given unsupported controller action";
   }
 }
 
