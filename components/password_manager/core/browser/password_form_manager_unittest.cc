@@ -13,8 +13,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/optional.h"
-#include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -39,6 +37,7 @@
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/core/browser/vote_uploads_test_matchers.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -79,9 +78,6 @@ using ::testing::WithArg;
 namespace password_manager {
 
 namespace {
-
-constexpr int kNumberOfPasswordAttributes =
-    static_cast<int>(autofill::PasswordAttribute::kPasswordAttributesCount);
 
 // Enum that describes what button the user pressed on the save prompt.
 enum SavePromptInteraction { SAVE, NEVER, NO_INTERACTION };
@@ -164,167 +160,8 @@ MATCHER_P(UsernamePtrIs, username_value, "") {
   return true;
 }
 
-// Matches a FormStructure if its signature is the same as that of the
-// PasswordForm |form|.
-MATCHER_P(SignatureIsSameAs,
-          form,
-          std::string(negation ? "signature isn't " : "signature is ") +
-              autofill::FormStructure(form.form_data).FormSignatureAsStr()) {
-  if (autofill::FormStructure(form.form_data).FormSignatureAsStr() ==
-      arg.FormSignatureAsStr())
-    return true;
-
-  *result_listener << "signature is " << arg.FormSignatureAsStr() << " instead";
-  return false;
-}
-
-MATCHER_P(UploadedAutofillTypesAre, expected_types, "") {
-  size_t fields_matched_type_count = 0;
-  bool conflict_found = false;
-  for (const auto& field : arg) {
-    fields_matched_type_count +=
-        expected_types.find(field->name) == expected_types.end() ? 0 : 1;
-    if (field->possible_types().size() > 1) {
-      *result_listener << (conflict_found ? ", " : "") << "Field "
-                       << field->name << ": has several possible types";
-      conflict_found = true;
-    }
-
-    autofill::ServerFieldType expected_vote =
-        expected_types.find(field->name) == expected_types.end()
-            ? autofill::NO_SERVER_DATA
-            : expected_types.find(field->name)->second;
-    autofill::ServerFieldType actual_vote =
-        field->possible_types().empty() ? autofill::NO_SERVER_DATA
-                                        : *field->possible_types().begin();
-    if (expected_vote != actual_vote) {
-      *result_listener << (conflict_found ? ", " : "") << "Field "
-                       << field->name << ": expected vote " << expected_vote
-                       << " but found " << actual_vote;
-      conflict_found = true;
-    }
-  }
-  if (expected_types.size() != fields_matched_type_count) {
-    *result_listener << (conflict_found ? ", " : "")
-                     << "Some types were expected but not found in the vote";
-    return false;
-  }
-
-  return !conflict_found;
-}
-
-MATCHER_P(HasGenerationVote, expect_generation_vote, "") {
-  bool found_generation_vote = false;
-  for (const auto& field : arg) {
-    if (field->generation_type() !=
-        autofill::AutofillUploadContents::Field::NO_GENERATION) {
-      found_generation_vote = true;
-      break;
-    }
-  }
-  return found_generation_vote == expect_generation_vote;
-}
-
-// Matches if all fields with a vote type are described in |expected_vote_types|
-// and all votes from |expected_vote_types| are found in a field.
-MATCHER_P(VoteTypesAre, expected_vote_types, "") {
-  size_t matched_count = 0;
-  bool conflict_found = false;
-  for (const auto& field : arg) {
-    auto expectation = expected_vote_types.find(field->name);
-    if (expectation == expected_vote_types.end()) {
-      if (field->vote_type() !=
-          autofill::AutofillUploadContents::Field::NO_INFORMATION) {
-        *result_listener << (conflict_found ? ", " : "") << "field "
-                         << field->name << ": unexpected vote type "
-                         << field->vote_type();
-        conflict_found = true;
-      }
-      continue;
-    }
-
-    matched_count++;
-    if (expectation->second != field->vote_type()) {
-      *result_listener << (conflict_found ? ", " : "") << "field "
-                       << field->name << ": expected vote type "
-                       << expectation->second << " but has "
-                       << field->vote_type();
-      conflict_found = true;
-    }
-  }
-  if (expected_vote_types.size() != matched_count) {
-    *result_listener
-        << (conflict_found ? ", " : "")
-        << "some vote types were expected but not found in the vote";
-    conflict_found = true;
-  }
-
-  return !conflict_found;
-}
-
-MATCHER_P2(UploadedGenerationTypesAre,
-           expected_generation_types,
-           generated_password_changed,
-           "") {
-  for (const auto& field : arg) {
-    if (expected_generation_types.find(field->name) ==
-        expected_generation_types.end()) {
-      if (field->generation_type() !=
-          autofill::AutofillUploadContents::Field::NO_GENERATION) {
-        // Unexpected generation type.
-        *result_listener << "Expected no generation type for the field "
-                         << field->name << ", but found "
-                         << field->generation_type();
-        return false;
-      }
-    } else {
-      if (expected_generation_types.find(field->name)->second !=
-          field->generation_type()) {
-        // Wrong generation type.
-        *result_listener << "Expected generation type for the field "
-                         << field->name << " is "
-                         << expected_generation_types.find(field->name)->second
-                         << ", but found " << field->generation_type();
-        return false;
-      }
-
-      if (field->generation_type() !=
-          autofill::AutofillUploadContents::Field::IGNORED_GENERATION_POPUP) {
-        if (generated_password_changed != field->generated_password_changed())
-          return false;
-      }
-    }
-  }
-  return true;
-}
-
-MATCHER_P2(UploadedFormClassifierVoteIs,
-           found_generation_element,
-           generation_element,
-           "") {
-  for (const auto& field : arg) {
-    if (found_generation_element && field->name == generation_element) {
-      if (field->form_classifier_outcome() !=
-          autofill::AutofillUploadContents::Field::GENERATION_ELEMENT)
-        return false;
-    } else {
-      if (field->form_classifier_outcome() !=
-          autofill::AutofillUploadContents::Field::NON_GENERATION_ELEMENT)
-        return false;
-    }
-  }
-  return true;
-}
-
 MATCHER_P(PasswordsWereRevealed, revealed, "") {
   return arg.passwords_were_revealed() == revealed;
-}
-
-MATCHER_P(HasPasswordAttributesVote, is_vote_expected, "") {
-  base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
-      arg.get_password_attributes_vote_for_testing();
-  EXPECT_EQ(is_vote_expected, vote.has_value());
-  return true;
 }
 
 // Matches iff the masks in |expected_field_properties| match the mask in the
@@ -4860,57 +4697,6 @@ TEST_F(PasswordFormManagerTest, FirstLoginVote_KnownValue) {
           _, true));
 
   form_manager()->Save();
-}
-
-TEST_F(PasswordFormManagerTest, GeneratePasswordAttributesVote) {
-  // Checks that randomization distorts information about present and missed
-  // character classess, but a true value is still restorable with aggregation
-  // of many distorted reports.
-  const char* kPasswordSnippets[] = {"abc", "XYZ", "123", "*-_"};
-  for (int test_case = 0; test_case < 10; ++test_case) {
-    bool has_password_attribute[kNumberOfPasswordAttributes];
-    base::string16 password_value;
-    for (int i = 0; i < kNumberOfPasswordAttributes; ++i) {
-      has_password_attribute[i] = base::RandGenerator(2);
-      if (has_password_attribute[i])
-        password_value += ASCIIToUTF16(kPasswordSnippets[i]);
-    }
-    if (password_value.empty())
-      continue;
-
-    autofill::FormData form;
-    autofill::FormStructure form_structure(form);
-    int reported_false[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
-    int reported_true[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
-
-    for (int i = 0; i < 1000; ++i) {
-      form_manager()->GeneratePasswordAttributesVote(password_value,
-                                                     &form_structure);
-      base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
-          form_structure.get_password_attributes_vote_for_testing();
-      int attribute_index = static_cast<int>(vote->first);
-      if (vote->second)
-        reported_true[attribute_index]++;
-      else
-        reported_false[attribute_index]++;
-    }
-    for (int i = 0; i < kNumberOfPasswordAttributes; i++) {
-      EXPECT_LT(0, reported_false[i]);
-      EXPECT_LT(0, reported_true[i]);
-
-      // If the actual value is |true|, then it should report more |true|s than
-      // |false|s.
-      if (has_password_attribute[i]) {
-        EXPECT_LT(reported_false[i], reported_true[i])
-            << "Wrong distribution for attribute " << i
-            << ". password_value = " << password_value;
-      } else {
-        EXPECT_GT(reported_false[i], reported_true[i])
-            << "Wrong distribution for attribute " << i
-            << ". password_value = " << password_value;
-      }
-    }
-  }
 }
 
 TEST_F(PasswordFormManagerTest, UploadPasswordAttributesVote) {

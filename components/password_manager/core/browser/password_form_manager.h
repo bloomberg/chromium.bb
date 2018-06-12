@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/votes_uploader.h"
 
 using autofill::FormData;
 using autofill::FormStructure;
@@ -37,12 +38,6 @@ namespace password_manager {
 class FormSaver;
 class PasswordManager;
 class PasswordManagerClient;
-
-// A map from field names to field types.
-using FieldTypeMap = std::map<base::string16, autofill::ServerFieldType>;
-// A map from field names to field vote types.
-using VoteTypeMap =
-    std::map<base::string16, autofill::AutofillUploadContents::Field::VoteType>;
 
 // This class helps with filling the observed form (both HTML and from HTTP
 // auth) and with saving/updating the stored information about it.
@@ -156,27 +151,31 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // These functions are used to determine if this form has generated password
   // changed by user.
   bool generated_password_changed() const {
-    return generated_password_changed_;
+    return votes_uploader_.generated_password_changed();
   }
   void set_generated_password_changed(bool generated_password_changed) {
-    generated_password_changed_ = generated_password_changed;
+    votes_uploader_.set_generated_password_changed(generated_password_changed);
   }
 
-  bool is_manual_generation() { return is_manual_generation_; }
+  bool is_manual_generation() const {
+    return votes_uploader_.is_manual_generation();
+  }
   void set_is_manual_generation(bool is_manual_generation) {
-    is_manual_generation_ = is_manual_generation;
+    votes_uploader_.set_is_manual_generation(is_manual_generation);
   }
 
-  const base::string16& generation_element() { return generation_element_; }
+  const base::string16& generation_element() const {
+    return votes_uploader_.get_generation_element();
+  }
   void set_generation_element(const base::string16& generation_element) {
-    generation_element_ = generation_element;
+    votes_uploader_.set_generation_element(generation_element);
   }
 
   bool get_generation_popup_was_shown() const {
-    return generation_popup_was_shown_;
+    return votes_uploader_.get_generation_popup_was_shown();
   }
   void set_generation_popup_was_shown(bool generation_popup_was_shown) {
-    generation_popup_was_shown_ = generation_popup_was_shown;
+    votes_uploader_.set_generation_popup_was_shown(generation_popup_was_shown);
   }
 
   bool retry_password_form_password_update() const {
@@ -210,11 +209,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // Saves the outcome of HTML parsing based form classifier to upload proto.
   void SaveGenerationFieldDetectedByClassifier(
       const base::string16& generation_field);
-
-  // Generates a password attributes vote based on |password_value| and saves it
-  // to |form_structure|. Declared as public for testing.
-  void GeneratePasswordAttributesVote(const base::string16& password_value,
-                                      FormStructure* form_structure);
 
   FormSaver* form_saver() { return form_saver_.get(); }
 
@@ -268,13 +262,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
       size_t filtered_count) override;
 
  private:
-  // The outcome of the form classifier.
-  enum FormClassifierOutcome {
-    kNoOutcome,
-    kNoGenerationElement,
-    kFoundGenerationElement
-  };
-
   // Through |driver|, supply the associated frame with appropriate information
   // (fill data, whether to allow password generation, etc.).
   void ProcessFrameInternal(const base::WeakPtr<PasswordManagerDriver>& driver);
@@ -296,14 +283,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // triggers some UMA reporting.
   void ProcessUpdate();
 
-  // Check to see if |pending| corresponds to an account creation form. If we
-  // think that it does, we label it as such and upload this state to the
-  // Autofill server to vote for the correct username field, and also so that
-  // we will trigger password generation in the future. This function will
-  // update generation_upload_status of |pending| if an upload is performed.
-  void SendVoteOnCredentialsReuse(const autofill::PasswordForm& observed,
-                                  autofill::PasswordForm* pending);
-
   // Update all login matches to reflect new preferred state - preferred flag
   // will be reset on all matched logins that different than the current
   // |pending_credentials_|.
@@ -315,45 +294,11 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool UpdatePendingCredentialsIfOtherPossibleUsername(
       const base::string16& username);
 
-  // Searches for |username| in |other_possible_usernames| of |match|. If the
-  // username value is found, the match is saved to |username_correction_vote_|
-  // and the function returns true.
-  bool FindUsernameInOtherPossibleUsernames(const autofill::PasswordForm& match,
-                                            const base::string16& username);
-
-  // Searches for |username| in |other_possible_usernames| of |best_matches_|
-  // and |not_best_matches_|. If the username value is found in
-  // |other_possible_usernames| and the password value of the match is equal to
-  // |password|, the match is saved to |username_correction_vote_| and the
-  // method returns true.
-  bool FindCorrectedUsernameElement(const base::string16& username,
-                                    const base::string16& password);
-
   // Returns true if |form| is a username update of a credential already in
   // |best_matches_|. Sets |pending_credentials_| to the appropriate
   // PasswordForm if it returns true.
   bool UpdatePendingCredentialsIfUsernameChanged(
       const autofill::PasswordForm& form);
-
-  // Tries to set all votes (e.g. autofill field types, generation vote) to
-  // a |FormStructure| and upload it to the server. Returns true on success.
-  bool UploadPasswordVote(const autofill::PasswordForm& form_to_upload,
-                          const autofill::ServerFieldType& password_type,
-                          const std::string& login_form_signature);
-
-  // Adds a vote on password generation usage to |form_structure|.
-  void AddGeneratedVote(autofill::FormStructure* form_structure);
-
-  // Adds a vote from HTML parsing based form classifier to |form_structure|.
-  void AddFormClassifierVote(autofill::FormStructure* form_structure);
-
-  // Sets the known-value flag for each field, indicating that the field
-  // contained a previously stored credential on submission.
-  void SetKnownValueFlag(autofill::FormStructure* form_to_upload);
-
-  // Sends USERNAME and PASSWORD votes, when a credential is used to login for
-  // the first time. |form_to_upload| is the submitted login form.
-  void UploadFirstLoginVotes(const autofill::PasswordForm& form_to_upload);
 
   // Create pending credentials from provisionally saved form and forms received
   // from password store.
@@ -383,12 +328,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   const autofill::PasswordForm* FindBestSavedMatch(
       const autofill::PasswordForm* form) const;
 
-  // Send appropriate votes based on what is currently being saved.
-  void SendVotesOnSave();
-
-  // Send a vote for sign-in forms with autofill types for a username field.
-  void SendSignInVote(const FormData& form_data);
-
   // Sets |user_action_| and records some metrics.
   void SetUserAction(UserAction user_action);
 
@@ -401,6 +340,11 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // used as the old primary key during the store update.
   base::Optional<autofill::PasswordForm> UpdatePendingAndGetOldKey(
       std::vector<autofill::PasswordForm>* credentials_to_update);
+
+  void SetPasswordOverridden(bool password_overridden) {
+    password_overridden_ = password_overridden;
+    votes_uploader_.set_password_overridden(password_overridden);
+  }
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by |this|, indexed by username. This means the best
@@ -436,14 +380,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // Stores a submitted form.
   std::unique_ptr<const autofill::PasswordForm> submitted_form_;
 
-  // If the user typed username that doesn't match any saved credentials, but
-  // matches an entry from |other_possible_usernames| of a saved credential,
-  // then |username_correction_vote_| stores the credential with matched
-  // username. The matched credential is copied to |username_correction_vote_|,
-  // but |username_correction_vote_.username_element| is set to the name of the
-  // field where matched username was found.
-  std::unique_ptr<autofill::PasswordForm> username_correction_vote_;
-
   // Stores updated credentials when the form was submitted but success is still
   // unknown. This variable contains credentials that are ready to be written
   // (saved or updated) to a password store. It is calculated based on
@@ -456,25 +392,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   // Whether this form has an auto generated password.
   bool has_generated_password_;
-
-  // Whether this form has a generated password changed by user.
-  bool generated_password_changed_;
-
-  // Whether password generation was manually triggered.
-  bool is_manual_generation_;
-
-  // A password field name that is used for generation.
-  base::string16 generation_element_;
-
-  // Whether generation popup was shown at least once.
-  bool generation_popup_was_shown_;
-
-  // The outcome of HTML parsing based form classifier.
-  FormClassifierOutcome form_classifier_outcome_;
-
-  // If |form_classifier_outcome_| == kFoundGenerationElement, the field
-  // contains the name of the detected generation element.
-  base::string16 generation_element_detected_by_classifier_;
 
   // Whether the saved password was overridden.
   bool password_overridden_;
@@ -525,6 +442,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // FormFetcher instance which owns the login data from PasswordStore.
   FormFetcher* form_fetcher_;
 
+  VotesUploader votes_uploader_;
+
   // True if the main frame's visible URL, at the time this PasswordFormManager
   // was created, is secure.
   bool is_main_frame_secure_ = false;
@@ -533,18 +452,11 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // Make sure to call Init before using |*this|, to ensure it is not null.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
 
-  // True iff a user edited the username value in a prompt and new username is
-  // the value of another field of the observed form.
-  bool has_username_edited_vote_ = false;
-
   // If Chrome has already autofilled a few times, it is probable that autofill
   // is triggered by programmatic changes in the page. We set a maximum number
   // of times that Chrome will autofill to avoid being stuck in an infinite
   // loop.
   int autofills_left_ = kMaxTimesAutofill;
-
-  // Whether the password values have been shown to the user on the save prompt.
-  bool has_passwords_revealed_vote_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

@@ -151,6 +151,8 @@ static_library("browser") {
     "ui/export_flow.h",
     "ui/export_progress_status.h",
     "ui/import_flow.h",
+    "votes_uploader.cc",
+    "votes_uploader.h",
     "webdata/logins_table.cc",
     "webdata/logins_table.h",
     "webdata/logins_table_win.cc",
@@ -398,6 +400,8 @@ source_set("unit_tests") {
     "sql_table_builder_unittest.cc",
     "statistics_table_unittest.cc",
     "suppressed_form_fetcher_unittest.cc",
+    "vote_uploads_test_matchers.h",
+    "votes_uploader_unittest.cc",
   ]
   if (is_mac) {
     sources -= [ "password_store_default_unittest.cc" ]
