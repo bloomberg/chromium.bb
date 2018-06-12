@@ -154,6 +154,8 @@ static_library("test_support") {
     "fake_pending_connection_request.h",
     "fake_pending_connection_request_delegate.cc",
     "fake_pending_connection_request_delegate.h",
+    "fake_secure_channel.cc",
+    "fake_secure_channel.h",
     "fake_single_client_message_proxy.cc",
     "fake_single_client_message_proxy.h",
     "fake_timer_factory.cc",
