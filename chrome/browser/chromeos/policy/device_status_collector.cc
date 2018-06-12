@@ -44,6 +44,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -829,8 +830,12 @@ void DeviceStatusCollector::UpdateReportingSettings() {
           chromeos::kReportDeviceVersionInfo, &report_version_info_)) {
     report_version_info_ = true;
   }
-  if (!cros_settings_->GetBoolean(
-          chromeos::kReportDeviceActivityTimes, &report_activity_times_)) {
+  if (!is_enterprise_reporting_) {
+    // Only report activity times for consumer if time limit is enabled.
+    report_activity_times_ =
+        base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy);
+  } else if (!cros_settings_->GetBoolean(chromeos::kReportDeviceActivityTimes,
+                                         &report_activity_times_)) {
     report_activity_times_ = true;
   }
   if (!cros_settings_->GetBoolean(
