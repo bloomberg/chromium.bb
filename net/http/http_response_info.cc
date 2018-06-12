@@ -104,6 +104,9 @@ enum {
   // trust anchor.
   RESPONSE_INFO_PKP_BYPASSED = 1 << 23,
 
+  // This bit is set if stale_revalidate_time is stored.
+  RESPONSE_INFO_HAS_STALENESS = 1 << 24,
+
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
 };
@@ -118,6 +121,7 @@ HttpResponseInfo::HttpResponseInfo()
       was_fetched_via_proxy(false),
       did_use_http_auth(false),
       unused_since_prefetch(false),
+      async_revalidation_requested(false),
       connection_info(CONNECTION_INFO_UNKNOWN) {}
 
 HttpResponseInfo::HttpResponseInfo(const HttpResponseInfo& rhs) = default;
@@ -253,6 +257,14 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
       ssl_info.key_exchange_group = key_exchange_group;
   }
 
+  // Read staleness time.
+  if (flags & RESPONSE_INFO_HAS_STALENESS) {
+    if (!iter.ReadInt64(&time_val))
+      return false;
+    stale_revalidate_timeout =
+        base::Time() + base::TimeDelta::FromMicroseconds(time_val);
+  }
+
   was_fetched_via_spdy = (flags & RESPONSE_INFO_WAS_SPDY) != 0;
 
   was_alpn_negotiated = (flags & RESPONSE_INFO_WAS_ALPN) != 0;
@@ -304,6 +316,8 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     flags |= RESPONSE_INFO_UNUSED_SINCE_PREFETCH;
   if (ssl_info.pkp_bypassed)
     flags |= RESPONSE_INFO_PKP_BYPASSED;
+  if (!stale_revalidate_timeout.is_null())
+    flags |= RESPONSE_INFO_HAS_STALENESS;
 
   pickle->WriteInt(flags);
   pickle->WriteInt64(request_time.ToInternalValue());
@@ -346,6 +360,11 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
 
   if (ssl_info.is_valid() && ssl_info.key_exchange_group != 0)
     pickle->WriteInt(ssl_info.key_exchange_group);
+
+  if (flags & RESPONSE_INFO_HAS_STALENESS) {
+    pickle->WriteInt64(
+        (stale_revalidate_timeout - base::Time()).InMicroseconds());
+  }
 }
 
 bool HttpResponseInfo::DidUseQuic() const {

@@ -10311,6 +10311,154 @@ TEST_F(HttpCachePrefetchValidationTest, ValidateOnDelayedSecondPrefetch) {
   EXPECT_FALSE(TransactionRequiredNetwork(LOAD_NORMAL));
 }
 
+TEST_F(HttpCacheTest, StaleContentNotUsedWhenLoadFlagNotSet) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=0,stale-while-revalidate=86400\n";
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Send the request again and check that it is sent to the network again.
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(
+      cache.http_cache(), stale_while_revalidate_transaction, &response_info);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_FALSE(response_info.async_revalidation_requested);
+}
+
+TEST_F(HttpCacheTest, StaleContentUsedWhenLoadFlagSetAndUsableThenTimesout) {
+  MockHttpCache cache;
+  base::SimpleTestClock clock;
+  cache.http_cache()->SetClockForTesting(&clock);
+  cache.network_layer()->SetClock(&clock);
+  clock.Advance(base::TimeDelta::FromSeconds(10));
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+  stale_while_revalidate_transaction.load_flags |=
+      LOAD_SUPPORT_ASYNC_REVALIDATION;
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=0,stale-while-revalidate=86400\n";
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Send the request again and check that it is not sent to the network again.
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(
+      cache.http_cache(), stale_while_revalidate_transaction, &response_info);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_TRUE(response_info.async_revalidation_requested);
+  EXPECT_FALSE(response_info.stale_revalidate_timeout.is_null());
+
+  // Move forward in time such that the stale response is no longer valid.
+  clock.SetNow(response_info.stale_revalidate_timeout);
+  clock.Advance(base::TimeDelta::FromSeconds(1));
+
+  RunTransactionTestWithResponseInfo(
+      cache.http_cache(), stale_while_revalidate_transaction, &response_info);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_FALSE(response_info.async_revalidation_requested);
+}
+
+TEST_F(HttpCacheTest, StaleContentUsedWhenLoadFlagSetAndUsable) {
+  MockHttpCache cache;
+  base::SimpleTestClock clock;
+  cache.http_cache()->SetClockForTesting(&clock);
+  cache.network_layer()->SetClock(&clock);
+  clock.Advance(base::TimeDelta::FromSeconds(10));
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+  stale_while_revalidate_transaction.load_flags |=
+      LOAD_SUPPORT_ASYNC_REVALIDATION;
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=0,stale-while-revalidate=86400\n";
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Send the request again and check that it is not sent to the network again.
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(
+      cache.http_cache(), stale_while_revalidate_transaction, &response_info);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_TRUE(response_info.async_revalidation_requested);
+  EXPECT_FALSE(response_info.stale_revalidate_timeout.is_null());
+  base::Time revalidation_timeout = response_info.stale_revalidate_timeout;
+  clock.Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(clock.Now() < revalidation_timeout);
+
+  // Fetch the resource again inside the revalidation timeout window.
+  RunTransactionTestWithResponseInfo(
+      cache.http_cache(), stale_while_revalidate_transaction, &response_info);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_TRUE(response_info.async_revalidation_requested);
+  EXPECT_FALSE(response_info.stale_revalidate_timeout.is_null());
+  // Expect that the original revalidation timeout hasn't changed.
+  EXPECT_TRUE(revalidation_timeout == response_info.stale_revalidate_timeout);
+
+  // mask of async revalidation flag.
+  stale_while_revalidate_transaction.load_flags &=
+      ~LOAD_SUPPORT_ASYNC_REVALIDATION;
+  stale_while_revalidate_transaction.status = "HTTP/1.1 304 Not Modified";
+  // Write 304 to the cache.
+  RunTransactionTestWithResponseInfo(
+      cache.http_cache(), stale_while_revalidate_transaction, &response_info);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_FALSE(response_info.async_revalidation_requested);
+  EXPECT_TRUE(response_info.stale_revalidate_timeout.is_null());
+}
+
+TEST_F(HttpCacheTest, StaleContentNotUsedWhenUnusable) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction stale_while_revalidate_transaction(
+      kSimpleGET_Transaction);
+  stale_while_revalidate_transaction.load_flags |=
+      LOAD_SUPPORT_ASYNC_REVALIDATION;
+  stale_while_revalidate_transaction.response_headers =
+      "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+      "Age: 10801\n"
+      "Cache-Control: max-age=0,stale-while-revalidate=1800\n";
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), stale_while_revalidate_transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+
+  // Send the request again and check that it is sent to the network again.
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(
+      cache.http_cache(), stale_while_revalidate_transaction, &response_info);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_FALSE(response_info.async_revalidation_requested);
+}
+
 // Tests that we allow multiple simultaneous, non-overlapping transactions to
 // take place on a sparse entry.
 TEST_F(HttpCacheTest, RangeGET_MultipleRequests) {

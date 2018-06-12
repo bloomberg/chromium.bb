@@ -92,3 +92,13 @@ LOAD_FLAG(DISABLE_CONNECTION_MIGRATION, 1 << 16)
 // Indicates that the cache should not check that the request matches the
 // response's vary header.
 LOAD_FLAG(SKIP_VARY_CHECK, 1 << 17)
+
+// The creator of this URLRequest wishes to receive stale responses when allowed
+// by the "Cache-Control: stale-while-revalidate" directive and is able to issue
+// an async revalidation to update the cache. If the callee needs to revalidate
+// the resource |async_revalidation_requested| attribute will be set on the
+// associated HttpResponseInfo. If indicated the callee should revalidate the
+// resource by issuing a new request without this flag set. If the revalidation
+// does not complete in 60 seconds, the cache treat the stale resource as
+// invalid, as it did not specify stale-while-revalidate.
+LOAD_FLAG(SUPPORT_ASYNC_REVALIDATION, 1 << 18)

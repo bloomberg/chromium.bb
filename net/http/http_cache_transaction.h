@@ -256,6 +256,9 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     STATE_CACHE_QUERY_DATA_COMPLETE,
     STATE_START_PARTIAL_CACHE_VALIDATION,
     STATE_COMPLETE_PARTIAL_CACHE_VALIDATION,
+    STATE_CACHE_UPDATE_STALE_WHILE_REVALIDATE_TIMEOUT,
+    STATE_CACHE_UPDATE_STALE_WHILE_REVALIDATE_TIMEOUT_COMPLETE,
+    STATE_SETUP_ENTRY_FOR_READ,
     STATE_SEND_REQUEST,
     STATE_SEND_REQUEST_COMPLETE,
     STATE_SUCCESSFUL_SEND_REQUEST,
@@ -333,6 +336,9 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   int DoCacheDispatchValidation();
   int DoCacheQueryData();
   int DoCacheQueryDataComplete(int result);
+  int DoCacheUpdateStaleWhileRevalidateTimeout();
+  int DoCacheUpdateStaleWhileRevalidateTimeoutComplete(int result);
+  int DoSetupEntryForRead();
   int DoStartPartialCacheValidation();
   int DoCompletePartialCacheValidation(int result);
   int DoSendRequest();
@@ -407,8 +413,9 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   // Returns network error code.
   int RestartNetworkRequestWithAuth(const AuthCredentials& credentials);
 
-  // Called to determine if we need to validate the cache entry before using it.
-  bool RequiresValidation();
+  // Called to determine if we need to validate the cache entry before using it,
+  // and whether the validation should be synchronous or asynchronous.
+  ValidationType RequiresValidation();
 
   // Called to make the request conditional (to ask the server if the cached
   // copy is valid).  Returns true if able to make the request conditional.
@@ -442,9 +449,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
 
   // Fixes the response headers to match expectations for a HEAD request.
   void FixHeadersForHead();
-
-  // Setups the transaction for reading from the cache entry.
-  int SetupEntryForRead();
 
   // Called to write data to the cache entry.  If the write fails, then the
   // cache entry is destroyed.  Future calls to this function will just do
