@@ -306,5 +306,7 @@ blink_core_sources("dom") {
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",
+    # Needed to generate add_event_listener_options.h
+    "//third_party/blink/renderer/bindings/core/v8:bindings_core_impl_generated",
   ]
 }
