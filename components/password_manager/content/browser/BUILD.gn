@@ -16,6 +16,8 @@ static_library("browser") {
     "form_submission_tracker_util.h",
     "password_manager_internals_service_factory.cc",
     "password_manager_internals_service_factory.h",
+    "password_requirements_service_factory.cc",
+    "password_requirements_service_factory.h",
   ]
 
   public_deps = [
