@@ -210,7 +210,13 @@ class SimulateDelegate : public ExceptionHandlerServer::Delegate {
 
     // Verify the dump was captured at the expected location with some slop
     // space.
+#if defined(ADDRESS_SANITIZER)
+    // ASan instrumentation inserts more instructions between the expected
+    // location and what's reported. https://crbug.com/845011.
+    constexpr uint64_t kAllowedOffset = 500;
+#else
     constexpr uint64_t kAllowedOffset = 100;
+#endif
     EXPECT_GT(snapshot.Exception()->Context()->InstructionPointer(),
               dump_near_);
     EXPECT_LT(snapshot.Exception()->Context()->InstructionPointer(),

@@ -23,13 +23,16 @@ deps = {
       '6fe4a3251488f7af86d64fc25cf442e817cf6133',
   'crashpad/third_party/gtest/gtest':
       Var('chromium_git') + '/external/github.com/google/googletest@' +
-      'd175c8bf823e709d570772b038757fadf63bc632',
+      'c091b0469ab4c04ee9411ef770f32360945f4c53',
   'crashpad/third_party/gyp/gyp':
       Var('chromium_git') + '/external/gyp@' +
       '5e2b3ddde7cda5eb6bc09a5546a76b00e49d888f',
   'crashpad/third_party/mini_chromium/mini_chromium':
       Var('chromium_git') + '/chromium/mini_chromium@' +
-      '40cb6722bbc6bd6fb5fccecd80362313440a0537',
+      'd5a36d3c51a7a270afc2c888baaaec2a6e496219',
+  'crashpad/third_party/libfuzzer/src':
+      Var('chromium_git') + '/chromium/llvm-project/compiler-rt/lib/fuzzer.git@' +
+      'fda403cf93ecb8792cb1d061564d89a6553ca020',
   'crashpad/third_party/zlib/zlib':
       Var('chromium_git') + '/chromium/src/third_party/zlib@' +
       '13dc246a58e4b72104d35f9b1809af95221ebda7',
