@@ -291,7 +291,11 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
       "mi", "mi-sha256=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
   envelope.SetSignatureForTesting((*signature)[0]);
 
-  TestVerifierGivenValidInput(envelope, certlist[0]);
+  EXPECT_EQ(
+      SignedExchangeSignatureVerifier::Result::kErrSignatureVerificationFailed,
+      SignedExchangeSignatureVerifier::Verify(envelope, certlist[0],
+                                              VerificationTime(),
+                                              nullptr /* devtools_proxy */));
 }
 
 TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {

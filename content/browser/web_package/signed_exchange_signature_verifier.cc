@@ -167,27 +167,24 @@ bool VerifySignature(base::span<const uint8_t> sig,
         devtools_proxy, "Failed to parse public key.");
     return false;
   }
-  switch (EVP_PKEY_id(pkey.get())) {
-    case EVP_PKEY_RSA:
-      algorithm = crypto::SignatureVerifier::RSA_PSS_SHA256;
+  int pkey_id = EVP_PKEY_id(pkey.get());
+  if (pkey_id != EVP_PKEY_EC) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
+        base::StringPrintf("Unsupported public key type: %d", pkey_id));
+    return false;
+  }
+
+  const EC_GROUP* group = EC_KEY_get0_group(EVP_PKEY_get0_EC_KEY(pkey.get()));
+  int curve_name = EC_GROUP_get_curve_name(group);
+  switch (curve_name) {
+    case NID_X9_62_prime256v1:
+      algorithm = crypto::SignatureVerifier::ECDSA_SHA256;
       break;
-    case EVP_PKEY_EC: {
-      const EC_GROUP* group =
-          EC_KEY_get0_group(EVP_PKEY_get0_EC_KEY(pkey.get()));
-      switch (EC_GROUP_get_curve_name(group)) {
-        case NID_X9_62_prime256v1:
-          algorithm = crypto::SignatureVerifier::ECDSA_SHA256;
-          break;
-        default:
-          signed_exchange_utils::ReportErrorAndTraceEvent(
-              devtools_proxy, "Unsupported EC group.");
-          return false;
-      }
-      break;
-    }
     default:
       signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy, "Unsupported public key type.");
+          devtools_proxy,
+          base::StringPrintf("Unsupported EC group: %d", curve_name));
       return false;
   }
 
