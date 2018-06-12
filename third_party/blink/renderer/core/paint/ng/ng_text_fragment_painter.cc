@@ -85,7 +85,6 @@ static void PaintSelection(GraphicsContext& context,
   if (!color.Alpha())
     return;
 
-  GraphicsContextStateSaver state_saver(context);
   const NGPhysicalOffsetRect selection_rect =
       paint_fragment.ComputeLocalSelectionRect(selection_status);
   const NGPhysicalOffsetRect global_rect(
