@@ -17,7 +17,7 @@ bool IsPasswordSyncEnabled(const syncer::SyncService* sync_service) {
   if (!sync_service)
     return false;
   return password_manager_util::GetPasswordSyncState(sync_service) !=
-         password_manager::PasswordSyncState::NOT_SYNCING_PASSWORDS;
+         password_manager::SyncState::NOT_SYNCING;
 }
 
 }  // namespace

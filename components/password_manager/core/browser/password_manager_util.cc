@@ -85,7 +85,7 @@ bool IsBetterMatch(const PasswordForm* lhs, const PasswordForm* rhs) {
 
 }  // namespace
 
-password_manager::PasswordSyncState GetPasswordSyncState(
+password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service) {
   if (sync_service && sync_service->IsFirstSetupComplete() &&
       sync_service->IsSyncActive() &&
@@ -94,7 +94,7 @@ password_manager::PasswordSyncState GetPasswordSyncState(
                ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
                : password_manager::SYNCING_NORMAL_ENCRYPTION;
   }
-  return password_manager::NOT_SYNCING_PASSWORDS;
+  return password_manager::NOT_SYNCING;
 }
 
 void FindDuplicates(

@@ -125,7 +125,7 @@ class FakePasswordRequirementsSpecFetcher
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_CONST_METHOD0(GetPasswordSyncState, PasswordSyncState());
+  MOCK_CONST_METHOD0(GetPasswordSyncState, SyncState());
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
   MOCK_CONST_METHOD0(IsIncognito, bool());
 
@@ -209,7 +209,7 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 
   // Disabling password syncing should cause generation to be disabled.
   EXPECT_CALL(*client_, GetPasswordSyncState())
-      .WillRepeatedly(testing::Return(NOT_SYNCING_PASSWORDS));
+      .WillRepeatedly(testing::Return(NOT_SYNCING));
   EXPECT_FALSE(IsGenerationEnabled());
 
   // Disabling the PasswordManager should cause generation to be disabled even

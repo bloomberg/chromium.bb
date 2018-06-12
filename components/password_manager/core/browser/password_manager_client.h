@@ -38,8 +38,8 @@ class PasswordManagerMetricsRecorder;
 class PasswordRequirementsService;
 class PasswordStore;
 
-enum PasswordSyncState {
-  NOT_SYNCING_PASSWORDS,
+enum SyncState {
+  NOT_SYNCING,
   SYNCING_NORMAL_ENCRYPTION,
   SYNCING_WITH_CUSTOM_PASSPHRASE
 };
@@ -177,9 +177,9 @@ class PasswordManagerClient {
   virtual PasswordStore* GetPasswordStore() const = 0;
 
   // Reports whether and how passwords are synced in the embedder. The default
-  // implementation always returns NOT_SYNCING_PASSWORDS.
+  // implementation always returns NOT_SYNCING.
   // TODO(vabr): Factor this out of the client to the sync layer.
-  virtual PasswordSyncState GetPasswordSyncState() const;
+  virtual SyncState GetPasswordSyncState() const;
 
   // Returns true if last navigation page had HTTP error i.e 5XX or 4XX
   virtual bool WasLastNavigationHTTPError() const;

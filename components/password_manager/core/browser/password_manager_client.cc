@@ -40,8 +40,8 @@ void PasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const autofill::PasswordForm*>* federated_matches) const {
 }
 
-PasswordSyncState PasswordManagerClient::GetPasswordSyncState() const {
-  return NOT_SYNCING_PASSWORDS;
+SyncState PasswordManagerClient::GetPasswordSyncState() const {
+  return NOT_SYNCING;
 }
 
 bool PasswordManagerClient::WasLastNavigationHTTPError() const {

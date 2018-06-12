@@ -586,8 +586,8 @@ ChromePasswordManagerClient::GetPasswordStore() const {
              profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
 }
 
-password_manager::PasswordSyncState
-ChromePasswordManagerClient::GetPasswordSyncState() const {
+password_manager::SyncState ChromePasswordManagerClient::GetPasswordSyncState()
+    const {
   const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   return password_manager_util::GetPasswordSyncState(sync_service);
