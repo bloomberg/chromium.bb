@@ -73,7 +73,7 @@ void ArcProcessTaskProvider::UpdateProcessList(
       // Update process state of existing process.
       std::unique_ptr<ArcProcessTask>& task = (*pid_to_task)[entry.nspid()];
       DCHECK(task.get());
-      task->SetProcessStateDeprecated(entry.process_state());
+      task->SetProcessState(entry.process_state());
     }
   }
 

@@ -37,8 +37,7 @@ class ArcProcessTask
   // arc::ConnectionObserver<arc::mojom::IntentHelperInstance>:
   void OnConnectionReady() override;
 
-  void SetProcessStateDeprecated(
-      arc::mojom::ProcessStateDeprecated process_state);
+  void SetProcessState(arc::mojom::ProcessState process_state);
 
   base::ProcessId nspid() const { return arc_process_.nspid(); }
   const std::string& process_name() const {

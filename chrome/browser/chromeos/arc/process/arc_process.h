@@ -21,7 +21,7 @@ class ArcProcess {
   ArcProcess(base::ProcessId nspid,
              base::ProcessId pid,
              const std::string& process_name,
-             mojom::ProcessStateDeprecated process_state,
+             mojom::ProcessState process_state,
              bool is_focused,
              int64_t last_activity_time);
   ~ArcProcess();
@@ -35,13 +35,13 @@ class ArcProcess {
   base::ProcessId nspid() const { return nspid_; }
   base::ProcessId pid() const { return pid_; }
   const std::string& process_name() const { return process_name_; }
-  mojom::ProcessStateDeprecated process_state() const { return process_state_; }
+  mojom::ProcessState process_state() const { return process_state_; }
   bool is_focused() const { return is_focused_; }
   int64_t last_activity_time() const { return last_activity_time_; }
   std::vector<std::string>& packages() { return packages_; }
   const std::vector<std::string>& packages() const { return packages_; }
 
-  void set_process_state(mojom::ProcessStateDeprecated process_state) {
+  void set_process_state(mojom::ProcessState process_state) {
     process_state_ = process_state;
   }
 
@@ -63,7 +63,7 @@ class ArcProcess {
   base::ProcessId nspid_;
   base::ProcessId pid_;
   std::string process_name_;
-  mojom::ProcessStateDeprecated process_state_;
+  mojom::ProcessState process_state_;
   // If the Android app is the focused window.
   bool is_focused_;
   // A monotonic timer recording the last time this process was active.
