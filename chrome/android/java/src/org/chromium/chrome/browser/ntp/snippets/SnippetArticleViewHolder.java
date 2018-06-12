@@ -244,7 +244,6 @@ public class SnippetArticleViewHolder extends CardViewHolder {
         }
 
         mUiDelegate.getEventReporter().onSuggestionShown(mArticle);
-        mRecyclerView.onSnippetImpression();
     }
 
     @VisibleForTesting
