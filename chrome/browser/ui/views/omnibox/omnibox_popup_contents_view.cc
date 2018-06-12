@@ -520,7 +520,7 @@ gfx::Rect OmniboxPopupContentsView::UpdateMarginsAndGetTargetBounds() {
     // The rounded popup is always offset the same amount from the omnibox.
     gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();
     gfx::Insets popup_insets =
-        -RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets;
+        -RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets();
     content_rect.Inset(popup_insets);
     content_rect.set_height(CalculatePopupHeight());
     return content_rect;

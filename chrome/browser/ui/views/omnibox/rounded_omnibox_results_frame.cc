@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/painter.h"
 
@@ -41,8 +42,6 @@ gfx::Insets GetContentInsets() {
 }
 
 }  // namespace
-
-constexpr gfx::Insets RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets;
 
 RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(views::View* contents,
                                                        OmniboxTint tint)
@@ -89,7 +88,13 @@ void RoundedOmniboxResultsFrame::OnBeforeWidgetInit(
 // static
 int RoundedOmniboxResultsFrame::GetNonResultSectionHeight() {
   return GetLayoutConstant(LOCATION_BAR_HEIGHT) +
-         kLocationBarAlignmentInsets.height();
+         GetLocationBarAlignmentInsets().height();
+}
+
+// static
+gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
+  return ui::MaterialDesignController::IsRefreshUi() ? gfx::Insets(5, 6)
+                                                     : gfx::Insets(4);
 }
 
 const char* RoundedOmniboxResultsFrame::GetClassName() const {
@@ -107,7 +112,7 @@ void RoundedOmniboxResultsFrame::Layout() {
 
   gfx::Rect top_bounds(bounds);
   top_bounds.set_height(GetNonResultSectionHeight());
-  top_bounds.Inset(kLocationBarAlignmentInsets);
+  top_bounds.Inset(GetLocationBarAlignmentInsets());
   top_background_->SetBoundsRect(top_bounds);
 
   gfx::Rect results_bounds(bounds);
