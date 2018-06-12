@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_METADATA_DATABASE_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_TYPED_URL_SYNC_METADATA_DATABASE_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/sync/base/model_type.h"
@@ -58,6 +60,13 @@ class TypedURLSyncMetadataDatabase : public syncer::SyncMetadataStore {
   // Called by the derived classes on initialization to make sure the tables
   // and indices are properly set up. Must be called before anything else.
   bool InitSyncTable();
+
+  // Cleans up orphaned metadata for typed URLs, i.e. deletes all metadata
+  // entries for rowids not present in |sorted_valid_rowids| (which must be
+  // sorted in ascending order). Returns true if the clean up finishes without
+  // any DB error.
+  bool CleanTypedURLOrphanedMetadataForMigrationToVersion40(
+      const std::vector<URLID>& sorted_valid_rowids);
 
  private:
   // Read all sync_pb::EntityMetadata for typed URL and fill

@@ -720,4 +720,16 @@ bool VisitDatabase::MigrateVisitsWithoutIncrementedOmniboxTypedScore() {
   return true;
 }
 
+bool VisitDatabase::GetAllVisitedURLRowidsForMigrationToVersion40(
+    std::vector<URLID>* visited_url_rowids_sorted) {
+  DCHECK(visited_url_rowids_sorted);
+  sql::Statement statement(GetDB().GetUniqueStatement(
+      "SELECT DISTINCT url FROM visits ORDER BY url"));
+
+  while (statement.Step()) {
+    visited_url_rowids_sorted->push_back(statement.ColumnInt64(0));
+  }
+  return statement.Succeeded();
+}
+
 }  // namespace history

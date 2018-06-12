@@ -116,6 +116,49 @@ bool TypedURLSyncMetadataDatabase::InitSyncTable() {
   return true;
 }
 
+bool TypedURLSyncMetadataDatabase::
+    CleanTypedURLOrphanedMetadataForMigrationToVersion40(
+        const std::vector<URLID>& sorted_valid_rowids) {
+  DCHECK(
+      std::is_sorted(sorted_valid_rowids.begin(), sorted_valid_rowids.end()));
+  std::vector<URLID> invalid_metadata_rowids;
+  auto valid_rowids_iter = sorted_valid_rowids.begin();
+
+  sql::Statement sorted_metadata_rowids(GetDB().GetUniqueStatement(
+      "SELECT storage_key FROM typed_url_sync_metadata ORDER BY storage_key"));
+  while (sorted_metadata_rowids.Step()) {
+    URLID metadata_rowid = sorted_metadata_rowids.ColumnInt64(0);
+    // Both collections are sorted, we check whether |metadata_rowid| is valid
+    // by iterating both at the same time.
+
+    // First, skip all valid IDs that are omitted in |sorted_metadata_rowids|.
+    while (valid_rowids_iter != sorted_valid_rowids.end() &&
+           *valid_rowids_iter < metadata_rowid) {
+      valid_rowids_iter++;
+    }
+    // Now, is |metadata_rowid| invalid?
+    if (valid_rowids_iter == sorted_valid_rowids.end() ||
+        *valid_rowids_iter != metadata_rowid) {
+      invalid_metadata_rowids.push_back(metadata_rowid);
+    }
+  }
+
+  if (!sorted_metadata_rowids.Succeeded()) {
+    return false;
+  }
+
+  for (const URLID& rowid : invalid_metadata_rowids) {
+    sql::Statement del(GetDB().GetCachedStatement(
+        SQL_FROM_HERE,
+        "DELETE FROM typed_url_sync_metadata WHERE storage_key=?"));
+    del.BindInt64(0, rowid);
+    if (!del.Run())
+      return false;
+  }
+
+  return true;
+}
+
 bool TypedURLSyncMetadataDatabase::GetAllSyncEntityMetadata(
     syncer::MetadataBatch* metadata_batch) {
   DCHECK(metadata_batch);

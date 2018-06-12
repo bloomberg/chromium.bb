@@ -227,6 +227,10 @@ class VisitDatabase {
   // don't have incremented_omnibox_typed_score column yet.
   bool MigrateVisitsWithoutIncrementedOmniboxTypedScore();
 
+  // A subprocedure in the process of migration to version 40.
+  bool GetAllVisitedURLRowidsForMigrationToVersion40(
+      std::vector<URLID>* visited_url_rowids_sorted);
+
  private:
 
   DISALLOW_COPY_AND_ASSIGN(VisitDatabase);
