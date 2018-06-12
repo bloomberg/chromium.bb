@@ -2161,6 +2161,7 @@ split_static_library("ui") {
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/compositor_extra",
+      "//ui/keyboard",
       "//ui/keyboard:mojom",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
@@ -3476,8 +3477,6 @@ split_static_library("ui") {
     ]
     deps += [
       "//ui/aura",
-      "//ui/keyboard",
-      "//ui/keyboard:resources",
       "//ui/wm",
     ]
 

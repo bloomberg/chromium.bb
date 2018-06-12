@@ -85,11 +85,11 @@ class ImeObserver : public input_method::InputMethodEngineBase::Observer {
   // Functions used to convert InputContext struct to string
   std::string ConvertInputContextType(
       IMEEngineHandlerInterface::InputContext input_context);
-  bool ConvertInputContextAutoCorrect(
+  virtual bool ConvertInputContextAutoCorrect(
       IMEEngineHandlerInterface::InputContext input_context);
-  bool ConvertInputContextAutoComplete(
+  virtual bool ConvertInputContextAutoComplete(
       IMEEngineHandlerInterface::InputContext input_context);
-  bool ConvertInputContextSpellCheck(
+  virtual bool ConvertInputContextSpellCheck(
       IMEEngineHandlerInterface::InputContext input_context);
 
   std::string extension_id_;
