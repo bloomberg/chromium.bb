@@ -28,6 +28,8 @@ SignedExchangeError::GetFieldFromSignatureVerifierResult(
       return Field::kSignatureIintegrity;
     case SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp:
       return Field::kSignatureTimestamps;
+    case SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType:
+      return Field::kSignatureCertUrl;
   }
 
   NOTREACHED();

@@ -44,7 +44,8 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     kErrInvalidSignatureFormat,
     kErrSignatureVerificationFailed,
     kErrInvalidSignatureIntegrity,
-    kErrInvalidTimestamp
+    kErrInvalidTimestamp,
+    kErrUnsupportedCertType
   };
 
   static Result Verify(const SignedExchangeEnvelope& envelope,
