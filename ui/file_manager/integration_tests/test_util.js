@@ -583,11 +583,11 @@ var ENTRIES = {
     sizeText: '--',
     typeText: 'Google document',
     capabilities: {
-      canCopy: false,
+      canCopy: true,
       canAddChildren: false,
       canRename: false,
       canDelete: false,
-      canShare: false
+      canShare: true
     },
   }),
 
