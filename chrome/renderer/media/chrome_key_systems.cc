@@ -140,8 +140,47 @@ static void AddExternalClearKey(
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
+static SupportedCodecs GetSupportedCodecs(
+    const std::vector<media::VideoCodec>& supported_video_codecs) {
+  SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
+
+  // Audio codecs are always supported.
+  // TODO(sandersd): Distinguish these from those that are directly supported,
+  // as those may offer a higher level of protection.
+  supported_codecs |= media::EME_CODEC_WEBM_OPUS;
+  supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
+  supported_codecs |= media::EME_CODEC_MP4_FLAC;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  supported_codecs |= media::EME_CODEC_MP4_AAC;
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+
+  // Video codecs are determined by what was registered for the CDM.
+  for (const auto& codec : supported_video_codecs) {
+    switch (codec) {
+      case media::VideoCodec::kCodecVP8:
+        supported_codecs |= media::EME_CODEC_WEBM_VP8;
+        break;
+      case media::VideoCodec::kCodecVP9:
+        supported_codecs |= media::EME_CODEC_WEBM_VP9;
+        supported_codecs |= media::EME_CODEC_COMMON_VP9;
+        break;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+      case media::VideoCodec::kCodecH264:
+        supported_codecs |= media::EME_CODEC_MP4_AVC1;
+        break;
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+      default:
+        DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec);
+        break;
+    }
+  }
+
+  return supported_codecs;
+}
+
 // Returns persistent-license session support.
-EmeSessionTypeSupport GetPersistentLicenseSupport(bool supported_by_the_cdm) {
+static EmeSessionTypeSupport GetPersistentLicenseSupport(
+    bool supported_by_the_cdm) {
   // Do not support persistent-license if the process cannot persist data.
   // TODO(crbug.com/457487): Have a better plan on this. See bug for details.
   if (ChromeRenderThreadObserver::is_incognito_process()) {
@@ -204,46 +243,22 @@ static void AddWidevine(
     return;
   }
 
-  SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
+  auto supported_codecs = GetSupportedCodecs(supported_video_codecs);
 
-  // Audio codecs are always supported.
-  // TODO(sandersd): Distinguish these from those that are directly supported,
-  // as those may offer a higher level of protection.
-  supported_codecs |= media::EME_CODEC_WEBM_OPUS;
-  supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
-  supported_codecs |= media::EME_CODEC_MP4_FLAC;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  supported_codecs |= media::EME_CODEC_MP4_AAC;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+  // On ChromeOS, we do not have real hardware secure codecs. But this does not
+  // affect HW_SECURE* support since the support doesn't require hardware secure
+  // codecs. See WidevineKeySystemProperties::GetRobustnessConfigRule().
+  // TODO(crbug.com/848532): Populate supported secure codecs if supported by
+  // CDM and the platform.
+  auto supported_secure_codecs = media::EME_CODEC_NONE;
 
-  // Video codecs are determined by what was registered for the CDM.
-  for (const auto& codec : supported_video_codecs) {
-    switch (codec) {
-      case media::VideoCodec::kCodecVP8:
-        supported_codecs |= media::EME_CODEC_WEBM_VP8;
-        break;
-      case media::VideoCodec::kCodecVP9:
-        supported_codecs |= media::EME_CODEC_WEBM_VP9;
-        supported_codecs |= media::EME_CODEC_COMMON_VP9;
-        break;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-      case media::VideoCodec::kCodecH264:
-        supported_codecs |= media::EME_CODEC_MP4_AVC1;
-        break;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-      default:
-        DVLOG(1) << "Unexpected supported codec: " << GetCodecName(codec);
-        break;
-    }
-  }
-
-  EmeSessionTypeSupport persistent_license_support =
+  auto persistent_license_support =
       GetPersistentLicenseSupport(supports_persistent_license);
 
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-      supported_encryption_schemes, supported_codecs,
+      supported_encryption_schemes, supported_codecs, supported_secure_codecs,
 #if defined(OS_CHROMEOS)
       Robustness::HW_SECURE_ALL,             // Maximum audio robustness.
       Robustness::HW_SECURE_ALL,             // Maximum video robustness.

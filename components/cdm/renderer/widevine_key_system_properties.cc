@@ -40,9 +40,7 @@ Robustness ConvertRobustness(const std::string& robustness) {
 WidevineKeySystemProperties::WidevineKeySystemProperties(
     base::flat_set<media::EncryptionMode> supported_encryption_schemes,
     media::SupportedCodecs supported_codecs,
-#if defined(OS_ANDROID)
     media::SupportedCodecs supported_secure_codecs,
-#endif  // defined(OS_ANDROID)
     Robustness max_audio_robustness,
     Robustness max_video_robustness,
     media::EmeSessionTypeSupport persistent_license_support,
@@ -51,9 +49,7 @@ WidevineKeySystemProperties::WidevineKeySystemProperties(
     media::EmeFeatureSupport distinctive_identifier_support)
     : supported_encryption_schemes_(std::move(supported_encryption_schemes)),
       supported_codecs_(supported_codecs),
-#if defined(OS_ANDROID)
       supported_secure_codecs_(supported_secure_codecs),
-#endif  // defined(OS_ANDROID)
       max_audio_robustness_(max_audio_robustness),
       max_video_robustness_(max_video_robustness),
       persistent_license_support_(persistent_license_support),
@@ -90,11 +86,9 @@ SupportedCodecs WidevineKeySystemProperties::GetSupportedCodecs() const {
   return supported_codecs_;
 }
 
-#if defined(OS_ANDROID)
 SupportedCodecs WidevineKeySystemProperties::GetSupportedSecureCodecs() const {
   return supported_secure_codecs_;
 }
-#endif
 
 EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
     EmeMediaType media_type,
@@ -145,6 +139,7 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
   }
 #endif  // defined(OS_CHROMEOS)
 
+  // TODO(crbug.com/848532): Handle HW_SECURE* levels for Windows.
   return EmeConfigRule::SUPPORTED;
 }
 
