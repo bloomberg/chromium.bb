@@ -328,6 +328,12 @@ class OopImagePixelTest : public OopPixelTest,
   }
 };
 
+class OopClearPixelTest : public OopPixelTest,
+                          public ::testing::WithParamInterface<bool> {
+ public:
+  bool IsPartialRaster() const { return GetParam(); }
+};
+
 TEST_F(OopPixelTest, DrawColor) {
   gfx::Rect rect(10, 10);
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
@@ -733,7 +739,7 @@ TEST_F(OopPixelTest, Preclear) {
   ExpectEquals(actual, expected);
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueCorner) {
+TEST_P(OopClearPixelTest, ClearingOpaqueCorner) {
   // Verify that clears work properly for both the right and bottom sides
   // of an opaque corner tile.
 
@@ -743,7 +749,14 @@ TEST_F(OopPixelTest, ClearingOpaqueCorner) {
   options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(8, 7));
   options.content_size = gfx::Size(options.full_raster_rect.right(),
                                    options.full_raster_rect.bottom());
-  options.playback_rect = options.full_raster_rect;
+  if (IsPartialRaster()) {
+    options.playback_rect = gfx::Rect(options.full_raster_rect.x() + 1,
+                                      options.full_raster_rect.y() + 1,
+                                      options.full_raster_rect.width() - 1,
+                                      options.full_raster_rect.height() - 1);
+  } else {
+    options.playback_rect = options.full_raster_rect;
+  }
   options.background_color = SK_ColorGREEN;
   float arbitrary_scale = 0.25f;
   options.post_scale = arbitrary_scale;
@@ -763,13 +776,20 @@ TEST_F(OopPixelTest, ClearingOpaqueCorner) {
                                  options.resource_size.height()),
       SkBitmap::kZeroPixels_AllocFlag);
 
-  // Expect a two pixel border from texels 7-9 on the column and 6-8 on row.
   SkCanvas canvas(bitmap);
   canvas.drawColor(options.preclear_color);
   SkPaint green;
   green.setColor(options.background_color);
-  canvas.drawRect(SkRect::MakeXYWH(7, 0, 2, 8), green);
-  canvas.drawRect(SkRect::MakeXYWH(0, 6, 9, 2), green);
+  if (IsPartialRaster()) {
+    // Expect a two pixel border from texels 7-9 on the column and 6-8 on row,
+    // ignoring the top row and left column.
+    canvas.drawRect(SkRect::MakeXYWH(7, 1, 2, 7), green);
+    canvas.drawRect(SkRect::MakeXYWH(1, 6, 8, 2), green);
+  } else {
+    // Expect a two pixel border from texels 7-9 on the column and 6-8 on row.
+    canvas.drawRect(SkRect::MakeXYWH(7, 0, 2, 8), green);
+    canvas.drawRect(SkRect::MakeXYWH(0, 6, 9, 2), green);
+  }
 
   ExpectEquals(oop_result, bitmap, "oop");
   ExpectEquals(gpu_result, bitmap, "gpu");
@@ -829,11 +849,15 @@ TEST_F(OopPixelTest, ClearingOpaqueCornerPartialRaster) {
   options.content_size = gfx::Size(options.full_raster_rect.right(),
                                    options.full_raster_rect.bottom());
   options.playback_rect =
-      gfx::Rect(arbitrary_offset.x() + 5, arbitrary_offset.y() + 3, 2, 4);
+      gfx::Rect(arbitrary_offset.x() + 5, arbitrary_offset.y() + 3, 2, 3);
   options.background_color = SK_ColorGREEN;
   options.requires_clear = false;
   options.preclear = true;
   options.preclear_color = SK_ColorRED;
+
+  // Verify this is internal.
+  EXPECT_NE(options.playback_rect.right(), options.full_raster_rect.right());
+  EXPECT_NE(options.playback_rect.bottom(), options.full_raster_rect.bottom());
 
   // Make a non-empty but noop display list to avoid early outs.
   auto display_item_list = MakeNoopDisplayItemList();
@@ -855,17 +879,27 @@ TEST_F(OopPixelTest, ClearingOpaqueCornerPartialRaster) {
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueRightEdge) {
+TEST_P(OopClearPixelTest, ClearingOpaqueRightEdge) {
   // Verify that a tile that intersects the right edge of content
   // but not the bottom only clears the right pixels.
-
   RasterOptions options;
   gfx::Point arbitrary_offset(30, 40);
   options.resource_size = gfx::Size(10, 10);
   options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(3, 10));
   options.content_size = gfx::Size(options.full_raster_rect.right(),
                                    options.full_raster_rect.bottom() + 1000);
-  options.playback_rect = options.full_raster_rect;
+  if (IsPartialRaster()) {
+    // Ignore the left column of pixels here to force partial raster.
+    // Additionally ignore the bottom row of pixels to make sure
+    // that things are not cleared outside the rect.
+    options.playback_rect = gfx::Rect(options.full_raster_rect.x() + 1,
+                                      options.full_raster_rect.y(),
+                                      options.full_raster_rect.width() - 1,
+                                      options.full_raster_rect.height() - 1);
+  } else {
+    options.playback_rect = options.full_raster_rect;
+  }
+
   options.background_color = SK_ColorGREEN;
   options.requires_clear = false;
   options.preclear = true;
@@ -883,18 +917,23 @@ TEST_F(OopPixelTest, ClearingOpaqueRightEdge) {
                                  options.resource_size.height()),
       SkBitmap::kZeroPixels_AllocFlag);
 
-  // Expect a two pixel column border from texels 2-4.
   SkCanvas canvas(bitmap);
   canvas.drawColor(options.preclear_color);
   SkPaint green;
   green.setColor(options.background_color);
-  canvas.drawRect(SkRect::MakeXYWH(2, 0, 2, 10), green);
+  if (IsPartialRaster()) {
+    // Expect a two pixel column border from texels 2-4, ignoring the last row.
+    canvas.drawRect(SkRect::MakeXYWH(2, 0, 2, 9), green);
+  } else {
+    // Expect a two pixel column border from texels 2-4.
+    canvas.drawRect(SkRect::MakeXYWH(2, 0, 2, 10), green);
+  }
 
   ExpectEquals(oop_result, bitmap, "oop");
   ExpectEquals(gpu_result, bitmap, "gpu");
 }
 
-TEST_F(OopPixelTest, ClearingOpaqueBottomEdge) {
+TEST_P(OopClearPixelTest, ClearingOpaqueBottomEdge) {
   // Verify that a tile that intersects the bottom edge of content
   // but not the right only clears the bottom pixels.
 
@@ -904,7 +943,17 @@ TEST_F(OopPixelTest, ClearingOpaqueBottomEdge) {
   options.full_raster_rect = gfx::Rect(arbitrary_offset, gfx::Size(10, 5));
   options.content_size = gfx::Size(options.full_raster_rect.right() + 1000,
                                    options.full_raster_rect.bottom());
-  options.playback_rect = options.full_raster_rect;
+  if (IsPartialRaster()) {
+    // Ignore the top row of pixels here to force partial raster.
+    // Additionally ignore the right column of pixels to make sure
+    // that things are not cleared outside the rect.
+    options.playback_rect = gfx::Rect(options.full_raster_rect.x(),
+                                      options.full_raster_rect.y() + 1,
+                                      options.full_raster_rect.width() - 1,
+                                      options.full_raster_rect.height() - 1);
+  } else {
+    options.playback_rect = options.full_raster_rect;
+  }
   options.background_color = SK_ColorGREEN;
   float arbitrary_scale = 0.25f;
   options.post_scale = arbitrary_scale;
@@ -924,12 +973,19 @@ TEST_F(OopPixelTest, ClearingOpaqueBottomEdge) {
                                  options.resource_size.height()),
       SkBitmap::kZeroPixels_AllocFlag);
 
-  // Expect a two pixel border from texels 4-6 on the row
   SkCanvas canvas(bitmap);
   canvas.drawColor(options.preclear_color);
   SkPaint green;
   green.setColor(options.background_color);
-  canvas.drawRect(SkRect::MakeXYWH(0, 4, 10, 2), green);
+
+  if (IsPartialRaster()) {
+    // Expect a two pixel border from texels 4-6 on the row, ignoring the last
+    // column.
+    canvas.drawRect(SkRect::MakeXYWH(0, 4, 9, 2), green);
+  } else {
+    // Expect a two pixel border from texels 4-6 on the row
+    canvas.drawRect(SkRect::MakeXYWH(0, 4, 10, 2), green);
+  }
 
   ExpectEquals(oop_result, bitmap, "oop");
   ExpectEquals(gpu_result, bitmap, "gpu");
@@ -1368,6 +1424,7 @@ TEST_F(OopPixelTest, DrawTextMultipleRasterCHROMIUM) {
 }
 
 INSTANTIATE_TEST_CASE_P(P, OopImagePixelTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(P, OopClearPixelTest, ::testing::Bool());
 
 }  // namespace
 }  // namespace cc
