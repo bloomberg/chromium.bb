@@ -159,7 +159,7 @@ class CompositorWatcher : public ui::CompositorObserver {
           RootWindowController::ForWindow(window)
               ->wallpaper_widget_controller();
       if (wallpaper_widget_controller->IsAnimating()) {
-        wallpaper_widget_controller->AddPendingAnimationEndCallback(
+        wallpaper_widget_controller->AddAnimationEndCallback(
             base::BindOnce(&CompositorWatcher::StartObservingCompositing,
                            weak_ptr_factory_.GetWeakPtr(), compositor));
       } else {

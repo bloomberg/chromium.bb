@@ -2270,6 +2270,48 @@ TEST_F(WallpaperControllerTest, WallpaperSyncedDuringPreview) {
   EXPECT_EQ(user_wallpaper_info, synced_online_wallpaper_info);
 }
 
+TEST_F(WallpaperControllerTest, AddFirstWallpaperAnimationEndCallback) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  std::unique_ptr<aura::Window> test_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+
+  bool is_first_callback_run = false;
+  controller_->AddFirstWallpaperAnimationEndCallback(
+      base::BindLambdaForTesting(
+          [&is_first_callback_run]() { is_first_callback_run = true; }),
+      test_window.get());
+  // The callback is not run because the first wallpaper hasn't been set.
+  RunAllTasksUntilIdle();
+  EXPECT_FALSE(is_first_callback_run);
+
+  // Set the first wallpaper.
+  controller_->ShowDefaultWallpaperForTesting();
+  bool is_second_callback_run = false;
+  controller_->AddFirstWallpaperAnimationEndCallback(
+      base::BindLambdaForTesting(
+          [&is_second_callback_run]() { is_second_callback_run = true; }),
+      test_window.get());
+  // Neither callback is run because the animation of the first wallpaper
+  // hasn't finished yet.
+  RunAllTasksUntilIdle();
+  EXPECT_FALSE(is_first_callback_run);
+  EXPECT_FALSE(is_second_callback_run);
+
+  // Force the animation to complete. The two callbacks are both run.
+  RunDesktopControllerAnimation();
+  EXPECT_TRUE(is_first_callback_run);
+  EXPECT_TRUE(is_second_callback_run);
+
+  // The callback added after the first wallpaper animation is run right away.
+  bool is_third_callback_run = false;
+  controller_->AddFirstWallpaperAnimationEndCallback(
+      base::BindLambdaForTesting(
+          [&is_third_callback_run]() { is_third_callback_run = true; }),
+      test_window.get());
+  EXPECT_TRUE(is_third_callback_run);
+}
+
 // A test wallpaper controller client class.
 class TestWallpaperControllerClient : public mojom::WallpaperControllerClient {
  public:

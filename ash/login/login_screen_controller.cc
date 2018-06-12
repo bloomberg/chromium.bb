@@ -345,7 +345,7 @@ void LoginScreenController::SetDevChannelInfo(
 
 void LoginScreenController::IsReadyForPassword(
     IsReadyForPasswordCallback callback) {
-  std::move(callback).Run(LockScreen::IsShown() &&
+  std::move(callback).Run(LockScreen::HasInstance() &&
                           authentication_stage_ == AuthenticationStage::kIdle);
 }
 
@@ -414,7 +414,7 @@ void LoginScreenController::OnAuthenticateComplete(
 }
 
 LoginDataDispatcher* LoginScreenController::DataDispatcher() const {
-  if (!ash::LockScreen::IsShown())
+  if (!ash::LockScreen::HasInstance())
     return nullptr;
   return ash::LockScreen::Get()->data_dispatcher();
 }

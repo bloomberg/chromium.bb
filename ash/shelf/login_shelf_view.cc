@@ -298,7 +298,7 @@ void LoginShelfView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 }
 
 void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (LockScreen::IsShown()) {
+  if (LockScreen::HasInstance()) {
     int previous_id = views::AXAuraObjCache::GetInstance()->GetID(
         static_cast<views::Widget*>(LockScreen::Get()->window()));
     node_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,

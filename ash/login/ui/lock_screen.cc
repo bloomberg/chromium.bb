@@ -18,8 +18,10 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/tray_action/tray_action.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/command_line.h"
+#include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -27,6 +29,9 @@
 
 namespace ash {
 namespace {
+
+constexpr base::TimeDelta kShowLoginScreenTimeout =
+    base::TimeDelta::FromSeconds(5);
 
 ui::Layer* GetWallpaperLayerForWindow(aura::Window* window) {
   return RootWindowController::ForWindow(window)
@@ -91,11 +96,32 @@ void LockScreen::Show(ScreenType type) {
   }
 
   instance_->window_->set_data_dispatcher(std::move(data_dispatcher));
-  instance_->window_->Show();
+  const base::RepeatingClosure show_screen = base::BindRepeating([]() {
+    // |instance_| may already be destroyed in tests.
+    if (!instance_ || instance_->is_shown_)
+      return;
+    instance_->is_shown_ = true;
+    instance_->window_->Show();
+  });
+  if (type == ScreenType::kLogin) {
+    // Postpone showing the login screen after the animation of the first
+    // wallpaper completes, to make the transition smooth.
+    Shell::Get()->wallpaper_controller()->AddFirstWallpaperAnimationEndCallback(
+        show_screen, instance_->window_->GetNativeView());
+    // In case the wallpaper animation takes forever to complete, set a timer to
+    // make sure the login screen is shown eventually. This should never happen,
+    // so use an extra long time-out value to raise awareness.
+    instance_->show_login_screen_fallback_timer_ =
+        std::make_unique<base::OneShotTimer>();
+    instance_->show_login_screen_fallback_timer_->Start(
+        FROM_HERE, kShowLoginScreenTimeout, show_screen);
+  } else {
+    show_screen.Run();
+  }
 }
 
 // static
-bool LockScreen::IsShown() {
+bool LockScreen::HasInstance() {
   return !!instance_;
 }
 

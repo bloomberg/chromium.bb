@@ -184,10 +184,9 @@ void WallpaperWidgetController::EndPendingAnimation() {
   animating_widget_->StopAnimating();
 }
 
-void WallpaperWidgetController::AddPendingAnimationEndCallback(
+void WallpaperWidgetController::AddAnimationEndCallback(
     base::OnceClosure callback) {
-  DCHECK(IsAnimating());
-  pending_animation_end_callbacks_.emplace_back(std::move(callback));
+  animation_end_callbacks_.emplace_back(std::move(callback));
 }
 
 void WallpaperWidgetController::SetWallpaperWidget(views::Widget* widget,
@@ -255,13 +254,13 @@ void WallpaperWidgetController::SetAnimatingWidgetAsActive() {
     std::move(wallpaper_set_callback_).Run();
 
   // Notify observers that animation finished.
-  RunPendingAnimationEndCallbacks();
+  RunAnimationEndCallbacks();
   Shell::Get()->wallpaper_controller()->OnWallpaperAnimationFinished();
 }
 
-void WallpaperWidgetController::RunPendingAnimationEndCallbacks() {
+void WallpaperWidgetController::RunAnimationEndCallbacks() {
   std::list<base::OnceClosure> callbacks;
-  pending_animation_end_callbacks_.swap(callbacks);
+  animation_end_callbacks_.swap(callbacks);
   for (auto& callback : callbacks)
     std::move(callback).Run();
 }

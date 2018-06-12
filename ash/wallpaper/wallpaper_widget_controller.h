@@ -33,20 +33,18 @@ class ASH_EXPORT WallpaperWidgetController {
   views::Widget* GetWidget();
   views::Widget* GetAnimatingWidget();
 
-  // Whether a wallpaper change is in progress - it will be set if
-  // |animating_widget_| exists.
+  // Whether a wallpaper change is in progress, i.e. |animating_widget_| exists.
   bool IsAnimating() const;
 
   // If an animating wallpaper change is in progress, it ends the animation and
-  // changes the wallpaper immediately.
-  // No-op if IsAnimation() returns false.
+  // changes the wallpaper immediately. No-op if IsAnimation() returns false.
   void EndPendingAnimation();
 
-  // If an animating wallpaper change is in progress, it adds a callback that
-  // will be run when the pending animation ends.
-  // The callback will not be run if a wallpaper animation is not in progress -
-  // in that case the method will return false.
-  void AddPendingAnimationEndCallback(base::OnceClosure callback);
+  // Adds a callback that will be run when the wallpaper animation ends. Used
+  // when you're expecting a wallpaper change (e.g. when IsAnimation() returns
+  // true or you just set a new wallpaper) and want to be notified of the exact
+  // timing that the wallpaper is applied.
+  void AddAnimationEndCallback(base::OnceClosure callback);
 
   // Sets a new wallpaper widget - this will not change the primary widget
   // immediately. The primary widget will be switched when |widget|'s showing
@@ -83,8 +81,8 @@ class ASH_EXPORT WallpaperWidgetController {
   // Moves |animated_widget_| to |active_widget_|.
   void SetAnimatingWidgetAsActive();
 
-  // Runs callbacks in |pending_animation_end_callbacks_|.
-  void RunPendingAnimationEndCallbacks();
+  // Runs callbacks in |animation_end_callbacks_|.
+  void RunAnimationEndCallbacks();
 
   // Callback that will be run when |active_widget_| is first set.
   base::OnceClosure wallpaper_set_callback_;
@@ -98,7 +96,7 @@ class ASH_EXPORT WallpaperWidgetController {
 
   // Callbacks to be run when the |animating_widget_| stops animating and gets
   // set as the active widget.
-  std::list<base::OnceClosure> pending_animation_end_callbacks_;
+  std::list<base::OnceClosure> animation_end_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperWidgetController);
 };

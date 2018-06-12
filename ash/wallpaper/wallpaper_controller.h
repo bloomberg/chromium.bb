@@ -276,6 +276,11 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // login screen right now.
   bool ShouldSetDevicePolicyWallpaper() const;
 
+  // Runs |callback| upon the completion of the first wallpaper animation that's
+  // shown on |window|'s root window.
+  void AddFirstWallpaperAnimationEndCallback(base::OnceClosure callback,
+                                             aura::Window* window);
+
   // mojom::WallpaperController:
   void Init(mojom::WallpaperControllerClientPtr client,
             const base::FilePath& user_data_path,
