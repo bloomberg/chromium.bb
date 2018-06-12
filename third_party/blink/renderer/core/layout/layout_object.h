@@ -1598,6 +1598,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsFlexibleBox() || IsDeprecatedFlexibleBox();
   }
 
+  bool IsListItemIncludingNG() const {
+    return IsListItem() || IsLayoutNGListItem();
+  }
+
   virtual bool IsCombineText() const { return false; }
 
   virtual int CaretMinOffset() const;

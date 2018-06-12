@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -101,7 +102,7 @@ static bool IsPotentialClusterRoot(const LayoutObject* layout_object) {
   if (layout_object->IsInline() &&
       !layout_object->Style()->IsDisplayReplacedType())
     return false;
-  if (layout_object->IsListItem())
+  if (layout_object->IsListItemIncludingNG())
     return (layout_object->IsFloating() ||
             layout_object->IsOutOfFlowPositioned());
 
@@ -458,13 +459,13 @@ float TextAutosizer::Inflate(LayoutObject* parent,
   if (has_text_child) {
     ApplyMultiplier(parent, multiplier,
                     layouter);  // Parent handles line spacing.
-  } else if (!parent->IsListItem()) {
+  } else if (!parent->IsListItemIncludingNG()) {
     // For consistency, a block with no immediate text child should always have
     // a multiplier of 1.
     ApplyMultiplier(parent, 1, layouter);
   }
 
-  if (parent->IsListItem()) {
+  if (parent->IsListItemIncludingNG()) {
     float multiplier = ClusterMultiplier(cluster);
     ApplyMultiplier(parent, multiplier, layouter);
 
@@ -472,10 +473,18 @@ float TextAutosizer::Inflate(LayoutObject* parent,
     // that you have a list item for a form inside it. The list marker then ends
     // up inside the form and when we try to get the clusterMultiplier we have
     // the wrong cluster root to work from and get the wrong value.
-    LayoutListItem* item = ToLayoutListItem(parent);
-    if (LayoutListMarker* marker = item->Marker()) {
-      ApplyMultiplier(marker, multiplier, layouter);
-      marker->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
+    LayoutObject* marker = nullptr;
+    if (parent->IsListItem())
+      marker = ToLayoutListItem(parent)->Marker();
+    else if (parent->IsLayoutNGListItem())
+      marker = ToLayoutNGListItem(parent)->Marker();
+
+    // A LayoutNGListMarker has a text child that needs its font multiplier
+    // updated. Just mark the entire subtree, to make sure we get to it.
+    for (LayoutObject* walker = marker; walker;
+         walker = walker->NextInPreOrder(marker)) {
+      ApplyMultiplier(walker, multiplier, layouter);
+      walker->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
     }
   }
 
@@ -963,7 +972,8 @@ float TextAutosizer::WidthFromBlock(const LayoutBlock* block) const {
   CHECK(block);
   CHECK(block->Style());
 
-  if (!(block->IsTable() || block->IsTableCell() || block->IsListItem()))
+  if (!(block->IsTable() || block->IsTableCell() ||
+        block->IsListItemIncludingNG()))
     return block->ContentLogicalWidth().ToFloat();
 
   if (!block->ContainingBlock())
@@ -1081,7 +1091,7 @@ const LayoutObject* TextAutosizer::FindTextLeaf(
     size_t& depth,
     TextLeafSearch first_or_last) const {
   // List items are treated as text due to the marker.
-  if (parent->IsListItem())
+  if (parent->IsListItemIncludingNG())
     return parent;
 
   if (parent->IsText())
@@ -1340,7 +1350,13 @@ TextAutosizer::NGLayoutScope::NGLayoutScope(const NGBlockNode& node,
                                             LayoutUnit inline_size)
     : text_autosizer_(node.GetLayoutObject()->GetDocument().GetTextAutosizer()),
       block_(ToLayoutBlockFlow(node.GetLayoutObject())) {
-  if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout()) {
+  if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() ||
+      block_->IsLayoutNGListMarker()) {
+    // Bail if text autosizing isn't enabled, but also if this is a
+    // IsLayoutNGListMarker. They are super-small blocks, and using them to
+    // determine if we should autosize the text will typically always yield
+    // false, overriding whatever its parent (typically the list item) has
+    // already correctly determined.
     text_autosizer_ = nullptr;
     return;
   }
