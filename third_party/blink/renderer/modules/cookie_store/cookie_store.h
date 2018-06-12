@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
+#include "third_party/blink/public/platform/web_canonical_cookie.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
@@ -101,7 +102,7 @@ class CookieStore final : public EventTargetWithInlineData,
   void RemoveAllEventListeners() override;
 
   // RestrictedCookieChangeListener
-  void OnCookieChange(network::mojom::blink::CanonicalCookiePtr,
+  void OnCookieChange(const WebCanonicalCookie&,
                       network::mojom::blink::CookieChangeCause) override;
 
  protected:
@@ -113,8 +114,7 @@ class CookieStore final : public EventTargetWithInlineData,
 
  private:
   using DoReadBackendResultConverter =
-      void (*)(ScriptPromiseResolver*,
-               Vector<network::mojom::blink::CanonicalCookiePtr>);
+      void (*)(ScriptPromiseResolver*, const Vector<WebCanonicalCookie>&);
 
   CookieStore(ExecutionContext*,
               network::mojom::blink::RestrictedCookieManagerPtr backend,
@@ -136,19 +136,19 @@ class CookieStore final : public EventTargetWithInlineData,
   // the promise result expected by CookieStore.getAll.
   static void GetAllForUrlToGetAllResult(
       ScriptPromiseResolver*,
-      Vector<network::mojom::blink::CanonicalCookiePtr> backend_result);
+      const Vector<WebCanonicalCookie>& backend_result);
 
   // Converts the result of a RestrictedCookieManager::GetAllForUrl mojo call to
   // the promise result expected by CookieStore.get.
   static void GetAllForUrlToGetResult(
       ScriptPromiseResolver*,
-      Vector<network::mojom::blink::CanonicalCookiePtr> backend_result);
+      const Vector<WebCanonicalCookie>& backend_result);
 
   // Converts the result of a RestrictedCookieManager::GetAllForUrl mojo call to
   // the promise result expected by CookieStore.has.
   static void GetAllForUrlToHasResult(
       ScriptPromiseResolver*,
-      Vector<network::mojom::blink::CanonicalCookiePtr> backend_result);
+      const Vector<WebCanonicalCookie>& backend_result);
 
   // Common code in CookieStore::delete and CookieStore::set.
   ScriptPromise DoWrite(ScriptState*,

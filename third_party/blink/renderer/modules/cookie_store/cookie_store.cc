@@ -71,117 +71,108 @@ network::mojom::blink::CookieManagerGetOptionsPtr ToBackendOptions(
   return backend_options;
 }
 
-// Returns null if and only if an exception is thrown.
-network::mojom::blink::CanonicalCookiePtr ToCanonicalCookie(
+// Returns no value if and only if an exception is thrown.
+base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
     const KURL& cookie_url,
-    const String& name,   // Value of the "name" positional argument.
-    const String& value,  // Value of the "value" positional argument.
-    bool for_deletion,    // True for CookieStore.delete, false for set.
+    const String& name_arg,   // Value of the "name" positional argument.
+    const String& value_arg,  // Value of the "value" positional argument.
+    bool for_deletion,        // True for CookieStore.delete, false for set.
     const CookieStoreSetOptions& options,
     ExceptionState& exception_state) {
-  auto canonical_cookie = network::mojom::blink::CanonicalCookie::New();
-
-  if (name.IsNull()) {
+  String name;
+  if (name_arg.IsNull()) {
     if (!options.hasName()) {
       exception_state.ThrowTypeError("Unspecified cookie name");
-      return nullptr;
+      return base::nullopt;
     }
-    canonical_cookie->name = options.name();
+    name = options.name();
   } else {
     if (options.hasName()) {
       exception_state.ThrowTypeError(
           "Cookie name specified both as an argument and as an option");
-      return nullptr;
+      return base::nullopt;
     }
-    canonical_cookie->name = name;
+    name = name_arg;
   }
 
+  String value;
+  base::Time expiry;
   if (for_deletion) {
-    DCHECK(value.IsNull());
+    DCHECK(value_arg.IsNull());
     if (options.hasValue()) {
       exception_state.ThrowTypeError(
           "Cookie value is meaningless when deleting");
-      return nullptr;
+      return base::nullopt;
     }
-    canonical_cookie->value = g_empty_string;
+    value = g_empty_string;
 
     if (options.hasExpires()) {
       exception_state.ThrowTypeError(
           "Cookie expiration time is meaningless when deleting");
-      return nullptr;
+      return base::nullopt;
     }
-    canonical_cookie->expiry = WTF::Time::Min();
+    expiry = WTF::Time::Min();
   } else {
-    if (value.IsNull()) {
+    if (value_arg.IsNull()) {
       if (!options.hasValue()) {
         exception_state.ThrowTypeError("Unspecified cookie value");
-        return nullptr;
+        return base::nullopt;
       }
-      canonical_cookie->value = options.value();
+      value = options.value();
     } else {
       if (options.hasValue()) {
         exception_state.ThrowTypeError(
             "Cookie value specified both as an argument and as an option");
-        return nullptr;
+        return base::nullopt;
       }
-      canonical_cookie->value = value;
+      value = value_arg;
     }
 
-    if (canonical_cookie->name.IsEmpty() &&
-        canonical_cookie->value.Contains('=')) {
+    if (name.IsEmpty() && value.Contains('=')) {
       exception_state.ThrowTypeError(
           "Cookie value cannot contain '=' if the name is empty.");
-      return nullptr;
+      return base::nullopt;
     }
 
     if (options.hasExpires()) {
-      canonical_cookie->expiry = WTF::Time::FromJavaTime(options.expires());
+      expiry = WTF::Time::FromJavaTime(options.expires());
     } else {
-      // Session cookie.
-      canonical_cookie->expiry = WTF::Time();
+      expiry = WTF::Time();
     }
   }
 
+  String domain;
   if (options.hasDomain()) {
     // TODO(crbug.com/729800): Checks and exception throwing.
-    canonical_cookie->domain = options.domain();
+    domain = options.domain();
   } else {
     // TODO(crbug.com/729800): Correct value?
-    canonical_cookie->domain = cookie_url.Host();
+    domain = cookie_url.Host();
   }
 
-  if (options.hasPath()) {
-    canonical_cookie->path = options.path();
-  } else {
-    canonical_cookie->path = String("/");
-  }
+  const String path = options.hasPath() ? options.path() : String("/");
 
-  bool is_secure_origin = SecurityOrigin::IsSecure(cookie_url);
-  if (options.hasSecure()) {
-    canonical_cookie->secure = options.secure();
-  } else {
-    canonical_cookie->secure = is_secure_origin;
-  }
+  const bool is_secure_origin = SecurityOrigin::IsSecure(cookie_url);
+  const bool secure = options.hasSecure() ? options.secure() : is_secure_origin;
 
   if (name.StartsWith("__Secure-") || name.StartsWith("__Host-")) {
-    if (!canonical_cookie->secure) {
+    if (!secure) {
       exception_state.ThrowTypeError(
           "__Secure- and __Host- cookies must be secure");
-      return nullptr;
+      return base::nullopt;
     }
     if (!is_secure_origin) {
       exception_state.ThrowTypeError(
           "__Secure- and __Host- cookies must be written from secure origin");
-      return nullptr;
+      return base::nullopt;
     }
   }
 
-  canonical_cookie->httponly = options.httpOnly();
-
-  // The backend does not trust these fields.
-  canonical_cookie->creation = WTF::Time();
-  canonical_cookie->last_access = WTF::Time();
-  return canonical_cookie;
+  return WebCanonicalCookie::Create(
+      name, value, domain, path, WTF::Time() /*creation*/, expiry,
+      WTF::Time() /*last_access*/, secure, options.httpOnly(),
+      WebCanonicalCookie::kDefaultSameSiteMode,
+      WebCanonicalCookie::kDefaultPriority);
 }
 
 // Returns null if and only if an exception is thrown.
@@ -223,12 +214,12 @@ blink::mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
 }
 
 void ToCookieListItem(
-    const network::mojom::blink::CanonicalCookiePtr& canonical_cookie,
+    const WebCanonicalCookie& canonical_cookie,
     bool is_deleted,  // True for the information from a cookie deletion event.
     CookieListItem& cookie) {
-  cookie.setName(canonical_cookie->name);
+  cookie.setName(canonical_cookie.Name());
   if (!is_deleted)
-    cookie.setValue(canonical_cookie->value);
+    cookie.setValue(canonical_cookie.Value());
 }
 
 void ToCookieChangeSubscription(
@@ -371,8 +362,10 @@ ScriptPromise CookieStore::subscribeToChanges(
     blink::mojom::blink::CookieChangeSubscriptionPtr backend_subscription =
         ToBackendSubscription(default_cookie_url_, subscription,
                               exception_state);
-    if (backend_subscription.is_null())
-      return ScriptPromise();  // ToBackendSubscription has thrown an exception.
+    if (backend_subscription.is_null()) {
+      DCHECK(exception_state.HadException());
+      return ScriptPromise();
+    }
     backend_subscriptions.emplace_back(std::move(backend_subscription));
   }
 
@@ -443,7 +436,7 @@ void CookieStore::RemoveAllEventListeners() {
 }
 
 void CookieStore::OnCookieChange(
-    network::mojom::blink::CanonicalCookiePtr backend_cookie,
+    const WebCanonicalCookie& backend_cookie,
     network::mojom::blink::CookieChangeCause change_cause) {
   HeapVector<CookieListItem> changed, deleted;
 
@@ -516,8 +509,10 @@ ScriptPromise CookieStore::DoRead(
     ExceptionState& exception_state) {
   network::mojom::blink::CookieManagerGetOptionsPtr backend_options =
       ToBackendOptions(name, options, exception_state);
-  if (backend_options.is_null())
-    return ScriptPromise();  // ToBackendOptions has thrown an exception.
+  if (backend_options.is_null()) {
+    DCHECK(exception_state.HadException());
+    return ScriptPromise();
+  }
 
   if (!backend_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -536,7 +531,7 @@ ScriptPromise CookieStore::DoRead(
 // static
 void CookieStore::GetAllForUrlToGetAllResult(
     ScriptPromiseResolver* resolver,
-    Vector<network::mojom::blink::CanonicalCookiePtr> backend_cookies) {
+    const Vector<WebCanonicalCookie>& backend_cookies) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
@@ -554,7 +549,7 @@ void CookieStore::GetAllForUrlToGetAllResult(
 // static
 void CookieStore::GetAllForUrlToGetResult(
     ScriptPromiseResolver* resolver,
-    Vector<network::mojom::blink::CanonicalCookiePtr> backend_cookies) {
+    const Vector<WebCanonicalCookie>& backend_cookies) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
@@ -573,7 +568,7 @@ void CookieStore::GetAllForUrlToGetResult(
 // static
 void CookieStore::GetAllForUrlToHasResult(
     ScriptPromiseResolver* resolver,
-    Vector<network::mojom::blink::CanonicalCookiePtr> backend_cookies) {
+    const Vector<WebCanonicalCookie>& backend_cookies) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
@@ -587,11 +582,12 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
                                    const CookieStoreSetOptions& options,
                                    bool is_deletion,
                                    ExceptionState& exception_state) {
-  network::mojom::blink::CanonicalCookiePtr canonical_cookie =
-      ToCanonicalCookie(default_cookie_url_, name, value, is_deletion, options,
-                        exception_state);
-  if (canonical_cookie.is_null())
-    return ScriptPromise();  // ToCanonicalCookie has thrown an exception.
+  base::Optional<WebCanonicalCookie> canonical_cookie = ToWebCanonicalCookie(
+      default_cookie_url_, name, value, is_deletion, options, exception_state);
+  if (!canonical_cookie) {
+    DCHECK(exception_state.HadException());
+    return ScriptPromise();
+  }
 
   if (!backend_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -601,7 +597,7 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   backend_->SetCanonicalCookie(
-      std::move(canonical_cookie), default_cookie_url_,
+      std::move(canonical_cookie.value()), default_cookie_url_,
       default_site_for_cookies_,
       WTF::Bind(&CookieStore::OnSetCanonicalCookieResult,
                 WrapPersistent(resolver)));
