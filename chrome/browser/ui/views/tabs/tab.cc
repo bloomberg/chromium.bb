@@ -1185,10 +1185,9 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   DCHECK(!y_offset || fill_id);
 
   const float endcap_width = GetTabEndcapWidth();
-  const ui::ThemeProvider* tp = GetThemeProvider();
-  const SkColor active_color = tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  const SkColor active_color = controller_->GetTabBackgroundColor(TAB_ACTIVE);
   const SkColor inactive_color =
-      tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB);
+      controller_->GetTabBackgroundColor(TAB_INACTIVE);
   const SkColor stroke_color = controller_->GetToolbarTopSeparatorColor();
   const bool paint_hover_effect = !active && hover_controller_.ShouldDraw();
 
@@ -1253,7 +1252,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   }
 
   if (!active)
-    PaintSeparator(canvas, inactive_color);
+    PaintSeparator(canvas);
 }
 
 void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
@@ -1313,7 +1312,7 @@ void Tab::PaintTabBackgroundStroke(gfx::Canvas* canvas,
   canvas->DrawPath(path, flags);
 }
 
-void Tab::PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color) {
+void Tab::PaintSeparator(gfx::Canvas* canvas) {
   if (!MD::IsRefreshUi())
     return;
 
@@ -1352,9 +1351,10 @@ void Tab::PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color) {
       hover_controller_.GetAnimationValue(),
       previous_tab ? previous_tab->hover_controller()->GetAnimationValue() : 0);
   cc::PaintFlags flags;
+  const SkColor separator_color = controller_->GetTabSeparatorColor();
   flags.setAntiAlias(true);
   flags.setColor(
-      SkColorSetA(color_utils::BlendTowardOppositeLuma(inactive_color, 0x5a),
+      SkColorSetA(separator_color,
                   gfx::Tween::IntValueBetween(max_hover_value, SK_AlphaOPAQUE,
                                               SK_AlphaTRANSPARENT)));
   canvas->DrawRect(separator_bounds, flags);
@@ -1479,9 +1479,8 @@ void Tab::OnButtonColorMaybeChanged() {
   if (!theme_provider)
     return;
 
-  const SkColor title_color = theme_provider->GetColor(IsActive() ?
-      ThemeProperties::COLOR_TAB_TEXT :
-      ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
+  const SkColor title_color = controller_->GetTabForegroundColor(
+      IsActive() ? TAB_ACTIVE : TAB_INACTIVE);
 
   SkColor new_button_color = title_color;
   if (IsActive()) {

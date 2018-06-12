@@ -45,6 +45,21 @@ constexpr SkColor kGoogleGrey700 = SkColorSetRGB(0x5F, 0x63, 0x68);
 constexpr SkColor kGoogleGrey800 = SkColorSetRGB(0x3C, 0x40, 0x43);
 constexpr SkColor kGoogleGrey900 = SkColorSetRGB(0x20, 0x21, 0x24);
 
+// The following are the values that correspond to the above kGoogleGreyXXX
+// values, which are the opaque colors created from the following alpha values
+// applied to kGoogleGrey900 on a white background.
+// These values are from the palette of greys specified in the Material Refresh
+// spec.
+constexpr SkAlpha kGoogleGreyAlpha050 = 0x08;  //   3%
+constexpr SkAlpha kGoogleGreyAlpha100 = 0x0F;  //   6%
+constexpr SkAlpha kGoogleGreyAlpha200 = 0x1A;  //  10%
+constexpr SkAlpha kGoogleGreyAlpha300 = 0x29;  //  16%
+constexpr SkAlpha kGoogleGreyAlpha400 = 0x47;  //  28%
+constexpr SkAlpha kGoogleGreyAlpha500 = 0x6E;  //  43%
+constexpr SkAlpha kGoogleGreyAlpha600 = 0x8C;  //  55%
+constexpr SkAlpha kGoogleGreyAlpha700 = 0xB5;  //  71%
+constexpr SkAlpha kGoogleGreyAlpha800 = 0xDB;  //  86%
+
 // kChromeIconGrey is subject to change in the future, kGoogleGrey700 is set in
 // stone. If you're semantically looking for "the icon color Chrome uses" then
 // use kChromeIconGrey, if you're looking for GG700 grey specifically, use the

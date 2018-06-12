@@ -92,9 +92,31 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
       ShouldPaintAsActive()
           ? ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR
           : ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE;
-  return ShouldPaintAsThemed() ? GetThemeProvider()->GetColor(color_id)
-                               : ThemeProperties::GetDefaultColor(
-                                     color_id, browser_view_->IsIncognito());
+  return GetThemeOrDefaultColor(color_id);
+}
+
+SkColor BrowserNonClientFrameView::GetTabSeparatorColor() const {
+  DCHECK(MD::IsRefreshUi());
+  constexpr SkAlpha kTabSeparatorAlpha = 0x59;  // 35%
+  return GetContrastingColorAgainstFrame(kTabSeparatorAlpha);
+}
+
+SkColor BrowserNonClientFrameView::GetTabBackgroundColor(TabState state) const {
+  if (state == TAB_INACTIVE && MD::IsRefreshUi())
+    return GetFrameColor();
+  const auto color_id = state == TAB_ACTIVE
+                            ? ThemeProperties::COLOR_TOOLBAR
+                            : ThemeProperties::COLOR_BACKGROUND_TAB;
+  return GetThemeOrDefaultColor(color_id);
+}
+
+SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
+  if (MD::IsRefreshUi() && state == TAB_INACTIVE && ShouldPaintAsThemed())
+    return GetContrastingColorAgainstFrame(gfx::kGoogleGreyAlpha700);
+  const auto color_id = state == TAB_ACTIVE
+                            ? ThemeProperties::COLOR_TAB_TEXT
+                            : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT;
+  return GetThemeOrDefaultColor(color_id);
 }
 
 views::Button* BrowserNonClientFrameView::GetProfileSwitcherButton() const {
@@ -181,7 +203,7 @@ SkColor BrowserNonClientFrameView::GetFrameColor(bool active) const {
 }
 
 gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(bool active) const {
-  const ui::ThemeProvider* tp = frame_->GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProviderForProfile();
   int frame_image_id = active ? IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE;
   return ShouldPaintAsThemed() && (tp->HasCustomImage(frame_image_id) ||
                                    tp->HasCustomImage(IDR_THEME_FRAME))
@@ -194,7 +216,7 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameOverlayImage(
   if (browser_view_->IsIncognito() || !browser_view_->IsBrowserTypeNormal())
     return gfx::ImageSkia();
 
-  const ui::ThemeProvider* tp = frame_->GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProviderForProfile();
   int frame_overlay_image_id =
       active ? IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE;
   return tp->HasCustomImage(frame_overlay_image_id)
@@ -511,4 +533,18 @@ bool BrowserNonClientFrameView::ShouldShowProfileIndicatorIcon() const {
   }
 #endif  // defined(OS_CHROMEOS)
   return true;
+}
+
+SkColor BrowserNonClientFrameView::GetThemeOrDefaultColor(int color_id) const {
+  return ShouldPaintAsThemed() ? GetThemeProvider()->GetColor(color_id)
+                               : ThemeProperties::GetDefaultColor(
+                                     color_id, browser_view_->IsIncognito());
+}
+
+SkColor BrowserNonClientFrameView::GetContrastingColorAgainstFrame(
+    SkAlpha alpha) const {
+  const SkColor frame_color = GetFrameColor();
+  const SkColor base_color =
+      color_utils::BlendTowardOppositeLuma(frame_color, SK_AlphaOPAQUE);
+  return color_utils::AlphaBlend(base_color, frame_color, alpha);
 }

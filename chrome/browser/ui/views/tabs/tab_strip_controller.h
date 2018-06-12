@@ -120,6 +120,17 @@ class TabStripController {
   // state of the window.
   virtual SkColor GetToolbarTopSeparatorColor() const = 0;
 
+  // Under Refresh, returns the color of the separator between the tabs.
+  virtual SkColor GetTabSeparatorColor() const = 0;
+
+  // Returns the tab background color based on both the |state| of the tab and
+  // the activation state of the window.
+  virtual SkColor GetTabBackgroundColor(TabState state) const = 0;
+
+  // Returns the tab foreground color of the the text based on both the |state|
+  // of the tab and the activation state of the window.
+  virtual SkColor GetTabForegroundColor(TabState state) const = 0;
+
   // Returns the accessible tab name.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;
 

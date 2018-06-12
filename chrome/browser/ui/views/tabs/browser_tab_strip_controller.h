@@ -76,6 +76,9 @@ class BrowserTabStripController : public TabStripController,
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
   SkColor GetToolbarTopSeparatorColor() const override;
+  SkColor GetTabSeparatorColor() const override;
+  SkColor GetTabBackgroundColor(TabState active) const override;
+  SkColor GetTabForegroundColor(TabState state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;
 

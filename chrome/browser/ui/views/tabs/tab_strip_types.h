@@ -29,4 +29,11 @@ enum NewTabButtonPosition {
   TRAILING,    // Pinned to the trailing edge of the tabstrip region.
 };
 
+// Enum passed to GetTabForegroundColor and GetTabBackgroundColor to indicate
+// whether the tab is active or not.
+enum TabState {
+  TAB_ACTIVE,
+  TAB_INACTIVE,
+};
+
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_TYPES_H_
