@@ -1290,9 +1290,8 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
 
     # Touch Tast paths so they'll be included in the tar command. Skip creating
     # the last file so we can verify that it's omitted from the tar command.
-    chroot = os.path.join(self._buildroot, 'chroot')
     for p in commands.TAST_SSP_FILES[:-1]:
-      path = os.path.join(chroot, os.path.relpath(p, '/'))
+      path = os.path.join(self._buildroot, p)
       if not os.path.exists(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
       open(path, 'a').close()

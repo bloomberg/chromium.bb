@@ -80,12 +80,13 @@ AUTOTEST_SERVER_PACKAGE = 'autotest_server_package.tar.bz2'
 _TAST_SSP_SUBDIR = 'tast'
 
 # Tast files and directories to include in AUTOTEST_SERVER_PACKAGE relative to
-# the chroot. Public so it can be used by commands_unittest.py.
+# the build root. Public so it can be used by commands_unittest.py.
 TAST_SSP_FILES = [
-    '/usr/bin/tast',                # Main Tast executable.
-    '/usr/bin/remote_test_runner',  # Runs remote tests.
-    '/usr/libexec/tast/bundles',    # Dir containing test bundles.
-    '/usr/share/tast/data',         # Dir containing test data.
+    'chroot/usr/bin/tast',                  # Main Tast executable.
+    'chroot/usr/bin/remote_test_runner',    # Runs remote tests.
+    'chroot/usr/libexec/tast/bundles',      # Dir containing test bundles.
+    'chroot/usr/share/tast/data',           # Dir containing test data.
+    'src/platform/tast/tools/run_tast.sh',  # Helper script to run SSP tast.
 ]
 
 # =========================== Command Helpers =================================
@@ -2350,8 +2351,7 @@ def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
       exclude_dirs=('autotest/packages', 'autotest/client/deps/',
                     'autotest/client/tests', 'autotest/client/site_tests'))
 
-  tast_files, transforms = \
-      _GetTastServerFilesAndTarTransforms(os.path.join(buildroot, 'chroot'))
+  tast_files, transforms = _GetTastServerFilesAndTarTransforms(buildroot)
 
   tarball = os.path.join(tarball_dir, AUTOTEST_SERVER_PACKAGE)
   BuildTarball(buildroot, autotest_files + tast_files, tarball, cwd=cwd,
@@ -2359,7 +2359,7 @@ def BuildAutotestServerPackageTarball(buildroot, cwd, tarball_dir):
   return tarball
 
 
-def _GetTastServerFilesAndTarTransforms(chroot):
+def _GetTastServerFilesAndTarTransforms(buildroot):
   """Returns Tast server files and corresponding tar transform flags.
 
   The returned paths should be included in AUTOTEST_SERVER_PACKAGE. The
@@ -2367,7 +2367,7 @@ def _GetTastServerFilesAndTarTransforms(chroot):
   appropriate destinations in the tarball.
 
   Args:
-    chroot: Absolute path of the Chrome OS chroot.
+    buildroot: Absolute path to root build directory.
 
   Returns:
     (files, transforms), where files is a list of absolute paths to Tast server
@@ -2378,7 +2378,7 @@ def _GetTastServerFilesAndTarTransforms(chroot):
   transforms = []
 
   for p in TAST_SSP_FILES:
-    path = os.path.join(chroot, os.path.relpath(p, '/'))
+    path = os.path.join(buildroot, p)
     if os.path.exists(path):
       files.append(path)
       dest = os.path.join(_TAST_SSP_SUBDIR, os.path.basename(path))
