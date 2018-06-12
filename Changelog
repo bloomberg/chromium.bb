@@ -8,6 +8,10 @@ version <next>:
 - fftdnoiz filter
 - aderivative and aintegral audio filters
 - pal75bars and pal100bars video filter sources
+- support mbedTLS based TLS
+- adeclick filter
+- adeclip filter
+- libtensorflow backend for DNN based filters like srcnn
 
 
 version 4.0:
