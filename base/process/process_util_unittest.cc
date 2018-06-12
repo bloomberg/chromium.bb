@@ -540,9 +540,22 @@ TEST_F(ProcessUtilTest, EnsureTerminationUndying) {
 
   EnsureProcessTerminated(child_process.Duplicate());
 
+#if defined(OS_POSIX)
+  errno = 0;
+#endif  // defined(OS_POSIX)
+
   // Allow a generous timeout, to cope with slow/loaded test bots.
-  EXPECT_TRUE(child_process.WaitForExitWithTimeout(
-      TestTimeouts::action_max_timeout(), nullptr));
+  bool did_exit = child_process.WaitForExitWithTimeout(
+      TestTimeouts::action_max_timeout(), nullptr);
+
+#if defined(OS_POSIX)
+  // Both EnsureProcessTerminated() and WaitForExitWithTimeout() will call
+  // waitpid(). One will succeed, and the other will fail with ECHILD. If our
+  // wait failed then check for ECHILD, and assumed |did_exit| in that case.
+  did_exit = did_exit || (errno == ECHILD);
+#endif  // defined(OS_POSIX)
+
+  EXPECT_TRUE(did_exit);
 }
 
 MULTIPROCESS_TEST_MAIN(process_util_test_never_die) {
