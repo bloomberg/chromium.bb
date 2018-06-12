@@ -2593,8 +2593,6 @@ split_static_library("ui") {
       "views/color_chooser_dialog.cc",
       "views/color_chooser_dialog.h",
       "views/color_chooser_win.cc",
-      "views/conflicting_module_view_win.cc",
-      "views/conflicting_module_view_win.h",
       "views/critical_notification_bubble_view.cc",
       "views/critical_notification_bubble_view.h",
       "views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.cc",

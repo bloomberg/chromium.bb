@@ -55,16 +55,6 @@ bool ShouldShowUpgradeRecommended() {
 #endif
 }
 
-// Returns true if we should show the warning for incompatible software.
-bool ShouldShowIncompatibilityWarning() {
-#if defined(OS_WIN)
-  return !base::FeatureList::IsEnabled(features::kModuleDatabase) &&
-         EnumerateModulesModel::GetInstance()->ShouldShowConflictWarning();
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 AppMenuIconController::AppMenuIconController(Profile* profile,
@@ -77,23 +67,10 @@ AppMenuIconController::AppMenuIconController(Profile* profile,
                  content::Source<Profile>(profile_));
 
   UpgradeDetector::GetInstance()->AddObserver(this);
-
-#if defined(OS_WIN)
-  if (!base::FeatureList::IsEnabled(features::kModuleDatabase)) {
-    auto* modules = EnumerateModulesModel::GetInstance();
-    modules->AddObserver(this);
-    modules->MaybePostScanningTask();
-  }
-#endif
 }
 
 AppMenuIconController::~AppMenuIconController() {
   UpgradeDetector::GetInstance()->RemoveObserver(this);
-
-#if defined(OS_WIN)
-  if (!base::FeatureList::IsEnabled(features::kModuleDatabase))
-    EnumerateModulesModel::GetInstance()->RemoveObserver(this);
-#endif
 }
 
 void AppMenuIconController::UpdateDelegate() {
@@ -103,12 +80,6 @@ void AppMenuIconController::UpdateDelegate() {
     delegate_->UpdateSeverity(IconType::UPGRADE_NOTIFICATION,
                               SeverityFromUpgradeLevel(level),
                               ShouldAnimateUpgradeLevel(level));
-    return;
-  }
-
-  if (ShouldShowIncompatibilityWarning()) {
-    delegate_->UpdateSeverity(IconType::INCOMPATIBILITY_WARNING,
-                              Severity::MEDIUM, true);
     return;
   }
 
@@ -123,16 +94,6 @@ void AppMenuIconController::UpdateDelegate() {
 
   delegate_->UpdateSeverity(IconType::NONE, Severity::NONE, false);
 }
-
-#if defined(OS_WIN)
-void AppMenuIconController::OnScanCompleted() {
-  UpdateDelegate();
-}
-
-void AppMenuIconController::OnConflictsAcknowledged() {
-  UpdateDelegate();
-}
-#endif
 
 void AppMenuIconController::Observe(
     int type,

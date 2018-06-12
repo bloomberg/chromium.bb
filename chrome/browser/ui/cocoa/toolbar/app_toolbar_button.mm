@@ -127,7 +127,6 @@ constexpr NSTimeInterval kAnimationDelay = 1.5;
     case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
       return &kBrowserToolsUpdateIcon;
     case AppMenuIconController::IconType::GLOBAL_ERROR:
-    case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
       return &kBrowserToolsErrorIcon;
   }
 
