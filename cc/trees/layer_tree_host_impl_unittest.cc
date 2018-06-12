@@ -11616,50 +11616,29 @@ TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
   EXPECT_FALSE(last_on_draw_frame_->has_no_damage);
 }
 
-// TODO(gyuyoung): OnMemoryPressure disabled on ASAN, TSAN, Android, windows,
-//                 chromecast due to the test failure. Will be handled on
-//                 http://crbug.com/839687.
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(ADDRESS_SANITIZER) || \
-    defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER) ||               \
-    defined(LEAK_SANITIZER) || defined(CHROMECAST_BUILD)
-#define MAYBE_OnMemoryPressure DISABLED_OnMemoryPressure
-#else
-#define MAYBE_OnMemoryPressure OnMemoryPressure
-#endif
-
-TEST_F(LayerTreeHostImplTest, MAYBE_OnMemoryPressure) {
+TEST_F(LayerTreeHostImplTest, OnMemoryPressure) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableLowEndDeviceMode);
 
-  const gfx::Size viewport_size(100, 100);
-  host_impl_->SetViewportSize(viewport_size);
-  host_impl_->CreatePendingTree();
-  scoped_refptr<FakeRasterSource> raster_source(
-      FakeRasterSource::CreateFilled(viewport_size));
-  std::unique_ptr<FakePictureLayerImpl> layer(
-      FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
-                                                   11, raster_source));
-  layer->SetBounds(viewport_size);
-  layer->SetDrawsContent(true);
-  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(layer));
-  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
-  host_impl_->ActivateSyncTree();
-  const gfx::Transform draw_transform;
-  host_impl_->OnDraw(draw_transform, gfx::Rect(viewport_size), false);
+  gfx::Size size(200, 200);
+  viz::ResourceFormat format = viz::RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  ResourcePool::InUsePoolResource resource =
+      host_impl_->resource_pool()->AcquireResource(size, format, color_space);
+  host_impl_->resource_pool()->ReleaseResource(std::move(resource));
 
-  std::unique_ptr<base::ProcessMetrics> metric(
-      base::ProcessMetrics::CreateCurrentProcessMetrics());
-  size_t current_memory_usage = metric->GetMallocUsage();
+  size_t current_memory_usage =
+      host_impl_->resource_pool()->GetTotalMemoryUsageForTesting();
 
   base::MemoryPressureListener::SimulatePressureNotification(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   base::RunLoop().RunUntilIdle();
 
-  size_t memory_usage_after_memory_pressure = metric->GetMallocUsage();
+  size_t memory_usage_after_memory_pressure =
+      host_impl_->resource_pool()->GetTotalMemoryUsageForTesting();
 
   // Memory usage after the memory pressure should be less than previous one.
   EXPECT_LT(memory_usage_after_memory_pressure, current_memory_usage);
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 }
 
 // We will force the touch event handler to be passive if we touch on a layer
