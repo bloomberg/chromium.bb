@@ -21,6 +21,9 @@ namespace chromeos {
 // and the user of this class can raise a fake mouse events.
 class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
  public:
+  using CustomMountPointCallback =
+      base::RepeatingCallback<base::FilePath(const std::string&,
+                                             const std::vector<std::string>&)>;
   FakeCrosDisksClient();
   ~FakeCrosDisksClient() override;
 
@@ -71,6 +74,9 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
                              const std::string& device_path);
   void NotifyRenameCompleted(RenameError error_code,
                              const std::string& device_path);
+
+  void SetCustomMountPointCallback(
+      CustomMountPointCallback custom_mount_point_callback);
 
   // Returns how many times Unmount() was called.
   int unmount_call_count() const {
@@ -157,6 +163,7 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
   std::string last_rename_volume_name_;
   bool rename_success_;
   std::set<base::FilePath> mounted_paths_;
+  CustomMountPointCallback custom_mount_point_callback_;
 
   base::WeakPtrFactory<FakeCrosDisksClient> weak_ptr_factory_;
 

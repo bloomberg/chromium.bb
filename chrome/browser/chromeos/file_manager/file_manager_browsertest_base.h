@@ -32,6 +32,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // ExtensionApiTest overrides.
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
+  bool SetUpUserDataDirectory() override;
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
@@ -74,8 +75,8 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
                  std::string* output);
 
   std::unique_ptr<LocalTestVolume> local_volume_;
-  std::unique_ptr<DriveTestVolume> drive_volume_;
   std::map<Profile*, std::unique_ptr<DriveTestVolume>> drive_volumes_;
+  DriveTestVolume* drive_volume_;
   std::unique_ptr<FakeTestVolume> usb_volume_;
   std::unique_ptr<FakeTestVolume> mtp_volume_;
 
