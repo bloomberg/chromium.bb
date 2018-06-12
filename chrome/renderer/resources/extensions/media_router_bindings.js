@@ -896,7 +896,8 @@ MediaRouter.prototype.onIssue = function(issue) {
     'defaultAction': issueActionToMojo_(issue.defaultAction),
     'secondaryActions': secondaryActions,
     'helpPageId': issue.helpPageId,
-    'isBlocking': issue.isBlocking
+    'isBlocking': issue.isBlocking,
+    'sinkId': issue.sinkId || ''
   }));
 };
 

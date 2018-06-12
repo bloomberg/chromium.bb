@@ -14,6 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/media/router/issue_manager.h"
+#include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
@@ -26,9 +28,11 @@
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/common/media_router/route_request_result.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
@@ -137,9 +141,12 @@ bool MediaRouterUIBase::CreateRoute(const MediaSink::Id& sink_id,
                                     MediaCastMode cast_mode) {
   base::Optional<RouteParameters> params =
       GetRouteParameters(sink_id, cast_mode);
-  if (!params)
+  if (!params) {
+    SendIssueForUnableToCast(cast_mode);
     return false;
+  }
 
+  GetIssueManager()->ClearNonBlockingIssues();
   GetMediaRouter()->CreateRoute(params->source_id, sink_id, params->origin,
                                 initiator_,
                                 std::move(params->route_response_callbacks),
@@ -190,6 +197,14 @@ std::string MediaRouterUIBase::GetTruncatedPresentationRequestSourceName()
              ? GetExtensionName(gurl, extensions::ExtensionRegistry::Get(
                                           initiator()->GetBrowserContext()))
              : TruncateHost(GetHostFromURL(gurl));
+}
+
+void MediaRouterUIBase::AddIssue(const IssueInfo& issue) {
+  GetIssueManager()->AddIssue(issue);
+}
+
+void MediaRouterUIBase::RemoveIssue(const Issue::Id& issue_id) {
+  GetIssueManager()->ClearIssue(issue_id);
 }
 
 MediaRouterUIBase::RouteRequest::RouteRequest(const MediaSink::Id& sink_id)
@@ -429,6 +444,76 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
 GURL MediaRouterUIBase::GetFrameURL() const {
   return presentation_request_ ? presentation_request_->frame_origin.GetURL()
                                : GURL();
+}
+
+void MediaRouterUIBase::SendIssueForRouteTimeout(
+    MediaCastMode cast_mode,
+    const base::string16& presentation_request_source_name) {
+  std::string issue_title;
+  switch (cast_mode) {
+    case PRESENTATION:
+      DLOG_IF(ERROR, presentation_request_source_name.empty())
+          << "Empty presentation request source name.";
+      issue_title =
+          l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
+                                    presentation_request_source_name);
+      break;
+    case TAB_MIRROR:
+      issue_title = l10n_util::GetStringUTF8(
+          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
+      break;
+    case DESKTOP_MIRROR:
+      issue_title = l10n_util::GetStringUTF8(
+          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP);
+      break;
+    case LOCAL_FILE:
+      issue_title = l10n_util::GetStringUTF8(
+          IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_GENERIC_ERROR);
+      break;
+  }
+
+  AddIssue(IssueInfo(issue_title, IssueInfo::Action::DISMISS,
+                     IssueInfo::Severity::NOTIFICATION));
+}
+
+void MediaRouterUIBase::SendIssueForUnableToCast(MediaCastMode cast_mode) {
+  // For a generic error, claim a tab error unless it was specifically desktop
+  // mirroring.
+  std::string issue_title =
+      (cast_mode == MediaCastMode::DESKTOP_MIRROR)
+          ? l10n_util::GetStringUTF8(
+                IDS_MEDIA_ROUTER_ISSUE_UNABLE_TO_CAST_DESKTOP)
+          : l10n_util::GetStringUTF8(
+                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
+  AddIssue(IssueInfo(issue_title, IssueInfo::Action::DISMISS,
+                     IssueInfo::Severity::WARNING));
+}
+
+IssueManager* MediaRouterUIBase::GetIssueManager() {
+  return GetMediaRouter()->GetIssueManager();
+}
+
+void MediaRouterUIBase::StartObservingIssues() {
+  issues_observer_ =
+      std::make_unique<UiIssuesObserver>(GetIssueManager(), this);
+  issues_observer_->Init();
+}
+
+MediaRouterUIBase::UiIssuesObserver::UiIssuesObserver(
+    IssueManager* issue_manager,
+    MediaRouterUIBase* ui)
+    : IssuesObserver(issue_manager), ui_(ui) {
+  DCHECK(ui);
+}
+
+MediaRouterUIBase::UiIssuesObserver::~UiIssuesObserver() = default;
+
+void MediaRouterUIBase::UiIssuesObserver::OnIssue(const Issue& issue) {
+  ui_->OnIssue(issue);
+}
+
+void MediaRouterUIBase::UiIssuesObserver::OnIssuesCleared() {
+  ui_->OnIssueCleared();
 }
 
 MediaRouterUIBase::UIMediaRoutesObserver::UIMediaRoutesObserver(

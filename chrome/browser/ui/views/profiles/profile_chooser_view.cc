@@ -1186,6 +1186,7 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
     // Make sure that the arrow is flipped in RTL mode.
     submenu_arrow_icon_view->EnableCanvasFlippingForRTLUI(true);
   }
+  LOG(ERROR) << "----------- use secondary icon";
   sync_to_another_account_button_ = new HoverButton(
       this, std::move(switch_account_icon_view),
       l10n_util::GetStringUTF16(

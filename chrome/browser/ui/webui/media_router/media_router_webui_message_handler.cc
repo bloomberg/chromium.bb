@@ -645,7 +645,7 @@ void MediaRouterWebUIMessageHandler::OnActOnIssue(const base::ListValue* args) {
       static_cast<IssueInfo::Action>(action_type_num);
   if (ActOnIssueType(action_type, args_dict))
     DVLOG(1) << "ActOnIssueType failed for Issue ID " << issue_id;
-  media_router_ui_->ClearIssue(issue_id);
+  media_router_ui_->RemoveIssue(issue_id);
 }
 
 void MediaRouterWebUIMessageHandler::OnJoinRoute(const base::ListValue* args) {

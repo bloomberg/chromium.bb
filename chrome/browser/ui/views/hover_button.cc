@@ -70,6 +70,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
     : views::MenuButton(text, this, false),
       title_(nullptr),
       subtitle_(nullptr),
+      secondary_icon_view_(nullptr),
       listener_(button_listener) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetFocusPainter(nullptr);
@@ -174,6 +175,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   title_wrapper->set_can_process_events_within_subtree(false);
   grid_layout->AddView(title_wrapper);
 
+  secondary_icon_view_ = secondary_icon_view.get();
   if (secondary_icon_view) {
     columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
                        kFixed, views::GridLayout::USE_PREF, 0, 0);
@@ -334,6 +336,17 @@ void HoverButton::Layout() {
 views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (!HitTestPoint(point))
     return nullptr;
+
+  // Let the secondary icon handle it if it has a tooltip.
+  if (secondary_icon_view_) {
+    gfx::Point point_in_icon_coords(point);
+    ConvertPointToTarget(this, secondary_icon_view_, &point_in_icon_coords);
+    base::string16 tooltip;
+    if (secondary_icon_view_->HitTestPoint(point_in_icon_coords) &&
+        secondary_icon_view_->GetTooltipText(point_in_icon_coords, &tooltip)) {
+      return secondary_icon_view_;
+    }
+  }
 
   // If possible, take advantage of the |views::Label| tooltip behavior, which
   // only sets the tooltip when the text is too long.

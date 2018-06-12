@@ -22,9 +22,6 @@ struct SelectedFileInfo;
 namespace media_router {
 
 struct MediaStatus;
-class Issue;
-class IssueManager;
-class IssuesObserver;
 class MediaRouterWebUIMessageHandler;
 class RouteRequestResult;
 
@@ -51,12 +48,6 @@ class MediaRouterUI
   // Calls MediaRouter to join the given route.
   bool ConnectRoute(const MediaSink::Id& sink_id,
                     const MediaRoute::Id& route_id);
-
-  // Calls MediaRouter to add the given issue.
-  void AddIssue(const IssueInfo& issue);
-
-  // Calls MediaRouter to clear the given issue.
-  void ClearIssue(const Issue::Id& issue_id);
 
   // Called to open a file dialog with the media_router_ui file dialog handler.
   void OpenFileDialog();
@@ -178,11 +169,8 @@ class MediaRouterUI
   void FileDialogFileSelected(const ui::SelectedFileInfo& file_info) override;
   void FileDialogSelectionFailed(const IssueInfo& issue) override;
 
-  // Called by |issues_observer_| when the top issue has changed.
-  // If the UI is already initialized, notifies |handler_| to update the UI.
-  // Ignored if the UI is not yet initialized.
-  void SetIssue(const Issue& issue);
-  void ClearIssue();
+  void OnIssue(const Issue& issue) override;
+  void OnIssueCleared() override;
 
   void OnRoutesUpdated(
       const std::vector<MediaRoute>& routes,
@@ -206,14 +194,6 @@ class MediaRouterUI
   // SearchSinksAndCreateRoute().
   void OnSearchSinkResponseReceived(MediaCastMode cast_mode,
                                     const MediaSink::Id& found_sink_id);
-
-  // Creates and sends an issue if route creation timed out.
-  void SendIssueForRouteTimeout(
-      MediaCastMode cast_mode,
-      const base::string16& presentation_request_source_name);
-
-  // Creates and sends an issue if casting fails for any other reason.
-  void SendIssueForUnableToCast(MediaCastMode cast_mode);
 
   void InitCommon(content::WebContents* initiator) override;
 
@@ -253,9 +233,6 @@ class MediaRouterUI
   // handler of a media status update for the route currently shown in the UI.
   void UpdateMediaRouteStatus(const MediaStatus& status);
 
-  // Returns the IssueManager associated with |router_|.
-  IssueManager* GetIssueManager();
-
   void UpdateSinks() override;
 
   MediaRouter* GetMediaRouter() const override;
@@ -263,8 +240,6 @@ class MediaRouterUI
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.
   MediaRouterWebUIMessageHandler* handler_ = nullptr;
-
-  std::unique_ptr<IssuesObserver> issues_observer_;
 
   // Set to true by |handler_| when the UI has been initialized.
   bool ui_initialized_;

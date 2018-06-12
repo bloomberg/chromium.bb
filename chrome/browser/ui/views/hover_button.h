@@ -110,6 +110,7 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
  private:
   views::StyledLabel* title_;
   views::Label* subtitle_;
+  views::View* secondary_icon_view_;
 
   // The horizontal space the padding and icon take up. Used for calculating the
   // available space for |title_|, if it exists.

@@ -150,8 +150,13 @@ struct Issue {
   };
 
   // If set, the ID of the route to which this issue pertains.
-  // If not set (default), then this is a global issue.
-  string? route_id;
+  // If this is an empty string (default), then this is a global issue.
+  string route_id;
+
+  // The ID of the sink associated with this issue.
+  // If this is an empty string (default), then this is a global issue.
+  // TODO(https://crbug.com/554646): Associate all issues with sinks.
+  string sink_id;
 
   Severity severity;
 
