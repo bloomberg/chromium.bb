@@ -2437,6 +2437,20 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
 // correctly.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
                        RespondWithNavigationPreloadWithMimeSniffing) {
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    // When S13nSW/NetworkService is enabled, we don't do MIME sniffing
+    // (https://crbug.com/771118), so just skip this test. Also, this test was
+    // meant to test an internal quirk of MimeSniffingResourceHandler, which
+    // might not make sense in the NetworkService implementation anyway. If we
+    // want a behavior test for MIME sniffing for navigation preload, it can be
+    // an end-to-end layout test instead.
+
+    // This has to be called so the EmbeddedTestServer IO Thread is created,
+    // otherwise we crash on destruction.
+    embedded_test_server()->StartAcceptingConnections();
+    return;
+  }
+
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";
   const char kPage[] = "<title>PASS</title>Hello world.";
