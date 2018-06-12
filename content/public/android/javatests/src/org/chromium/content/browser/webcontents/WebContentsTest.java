@@ -19,7 +19,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ChildProcessLauncherHelper;
+import org.chromium.content.browser.ChildProcessLauncherHelperImpl;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -370,8 +370,8 @@ public class WebContentsTest {
 
     private ChildProcessConnection getSandboxedChildProcessConnection() {
         Callable<ChildProcessConnection> getConnectionCallable = () -> {
-            for (ChildProcessLauncherHelper process :
-                    ChildProcessLauncherHelper.getAllProcessesForTesting().values()) {
+            for (ChildProcessLauncherHelperImpl process :
+                    ChildProcessLauncherHelperImpl.getAllProcessesForTesting().values()) {
                 ChildProcessConnection connection = process.getChildProcessConnection();
                 if (connection.getServiceName().getClassName().indexOf("Sandbox") != -1) {
                     return connection;

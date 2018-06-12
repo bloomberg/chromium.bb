@@ -103,7 +103,7 @@ public class ChildProcessLauncherIntegrationTest {
     public void testCrossDomainNavigationDoNotLoseImportance() throws Throwable {
         final TestChildProcessConnectionFactory factory = new TestChildProcessConnectionFactory();
         final List<TestChildProcessConnection> connections = factory.getConnections();
-        ChildProcessLauncherHelper.setSandboxServicesSettingsForTesting(factory,
+        ChildProcessLauncherHelperImpl.setSandboxServicesSettingsForTesting(factory,
                 10 /* arbitrary number, only realy need 2 */, null /* use default service name */);
 
         // TODO(boliu,nasko): Ensure navigation is actually successful
@@ -143,7 +143,7 @@ public class ChildProcessLauncherIntegrationTest {
     public void testIntentionalKillToFreeServiceSlot() throws Throwable {
         final TestChildProcessConnectionFactory factory = new TestChildProcessConnectionFactory();
         final List<TestChildProcessConnection> connections = factory.getConnections();
-        ChildProcessLauncherHelper.setSandboxServicesSettingsForTesting(
+        ChildProcessLauncherHelperImpl.setSandboxServicesSettingsForTesting(
                 factory, 1, null /* use default service name */);
         // Doing a cross-domain navigation would need to kill the first process in order to create
         // the second process.
