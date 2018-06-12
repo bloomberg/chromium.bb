@@ -356,6 +356,14 @@ class FakeDriveService : public DriveServiceInterface {
       const base::Time& last_modified_time,
       const google_apis::FileResourceCallback& callback);
 
+  // Sets the capabilities for an entry specified by |resource_id|.
+  // On success, returns HTTP_SUCCESS with the parsed entry.
+  // |callback| must not be null.
+  void SetFileCapabilities(
+      const std::string& resource_id,
+      const google_apis::FileResourceCapabilities& capabilities,
+      const google_apis::FileResourceCallback& callback);
+
   // Sets the user's permission for an entry specified by |resource_id|.
   google_apis::DriveApiErrorCode SetUserPermission(
       const std::string& resource_id,

@@ -175,7 +175,7 @@ var NESTED_ENTRY_SET = [
 ];
 
 /**
- * Expeceted list of preset entries in fake test volumes. This should be in sync
+ * Expected list of preset entries in fake test volumes. This should be in sync
  * with FakeTestVolume::PrepareTestEntries in the test harness.
  *
  * @type {Array<TestEntryInfo>}
