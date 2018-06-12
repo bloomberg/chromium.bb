@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.photo_picker;
 
 import android.Manifest;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.MediaStore;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -114,8 +116,12 @@ class FileEnumWorkerTask extends AsyncTask<Void, Void, List<PickerBitmap>> {
         Collections.sort(pickerBitmaps);
 
         pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.GALLERY));
-        if (mWindowAndroid.hasPermission(Manifest.permission.CAMERA)
-                || mWindowAndroid.canRequestPermission(Manifest.permission.CAMERA)) {
+        boolean hasCameraAppAvailable =
+                mWindowAndroid.canResolveActivity(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
+        boolean hasOrCanRequestCameraPermission =
+                mWindowAndroid.hasPermission(Manifest.permission.CAMERA)
+                || mWindowAndroid.canRequestPermission(Manifest.permission.CAMERA);
+        if (hasCameraAppAvailable && hasOrCanRequestCameraPermission) {
             pickerBitmaps.add(0, new PickerBitmap("", 0, PickerBitmap.CAMERA));
         }
 
