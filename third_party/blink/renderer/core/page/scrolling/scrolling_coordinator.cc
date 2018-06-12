@@ -162,8 +162,7 @@ void ScrollingCoordinator::DidScroll(const gfx::ScrollOffset& offset,
   // safely ignore the DidScroll callback.
 }
 
-void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
-    LocalFrameView* frame_view) {
+void ScrollingCoordinator::UpdateAfterPrePaint(LocalFrameView* frame_view) {
   LocalFrame* frame = &frame_view->GetFrame();
   DCHECK(frame->IsLocalRoot());
 
@@ -181,8 +180,7 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
   }
 
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.ScrollingCoordinator.UpdateTime");
-  TRACE_EVENT0("input",
-               "ScrollingCoordinator::updateAfterCompositingChangeIfNeeded");
+  TRACE_EVENT0("input", "ScrollingCoordinator::UpdateAfterPrePaint");
 
   // TODO(pdr): Move the scroll gesture region logic to use touch action rects.
   // These features are similar and do not need independent implementations.
