@@ -62,6 +62,7 @@ class SaveCardBubbleViewsBrowserTestBase
   void OnSentUploadCardRequest() override;
 
   // Will call JavaScript to fill and submit the form in different ways.
+  void SubmitForm();
   void FillAndSubmitForm();
   void FillAndSubmitFormWithCardDetailsOnly();
   void FillAndSubmitFormWithoutCvc();
@@ -80,8 +81,13 @@ class SaveCardBubbleViewsBrowserTestBase
   // Clicks on the given views::View*.
   void ClickOnDialogView(views::View* view);
 
-  // Clicks on a view from within the dialog and waits for a certain event to be
-  // observed.
+  // Clicks on the given views::View* and waits for the dialog to close.
+  void ClickOnDialogViewAndWait(views::View* view);
+
+  // Clicks on a view from within the dialog.
+  void ClickOnDialogViewWithId(DialogViewId view_id);
+
+  // Clicks on a view from within the dialog and waits for the dialog to close.
   void ClickOnDialogViewWithIdAndWait(DialogViewId view_id);
 
   // Returns the views::View* that was previously assigned the id |view_id|.

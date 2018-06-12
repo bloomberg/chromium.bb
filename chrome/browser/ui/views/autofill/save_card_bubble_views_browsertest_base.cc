@@ -20,10 +20,12 @@
 #include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "device/geolocation/public/cpp/scoped_geolocation_overrider.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
@@ -116,16 +118,22 @@ void SaveCardBubbleViewsBrowserTestBase::OnSentUploadCardRequest() {
     event_waiter_->OnEvent(DialogEvent::SENT_UPLOAD_CARD_REQUEST);
 }
 
+void SaveCardBubbleViewsBrowserTestBase::SubmitForm() {
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_submit_button_js =
+      "(function() { document.getElementById('submit').click(); })();";
+  content::TestNavigationObserver nav_observer(web_contents);
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  nav_observer.Wait();
+}
+
 // Should be called for credit_card_upload_form_address_and_cc.html.
 void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitForm() {
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_fill_button_js =
       "(function() { document.getElementById('fill_form').click(); })();";
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
-
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 void SaveCardBubbleViewsBrowserTestBase::
@@ -135,9 +143,7 @@ void SaveCardBubbleViewsBrowserTestBase::
       "(function() { document.getElementById('fill_card_only').click(); })();";
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_card_button_js));
 
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 // Should be called for credit_card_upload_form_address_and_cc.html.
@@ -151,9 +157,7 @@ void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithoutCvc() {
       "(function() { document.getElementById('clear_cvc').click(); })();";
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_clear_cvc_button_js));
 
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 // Should be called for credit_card_upload_form_address_and_cc.html.
@@ -169,9 +173,7 @@ void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithInvalidCvc() {
   ASSERT_TRUE(
       content::ExecuteScript(web_contents, click_fill_invalid_cvc_button_js));
 
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 // Should be called for credit_card_upload_form_address_and_cc.html.
@@ -185,9 +187,7 @@ void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithoutName() {
       "(function() { document.getElementById('clear_name').click(); })();";
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_clear_name_button_js));
 
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 // Should be called for credit_card_upload_form_address_and_cc.html.
@@ -201,9 +201,7 @@ void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithoutAddress() {
       "(function() { document.getElementById('clear_address').click(); })();";
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_clear_name_button_js));
 
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 // Should be called for credit_card_upload_form_shipping_address.html.
@@ -220,9 +218,7 @@ void SaveCardBubbleViewsBrowserTestBase::
   ASSERT_TRUE(
       content::ExecuteScript(web_contents, click_conflicting_name_button_js));
 
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 // Should be called for credit_card_upload_form_shipping_address.html.
@@ -239,9 +235,7 @@ void SaveCardBubbleViewsBrowserTestBase::
   ASSERT_TRUE(content::ExecuteScript(
       web_contents, click_conflicting_street_address_button_js));
 
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 // Should be called for credit_card_upload_form_shipping_address.html.
@@ -258,9 +252,7 @@ void SaveCardBubbleViewsBrowserTestBase::
   ASSERT_TRUE(content::ExecuteScript(web_contents,
                                      click_conflicting_postal_code_button_js));
 
-  const std::string click_submit_button_js =
-      "(function() { document.getElementById('submit').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+  SubmitForm();
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SetUploadDetailsRpcPaymentsAccepts() {
@@ -293,10 +285,24 @@ void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogView(views::View* view) {
   view->OnMouseReleased(released_event);
 }
 
-void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogViewWithIdAndWait(
+void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogViewAndWait(
+    views::View* view) {
+  EXPECT_TRUE(GetSaveCardBubbleViews());
+  views::test::WidgetDestroyedWaiter destroyed_waiter(
+      GetSaveCardBubbleViews()->GetWidget());
+  ClickOnDialogView(view);
+  destroyed_waiter.Wait();
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+}
+
+void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogViewWithId(
     DialogViewId view_id) {
   ClickOnDialogView(FindViewInBubbleById(view_id));
-  WaitForObservedEvent();
+}
+
+void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogViewWithIdAndWait(
+    DialogViewId view_id) {
+  ClickOnDialogViewAndWait(FindViewInBubbleById(view_id));
 }
 
 views::View* SaveCardBubbleViewsBrowserTestBase::FindViewInBubbleById(
