@@ -27,12 +27,8 @@
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
-      # They should be running here, though, once stabilized.
-      'Nougat Phone Tester chromium.android',
       # chromium.android.fyi
       'x64 Device Tester',
-      # chromium.clang
-      'ToTAndroid x64',
       # chromium.fyi
       'Out of Process Profiling Android',
     ],
@@ -71,15 +67,9 @@
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.13',
-      # chromium.gpu and chromium.gpu.fyi
+      # chromium.gpu.fyi
       # On Android, these are already run on the main waterfall.
-      # Run them on the one-off Android FYI bots, though.
-      'Android Release (Nexus 5X)',
       'Android FYI Release (Nexus 5X)',
-      # Remove these from the optional GPU tryservers as they're
-      # already run on the main ones.
-      'Optional Linux Release (Intel HD 630)',
-      'Optional Linux Release (NVIDIA)',
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
@@ -94,10 +84,6 @@
       # chromium.fyi
       'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
-    ],
-  },
-  'mash_ash_unittests': {
-    'remove_from': [
     ],
   },
   'aura_unittests': {
@@ -886,7 +872,6 @@
       'Win7 Tests (1)',
       # On chromium.win, unclear why these only run on "Win7 Tests (1)".
       'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
       'Win7 Tests (dbg)(1)',
       # client.v8.chromium
@@ -1214,20 +1199,12 @@
       # chromium.clang
       'CFI Linux (icall)',
       'CFI Linux ToT',
-      # chromium.gpu
-      # On Android, these are already run on the main waterfall.
-      # Run them on the one-off Android FYI bots, though.
-      'Android Release (Nexus 5X)',
       # chromium.gpu.fyi
-      'Android FYI 32 Vk Release (Nexus 5X)',
-      'Android FYI 64 Vk Release (Nexus 5X)',
       'Android FYI Release (Nexus 5X)',
-      'Linux FYI Ozone (Intel)',
       # chromium.memory
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
       'Linux MSan Tests',
-      'Linux ChromiumOS MSan Tests',
     ],
     'modifications': {
       'KitKat Tablet Tester': {
@@ -1692,12 +1669,6 @@
       'Out of Process Profiling Mac',
     ],
   },
-  'mini_installer_tests': {
-    'remove_from': [
-      # chromium.clang
-      'linux-win_cross-rel',  # https://crbug.com/799827
-    ],
-  },
   'mojo_core_unittests': {
     'remove_from': [
       # chromium.clang
@@ -1817,7 +1788,6 @@
       # (https://crbug.com/813553)
       # chromium.win
       'Win 7 Tests x64 (1)',
-      'Win7 (32) Tests',
       'Win7 Tests (1)',
       'Win7 Tests (dbg)(1)',
       # chromium.clang; all these bots run Windows 7.
@@ -1899,8 +1869,6 @@
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # chromium.linux
-      'Cast Audio Linux',
-      'Cast Linux',
       'Linux Tests (dbg)(1)(32)',
       # On chromium.mac, unclear why these aren't run.
       'Mac10.10 Tests',
@@ -2067,12 +2035,6 @@
       'mac-views-rel',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
-      # On chromium.win, unclear why these aren't run.
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 (32) Tests',
-      'Win7 Tests (1)',
-      'Win7 Tests (dbg)(1)',
     ],
   },
   'sql_unittests': {
@@ -2198,11 +2160,6 @@
       'Mac Retina Debug (AMD)',
       'Win10 Debug (NVIDIA)',
       # chromium.gpu.fyi
-      'Linux FYI Debug (NVIDIA)',
-      'Linux FYI GPU TSAN Release',
-      'Mac FYI Debug (Intel)',
-      'Mac FYI Retina Debug (AMD)',
-      'Mac FYI Retina Debug (NVIDIA)',
       'Win10 FYI Debug (NVIDIA)',
       'Win7 FYI Debug (AMD)',
     ],
@@ -2690,7 +2647,6 @@
       'Mac10.13 Tests (dbg)',
       # chromium.win
       'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
@@ -2979,10 +2935,8 @@
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
-      'Nougat Phone Tester chromium.android',
       # chromium.android.fyi
       # chromium.clang; matching chromium.android, the test fails on these.
-      'ToTAndroid x64',
       'ToTAndroid',
       # On chromium.swarm, this should possibly be being run (or removed
       # from Android N5X Swarm).
