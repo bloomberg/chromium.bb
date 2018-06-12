@@ -303,6 +303,13 @@ if (is_android) {
 if (is_linux) {
   # The setuid sandbox for Linux.
   executable("chrome_sandbox") {
+    # If this target had libc++ as a dependency, it would be listed as a
+    # required library for either component or sanitized builds.  However, the
+    # update-linux-sandbox.sh script should not have to worry about copying the
+    # libc++.so dependency, so we explicitly say here that libc++ should not be
+    # a dependency.  It is unneeded since this target only contains C sources.
+    no_default_deps = true
+
     sources = [
       "suid/common/sandbox.h",
       "suid/common/suid_unsafe_environment_variables.h",
