@@ -242,6 +242,7 @@ component("bluetooth") {
       "bluetooth_adapter_winrt.h",
       "bluetooth_device_winrt.cc",
       "bluetooth_device_winrt.h",
+      "event_utils_winrt.h",
     ]
 
     libs = [

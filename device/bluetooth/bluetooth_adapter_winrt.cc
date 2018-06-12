@@ -26,6 +26,7 @@
 #include "device/bluetooth/bluetooth_device_winrt.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
+#include "device/bluetooth/event_utils_winrt.h"
 
 namespace device {
 
@@ -56,130 +57,11 @@ using ABI::Windows::Devices::Enumeration::IDeviceInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationStatics;
 using ABI::Windows::Foundation::Collections::IVector;
 using ABI::Windows::Foundation::IAsyncOperation;
-using ABI::Windows::Foundation::IAsyncOperationCompletedHandler;
-using ABI::Windows::Foundation::ITypedEventHandler;
-using Microsoft::WRL::Callback;
 using Microsoft::WRL::ComPtr;
 
 bool ResolveCoreWinRT() {
   return base::win::ResolveCoreWinRTDelayload() &&
          base::win::ScopedHString::ResolveCoreWinRTStringDelayload();
-}
-
-// Utility functions to pretty print enum values.
-constexpr const char* ToCString(AsyncStatus async_status) {
-  switch (async_status) {
-    case AsyncStatus::Started:
-      return "AsyncStatus::Started";
-    case AsyncStatus::Completed:
-      return "AsyncStatus::Completed";
-    case AsyncStatus::Canceled:
-      return "AsyncStatus::Canceled";
-    case AsyncStatus::Error:
-      return "AsyncStatus::Error";
-  }
-
-  NOTREACHED();
-  return "";
-}
-
-template <typename T>
-using AsyncAbiT = typename ABI::Windows::Foundation::Internal::GetAbiType<
-    typename IAsyncOperation<T>::TResult_complex>::type;
-
-// Compile time switch to decide what container to use for the async results for
-// |T|. Depends on whether the underlying Abi type is a pointer to IUnknown or
-// not. It queries the internals of Windows::Foundation to obtain this
-// information.
-template <typename T>
-using AsyncResultsT =
-    std::conditional_t<std::is_convertible<AsyncAbiT<T>, IUnknown*>::value,
-                       ComPtr<std::remove_pointer_t<AsyncAbiT<T>>>,
-                       AsyncAbiT<T>>;
-
-// Obtains the results of the provided async operation. Returns it if the
-// operation completed successfully.
-template <typename T>
-AsyncResultsT<T> GetAsyncResults(IAsyncOperation<T>* async_op,
-                                 AsyncStatus async_status) {
-  if (async_status != AsyncStatus::Completed) {
-    VLOG(2) << "Got unexpected AsyncStatus: " << ToCString(async_status);
-    return {};
-  }
-
-  AsyncResultsT<T> results;
-  HRESULT hr = async_op->GetResults(&results);
-  if (FAILED(hr)) {
-    VLOG(2) << "GotAsyncResults failed: "
-            << logging::SystemErrorCodeToString(hr);
-  }
-
-  return results;
-}
-
-// This method registers a completion handler for |async_op| and will post the
-// results to |callback| on |task_runner|. While a Callback can be constructed
-// from callable types such as a lambda or std::function objects, it cannot be
-// directly constructed from a base::OnceCallback. Thus the callback is moved
-// into a capturing lambda, which then posts the callback once it is run.
-// Posting the results to the TaskRunner is required, since the completion
-// callback might be invoked on an arbitrary thread. Lastly, the lambda takes
-// ownership of |async_op|, as this needs to be kept alive until GetAsyncResults
-// can be invoked. Once that is done it is safe to release the |async_op|.
-template <typename T>
-HRESULT PostAsyncResults(ComPtr<IAsyncOperation<T>> async_op,
-                         scoped_refptr<base::TaskRunner> task_runner,
-                         base::OnceCallback<void(AsyncResultsT<T>)> callback) {
-  auto async_op_raw = async_op.Get();
-  return async_op_raw->put_Completed(
-      Callback<IAsyncOperationCompletedHandler<T>>([
-        async_op(std::move(async_op)), task_runner(std::move(task_runner)),
-        callback(std::move(callback))
-      ](IAsyncOperation<T> * async_op_raw, AsyncStatus async_status) mutable {
-        // Note: We are using |async_op_raw| instead of async_op.Get(), as this
-        // could be executed on any thread and only |async_op_raw| is guaranteed
-        // to be in the correct COM apartment.
-        task_runner->PostTask(
-            FROM_HERE,
-            base::BindOnce(std::move(callback),
-                           GetAsyncResults(async_op_raw, async_status)));
-        async_op.Reset();
-        return S_OK;
-      })
-          .Get());
-}
-
-template <typename Interface, typename... Args>
-using IMemberFunction = HRESULT (__stdcall Interface::*)(Args...);
-
-template <typename Interface,
-          typename Sender,
-          typename Args,
-          typename SenderAbi,
-          typename ArgsAbi>
-base::Optional<EventRegistrationToken> AddTypedEventHandler(
-    Interface* i,
-    IMemberFunction<Interface,
-                    ITypedEventHandler<Sender, Args>*,
-                    EventRegistrationToken*> function,
-    base::RepeatingCallback<void(SenderAbi, ArgsAbi)> callback) {
-  EventRegistrationToken token;
-  HRESULT hr =
-      ((*i).*function)(Callback<ITypedEventHandler<Sender, Args>>(
-                           [callback](SenderAbi sender, ArgsAbi args) {
-                             callback.Run(std::move(sender), std::move(args));
-                             return S_OK;
-                           })
-                           .Get(),
-                       &token);
-
-  if (FAILED(hr)) {
-    VLOG(2) << "Adding EventHandler failed: "
-            << logging::SystemErrorCodeToString(hr);
-    return base::nullopt;
-  }
-
-  return token;
 }
 
 base::Optional<BluetoothDevice::UUIDList> ExtractAdvertisedUUIDs(
@@ -403,7 +285,7 @@ void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
   }
 
   hr = PostAsyncResults(
-      std::move(get_default_adapter_op), ui_task_runner_,
+      std::move(get_default_adapter_op),
       base::BindOnce(&BluetoothAdapterWinrt::OnGetDefaultAdapter,
                      weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
 
@@ -638,7 +520,7 @@ void BluetoothAdapterWinrt::OnGetDefaultAdapter(
   }
 
   hr = PostAsyncResults(
-      std::move(create_from_id_op), ui_task_runner_,
+      std::move(create_from_id_op),
       base::BindOnce(&BluetoothAdapterWinrt::OnCreateFromIdAsync,
                      weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
   if (FAILED(hr)) {
