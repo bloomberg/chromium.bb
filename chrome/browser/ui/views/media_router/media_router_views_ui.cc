@@ -14,6 +14,17 @@
 
 namespace media_router {
 
+namespace {
+
+// Returns true if |issue| is associated with |ui_sink|.
+bool IssueMatches(const Issue& issue, const UIMediaSink ui_sink) {
+  return issue.info().sink_id == ui_sink.id ||
+         (!issue.info().route_id.empty() &&
+          issue.info().route_id == ui_sink.route_id);
+}
+
+}  // namespace
+
 MediaRouterViewsUI::MediaRouterViewsUI() = default;
 
 MediaRouterViewsUI::~MediaRouterViewsUI() {
@@ -54,6 +65,14 @@ std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
   return sinks;
 }
 
+void MediaRouterViewsUI::InitCommon(content::WebContents* initiator) {
+  MediaRouterUIBase::InitCommon(initiator);
+  // We don't start observing issues in MediaRouterUIBase::InitCommon() because
+  // in the WebUI dialog, we need to wait for the WebUI to load before
+  // starting to observe.
+  StartObservingIssues();
+}
+
 void MediaRouterViewsUI::OnRoutesUpdated(
     const std::vector<MediaRoute>& routes,
     const std::vector<MediaRoute::Id>& joinable_route_ids) {
@@ -71,7 +90,7 @@ void MediaRouterViewsUI::UpdateSinks() {
           return route.media_sink_id() == sink.sink.id();
         });
     const MediaRoute* route = route_it == routes().end() ? nullptr : &*route_it;
-    model_.media_sinks.push_back(ConvertToUISink(sink, route));
+    model_.media_sinks.push_back(ConvertToUISink(sink, route, issue_));
   }
   for (CastDialogController::Observer& observer : observers_)
     observer.OnModelUpdated(model_);
@@ -79,7 +98,8 @@ void MediaRouterViewsUI::UpdateSinks() {
 
 UIMediaSink MediaRouterViewsUI::ConvertToUISink(
     const MediaSinkWithCastModes& sink,
-    const MediaRoute* route) {
+    const MediaRoute* route,
+    const base::Optional<Issue>& issue) {
   UIMediaSink ui_sink;
   ui_sink.id = sink.sink.id();
   ui_sink.friendly_name = base::UTF8ToUTF16(sink.sink.name());
@@ -96,7 +116,19 @@ UIMediaSink MediaRouterViewsUI::ConvertToUISink(
                         : UIMediaSinkState::AVAILABLE;
     ui_sink.cast_modes = sink.cast_modes;
   }
+  if (issue && IssueMatches(*issue, ui_sink))
+    ui_sink.issue = issue;
   return ui_sink;
+}
+
+void MediaRouterViewsUI::OnIssue(const Issue& issue) {
+  issue_ = issue;
+  UpdateSinks();
+}
+
+void MediaRouterViewsUI::OnIssueCleared() {
+  issue_ = base::nullopt;
+  UpdateSinks();
 }
 
 }  // namespace media_router

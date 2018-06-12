@@ -209,6 +209,10 @@ struct StructTraits<media_router::mojom::IssueDataView,
     return issue.route_id;
   }
 
+  static const std::string& sink_id(const media_router::IssueInfo& issue) {
+    return issue.sink_id;
+  }
+
   static media_router::IssueInfo::Severity severity(
       const media_router::IssueInfo& issue) {
     return issue.severity;

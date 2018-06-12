@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
@@ -113,6 +114,12 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
   // Returns a source name that can be shown in the dialog.
   std::string GetTruncatedPresentationRequestSourceName() const;
 
+  // Calls MediaRouter to add the given issue.
+  void AddIssue(const IssueInfo& issue);
+
+  // Calls MediaRouter to remove the given issue.
+  void RemoveIssue(const Issue::Id& issue_id);
+
   const std::vector<MediaRoute>& routes() const { return routes_; }
   content::WebContents* initiator() const { return initiator_; }
 
@@ -180,6 +187,20 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
   // Otherwise returns an empty GURL.
   GURL GetFrameURL() const;
 
+  // Creates and sends an issue if route creation timed out.
+  void SendIssueForRouteTimeout(
+      MediaCastMode cast_mode,
+      const base::string16& presentation_request_source_name);
+
+  // Creates and sends an issue if casting fails for any other reason.
+  void SendIssueForUnableToCast(MediaCastMode cast_mode);
+
+  // Returns the IssueManager associated with |router_|.
+  IssueManager* GetIssueManager();
+
+  // Instantiates and initializes the issues observer.
+  void StartObservingIssues();
+
   const base::Optional<RouteRequest> current_route_request() const {
     return current_route_request_;
   }
@@ -203,6 +224,24 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            UIMediaRoutesObserverSkipsUnavailableCastModes);
 
+  // This class calls to refresh the UI when the highest priority issue is
+  // updated.
+  class UiIssuesObserver : public IssuesObserver {
+   public:
+    UiIssuesObserver(IssueManager* issue_manager, MediaRouterUIBase* ui);
+    ~UiIssuesObserver() override;
+
+    // IssuesObserver:
+    void OnIssue(const Issue& issue) override;
+    void OnIssuesCleared() override;
+
+   private:
+    // Reference back to the owning MediaRouterUIBase instance.
+    MediaRouterUIBase* const ui_;
+
+    DISALLOW_COPY_AND_ASSIGN(UiIssuesObserver);
+  };
+
   class UIMediaRoutesObserver : public MediaRoutesObserver {
    public:
     using RoutesUpdatedCallback =
@@ -213,7 +252,7 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
                           const RoutesUpdatedCallback& callback);
     ~UIMediaRoutesObserver() override;
 
-    // MediaRoutesObserver
+    // MediaRoutesObserver:
     void OnRoutesUpdated(
         const std::vector<MediaRoute>& routes,
         const std::vector<MediaRoute::Id>& joinable_route_ids) override;
@@ -224,6 +263,10 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
 
     DISALLOW_COPY_AND_ASSIGN(UIMediaRoutesObserver);
   };
+
+  // Called by |issues_observer_| when the top issue has changed.
+  virtual void OnIssue(const Issue& issue) = 0;
+  virtual void OnIssueCleared() = 0;
 
   // Returns the MediaRouter for this instance's BrowserContext.
   virtual MediaRouter* GetMediaRouter() const;
@@ -264,6 +307,8 @@ class MediaRouterUIBase : public QueryResultManager::Observer,
 
   // WebContents for the tab for which the Cast dialog is shown.
   content::WebContents* initiator_;
+
+  std::unique_ptr<IssuesObserver> issues_observer_;
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
   // Keeps track of which display the initiator WebContents is on. This is used

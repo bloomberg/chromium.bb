@@ -33,11 +33,11 @@ bool StructTraits<media_router::mojom::IssueDataView, media_router::IssueInfo>::
   if (!data.ReadSecondaryActions(&out->secondary_actions))
     return false;
 
-  base::Optional<std::string> route_id;
-  if (!data.ReadRouteId(&route_id))
+  if (!data.ReadRouteId(&out->route_id))
     return false;
 
-  out->route_id = route_id.value_or(std::string());
+  if (!data.ReadSinkId(&out->sink_id))
+    return false;
 
   out->is_blocking = data.is_blocking();
   out->help_page_id = data.help_page_id();

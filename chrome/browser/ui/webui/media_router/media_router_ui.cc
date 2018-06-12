@@ -16,7 +16,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/issue_manager.h"
-#include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
@@ -62,28 +61,6 @@
 #endif
 
 namespace media_router {
-
-// This class calls to refresh the UI when the highest priority issue is
-// updated.
-class MediaRouterUI::UIIssuesObserver : public IssuesObserver {
- public:
-  UIIssuesObserver(IssueManager* issue_manager, MediaRouterUI* ui)
-      : IssuesObserver(issue_manager), ui_(ui) {
-    DCHECK(ui);
-  }
-
-  ~UIIssuesObserver() override {}
-
-  // IssuesObserver implementation.
-  void OnIssue(const Issue& issue) override { ui_->SetIssue(issue); }
-  void OnIssuesCleared() override { ui_->ClearIssue(); }
-
- private:
-  // Reference back to the owning MediaRouterUI instance.
-  MediaRouterUI* ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(UIIssuesObserver);
-};
 
 // Observes a WebContents and requests fullscreening of its first
 // video element.  The request is sent after the WebContents is loaded and tab
@@ -231,9 +208,7 @@ void MediaRouterUI::OnUIInitialized() {
   // TODO(imcheng): We should be able to instantiate |issue_observer_| during
   // InitCommon by storing an initial Issue in this class.
   // Register for Issue updates.
-  issues_observer_ =
-      std::make_unique<UIIssuesObserver>(GetIssueManager(), this);
-  issues_observer_->Init();
+  StartObservingIssues();
 }
 
 bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
@@ -242,6 +217,8 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   // necessary.
   content::WebContents* tab_contents = initiator();
 
+  // TODO(http://crbug.com/842787): Code is duplicated between MRUI and MRUIBase
+  // until MRUIBase supports local file casting.
   base::Optional<RouteParameters> params;
   if (cast_mode == MediaCastMode::LOCAL_FILE) {
     GURL url = media_router_file_dialog_->GetLastSelectedFileUrl();
@@ -277,14 +254,6 @@ bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
       std::move(params->route_response_callbacks), params->timeout,
       params->incognito);
   return true;
-}
-
-void MediaRouterUI::AddIssue(const IssueInfo& issue) {
-  GetIssueManager()->AddIssue(issue);
-}
-
-void MediaRouterUI::ClearIssue(const Issue::Id& issue_id) {
-  GetIssueManager()->ClearIssue(issue_id);
 }
 
 void MediaRouterUI::OpenFileDialog() {
@@ -478,12 +447,12 @@ void MediaRouterUI::FileDialogSelectionFailed(const IssueInfo& issue) {
   AddIssue(issue);
 }
 
-void MediaRouterUI::SetIssue(const Issue& issue) {
+void MediaRouterUI::OnIssue(const Issue& issue) {
   if (ui_initialized_)
     handler_->UpdateIssue(issue);
 }
 
-void MediaRouterUI::ClearIssue() {
+void MediaRouterUI::OnIssueCleared() {
   if (ui_initialized_)
     handler_->ClearIssue();
 }
@@ -540,47 +509,6 @@ void MediaRouterUI::OnSearchSinkResponseReceived(
   handler_->ReturnSearchResult(found_sink_id);
 
   CreateRoute(found_sink_id, cast_mode);
-}
-
-void MediaRouterUI::SendIssueForRouteTimeout(
-    MediaCastMode cast_mode,
-    const base::string16& presentation_request_source_name) {
-  std::string issue_title;
-  switch (cast_mode) {
-    case PRESENTATION:
-      DLOG_IF(ERROR, presentation_request_source_name.empty())
-          << "Empty presentation request source name.";
-      issue_title =
-          l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
-                                    presentation_request_source_name);
-      break;
-    case TAB_MIRROR:
-      issue_title = l10n_util::GetStringUTF8(
-          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
-      break;
-    case DESKTOP_MIRROR:
-      issue_title = l10n_util::GetStringUTF8(
-          IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP);
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  AddIssue(IssueInfo(issue_title, IssueInfo::Action::DISMISS,
-                     IssueInfo::Severity::NOTIFICATION));
-}
-
-void MediaRouterUI::SendIssueForUnableToCast(MediaCastMode cast_mode) {
-  // For a generic error, claim a tab error unless it was specifically desktop
-  // mirroring.
-  std::string issue_title =
-      (cast_mode == MediaCastMode::DESKTOP_MIRROR)
-          ? l10n_util::GetStringUTF8(
-                IDS_MEDIA_ROUTER_ISSUE_UNABLE_TO_CAST_DESKTOP)
-          : l10n_util::GetStringUTF8(
-                IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
-  AddIssue(IssueInfo(issue_title, IssueInfo::Action::DISMISS,
-                     IssueInfo::Severity::WARNING));
 }
 
 void MediaRouterUI::InitCommon(content::WebContents* initiator) {
@@ -696,10 +624,6 @@ void MediaRouterUI::OnRouteControllerInvalidated() {
 }
 void MediaRouterUI::UpdateMediaRouteStatus(const MediaStatus& status) {
   handler_->UpdateMediaRouteStatus(status);
-}
-
-IssueManager* MediaRouterUI::GetIssueManager() {
-  return GetMediaRouter()->GetIssueManager();
 }
 
 void MediaRouterUI::UpdateSinks() {

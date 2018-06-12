@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
+#include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
@@ -183,7 +184,49 @@ TEST_F(MediaRouterViewsUITest, ConnectingState) {
       })));
   MediaRoute route(kRouteId, MediaSource(kSourceId), kSinkId, "", true, true);
   ui_->OnRoutesUpdated({route}, {});
+  ui_->RemoveObserver(&observer);
+}
 
+TEST_F(MediaRouterViewsUITest, AddAndRemoveIssue) {
+  MediaSink sink1("sink_id1", "Sink 1", SinkIconType::CAST_AUDIO);
+  MediaSinkWithCastModes sink1_with_cast_modes(sink1);
+  sink1_with_cast_modes.cast_modes = {MediaCastMode::TAB_MIRROR};
+  MediaSink sink2("sink_id2", "Sink 2", SinkIconType::CAST_AUDIO);
+  MediaSinkWithCastModes sink2_with_cast_modes(sink2);
+  sink2_with_cast_modes.cast_modes = {MediaCastMode::TAB_MIRROR};
+  ui_->OnResultsUpdated({sink1_with_cast_modes, sink2_with_cast_modes});
+
+  MockControllerObserver observer;
+  ui_->AddObserver(&observer);
+  MockIssuesObserver issues_observer(mock_router_.GetIssueManager());
+  issues_observer.Init();
+  const std::string issue_title("Issue 1");
+  IssueInfo issue(issue_title, IssueInfo::Action::DISMISS,
+                  IssueInfo::Severity::WARNING);
+  issue.sink_id = sink2.id();
+  Issue::Id issue_id = -1;
+
+  EXPECT_CALL(issues_observer, OnIssue)
+      .WillOnce(
+          Invoke([&issue_id](const Issue& issue) { issue_id = issue.id(); }));
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(WithArg<0>(
+          Invoke([&sink1, &sink2, &issue_title](const CastDialogModel& model) {
+            EXPECT_EQ(2u, model.media_sinks.size());
+            EXPECT_EQ(model.media_sinks[0].id, sink1.id());
+            EXPECT_FALSE(model.media_sinks[0].issue.has_value());
+            EXPECT_EQ(model.media_sinks[1].id, sink2.id());
+            EXPECT_EQ(model.media_sinks[1].issue->info().title, issue_title);
+          })));
+  mock_router_.GetIssueManager()->AddIssue(issue);
+
+  EXPECT_CALL(observer, OnModelUpdated(_))
+      .WillOnce(WithArg<0>(Invoke([&sink2](const CastDialogModel& model) {
+        EXPECT_EQ(2u, model.media_sinks.size());
+        EXPECT_EQ(model.media_sinks[1].id, sink2.id());
+        EXPECT_FALSE(model.media_sinks[1].issue.has_value());
+      })));
+  mock_router_.GetIssueManager()->ClearIssue(issue_id);
   ui_->RemoveObserver(&observer);
 }
 

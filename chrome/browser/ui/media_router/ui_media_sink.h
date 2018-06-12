@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
+#include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "url/gurl.h"
 
@@ -21,9 +22,7 @@ enum class UIMediaSinkState {
   // Sink has a media route.
   CONNECTED,
   // Sink is disconnected/cached (not available right now).
-  UNAVAILABLE,
-  // Sink is in an error state.
-  ERROR_STATE
+  UNAVAILABLE
 };
 
 struct UIMediaSink {
@@ -62,10 +61,9 @@ struct UIMediaSink {
   // The current state of the media sink.
   UIMediaSinkState state = UIMediaSinkState::AVAILABLE;
 
-  // Help center article ID for troubleshooting.
-  // This will show an info bubble with a tooltip for the article.
-  // This is a nullopt if there are no issues with the sink.
-  base::Optional<int> tooltip_article_id;
+  // An issue the sink is having. This is a nullopt when there are no issues
+  // with the sink.
+  base::Optional<Issue> issue;
 
   // Set of Cast Modes (e.g. presentation, desktop mirroring) supported by the
   // sink.

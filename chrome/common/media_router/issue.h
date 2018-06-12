@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/media_router/media_route.h"
+#include "chrome/common/media_router/media_sink.h"
 
 namespace media_router {
 
@@ -62,7 +63,11 @@ struct IssueInfo {
 
   // ID of route associated with the Issue, or empty if no route is associated
   // with it.
-  std::string route_id;
+  MediaRoute::Id route_id;
+
+  // ID of the sink associated with this issue, or empty if no sink is
+  // associated with it.
+  MediaSink::Id sink_id;
 
   // |true| if the issue needs to be resolved before continuing. Note that a
   // Issue of severity FATAL is considered blocking by default.

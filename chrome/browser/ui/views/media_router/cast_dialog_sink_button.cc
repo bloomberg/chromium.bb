@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/common/media_router/issue.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
@@ -66,10 +69,17 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(const UIMediaSink& sink) {
 
 std::unique_ptr<views::View> CreateSecondaryIconForSink(
     const UIMediaSink& sink) {
-  if (sink.state == UIMediaSinkState::CONNECTED) {
-    constexpr int kSecondaryIconSize = 16;
+  constexpr int kSecondaryIconSize = 16;
+  if (sink.issue) {
     auto icon_view = std::make_unique<views::ImageView>();
-    icon_view->SetImage(gfx::CreateVectorIcon(
+    icon_view->SetImage(CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
+                                         kSecondaryIconSize,
+                                         gfx::kChromeIconGrey));
+    icon_view->SetTooltipText(base::UTF8ToUTF16(sink.issue->info().title));
+    return icon_view;
+  } else if (sink.state == UIMediaSinkState::CONNECTED) {
+    auto icon_view = std::make_unique<views::ImageView>();
+    icon_view->SetImage(CreateVectorIcon(
         views::kMenuCheckIcon, kSecondaryIconSize, gfx::kChromeIconGrey));
     return icon_view;
   } else if (sink.state == UIMediaSinkState::CONNECTING) {
