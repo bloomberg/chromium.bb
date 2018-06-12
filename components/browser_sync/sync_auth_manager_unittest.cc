@@ -91,7 +91,7 @@ TEST_F(SyncAuthManagerTest, IgnoresEventsIfNotRegistered) {
   std::string account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com");
   ASSERT_EQ(auth_manager->GetAuthenticatedAccountInfo().account_id, account_id);
-  identity_env()->SetRefreshTokenForAccount(account_id);
+  identity_env()->SetRefreshTokenForPrimaryAccount();
   identity_env()->ClearPrimaryAccount();
   ASSERT_TRUE(auth_manager->GetAuthenticatedAccountInfo().account_id.empty());
 }
@@ -161,7 +161,7 @@ TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
   // Now the refresh token gets updated. The access token will get dropped, so
   // this should cause another notification.
   EXPECT_CALL(credentials_changed, Run());
-  identity_env()->SetRefreshTokenForAccount(account_id);
+  identity_env()->SetRefreshTokenForPrimaryAccount();
   ASSERT_TRUE(auth_manager->GetCredentials().sync_token.empty());
 
   // Once a new token is available, there's another notification.
@@ -355,7 +355,7 @@ TEST_F(SyncAuthManagerTest, RequestsNewAccessTokenOnRefreshTokenUpdate) {
             GoogleServiceAuthError::AuthErrorNone());
 
   // But then the refresh token changes.
-  identity_env()->SetRefreshTokenForAccount(account_id);
+  identity_env()->SetRefreshTokenForPrimaryAccount();
 
   // Should immediately drop the access token and fetch a new one (no backoff).
   EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
@@ -382,7 +382,7 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenAutonomously) {
   EXPECT_CALL(access_token_requested, Run()).Times(0);
   identity_env()->SetCallbackForNextAccessTokenRequest(
       access_token_requested.Get());
-  identity_env()->SetRefreshTokenForAccount(account_id);
+  identity_env()->SetRefreshTokenForPrimaryAccount();
 
   // Make sure no access token request was sent. Since the request goes through
   // posted tasks, we have to spin the message loop.

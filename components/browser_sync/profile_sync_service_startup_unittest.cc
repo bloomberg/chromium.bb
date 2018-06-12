@@ -103,12 +103,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   void UpdateCredentials() {
-    identity::SetRefreshTokenForAccount(
+    identity::SetRefreshTokenForPrimaryAccount(
         profile_sync_service_bundle_.auth_service(),
-        profile_sync_service_bundle_.identity_manager(),
-        profile_sync_service_bundle_.identity_manager()
-            ->GetPrimaryAccountInfo()
-            .account_id);
+        profile_sync_service_bundle_.identity_manager());
   }
 
   DataTypeManagerMock* SetUpDataTypeManagerMock() {

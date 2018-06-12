@@ -99,9 +99,10 @@ std::string SetPrimaryAccount(SigninManagerBase* signin_manager,
   return identity_manager->GetPrimaryAccountInfo().account_id;
 }
 
-void SetRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                               IdentityManager* identity_manager,
-                               const std::string& account_id) {
+void SetRefreshTokenForPrimaryAccount(ProfileOAuth2TokenService* token_service,
+                                      IdentityManager* identity_manager) {
+  DCHECK(identity_manager->HasPrimaryAccount());
+  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
   std::string refresh_token = "refresh_token_for_" + account_id;
   token_service->UpdateCredentials(account_id, refresh_token);
 }
@@ -126,7 +127,7 @@ std::string MakePrimaryAccountAvailable(
     const std::string& email) {
   std::string account_id =
       SetPrimaryAccount(signin_manager, identity_manager, email);
-  SetRefreshTokenForAccount(token_service, identity_manager, account_id);
+  SetRefreshTokenForPrimaryAccount(token_service, identity_manager);
   return account_id;
 }
 

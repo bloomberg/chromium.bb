@@ -30,9 +30,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // of the newly-set account.
   std::string SetPrimaryAccount(const std::string& email);
 
-  // Sets a refresh token that corresponds uniquely to |account_id|. Blocks
-  // until the refresh token is set.
-  void SetRefreshTokenForAccount(const std::string& account_id);
+  // Sets a refresh token for the primary account (which must already be set).
+  // Blocks until the refresh token is set.
+  void SetRefreshTokenForPrimaryAccount();
 
   // Sets a special invalid refresh token that corresponds uniquely to
   // |account_id|. Blocks until the refresh token is set.

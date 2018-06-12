@@ -103,10 +103,9 @@ std::string IdentityTestEnvironment::SetPrimaryAccount(
                                      internals_->identity_manager(), email);
 }
 
-void IdentityTestEnvironment::SetRefreshTokenForAccount(
-    const std::string& account_id) {
-  identity::SetRefreshTokenForAccount(
-      internals_->token_service(), internals_->identity_manager(), account_id);
+void IdentityTestEnvironment::SetRefreshTokenForPrimaryAccount() {
+  identity::SetRefreshTokenForPrimaryAccount(internals_->token_service(),
+                                             internals_->identity_manager());
 }
 
 void IdentityTestEnvironment::SetInvalidRefreshTokenForAccount(
