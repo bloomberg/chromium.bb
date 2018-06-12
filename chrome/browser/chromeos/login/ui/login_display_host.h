@@ -129,7 +129,8 @@ class LoginDisplayHost {
   // preloaded in the gaia dialog.
   virtual void UpdateGaiaDialogVisibility(
       bool visible,
-      const base::Optional<AccountId>& account) = 0;
+      bool can_close,
+      const base::Optional<AccountId>& prefilled_account) = 0;
 
   // Update the size of the gaia dialog.
   virtual void UpdateGaiaDialogSize(int width, int height) = 0;

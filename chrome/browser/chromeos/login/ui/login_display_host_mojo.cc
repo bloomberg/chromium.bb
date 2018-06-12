@@ -195,19 +195,20 @@ bool LoginDisplayHostMojo::IsVoiceInteractionOobe() {
 
 void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(
     bool visible,
-    const base::Optional<AccountId>& account) {
+    bool can_close,
+    const base::Optional<AccountId>& prefilled_account) {
   DCHECK(dialog_);
 
   if (visible) {
-    if (account) {
+    if (prefilled_account) {
       // Make sure gaia displays |account| if requested.
-      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(account);
-      LoginDisplayHost::default_host()->LoadWallpaper(account.value());
+      GetOobeUI()->GetGaiaScreenView()->ShowGaiaAsync(prefilled_account);
+      LoginDisplayHost::default_host()->LoadWallpaper(*prefilled_account);
     } else {
       LoginDisplayHost::default_host()->LoadSigninWallpaper();
     }
 
-    dialog_->Show(true /*closable_by_esc*/);
+    dialog_->Show(can_close /*closable_by_esc*/);
     return;
   }
   // Show the wallpaper of the focused user pod when the dialog is hidden.
@@ -234,7 +235,8 @@ const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
 
 void LoginDisplayHostMojo::CancelPasswordChangedFlow() {
   // Close the Oobe UI dialog.
-  UpdateGaiaDialogVisibility(false /*visible*/, base::nullopt /*account*/);
+  UpdateGaiaDialogVisibility(false /*visible*/, true /*can_close*/,
+                             base::nullopt /*account*/);
   LoginDisplayHostCommon::CancelPasswordChangedFlow();
 }
 

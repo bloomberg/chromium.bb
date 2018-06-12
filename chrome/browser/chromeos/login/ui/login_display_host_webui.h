@@ -73,7 +73,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnBrowserCreated() override;
   void UpdateGaiaDialogVisibility(
       bool visible,
-      const base::Optional<AccountId>& account) override;
+      bool can_close,
+      const base::Optional<AccountId>& prefilled_account) override;
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
 

@@ -346,7 +346,8 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
       Shell::Get()->login_screen_controller()->LoginAsGuest();
       break;
     case kAddUser:
-      Shell::Get()->login_screen_controller()->ShowGaiaSignin(base::nullopt);
+      Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+          true /*can_close*/, base::nullopt /*prefilled_account*/);
       break;
     default:
       NOTREACHED();

@@ -185,9 +185,10 @@ interface LoginScreenClient {
   // |reverse|:   Whether the tab order is reversed.
   FocusLockScreenApps(bool reverse);
 
-  // Show the gaia sign-in dialog. If available, |account_id| is used for
-  // prefilling information.
-  ShowGaiaSignin(signin.mojom.AccountId? account_id);
+  // Show the gaia sign-in dialog. If |can_close| is true, the dialog can be
+  // closed. The value in |prefilled_account| will be used to prefill the
+  // sign-in dialog so the user does not need to type the account email.
+  ShowGaiaSignin(bool can_close, signin.mojom.AccountId? prefilled_account);
 
   // Notification that the remove user warning was shown.
   OnRemoveUserWarningShown();

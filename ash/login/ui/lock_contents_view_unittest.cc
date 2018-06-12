@@ -741,7 +741,7 @@ TEST_F(LockContentsViewUnitTest, GaiaNeverShownOnLockAfterFailedAuth) {
   };
 
   // ShowGaiaSignin is never triggered.
-  EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(0);
+  EXPECT_CALL(*client, ShowGaiaSignin(_, _)).Times(0);
   for (int i = 0; i < LockContentsView::kLoginAttemptsBeforeGaiaDialog + 1; ++i)
     submit_password();
 }
@@ -767,14 +767,16 @@ TEST_F(LockContentsViewUnitTest, ShowGaiaAuthAfterManyFailedLoginAttempts) {
   };
 
   // The first n-1 attempts do not trigger ShowGaiaSignin.
-  EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(0);
+  EXPECT_CALL(*client, ShowGaiaSignin(_, _)).Times(0);
   for (int i = 0; i < LockContentsView::kLoginAttemptsBeforeGaiaDialog - 1; ++i)
     submit_password();
   Mock::VerifyAndClearExpectations(client.get());
 
   // The final attempt triggers ShowGaiaSignin.
-  EXPECT_CALL(*client, ShowGaiaSignin(base::Optional<AccountId>(
-                           users()[0]->basic_user_info->account_id)))
+  EXPECT_CALL(*client,
+              ShowGaiaSignin(false /*can_close*/,
+                             base::Optional<AccountId>(
+                                 users()[0]->basic_user_info->account_id)))
       .Times(1);
   submit_password();
   Mock::VerifyAndClearExpectations(client.get());

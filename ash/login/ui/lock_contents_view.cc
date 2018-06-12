@@ -394,9 +394,12 @@ void LockContentsView::OnUsersChanged(
   rotation_actions_.clear();
   users_.clear();
 
-  // If there are no users we have no UI to build.
+  // If there are no users, show gaia signin if login, otherwise crash.
   if (users.empty()) {
-    LOG(ERROR) << "Empty user list received";
+    LOG_IF(FATAL, screen_type_ != LockScreen::ScreenType::kLogin)
+        << "Empty user list received";
+    Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+        false /*can_close*/, base::nullopt /*prefilled_account*/);
     return;
   }
 
@@ -650,16 +653,15 @@ void LockContentsView::OnPublicSessionKeyboardLayoutsChanged(
 
 void LockContentsView::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus pairing_status) {
-  const mojom::UserInfoPtr& user_info =
-      CurrentBigUserView()->GetCurrentUser()->basic_user_info;
   // If the current big user is public account user, or the base is not paired,
   // or the paired base matches the last used by the current user, the
   // detachable base error bubble should be hidden. Otherwise, the bubble should
   // be shown.
-  if (!CurrentBigUserView()->auth_user() ||
+  if (!CurrentBigUserView() || !CurrentBigUserView()->auth_user() ||
       pairing_status == DetachableBasePairingStatus::kNone ||
       (pairing_status == DetachableBasePairingStatus::kAuthenticated &&
-       detachable_base_model_->PairedBaseMatchesLastUsedByUser(*user_info))) {
+       detachable_base_model_->PairedBaseMatchesLastUsedByUser(
+           *CurrentBigUserView()->GetCurrentUser()->basic_user_info))) {
     detachable_base_error_bubble_->Close();
     return;
   }
@@ -781,6 +783,9 @@ void LockContentsView::OnVirtualKeyboardStateChanged(
 
 void LockContentsView::OnStateChanged(
     const keyboard::KeyboardControllerState state) {
+  if (!primary_big_view_)
+    return;
+
   if (state == keyboard::KeyboardControllerState::SHOWN ||
       state == keyboard::KeyboardControllerState::HIDDEN) {
     bool keyboard_will_be_shown =
@@ -1099,6 +1104,7 @@ void LockContentsView::ShowAuthErrorMessage() {
   if (screen_type_ == LockScreen::ScreenType::kLogin &&
       unlock_attempt_ >= kLoginAttemptsBeforeGaiaDialog) {
     Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+        false /*can_close*/,
         big_view->auth_user()->current_user()->basic_user_info->account_id);
     return;
   }
@@ -1220,8 +1226,9 @@ LoginBigUserView* LockContentsView::TryToFindBigUser(const AccountId& user,
   LoginBigUserView* view = nullptr;
 
   // Find auth instance.
-  if (primary_big_view_->GetCurrentUser()->basic_user_info->account_id ==
-      user) {
+  if (primary_big_view_ &&
+      primary_big_view_->GetCurrentUser()->basic_user_info->account_id ==
+          user) {
     view = primary_big_view_;
   } else if (opt_secondary_big_view_ &&
              opt_secondary_big_view_->GetCurrentUser()

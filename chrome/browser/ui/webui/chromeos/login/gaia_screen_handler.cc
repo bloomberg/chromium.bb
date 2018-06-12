@@ -803,8 +803,8 @@ void GaiaScreenHandler::HandleUpdateGaiaDialogSize(int width, int height) {
 
 void GaiaScreenHandler::HandleUpdateGaiaDialogVisibility(bool visible) {
   if (LoginDisplayHost::default_host()) {
-    LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(visible,
-                                                                 base::nullopt);
+    LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(
+        visible, true /*can_close*/, base::nullopt /*prefilled_account*/);
   }
 }
 

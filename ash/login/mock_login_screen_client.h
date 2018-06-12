@@ -55,8 +55,9 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   MOCK_METHOD1(OnMaxIncorrectPasswordAttempted,
                void(const AccountId& account_id));
   MOCK_METHOD1(FocusLockScreenApps, void(bool reverse));
-  MOCK_METHOD1(ShowGaiaSignin,
-               void(const base::Optional<AccountId>& account_id));
+  MOCK_METHOD2(ShowGaiaSignin,
+               void(bool can_close,
+                    const base::Optional<AccountId>& prefilled_account));
   MOCK_METHOD0(OnRemoveUserWarningShown, void());
   MOCK_METHOD1(RemoveUser, void(const AccountId& account_id));
   MOCK_METHOD3(LaunchPublicSession,

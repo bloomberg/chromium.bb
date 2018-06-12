@@ -101,7 +101,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   void SetUserCount(int count) {
     DCHECK(!root_users_.empty());
 
-    count = std::max(count, 1);
+    count = std::max(count, 0);
 
     // Trim any extra debug users.
     if (debug_users_.size() > size_t{count})
@@ -110,9 +110,7 @@ class LockDebugView::DebugDataDispatcherTransformer
     // Build |users|, add any new users to |debug_users|.
     std::vector<mojom::LoginUserInfoPtr> users;
     for (size_t i = 0; i < size_t{count}; ++i) {
-      const mojom::LoginUserInfoPtr& root_user =
-          root_users_[i % root_users_.size()];
-      users.push_back(root_user->Clone());
+      users.push_back(root_users_[i % root_users_.size()]->Clone());
       if (i >= root_users_.size()) {
         users[i]->basic_user_info->account_id = AccountId::FromUserEmailGaiaId(
             users[i]->basic_user_info->account_id.GetUserEmail() +
@@ -265,7 +263,7 @@ class LockDebugView::DebugDataDispatcherTransformer
       root_users_.push_back(user->Clone());
 
     // Rebuild debug users using new source data.
-    SetUserCount(debug_users_.size());
+    SetUserCount(root_users_.size());
   }
   void OnPinEnabledForUserChanged(const AccountId& user,
                                   bool enabled) override {
@@ -561,8 +559,8 @@ void LockDebugView::ButtonPressed(views::Button* sender,
       ++num_users_;
     else if (sender == remove_user_)
       --num_users_;
-    if (num_users_ < 1u)
-      num_users_ = 1u;
+    if (num_users_ < 0)
+      num_users_ = 0;
     debug_data_dispatcher_->SetUserCount(num_users_);
     RebuildDebugUserColumn();
     Layout();
@@ -696,7 +694,7 @@ void LockDebugView::RebuildDebugUserColumn() {
   per_user_action_column_toggle_auth_enabled_.clear();
   per_user_action_column_use_detachable_base_.clear();
 
-  for (size_t i = 0u; i < num_users_; ++i) {
+  for (int i = 0; i < num_users_; ++i) {
     auto* row = new NonAccessibleView();
     row->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));

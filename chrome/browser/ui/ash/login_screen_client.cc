@@ -110,10 +110,11 @@ void LoginScreenClient::FocusLockScreenApps(bool reverse) {
 }
 
 void LoginScreenClient::ShowGaiaSignin(
-    const base::Optional<AccountId>& account_id) {
+    bool can_close,
+    const base::Optional<AccountId>& prefilled_account) {
   if (chromeos::LoginDisplayHost::default_host()) {
     chromeos::LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(
-        true /*visible*/, account_id);
+        true /*visible*/, can_close, prefilled_account);
   }
 }
 
