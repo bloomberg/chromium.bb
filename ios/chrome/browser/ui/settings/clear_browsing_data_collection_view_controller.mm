@@ -118,9 +118,9 @@ void BrowsingDataRemoverObserverWrapper::OnBrowsingDataRemoved(
     self.accessibilityTraits |= UIAccessibilityTraitButton;
 
     _browserState = browserState;
-
-    _dataManager =
-        [[ClearBrowsingDataManager alloc] initWithBrowserState:browserState];
+    _dataManager = [[ClearBrowsingDataManager alloc]
+        initWithBrowserState:browserState
+          managingListOfType:ClearBrowsingDataListType::CollectionView];
     _dataManager.linkDelegate = self;
     _dataManager.consumer = self;
 
