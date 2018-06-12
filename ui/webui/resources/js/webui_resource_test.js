@@ -120,6 +120,12 @@ function assertDeepEquals(expected, observed, opt_message) {
  */
 (function(exports) {
 /**
+ * Scope containing testXXX functions.
+ * @type {object}
+ */
+var testScope = [];
+
+/**
  * List of test cases.
  * @type {Array<string>} List of function names for tests to run.
  */
@@ -158,12 +164,15 @@ var runnerStartTime = 0;
 /**
  * Runs all functions starting with test and reports success or
  * failure of the test suite.
+ * @param {object=} opt_testScope optional scope containing testXXX functions.
+ *   Uses global 'window' by default.
  */
-function runTests() {
+function runTests(opt_testScope) {
   runnerStartTime = performance.now();
-  for (var name in window) {
+  testScope = opt_testScope || window;
+  for (var name in testScope) {
     // To avoid unnecessary getting properties, test name first.
-    if (/^test/.test(name) && typeof window[name] == 'function')
+    if (/^test/.test(name) && typeof testScope[name] == 'function')
       testCases.push(name);
   }
   if (!testCases.length) {
@@ -171,8 +180,8 @@ function runTests() {
     cleanTestRun = false;
   }
   try {
-    if (window.setUpPage)
-      window.setUpPage();
+    if (testScope.setUpPage)
+      testScope.setUpPage();
   } catch (err) {
     cleanTestRun = false;
   }
@@ -204,13 +213,13 @@ function continueTesting(opt_asyncTestFailure) {
     testStartTime = now;
     testName = testCases.pop();
     console.log('TEST ' + testName + ' starting...');
-    var isAsyncTest = window[testName].length;
+    var isAsyncTest = testScope[testName].length;
     var testError = false;
     try {
-      if (window.setUp)
-        window.setUp();
-      pendingTearDown = window.tearDown;
-      window[testName](continueTesting);
+      if (testScope.setUp)
+        testScope.setUp();
+      pendingTearDown = testScope.tearDown;
+      testScope[testName](continueTesting);
     } catch (err) {
       console.error('Failure in test ' + testName + '\n' + err);
       console.log(err.stack);
