@@ -135,6 +135,8 @@ gles2_implementation_source_files = [
   "program_info_manager.h",
   "query_tracker.cc",
   "query_tracker.h",
+  "readback_buffer_shadow_tracker.cc",
+  "readback_buffer_shadow_tracker.h",
   "share_group.cc",
   "share_group.h",
   "vertex_array_object_manager.cc",

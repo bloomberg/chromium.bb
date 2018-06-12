@@ -147,6 +147,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(use_gpu_fences_for_overlay_planes)
   IPC_STRUCT_TRAITS_MEMBER(context_supports_distance_field_text)
   IPC_STRUCT_TRAITS_MEMBER(glyph_cache_max_texture_bytes)
+  IPC_STRUCT_TRAITS_MEMBER(chromium_nonblocking_readback)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)

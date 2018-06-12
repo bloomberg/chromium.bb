@@ -2610,4 +2610,11 @@ void GLES2TraceImplementation::DestroyGpuFenceCHROMIUM(GLuint gpu_fence_id) {
   gl_->DestroyGpuFenceCHROMIUM(gpu_fence_id);
 }
 
+void GLES2TraceImplementation::InvalidateReadbackBufferShadowDataCHROMIUM(
+    GLuint buffer_id) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::InvalidateReadbackBufferShadowDataCHROMIUM");
+  gl_->InvalidateReadbackBufferShadowDataCHROMIUM(buffer_id);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

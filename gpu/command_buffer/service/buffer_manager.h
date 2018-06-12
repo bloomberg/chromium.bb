@@ -127,6 +127,10 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
            transform_feedback_binding_count_ != binding_count_;
   }
 
+  void SetReadbackShadowAllocation(scoped_refptr<gpu::Buffer> shm,
+                                   uint32_t shm_offset);
+  scoped_refptr<gpu::Buffer> TakeReadbackShadowAllocation(void** data);
+
  private:
   friend class BufferManager;
   friend class BufferManagerTestBase;
@@ -235,6 +239,9 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
   // A map of ranges to the highest value in that range of a certain type.
   typedef std::map<Range, GLuint, Range::Less> RangeToMaxValueMap;
   RangeToMaxValueMap range_set_;
+
+  scoped_refptr<gpu::Buffer> readback_shm_;
+  uint32_t readback_shm_offset_ = 0;
 };
 
 // This class keeps track of the buffers and their sizes so we can do

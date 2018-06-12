@@ -742,6 +742,7 @@ _NAMED_TYPE_INFO = {
       'GL_LATENCY_QUERY_CHROMIUM',
       'GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM',
       'GL_COMMANDS_COMPLETED_CHROMIUM',
+      'GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM',
     ],
   },
   'RenderBufferParameter': {
@@ -4046,7 +4047,21 @@ _FUNCTION_INFO = {
     'impl_func': True,
     'extension': 'CHROMIUM_unpremultiply_and_dither_copy',
     'extension_flag': 'unpremultiply_and_dither_copy',
-  }
+  },
+  'InvalidateReadbackBufferShadowDataCHROMIUM': {
+    'type': 'NoCommand',
+    'impl_func': False,
+    'es3': True,
+    'extension': 'CHROMIUM_nonblocking_readback',
+  },
+  'SetReadbackBufferShadowAllocationINTERNAL': {
+    'decoder_func': 'DoSetReadbackBufferShadowAllocationINTERNAL',
+    'client_test': False,
+    'unit_test': False,
+    'impl_func': True,
+    'internal': True,
+    'es3': True,
+  },
 }
 
 

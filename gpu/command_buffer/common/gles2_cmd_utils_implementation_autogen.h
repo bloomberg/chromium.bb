@@ -1414,6 +1414,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x84F7, "GL_COMMANDS_COMPLETED_CHROMIUM",
     },
     {
+        0x84F8, "GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM",
+    },
+    {
         0x84F9, "GL_DEPTH_STENCIL_OES",
     },
     {
@@ -5071,6 +5074,8 @@ std::string GLES2Util::GetStringQueryTarget(uint32_t value) {
       {GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM,
        "GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM"},
       {GL_COMMANDS_COMPLETED_CHROMIUM, "GL_COMMANDS_COMPLETED_CHROMIUM"},
+      {GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM,
+       "GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);
