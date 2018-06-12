@@ -19,12 +19,25 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
+
+namespace {
+
+VirtualKeyboardController* GetVirtualKeyboardController() {
+  return Shell::Get()->virtual_keyboard_controller();
+}
+
+keyboard::KeyboardController* GetKeyboardController() {
+  return keyboard::KeyboardController::Get();
+}
+
+}  // namespace
 
 class VirtualKeyboardControllerTest : public AshTestBase {
  public:
@@ -41,6 +54,29 @@ class VirtualKeyboardControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     ui::InputDeviceClientTestApi().SetKeyboardDevices({});
     ui::InputDeviceClientTestApi().SetTouchscreenDevices({});
+  }
+
+  display::Display GetPrimaryDisplay() {
+    return display::Screen::GetScreen()->GetPrimaryDisplay();
+  }
+
+  display::Display GetSecondaryDisplay() {
+    return Shell::Get()->display_manager()->GetSecondaryDisplay();
+  }
+
+  aura::Window* GetPrimaryRootWindow() { return Shell::GetPrimaryRootWindow(); }
+
+  aura::Window* GetSecondaryRootWindow() {
+    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+    return root_windows[0] == GetPrimaryRootWindow() ? root_windows[1]
+                                                     : root_windows[0];
+  }
+
+  void CreateFocusedTestWindowInRootWindow(aura::Window* root_window) {
+    // Owned by |root_window|.
+    aura::Window* focusable_window =
+        CreateTestWindowInShellWithBounds(root_window->GetBoundsInScreen());
+    focusable_window->Focus();
   }
 
  private:
@@ -90,7 +126,7 @@ TEST_F(VirtualKeyboardControllerTest,
   Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
 
   // Should show the keyboard without messing with accessibility prefs.
-  Shell::Get()->virtual_keyboard_controller()->ForceShowKeyboardWithKeyset(
+  GetVirtualKeyboardController()->ForceShowKeyboardWithKeyset(
       chromeos::input_method::mojom::ImeKeyset::kEmoji);
   Shell::Get()->ime_controller()->FlushMojoForTesting();
   EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
@@ -101,9 +137,8 @@ TEST_F(VirtualKeyboardControllerTest,
             client.last_keyset_);
 
   // Simulate the keyboard hiding.
-  if (keyboard::KeyboardController::Get()->HasObserver(
-          Shell::Get()->virtual_keyboard_controller())) {
-    Shell::Get()->virtual_keyboard_controller()->OnKeyboardHidden();
+  if (GetKeyboardController()->HasObserver(GetVirtualKeyboardController())) {
+    GetVirtualKeyboardController()->OnKeyboardHidden();
   }
   base::RunLoop().RunUntilIdle();
 
@@ -136,7 +171,7 @@ TEST_F(VirtualKeyboardControllerTest,
   Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
 
   // Should show the keyboard by turning on the accesibility keyboard.
-  Shell::Get()->virtual_keyboard_controller()->ForceShowKeyboardWithKeyset(
+  GetVirtualKeyboardController()->ForceShowKeyboardWithKeyset(
       chromeos::input_method::mojom::ImeKeyset::kEmoji);
   Shell::Get()->ime_controller()->FlushMojoForTesting();
   EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
@@ -146,9 +181,8 @@ TEST_F(VirtualKeyboardControllerTest,
             client.last_keyset_);
 
   // Simulate the keyboard hiding.
-  if (keyboard::KeyboardController::Get()->HasObserver(
-          Shell::Get()->virtual_keyboard_controller())) {
-    Shell::Get()->virtual_keyboard_controller()->OnKeyboardHidden();
+  if (GetKeyboardController()->HasObserver(GetVirtualKeyboardController())) {
+    GetVirtualKeyboardController()->OnKeyboardHidden();
   }
   base::RunLoop().RunUntilIdle();
 
@@ -254,13 +288,13 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedIfExternalKeyboardPresent) {
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be visible.
   ResetObserver();
-  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
+  GetVirtualKeyboardController()->ToggleIgnoreExternalKeyboard();
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be hidden.
   ResetObserver();
-  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
+  GetVirtualKeyboardController()->ToggleIgnoreExternalKeyboard();
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
@@ -326,13 +360,13 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be visible.
   ResetObserver();
-  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
+  GetVirtualKeyboardController()->ToggleIgnoreExternalKeyboard();
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
   // Toggle show keyboard. Keyboard should be hidden.
   ResetObserver();
-  Shell::Get()->virtual_keyboard_controller()->ToggleIgnoreExternalKeyboard();
+  GetVirtualKeyboardController()->ToggleIgnoreExternalKeyboard();
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
   ASSERT_TRUE(IsVirtualKeyboardSuppressed());
@@ -379,6 +413,122 @@ TEST_F(VirtualKeyboardControllerAlwaysEnabledTest, DoesNotSuppressKeyboard) {
       1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
   ui::InputDeviceClientTestApi().SetKeyboardDevices(keyboard_devices);
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+}
+
+// Test for http://crbug.com/297858. |MoveKeyboardToTouchableDisplay| should
+// move keyboard to primary display if no display has touch capability.
+TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
+       MovesKeyboardToPrimaryDisplayWhenNoDisplayHasTouch) {
+  UpdateDisplay("500x500,500x500");
+
+  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
+            GetPrimaryDisplay().touch_support());
+  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
+            GetSecondaryDisplay().touch_support());
+
+  GetVirtualKeyboardController()->MoveKeyboardToTouchableDisplay();
+
+  EXPECT_EQ(GetPrimaryRootWindow(), GetKeyboardController()->GetRootWindow());
+}
+
+// Test for http://crbug.com/303429. |MoveKeyboardToTouchableDisplay| should
+// move keyboard to first touchable display when there is one.
+TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
+       MovesKeyboardToFirstTouchableDisplay) {
+  UpdateDisplay("500x500,500x500");
+
+  // Make secondary display touchable.
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetTouchSupport(GetSecondaryDisplay().id(),
+                       display::Display::TouchSupport::AVAILABLE);
+
+  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
+            GetPrimaryDisplay().touch_support());
+  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
+            GetSecondaryDisplay().touch_support());
+
+  GetVirtualKeyboardController()->MoveKeyboardToTouchableDisplay();
+
+  EXPECT_EQ(GetSecondaryRootWindow(), GetKeyboardController()->GetRootWindow());
+}
+
+// Test for http://crbug.com/303429. |MoveKeyboardToTouchableDisplay| should
+// move keyboard to first touchable display when the focused display is not
+// touchable.
+TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
+       MovesKeyboardToFirstTouchableDisplayIfFocusedDisplayIsNotTouchable) {
+  UpdateDisplay("500x500,500x500");
+
+  // Make secondary display touchable.
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetTouchSupport(GetSecondaryDisplay().id(),
+                       display::Display::TouchSupport::AVAILABLE);
+
+  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
+            GetPrimaryDisplay().touch_support());
+  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
+            GetSecondaryDisplay().touch_support());
+
+  // Focus on primary display.
+  CreateFocusedTestWindowInRootWindow(GetPrimaryRootWindow());
+
+  GetVirtualKeyboardController()->MoveKeyboardToTouchableDisplay();
+  EXPECT_EQ(GetSecondaryRootWindow(), GetKeyboardController()->GetRootWindow());
+}
+
+// Test for http://crbug.com/303429. |MoveKeyboardToTouchableDisplay| should
+// move keyborad to first touchable display when there is one.
+TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
+       MovesKeyboardToFocusedDisplayIfTouchable) {
+  UpdateDisplay("500x500,500x500");
+
+  // Make both displays touchable.
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetTouchSupport(GetPrimaryDisplay().id(),
+                       display::Display::TouchSupport::AVAILABLE);
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetTouchSupport(GetSecondaryDisplay().id(),
+                       display::Display::TouchSupport::AVAILABLE);
+
+  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
+            GetPrimaryDisplay().touch_support());
+  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
+            GetSecondaryDisplay().touch_support());
+
+  // Focus on secondary display.
+  CreateFocusedTestWindowInRootWindow(GetSecondaryRootWindow());
+  GetVirtualKeyboardController()->MoveKeyboardToTouchableDisplay();
+  EXPECT_EQ(GetSecondaryRootWindow(), GetKeyboardController()->GetRootWindow());
+
+  // Focus on primary display.
+  CreateFocusedTestWindowInRootWindow(GetPrimaryRootWindow());
+  GetVirtualKeyboardController()->MoveKeyboardToTouchableDisplay();
+  EXPECT_EQ(GetPrimaryRootWindow(), GetKeyboardController()->GetRootWindow());
+}
+
+// Test for http://crbug.com/303429. |MoveKeyboardToDisplay| should move
+// keyboard to specified display even when it's not touchable.
+TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
+       MovesKeyboardToSpecifiedDisplay) {
+  UpdateDisplay("500x500,500x500");
+
+  // Make primary display touchable.
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetTouchSupport(GetPrimaryDisplay().id(),
+                       display::Display::TouchSupport::AVAILABLE);
+
+  EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
+            GetPrimaryDisplay().touch_support());
+  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
+            GetSecondaryDisplay().touch_support());
+
+  // Move to primary display.
+  GetVirtualKeyboardController()->MoveKeyboardToDisplay(GetPrimaryDisplay());
+  EXPECT_EQ(GetPrimaryRootWindow(), GetKeyboardController()->GetRootWindow());
+
+  // Move to secondary display.
+  GetVirtualKeyboardController()->MoveKeyboardToDisplay(GetSecondaryDisplay());
+  EXPECT_EQ(GetSecondaryRootWindow(), GetKeyboardController()->GetRootWindow());
 }
 
 }  // namespace ash
