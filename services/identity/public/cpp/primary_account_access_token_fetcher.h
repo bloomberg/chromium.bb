@@ -30,9 +30,11 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   // requests, |error| is NONE and |access_token| contains the obtained OAuth2
   // access token. On failed requests, |error| contains the actual error and
   // |access_token| is empty.
-  using TokenCallback =
-      base::OnceCallback<void(const GoogleServiceAuthError& error,
-                              const std::string& access_token)>;
+  // NOTE: At the time that this method is invoked, it is safe for the client to
+  // destroy the PrimaryAccountAccessTokenFetcher instance that is invoking
+  // this callback.
+  using TokenCallback = base::OnceCallback<void(GoogleServiceAuthError error,
+                                                std::string access_token)>;
 
   // Specifies how this instance should behave:
   // |kImmediate|: Makes one-shot immediate request.
@@ -81,9 +83,20 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
+  // Invokes |callback_| with (|error|, |access_token|). Per the contract of
+  // this class, it is allowed for clients to delete this object as part of the
+  // invocation of |callback_|. Hence, this object must assume that it is dead
+  // after invoking this method and must not run any more code.
+  void RunCallbackAndMaybeDie(const GoogleServiceAuthError& error,
+                              const std::string& access_token);
+
   SigninManagerBase* signin_manager_;
   OAuth2TokenService* token_service_;
   OAuth2TokenService::ScopeSet scopes_;
+
+  // NOTE: This callback should only be invoked from |RunCallbackAndMaybeDie|,
+  // as invoking it has the potential to destroy this object per this class's
+  // contract.
   TokenCallback callback_;
 
   ScopedObserver<SigninManagerBase, PrimaryAccountAccessTokenFetcher>

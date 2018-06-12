@@ -89,8 +89,8 @@ class SubscriptionManagerImpl : public SubscriptionManager,
   // access token.
   void StartAccessTokenRequest(const std::string& subscription_token);
   void AccessTokenFetchFinished(const std::string& subscription_token,
-                                const GoogleServiceAuthError& error,
-                                const std::string& access_token);
+                                GoogleServiceAuthError error,
+                                std::string access_token);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

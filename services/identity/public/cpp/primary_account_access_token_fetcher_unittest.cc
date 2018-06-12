@@ -41,8 +41,8 @@ namespace {
 void OnAccessTokenFetchComplete(base::OnceClosure done_closure,
                                 const GoogleServiceAuthError& expected_error,
                                 const std::string& expected_access_token,
-                                const GoogleServiceAuthError& error,
-                                const std::string& access_token) {
+                                GoogleServiceAuthError error,
+                                std::string access_token) {
   EXPECT_EQ(expected_error, error);
   if (expected_error == GoogleServiceAuthError::AuthErrorNone())
     EXPECT_EQ(expected_access_token, access_token);

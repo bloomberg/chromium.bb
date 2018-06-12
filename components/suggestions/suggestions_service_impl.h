@@ -140,8 +140,8 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   // Called when an access token request completes (successfully or not).
   void AccessTokenAvailable(const GURL& url,
-                            const GoogleServiceAuthError& error,
-                            const std::string& access_token);
+                            GoogleServiceAuthError error,
+                            std::string access_token);
 
   // Issues a network request for suggestions (fetch, blacklist, or clear
   // blacklist, depending on |url|).

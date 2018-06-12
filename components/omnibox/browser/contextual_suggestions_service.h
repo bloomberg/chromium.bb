@@ -131,8 +131,8 @@ class ContextualSuggestionsService : public KeyedService {
   // Called when an access token request completes (successfully or not).
   void AccessTokenAvailable(std::unique_ptr<net::URLFetcher> fetcher,
                             ContextualSuggestionsCallback callback,
-                            const GoogleServiceAuthError& error,
-                            const std::string& access_token);
+                            GoogleServiceAuthError error,
+                            std::string access_token);
 
   net::URLRequestContextGetter* request_context_;
   identity::IdentityManager* identity_manager_;

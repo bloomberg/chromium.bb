@@ -112,12 +112,9 @@ void SubscriptionManagerImpl::StartAccessTokenRequest(
 
 void SubscriptionManagerImpl::AccessTokenFetchFinished(
     const std::string& subscription_token,
-    const GoogleServiceAuthError& error,
-    const std::string& access_token) {
-  // Delete the fetcher only after we leave this method (which is called from
-  // the fetcher itself).
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      access_token_fetcher_deleter(std::move(access_token_fetcher_));
+    GoogleServiceAuthError error,
+    std::string access_token) {
+  access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     // In case of error, we will retry on next Chrome restart.

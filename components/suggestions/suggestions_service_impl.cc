@@ -384,13 +384,11 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
-void SuggestionsServiceImpl::AccessTokenAvailable(
-    const GURL& url,
-    const GoogleServiceAuthError& error,
-    const std::string& access_token) {
+void SuggestionsServiceImpl::AccessTokenAvailable(const GURL& url,
+                                                  GoogleServiceAuthError error,
+                                                  std::string access_token) {
   DCHECK(token_fetcher_);
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      token_fetcher_deleter(std::move(token_fetcher_));
+  token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
     blacklist_upload_backoff_.InformOfRequest(/*succeeded=*/false);
