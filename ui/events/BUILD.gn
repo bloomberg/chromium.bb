@@ -20,20 +20,11 @@ static_library("dom_keycode_converter") {
   public = [
     "keycodes/dom/dom_code.h",
     "keycodes/dom/dom_key.h",
-    "keycodes/dom/dom_keyboard_layout.h",
-    "keycodes/dom/dom_keyboard_layout_manager.h",
-    "keycodes/dom/dom_keyboard_layout_map.h",
     "keycodes/dom/keycode_converter.h",
   ]
 
   sources = [
     "keycodes/dom/dom_key_data.inc",
-    "keycodes/dom/dom_keyboard_layout.cc",
-    "keycodes/dom/dom_keyboard_layout_manager.cc",
-    "keycodes/dom/dom_keyboard_layout_map_base.cc",
-    "keycodes/dom/dom_keyboard_layout_map_base.h",
-    "keycodes/dom/dom_keyboard_layout_map_mac.mm",
-    "keycodes/dom/dom_keyboard_layout_map_win.cc",
     "keycodes/dom/keycode_converter.cc",
     "keycodes/dom/keycode_converter_data.inc",
   ]
@@ -46,17 +37,44 @@ static_library("dom_keycode_converter") {
     deps += [ "//ipc:param_traits" ]
   }
 
+  # TODO(joedow): Remove the ash friend.  There is a cc file in that directory
+  # which includes the private inc file, we should expose the funcitonality they
+  # need in the KeycodeConverter and then clean this up.
+  friend = [ "//ash/components/shortcut_viewer:lib" ]
+}
+
+static_library("dom_keyboard_layout") {
+  public = [
+    "keycodes/dom/dom_keyboard_layout.h",
+    "keycodes/dom/dom_keyboard_layout_manager.h",
+    "keycodes/dom/dom_keyboard_layout_map.h",
+  ]
+
+  sources = [
+    "keycodes/dom/dom_keyboard_layout.cc",
+    "keycodes/dom/dom_keyboard_layout_manager.cc",
+    "keycodes/dom/dom_keyboard_layout_map_base.cc",
+    "keycodes/dom/dom_keyboard_layout_map_base.h",
+    "keycodes/dom/dom_keyboard_layout_map_mac.mm",
+    "keycodes/dom/dom_keyboard_layout_map_ozone.cc",
+    "keycodes/dom/dom_keyboard_layout_map_win.cc",
+  ]
+
+  deps = [
+    ":dom_keycode_converter",
+    "//base",
+    "//ui/events/ozone:events_ozone_layout",
+  ]
+
+  if (!is_ios) {
+    deps += [ "//ipc:param_traits" ]
+  }
+
   # Expose the internals of this target to other packages in this BUILD file
   # so the unit tests can access the private header files.
   # Note: Only 'events_unittests' needs access in this file, however it uses a
   # template which generates different target names on different platforms.
-  # TODO(joedow): Remove the ash friend.  There is a cc file in that directory
-  # which includes the private inc file, we should expose the funcitonality they
-  # need in the KeycodeConverter and then clean this up.
-  friend = [
-    ":*",
-    "//ash/components/shortcut_viewer:lib",
-  ]
+  friend = [ ":*" ]
 }
 
 source_set("event_constants") {
@@ -461,6 +479,7 @@ if (!is_ios) {
     ]
 
     deps = [
+      ":dom_keyboard_layout",
       ":dom_keycode_converter",
       ":events",
       ":events_base",

@@ -176,6 +176,7 @@ jumbo_component("aura") {
     "//ui/base/ime",
     "//ui/display",
     "//ui/events",
+    "//ui/events:dom_keyboard_layout",
     "//ui/events:events_base",
     "//ui/events/platform",
     "//ui/gfx",
@@ -214,7 +215,6 @@ jumbo_component("aura") {
     sources += [
       "mus/platform_event_source_mus_ozone.cc",
       "mus/platform_event_source_mus_ozone.h",
-      "window_tree_host_platform_ozone.cc",
     ]
   }
 
