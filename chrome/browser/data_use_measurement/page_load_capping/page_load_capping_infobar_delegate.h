@@ -45,6 +45,15 @@ class PageLoadCappingInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   ~PageLoadCappingInfoBarDelegate() override;
 
+  // Used to record UMA on user interaction with the capping heavy pages
+  // InfoBar.
+  enum class InfoBarInteraction {
+    kShowedInfoBar = 0,
+    kPausedPage = 1,
+    kResumedPage = 2,
+    kMaxValue = kResumedPage,
+  };
+
  protected:
   PageLoadCappingInfoBarDelegate();
 

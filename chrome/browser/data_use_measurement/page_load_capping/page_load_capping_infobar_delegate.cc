@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -16,6 +17,11 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+void RecordInteractionUMA(
+    PageLoadCappingInfoBarDelegate::InfoBarInteraction interaction) {
+  UMA_HISTOGRAM_ENUMERATION("HeavyPageCapping.InfoBarInteraction", interaction);
+}
 
 // The infobar that allows the user to resume resource loading on the page.
 class ResumeDelegate : public PageLoadCappingInfoBarDelegate {
@@ -36,6 +42,7 @@ class ResumeDelegate : public PageLoadCappingInfoBarDelegate {
     return l10n_util::GetStringUTF16(IDS_PAGE_CAPPING_CONTINUE_MESSAGE);
   }
   bool Accept() override {
+    RecordInteractionUMA(InfoBarInteraction::kResumedPage);
     if (pause_callback_.is_null())
       return true;
     // Pass false to resume subresource loading.
@@ -77,6 +84,7 @@ class PauseDelegate : public PageLoadCappingInfoBarDelegate {
   }
 
   bool Accept() override {
+    RecordInteractionUMA(InfoBarInteraction::kPausedPage);
     if (!pause_callback_.is_null()) {
       // Pause subresouce loading on the page.
       pause_callback_.Run(true);
@@ -110,7 +118,7 @@ bool PageLoadCappingInfoBarDelegate::Create(
     content::WebContents* web_contents,
     const PauseCallback& pause_callback) {
   auto* infobar_service = InfoBarService::FromWebContents(web_contents);
-
+  RecordInteractionUMA(InfoBarInteraction::kShowedInfoBar);
   // WrapUnique is used to allow for a private constructor.
   return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::make_unique<PauseDelegate>(bytes_threshold, pause_callback)));
