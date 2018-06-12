@@ -9,17 +9,18 @@
 #include "services/viz/privileged/interfaces/compositing/external_begin_frame_controller.mojom.h"
 
 namespace ui {
-class Compositor;
+class ExternalBeginFrameClient;
 }  // namespace ui
 
 namespace content {
 
-// ExternalBeginFrameControllerClient implementation that notifies a
-// ui::Compositor about BeginFrame events.
+// ExternalBeginFrameControllerClient implementation that notifies an
+// ExternalBeginFrameClient about BeginFrame events.
 class ExternalBeginFrameControllerClientImpl
     : public viz::mojom::ExternalBeginFrameControllerClient {
  public:
-  explicit ExternalBeginFrameControllerClientImpl(ui::Compositor* compositor);
+  explicit ExternalBeginFrameControllerClientImpl(
+      ui::ExternalBeginFrameClient* client);
   ~ExternalBeginFrameControllerClientImpl() override;
 
   viz::mojom::ExternalBeginFrameControllerClientPtr GetBoundPtr();
@@ -34,7 +35,7 @@ class ExternalBeginFrameControllerClientImpl
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
   void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) override;
 
-  ui::Compositor* compositor_;
+  ui::ExternalBeginFrameClient* client_;
 
   mojo::Binding<viz::mojom::ExternalBeginFrameControllerClient> binding_;
   viz::mojom::ExternalBeginFrameControllerAssociatedPtr controller_;

@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/host/host_frame_sink_client.h"
@@ -25,11 +26,13 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/vulkan/buildflags.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/compositor/compositor_lock.h"
+#include "ui/compositor/external_begin_frame_client.h"
 #include "ui/display/display_observer.h"
 
 struct ANativeWindow;
@@ -50,6 +53,8 @@ class OutputSurface;
 
 namespace content {
 class CompositorClient;
+class InProcessDisplayClient;
+class ExternalBeginFrameControllerClientImpl;
 
 // -----------------------------------------------------------------------------
 // Browser-side compositor that manages a tree of content and UI layers.
@@ -62,7 +67,9 @@ class CONTENT_EXPORT CompositorImpl
       public ui::UIResourceProvider,
       public ui::WindowAndroidCompositor,
       public viz::HostFrameSinkClient,
-      public display::DisplayObserver {
+      public display::DisplayObserver,
+      public ui::ExternalBeginFrameClient,
+      public viz::BeginFrameObserverBase {
  public:
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
   ~CompositorImpl() override;
@@ -153,6 +160,14 @@ class CONTENT_EXPORT CompositorImpl
   // ui::CompositorLockManagerClient implementation.
   void OnCompositorLockStateChanged(bool locked) override;
 
+  // viz::BeginFrameObserverBase implementation.
+  bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
+  void OnBeginFrameSourcePausedChanged(bool paused) override {}
+
+  // ui::ExternalBeginFrameClient implementation.
+  void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) override {}
+  void OnNeedsExternalBeginFrames(bool needs_begin_frames) override;
+
   void SetVisible(bool visible);
   void CreateLayerTreeHost();
 
@@ -241,6 +256,17 @@ class CONTENT_EXPORT CompositorImpl
 
   // If true, we are using a Viz process.
   const bool enable_viz_;
+
+  // If true, we should send external begin frames to the Viz process.
+  bool needs_external_begin_frames_ = false;
+
+  // Viz-specific members for communicating with the display.
+  viz::mojom::DisplayPrivateAssociatedPtr display_private_;
+  std::unique_ptr<InProcessDisplayClient> display_client_;
+
+  // Viz-specific member which manages sending begin frames to the Viz process.
+  std::unique_ptr<ExternalBeginFrameControllerClientImpl>
+      external_begin_frame_controller_client_;
 
   // Test-only. Called when we are notified of a swap.
   base::RepeatingCallback<void(const gfx::Size&)>

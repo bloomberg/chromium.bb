@@ -2152,6 +2152,8 @@ jumbo_source_set("browser") {
       "android/tracing_controller_android.h",
       "android/web_contents_observer_proxy.cc",
       "android/web_contents_observer_proxy.h",
+      "compositor/external_begin_frame_controller_client_impl.cc",
+      "compositor/external_begin_frame_controller_client_impl.h",
       "compositor/in_process_display_client.cc",
       "compositor/in_process_display_client.h",
       "frame_host/render_frame_host_android.cc",
