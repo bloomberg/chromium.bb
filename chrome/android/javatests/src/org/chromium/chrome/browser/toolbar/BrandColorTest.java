@@ -85,13 +85,6 @@ public class BrandColorTest {
                         == mToolbar.getBackgroundDrawable().getColor();
             }
         });
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(brandColor, new Callable<Integer>() {
-                    @Override
-                    public Integer call() {
-                        return mToolbar.getOverlayDrawable().getColor();
-                    }
-                }));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && !SysUtils.isLowEndDevice()) {
             final int expectedStatusBarColor = brandColor == mDefaultColor
