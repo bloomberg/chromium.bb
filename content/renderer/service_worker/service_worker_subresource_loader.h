@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/dispatch_fetch_event_params.mojom.h"
@@ -55,7 +56,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   ~ServiceWorkerSubresourceLoader() override;
 
-  // ControllerServiceWorkerConnector::Observer overrdies:
+  // ControllerServiceWorkerConnector::Observer overrides:
   void OnConnectionClosed() override;
 
  private:
@@ -67,7 +68,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void DispatchFetchEvent();
   void OnFetchEventFinished(blink::mojom::ServiceWorkerEventStatus status,
                             base::Time dispatch_event_time);
-  void SettleInflightFetchRequestIfNeeded();
+  // Called when this loader no longer needs to restart dispatching the fetch
+  // event on failure.
+  void SettleFetchEventDispatch();
 
   // mojom::ServiceWorkerFetchResponseCallback overrides:
   void OnResponse(const ServiceWorkerResponse& response,
@@ -119,10 +122,12 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
-  // The request destined for the controller service worker. This is used
-  // separately from |resource_request_| for the restarting mechanism when the
-  // first attempt to dispatch to the controller failed.
-  std::unique_ptr<network::ResourceRequest> inflight_fetch_request_;
+  // Observes |controller_connector_| while this loader dispatches a fetch event
+  // to the controller. If a broken connection is observed, this loader attempts
+  // to restart the controller and dispatch the event again.
+  ScopedObserver<ControllerServiceWorkerConnector,
+                 ServiceWorkerSubresourceLoader>
+      controller_connector_observer_;
   bool fetch_request_restarted_;
 
   // These are given by the constructor (as the params for

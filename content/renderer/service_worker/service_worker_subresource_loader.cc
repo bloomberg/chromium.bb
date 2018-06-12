@@ -151,6 +151,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       url_loader_binding_(this, std::move(request)),
       response_callback_binding_(this),
       controller_connector_(std::move(controller_connector)),
+      controller_connector_observer_(this),
       fetch_request_restarted_(false),
       routing_id_(routing_id),
       request_id_(request_id),
@@ -170,9 +171,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
   StartRequest(resource_request);
 }
 
-ServiceWorkerSubresourceLoader::~ServiceWorkerSubresourceLoader() {
-  SettleInflightFetchRequestIfNeeded();
-};
+ServiceWorkerSubresourceLoader::~ServiceWorkerSubresourceLoader() = default;
 
 void ServiceWorkerSubresourceLoader::OnConnectionError() {
   delete this;
@@ -186,10 +185,8 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   DCHECK(!ServiceWorkerUtils::IsMainResourceType(
       static_cast<ResourceType>(resource_request.resource_type)));
 
-  DCHECK(!inflight_fetch_request_);
-  inflight_fetch_request_ =
-      std::make_unique<network::ResourceRequest>(resource_request);
-  controller_connector_->AddObserver(this);
+  DCHECK(!controller_connector_observer_.IsObservingSources());
+  controller_connector_observer_.Add(controller_connector_.get());
   fetch_request_restarted_ = false;
 
   response_head_.service_worker_start_time = base::TimeTicks::Now();
@@ -202,14 +199,13 @@ void ServiceWorkerSubresourceLoader::StartRequest(
 }
 
 void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
-  DCHECK(inflight_fetch_request_);
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
   mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
           mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
   // When |controller| is null, the network request will be aborted soon since
-  // the network provider has already been discarded. In that case, We don't
+  // the network provider has already been discarded. In that case, we don't
   // need to return an error as the client must be shutting down.
   if (!controller) {
     auto controller_state = controller_connector_->state();
@@ -226,12 +222,12 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     }
     DCHECK_EQ(ControllerServiceWorkerConnector::State::kNoContainerHost,
               controller_state);
-    SettleInflightFetchRequestIfNeeded();
+    SettleFetchEventDispatch();
     return;
   }
 
   auto params = mojom::DispatchFetchEventParams::New();
-  params->request = *inflight_fetch_request_;
+  params->request = resource_request_;
   params->client_id = controller_connector_->client_id();
 
   // S13nServiceWorker without NetworkService:
@@ -253,8 +249,8 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
     blink::mojom::ServiceWorkerEventStatus status,
     base::Time dispatch_event_time) {
   // Stop restarting logic here since OnFetchEventFinished() indicates that the
-  // fetch event was successfully dispatched.
-  SettleInflightFetchRequestIfNeeded();
+  // fetch event dispatch reached the renderer.
+  SettleFetchEventDispatch();
 
   switch (status) {
     case blink::mojom::ServiceWorkerEventStatus::COMPLETED:
@@ -267,15 +263,17 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
       // promise, and handle this request.
       break;
     case blink::mojom::ServiceWorkerEventStatus::ABORTED:
-      // We have an unexpected error: fetch event dispatch failed. Return
-      // network error.
+      // Fetch event dispatch did not complete, possibly due to timeout of
+      // respondWith() or waitUntil(). Return network error.
+
+      // TODO(falken): This seems racy. respondWith() may have been called
+      // already and we could have an outstanding stream or blob in progress,
+      // and we might hit CommitCompleted() twice once that settles.
       CommitCompleted(net::ERR_FAILED);
   }
 }
 
 void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
-  if (!inflight_fetch_request_)
-    return;
   response_callback_binding_.Close();
 
   // If the connection to the service worker gets disconnected after dispatching
@@ -283,7 +281,7 @@ void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
   // the fetch event again. If it has already been restarted, that means
   // starting worker failed. In that case, abort the request.
   if (fetch_request_restarted_) {
-    SettleInflightFetchRequestIfNeeded();
+    SettleFetchEventDispatch();
     CommitCompleted(net::ERR_FAILED);
     return;
   }
@@ -294,17 +292,14 @@ void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void ServiceWorkerSubresourceLoader::SettleInflightFetchRequestIfNeeded() {
-  if (inflight_fetch_request_) {
-    inflight_fetch_request_.reset();
-    controller_connector_->RemoveObserver(this);
-  }
+void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch() {
+  controller_connector_observer_.RemoveAll();
 }
 
 void ServiceWorkerSubresourceLoader::OnResponse(
     const ServiceWorkerResponse& response,
     base::Time dispatch_event_time) {
-  SettleInflightFetchRequestIfNeeded();
+  SettleFetchEventDispatch();
   StartResponse(response, nullptr /* body_as_blob */,
                 nullptr /* body_as_stream */);
 }
@@ -313,7 +308,7 @@ void ServiceWorkerSubresourceLoader::OnResponseBlob(
     const ServiceWorkerResponse& response,
     blink::mojom::BlobPtr body_as_blob,
     base::Time dispatch_event_time) {
-  SettleInflightFetchRequestIfNeeded();
+  SettleFetchEventDispatch();
   StartResponse(response, std::move(body_as_blob),
                 nullptr /* body_as_stream */);
 }
@@ -329,14 +324,14 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     base::Time dispatch_event_time) {
-  SettleInflightFetchRequestIfNeeded();
+  SettleFetchEventDispatch();
   StartResponse(response, nullptr /* body_as_blob */,
                 std::move(body_as_stream));
 }
 
 void ServiceWorkerSubresourceLoader::OnFallback(
     base::Time dispatch_event_time) {
-  SettleInflightFetchRequestIfNeeded();
+  SettleFetchEventDispatch();
   // When the request mode is CORS or CORS-with-forced-preflight and the origin
   // of the request URL is different from the security origin of the document,
   // we can't simply fallback to the network here. It is because the CORS
@@ -408,6 +403,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     }
     response_head_.encoded_data_length = 0;
     url_loader_client_->OnReceiveRedirect(*redirect_info_, response_head_);
+    // Set status to complete, but we expect to restart in FollowRedirect.
     status_ = Status::kCompleted;
     return;
   }
