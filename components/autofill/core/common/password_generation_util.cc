@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "ui/base/ui_base_features.h"
 
 namespace autofill {
 namespace password_generation {
@@ -65,6 +66,9 @@ bool IsPasswordGenerationEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisablePasswordGeneration))
     return false;
+
+  if (base::FeatureList::IsEnabled(features::kExperimentalUi))
+    return true;
 
   if (command_line->HasSwitch(switches::kEnablePasswordGeneration))
     return true;
