@@ -473,7 +473,8 @@ bool IsArcTermsOfServiceNegotiationNeeded(const Profile* profile) {
   // them are managed by the admin policy. Note that the ToS agreement is anyway
   // not shown in the case of the managed ARC.
   if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
-      AreArcAllOptInPreferencesIgnorableForProfile(profile)) {
+      AreArcAllOptInPreferencesIgnorableForProfile(profile) &&
+      !ShouldShowOptInForTesting()) {
     VLOG(1) << "All opt-in preferences are under managed. "
             << "Skip ARC Terms of Service negotiation.";
     return false;

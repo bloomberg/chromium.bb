@@ -103,6 +103,11 @@ bool ShouldArcAlwaysStart() {
   return value == kAlwaysStartWithNoPlayStore || value == kAlwaysStart;
 }
 
+bool ShouldShowOptInForTesting() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcForceShowOptInUi);
+}
+
 void SetArcAlwaysStartForTesting(bool play_store_available) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       chromeos::switches::kArcStartMode,

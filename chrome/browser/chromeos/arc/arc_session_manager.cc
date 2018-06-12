@@ -101,6 +101,47 @@ void ShowUMAConsentMessageBox() {
           IDS_ARC_NOTIFICATION_METRICS_ENABLED_MANAGED_MESSAGE));
 }
 
+// Returns true if launching the Play Store on OptIn succeeded is needed.
+// Launch Play Store app, except for the following cases:
+// * When Opt-in verification is disabled (for tests);
+// * In case ARC is enabled from OOBE.
+// * In ARC Kiosk mode, because the only one UI in kiosk mode must be the
+//   kiosk app and device is not needed for opt-in;
+// * In Public Session mode, because Play Store will be hidden from users
+//   and only apps configured by policy should be installed.
+// * When ARC is managed and all OptIn preferences are managed/unused, too,
+//   because the whole OptIn flow should happen as seamless as possible for
+//   the user.
+// For Active Directory users we always show a page notifying them that they
+// have to authenticate with their identity provider (through SAML) to make
+// it less weird that a browser window pops up.
+// Some tests require the Play Store to be shown and forces this using chromeos
+// switch kArcForceShowPlayStoreApp.
+bool ShouldLaunchPlayStoreApp(Profile* profile,
+                              bool oobe_or_assistant_wizard_start) {
+  if (!IsPlayStoreAvailable())
+    return false;
+
+  if (oobe_or_assistant_wizard_start)
+    return false;
+
+  if (ShouldShowOptInForTesting())
+    return true;
+
+  if (IsRobotAccountMode())
+    return false;
+
+  if (IsArcOptInVerificationDisabled())
+    return false;
+
+  if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
+      AreArcAllOptInPreferencesIgnorableForProfile(profile)) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 // This class is used to track statuses on OptIn flow. It is created in case ARC
@@ -305,25 +346,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
 
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
 
-    // Launch Play Store app, except for the following cases:
-    // * When Opt-in verification is disabled (for tests);
-    // * In case ARC is enabled from OOBE.
-    // * In ARC Kiosk mode, because the only one UI in kiosk mode must be the
-    //   kiosk app and device is not needed for opt-in;
-    // * In Public Session mode, because Play Store will be hidden from users
-    //   and only apps configured by policy should be installed.
-    // * When ARC is managed and all OptIn preferences are managed/unused, too,
-    //   because the whole OptIn flow should happen as seamless as possible for
-    //   the user.
-    // For Active Directory users we always show a page notifying them that they
-    // have to authenticate with their identity provider (through SAML) to make
-    // it less weird that a browser window pops up.
-    const bool suppress_play_store_app =
-        !IsPlayStoreAvailable() || IsArcOptInVerificationDisabled() ||
-        IsRobotAccountMode() || oobe_or_assistant_wizard_start_ ||
-        (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
-         AreArcAllOptInPreferencesIgnorableForProfile(profile_));
-    if (!suppress_play_store_app) {
+    if (ShouldLaunchPlayStoreApp(profile_, oobe_or_assistant_wizard_start_)) {
       playstore_launcher_ = std::make_unique<ArcAppLauncher>(
           profile_, kPlayStoreAppId,
           GetLaunchIntent(kPlayStorePackage, kPlayStoreActivity,
