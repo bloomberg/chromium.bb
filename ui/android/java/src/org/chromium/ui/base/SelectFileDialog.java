@@ -418,7 +418,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         @Override
         public Uri doInBackground(Void...voids) {
             try {
-                Context context = mWindowAndroid.getApplicationContext();
+                Context context = ContextUtils.getApplicationContext();
                 return ApiCompatibilityUtils.getUriForImageCaptureFile(
                         getFileForImageCapture(context));
             } catch (IOException e) {
@@ -444,9 +444,9 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                     | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             camera.putExtra(MediaStore.EXTRA_OUTPUT, mCameraOutputUri);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                camera.setClipData(ClipData.newUri(
-                        mWindowAndroid.getApplicationContext().getContentResolver(),
-                        UiUtils.IMAGE_FILE_PATH, mCameraOutputUri));
+                camera.setClipData(
+                        ClipData.newUri(ContextUtils.getApplicationContext().getContentResolver(),
+                                UiUtils.IMAGE_FILE_PATH, mCameraOutputUri));
             }
             if (mDirectToCamera) {
                 mWindow.showIntent(camera, mCallback, R.string.low_memory_error);
