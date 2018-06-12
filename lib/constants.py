@@ -638,6 +638,7 @@ VALID_BUILD_TYPES = (
 PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
     'betty-pre-cq',                   # vm board                  vmtest
+    'betty-arcnext-pre-cq',           # vm board                  arcnext
     'cyan-no-vmtest-pre-cq',          # braswell     kernel 3.18
     'daisy_spring-no-vmtest-pre-cq',  # arm32        kernel 3.8
     'eve-no-vmtest-pre-cq',           # kabylake     kernel 4.4   cheets_user_64
