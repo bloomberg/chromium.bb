@@ -1633,3 +1633,49 @@ TEST_F(TrialComparisonCertVerifierTest, MultiplePoliciesOnlyOneIsEV) {
       "Net.CertVerifier_TrialComparisonResult",
       TrialComparisonCertVerifier::kBothValidDifferentDetails, 1);
 }
+
+TEST_F(TrialComparisonCertVerifierTest, LocallyTrustedLeaf) {
+  // Platform verifier verifies the leaf directly.
+  net::CertVerifyResult primary_result;
+  primary_result.verified_cert = leaf_cert_1_;
+  scoped_refptr<FakeCertVerifyProc> verify_proc1 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::OK, primary_result);
+
+  // Trial verifier does not support directly-trusted leaf certs.
+  net::CertVerifyResult secondary_result;
+  secondary_result.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
+  secondary_result.verified_cert = leaf_cert_1_;
+  scoped_refptr<FakeCertVerifyProc> verify_proc2 =
+      base::MakeRefCounted<FakeCertVerifyProc>(net::ERR_CERT_AUTHORITY_INVALID,
+                                               secondary_result);
+
+  TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
+
+  net::CertVerifier::RequestParams params(
+      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
+      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifyResult result;
+  net::TestCompletionCallback callback;
+  std::unique_ptr<net::CertVerifier::Request> request;
+  int error =
+      verifier.Verify(params, nullptr /* crl_set */, &result,
+                      callback.callback(), &request, net::NetLogWithSource());
+  ASSERT_THAT(error, IsError(net::ERR_IO_PENDING));
+  EXPECT_TRUE(request);
+
+  error = callback.WaitForResult();
+  EXPECT_THAT(error, IsError(net::OK));
+
+  verify_proc2->WaitForVerifyCall();
+
+  // Expect no report.
+  reporting_service_test_helper()->ExpectNoRequests(service());
+
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
+  histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
+                               1);
+  histograms_.ExpectUniqueSample(
+      "Net.CertVerifier_TrialComparisonResult",
+      TrialComparisonCertVerifier::kIgnoredLocallyTrustedLeaf, 1);
+}
