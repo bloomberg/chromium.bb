@@ -631,12 +631,18 @@ ExtensionFunction::ResponseAction GetPreferenceFunction::Run() {
         extensions::preference_api_constants::kIncognitoKey, &incognito));
 
   // Check incognito access.
-  // TODO(https://crbug.com/845845): Update to allowing the function to read
-  // from incognito preferences iff:
-  // enabled_incognito && (!split_mode || browser_context()->IsOffTheRecord())
-  if (incognito && !include_incognito_information())
-    return RespondNow(
-        Error(extensions::preference_api_constants::kIncognitoErrorMessage));
+  if (incognito) {
+    // Extensions are only allowed to modify incognito preferences if they are
+    // enabled in incognito. If the calling browser context is off the record,
+    // then the extension must be allowed to run incognito. Otherwise, this
+    // could be a spanning mode extension, and we need to check its incognito
+    // access.
+    if (!browser_context()->IsOffTheRecord() &&
+        !include_incognito_information()) {
+      return RespondNow(
+          Error(extensions::preference_api_constants::kIncognitoErrorMessage));
+    }
+  }
 
   // Obtain pref.
   std::string browser_pref;
