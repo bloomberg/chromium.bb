@@ -73,11 +73,11 @@ void PageSignalReceiver::NotifyNonPersistentNotificationCreated(
 
 void PageSignalReceiver::OnLoadTimePerformanceEstimate(
     const CoordinationUnitID& page_cu_id,
-    const std::string& origin,
+    const std::string& url,
     base::TimeDelta cpu_usage_estimate,
     uint64_t private_footprint_kb_estimate) {
   NotifyObserversIfKnownCu(
-      page_cu_id, &PageSignalObserver::OnLoadTimePerformanceEstimate, origin,
+      page_cu_id, &PageSignalObserver::OnLoadTimePerformanceEstimate, url,
       cpu_usage_estimate, private_footprint_kb_estimate);
 }
 

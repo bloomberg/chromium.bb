@@ -30,11 +30,11 @@ interface PageSignalReceiver {
   // notification.
   NotifyNonPersistentNotificationCreated(CoordinationUnitID page_cu_id);
 
-  // This notification needs the site that was loaded, as by the time the
+  // This notification needs the url that was loaded, as by the time the
   // notification comes back around, the WebContents may have navigated to
   // another site altogether.
   OnLoadTimePerformanceEstimate(CoordinationUnitID cu_id,
-                                   string origin,
+                                   string url,
                                    mojo_base.mojom.TimeDelta cpu_usage_estimate,
                                    uint64 private_footprint_kb_estimate);
 };

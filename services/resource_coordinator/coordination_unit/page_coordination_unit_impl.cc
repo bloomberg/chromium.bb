@@ -64,7 +64,10 @@ void PageCoordinationUnitImpl::OnTitleUpdated() {
   SendEvent(mojom::Event::kTitleUpdated);
 }
 
-void PageCoordinationUnitImpl::OnMainFrameNavigationCommitted() {
+void PageCoordinationUnitImpl::OnMainFrameNavigationCommitted(
+    const std::string& url) {
+  main_frame_url_ = url;
+
   SendEvent(mojom::Event::kNavigationCommitted);
 }
 

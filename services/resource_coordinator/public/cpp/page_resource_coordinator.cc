@@ -46,10 +46,11 @@ void PageResourceCoordinator::OnTitleUpdated() {
   service_->OnTitleUpdated();
 }
 
-void PageResourceCoordinator::OnMainFrameNavigationCommitted() {
+void PageResourceCoordinator::OnMainFrameNavigationCommitted(
+    const std::string& url) {
   if (!service_)
     return;
-  service_->OnMainFrameNavigationCommitted();
+  service_->OnMainFrameNavigationCommitted(url);
 }
 
 void PageResourceCoordinator::AddFrame(const FrameResourceCoordinator& frame) {

@@ -56,10 +56,10 @@ void TabManager::ResourceCoordinatorSignalObserver::
 
 void TabManager::ResourceCoordinatorSignalObserver::
     OnLoadTimePerformanceEstimate(content::WebContents* web_contents,
-                                  const std::string& origin,
+                                  const std::string& url,
                                   base::TimeDelta cpu_usage_estimate,
                                   uint64_t private_footprint_kb_estimate) {
-  // TODO(siggi): Persist the measurement associated to |site|.
+  // TODO(siggi): Persist the measurement associated to |url|'s site.
 }
 
 }  // namespace resource_coordinator

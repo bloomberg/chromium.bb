@@ -301,7 +301,7 @@ void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 
   // Post a navigation. The state should reset.
-  page_cu->OnMainFrameNavigationCommitted();
+  page_cu->OnMainFrameNavigationCommitted("http://www.example.org");
   EXPECT_EQ(LIS::kLoadingNotStarted, page_data->GetLoadIdleState());
   EXPECT_FALSE(page_data->idling_timer.IsRunning());
 }
@@ -419,6 +419,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   PageSignalGeneratorImpl::PageData* page_data = psg->GetPageData(page_cu);
   page_data->idling_timer.SetTaskRunner(task_env().GetMainThreadTaskRunner());
 
+  page_cu->OnMainFrameNavigationCommitted("https://www.google.com/");
   DrivePageToLoadedAndIdle(&cu_graph);
 
   base::TimeTicks event_time = ResourceCoordinatorClock::NowTicks();
@@ -438,9 +439,10 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(mock_receiver, OnLoadTimePerformanceEstimate(
-                                   cu_graph.page->id(), std::string(),
-                                   base::TimeDelta::FromMicroseconds(15), 150))
+    EXPECT_CALL(mock_receiver,
+                OnLoadTimePerformanceEstimate(
+                    cu_graph.page->id(), "https://www.google.com/",
+                    base::TimeDelta::FromMicroseconds(15), 150))
         .WillOnce(
             ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
@@ -450,7 +452,7 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
   ::testing::Mock::VerifyAndClear(&mock_receiver);
 
   // Make sure a second run around the state machine generates a second event.
-  page_cu->OnMainFrameNavigationCommitted();
+  page_cu->OnMainFrameNavigationCommitted("https://example.org/bobcat");
   task_env().FastForwardUntilNoTasksRemain();
   EXPECT_NE(LIS::kLoadedAndIdle, page_data->GetLoadIdleState());
 
@@ -464,9 +466,10 @@ TEST_F(PageSignalGeneratorImplTest, OnLoadTimePerformanceEstimate) {
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(mock_receiver, OnLoadTimePerformanceEstimate(
-                                   cu_graph.page->id(), std::string(),
-                                   base::TimeDelta::FromMicroseconds(25), 250))
+    EXPECT_CALL(mock_receiver,
+                OnLoadTimePerformanceEstimate(
+                    cu_graph.page->id(), "https://example.org/bobcat",
+                    base::TimeDelta::FromMicroseconds(25), 250))
         .WillOnce(
             ::testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
