@@ -144,10 +144,9 @@ base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
   return cbor::CBORValue(map);
 }
 
-bool VerifySignature(base::span<const uint8_t> sig,
-                     base::span<const uint8_t> msg,
-                     scoped_refptr<net::X509Certificate> cert,
-                     SignedExchangeDevToolsProxy* devtools_proxy) {
+base::Optional<crypto::SignatureVerifier::SignatureAlgorithm>
+GetSignatureAlgorithm(scoped_refptr<net::X509Certificate> cert,
+                      SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
   base::StringPiece spki;
   if (!net::asn1::ExtractSPKIFromDERCert(
@@ -155,39 +154,45 @@ bool VerifySignature(base::span<const uint8_t> sig,
           &spki)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
                                                     "Failed to extract SPKI.");
-    return false;
+    return base::nullopt;
   }
 
-  crypto::SignatureVerifier::SignatureAlgorithm algorithm;
   CBS cbs;
   CBS_init(&cbs, reinterpret_cast<const uint8_t*>(spki.data()), spki.size());
   bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_public_key(&cbs));
   if (!pkey || CBS_len(&cbs) != 0) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to parse public key.");
-    return false;
+    return base::nullopt;
   }
+
   int pkey_id = EVP_PKEY_id(pkey.get());
   if (pkey_id != EVP_PKEY_EC) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
-        base::StringPrintf("Unsupported public key type: %d", pkey_id));
-    return false;
+        base::StringPrintf("Unsupported public key type: %d. Only ECDSA keys "
+                           "on the secp256r1 curve are supported.",
+                           pkey_id));
+    return base::nullopt;
   }
 
   const EC_GROUP* group = EC_KEY_get0_group(EVP_PKEY_get0_EC_KEY(pkey.get()));
   int curve_name = EC_GROUP_get_curve_name(group);
-  switch (curve_name) {
-    case NID_X9_62_prime256v1:
-      algorithm = crypto::SignatureVerifier::ECDSA_SHA256;
-      break;
-    default:
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy,
-          base::StringPrintf("Unsupported EC group: %d", curve_name));
-      return false;
-  }
+  if (curve_name == NID_X9_62_prime256v1)
+    return crypto::SignatureVerifier::ECDSA_SHA256;
+  signed_exchange_utils::ReportErrorAndTraceEvent(
+      devtools_proxy,
+      base::StringPrintf("Unsupported EC group: %d. Only ECDSA keys on the "
+                         "secp256r1 curve are supported.",
+                         curve_name));
+  return base::nullopt;
+}
 
+bool VerifySignature(base::span<const uint8_t> sig,
+                     base::span<const uint8_t> msg,
+                     scoped_refptr<net::X509Certificate> cert,
+                     crypto::SignatureVerifier::SignatureAlgorithm algorithm,
+                     SignedExchangeDevToolsProxy* devtools_proxy) {
   crypto::SignatureVerifier verifier;
   if (!net::x509_util::SignatureVerifierInitWithCertificate(
           &verifier, algorithm, sig, cert->cert_buffer())) {
@@ -326,11 +331,16 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     return Result::kErrInvalidSignatureFormat;
   }
 
+  base::Optional<crypto::SignatureVerifier::SignatureAlgorithm> algorithm =
+      GetSignatureAlgorithm(certificate, devtools_proxy);
+  if (!algorithm)
+    return Result::kErrUnsupportedCertType;
+
   const std::string& sig = envelope.signature().sig;
   if (!VerifySignature(
           base::make_span(reinterpret_cast<const uint8_t*>(sig.data()),
                           sig.size()),
-          *message, certificate, devtools_proxy)) {
+          *message, certificate, *algorithm, devtools_proxy)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to verify signature \"sig\".");
     return Result::kErrSignatureVerificationFailed;
