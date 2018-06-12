@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
@@ -1915,64 +1916,6 @@ TEST_F(ConsumerDeviceStatusCollectorTest, ReportingBootMode) {
   EXPECT_EQ("Verified", device_status_.boot_mode());
 }
 
-TEST_F(ConsumerDeviceStatusCollectorTest, ReportingActivityTimes) {
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-                                 ui::IDLE_STATE_ACTIVE};
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
-
-  GetStatus();
-
-  ASSERT_EQ(1, device_status_.active_period_size());
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-  EXPECT_EQ(user_account_id_.GetUserEmail(),
-            device_status_.active_period(0).user_email());
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTest, ActivityKeptInPref) {
-  EXPECT_TRUE(
-      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
-
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
-                                 ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-                                 ui::IDLE_STATE_IDLE,   ui::IDLE_STATE_IDLE};
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
-  EXPECT_FALSE(
-      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
-
-  // Process the list a second time after restarting the collector. It should be
-  // able to count the active periods found by the original collector, because
-  // the results are stored in a pref.
-  RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
-                         base::BindRepeating(&GetEmptyCPUStatistics),
-                         base::BindRepeating(&GetEmptyCPUTempInfo),
-                         base::BindRepeating(&GetEmptyAndroidStatus));
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
-
-  GetStatus();
-  EXPECT_EQ(6 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-}
-
-TEST_F(ConsumerDeviceStatusCollectorTest, ActivityNotWrittenToLocalState) {
-  EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
-
-  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
-                                 ui::IDLE_STATE_ACTIVE};
-  status_collector_->Simulate(test_states,
-                              sizeof(test_states) / sizeof(ui::IdleState));
-  GetStatus();
-  EXPECT_EQ(1, device_status_.active_period_size());
-  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
-            GetActiveMilliseconds(device_status_));
-
-  // Nothing should be written to local state, because it is only used for
-  // enterprise reporting.
-  EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
-}
 
 TEST_F(ConsumerDeviceStatusCollectorTest, ReportingArcStatus) {
   RestartStatusCollector(
@@ -2094,6 +2037,92 @@ TEST_F(ConsumerDeviceStatusCollectorTest, TimeZoneReporting) {
 
   EXPECT_TRUE(session_status_.has_time_zone());
   EXPECT_EQ(timezone, session_status_.time_zone());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, ActivityTimesFeatureDisable) {
+  settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
+  settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  status_collector_->Simulate(test_states, 3);
+
+  GetStatus();
+  EXPECT_EQ(0, device_status_.active_period_size());
+}
+
+// Tests collecting device status for registered consumer device when time
+// limit feature is enabled.
+class ConsumerDeviceStatusCollectorTimeLimitEnabledTest
+    : public ConsumerDeviceStatusCollectorTest {
+ public:
+  ConsumerDeviceStatusCollectorTimeLimitEnabledTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kUsageTimeLimitPolicy);
+  }
+  ~ConsumerDeviceStatusCollectorTimeLimitEnabledTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
+       ReportingActivityTimes) {
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+
+  GetStatus();
+
+  ASSERT_EQ(1, device_status_.active_period_size());
+  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+  EXPECT_EQ(user_account_id_.GetUserEmail(),
+            device_status_.active_period(0).user_email());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
+  EXPECT_TRUE(
+      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
+
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
+                                 ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_IDLE,   ui::IDLE_STATE_IDLE};
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+  EXPECT_FALSE(
+      profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
+
+  // Process the list a second time after restarting the collector. It should be
+  // able to count the active periods found by the original collector, because
+  // the results are stored in a pref.
+  RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                         base::BindRepeating(&GetEmptyCPUStatistics),
+                         base::BindRepeating(&GetEmptyCPUTempInfo),
+                         base::BindRepeating(&GetEmptyAndroidStatus));
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+
+  GetStatus();
+  EXPECT_EQ(6 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
+       ActivityNotWrittenToLocalState) {
+  EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
+
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+  GetStatus();
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+
+  // Nothing should be written to local state, because it is only used for
+  // enterprise reporting.
+  EXPECT_TRUE(local_state_.GetDictionary(prefs::kDeviceActivityTimes)->empty());
 }
 
 }  // namespace policy
