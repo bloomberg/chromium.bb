@@ -29,6 +29,7 @@ include_rules = [
   "+third_party/libaddressinput", # For address i18n.
   "+third_party/libphonenumber",  # For phone number i18n.
   "+third_party/re2",
+  "+ui/accessibility",
   "+ui/base",
   "+ui/gfx",
 ]

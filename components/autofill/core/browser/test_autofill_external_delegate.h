@@ -29,6 +29,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   void OnSuggestionsReturned(int query_id,
                              const std::vector<Suggestion>& suggestions,
                              bool is_all_server_suggestions) override;
+  bool HasActiveScreenReader() const override;
+  void OnAutofillAvailabilityEvent(bool has_suggestions) override;
 
   // Functions unique to TestAutofillExternalDelegate.
 
@@ -55,6 +57,10 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
   bool popup_hidden() const;
 
+  void set_has_active_screen_reader(bool has_active_screen_reader);
+
+  bool has_suggestions_available_on_field_focus() const;
+
  private:
   // If true, calls AutofillExternalDelegate::OnQuery and
   // AutofillExternalDelegate::OnSuggestionsReturned.
@@ -78,6 +84,10 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 
   // |true| if the popup is hidden, |false| if the popup is shown.
   bool popup_hidden_ = true;
+
+  bool has_active_screen_reader_ = true;
+
+  bool has_suggestions_available_on_field_focus_ = false;
 
   base::RunLoop run_loop_;
 

@@ -61,6 +61,15 @@ void TestAutofillExternalDelegate::OnSuggestionsReturned(
                                                     is_all_server_suggestions);
 }
 
+bool TestAutofillExternalDelegate::HasActiveScreenReader() const {
+  return has_active_screen_reader_;
+}
+
+void TestAutofillExternalDelegate::OnAutofillAvailabilityEvent(
+    bool has_suggestions) {
+  has_suggestions_available_on_field_focus_ = has_suggestions;
+}
+
 void TestAutofillExternalDelegate::WaitForPopupHidden() {
   if (popup_hidden_)
     return;
@@ -115,6 +124,16 @@ bool TestAutofillExternalDelegate::is_all_server_suggestions() const {
 
 bool TestAutofillExternalDelegate::popup_hidden() const {
   return popup_hidden_;
+}
+
+void TestAutofillExternalDelegate::set_has_active_screen_reader(
+    bool has_active_screen_reader) {
+  has_active_screen_reader_ = has_active_screen_reader;
+}
+
+bool TestAutofillExternalDelegate::has_suggestions_available_on_field_focus()
+    const {
+  return has_suggestions_available_on_field_focus_;
 }
 
 }  // namespace autofill

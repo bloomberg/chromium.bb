@@ -26,6 +26,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
@@ -164,6 +165,20 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
                                           query_field_.text_direction,
                                           suggestions,
                                           GetWeakPtr());
+  }
+}
+
+bool AutofillExternalDelegate::HasActiveScreenReader() const {
+  return ui::AXPlatformNode::GetAccessibilityMode().has_mode(
+      ui::AXMode::kScreenReader);
+}
+
+void AutofillExternalDelegate::OnAutofillAvailabilityEvent(
+    bool has_suggestions) {
+  if (has_suggestions) {
+    ui::AXPlatformNode::OnInputSuggestionsAvailable();
+  } else {
+    ui::AXPlatformNode::OnInputSuggestionsUnavailable();
   }
 }
 
