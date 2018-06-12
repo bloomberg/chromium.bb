@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/cocoa/fullscreen_placeholder_view.h"
 #include "chrome/browser/ui/cocoa/separate_fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-#import "chrome/browser/ui/cocoa/web_textfield_touch_bar_controller.h"
+#import "chrome/browser/ui/cocoa/touchbar/web_textfield_touch_bar_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_within_tab_helper.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/common/chrome_features.h"

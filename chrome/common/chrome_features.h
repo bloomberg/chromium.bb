@@ -289,6 +289,10 @@ extern const base::Feature kNativeSmb;
 
 extern const base::Feature kSoundContentSetting;
 
+#if defined(OS_MACOSX)
+extern const base::Feature kSuggestedTextTouchBar;
+#endif
+
 extern const base::Feature kSupervisedUserCommittedInterstitials;
 
 #if defined(OS_CHROMEOS)
