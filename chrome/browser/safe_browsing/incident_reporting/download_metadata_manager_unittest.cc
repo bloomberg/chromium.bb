@@ -149,14 +149,13 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
     WriteTestMetadataFileForItem(kTestDownloadId);
   }
 
-  // Returns the DownloadMetadata read from the test profile's directory.
-  std::unique_ptr<DownloadMetadata> ReadTestMetadataFile() const {
+  // Reads the DownloadMetadata from the test profile's directory into
+  // |metadata|.
+  void ReadTestMetadataFile(std::unique_ptr<DownloadMetadata>* metadata) const {
     std::string data;
-    if (!base::ReadFileToString(GetMetadataPath(), &data))
-      return std::unique_ptr<DownloadMetadata>();
-    std::unique_ptr<DownloadMetadata> result(new DownloadMetadata);
-    EXPECT_TRUE(result->ParseFromString(data));
-    return result;
+    ASSERT_TRUE(base::ReadFileToString(GetMetadataPath(), &data));
+    *metadata = std::make_unique<DownloadMetadata>();
+    ASSERT_TRUE((*metadata)->ParseFromString(data));
   }
 
   // Runs all tasks posted to the test thread's message loop.
@@ -326,15 +325,15 @@ class GetDetailsTest
 TEST_P(GetDetailsTest, GetDownloadDetails) {
   // Optionally put a metadata file in the profile directory.
   if (metadata_file_present_)
-    WriteTestMetadataFile();
+    ASSERT_NO_FATAL_FAILURE(WriteTestMetadataFile());
 
   // Optionally add a download manager for the profile.
   if (manager_added_)
-    AddDownloadManager();
+    ASSERT_NO_FATAL_FAILURE(AddDownloadManager());
 
   // Optionally create download items and perform actions on the one under test.
   if (item_action_ != NOT_CREATED)
-    AddDownloadItems();
+    ASSERT_NO_FATAL_FAILURE(AddDownloadItems());
   if (item_action_ == OPENED)
     test_item_->NotifyObserversDownloadOpened();
   else if (item_action_ == REMOVED)
@@ -450,25 +449,24 @@ class SetRequestTest
 
 // Tests that DownloadMetadataManager::SetRequest works for all combinations of
 // states.
-// Flaky. See https://crbug.com/845811.
-TEST_P(SetRequestTest, DISABLED_SetRequest) {
+TEST_P(SetRequestTest, SetRequest) {
   // Optionally put a metadata file in the profile directory.
   switch (metadata_file_present_) {
     case ABSENT:
       break;
     case PRESENT_FOR_THIS_ITEM:
-      WriteTestMetadataFile();
+      ASSERT_NO_FATAL_FAILURE(WriteTestMetadataFile());
       break;
     case PRESENT_FOR_OTHER_ITEM:
-      WriteTestMetadataFileForItem(kOtherDownloadId);
+      ASSERT_NO_FATAL_FAILURE(WriteTestMetadataFileForItem(kOtherDownloadId));
       break;
     case PRESENT_FOR_UNKNOWN_ITEM:
-      WriteTestMetadataFileForItem(kCrazyDowloadId);
+      ASSERT_NO_FATAL_FAILURE(WriteTestMetadataFileForItem(kCrazyDowloadId));
       break;
   }
 
-  AddDownloadManager();
-  AddDownloadItems();
+  ASSERT_NO_FATAL_FAILURE(AddDownloadManager());
+  ASSERT_NO_FATAL_FAILURE(AddDownloadItems());
 
   // Optionally allow the task to read the file to complete.
   if (details_loaded_) {
@@ -502,18 +500,23 @@ TEST_P(SetRequestTest, DISABLED_SetRequest) {
 
   ShutdownDownloadManager();
 
-  std::unique_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
+  RunAllTasks();
+
   if (set_request_) {
     // Expect that the file contains metadata for the download.
-    ASSERT_TRUE(metadata);
+    std::unique_ptr<DownloadMetadata> metadata;
+    ASSERT_NO_FATAL_FAILURE(ReadTestMetadataFile(&metadata))
+        << GetMetadataPath().value();
     EXPECT_EQ(kTestDownloadId, metadata->download_id());
     EXPECT_STREQ(kNewUrl, metadata->download().download().url().c_str());
-  } else if (metadata_file_present_) {
+  } else if (metadata_file_present_ != ABSENT) {
     // Expect that the metadata file has not been overwritten.
-    ASSERT_TRUE(metadata);
+    std::unique_ptr<DownloadMetadata> metadata;
+    ASSERT_NO_FATAL_FAILURE(ReadTestMetadataFile(&metadata))
+        << GetMetadataPath().value();
   } else {
     // Expect that the file is not present.
-    ASSERT_FALSE(metadata);
+    ASSERT_FALSE(base::PathExists(GetMetadataPath()));
   }
 }
 
@@ -528,10 +531,10 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadNoRequest) {
   // Put some metadata on disk from a previous download.
-  WriteTestMetadataFileForItem(kOtherDownloadId);
+  ASSERT_NO_FATAL_FAILURE(WriteTestMetadataFileForItem(kOtherDownloadId));
 
-  AddDownloadManager();
-  AddDownloadItems();
+  ASSERT_NO_FATAL_FAILURE(AddDownloadManager());
+  ASSERT_NO_FATAL_FAILURE(AddDownloadItems());
 
   // Allow everything to load into steady-state.
   RunAllTasks();
@@ -551,17 +554,17 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadNoRequest) {
   ShutdownDownloadManager();
 
   // Expect that the metadata file is still present.
-  std::unique_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
-  ASSERT_TRUE(metadata);
+  std::unique_ptr<DownloadMetadata> metadata;
+  ASSERT_NO_FATAL_FAILURE(ReadTestMetadataFile(&metadata));
   EXPECT_EQ(kOtherDownloadId, metadata->download_id());
 }
 
 TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadWithRequest) {
   // Put some metadata on disk from a previous download.
-  WriteTestMetadataFileForItem(kOtherDownloadId);
+  ASSERT_NO_FATAL_FAILURE(WriteTestMetadataFileForItem(kOtherDownloadId));
 
-  AddDownloadManager();
-  AddDownloadItems();
+  ASSERT_NO_FATAL_FAILURE(AddDownloadManager());
+  ASSERT_NO_FATAL_FAILURE(AddDownloadItems());
 
   // Allow everything to load into steady-state.
   RunAllTasks();
@@ -594,8 +597,8 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadWithRequest) {
   ShutdownDownloadManager();
 
   // Expect that the file contains metadata for the download.
-  std::unique_ptr<DownloadMetadata> metadata(ReadTestMetadataFile());
-  ASSERT_TRUE(metadata);
+  std::unique_ptr<DownloadMetadata> metadata;
+  ASSERT_NO_FATAL_FAILURE(ReadTestMetadataFile(&metadata));
   EXPECT_EQ(kTestDownloadId, metadata->download_id());
   EXPECT_STREQ(kNewUrl, metadata->download().download().url().c_str());
 }
@@ -603,8 +606,8 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadWithRequest) {
 // Regression test for http://crbug.com/504092: open an item with id==0 when
 // there is no metadata loaded.
 TEST_F(DownloadMetadataManagerTestBase, OpenItemWithZeroId) {
-  AddDownloadManager();
-  AddDownloadItems();
+  ASSERT_NO_FATAL_FAILURE(AddDownloadManager());
+  ASSERT_NO_FATAL_FAILURE(AddDownloadItems());
 
   // Allow everything to load into steady-state.
   RunAllTasks();
