@@ -246,10 +246,7 @@ void SpeechRecognitionSession::OnRecognitionEnd(int session_id) {
 void SpeechRecognitionSession::OnRecognitionResults(
     int session_id,
     const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results) {
-  std::vector<blink::mojom::SpeechRecognitionResultPtr> results_copy;
-  for (auto& result : results)
-    results_copy.push_back(result.Clone());
-  client_->ResultRetrieved(std::move(results_copy));
+  client_->ResultRetrieved(mojo::Clone(results));
 }
 
 void SpeechRecognitionSession::OnRecognitionError(

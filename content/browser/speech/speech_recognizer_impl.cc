@@ -308,8 +308,7 @@ void SpeechRecognizerImpl::OnCaptureError(const std::string& message) {
 void SpeechRecognizerImpl::OnSpeechRecognitionEngineResults(
     const std::vector<blink::mojom::SpeechRecognitionResultPtr>& results) {
   FSMEventArgs event_args(EVENT_ENGINE_RESULT);
-  for (auto& result : results)
-    event_args.engine_results.push_back(result.Clone());
+  event_args.engine_results = mojo::Clone(results);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this, event_args));
@@ -907,8 +906,7 @@ SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(const FSMEventArgs& other)
     : event(other.event),
       audio_data(other.audio_data),
       engine_error(other.engine_error) {
-  for (auto& result : other.engine_results)
-    engine_results.push_back(result.Clone());
+  engine_results = mojo::Clone(other.engine_results);
 }
 
 SpeechRecognizerImpl::FSMEventArgs::~FSMEventArgs() {}
