@@ -19848,6 +19848,8 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Toggle use mobile data for sync (off)"/>
   <int value="8" label="Toggle Show Google Docs files (on)"/>
   <int value="9" label="Toggle Show Google Docs files (off)"/>
+  <int value="10" label="Toggle show hidden Android folders (on)"/>
+  <int value="11" label="Toggle show hidden Android folders (off)"/>
 </enum>
 
 <enum name="FileManagerQuickViewWayToOpen">

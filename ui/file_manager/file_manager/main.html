@@ -142,6 +142,9 @@
       <command id="toggle-hidden-files"
                i18n-values="label:TOGGLE_HIDDEN_FILES_COMMAND_LABEL"
                shortcut=".|Ctrl" hide-shortcut-text>
+      <!-- TODO(fukino): Internationalize this label. crbug.com/851844. -->
+      <command id="toggle-hidden-android-folders"
+               label="Show hidden Play folders"></command>
 
       <command id="default-task">
       <command id="open-with" i18n-values="label:OPEN_WITH_BUTTON_LABEL">
@@ -250,6 +253,8 @@
                     command="#select-all"></cr-menu-item>
       <cr-menu-item id="gear-menu-toggle-hidden-files"
                     command="#toggle-hidden-files"></cr-menu-item>
+      <cr-menu-item id="gear-menu-toggle-hidden-android-folders"
+                    command="#toggle-hidden-android-folders"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-sync-settings"
                     command="#drive-sync-settings"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-hosted-settings"
