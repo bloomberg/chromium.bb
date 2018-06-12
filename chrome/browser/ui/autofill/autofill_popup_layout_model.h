@@ -86,9 +86,17 @@ class AutofillPopupLayoutModel {
   // the top left of the popup.
   gfx::Rect GetRowBounds(size_t index) const;
 
-  // Gets the resource value for the given resource, returning -1 if the
+  // Gets the resource value for the given resource, returning 0 if the
   // resource isn't recognized.
   int GetIconResourceID(const base::string16& resource_name) const;
+
+  // Returns the string id for an accessible name which should be used to
+  // describe the given resource. Returns 0 if the resource isn't recognized;
+  // note that this doesn't necessarily mean anything went wrong, as some valid
+  // resources are intentionally omitted for screen readers.
+  int GetIconAccessibleNameResourceId(
+      const base::string16& resource_name) const;
+
   bool is_credit_card_popup() const { return is_credit_card_popup_; }
 
  private:
