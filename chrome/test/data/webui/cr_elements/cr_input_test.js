@@ -15,35 +15,25 @@ suite('cr-input', function() {
   });
 
   test('AttributesCorrectlySupported', function() {
-    assertFalse(input.autofocus);
-    crInput.setAttribute('autofocus', 'autofocus');
-    assertTrue(input.autofocus);
+    const attributesToTest = [
+      // [externalName, internalName, defaultValue, testValue]
+      ['autofocus', 'autofocus', false, true],
+      ['disabled', 'disabled', false, true],
+      ['incremental', 'incremental', false, true],
+      ['maxlength', 'maxLength', -1, 5],
+      ['pattern', 'pattern', '', '[a-z]+'],
+      ['readonly', 'readOnly', false, true],
+      ['required', 'required', false, true],
+      ['tab-index', 'tabIndex', 0, -1],
+      ['type', 'type', 'text', 'password'],
+    ];
 
-    assertFalse(input.disabled);
-    crInput.setAttribute('disabled', 'disabled');
-    assertTrue(input.disabled);
-
-    assertFalse(input.hasAttribute('tabindex'));
-    crInput.tabIndex = '-1';
-    assertEquals(-1, input.tabIndex);
-    crInput.tabIndex = '0';
-    assertEquals(0, input.tabIndex);
-
-    assertEquals('none', getComputedStyle(crInput.$.label).display);
-    crInput.label = 'label';
-    assertEquals('block', getComputedStyle(crInput.$.label).display);
-
-    assertFalse(input.readOnly);
-    crInput.setAttribute('readonly', 'readonly');
-    assertTrue(input.readOnly);
-
-    assertEquals('text', input.type);
-    crInput.setAttribute('type', 'password');
-    assertEquals('password', input.type);
-
-    assertEquals(-1, input.maxLength);
-    crInput.setAttribute('maxlength', 5);
-    assertEquals(5, input.maxLength);
+    attributesToTest.forEach(attr => {
+      console.log(attr[0]);
+      assertEquals(attr[2], input[attr[1]]);
+      crInput.setAttribute(attr[0], attr[3]);
+      assertEquals(attr[3], input[attr[1]]);
+    });
   });
 
   test('placeholderCorrectlyBound', function() {
@@ -61,9 +51,9 @@ suite('cr-input', function() {
 
   test('labelHiddenWhenEmpty', function() {
     const label = crInput.$.label;
-    assertTrue(label.hidden);
+    assertEquals('none', getComputedStyle(crInput.$.label).display);
     crInput.label = 'foobar';
-    assertFalse(label.hidden);
+    assertEquals('block', getComputedStyle(crInput.$.label).display);
     assertEquals('foobar', label.textContent);
   });
 
@@ -127,14 +117,13 @@ suite('cr-input', function() {
 
   test('validation', function() {
     crInput.value = 'FOO';
-    // Note that even with |autoValidate|, crInput.invalid only updates after
-    // |value| is changed.
     crInput.autoValidate = true;
     assertFalse(crInput.hasAttribute('required'));
     assertFalse(crInput.invalid);
 
-    crInput.setAttribute('required', 'required');
-    assertTrue(input.required);
+    // Note that even with |autoValidate|, crInput.invalid only updates after
+    // |value| is changed.
+    crInput.setAttribute('required', '');
     assertFalse(crInput.invalid);
 
     crInput.value = '';
@@ -144,7 +133,6 @@ suite('cr-input', function() {
 
     const testPattern = '[a-z]+';
     crInput.setAttribute('pattern', testPattern);
-    assertEquals(testPattern, input.pattern);
     crInput.value = 'FOO';
     assertTrue(crInput.invalid);
     crInput.value = 'foo';

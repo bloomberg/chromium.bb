@@ -8,14 +8,15 @@
  * Native input attributes that are currently supported by cr-inputs are:
  *   autofocus
  *   disabled
+ *   incremental (only applicable when type="search")
  *   maxlength
- *   type (only 'text' and 'password')
- *   readonly
  *   pattern
- *   required
- *   value
  *   placeholder
+ *   readonly
+ *   required
  *   tabindex as 'tab-index' (e.g.: <cr-input tab-index="-1">)
+ *   type (only 'text', 'password', and 'search' supported)
+ *   value
  *
  * Additional attributes that you can use with cr-input:
  *   label
@@ -54,6 +55,8 @@ Polymer({
       type: String,
       value: '',
     },
+
+    incremental: Boolean,
 
     invalid: {
       type: Boolean,
@@ -95,7 +98,7 @@ Polymer({
 
     type: {
       type: String,
-      value: 'text',  // Only 'text' and 'password' are currently supported.
+      value: 'text',  // Only 'text', 'password', 'search' are supported.
     },
 
     value: {

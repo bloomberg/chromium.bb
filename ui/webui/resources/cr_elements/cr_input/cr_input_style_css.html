@@ -42,8 +42,22 @@
         font-size: inherit;
         line-height: inherit;
         outline: none;
-        padding: 6px 8px;
         width: 100%;
+
+        /**
+         * When using mixins, avoid using padding shorthand. Using both the
+         * shorthand and top/bottom/start/end can lead to style override issues.
+         * This is only noticable when the |optimize_webui=true| build argument
+         * is used.
+         *
+         * See https://crbug.com/846254 and associated CL for more information.
+         */
+        -webkit-padding-end: 8px;
+        -webkit-padding-start: 8px;
+        padding-bottom: 6px;
+        padding-top: 6px;
+
+        @apply --cr-input-input;
       }
 
       /* Underline styling below. */
