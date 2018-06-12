@@ -7,6 +7,8 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 
+#import "ios/chrome/browser/ui/settings/clear_browsing_data_consumer.h"
+
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
@@ -14,7 +16,7 @@ class ChromeBrowserState;
 // CollectionView for clearing browsing data (including history,
 // cookies, caches, passwords, and autofill).
 @interface ClearBrowsingDataCollectionViewController
-    : SettingsRootCollectionViewController
+    : SettingsRootCollectionViewController<ClearBrowsingDataConsumer>
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;

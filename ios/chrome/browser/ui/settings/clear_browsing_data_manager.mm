@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_manager.h"
 
 #include "base/bind.h"
-#include "base/ios/block_types.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -106,9 +105,9 @@ const int kMaxTimesHistoryNoticeShown = 1;
 - (void)loadModel:(ListModel*)model {
   // Time range section.
   if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
-    [model addSectionWithIdentifier:SectionTimeRange];
+    [model addSectionWithIdentifier:SectionIdentifierTimeRange];
     [model addItem:[self timeRangeItem]
-        toSectionWithIdentifier:SectionTimeRange];
+        toSectionWithIdentifier:SectionIdentifierTimeRange];
   }
 
   [self addClearBrowsingDataItemsToModel:model];
@@ -119,53 +118,57 @@ const int kMaxTimesHistoryNoticeShown = 1;
 // Add items for types of browsing data to clear.
 - (void)addClearBrowsingDataItemsToModel:(ListModel*)model {
   // Data types section.
-  [model addSectionWithIdentifier:SectionDataTypes];
+  [model addSectionWithIdentifier:SectionIdentifierDataTypes];
   CollectionViewItem* browsingHistoryItem =
-      [self clearDataItemWithType:DataTypeBrowsingHistory
+      [self clearDataItemWithType:ItemTypeDataTypeBrowsingHistory
                           titleID:IDS_IOS_CLEAR_BROWSING_HISTORY
                              mask:BrowsingDataRemoveMask::REMOVE_HISTORY
                          prefName:browsing_data::prefs::kDeleteBrowsingHistory];
-  [model addItem:browsingHistoryItem toSectionWithIdentifier:SectionDataTypes];
+  [model addItem:browsingHistoryItem
+      toSectionWithIdentifier:SectionIdentifierDataTypes];
 
   // This data type doesn't currently have an associated counter, but displays
   // an explanatory text instead, when the new UI is enabled.
   ClearBrowsingDataItem* cookiesSiteDataItem =
-      [self clearDataItemWithType:DataTypeCookiesSiteData
+      [self clearDataItemWithType:ItemTypeDataTypeCookiesSiteData
                           titleID:IDS_IOS_CLEAR_COOKIES
                              mask:BrowsingDataRemoveMask::REMOVE_SITE_DATA
                          prefName:browsing_data::prefs::kDeleteCookies];
-  [model addItem:cookiesSiteDataItem toSectionWithIdentifier:SectionDataTypes];
+  [model addItem:cookiesSiteDataItem
+      toSectionWithIdentifier:SectionIdentifierDataTypes];
 
   ClearBrowsingDataItem* cacheItem =
-      [self clearDataItemWithType:DataTypeCache
+      [self clearDataItemWithType:ItemTypeDataTypeCache
                           titleID:IDS_IOS_CLEAR_CACHE
                              mask:BrowsingDataRemoveMask::REMOVE_CACHE
                          prefName:browsing_data::prefs::kDeleteCache];
-  [model addItem:cacheItem toSectionWithIdentifier:SectionDataTypes];
+  [model addItem:cacheItem toSectionWithIdentifier:SectionIdentifierDataTypes];
 
   ClearBrowsingDataItem* savedPasswordsItem =
-      [self clearDataItemWithType:DataTypeSavedPasswords
+      [self clearDataItemWithType:ItemTypeDataTypeSavedPasswords
                           titleID:IDS_IOS_CLEAR_SAVED_PASSWORDS
                              mask:BrowsingDataRemoveMask::REMOVE_PASSWORDS
                          prefName:browsing_data::prefs::kDeletePasswords];
-  [model addItem:savedPasswordsItem toSectionWithIdentifier:SectionDataTypes];
+  [model addItem:savedPasswordsItem
+      toSectionWithIdentifier:SectionIdentifierDataTypes];
 
   ClearBrowsingDataItem* autofillItem =
-      [self clearDataItemWithType:DataTypeAutofill
+      [self clearDataItemWithType:ItemTypeDataTypeAutofill
                           titleID:IDS_IOS_CLEAR_AUTOFILL
                              mask:BrowsingDataRemoveMask::REMOVE_FORM_DATA
                          prefName:browsing_data::prefs::kDeleteFormData];
-  [model addItem:autofillItem toSectionWithIdentifier:SectionDataTypes];
+  [model addItem:autofillItem
+      toSectionWithIdentifier:SectionIdentifierDataTypes];
 
   // Clear Browsing Data button.
-  [model addSectionWithIdentifier:SectionClearBrowsingDataButton];
-  CollectionViewTextItem* clearButtonItem =
-      [[CollectionViewTextItem alloc] initWithType:ClearBrowsingDataButton];
+  [model addSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
+  CollectionViewTextItem* clearButtonItem = [[CollectionViewTextItem alloc]
+      initWithType:ItemTypeClearBrowsingDataButton];
   clearButtonItem.text = l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
   clearButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
   clearButtonItem.textColor = [[MDCPalette cr_redPalette] tint500];
   [model addItem:clearButtonItem
-      toSectionWithIdentifier:SectionClearBrowsingDataButton];
+      toSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
 }
 
 - (NSString*)counterTextFromResult:
@@ -246,9 +249,9 @@ const int kMaxTimesHistoryNoticeShown = 1;
   if (signinManager->IsAuthenticated()) {
     // TODO(crbug.com/650424): Footer items must currently go into a separate
     // section, to work around a drawing bug in MDC.
-    [model addSectionWithIdentifier:SectionGoogleAccount];
+    [model addSectionWithIdentifier:SectionIdentifierGoogleAccount];
     [model addItem:[self footerForGoogleAccountSectionItem]
-        toSectionWithIdentifier:SectionGoogleAccount];
+        toSectionWithIdentifier:SectionIdentifierGoogleAccount];
   }
 
   browser_sync::ProfileSyncService* syncService =
@@ -256,15 +259,15 @@ const int kMaxTimesHistoryNoticeShown = 1;
   if (syncService && syncService->IsSyncActive()) {
     // TODO(crbug.com/650424): Footer items must currently go into a separate
     // section, to work around a drawing bug in MDC.
-    [model addSectionWithIdentifier:SectionClearSyncAndSavedSiteData];
+    [model addSectionWithIdentifier:SectionIdentifierClearSyncAndSavedSiteData];
     [model addItem:[self footerClearSyncAndSavedSiteDataItem]
-        toSectionWithIdentifier:SectionClearSyncAndSavedSiteData];
+        toSectionWithIdentifier:SectionIdentifierClearSyncAndSavedSiteData];
   } else {
     // TODO(crbug.com/650424): Footer items must currently go into a separate
     // section, to work around a drawing bug in MDC.
-    [model addSectionWithIdentifier:SectionSavedSiteData];
+    [model addSectionWithIdentifier:SectionIdentifierSavedSiteData];
     [model addItem:[self footerSavedSiteDataItem]
-        toSectionWithIdentifier:SectionSavedSiteData];
+        toSectionWithIdentifier:SectionIdentifierSavedSiteData];
   }
 
   // If not signed in, no need to continue with profile syncing.
@@ -330,7 +333,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
       [self accessibilityIdentifierFromItemType:itemType];
 
   // Because there is no counter for cookies, an explanatory text is displayed.
-  if (itemType == DataTypeCookiesSiteData &&
+  if (itemType == ItemTypeDataTypeCookiesSiteData &&
       experimental_flags::IsNewClearBrowsingDataUIEnabled() &&
       prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
     clearDataItem.detailText = l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
@@ -346,8 +349,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
 }
 
 - (CollectionViewItem*)footerGoogleAccountItem {
-  CollectionViewFooterItem* footerItem =
-      [[CollectionViewFooterItem alloc] initWithType:FooterGoogleAccount];
+  CollectionViewFooterItem* footerItem = [[CollectionViewFooterItem alloc]
+      initWithType:ItemTypeFooterGoogleAccount];
   footerItem.text =
       l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT);
   UIImage* image = ios::GetChromeBrowserProvider()
@@ -362,7 +365,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
                        ->GetBrandedImageProvider()
                        ->GetClearBrowsingDataAccountActivityImage();
   return [self
-      footerItemWithType:FooterGoogleAccountAndMyActivity
+      footerItemWithType:ItemTypeFooterGoogleAccountAndMyActivity
                  titleID:IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT_AND_HISTORY
                      URL:kClearBrowsingDataMyActivityUrlInFooterURL
                    image:image];
@@ -373,7 +376,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
                        ->GetBrandedImageProvider()
                        ->GetClearBrowsingDataSiteDataImage();
   return [self
-      footerItemWithType:FooterSavedSiteData
+      footerItemWithType:ItemTypeFooterSavedSiteData
                  titleID:IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SAVED_SITE_DATA
                      URL:kClearBrowsingDataLearnMoreURL
                    image:image];
@@ -383,7 +386,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
   UIImage* infoIcon = [ChromeIcon infoIcon];
   UIImage* image = TintImage(infoIcon, [[MDCPalette greyPalette] tint500]);
   return [self
-      footerItemWithType:FooterClearSyncAndSavedSiteData
+      footerItemWithType:ItemTypeFooterClearSyncAndSavedSiteData
                  titleID:
                      IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_CLEAR_SYNC_AND_SAVED_SITE_DATA
                      URL:kClearBrowsingDataLearnMoreURL
@@ -406,7 +409,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 - (CollectionViewItem*)timeRangeItem {
   CollectionViewDetailItem* timeRangeItem =
-      [[CollectionViewDetailItem alloc] initWithType:TimeRange];
+      [[CollectionViewDetailItem alloc] initWithType:ItemTypeTimeRange];
   timeRangeItem.text = l10n_util::GetNSString(
       IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
   NSString* detailText = [TimeRangeSelectorCollectionViewController
@@ -421,15 +424,15 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 - (NSString*)accessibilityIdentifierFromItemType:(NSInteger)itemType {
   switch (itemType) {
-    case DataTypeBrowsingHistory:
+    case ItemTypeDataTypeBrowsingHistory:
       return kClearBrowsingHistoryCellAccessibilityIdentifier;
-    case DataTypeCookiesSiteData:
+    case ItemTypeDataTypeCookiesSiteData:
       return kClearCookiesCellAccessibilityIdentifier;
-    case DataTypeCache:
+    case ItemTypeDataTypeCache:
       return kClearCacheCellAccessibilityIdentifier;
-    case DataTypeSavedPasswords:
+    case ItemTypeDataTypeSavedPasswords:
       return kClearSavedPasswordsCellAccessibilityIdentifier;
-    case DataTypeAutofill:
+    case ItemTypeDataTypeAutofill:
       return kClearAutofillCellAccessibilityIdentifier;
     default: {
       NOTREACHED();
@@ -504,18 +507,19 @@ const int kMaxTimesHistoryNoticeShown = 1;
   // TODO(crbug.com/650424): Simplify with setFooter:inSection: when the bug in
   // MDC is fixed.
   // Remove the footer if there is one in that section.
-  if ([model hasSectionForSectionIdentifier:SectionGoogleAccount]) {
-    if ([model hasItemForItemType:FooterGoogleAccount
-                sectionIdentifier:SectionGoogleAccount]) {
-      [model removeItemWithType:FooterGoogleAccount
-          fromSectionWithIdentifier:SectionGoogleAccount];
+  if ([model hasSectionForSectionIdentifier:SectionIdentifierGoogleAccount]) {
+    if ([model hasItemForItemType:ItemTypeFooterGoogleAccount
+                sectionIdentifier:SectionIdentifierGoogleAccount]) {
+      [model removeItemWithType:ItemTypeFooterGoogleAccount
+          fromSectionWithIdentifier:SectionIdentifierGoogleAccount];
     } else {
-      [model removeItemWithType:FooterGoogleAccountAndMyActivity
-          fromSectionWithIdentifier:SectionGoogleAccount];
+      [model removeItemWithType:ItemTypeFooterGoogleAccountAndMyActivity
+          fromSectionWithIdentifier:SectionIdentifierGoogleAccount];
     }
   }
   // Add the new footer.
-  [model addItem:footerItem toSectionWithIdentifier:SectionGoogleAccount];
+  [model addItem:footerItem
+      toSectionWithIdentifier:SectionIdentifierGoogleAccount];
   [self.consumer updateCellsForItem:footerItem];
 }
 

@@ -15,46 +15,46 @@
 // Clear Browswing Data Section Identifiers.
 enum ClearBrowsingDataSectionIdentifier {
   // Section holding types of data that can be cleared.
-  SectionDataTypes = kSectionIdentifierEnumZero,
+  SectionIdentifierDataTypes = kSectionIdentifierEnumZero,
   // Section containing button to clear browsing data.
-  SectionClearBrowsingDataButton,
+  SectionIdentifierClearBrowsingDataButton,
   // Section for informational footnote about user's Google Account data.
-  SectionGoogleAccount,
+  SectionIdentifierGoogleAccount,
   // Section for footnote about synced data being cleared.
-  SectionClearSyncAndSavedSiteData,
+  SectionIdentifierClearSyncAndSavedSiteData,
   // Section for informational footnote about site settings remaining.
-  SectionSavedSiteData,
+  SectionIdentifierSavedSiteData,
   // Section containing cell displaying time range to remove data.
-  SectionTimeRange,
+  SectionIdentifierTimeRange,
 };
 
 // Clear Browsing Data Item Types.
 enum ClearBrowsingDataItemType {
   // Item representing browsing history data.
-  DataTypeBrowsingHistory = kItemTypeEnumZero,
+  ItemTypeDataTypeBrowsingHistory = kItemTypeEnumZero,
   // Item representing cookies and site data.
-  DataTypeCookiesSiteData,
+  ItemTypeDataTypeCookiesSiteData,
   // Items representing cached data.
-  DataTypeCache,
+  ItemTypeDataTypeCache,
   // Items representing saved passwords.
-  DataTypeSavedPasswords,
+  ItemTypeDataTypeSavedPasswords,
   // Items representing autofill data.
-  DataTypeAutofill,
+  ItemTypeDataTypeAutofill,
   // Clear data button.
-  ClearBrowsingDataButton,
+  ItemTypeClearBrowsingDataButton,
   // Footer noting account will not be signed out.
-  FooterGoogleAccount,
+  ItemTypeFooterGoogleAccount,
   // Footer noting user will not be signed out of chrome and other forms of
   // browsing history will still be available.
-  FooterGoogleAccountAndMyActivity,
+  ItemTypeFooterGoogleAccountAndMyActivity,
   // Footer noting site settings will remain.
-  FooterSavedSiteData,
+  ItemTypeFooterSavedSiteData,
   // Footer noting data will be cleared on all devices except for saved
   // settings.
-  FooterClearSyncAndSavedSiteData,
+  ItemTypeFooterClearSyncAndSavedSiteData,
   // Item showing time range to remove data and allowing user to edit time
   // range.
-  TimeRange,
+  ItemTypeTimeRange,
 };
 
 // Manager that serves as the bulk of the logic for
