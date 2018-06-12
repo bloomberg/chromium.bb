@@ -205,6 +205,8 @@ class StreamMixer {
   // Special thread to avoid underruns due to priority inversion.
   std::unique_ptr<base::Thread> shim_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> shim_task_runner_;
+  std::unique_ptr<base::Thread> input_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
 
   int num_output_channels_;
   const int low_sample_rate_cutoff_;
