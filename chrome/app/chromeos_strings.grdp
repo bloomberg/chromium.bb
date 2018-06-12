@@ -2404,6 +2404,9 @@
   <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_NAME_UTC" desc="This is the display name of UTC/GMT timezone for timezone option in user settings.">
     Coordinated Universal Time (UTC/GMT)
   </message>
+  <message name="IDS_TEXT_TO_SPEECH_SETTINGS_NO_LANGUAGE" desc="A label for text-to-speech voices which do not have a language specified. For example, some voices may speak in US English, or Spain-Spanish. This labels voices with no language.">
+    No language
+  </message>
 
   <!-- Network Configuration Views UI -->
   <message name="IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS" desc="In the settings tab, the text on the button to display other Wi-Fi networks.">

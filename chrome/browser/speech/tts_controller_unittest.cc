@@ -85,6 +85,8 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
       std::make_unique<base::DictionaryValue>();
   lang_to_voices->SetKey(
       "es", base::Value("{\"name\":\"Voice8\",\"extension\":\"id8\"}"));
+  lang_to_voices->SetKey(
+      "noLanguage", base::Value("{\"name\":\"Android\",\"extension\":\"\"}"));
   pref_service_.registry()->RegisterDictionaryPref(
       prefs::kTextToSpeechLangToVoiceName, std::move(lang_to_voices));
   tts_controller->pref_service_ = &pref_service_;
@@ -157,6 +159,12 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     voice8.name = "Voice8";
     voice8.lang = "es-mx";
     voices.push_back(voice8);
+    VoiceData voice9;
+    voice9.extension_id = "";
+    voice9.name = "Android";
+    voice9.lang = "";
+    voice9.native = true;
+    voices.push_back(voice9);
 
     Utterance utterance(nullptr);
     EXPECT_EQ(0, tts_controller->GetMatchingVoice(&utterance, voices));
@@ -193,6 +201,13 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     utterance.set_extension_id("");
     utterance.set_lang("es-ar");
     EXPECT_EQ(8, tts_controller->GetMatchingVoice(&utterance, voices));
+
+    // The 9th voice is like the built-in "Android" voice, it has no lang
+    // and no extension ID. Make sure it can still be matched.
+    utterance.set_voice_name("Android");
+    utterance.set_extension_id("");
+    utterance.set_lang("");
+    EXPECT_EQ(9, tts_controller->GetMatchingVoice(&utterance, voices));
 #endif  // defined(OS_CHROMEOS)
   }
 }
