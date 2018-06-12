@@ -276,7 +276,7 @@ public class DownloadManagerUi
                 true);
         mToolbar.getMenu().setGroupVisible(normalGroupId, true);
         mToolbar.setManager(this);
-        mToolbar.initializeFilterSpinner(mFilterAdapter);
+        mToolbar.initialize(mFilterAdapter);
 
         mToolbar.initializeSearchView(this, R.string.download_manager_search, mSearchMenuId);
 
