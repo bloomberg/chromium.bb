@@ -38,14 +38,18 @@ VulkanSurface::VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface)
 bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
                                VulkanSurface::Format format) {
   DCHECK(format >= 0 && format < NUM_SURFACE_FORMATS);
+  DCHECK(device_queue);
+
+  device_queue_ = device_queue;
+
   VkResult result = VK_SUCCESS;
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
 
   VkBool32 present_support;
   if (vulkan_function_pointers->vkGetPhysicalDeviceSurfaceSupportKHR(
-          device_queue->GetVulkanPhysicalDevice(),
-          device_queue->GetVulkanQueueIndex(), surface_,
+          device_queue_->GetVulkanPhysicalDevice(),
+          device_queue_->GetVulkanQueueIndex(), surface_,
           &present_support) != VK_SUCCESS) {
     DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceSupportKHR() failed: " << result;
     return false;
