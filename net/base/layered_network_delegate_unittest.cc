@@ -42,14 +42,14 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
 
   // NetworkDelegateImpl implementation:
   int OnBeforeURLRequest(URLRequest* request,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          GURL* new_url) override {
     IncrementAndCompareCounter("on_before_url_request_count");
     return OK;
   }
 
   int OnBeforeStartTransaction(URLRequest* request,
-                               const CompletionCallback& callback,
+                               CompletionOnceCallback callback,
                                HttpRequestHeaders* headers) override {
     IncrementAndCompareCounter("on_before_start_transaction_count");
     return OK;
@@ -69,7 +69,7 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
 
   int OnHeadersReceived(
       URLRequest* request,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override {
@@ -109,7 +109,7 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
 
   AuthRequiredResponse OnAuthRequired(URLRequest* request,
                                       const AuthChallengeInfo& auth_info,
-                                      const AuthCallback& callback,
+                                      AuthCallback callback,
                                       AuthCredentials* credentials) override {
     IncrementAndCompareCounter("on_auth_required_count");
     return NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
@@ -214,14 +214,12 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
  protected:
   void OnBeforeURLRequestInternal(URLRequest* request,
-                                  const CompletionCallback& callback,
                                   GURL* new_url) override {
     ++(*counters_)["on_before_url_request_count"];
     EXPECT_EQ(1, (*counters_)["on_before_url_request_count"]);
   }
 
   void OnBeforeStartTransactionInternal(URLRequest* request,
-                                        const CompletionCallback& callback,
                                         HttpRequestHeaders* headers) override {
     ++(*counters_)["on_before_start_transaction_count"];
     EXPECT_EQ(1, (*counters_)["on_before_start_transaction_count"]);
@@ -243,7 +241,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
   void OnHeadersReceivedInternal(
       URLRequest* request,
-      const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override {
@@ -292,7 +289,6 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
   void OnAuthRequiredInternal(URLRequest* request,
                               const AuthChallengeInfo& auth_info,
-                              const AuthCallback& callback,
                               AuthCredentials* credentials) override {
     ++(*counters_)["on_auth_required_count"];
     EXPECT_EQ(1, (*counters_)["on_auth_required_count"]);

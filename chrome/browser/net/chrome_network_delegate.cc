@@ -85,14 +85,13 @@ bool g_access_to_all_files_enabled = false;
 // did not do a redirect (so |new_url| is empty) then we enforce the
 // SafeSearch parameters. Otherwise we will get called again after the
 // redirect and we enforce SafeSearch then.
-void ForceGoogleSafeSearchCallbackWrapper(
-    const net::CompletionCallback& callback,
-    net::URLRequest* request,
-    GURL* new_url,
-    int rv) {
+void ForceGoogleSafeSearchCallbackWrapper(net::CompletionOnceCallback callback,
+                                          net::URLRequest* request,
+                                          GURL* new_url,
+                                          int rv) {
   if (rv == net::OK && new_url->is_empty())
     safe_search_util::ForceGoogleSafeSearch(request, new_url);
-  callback.Run(rv);
+  std::move(callback).Run(rv);
 }
 
 void ReportInvalidReferrerSendOnUI() {
@@ -271,9 +270,8 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
 
 int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     GURL* new_url) {
-
   extensions_delegate_->ForwardStartRequestStatus(request);
 
   if (!enable_referrers_->GetValue())
@@ -282,16 +280,15 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   bool force_safe_search =
       (force_google_safe_search_ && force_google_safe_search_->GetValue());
 
-  net::CompletionCallback wrapped_callback = callback;
+  net::CompletionOnceCallback wrapped_callback = std::move(callback);
   if (force_safe_search) {
-    wrapped_callback = base::Bind(&ForceGoogleSafeSearchCallbackWrapper,
-                                  callback,
-                                  base::Unretained(request),
-                                  base::Unretained(new_url));
+    wrapped_callback = base::BindOnce(
+        &ForceGoogleSafeSearchCallbackWrapper, std::move(wrapped_callback),
+        base::Unretained(request), base::Unretained(new_url));
   }
 
-  int rv = extensions_delegate_->OnBeforeURLRequest(
-      request, wrapped_callback, new_url);
+  int rv = extensions_delegate_->NotifyBeforeURLRequest(
+      request, std::move(wrapped_callback), new_url);
 
   if (force_safe_search && rv == net::OK && new_url->is_empty())
     safe_search_util::ForceGoogleSafeSearch(request, new_url);
@@ -309,7 +306,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
 
 int ChromeNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     net::HttpRequestHeaders* headers) {
   if (force_youtube_restrict_) {
     int value = force_youtube_restrict_->GetValue();
@@ -322,41 +319,38 @@ int ChromeNetworkDelegate::OnBeforeStartTransaction(
     }
   }
 
-  return extensions_delegate_->OnBeforeStartTransaction(request, callback,
-                                                        headers);
+  return extensions_delegate_->NotifyBeforeStartTransaction(
+      request, std::move(callback), headers);
 }
 
 void ChromeNetworkDelegate::OnStartTransaction(
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
-  extensions_delegate_->OnStartTransaction(request, headers);
+  extensions_delegate_->NotifyStartTransaction(request, headers);
 }
 
 int ChromeNetworkDelegate::OnHeadersReceived(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  return extensions_delegate_->OnHeadersReceived(
-      request,
-      callback,
-      original_response_headers,
-      override_response_headers,
-      allowed_unsafe_redirect_url);
+  return extensions_delegate_->NotifyHeadersReceived(
+      request, std::move(callback), original_response_headers,
+      override_response_headers, allowed_unsafe_redirect_url);
 }
 
 void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                              const GURL& new_location) {
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnBeforeRedirect(request);
-  extensions_delegate_->OnBeforeRedirect(request, new_location);
+  extensions_delegate_->NotifyBeforeRedirect(request, new_location);
   variations::StripVariationHeaderIfNeeded(new_location, request);
 }
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request,
                                               int net_error) {
-  extensions_delegate_->OnResponseStarted(request, net_error);
+  extensions_delegate_->NotifyResponseStarted(request, net_error);
 }
 
 void ChromeNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
@@ -390,7 +384,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
   // of redirected requests.
   RecordNetworkErrorHistograms(request, net_error);
 
-  extensions_delegate_->OnCompleted(request, started, net_error);
+  extensions_delegate_->NotifyCompleted(request, started, net_error);
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->OnCompleted(request, started);
   extensions_delegate_->ForwardProxyErrors(request, net_error);
@@ -398,22 +392,21 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
 }
 
 void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
-  extensions_delegate_->OnURLRequestDestroyed(request);
+  extensions_delegate_->NotifyURLRequestDestroyed(request);
 }
 
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,
                                              const base::string16& error) {
-  extensions_delegate_->OnPACScriptError(line_number, error);
+  extensions_delegate_->NotifyPACScriptError(line_number, error);
 }
 
 net::NetworkDelegate::AuthRequiredResponse
-ChromeNetworkDelegate::OnAuthRequired(
-    net::URLRequest* request,
-    const net::AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
-    net::AuthCredentials* credentials) {
-  return extensions_delegate_->OnAuthRequired(
-      request, auth_info, callback, credentials);
+ChromeNetworkDelegate::OnAuthRequired(net::URLRequest* request,
+                                      const net::AuthChallengeInfo& auth_info,
+                                      AuthCallback callback,
+                                      net::AuthCredentials* credentials) {
+  return extensions_delegate_->NotifyAuthRequired(
+      request, auth_info, std::move(callback), credentials);
 }
 
 bool ChromeNetworkDelegate::OnCanGetCookies(

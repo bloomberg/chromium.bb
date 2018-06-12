@@ -545,8 +545,8 @@ void URLRequestHttpJob::StartTransaction() {
     // destruction regardless, due to the headers parameter.
     int rv = network_delegate()->NotifyBeforeStartTransaction(
         request_,
-        base::Bind(&URLRequestHttpJob::NotifyBeforeStartTransactionCallback,
-                   base::Unretained(this)),
+        base::BindOnce(&URLRequestHttpJob::NotifyBeforeStartTransactionCallback,
+                       base::Unretained(this)),
         &request_info_.extra_headers);
     // If an extension blocks the request, we rely on the callback to
     // MaybeStartTransactionInternal().
@@ -997,8 +997,9 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       // using a WeakPtr here because it's not enough, the consumer has to watch
       // for destruction regardless, due to the pointer parameters.
       int error = network_delegate()->NotifyHeadersReceived(
-          request_, base::Bind(&URLRequestHttpJob::OnHeadersReceivedCallback,
-                               base::Unretained(this)),
+          request_,
+          base::BindOnce(&URLRequestHttpJob::OnHeadersReceivedCallback,
+                         base::Unretained(this)),
           headers.get(), &override_response_headers_,
           &allowed_unsafe_redirect_url_);
       if (error != OK) {

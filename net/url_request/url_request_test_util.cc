@@ -417,10 +417,9 @@ void TestNetworkDelegate::InitRequestStatesIfNew(int request_id) {
   }
 }
 
-int TestNetworkDelegate::OnBeforeURLRequest(
-    URLRequest* request,
-    const CompletionCallback& callback,
-    GURL* new_url) {
+int TestNetworkDelegate::OnBeforeURLRequest(URLRequest* request,
+                                            CompletionOnceCallback callback,
+                                            GURL* new_url) {
   int req_id = request->identifier();
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnBeforeURLRequest\n";
@@ -438,7 +437,7 @@ int TestNetworkDelegate::OnBeforeURLRequest(
 
 int TestNetworkDelegate::OnBeforeStartTransaction(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     HttpRequestHeaders* headers) {
   if (before_start_transaction_fails_)
     return ERR_FAILED;
@@ -486,7 +485,7 @@ void TestNetworkDelegate::OnStartTransaction(
 
 int TestNetworkDelegate::OnHeadersReceived(
     URLRequest* request,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
@@ -636,7 +635,7 @@ void TestNetworkDelegate::OnPACScriptError(int line_number,
 NetworkDelegate::AuthRequiredResponse TestNetworkDelegate::OnAuthRequired(
     URLRequest* request,
     const AuthChallengeInfo& auth_info,
-    const AuthCallback& callback,
+    AuthCallback callback,
     AuthCredentials* credentials) {
   load_timing_info_before_auth_ = LoadTimingInfo();
   request->GetLoadTimingInfo(&load_timing_info_before_auth_);

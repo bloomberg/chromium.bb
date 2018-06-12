@@ -61,7 +61,7 @@ bool CastNetworkDelegate::OnCanAccessFile(
 
 int CastNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     GURL* new_url) {
   if (!network_request_interceptor_->IsInitialized())
     return net::OK;
@@ -86,17 +86,17 @@ int CastNetworkDelegate::OnBeforeURLRequest(
     render_process_id = content::ChildProcessHost::kInvalidUniqueID;
   }
   return network_request_interceptor_->OnBeforeURLRequest(
-      request, session_id, render_process_id, callback, new_url);
+      request, session_id, render_process_id, std::move(callback), new_url);
 }
 
 int CastNetworkDelegate::OnBeforeStartTransaction(
     net::URLRequest* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     net::HttpRequestHeaders* headers) {
   if (!network_request_interceptor_->IsInitialized())
     return net::OK;
   return network_request_interceptor_->OnBeforeStartTransaction(
-      request, callback, headers);
+      request, std::move(callback), headers);
 }
 
 void CastNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {

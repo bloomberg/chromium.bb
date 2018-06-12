@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/auth.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
@@ -58,7 +58,7 @@ class NET_EXPORT NetworkDelegate {
     AUTH_REQUIRED_RESPONSE_CANCEL_AUTH,
     AUTH_REQUIRED_RESPONSE_IO_PENDING,
   };
-  typedef base::Callback<void(AuthRequiredResponse)> AuthCallback;
+  using AuthCallback = base::OnceCallback<void(AuthRequiredResponse)>;
 
   virtual ~NetworkDelegate();
 
@@ -67,10 +67,10 @@ class NET_EXPORT NetworkDelegate {
   // checking on parameters. See the corresponding virtuals for explanations of
   // the methods and their arguments.
   int NotifyBeforeURLRequest(URLRequest* request,
-                             const CompletionCallback& callback,
+                             CompletionOnceCallback callback,
                              GURL* new_url);
   int NotifyBeforeStartTransaction(URLRequest* request,
-                                   const CompletionCallback& callback,
+                                   CompletionOnceCallback callback,
                                    HttpRequestHeaders* headers);
   void NotifyBeforeSendHeaders(URLRequest* request,
                                const ProxyInfo& proxy_info,
@@ -80,7 +80,7 @@ class NET_EXPORT NetworkDelegate {
                               const HttpRequestHeaders& headers);
   int NotifyHeadersReceived(
       URLRequest* request,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url);
@@ -98,7 +98,7 @@ class NET_EXPORT NetworkDelegate {
   void NotifyPACScriptError(int line_number, const base::string16& error);
   AuthRequiredResponse NotifyAuthRequired(URLRequest* request,
                                           const AuthChallengeInfo& auth_info,
-                                          const AuthCallback& callback,
+                                          AuthCallback callback,
                                           AuthCredentials* credentials);
   bool CanGetCookies(const URLRequest& request,
                      const CookieList& cookie_list);
@@ -135,6 +135,11 @@ class NET_EXPORT NetworkDelegate {
   // member functions will be called by the respective public notification
   // member function, which will perform basic sanity checking.
   //
+  // Note that these member functions refer to URLRequests which may be canceled
+  // or destroyed at any time. Implementations which return ERR_IO_PENDING must
+  // also implement OnURLRequestDestroyed and OnCompleted to handle cancelation.
+  // See below for details.
+  //
   // (NetworkDelegateImpl has default implementations of these member functions.
   // NetworkDelegate implementations should consider subclassing
   // NetworkDelegateImpl.)
@@ -144,40 +149,48 @@ class NET_EXPORT NetworkDelegate {
   // reference fragment from the original URL is not automatically appended to
   // |new_url|; callers are responsible for copying the reference fragment if
   // desired.
-  // |callback| and |new_url| are valid only until OnURLRequestDestroyed is
-  // called for this request. Returns a net status code, generally either OK to
-  // continue with the request or ERR_IO_PENDING if the result is not ready yet.
-  // A status code other than OK and ERR_IO_PENDING will cancel the request and
-  // report the status code as the reason.
+  //
+  // Returns OK to continue with the request, ERR_IO_PENDING if the result is
+  // not ready yet, and any other status code to cancel the request.  If
+  // returning ERR_IO_PENDING, call |callback| when the result is ready. Note,
+  // however, that a pending operation may be cancelled by
+  // OnURLRequestDestroyed. Once cancelled, |request| and |new_url| become
+  // invalid and |callback| may not be called.
   //
   // The default implementation returns OK (continue with request).
   virtual int OnBeforeURLRequest(URLRequest* request,
-                                 const CompletionCallback& callback,
+                                 CompletionOnceCallback callback,
                                  GURL* new_url) = 0;
 
   // Called right before the network transaction starts. Allows the delegate to
-  // read/write |headers| before they get sent out. |callback| and |headers| are
-  // valid only until OnCompleted or OnURLRequestDestroyed is called for this
-  // request.
-  // See OnBeforeURLRequest for return value description. Returns OK by default.
+  // read/write |headers| before they get sent out.
+  //
+  // Returns OK to continue with the request, ERR_IO_PENDING if the result is
+  // not ready yet, and any other status code to cancel the request. If
+  // returning ERR_IO_PENDING, call |callback| when the result is ready. Note,
+  // however, that a pending operation may be cancelled by OnURLRequestDestroyed
+  // or OnCompleted. Once cancelled, |request| and |headers| become invalid and
+  // |callback| may not be called.
+  //
+  // The default implementation returns OK (continue with request) without
+  // modifying |headers|.
   virtual int OnBeforeStartTransaction(URLRequest* request,
-                                       const CompletionCallback& callback,
+                                       CompletionOnceCallback callback,
                                        HttpRequestHeaders* headers) = 0;
 
   // Called after a connection is established , and just before headers are sent
   // to the destination server (i.e., not called for HTTP CONNECT requests). For
   // non-tunneled requests using HTTP proxies, |headers| will include any
   // proxy-specific headers as well. Allows the delegate to read/write |headers|
-  // before they get sent out. |headers| is valid only until OnCompleted or
-  // OnURLRequestDestroyed is called for this request.
+  // before they get sent out. |headers| is valid only for the duration of the
+  // call.
   virtual void OnBeforeSendHeaders(URLRequest* request,
                                    const ProxyInfo& proxy_info,
                                    const ProxyRetryInfoMap& proxy_retry_info,
                                    HttpRequestHeaders* headers) = 0;
 
   // Called right before the HTTP request(s) are being sent to the network.
-  // |headers| is only valid until OnCompleted or OnURLRequestDestroyed is
-  // called for this request.
+  // |headers| is only valid only for the duration of the call.
   virtual void OnStartTransaction(URLRequest* request,
                                   const HttpRequestHeaders& headers) = 0;
 
@@ -191,19 +204,23 @@ class NET_EXPORT NetworkDelegate {
   // blocked and the reference fragment is not copied from the original URL
   // to the redirection target.
   //
-  // |callback|, |original_response_headers|, and |override_response_headers|
-  // are only valid until OnURLRequestDestroyed is called for this request.
-  // See OnBeforeURLRequest for return value description. Returns OK by default.
+  // Returns OK to continue with the request, ERR_IO_PENDING if the result is
+  // not ready yet, and any other status code to cancel the request. If
+  // returning ERR_IO_PENDING, call |callback| when the result is ready. Note,
+  // however, that a pending operation may be cancelled by
+  // OnURLRequestDestroyed. Once cancelled, |request|,
+  // |original_response_headers|, |override_response_headers|, and
+  // |allowed_unsafe_redirect_url| become invalid and |callback| may not be
+  // called.
   virtual int OnHeadersReceived(
       URLRequest* request,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) = 0;
 
-  // Called right after a redirect response code was received.
-  // |new_location| is only valid until OnURLRequestDestroyed is called for this
-  // request.
+  // Called right after a redirect response code was received. |new_location| is
+  // only valid for the duration of the call.
   virtual void OnBeforeRedirect(URLRequest* request,
                                 const GURL& new_location) = 0;
 
@@ -248,8 +265,7 @@ class NET_EXPORT NetworkDelegate {
 
   // Called when a request receives an authentication challenge
   // specified by |auth_info|, and is unable to respond using cached
-  // credentials. |callback| and |credentials| must be non-NULL, and must
-  // be valid until OnURLRequestDestroyed is called for |request|.
+  // credentials. |callback| and |credentials| must be non-NULL.
   //
   // The following return values are allowed:
   //  - AUTH_REQUIRED_RESPONSE_NO_ACTION: |auth_info| is observed, but
@@ -262,11 +278,14 @@ class NET_EXPORT NetworkDelegate {
   //  - AUTH_REQUIRED_RESPONSE_IO_PENDING: The action will be decided
   //    asynchronously. |callback| will be invoked when the decision is made,
   //    and one of the other AuthRequiredResponse values will be passed in with
-  //    the same semantics as described above.
+  //    the same semantics as described above. Note, however, that a pending
+  //    operation may be cancelled by OnURLRequestDestroyed. Once cancelled,
+  //    |request|, |auth_info|, and |credentials| become invalid and |callback|
+  //    may not be called.
   virtual AuthRequiredResponse OnAuthRequired(
       URLRequest* request,
       const AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
+      AuthCallback callback,
       AuthCredentials* credentials) = 0;
 
   // Called when reading cookies to allow the network delegate to block access

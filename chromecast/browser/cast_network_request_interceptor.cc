@@ -30,14 +30,14 @@ int CastNetworkRequestInterceptor::OnBeforeURLRequest(
     net::URLRequest* /* request */,
     const std::string& /* session_id */,
     int /* render_process_id */,
-    const net::CompletionCallback& /* callback */,
+    net::CompletionOnceCallback /* callback */,
     GURL* /* new_url */) {
   return net::OK;
 }
 
 int CastNetworkRequestInterceptor::OnBeforeStartTransaction(
     net::URLRequest* /* request */,
-    const net::CompletionCallback& /* callback */,
+    net::CompletionOnceCallback /* callback */,
     net::HttpRequestHeaders* headers) {
   return net::OK;
 }

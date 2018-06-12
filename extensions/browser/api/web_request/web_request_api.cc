@@ -576,7 +576,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   int num_handlers_blocking = 0;
 
   // The callback to call when we get a response from all event handlers.
-  net::CompletionCallback callback;
+  net::CompletionOnceCallback callback;
 
   // If non-empty, this contains the new URL that the request will redirect to.
   // Only valid for OnBeforeRequest and OnHeadersReceived.
@@ -713,7 +713,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     void* browser_context,
     const InfoMap* extension_info_map,
     WebRequestInfo* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     GURL* new_url) {
   if (ShouldHideEvent(browser_context, extension_info_map, *request))
     return net::OK;
@@ -772,7 +772,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   blocked_request.event = kOnBeforeRequest;
   blocked_request.is_incognito |= is_incognito_context;
   blocked_request.request = request;
-  blocked_request.callback = callback;
+  blocked_request.callback = std::move(callback);
   blocked_request.new_url = new_url;
 
   if (blocked_request.num_handlers_blocking == 0) {
@@ -787,7 +787,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     void* browser_context,
     const InfoMap* extension_info_map,
     const WebRequestInfo* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     net::HttpRequestHeaders* headers) {
   if (ShouldHideEvent(browser_context, extension_info_map, *request))
     return net::OK;
@@ -825,7 +825,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   blocked_request.event = kOnBeforeSendHeaders;
   blocked_request.is_incognito |= IsIncognitoBrowserContext(browser_context);
   blocked_request.request = request;
-  blocked_request.callback = callback;
+  blocked_request.callback = std::move(callback);
   blocked_request.request_headers = headers;
 
   if (blocked_request.num_handlers_blocking == 0) {
@@ -868,7 +868,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     void* browser_context,
     const InfoMap* extension_info_map,
     const WebRequestInfo* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
@@ -909,7 +909,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   blocked_request.event = kOnHeadersReceived;
   blocked_request.is_incognito |= IsIncognitoBrowserContext(browser_context);
   blocked_request.request = request;
-  blocked_request.callback = callback;
+  blocked_request.callback = std::move(callback);
   blocked_request.override_response_headers = override_response_headers;
   blocked_request.original_response_headers = original_response_headers;
   blocked_request.new_url = allowed_unsafe_redirect_url;
@@ -928,7 +928,7 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
     const InfoMap* extension_info_map,
     const WebRequestInfo* request,
     const net::AuthChallengeInfo& auth_info,
-    const net::NetworkDelegate::AuthCallback& callback,
+    net::NetworkDelegate::AuthCallback callback,
     net::AuthCredentials* credentials) {
   // No browser_context means that this is for authentication challenges in the
   // system context. Skip in that case. Also skip sensitive requests.
@@ -955,7 +955,7 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
     blocked_request.event = kOnAuthRequired;
     blocked_request.is_incognito |= IsIncognitoBrowserContext(browser_context);
     blocked_request.request = request;
-    blocked_request.auth_callback = callback;
+    blocked_request.auth_callback = std::move(callback);
     blocked_request.auth_credentials = credentials;
     return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING;
   }
@@ -1899,12 +1899,12 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
   int rv = canceled ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
 
   if (!blocked_request.callback.is_null()) {
-    net::CompletionCallback callback = blocked_request.callback;
+    net::CompletionOnceCallback callback = std::move(blocked_request.callback);
     // Ensure that request is removed before callback because the callback
     // might trigger the next event.
     blocked_requests_.erase(request->id);
     if (call_callback)
-      callback.Run(rv);
+      std::move(callback).Run(rv);
   } else if (!blocked_request.auth_callback.is_null()) {
     net::NetworkDelegate::AuthRequiredResponse response;
     if (canceled)
@@ -1914,10 +1914,11 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(void* browser_context,
     else
       response = net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
-    net::NetworkDelegate::AuthCallback callback = blocked_request.auth_callback;
+    net::NetworkDelegate::AuthCallback callback =
+        std::move(blocked_request.auth_callback);
     blocked_requests_.erase(request->id);
     if (call_callback)
-      callback.Run(response);
+      std::move(callback).Run(response);
   } else {
     blocked_requests_.erase(request->id);
   }

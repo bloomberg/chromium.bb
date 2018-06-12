@@ -39,7 +39,6 @@ class DataUseNetworkDelegate : public net::LayeredNetworkDelegate {
 
   // LayeredNetworkDelegate:
   void OnBeforeURLRequestInternal(net::URLRequest* request,
-                                  const net::CompletionCallback& callback,
                                   GURL* new_url) override;
 
   void OnBeforeRedirectInternal(net::URLRequest* request,
@@ -47,7 +46,6 @@ class DataUseNetworkDelegate : public net::LayeredNetworkDelegate {
 
   void OnHeadersReceivedInternal(
       net::URLRequest* request,
-      const net::CompletionCallback& callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
       GURL* allowed_unsafe_redirect_url) override;

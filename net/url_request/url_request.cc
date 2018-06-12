@@ -532,9 +532,12 @@ void URLRequest::Start() {
   if (network_delegate_) {
     OnCallToDelegate();
     int error = network_delegate_->NotifyBeforeURLRequest(
-        this, before_request_callback_, &delegate_redirect_url_);
+        this,
+        base::BindOnce(&URLRequest::BeforeRequestComplete,
+                       base::Unretained(this)),
+        &delegate_redirect_url_);
     // If ERR_IO_PENDING is returned, the delegate will invoke
-    // |before_request_callback_| later.
+    // |BeforeRequestComplete| later.
     if (error != ERR_IO_PENDING)
       BeforeRequestComplete(error);
     return;
@@ -572,8 +575,6 @@ URLRequest::URLRequest(const GURL& url,
       identifier_(GenerateURLRequestIdentifier()),
       calling_delegate_(false),
       use_blocked_by_as_load_param_(false),
-      before_request_callback_(base::Bind(&URLRequest::BeforeRequestComplete,
-                                          base::Unretained(this))),
       has_notified_completion_(false),
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
@@ -998,10 +999,9 @@ void URLRequest::NotifyAuthRequired(AuthChallengeInfo* auth_info) {
   if (network_delegate_) {
     OnCallToDelegate();
     rv = network_delegate_->NotifyAuthRequired(
-        this,
-        *auth_info,
-        base::Bind(&URLRequest::NotifyAuthRequiredComplete,
-                   base::Unretained(this)),
+        this, *auth_info,
+        base::BindOnce(&URLRequest::NotifyAuthRequiredComplete,
+                       base::Unretained(this)),
         &auth_credentials_);
     if (rv == NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING)
       return;

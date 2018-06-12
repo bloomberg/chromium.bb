@@ -146,7 +146,7 @@ class TestReportSenderNetworkDelegate : public NetworkDelegateImpl {
 
   // NetworkDelegateImpl implementation.
   int OnBeforeURLRequest(URLRequest* request,
-                         const CompletionCallback& callback,
+                         CompletionOnceCallback callback,
                          GURL* new_url) override {
     num_requests_++;
     EXPECT_EQ(expect_url_, request->url());
