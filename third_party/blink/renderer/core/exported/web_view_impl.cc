@@ -440,7 +440,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   if (event.button == WebMouseEvent::Button::kLeft &&
       page_->MainFrame()->IsLocalFrame()) {
     point =
-        page_->DeprecatedLocalMainFrame()->View()->RootFrameToContents(point);
+        page_->DeprecatedLocalMainFrame()->View()->ConvertFromRootFrame(point);
     HitTestResult result(page_->DeprecatedLocalMainFrame()
                              ->GetEventHandler()
                              .HitTestResultAtPoint(point));
@@ -3355,7 +3355,7 @@ HitTestResult WebViewImpl::HitTestResultForRootFramePos(
   if (!page_->MainFrame()->IsLocalFrame())
     return HitTestResult();
   LayoutPoint doc_point(
-      page_->DeprecatedLocalMainFrame()->View()->RootFrameToContents(
+      page_->DeprecatedLocalMainFrame()->View()->ConvertFromRootFrame(
           pos_in_root_frame));
   HitTestResult result =
       page_->DeprecatedLocalMainFrame()->GetEventHandler().HitTestResultAtPoint(

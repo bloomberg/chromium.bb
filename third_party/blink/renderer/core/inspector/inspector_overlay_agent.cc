@@ -97,8 +97,8 @@ Node* HoveredNodeForPoint(LocalFrame* frame,
   if (ignore_pointer_events_none)
     hit_type |= HitTestRequest::kIgnorePointerEventsNone;
   HitTestRequest request(hit_type);
-  HitTestResult result(request,
-                       frame->View()->RootFrameToContents(point_in_root_frame));
+  HitTestResult result(
+      request, frame->View()->ConvertFromRootFrame(point_in_root_frame));
   frame->ContentLayoutObject()->HitTest(result);
   Node* node = result.InnerPossiblyPseudoNode();
   while (node && node->getNodeType() == Node::kTextNode)
@@ -1070,8 +1070,8 @@ bool InspectorOverlayAgent::HandleMouseUp(const WebMouseEvent& event) {
     IntPoint p2 = screenshot_position_;
     if (LocalFrame* frame = frame_impl_->GetFrame()) {
       scale = frame->GetPage()->PageScaleFactor();
-      p1 = frame->View()->RootFrameToContents(p1);
-      p2 = frame->View()->RootFrameToContents(p2);
+      p1 = frame->View()->ConvertFromRootFrame(p1);
+      p2 = frame->View()->ConvertFromRootFrame(p2);
     }
     int min_x = std::min(p1.X(), p2.X());
     int max_x = std::max(p1.X(), p2.X());

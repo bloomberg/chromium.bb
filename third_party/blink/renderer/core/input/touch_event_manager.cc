@@ -534,7 +534,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
       (!touch_node || &touch_node->GetDocument() != touch_sequence_document_)) {
     if (touch_sequence_document_->GetFrame()) {
       LayoutPoint frame_point = LayoutPoint(
-          touch_sequence_document_->GetFrame()->View()->RootFrameToContents(
+          touch_sequence_document_->GetFrame()->View()->ConvertFromRootFrame(
               event.PositionInWidget()));
       result = EventHandlingUtil::HitTestResultInFrame(
           touch_sequence_document_->GetFrame(), frame_point, hit_type);

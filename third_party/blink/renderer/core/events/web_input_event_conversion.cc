@@ -96,7 +96,7 @@ void UpdateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
                                event.AbsoluteLocation().Y());
   if (plugin_parent) {
     point_in_root_frame =
-        plugin_parent->ContentsToRootFrame(point_in_root_frame);
+        plugin_parent->ConvertToRootFrame(point_in_root_frame);
   }
   web_event.SetPositionInScreen(event.screenX(), event.screenY());
   FloatPoint local_point = ConvertAbsoluteLocationForLayoutObjectFloat(

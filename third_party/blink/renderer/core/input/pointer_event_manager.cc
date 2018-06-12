@@ -374,7 +374,7 @@ PointerEventManager::ComputePointerEventTarget(
     HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent |
                                                   HitTestRequest::kReadOnly |
                                                   HitTestRequest::kActive;
-    LayoutPoint page_point = frame_->View()->RootFrameToContents(
+    LayoutPoint page_point = frame_->View()->ConvertFromRootFrame(
         LayoutPoint(web_pointer_event.PositionInWidget()));
     HitTestResult hit_test_tesult =
         frame_->GetEventHandler().HitTestResultAtPoint(page_point, hit_type);

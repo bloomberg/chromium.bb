@@ -647,7 +647,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
                          TRACE_EVENT_SCOPE_THREAD);
 
     LocalFrameView* view = frame_->View();
-    LayoutPoint view_point = view->RootFrameToContents(
+    LayoutPoint view_point = view->ConvertFromRootFrame(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     HitTestRequest request(HitTestRequest::kReadOnly);
     HitTestResult result(request, view_point);
@@ -729,7 +729,7 @@ bool ScrollManager::HandleScrollGestureOnResizer(
     PaintLayer* layer = event_target->GetLayoutObject()
                             ? event_target->GetLayoutObject()->EnclosingLayer()
                             : nullptr;
-    IntPoint p = frame_->View()->RootFrameToContents(
+    IntPoint p = frame_->View()->ConvertFromRootFrame(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     if (layer && layer->GetScrollableArea() &&
         layer->GetScrollableArea()->IsPointInResizeControl(p,

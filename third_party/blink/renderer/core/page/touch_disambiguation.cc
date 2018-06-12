@@ -59,7 +59,7 @@ static IntRect BoundingBoxForEventNodes(Node* event_node) {
     result.Unite(node->PixelSnappedBoundingBox());
     node = NodeTraversal::Next(*node, event_node);
   }
-  return event_node->GetDocument().View()->ContentsToRootFrame(result);
+  return event_node->GetDocument().View()->ConvertToRootFrame(result);
 }
 
 static float ScoreTouchTarget(const IntRect& touch_rect, IntRect bounding_box) {
@@ -87,7 +87,7 @@ void FindGoodTouchTargets(const IntRect& touch_box_in_root_frame,
                           Vector<IntRect>& good_targets,
                           HeapVector<Member<Node>>& highlight_nodes) {
   good_targets.clear();
-  LayoutPoint hit_point(main_frame->View()->RootFrameToContents(
+  LayoutPoint hit_point(main_frame->View()->ConvertFromRootFrame(
       touch_box_in_root_frame.Location()));
   LayoutRect hit_rect(hit_point, LayoutSize(touch_box_in_root_frame.Size()));
   HitTestResult result = main_frame->GetEventHandler().HitTestResultAtRect(

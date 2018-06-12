@@ -190,13 +190,13 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
 
   // The plugin is positioned in the root frame's coordinates, so it needs to
   // be painted in them too.
-  FloatPoint origin(ParentFrameView().ContentsToRootFrame(IntPoint()));
+  FloatPoint origin(ParentFrameView().ConvertToRootFrame(IntPoint()));
   origin.Move(-paint_offset);
   context.Translate(-origin.X(), -origin.Y());
 
   WebCanvas* canvas = context.Canvas();
 
-  IntRect window_rect = ParentFrameView().ContentsToRootFrame(cull_rect.rect_);
+  IntRect window_rect = ParentFrameView().ConvertToRootFrame(cull_rect.rect_);
   web_plugin_->Paint(canvas, window_rect);
 
   context.Restore();
@@ -653,7 +653,7 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
 WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
     const WebPoint& point_in_root_frame) {
   WebPoint point_in_content =
-      ParentFrameView().RootFrameToContents(point_in_root_frame);
+      ParentFrameView().ConvertFromRootFrame(point_in_root_frame);
   return RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocal(
       FloatPoint(point_in_content), kUseTransforms));
 }
@@ -663,7 +663,7 @@ WebPoint WebPluginContainerImpl::LocalToRootFramePoint(
   IntPoint absolute_point =
       RoundedIntPoint(element_->GetLayoutObject()->LocalToAbsolute(
           FloatPoint(point_in_local), kUseTransforms));
-  return ParentFrameView().ContentsToRootFrame(absolute_point);
+  return ParentFrameView().ConvertToRootFrame(absolute_point);
 }
 
 void WebPluginContainerImpl::DidReceiveResponse(
@@ -854,7 +854,7 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent* event) {
   WebFloatPoint absolute_location = event->NativeEvent().PositionInRootFrame();
 
   // Translate the root frame position to content coordinates.
-  absolute_location = ParentFrameView().RootFrameToContents(absolute_location);
+  absolute_location = ParentFrameView().ConvertFromRootFrame(absolute_location);
 
   FloatPoint local_point = element_->GetLayoutObject()->AbsoluteToLocal(
       absolute_location, kUseTransforms);
@@ -949,7 +949,7 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
         transformed_event.touches[i].PositionInWidget();
 
     // Translate the root frame position to content coordinates.
-    absolute_location = parent.RootFrameToContents(absolute_location);
+    absolute_location = parent.ConvertFromRootFrame(absolute_location);
 
     FloatPoint local_point = element_->GetLayoutObject()->AbsoluteToLocal(
         absolute_location, kUseTransforms);

@@ -276,8 +276,8 @@ HitTestResult EventHandler::HitTestResultAtPoint(
       LocalFrameView* frame_view = frame_->View();
       LocalFrameView* main_view = main_frame.View();
       if (frame_view && main_view) {
-        LayoutPoint main_content_point = main_view->RootFrameToContents(
-            frame_view->ContentsToRootFrame(point));
+        LayoutPoint main_content_point = main_view->ConvertFromRootFrame(
+            frame_view->ConvertToRootFrame(point));
         return main_frame.GetEventHandler().HitTestResultAtPoint(
             main_content_point, hit_type, stop_node);
       }
@@ -309,8 +309,8 @@ HitTestResult EventHandler::HitTestResultAtRect(
       LocalFrameView* frame_view = frame_->View();
       LocalFrameView* main_view = main_frame.View();
       if (frame_view && main_view) {
-        LayoutPoint main_content_point = main_view->RootFrameToContents(
-            frame_view->ContentsToRootFrame(rect.Location()));
+        LayoutPoint main_content_point = main_view->ConvertFromRootFrame(
+            frame_view->ConvertToRootFrame(rect.Location()));
         return main_frame.GetEventHandler().HitTestResultAtRect(
             LayoutRect(main_content_point, rect.Size()), hit_type, stop_node);
       }
@@ -635,7 +635,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   HitTestRequest request(HitTestRequest::kActive);
   // Save the document point we generate in case the window coordinate is
   // invalidated by what happens when we dispatch the event.
-  LayoutPoint document_point = frame_->View()->RootFrameToContents(
+  LayoutPoint document_point = frame_->View()->ConvertFromRootFrame(
       FlooredIntPoint(mouse_event.PositionInRootFrame()));
   MouseEventWithHitTestResults mev =
       frame_->GetDocument()->PerformMouseEventHitTest(request, document_point,
@@ -711,7 +711,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
         mev.InnerNode()->GetLayoutObject()
             ? mev.InnerNode()->GetLayoutObject()->EnclosingLayer()
             : nullptr;
-    IntPoint p = view->RootFrameToContents(
+    IntPoint p = view->ConvertFromRootFrame(
         FlooredIntPoint(mouse_event.PositionInRootFrame()));
     if (layer && layer->GetScrollableArea() &&
         layer->GetScrollableArea()->IsPointInResizeControl(
@@ -1480,8 +1480,8 @@ bool EventHandler::BestClickableNodeForHitTestResult(
   }
 
   IntPoint touch_center =
-      frame_->View()->ContentsToRootFrame(result.RoundedPointInMainFrame());
-  IntRect touch_rect = frame_->View()->ContentsToRootFrame(
+      frame_->View()->ConvertToRootFrame(result.RoundedPointInMainFrame());
+  IntRect touch_rect = frame_->View()->ConvertToRootFrame(
       result.GetHitTestLocation().EnclosingIntRect());
 
   HeapVector<Member<Node>, 11> nodes;
@@ -1500,8 +1500,8 @@ bool EventHandler::BestContextMenuNodeForHitTestResult(
     Node*& target_node) {
   DCHECK(result.IsRectBasedTest());
   IntPoint touch_center =
-      frame_->View()->ContentsToRootFrame(result.RoundedPointInMainFrame());
-  IntRect touch_rect = frame_->View()->ContentsToRootFrame(
+      frame_->View()->ConvertToRootFrame(result.RoundedPointInMainFrame());
+  IntRect touch_rect = frame_->View()->ConvertToRootFrame(
       result.GetHitTestLocation().EnclosingIntRect());
   HeapVector<Member<Node>, 11> nodes;
   CopyToVector(result.ListBasedTestResult(), nodes);
@@ -1775,7 +1775,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
       hit_frame = frame_;
     hit_test_result = EventHandlingUtil::HitTestResultInFrame(
         hit_frame,
-        hit_frame->View()->RootFrameToContents(
+        hit_frame->View()->ConvertFromRootFrame(
             LayoutPoint(adjusted_event.PositionInRootFrame())),
         (hit_type | HitTestRequest::kReadOnly) & ~HitTestRequest::kListBased);
   }
@@ -1826,7 +1826,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
   // crbug.com/398914
   if (adjusted) {
     hit_test_result->ResolveRectBasedTest(
-        adjusted_node, frame_->View()->RootFrameToContents(adjusted_point));
+        adjusted_node, frame_->View()->ConvertFromRootFrame(adjusted_point));
     gesture_event->ApplyTouchAdjustment(
         WebFloatPoint(adjusted_point.X(), adjusted_point.Y()));
   }
@@ -1843,7 +1843,7 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   // up.
   mouse_event_manager_->ReleaseMousePress();
   LayoutPoint position_in_contents =
-      v->RootFrameToContents(FlooredIntPoint(event.PositionInRootFrame()));
+      v->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame()));
   HitTestRequest request(HitTestRequest::kActive);
   MouseEventWithHitTestResults mev =
       frame_->GetDocument()->PerformMouseEventHitTest(
@@ -1910,7 +1910,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
     // In a multiline edit, firstRect.maxY() would end up on the next line, so
     // take the midpoint.
     int y = (first_rect.MaxY() + first_rect.Y()) / 2;
-    location_in_root_frame = view->ContentsToRootFrame(IntPoint(x, y));
+    location_in_root_frame = view->ConvertToRootFrame(IntPoint(x, y));
   } else if (focused_element) {
     IntRect clipped_rect = focused_element->BoundsInViewport();
     location_in_root_frame =

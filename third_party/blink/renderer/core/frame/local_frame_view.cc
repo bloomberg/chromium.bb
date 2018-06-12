@@ -4444,48 +4444,6 @@ IntRect LocalFrameView::FrameToContents(const IntRect& rect_in_frame) const {
                  rect_in_frame.Size());
 }
 
-LayoutPoint LocalFrameView::RootFrameToContents(
-    const LayoutPoint& point_in_root_frame) const {
-  LayoutPoint frame_point = ConvertFromRootFrame(point_in_root_frame);
-  return FrameToContents(frame_point);
-}
-
-FloatPoint LocalFrameView::RootFrameToContents(
-    const FloatPoint& point_in_root_frame) const {
-  FloatPoint frame_point = ConvertFromRootFrame(point_in_root_frame);
-  return FrameToContents(frame_point);
-}
-
-IntPoint LocalFrameView::RootFrameToContents(
-    const IntPoint& root_frame_point) const {
-  IntPoint frame_point = ConvertFromRootFrame(root_frame_point);
-  return FrameToContents(frame_point);
-}
-
-IntRect LocalFrameView::RootFrameToContents(
-    const IntRect& root_frame_rect) const {
-  return IntRect(RootFrameToContents(root_frame_rect.Location()),
-                 root_frame_rect.Size());
-}
-
-LayoutPoint LocalFrameView::ContentsToRootFrame(
-    const LayoutPoint& contents_point) const {
-  LayoutPoint frame_point = ContentsToFrame(contents_point);
-  return ConvertToRootFrame(frame_point);
-}
-
-IntPoint LocalFrameView::ContentsToRootFrame(
-    const IntPoint& contents_point) const {
-  IntPoint frame_point = ContentsToFrame(contents_point);
-  return ConvertToRootFrame(frame_point);
-}
-
-IntRect LocalFrameView::ContentsToRootFrame(
-    const IntRect& contents_rect) const {
-  IntRect rect_in_frame = ContentsToFrame(contents_rect);
-  return ConvertToRootFrame(rect_in_frame);
-}
-
 LayoutPoint LocalFrameView::ViewportToContents(
     const LayoutPoint& point_in_viewport) const {
   LayoutPoint point_in_root_frame(

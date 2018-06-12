@@ -271,7 +271,7 @@ static void InvalidatePaintRectangleOnWindow(
     return;
 
   if (ChromeClient* client = frame_view->GetChromeClient())
-    client->InvalidateRect(frame_view->ContentsToRootFrame(paint_rect));
+    client->InvalidateRect(frame_view->ConvertToRootFrame(paint_rect));
 }
 
 void ObjectPaintInvalidator::SetBackingNeedsPaintInvalidationInRect(

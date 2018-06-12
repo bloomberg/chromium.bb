@@ -475,7 +475,7 @@ bool InspectorHighlight::GetBoxModel(
   margin.Scale(scale, scale);
 
   IntRect bounding_box =
-      view->ContentsToRootFrame(layout_object->AbsoluteBoundingBoxRect());
+      view->ConvertToRootFrame(layout_object->AbsoluteBoundingBoxRect());
   LayoutBoxModelObject* model_object =
       layout_object->IsBoxModelObject() ? ToLayoutBoxModelObject(layout_object)
                                         : nullptr;

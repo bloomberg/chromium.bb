@@ -1938,7 +1938,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
   float zoom_factor = GetLayoutBox()->Style()->EffectiveZoom();
 
   IntSize new_offset =
-      OffsetFromResizeCorner(document.View()->RootFrameToContents(pos));
+      OffsetFromResizeCorner(document.View()->ConvertFromRootFrame(pos));
   new_offset.SetWidth(new_offset.Width() / zoom_factor);
   new_offset.SetHeight(new_offset.Height() / zoom_factor);
 
