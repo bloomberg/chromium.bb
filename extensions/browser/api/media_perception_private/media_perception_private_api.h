@@ -99,6 +99,9 @@ class MediaPerceptionPrivateSetComponentProcessStateFunction
   // ExtensionFunction:
   ResponseAction Run() override;
 
+  void OnComponentProcessStateSet(
+      extensions::api::media_perception_private::ProcessState process_state);
+
   DISALLOW_COPY_AND_ASSIGN(
       MediaPerceptionPrivateSetComponentProcessStateFunction);
 };

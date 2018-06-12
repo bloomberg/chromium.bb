@@ -114,6 +114,16 @@ IN_PROC_BROWSER_TEST_F(MediaPerceptionPrivateApiTest, SetAnalyticsComponent) {
   ASSERT_TRUE(RunAppTest("media_perception_private/component")) << message_;
 }
 
+// Verify that we can use the new interface to set the process state of the
+// media perception component.
+IN_PROC_BROWSER_TEST_F(MediaPerceptionPrivateApiTest,
+                       SetComponentProcessState) {
+  // Constructing a TestExtensionsAPIClient to set the behavior of the
+  // ExtensionsAPIClient.
+  TestExtensionsAPIClient test_api_client;
+  ASSERT_TRUE(RunAppTest("media_perception_private/process_state")) << message_;
+}
+
 // Verify that we can set and get mediaPerception system state.
 IN_PROC_BROWSER_TEST_F(MediaPerceptionPrivateApiTest, State) {
   ASSERT_TRUE(RunAppTest("media_perception_private/state")) << message_;

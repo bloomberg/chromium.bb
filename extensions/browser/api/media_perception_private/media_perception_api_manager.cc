@@ -33,6 +33,14 @@ media_perception::State GetStateForServiceError(
   return state;
 }
 
+media_perception::ProcessState GetProcessStateForServiceError(
+    const media_perception::ServiceError service_error) {
+  media_perception::ProcessState process_state;
+  process_state.status = media_perception::PROCESS_STATUS_SERVICE_ERROR;
+  process_state.service_error = service_error;
+  return process_state;
+}
+
 media_perception::Diagnostics GetDiagnosticsForServiceError(
     const media_perception::ServiceError& service_error) {
   media_perception::Diagnostics diagnostics;
@@ -90,18 +98,23 @@ MediaPerceptionAPIManager::~MediaPerceptionAPIManager() {
   upstart_client->StopMediaAnalytics();
 }
 
-void MediaPerceptionAPIManager::GetState(const APIStateCallback& callback) {
+void MediaPerceptionAPIManager::SetMountPointNonEmptyForTesting() {
+  mount_point_ = "non-empty-string";
+}
+
+void MediaPerceptionAPIManager::GetState(APIStateCallback callback) {
   if (analytics_process_state_ == AnalyticsProcessState::RUNNING) {
     chromeos::MediaAnalyticsClient* dbus_client =
         chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient();
-    dbus_client->GetState(base::Bind(&MediaPerceptionAPIManager::StateCallback,
-                                     weak_ptr_factory_.GetWeakPtr(), callback));
+    dbus_client->GetState(
+        base::BindOnce(&MediaPerceptionAPIManager::StateCallback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 
   if (analytics_process_state_ ==
       AnalyticsProcessState::CHANGING_PROCESS_STATE) {
-    callback.Run(GetStateForServiceError(
+    std::move(callback).Run(GetStateForServiceError(
         media_perception::SERVICE_ERROR_SERVICE_BUSY_LAUNCHING));
     return;
   }
@@ -109,7 +122,7 @@ void MediaPerceptionAPIManager::GetState(const APIStateCallback& callback) {
   // Calling getState with process not running returns State UNINITIALIZED.
   media_perception::State state_uninitialized;
   state_uninitialized.status = media_perception::STATUS_UNINITIALIZED;
-  callback.Run(std::move(state_uninitialized));
+  std::move(callback).Run(std::move(state_uninitialized));
 }
 
 void MediaPerceptionAPIManager::SetAnalyticsComponent(
@@ -154,8 +167,58 @@ void MediaPerceptionAPIManager::LoadComponentCallback(
   return;
 }
 
+void MediaPerceptionAPIManager::SetComponentProcessState(
+    const media_perception::ProcessState& process_state,
+    APIComponentProcessStateCallback callback) {
+  DCHECK(process_state.status == media_perception::PROCESS_STATUS_STARTED ||
+         process_state.status == media_perception::PROCESS_STATUS_STOPPED);
+  if (analytics_process_state_ ==
+      AnalyticsProcessState::CHANGING_PROCESS_STATE) {
+    std::move(callback).Run(GetProcessStateForServiceError(
+        media_perception::SERVICE_ERROR_SERVICE_BUSY_LAUNCHING));
+    return;
+  }
+
+  analytics_process_state_ = AnalyticsProcessState::CHANGING_PROCESS_STATE;
+  if (process_state.status == media_perception::PROCESS_STATUS_STOPPED) {
+    chromeos::UpstartClient* dbus_client =
+        chromeos::DBusThreadManager::Get()->GetUpstartClient();
+    base::OnceCallback<void(bool)> stop_callback =
+        base::BindOnce(&MediaPerceptionAPIManager::UpstartStopProcessCallback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+    dbus_client->StopMediaAnalytics(std::move(stop_callback));
+    return;
+  }
+
+  if (process_state.status == media_perception::PROCESS_STATUS_STARTED) {
+    // Check if a component is loaded and add the necessary mount_point
+    // information to the Upstart start command.
+    if (mount_point_.empty()) {
+      analytics_process_state_ = AnalyticsProcessState::IDLE;
+      std::move(callback).Run(GetProcessStateForServiceError(
+          media_perception::SERVICE_ERROR_SERVICE_NOT_INSTALLED));
+      return;
+    }
+
+    chromeos::UpstartClient* dbus_client =
+        chromeos::DBusThreadManager::Get()->GetUpstartClient();
+    std::vector<std::string> upstart_env;
+    upstart_env.push_back(std::string("mount_point=") + mount_point_);
+
+    dbus_client->StartMediaAnalytics(
+        upstart_env,
+        base::BindOnce(&MediaPerceptionAPIManager::UpstartStartProcessCallback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
+  analytics_process_state_ = AnalyticsProcessState::IDLE;
+  std::move(callback).Run(GetProcessStateForServiceError(
+      media_perception::SERVICE_ERROR_SERVICE_NOT_RUNNING));
+}
+
 void MediaPerceptionAPIManager::SetState(const media_perception::State& state,
-                                         const APIStateCallback& callback) {
+                                         APIStateCallback callback) {
   mri::State state_proto = StateIdlToProto(state);
   DCHECK(state_proto.status() == mri::State::RUNNING ||
          state_proto.status() == mri::State::SUSPENDED ||
@@ -166,7 +229,7 @@ void MediaPerceptionAPIManager::SetState(const media_perception::State& state,
 
   if (analytics_process_state_ ==
       AnalyticsProcessState::CHANGING_PROCESS_STATE) {
-    callback.Run(GetStateForServiceError(
+    std::move(callback).Run(GetStateForServiceError(
         media_perception::SERVICE_ERROR_SERVICE_BUSY_LAUNCHING));
     return;
   }
@@ -178,8 +241,8 @@ void MediaPerceptionAPIManager::SetState(const media_perception::State& state,
     chromeos::UpstartClient* dbus_client =
         chromeos::DBusThreadManager::Get()->GetUpstartClient();
     dbus_client->StopMediaAnalytics(
-        base::Bind(&MediaPerceptionAPIManager::UpstartStopCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&MediaPerceptionAPIManager::UpstartStopCallback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 
@@ -190,13 +253,13 @@ void MediaPerceptionAPIManager::SetState(const media_perception::State& state,
     chromeos::UpstartClient* dbus_client =
         chromeos::DBusThreadManager::Get()->GetUpstartClient();
     dbus_client->RestartMediaAnalytics(
-        base::Bind(&MediaPerceptionAPIManager::UpstartRestartCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&MediaPerceptionAPIManager::UpstartRestartCallback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 
   if (analytics_process_state_ == AnalyticsProcessState::RUNNING) {
-    SetStateInternal(callback, state_proto);
+    SetStateInternal(std::move(callback), state_proto);
     return;
   }
 
@@ -219,23 +282,24 @@ void MediaPerceptionAPIManager::SetState(const media_perception::State& state,
 
     dbus_client->StartMediaAnalytics(
         upstart_env,
-        base::Bind(&MediaPerceptionAPIManager::UpstartStartCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback, state_proto));
+        base::BindOnce(&MediaPerceptionAPIManager::UpstartStartCallback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       state_proto));
     return;
   }
 
-  callback.Run(GetStateForServiceError(
+  std::move(callback).Run(GetStateForServiceError(
       media_perception::SERVICE_ERROR_SERVICE_NOT_RUNNING));
 }
 
-void MediaPerceptionAPIManager::SetStateInternal(
-    const APIStateCallback& callback,
-    const mri::State& state) {
+void MediaPerceptionAPIManager::SetStateInternal(APIStateCallback callback,
+                                                 const mri::State& state) {
   chromeos::MediaAnalyticsClient* dbus_client =
       chromeos::DBusThreadManager::Get()->GetMediaAnalyticsClient();
-  dbus_client->SetState(state,
-                        base::Bind(&MediaPerceptionAPIManager::StateCallback,
-                                   weak_ptr_factory_.GetWeakPtr(), callback));
+  dbus_client->SetState(
+      state,
+      base::BindOnce(&MediaPerceptionAPIManager::StateCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void MediaPerceptionAPIManager::GetDiagnostics(
@@ -247,26 +311,55 @@ void MediaPerceptionAPIManager::GetDiagnostics(
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void MediaPerceptionAPIManager::UpstartStartCallback(
-    const APIStateCallback& callback,
-    const mri::State& state,
+void MediaPerceptionAPIManager::UpstartStartProcessCallback(
+    APIComponentProcessStateCallback callback,
     bool succeeded) {
   if (!succeeded) {
     analytics_process_state_ = AnalyticsProcessState::IDLE;
-    callback.Run(GetStateForServiceError(
+    std::move(callback).Run(GetProcessStateForServiceError(
         media_perception::SERVICE_ERROR_SERVICE_NOT_RUNNING));
     return;
   }
   analytics_process_state_ = AnalyticsProcessState::RUNNING;
-  SetStateInternal(callback, state);
+  media_perception::ProcessState state_started;
+  state_started.status = media_perception::PROCESS_STATUS_STARTED;
+  std::move(callback).Run(std::move(state_started));
 }
 
-void MediaPerceptionAPIManager::UpstartStopCallback(
-    const APIStateCallback& callback,
+void MediaPerceptionAPIManager::UpstartStopProcessCallback(
+    APIComponentProcessStateCallback callback,
     bool succeeded) {
   if (!succeeded) {
     analytics_process_state_ = AnalyticsProcessState::UNKNOWN;
-    callback.Run(GetStateForServiceError(
+    std::move(callback).Run(GetProcessStateForServiceError(
+        media_perception::SERVICE_ERROR_SERVICE_UNREACHABLE));
+    return;
+  }
+  analytics_process_state_ = AnalyticsProcessState::IDLE;
+  // Stopping the process succeeded so fire a callback with status STOPPED.
+  media_perception::ProcessState state_stopped;
+  state_stopped.status = media_perception::PROCESS_STATUS_STOPPED;
+  std::move(callback).Run(std::move(state_stopped));
+}
+
+void MediaPerceptionAPIManager::UpstartStartCallback(APIStateCallback callback,
+                                                     const mri::State& state,
+                                                     bool succeeded) {
+  if (!succeeded) {
+    analytics_process_state_ = AnalyticsProcessState::IDLE;
+    std::move(callback).Run(GetStateForServiceError(
+        media_perception::SERVICE_ERROR_SERVICE_NOT_RUNNING));
+    return;
+  }
+  analytics_process_state_ = AnalyticsProcessState::RUNNING;
+  SetStateInternal(std::move(callback), state);
+}
+
+void MediaPerceptionAPIManager::UpstartStopCallback(APIStateCallback callback,
+                                                    bool succeeded) {
+  if (!succeeded) {
+    analytics_process_state_ = AnalyticsProcessState::UNKNOWN;
+    std::move(callback).Run(GetStateForServiceError(
         media_perception::SERVICE_ERROR_SERVICE_UNREACHABLE));
     return;
   }
@@ -274,31 +367,31 @@ void MediaPerceptionAPIManager::UpstartStopCallback(
   // Stopping the process succeeded so fire a callback with status STOPPED.
   media_perception::State state_stopped;
   state_stopped.status = media_perception::STATUS_STOPPED;
-  callback.Run(std::move(state_stopped));
+  std::move(callback).Run(std::move(state_stopped));
 }
 
 void MediaPerceptionAPIManager::UpstartRestartCallback(
-    const APIStateCallback& callback,
+    APIStateCallback callback,
     bool succeeded) {
   if (!succeeded) {
     analytics_process_state_ = AnalyticsProcessState::IDLE;
-    callback.Run(GetStateForServiceError(
+    std::move(callback).Run(GetStateForServiceError(
         media_perception::SERVICE_ERROR_SERVICE_NOT_RUNNING));
     return;
   }
   analytics_process_state_ = AnalyticsProcessState::RUNNING;
-  GetState(callback);
+  GetState(std::move(callback));
 }
 
 void MediaPerceptionAPIManager::StateCallback(
-    const APIStateCallback& callback,
+    APIStateCallback callback,
     base::Optional<mri::State> result) {
   if (!result.has_value()) {
-    callback.Run(GetStateForServiceError(
+    std::move(callback).Run(GetStateForServiceError(
         media_perception::SERVICE_ERROR_SERVICE_UNREACHABLE));
     return;
   }
-  callback.Run(media_perception::StateProtoToIdl(result.value()));
+  std::move(callback).Run(media_perception::StateProtoToIdl(result.value()));
 }
 
 void MediaPerceptionAPIManager::GetDiagnosticsCallback(

@@ -91,6 +91,14 @@ void RecordServiceErrorFromStateAndRunClosure(
   quit_run_loop.Run();
 }
 
+void RecordServiceErrorFromProcessStateAndRunClosure(
+    base::OnceClosure quit_run_loop,
+    media_perception::ServiceError* service_error,
+    media_perception::ProcessState result_state) {
+  *service_error = result_state.service_error;
+  std::move(quit_run_loop).Run();
+}
+
 void RecordServiceErrorFromDiagnosticsAndRunClosure(
     base::Closure quit_run_loop,
     media_perception::ServiceError* service_error,
@@ -116,6 +124,19 @@ media_perception::ServiceError GetStateAndWaitForResponse(
   media_perception::ServiceError service_error;
   manager->GetState(base::Bind(&RecordServiceErrorFromStateAndRunClosure,
                                run_loop.QuitClosure(), &service_error));
+  run_loop.Run();
+  return service_error;
+}
+
+media_perception::ServiceError SetComponentProcessStateAndWaitForResponse(
+    MediaPerceptionAPIManager* manager,
+    const media_perception::ProcessState& process_state) {
+  base::RunLoop run_loop;
+  media_perception::ServiceError service_error;
+  manager->SetComponentProcessState(
+      process_state,
+      base::BindOnce(&RecordServiceErrorFromProcessStateAndRunClosure,
+                     run_loop.QuitClosure(), &service_error));
   run_loop.Run();
   return service_error;
 }
@@ -151,6 +172,7 @@ class MediaPerceptionAPIManagerTest : public testing::Test {
     dbus_setter->SetUpstartClient(std::move(upstart_client));
 
     manager_ = std::make_unique<MediaPerceptionAPIManager>(&browser_context_);
+    manager_->SetMountPointNonEmptyForTesting();
   }
 
   void TearDown() override {
@@ -193,6 +215,28 @@ TEST_F(MediaPerceptionAPIManagerTest, UpstartFailure) {
             SetStateAndWaitForResponse(manager_.get(), state));
 }
 
+TEST_F(MediaPerceptionAPIManagerTest, ProcessStateUpstartFailure) {
+  upstart_client_->set_enqueue_requests(true);
+  media_perception::ProcessState process_state;
+  process_state.status = media_perception::PROCESS_STATUS_STARTED;
+
+  base::RunLoop run_loop;
+  media_perception::ServiceError service_error;
+  manager_->SetComponentProcessState(
+      process_state,
+      base::BindOnce(&RecordServiceErrorFromProcessStateAndRunClosure,
+                     run_loop.QuitClosure(), &service_error));
+  EXPECT_TRUE(upstart_client_->HandleNextUpstartRequest(false));
+  run_loop.Run();
+  EXPECT_EQ(media_perception::SERVICE_ERROR_SERVICE_NOT_RUNNING, service_error);
+
+  // Check that after a failed request, setState RUNNING will go through.
+  upstart_client_->set_enqueue_requests(false);
+  EXPECT_EQ(media_perception::SERVICE_ERROR_NONE,
+            SetComponentProcessStateAndWaitForResponse(manager_.get(),
+                                                       process_state));
+}
+
 TEST_F(MediaPerceptionAPIManagerTest, UpstartStopFailure) {
   upstart_client_->set_enqueue_requests(true);
   media_perception::State state;
@@ -207,10 +251,32 @@ TEST_F(MediaPerceptionAPIManagerTest, UpstartStopFailure) {
   run_loop.Run();
   EXPECT_EQ(media_perception::SERVICE_ERROR_SERVICE_UNREACHABLE, service_error);
 
-  // Check that after a failed request, setState STOPPED will go through.
+  // Check that after a failed request, STOPPED will go through.
   upstart_client_->set_enqueue_requests(false);
   EXPECT_EQ(media_perception::SERVICE_ERROR_NONE,
             SetStateAndWaitForResponse(manager_.get(), state));
+}
+
+TEST_F(MediaPerceptionAPIManagerTest, ProcessStateUpstartStopFailure) {
+  upstart_client_->set_enqueue_requests(true);
+  media_perception::ProcessState process_state;
+  process_state.status = media_perception::PROCESS_STATUS_STOPPED;
+
+  base::RunLoop run_loop;
+  media_perception::ServiceError service_error;
+  manager_->SetComponentProcessState(
+      process_state,
+      base::BindOnce(&RecordServiceErrorFromProcessStateAndRunClosure,
+                     run_loop.QuitClosure(), &service_error));
+  EXPECT_TRUE(upstart_client_->HandleNextUpstartRequest(false));
+  run_loop.Run();
+  EXPECT_EQ(media_perception::SERVICE_ERROR_SERVICE_UNREACHABLE, service_error);
+
+  // Check that after a failed request, STOPPED will go through.
+  upstart_client_->set_enqueue_requests(false);
+  EXPECT_EQ(media_perception::SERVICE_ERROR_NONE,
+            SetComponentProcessStateAndWaitForResponse(manager_.get(),
+                                                       process_state));
 }
 
 TEST_F(MediaPerceptionAPIManagerTest, UpstartRestartFailure) {
@@ -262,6 +328,32 @@ TEST_F(MediaPerceptionAPIManagerTest, UpstartStall) {
             SetStateAndWaitForResponse(manager_.get(), state));
 }
 
+TEST_F(MediaPerceptionAPIManagerTest, SetComponentProcessStateUpstartStall) {
+  upstart_client_->set_enqueue_requests(true);
+  media_perception::ProcessState process_state;
+  process_state.status = media_perception::PROCESS_STATUS_STARTED;
+
+  base::RunLoop run_loop;
+  media_perception::ServiceError service_error;
+  manager_->SetComponentProcessState(
+      process_state,
+      base::BindOnce(&RecordServiceErrorFromProcessStateAndRunClosure,
+                     run_loop.QuitClosure(), &service_error));
+
+  EXPECT_EQ(media_perception::SERVICE_ERROR_SERVICE_BUSY_LAUNCHING,
+            SetComponentProcessStateAndWaitForResponse(manager_.get(),
+                                                       process_state));
+  EXPECT_TRUE(upstart_client_->HandleNextUpstartRequest(true));
+  run_loop.Run();
+  EXPECT_EQ(media_perception::SERVICE_ERROR_NONE, service_error);
+
+  // Verify that after the slow start, things works as normal.
+  upstart_client_->set_enqueue_requests(false);
+  process_state.status = media_perception::PROCESS_STATUS_STARTED;
+  EXPECT_EQ(media_perception::SERVICE_ERROR_NONE,
+            SetComponentProcessStateAndWaitForResponse(manager_.get(),
+                                                       process_state));
+}
 TEST_F(MediaPerceptionAPIManagerTest, UpstartRestartStall) {
   upstart_client_->set_enqueue_requests(true);
   media_perception::State state;
