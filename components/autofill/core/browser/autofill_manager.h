@@ -178,6 +178,9 @@ class AutofillManager : public AutofillHandler,
 
   // AutofillHandler:
   void OnFocusNoLongerOnForm() override;
+  void OnFocusOnFormFieldImpl(const FormData& form,
+                              const FormFieldData& field,
+                              const gfx::RectF& bounding_box) override;
   void OnDidFillAutofillFormData(const FormData& form,
                                  const base::TimeTicks timestamp) override;
   void OnDidPreviewAutofillFormData() override;
@@ -260,9 +263,6 @@ class AutofillManager : public AutofillHandler,
                                     const FormData& form,
                                     const FormFieldData& field,
                                     const gfx::RectF& transformed_box) override;
-  void OnFocusOnFormFieldImpl(const FormData& form,
-                              const FormFieldData& field,
-                              const gfx::RectF& bounding_box) override;
   void OnSelectControlDidChangeImpl(const FormData& form,
                                     const FormFieldData& field,
                                     const gfx::RectF& bounding_box) override;
@@ -313,6 +313,17 @@ class AutofillManager : public AutofillHandler,
     std::set<FieldTypeGroup> type_groups_originally_filled;
   };
 
+  // Indicates the reason why autofill suggestions are suppressed.
+  enum class SuppressReason {
+    kNotSuppressed,
+    // Credit card suggestions are not shown because an ablation experiment is
+    // enabled.
+    kCreditCardsAblation,
+    // Address suggestions are not shown because the field is annotated with
+    // autocomplete=off and the directive is being observed by the browser.
+    kAutocompleteOff,
+  };
+
   // The context for the list of suggestions available for a given field to be
   // returned by GetAvailableSuggestions().
   struct SuggestionsContext {
@@ -323,7 +334,8 @@ class AutofillManager : public AutofillHandler,
     bool is_filling_credit_card = false;
     // Flag to indicate whether all suggestions come from Google Payments.
     bool is_all_server_suggestions = false;
-    bool suggestions_suppressed = false;
+    bool section_has_autofilled_field = false;
+    SuppressReason suppress_reason = SuppressReason::kNotSuppressed;
   };
 
   // AutofillDownloadManager::Observer:
@@ -524,8 +536,7 @@ class AutofillManager : public AutofillHandler,
   // |field|. |context| will contain additional information about the
   // suggestions, such as if they correspond to credit card suggestions and
   // if the context is secure.
-  void GetAvailableSuggestions(int query_id,
-                               const FormData& form,
+  void GetAvailableSuggestions(const FormData& form,
                                const FormFieldData& field,
                                std::vector<Suggestion>* suggestions,
                                SuggestionsContext* context);

@@ -74,6 +74,13 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
                                      const std::vector<Suggestion>& suggestions,
                                      bool is_all_server_suggestions = false);
 
+  // Returns true if there is a screen reader installed on the machine.
+  virtual bool HasActiveScreenReader() const;
+
+  // Indicates on focus changed if autofill is available or unavailable, so
+  // state can be announced by screen readers.
+  virtual void OnAutofillAvailabilityEvent(bool has_suggestions);
+
   // Set the data list value associated with the current field.
   void SetCurrentDataListValues(
       const std::vector<base::string16>& data_list_values,

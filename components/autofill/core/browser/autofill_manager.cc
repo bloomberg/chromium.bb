@@ -547,60 +547,37 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
 
   std::vector<Suggestion> suggestions;
   SuggestionsContext context;
-  GetAvailableSuggestions(query_id, form, field, &suggestions, &context);
+  GetAvailableSuggestions(form, field, &suggestions, &context);
 
   if (context.is_autofill_available) {
-    if (context.suggestions_suppressed)
-      return;
+    switch (context.suppress_reason) {
+      case SuppressReason::kNotSuppressed:
+        break;
+
+      case SuppressReason::kCreditCardsAblation:
+        enable_ablation_logging_ = true;
+        autocomplete_history_manager_->CancelPendingQuery();
+        external_delegate_->OnSuggestionsReturned(query_id, suggestions);
+        return;
+
+      case SuppressReason::kAutocompleteOff:
+        return;
+    }
 
     if (!suggestions.empty()) {
-      if (context.is_filling_credit_card)
+      if (context.is_filling_credit_card) {
         AutofillMetrics::LogIsQueriedCreditCardFormSecure(
             context.is_context_secure);
+      }
 
-      // Don't provide credit card suggestions for non-secure pages, but do
-      // provide them for secure pages with passive mixed content (see impl. of
-      // IsContextSecure).
-      if (context.is_filling_credit_card && !context.is_context_secure) {
-        // Replace the suggestion content with a warning message explaining why
-        // Autofill is disabled for a website. The string is different if the
-        // credit card autofill HTTP warning experiment is enabled.
-        Suggestion warning_suggestion(l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
-        warning_suggestion.frontend_id =
-            POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
-        suggestions.assign(1, warning_suggestion);
-      } else {
-        bool section_has_autofilled_field = SectionHasAutofilledField(
-            *context.form_structure, form, context.focused_field->section);
-        if (section_has_autofilled_field) {
-          // If the relevant section has auto-filled  fields and the renderer is
-          // querying for suggestions, then for some fields, the user is editing
-          // the value of a field. In this case, mimic autocomplete: don't
-          // display labels or icons, as that information is redundant.
-          // Moreover, filter out duplicate suggestions.
-          std::set<base::string16> seen_values;
-          for (auto iter = suggestions.begin(); iter != suggestions.end();) {
-            if (!seen_values.insert(iter->value).second) {
-              // If we've seen this suggestion value before, remove it.
-              iter = suggestions.erase(iter);
-            } else {
-              iter->label.clear();
-              iter->icon.clear();
-              ++iter;
-            }
-          }
-        }
-
-        // The first time we show suggestions on this page, log the number of
-        // suggestions available.
-        // TODO(mathp): Differentiate between number of suggestions available
-        // (current metric) and number shown to the user.
-        if (!has_logged_address_suggestions_count_ &&
-            !section_has_autofilled_field) {
-          AutofillMetrics::LogAddressSuggestionsCount(suggestions.size());
-          has_logged_address_suggestions_count_ = true;
-        }
+      // The first time we show suggestions on this page, log the number of
+      // suggestions available.
+      // TODO(mathp): Differentiate between number of suggestions available
+      // (current metric) and number shown to the user.
+      if (!has_logged_address_suggestions_count_ &&
+          !context.section_has_autofilled_field) {
+        AutofillMetrics::LogAddressSuggestionsCount(suggestions.size());
+        has_logged_address_suggestions_count_ = true;
       }
     }
   }
@@ -767,11 +744,27 @@ void AutofillManager::FillCreditCardForm(int query_id,
 
 void AutofillManager::OnFocusNoLongerOnForm() {
   ProcessPendingFormForUpload();
+  if (external_delegate_->HasActiveScreenReader())
+    external_delegate_->OnAutofillAvailabilityEvent(false);
 }
 
 void AutofillManager::OnFocusOnFormFieldImpl(const FormData& form,
                                              const FormFieldData& field,
-                                             const gfx::RectF& bounding_box) {}
+                                             const gfx::RectF& bounding_box) {
+  // Notify installed screen readers if the focus is on a field for which there
+  // are suggestions to present. Ignore if a screen reader is not present.
+  if (!external_delegate_->HasActiveScreenReader())
+    return;
+
+  // TODO(https://crbug.com/848427): Add metrics for performance impact.
+  std::vector<Suggestion> suggestions;
+  SuggestionsContext context;
+  GetAvailableSuggestions(form, field, &suggestions, &context);
+
+  external_delegate_->OnAutofillAvailabilityEvent(
+      context.suppress_reason == SuppressReason::kNotSuppressed &&
+      !suggestions.empty());
+}
 
 void AutofillManager::OnSelectControlDidChangeImpl(
     const FormData& form,
@@ -2069,7 +2062,6 @@ void AutofillManager::TriggerRefill(const FormData& form,
 }
 
 void AutofillManager::GetAvailableSuggestions(
-    int query_id,
     const FormData& form,
     const FormFieldData& field,
     std::vector<Suggestion>* suggestions,
@@ -2114,33 +2106,66 @@ void AutofillManager::GetAvailableSuggestions(
 
   context->is_autofill_available = true;
 
-  // On desktop, don't return non credit card related suggestions for forms or
-  // fields that have the "autocomplete" attribute set to off, only if the
-  // feature to always fill addresses is off.
-  if (!base::FeatureList::IsEnabled(kAutofillAlwaysFillAddresses) &&
-      IsDesktopPlatform() && !context->is_filling_credit_card &&
-      !field.should_autocomplete) {
-    context->suggestions_suppressed = true;
-    return;
-  }
-
   if (context->is_filling_credit_card) {
     *suggestions =
         GetCreditCardSuggestions(field, context->focused_field->Type(),
                                  &context->is_all_server_suggestions);
+
+    // Logic for disabling/ablating credit card autofill.
+    if (base::FeatureList::IsEnabled(kAutofillCreditCardAblationExperiment) &&
+        !suggestions->empty()) {
+      context->suppress_reason = SuppressReason::kCreditCardsAblation;
+      suggestions->clear();
+      return;
+    }
   } else {
+    // On desktop, don't return non credit card related suggestions for forms or
+    // fields that have the "autocomplete" attribute set to off, only if the
+    // feature to always fill addresses is off.
+    if (!base::FeatureList::IsEnabled(kAutofillAlwaysFillAddresses) &&
+        IsDesktopPlatform() && !field.should_autocomplete) {
+      context->suppress_reason = SuppressReason::kAutocompleteOff;
+      return;
+    }
+
     *suggestions = GetProfileSuggestions(*context->form_structure, field,
                                          *context->focused_field);
   }
 
-  // Logic for disabling/ablating credit card autofill.
-  if (base::FeatureList::IsEnabled(kAutofillCreditCardAblationExperiment) &&
-      context->is_filling_credit_card && !suggestions->empty()) {
-    context->suggestions_suppressed = true;
-    suggestions->clear();
-    autocomplete_history_manager_->CancelPendingQuery();
-    external_delegate_->OnSuggestionsReturned(query_id, *suggestions);
-    enable_ablation_logging_ = true;
+  // Don't provide credit card suggestions for non-secure pages, but do provide
+  // them for secure pages with passive mixed content (see implementation of
+  // IsContextSecure).
+  if (!suggestions->empty() && context->is_filling_credit_card &&
+      !context->is_context_secure) {
+    // Replace the suggestion content with a warning message explaining why
+    // Autofill is disabled for a website. The string is different if the
+    // credit card autofill HTTP warning experiment is enabled.
+    Suggestion warning_suggestion(
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
+    warning_suggestion.frontend_id =
+        POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
+    suggestions->assign(1, warning_suggestion);
+  } else {
+    context->section_has_autofilled_field = SectionHasAutofilledField(
+        *context->form_structure, form, context->focused_field->section);
+    if (context->section_has_autofilled_field) {
+      // If the relevant section has auto-filled  fields and the renderer is
+      // querying for suggestions, then for some fields, the user is editing
+      // the value of a field. In this case, mimic autocomplete: don't
+      // display labels or icons, as that information is redundant.
+      // Moreover, filter out duplicate suggestions.
+      std::set<base::string16> seen_values;
+      for (auto iter = suggestions->begin(); iter != suggestions->end();) {
+        if (!seen_values.insert(iter->value).second) {
+          // If we've seen this suggestion value before, remove it.
+          iter = suggestions->erase(iter);
+        } else {
+          iter->label.clear();
+          iter->icon.clear();
+          ++iter;
+        }
+      }
+    }
   }
 }
 

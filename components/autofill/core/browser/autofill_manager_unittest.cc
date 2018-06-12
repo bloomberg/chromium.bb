@@ -71,6 +71,7 @@
 using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
+using autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;
@@ -6141,5 +6142,173 @@ TEST_F(AutofillManagerTest,
   // Test that we sent the right values to the external delegate.
   ASSERT_FALSE(external_delegate_->is_all_server_suggestions());
 }
+
+// Test param indicates if there is an active screen reader.
+class OnFocusOnFormFieldTest : public AutofillManagerTest,
+                               public testing::WithParamInterface<bool> {
+ protected:
+  OnFocusOnFormFieldTest() = default;
+  ~OnFocusOnFormFieldTest() override = default;
+
+  void SetUp() override {
+    AutofillManagerTest::SetUp();
+
+    has_active_screen_reader_ = GetParam();
+    external_delegate_->set_has_active_screen_reader(has_active_screen_reader_);
+
+    scoped_feature_list_.InitWithFeatures(
+        // Enabled
+        {},
+        // Disabled
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillEnforceMinRequiredFieldsForQuery,
+         kAutofillEnforceMinRequiredFieldsForUpload,
+         kAutofillRestrictUnownedFieldsToFormlessCheckout});
+  }
+
+  void TearDown() override {
+    external_delegate_->set_has_active_screen_reader(false);
+
+    AutofillManagerTest::TearDown();
+  }
+
+  void CheckSuggestionsAvailableIfScreenReaderRunning() {
+    EXPECT_EQ(has_active_screen_reader_,
+              external_delegate_->has_suggestions_available_on_field_focus());
+  }
+
+  void CheckNoSuggestionsAvailableOnFieldFocus() {
+    EXPECT_FALSE(
+        external_delegate_->has_suggestions_available_on_field_focus());
+  }
+
+  bool has_active_screen_reader_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(OnFocusOnFormFieldTest, AddressSuggestions) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  // Set a valid autocomplete attribute for the first name.
+  test::CreateTestFormField("First name", "firstname", "", "text", &field);
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+  // Set an unrecognized autocomplete attribute for the last name.
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  field.autocomplete_attribute = "unrecognized";
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Suggestions should be returned for the first field.
+  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[0], gfx::RectF());
+  CheckSuggestionsAvailableIfScreenReaderRunning();
+
+  // No suggestions should be provided for the second field because of its
+  // unrecognized autocomplete attribute.
+  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1], gfx::RectF());
+  CheckNoSuggestionsAvailableOnFieldFocus();
+}
+
+TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_AutocompleteOffNotRespected) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kAutofillAlwaysFillAddresses);
+
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  // Set a valid autocomplete attribute for the first name.
+  test::CreateTestFormField("First name", "firstname", "", "text", &field);
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+  // Set an autocomplete=off attribute for the last name.
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  field.should_autocomplete = false;
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1], gfx::RectF());
+  CheckSuggestionsAvailableIfScreenReaderRunning();
+}
+
+TEST_P(OnFocusOnFormFieldTest, AddressSuggestions_AutocompleteOffRespected) {
+  if (!IsDesktopPlatform())
+    return;
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kAutofillAlwaysFillAddresses);
+
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  // Set a valid autocomplete attribute for the first name.
+  test::CreateTestFormField("First name", "firstname", "", "text", &field);
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+  // Set an autocomplete=off attribute for the last name.
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  field.should_autocomplete = false;
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1], gfx::RectF());
+  CheckNoSuggestionsAvailableOnFieldFocus();
+}
+
+TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_SecureContext) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  // Clear the form action.
+  form.action = GURL();
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1], gfx::RectF());
+  CheckSuggestionsAvailableIfScreenReaderRunning();
+}
+
+TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_NonSecureContext) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, false, false);
+  // Clear the form action.
+  form.action = GURL();
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1], gfx::RectF());
+  // In a non-HTTPS context, there will be a warning indicating the page is
+  // insecure.
+  CheckSuggestionsAvailableIfScreenReaderRunning();
+}
+
+TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_Ablation) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kAutofillCreditCardAblationExperiment);
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  // Clear the form action.
+  form.action = GURL();
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  autofill_manager_->OnFocusOnFormFieldImpl(form, form.fields[1], gfx::RectF());
+  CheckNoSuggestionsAvailableOnFieldFocus();
+}
+
+INSTANTIATE_TEST_CASE_P(All, OnFocusOnFormFieldTest, testing::Bool());
 
 }  // namespace autofill
