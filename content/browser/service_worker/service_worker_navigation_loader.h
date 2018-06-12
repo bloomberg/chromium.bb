@@ -84,10 +84,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   // Called via URLJobWrapper.
   void FallbackToNetwork();
-  void FallbackToNetworkOrRenderer();
   void ForwardToServiceWorker();
   bool ShouldFallbackToNetwork();
-  void FailDueToLostController();
   void Cancel();
   bool WasCanceled() const;
 
@@ -164,7 +162,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   bool did_navigation_preload_ = false;
   network::ResourceResponseHead response_head_;
-  base::Optional<net::SSLInfo> ssl_info_;
 
   // Pointer to the URLLoaderClient (i.e. NavigationURLLoader).
   network::mojom::URLLoaderClientPtr url_loader_client_;

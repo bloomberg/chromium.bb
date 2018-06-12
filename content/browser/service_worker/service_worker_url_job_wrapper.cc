@@ -39,7 +39,10 @@ void ServiceWorkerURLJobWrapper::FallbackToNetwork() {
 
 void ServiceWorkerURLJobWrapper::FallbackToNetworkOrRenderer() {
   if (url_loader_job_) {
-    url_loader_job_->FallbackToNetworkOrRenderer();
+    // Fallback to renderer is used when CORS checks need to be performed on the
+    // request. CORS doesn't apply to navigations, and |url_loader_job_| is for
+    // navigations, so just use FallbackToNetwork().
+    url_loader_job_->FallbackToNetwork();
   } else {
     url_request_job_->FallbackToNetworkOrRenderer();
   }
@@ -62,11 +65,10 @@ bool ServiceWorkerURLJobWrapper::ShouldFallbackToNetwork() {
 }
 
 void ServiceWorkerURLJobWrapper::FailDueToLostController() {
-  if (url_loader_job_) {
-    url_loader_job_->FailDueToLostController();
-  } else {
-    url_request_job_->FailDueToLostController();
-  }
+  // This function is only called for subresource requests, so it can't
+  // be called for |url_loader_job_|, which is for navigations.
+  DCHECK(!url_loader_job_);
+  url_request_job_->FailDueToLostController();
 }
 
 bool ServiceWorkerURLJobWrapper::WasCanceled() const {

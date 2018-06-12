@@ -100,11 +100,6 @@ void ServiceWorkerNavigationLoader::FallbackToNetwork() {
     std::move(loader_callback_).Run({});
 }
 
-void ServiceWorkerNavigationLoader::FallbackToNetworkOrRenderer() {
-  // TODO(kinuko): Implement this. Now we always fallback to network.
-  FallbackToNetwork();
-}
-
 void ServiceWorkerNavigationLoader::ForwardToServiceWorker() {
   response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
   StartRequest();
@@ -112,10 +107,6 @@ void ServiceWorkerNavigationLoader::ForwardToServiceWorker() {
 
 bool ServiceWorkerNavigationLoader::ShouldFallbackToNetwork() {
   return response_type_ == ResponseType::FALLBACK_TO_NETWORK;
-}
-
-void ServiceWorkerNavigationLoader::FailDueToLostController() {
-  NOTIMPLEMENTED();
 }
 
 void ServiceWorkerNavigationLoader::Cancel() {
@@ -243,7 +234,6 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
 
   if (fetch_result ==
       ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback) {
-    // TODO(kinuko): Check if this needs to fallback to the renderer.
     FallbackToNetwork();
     return;
   }
@@ -257,15 +247,6 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     ReturnNetworkError();
     return;
   }
-
-  // Get SSLInfo from the ServiceWorker script's HttpResponseInfo to show HTTPS
-  // padlock.
-  // TODO(horo): When we support mixed-content (HTTP) no-cors requests from a
-  // ServiceWorker, we have to check the security level of the responses.
-  const net::HttpResponseInfo* main_script_http_info =
-      version->GetMainScriptHttpResponseInfo();
-  DCHECK(main_script_http_info);
-  ssl_info_ = main_script_http_info->ssl_info;
 
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartResponse,
@@ -295,14 +276,20 @@ void ServiceWorkerNavigationLoader::StartResponse(
   response_head_.did_service_worker_navigation_preload =
       did_navigation_preload_;
   response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
-  response_head_.ssl_info = ssl_info_;
+
+  // Make the navigated page inherit the SSLInfo from its controller service
+  // worker's script.  This affects the HTTPS padlock, etc, shown by the
+  // browser. See https://crbug.com/392409 for details about this design.
+  // TODO(horo): When we support mixed-content (HTTP) no-cors requests from a
+  // ServiceWorker, we have to check the security level of the responses.
+  response_head_.ssl_info = version->GetMainScriptHttpResponseInfo()->ssl_info;
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.
   base::Optional<net::RedirectInfo> redirect_info =
       ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
           resource_request_, response_head_,
-          ssl_info_ && ssl_info_->token_binding_negotiated);
+          response_head_.ssl_info->token_binding_negotiated);
   if (redirect_info) {
     response_head_.encoded_data_length = 0;
     url_loader_client_->OnReceiveRedirect(*redirect_info, response_head_);
