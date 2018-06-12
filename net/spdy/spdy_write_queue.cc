@@ -92,15 +92,13 @@ bool SpdyWriteQueue::Dequeue(
   return false;
 }
 
-void SpdyWriteQueue::RemovePendingWritesForStream(
-    const base::WeakPtr<SpdyStream>& stream) {
+void SpdyWriteQueue::RemovePendingWritesForStream(SpdyStream* stream) {
   CHECK(!removing_writes_);
   removing_writes_ = true;
   RequestPriority priority = stream->priority();
   CHECK_GE(priority, MINIMUM_PRIORITY);
   CHECK_LE(priority, MAXIMUM_PRIORITY);
 
-  DCHECK(stream.get());
 #if DCHECK_IS_ON()
   // |stream| should not have pending writes in a queue not matching
   // its priority.
@@ -108,7 +106,7 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
     if (priority == i)
       continue;
     for (auto it = queue_[i].begin(); it != queue_[i].end(); ++it)
-      DCHECK_NE(it->stream.get(), stream.get());
+      DCHECK_NE(it->stream.get(), stream);
   }
 #endif
 
@@ -117,7 +115,7 @@ void SpdyWriteQueue::RemovePendingWritesForStream(
   std::vector<std::unique_ptr<SpdyBufferProducer>> erased_buffer_producers;
   base::circular_deque<PendingWrite>& queue = queue_[priority];
   for (auto it = queue.begin(); it != queue.end();) {
-    if (it->stream.get() == stream.get()) {
+    if (it->stream.get() == stream) {
       erased_buffer_producers.push_back(std::move(it->frame_producer));
       it = queue.erase(it);
     } else {
@@ -157,11 +155,11 @@ void SpdyWriteQueue::RemovePendingWritesForStreamsAfter(
 }
 
 void SpdyWriteQueue::ChangePriorityOfWritesForStream(
-    const base::WeakPtr<SpdyStream>& stream,
+    SpdyStream* stream,
     RequestPriority old_priority,
     RequestPriority new_priority) {
   CHECK(!removing_writes_);
-  DCHECK(stream.get());
+  DCHECK(stream);
 
 #if DCHECK_IS_ON()
   // |stream| should not have pending writes in a queue not matching
@@ -170,14 +168,14 @@ void SpdyWriteQueue::ChangePriorityOfWritesForStream(
     if (i == old_priority)
       continue;
     for (auto it = queue_[i].begin(); it != queue_[i].end(); ++it)
-      DCHECK_NE(it->stream.get(), stream.get());
+      DCHECK_NE(it->stream.get(), stream);
   }
 #endif
 
   base::circular_deque<PendingWrite>& old_queue = queue_[old_priority];
   base::circular_deque<PendingWrite>& new_queue = queue_[new_priority];
   for (auto it = old_queue.begin(); it != old_queue.end();) {
-    if (it->stream.get() == stream.get()) {
+    if (it->stream.get() == stream) {
       new_queue.push_back(std::move(*it));
       it = old_queue.erase(it);
     } else {
