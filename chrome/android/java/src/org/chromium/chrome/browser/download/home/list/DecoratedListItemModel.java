@@ -35,11 +35,11 @@ class DecoratedListItemModel extends ListObservable<Void> implements ListObserve
         mHeaderItem = item;
 
         if (oldHeaderItem != null && item == null) {
-            notifyItemRangeRemoved(0, 1);
+            notifyItemRemoved(0);
         } else if (oldHeaderItem == null && item != null) {
-            notifyItemRangeInserted(0, 1);
+            notifyItemInserted(0);
         } else {
-            notifyItemRangeChanged(0, 1, null);
+            notifyItemRangeChanged(0, 1);
         }
     }
 

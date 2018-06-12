@@ -63,7 +63,6 @@ public abstract class BatchListObservable extends ListObservable<Void> {
 
     @Override
     protected void notifyItemRangeChanged(int index, int count, @Nullable Void payload) {
-        assert payload == null;
         mBatchingCallback.onChanged(index, count, null);
     }
 

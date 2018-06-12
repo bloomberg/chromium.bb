@@ -33,12 +33,6 @@ public abstract class ChildNode extends ListObservable<PartialBindCallback> impl
         super.notifyItemRangeChanged(index, count, callback);
     }
 
-    // TODO(bauerb): Push these convenience methods to the base class once they're only called
-    // from subclasses.
-    protected void notifyItemRangeChanged(int index, int count) {
-        notifyItemRangeChanged(index, count, null);
-    }
-
     @Override
     protected void notifyItemRangeInserted(int index, int count) {
         mNumItems += count;
@@ -53,28 +47,6 @@ public abstract class ChildNode extends ListObservable<PartialBindCallback> impl
         mNumItems -= count;
         assert mNumItems == getItemCountForDebugging();
         super.notifyItemRangeRemoved(index, count);
-    }
-
-    protected void notifyItemChanged(int index, @Nullable PartialBindCallback callback) {
-        notifyItemRangeChanged(index, 1, callback);
-    }
-
-    /**
-     * @deprecated Change notifications without payload recreate the view holder. Is that on
-     * purpose? Use {@link #notifyItemChanged(int, PartialBindCallback)} if the item to be notified
-     * should not be entirely replaced. (see https://crbug.com/704130)
-     */
-    @Deprecated // Can be valid in specific cases, but marked as deprecated to provide the warning.
-    protected void notifyItemChanged(int index) {
-        notifyItemRangeChanged(index, 1);
-    }
-
-    protected void notifyItemInserted(int index) {
-        notifyItemRangeInserted(index, 1);
-    }
-
-    protected void notifyItemRemoved(int index) {
-        notifyItemRangeRemoved(index, 1);
     }
 
     protected void checkIndex(int position) {
