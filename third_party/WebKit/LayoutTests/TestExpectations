@@ -4787,3 +4787,6 @@ crbug.com/851090 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll
 crbug.com/850202 [ Linux ] http/tests/devtools/network/network-filters.js [ Pass Failure ]
 crbug.com/851746 [ Linux ] fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout ]
 crbug.com/851746 [ Linux ] virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout ]
+
+# Update the DataView case when crbug.com/v8/7816 is fixed
+crbug.com/v8/7816 fast/js/constructor-length.html [ Skip ]
