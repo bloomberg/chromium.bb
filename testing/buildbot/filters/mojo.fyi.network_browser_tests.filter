@@ -35,11 +35,6 @@
 # https://crbug.com/721398
 -WebViewTest.ClearDataCache
 
-# Non-navigation downloads don't go through RequestLimiter (
-# https://crbug.com/843631). Once that's fixed, WebContentsDelegate::CanDownload
-# will be called for other downloads and that'll fix the test.
--WebViewTest.DownloadPermission
-
 # Need a test interface API that allows us to check on the CT status.
 # Then in ssl_browsertest.cc we can use that instead of the direct
 # call to the transport_security_state()
