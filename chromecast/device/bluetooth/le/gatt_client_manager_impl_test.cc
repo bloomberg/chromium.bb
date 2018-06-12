@@ -101,7 +101,7 @@ std::vector<bluetooth_v2_shlib::Gatt::Service> GenerateServices() {
 }
 
 class GattClientManagerTest : public ::testing::Test {
- protected:
+ public:
   void SetUp() override {
     message_loop_ =
         std::make_unique<base::MessageLoop>(base::MessageLoop::TYPE_DEFAULT);
@@ -606,15 +606,53 @@ TEST_F(GattClientManagerTest, ConnectMultiple) {
 }
 
 TEST_F(GattClientManagerTest, GetServicesFailOnConnect) {
-  EXPECT_CALL(cb_, Run(false));
   scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
   device->Connect(cb_.Get());
   bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
       gatt_client_->delegate();
+
+  EXPECT_CALL(cb_, Run(false));
   EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(false));
   delegate->OnConnectChanged(kTestAddr1, true /* status */,
                              true /* connected */);
-  ASSERT_FALSE(device->IsConnected());
+  EXPECT_FALSE(device->IsConnected());
+}
+
+TEST_F(GattClientManagerTest, GetServicesSuccessAfterConnectCallback) {
+  const auto kServices = GenerateServices();
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+
+  // Callback that checks when Connect()'s callback returns, GetServices returns
+  // the correct services.
+  bool cb_called = false;
+  auto cb = base::BindOnce(
+      [](GattClientManagerTest* gcmt,
+         const std::vector<bluetooth_v2_shlib::Gatt::Service>*
+             expected_services,
+         bool* cb_called, bool success) {
+        EXPECT_TRUE(success);
+        *cb_called = true;
+
+        auto device = gcmt->GetDevice(kTestAddr1);
+        auto services = gcmt->GetServices(device.get());
+        EXPECT_EQ(expected_services->size(), services.size());
+      },
+      this, &kServices, &cb_called);
+  EXPECT_CALL(*gatt_client_, Connect(kTestAddr1)).WillOnce(Return(true));
+  device->Connect(std::move(cb));
+
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  EXPECT_CALL(*gatt_client_, GetServices(kTestAddr1)).WillOnce(Return(true));
+  delegate->OnConnectChanged(kTestAddr1, true /* status */,
+                             true /* connected */);
+
+  // Connect's callback should not be called until service discovery is
+  // complete.
+  EXPECT_FALSE(cb_called);
+  delegate->OnGetServices(kTestAddr1, kServices);
+  EXPECT_TRUE(cb_called);
 }
 
 }  // namespace bluetooth

@@ -231,15 +231,11 @@ scoped_refptr<RemoteService> RemoteDeviceImpl::GetServiceByUuidSync(
 
 void RemoteDeviceImpl::SetConnected(bool connected) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  // We only set connected = true after services are discovered.
+  // We only set connected = true and call the callback after services are
+  // discovered.
   if (!connected) {
     connected_ = false;
-  }
-  if (connect_pending_) {
-    connect_pending_ = false;
-    if (connect_cb_) {
-      std::move(connect_cb_).Run(connected);
-    }
+    ConnectComplete(false);
   }
 
   if (disconnect_pending_) {
@@ -287,9 +283,7 @@ void RemoteDeviceImpl::SetConnected(bool connected) {
     if (!gatt_client_manager_->gatt_client()->GetServices(addr_)) {
       LOG(ERROR) << "Couldn't discover services, disconnecting";
       Disconnect({});
-      if (connect_cb_) {
-        std::move(connect_cb_).Run(false);
-      }
+      ConnectComplete(false);
     }
   } else {
     uuid_to_service_.clear();
@@ -305,9 +299,7 @@ void RemoteDeviceImpl::SetServicesDiscovered(bool discovered) {
     return;
   }
   connected_ = true;
-  if (connect_cb_) {
-    std::move(connect_cb_).Run(true);
-  }
+  ConnectComplete(true);
 }
 
 bool RemoteDeviceImpl::GetServicesDiscovered() {
@@ -397,6 +389,16 @@ void RemoteDeviceImpl::OnReadRemoteRssiComplete(bool status, int rssi) {
   rssi_pending_ = false;
   if (rssi_cb_) {
     std::move(rssi_cb_).Run(true, rssi);
+  }
+}
+
+void RemoteDeviceImpl::ConnectComplete(bool success) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  if (connect_pending_) {
+    connect_pending_ = false;
+    if (connect_cb_) {
+      std::move(connect_cb_).Run(success);
+    }
   }
 }
 

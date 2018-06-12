@@ -73,6 +73,8 @@ class RemoteDeviceImpl : public RemoteDevice {
   void OnReadRemoteRssiComplete(bool status, int rssi);
   // end Friend methods for GattClientManagerImpl
 
+  void ConnectComplete(bool success);
+
   const base::WeakPtr<GattClientManagerImpl> gatt_client_manager_;
   const bluetooth_v2_shlib::Addr addr_;
 
