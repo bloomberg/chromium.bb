@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -288,10 +287,12 @@ void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
 
 #if defined(GOOGLE_CHROME_BUILD)
 void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-      IsThirdPartyBlockingPolicyEnabled() &&
-      base::FeatureList::IsEnabled(
-          features::kIncompatibleApplicationsWarning)) {
+  if (!IsThirdPartyBlockingPolicyEnabled())
+    return;
+
+  if (base::FeatureList::IsEnabled(
+          features::kIncompatibleApplicationsWarning) ||
+      base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
     third_party_conflicts_manager_ =
         std::make_unique<ThirdPartyConflictsManager>(this);
     AddObserver(third_party_conflicts_manager_.get());

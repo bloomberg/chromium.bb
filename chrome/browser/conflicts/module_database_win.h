@@ -118,13 +118,14 @@ class ModuleDatabase {
 #if defined(GOOGLE_CHROME_BUILD)
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-  // Returns true if the ThirdPartyBlocking policy is enabled. This can only
-  // return false if it is disabled via admin policy.
+  // Returns false if third-party modules blocking is disabled via
+  // administrative policy.
   static bool IsThirdPartyBlockingPolicyEnabled();
 
   // Accessor for the third party conflicts manager. This is exposed so that the
   // manager can be wired up to the ThirdPartyModuleListComponentInstaller.
-  // Returns null if the tracking of incompatible applications is disabled.
+  // Returns null if both the tracking of incompatible applications and the
+  // blocking of third-party modules are disabled.
   ThirdPartyConflictsManager* third_party_conflicts_manager() {
     return third_party_conflicts_manager_.get();
   }
@@ -178,12 +179,11 @@ class ModuleDatabase {
   void NotifyLoadedModules(ModuleDatabaseObserver* observer);
 
 #if defined(GOOGLE_CHROME_BUILD)
-  // Initializes the ThirdPartyConflictsManager, which controls the warning of
-  // incompatible applications that injects into Chrome and the blocking of
-  // third-party modules.
-  // The manager is not initialized if it is disabled via a base::Feature or a
-  // group policy. Note that it is also not initialized on Windows version
-  // 8.1 and less.
+  // Initializes the ThirdPartyConflictsManager, which controls showing warnings
+  // for incompatible applications that inject into Chrome and the blocking of
+  // third-party modules. The manager is only initialized if either or both of
+  // the ThirdPartyModulesBlocking and IncompatibleApplicationsWarning features
+  // are enabled.
   void MaybeInitializeThirdPartyConflictsManager();
 
   void OnThirdPartyBlockingPolicyChanged();
