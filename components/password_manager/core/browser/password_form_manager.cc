@@ -523,7 +523,14 @@ void PasswordFormManager::UpdatePasswordValue(
 
 void PasswordFormManager::PresaveGeneratedPassword(
     const autofill::PasswordForm& form) {
-  form_saver()->PresaveGeneratedPassword(form);
+  if ((best_matches_.find(form.username_value) == best_matches_.end()) ||
+      form.username_value.empty()) {
+    form_saver()->PresaveGeneratedPassword(form);
+  } else {
+    autofill::PasswordForm form_without_username(form);
+    form_without_username.username_value.clear();
+    form_saver()->PresaveGeneratedPassword(form_without_username);
+  }
   metrics_recorder_->SetHasGeneratedPassword(true);
   if (has_generated_password_) {
     generated_password_changed_ = true;

@@ -760,12 +760,24 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
     EXPECT_TRUE(fake_driver_.called_presave_generated_password());
     fake_driver_.reset_called_presave_generated_password();
 
+    FocusField("username");
+    SimulateUserTypingASCIICharacter('X', true);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(fake_driver_.called_presave_generated_password());
+    fake_driver_.reset_called_presave_generated_password();
+
+    FocusField(test_case.generation_element);
     for (size_t i = 0; i < password.length(); ++i)
       SimulateUserTypingASCIICharacter(ui::VKEY_BACK, false);
     SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
     fake_driver_.reset_called_password_no_longer_generated();
+
+    FocusField("username");
+    SimulateUserTypingASCIICharacter('Y', true);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(fake_driver_.called_presave_generated_password());
   }
 }
 
