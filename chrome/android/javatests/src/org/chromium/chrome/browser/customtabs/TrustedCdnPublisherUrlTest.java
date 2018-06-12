@@ -37,6 +37,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -128,10 +129,11 @@ public class TrustedCdnPublisherUrlTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"UiCatalogue"})
+    //@SmallTest
+    //@Feature({"UiCatalogue"})
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
+    @DisabledTest // Disabled for flakiness! See http://crbug.com/851950
     public void testHttps() throws Exception {
         runTrustedCdnPublisherUrlTest("https://www.example.com/test", "com.example.test",
                 "example.com", org.chromium.chrome.R.drawable.omnibox_https_valid);
