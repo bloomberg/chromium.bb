@@ -9,6 +9,10 @@
 
 #include "base/time/time.h"
 
+namespace content {
+class WebContents;
+}
+
 class TabLoaderCallback {
  public:
   // This function will get called to suppress and to allow tab loading. Tab
@@ -20,7 +24,6 @@ class TabLoaderCallback {
 // the loading of hidden tabs starts.
 class TabLoaderDelegate {
  public:
-  TabLoaderDelegate() {}
   virtual ~TabLoaderDelegate() {}
 
   // Create a tab loader delegate. |TabLoaderCallback::SetTabLoadingEnabled| can
@@ -35,6 +38,26 @@ class TabLoaderDelegate {
   // Returns the default timeout time after which the next tab gets loaded if
   // the previous tab did not finish loading.
   virtual base::TimeDelta GetTimeoutBeforeLoadingNextTab() const = 0;
+
+  // Returns the maximum number of tabs that should be loading simultaneously.
+  virtual size_t GetMaxSimultaneousTabLoads() const = 0;
+
+  // Determines whether or not the given tab should be loaded. If this returns
+  // false, then the TabLoader no longer attempts to load |contents| and removes
+  // it from TabLoaders internal state. This is called immediately prior to
+  // trying to load the tab and allows the TabLoader to respond to changing
+  // conditions.
+  virtual bool ShouldLoad(content::WebContents* contents) const = 0;
+
+  // Notifies the delegate that a tab load has been initiated.
+  virtual void NotifyTabLoadStarted() = 0;
+
+ protected:
+  // The delegate should only be created via the factory function.
+  TabLoaderDelegate() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TabLoaderDelegate);
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_TAB_LOADER_DELEGATE_H_

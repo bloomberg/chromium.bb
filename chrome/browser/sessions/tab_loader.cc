@@ -38,19 +38,6 @@ const base::TickClock* GetDefaultTickClock() {
 size_t g_max_loaded_tab_count_for_testing = 0;
 base::RepeatingCallback<void(TabLoader*)>* g_construction_callback = nullptr;
 
-// Every two cores is a loading slot, with a minimum of 1 and a max of 4.
-constexpr size_t kCoresPerSimultaneousTabLoad = 2;
-constexpr size_t kMinSimultaneousTabLoads = 1;
-constexpr size_t kMaxSimultaneousTabLoads = 4;
-
-size_t GetMaxSimultaneousTabLoads() {
-  size_t cores = base::SysInfo::NumberOfProcessors();
-  size_t loads = cores / kCoresPerSimultaneousTabLoad;
-  loads = std::min(loads, kMaxSimultaneousTabLoads);
-  loads = std::max(loads, kMinSimultaneousTabLoads);
-  return loads;
-}
-
 }  // namespace
 
 // Used for performing lifetime management of the tab loader. Maintains entry
@@ -134,7 +121,6 @@ void TabLoader::MaybeLoadSomeTabsForTesting() {
 TabLoader::TabLoader(base::TimeTicks restore_started)
     : memory_pressure_listener_(
           base::Bind(&TabLoader::OnMemoryPressure, base::Unretained(this))),
-      max_simultaneous_loads_(GetMaxSimultaneousTabLoads()),
       clock_(GetDefaultTickClock()) {
   stats_collector_ = new SessionRestoreStatsCollector(
       restore_started,
@@ -191,6 +177,17 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   DCHECK(!tabs.empty());
   ReentrancyHelper lifetime_helper(this);
 
+  // Create a TabLoaderDelegate which will allow OS specific behavior for tab
+  // loading. This needs to be done before any calls to AddTab, as the delegate
+  // is used there.
+  bool delegate_existed = true;
+  if (!delegate_) {
+    delegate_ = TabLoaderDelegate::Create(this);
+    if (max_simultaneous_loads_ == 0)
+      max_simultaneous_loads_ = delegate_->GetMaxSimultaneousTabLoads();
+    delegate_existed = false;
+  }
+
   // Add the tabs to the list of tabs loading/to load. Also, restore the
   // favicons of the background tabs (the title has already been set by now).
   // This avoids having blank icons in case the restore is halted due to memory
@@ -213,22 +210,15 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
     AddTab(restored_tab.contents(), restored_tab.is_active());
   }
 
-  // When multiple profiles are using the same TabLoader, another profile might
-  // already have started loading. In that case a delegate has already been
-  // created and tab loading has already started.
-  if (delegate_) {
-    StartTimerIfNeeded();
-    return;
-  }
-
-  // Create a TabLoaderDelegate which will allow OS specific behavior for tab
-  // loading.
-  delegate_ = TabLoaderDelegate::Create(this);
-
-  // Only the initial call to StartLoading needs to kick off tab loads, as
-  // otherwise the state machine is already in operation.
   StartTimerIfNeeded();
-  MaybeLoadSomeTabs();
+
+  // When multiple profiles are using the same TabLoader, another profile might
+  // already have started loading. In that case a delegate was already created
+  // and tab loading had already started. Only the initial call to StartLoading
+  // needs to kick off tab loads, as otherwise the state machine is already in
+  // operation.
+  if (!delegate_existed)
+    MaybeLoadSomeTabs();
 }
 
 void TabLoader::OnLoadingStateChange(WebContents* contents,
@@ -366,6 +356,7 @@ void TabLoader::AddTab(WebContents* contents, bool loading_initiated) {
   // Handle tabs that have already started or finished loading.
   auto loading_state = TabLoadTracker::Get()->GetLoadingState(contents);
   if (loading_state != TabLoadTracker::UNLOADED) {
+    delegate_->NotifyTabLoadStarted();
     ++scheduled_to_load_count_;
     if (loading_state == TabLoadTracker::LOADING)
       tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
@@ -375,6 +366,7 @@ void TabLoader::AddTab(WebContents* contents, bool loading_initiated) {
   // Otherwise place it in one of the |tabs_load_initiated_| or
   // |tabs_to_load_| containers.
   if (loading_initiated) {
+    delegate_->NotifyTabLoadStarted();
     ++scheduled_to_load_count_;
     tabs_load_initiated_.insert(contents);
   } else {
@@ -416,6 +408,7 @@ void TabLoader::MarkTabAsLoadInitiated(WebContents* contents) {
   // Tabs are considered as starting to load the moment we schedule the load.
   // The actual load notification from TabLoadTracker comes some point after
   // this.
+  delegate_->NotifyTabLoadStarted();
   ++scheduled_to_load_count_;
   tabs_load_initiated_.insert(contents);
 }
@@ -433,6 +426,17 @@ void TabLoader::MarkTabAsLoading(WebContents* contents) {
     return;
   tabs_load_initiated_.erase(it);
   tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
+}
+
+void TabLoader::MarkTabAsDeferred(content::WebContents* contents) {
+  DCHECK(reentry_depth_ > 0);  // This can only be called internally.
+
+  // This can only be called for a tab that is waiting to be loaded so this
+  // should never fail.
+  auto it = std::find(tabs_to_load_.begin(), tabs_to_load_.end(), contents);
+  DCHECK(it != tabs_to_load_.end());
+  tabs_to_load_.erase(it);
+  stats_collector_->DeferTab(&contents->GetController());
 }
 
 void TabLoader::MaybeLoadSomeTabs() {
@@ -498,6 +502,25 @@ void TabLoader::StopLoadingTabs() {
   StartTimerIfNeeded();
 }
 
+content::WebContents* TabLoader::GetNextTabToLoad() {
+  DCHECK(reentry_depth_ > 0);  // This can only be called internally.
+  DCHECK(!tabs_to_load_.empty());
+
+  // Find the next tab to load. This skips tabs that the delegate decides
+  // shouldn't be loaded at this moment.
+  while (!tabs_to_load_.empty()) {
+    WebContents* contents = tabs_to_load_.front();
+    if (delegate_->ShouldLoad(contents))
+      return contents;
+    MarkTabAsDeferred(contents);
+  }
+
+  // It's possible the delegate decided none of the remaining tabs should be
+  // loaded, in which case the TabLoader is done and will clean itself up as
+  // the stack unwinds to the outermost frame.
+  return nullptr;
+}
+
 void TabLoader::LoadNextTab(bool due_to_timeout) {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
   DCHECK(!tabs_to_load_.empty());
@@ -509,8 +532,13 @@ void TabLoader::LoadNextTab(bool due_to_timeout) {
     return;
   }
 
+  // Find the next tab to load. This skips tabs that the delegate decides
+  // shouldn't be loaded at this moment.
+  WebContents* contents = GetNextTabToLoad();
+  if (!contents)
+    return;
+
   stats_collector_->OnWillLoadNextTab(due_to_timeout);
-  WebContents* contents = tabs_to_load_.front();
   MarkTabAsLoadInitiated(contents);
   StartTimerIfNeeded();
 

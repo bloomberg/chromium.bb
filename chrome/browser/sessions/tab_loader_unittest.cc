@@ -12,8 +12,10 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sessions/tab_loader_tester.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -33,7 +35,8 @@ class TabLoaderTest : public testing::Test {
   void OnTabLoaderCreated(TabLoader* tab_loader) {
     tab_loader_.SetTabLoader(tab_loader);
     tab_loader_.SetTickClockForTesting(&clock_);
-    tab_loader_.SetMaxSimultaneousLoadsForTesting(max_simultaneous_loads_);
+    if (max_simultaneous_loads_ != 0)
+      tab_loader_.SetMaxSimultaneousLoadsForTesting(max_simultaneous_loads_);
   }
 
   // testing::Test:
@@ -323,4 +326,57 @@ TEST_F(TabLoaderTest, TimeoutCanExceedLoadingSlots) {
   EXPECT_TRUE(tab_loader_.tabs_to_load().empty());
   EXPECT_EQ(5u, tab_loader_.scheduled_to_load_count());
   EXPECT_TRUE(tab_loader_.IsSharedTabLoader());
+}
+
+TEST_F(TabLoaderTest, DelegatePolicyIsApplied) {
+  namespace rc = resource_coordinator;
+
+  std::set<std::string> features;
+  features.insert(features::kInfiniteSessionRestore.name);
+
+  // Configure the policy engine via its experimental feature. This configures
+  // it such that there are 2 max simultaneous tab loads, and 3 maximum tabs to
+  // restore.
+  std::map<std::string, std::string> params;
+  params[rc::kInfiniteSessionRestore_MinSimultaneousTabLoads] = "2";
+  params[rc::kInfiniteSessionRestore_MaxSimultaneousTabLoads] = "2";
+  params[rc::kInfiniteSessionRestore_CoresPerSimultaneousTabLoad] = "0";
+  params[rc::kInfiniteSessionRestore_MinTabsToRestore] = "1";
+  params[rc::kInfiniteSessionRestore_MaxTabsToRestore] = "3";
+
+  // Disable these policy features.
+  params[rc::kInfiniteSessionRestore_MbFreeMemoryPerTabToRestore] = "0";
+  params[rc::kInfiniteSessionRestore_MaxTimeSinceLastUseToRestore] = "0";
+  params[rc::kInfiniteSessionRestore_MinSiteEngagementToRestore] = "0";
+
+  variations::testing::VariationParamsManager variations_manager;
+  variations_manager.SetVariationParamsWithFeatureAssociations(
+      "DummyTrial", params, features);
+
+  // Don't directly configure the max simultaneous loads, but rather let it be
+  // configured via the policy engine.
+  max_simultaneous_loads_ = 0;
+
+  // Create 5 tabs to restore, 1 foreground and 4 background.
+  CreateMultipleRestoredWebContents(1, 4);
+
+  // Create the tab loader. This should initially start loading 1 tab, due to
+  // exclusive initial loading of active tabs.
+  TabLoader::RestoreTabs(restored_tabs_, clock_.NowTicks());
+  EXPECT_EQ(4u, tab_loader_.tabs_to_load().size());
+  EXPECT_EQ(1u, tab_loader_.scheduled_to_load_count());
+  EXPECT_TRUE(tab_loader_.IsSharedTabLoader());
+
+  // Simulate the first tab as having loaded. Another 2 should start loading.
+  SimulateLoaded(0);
+  EXPECT_EQ(2u, tab_loader_.tabs_to_load().size());
+  EXPECT_EQ(3u, tab_loader_.scheduled_to_load_count());
+  EXPECT_TRUE(tab_loader_.IsSharedTabLoader());
+
+  // Simulate another tab as having loaded. The last 2 tabs should be deferred
+  // (still need reloads) and the tab loader should detach.
+  SimulateLoaded(1);
+  EXPECT_TRUE(restored_tabs_[3].contents()->GetController().NeedsReload());
+  EXPECT_TRUE(restored_tabs_[4].contents()->GetController().NeedsReload());
+  EXPECT_TRUE(TabLoaderTester::shared_tab_loader() == nullptr);
 }
