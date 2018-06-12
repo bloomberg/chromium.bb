@@ -57,9 +57,11 @@ enum ClearBrowsingDataItemType {
   ItemTypeTimeRange,
 };
 
+// Differentiation between two types of view controllers that the
+// ClearBrowsingDataManager could be serving.
 enum class ClearBrowsingDataListType {
-  TableView = 0,
-  CollectionView,
+  kListTypeTableView,
+  kListTypeCollectionView,
 };
 
 // Manager that serves as the bulk of the logic for
@@ -75,7 +77,7 @@ enum class ClearBrowsingDataListType {
 // Default init method. |browserState| can't be nil and
 // |managingList| determines what kind of items to populate model with.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                  managingListOfType:(ClearBrowsingDataListType)listType
+                            listType:(ClearBrowsingDataListType)listType
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
