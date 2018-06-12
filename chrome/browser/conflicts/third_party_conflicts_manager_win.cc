@@ -10,9 +10,13 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
@@ -54,13 +58,15 @@ std::unique_ptr<ModuleListFilter> CreateModuleListFilter(
 ThirdPartyConflictsManager::ThirdPartyConflictsManager(
     ModuleDatabase* module_database)
     : module_database_(module_database),
+      background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+           base::MayBlock()})),
       module_list_received_(false),
       on_module_database_idle_called_(false),
       weak_ptr_factory_(this) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+  base::PostTaskAndReplyWithResult(
+      background_sequence_.get(), FROM_HERE,
       base::BindOnce(&CreateExeCertificateInfo),
       base::BindOnce(&ThirdPartyConflictsManager::OnExeCertificateCreated,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -71,35 +77,21 @@ ThirdPartyConflictsManager::~ThirdPartyConflictsManager() = default;
 // static
 void ThirdPartyConflictsManager::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
-  // Register the pref used to disable the Incompatible Applications warning and
-  // the blocking of third-party modules using group policy. Enabled by default.
-  registry->RegisterBooleanPref(prefs::kThirdPartyBlockingEnabled, true);
-
   // Register the pref that remembers the MD5 digest for the current module
   // blacklist cache. The default value is an invalid MD5 digest.
   registry->RegisterStringPref(prefs::kModuleBlacklistCacheMD5Digest, "");
 }
 
 // static
-bool ThirdPartyConflictsManager::IsThirdPartyBlockingPolicyEnabled() {
-  const PrefService::Preference* third_party_blocking_enabled_pref =
-      g_browser_process->local_state()->FindPreference(
-          prefs::kThirdPartyBlockingEnabled);
-  return !third_party_blocking_enabled_pref->IsManaged() ||
-         third_party_blocking_enabled_pref->GetValue()->GetBool();
-}
-
-// static
-void ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking() {
+void ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
+    base::TaskRunner* background_sequence) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Delete the module blacklist cache. Since the NtMapViewOfSection hook only
   // blocks if the file is present, this will deactivate third-party modules
   // blocking for the next browser launch.
-  base::PostTaskWithTraits(
+  background_sequence->PostTask(
       FROM_HERE,
-      {base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(&ModuleBlacklistCacheUpdater::DeleteModuleBlacklistCache));
 
   // Also clear the MD5 digest since there will no longer be a current module
@@ -108,18 +100,23 @@ void ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking() {
       prefs::kModuleBlacklistCacheMD5Digest);
 }
 
+// static
+void ThirdPartyConflictsManager::ShutdownAndDestroy(
+    std::unique_ptr<ThirdPartyConflictsManager> instance) {
+  DisableThirdPartyModuleBlocking(instance->background_sequence_.get());
+  // |instance| is intentionally destroyed at the end of the function scope.
+}
+
 void ThirdPartyConflictsManager::OnModuleDatabaseIdle() {
   if (on_module_database_idle_called_)
     return;
 
   on_module_database_idle_called_ = true;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(
-          []() { return std::make_unique<InstalledApplications>(); }),
+  base::PostTaskAndReplyWithResult(
+      background_sequence_.get(), FROM_HERE, base::BindOnce([]() {
+        return std::make_unique<InstalledApplications>();
+      }),
       base::BindOnce(
           &ThirdPartyConflictsManager::OnInstalledApplicationsCreated,
           weak_ptr_factory_.GetWeakPtr()));
@@ -131,10 +128,8 @@ void ThirdPartyConflictsManager::LoadModuleList(const base::FilePath& path) {
 
   module_list_received_ = true;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+  base::PostTaskAndReplyWithResult(
+      background_sequence_.get(), FROM_HERE,
       base::BindOnce(&CreateModuleListFilter, path),
       base::BindOnce(&ThirdPartyConflictsManager::OnModuleListFilterCreated,
                      weak_ptr_factory_.GetWeakPtr()));

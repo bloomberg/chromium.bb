@@ -281,6 +281,7 @@
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
+#include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
@@ -470,6 +471,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
 #if defined(GOOGLE_CHROME_BUILD)
   IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(registry);
+  ModuleDatabase::RegisterLocalStatePrefs(registry);
   ThirdPartyConflictsManager::RegisterLocalStatePrefs(registry);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif
