@@ -4,6 +4,7 @@
 
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "cc/paint/paint_flags.h"
@@ -273,10 +274,16 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
   }
 
   SkScalar radius = SkIntToScalar(kTabHighlightBorderRadius);
-  const SkScalar kRadius[8] = {0, 0, radius, radius, radius, radius, 0, 0};
   SkPath path;
   gfx::Rect bounds(size());
-  path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
+  if (base::i18n::IsRTL()) {
+    const SkScalar kRadius[8] = {radius, radius, 0, 0, 0, 0, radius, radius};
+    path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
+  } else {
+    const SkScalar kRadius[8] = {0, 0, radius, radius, radius, radius, 0, 0};
+    path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
+  }
+
   cc::PaintFlags fill_flags;
   fill_flags.setAntiAlias(true);
   fill_flags.setColor(kTabHighlightBackgroundColor);
