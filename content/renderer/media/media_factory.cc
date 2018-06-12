@@ -103,14 +103,15 @@ class FrameFetchContext : public media::ResourceFetchContext {
 };
 
 void ObtainAndSetContextProvider(
-    base::OnceCallback<void(bool, viz::ContextProvider*)>
+    base::OnceCallback<void(bool,
+                            scoped_refptr<ui::ContextProviderCommandBuffer>)>
         set_context_provider_callback,
     std::pair<media::GpuVideoAcceleratorFactories*, bool> gpu_info) {
   if (gpu_info.first) {
-    viz::ContextProvider* context_provider =
+    scoped_refptr<ui::ContextProviderCommandBuffer> context_provider =
         gpu_info.first->GetMediaContextProvider();
     std::move(set_context_provider_callback)
-        .Run(gpu_info.second, context_provider);
+        .Run(gpu_info.second, std::move(context_provider));
   } else {
     std::move(set_context_provider_callback).Run(false, nullptr);
   }
@@ -122,7 +123,8 @@ void ObtainAndSetContextProvider(
 // thread.
 void PostMediaContextProviderToCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    base::OnceCallback<void(bool, viz::ContextProvider*)>
+    base::OnceCallback<void(bool,
+                            scoped_refptr<ui::ContextProviderCommandBuffer>)>
         set_context_provider_callback) {
   base::PostTaskAndReplyWithResult(
       main_task_runner.get(), FROM_HERE, base::BindOnce([]() {

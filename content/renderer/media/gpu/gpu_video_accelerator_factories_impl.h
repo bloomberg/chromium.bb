@@ -32,10 +32,6 @@ namespace ui {
 class ContextProviderCommandBuffer;
 }
 
-namespace viz {
-class ContextProvider;
-}
-
 namespace content {
 
 // Glue code to expose functionality needed by media::GpuVideoAccelerator to
@@ -105,7 +101,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
 
-  viz::ContextProvider* GetMediaContextProvider() override;
+  scoped_refptr<ui::ContextProviderCommandBuffer> GetMediaContextProvider()
+      override;
 
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 

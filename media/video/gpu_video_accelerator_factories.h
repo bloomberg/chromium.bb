@@ -35,9 +35,9 @@ namespace gpu {
 struct SyncToken;
 };
 
-namespace viz {
-class ContextProvider;
-}
+namespace ui {
+class ContextProviderCommandBuffer;
+}  // namespace ui
 
 namespace media {
 
@@ -134,7 +134,8 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
-  virtual viz::ContextProvider* GetMediaContextProvider() = 0;
+  virtual scoped_refptr<ui::ContextProviderCommandBuffer>
+  GetMediaContextProvider() = 0;
 
   // Sets the current pipeline rendering color space.
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) = 0;

@@ -13,6 +13,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "media/base/video_frame.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
@@ -137,7 +138,7 @@ void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider) {
 
 void VideoFrameSubmitter::OnReceivedContextProvider(
     bool use_gpu_compositing,
-    viz::ContextProvider* context_provider) {
+    scoped_refptr<ui::ContextProviderCommandBuffer> context_provider) {
   // We could get a null |context_provider| back if the context is still lost.
   if (!context_provider && use_gpu_compositing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -150,10 +151,10 @@ void VideoFrameSubmitter::OnReceivedContextProvider(
     return;
   }
 
-  context_provider_ = context_provider;
+  context_provider_ = std::move(context_provider);
   if (use_gpu_compositing) {
     context_provider_->AddObserver(this);
-    resource_provider_->Initialize(context_provider, nullptr);
+    resource_provider_->Initialize(context_provider_.get(), nullptr);
   } else {
     resource_provider_->Initialize(nullptr, this);
   }

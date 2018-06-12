@@ -46,7 +46,9 @@ class PLATFORM_EXPORT VideoFrameSubmitter
     compositor_frame_sink_ = std::move(*sink);
   }
 
-  void OnReceivedContextProvider(bool, viz::ContextProvider*);
+  void OnReceivedContextProvider(
+      bool,
+      scoped_refptr<ui::ContextProviderCommandBuffer>);
 
   // cc::VideoFrameProvider::Client implementation.
   void StopUsingProvider() override;
@@ -90,7 +92,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void SubmitSingleFrame();
 
   cc::VideoFrameProvider* provider_ = nullptr;
-  viz::ContextProvider* context_provider_ = nullptr;
+  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
