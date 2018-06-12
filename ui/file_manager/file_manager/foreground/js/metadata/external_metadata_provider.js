@@ -18,11 +18,30 @@ function ExternalMetadataProvider() {
  * @const {!Array<string>}
  */
 ExternalMetadataProvider.PROPERTY_NAMES = [
-  'availableOffline', 'availableWhenMetered', 'contentMimeType',
-  'croppedThumbnailUrl', 'customIconUrl', 'dirty', 'externalFileUrl', 'hosted',
-  'imageHeight', 'imageRotation', 'imageWidth', 'modificationTime',
-  'modificationByMeTime', 'pinned', 'present', 'shared', 'sharedWithMe', 'size',
-  'thumbnailUrl'
+  'availableOffline',
+  'availableWhenMetered',
+  'contentMimeType',
+  'croppedThumbnailUrl',
+  'customIconUrl',
+  'dirty',
+  'externalFileUrl',
+  'hosted',
+  'imageHeight',
+  'imageRotation',
+  'imageWidth',
+  'modificationTime',
+  'modificationByMeTime',
+  'pinned',
+  'present',
+  'shared',
+  'sharedWithMe',
+  'size',
+  'thumbnailUrl',
+  'canCopy',
+  'canDelete',
+  'canRename',
+  'canAddChildren',
+  'canShare'
 ];
 
 ExternalMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
@@ -57,7 +76,8 @@ ExternalMetadataProvider.prototype.get = function(requests) {
 
 /**
  * @param {!Array<!MetadataRequest>} requests
- * @param {!Object<boolean>} nameMap
+ * @param {!Object<boolean>} nameMap A map of property names that will be used
+ *     to copy the value from |propertiesList|.
  * @param {!Array<!chrome.fileManagerPrivate.EntryProperties>} propertiesList
  * @return {!Array<!MetadataItem>}
  */
@@ -108,6 +128,14 @@ ExternalMetadataProvider.prototype.convertResults_ =
       item.size = requests[i].entry.isFile ? (prop.size || 0) : -1;
     if (prop.thumbnailUrl !== undefined || nameMap['thumbnailUrl'])
       item.thumbnailUrl = prop.thumbnailUrl;
+    if (prop.canCopy !== undefined || nameMap['canCopy'])
+      item.canCopy = prop.canCopy;
+    if (prop.canDelete !== undefined || nameMap['canDelete'])
+      item.canDelete = prop.canDelete;
+    if (prop.canRename !== undefined || nameMap['canRename'])
+      item.canRename = prop.canRename;
+    if (prop.canAddChildren !== undefined || nameMap['canAddChildren'])
+      item.canAddChildren = prop.canAddChildren;
     results.push(item);
   }
   return results;
