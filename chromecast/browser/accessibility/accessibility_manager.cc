@@ -13,7 +13,8 @@ namespace chromecast {
 namespace shell {
 
 AccessibilityManager::AccessibilityManager(
-    aura::WindowTreeHost* window_tree_host) {
+    aura::WindowTreeHost* window_tree_host)
+    : window_tree_host_(window_tree_host) {
   DCHECK(window_tree_host);
   aura::Window* root_window = window_tree_host->window()->GetRootWindow();
   wm::ActivationClient* activation_client =
