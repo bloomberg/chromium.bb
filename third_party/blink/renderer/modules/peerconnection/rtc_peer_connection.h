@@ -224,7 +224,6 @@ class MODULES_EXPORT RTCPeerConnection final
   void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) override;
   void ReleasePeerConnectionHandler() override;
   void ClosePeerConnection() override;
-  WebRTCOriginTrials GetOriginTrials() override;
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

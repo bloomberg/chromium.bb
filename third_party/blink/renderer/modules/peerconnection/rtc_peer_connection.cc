@@ -1877,13 +1877,6 @@ void RTCPeerConnection::ClosePeerConnection() {
   CloseInternal();
 }
 
-RTCPeerConnection::WebRTCOriginTrials RTCPeerConnection::GetOriginTrials() {
-  RTCPeerConnection::WebRTCOriginTrials trials;
-  trials.vaapi_hwvp8_encoding_enabled =
-      OriginTrials::webRtcVaapiHWVP8EncodingEnabled(GetExecutionContext());
-  return trials;
-}
-
 const AtomicString& RTCPeerConnection::InterfaceName() const {
   return EventTargetNames::RTCPeerConnection;
 }
