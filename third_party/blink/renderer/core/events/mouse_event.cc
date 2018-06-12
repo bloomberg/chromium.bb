@@ -223,7 +223,7 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
   float scale_factor = 1.0f;
   if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
     LocalFrame* frame = dom_window->GetFrame();
-    FloatPoint page_point = frame->View()->RootFrameToContents(
+    FloatPoint page_point = frame->View()->ConvertFromRootFrame(
         web_pointer_properties.PositionInWidget());
     scale_factor = 1.0f / frame->PageZoomFactor();
     FloatPoint scroll_position(frame->View()->GetScrollOffset());

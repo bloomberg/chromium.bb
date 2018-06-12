@@ -672,8 +672,8 @@ bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor_web,
 
   // FIXME: This doesn't apply page scale. This should probably be contents to
   // viewport. crbug.com/459293.
-  anchor_web = local_frame->View()->ContentsToRootFrame(anchor);
-  focus_web = local_frame->View()->ContentsToRootFrame(focus);
+  anchor_web = local_frame->View()->ConvertToRootFrame(anchor);
+  focus_web = local_frame->View()->ConvertToRootFrame(focus);
   return true;
 }
 
@@ -750,7 +750,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
   // capture because it will interfere with the scrollbar receiving events.
   LayoutPoint point(event.PositionInWidget().x, event.PositionInWidget().y);
   if (event.button == WebMouseEvent::Button::kLeft) {
-    point = LocalRootImpl()->GetFrameView()->RootFrameToContents(point);
+    point = LocalRootImpl()->GetFrameView()->ConvertFromRootFrame(point);
     HitTestResult result(
         LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtPoint(
             point));
@@ -1140,7 +1140,7 @@ void WebFrameWidgetImpl::SetVisibilityState(
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
     const LayoutPoint& pos_in_root_frame) {
   LayoutPoint doc_point(
-      LocalRootImpl()->GetFrame()->View()->RootFrameToContents(
+      LocalRootImpl()->GetFrame()->View()->ConvertFromRootFrame(
           pos_in_root_frame));
   HitTestResult result =
       LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtPoint(

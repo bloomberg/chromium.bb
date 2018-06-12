@@ -1441,7 +1441,7 @@ void Internals::HitTestRect(HitTestResult& result,
   document->UpdateStyleAndLayout();
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   LayoutPoint hit_test_point(
-      document->GetFrame()->View()->RootFrameToContents(LayoutPoint(x, y)));
+      document->GetFrame()->View()->ConvertFromRootFrame(LayoutPoint(x, y)));
   result = event_handler.HitTestResultAtRect(
       LayoutRect(hit_test_point, LayoutSize((int)width, (int)height)),
       HitTestRequest::kReadOnly | HitTestRequest::kActive |

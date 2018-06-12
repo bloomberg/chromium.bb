@@ -606,14 +606,6 @@ class CORE_EXPORT LocalFrameView final
   // WARNING: With --root-layer-scrolling, these become ambiguous since content
   // coordinates mean something different. These will eventually be replaced,
   // see comments below about writing RLS agnostic conversions.
-  IntPoint RootFrameToContents(const IntPoint&) const;
-  FloatPoint RootFrameToContents(const FloatPoint&) const;
-  LayoutPoint RootFrameToContents(const LayoutPoint&) const;
-  IntRect RootFrameToContents(const IntRect&) const;
-  IntPoint ContentsToRootFrame(const IntPoint&) const;
-  LayoutPoint ContentsToRootFrame(const LayoutPoint&) const;
-  IntRect ContentsToRootFrame(const IntRect&) const;
-
   IntRect ViewportToContents(const IntRect&) const;
   IntRect ContentsToViewport(const IntRect&) const;
   IntPoint ContentsToViewport(const IntPoint&) const;

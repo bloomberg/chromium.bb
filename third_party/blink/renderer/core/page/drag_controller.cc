@@ -261,7 +261,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       if (!prevented_default) {
         // When drop target is plugin element and it can process drag, we
         // should prevent default behavior.
-        const LayoutPoint point = local_root.View()->RootFrameToContents(
+        const LayoutPoint point = local_root.View()->ConvertFromRootFrame(
             LayoutPoint(drag_data->ClientPosition()));
         const HitTestResult result = event_handler.HitTestResultAtPoint(point);
         prevented_default |=
@@ -405,7 +405,7 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
 
   if ((action_mask & kDragDestinationActionEdit) &&
       CanProcessDrag(drag_data, local_root)) {
-    LayoutPoint point = frame_view->RootFrameToContents(
+    LayoutPoint point = frame_view->ConvertFromRootFrame(
         LayoutPoint(drag_data->ClientPosition()));
     Element* element = ElementUnderMouse(document_under_mouse_.Get(), point);
     if (!element)
@@ -530,7 +530,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
   if (!document_under_mouse_)
     return false;
 
-  LayoutPoint point = document_under_mouse_->View()->RootFrameToContents(
+  LayoutPoint point = document_under_mouse_->View()->ConvertFromRootFrame(
       LayoutPoint(drag_data->ClientPosition()));
   Element* element = ElementUnderMouse(document_under_mouse_.Get(), point);
   if (!element)
@@ -695,7 +695,7 @@ bool DragController::CanProcessDrag(DragData* drag_data,
   if (!local_root.ContentLayoutObject())
     return false;
 
-  LayoutPoint point = local_root.View()->RootFrameToContents(
+  LayoutPoint point = local_root.View()->ConvertFromRootFrame(
       LayoutPoint(drag_data->ClientPosition()));
 
   HitTestResult result =
@@ -1177,7 +1177,7 @@ bool DragController::StartDrag(LocalFrame* src,
 
   // TODO(pdr): This code shouldn't be necessary because drag_origin is already
   // in the coordinate space of the view's contents.
-  IntPoint mouse_dragged_point = src->View()->RootFrameToContents(
+  IntPoint mouse_dragged_point = src->View()->ConvertFromRootFrame(
       FlooredIntPoint(drag_event.PositionInRootFrame()));
 
   IntPoint drag_location;

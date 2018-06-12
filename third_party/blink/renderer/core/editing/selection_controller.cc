@@ -323,7 +323,7 @@ bool SelectionController::HandleSingleClick(
   // Don't restart the selection when the mouse is pressed on an
   // existing selection so we can allow for text dragging.
   if (LocalFrameView* view = frame_->View()) {
-    const LayoutPoint v_point = view->RootFrameToContents(
+    const LayoutPoint v_point = view->ConvertFromRootFrame(
         FlooredIntPoint(event.Event().PositionInRootFrame()));
     if (!extend_selection && this->Selection().Contains(v_point)) {
       mouse_down_was_single_click_in_selection_ = true;
@@ -1207,7 +1207,7 @@ void SelectionController::PassMousePressEventToSubframe(
   // greyed out even though we're clicking on the selection.  This looks
   // really strange (having the whole frame be greyed out), so we deselect the
   // selection.
-  IntPoint p = frame_->View()->RootFrameToContents(
+  IntPoint p = frame_->View()->ConvertFromRootFrame(
       FlooredIntPoint(mev.Event().PositionInRootFrame()));
   if (!Selection().Contains(p))
     return;

@@ -813,7 +813,7 @@ Document* LocalFrame::DocumentAtPoint(const LayoutPoint& point_in_root_frame) {
   if (!View())
     return nullptr;
 
-  LayoutPoint pt = View()->RootFrameToContents(point_in_root_frame);
+  LayoutPoint pt = View()->ConvertFromRootFrame(point_in_root_frame);
 
   if (!ContentLayoutObject())
     return nullptr;

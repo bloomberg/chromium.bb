@@ -590,7 +590,7 @@ void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
       TransformWebMouseEvent(web_local_frame_impl_->GetFrameView(), dummy_event)
           .PositionInRootFrame());
   HitTestResult result(
-      request, web_local_frame_impl_->GetFrameView()->RootFrameToContents(
+      request, web_local_frame_impl_->GetFrameView()->ConvertFromRootFrame(
                    transformed_point));
   web_local_frame_impl_->GetFrame()->ContentLayoutObject()->HitTest(result);
   Node* node = result.InnerNode();

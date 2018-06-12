@@ -159,7 +159,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
 
   // We use the adjusted position so the application isn't surprised to see a
   // event with co-ordinates outside the target's bounds.
-  IntPoint adjusted_point = frame_view->RootFrameToContents(
+  IntPoint adjusted_point = frame_view->ConvertFromRootFrame(
       FlooredIntPoint(gesture_event.PositionInRootFrame()));
 
   const unsigned modifiers = gesture_event.GetModifiers();
@@ -192,7 +192,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
     if (!main_frame.View() ||
         !main_frame.View()->UpdateLifecycleToPrePaintClean())
       return WebInputEventResult::kNotHandled;
-    adjusted_point = frame_view->RootFrameToContents(
+    adjusted_point = frame_view->ConvertFromRootFrame(
         FlooredIntPoint(gesture_event.PositionInRootFrame()));
     current_hit_test = EventHandlingUtil::HitTestResultInFrame(
         frame_, adjusted_point, hit_type);
@@ -255,7 +255,7 @@ WebInputEventResult GestureManager::HandleGestureTap(
     LocalFrame& main_frame = frame_->LocalFrameRoot();
     if (main_frame.View())
       main_frame.View()->UpdateAllLifecyclePhases();
-    adjusted_point = frame_view->RootFrameToContents(tapped_position);
+    adjusted_point = frame_view->ConvertFromRootFrame(tapped_position);
     current_hit_test = EventHandlingUtil::HitTestResultInFrame(
         frame_, adjusted_point, hit_type);
   }
@@ -327,7 +327,7 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
   // overhaul of the touch drag-and-drop code and LongPress is such a special
   // scenario that it's unlikely to matter much in practice.
 
-  IntPoint hit_test_point = frame_->View()->RootFrameToContents(
+  IntPoint hit_test_point = frame_->View()->ConvertFromRootFrame(
       FlooredIntPoint(gesture_event.PositionInRootFrame()));
   HitTestResult hit_test_result =
       frame_->GetEventHandler().HitTestResultAtPoint(hit_test_point);
@@ -414,7 +414,7 @@ WebInputEventResult GestureManager::SendContextMenuEventForGesture(
 
   if (!suppress_mouse_events_from_gestures_ && frame_->View()) {
     HitTestRequest request(HitTestRequest::kActive);
-    LayoutPoint document_point = frame_->View()->RootFrameToContents(
+    LayoutPoint document_point = frame_->View()->ConvertFromRootFrame(
         FlooredIntPoint(targeted_event.Event().PositionInRootFrame()));
     MouseEventWithHitTestResults mev =
         frame_->GetDocument()->PerformMouseEventHitTest(request, document_point,

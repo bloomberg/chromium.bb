@@ -142,7 +142,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     WebMouseEvent mouse_event = TransformWebMouseEvent(
         root->View(), static_cast<const WebMouseEvent&>(event));
 
-    IntPoint doc_point(root->View()->RootFrameToContents(
+    IntPoint doc_point(root->View()->ConvertFromRootFrame(
         FlooredIntPoint(mouse_event.PositionInRootFrame())));
     HitTestResult result = root->GetEventHandler().HitTestResultAtPoint(
         doc_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);

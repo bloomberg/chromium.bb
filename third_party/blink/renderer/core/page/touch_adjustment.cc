@@ -337,7 +337,7 @@ void CompileSubtargetList(const HeapVector<Member<Node>>& intersected_nodes,
 float ZoomableIntersectionQuotient(const IntPoint& touch_hotspot,
                                    const IntRect& touch_area,
                                    const SubtargetGeometry& subtarget) {
-  IntRect rect = subtarget.GetNode()->GetDocument().View()->ContentsToRootFrame(
+  IntRect rect = subtarget.GetNode()->GetDocument().View()->ConvertToRootFrame(
       subtarget.BoundingBox());
 
   // Check the rectangle is meaningful zoom target. It should at least contain
@@ -361,7 +361,7 @@ float ZoomableIntersectionQuotient(const IntPoint& touch_hotspot,
 float HybridDistanceFunction(const IntPoint& touch_hotspot,
                              const IntRect& touch_rect,
                              const SubtargetGeometry& subtarget) {
-  IntRect rect = subtarget.GetNode()->GetDocument().View()->ContentsToRootFrame(
+  IntRect rect = subtarget.GetNode()->GetDocument().View()->ConvertToRootFrame(
       subtarget.BoundingBox());
 
   float radius_squared = 0.25f * (touch_rect.Size().DiagonalLengthSquared());
@@ -380,10 +380,10 @@ float HybridDistanceFunction(const IntPoint& touch_hotspot,
   return hybrid_score;
 }
 
-FloatPoint ContentsToRootFrame(LocalFrameView* view, FloatPoint pt) {
+FloatPoint ConvertToRootFrame(LocalFrameView* view, FloatPoint pt) {
   int x = static_cast<int>(pt.X() + 0.5f);
   int y = static_cast<int>(pt.Y() + 0.5f);
-  IntPoint adjusted = view->ContentsToRootFrame(IntPoint(x, y));
+  IntPoint adjusted = view->ConvertToRootFrame(IntPoint(x, y));
   return FloatPoint(adjusted.X(), adjusted.Y());
 }
 
@@ -409,7 +409,7 @@ bool SnapTo(const SubtargetGeometry& geom,
   FloatQuad quad = geom.Quad();
 
   if (quad.IsRectilinear()) {
-    IntRect bounds = view->ContentsToRootFrame(geom.BoundingBox());
+    IntRect bounds = view->ConvertToRootFrame(geom.BoundingBox());
     if (bounds.Contains(touch_point)) {
       adjusted_point = touch_point;
       return true;
@@ -429,10 +429,10 @@ bool SnapTo(const SubtargetGeometry& geom,
   // the quad. Corner-cases exist where the quad will intersect but this will
   // fail to adjust the point to somewhere in the intersection.
 
-  FloatPoint p1 = ContentsToRootFrame(view, quad.P1());
-  FloatPoint p2 = ContentsToRootFrame(view, quad.P2());
-  FloatPoint p3 = ContentsToRootFrame(view, quad.P3());
-  FloatPoint p4 = ContentsToRootFrame(view, quad.P4());
+  FloatPoint p1 = ConvertToRootFrame(view, quad.P1());
+  FloatPoint p2 = ConvertToRootFrame(view, quad.P2());
+  FloatPoint p3 = ConvertToRootFrame(view, quad.P3());
+  FloatPoint p4 = ConvertToRootFrame(view, quad.P4());
   quad = FloatQuad(p1, p2, p3, p4);
 
   if (quad.ContainsPoint(touch_point)) {
@@ -492,9 +492,10 @@ bool FindNodeWithLowestDistanceMetric(Node*& target_node,
   if (target_node && target_node->IsPseudoElement())
     target_node = target_node->ParentOrShadowHostNode();
 
-  if (target_node)
+  if (target_node) {
     target_area =
-        target_node->GetDocument().View()->ContentsToRootFrame(target_area);
+        target_node->GetDocument().View()->ConvertToRootFrame(target_area);
+  }
 
   return (target_node);
 }

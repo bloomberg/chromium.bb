@@ -589,7 +589,7 @@ void MouseEventManager::HandleMousePressEventUpdateStates(
   mouse_down_timestamp_ = mouse_event.TimeStamp();
 
   if (LocalFrameView* view = frame_->View()) {
-    mouse_down_pos_ = view->RootFrameToContents(
+    mouse_down_pos_ = view->ConvertFromRootFrame(
         FlooredIntPoint(mouse_event.PositionInRootFrame()));
   } else {
     InvalidateClick();
@@ -688,7 +688,7 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
         single_click) {
       svg_pan_ = true;
       frame_->GetDocument()->AccessSVGExtensions().StartPan(
-          frame_->View()->RootFrameToContents(
+          frame_->View()->ConvertFromRootFrame(
               FlooredIntPoint(event.Event().PositionInRootFrame())));
       return WebInputEventResult::kHandledSystem;
     }
@@ -771,7 +771,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
                                                     mouse_drag_event);
     mouse_down_may_start_drag_ = true;
     ResetDragState();
-    mouse_down_pos_ = frame_->View()->RootFrameToContents(
+    mouse_down_pos_ = frame_->View()->ConvertFromRootFrame(
         FlooredIntPoint(mouse_drag_event.PositionInRootFrame()));
     return HandleDrag(mev, DragInitiator::kTouch);
   }
@@ -1114,7 +1114,7 @@ bool MouseEventManager::DragThresholdExceeded(
   if (!view)
     return false;
   IntPoint drag_location =
-      view->RootFrameToContents(drag_location_in_root_frame);
+      view->ConvertFromRootFrame(drag_location_in_root_frame);
   IntSize delta = drag_location - mouse_down_pos_;
 
   // WebKit's drag thresholds depend on the type of object being dragged. If we
