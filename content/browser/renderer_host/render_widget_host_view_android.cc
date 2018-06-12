@@ -701,8 +701,7 @@ bool RenderWidgetHostViewAndroid::OnTouchHandleEvent(
 int RenderWidgetHostViewAndroid::GetTouchHandleHeight() {
   if (!touch_selection_controller_)
     return 0;
-  return static_cast<int>(
-      touch_selection_controller_->GetStartHandleRect().height());
+  return static_cast<int>(touch_selection_controller_->GetTouchHandleHeight());
 }
 
 void RenderWidgetHostViewAndroid::ResetGestureDetection() {

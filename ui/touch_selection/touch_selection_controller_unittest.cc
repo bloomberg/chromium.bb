@@ -1168,6 +1168,51 @@ TEST_F(TouchSelectionControllerTest, RectBetweenBounds) {
   EXPECT_EQ(gfx::RectF(), controller().GetRectBetweenBounds());
 }
 
+TEST_F(TouchSelectionControllerTest, TouchHandleHeight) {
+  OnLongPressEvent();
+  SetDraggingEnabled(true);
+
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
+
+  // Handle height should be zero when there is no selection/ insertion.
+  EXPECT_EQ(0.f, controller().GetTouchHandleHeight());
+
+  // Insertion case - Handle shown.
+  ChangeInsertion(start_rect, true);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_SHOWN));
+  EXPECT_NE(0.f, controller().GetTouchHandleHeight());
+
+  // Insertion case - Handle moved.
+  start_rect.Offset(1, 0);
+  ChangeInsertion(start_rect, true);
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_MOVED));
+  EXPECT_NE(0.f, controller().GetTouchHandleHeight());
+
+  ClearInsertion();
+  EXPECT_THAT(GetAndResetEvents(), ElementsAre(INSERTION_HANDLE_CLEARED));
+  EXPECT_EQ(0.f, controller().GetTouchHandleHeight());
+
+  // Selection case - Start and End are visible.
+  ChangeSelection(start_rect, true, end_rect, true);
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_SHOWN));
+  EXPECT_NE(0.f, controller().GetTouchHandleHeight());
+
+  // Selection case - Only Start is visible.
+  ChangeSelection(start_rect, true, end_rect, false);
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_MOVED));
+  EXPECT_NE(0.f, controller().GetTouchHandleHeight());
+
+  // Selection case - Only End is visible.
+  ChangeSelection(start_rect, false, end_rect, true);
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_MOVED));
+  EXPECT_NE(0.f, controller().GetTouchHandleHeight());
+
+  ClearSelection();
+  ASSERT_THAT(GetAndResetEvents(), ElementsAre(SELECTION_HANDLES_CLEARED));
+  EXPECT_EQ(0.f, controller().GetTouchHandleHeight());
+}
+
 TEST_F(TouchSelectionControllerTest, SelectionNoOrientationChangeWhenSwapped) {
   TouchSelectionControllerTestApi test_controller(&controller());
   base::TimeTicks event_time = base::TimeTicks::Now();
