@@ -9,7 +9,9 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -23,10 +25,6 @@ namespace {
 constexpr int kIconSizeDip = 20;
 constexpr int kMaxWidthDip = 512;
 constexpr int kPreferredHeightDip = 48;
-
-// TODO(b/77638210): Replace with localized resource strings.
-constexpr char kDefaultPrompt[] = "How can I help you?";
-constexpr char kStylusPrompt[] = "Draw with your stylus to select";
 
 }  // namespace
 
@@ -88,11 +86,13 @@ void AssistantMiniView::InitLayout() {
 void AssistantMiniView::OnInputModalityChanged(InputModality input_modality) {
   switch (input_modality) {
     case InputModality::kStylus:
-      label_->SetText(base::UTF8ToUTF16(kStylusPrompt));
+      label_->SetText(
+          l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_STYLUS));
       break;
     case InputModality::kKeyboard:
     case InputModality::kVoice:
-      label_->SetText(base::UTF8ToUTF16(kDefaultPrompt));
+      label_->SetText(
+          l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
       break;
   }
 }

@@ -7,7 +7,10 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -24,14 +27,6 @@ constexpr int kBorderSizeDip = 1;
 constexpr int kPaddingHorizontalDip = 14;
 constexpr int kPaddingVerticalDip = 8;
 constexpr int kPreferredHeightDip = 48;
-constexpr int kSpacingDip = 8;
-
-// Typography.
-constexpr SkColor kTextColorHint = SkColorSetA(SK_ColorBLACK, 0x42);
-constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
-
-// TODO(b/77638210): Replace with localized resource strings.
-constexpr char kHint[] = "Type a message";
 
 }  // namespace
 
@@ -83,7 +78,8 @@ void DialogPlate::InitLayout() {
   textfield_->set_controller(this);
   textfield_->SetFontList(font_list);
   textfield_->set_placeholder_font_list(font_list);
-  textfield_->set_placeholder_text(base::UTF8ToUTF16(kHint));
+  textfield_->set_placeholder_text(
+      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT));
   textfield_->set_placeholder_text_color(kTextColorHint);
   textfield_->SetTextColor(kTextColorPrimary);
   AddChildView(textfield_);

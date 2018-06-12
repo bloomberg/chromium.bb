@@ -11,7 +11,9 @@
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -22,9 +24,6 @@ namespace {
 
 // Appearance.
 constexpr int kIconSizeDip = 24;
-
-// TODO(b/77638210): Replace with localized resource strings.
-constexpr char kPrompt[] = "Hi, how can I help?";
 
 }  // namespace
 
@@ -107,7 +106,7 @@ void AssistantQueryView::OnQueryChanged(const AssistantQuery& query) {
 }
 
 void AssistantQueryView::OnQueryCleared() {
-  SetText(kPrompt);
+  SetText(l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
 }
 
 void AssistantQueryView::SetText(const std::string& high_confidence_text,

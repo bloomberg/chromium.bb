@@ -1489,6 +1489,20 @@ This file contains the strings for ash.
       <message name="IDS_ASH_UI_SERVICE_NAME" desc="Name of the internal software service that manages the user interface (UI). Appears in the task manager.">
         UI service
       </message>
+
+      <!-- Assistant -->
+      <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT" desc="Message shown as a placeholder in Assistant's input textfield when empty.">
+        Type a message
+      </message>
+      <message name="IDS_ASH_ASSISTANT_ERROR_GENERIC" desc="Generic message shown when Assistant is in an error state.">
+        Something went wrong. Try again in a few seconds.
+      </message>
+      <message name="IDS_ASH_ASSISTANT_PROMPT_DEFAULT" desc="Message shown to indicate that Assistant is ready to receive a query in Assistant UI.">
+        Hi, how can I help?
+      </message>
+      <message name="IDS_ASH_ASSISTANT_PROMPT_STYLUS" desc="Message shown to indicate that Assistant is ready to receive a selection made using the stylus.">
+        Draw with your stylus to select
+      </message>
     </messages>
   </release>
 </grit>
