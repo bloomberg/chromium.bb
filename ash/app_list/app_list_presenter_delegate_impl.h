@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
-#define ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
+#ifndef ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_IMPL_H_
+#define ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_IMPL_H_
 
 #include <stdint.h>
 
@@ -16,7 +16,7 @@
 namespace app_list {
 class AppListPresenterImpl;
 class AppListView;
-}
+}  // namespace app_list
 
 namespace ui {
 class LocatedEvent;
@@ -24,17 +24,16 @@ class LocatedEvent;
 
 namespace ash {
 
-// Non-Mus+ash implementation of AppListPresenterDelegate.
 // Responsible for laying out the app list UI as well as updating the Shelf
 // launch icon as the state of the app list changes. Listens to shell events
 // and touches/mouse clicks outside the app list to auto dismiss the UI or
 // update its layout as necessary.
-class ASH_EXPORT AppListPresenterDelegate
+class ASH_EXPORT AppListPresenterDelegateImpl
     : public app_list::AppListPresenterDelegate,
       public ui::EventHandler {
  public:
-  AppListPresenterDelegate();
-  ~AppListPresenterDelegate() override;
+  AppListPresenterDelegateImpl();
+  ~AppListPresenterDelegateImpl() override;
 
   // app_list::AppListPresenterDelegate:
   void Init(app_list::AppListView* view,
@@ -64,9 +63,9 @@ class ASH_EXPORT AppListPresenterDelegate
   // Owned by its widget.
   app_list::AppListView* view_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_H_
+#endif  // ASH_APP_LIST_APP_LIST_PRESENTER_DELEGATE_IMPL_H_
