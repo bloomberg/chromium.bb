@@ -293,7 +293,8 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
       gfx::Vector2d size_in_vec(snapshot->physical_size().width(),
                                 snapshot->physical_size().height());
       if (size_in_vec.LengthSquared() > k2xThreshouldSizeSquaredFor4KInMm &&
-          mode_info->size().width() >= kMinimumWidthFor4K) {
+          mode_info->size().width() >= kMinimumWidthFor4K &&
+          !features::IsDisplayZoomSettingEnabled()) {
         // Make sure that additional device scale factors table has 2x.
         DCHECK_EQ(2.0f, kAdditionalDeviceScaleFactorsFor4k[1]);
         device_scale_factor = 2.0f;
