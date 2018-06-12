@@ -1017,7 +1017,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenFromFTP) {
 // For both PDFExtensionTest and PDFIsolatedExtensionTest, MultipleDomains case
 // flakily times out on Win7 Tests (dbg)(1) and win_chromium_dbg_ng bots.
 // https://crbug.com/825038
-#if defined(OS_WIN) && !defined(NDEBUG)
+// https://crbug.com/851805
+#if defined(OS_WIN) || defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_LINUX) && !defined(NDEBUG)
 #define MAYBE_MultipleDomains DISABLED_MultipleDomains
 #else
 #define MAYBE_MultipleDomains MultipleDomains
@@ -1048,7 +1050,8 @@ class PDFIsolatedExtensionTest : public PDFExtensionTest {
   base::test::ScopedFeatureList features_;
 };
 
-// See MAYBE_MultipleDomains definition, above. https://crbug.com/825038
+// See MAYBE_MultipleDomains definition, above.
+// https://crbug.com/825038 and https://crbug.com/851805
 IN_PROC_BROWSER_TEST_F(PDFIsolatedExtensionTest, MAYBE_MultipleDomains) {
   for (const auto& url :
        {embedded_test_server()->GetURL("a.com", "/pdf/test.pdf"),
