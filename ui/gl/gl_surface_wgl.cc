@@ -321,7 +321,7 @@ gfx::SwapResult NativeViewGLSurfaceWGL::SwapBuffers(
         0 /* flags */));
     return gfx::SwapResult::SWAP_ACK;
   } else {
-    callback.Run(gfx::PresentationFeedback());
+    callback.Run(gfx::PresentationFeedback::Failure());
     return gfx::SwapResult::SWAP_FAILED;
   }
 }

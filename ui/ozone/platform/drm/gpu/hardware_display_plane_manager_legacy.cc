@@ -69,7 +69,7 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
                     << " plane=" << plane.plane;
         ret = false;
         flip.crtc->SignalPageFlipRequest(gfx::SwapResult::SWAP_FAILED,
-                                         gfx::PresentationFeedback());
+                                         gfx::PresentationFeedback::Failure());
         break;
       }
     }
@@ -91,7 +91,7 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
       }
       flip.crtc->SignalPageFlipRequest(
           ret ? gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED,
-          gfx::PresentationFeedback());
+          gfx::PresentationFeedback::Failure());
     }
   }
   // For each element in |old_plane_list|, if it hasn't been reclaimed (by

@@ -875,13 +875,6 @@ void RenderWidgetHostViewAndroid::DidPresentCompositorFrame(
                                                              feedback);
 }
 
-void RenderWidgetHostViewAndroid::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  DCHECK(using_browser_compositor_);
-  renderer_compositor_frame_sink_->DidDiscardCompositorFrame(
-      presentation_token);
-}
-
 void RenderWidgetHostViewAndroid::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   if (resources.empty())

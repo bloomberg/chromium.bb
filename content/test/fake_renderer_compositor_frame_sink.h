@@ -31,7 +31,6 @@ class FakeRendererCompositorFrameSink
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
       const gfx::PresentationFeedback& feedback) override {}
-  void DidDiscardCompositorFrame(uint32_t presentation_token) override {}
   void OnBeginFrame(const viz::BeginFrameArgs& args) override {}
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(

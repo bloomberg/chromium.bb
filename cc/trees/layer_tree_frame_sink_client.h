@@ -63,8 +63,6 @@ class CC_EXPORT LayerTreeFrameSinkClient {
       uint32_t presentation_token,
       const gfx::PresentationFeedback& feedback) = 0;
 
-  virtual void DidDiscardCompositorFrame(uint32_t presentation_token) = 0;
-
   // The LayerTreeFrameSink is lost when the viz::ContextProviders held by it
   // encounter an error. In this case the LayerTreeFrameSink (and the
   // viz::ContextProviders) must be recreated.

@@ -18,9 +18,6 @@ void FakeCompositorFrameSinkClient::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {}
 
-void FakeCompositorFrameSinkClient::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {}
-
 void FakeCompositorFrameSinkClient::OnBeginFrame(const BeginFrameArgs& args) {}
 
 void FakeCompositorFrameSinkClient::ReclaimResources(

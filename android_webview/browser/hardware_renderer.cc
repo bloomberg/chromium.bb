@@ -186,8 +186,6 @@ void HardwareRenderer::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {}
 
-void HardwareRenderer::DidDiscardCompositorFrame(uint32_t presentation_token) {}
-
 void HardwareRenderer::OnBeginFrame(const viz::BeginFrameArgs& args) {
   // TODO(tansell): Hook this up.
 }

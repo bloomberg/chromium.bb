@@ -227,7 +227,6 @@ class FastInkView::LayerTreeFrameSinkHolder
     if (view_)
       view_->DidPresentCompositorFrame(feedback);
   }
-  void DidDiscardCompositorFrame(uint32_t presentation_token) override {}
   void DidLoseLayerTreeFrameSink() override {
     exported_resources_.clear();
     if (root_window_)

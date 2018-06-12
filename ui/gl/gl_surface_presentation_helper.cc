@@ -55,7 +55,7 @@ GLSurfacePresentationHelper::~GLSurfacePresentationHelper() {
   for (auto& frame : pending_frames_) {
     if (frame.timer)
       frame.timer->Destroy(has_context);
-    frame.callback.Run(gfx::PresentationFeedback());
+    frame.callback.Run(gfx::PresentationFeedback::Failure());
   }
   pending_frames_.clear();
 }
@@ -75,7 +75,7 @@ void GLSurfacePresentationHelper::OnMakeCurrent(GLContext* context,
     gpu_timing_client_ = nullptr;
     for (auto& frame : pending_frames_) {
       frame.timer->Destroy(false /* has_context */);
-      frame.callback.Run(gfx::PresentationFeedback());
+      frame.callback.Run(gfx::PresentationFeedback::Failure());
     }
     pending_frames_.clear();
   }
@@ -126,7 +126,7 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
     for (auto& frame : pending_frames_) {
       if (frame.timer)
         frame.timer->Destroy(false /* has_context */);
-      frame.callback.Run(gfx::PresentationFeedback());
+      frame.callback.Run(gfx::PresentationFeedback::Failure());
     }
     pending_frames_.clear();
     return;
@@ -151,7 +151,7 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
       if (frame.result == gfx::SwapResult::SWAP_ACK)
         frame.callback.Run(feedback);
       else
-        frame.callback.Run(gfx::PresentationFeedback());
+        frame.callback.Run(gfx::PresentationFeedback::Failure());
     }
     pending_frames_.clear();
     // We want to update VSync, if we can not get VSync parameters
@@ -178,7 +178,7 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
         };
 
     if (frame.result != gfx::SwapResult::SWAP_ACK) {
-      frame_presentation_callback(gfx::PresentationFeedback());
+      frame_presentation_callback(gfx::PresentationFeedback::Failure());
       continue;
     }
 

@@ -3243,9 +3243,6 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
             .SetRequestPresentationFeedback(true)
             .Build();
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
-    // TODO(penghuang): Verify DidDiscardCompositorFrame() is called when
-    // GLSurface presentation callback is implemented.
-    // https://crbug.com/776877
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
   }
 
@@ -3298,7 +3295,12 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
             .Build();
 
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
-    EXPECT_CALL(sub_client, DidDiscardCompositorFrame(2)).Times(1);
+    EXPECT_CALL(
+        sub_client,
+        DidPresentCompositorFrame(
+            2, testing::Field(&gfx::PresentationFeedback::flags,
+                              gfx::PresentationFeedback::Flags::kFailure)))
+        .Times(1);
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
 
     display_->DrawAndSwap();

@@ -316,12 +316,6 @@ void DelegatedFrameHost::DidPresentCompositorFrame(
                                                              feedback);
 }
 
-void DelegatedFrameHost::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  renderer_compositor_frame_sink_->DidDiscardCompositorFrame(
-      presentation_token);
-}
-
 void DelegatedFrameHost::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   renderer_compositor_frame_sink_->ReclaimResources(resources);

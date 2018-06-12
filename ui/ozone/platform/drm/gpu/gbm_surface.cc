@@ -70,7 +70,7 @@ void GbmSurface::SwapBuffersAsync(
           /* gpu_fence */ nullptr)) {
     completion_callback.Run(gfx::SwapResult::SWAP_FAILED);
     // Notify the caller, the buffer is never presented on a screen.
-    presentation_callback.Run(gfx::PresentationFeedback());
+    presentation_callback.Run(gfx::PresentationFeedback::Failure());
     return;
   }
   GbmSurfaceless::SwapBuffersAsync(completion_callback, presentation_callback);

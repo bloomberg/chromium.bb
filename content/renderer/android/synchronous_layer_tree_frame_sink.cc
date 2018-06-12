@@ -505,9 +505,6 @@ void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {}
 
-void SynchronousLayerTreeFrameSink::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {}
-
 void SynchronousLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args) {}
 

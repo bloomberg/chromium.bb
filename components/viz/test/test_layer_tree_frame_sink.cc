@@ -239,11 +239,6 @@ void TestLayerTreeFrameSink::DidPresentCompositorFrame(
   client_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
-void TestLayerTreeFrameSink::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  client_->DidDiscardCompositorFrame(presentation_token);
-}
-
 void TestLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   external_begin_frame_source_.OnBeginFrame(args);
 }

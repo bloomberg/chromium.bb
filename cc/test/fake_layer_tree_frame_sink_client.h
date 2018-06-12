@@ -21,7 +21,6 @@ class FakeLayerTreeFrameSinkClient : public LayerTreeFrameSinkClient {
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
       const gfx::PresentationFeedback& feedback) override {}
-  void DidDiscardCompositorFrame(uint32_t presentation_token) override {}
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override {}
   void DidLoseLayerTreeFrameSink() override;

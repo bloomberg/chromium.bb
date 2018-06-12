@@ -123,13 +123,6 @@ void LayerTreeFrameSinkLocal::DidPresentCompositorFrame(
   client_->DidPresentCompositorFrame(presentation_token, feedback);
 }
 
-void LayerTreeFrameSinkLocal::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  DCHECK(thread_checker_);
-  DCHECK(thread_checker_->CalledOnValidThread());
-  client_->DidDiscardCompositorFrame(presentation_token);
-}
-
 void LayerTreeFrameSinkLocal::OnBeginFrame(const viz::BeginFrameArgs& args) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());

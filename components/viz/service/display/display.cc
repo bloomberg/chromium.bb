@@ -63,7 +63,7 @@ Display::Display(
 Display::~Display() {
   for (auto& callback_list : pending_presented_callbacks_) {
     for (auto& callback : callback_list)
-      std::move(callback).Run(gfx::PresentationFeedback());
+      std::move(callback).Run(gfx::PresentationFeedback::Failure());
   }
 
   // Only do this if Initialize() happened.

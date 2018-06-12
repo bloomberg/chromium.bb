@@ -402,11 +402,6 @@ void CanvasResourceDispatcher::DidPresentCompositorFrame(
   NOTIMPLEMENTED();
 }
 
-void CanvasResourceDispatcher::DidDiscardCompositorFrame(
-    uint32_t presentation_token) {
-  NOTIMPLEMENTED();
-}
-
 void CanvasResourceDispatcher::SetNeedsBeginFrame(bool needs_begin_frame) {
   if (needs_begin_frame_ == needs_begin_frame)
     return;

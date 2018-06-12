@@ -117,7 +117,7 @@ void GbmSurfaceless::SwapBuffersAsync(
   if (!last_swap_buffers_result_) {
     completion_callback.Run(gfx::SwapResult::SWAP_FAILED);
     // Notify the caller, the buffer is never presented on a screen.
-    presentation_callback.Run(gfx::PresentationFeedback());
+    presentation_callback.Run(gfx::PresentationFeedback::Failure());
     return;
   }
 
@@ -152,7 +152,7 @@ void GbmSurfaceless::SwapBuffersAsync(
   if (!fence) {
     completion_callback.Run(gfx::SwapResult::SWAP_FAILED);
     // Notify the caller, the buffer is never presented on a screen.
-    presentation_callback.Run(gfx::PresentationFeedback());
+    presentation_callback.Run(gfx::PresentationFeedback::Failure());
     return;
   }
 
@@ -248,7 +248,7 @@ void GbmSurfaceless::SubmitFrame() {
       // |callback| is a wrapper for SwapCompleted(). Call it to properly
       // propagate the failed state.
       std::move(callback).Run(gfx::SwapResult::SWAP_FAILED,
-                              gfx::PresentationFeedback());
+                              gfx::PresentationFeedback::Failure());
       return;
     }
 

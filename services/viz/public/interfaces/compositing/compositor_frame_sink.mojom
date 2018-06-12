@@ -85,15 +85,9 @@ interface CompositorFrameSinkClient {
   DidReceiveCompositorFrameAck(array<ReturnedResource> resources);
 
   // Notification that a CompositorFrame with given |presentation_token| has
-  // been turned into light the first time on display. |time| indicates the
-  // presentation time, |refresh| indicates the time till next refresh, |flags|
-  // is a combination of |gfx::PresentationFlags|.
+  // been turned into light the first time on display (or that it failed).
   DidPresentCompositorFrame(uint32 presentation_token,
                             gfx.mojom.PresentationFeedback feedback);
-
-  // Notification that a CompositorFrame with given presentation_token has been
-  // discarded. It will never be displayed.
-  DidDiscardCompositorFrame(uint32 presentation_token);
 
   // Notification for the client to generate a CompositorFrame.
   OnBeginFrame(BeginFrameArgs args);
