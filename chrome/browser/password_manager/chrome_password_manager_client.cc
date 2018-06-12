@@ -37,6 +37,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/form_submission_tracker_util.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
+#include "components/password_manager/content/browser/password_requirements_service_factory.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/log_manager.h"
@@ -46,6 +47,7 @@
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -701,7 +703,8 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
           popup_controller_, element_bounds_in_screen_space, form,
-          0,  // Unspecified max length.
+          base::string16(),  // No generation_element needed for editing.
+          0,                 // Unspecified max length.
           &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
           web_contents()->GetNativeView());
   popup_controller_->Show(false /* display_password */);
@@ -786,6 +789,13 @@ const password_manager::LogManager* ChromePasswordManagerClient::GetLogManager()
   return log_manager_.get();
 }
 
+password_manager::PasswordRequirementsService*
+ChromePasswordManagerClient::GetPasswordRequirementsService() {
+  return password_manager::PasswordRequirementsServiceFactory::
+      GetForBrowserContext(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+}
+
 // static
 void ChromePasswordManagerClient::BindCredentialManager(
     password_manager::mojom::CredentialManagerRequest request,
@@ -853,8 +863,8 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
           popup_controller_, element_bounds_in_screen_space,
-          ui_data.password_form, ui_data.max_length, &password_manager_,
-          driver->AsWeakPtr(), observer_, web_contents(),
+          ui_data.password_form, ui_data.generation_element, ui_data.max_length,
+          &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
           web_contents()->GetNativeView());
   popup_controller_->Show(true /* display_password */);
 }

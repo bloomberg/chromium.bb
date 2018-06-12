@@ -10,9 +10,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
@@ -147,6 +149,12 @@ class AutofillField : public FormFieldData {
     return vote_type_;
   }
 
+  void SetPasswordRequirements(PasswordRequirementsSpec spec);
+  const base::Optional<PasswordRequirementsSpec>& password_requirements()
+      const {
+    return password_requirements_;
+  }
+
  private:
   // Whether the heuristics or server predict a credit card field.
   bool IsCreditCardPrediction() const;
@@ -161,6 +169,10 @@ class AutofillField : public FormFieldData {
   // including |server_type_| as the first item.
   std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
       server_predictions_;
+
+  // Requirements the site imposes to passwords (for password generation).
+  // Corresponds to the requirements determined by the Autofill server.
+  base::Optional<PasswordRequirementsSpec> password_requirements_;
 
   // The type of the field, as determined by the local heuristics.
   ServerFieldType heuristic_type_;

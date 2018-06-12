@@ -84,4 +84,11 @@ const LogManager* PasswordManagerClient::GetLogManager() const {
 
 void PasswordManagerClient::AnnotateNavigationEntry(bool has_password_field) {}
 
+PasswordRequirementsService*
+PasswordManagerClient::GetPasswordRequirementsService() {
+  // Not impemented but that is a valid state as per interface definition.
+  // Therefore, don't call NOTIMPLEMENTED() here.
+  return nullptr;
+}
+
 }  // namespace password_manager

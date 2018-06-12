@@ -35,6 +35,7 @@ class LogManager;
 class PasswordFormManagerForUI;
 class PasswordManager;
 class PasswordManagerMetricsRecorder;
+class PasswordRequirementsService;
 class PasswordStore;
 
 enum PasswordSyncState {
@@ -247,6 +248,12 @@ class PasswordManagerClient {
   // instance will be returned for each committed navigation. A caller must not
   // hold on to the pointer.
   virtual PasswordManagerMetricsRecorder& GetMetricsRecorder() = 0;
+
+  // Gets the PasswordRequirementsService associated with the client. It is
+  // valid that this method returns a nullptr if the PasswordRequirementsService
+  // has not been implemented for a specific platform or the context is an
+  // incognito context. Callers should guard against this.
+  virtual PasswordRequirementsService* GetPasswordRequirementsService();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

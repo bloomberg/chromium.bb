@@ -108,6 +108,8 @@ class ChromePasswordManagerClient
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
   const password_manager::LogManager* GetLogManager() const override;
+  password_manager::PasswordRequirementsService*
+  GetPasswordRequirementsService() override;
 
   // autofill::mojom::PasswordManagerClient overrides.
   void AutomaticGenerationStatusChanged(
