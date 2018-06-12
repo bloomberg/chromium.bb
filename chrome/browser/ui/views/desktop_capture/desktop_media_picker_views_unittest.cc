@@ -18,7 +18,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
