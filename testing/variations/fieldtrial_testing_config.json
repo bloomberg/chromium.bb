@@ -2295,26 +2295,6 @@
             ]
         }
     ],
-    "NetAdaptiveProxyConnectionTimeout": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_Forced",
-                    "params": {
-                        "non_ssl_http_rtt_multiplier": "5",
-                        "ssl_http_rtt_multiplier": "10"
-                    }
-                }
-            ]
-        }
-    ],
     "NetworkQualityEstimator": [
         {
             "platforms": [
