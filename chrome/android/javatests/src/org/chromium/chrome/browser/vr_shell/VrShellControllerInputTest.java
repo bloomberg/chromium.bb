@@ -91,35 +91,30 @@ public class VrShellControllerInputTest {
         // Arbitrary, but valid values to scroll smoothly
         int scrollSteps = 20;
         int scrollSpeed = 60;
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed,
-                /* fling */ false);
+        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         // We need this second scroll down, otherwise the horizontal scrolling becomes flaky
         // This actually seems to not be an issue in this test case anymore, but still occurs in
         // the fling scroll test, so keep around here as an extra precaution.
         // TODO(bsheedy): Figure out why this is the case
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed,
-                /* fling */ false);
+        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         int endScrollPoint = coord.getScrollYPixInt();
         Assert.assertTrue("Controller was able to scroll down", startScrollPoint < endScrollPoint);
 
         // Test that scrolling up works
         startScrollPoint = endScrollPoint;
-        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed,
-                /* fling */ false);
+        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
         endScrollPoint = coord.getScrollYPixInt();
         Assert.assertTrue("Controller was able to scroll up", startScrollPoint > endScrollPoint);
 
         // Test that scrolling right works
         startScrollPoint = coord.getScrollXPixInt();
-        mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed,
-                /* fling */ false);
+        mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
         endScrollPoint = coord.getScrollXPixInt();
         Assert.assertTrue("Controller was able to scroll right", startScrollPoint < endScrollPoint);
 
         // Test that scrolling left works
         startScrollPoint = endScrollPoint;
-        mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed,
-                /* fling */ false);
+        mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
         endScrollPoint = coord.getScrollXPixInt();
         Assert.assertTrue("Controller was able to scroll left", startScrollPoint > endScrollPoint);
     }
@@ -137,12 +132,11 @@ public class VrShellControllerInputTest {
         waitForPageToBeScrollable(coord);
 
         // Arbitrary, but valid values to trigger fling scrolling
-        int scrollSteps = 2;
-        int scrollSpeed = 40;
+        int scrollSteps = 10;
+        int scrollSpeed = 10;
 
         // Test fling scrolling down
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed,
-                /* fling */ true);
+        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         final AtomicInteger endScrollPoint = new AtomicInteger(coord.getScrollYPixInt());
         // Check that we continue to scroll past wherever we were when we let go of the touchpad
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
@@ -154,8 +148,7 @@ public class VrShellControllerInputTest {
         mController.cancelFlingScroll();
 
         // Test fling scrolling up
-        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed,
-                /* fling */ true);
+        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollYPixInt());
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -166,12 +159,10 @@ public class VrShellControllerInputTest {
         mController.cancelFlingScroll();
         // Horizontal scrolling becomes flaky if the scroll bar is at the top when we try to scroll
         // horizontally, so scroll down a bit to ensure that isn't the case.
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, 10, 60,
-                /* fling */ false);
+        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, 10, 60);
 
         // Test fling scrolling right
-        mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed,
-                /* fling */ true);
+        mController.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollXPixInt());
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -182,8 +173,7 @@ public class VrShellControllerInputTest {
         mController.cancelFlingScroll();
 
         // Test fling scrolling left
-        mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed,
-                /* fling */ true);
+        mController.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
         endScrollPoint.set(coord.getScrollXPixInt());
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -246,15 +236,13 @@ public class VrShellControllerInputTest {
         // Arbitrary, but valid values to scroll smoothly
         int scrollSteps = 20;
         int scrollSpeed = 60;
-        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed,
-                /* fling */ false);
+        mController.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
         int endScrollPoint = recyclerView.computeVerticalScrollOffset();
         Assert.assertTrue("Controller was able to scroll down", startScrollPoint < endScrollPoint);
 
         // Test that scrolling up works
         startScrollPoint = endScrollPoint;
-        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed,
-                /* fling */ false);
+        mController.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
         endScrollPoint = recyclerView.computeVerticalScrollOffset();
         Assert.assertTrue("Controller was able to scroll up", startScrollPoint > endScrollPoint);
     }
