@@ -200,6 +200,7 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOADS_LOCATION_CHANGE = "DownloadsLocationChange";
     public static final String EXPERIMENTAL_APP_BANNERS = "ExperimentalAppBanners";
     public static final String EXPERIMENTAL_UI = "ExperimentalUi";
+    public static final String EXPLORE_SITES = "ExploreSites";
     // When enabled, fullscreen WebContents will be moved to a new Activity. Coming soon...
     public static final String FULLSCREEN_ACTIVITY = "FullscreenActivity";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";

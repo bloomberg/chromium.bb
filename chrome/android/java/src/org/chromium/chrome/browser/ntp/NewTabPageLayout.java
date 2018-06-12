@@ -8,13 +8,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.suggestions.SiteSection;
 import org.chromium.chrome.browser.suggestions.TileGridLayout;
 
@@ -31,6 +34,8 @@ public class NewTabPageLayout extends LinearLayout {
     private LogoView mSearchProviderLogoView;
     private View mSearchBoxView;
     private ViewGroup mSiteSectionView;
+    @Nullable
+    private View mExploreSectionView; // View is null if explore flag is disabled.
 
     /**
      * Constructor for inflating from XML.
@@ -49,6 +54,10 @@ public class NewTabPageLayout extends LinearLayout {
         mSearchProviderLogoView = findViewById(R.id.search_provider_logo);
         mSearchBoxView = findViewById(R.id.search_box);
         insertSiteSectionView();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EXPLORE_SITES)) {
+            ViewStub exploreStub = findViewById(R.id.explore_sites_stub);
+            mExploreSectionView = exploreStub.inflate();
+        }
     }
 
     public void insertSiteSectionView() {
@@ -84,6 +93,12 @@ public class NewTabPageLayout extends LinearLayout {
                     width + mSearchboxShadowWidth, mSearchBoxView.getMeasuredHeight());
             measureExactly(mSearchProviderLogoView,
                     width, mSearchProviderLogoView.getMeasuredHeight());
+        } else if (mExploreSectionView != null) {
+            final int exploreWidth = mExploreSectionView.getMeasuredWidth() - mTileGridLayoutBleed;
+            measureExactly(mSearchBoxView, exploreWidth + mSearchboxShadowWidth,
+                    mSearchBoxView.getMeasuredHeight());
+            measureExactly(mSearchProviderLogoView, exploreWidth,
+                    mSearchProviderLogoView.getMeasuredHeight());
         }
     }
 
