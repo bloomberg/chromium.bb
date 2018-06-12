@@ -1,10 +1,9 @@
 <h1>Alternative Extension Distribution Options</h1>
 
 <p>
-All Chrome extensions must be distributed either directly from the Chrome Web Store,
-using
-<a href="/webstore/inline_installation">inline installation</a>,
-or using the mechanisms described below.
+All Chrome extensions must be distributed either directly from the
+Chrome Web Store
+or by using the mechanisms described below.
 Failure to comply with one of these distribution methods constitutes
 a violation of the
 <a href="/extensions/single_purpose">Chrome extension policy</a>
@@ -14,10 +13,8 @@ and/or the software distributing it to be flagged as
 </p>
 
 <p>
-Usually, users install their own extensions from the Chrome Web Store
-or some other site via
-<a href="/webstore/inline_installation">inline installation</a>.
-But sometimes you might want an extension
+Usually, users install extensions from the Chrome Web Store,
+but sometimes you might want an extension
 to be installed via other means.
 Here are two typical cases:
 </p>
@@ -35,8 +32,8 @@ Here are two typical cases:
 </ul>
 
 <p>
-An extension that's installed neither from the Chrome Web Store
-nor as an inline installation is known as an
+An extension that is not installed from the Chrome Web Store
+is known as an
 <em>external extension</em>.
 For developers who want to distribute an extension as part
 of the installation process for other software,
@@ -59,24 +56,11 @@ where the extension must be hosted.
 </p>
 
 <p>
-The preferences file on Linux can point
-to your own server where you are hosting the extension
-(see <a href="autoupdate#update_url">autoupdating</a>).
+The preferences file on <a href ="/extensions/linux_hosting">Linux can point
+to your own server where you are hosting the extension</a>.
 The preferences JSON file also supports installing
 an extension from a <code>.crx</code> extension
-file on the user's Linux computer
-(see <a href="hosting">hosting</a>).
-</p>
-
-
-<p class="note">
-<b>Install extensions from your website:</b>
-Among these methods,
-the safest option for your users is to publish your extension
-in the Chrome Web Store.
-Instead of hosting your own extension,
-publish it in the store, and provide an
-<a href="https://developers.google.com/chrome/web-store/docs/inline_installation">inline installation</a> link from your website.
+file on the user's Linux computer.
 </p>
 
 <h2 id="prereqs">Before you begin</h2>
@@ -323,7 +307,7 @@ This section answers common questions about external extensions.
 by Google Chrome from M33 onwards?</b></p>
 <p>Yes, but only as an install from a Chrome Web Store
 <code>update_URL</code>,
-not from a local file path.</p> 
+not from a local file path.</p>
 
 <p><b>Can I specify a URL as a path to the external extension?</b> </p>
 <p>Yes, use the <a href="#preferences">preferences JSON</a> file
@@ -393,4 +377,3 @@ your extension through the UI,
 you can remove the blocklist tag
 by installing the extension normally
 through the UI, and then uninstalling it. </p>
-
