@@ -44,7 +44,9 @@ class ChromeStabilityMetricsProvider
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeStabilityMetricsProviderTest,
-                           BrowserChildProcessObserver);
+                           BrowserChildProcessObserverGpu);
+  FRIEND_TEST_ALL_PREFIXES(ChromeStabilityMetricsProviderTest,
+                           BrowserChildProcessObserverUtility);
   FRIEND_TEST_ALL_PREFIXES(ChromeStabilityMetricsProviderTest,
                            NotificationObserver);
 
@@ -57,6 +59,8 @@ class ChromeStabilityMetricsProvider
   void BrowserChildProcessCrashed(
       const content::ChildProcessData& data,
       const content::ChildProcessTerminationInfo& info) override;
+  void BrowserChildProcessLaunchedAndConnected(
+      const content::ChildProcessData& data) override;
 
 #if defined(OS_ANDROID)
   // crash_reporter::CrashMetricsReporter::Observer:

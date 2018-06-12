@@ -30,6 +30,13 @@ class StabilityMetricsHelper {
   // Clears the gathered stability metrics.
   void ClearSavedStabilityMetrics();
 
+  // Records a utility process launch with name |metrics_name|.
+  void BrowserUtilityProcessLaunched(const std::string& metrics_name);
+
+  // Records a utility process crash with name |metrics_name|.
+  void BrowserUtilityProcessCrashed(const std::string& metrics_name,
+                                    int exit_code);
+
   // Records a browser child process crash.
   void BrowserChildProcessCrashed();
 

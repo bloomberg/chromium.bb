@@ -11,12 +11,14 @@
 #include "base/metrics/sparse_histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/process_type.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -133,6 +135,7 @@ void ChromeStabilityMetricsProvider::Observe(
 void ChromeStabilityMetricsProvider::BrowserChildProcessCrashed(
     const content::ChildProcessData& data,
     const content::ChildProcessTerminationInfo& info) {
+  DCHECK(!data.metrics_name.empty());
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Exclude plugin crashes from the count below because we report them via
   // a separate UMA metric.
@@ -140,7 +143,16 @@ void ChromeStabilityMetricsProvider::BrowserChildProcessCrashed(
     return;
 #endif
 
+  if (data.process_type == content::PROCESS_TYPE_UTILITY)
+    helper_.BrowserUtilityProcessCrashed(data.metrics_name, info.exit_code);
   helper_.BrowserChildProcessCrashed();
+}
+
+void ChromeStabilityMetricsProvider::BrowserChildProcessLaunchedAndConnected(
+    const content::ChildProcessData& data) {
+  DCHECK(!data.metrics_name.empty());
+  if (data.process_type == content::PROCESS_TYPE_UTILITY)
+    helper_.BrowserUtilityProcessLaunched(data.metrics_name);
 }
 
 #if defined(OS_ANDROID)
