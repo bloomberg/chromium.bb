@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_WINDOW_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_WINDOW_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,14 +30,12 @@ enum UserManagerAction {
   USER_MANAGER_SELECT_PROFILE_TASK_MANAGER,
   USER_MANAGER_SELECT_PROFILE_ABOUT_CHROME,
   USER_MANAGER_SELECT_PROFILE_CHROME_SETTINGS,
-  USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER,
 };
 
 extern const char kUserManagerOpenCreateUserPage[];
 extern const char kUserManagerSelectProfileTaskManager[];
 extern const char kUserManagerSelectProfileAboutChrome[];
 extern const char kUserManagerSelectProfileChromeSettings[];
-extern const char kUserManagerSelectProfileAppLauncher[];
 
 // Returns the path of the profile connected to the given email.  If no profile
 // is found an empty file path is returned.

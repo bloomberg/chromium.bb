@@ -285,7 +285,6 @@ void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
 
 void RebuildAppAndLaunch(std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(crbug/821659): Clean up the desktop UserManager webui.
   if (shortcut_info->extension_id == app_mode::kAppListModeId)
     return;
 

@@ -271,12 +271,8 @@ bool CanOpenProfileOnStartup(Profile* profile) {
 
 void ShowUserManagerOnStartup(const base::CommandLine& command_line) {
 #if !defined(OS_CHROMEOS)
-  // TODO(crbug/821659): Clean up the desktop UserManager webui.
-  profiles::UserManagerAction action =
-      command_line.HasSwitch(switches::kShowAppList) ?
-          profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER :
-          profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION;
-  UserManager::Show(base::FilePath(), action);
+  UserManager::Show(base::FilePath(),
+                    profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 #endif  // !defined(OS_CHROMEOS)
 }
 

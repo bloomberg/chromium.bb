@@ -165,12 +165,6 @@ void UrlHashHelper::OnBrowserRemoved(Browser* browser) {
 }
 
 void UrlHashHelper::ExecuteUrlHash() {
-  if (hash_ == profiles::kUserManagerSelectProfileAppLauncher) {
-    // TODO(crbug/821659): Clean up the desktop UserManager webui.
-    NOTIMPLEMENTED();
-    return;
-  }
-
   Browser* target_browser = browser_;
   if (!target_browser) {
     target_browser = chrome::FindLastActiveWithProfile(profile_);
