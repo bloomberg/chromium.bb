@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
@@ -61,9 +62,9 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   //
   // Returns OK if the transaction could be started synchronously, which means
   // that the request was served from the cache.  ERR_IO_PENDING is returned to
-  // indicate that the CompletionCallback will be notified once response info is
-  // available or if an IO error occurs.  Any other return value indicates that
-  // the transaction could not be started.
+  // indicate that |callback| will be notified once response info is available
+  // or if an IO error occurs.  Any other return value indicates that the
+  // transaction could not be started.
   //
   // Regardless of the return value, the caller is expected to keep the
   // request_info object alive until Destroy is called on the transaction.
@@ -72,7 +73,7 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
   virtual int Start(const HttpRequestInfo* request_info,
-                    const CompletionCallback& callback,
+                    CompletionOnceCallback callback,
                     const NetLogWithSource& net_log) = 0;
 
   // Restarts the HTTP transaction, ignoring the last error.  This call can
@@ -85,17 +86,17 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   //
   // NOTE: The transaction is not responsible for deleting the callback object.
   //
-  virtual int RestartIgnoringLastError(const CompletionCallback& callback) = 0;
+  virtual int RestartIgnoringLastError(CompletionOnceCallback callback) = 0;
 
   // Restarts the HTTP transaction with a client certificate.
   virtual int RestartWithCertificate(
       scoped_refptr<X509Certificate> client_cert,
       scoped_refptr<SSLPrivateKey> client_private_key,
-      const CompletionCallback& callback) = 0;
+      CompletionOnceCallback callback) = 0;
 
   // Restarts the HTTP transaction with authentication credentials.
   virtual int RestartWithAuth(const AuthCredentials& credentials,
-                              const CompletionCallback& callback) = 0;
+                              CompletionOnceCallback callback) = 0;
 
   // Returns true if auth is ready to be continued. Callers should check
   // this value anytime Start() completes: if it is true, the transaction
@@ -109,19 +110,19 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // read by calling this method.
   //
   // Response data is copied into the given buffer and the number of bytes
-  // copied is returned.  ERR_IO_PENDING is returned if response data is not
-  // yet available.  The CompletionCallback is notified when the data copy
-  // completes, and it is passed the number of bytes that were successfully
-  // copied.  Or, if a read error occurs, the CompletionCallback is notified of
-  // the error.  Any other negative return value indicates that the transaction
-  // could not be read.
+  // copied is returned.  ERR_IO_PENDING is returned if response data is not yet
+  // available.  |callback| is notified when the data copy completes, and it is
+  // passed the number of bytes that were successfully copied.  Or, if a read
+  // error occurs, |callback| is notified of the error.  Any other negative
+  // return value indicates that the transaction could not be read.
   //
   // NOTE: The transaction is not responsible for deleting the callback object.
   // If the operation is not completed immediately, the transaction must acquire
   // a reference to the provided buffer.
   //
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) = 0;
+  virtual int Read(IOBuffer* buf,
+                   int buf_len,
+                   CompletionOnceCallback callback) = 0;
 
   // Stops further caching of this request by the HTTP cache, if there is any.
   // Note that this is merely a hint to the transaction which it may choose to

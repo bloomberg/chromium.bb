@@ -37,16 +37,15 @@ ThrottlingNetworkTransaction::~ThrottlingNetworkTransaction() {
 }
 
 void ThrottlingNetworkTransaction::IOCallback(
-    const net::CompletionCallback& callback,
     bool start,
     int result) {
-  result = Throttle(callback, start, result);
+  DCHECK(callback_);
+  result = Throttle(start, result);
   if (result != net::ERR_IO_PENDING)
-    callback.Run(result);
+    std::move(callback_).Run(result);
 }
 
 int ThrottlingNetworkTransaction::Throttle(
-    const net::CompletionCallback& callback,
     bool start,
     int result) {
   if (failed_)
@@ -69,9 +68,8 @@ int ThrottlingNetworkTransaction::Throttle(
   if (result > 0)
     throttled_byte_count_ += result;
 
-  throttle_callback_ =
-      base::Bind(&ThrottlingNetworkTransaction::ThrottleCallback,
-                 base::Unretained(this), callback);
+  throttle_callback_ = base::Bind(
+      &ThrottlingNetworkTransaction::ThrottleCallback, base::Unretained(this));
   int rv = interceptor_->StartThrottle(result, throttled_byte_count_, send_end,
                                        start, false, throttle_callback_);
   if (rv != net::ERR_IO_PENDING)
@@ -82,15 +80,16 @@ int ThrottlingNetworkTransaction::Throttle(
 }
 
 void ThrottlingNetworkTransaction::ThrottleCallback(
-    const net::CompletionCallback& callback,
     int result,
     int64_t bytes) {
+  DCHECK(callback_);
   DCHECK(!throttle_callback_.is_null());
+
   throttle_callback_.Reset();
   if (result == net::ERR_INTERNET_DISCONNECTED)
     Fail();
   throttled_byte_count_ = bytes;
-  callback.Run(result);
+  std::move(callback_).Run(result);
 }
 
 void ThrottlingNetworkTransaction::Fail() {
@@ -114,7 +113,7 @@ bool ThrottlingNetworkTransaction::CheckFailed() {
 }
 
 int ThrottlingNetworkTransaction::Start(const net::HttpRequestInfo* request,
-                                        const net::CompletionCallback& callback,
+                                        net::CompletionOnceCallback callback,
                                         const net::NetLogWithSource& net_log) {
   DCHECK(request);
   request_ = request;
@@ -150,82 +149,87 @@ int ThrottlingNetworkTransaction::Start(const net::HttpRequestInfo* request,
     return net::ERR_INTERNET_DISCONNECTED;
 
   if (!interceptor_)
-    return network_transaction_->Start(request_, callback, net_log);
+    return network_transaction_->Start(request_, std::move(callback), net_log);
 
+  callback_ = std::move(callback);
   int result = network_transaction_->Start(
       request_,
-      base::Bind(&ThrottlingNetworkTransaction::IOCallback,
-                 base::Unretained(this), callback, true),
+      base::BindOnce(&ThrottlingNetworkTransaction::IOCallback,
+                     base::Unretained(this), true),
       net_log);
-  return Throttle(callback, true, result);
+  return Throttle(true, result);
 }
 
 int ThrottlingNetworkTransaction::RestartIgnoringLastError(
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;
   if (!interceptor_)
-    return network_transaction_->RestartIgnoringLastError(callback);
+    return network_transaction_->RestartIgnoringLastError(std::move(callback));
 
-  int result = network_transaction_->RestartIgnoringLastError(
-      base::Bind(&ThrottlingNetworkTransaction::IOCallback,
-                 base::Unretained(this), callback, true));
-  return Throttle(callback, true, result);
+  callback_ = std::move(callback);
+  int result = network_transaction_->RestartIgnoringLastError(base::BindOnce(
+      &ThrottlingNetworkTransaction::IOCallback, base::Unretained(this), true));
+  return Throttle(true, result);
 }
 
 int ThrottlingNetworkTransaction::RestartWithCertificate(
     scoped_refptr<net::X509Certificate> client_cert,
     scoped_refptr<net::SSLPrivateKey> client_private_key,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;
   if (!interceptor_) {
     return network_transaction_->RestartWithCertificate(
-        std::move(client_cert), std::move(client_private_key), callback);
+        std::move(client_cert), std::move(client_private_key),
+        std::move(callback));
   }
 
+  callback_ = std::move(callback);
   int result = network_transaction_->RestartWithCertificate(
       std::move(client_cert), std::move(client_private_key),
-      base::Bind(&ThrottlingNetworkTransaction::IOCallback,
-                 base::Unretained(this), callback, true));
-  return Throttle(callback, true, result);
+      base::BindOnce(&ThrottlingNetworkTransaction::IOCallback,
+                     base::Unretained(this), true));
+  return Throttle(true, result);
 }
 
 int ThrottlingNetworkTransaction::RestartWithAuth(
     const net::AuthCredentials& credentials,
-    const net::CompletionCallback& callback) {
+    net::CompletionOnceCallback callback) {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;
   if (!interceptor_)
-    return network_transaction_->RestartWithAuth(credentials, callback);
+    return network_transaction_->RestartWithAuth(credentials,
+                                                 std::move(callback));
 
+  callback_ = std::move(callback);
   int result = network_transaction_->RestartWithAuth(
-      credentials, base::Bind(&ThrottlingNetworkTransaction::IOCallback,
-                              base::Unretained(this), callback, true));
-  return Throttle(callback, true, result);
+      credentials, base::BindOnce(&ThrottlingNetworkTransaction::IOCallback,
+                                  base::Unretained(this), true));
+  return Throttle(true, result);
 }
 
 bool ThrottlingNetworkTransaction::IsReadyToRestartForAuth() {
   return network_transaction_->IsReadyToRestartForAuth();
 }
 
-int ThrottlingNetworkTransaction::Read(
-    net::IOBuffer* buf,
-    int buf_len,
-    const net::CompletionCallback& callback) {
+int ThrottlingNetworkTransaction::Read(net::IOBuffer* buf,
+                                       int buf_len,
+                                       net::CompletionOnceCallback callback) {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;
   if (!interceptor_)
-    return network_transaction_->Read(buf, buf_len, callback);
+    return network_transaction_->Read(buf, buf_len, std::move(callback));
 
+  callback_ = std::move(callback);
   int result = network_transaction_->Read(
       buf, buf_len,
-      base::Bind(&ThrottlingNetworkTransaction::IOCallback,
-                 base::Unretained(this), callback, false));
+      base::BindOnce(&ThrottlingNetworkTransaction::IOCallback,
+                     base::Unretained(this), false));
   // URLRequestJob relies on synchronous end-of-stream notification.
   if (result == 0)
     return result;
-  return Throttle(callback, false, result);
+  return Throttle(false, result);
 }
 
 void ThrottlingNetworkTransaction::StopCaching() {

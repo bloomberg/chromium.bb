@@ -275,30 +275,29 @@ MockNetworkTransaction::~MockNetworkTransaction() {
 }
 
 int MockNetworkTransaction::Start(const HttpRequestInfo* request,
-                                  const CompletionCallback& callback,
+                                  CompletionOnceCallback callback,
                                   const NetLogWithSource& net_log) {
   if (request_)
     return ERR_FAILED;
 
   request_ = request;
-  return StartInternal(request, callback, net_log);
+  return StartInternal(request, std::move(callback), net_log);
 }
 
 int MockNetworkTransaction::RestartIgnoringLastError(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   return ERR_FAILED;
 }
 
 int MockNetworkTransaction::RestartWithCertificate(
     scoped_refptr<X509Certificate> client_cert,
     scoped_refptr<SSLPrivateKey> client_private_key,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   return ERR_FAILED;
 }
 
-int MockNetworkTransaction::RestartWithAuth(
-    const AuthCredentials& credentials,
-    const CompletionCallback& callback) {
+int MockNetworkTransaction::RestartWithAuth(const AuthCredentials& credentials,
+                                            CompletionOnceCallback callback) {
   if (!IsReadyToRestartForAuth())
     return ERR_FAILED;
 
@@ -308,7 +307,8 @@ int MockNetworkTransaction::RestartWithAuth(
   // Let the MockTransactionHandler worry about this: the only way for this
   // test to succeed is by using an explicit handler for the transaction so
   // that server behavior can be simulated.
-  return StartInternal(&auth_request_info, callback, NetLogWithSource());
+  return StartInternal(&auth_request_info, std::move(callback),
+                       NetLogWithSource());
 }
 
 void MockNetworkTransaction::PopulateNetErrorDetails(
@@ -331,7 +331,7 @@ bool MockNetworkTransaction::IsReadyToRestartForAuth() {
 
 int MockNetworkTransaction::Read(net::IOBuffer* buf,
                                  int buf_len,
-                                 const CompletionCallback& callback) {
+                                 CompletionOnceCallback callback) {
   const MockTransaction* t = FindMockTransaction(request_->url);
   DCHECK(t);
 
@@ -359,7 +359,7 @@ int MockNetworkTransaction::Read(net::IOBuffer* buf,
   if (test_mode_ & TEST_MODE_SYNC_NET_READ)
     return num;
 
-  CallbackLater(callback, num);
+  CallbackLater(std::move(callback), num);
   return ERR_IO_PENDING;
 }
 
@@ -445,7 +445,7 @@ const int64_t MockNetworkTransaction::kTotalReceivedBytes = 1000;
 const int64_t MockNetworkTransaction::kTotalSentBytes = 100;
 
 int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
-                                          const CompletionCallback& callback,
+                                          CompletionOnceCallback callback,
                                           const NetLogWithSource& net_log) {
   const MockTransaction* t = FindMockTransaction(request->url);
   if (!t)
@@ -457,7 +457,7 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   if (OK != t->start_return_code) {
     if (test_mode_ & TEST_MODE_SYNC_NET_START)
       return t->start_return_code;
-    CallbackLater(callback, t->start_return_code);
+    CallbackLater(std::move(callback), t->start_return_code);
     return ERR_IO_PENDING;
   }
 
@@ -506,7 +506,7 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
     bool defer = false;
     before_network_start_callback_.Run(&defer);
     if (defer) {
-      resume_start_callback_ = callback;
+      resume_start_callback_ = std::move(callback);
       return net::ERR_IO_PENDING;
     }
   }
@@ -514,7 +514,7 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   if (test_mode_ & TEST_MODE_SYNC_NET_START)
     return OK;
 
-  CallbackLater(callback, OK);
+  CallbackLater(std::move(callback), OK);
   return ERR_IO_PENDING;
 }
 
@@ -528,7 +528,7 @@ void MockNetworkTransaction::SetBeforeHeadersSentCallback(
 
 int MockNetworkTransaction::ResumeNetworkStart() {
   DCHECK(!resume_start_callback_.is_null());
-  CallbackLater(resume_start_callback_, OK);
+  CallbackLater(std::move(resume_start_callback_), OK);
   return ERR_IO_PENDING;
 }
 
@@ -537,16 +537,17 @@ void MockNetworkTransaction::GetConnectionAttempts(
   NOTIMPLEMENTED();
 }
 
-void MockNetworkTransaction::CallbackLater(const CompletionCallback& callback,
+void MockNetworkTransaction::CallbackLater(CompletionOnceCallback callback,
                                            int result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockNetworkTransaction::RunCallback,
-                            weak_factory_.GetWeakPtr(), callback, result));
+      FROM_HERE,
+      base::BindOnce(&MockNetworkTransaction::RunCallback,
+                     weak_factory_.GetWeakPtr(), std::move(callback), result));
 }
 
-void MockNetworkTransaction::RunCallback(const CompletionCallback& callback,
+void MockNetworkTransaction::RunCallback(CompletionOnceCallback callback,
                                          int result) {
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 MockNetworkLayer::MockNetworkLayer()
