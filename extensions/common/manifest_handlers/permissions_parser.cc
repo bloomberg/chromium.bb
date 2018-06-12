@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
@@ -19,6 +20,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -162,6 +164,12 @@ bool ParseHelper(Extension* extension,
   bool can_execute_script_everywhere =
       PermissionsData::CanExecuteScriptEverywhere(extension->id(),
                                                   extension->location());
+
+  // Users should be able to enable file access for extensions with activeTab.
+  if (!can_execute_script_everywhere &&
+      base::ContainsKey(*api_permissions, APIPermission::kActiveTab)) {
+    extension->set_wants_file_access(true);
+  }
 
   // Parse host pattern permissions.
   const int kAllowedSchemes = can_execute_script_everywhere
