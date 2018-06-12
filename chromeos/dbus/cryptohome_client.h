@@ -596,12 +596,14 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void IsQuotaSupported(
       DBusMethodCallback<bool> callback) = 0;
 
-  // Calls GetCurrentSpaceForUid to get the current disk space for a uid.
-  virtual void GetCurrentSpaceForUid(const uid_t uid,
+  // Calls GetCurrentSpaceForUid to get the current disk space for an android
+  // uid (a shifted uid).
+  virtual void GetCurrentSpaceForUid(const uid_t android_uid,
                                      DBusMethodCallback<int64_t> callback) = 0;
 
-  // Calls GetCurrentSpaceForGid to get the current disk space for a gid.
-  virtual void GetCurrentSpaceForGid(const gid_t gid,
+  // Calls GetCurrentSpaceForGid to get the current disk space for an android
+  // gid (a shifted gid).
+  virtual void GetCurrentSpaceForGid(const gid_t android_gid,
                                      DBusMethodCallback<int64_t> callback) = 0;
 
  protected:

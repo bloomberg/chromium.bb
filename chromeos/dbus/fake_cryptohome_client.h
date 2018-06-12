@@ -207,9 +207,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::GetSupportedKeyPoliciesRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void IsQuotaSupported(DBusMethodCallback<bool> callback) override;
-  void GetCurrentSpaceForUid(uid_t uid,
+  void GetCurrentSpaceForUid(uid_t android_uid,
                              DBusMethodCallback<int64_t> callback) override;
-  void GetCurrentSpaceForGid(gid_t gid,
+  void GetCurrentSpaceForGid(gid_t android_gid,
                              DBusMethodCallback<int64_t> callback) override;
 
   /////////// Test helpers ////////////

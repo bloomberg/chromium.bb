@@ -75,7 +75,7 @@ void ArcDiskQuotaBridge::GetCurrentSpaceForUid(
                       base::Optional<int64_t> result) {
                      LOG_IF(ERROR, !result.has_value())
                          << "Failed to retrieve result from "
-                            "GetCurrentSpaceForUid for uid="
+                            "GetCurrentSpaceForUid for android uid="
                          << uid;
                      std::move(callback).Run(result.value_or(-1LL));
                    },
@@ -93,7 +93,7 @@ void ArcDiskQuotaBridge::GetCurrentSpaceForGid(
                       base::Optional<int64_t> result) {
                      LOG_IF(ERROR, !result.has_value())
                          << "Failed to retrieve result from "
-                            "GetCurrentSpaceForGid for gid="
+                            "GetCurrentSpaceForGid for android gid="
                          << gid;
                      std::move(callback).Run(result.value_or(-1LL));
                    },
