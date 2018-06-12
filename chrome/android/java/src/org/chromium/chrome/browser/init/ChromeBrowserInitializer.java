@@ -23,7 +23,6 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
-import org.chromium.base.ResourceExtractor;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -50,6 +49,7 @@ import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SpeechRecognition;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.policy.CombinedPolicyProvider;
+import org.chromium.ui.resources.ResourceExtractor;
 
 import java.io.File;
 import java.util.Locale;
