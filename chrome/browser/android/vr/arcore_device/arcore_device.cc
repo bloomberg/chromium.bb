@@ -10,8 +10,10 @@
 #include "base/optional.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl_thread.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -85,6 +87,8 @@ ARCoreDevice::ARCoreDevice()
       weak_ptr_factory_(this) {
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId()));
 
+  arcore_java_utils_ = std::make_unique<vr::ArCoreJavaUtils>(this);
+
   // TODO(https://crbug.com/836524) clean up usage of mailbox bridge
   // and extract the methods in this class that interact with ARCore API
   // into a separate class that implements the ARCore interface.
@@ -117,6 +121,9 @@ void ARCoreDevice::ResumeTracking() {
     return;
 
   is_paused_ = false;
+
+  if (!deferred_request_install_supported_arcore_callbacks_.empty())
+    CallDeferredRequestInstallSupportedARCore();
 
   if (!is_arcore_gl_initialized_)
     return;
@@ -169,16 +176,97 @@ void ARCoreDevice::RequestSession(
       base::BindOnce(&ARCoreDevice::OnRequestSessionPreconditionsComplete,
                      GetWeakPtr(), std::move(callback));
 
-  // TODO(https://crbug.com/838954): Check if ARCore is installed and is the
-  // correct version. This must happen in the main thread.
+  SatisfyRequestSessionPreconditions(
+      render_process_id, render_frame_id, has_user_activation,
+      std::move(preconditions_complete_callback));
+}
 
-  // TODO(https://crbug.com/845792): Consider calling a method to ask for the
-  // appropriate permissions.
-  // ARCore sessions require camera permission.
+void ARCoreDevice::SatisfyRequestSessionPreconditions(
+    int render_process_id,
+    int render_frame_id,
+    bool has_user_activation,
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
+  DCHECK(IsOnMainThread());
+  DCHECK(is_arcore_gl_thread_initialized_);
+
+  if (!arcore_java_utils_->ShouldRequestInstallSupportedArCore()) {
+    // TODO(https://crbug.com/845792): Consider calling a method to ask for the
+    // appropriate permissions.
+    // ARCore sessions require camera permission.
+    RequestCameraPermission(
+        render_process_id, render_frame_id, has_user_activation,
+        base::BindOnce(&ARCoreDevice::OnRequestCameraPermissionComplete,
+                       GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
+  // ARCore is not installed or requires an update. Store the callback to be
+  // processed later and only the first request session will trigger the
+  // request to install or update of the ARCore APK.
+  auto deferred_callback =
+      base::BindOnce(&ARCoreDevice::OnRequestARCoreInstallOrUpdateComplete,
+                     GetWeakPtr(), render_process_id, render_frame_id,
+                     has_user_activation, std::move(callback));
+  deferred_request_install_supported_arcore_callbacks_.push_back(
+      std::move(deferred_callback));
+  if (deferred_request_install_supported_arcore_callbacks_.size() > 1)
+    return;
+
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  DCHECK(render_frame_host);
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  DCHECK(web_contents);
+
+  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab_android);
+
+  base::android::ScopedJavaLocalRef<jobject> j_tab_android =
+      tab_android->GetJavaObject();
+  DCHECK(!j_tab_android.is_null());
+
+  arcore_java_utils_->RequestInstallSupportedArCore(j_tab_android);
+}
+
+void ARCoreDevice::OnRequestInstallSupportedARCoreCanceled() {
+  DCHECK(IsOnMainThread());
+  DCHECK(is_arcore_gl_thread_initialized_);
+  DCHECK(!deferred_request_install_supported_arcore_callbacks_.empty());
+
+  CallDeferredRequestInstallSupportedARCore();
+}
+
+void ARCoreDevice::CallDeferredRequestInstallSupportedARCore() {
+  DCHECK(IsOnMainThread());
+  DCHECK(is_arcore_gl_thread_initialized_);
+  DCHECK(!deferred_request_install_supported_arcore_callbacks_.empty());
+
+  for (auto& deferred_callback :
+       deferred_request_install_supported_arcore_callbacks_) {
+    std::move(deferred_callback).Run();
+  }
+  deferred_request_install_supported_arcore_callbacks_.clear();
+}
+
+void ARCoreDevice::OnRequestARCoreInstallOrUpdateComplete(
+    int render_process_id,
+    int render_frame_id,
+    bool has_user_activation,
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
+  DCHECK(IsOnMainThread());
+  DCHECK(is_arcore_gl_thread_initialized_);
+
+  if (arcore_java_utils_->ShouldRequestInstallSupportedArCore()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
   RequestCameraPermission(
       render_process_id, render_frame_id, has_user_activation,
       base::BindOnce(&ARCoreDevice::OnRequestCameraPermissionComplete,
-                     GetWeakPtr(), std::move(preconditions_complete_callback)));
+                     GetWeakPtr(), std::move(callback)));
 }
 
 void ARCoreDevice::OnRequestCameraPermissionComplete(
@@ -246,13 +334,13 @@ void ARCoreDevice::RequestCameraPermission(
 
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+
   // The RFH may have been destroyed by the time the request is processed.
-  if (!rfh) {
-    std::move(callback).Run(false);
-    return;
-  }
+  DCHECK(rfh);
+
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
+  DCHECK(web_contents);
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
