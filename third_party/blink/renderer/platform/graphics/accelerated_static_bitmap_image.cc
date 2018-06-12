@@ -262,6 +262,8 @@ void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
 void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,
                                                  GLenum filter) {
   if (!texture_holder_->IsMailboxTextureHolder()) {
+    TRACE_EVENT0("blink", "AcceleratedStaticBitmapImage::EnsureMailbox");
+
     if (!original_skia_image_) {
       // To ensure that the texture resource stays alive we only really need
       // to retain the source SkImage until the mailbox is consumed, but this

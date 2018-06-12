@@ -82,6 +82,8 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
   if (!ContextProviderWrapper() || IsAbandoned())
     return;
 
+  TRACE_EVENT0("blink", "MailboxTextureHolder::Sync");
+
   gpu::gles2::GLES2Interface* gl =
       ContextProviderWrapper()->ContextProvider()->ContextGL();
 
