@@ -80,8 +80,8 @@ const CGFloat kBackgroundWidth = 3 * kSegmentWidth + 2 * kSeparatorWidth;
 // Overall height of the control -- the larger of the slider and segment
 // heights.
 const CGFloat kOverallHeight = std::max(kSliderHeight, kSegmentHeight);
-// Overall width of the control -- the background width plusand twice
-// the slider overhang.
+// Overall width of the control -- the background width plus twice the slider
+// overhang.
 const CGFloat kOverallWidth = kBackgroundWidth + 2 * kSliderOverhang;
 
 // Radius used to draw the background and the slider.
@@ -152,6 +152,10 @@ NSString* StringForItemCount(long count) {
 // the positive-x direction.
 @property(nonatomic) CGFloat sliderRange;
 @property(nonatomic, strong) NSArray* accessibilityElements;
+// YES if the slider is currently being dragged
+@property(nonatomic) BOOL dragging;
+@property(nonatomic) CGPoint dragStart;
+@property(nonatomic) CGFloat dragStartPosition;
 @end
 
 @implementation TabGridPageControl
@@ -176,6 +180,9 @@ NSString* StringForItemCount(long count) {
 @synthesize sliderOrigin = _sliderOrigin;
 @synthesize sliderRange = _sliderRange;
 @synthesize accessibilityElements = _accessibilityElements;
+@synthesize dragging = _dragging;
+@synthesize dragStart = _dragStart;
+@synthesize dragStartPosition = _dragStartPosition;
 
 + (instancetype)pageControl {
   return [[TabGridPageControl alloc] init];
@@ -262,6 +269,49 @@ NSString* StringForItemCount(long count) {
   } else {
     self.sliderPosition = newPosition;
   }
+}
+
+#pragma mark - UIControl
+
+- (BOOL)beginTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
+  CGPoint locationInSlider = [touch locationInView:self.sliderView];
+  if ([self.sliderView pointInside:locationInSlider withEvent:event]) {
+    self.dragging = YES;
+    self.dragStart = [touch locationInView:self];
+    self.dragStartPosition = self.sliderPosition;
+    return YES;
+  }
+  return NO;
+}
+
+- (BOOL)continueTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
+  if (!self.dragging)
+    return NO;
+  // Compute x-distance offset
+  CGPoint position = [touch locationInView:self];
+  CGFloat deltaX = position.x - self.dragStart.x;
+  // Convert to position change.
+  CGFloat postionChange = deltaX / self.sliderRange;
+
+  self.sliderPosition = self.dragStartPosition + postionChange;
+  [self sendActionsForControlEvents:UIControlEventValueChanged];
+
+  // If the touch is now outside of the control, stop tracking it.
+  return self.touchInside;
+}
+
+- (void)endTrackingWithTouch:(UITouch*)touch withEvent:(UIEvent*)event {
+  // endTracking is called when -continueTracking returns NO. There's no
+  // additional logic in this case, so just forward to -cancelTracking
+  [self cancelTrackingWithEvent:event];
+}
+
+- (void)cancelTrackingWithEvent:(UIEvent*)event {
+  // cancelTracking is called when there are no more touches (that is, when the
+  // user lifts their finger).
+  self.dragging = NO;
+  [self setSelectedPage:self.selectedPage animated:YES];
+  [self sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
 #pragma mark - UIView
@@ -365,6 +415,7 @@ NSString* StringForItemCount(long count) {
 // used to position the section content.
 - (void)setupViews {
   UIView* backgroundView = [[TabGridPageControlBackground alloc] init];
+  backgroundView.userInteractionEnabled = NO;
   backgroundView.layer.cornerRadius = kCornerRadius;
   backgroundView.layer.masksToBounds = YES;
   [self addSubview:backgroundView];
@@ -409,6 +460,7 @@ NSString* StringForItemCount(long count) {
   // Add the slider above the section images and labels.
   CGRect sliderFrame = CGRectMake(0, 0, kSliderWidth, kSliderHeight);
   UIView* slider = [[UIView alloc] initWithFrame:sliderFrame];
+  slider.userInteractionEnabled = NO;
   slider.layer.cornerRadius = kCornerRadius;
   slider.layer.masksToBounds = YES;
   slider.backgroundColor = UIColorFromRGB(kSliderColor);
@@ -420,6 +472,7 @@ NSString* StringForItemCount(long count) {
   // will be clipped by the slider.
   UIView* selectedImageView = [[UIView alloc]
       initWithFrame:(CGRectMake(0, 0, kOverallWidth, kOverallHeight))];
+  selectedImageView.userInteractionEnabled = NO;
   [self.sliderView addSubview:selectedImageView];
   self.selectedImageView = selectedImageView;
 
@@ -519,7 +572,7 @@ NSString* StringForItemCount(long count) {
   }
   if (page != self.selectedPage) {
     [self setSelectedPage:page animated:YES];
-    [self sendActionsForControlEvents:UIControlEventValueChanged];
+    [self sendActionsForControlEvents:UIControlEventTouchUpInside];
   }
 }
 
