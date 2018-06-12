@@ -155,6 +155,51 @@ bool HasPasswordField(const std::vector<const FormFieldData*>& fields) {
   return false;
 }
 
+// Returns the first element of |fields| which has the specified
+// |unique_renderer_id|, or null if there is no such element.
+const FormFieldData* FindFieldWithUniqueRendererId(
+    const std::vector<const FormFieldData*>& fields,
+    uint32_t unique_renderer_id) {
+  for (const FormFieldData* field : fields) {
+    if (field->unique_renderer_id == unique_renderer_id)
+      return field;
+  }
+  return nullptr;
+}
+
+// Tries to parse |fields| based on server |predictions|.
+std::unique_ptr<ParseResult> ParseUsingPredictions(
+    const std::vector<const FormFieldData*>& fields,
+    const FormPredictions& predictions) {
+  auto result = std::make_unique<ParseResult>();
+  // Note: The code does not check whether there is at most 1 username, 1
+  // current password and at most 2 new passwords. It is assumed that server
+  // side predictions are sane.
+  for (const auto& prediction : predictions) {
+    switch (DeriveFromServerFieldType(prediction.second.type)) {
+      case CredentialFieldType::kUsername:
+        result->username_field =
+            FindFieldWithUniqueRendererId(fields, prediction.first);
+        break;
+      case CredentialFieldType::kCurrentPassword:
+        result->password_field =
+            FindFieldWithUniqueRendererId(fields, prediction.first);
+        break;
+      case CredentialFieldType::kNewPassword:
+        result->new_password_field =
+            FindFieldWithUniqueRendererId(fields, prediction.first);
+        break;
+      case CredentialFieldType::kConfirmationPassword:
+        result->confirmation_password_field =
+            FindFieldWithUniqueRendererId(fields, prediction.first);
+        break;
+      case CredentialFieldType::kNone:
+        break;
+    }
+  }
+  return result->IsEmpty() ? nullptr : std::move(result);
+}
+
 // Tries to parse |fields| based on autocomplete attributes from
 // |autocomplete_cache|. Assumption on the usage autocomplete attributes:
 // 1. Not more than 1 field with autocomplete=username.
@@ -201,9 +246,7 @@ std::unique_ptr<ParseResult> ParseUsingAutocomplete(
     }
   }
 
-  if (result->IsEmpty())
-    return nullptr;
-  return result;
+  return result->IsEmpty() ? nullptr : std::move(result);
 }
 
 // Returns only relevant password fields from |fields|. Namely
@@ -405,7 +448,6 @@ std::unique_ptr<PasswordForm> ParseFormData(
     const autofill::FormData& form_data,
     const FormPredictions* form_predictions,
     FormParsingMode mode) {
-  // TODO(crbug.com/845426): Use predictions.
 
   std::vector<const FormFieldData*> fields = GetTextFields(form_data.fields);
 
@@ -427,7 +469,15 @@ std::unique_ptr<PasswordForm> ParseFormData(
   result->action = form_data.action;
   result->form_data = form_data;
 
-  // TODO(crbug.com/845426): Add parsing with trusted server-side hints.
+  if (form_predictions) {
+    // Try to parse with server predictions.
+    auto predictions_parse_result =
+        ParseUsingPredictions(fields, *form_predictions);
+    if (predictions_parse_result) {
+      SetFields(*predictions_parse_result, result.get());
+      return result;
+    }
+  }
 
   // Try to parse with autocomplete attributes.
   auto autocomplete_parse_result =

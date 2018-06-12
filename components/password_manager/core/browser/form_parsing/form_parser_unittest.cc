@@ -63,6 +63,7 @@ struct FieldDataDescription {
   const char* autocomplete_attribute = nullptr;
   const char* value = kNonimportantValue;
   const char* form_control_type = "text";
+  PasswordFieldPrediction prediction = {.type = autofill::MAX_VALID_FIELD_TYPE};
 };
 
 // Describes a test case for the parser.
@@ -104,9 +105,11 @@ struct ParseResultIds {
 
 // Creates a FormData to be fed to the parser. Includes FormFieldData as
 // described in |fields_description|. Generates |fill_result| and |save_result|
-// expectations about the result in FILLING and SAVING mode, respectively.
+// expectations about the result in FILLING and SAVING mode, respectively. Also
+// fills |predictions| with the predictions contained in FieldDataDescriptions.
 FormData GetFormDataAndExpectation(
     const std::vector<FieldDataDescription>& fields_description,
+    FormPredictions* predictions,
     ParseResultIds* fill_result,
     ParseResultIds* save_result) {
   FormData form_data;
@@ -175,6 +178,9 @@ FormData GetFormDataAndExpectation(
         save_result->confirmation_password_id = unique_id;
         break;
     }
+    if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
+      (*predictions)[unique_id] = field_description.prediction;
+    }
   }
   return form_data;
 }
@@ -239,10 +245,11 @@ void CheckPasswordFormFields(const PasswordForm& password_form,
 // checks the results.
 void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
   for (const FormParsingTestCase& test_case : test_cases) {
+    FormPredictions predictions;
     ParseResultIds fill_result;
     ParseResultIds save_result;
-    const FormData form_data =
-        GetFormDataAndExpectation(test_case.fields, &fill_result, &save_result);
+    const FormData form_data = GetFormDataAndExpectation(
+        test_case.fields, &predictions, &fill_result, &save_result);
     for (auto mode : {FormParsingMode::FILLING, FormParsingMode::SAVING}) {
       SCOPED_TRACE(
           testing::Message("Test description: ")
@@ -250,7 +257,7 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
           << (mode == FormParsingMode::FILLING ? "Filling" : "Saving"));
 
       std::unique_ptr<PasswordForm> parsed_form =
-          ParseFormData(form_data, nullptr, mode);
+          ParseFormData(form_data, &predictions, mode);
 
       const ParseResultIds& expected_ids =
           mode == FormParsingMode::FILLING ? fill_result : save_result;
@@ -822,6 +829,62 @@ TEST(FormParserTest, ReadonlyFields) {
                .form_control_type = "password",
                .is_readonly = true},
               {.form_control_type = "password", .is_readonly = true},
+          },
+      },
+  });
+}
+
+TEST(FormParserTest, ServerHints) {
+  CheckTestData({
+      {
+          "Empty predictions don't cause panic",
+          {
+              {.form_control_type = "text"},
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+      },
+      {
+          "Username-only predictions are ignored",
+          {
+              {.form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+      },
+      {
+          "Simple predictions work",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS}},
+              {.form_control_type = "text"},
+              {.form_control_type = "password"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::PASSWORD},
+               .form_control_type = "password"},
+          },
+      },
+      {
+          "Longer predictions work",
+          {
+              {.role = ElementRole::USERNAME,
+               .prediction = {.type = autofill::USERNAME},
+               .form_control_type = "text"},
+              {.form_control_type = "text"},
+              {.form_control_type = "password"},
+              {.role = ElementRole::NEW_PASSWORD,
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
+               .form_control_type = "password"},
+              {.role = ElementRole::CONFIRMATION_PASSWORD,
+               .prediction = {.type = autofill::CONFIRMATION_PASSWORD},
+               .form_control_type = "password"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::PASSWORD},
+               .form_control_type = "password"},
           },
       },
   });
