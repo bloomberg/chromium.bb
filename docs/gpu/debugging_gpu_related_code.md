@@ -188,7 +188,7 @@ This will print the name of each GPU command before it is executed.
 ### Debugging in the GPU Process
 
 Given the multi-processness of chromium it can be hard to debug both sides.
-Turing on all the logging and having a small test case is useful. One minor
+Turning on all the logging and having a small test case is useful. One minor
 suggestion, if you have some idea where the bug is happening a call to some
 obscure gl function like `glHint()` can give you a place to catch a command
 being processed in the GPU process (put a break point on
@@ -197,15 +197,17 @@ after that. All of them go through `gpu::gles2::GLES2DecoderImpl::DoCommand`.
 
 To actually debug the GPU process:
 
-On Linux this works for me:
+On Linux this works for me (the quotes around launcher can be omitted - they are
+there to stop Windows Defender from complaining about this file):
 
-*   `out/Debug/chromium --no-sandbox --gpu-launcher="xterm -e gdb --args"
+*   `out/Debug/chromium --no-sandbox --gpu-"launcher"="xterm -e gdb --args"
     http://localhost:8000/page-to-repro.html`
 
-On OSX this works for me:
+On OSX this works for me (the quotes around launcher can be omitted - they are
+there to stop Windows Defender from complaining about this file):
 
 *   `out/Debug/Chromium.app/Contents/MacOSX/Chromium --no-sandbox
-    --gpu-launcher="xterm -e gdb --args"
+    --gpu-"launcher"="xterm -e gdb --args"
     http://localhost:8000/page-to-repro.html`
 
 On Windows I use `--gpu-startup-dialog` and then connect to the listed process.
