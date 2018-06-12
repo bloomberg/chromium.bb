@@ -73,6 +73,16 @@ bool SyncedWindowDelegateAndroid::IsSessionRestoreInProgress() const {
 }
 
 bool SyncedWindowDelegateAndroid::ShouldSync() const {
+  // We consider a window non-syncable if it contains at least one null tab.
+  // This is sometimes the case during shutdown: on Android, when Custom Tab
+  // windows are open as well as the browser itself when the browser is closed,
+  // the window-closing transition exposes this weird state that, unless
+  // filtered out, would cause tabs to be closed.
+  for (int i = 0; i < tab_model_->GetTabCount(); ++i) {
+    if (tab_model_->GetTabAt(i) == nullptr) {
+      return false;
+    }
+  }
   return true;
 }
 
