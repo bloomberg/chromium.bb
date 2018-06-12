@@ -48,30 +48,12 @@ function testCrostiniSuccess(done) {
       .then(() => {
         // Intercept the fileManagerPrivate.mountCrostiniContainer call
         // and add crostini disk mount.
-        var volumeInfo = mockVolumeManager.createVolumeInfo(
-            VolumeManagerCommon.VolumeType.CROSTINI, 'crostini',
-            str('LINUX_FILES_ROOT_LABEL'));
-        volumeInfo.fileSystem.populate(
-            test.TestEntryInfo.getMockFileSystemPopulateRows(
-                test.CROSTINI_ENTRY_SET, '/'),
-            true);
-        chrome.fileManagerPrivate.dispatchEvent_('onMountCompleted', {
-          status: 'success',
-          eventType: 'mount',
-          volumeMetadata: {
-            volumeType: VolumeManagerCommon.VolumeType.CROSTINI,
-            volumeId: 'crostini',
-            isReadOnly: false,
-            iconSet: {},
-            profile: {isCurrentProfile: true, displayName: ''},
-            mountContext: 'user',
-          },
-        });
+        test.mountCrostini();
         // Continue from fileManagerPrivate.mountCrostiniContainer callback
         // and ensure expected files are shown.
         mountCallback();
         return test.waitForFiles(
-            test.TestEntryInfo.getExpectedRows(test.CROSTINI_ENTRY_SET));
+            test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
       })
       .then(() => {
         // Reset fileManagerPrivate.mountCrostiniContainer and remove mount.
