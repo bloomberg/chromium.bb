@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -583,10 +584,9 @@ void UserSessionManager::StartSession(const UserContext& user_context,
                                           user_context.GetDeviceId());
   }
 
-  arc::UpdateArcFileSystemCompatibilityPrefIfNeeded(
-      user_context_.GetAccountId(),
-      ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
-      base::BindOnce(&UserSessionManager::PrepareProfile, AsWeakPtr()));
+  InitDemoSessionIfNeeded(base::BindOnce(
+      &UserSessionManager::UpdateArcFileSystemCompatibilityAndPrepareProfile,
+      AsWeakPtr()));
 }
 
 void UserSessionManager::DelegateDeleted(UserSessionManagerDelegate* delegate) {
@@ -1093,6 +1093,24 @@ void UserSessionManager::OnUserNetworkPolicyParsed(bool send_password) {
   }
 
   user_context_.GetMutablePasswordKey()->ClearSecret();
+}
+
+void UserSessionManager::InitDemoSessionIfNeeded(base::OnceClosure callback) {
+  chromeos::DemoSession* demo_session =
+      chromeos::DemoSession::StartIfInDemoMode();
+  if (!demo_session || !demo_session->started()) {
+    std::move(callback).Run();
+    return;
+  }
+
+  demo_session->EnsureOfflineResourcesLoaded(std::move(callback));
+}
+
+void UserSessionManager::UpdateArcFileSystemCompatibilityAndPrepareProfile() {
+  arc::UpdateArcFileSystemCompatibilityPrefIfNeeded(
+      user_context_.GetAccountId(),
+      ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
+      base::BindOnce(&UserSessionManager::PrepareProfile, AsWeakPtr()));
 }
 
 void UserSessionManager::PrepareProfile() {

@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -110,6 +111,20 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
       LOG(ERROR) << "Could not get active user after crash.";
       return;
     }
+
+    chromeos::DemoSession* demo_session =
+        chromeos::DemoSession::StartIfInDemoMode();
+    // In demo session, delay starting user session until the offline demo
+    // session resources have been loaded.
+    if (demo_session && demo_session->started() &&
+        !demo_session->offline_resources_loaded()) {
+      demo_session->EnsureOfflineResourcesLoaded(
+          base::BindOnce(&StartUserSession, user_profile, login_user_id));
+      LOG(WARNING) << "Delay demo user session start until offline demo "
+                   << "resources are loaded";
+      return;
+    }
+
     user_session_mgr->InitRlz(user_profile);
     user_session_mgr->InitializeCerts(user_profile);
     user_session_mgr->InitializeCRLSetFetcher(user);
@@ -195,6 +210,8 @@ void ChromeSessionManager::Initialize(
     StartKioskSession();
     return;
   }
+
+  DemoSession::PreloadOfflineResourcesIfInDemoMode();
 
   if (parsed_command_line.HasSwitch(switches::kLoginManager) &&
       (!is_running_test || force_login_screen_in_test)) {
