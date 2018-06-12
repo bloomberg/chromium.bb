@@ -821,10 +821,10 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
         break;
       }
       default:
-        EXPECT_GE(scroll_layer_->scroll_offset().x(), 10);
-        EXPECT_GE(scroll_layer_->scroll_offset().y(), 20);
-        if (scroll_layer_->scroll_offset().x() > 10 &&
-            scroll_layer_->scroll_offset().y() > 20)
+        EXPECT_GE(scroll_layer_->CurrentScrollOffset().x(), 10);
+        EXPECT_GE(scroll_layer_->CurrentScrollOffset().y(), 20);
+        if (scroll_layer_->CurrentScrollOffset().x() > 10 &&
+            scroll_layer_->CurrentScrollOffset().y() > 20)
           EndTest();
     }
   }
@@ -1122,12 +1122,12 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        EXPECT_EQ(scroll_layer_->scroll_offset().x(), 100);
-        EXPECT_EQ(scroll_layer_->scroll_offset().y(), 200);
+        EXPECT_EQ(scroll_layer_->CurrentScrollOffset().x(), 100);
+        EXPECT_EQ(scroll_layer_->CurrentScrollOffset().y(), 200);
         break;
       case 1: {
-        EXPECT_GE(scroll_layer_->scroll_offset().x(), 100);
-        EXPECT_GE(scroll_layer_->scroll_offset().y(), 200);
+        EXPECT_GE(scroll_layer_->CurrentScrollOffset().x(), 100);
+        EXPECT_GE(scroll_layer_->CurrentScrollOffset().y(), 200);
         KeyframeModel* keyframe_model =
             animation_child_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);
         animation_child_->RemoveKeyframeModel(keyframe_model->id());
@@ -1135,7 +1135,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
         break;
       }
       default:
-        EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
+        EXPECT_EQ(final_postion_, scroll_layer_->CurrentScrollOffset());
     }
   }
 
@@ -1168,7 +1168,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   }
 
   void AfterTest() override {
-    EXPECT_EQ(final_postion_, scroll_layer_->scroll_offset());
+    EXPECT_EQ(final_postion_, scroll_layer_->CurrentScrollOffset());
   }
 
  private:

@@ -95,8 +95,7 @@ Layer::Layer()
       needs_show_scrollbars_(false),
       has_transform_node_(false),
       subtree_has_copy_request_(false),
-      safe_opaque_background_color_(0),
-      num_unclipped_descendants_(0) {}
+      safe_opaque_background_color_(0) {}
 
 Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no
