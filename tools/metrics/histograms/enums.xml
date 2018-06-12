@@ -48318,6 +48318,16 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Other"/>
 </enum>
 
+<enum name="WebRtcPeerConnectionUsagePattern">
+  <summary>
+    These values are integers representing a set of flags indicating how the
+    PeerConnection is used. For flag values, see header file
+    webrtc/pc/peerconnection.h, enum class UsageEvent. Only interesting values
+    are called out with labels.
+  </summary>
+  <int value="0" label="Unused and unclosed"/>
+</enum>
+
 <enum name="WebRtcVideoCodecs">
   <int value="0" label="Unknown"/>
   <int value="1" label="VP8"/>
