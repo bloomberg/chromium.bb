@@ -10,7 +10,6 @@ import android.os.StrictMode;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -22,6 +21,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
+import org.chromium.ui.resources.ResourceExtractor;
 
 import java.util.ArrayList;
 import java.util.List;

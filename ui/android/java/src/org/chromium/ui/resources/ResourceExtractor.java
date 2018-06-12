@@ -2,12 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.base;
+package org.chromium.ui.resources;
 
 import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+
+import org.chromium.base.BuildConfig;
+import org.chromium.base.BuildInfo;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
+import org.chromium.base.LocaleUtils;
+import org.chromium.base.Log;
+import org.chromium.base.PathUtils;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +32,7 @@ import java.util.Locale;
  * the file system accessible from the native code.
  */
 public class ResourceExtractor {
-    private static final String TAG = "base";
+    private static final String TAG = "ui";
     private static final String ICU_DATA_FILENAME = "icudtl.dat";
     private static final String V8_NATIVES_DATA_FILENAME = "natives_blob.bin";
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
@@ -31,7 +41,6 @@ public class ResourceExtractor {
     private static final int BUFFER_SIZE = 16 * 1024;
 
     private class ExtractTask extends AsyncTask<Void, Void, Void> {
-
         private final List<Runnable> mCompletionCallbacks = new ArrayList<Runnable>();
 
         private void doInBackgroundImpl() {
@@ -242,6 +251,8 @@ public class ResourceExtractor {
      * Pak extraction not necessarily required by the embedder.
      */
     private static boolean shouldSkipPakExtraction() {
-        return get().mAssetsToExtract.length == 0;
+        // Certain apks like ContentShell.apk don't have any compressed locale
+        // assets however, so skip extraction entirely for them.
+        return BuildConfig.COMPRESSED_LOCALES.length == 0;
     }
 }
