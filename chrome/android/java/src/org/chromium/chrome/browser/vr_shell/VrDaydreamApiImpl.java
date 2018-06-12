@@ -77,6 +77,12 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
         int type = GvrApi.ViewerType.CARDBOARD;
         try {
             type = daydreamApi.getCurrentViewerType();
+        } catch (RuntimeException ex) {
+            // TODO(mthiesse, b/110092501): Remove this exception handling once Daydream handles
+            // this exception.
+            // We occasionally get the hidden CursorWindowAllocationException here, presumably from
+            // being OOM when trying to check the current viewer type.
+            return false;
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
