@@ -1936,6 +1936,7 @@ test("ash_unittests") {
   deps = [
     ":ash",
     ":test_support_without_content",
+    "//ash/app_list:test_support",
     "//ash/app_list/presenter",
     "//ash/app_list/presenter:test_support",
     "//ash/autoclick/common:autoclick",
@@ -1980,7 +1981,6 @@ test("ash_unittests") {
     "//testing/gtest",
     "//third_party/icu",
     "//ui/accessibility",
-    "//ui/app_list:test_support",
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/base",
@@ -2246,6 +2246,7 @@ static_library("test_support_common") {
   ]
   deps = [
     "//ash",
+    "//ash/app_list:test_support",
     "//ash/app_list/presenter",
     "//ash/app_list/presenter:test_support",
     "//ash/components/fast_ink",
@@ -2269,7 +2270,6 @@ static_library("test_support_common") {
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",
-    "//ui/app_list:test_support",
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/base:test_support",

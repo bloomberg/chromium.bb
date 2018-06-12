@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/shelf/ink_drop_button_listener.h"
@@ -19,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/context_menu_controller.h"

@@ -17,9 +17,9 @@ component("presenter") {
   defines = [ "APP_LIST_PRESENTER_IMPLEMENTATION" ]
 
   public_deps = [
+    "//ash/app_list",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//ui/app_list",
     "//ui/aura",
     "//ui/compositor",
     "//ui/gfx/geometry",
@@ -46,9 +46,9 @@ static_library("test_support") {
   ]
   deps = [
     "//ash",
+    "//ash/app_list:test_support",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//ui/app_list:test_support",
   ]
 }
 
@@ -64,11 +64,11 @@ test("app_list_presenter_unittests") {
     ":presenter",
     ":test_support",
     "//ash:ash",
+    "//ash/app_list:test_support",
     "//base",
     "//base/test:test_support",
     "//mojo/edk",
     "//testing/gtest",
-    "//ui/app_list:test_support",
     "//ui/aura:aura",
     "//ui/aura:test_support",
     "//ui/base",

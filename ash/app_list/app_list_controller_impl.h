@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/model/app_list_view_state.h"
@@ -25,7 +26,6 @@
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ui {

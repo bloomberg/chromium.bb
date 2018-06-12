@@ -4,6 +4,10 @@
 
 #include "ash/first_run/first_run_helper.h"
 
+#include <memory>
+#include <utility>
+
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/first_run/desktop_cleaner.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
@@ -17,7 +21,6 @@
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/logging.h"
-#include "ui/app_list/views/app_list_view.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 

@@ -7,9 +7,9 @@
 
 #include <map>
 
+#include "ash/app_list/views/suggestion_chip_view.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
-#include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/views/controls/scroll_view.h"
 
 namespace ash {

@@ -5,7 +5,7 @@
 #include "ash/app_list/presenter/test/app_list_presenter_impl_test_api.h"
 
 #include "ash/app_list/app_list_presenter_impl.h"
-#include "ui/app_list/views/app_list_view.h"
+#include "ash/app_list/views/app_list_view.h"
 
 namespace app_list {
 namespace test {

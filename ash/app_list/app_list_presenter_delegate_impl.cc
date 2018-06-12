@@ -6,6 +6,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -23,7 +24,6 @@
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
-#include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"

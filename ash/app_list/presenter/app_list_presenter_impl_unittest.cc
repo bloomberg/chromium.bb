@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "ash/app_list/presenter/test/app_list_presenter_impl_test_api.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "base/memory/ptr_util.h"
-#include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_screen.h"

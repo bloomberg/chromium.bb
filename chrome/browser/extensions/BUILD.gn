@@ -993,6 +993,7 @@ static_library("extensions") {
     }
     deps += [
       "//ash",
+      "//ash/app_list",
       "//ash/public/cpp",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/proximity_auth/logging",
@@ -1006,7 +1007,6 @@ static_library("extensions") {
       "//remoting/host",
       "//remoting/host/it2me:common",
       "//third_party/protobuf:protobuf_lite",
-      "//ui/app_list",
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/file_manager",

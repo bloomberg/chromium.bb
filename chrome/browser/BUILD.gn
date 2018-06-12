@@ -3382,7 +3382,7 @@ jumbo_split_static_library("browser") {
   }
 
   if (enable_app_list) {
-    deps += [ "//ui/app_list" ]
+    deps += [ "//ash/app_list" ]
   }
 
   if (enable_background_mode) {
