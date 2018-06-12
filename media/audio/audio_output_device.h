@@ -17,7 +17,8 @@
 // is done by using shared memory in combination with a sync socket pair
 // to generate a low latency transport. The AudioOutputDevice user registers an
 // AudioOutputDevice::RenderCallback at construction and will be polled by the
-// AudioOutputDevice for audio to be played out by the underlying audio layers.
+// AudioOutputController for audio to be played out by the underlying audio
+// layers.
 //
 // State sequences.
 //
@@ -51,10 +52,10 @@
 //    The thread within which this class receives all the IPC messages and
 //    IPC communications can only happen in this thread.
 // 4. Audio transport thread (See AudioDeviceThread).
-//    Responsible for calling the AudioThreadCallback implementation that in
-//    turn calls AudioRendererSink::RenderCallback which feeds audio samples to
-//    the audio layer in the browser process using sync sockets and shared
-//    memory.
+//    Responsible for calling the AudioOutputDeviceThreadCallback
+//    implementation that in turn calls AudioRendererSink::RenderCallback
+//    which feeds audio samples to the audio layer in the browser process using
+//    sync sockets and shared memory.
 //
 // Implementation notes:
 // - The user must call Stop() before deleting the class instance.
@@ -83,6 +84,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace media {
+class AudioOutputDeviceThreadCallback;
 
 class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
                                        public AudioOutputIPCDelegate {
@@ -114,7 +116,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   // AudioOutputIPCDelegate methods.
   void OnError() override;
   void OnDeviceAuthorized(OutputDeviceStatus device_status,
-                          const media::AudioParameters& output_params,
+                          const AudioParameters& output_params,
                           const std::string& matched_device_id) override;
   void OnStreamCreated(base::UnsafeSharedMemoryRegion shared_memory_region,
                        base::SyncSocket::Handle socket_handle,
@@ -162,7 +164,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   // Process device authorization result on the IO thread.
   void ProcessDeviceAuthorizationOnIOThread(
       OutputDeviceStatus device_status,
-      const media::AudioParameters& output_params,
+      const AudioParameters& output_params,
       const std::string& matched_device_id,
       bool timed_out);
 
@@ -199,13 +201,10 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   // received in OnDeviceAuthorized().
   std::string matched_device_id_;
 
-  // Our audio thread callback class.  See source file for details.
-  class AudioThreadCallback;
-
   // In order to avoid a race between OnStreamCreated and Stop(), we use this
   // guard to control stopping and starting the audio thread.
   base::Lock audio_thread_lock_;
-  std::unique_ptr<AudioOutputDevice::AudioThreadCallback> audio_callback_;
+  std::unique_ptr<AudioOutputDeviceThreadCallback> audio_callback_;
   std::unique_ptr<AudioDeviceThread> audio_thread_;
 
   // Temporary hack to ignore OnStreamCreated() due to the user calling Stop()

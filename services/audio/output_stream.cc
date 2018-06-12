@@ -34,11 +34,13 @@ OutputStream::OutputStream(
       delete_callback_(std::move(delete_callback)),
       binding_(this, std::move(stream_request)),
       observer_(std::move(observer)),
-      log_(media::mojom::ThreadSafeAudioLogPtr::Create(std::move(log))),
+      log_(log ? media::mojom::ThreadSafeAudioLogPtr::Create(std::move(log))
+               : nullptr),
       coordinator_(coordinator),
       // Unretained is safe since we own |reader_|
-      reader_(base::BindRepeating(&media::mojom::AudioLog::OnLogMessage,
-                                  base::Unretained(log_->get())),
+      reader_(log_ ? base::BindRepeating(&media::mojom::AudioLog::OnLogMessage,
+                                         base::Unretained(log_->get()))
+                   : base::DoNothing(),
               params,
               &foreign_socket_),
       controller_(audio_manager,
@@ -49,7 +51,6 @@ OutputStream::OutputStream(
                   &reader_),
       weak_factory_(this) {
   DCHECK(binding_.is_bound());
-  DCHECK(observer_.is_bound());
   DCHECK(created_callback);
   DCHECK(delete_callback_);
   DCHECK(coordinator_);
@@ -64,9 +65,11 @@ OutputStream::OutputStream(
   binding_.set_connection_error_handler(error_handler);
 
   // We allow the observer to terminate the stream by closing the message pipe.
-  observer_.set_connection_error_handler(std::move(error_handler));
+  if (observer_)
+    observer_.set_connection_error_handler(std::move(error_handler));
 
-  log_->get()->OnCreated(params, output_device_id);
+  if (log_)
+    log_->get()->OnCreated(params, output_device_id);
 
   coordinator_->RegisterGroupMember(&controller_);
   if (!reader_.IsValid() || !controller_.Create(false)) {
@@ -83,7 +86,8 @@ OutputStream::OutputStream(
 OutputStream::~OutputStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
-  log_->get()->OnClosed();
+  if (log_)
+    log_->get()->OnClosed();
 
   if (observer_)
     observer_.ResetWithReason(
@@ -108,14 +112,16 @@ void OutputStream::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
   controller_.Play();
-  log_->get()->OnStarted();
+  if (log_)
+    log_->get()->OnStarted();
 }
 
 void OutputStream::Pause() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 
   controller_.Pause();
-  log_->get()->OnStopped();
+  if (log_)
+    log_->get()->OnStopped();
 }
 
 void OutputStream::SetVolume(double volume) {
@@ -130,7 +136,8 @@ void OutputStream::SetVolume(double volume) {
   }
 
   controller_.SetVolume(volume);
-  log_->get()->OnSetVolume(volume);
+  if (log_)
+    log_->get()->OnSetVolume(volume);
 }
 
 void OutputStream::CreateAudioPipe(CreatedCallback created_callback) {
@@ -161,7 +168,8 @@ void OutputStream::OnControllerPlaying() {
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("audio", "Playing", this);
   playing_ = true;
-  observer_->DidStartPlaying();
+  if (observer_)
+    observer_->DidStartPlaying();
   if (OutputController::will_monitor_audio_levels()) {
     DCHECK(!poll_timer_.IsRunning());
     // base::Unretained is safe because |this| owns |poll_timer_|.
@@ -175,7 +183,8 @@ void OutputStream::OnControllerPlaying() {
 
   // In case we don't monitor audio levels, we assume a stream is audible when
   // it's playing.
-  observer_->DidChangeAudibleState(true);
+  if (observer_)
+    observer_->DidChangeAudibleState(true);
 }
 
 void OutputStream::OnControllerPaused() {
@@ -189,7 +198,8 @@ void OutputStream::OnControllerPaused() {
     DCHECK(poll_timer_.IsRunning());
     poll_timer_.Stop();
   }
-  observer_->DidStopPlaying();
+  if (observer_)
+    observer_->DidStopPlaying();
   TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "Playing", this);
 }
 
@@ -201,7 +211,8 @@ void OutputStream::OnControllerError() {
   // torn down.
   poll_timer_.Stop();
 
-  log_->get()->OnError();
+  if (log_)
+    log_->get()->OnError();
 
   if (observer_) {
     observer_.ResetWithReason(
@@ -215,7 +226,8 @@ void OutputStream::OnControllerError() {
 
 void OutputStream::OnLog(base::StringPiece message) {
   // No sequence check: |log_| is thread-safe.
-  log_->get()->OnLogMessage(message.as_string());
+  if (log_)
+    log_->get()->OnLogMessage(message.as_string());
 }
 
 void OutputStream::OnError() {
@@ -245,10 +257,12 @@ void OutputStream::PollAudioLevel() {
 
   if (is_audible_ && !was_audible) {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("audio", "Audible", this);
-    observer_->DidChangeAudibleState(is_audible_);
+    if (observer_)
+      observer_->DidChangeAudibleState(is_audible_);
   } else if (!is_audible_ && was_audible) {
     TRACE_EVENT_NESTABLE_ASYNC_END0("audio", "Audible", this);
-    observer_->DidChangeAudibleState(is_audible_);
+    if (observer_)
+      observer_->DidChangeAudibleState(is_audible_);
   }
 }
 

@@ -65,8 +65,8 @@ interface StreamFactory {
   // will later be used for muting streams or capturing them for loopback.
   CreateOutputStream(
     media.mojom.AudioOutputStream& stream,
-    associated media.mojom.AudioOutputStreamObserver observer,
-    media.mojom.AudioLog log,
+    associated media.mojom.AudioOutputStreamObserver? observer,
+    media.mojom.AudioLog? log,
     string device_id, media.mojom.AudioParameters params,
     mojo_base.mojom.UnguessableToken group_id)
     => (media.mojom.ReadWriteAudioDataPipe? data_pipe);
