@@ -25,10 +25,13 @@
 
 namespace color_utils {
 
-
-// Helper functions -----------------------------------------------------------
-
 namespace {
+
+// The darkest reference color in color_utils.
+SkColor g_color_utils_darkest = SK_ColorBLACK;
+
+// The luma midpoint for determining if a color is light or dark.
+int g_color_utils_luma_midpoint = 128;
 
 int calcHue(double temp1, double temp2, double hue) {
   if (hue < 0.0)
@@ -65,9 +68,6 @@ SkColor LightnessInvertColor(SkColor color) {
 }
 
 }  // namespace
-
-
-// ----------------------------------------------------------------------------
 
 double GetContrastRatio(SkColor color_a, SkColor color_b) {
   return GetContrastRatio(GetRelativeLuminance(color_a),
@@ -290,12 +290,12 @@ SkColor GetResultingPaintColor(SkColor foreground, SkColor background) {
 }
 
 bool IsDark(SkColor color) {
-  return GetLuma(color) < 128;
+  return GetLuma(color) < g_color_utils_luma_midpoint;
 }
 
 SkColor BlendTowardOppositeLuma(SkColor color, SkAlpha alpha) {
-  return AlphaBlend(IsDark(color) ? SK_ColorWHITE : SK_ColorBLACK, color,
-                    alpha);
+  return AlphaBlend(IsDark(color) ? SK_ColorWHITE : g_color_utils_darkest,
+                    color, alpha);
 }
 
 SkColor GetReadableColor(SkColor foreground, SkColor background) {
@@ -352,6 +352,15 @@ std::string SkColorToRgbaString(SkColor color) {
 std::string SkColorToRgbString(SkColor color) {
   return base::StringPrintf("%d,%d,%d", SkColorGetR(color), SkColorGetG(color),
                             SkColorGetB(color));
+}
+
+void SetDarkestColor(SkColor color) {
+  g_color_utils_darkest = color;
+  g_color_utils_luma_midpoint = (GetLuma(color) + 255) / 2;
+}
+
+SkColor GetDarkestColorForTesting() {
+  return g_color_utils_darkest;
 }
 
 }  // namespace color_utils

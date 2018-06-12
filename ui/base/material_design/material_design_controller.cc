@@ -12,6 +12,8 @@
 #include "build/build_config.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 
 #if defined(OS_CHROMEOS)
 #include <fcntl.h>
@@ -120,6 +122,9 @@ void MaterialDesignController::Initialize() {
     }
     SetMode(DefaultMode());
   }
+
+  if (IsRefreshUi())
+    color_utils::SetDarkestColor(gfx::kGoogleGrey900);
 }
 
 // static

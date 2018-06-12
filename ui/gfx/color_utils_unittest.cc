@@ -178,4 +178,14 @@ TEST(ColorUtils, SkColorToRgbString) {
   EXPECT_EQ(color_string, "50,100,150");
 }
 
+TEST(ColorUtils, IsDarkDarkestColorChange) {
+  SkColor old_black_color = GetDarkestColorForTesting();
+
+  ASSERT_FALSE(IsDark(SkColorSetARGB(255, 200, 200, 200)));
+  SetDarkestColor(SkColorSetARGB(255, 200, 200, 200));
+  EXPECT_TRUE(IsDark(SkColorSetARGB(255, 200, 200, 200)));
+
+  SetDarkestColor(old_black_color);
+}
+
 }  // namespace color_utils

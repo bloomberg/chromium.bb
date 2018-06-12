@@ -146,6 +146,12 @@ GFX_EXPORT std::string SkColorToRgbaString(SkColor color);
 // Creates an rgb string for an SkColor. For example: '255,0,255'.
 GFX_EXPORT std::string SkColorToRgbString(SkColor color);
 
+// Sets the color_utils darkest color to |color| from the SK_ColorBLACK default.
+GFX_EXPORT void SetDarkestColor(SkColor color);
+
+// Returns the current color_utils darkest color so tests can clean up.
+GFX_EXPORT SkColor GetDarkestColorForTesting();
+
 }  // namespace color_utils
 
 #endif  // UI_GFX_COLOR_UTILS_H_
