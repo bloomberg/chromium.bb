@@ -5,6 +5,7 @@
 #ifndef GIN_PUBLIC_V8_IDLE_TASK_RUNNER_H_
 #define GIN_PUBLIC_V8_IDLE_TASK_RUNNER_H_
 
+#include <memory>
 #include "v8/include/v8-platform.h"
 
 namespace gin {
@@ -15,7 +16,7 @@ namespace gin {
 // The idle task is expected to complete by this deadline.
 class GIN_EXPORT V8IdleTaskRunner {
  public:
-  virtual void PostIdleTask(v8::IdleTask* task) = 0;
+  virtual void PostIdleTask(std::unique_ptr<v8::IdleTask> task) = 0;
 
   virtual ~V8IdleTaskRunner() {}
 };

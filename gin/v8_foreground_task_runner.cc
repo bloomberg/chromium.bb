@@ -33,7 +33,7 @@ void V8ForegroundTaskRunner::PostDelayedTask(std::unique_ptr<v8::Task> task,
 
 void V8ForegroundTaskRunner::PostIdleTask(std::unique_ptr<v8::IdleTask> task) {
   DCHECK(IdleTasksEnabled());
-  idle_task_runner()->PostIdleTask(task.release());
+  idle_task_runner()->PostIdleTask(std::move(task));
 }
 
 }  // namespace gin
