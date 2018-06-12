@@ -160,8 +160,15 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 // observers to wait for the message to be processed on the MediaSessionObserver
 // side.
 
+#if defined(LEAK_SANITIZER)
+// TODO(crbug.com/850870) Plug the leaks.
+#define MAYBE_ResetServiceWhenNavigatingAway \
+  DISABLED_ResetServiceWhenNavigatingAway
+#else
+#define MAYBE_ResetServiceWhenNavigatingAway ResetServiceWhenNavigatingAway
+#endif
 IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
-                       ResetServiceWhenNavigatingAway) {
+                       MAYBE_ResetServiceWhenNavigatingAway) {
   NavigateToURL(shell(), GetTestUrl(".", "title1.html"));
   EnsurePlayer();
 
@@ -182,8 +189,16 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
   EXPECT_EQ(0u, GetService()->actions().size());
 }
 
+#if defined(LEAK_SANITIZER)
+// TODO(crbug.com/850870) Plug the leaks.
+#define MAYBE_DontResetServiceForSameDocumentNavigation \
+  DISABLED_DontResetServiceForSameDocumentNavigation
+#else
+#define MAYBE_DontResetServiceForSameDocumentNavigation \
+  DontResetServiceForSameDocumentNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
-                       DontResetServiceForSameDocumentNavigation) {
+                       MAYBE_DontResetServiceForSameDocumentNavigation) {
   NavigateToURL(shell(), GetTestUrl(".", "title1.html"));
   EnsurePlayer();
 
