@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/layers/heads_up_display_layer.h"
+
 #include "cc/layers/layer.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_host.h"
@@ -18,26 +19,11 @@ class HeadsUpDisplayTest : public LayerTreeTest {
   }
 };
 
-class DrawsContentLayer : public Layer {
- public:
-  static scoped_refptr<DrawsContentLayer> Create() {
-    return base::WrapRefCounted(new DrawsContentLayer());
-  }
-  bool DrawsContent() const override { return true; }
-
- private:
-  DrawsContentLayer() = default;
-  ~DrawsContentLayer() override = default;
-};
-
 class HudWithRootLayerChange : public HeadsUpDisplayTest {
  public:
-  HudWithRootLayerChange()
-      : root_layer1_(DrawsContentLayer::Create()),
-        root_layer2_(DrawsContentLayer::Create()),
-        num_commits_(0) {}
-
   void BeginTest() override {
+    root_layer1_ = Layer::Create();
+    root_layer2_ = Layer::Create();
     root_layer1_->SetBounds(gfx::Size(30, 30));
     root_layer2_->SetBounds(gfx::Size(30, 30));
 
@@ -76,7 +62,7 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
         break;
       case 6:
         EXPECT_EQ(root_layer2_.get(), layer_tree_host()->hud_layer()->parent());
-        // Change directly back to the last root layer/
+        // Change directly back to the last root layer.
         layer_tree_host()->SetRootLayer(root_layer1_);
         break;
       case 7:
@@ -89,12 +75,12 @@ class HudWithRootLayerChange : public HeadsUpDisplayTest {
   void AfterTest() override {}
 
  private:
-  scoped_refptr<DrawsContentLayer> root_layer1_;
-  scoped_refptr<DrawsContentLayer> root_layer2_;
-  int num_commits_;
+  scoped_refptr<Layer> root_layer1_;
+  scoped_refptr<Layer> root_layer2_;
+  int num_commits_ = 0;
 };
 
-MULTI_THREAD_TEST_F(HudWithRootLayerChange);
+SINGLE_AND_MULTI_THREAD_TEST_F(HudWithRootLayerChange);
 
 }  // namespace
 }  // namespace cc
