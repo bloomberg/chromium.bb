@@ -43,6 +43,7 @@ class ExampleController(test_controller.TestController):
     self.TestIntegrationTests()
 
   def CreateBrowserTestsLauncherCommand(self):
+    # This command is run on the Swarming bot.
     return [
         'python',
         self.TaskAbsPath('../browser_tests_launcher.py'),

@@ -204,7 +204,7 @@ class TaskController(object):
   def _ExecuteSwarming(self):
     """Executes swarming.py."""
     cmd = [
-        'python',
+        sys.executable,
         SWARMING_PY,
         'trigger',
         self._isolated_hash,
