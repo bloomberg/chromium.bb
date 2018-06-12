@@ -169,7 +169,8 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   auto display = display_provider_->CreateDisplay(
       params->frame_sink_id, params->widget, params->gpu_compositing,
       display_client.get(), external_begin_frame_controller.get(),
-      params->renderer_settings, &begin_frame_source);
+      params->renderer_settings, params->send_swap_size_notifications,
+      &begin_frame_source);
 
   // Creating display failed. Drop the CompositorFrameSink message pipes here
   // and let host send a new request, potential with a different compositing

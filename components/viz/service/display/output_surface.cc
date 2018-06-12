@@ -64,4 +64,9 @@ bool OutputSurface::LatencyInfoHasSnapshotRequest(
   return false;
 }
 
+void OutputSurface::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {
+  DCHECK(!needs_swap_size_notifications);
+}
+
 }  // namespace viz

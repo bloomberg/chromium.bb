@@ -38,6 +38,7 @@ class InProcessDisplayClient : public viz::mojom::DisplayClient {
       const std::vector<ui::LatencyInfo>& latency_info) override;
   void CreateLayeredWindowUpdater(
       viz::mojom::LayeredWindowUpdaterRequest request) override;
+  void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
 
   mojo::Binding<viz::mojom::DisplayClient> binding_;
 #if defined(OS_MACOSX) || defined(OS_WIN)

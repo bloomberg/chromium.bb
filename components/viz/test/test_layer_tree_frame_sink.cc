@@ -267,6 +267,9 @@ void TestLayerTreeFrameSink::DisplayDidDrawAndSwap() {
 void TestLayerTreeFrameSink::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {}
 
+void TestLayerTreeFrameSink::DisplayDidCompleteSwapWithSize(
+    const gfx::Size& pixel_Size) {}
+
 void TestLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
   support_->SetNeedsBeginFrame(needs_begin_frames);
 }

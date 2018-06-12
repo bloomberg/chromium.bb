@@ -206,6 +206,7 @@ class StubDisplayClient : public DisplayClient {
   void DisplayDidDrawAndSwap() override {}
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override{};
+  void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override {}
   void DidSwapAfterSnapshotRequestReceived(
       const std::vector<ui::LatencyInfo>& latency_info) override {}
 };

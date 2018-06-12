@@ -482,7 +482,8 @@ void SkiaOutputSurfaceImpl::RecreateRecorder() {
 }
 
 void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
-    gpu::SwapBuffersCompleteParams params) {
+    gpu::SwapBuffersCompleteParams params,
+    const gfx::Size& pixel_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(client_);
 
@@ -491,6 +492,8 @@ void SkiaOutputSurfaceImpl::DidSwapBuffersComplete(
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
   client_->DidReceiveSwapBuffersAck();
+  if (needs_swap_size_notifications_)
+    client_->DidSwapWithSize(pixel_size);
 }
 
 void SkiaOutputSurfaceImpl::BufferPresented(
@@ -506,6 +509,11 @@ void SkiaOutputSurfaceImpl::BufferPresented(
                                 ? BeginFrameArgs::DefaultInterval()
                                 : feedback.interval);
   }
+}
+
+void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {
+  needs_swap_size_notifications_ = needs_swap_size_notifications;
 }
 
 }  // namespace viz

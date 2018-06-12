@@ -278,9 +278,10 @@ void SkiaOutputSurfaceImplOnGpu::DidCreateAcceleratedSurfaceChildWindow(
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(
     gpu::SwapBuffersCompleteParams params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  params.swap_response.swap_id = pending_swap_completed_ids_.front();
-  pending_swap_completed_ids_.pop_front();
-  did_swap_buffer_complete_callback_.Run(params);
+  params.swap_response.swap_id = pending_swap_completed_params_.front().first;
+  gfx::Size pixel_size = pending_swap_completed_params_.front().second;
+  pending_swap_completed_params_.pop_front();
+  did_swap_buffer_complete_callback_.Run(params, pixel_size);
 }
 
 const gpu::gles2::FeatureInfo* SkiaOutputSurfaceImplOnGpu::GetFeatureInfo()
@@ -392,7 +393,8 @@ void SkiaOutputSurfaceImplOnGpu::PreprocessYUVResources(
 
 void SkiaOutputSurfaceImplOnGpu::OnSwapBuffers() {
   uint64_t swap_id = swap_id_++;
-  pending_swap_completed_ids_.push_back(swap_id);
+  gfx::Size pixel_size(sk_surface_->width(), sk_surface_->height());
+  pending_swap_completed_params_.emplace_back(swap_id, pixel_size);
 }
 
 }  // namespace viz

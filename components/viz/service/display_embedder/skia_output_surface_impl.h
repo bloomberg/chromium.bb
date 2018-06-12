@@ -68,6 +68,8 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
   unsigned UpdateGpuFence() override;
+  void SetNeedsSwapSizeNotifications(
+      bool needs_swap_size_notifications) override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* GetSkCanvasForCurrentFrame() override;
@@ -92,7 +94,8 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   class PromiseTextureHelper;
   void InitializeOnGpuThread(base::WaitableEvent* event);
   void RecreateRecorder();
-  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params);
+  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
+                              const gfx::Size& pixel_size);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
 
   uint64_t sync_fence_release_ = 0;
@@ -126,6 +129,9 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   // |impl_on_gpu| is created and destroyed on the GPU thread.
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
+
+  // Whether to send OutputSurfaceClient::DidSwapWithSize notifications.
+  bool needs_swap_size_notifications_ = false;
 
   THREAD_CHECKER(thread_checker_);
 

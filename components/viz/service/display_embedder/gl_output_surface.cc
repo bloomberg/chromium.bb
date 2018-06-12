@@ -96,7 +96,7 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 
   auto swap_callback = base::BindOnce(
       &GLOutputSurface::OnGpuSwapBuffersCompleted,
-      weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info));
+      weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info), size_);
   gpu::ContextSupport::PresentationCallback presentation_callback;
   if (frame.need_presentation_feedback) {
     flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
@@ -151,6 +151,7 @@ void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
 
 void GLOutputSurface::OnGpuSwapBuffersCompleted(
     std::vector<ui::LatencyInfo> latency_info,
+    const gfx::Size& pixel_size,
     const gpu::SwapBuffersCompleteParams& params) {
   if (!params.texture_in_use_responses.empty())
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
@@ -161,6 +162,9 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidFinishLatencyInfo(latency_info);
+
+  if (needs_swap_size_notifications_)
+    client_->DidSwapWithSize(pixel_size);
 }
 
 void GLOutputSurface::OnVSyncParametersUpdated(base::TimeTicks timebase,
@@ -195,6 +199,11 @@ unsigned GLOutputSurface::UpdateGpuFence() {
   gpu_fence_id_ = context_provider()->ContextGL()->CreateGpuFenceCHROMIUM();
 
   return gpu_fence_id_;
+}
+
+void GLOutputSurface::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {
+  needs_swap_size_notifications_ = needs_swap_size_notifications;
 }
 
 }  // namespace viz
