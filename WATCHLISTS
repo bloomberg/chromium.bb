@@ -834,10 +834,11 @@
       'filepath': 'drive.*resource_metadata'
     },
     'eme': {
-      'filepath': 'components/cdm/|' \
+      'filepath': 'chrome/renderer/media/.*key_system|' \
+                  'chrome/browser/media/.*(cdm|encrypted)|' \
+                  'components/cdm/|' \
                   'content/browser/media/cdm/|' \
-                  'content/renderer/media/crypto/|' \
-                  'media/base/android/*drm*|' \
+                  'media/base/android/.*drm|' \
                   'media/cdm/|' \
                   'third_party/widevine/cdm/'
     },
@@ -1047,7 +1048,7 @@
                   '|chrome/test/data/extensions/api_test/media_galleries/'
     },
     'media_mojo': {
-      'filepath': 'media/mojo/*'
+      'filepath': 'media/mojo/'
     },
     'media_recorder': {
       'filepath': 'content/renderer/media_recorder/' \
@@ -1073,6 +1074,9 @@
                   '|chrome/test/data/webui/media_router/' \
                   '|chrome/test/media_router/' \
                   '|chrome/utility/media_router/'
+    },
+    'media_win': {
+      'filepath': 'media/gpu/windows/'
     },
     'memory_coordinator': {
       'filepath': 'base/memory/memory_|' \
@@ -2145,7 +2149,8 @@
     'media_controls': ['steimel+watch-mediacontrols@chromium.org'],
     'media_galleries': ['thestig@chromium.org',
                         'tommycli@chromium.org'],
-    'media_mojo': ['alokp+watch@chromium.org'],
+    'media_mojo': ['alokp+watch@chromium.org',
+                   'xhwang+watch@chromium.org'],
     'media_recorder': ['emircan+watch+mediarecorder@chromium.org',
                        'mcasas+mediarecorder@chromium.org'],
     'media_remoting': ['erickung+watch@chromium.org',
@@ -2155,6 +2160,7 @@
     'media_router': ['imcheng+watch@chromium.org',
                      'mfoltz+watch@chromium.org',
                      'takumif+watch@chromium.org'],
+    'media_win': ['media-win-reviews@chromium.org'],
     'memory_coordinator': ['chrome-grc-reviews+memory@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
