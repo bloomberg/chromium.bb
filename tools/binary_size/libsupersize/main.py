@@ -84,6 +84,7 @@ def main():
     tup[0].AddArguments(sub_parser)
     sub_parser.set_defaults(func=tup[0].Run)
 
+  # Show help if the command or a subcommand is called with no arguments
   if len(sys.argv) == 1:
     parser.print_help()
     sys.exit(1)

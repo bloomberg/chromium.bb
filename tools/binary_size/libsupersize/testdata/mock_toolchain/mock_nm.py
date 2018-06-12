@@ -99,7 +99,7 @@ def _PrintHeader(path):
 
 
 def _PrintOutput(path):
-  if path.endswith(os.path.join('mock_output_directory', 'elf')):
+  if path.endswith(os.path.join('out', 'Release', 'elf')):
     sys.stdout.write(_ELF_OUTPUT)
   else:
     lines = _OBJECT_OUTPUTS.get(os.path.normpath(path))
