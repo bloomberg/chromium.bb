@@ -80,12 +80,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     // Called when congestion window or RTT may have changed.
     virtual void OnCongestionChange() = 0;
 
-    // Called with the path may be degrading. Note that the path may only be
-    // temporarily degrading.
-    // TODO(b/76462761): remove this once
-    // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm is deprecated.
-    virtual void OnPathDegrading() = 0;
-
     // Called when the Path MTU may have increased.
     virtual void OnPathMtuIncreased(QuicPacketLength packet_size) = 0;
   };
@@ -512,10 +506,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // OnAckRangeStart, and gradually moves in OnAckRange. This is only used
   // when quic_reloadable_flag_quic_use_incremental_ack_processing4 is true.
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
-
-  // Latched value of
-  // quic_reloadable_flag_quic_path_degrading_alarm
-  const bool use_path_degrading_alarm_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

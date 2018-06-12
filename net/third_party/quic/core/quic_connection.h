@@ -505,9 +505,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // QuicSentPacketManager::NetworkChangeVisitor
   void OnCongestionChange() override;
-  // TODO(b/76462614): remove OnPathDegrading() once
-  // FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2 is deprecated.
-  void OnPathDegrading() override;
   void OnPathMtuIncreased(QuicPacketLength packet_size) override;
 
   // Called by the crypto stream when the handshake completes. In the server's
@@ -1340,10 +1337,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of FLAGS_quic_pace_time_into_future_ms. Only used when
   // supports_release_time_ is true.
   const QuicTime::Delta pace_time_into_future_;
-
-  // Latched value of
-  // quic_reloadable_flag_quic_path_degrading_alarm2.
-  const bool use_path_degrading_alarm_;
 
   // Latched value of quic_reloadable_flag_quic_enable_server_proxy2.
   const bool enable_server_proxy_;

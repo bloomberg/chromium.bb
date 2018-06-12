@@ -74,8 +74,6 @@ const bool kHasStopWaiting = true;
 
 const int kDefaultRetransmissionTimeMs = 500;
 
-const QuicUint128 kTestStatelessResetToken = 1010101;  // 0x0F69B5
-
 const QuicSocketAddress kPeerAddress =
     QuicSocketAddress(QuicIpAddress::Loopback6(),
                       /*port=*/12345);
@@ -789,9 +787,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
         frame2_(1, false, 3, QuicStringPiece(data2)),
         packet_number_length_(PACKET_4BYTE_PACKET_NUMBER),
         connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
-        notifier_(&connection_),
-        use_path_degrading_alarm_(
-            GetQuicReloadableFlag(quic_path_degrading_alarm2)) {
+        notifier_(&connection_) {
     SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
     SetQuicReloadableFlag(quic_respect_ietf_header, true);
     connection_.set_defer_send_in_response_to_packets(GetParam().ack_response ==
@@ -1235,10 +1231,6 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   QuicConnectionIdLength connection_id_length_;
 
   SimpleSessionNotifier notifier_;
-
-  // Latched value of
-  // quic_reloadable_flag_quic_path_degrading_alarm2.
-  bool use_path_degrading_alarm_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionTest);
@@ -3545,9 +3537,6 @@ TEST_P(QuicConnectionTest, TestRetransmitOrder) {
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(20));
   {
     InSequence s;
-    if (!use_path_degrading_alarm_) {
-      EXPECT_CALL(visitor_, OnPathDegrading());
-    }
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, first_packet_size, _));
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, second_packet_size, _));
   }
@@ -4500,9 +4489,6 @@ TEST_P(QuicConnectionTest, TimeoutAfter5ClientRTOs) {
   // Send stream data.
   SendStreamDataToPeer(kClientDataStreamId1, "foo", 0, FIN, nullptr);
 
-  if (!use_path_degrading_alarm_) {
-    EXPECT_CALL(visitor_, OnPathDegrading());
-  }
   // Fire the retransmission alarm 6 times, twice for TLP and 4 times for RTO.
   for (int i = 0; i < 6; ++i) {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
@@ -4536,9 +4522,6 @@ TEST_P(QuicConnectionTest, TimeoutAfter3ClientRTOs) {
   // Send stream data.
   SendStreamDataToPeer(kClientDataStreamId1, "foo", 0, FIN, nullptr);
 
-  if (!use_path_degrading_alarm_) {
-    EXPECT_CALL(visitor_, OnPathDegrading());
-  }
   // Fire the retransmission alarm 4 times, twice for TLP and 2 times for RTO.
   for (int i = 0; i < 4; ++i) {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
@@ -5761,6 +5744,7 @@ TEST_P(QuicConnectionTest, IetfStatelessReset) {
   if (GetParam().version.transport_version <= QUIC_VERSION_43) {
     return;
   }
+  const QuicUint128 kTestStatelessResetToken = 1010101;
   QuicConfig config;
   QuicConfigPeer::SetReceivedStatelessResetToken(&config,
                                                  kTestStatelessResetToken);
@@ -6306,44 +6290,8 @@ TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
   EXPECT_FALSE(connection_.connected());
 }
 
-TEST_P(QuicConnectionTest, OnPathDegrading) {
-  if (use_path_degrading_alarm_) {
-    return;
-  }
-
-  QuicByteCount packet_size;
-  const size_t kMinTimeoutsBeforePathDegrading = 2;
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
-      .WillOnce(SaveArg<3>(&packet_size));
-  connection_.SendStreamDataWithString(3, "packet", 0, NO_FIN);
-  size_t num_timeouts =
-      kMinTimeoutsBeforePathDegrading +
-      QuicSentPacketManagerPeer::GetMaxTailLossProbes(
-          QuicConnectionPeer::GetSentPacketManager(&connection_));
-  for (size_t i = 1; i < num_timeouts; ++i) {
-    clock_.AdvanceTime(QuicTime::Delta::FromSeconds(10 * i));
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, packet_size, _));
-    connection_.GetRetransmissionAlarm()->Fire();
-  }
-  // Next RTO should cause OnPathDegrading to be called before the
-  // retransmission is sent out.
-  clock_.AdvanceTime(
-      QuicTime::Delta::FromSeconds(kMinTimeoutsBeforePathDegrading * 10));
-  {
-    InSequence s;
-    EXPECT_CALL(visitor_, OnPathDegrading());
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, packet_size, _));
-  }
-  connection_.GetRetransmissionAlarm()->Fire();
-}
-
 // Includes regression test for https://b.corp.google.com/issues/69979024.
 TEST_P(QuicConnectionTest, PathDegradingAlarm) {
-  if (!use_path_degrading_alarm_) {
-    return;
-  }
-
   EXPECT_TRUE(connection_.connected());
   EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
   EXPECT_FALSE(connection_.IsPathDegrading());
@@ -6413,9 +6361,6 @@ TEST_P(QuicConnectionTest, PathDegradingAlarm) {
 }
 
 TEST_P(QuicConnectionTest, RetransmittableOnWireSetsPathDegradingAlarm) {
-  if (!use_path_degrading_alarm_) {
-    return;
-  }
   const QuicTime::Delta retransmittable_on_wire_timeout =
       QuicTime::Delta::FromMilliseconds(50);
   connection_.set_retransmittable_on_wire_timeout(
@@ -6479,10 +6424,6 @@ TEST_P(QuicConnectionTest, RetransmittableOnWireSetsPathDegradingAlarm) {
 // spin timer to detect path degrading when a new packet is sent on the
 // degraded path.
 TEST_P(QuicConnectionTest, NoPathDegradingAlarmIfPathIsDegrading) {
-  if (!use_path_degrading_alarm_) {
-    return;
-  }
-
   EXPECT_TRUE(connection_.connected());
   EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
   EXPECT_FALSE(connection_.IsPathDegrading());
@@ -6548,10 +6489,6 @@ TEST_P(QuicConnectionTest, NoPathDegradingAlarmIfPathIsDegrading) {
 // the timer to detect future path degrading when forward progress is made
 // after path has been marked degrading.
 TEST_P(QuicConnectionTest, UnmarkPathDegradingOnForwardProgress) {
-  if (!use_path_degrading_alarm_) {
-    return;
-  }
-
   EXPECT_TRUE(connection_.connected());
   EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
   EXPECT_FALSE(connection_.IsPathDegrading());

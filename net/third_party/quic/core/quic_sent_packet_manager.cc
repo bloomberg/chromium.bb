@@ -93,9 +93,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       delayed_ack_time_(
           QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)),
       rtt_updated_(false),
-      acked_packets_iter_(last_ack_frame_.packets.rbegin()),
-      use_path_degrading_alarm_(
-          GetQuicReloadableFlag(quic_path_degrading_alarm2)) {
+      acked_packets_iter_(last_ack_frame_.packets.rbegin()) {
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -428,7 +426,13 @@ void QuicSentPacketManager::MarkForRetransmission(
     TransmissionType transmission_type) {
   QuicTransmissionInfo* transmission_info =
       unacked_packets_.GetMutableTransmissionInfo(packet_number);
-  QUIC_BUG_IF(!unacked_packets_.HasRetransmittableFrames(*transmission_info));
+  // When session decides what to write, a previous RTO retransmission may cause
+  // connection close.
+  QUIC_BUG_IF(!unacked_packets_.HasRetransmittableFrames(*transmission_info) &&
+              (!session_decides_what_to_write() ||
+               transmission_type != RTO_RETRANSMISSION))
+      << "transmission_type: "
+      << QuicUtils::TransmissionTypeToString(transmission_type);
   // Handshake packets should never be sent as probing retransmissions.
   DCHECK(!transmission_info->has_crypto_handshake ||
          transmission_type != PROBING_RETRANSMISSION);
@@ -684,14 +688,6 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
     case RTO_MODE:
       ++stats_->rto_count;
       RetransmitRtoPackets();
-      if (!use_path_degrading_alarm_) {
-        if (!session_decides_what_to_write() &&
-            network_change_visitor_ != nullptr &&
-            consecutive_rto_count_ ==
-                kNumRetransmissionDelaysForPathDegradingDelay) {
-          network_change_visitor_->OnPathDegrading();
-        }
-      }
       return;
   }
 }
@@ -795,13 +791,6 @@ void QuicSentPacketManager::RetransmitRtoPackets() {
     ++consecutive_rto_count_;
   }
   if (session_decides_what_to_write()) {
-    if (!use_path_degrading_alarm_) {
-      if (network_change_visitor_ != nullptr &&
-          consecutive_rto_count_ ==
-              kNumRetransmissionDelaysForPathDegradingDelay) {
-        network_change_visitor_->OnPathDegrading();
-      }
-    }
     for (QuicPacketNumber retransmission : retransmissions) {
       MarkForRetransmission(retransmission, RTO_RETRANSMISSION);
     }

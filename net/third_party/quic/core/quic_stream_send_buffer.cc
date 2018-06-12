@@ -241,22 +241,15 @@ bool QuicStreamSendBuffer::FreeMemSlices(QuicStreamOffset start,
   auto it = buffered_slices_.begin();
   // Find it, such that buffered_slices_[it - 1].end < start <=
   // buffered_slices_[it].end.
-  bool found = false;
-  if (GetQuicReloadableFlag(quic_fast_free_mem_slice)) {
-    if (it == buffered_slices_.end() || it->slice.empty()) {
-      QUIC_BUG << "Trying to ack stream data [" << start << ", " << end << "), "
-               << (it == buffered_slices_.end()
-                       ? "and there is no outstanding data."
-                       : "and the first slice is empty.");
-      return false;
-    }
-    // Fast path that the earliest outstanding data gets acked.
-    found = start >= it->offset && start < it->offset + it->slice.length();
-    if (found) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fast_free_mem_slice);
-    }
+  if (it == buffered_slices_.end() || it->slice.empty()) {
+    QUIC_BUG << "Trying to ack stream data [" << start << ", " << end << "), "
+             << (it == buffered_slices_.end()
+                     ? "and there is no outstanding data."
+                     : "and the first slice is empty.");
+    return false;
   }
-  if (!found) {
+  if (start >= it->offset + it->slice.length() || start < it->offset) {
+    // Slow path that not the earliest outstanding data gets acked.
     it = std::lower_bound(buffered_slices_.begin(), buffered_slices_.end(),
                           start, CompareOffset());
   }

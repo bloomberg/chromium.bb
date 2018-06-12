@@ -21,14 +21,6 @@ using spdy::SpdyPriority;
 
 namespace quic {
 
-namespace {
-
-// Stateless reset token used in IETF public reset packet.
-// TODO(fayang): use a real stateless reset token instead of a hard code one.
-const QuicUint128 kStatelessResetToken = 1010101;
-
-}  // namespace
-
 #define ENDPOINT \
   (perspective() == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
@@ -1144,7 +1136,7 @@ bool QuicSession::WriteStreamData(QuicStreamId id,
 }
 
 QuicUint128 QuicSession::GetStatelessResetToken() const {
-  return kStatelessResetToken;
+  return connection_->connection_id();
 }
 
 bool QuicSession::RetransmitLostData() {

@@ -282,7 +282,7 @@ void QuicMemoryCacheBackend::FetchResponseFromBackend(
   }
 
   QuicString request_url =
-      authority->second.as_string() + path->second.as_string();
+      QuicString(authority->second) + QuicString(path->second);
   std::list<ServerPushInfo> resources = GetServerPushResources(request_url);
   QUIC_DVLOG(1)
       << "Fetching QUIC response from backend in-memory cache for url "

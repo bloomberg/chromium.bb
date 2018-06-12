@@ -320,8 +320,6 @@ QuicConnection::QuicConnection(
       supports_release_time_(writer->SupportsReleaseTime()),
       pace_time_into_future_(QuicTime::Delta::FromMilliseconds(
           GetQuicFlag(FLAGS_quic_pace_time_into_future_ms))),
-      use_path_degrading_alarm_(
-          GetQuicReloadableFlag(quic_path_degrading_alarm2)),
       enable_server_proxy_(GetQuicReloadableFlag(quic_enable_server_proxy2)),
       deprecate_scheduler_(
           GetQuicReloadableFlag(quic_deprecate_scoped_scheduler2)) {
@@ -2162,12 +2160,10 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     // A retransmittable packet has been put on the wire, so no need for the
     // |retransmittable_on_wire_alarm_| to possibly send a PING.
     retransmittable_on_wire_alarm_->Cancel();
-    if (use_path_degrading_alarm_) {
-      if (!is_path_degrading_ && !path_degrading_alarm_->IsSet()) {
-        // This is the first retransmittable packet on the working path.
-        // Start the path degrading alarm to detect new path degrading.
-        SetPathDegradingAlarm();
-      }
+    if (!is_path_degrading_ && !path_degrading_alarm_->IsSet()) {
+      // This is the first retransmittable packet on the working path.
+      // Start the path degrading alarm to detect new path degrading.
+      SetPathDegradingAlarm();
     }
 
     // Only adjust the last sent time (for the purpose of tracking the idle
@@ -2306,13 +2302,6 @@ void QuicConnection::OnCongestionChange() {
   }
 }
 
-// TODO(b/77267845): remove this method once
-// FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2 is deprecated.
-void QuicConnection::OnPathDegrading() {
-  DCHECK(!use_path_degrading_alarm_);
-  visitor_->OnPathDegrading();
-}
-
 void QuicConnection::OnPathMtuIncreased(QuicPacketLength packet_size) {
   if (packet_size > max_packet_length()) {
     SetMaxPacketLength(packet_size);
@@ -2376,7 +2365,6 @@ void QuicConnection::SendAck() {
 }
 
 void QuicConnection::OnPathDegradingTimeout() {
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm2, 2, 5);
   is_path_degrading_ = true;
   visitor_->OnPathDegrading();
 }
@@ -2588,10 +2576,7 @@ void QuicConnection::CancelAllAlarms() {
   timeout_alarm_->Cancel();
   mtu_discovery_alarm_->Cancel();
   retransmittable_on_wire_alarm_->Cancel();
-  if (use_path_degrading_alarm_) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm2, 5, 5);
-    path_degrading_alarm_->Cancel();
-  }
+  path_degrading_alarm_->Cancel();
 }
 
 QuicByteCount QuicConnection::max_packet_length() const {
@@ -2732,8 +2717,6 @@ void QuicConnection::SetRetransmissionAlarm() {
 }
 
 void QuicConnection::SetPathDegradingAlarm() {
-  DCHECK(use_path_degrading_alarm_);
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm2, 1, 5);
   const QuicTime::Delta delay = sent_packet_manager_.GetPathDegradingDelay();
   path_degrading_alarm_->Update(clock_->ApproximateNow() + delay,
                                 QuicTime::Delta::FromMilliseconds(1));
@@ -3313,19 +3296,13 @@ void QuicConnection::PostProcessAfterAckFrame(bool send_stop_waiting,
     }
     // There are no retransmittable packets on the wire, so it's impossible to
     // say if the connection has degraded.
-    if (use_path_degrading_alarm_) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm2, 3, 5);
-      path_degrading_alarm_->Cancel();
-    }
+    path_degrading_alarm_->Cancel();
   } else if (acked_new_packet) {
     // A previously-unacked packet has been acked, which means forward progress
     // has been made. Unset |is_path_degrading| if the path was considered as
     // degrading previously. Set/update the path degrading alarm.
-    if (use_path_degrading_alarm_) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_path_degrading_alarm2, 4, 5);
-      is_path_degrading_ = false;
-      SetPathDegradingAlarm();
-    }
+    is_path_degrading_ = false;
+    SetPathDegradingAlarm();
   }
 
   if (send_stop_waiting) {

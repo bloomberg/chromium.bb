@@ -41,11 +41,10 @@ namespace quic {
 namespace test {
 namespace {
 
-const QuicUint128 kTestStatelessResetToken = 1010101;
-
 class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  public:
-  FramerVisitorCapturingPublicReset() = default;
+  FramerVisitorCapturingPublicReset(QuicConnectionId connection_id)
+      : connection_id_(connection_id) {}
   ~FramerVisitorCapturingPublicReset() override = default;
 
   void OnPublicResetPacket(const QuicPublicResetPacket& public_reset) override {
@@ -57,7 +56,7 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
   }
 
   bool IsValidStatelessResetToken(QuicUint128 token) const override {
-    return token == kTestStatelessResetToken;
+    return token == connection_id_;
   }
 
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -72,6 +71,7 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
  private:
   QuicPublicResetPacket public_reset_packet_;
   QuicIetfStatelessResetPacket stateless_reset_packet_;
+  QuicConnectionId connection_id_;
 };
 
 class MockFakeTimeEpollServer : public FakeTimeEpollServer {
@@ -158,7 +158,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
 bool ValidPublicResetPacketPredicate(
     QuicConnectionId expected_connection_id,
     const testing::tuple<const char*, int>& packet_buffer) {
-  FramerVisitorCapturingPublicReset visitor;
+  FramerVisitorCapturingPublicReset visitor(expected_connection_id);
   QuicFramer framer(AllSupportedVersions(), QuicTime::Zero(),
                     Perspective::IS_CLIENT);
   framer.set_visitor(&visitor);
@@ -174,7 +174,7 @@ bool ValidPublicResetPacketPredicate(
   QuicIetfStatelessResetPacket stateless_reset =
       visitor.stateless_reset_packet();
   bool stateless_reset_is_valid =
-      stateless_reset.stateless_reset_token == kTestStatelessResetToken;
+      stateless_reset.stateless_reset_token == expected_connection_id;
 
   return public_reset_is_valid || stateless_reset_is_valid;
 }
@@ -390,8 +390,11 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   EXPECT_CALL(writer_,
               WritePacket(_, _, server_address_.host(), client_address_, _))
       .With(Args<0, 1>(PublicResetPacketEq(connection_id)))
-      .Times(2)
-      .WillRepeatedly(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
+  EXPECT_CALL(writer_,
+              WritePacket(_, _, server_address_.host(), client_address_, _))
+      .With(Args<0, 1>(PublicResetPacketEq(other_connection_id)))
+      .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
   time_wait_list_manager_.OnBlockedWriterCanWrite();
 }
 
