@@ -1595,8 +1595,12 @@ endif
 
 MAN_SUBSTS =								\
 	-e 's|__weston_native_backend__|$(WESTON_NATIVE_BACKEND)|g'	\
-	-e 's|__weston_modules_dir__|$(pkglibdir)|g'			\
+	-e 's|__weston_modules_dir__|$(moduledir)|g'			\
+	-e 's|__libweston_modules_dir__|$(libweston_moduledir)|g'	\
 	-e 's|__weston_shell_client__|$(WESTON_SHELL_CLIENT)|g'		\
+	-e 's|__weston_libexecdir__|$(libexecdir)|g' 			\
+	-e 's|__weston_bindir__|$(bindir)|g' 				\
+	-e 's|__xserver_path__|$(XSERVER_PATH)|g'			\
 	-e 's|__version__|$(PACKAGE_VERSION)|g'
 
 SUFFIXES = .1 .5 .7 .man
