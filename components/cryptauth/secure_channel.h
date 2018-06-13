@@ -49,15 +49,13 @@ class SecureChannel : public ConnectionObserver {
 
   class Observer {
    public:
-    virtual void OnSecureChannelStatusChanged(
-        SecureChannel* secure_channel,
-        const Status& old_status,
-        const Status& new_status) = 0;
+    virtual void OnSecureChannelStatusChanged(SecureChannel* secure_channel,
+                                              const Status& old_status,
+                                              const Status& new_status) {}
 
-    virtual void OnMessageReceived(
-        SecureChannel* secure_channel,
-        const std::string& feature,
-        const std::string& payload) = 0;
+    virtual void OnMessageReceived(SecureChannel* secure_channel,
+                                   const std::string& feature,
+                                   const std::string& payload) {}
 
     // Called when a message has been sent successfully; |sequence_number|
     // corresponds to the value returned by an earlier call to SendMessage().
