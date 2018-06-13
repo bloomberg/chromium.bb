@@ -85,8 +85,10 @@ void ContentPasswordManagerDriver::FillPasswordForm(
 
 void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
     const autofill::PasswordForm& form) {
-  if (!GetPasswordGenerationManager()->IsGenerationEnabled(true))
+  if (!GetPasswordGenerationManager()->IsGenerationEnabled(
+          /*log_debug_data=*/true)) {
     return;
+  }
   GetPasswordGenerationAgent()->FormNotBlacklisted(form);
 }
 

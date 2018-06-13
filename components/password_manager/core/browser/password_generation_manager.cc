@@ -42,8 +42,7 @@ void PasswordGenerationManager::ProcessPasswordRequirements(
     const std::vector<autofill::FormStructure*>& forms) {
   // IsGenerationEnabled is called multiple times and it is sufficient to
   // log debug data once.
-  const bool kLogDebugData = false;
-  if (!IsGenerationEnabled(kLogDebugData))
+  if (!IsGenerationEnabled(/*log_debug_data=*/false))
     return;
 
   // It is legit to have no PasswordRequirementsService on some platforms where
@@ -75,8 +74,7 @@ void PasswordGenerationManager::DetectFormsEligibleForGeneration(
     const std::vector<autofill::FormStructure*>& forms) {
   // IsGenerationEnabled is called multiple times and it is sufficient to
   // log debug data once. This is it!
-  const bool kLogDebugData = true;
-  if (!IsGenerationEnabled(kLogDebugData))
+  if (!IsGenerationEnabled(/*log_debug_data=*/true))
     return;
 
   std::vector<autofill::PasswordFormGenerationData>
