@@ -205,6 +205,12 @@ CertStatus CertVerifyProcIOS::GetCertFailureStatusFromTrust(SecTrustRef trust) {
       CFBundleCopyLocalizedString(bundle, hostname_mismatch_string,
                                   hostname_mismatch_string,
                                   CFSTR("SecCertificate")));
+  CFStringRef root_certificate_string =
+      CFSTR("Unable to build chain to root certificate.");
+  ScopedCFTypeRef<CFStringRef> root_certificate_error(
+      CFBundleCopyLocalizedString(bundle, root_certificate_string,
+                                  root_certificate_string,
+                                  CFSTR("SecCertificate")));
   CFStringRef policy_requirements_not_met_string =
       CFSTR("Policy requirements not met.");
   ScopedCFTypeRef<CFStringRef> policy_requirements_not_met_error(
@@ -228,6 +234,8 @@ CertStatus CertVerifyProcIOS::GetCertFailureStatusFromTrust(SecTrustRef trust) {
       reason |= CERT_STATUS_COMMON_NAME_INVALID;
     } else if (CFEqual(error, policy_requirements_not_met_error)) {
       reason |= CERT_STATUS_INVALID | CERT_STATUS_AUTHORITY_INVALID;
+    } else if (CFEqual(error, root_certificate_error)) {
+      reason |= CERT_STATUS_AUTHORITY_INVALID;
     } else {
       reason |= CERT_STATUS_INVALID;
     }
