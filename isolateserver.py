@@ -1090,114 +1090,114 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
       isolated_hash, storage, cache, outdir, use_symlinks)
   # Hash algorithm to use, defined by namespace |storage| is using.
   algo = storage.hash_algo
-  with cache:
-    fetch_queue = FetchQueue(storage, cache)
-    bundle = IsolatedBundle()
+  fetch_queue = FetchQueue(storage, cache)
+  bundle = IsolatedBundle()
 
-    with tools.Profiler('GetIsolateds'):
-      # Optionally support local files by manually adding them to cache.
-      if not isolated_format.is_valid_hash(isolated_hash, algo):
-        logging.debug('%s is not a valid hash, assuming a file '
-                      '(algo was %s, hash size was %d)',
-                      isolated_hash, algo(), algo().digest_size)
-        path = unicode(os.path.abspath(isolated_hash))
-        try:
-          isolated_hash = fetch_queue.inject_local_file(path, algo)
-        except IOError as e:
-          raise isolated_format.MappingError(
-              '%s doesn\'t seem to be a valid file. Did you intent to pass a '
-              'valid hash (error: %s)?' % (isolated_hash, e))
+  with tools.Profiler('GetIsolateds'):
+    # Optionally support local files by manually adding them to cache.
+    if not isolated_format.is_valid_hash(isolated_hash, algo):
+      logging.debug('%s is not a valid hash, assuming a file '
+                    '(algo was %s, hash size was %d)',
+                    isolated_hash, algo(), algo().digest_size)
+      path = unicode(os.path.abspath(isolated_hash))
+      try:
+        isolated_hash = fetch_queue.inject_local_file(path, algo)
+      except IOError as e:
+        raise isolated_format.MappingError(
+            '%s doesn\'t seem to be a valid file. Did you intent to pass a '
+            'valid hash (error: %s)?' % (isolated_hash, e))
 
-      # Load all *.isolated and start loading rest of the files.
-      bundle.fetch(fetch_queue, isolated_hash, algo)
+    # Load all *.isolated and start loading rest of the files.
+    bundle.fetch(fetch_queue, isolated_hash, algo)
 
-    with tools.Profiler('GetRest'):
-      # Create file system hierarchy.
-      file_path.ensure_tree(outdir)
-      create_directories(outdir, bundle.files)
-      create_symlinks(outdir, bundle.files.iteritems())
+  with tools.Profiler('GetRest'):
+    # Create file system hierarchy.
+    file_path.ensure_tree(outdir)
+    create_directories(outdir, bundle.files)
+    create_symlinks(outdir, bundle.files.iteritems())
 
-      # Ensure working directory exists.
-      cwd = os.path.normpath(os.path.join(outdir, bundle.relative_cwd))
-      file_path.ensure_tree(cwd)
+    # Ensure working directory exists.
+    cwd = os.path.normpath(os.path.join(outdir, bundle.relative_cwd))
+    file_path.ensure_tree(cwd)
 
-      # Multimap: digest -> list of pairs (path, props).
-      remaining = {}
-      for filepath, props in bundle.files.iteritems():
-        if 'h' in props:
-          remaining.setdefault(props['h'], []).append((filepath, props))
-          fetch_queue.wait_on(props['h'])
+    # Multimap: digest -> list of pairs (path, props).
+    remaining = {}
+    for filepath, props in bundle.files.iteritems():
+      if 'h' in props:
+        remaining.setdefault(props['h'], []).append((filepath, props))
+        fetch_queue.wait_on(props['h'])
 
-      # Now block on the remaining files to be downloaded and mapped.
-      logging.info('Retrieving remaining files (%d of them)...',
-          fetch_queue.pending_count)
-      last_update = time.time()
-      with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
-        while remaining:
-          detector.ping()
+    # Now block on the remaining files to be downloaded and mapped.
+    logging.info('Retrieving remaining files (%d of them)...',
+        fetch_queue.pending_count)
+    last_update = time.time()
+    with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
+      while remaining:
+        detector.ping()
 
-          # Wait for any item to finish fetching to cache.
-          digest = fetch_queue.wait()
+        # Wait for any item to finish fetching to cache.
+        digest = fetch_queue.wait()
 
-          # Create the files in the destination using item in cache as the
-          # source.
-          for filepath, props in remaining.pop(digest):
-            fullpath = os.path.join(outdir, filepath)
+        # Create the files in the destination using item in cache as the
+        # source.
+        for filepath, props in remaining.pop(digest):
+          fullpath = os.path.join(outdir, filepath)
 
-            with cache.getfileobj(digest) as srcfileobj:
-              filetype = props.get('t', 'basic')
+          with cache.getfileobj(digest) as srcfileobj:
+            filetype = props.get('t', 'basic')
 
-              if filetype == 'basic':
-                # Ignore all bits apart from the user.
-                file_mode = (props.get('m') or 0500) & 0700
-                if bundle.read_only:
-                  # Enforce read-only if the root bundle does.
-                  file_mode &= 0500
-                putfile(
-                    srcfileobj, fullpath, file_mode,
-                    use_symlink=use_symlinks)
+            if filetype == 'basic':
+              # Ignore all bits apart from the user.
+              file_mode = (props.get('m') or 0500) & 0700
+              if bundle.read_only:
+                # Enforce read-only if the root bundle does.
+                file_mode &= 0500
+              putfile(
+                  srcfileobj, fullpath, file_mode,
+                  use_symlink=use_symlinks)
 
-              elif filetype == 'tar':
-                basedir = os.path.dirname(fullpath)
-                with tarfile.TarFile(fileobj=srcfileobj, encoding='utf-8') as t:
-                  for ti in t:
-                    if not ti.isfile():
-                      logging.warning(
-                          'Path(%r) is nonfile (%s), skipped',
-                          ti.name, ti.type)
-                      continue
-                    # Handle files created on Windows fetched on POSIX and the
-                    # reverse.
-                    other_sep = '/' if os.path.sep == '\\' else '\\'
-                    name = ti.name.replace(other_sep, os.path.sep)
-                    fp = os.path.normpath(os.path.join(basedir, name))
-                    if not fp.startswith(basedir):
-                      logging.error(
-                          'Path(%r) is outside root directory',
-                          fp)
-                    ifd = t.extractfile(ti)
-                    file_path.ensure_tree(os.path.dirname(fp))
-                    file_mode = ti.mode & 0700
-                    if bundle.read_only:
-                      # Enforce read-only if the root bundle does.
-                      file_mode &= 0500
-                    putfile(ifd, fp, file_mode, ti.size)
+            elif filetype == 'tar':
+              basedir = os.path.dirname(fullpath)
+              with tarfile.TarFile(fileobj=srcfileobj, encoding='utf-8') as t:
+                for ti in t:
+                  if not ti.isfile():
+                    logging.warning(
+                        'Path(%r) is nonfile (%s), skipped',
+                        ti.name, ti.type)
+                    continue
+                  # Handle files created on Windows fetched on POSIX and the
+                  # reverse.
+                  other_sep = '/' if os.path.sep == '\\' else '\\'
+                  name = ti.name.replace(other_sep, os.path.sep)
+                  fp = os.path.normpath(os.path.join(basedir, name))
+                  if not fp.startswith(basedir):
+                    logging.error(
+                        'Path(%r) is outside root directory',
+                        fp)
+                  ifd = t.extractfile(ti)
+                  file_path.ensure_tree(os.path.dirname(fp))
+                  file_mode = ti.mode & 0700
+                  if bundle.read_only:
+                    # Enforce read-only if the root bundle does.
+                    file_mode &= 0500
+                  putfile(ifd, fp, file_mode, ti.size)
 
-              else:
-                raise isolated_format.IsolatedError(
-                      'Unknown file type %r', filetype)
+            else:
+              raise isolated_format.IsolatedError(
+                    'Unknown file type %r', filetype)
 
-          # Report progress.
-          duration = time.time() - last_update
-          if duration > DELAY_BETWEEN_UPDATES_IN_SECS:
-            msg = '%d files remaining...' % len(remaining)
-            sys.stdout.write(msg + '\n')
-            sys.stdout.flush()
-            logging.info(msg)
-            last_update = time.time()
-      assert fetch_queue.wait_queue_empty, 'FetchQueue should have been emptied'
+        # Report progress.
+        duration = time.time() - last_update
+        if duration > DELAY_BETWEEN_UPDATES_IN_SECS:
+          msg = '%d files remaining...' % len(remaining)
+          sys.stdout.write(msg + '\n')
+          sys.stdout.flush()
+          logging.info(msg)
+          last_update = time.time()
+    assert fetch_queue.wait_queue_empty, 'FetchQueue should have been emptied'
 
   # Cache could evict some items we just tried to fetch, it's a fatal error.
+  cache.trim()
   if not fetch_queue.verify_all_cached():
     free_disk = file_path.get_free_space(cache.cache_dir)
     msg = (
@@ -1409,13 +1409,13 @@ def CMDdownload(parser, args):
 
     # Fetching whole isolated tree.
     if options.isolated:
-      with cache:
-        bundle = fetch_isolated(
-            isolated_hash=options.isolated,
-            storage=storage,
-            cache=cache,
-            outdir=options.target,
-            use_symlinks=options.use_symlinks)
+      bundle = fetch_isolated(
+          isolated_hash=options.isolated,
+          storage=storage,
+          cache=cache,
+          outdir=options.target,
+          use_symlinks=options.use_symlinks)
+      cache.trim()
       if bundle.command:
         rel = os.path.join(options.target, bundle.relative_cwd)
         print('To run this test please run from the directory %s:' %

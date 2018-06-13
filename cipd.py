@@ -390,19 +390,18 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
             max_age_secs=21*24*60*60),
         hashlib.sha1,
         trim=True)
-    with version_cache:
-      version_cache.cleanup()
-      # Convert (package_name, version) to a string that may be used as a
-      # filename in disk cache by hashing it.
-      version_digest = hashlib.sha1(
-          '%s\n%s' % (package_name, version)).hexdigest()
-      try:
-        with version_cache.getfileobj(version_digest) as f:
-          instance_id = f.read()
-      except local_caching.CacheMiss:
-        instance_id = resolve_version(
-            service_url, package_name, version, timeout=timeoutfn())
-        version_cache.write(version_digest, instance_id)
+    # Convert (package_name, version) to a string that may be used as a
+    # filename in disk cache by hashing it.
+    version_digest = hashlib.sha1(
+        '%s\n%s' % (package_name, version)).hexdigest()
+    try:
+      with version_cache.getfileobj(version_digest) as f:
+        instance_id = f.read()
+    except local_caching.CacheMiss:
+      instance_id = resolve_version(
+          service_url, package_name, version, timeout=timeoutfn())
+      version_cache.write(version_digest, instance_id)
+    version_cache.trim()
   else:  # it's a ref, hit the backend
     instance_id = resolve_version(
         service_url, package_name, version, timeout=timeoutfn())
@@ -420,34 +419,33 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
             max_age_secs=21*24*60*60),
       hashlib.sha1,
       trim=True)
-  with instance_cache:
-    instance_cache.cleanup()
-    if instance_id not in instance_cache:
-      logging.info('Fetching CIPD client %s:%s', package_name, instance_id)
-      fetch_url = get_client_fetch_url(
-          service_url, package_name, instance_id, timeout=timeoutfn())
-      _fetch_cipd_client(instance_cache, instance_id, fetch_url, timeoutfn)
+  if instance_id not in instance_cache:
+    logging.info('Fetching CIPD client %s:%s', package_name, instance_id)
+    fetch_url = get_client_fetch_url(
+        service_url, package_name, instance_id, timeout=timeoutfn())
+    _fetch_cipd_client(instance_cache, instance_id, fetch_url, timeoutfn)
 
-    # A single host can run multiple swarming bots, but ATM they do not share
-    # same root bot directory. Thus, it is safe to use the same name for the
-    # binary.
-    cipd_bin_dir = unicode(os.path.join(cache_dir, 'bin'))
-    binary_path = os.path.join(cipd_bin_dir, 'cipd' + EXECUTABLE_SUFFIX)
-    if fs.isfile(binary_path):
-      file_path.remove(binary_path)
-    else:
-      file_path.ensure_tree(cipd_bin_dir)
+  # A single host can run multiple swarming bots, but they cannot share same
+  # root bot directory. Thus, it is safe to use the same name for the binary.
+  cipd_bin_dir = unicode(os.path.join(cache_dir, 'bin'))
+  binary_path = os.path.join(cipd_bin_dir, 'cipd' + EXECUTABLE_SUFFIX)
+  if fs.isfile(binary_path):
+    # TODO(maruel): Do not unconditionally remove the binary.
+    file_path.remove(binary_path)
+  else:
+    file_path.ensure_tree(cipd_bin_dir)
 
-    with instance_cache.getfileobj(instance_id) as f:
-      isolateserver.putfile(f, binary_path, 0511)  # -r-x--x--x
+  with instance_cache.getfileobj(instance_id) as f:
+    isolateserver.putfile(f, binary_path, 0511)  # -r-x--x--x
 
-    _ensure_batfile(binary_path)
+  _ensure_batfile(binary_path)
 
-    yield CipdClient(
-        binary_path,
-        package_name=package_name,
-        instance_id=instance_id,
-        service_url=service_url)
+  yield CipdClient(
+      binary_path,
+      package_name=package_name,
+      instance_id=instance_id,
+      service_url=service_url)
+  instance_cache.trim()
 
 
 def parse_package_args(packages):

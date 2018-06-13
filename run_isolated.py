@@ -1015,7 +1015,7 @@ def install_client_and_packages(
       })
 
 
-def clean_caches(isolate_cache, named_cache_manager):
+def clean_caches(isolate_cache, named_cache):
   """Trims isolated and named caches.
 
   The goal here is to coherently trim both caches, deleting older items
@@ -1023,25 +1023,25 @@ def clean_caches(isolate_cache, named_cache_manager):
   """
   # TODO(maruel): Trim CIPD cache the same way.
   total = 0
-  with named_cache_manager:
-    oldest_isolated = isolate_cache.get_oldest()
-    oldest_named = named_cache_manager.get_oldest()
-    trimmers = [
-      (
-        isolate_cache.trim,
-        isolate_cache.get_timestamp(oldest_isolated) if oldest_isolated else 0,
-      ),
-      (
-        named_cache_manager.trim,
-        named_cache_manager.get_timestamp(oldest_named) if oldest_named else 0,
-      ),
-    ]
-    trimmers.sort(key=lambda (_, ts): ts)
-    # TODO(maruel): This is incorrect, we want to trim 'items' that are strictly
-    # the oldest independent of in which cache they live in. Right now, the
-    # cache with the oldest item pays the price.
-    for trim, _ in trimmers:
-      total += trim()
+  oldest_isolated = isolate_cache.get_oldest()
+  oldest_named = named_cache.get_oldest()
+  trimmers = [
+    (
+      isolate_cache.trim,
+      isolate_cache.get_timestamp(oldest_isolated) if oldest_isolated else 0,
+    ),
+    (
+      named_cache.trim,
+      named_cache.get_timestamp(oldest_named) if oldest_named else 0,
+    ),
+  ]
+  trimmers.sort(key=lambda (_, ts): ts)
+  # TODO(maruel): This is incorrect, we want to trim 'items' that are strictly
+  # the oldest independent of in which cache they live in. Right now, the
+  # cache with the oldest item pays the price.
+  for trim, _ in trimmers:
+    total += trim()
+  named_cache.trim()
   isolate_cache.cleanup()
   return total
 
@@ -1224,7 +1224,7 @@ def main(args):
     logging.error('Symlink support is not enabled')
 
   isolate_cache = isolateserver.process_cache_options(options, trim=False)
-  named_cache_manager = process_named_cache_options(parser, options)
+  named_cache = process_named_cache_options(parser, options)
   if options.clean:
     if options.isolated:
       parser.error('Can\'t use --isolated with --clean.')
@@ -1234,11 +1234,11 @@ def main(args):
       parser.error('Can\'t use --json with --clean.')
     if options.named_caches:
       parser.error('Can\t use --named-cache with --clean.')
-    clean_caches(isolate_cache, named_cache_manager)
+    clean_caches(isolate_cache, named_cache)
     return 0
 
   if not options.no_clean:
-    clean_caches(isolate_cache, named_cache_manager)
+    clean_caches(isolate_cache, named_cache)
 
   if not options.isolated and not args:
     parser.error('--isolated or command to run is required.')
@@ -1302,9 +1302,9 @@ def main(args):
       (os.path.join(run_dir, unicode(relpath)), name)
       for name, relpath in options.named_caches
     ]
-    with named_cache_manager:
-      for path, name in caches:
-        named_cache_manager.install(path, name)
+    for path, name in caches:
+      named_cache.install(path, name)
+    named_cache.trim()
     try:
       yield
     finally:
@@ -1314,13 +1314,13 @@ def main(args):
       #
       # If the Swarming bot cannot clean up the cache, it will handle it like
       # any other bot file that could not be removed.
-      with named_cache_manager:
-        for path, name in caches:
-          try:
-            named_cache_manager.uninstall(path, name)
-          except local_caching.NamedCacheError:
-            logging.exception('Error while removing named cache %r at %r. '
-                              'The cache will be lost.', path, name)
+      for path, name in caches:
+        try:
+          named_cache.uninstall(path, name)
+        except local_caching.NamedCacheError:
+          logging.exception('Error while removing named cache %r at %r. '
+                            'The cache will be lost.', path, name)
+      named_cache.trim()
 
   extra_args = []
   command = []

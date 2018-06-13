@@ -329,29 +329,6 @@ class DiskContentAddressedCache(ContentAddressedCache):
     with self._lock:
       return digest in self._lru
 
-  def __enter__(self):
-    return self
-
-  def __exit__(self, _exc_type, _exec_value, _traceback):
-    with tools.Profiler('CleanupTrimming'):
-      with self._lock:
-        self._trim()
-
-        logging.info(
-            '%5d (%8dkb) added',
-            len(self._added), sum(self._added) / 1024)
-        logging.info(
-            '%5d (%8dkb) current',
-            len(self._lru),
-            sum(self._lru.itervalues()) / 1024)
-        logging.info(
-            '%5d (%8dkb) evicted',
-            len(self._evicted), sum(self._evicted) / 1024)
-        logging.info(
-            '       %8dkb free',
-            self._free_disk / 1024)
-    return False
-
   @property
   def number_items(self):
     with self._lock:
@@ -702,14 +679,6 @@ class NamedCache(Cache):
     if time_fn:
       self._lru.time_fn = time_fn
 
-  def __enter__(self):
-    return self
-
-  def __exit__(self, _exc_type, _exec_value, _traceback):
-    with self._lock:
-      self._save()
-    return False
-
   def __len__(self):
     """Returns number of items in the cache.
 
@@ -782,6 +751,7 @@ class NamedCache(Cache):
         # When uninstalling, we will move it back to the cache and create an
         # an entry.
         file_path.ensure_tree(path)
+        self._save()
       except (IOError, OSError) as ex:
         raise NamedCacheError(
             'cannot install cache named %r at %r: %s' % (
@@ -835,6 +805,7 @@ class NamedCache(Cache):
             # account.
             if sys.platform != 'win32':
               raise
+        self._save()
       except (IOError, OSError) as ex:
         raise NamedCacheError(
             'cannot uninstall cache named %r at %r: %s' % (
@@ -888,6 +859,7 @@ class NamedCache(Cache):
       # TODO(maruel): Trim empty directories. An empty directory is not a cache,
       # something needs to be in it.
 
+      self._save()
       return len(removed)
 
   def cleanup(self):

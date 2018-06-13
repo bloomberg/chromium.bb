@@ -759,25 +759,25 @@ class RunIsolatedTest(RunIsolatedTestBase):
         options, trim=False, time_fn=lambda: fake_time)
     self.assertIsInstance(
         isolate_cache, local_caching.DiskContentAddressedCache)
-    named_cache_manager = run_isolated.process_named_cache_options(
+    named_cache = run_isolated.process_named_cache_options(
         parser, options, time_fn=lambda: fake_time)
-    self.assertIsInstance(named_cache_manager, local_caching.NamedCache)
+    self.assertIsInstance(named_cache, local_caching.NamedCache)
 
     # Add items to these caches.
     small = '0123456789'
     big = small * 1014
     small_digest = unicode(ALGO(small).hexdigest())
     big_digest = unicode(ALGO(big).hexdigest())
-    with isolate_cache:
-      fake_time = now + 1
-      isolate_cache.write(big_digest, [big])
-      fake_time = now + 2
-      isolate_cache.write(small_digest, [small])
-    with named_cache_manager:
-      fake_time = now + 1
-      put_to_named_cache(named_cache_manager, u'first', u'big', big)
-      fake_time = now + 3
-      put_to_named_cache(named_cache_manager, u'second', u'small', small)
+    fake_time = now + 1
+    isolate_cache.write(big_digest, [big])
+    fake_time = now + 2
+    isolate_cache.write(small_digest, [small])
+    isolate_cache.trim()
+    fake_time = now + 1
+    put_to_named_cache(named_cache, u'first', u'big', big)
+    fake_time = now + 3
+    put_to_named_cache(named_cache, u'second', u'small', small)
+    named_cache.trim()
 
     # Ensures the cache contain the expected data.
     actual = read_tree(np)
@@ -812,10 +812,9 @@ class RunIsolatedTest(RunIsolatedTestBase):
       return old_rmtree(p)
     old_rmtree = self.mock(file_path, 'rmtree', rmtree)
     isolate_cache = isolateserver.process_cache_options(options, trim=False)
-    named_cache_manager = run_isolated.process_named_cache_options(
-        parser, options)
+    named_cache = run_isolated.process_named_cache_options(parser, options)
     # This function uses real time, hence the time.time() calls above.
-    actual = run_isolated.clean_caches(isolate_cache, named_cache_manager)
+    actual = run_isolated.clean_caches(isolate_cache, named_cache)
     self.assertEqual(2, actual)
     # One of each entry should have been cleaned up. This only happen to work
     # because:
@@ -826,7 +825,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     actual = read_tree(np)
     expected = {
       os.path.join(cache_small, u'small'): small,
-      u'state.json':
+      named_cache.STATE_FILE:
           '{"items":[["second",["%s",%s]]],"version":2}' %
           (cache_small, now+3),
     }
