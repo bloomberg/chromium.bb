@@ -129,7 +129,7 @@ void CommandsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
   if (fence_ && fence_->ResetSupported()) {
     fence_->ResetState();
   } else {
-    fence_.reset(gl::GLFence::Create());
+    fence_ = gl::GLFence::Create();
   }
   DCHECK(fence_);
   AddToPendingQueue(submit_count);

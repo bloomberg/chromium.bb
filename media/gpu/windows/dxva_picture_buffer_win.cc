@@ -291,7 +291,7 @@ bool PbufferPictureBuffer::InitializeTexture(
 void PbufferPictureBuffer::ResetReuseFence() {
   DCHECK_EQ(IN_CLIENT, state_);
   if (!reuse_fence_ || !reuse_fence_->ResetSupported())
-    reuse_fence_.reset(gl::GLFence::Create());
+    reuse_fence_ = gl::GLFence::Create();
   else
     reuse_fence_->ResetState();
   state_ = WAITING_TO_REUSE;
