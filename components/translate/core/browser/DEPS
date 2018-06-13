@@ -3,6 +3,7 @@ include_rules = [
   "+components/metrics",
   "+components/assist_ranker",
   "+services/metrics/public",
+  "+services/network/test",
 ]
 
 specific_include_rules = {

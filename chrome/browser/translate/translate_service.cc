@@ -52,8 +52,6 @@ void TranslateService::Initialize() {
   g_translate_service->OnResourceRequestsAllowed();
   translate::TranslateDownloadManager* download_manager =
       translate::TranslateDownloadManager::GetInstance();
-  download_manager->set_request_context(
-      g_browser_process->system_request_context());
   SystemNetworkContextManager* system_network_context_manager =
       g_browser_process->system_network_context_manager();
   // Manager will be null if called from InitializeForTesting.
@@ -73,7 +71,7 @@ void TranslateService::Shutdown(bool cleanup_pending_fetcher) {
     download_manager->Shutdown();
   } else {
     // This path is only used by browser tests.
-    download_manager->set_request_context(NULL);
+    download_manager->set_url_loader_factory(nullptr);
   }
 }
 

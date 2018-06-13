@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -33,8 +32,7 @@
 #include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "url/gurl.h"
 
 namespace {
@@ -84,10 +82,30 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     set_open_about_blank_on_browser_launch(true);
     translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     InProcessBrowserTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        translate::switches::kTranslateScriptURL,
+        embedded_test_server()->GetURL("/mock_translate_script.js").spec());
+  }
+
+  void SetUpOnMainThread() override {
+    controllable_http_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), "/mock_translate_script.js",
+            true /*relative_url_is_prefix*/);
+    embedded_test_server()->StartAcceptingConnections();
+  }
+
   void TearDown() override { InProcessBrowserTest::TearDown(); }
+
+  void TearDownOnMainThread() override {
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
 
  protected:
   void InitInIncognitoMode(const bool incognito) {
@@ -174,7 +192,6 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
 
  private:
   Browser* browser_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
 
   // Language detection sometimes fires early with an "und" detected code. This
   // callback is used to wait until language detection succeeds.
@@ -187,15 +204,17 @@ class TranslateLanguageBrowserTest : public InProcessBrowserTest {
   }
 
   void SimulateURLFetch() {
-    net::TestURLFetcher* const fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
-
-    fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(net::URLRequestStatus::FromError(net::OK));
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(kTestValidScript);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    controllable_http_response_->WaitForRequest();
+    controllable_http_response_->Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/javascript\r\n"
+        "\r\n");
+    controllable_http_response_->Send(kTestValidScript);
+    controllable_http_response_->Done();
   }
+
+  std::unique_ptr<net::test_server::ControllableHttpResponse>
+      controllable_http_response_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateLanguageBrowserTest);
 };

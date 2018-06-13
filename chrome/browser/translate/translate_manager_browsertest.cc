@@ -16,9 +16,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/notification_service.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
 
 namespace {
@@ -201,16 +202,17 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
         content::NotificationService::AllSources()));
   }
 
-  void SimulateURLFetch(const std::string& script, bool success) {
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
-    net::Error error = success ? net::OK : net::ERR_FAILED;
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    if (request.GetURL().path() != "/mock_translate_script.js")
+      return nullptr;
 
-    fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(net::URLRequestStatus::FromError(error));
-    fetcher->set_response_code(success ? 200 : 500);
-    fetcher->SetResponseString(script);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse);
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content(script_);
+    http_response->set_content_type("text/javascript");
+    return std::move(http_response);
   }
 
   void OnTranslateError(const translate::TranslateErrorDetails& details) {
@@ -234,11 +236,27 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     ResetObserver();
     error_type_ = translate::TranslateErrors::NONE;
+
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &TranslateManagerBrowserTest::HandleRequest, base::Unretained(this)));
+    embedded_test_server()->StartAcceptingConnections();
+  }
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+
+    command_line->AppendSwitchASCII(
+        translate::switches::kTranslateScriptURL,
+        embedded_test_server()->GetURL("/mock_translate_script.js").spec());
+  }
+  void TearDownOnMainThread() override {
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+    InProcessBrowserTest::TearDownOnMainThread();
   }
 
- private:
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  void SetTranslateScript(const std::string& script) { script_ = script; }
 
+ private:
   translate::TranslateErrors::Type error_type_;
 
   std::unique_ptr<
@@ -252,12 +270,12 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<LangageDetectionObserver> language_detected_signal_;
   std::unique_ptr<content::WindowedNotificationObserver>
       page_translated_signal_;
+
+  std::string script_;
 };
 
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageLanguageDetection) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
   // The InProcessBrowserTest opens a new tab, let's wait for that first.
@@ -294,8 +312,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageLanguageDetection) {
 // HTML attribute. For all other languages, the HTML attribute should be used.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        PageLanguageDetectionConflict) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
   // The InProcessBrowserTest opens a new tab, let's wait for that first.
@@ -338,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 
 // Test that the translation was successful.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  SetTranslateScript(kTestValidScript);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -367,8 +383,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  SimulateURLFetch(kTestValidScript, true);
-
   // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
@@ -378,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
 
 // Test if there was an error during translation.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  SetTranslateScript(kTestValidScript);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -406,8 +420,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationError) {
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  SimulateURLFetch(kTestValidScript, true);
-
   // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
@@ -419,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationError) {
 // Test if there was an error during translate library initialization.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        PageTranslationInitializationError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  SetTranslateScript(kTestScriptInitializationError);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -447,8 +459,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
-
-  SimulateURLFetch(kTestScriptInitializationError, true);
 
   // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
@@ -461,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 // Test the checks translate lib never gets ready and throws timeout.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        PageTranslationTimeoutError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  SetTranslateScript(kTestScriptTimeout);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -490,8 +500,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  SimulateURLFetch(kTestScriptTimeout, true);
-
   // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
@@ -503,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 // Test the checks if both source and target languages mentioned are identical.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        PageTranslationIdenticalLanguagesError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  SetTranslateScript(kTestScriptIdenticalLanguages);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -530,8 +538,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
       chrome_translate_client->GetTranslateManager();
   manager->TranslatePage("aa", "en", true);
 
-  SimulateURLFetch(kTestScriptIdenticalLanguages, true);
-
   // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
@@ -543,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 // Test if there was an error during translatePage script execution.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        PageTranslationUnexpectedScriptError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  SetTranslateScript(kTestScriptUnexpectedScriptError);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -571,8 +577,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
-
-  SimulateURLFetch(kTestScriptUnexpectedScriptError, true);
 
   // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
@@ -585,7 +589,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 // Test if securityOrigin mentioned in url is valid.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        PageTranslationBadOriginError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  SetTranslateScript(kTestScriptBadOrigin);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -613,8 +617,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
-
-  SimulateURLFetch(kTestScriptBadOrigin, true);
 
   // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
@@ -626,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 // Test if there was an error during script load.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        PageTranslationScriptLoadError) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  SetTranslateScript(kTestScriptLoadError);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -654,8 +656,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
-
-  SimulateURLFetch(kTestScriptLoadError, true);
 
   // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();

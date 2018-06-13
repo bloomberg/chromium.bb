@@ -124,6 +124,8 @@ source_set("unit_tests") {
     "//components/variations",
     "//net:test_support",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/network:test_support",
+    "//services/network/public/cpp:cpp",
     "//testing/gtest",
     "//third_party/metrics_proto",
     "//ui/base",

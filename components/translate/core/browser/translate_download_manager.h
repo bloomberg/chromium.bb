@@ -28,17 +28,6 @@ class TranslateDownloadManager {
   // Returns the singleton instance.
   static TranslateDownloadManager* GetInstance();
 
-  // The request context used to download the resources.
-  // Should be set before this class can be used.
-  net::URLRequestContextGetter* request_context() {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
-    return request_context_.get();
-  }
-  void set_request_context(net::URLRequestContextGetter* context) {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
-    request_context_ = context;
-  }
-
   // The URL loader factory used to download the resources.
   // Should be set before this class can be used.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory() {
@@ -120,7 +109,6 @@ class TranslateDownloadManager {
   std::unique_ptr<TranslateScript> script_;
 
   std::string application_locale_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 };
 
