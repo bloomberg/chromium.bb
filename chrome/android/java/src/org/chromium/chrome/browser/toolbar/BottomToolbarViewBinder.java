@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.scene_layer.ScrollingBottomViewSceneLayer;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
-import org.chromium.chrome.browser.toolbar.BottomToolbarModel.PropertyKey;
 
 /**
  * This class is responsible for pushing updates to both the Android view and the compositor
@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.toolbar.BottomToolbarModel.PropertyKey;
  */
 public class BottomToolbarViewBinder
         implements PropertyModelChangeProcessor.ViewBinder<BottomToolbarModel,
-                BottomToolbarViewBinder.ViewHolder, BottomToolbarModel.PropertyKey> {
+                BottomToolbarViewBinder.ViewHolder, PropertyKey> {
     /**
      * A wrapper class that holds a {@link ViewGroup} (the toolbar view) and a composited layer to
      * be used with the {@link BottomToolbarViewBinder}.
@@ -49,18 +49,21 @@ public class BottomToolbarViewBinder
 
     @Override
     public final void bind(BottomToolbarModel model, ViewHolder view, PropertyKey propertyKey) {
-        if (PropertyKey.Y_OFFSET == propertyKey) {
-            view.sceneLayer.setYOffset(model.getYOffset());
-        } else if (PropertyKey.ANDROID_VIEW_VISIBILITY == propertyKey) {
-            view.toolbarRoot.setVisibility(model.getAndroidViewVisibility());
-        } else if (PropertyKey.SEARCH_ACCELERATOR_LISTENER == propertyKey) {
+        if (BottomToolbarModel.Y_OFFSET == propertyKey) {
+            view.sceneLayer.setYOffset(model.getValue(BottomToolbarModel.Y_OFFSET));
+        } else if (BottomToolbarModel.ANDROID_VIEW_VISIBILITY == propertyKey) {
+            view.toolbarRoot.setVisibility(
+                    model.getValue(BottomToolbarModel.ANDROID_VIEW_VISIBILITY));
+        } else if (BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER == propertyKey) {
             view.toolbarRoot.findViewById(R.id.search_button)
-                    .setOnClickListener(model.getSearchAcceleratorListener());
-        } else if (PropertyKey.MENU_BUTTON_LISTENER == propertyKey) {
+                    .setOnClickListener(
+                            model.getValue(BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER));
+        } else if (BottomToolbarModel.MENU_BUTTON_LISTENER == propertyKey) {
             view.toolbarRoot.findViewById(R.id.menu_button)
-                    .setOnTouchListener(model.getMenuButtonListener());
-        } else if (PropertyKey.LAYOUT_MANAGER == propertyKey) {
-            model.getLayoutManager().addSceneOverlayToBack(view.sceneLayer);
+                    .setOnTouchListener(model.getValue(BottomToolbarModel.MENU_BUTTON_LISTENER));
+        } else if (BottomToolbarModel.LAYOUT_MANAGER == propertyKey) {
+            model.getValue(BottomToolbarModel.LAYOUT_MANAGER)
+                    .addSceneOverlayToBack(view.sceneLayer);
         } else {
             assert false : "Unhandled property detected in BottomToolbarViewBinder!";
         }

@@ -57,11 +57,11 @@ class BottomToolbarMediator implements FullscreenListener {
 
     @Override
     public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
-        mModel.setYOffset((int) bottomOffset);
+        mModel.setValue(BottomToolbarModel.Y_OFFSET, (int) bottomOffset);
         if (bottomOffset > 0) {
-            mModel.setAndroidViewVisibility(View.INVISIBLE);
+            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBILITY, View.INVISIBLE);
         } else {
-            mModel.setAndroidViewVisibility(View.VISIBLE);
+            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBILITY, View.VISIBLE);
         }
     }
 
@@ -73,11 +73,11 @@ class BottomToolbarMediator implements FullscreenListener {
 
     public void setButtonListeners(
             OnClickListener searchAcceleratorListener, OnTouchListener menuButtonListener) {
-        mModel.setSearchAcceleratorListener(searchAcceleratorListener);
-        mModel.setMenuButtonListener(menuButtonListener);
+        mModel.setValue(BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER, searchAcceleratorListener);
+        mModel.setValue(BottomToolbarModel.MENU_BUTTON_LISTENER, menuButtonListener);
     }
 
     public void setLayoutManager(LayoutManager layoutManager) {
-        mModel.setLayoutManager(layoutManager);
+        mModel.setValue(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
     }
 }
