@@ -104,7 +104,7 @@ class StaleHostResolver::RequestImpl {
             const RequestInfo& info,
             net::RequestPriority priority,
             net::AddressList* addresses,
-            const net::CompletionCallback& result_callback,
+            net::CompletionOnceCallback result_callback,
             std::unique_ptr<net::HostResolver::Request>* out_req,
             const net::NetLogWithSource& net_log,
             const StaleEntryUsableCallback& usable_callback,
@@ -156,7 +156,7 @@ class StaleHostResolver::RequestImpl {
   // returns.
   net::AddressList* result_addresses_;
   // The callback passed into |Start()| to be called when the request returns.
-  net::CompletionCallback result_callback_;
+  net::CompletionOnceCallback result_callback_;
   // Set when |result_callback_| is being called so |OnHandleDestroyed()|
   // doesn't delete the request.
   bool returning_result_;
@@ -208,7 +208,7 @@ int StaleHostResolver::RequestImpl::Start(
     const RequestInfo& info,
     net::RequestPriority priority,
     net::AddressList* addresses,
-    const net::CompletionCallback& result_callback,
+    net::CompletionOnceCallback result_callback,
     std::unique_ptr<net::HostResolver::Request>* out_req,
     const net::NetLogWithSource& net_log,
     const StaleEntryUsableCallback& usable_callback,
@@ -233,7 +233,7 @@ int StaleHostResolver::RequestImpl::Start(
     return HandleResult(cache_rv, cache_addresses);
   }
 
-  result_callback_ = result_callback;
+  result_callback_ = std::move(result_callback);
   handle_ = new Handle(this);
   *out_req = std::unique_ptr<net::HostResolver::Request>(handle_);
 
@@ -308,7 +308,7 @@ void StaleHostResolver::RequestImpl::OnHandleDestroyed() {
   // it as a cancel.
   if (!have_returned()) {
     network_request_.reset();
-    result_callback_ = net::CompletionCallback();
+    result_callback_ = net::CompletionOnceCallback();
     RecordCanceledRequest();
   }
 
@@ -332,7 +332,7 @@ void StaleHostResolver::RequestImpl::ReturnResult(
     const net::AddressList& addresses) {
   DCHECK(result_callback_);
   returning_result_ = true;
-  base::ResetAndReturn(&result_callback_).Run(HandleResult(rv, addresses));
+  std::move(result_callback_).Run(HandleResult(rv, addresses));
   returning_result_ = false;
 }
 
@@ -384,16 +384,16 @@ StaleHostResolver::~StaleHostResolver() {}
 int StaleHostResolver::Resolve(const RequestInfo& info,
                                net::RequestPriority priority,
                                net::AddressList* addresses,
-                               const net::CompletionCallback& callback,
+                               net::CompletionOnceCallback callback,
                                std::unique_ptr<Request>* out_req,
                                const net::NetLogWithSource& net_log) {
   DCHECK(tick_clock_);
   StaleHostResolver::RequestImpl::StaleEntryUsableCallback usable_callback =
       base::Bind(&StaleEntryIsUsable, options_);
   RequestImpl* request = new RequestImpl(tick_clock_);
-  int rv =
-      request->Start(inner_resolver_.get(), info, priority, addresses, callback,
-                     out_req, net_log, usable_callback, options_.delay);
+  int rv = request->Start(inner_resolver_.get(), info, priority, addresses,
+                          std::move(callback), out_req, net_log,
+                          usable_callback, options_.delay);
   if (rv != net::ERR_IO_PENDING)
     delete request;
 

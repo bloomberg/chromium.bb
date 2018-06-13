@@ -4,6 +4,7 @@
 
 #include "net/dns/mock_host_resolver.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -60,12 +61,12 @@ class MockHostResolverBase::RequestImpl : public HostResolver::Request {
  public:
   RequestImpl(const RequestInfo& req_info,
               AddressList* addr,
-              const CompletionCallback& cb,
+              CompletionOnceCallback cb,
               MockHostResolverBase* resolver,
               size_t id)
       : info_(req_info),
         addresses_(addr),
-        callback_(cb),
+        callback_(std::move(cb)),
         resolver_(resolver),
         id_(id) {}
 
@@ -80,7 +81,7 @@ class MockHostResolverBase::RequestImpl : public HostResolver::Request {
     DCHECK_EQ(resolver_, resolver);
     resolver_ = nullptr;
     addresses_ = nullptr;
-    base::ResetAndReturn(&callback_).Run(error);
+    std::move(callback_).Run(error);
   }
 
   RequestInfo info() { return info_; }
@@ -90,7 +91,7 @@ class MockHostResolverBase::RequestImpl : public HostResolver::Request {
  private:
   RequestInfo info_;
   AddressList* addresses_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   MockHostResolverBase* resolver_;
   size_t id_;
 
@@ -105,7 +106,7 @@ MockHostResolverBase::~MockHostResolverBase() {
 int MockHostResolverBase::Resolve(const RequestInfo& info,
                                   RequestPriority priority,
                                   AddressList* addresses,
-                                  const CompletionCallback& callback,
+                                  CompletionOnceCallback callback,
                                   std::unique_ptr<Request>* request,
                                   const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -126,7 +127,7 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
 
   // Store the request for asynchronous resolution
   std::unique_ptr<RequestImpl> req(
-      new RequestImpl(info, addresses, callback, this, id));
+      new RequestImpl(info, addresses, std::move(callback), this, id));
   requests_[id] = req.get();
   *request = std::move(req);
 
@@ -516,7 +517,7 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc() {
 int HangingHostResolver::Resolve(const RequestInfo& info,
                                  RequestPriority priority,
                                  AddressList* addresses,
-                                 const CompletionCallback& callback,
+                                 CompletionOnceCallback callback,
                                  std::unique_ptr<Request>* request,
                                  const NetLogWithSource& net_log) {
   return ERR_IO_PENDING;

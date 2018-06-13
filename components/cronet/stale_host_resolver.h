@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "base/time/default_tick_clock.h"
+#include "net/base/completion_once_callback.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_impl.h"
 
@@ -69,7 +70,7 @@ class StaleHostResolver : public net::HostResolver {
   int Resolve(const RequestInfo& info,
               net::RequestPriority priority,
               net::AddressList* addresses,
-              const net::CompletionCallback& callback,
+              net::CompletionOnceCallback callback,
               std::unique_ptr<Request>* out_req,
               const net::NetLogWithSource& net_log) override;
 

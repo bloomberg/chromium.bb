@@ -463,12 +463,12 @@ void MockMojoProxyResolverFactory::CreateResolver(
 
 void DeleteResolverFactoryRequestCallback(
     std::unique_ptr<net::ProxyResolverFactory::Request>* request,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     int result) {
   ASSERT_TRUE(request);
   EXPECT_TRUE(request->get());
   request->reset();
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 class MockHostResolver : public net::HostResolver {
@@ -481,7 +481,7 @@ class MockHostResolver : public net::HostResolver {
   int Resolve(const RequestInfo& info,
               net::RequestPriority priority,
               net::AddressList* addresses,
-              const net::CompletionCallback& callback,
+              net::CompletionOnceCallback callback,
               std::unique_ptr<Request>* request,
               const net::NetLogWithSource& source_net_log) override {
     waiter_.NotifyEvent(DNS_REQUEST);
@@ -572,10 +572,10 @@ class ProxyResolverFactoryMojoTest : public testing::Test {
     ASSERT_TRUE(proxy_resolver_mojo_);
   }
 
-  void DeleteProxyResolverCallback(const net::CompletionCallback& callback,
+  void DeleteProxyResolverCallback(net::CompletionOnceCallback callback,
                                    int result) {
     proxy_resolver_mojo_.reset();
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   base::test::ScopedTaskEnvironment task_environment_;

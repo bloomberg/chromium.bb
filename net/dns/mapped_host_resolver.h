@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_export.h"
 #include "net/dns/host_resolver.h"
@@ -48,7 +49,7 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
-              const CompletionCallback& callback,
+              CompletionOnceCallback callback,
               std::unique_ptr<Request>* request,
               const NetLogWithSource& net_log) override;
   int ResolveFromCache(const RequestInfo& info,

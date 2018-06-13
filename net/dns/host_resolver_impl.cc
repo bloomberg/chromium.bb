@@ -597,7 +597,7 @@ class HostResolverImpl::RequestImpl
   RequestImpl(const NetLogWithSource& source_net_log,
               const RequestInfo& info,
               RequestPriority priority,
-              const CompletionCallback& callback,
+              CompletionOnceCallback callback,
               AddressList* addresses,
               Job* job,
               base::TimeTicks request_time)
@@ -605,7 +605,7 @@ class HostResolverImpl::RequestImpl
         info_(info),
         priority_(priority),
         job_(job),
-        callback_(callback),
+        callback_(std::move(callback)),
         addresses_(addresses),
         request_time_(request_time) {}
 
@@ -627,7 +627,7 @@ class HostResolverImpl::RequestImpl
       *addresses_ = EnsurePortOnAddressList(addr_list, info_.port());
     job_ = nullptr;
     addresses_ = nullptr;
-    base::ResetAndReturn(&callback_).Run(error);
+    std::move(callback_).Run(error);
   }
 
   Job* job() const {
@@ -658,7 +658,7 @@ class HostResolverImpl::RequestImpl
   Job* job_;
 
   // The user's callback to invoke when the request completes.
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
 
   // The address list to save result into.
   AddressList* addresses_;
@@ -1935,7 +1935,7 @@ void HostResolverImpl::SetMaxQueuedJobs(size_t value) {
 int HostResolverImpl::Resolve(const RequestInfo& info,
                               RequestPriority priority,
                               AddressList* addresses,
-                              const CompletionCallback& callback,
+                              CompletionOnceCallback callback,
                               std::unique_ptr<Request>* out_req,
                               const NetLogWithSource& source_net_log) {
   DCHECK(addresses);
@@ -1982,9 +1982,9 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   }
 
   // Can't complete synchronously. Create and attach request.
-  auto req =
-      std::make_unique<RequestImpl>(source_net_log, info, priority, callback,
-                                    addresses, job, tick_clock_->NowTicks());
+  auto req = std::make_unique<RequestImpl>(source_net_log, info, priority,
+                                           std::move(callback), addresses, job,
+                                           tick_clock_->NowTicks());
   job->AddRequest(req.get());
   *out_req = std::move(req);
 

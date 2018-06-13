@@ -4,6 +4,8 @@
 
 #include "chromeos/network/host_resolver_impl_chromeos.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -144,14 +146,14 @@ int HostResolverImplChromeOS::Resolve(
     const RequestInfo& info,
     net::RequestPriority priority,
     net::AddressList* addresses,
-    const net::CompletionCallback& callback,
+    net::CompletionOnceCallback callback,
     std::unique_ptr<Request>* out_req,
     const net::NetLogWithSource& source_net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (ResolveLocalIPAddress(info, addresses))
     return net::OK;
   return net::HostResolverImpl::Resolve(
-      info, priority, addresses, callback, out_req, source_net_log);
+      info, priority, addresses, std::move(callback), out_req, source_net_log);
 }
 
 void HostResolverImplChromeOS::SetIPAddresses(const std::string& ipv4_address,

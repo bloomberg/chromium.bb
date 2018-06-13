@@ -102,7 +102,7 @@ class FailingHostResolver : public MockHostResolverBase {
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
-              const CompletionCallback& callback,
+              CompletionOnceCallback callback,
               std::unique_ptr<Request>* out_req,
               const NetLogWithSource& net_log) override {
     return ERR_NAME_NOT_RESOLVED;
@@ -119,7 +119,7 @@ class HangingResolver : public MockHostResolverBase {
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
-              const CompletionCallback& callback,
+              CompletionOnceCallback callback,
               std::unique_ptr<Request>* out_req,
               const NetLogWithSource& net_log) override {
     return ERR_IO_PENDING;
