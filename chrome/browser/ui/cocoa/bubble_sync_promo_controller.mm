@@ -29,7 +29,7 @@ void RemoveUnderlining(NSTextView* textView, int offset, int length) {
 }
 
 const SkColor kTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
-const SkColor kBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
+const SkColor kPromoViewBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 const SkColor kBorderColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
 
 // Vertical padding of the promo (dp).
@@ -74,7 +74,8 @@ const int kFontSize = 11;
 - (void)loadView {
   NSBox* promoView = [[[NSBox alloc] init] autorelease];
   [promoView setBoxType:NSBoxCustom];
-  [promoView setFillColor:skia::SkColorToDeviceNSColor(kBackgroundColor)];
+  [promoView
+      setFillColor:skia::SkColorToDeviceNSColor(kPromoViewBackgroundColor)];
   [promoView setContentViewMargins:NSMakeSize(chrome_style::kHorizontalPadding,
                                               kVerticalPadding)];
   [promoView setBorderType:NSLineBorder];

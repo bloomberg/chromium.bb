@@ -26,7 +26,7 @@
 namespace {
 
 // Partially-transparent background color.
-const SkColor kBackgroundColor = SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
+const SkColor kButtonBackgroundColor = SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
 
 constexpr int kCloseIconSize = 24;
 
@@ -48,7 +48,7 @@ class CloseFullscreenButton : public views::Button {
     // TODO(robliao): If we decide to move forward with this, use themes.
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kBackgroundColor);
+    flags.setColor(kButtonBackgroundColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
     float radius = FullscreenControlView::kCircleButtonDiameter / 2.0f;
     canvas->DrawCircle(gfx::PointF(radius, radius), radius, flags);

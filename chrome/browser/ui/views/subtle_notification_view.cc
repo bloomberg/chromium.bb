@@ -29,7 +29,8 @@ const int kOuterPaddingHorizPx = 40;
 const int kOuterPaddingVertPx = 8;
 
 // Partially-transparent background color.
-const SkColor kBackgroundColor = SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
+const SkColor kSubtleNotificationBackgroundColor =
+    SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
 
 // Spacing around the key name.
 const int kKeyNameMarginHorizPx = 7;
@@ -145,12 +146,12 @@ SubtleNotificationView::SubtleNotificationView() : instruction_view_(nullptr) {
 
   std::unique_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
       views::BubbleBorder::NONE, views::BubbleBorder::NO_ASSETS,
-      kBackgroundColor));
+      kSubtleNotificationBackgroundColor));
   SetBackground(std::make_unique<views::BubbleBackground>(bubble_border.get()));
   SetBorder(std::move(bubble_border));
 
-  instruction_view_ =
-      new InstructionView(base::string16(), kForegroundColor, kBackgroundColor);
+  instruction_view_ = new InstructionView(base::string16(), kForegroundColor,
+                                          kSubtleNotificationBackgroundColor);
 
   int outer_padding_horiz = kOuterPaddingHorizPx;
   int outer_padding_vert = kOuterPaddingVertPx;

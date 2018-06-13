@@ -47,7 +47,7 @@ const int kDropdownMinWidth = 64;
 // TODO(crbug.com/831603): Determine how colors should be shared with menus
 // and/or omnibox, and how these should interact (if at all) with native
 // theme colors.
-const SkColor kBackgroundColor = SK_ColorWHITE;
+const SkColor kAutofillBackgroundColor = SK_ColorWHITE;
 const SkColor kSelectedBackgroundColor = gfx::kGoogleGrey200;
 const SkColor kFooterBackgroundColor = gfx::kGoogleGrey050;
 const SkColor kSeparatorColor = gfx::kGoogleGrey200;
@@ -225,8 +225,8 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
  protected:
   // AutofillPopupRowView:
   std::unique_ptr<views::Background> CreateBackground() override {
-    return views::CreateSolidBackground(is_selected_ ? kSelectedBackgroundColor
-                                                     : kBackgroundColor);
+    return views::CreateSolidBackground(
+        is_selected_ ? kSelectedBackgroundColor : kAutofillBackgroundColor);
   }
 
  private:
@@ -384,7 +384,7 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
   CreateChildViews();
-  SetBackground(views::CreateSolidBackground(kBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kAutofillBackgroundColor));
 }
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}

@@ -81,7 +81,7 @@ constexpr int kArrowHeight = 14;
 // popup's border.
 constexpr int kArrowInset = 3;
 
-const SkColor kBackgroundColor = SkColorSetRGB(0x1F, 0x1F, 0x1F);
+const SkColor kTryChromeBackgroundColor = SkColorSetRGB(0x1F, 0x1F, 0x1F);
 const SkColor kHeaderColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
 const SkColor kBodyColor = SkColorSetARGB(0xAD, 0xFF, 0xFF, 0xFF);
 const SkColor kBorderColor = SkColorSetARGB(0x80, 0x80, 0x80, 0x80);
@@ -612,7 +612,7 @@ void TryChromeDialog::Context::TaskbarCalculator::AddBorderToContents(
   // and observe the popup so that these pointers can be appropriately cleared.
   contents_view_ = contents_view;
   auto border = std::make_unique<ArrowBorder>(
-      kTryChromeBorderThickness, kBorderColor, kBackgroundColor,
+      kTryChromeBorderThickness, kBorderColor, kTryChromeBackgroundColor,
       kInactiveToastArrowIcon, &properties_->border_properties);
   border_ = border.get();
   contents_view->SetBorder(std::move(border));
@@ -1038,7 +1038,8 @@ void TryChromeDialog::OnContextInitialized() {
   popup_->Init(params);
 
   auto contents_view = std::make_unique<ClickableView>();
-  contents_view->SetBackground(views::CreateSolidBackground(kBackgroundColor));
+  contents_view->SetBackground(
+      views::CreateSolidBackground(kTryChromeBackgroundColor));
   views::GridLayout* layout = contents_view->SetLayoutManager(
       std::make_unique<views::GridLayout>(contents_view.get()));
   layout->set_minimum_size(gfx::Size(kToastWidth, 0));
@@ -1123,7 +1124,7 @@ void TryChromeDialog::OnContextInitialized() {
   auto header = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(kExperiments[group_].heading_id),
       CONTEXT_WINDOWS10_NATIVE);
-  header->SetBackgroundColor(kBackgroundColor);
+  header->SetBackgroundColor(kTryChromeBackgroundColor);
   header->SetEnabledColor(kHeaderColor);
   header->SetMultiLine(true);
   header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -1136,7 +1137,7 @@ void TryChromeDialog::OnContextInitialized() {
   if (body_string_id) {
     auto body_text = std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(body_string_id), CONTEXT_WINDOWS10_NATIVE);
-    body_text->SetBackgroundColor(kBackgroundColor);
+    body_text->SetBackgroundColor(kTryChromeBackgroundColor);
     body_text->SetEnabledColor(kBodyColor);
     body_text->SetMultiLine(true);
     body_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
