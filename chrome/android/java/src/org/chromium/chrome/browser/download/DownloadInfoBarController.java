@@ -583,7 +583,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             boolean singleDownloadCompleted =
                     itemCount == 1 && offlineItemState == OfflineItemState.COMPLETE;
             if (singleDownloadCompleted) {
-                info.message = itemToShow.title;
+                info.message = getContext().getString(
+                        R.string.download_infobar_filename, itemToShow.title);
                 info.id = itemToShow.id;
                 info.link = getContext().getString(R.string.open_downloaded_label);
                 info.hasAnimation = true;
