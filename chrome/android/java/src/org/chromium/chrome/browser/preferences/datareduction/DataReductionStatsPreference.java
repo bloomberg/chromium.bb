@@ -288,6 +288,13 @@ public class DataReductionStatsPreference extends Preference {
         mStartDatePhrase = formatDate(context, start);
         mEndDatePhrase = formatDate(context, end);
 
+        DataReductionProxyUma.dataReductionProxyUserViewedSavings(
+                compressedTotalBytes, originalTotalBytes);
+
+        // Here to the end of the method checks for a difference in the reported data breakdown. If
+        // mSiteBreakdownItems is null, return early.
+        if (mSiteBreakdownItems == null) return;
+
         long breakdownSavingsTotal = 0;
         long breakdownUsageTotal = 0;
         for (DataReductionDataUseItem item : mSiteBreakdownItems) {
@@ -301,8 +308,6 @@ public class DataReductionStatsPreference extends Preference {
         final int usageDiffPercent =
                 (int) (usageDiff / (breakdownUsageTotal + compressedTotalBytes) * 100);
 
-        DataReductionProxyUma.dataReductionProxyUserViewedSavings(
-                compressedTotalBytes, originalTotalBytes);
         DataReductionProxyUma.dataReductionProxyUserViewedSavingsDifference(
                 savingsDiffPercent, usageDiffPercent);
     }
