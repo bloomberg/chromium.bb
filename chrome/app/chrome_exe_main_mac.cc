@@ -16,6 +16,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -95,8 +96,8 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
     abort();
   }
 
-  char* exec_path = new char[exec_path_size];
-  rv = _NSGetExecutablePath(exec_path, &exec_path_size);
+  std::unique_ptr<char[]> exec_path(new char[exec_path_size]);
+  rv = _NSGetExecutablePath(exec_path.get(), &exec_path_size);
   if (rv != 0) {
     fprintf(stderr, "_NSGetExecutablePath: get path failed\n");
     abort();
@@ -122,39 +123,39 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
 
   // SandboxInit enables the sandbox and then returns.
   if (enable_v2_sandbox)
-    SandboxInit(exec_path, argc, argv, fd_mapping);
+    SandboxInit(exec_path.get(), argc, argv, fd_mapping);
 
-  const char* const rel_path =
+  const char rel_path[] =
       "../../../" PRODUCT_FULLNAME_STRING
       " Framework.framework/" PRODUCT_FULLNAME_STRING " Framework";
 #else
-  const char* const rel_path =
+  const char rel_path[] =
       "../Versions/" CHROME_VERSION_STRING "/" PRODUCT_FULLNAME_STRING
       " Framework.framework/" PRODUCT_FULLNAME_STRING " Framework";
 #endif  // defined(HELPER_EXECUTABLE)
 
   // Slice off the last part of the main executable path, and append the
   // version framework information.
-  const char* parent_dir = dirname(exec_path);
+  const char* parent_dir = dirname(exec_path.get());
   if (!parent_dir) {
-    fprintf(stderr, "dirname %s: %s\n", exec_path, strerror(errno));
+    fprintf(stderr, "dirname %s: %s\n", exec_path.get(), strerror(errno));
     abort();
   }
-  delete[] exec_path;
 
   const size_t parent_dir_len = strlen(parent_dir);
   const size_t rel_path_len = strlen(rel_path);
   // 2 accounts for a trailing NUL byte and the '/' in the middle of the paths.
   const size_t framework_path_size = parent_dir_len + rel_path_len + 2;
-  char* framework_path = new char[framework_path_size];
-  snprintf(framework_path, framework_path_size, "%s/%s", parent_dir, rel_path);
+  std::unique_ptr<char[]> framework_path(new char[framework_path_size]);
+  snprintf(framework_path.get(), framework_path_size, "%s/%s", parent_dir,
+           rel_path);
 
-  void* library = dlopen(framework_path, RTLD_LAZY | RTLD_LOCAL | RTLD_FIRST);
+  void* library =
+      dlopen(framework_path.get(), RTLD_LAZY | RTLD_LOCAL | RTLD_FIRST);
   if (!library) {
-    fprintf(stderr, "dlopen %s: %s\n", framework_path, dlerror());
+    fprintf(stderr, "dlopen %s: %s\n", framework_path.get(), dlerror());
     abort();
   }
-  delete[] framework_path;
 
   const ChromeMainPtr chrome_main =
       reinterpret_cast<ChromeMainPtr>(dlsym(library, "ChromeMain"));

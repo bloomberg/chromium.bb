@@ -46,11 +46,20 @@ def main(argv):
   # all the time on Linux.
   env[CHROME_SANDBOX_ENV] = CHROME_SANDBOX_PATH
 
+  additional_args = []
   if sys.platform == 'win32':
     exe = os.path.join('.', 'content_shell.exe')
   elif sys.platform == 'darwin':
     exe = os.path.join('.', 'Content Shell.app', 'Contents', 'MacOS',
                        'Content Shell')
+    # The Content Shell binary does not directly link against
+    # the Content Shell Framework (it is loaded at runtime). Ensure that
+    # symbols are dumped for the Framework too.
+    additional_args = [
+        '--additional-binary',
+        os.path.join('Content Shell Framework.framework', 'Versions',
+                     'Current', 'Content Shell Framework')
+    ]
   else:
     exe = os.path.join('.', 'content_shell')
 
@@ -64,7 +73,7 @@ def main(argv):
         '--build-dir', '.',
         '--binary', exe,
         '--json', tempfile_path
-    ], env)
+    ] + additional_args, env)
 
     with open(tempfile_path) as f:
       failures = json.load(f)

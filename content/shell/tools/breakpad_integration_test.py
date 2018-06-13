@@ -118,7 +118,13 @@ def main():
   parser.add_option('', '--build-dir', default='',
                     help='The build output directory.')
   parser.add_option('', '--binary', default='',
-                    help='The path of the binary to generate symbols for.')
+                    help='The path of the binary to generate symbols for and '
+                         'then run for the test.')
+  parser.add_option('', '--additional-binary', default='',
+                    help='An additional binary for which to generate symbols. '
+                         'On Mac this is used for specifying the '
+                         '"Content Shell Framework" library, which is not '
+                         'linked into --binary.')
   parser.add_option('', '--no-symbols', default=False, action='store_true',
                     help='Symbols are not expected to work.')
   parser.add_option('-j', '--jobs', default=CONCURRENT_TASKS, action='store',
@@ -153,18 +159,22 @@ def main():
   try:
     if sys.platform != 'win32':
       print "# Generate symbols."
+      bins = [options.binary]
+      if options.additional_binary:
+        bins.append(options.additional_binary)
       generate_symbols = os.path.join(
           BREAKPAD_TOOLS_DIR, 'generate_breakpad_symbols.py')
-      cmd = [generate_symbols,
-             '--build-dir=%s' % options.build_dir,
-             '--binary=%s' % options.binary,
-             '--symbols-dir=%s' % symbols_dir,
-             '--jobs=%d' % options.jobs]
-      if options.verbose:
-        cmd.append('--verbose')
-        print ' '.join(cmd)
-      failure = 'Failed to run generate_breakpad_symbols.py.'
-      subprocess.check_call(cmd)
+      for binary in bins:
+        cmd = [generate_symbols,
+               '--build-dir=%s' % options.build_dir,
+               '--binary=%s' % binary,
+               '--symbols-dir=%s' % symbols_dir,
+               '--jobs=%d' % options.jobs]
+        if options.verbose:
+          cmd.append('--verbose')
+          print ' '.join(cmd)
+        failure = 'Failed to run generate_breakpad_symbols.py.'
+        subprocess.check_call(cmd)
 
     print "# Running test without trap handler."
     run_test(options, crash_dir, symbols_dir)

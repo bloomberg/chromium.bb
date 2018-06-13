@@ -533,8 +533,9 @@ if (is_android) {
     testonly = true
     output_name = content_shell_product_name
     sources = [
-      "app/shell_main.cc",
+      "app/shell_main_mac.cc",
     ]
+    defines = [ "SHELL_PRODUCT_NAME=\"$content_shell_product_name\"" ]
     deps = [
       ":content_shell_framework_bundle_data",
       ":content_shell_resources_bundle_data",
@@ -543,13 +544,6 @@ if (is_android) {
       # be here per the comment in blink_test_platform_support_mac.mm about
       # the bundle structure.
       "//content/shell/test_runner:resources",
-    ]
-    ldflags = [
-      # The main app is at Content Shell.app/Contents/MacOS/Content Shell
-      # so set the rpath up to Contents/ so that the loader can find
-      # Framworks/.
-      "-rpath",
-      "@executable_path/../",
     ]
     info_plist_target = ":content_shell_plist"
     data_deps = [
@@ -750,11 +744,7 @@ if (is_mac) {
     # install_name_tool on one of the executables. However install_name_tool
     # only operates in-place, which is problematic to express in GN. Instead,
     # use rpath-based loading.
-    # TODO(rsesek): After GYP is gone, re-write content_shell_main to be like
-    # chrome_main and use dlopen() instead of a linked framework.
-    ldflags = [
-      "-Wl,-install_name,@rpath/Frameworks/$output_name.framework/$output_name",
-    ]
+    ldflags = [ "-Wl,-install_name,@executable_path/../Frameworks/$output_name.framework/$output_name" ]
 
     if (is_component_build) {
       # Set up the rpath for the framework so that it can find dylibs in the
@@ -786,16 +776,17 @@ if (is_mac) {
     testonly = true
     output_name = content_shell_helper_name
     sources = [
-      "app/shell_main.cc",
+      "app/shell_main_mac.cc",
     ]
-    deps = [
-      ":content_shell_framework+link",
+    defines = [
+      "HELPER_EXECUTABLE",
+      "SHELL_PRODUCT_NAME=\"$content_shell_product_name\"",
     ]
     ldflags = [
       # The helper is in Content Shell.app/Contents/Frameworks/Content Shell Helper.app/Contents/MacOS/
-      # so set rpath up to Contents/ so that the loader can find Frameworks/.
+      # so set rpath up to the base.
       "-rpath",
-      "@executable_path/../../../..",
+      "@executable_path/../../../../../..",
     ]
     info_plist_target = ":content_shell_helper_plist"
   }
@@ -810,7 +801,7 @@ if (is_mac) {
       "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}",
     ]
     public_deps = [
-      ":content_shell_framework+link",
+      ":content_shell_framework",
       ":content_shell_helper_app",
     ]
   }
