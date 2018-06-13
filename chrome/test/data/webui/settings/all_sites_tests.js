@@ -92,7 +92,7 @@ suite('AllSites', function() {
       const resolver = new PromiseResolver();
       testElement.async(resolver.resolve);
       return resolver.promise.then(function() {
-        assertEquals(3, testElement.sites.length);
+        assertEquals(3, testElement.siteGroupList.length);
 
         // Flush to be sure list container is populated.
         Polymer.dom.flush();
