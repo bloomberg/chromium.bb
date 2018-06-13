@@ -54,7 +54,9 @@ class WebStorageArea {
   // Get a value for a specific key. Valid key indices are 0 through
   // length() - 1.  Indexes may change on any Set/RemoveItem call. Will return
   // null if the index provided is out of range.
-  virtual WebString Key(unsigned index) = 0;
+  // The |did_decrease_iterator| parameter is used to collect use counter data
+  // for a particular optimization in DOMStorageMap.
+  virtual WebString Key(unsigned index, bool* did_decrease_iterator) = 0;
 
   // Get the value that corresponds to a specific key. This returns null if
   // there is no entry for that key.

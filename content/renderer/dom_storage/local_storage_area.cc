@@ -28,8 +28,9 @@ unsigned LocalStorageArea::length() {
   return cached_area_->GetLength();
 }
 
-WebString LocalStorageArea::Key(unsigned index) {
-  return WebString::FromUTF16(cached_area_->GetKey(index));
+WebString LocalStorageArea::Key(unsigned index, bool* did_decrease_iterator) {
+  return WebString::FromUTF16(
+      cached_area_->GetKey(index, did_decrease_iterator));
 }
 
 WebString LocalStorageArea::GetItem(const WebString& key) {

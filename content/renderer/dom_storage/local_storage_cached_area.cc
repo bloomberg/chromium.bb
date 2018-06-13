@@ -123,9 +123,11 @@ unsigned LocalStorageCachedArea::GetLength() {
   return map_->Length();
 }
 
-base::NullableString16 LocalStorageCachedArea::GetKey(unsigned index) {
+base::NullableString16 LocalStorageCachedArea::GetKey(
+    unsigned index,
+    bool* did_decrease_iterator) {
   EnsureLoaded();
-  return map_->Key(index);
+  return map_->Key(index, did_decrease_iterator);
 }
 
 base::NullableString16 LocalStorageCachedArea::GetItem(

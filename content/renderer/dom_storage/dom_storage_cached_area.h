@@ -47,7 +47,10 @@ class CONTENT_EXPORT DOMStorageCachedArea
   const GURL& origin() const { return origin_; }
 
   unsigned GetLength(int connection_id);
-  base::NullableString16 GetKey(int connection_id, unsigned index);
+  // See DOMStorageMap for the meaning of |did_decrease_iterator|.
+  base::NullableString16 GetKey(int connection_id,
+                                unsigned index,
+                                bool* did_decrease_iterator = nullptr);
   base::NullableString16 GetItem(int connection_id, const base::string16& key);
   bool SetItem(int connection_id,
                const base::string16& key,

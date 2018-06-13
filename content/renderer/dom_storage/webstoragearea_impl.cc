@@ -50,8 +50,9 @@ unsigned WebStorageAreaImpl::length() {
   return cached_area_->GetLength(connection_id_);
 }
 
-WebString WebStorageAreaImpl::Key(unsigned index) {
-  return WebString::FromUTF16(cached_area_->GetKey(connection_id_, index));
+WebString WebStorageAreaImpl::Key(unsigned index, bool* did_decrease_iterator) {
+  return WebString::FromUTF16(
+      cached_area_->GetKey(connection_id_, index, did_decrease_iterator));
 }
 
 WebString WebStorageAreaImpl::GetItem(const WebString& key) {

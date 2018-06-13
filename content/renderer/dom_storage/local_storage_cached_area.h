@@ -61,7 +61,9 @@ class CONTENT_EXPORT LocalStorageCachedArea
 
   // These correspond to blink::WebStorageArea.
   unsigned GetLength();
-  base::NullableString16 GetKey(unsigned index);
+  // See DOMStorageMap for the meaning of |did_decrease_iterator|.
+  base::NullableString16 GetKey(unsigned index,
+                                bool* did_decrease_iterator = nullptr);
   base::NullableString16 GetItem(const base::string16& key);
   bool SetItem(const base::string16& key,
                const base::string16& value,
