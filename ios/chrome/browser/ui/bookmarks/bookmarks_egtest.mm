@@ -421,10 +421,12 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Create a new folder.
   [BookmarksTestCase addFolderWithName:@"Sticky Folder"];
 
-  // Verify that the editor is present.
+  // Verify that the editor is present.  Uses notNil() instead of
+  // sufficientlyVisible() because the large title in the navigation bar causes
+  // less than 75% of the table view to be visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkEditViewContainerIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
 
   // Tap the Done button.
   [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
@@ -495,10 +497,12 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Create a new folder.
   [BookmarksTestCase addFolderWithName:nil];
 
-  // Verify that the editor is present.
+  // Verify that the editor is present.  Uses notNil() instead of
+  // sufficientlyVisible() because the large title in the navigation bar causes
+  // less than 75% of the table view to be visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkEditViewContainerIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
 
   // Check that the new folder doesn't contain the bookmark.
   [BookmarksTestCase assertChildCount:0 ofFolderWithName:@"New Folder"];
@@ -1582,11 +1586,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                    IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
       performAction:grey_tap()];
 
-  // Verify it shows edit view controller.
+  // Verify it shows edit view controller.  Uses notNil() instead of
+  // sufficientlyVisible() because the large title in the navigation bar causes
+  // less than 75% of the table view to be visible.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
                                    kBookmarkFolderEditViewContainerIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
 }
 
 - (void)testContextMenuForMultipleFolderSelection {
