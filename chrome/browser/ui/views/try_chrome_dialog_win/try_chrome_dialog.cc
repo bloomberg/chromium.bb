@@ -67,7 +67,7 @@ constexpr unsigned int kToastWidth = 360;
 constexpr int kHoverAboveNotificationHeight = 24;
 
 // The thickness of the border drawn around the inner edge of the popup.
-constexpr int kBorderThickness = 1;
+constexpr int kTryChromeBorderThickness = 1;
 
 // The space between the taskbar and the popup when it is positioned over an
 // icon in the taskbar.
@@ -571,7 +571,7 @@ void TryChromeDialog::Context::NotificationAreaCalculator::AddBorderToContents(
     views::Widget* popup,
     views::View* contents_view) {
   contents_view->SetBorder(
-      views::CreateSolidBorder(kBorderThickness, kBorderColor));
+      views::CreateSolidBorder(kTryChromeBorderThickness, kBorderColor));
 }
 
 gfx::Rect TryChromeDialog::Context::NotificationAreaCalculator::ComputeBounds(
@@ -612,8 +612,8 @@ void TryChromeDialog::Context::TaskbarCalculator::AddBorderToContents(
   // and observe the popup so that these pointers can be appropriately cleared.
   contents_view_ = contents_view;
   auto border = std::make_unique<ArrowBorder>(
-      kBorderThickness, kBorderColor, kBackgroundColor, kInactiveToastArrowIcon,
-      &properties_->border_properties);
+      kTryChromeBorderThickness, kBorderColor, kBackgroundColor,
+      kInactiveToastArrowIcon, &properties_->border_properties);
   border_ = border.get();
   contents_view->SetBorder(std::move(border));
   popup->AddObserver(this);
@@ -730,7 +730,7 @@ void TryChromeDialog::Context::TaskbarCalculator::OnWidgetBoundsChanged(
   // the border without the arrow).
   gfx::Insets scaled_insets =
       popup->GetContentsView()->border()->GetInsets().Scale(dsf);
-  scaled_insets -= gfx::Insets(kBorderThickness).Scale(dsf);
+  scaled_insets -= gfx::Insets(kTryChromeBorderThickness).Scale(dsf);
   gfx::Rect dialog_bounds(window_size);
   dialog_bounds.Inset(scaled_insets);
 
@@ -846,7 +846,10 @@ constexpr TryChromeDialog::Context::TaskbarCalculator::PopupProperties
         &CreateTopArrowRegion,
         {// ArrowBorder::Properties
          gfx::Insets(kArrowHeight - kArrowInset, 0, 0, 0),
-         gfx::Insets(0, kBorderThickness, 0, kBorderThickness),
+         gfx::Insets(0,
+                     kTryChromeBorderThickness,
+                     0,
+                     kTryChromeBorderThickness),
          ArrowBorder::ArrowRotation::k180Degrees}};
 
 // static
@@ -858,7 +861,10 @@ constexpr TryChromeDialog::Context::TaskbarCalculator::PopupProperties
         &CreateLeftArrowRegion,
         {// ArrowBorder::Properties
          gfx::Insets(0, kArrowHeight - kArrowInset, 0, 0),
-         gfx::Insets(kBorderThickness, 0, kBorderThickness, 0),
+         gfx::Insets(kTryChromeBorderThickness,
+                     0,
+                     kTryChromeBorderThickness,
+                     0),
          ArrowBorder::ArrowRotation::k90Degrees}};
 
 // static
@@ -870,7 +876,10 @@ constexpr TryChromeDialog::Context::TaskbarCalculator::PopupProperties
         &CreateBottomArrowRegion,
         {// ArrowBorder::Properties
          gfx::Insets(0, 0, kArrowHeight - kArrowInset, 0),
-         gfx::Insets(0, kBorderThickness, 0, kBorderThickness),
+         gfx::Insets(0,
+                     kTryChromeBorderThickness,
+                     0,
+                     kTryChromeBorderThickness),
          ArrowBorder::ArrowRotation::kNone}};
 
 // static
@@ -882,7 +891,10 @@ constexpr TryChromeDialog::Context::TaskbarCalculator::PopupProperties
         &CreateRightArrowRegion,
         {// ArrowBorder::Properties
          gfx::Insets(0, 0, 0, kArrowHeight - kArrowInset),
-         gfx::Insets(kBorderThickness, 0, kBorderThickness, 0),
+         gfx::Insets(kTryChromeBorderThickness,
+                     0,
+                     kTryChromeBorderThickness,
+                     0),
          ArrowBorder::ArrowRotation::k270Degrees}};
 
 // TryChromeDialog::ModalShowDelegate ------------------------------------------
@@ -1053,7 +1065,7 @@ void TryChromeDialog::OnContextInitialized() {
   const int kLabelWidth = kToastWidth - kLogoPadding - logo_size.width() -
                           kLogoPadding - kSpacingAfterHeadingHorizontal;
   columns = layout->AddColumnSet(0);
-  columns->AddPaddingColumn(0, kLogoPadding - kBorderThickness);
+  columns->AddPaddingColumn(0, kLogoPadding - kTryChromeBorderThickness);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::FIXED, logo_size.width(),
                      logo_size.height());
@@ -1063,24 +1075,26 @@ void TryChromeDialog::OnContextInitialized() {
   columns->AddPaddingColumn(0, kSpacingHeadingToClose);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kCloseButtonRightPadding - kBorderThickness);
+  columns->AddPaddingColumn(
+      0, kCloseButtonRightPadding - kTryChromeBorderThickness);
 
   // Optional third row: [pad][text].
   const int logo_padding = logo_size.width() + kLogoPadding;
   columns = layout->AddColumnSet(1);
-  columns->AddPaddingColumn(0, kLogoPadding - kBorderThickness + logo_padding);
+  columns->AddPaddingColumn(
+      0, kLogoPadding - kTryChromeBorderThickness + logo_padding);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                      views::GridLayout::FIXED, kLabelWidth, 0);
 
   // Fourth row: [pad][buttons][pad].
   columns = layout->AddColumnSet(2);
-  columns->AddPaddingColumn(0, kTextButtonPadding - kBorderThickness);
+  columns->AddPaddingColumn(0, kTextButtonPadding - kTryChromeBorderThickness);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kTextButtonPadding - kBorderThickness);
+  columns->AddPaddingColumn(0, kTextButtonPadding - kTryChromeBorderThickness);
 
   // First row.
-  layout->AddPaddingRow(0, kCloseButtonTopPadding - kBorderThickness);
+  layout->AddPaddingRow(0, kCloseButtonTopPadding - kTryChromeBorderThickness);
   layout->StartRow(0, 0, kLogoPadding - kCloseButtonTopPadding);
   layout->SkipColumns(1);
   layout->SkipColumns(1);
@@ -1157,7 +1171,7 @@ void TryChromeDialog::OnContextInitialized() {
 
   layout->AddView(buttons.release());
 
-  layout->AddPaddingRow(0, kTextButtonPadding - kBorderThickness);
+  layout->AddPaddingRow(0, kTextButtonPadding - kTryChromeBorderThickness);
 
   popup_->SetContentsView(contents_view.release());
 

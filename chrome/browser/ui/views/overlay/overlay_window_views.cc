@@ -33,7 +33,7 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 namespace {
 constexpr gfx::Size kMinWindowSize = gfx::Size(144, 100);
 
-const int kBorderThickness = 5;
+const int kOverlayBorderThickness = 5;
 const int kResizeAreaCornerSize = 16;
 
 // |play_pause_controls_view_| scales at 30% the size of the smaller of the
@@ -67,8 +67,9 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
       return HTNOWHERE;
 
     int window_component = GetHTComponentForFrame(
-        point, kBorderThickness, kBorderThickness, kResizeAreaCornerSize,
-        kResizeAreaCornerSize, GetWidget()->widget_delegate()->CanResize());
+        point, kOverlayBorderThickness, kOverlayBorderThickness,
+        kResizeAreaCornerSize, kResizeAreaCornerSize,
+        GetWidget()->widget_delegate()->CanResize());
 
     // The media controls should take and handle user interaction.
     OverlayWindowViews* window = static_cast<OverlayWindowViews*>(widget_);
