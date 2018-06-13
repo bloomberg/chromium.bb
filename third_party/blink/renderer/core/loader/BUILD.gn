@@ -53,6 +53,8 @@ blink_core_sources("loader") {
     "link_loader_client.h",
     "mixed_content_checker.cc",
     "mixed_content_checker.h",
+    "modulescript/document_module_script_fetcher.cc",
+    "modulescript/document_module_script_fetcher.h",
     "modulescript/module_script_creation_params.h",
     "modulescript/module_script_fetch_request.h",
     "modulescript/module_script_fetcher.cc",

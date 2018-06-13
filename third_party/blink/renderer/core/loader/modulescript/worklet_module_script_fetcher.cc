@@ -4,17 +4,18 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/worklet_module_script_fetcher.h"
 
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+
 namespace blink {
 
 WorkletModuleScriptFetcher::WorkletModuleScriptFetcher(
     ResourceFetcher* fetcher,
     WorkletModuleResponsesMap* module_responses_map)
-    : ModuleScriptFetcher(fetcher),
-      module_responses_map_(module_responses_map) {}
+    : fetcher_(fetcher), module_responses_map_(module_responses_map) {}
 
 void WorkletModuleScriptFetcher::Trace(blink::Visitor* visitor) {
   ModuleScriptFetcher::Trace(visitor);
-  ModuleScriptFetcher::Client::Trace(visitor);
+  visitor->Trace(fetcher_);
 }
 
 void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
@@ -36,12 +37,25 @@ void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   // need to handle that case, maybe by having a way to restart fetches in a
   // different global scope?
   url_ = fetch_params.Url();
-  ModuleScriptFetcher::Fetch(fetch_params, this);
+  ScriptResource::Fetch(fetch_params, fetcher_.Get(), this);
 }
 
-void WorkletModuleScriptFetcher::NotifyFetchFinished(
-    const base::Optional<ModuleScriptCreationParams>& params,
-    const HeapVector<Member<ConsoleMessage>>&) {
+void WorkletModuleScriptFetcher::NotifyFinished(Resource* resource) {
+  ClearResource();
+
+  base::Optional<ModuleScriptCreationParams> params;
+  ScriptResource* script_resource = ToScriptResource(resource);
+  HeapVector<Member<ConsoleMessage>> error_messages;
+  if (WasModuleLoadSuccessful(script_resource, &error_messages)) {
+    params.emplace(
+        script_resource->GetResponse().Url(), script_resource->SourceText(),
+        script_resource->GetResourceRequest().GetFetchCredentialsMode(),
+        script_resource->CalculateAccessControlStatus(
+            fetcher_->Context().GetSecurityOrigin()));
+  }
+
+  // This will eventually notify |client| passed to
+  // WorkletModuleScriptFetcher::Fetch().
   module_responses_map_->SetEntryParams(url_, params);
 }
 

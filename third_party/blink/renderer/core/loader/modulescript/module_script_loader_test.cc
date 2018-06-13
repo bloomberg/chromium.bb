@@ -11,8 +11,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
-#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/loader/modulescript/worklet_module_script_fetcher.h"
@@ -114,7 +114,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
       return new WorkletModuleScriptFetcher(
           Fetcher(), global_scope->GetModuleResponsesMap());
     }
-    return new ModuleScriptFetcher(Fetcher());
+    return new DocumentModuleScriptFetcher(Fetcher());
   }
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
