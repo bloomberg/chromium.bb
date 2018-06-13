@@ -54,8 +54,10 @@ void PasswordGenerationManager::ProcessPasswordRequirements(
     return;
 
   // Fetch password requirements for the domain.
-  password_requirements_service->PrefetchSpec(
-      client_->GetLastCommittedEntryURL().GetOrigin());
+  if (IsRequirementsFetchingEnabled()) {
+    password_requirements_service->PrefetchSpec(
+        client_->GetLastCommittedEntryURL().GetOrigin());
+  }
 
   // Store password requirements from the autofill server.
   for (const autofill::FormStructure* form : forms) {
@@ -126,6 +128,10 @@ bool PasswordGenerationManager::IsGenerationEnabled(bool log_debug_data) const {
     logger->LogMessage(Logger::STRING_GENERATION_DISABLED_NO_SYNC);
 
   return false;
+}
+
+bool PasswordGenerationManager::IsRequirementsFetchingEnabled() const {
+  return client_->GetHistorySyncState() == SYNCING_NORMAL_ENCRYPTION;
 }
 
 void PasswordGenerationManager::CheckIfFormClassifierShouldRun() {

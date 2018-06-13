@@ -56,6 +56,10 @@ class PasswordGenerationManager {
   // autofill::SavePasswordProgressLogger.
   bool IsGenerationEnabled(bool log_debug_data) const;
 
+  // Determines whether the PasswordGeneraitonManager has the permission to
+  // fetch domain wide password requirements from gstatic.com.
+  bool IsRequirementsFetchingEnabled() const;
+
   // Determine if the form classifier should run. If yes, sends a message to the
   // renderer.
   // TODO(crbug.com/621442): Remove client-side form classifier when server-side
