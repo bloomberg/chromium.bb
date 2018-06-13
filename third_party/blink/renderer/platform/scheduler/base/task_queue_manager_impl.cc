@@ -234,8 +234,6 @@ void TaskQueueManagerImpl::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
 }
 
 void TaskQueueManagerImpl::OnBeginNestedRunLoop() {
-  // We just entered a nested run loop, make sure there's a DoWork posted or
-  // the system will grind to a halt.
   main_thread_only().nesting_depth++;
   if (main_thread_only().observer && main_thread_only().nesting_depth == 1)
     main_thread_only().observer->OnBeginNestedRunLoop();
