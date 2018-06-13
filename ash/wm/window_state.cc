@@ -193,6 +193,10 @@ bool WindowState::IsTrustedPinned() const {
   return GetStateType() == mojom::WindowStateType::TRUSTED_PINNED;
 }
 
+bool WindowState::IsPip() const {
+  return GetStateType() == mojom::WindowStateType::PIP;
+}
+
 bool WindowState::IsNormalStateType() const {
   return GetStateType() == mojom::WindowStateType::NORMAL ||
          GetStateType() == mojom::WindowStateType::DEFAULT;
@@ -247,7 +251,7 @@ bool WindowState::CanSnap() const {
   const bool is_panel_window =
       window_->type() == aura::client::WINDOW_TYPE_PANEL;
 
-  if (!CanResize() || is_panel_window)
+  if (!CanResize() || is_panel_window || IsPip())
     return false;
 
   // Allow windows with no maximum width or height to be snapped.

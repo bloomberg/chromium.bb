@@ -114,6 +114,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsSnapped() const;
   bool IsPinned() const;
   bool IsTrustedPinned() const;
+  bool IsPip() const;
 
   // True if the window's state type is WindowStateType::MAXIMIZED,
   // WindowStateType::FULLSCREEN or WindowStateType::PINNED.
