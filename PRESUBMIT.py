@@ -658,7 +658,9 @@ _KNOWN_ROBOTS = set(
     for s in ('afdo', 'angle', 'catapult', 'chromite', 'depot-tools',
               'fuchsia-sdk', 'nacl', 'pdfium', 'perfetto', 'skia',
               'src-internal', 'webrtc')
-  ) | set('%s@appspot.gserviceaccount.com' % s for s in ('findit-for-me',))
+  ) | set('%s@appspot.gserviceaccount.com' % s for s in ('findit-for-me',)
+  ) | set('%s@chops-service-accounts.iam.gserviceaccount.com' % s
+    for s in ('v8-ci-autoroll-builder'))
 
 
 def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
