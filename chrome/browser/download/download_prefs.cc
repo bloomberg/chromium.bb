@@ -162,6 +162,16 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   prompt_for_download_.Init(prefs::kPromptForDownload, prefs);
 #if defined(OS_ANDROID)
   prompt_for_download_android_.Init(prefs::kPromptForDownloadAndroid, prefs);
+
+  // If |kDownloadsLocationChange| is not enabled, always uses the default
+  // download location, in case that the feature is enabled and then disabled
+  // from finch config and the user may stuck at other download locations.
+  if (!base::FeatureList::IsEnabled(features::kDownloadsLocationChange)) {
+    prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
+                       GetDefaultDownloadDirectoryForProfile());
+    prefs->SetFilePath(prefs::kSaveFileDefaultDirectory,
+                       GetDefaultDownloadDirectoryForProfile());
+  }
 #endif
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
   save_file_path_.Init(prefs::kSaveFileDefaultDirectory, prefs);
