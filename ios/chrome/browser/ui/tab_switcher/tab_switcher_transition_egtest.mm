@@ -564,6 +564,16 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   [ChromeEarlGreyUI openNewTab];
 }
 
+// Tests switching back and forth between the normal and incognito BVCs many
+// times.  This is a regression test for https://crbug.com/851954.
+- (void)testSwappingBVCModesManyTimesWithoutEnteringSwitcher {
+  for (int ii = 0; ii < 10; ++ii) {
+    // Opening a new tab from the menu will force a change in BVC.
+    [ChromeEarlGreyUI openNewIncognitoTab];
+    [ChromeEarlGreyUI openNewTab];
+  }
+}
+
 // Tests rotating the device while the switcher is not active.  This is a
 // regression test case for https://crbug.com/789975.
 - (void)testRotationsWhileSwitcherIsNotActive {

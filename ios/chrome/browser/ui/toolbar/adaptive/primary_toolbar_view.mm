@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
 
+#import "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
@@ -285,6 +286,18 @@
     [self.leadingStackView.heightAnchor
         constraintEqualToConstant:kAdaptiveToolbarButtonHeight],
   ]];
+
+  // When switching between incognito and non-incognito BVCs, it is possible for
+  // all of the toolbar's buttons to be temporarily hidden, which results in the
+  // stack view having zero width.  This seems to permanently break autolayout
+  // on iOS 10.  Adding an optional width constraint seems to work around this
+  // issue.  See https://crbug.com/851954.
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    NSLayoutConstraint* minWidthConstraint =
+        [self.leadingStackView.widthAnchor constraintEqualToConstant:1.0];
+    minWidthConstraint.priority = UILayoutPriorityDefaultLow;
+    minWidthConstraint.active = YES;
+  }
 
   // LocationBar constraints.
   self.locationBarHeight = [self.locationBarContainer.heightAnchor
