@@ -1335,6 +1335,8 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-ite
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/mozilla/flexbox-sizing-vert-1.xhtml [ Skip ]
 
 ### virtual/layout_ng_experimental/external/wpt/css/css-flexbox/
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/item-with-table-with-infinite-max-intrinsic-width.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/table-with-infinite-max-intrinsic-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/Flexible-order.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/abspos-autopos-htb-ltr.html [ Skip ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/abspos-autopos-htb-rtl.html [ Skip ]
