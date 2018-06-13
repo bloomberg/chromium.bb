@@ -506,7 +506,6 @@
     <dimen name="selectable_list_layout_row_padding">16dp</dimen>
     <dimen name="selectable_list_action_bar_end_padding">6dp</dimen>
     <dimen name="toolbar_wide_display_start_offset">13dp</dimen>
-    <dimen name="toolbar_modern_search_view_start_offset">4dp</dimen>
     <dimen name="search_toolbar_modern_bg_top_bottom_inset">8dp</dimen>
     <dimen name="search_toolbar_modern_bg_lateral_inset">8dp</dimen>
     <dimen name="selectable_list_toolbar_nav_button_start_offset">4dp</dimen>

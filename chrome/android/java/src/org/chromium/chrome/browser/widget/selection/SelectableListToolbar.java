@@ -122,7 +122,6 @@ public class SelectableListToolbar<E>
 
     private UiConfig mUiConfig;
     private int mWideDisplayStartOffsetPx;
-    private int mModernSearchViewStartOffsetPx;
     private int mModernNavButtonStartOffsetPx;
     private int mModernToolbarActionMenuEndOffsetPx;
     private int mModernToolbarSearchIconOffsetPx;
@@ -179,8 +178,6 @@ public class SelectableListToolbar<E>
         mSelectionDelegate = delegate;
         mSelectionDelegate.addObserver(this);
 
-        mModernSearchViewStartOffsetPx = getResources().getDimensionPixelSize(
-                R.dimen.toolbar_modern_search_view_start_offset);
         mModernNavButtonStartOffsetPx = getResources().getDimensionPixelSize(
                 R.dimen.selectable_list_toolbar_nav_button_start_offset);
         mModernToolbarActionMenuEndOffsetPx = getResources().getDimensionPixelSize(
@@ -540,9 +537,9 @@ public class SelectableListToolbar<E>
             params.setMargins(0, params.topMargin, 0, params.bottomMargin);
         }
         setLayoutParams(params);
-        // Navigation button should have more padding start in the modern search view.
-        if (isModernSearchViewEnabled) paddingStartOffset += mModernSearchViewStartOffsetPx;
 
+        // Navigation button should have more start padding in order to keep the navigation icon
+        // and the list item icon aligned.
         int navigationButtonStartOffsetPx =
                 mNavigationButton != NAVIGATION_BUTTON_NONE ? mModernNavButtonStartOffsetPx : 0;
 
