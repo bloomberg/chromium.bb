@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -18,6 +17,7 @@
 #include "gpu/config/gpu_util.h"
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
+#include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -88,7 +88,7 @@ bool GetSandboxTypeFromCommandLine(service_manager::SandboxType* sandbox_type) {
   if (service_manager::IsUnsandboxedSandboxType(*sandbox_type))
     return false;
 
-  if (command_line->HasSwitch(switches::kV2SandboxedEnabled)) {
+  if (command_line->HasSwitch(sandbox::switches::kSeatbeltClientName)) {
     CHECK(sandbox::Seatbelt::IsSandboxed());
     // Do not enable the sandbox if V2 is already enabled.
     return false;

@@ -17,8 +17,6 @@
 #include <unistd.h>
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "chrome/common/chrome_version.h"
 
@@ -29,62 +27,6 @@
 namespace {
 
 typedef int (*ChromeMainPtr)(int, char**);
-
-#if defined(HELPER_EXECUTABLE)
-// The command line parameter to engage the v2 sandbox.
-constexpr char v2_sandbox_arg[] = "--v2-sandbox";
-// The command line paramter indicating that the v2 sandbox is enabled. This
-// must be different than the "v2-sandbox" flag to avoid endless re-executing.
-// The flag tells the sandbox initialization code inside Chrome that the sandbox
-// should already be enabled.
-// TODO(kerrnel): Remove this once the V2 sandbox migration is complete.
-constexpr char v2_sandbox_enabled_arg[] = "--v2-sandbox-enabled";
-// The command line parameter for the file descriptor used to receive the
-// sandbox policy.
-constexpr char fd_mapping_arg[] = "--fd_mapping=";
-
-void SandboxInit(const char* exec_path,
-                 int argc,
-                 char* argv[],
-                 int fd_mapping) {
-  char rp[MAXPATHLEN];
-  if (realpath(exec_path, rp) == NULL) {
-    perror("realpath");
-    abort();
-  }
-
-  sandbox::SeatbeltExecServer server(fd_mapping);
-
-  // The name of the parameter containing the executable path.
-  const std::string exec_param = "EXECUTABLE_PATH";
-  // The name of the parameter containg the pid of this process.
-  const std::string pid_param = "CURRENT_PID";
-
-  if (!server.SetParameter(exec_param, rp) ||
-      !server.SetParameter(pid_param, std::to_string(getpid()))) {
-    fprintf(stderr, "Failed to set up parameters for sandbox.\n");
-    abort();
-  }
-
-  if (!server.InitializeSandbox()) {
-    fprintf(stderr, "Failed to initialize sandbox.\n");
-    abort();
-  }
-
-  std::vector<char*> new_argv;
-  for (int i = 0; i < argc; ++i) {
-    if (strcmp(argv[i], v2_sandbox_arg) != 0 &&
-        strncmp(argv[i], fd_mapping_arg, strlen(fd_mapping_arg)) != 0) {
-      new_argv.push_back(argv[i]);
-    }
-  }
-  // Tell Chrome that the sandbox should already be enabled.
-  // Note that execv() is documented to treat the argv as constants, so the
-  // const_cast is safe.
-  new_argv.push_back(const_cast<char*>(v2_sandbox_enabled_arg));
-  new_argv.push_back(nullptr);
-}
-#endif  // defined(HELPER_EXECUTABLE)
 
 }  // namespace
 
@@ -104,26 +46,19 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
   }
 
 #if defined(HELPER_EXECUTABLE)
-  bool enable_v2_sandbox = false;
-  int fd_mapping = -1;
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], v2_sandbox_arg) == 0) {
-      enable_v2_sandbox = true;
-    } else if (strncmp(argv[i], fd_mapping_arg, strlen(fd_mapping_arg)) == 0) {
-      // Parse --fd_mapping=X to get the file descriptor X.
-      std::string arg(argv[i]);
-      std::string fd_str = arg.substr(strlen(fd_mapping_arg), arg.length());
-      fd_mapping = std::stoi(fd_str);
+  sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
+      sandbox::SeatbeltExecServer::CreateFromArguments(exec_path.get(), argc,
+                                                       argv);
+  if (seatbelt.sandbox_required) {
+    if (!seatbelt.server) {
+      fprintf(stderr, "Failed to create seatbelt sandbox server.\n");
+      abort();
+    }
+    if (!seatbelt.server->InitializeSandbox()) {
+      fprintf(stderr, "Failed to initialize sandbox.\n");
+      abort();
     }
   }
-  if (enable_v2_sandbox && fd_mapping == -1) {
-    fprintf(stderr, "Must pass a valid file descriptor to --fd_mapping.\n");
-    abort();
-  }
-
-  // SandboxInit enables the sandbox and then returns.
-  if (enable_v2_sandbox)
-    SandboxInit(exec_path.get(), argc, argv, fd_mapping);
 
   const char rel_path[] =
       "../../../" PRODUCT_FULLNAME_STRING

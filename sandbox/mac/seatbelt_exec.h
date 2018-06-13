@@ -13,6 +13,19 @@
 
 namespace sandbox {
 
+namespace switches {
+
+// This switch is set by the process running the SeatbeltExecClient. It
+// specifies the FD number from which the SeatbeltExecServer should read the
+// sandbox profile and parameters. This is prefixed with "--" and ends with "="
+// for easier processing in C.
+SEATBELT_EXPORT extern const char kSeatbeltClient[];
+
+// This is the same as kSeatbeltClient without the prefix and suffix.
+SEATBELT_EXPORT extern const char kSeatbeltClientName[];
+
+}  // namespace switches
+
 // SeatbeltExecClient is used by the process that is launching another sandboxed
 // process. The API allows the launcher process to supply a sandbox profile and
 // parameters, which will be communicated to the sandboxed process over IPC.
@@ -65,9 +78,29 @@ class SEATBELT_EXPORT SeatbeltExecClient {
 // the profile, sandboxing the process.
 class SEATBELT_EXPORT SeatbeltExecServer {
  public:
-  // |sandbox_fd| should be the result of SendProfileAndGetFD().
+  // Creates a server instance with |server_fd| being the pipe returned from
+  // SeatbeltExecClient::GetReadFD(). To sandbox the process,
+  // InitializeSandbox() must be called.
   explicit SeatbeltExecServer(int sandbox_fd);
   ~SeatbeltExecServer();
+
+  // CreateFromArguments parses the command line arguments for the
+  // kSeatbeltClient flag. If no flag is present, then |sandbox_required| is
+  // false and |server| is nullptr. If the flag is present, then
+  // |sandbox_required| is true. If the SeatbeltExecServer was successfully
+  // created then |server| will be the result instance, upon which
+  // InitializeSandbox() must be called. If initialization fails, then |server|
+  // will be nullptr.
+  struct CreateFromArgumentsResult {
+    CreateFromArgumentsResult();
+    CreateFromArgumentsResult(CreateFromArgumentsResult&&);
+    ~CreateFromArgumentsResult();
+
+    bool sandbox_required = false;
+    std::unique_ptr<SeatbeltExecServer> server;
+  };
+  static CreateFromArgumentsResult
+  CreateFromArguments(const char* executable_path, int argc, char** argv);
 
   // Reads the policy from the client, applies the profile, and returns whether
   // or not the operation succeeds.

@@ -6,6 +6,7 @@
 #include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
@@ -170,8 +171,8 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
     // Update the command line to enable the V2 sandbox and pass the
     // communication FD to the helper executable.
-    command_line_->AppendSwitch(switches::kEnableV2Sandbox);
-    command_line_->AppendArg("--fd_mapping=" + std::to_string(pipe));
+    command_line_->AppendArg(
+        base::StringPrintf("%s%d", sandbox::switches::kSeatbeltClient, pipe));
   }
 
   // Hold the MachBroker lock for the duration of LaunchProcess. The child will
