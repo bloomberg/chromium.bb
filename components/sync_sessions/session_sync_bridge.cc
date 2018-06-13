@@ -338,6 +338,17 @@ void SessionSyncBridge::OnFaviconVisited(const GURL& page_url,
 }
 
 void SessionSyncBridge::OnSyncStarting() {
+  // |syncing_| can be non-null during testing, if ProfileSyncService is
+  // restarted without having disabled sync, because USS bridges currently do
+  // not receive a notification when sync is stopped (without actually
+  // disabling sync, e.g. browser shutdown).
+  // TODO(mastiz): Remove the workaround below once a proper signal is plumbed.
+  if (syncing_) {
+    local_session_event_router_->Stop();
+    syncing_.reset();  // Prevents metadata from being deleted.
+    change_processor()->GetControllerDelegateOnUIThread()->DisableSync();
+  }
+
   DCHECK(!syncing_);
 
   session_store_factory_.Run(base::BindOnce(

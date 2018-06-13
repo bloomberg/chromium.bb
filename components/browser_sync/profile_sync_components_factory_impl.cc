@@ -38,6 +38,7 @@
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_sessions/session_data_type_controller.h"
+#include "components/sync_sessions/session_model_type_controller.h"
 
 using base::FeatureList;
 using bookmarks::BookmarkModel;
@@ -179,8 +180,9 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       controllers.push_back(
           std::make_unique<ProxyDataTypeController>(syncer::PROXY_TABS));
       if (FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
-        controllers.push_back(std::make_unique<ModelTypeController>(
-            syncer::SESSIONS, sync_client_, ui_thread_));
+        controllers.push_back(
+            std::make_unique<sync_sessions::SessionModelTypeController>(
+                sync_client_, ui_thread_, history_disabled_pref_));
       } else {
         controllers.push_back(std::make_unique<SessionDataTypeController>(
             error_callback, sync_client_, local_device_info_provider,

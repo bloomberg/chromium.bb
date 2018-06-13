@@ -249,6 +249,7 @@ void ProfileSyncService::Initialize() {
       syncer::SyncStoppedReporter::ResultCallback());
 
   if (base::FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
+    DCHECK(sync_client_->GetSyncSessionsClient());
     sessions_sync_manager_ = std::make_unique<sync_sessions::SessionSyncBridge>(
         sync_client_->GetSyncSessionsClient(), &sync_prefs_,
         local_device_.get(), model_type_store_factory_,

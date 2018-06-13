@@ -315,8 +315,8 @@ class ProfileSyncService : public syncer::SyncService,
       syncer::SyncTypePreferenceProvider* provider) const;
 
   // Returns the SyncableService or USS bridge for syncer::SESSIONS.
-  virtual syncer::SyncableService* GetSessionsSyncableService();
-  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  syncer::SyncableService* GetSessionsSyncableService();
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetSessionSyncControllerDelegateOnUIThread();
 
   // Returns the ModelTypeControllerDelegate for syncer::BOOKMARKS.

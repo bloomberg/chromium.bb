@@ -1167,51 +1167,6 @@ TEST_F(ProfileSyncServiceTest, LocalBackendDisabledByPolicy) {
   EXPECT_TRUE(service()->IsSyncActive());
 }
 
-// The OpenTabsUIDelegate should not be accessible when PROXY_TABS is not
-// enabled.
-TEST_F(ProfileSyncServiceTest, GetOpenTabsUIDelegateNullIfDisabled) {
-  CreateService(ProfileSyncService::AUTO_START);
-
-  ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
-      .WillByDefault(testing::InvokeWithoutArgs([=]() {
-        auto controller =
-            std::make_unique<syncer::FakeDataTypeController>(syncer::SESSIONS);
-        // Progress the controller to RUNNING first, which is how the
-        // service determines whether a type is enabled.
-        controller->StartAssociating(base::DoNothing());
-        controller->FinishStart(syncer::DataTypeController::OK_FIRST_RUN);
-
-        syncer::DataTypeController::TypeVector controllers;
-        controllers.push_back(std::move(controller));
-        return controllers;
-      }));
-
-  InitializeForNthSync();
-  EXPECT_EQ(nullptr, service()->GetOpenTabsUIDelegate());
-}
-
-// The OpenTabsUIDelegate should be accessible when PROXY_TABS is enabled.
-TEST_F(ProfileSyncServiceTest, GetOpenTabsUIDelegateNotNullIfEnabled) {
-  CreateService(ProfileSyncService::AUTO_START);
-
-  ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
-      .WillByDefault(testing::InvokeWithoutArgs([=]() {
-        auto controller = std::make_unique<syncer::FakeDataTypeController>(
-            syncer::PROXY_TABS);
-        // Progress the controller to RUNNING first, which is how the
-        // service determines whether a type is enabled.
-        controller->StartAssociating(base::DoNothing());
-        controller->FinishStart(syncer::DataTypeController::OK_FIRST_RUN);
-
-        syncer::DataTypeController::TypeVector controllers;
-        controllers.push_back(std::move(controller));
-        return controllers;
-      }));
-
-  InitializeForNthSync();
-  EXPECT_NE(nullptr, service()->GetOpenTabsUIDelegate());
-}
-
 // Test ConfigureDataTypeManagerReason on First and Nth start.
 TEST_F(ProfileSyncServiceTest, ConfigureDataTypeManagerReason) {
   const syncer::DataTypeManager::ConfigureResult configure_result(

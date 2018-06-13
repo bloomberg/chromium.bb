@@ -145,6 +145,15 @@ class SingleClientSessionsSyncTest : public UssSwitchToggler, public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTest);
 };
 
+IN_PROC_BROWSER_TEST_P(SingleClientSessionsSyncTest,
+                       RequireProxyTabsForUiDelegate) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+  EXPECT_NE(nullptr, GetClient(0)->service()->GetOpenTabsUIDelegate());
+  ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::PROXY_TABS));
+  EXPECT_EQ(nullptr, GetClient(0)->service()->GetOpenTabsUIDelegate());
+}
+
 IN_PROC_BROWSER_TEST_P(SingleClientSessionsSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
