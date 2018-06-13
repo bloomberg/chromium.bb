@@ -263,6 +263,8 @@ base::Value ConvertCollectionImageToDict(
   images.GetList().reserve(collection_image.size());
   for (const CollectionImage& image : collection_image) {
     base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetKey("thumbnailImageUrl",
+                base::Value(image.thumbnail_image_url.spec()));
     dict.SetKey("imageUrl", base::Value(image.image_url.spec()));
     dict.SetKey("collectionId", base::Value(image.collection_id));
     base::Value attributions(base::Value::Type::LIST);
