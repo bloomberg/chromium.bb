@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.12'
+__version__ = '0.13'
 
 import collections
 import datetime
@@ -147,6 +147,7 @@ NewTaskRequest = collections.namedtuple(
       'service_account',
       'tags',
       'user',
+      'pool_task_template',
     ])
 
 
@@ -1009,6 +1010,14 @@ def add_trigger_options(parser):
            'bot itself is using to authenticate to Swarming. Don\'t use task '
            'service accounts if not given (default).')
   group.add_option(
+      '--pool-task-template',
+      choices=('AUTO', 'CANARY_PREFER', 'CANARY_NEVER', 'SKIP'),
+      default='AUTO',
+      help='Set how you want swarming to apply the pool\'s TaskTemplate. '
+           'By default, the pool\'s TaskTemplate is automatically selected, '
+           'according the pool configuration on the server. Choices are: '
+           'AUTO, CANARY_PREFER, CANARY_NEVER, and SKIP (default: AUTO).')
+  group.add_option(
       '-o', '--output', action='append', default=[], metavar='PATH',
       help='A list of files to return in addition to those written to '
            '${ISOLATED_OUTDIR}. An error will occur if a file specified by'
@@ -1160,7 +1169,8 @@ def process_trigger_options(parser, options, args):
       task_slices=[task_slice],
       service_account=options.service_account,
       tags=options.tags,
-      user=options.user)
+      user=options.user,
+      pool_task_template=options.pool_task_template)
 
 
 class TaskOutputStdoutOption(optparse.Option):

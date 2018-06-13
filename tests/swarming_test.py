@@ -120,6 +120,7 @@ def gen_request_data(properties=None, **kwargs):
   out = {
     'name': 'unit_tests',
     'parent_task_id': '',
+    'pool_task_template': 'AUTO',
     'priority': 101,
     'task_slices': [
       {
@@ -294,7 +295,8 @@ class TestIsolated(auto_stub.TestCase, Common):
         outdir = os.path.join(self.tempdir, 'out')
         self.assertTrue(os.path.isdir(outdir))
         self.assertEqual(
-            [sys.executable, u'main.py', u'foo', outdir, '--bar'], cmd)
+            [sys.executable, u'main.py', u'foo', os.path.realpath(outdir),
+             '--bar'], cmd)
         expected = os.environ.copy()
         expected['SWARMING_TASK_ID'] = 'reproduce'
         expected['SWARMING_BOT_ID'] = 'reproduce'
@@ -345,6 +347,7 @@ class TestSwarmingTrigger(NetTestCase):
     task_request = swarming.NewTaskRequest(
         name=TEST_NAME,
         parent_task_id=None,
+        pool_task_template='AUTO',
         priority=101,
         task_slices=[
           swarming.TaskSlice(
@@ -426,6 +429,7 @@ class TestSwarmingTrigger(NetTestCase):
     task_request = swarming.NewTaskRequest(
         name=TEST_NAME,
         parent_task_id='123',
+        pool_task_template='AUTO',
         priority=101,
         task_slices=[
           swarming.TaskSlice(
@@ -492,6 +496,7 @@ class TestSwarmingTrigger(NetTestCase):
     task_request = swarming.NewTaskRequest(
         name=TEST_NAME,
         parent_task_id='123',
+        pool_task_template='AUTO',
         priority=101,
         task_slices=[
           swarming.TaskSlice(
@@ -922,6 +927,7 @@ class TestMain(NetTestCase):
     request = {
       'name': u'None/foo=bar',
       'parent_task_id': '',
+      'pool_task_template': 'AUTO',
       'priority': 100,
       'task_slices': [
         {
@@ -975,6 +981,7 @@ class TestMain(NetTestCase):
     request = {
       'name': u'None/foo=bar/' + FILE_HASH,
       'parent_task_id': '',
+      'pool_task_template': 'AUTO',
       'priority': 100,
       'task_slices': [
         {
@@ -1032,6 +1039,7 @@ class TestMain(NetTestCase):
     request = {
       'name': u'None/foo=bar',
       'parent_task_id': '',
+      'pool_task_template': 'AUTO',
       'priority': 100,
       'task_slices': [
         {
@@ -1220,6 +1228,7 @@ class TestMain(NetTestCase):
           'request': {
             'name': 'unit_tests',
             'parent_task_id': '',
+            'pool_task_template': 'AUTO',
             'priority': 101,
             'task_slices': [
               {
@@ -1566,6 +1575,7 @@ class TestMain(NetTestCase):
       'name': u'None/foo=bar',
       'parent_task_id': '',
       'priority': 100,
+      'pool_task_template': 'AUTO',
       'task_slices': [
         {
           'expiration_secs': 21600,
