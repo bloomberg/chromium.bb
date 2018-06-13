@@ -3204,7 +3204,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
         <ph name="ITEM_NAME">%1$s<ex>item_name</ex></ph> (<ph name="ITEM_ID">%2$s<ex>item id</ex></ph>)
       </message>
 
-      <!-- WebAPK related strings -->
+      <!-- WebAPK/TWA related strings -->
       <message name="IDS_WEBAPK_RUNNING_IN_CHROME_DISCLOSURE" desc="Message on the notification that indicates a WebApk may use Chrome data.">
         This app is running in Chrome.
       </message>
@@ -3225,6 +3225,9 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       </message>
       <message name="IDS_WEBAPP_NETWORK_ERROR_MESSAGE_TUNNEL_CONNECTION_FAILED" desc="The error message for ERROR_TUNNEL_CONNECTION_FAILED.">
         Establishing a tunnel via proxy server failed
+      </message>
+      <message name="IDS_TWA_RUNNING_IN_CHROME" desc="Disclosure on opening a TWA that it may use Chrome data. Shown on a Toast." translateable="false">
+        Running in Chrome.
       </message>
 
       <!-- Keyboard shortcuts in Android N-->
