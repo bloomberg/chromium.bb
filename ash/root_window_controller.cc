@@ -591,8 +591,7 @@ void RootWindowController::DeactivateKeyboard(
 
     // Virtual keyboard may be deactivated while still showing, hide the
     // keyboard before removing it from view hierarchy.
-    keyboard_controller->HideKeyboard(
-        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+    keyboard_controller->HideKeyboardExplicitlyBySystem();
     aura::Window* vk_container =
         GetContainer(kShellWindowId_VirtualKeyboardContainer);
     DCHECK(vk_container);

@@ -371,7 +371,7 @@ void KeyboardController::MoveToDisplayWithTransition(
     gfx::Rect new_bounds_in_local) {
   queued_display_change_ =
       std::make_unique<QueuedDisplayChange>(display, new_bounds_in_local);
-  HideKeyboard(HIDE_REASON_AUTOMATIC);
+  HideKeyboardTemporarilyForTransition();
 }
 
 void KeyboardController::HideKeyboard(HideReason reason) {
@@ -389,12 +389,32 @@ void KeyboardController::HideKeyboard(HideReason reason) {
     case KeyboardControllerState::SHOWN: {
       SetTouchEventLogging(true /* enable */);
 
-      if (reason == HIDE_REASON_AUTOMATIC) {
-        keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_HIDE_AUTO);
-        time_of_last_blur_ = base::Time::Now();
-      } else {
-        keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_HIDE_USER);
-        time_of_last_blur_ = base::Time::UnixEpoch();
+      // Log whether this was a user or system (automatic) action.
+      switch (reason) {
+        case HIDE_REASON_SYSTEM_EXPLICIT:
+        case HIDE_REASON_SYSTEM_IMPLICIT:
+        case HIDE_REASON_SYSTEM_TEMPORARY:
+          keyboard::LogKeyboardControlEvent(
+              keyboard::KEYBOARD_CONTROL_HIDE_AUTO);
+          break;
+        case HIDE_REASON_USER_EXPLICIT:
+          keyboard::LogKeyboardControlEvent(
+              keyboard::KEYBOARD_CONTROL_HIDE_USER);
+          break;
+      }
+
+      // Decide whether regaining focus in a web-based text field should cause
+      // the keyboard to come back.
+      switch (reason) {
+        case HIDE_REASON_SYSTEM_IMPLICIT:
+          time_of_last_blur_ = base::Time::Now();
+          break;
+
+        case HIDE_REASON_SYSTEM_TEMPORARY:
+        case HIDE_REASON_SYSTEM_EXPLICIT:
+        case HIDE_REASON_USER_EXPLICIT:
+          time_of_last_blur_ = base::Time::UnixEpoch();
+          break;
       }
 
       NotifyContentsBoundsChanging(gfx::Rect());
@@ -430,7 +450,19 @@ void KeyboardController::HideKeyboard(HideReason reason) {
   }
 }
 
-void KeyboardController::MaybeHideKeyboard() {
+void KeyboardController::HideKeyboardByUser() {
+  HideKeyboard(HIDE_REASON_USER_EXPLICIT);
+}
+
+void KeyboardController::HideKeyboardTemporarilyForTransition() {
+  HideKeyboard(HIDE_REASON_SYSTEM_TEMPORARY);
+}
+
+void KeyboardController::HideKeyboardExplicitlyBySystem() {
+  HideKeyboard(HIDE_REASON_SYSTEM_EXPLICIT);
+}
+
+void KeyboardController::HideKeyboardImplicitlyBySystem() {
   if (state_ != KeyboardControllerState::SHOWN || keyboard_locked())
     return;
 
@@ -440,8 +472,12 @@ void KeyboardController::MaybeHideKeyboard() {
       FROM_HERE,
       base::BindOnce(&KeyboardController::HideKeyboard,
                      weak_factory_will_hide_.GetWeakPtr(),
-                     HIDE_REASON_AUTOMATIC),
+                     HIDE_REASON_SYSTEM_IMPLICIT),
       base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
+}
+
+void KeyboardController::DismissVirtualKeyboard() {
+  HideKeyboardByUser();
 }
 
 void KeyboardController::HideAnimationFinished() {
@@ -560,7 +596,7 @@ void KeyboardController::OnTextInputStateChanged(
         show_on_content_update_ = false;
         return;
       case KeyboardControllerState::SHOWN:
-        MaybeHideKeyboard();
+        HideKeyboardImplicitlyBySystem();
         return;
       default:
         return;
@@ -833,7 +869,7 @@ void KeyboardController::SetContainerType(
     // container type.
     queued_container_type_ = std::make_unique<QueuedContainerType>(
         this, type, target_bounds, std::move(callback));
-    HideKeyboard(HIDE_REASON_AUTOMATIC);
+    HideKeyboard(HIDE_REASON_SYSTEM_TEMPORARY);
   } else {
     // Keyboard is hidden. Switching the container type immediately and invoking
     // the passed callback now.
@@ -856,10 +892,6 @@ bool KeyboardController::DisplayVirtualKeyboard() {
     return true;
   }
   return false;
-}
-
-void KeyboardController::DismissVirtualKeyboard() {
-  HideKeyboard(HIDE_REASON_MANUAL);
 }
 
 void KeyboardController::AddObserver(

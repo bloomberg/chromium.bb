@@ -111,8 +111,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
   EXPECT_TRUE(IsKeyboardVisible());
 
   // Simulate hide keyboard by pressing hide key on the virtual keyboard.
-  keyboard::KeyboardController::Get()->HideKeyboard(
-      keyboard::KeyboardController::HIDE_REASON_MANUAL);
+  keyboard::KeyboardController::Get()->HideKeyboardByUser();
   EXPECT_FALSE(IsKeyboardVisible());
 
   MockEnableIMEInDifferentExtension("chrome-extension://domain-2", test_bounds);
@@ -252,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, OpenAndCloseAndOpen) {
             keyboard::KeyboardControllerState::LOADING_EXTENSION);
   WaitControllerStateChangesTo(keyboard::KeyboardControllerState::SHOWN);
 
-  controller->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  controller->HideKeyboardExplicitlyBySystem();
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::HIDDEN);
 

@@ -100,7 +100,7 @@ bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
 
   // Pass HIDE_REASON_MANUAL since calls to HideKeyboard as part of this API
   // would be user generated.
-  controller->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_MANUAL);
+  controller->HideKeyboardByUser();
   return true;
 }
 

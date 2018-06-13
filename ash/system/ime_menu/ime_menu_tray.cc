@@ -437,8 +437,7 @@ void ImeMenuTray::ShowBubble(bool show_by_click) {
       keyboard_controller->keyboard_visible()) {
     show_bubble_after_keyboard_hidden_ = true;
     keyboard_controller->AddObserver(this);
-    keyboard_controller->HideKeyboard(
-        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+    keyboard_controller->HideKeyboardExplicitlyBySystem();
   } else {
     base::RecordAction(base::UserMetricsAction("Tray_ImeMenu_Opened"));
     ShowImeMenuBubbleInternal(show_by_click);

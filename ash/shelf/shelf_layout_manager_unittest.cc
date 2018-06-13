@@ -2207,8 +2207,7 @@ TEST_F(ShelfLayoutManagerKeyboardTest,
   EXPECT_EQ(orig_work_area,
             display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 
-  kb_controller->HideKeyboard(
-      keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  kb_controller->HideKeyboardExplicitlyBySystem();
   NotifyKeyboardChanging(layout_manager, false, gfx::Rect());
   layout_manager->LayoutShelf();
   EXPECT_EQ(orig_work_area,

@@ -191,7 +191,7 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
         keyboard->NotifyContentsLoaded();
       }
     } else {
-      keyboard->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_MANUAL);
+      keyboard->HideKeyboardByUser();
     }
 
     DCHECK_EQ(show, keyboard->keyboard_visible());
