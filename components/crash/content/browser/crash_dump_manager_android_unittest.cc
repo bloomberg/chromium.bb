@@ -143,7 +143,7 @@ TEST_F(CrashDumpManagerTest, NoDumpCreated) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = false;
-  termination_info.has_oom_protection_bindings = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   base::PostTaskWithTraits(
@@ -170,7 +170,7 @@ TEST_F(CrashDumpManagerTest, NonOomCrash) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = false;
-  termination_info.has_oom_protection_bindings = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   base::PostTaskWithTraits(

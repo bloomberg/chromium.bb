@@ -28,7 +28,7 @@ base::LazyInstance<CrashDumpObserver>::DestructorAtExit g_instance =
 void PopulateTerminationInfo(
     const content::ChildProcessTerminationInfo& content_info,
     CrashDumpObserver::TerminationInfo* info) {
-  info->has_oom_protection_bindings = content_info.has_oom_protection_bindings;
+  info->binding_state = content_info.binding_state;
   info->was_killed_intentionally_by_browser =
       content_info.was_killed_intentionally_by_browser;
   info->was_oom_protected_status =

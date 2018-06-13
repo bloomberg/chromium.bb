@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 
+import org.chromium.base.ChildBindingState;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.MemoryPressureListener;
@@ -217,7 +218,7 @@ public class ChildProcessConnection {
 
     // Indicates whether the connection only has the waived binding (if the connection is unbound,
     // it contains the state at time of unbinding).
-    private volatile boolean mWaivedBoundOnly;
+    private volatile @ChildBindingState int mBindingState;
 
     // Set to true once unbind() was called.
     private boolean mUnbound;
@@ -526,7 +527,7 @@ public class ChildProcessConnection {
         }
         if (!success) return false;
 
-        updateWaivedBoundOnlyState();
+        updateBindingState();
         mWaivedBinding.bind();
         return true;
     }
@@ -563,7 +564,7 @@ public class ChildProcessConnection {
         }
         if (mStrongBindingCount == 0) {
             mStrongBinding.bind();
-            updateWaivedBoundOnlyState();
+            updateBindingState();
         }
         mStrongBindingCount++;
     }
@@ -578,7 +579,7 @@ public class ChildProcessConnection {
         mStrongBindingCount--;
         if (mStrongBindingCount == 0) {
             mStrongBinding.unbind();
-            updateWaivedBoundOnlyState();
+            updateBindingState();
         }
     }
 
@@ -595,7 +596,7 @@ public class ChildProcessConnection {
         }
         if (mModerateBindingCount == 0) {
             mModerateBinding.bind();
-            updateWaivedBoundOnlyState();
+            updateBindingState();
         }
         mModerateBindingCount++;
     }
@@ -610,7 +611,7 @@ public class ChildProcessConnection {
         mModerateBindingCount--;
         if (mModerateBindingCount == 0) {
             mModerateBinding.unbind();
-            updateWaivedBoundOnlyState();
+            updateBindingState();
         }
     }
 
@@ -618,11 +619,11 @@ public class ChildProcessConnection {
      * @return true if the connection is bound and only bound with the waived binding or if the
      * connection is unbound and was only bound with the waived binding when it disconnected.
      */
-    public boolean isWaivedBoundOnlyOrWasWhenDied() {
+    public @ChildBindingState int bindingStateCurrentOrWhenDied() {
         // WARNING: this method can be called from a thread other than the launcher thread.
         // Note that it returns the current waived bound only state and is racy. This not really
         // preventable without changing the caller's API, short of blocking.
-        return mWaivedBoundOnly;
+        return mBindingState;
     }
 
     /**
@@ -636,9 +637,16 @@ public class ChildProcessConnection {
     }
 
     // Should be called every time the mModerateBinding or mStrongBinding are bound/unbound.
-    private void updateWaivedBoundOnlyState() {
-        if (!mUnbound) {
-            mWaivedBoundOnly = !mStrongBinding.isBound() && !mModerateBinding.isBound();
+    private void updateBindingState() {
+        if (mUnbound) {
+            mBindingState = ChildBindingState.UNBOUND;
+        } else if (mStrongBinding.isBound()) {
+            mBindingState = ChildBindingState.STRONG;
+        } else if (mModerateBinding.isBound()) {
+            mBindingState = ChildBindingState.MODERATE;
+        } else {
+            assert mWaivedBinding.isBound();
+            mBindingState = ChildBindingState.WAIVED;
         }
     }
 

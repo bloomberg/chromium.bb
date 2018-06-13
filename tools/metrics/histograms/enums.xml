@@ -988,6 +988,15 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="Visible main frame renderer foreground intentional kill"/>
   <int value="10"
       label="Visible renderer foreground normal termination without minidump"/>
+  <int value="11"
+      label="Invisible renderer in foreground app with strong binding killed"/>
+  <int value="12"
+      label="Invisible renderer in foreground app with strong binding oom"/>
+  <int value="13"
+      label="Invisible renderer in foreground app with moderate binding
+             killed"/>
+  <int value="14"
+      label="Invisible renderer in foreground app with moderate binding oom"/>
 </enum>
 
 <enum name="AndroidResourceExtractionStatus">

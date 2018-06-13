@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/android/application_status_listener.h"
+#include "base/android/child_process_binding_types.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
@@ -49,7 +50,8 @@ class CrashDumpObserver : public content::BrowserChildProcessObserver,
     // Values from ChildProcessTerminationInfo.
     // Note base::TerminationStatus and exit_code are missing intentionally
     // because those fields hold no useful information on Android.
-    bool has_oom_protection_bindings = false;
+    base::android::ChildBindingState binding_state =
+        base::android::ChildBindingState::UNBOUND;
     bool was_killed_intentionally_by_browser = false;
 
     // Note this is slightly different |has_oom_protection_bindings|.

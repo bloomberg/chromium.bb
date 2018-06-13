@@ -43,7 +43,11 @@ class CrashMetricsReporter {
     kRendererCrashAll = 8,
     kRendererForegroundVisibleMainFrameIntentionalKill = 9,
     kRendererForegroundVisibleNormalTermNoMinidump = 10,
-    kMaxValue = kRendererForegroundVisibleNormalTermNoMinidump
+    kRendererForegroundInvisibleWithStrongBindingKilled = 11,
+    kRendererForegroundInvisibleWithStrongBindingOom = 12,
+    kRendererForegroundInvisibleWithModerateBindingKilled = 13,
+    kRendererForegroundInvisibleWithModerateBindingOom = 14,
+    kMaxValue = kRendererForegroundInvisibleWithModerateBindingOom
   };
   using ReportedCrashTypeSet = base::flat_set<ProcessedCrashCounts>;
 

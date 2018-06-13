@@ -173,6 +173,7 @@ jumbo_component("base") {
     "android/build_info.h",
     "android/callback_android.cc",
     "android/callback_android.h",
+    "android/child_process_binding_types.h",
     "android/child_process_service.cc",
     "android/command_line_android.cc",
     "android/content_uri_utils.cc",
@@ -3042,6 +3043,7 @@ if (is_android) {
   java_cpp_enum("base_android_java_enums_srcjar") {
     sources = [
       "android/application_status_listener.h",
+      "android/child_process_binding_types.h",
       "android/library_loader/library_load_from_apk_status_codes.h",
       "android/library_loader/library_loader_hooks.h",
       "memory/memory_pressure_listener.h",
