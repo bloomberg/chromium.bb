@@ -1276,27 +1276,29 @@ void AppsGridView::CalculateDropTarget() {
   views::View::ConvertPointToTarget(drag_view_, this, &point);
   // Ensure that the drop target location is correct if RTL.
   point.set_x(GetMirroredXInView(point.x()));
-  if (!IsPointWithinDragBuffer(point)) {
-    // Reset the reorder target to the original position if the cursor is
-    // outside the drag buffer.
-    if (IsDraggingForReparentInRootLevelGridView()) {
-      drop_attempt_ = DROP_FOR_NONE;
+  if (IsPointWithinDragBuffer(point)) {
+    if (EnableFolderDragDropUI() &&
+        CalculateFolderDropTarget(point, &folder_drop_target_)) {
+      drop_attempt_ = DROP_FOR_FOLDER;
       return;
     }
 
-    reorder_drop_target_ = drag_view_init_index_;
-    drop_attempt_ = DROP_FOR_REORDER;
+    if (CalculateReorderDropTarget(point, &reorder_drop_target_)) {
+      drop_attempt_ = DROP_FOR_REORDER;
+      return;
+    }
+  }
+
+  // Reset the reorder target to the original position if the cursor is outside
+  // the drag buffer or an item is dragged to a full page either from a folder
+  // or another page.
+  if (IsDraggingForReparentInRootLevelGridView()) {
+    drop_attempt_ = DROP_FOR_NONE;
     return;
   }
 
-  if (EnableFolderDragDropUI() &&
-      CalculateFolderDropTarget(point, &folder_drop_target_)) {
-    drop_attempt_ = DROP_FOR_FOLDER;
-    return;
-  }
-
+  reorder_drop_target_ = drag_view_init_index_;
   drop_attempt_ = DROP_FOR_REORDER;
-  CalculateReorderDropTarget(point, &reorder_drop_target_);
 }
 
 bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
@@ -1340,7 +1342,7 @@ bool AppsGridView::CalculateFolderDropTarget(const gfx::Point& point,
   return true;
 }
 
-void AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
+bool AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
                                               GridIndex* drop_target) const {
   gfx::Rect bounds = GetContentsBounds();
   GridIndex grid_index = GetNearestTileIndexForPoint(point);
@@ -1371,7 +1373,15 @@ void AppsGridView::CalculateReorderDropTarget(const gfx::Point& point,
       std::min(GridIndex(pagination_model_.selected_page(), row * cols_ + col),
                GetLastTargetIndexOfPage(pagination_model_.selected_page()));
 
+  // Dragging to a full page is not allowed when apps grid gap is enabled.
+  if (IsAppsGridGapEnabled() && view_structure_.IsFullPage(drop_target->page) &&
+      (drag_start_page_ != drop_target->page ||
+       IsDraggingForReparentInRootLevelGridView())) {
+    return false;
+  }
+
   DCHECK(IsValidReorderTargetIndex(*drop_target));
+  return true;
 }
 
 void AppsGridView::OnReorderTimer() {

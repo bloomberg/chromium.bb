@@ -313,4 +313,11 @@ bool PagedViewStructure::IsValidReorderTargetIndex(
   return false;
 }
 
+bool PagedViewStructure::IsFullPage(int page_index) const {
+  if (page_index >= total_pages())
+    return false;
+  return static_cast<int>(pages_[page_index].size()) ==
+         apps_grid_view_->TilesPerPage(page_index);
+}
+
 }  // namespace app_list

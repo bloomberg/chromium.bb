@@ -1348,7 +1348,7 @@ TEST_P(AppsGridGapTest, MoveLastItemToNewEmptyPage) {
   EXPECT_EQ(std::string("Item 0"), model_->GetModelContent());
 }
 
-TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
+TEST_P(AppsGridGapTest, MoveItemToPreviousFullPageNotAllowed) {
   const int kApps = 1 + GetTilesPerPage(0);
   model_->PopulateApps(kApps);
 
@@ -1385,33 +1385,30 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
   GetPaginationModel()->SelectPage(1, false);
   SimulateDragToNeighborPage(false /* next_page */, from, to_in_previous_page);
 
-  // The last item becomes the first item in first page and the last item in
-  // first page is squeezed to the second page.
+  // The dragging is not successfull, so nothing changes visually.
   EXPECT_EQ("0", page_flip_waiter_->selected_pages());
   EXPECT_EQ(0, GetPaginationModel()->selected_page());
   TestAppListItemViewIndice();
   EXPECT_EQ(kApps, view_model->view_size());
   EXPECT_EQ(view_model->view_at(0),
             test_api_->GetViewAtVisualIndex(0 /* page */, 0 /* slot */));
-  EXPECT_EQ("Item " + std::to_string(kApps - 1),
-            view_model->view_at(0)->item()->id());
-  for (int i = 1; i < kApps - 1; ++i) {
+  for (int i = 0; i < kApps - 1; ++i) {
     EXPECT_EQ(view_model->view_at(i),
               test_api_->GetViewAtVisualIndex(0 /* page */, i /* slot */));
-    EXPECT_EQ("Item " + std::to_string(i - 1),
+    EXPECT_EQ("Item " + std::to_string(i),
               view_model->view_at(i)->item()->id());
   }
   EXPECT_EQ(view_model->view_at(kApps - 1),
             test_api_->GetViewAtVisualIndex(1 /* page */, 0 /* slot */));
-  EXPECT_EQ("Item " + std::to_string(kApps - 2),
+  EXPECT_EQ("Item " + std::to_string(kApps - 1),
             view_model->view_at(kApps - 1)->item()->id());
 
   // A "page break" item is added to split the pages.
-  EXPECT_EQ(
-      std::string("Item 20,Item 0,Item 1,Item 2,Item 3,Item 4,Item 5,Item "
-                  "6,Item 7,Item 8,Item 9,Item 10,Item 11,Item 12,Item 13,Item "
-                  "14,Item 15,Item 16,Item 17,Item 18,PageBreakItem,Item 19"),
-      model_->GetModelContent());
+  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3,Item 4,Item 5,Item 6,Item "
+                        "7,Item 8,Item 9,Item 10,Item 11,Item 12,Item 13,Item "
+                        "14,Item 15,Item 16,Item 17,Item 18,Item "
+                        "19,PageBreakItem,Item 20"),
+            model_->GetModelContent());
 }
 
 }  // namespace test

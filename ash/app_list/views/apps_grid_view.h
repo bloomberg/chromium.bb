@@ -359,8 +359,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                                  GridIndex* drop_target) const;
 
   // Calculates the reorder target |point| and sets |drop_target| to the index
-  // of the view to reorder.
-  void CalculateReorderDropTarget(const gfx::Point& point,
+  // of the view to reorder. Returns true if |drop_target| is calculated
+  // successfully.
+  bool CalculateReorderDropTarget(const gfx::Point& point,
                                   GridIndex* drop_target) const;
 
   // Prepares |drag_and_drop_host_| for dragging. |grid_location| contains
