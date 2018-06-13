@@ -40,14 +40,6 @@ using ::testing::Return;
 
 using media::AudioParameters;
 
-namespace webrtc {
-
-bool operator==(const webrtc::Point& lhs, const webrtc::Point& rhs) {
-  return lhs.x() == rhs.x() && lhs.y() == rhs.y() && lhs.z() == rhs.z();
-}
-
-}  // namespace webrtc
-
 namespace content {
 
 namespace {
