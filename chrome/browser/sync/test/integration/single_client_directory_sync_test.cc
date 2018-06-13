@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 // not exist.
 // If this test fails, see the definition of kNumEntriesRequiredForCorruption
 // for one possible cause.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_DeleteDirectoryWhenCorrupted DISABLED_DeleteDirectoryWhenCorrupted
 #else
 #define MAYBE_DeleteDirectoryWhenCorrupted DeleteDirectoryWhenCorrupted
