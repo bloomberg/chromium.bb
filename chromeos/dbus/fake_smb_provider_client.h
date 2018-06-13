@@ -107,8 +107,17 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
                           uint16_t transaction_id,
                           ParseNetBiosPacketCallback callback) override;
 
+  // Adds |share| to the list of shares for |server_url| in |shares_|.
+  void AddToShares(const std::string& server_url, const std::string& share);
+
+  // Clears |shares_|.
+  void ClearShares();
+
  private:
   std::map<uint8_t, std::vector<std::string>> netbios_parse_results_;
+
+  // Mapping of a server url to its shares.
+  std::map<std::string, std::vector<std::string>> shares_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSmbProviderClient);
 };
