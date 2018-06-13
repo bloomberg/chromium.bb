@@ -49,10 +49,10 @@ class LocalFileReaderTest : public ::testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    worker_thread_.reset(new base::Thread("LocalFileReaderTest"));
+    worker_thread_ = std::make_unique<base::Thread>("LocalFileReaderTest");
     ASSERT_TRUE(worker_thread_->Start());
-    file_reader_.reset(
-        new LocalFileReader(worker_thread_->task_runner().get()));
+    file_reader_ =
+        std::make_unique<LocalFileReader>(worker_thread_->task_runner().get());
   }
 
   base::MessageLoop message_loop_;

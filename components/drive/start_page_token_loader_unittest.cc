@@ -4,6 +4,8 @@
 
 #include "components/drive/chromeos/start_page_token_loader.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -29,17 +31,17 @@ class StartPageTokenLoaderTest : public testing::Test {
         google_apis::kEnableTeamDrives);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    pref_service_.reset(new TestingPrefServiceSimple);
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
-    logger_.reset(new EventLogger);
+    logger_ = std::make_unique<EventLogger>();
 
-    drive_service_.reset(new FakeDriveService);
+    drive_service_ = std::make_unique<FakeDriveService>();
     ASSERT_TRUE(test_util::SetUpTestEntries(drive_service_.get()));
 
-    scheduler_.reset(new JobScheduler(
+    scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), drive_service_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr);
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
@@ -54,8 +56,8 @@ class StartPageTokenLoaderTest : public testing::Test {
                              base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
-    start_page_token_loader_.reset(
-        new StartPageTokenLoader(empty_team_drive_id_, scheduler_.get()));
+    start_page_token_loader_ = std::make_unique<StartPageTokenLoader>(
+        empty_team_drive_id_, scheduler_.get());
   }
 
   // Adds a new file to the root directory of the service.

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -65,9 +67,9 @@ class GetFileForSavingOperationTest : public OperationTestBase {
   void SetUp() override {
     OperationTestBase::SetUp();
 
-    operation_.reset(new GetFileForSavingOperation(
+    operation_ = std::make_unique<GetFileForSavingOperation>(
         logger(), blocking_task_runner(), &delegate_, scheduler(), metadata(),
-        cache(), temp_dir()));
+        cache(), temp_dir());
     operation_->file_write_watcher_for_testing()->DisableDelayForTesting();
   }
 

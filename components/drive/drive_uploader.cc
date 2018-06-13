@@ -5,6 +5,7 @@
 #include "components/drive/drive_uploader.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -198,9 +199,9 @@ CancelCallback DriveUploader::UploadNewFile(
   DCHECK(!callback.is_null());
 
   return StartUploadFile(
-      std::unique_ptr<UploadFileInfo>(
-          new UploadFileInfo(local_file_path, content_type, callback,
-                             progress_callback, wake_lock_provider_.get())),
+      std::make_unique<UploadFileInfo>(local_file_path, content_type, callback,
+                                       progress_callback,
+                                       wake_lock_provider_.get()),
       base::Bind(&DriveUploader::CallUploadServiceAPINewFile,
                  weak_ptr_factory_.GetWeakPtr(), parent_resource_id, title,
                  options, current_batch_request_));
@@ -230,9 +231,9 @@ CancelCallback DriveUploader::UploadExistingFile(
   DCHECK(!callback.is_null());
 
   return StartUploadFile(
-      std::unique_ptr<UploadFileInfo>(
-          new UploadFileInfo(local_file_path, content_type, callback,
-                             progress_callback, wake_lock_provider_.get())),
+      std::make_unique<UploadFileInfo>(local_file_path, content_type, callback,
+                                       progress_callback,
+                                       wake_lock_provider_.get()),
       base::Bind(&DriveUploader::CallUploadServiceAPIExistingFile,
                  weak_ptr_factory_.GetWeakPtr(), resource_id, options,
                  current_batch_request_));

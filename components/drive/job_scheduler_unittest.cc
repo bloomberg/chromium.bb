@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
@@ -143,18 +144,18 @@ class JobSchedulerTest : public testing::Test {
   }
 
   void SetUp() override {
-    fake_network_change_notifier_.reset(
-        new test_util::FakeNetworkChangeNotifier);
+    fake_network_change_notifier_ =
+        std::make_unique<test_util::FakeNetworkChangeNotifier>();
 
-    logger_.reset(new EventLogger);
+    logger_ = std::make_unique<EventLogger>();
 
-    fake_drive_service_.reset(new CancelTestableFakeDriveService);
+    fake_drive_service_ = std::make_unique<CancelTestableFakeDriveService>();
     test_util::SetUpTestEntries(fake_drive_service_.get());
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
-    scheduler_.reset(new JobScheduler(
+    scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), fake_drive_service_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr);
     scheduler_->SetDisableThrottling(true);
   }
 

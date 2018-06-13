@@ -4,6 +4,8 @@
 
 #include "components/drive/chromeos/file_system/move_operation.h"
 
+#include <memory>
+
 #include "components/drive/file_change.h"
 #include "components/drive/file_system/operation_test_base.h"
 #include "content/public/test/test_utils.h"
@@ -17,9 +19,8 @@ class MoveOperationTest : public OperationTestBase {
  protected:
   void SetUp() override {
    OperationTestBase::SetUp();
-   operation_.reset(new MoveOperation(blocking_task_runner(),
-                                      delegate(),
-                                      metadata()));
+   operation_ = std::make_unique<MoveOperation>(blocking_task_runner(),
+                                                delegate(), metadata());
   }
 
   std::unique_ptr<MoveOperation> operation_;

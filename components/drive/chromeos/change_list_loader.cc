@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -406,10 +407,11 @@ void ChangeListLoader::LoadChangeListFromServer(
   // Set up feed fetcher.
   bool is_delta_update = !local_start_page_token.empty();
   if (is_delta_update) {
-    change_feed_fetcher_.reset(new DeltaFeedFetcher(scheduler_, team_drive_id_,
-                                                    local_start_page_token));
+    change_feed_fetcher_ = std::make_unique<DeltaFeedFetcher>(
+        scheduler_, team_drive_id_, local_start_page_token);
   } else {
-    change_feed_fetcher_.reset(new FullFeedFetcher(scheduler_, team_drive_id_));
+    change_feed_fetcher_ =
+        std::make_unique<FullFeedFetcher>(scheduler_, team_drive_id_);
   }
 
   change_feed_fetcher_->Run(

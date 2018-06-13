@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/md5.h"
@@ -29,12 +31,9 @@ class EntryUpdatePerformerTest : public file_system::OperationTestBase {
  protected:
   void SetUp() override {
     OperationTestBase::SetUp();
-    performer_.reset(new EntryUpdatePerformer(blocking_task_runner(),
-                                              delegate(),
-                                              scheduler(),
-                                              metadata(),
-                                              cache(),
-                                              loader_controller()));
+    performer_ = std::make_unique<EntryUpdatePerformer>(
+        blocking_task_runner(), delegate(), scheduler(), metadata(), cache(),
+        loader_controller());
   }
 
   // Stores |content| to the cache and mark it as dirty.
