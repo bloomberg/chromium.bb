@@ -19,12 +19,6 @@
 # /2 Variant does not handle overlapping surfaces: https://crbug.com/846798
 -SitePerProcessHitTestBrowserTest.HitTestStaleDataDeletedView*
 
-# Flaky Result on Windows-7 http://crbug.com/883463
--MainThreadEventQueueBrowserTest.MouseMove
-
-# Uses LatencyInfo for input info https://crbug.com/791557
--MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
-
 ### Mac
 # BrowserSideFlingBrowserTest timing out https://crbug.com/842325
 -BrowserSideFlingBrowserTest.AutoscrollFling
