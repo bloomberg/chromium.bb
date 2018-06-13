@@ -7,6 +7,8 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/layout/layout_provider.h"
 
+#include <algorithm>
+
 int MaterialRefreshLayoutProvider::GetDistanceMetric(int metric) const {
   switch (metric) {
     case views::DistanceMetric::DISTANCE_CONTROL_VERTICAL_TEXT_PADDING:

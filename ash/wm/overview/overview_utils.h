@@ -10,6 +10,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
 
+#include <memory>
+
 namespace aura {
 class Window;
 }  // namespace aura
