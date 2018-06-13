@@ -18,6 +18,7 @@ DocumentModuleScriptFetcher::DocumentModuleScriptFetcher(
 }
 
 void DocumentModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
+                                        ModuleGraphLevel level,
                                         ModuleScriptFetcher::Client* client) {
   DCHECK(!client_);
   client_ = client;

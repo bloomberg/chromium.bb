@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/worklet_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/worker_fetch_test_helper.h"
 #include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
@@ -39,7 +40,8 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     FetchParameters fetch_params(resource_request);
     WorkletModuleScriptFetcher* module_fetcher =
         new WorkletModuleScriptFetcher(fetcher_.Get(), map_.Get());
-    module_fetcher->Fetch(fetch_params, client);
+    module_fetcher->Fetch(fetch_params, ModuleGraphLevel::kTopLevelModuleFetch,
+                          client);
   }
 
   void RunUntilIdle() {

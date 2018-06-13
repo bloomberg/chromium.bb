@@ -175,7 +175,7 @@ void ModuleScriptLoader::Fetch(
   // steps as part of the fetch's process response for the response response."
   // [spec text]
   module_fetcher_ = modulator_->CreateModuleScriptFetcher();
-  module_fetcher_->Fetch(fetch_params, this);
+  module_fetcher_->Fetch(fetch_params, level, this);
 }
 
 void ModuleScriptLoader::NotifyFetchFinished(

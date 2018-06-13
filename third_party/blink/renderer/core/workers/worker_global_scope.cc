@@ -357,7 +357,12 @@ WorkerGlobalScope::WorkerGlobalScope(
       creation_params->content_security_policy_parsed_headers);
   BindContentSecurityPolicyToExecutionContext();
   SetWorkerSettings(std::move(creation_params->worker_settings));
-  SetReferrerPolicy(creation_params->referrer_policy);
+
+  // For module scripts, referrer policy will be set after the top-level module
+  // script is fetched.
+  if (creation_params->script_type == ScriptType::kClassic)
+    SetReferrerPolicy(creation_params->referrer_policy);
+
   SetAddressSpace(creation_params->address_space);
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());

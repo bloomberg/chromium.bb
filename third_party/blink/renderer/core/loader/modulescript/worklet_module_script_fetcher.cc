@@ -19,6 +19,7 @@ void WorkletModuleScriptFetcher::Trace(blink::Visitor* visitor) {
 }
 
 void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
+                                       ModuleGraphLevel level,
                                        ModuleScriptFetcher::Client* client) {
   if (module_responses_map_->GetEntry(
           fetch_params.Url(), client,
