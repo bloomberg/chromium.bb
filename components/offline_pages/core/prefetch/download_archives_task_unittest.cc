@@ -136,11 +136,11 @@ TEST_F(DownloadArchivesTaskTest, SingleArchiveToDownload) {
   EXPECT_LT(download_item_before->freshness_time,
             download_item->freshness_time);
 
-  std::map<std::string, std::string> requested_downloads =
+  const TestPrefetchDownloader::RequestMap& requested_downloads =
       prefetch_downloader()->requested_downloads();
   auto it = requested_downloads.find(download_item->guid);
   ASSERT_TRUE(it != requested_downloads.end());
-  EXPECT_EQ(it->second, download_item->archive_body_name);
+  EXPECT_EQ(it->second.download_location, download_item->archive_body_name);
 
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadExpectedFileSize",
@@ -180,17 +180,17 @@ TEST_F(DownloadArchivesTaskTest, MultipleArchivesToDownload) {
   ASSERT_TRUE(download_item_2);
   EXPECT_EQ(PrefetchItemState::DOWNLOADING, download_item_2->state);
 
-  std::map<std::string, std::string> requested_downloads =
+  const TestPrefetchDownloader::RequestMap& requested_downloads =
       prefetch_downloader()->requested_downloads();
   EXPECT_EQ(2U, requested_downloads.size());
 
   auto it = requested_downloads.find(download_item_1->guid);
   ASSERT_TRUE(it != requested_downloads.end());
-  EXPECT_EQ(it->second, download_item_1->archive_body_name);
+  EXPECT_EQ(it->second.download_location, download_item_1->archive_body_name);
 
   it = requested_downloads.find(download_item_2->guid);
   ASSERT_TRUE(it != requested_downloads.end());
-  EXPECT_EQ(it->second, download_item_2->archive_body_name);
+  EXPECT_EQ(it->second.download_location, download_item_2->archive_body_name);
 
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadExpectedFileSize",
@@ -231,13 +231,13 @@ TEST_F(DownloadArchivesTaskTest, MultipleLargeArchivesToDownload) {
   ASSERT_TRUE(download_item_2);
   EXPECT_EQ(PrefetchItemState::RECEIVED_BUNDLE, download_item_2->state);
 
-  std::map<std::string, std::string> requested_downloads =
+  const TestPrefetchDownloader::RequestMap& requested_downloads =
       prefetch_downloader()->requested_downloads();
   EXPECT_EQ(1U, requested_downloads.size());
 
   auto it = requested_downloads.find(download_item_1->guid);
   ASSERT_TRUE(it != requested_downloads.end());
-  EXPECT_EQ(it->second, download_item_1->archive_body_name);
+  EXPECT_EQ(it->second.download_location, download_item_1->archive_body_name);
 
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadExpectedFileSize",
@@ -265,7 +265,7 @@ TEST_F(DownloadArchivesTaskTest, TooManyArchivesToDownload) {
   EXPECT_EQ(static_cast<size_t>(total_items),
             store_util()->GetAllItems(&items_after_run));
 
-  std::map<std::string, std::string> requested_downloads =
+  const TestPrefetchDownloader::RequestMap& requested_downloads =
       prefetch_downloader()->requested_downloads();
   EXPECT_EQ(static_cast<size_t>(DownloadArchivesTask::kMaxConcurrentDownloads),
             requested_downloads.size());
@@ -279,7 +279,7 @@ TEST_F(DownloadArchivesTaskTest, TooManyArchivesToDownload) {
 
     auto it = requested_downloads.find(download_item->guid);
     ASSERT_TRUE(it != requested_downloads.end());
-    EXPECT_EQ(it->second, download_item->archive_body_name);
+    EXPECT_EQ(it->second.download_location, download_item->archive_body_name);
   }
 
   // Remaining items shouldn't have been started.
@@ -333,7 +333,7 @@ TEST_F(DownloadArchivesTaskTest,
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(total_items, store_util()->GetAllItems(&items_after_run));
 
-  std::map<std::string, std::string> requested_downloads =
+  const TestPrefetchDownloader::RequestMap& requested_downloads =
       prefetch_downloader()->requested_downloads();
   EXPECT_EQ(max_concurrent_downloads, requested_downloads.size());
 
@@ -347,7 +347,7 @@ TEST_F(DownloadArchivesTaskTest,
 
     auto it = requested_downloads.find(download_item->guid);
     ASSERT_TRUE(it != requested_downloads.end());
-    EXPECT_EQ(it->second, download_item->archive_body_name);
+    EXPECT_EQ(it->second.download_location, download_item->archive_body_name);
   }
 
   // Remaining items shouldn't have been started.
@@ -391,16 +391,17 @@ TEST_F(DownloadArchivesTaskTest, SingleArchiveSecondAttempt) {
   EXPECT_EQ(PrefetchItemState::DOWNLOADING, download_item->state);
   EXPECT_EQ(2, download_item->download_initiation_attempts);
   EXPECT_EQ(item.archive_body_name, download_item->archive_body_name);
+  EXPECT_EQ(item.operation_name, download_item->operation_name);
   // GUID expected to change between download attempts.
   EXPECT_NE(item.guid, download_item->guid);
   // Freshness time not expected to change after first attempt.
   EXPECT_EQ(item.freshness_time, download_item->freshness_time);
 
-  std::map<std::string, std::string> requested_downloads =
+  const TestPrefetchDownloader::RequestMap& requested_downloads =
       prefetch_downloader()->requested_downloads();
   auto it = requested_downloads.find(download_item->guid);
   ASSERT_TRUE(it != requested_downloads.end());
-  EXPECT_EQ(it->second, download_item->archive_body_name);
+  EXPECT_EQ(it->second.download_location, download_item->archive_body_name);
 
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadExpectedFileSize",

@@ -387,7 +387,7 @@ void OfflineInternalsUIMessageHandler::HandleDownloadArchive(
 
   if (prefetch_service_) {
     prefetch_service_->GetPrefetchDownloader()->StartDownload(
-        base::GenerateGUID(), name);
+        base::GenerateGUID(), name, std::string());
   }
 }
 

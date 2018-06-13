@@ -28,7 +28,8 @@ using ItemsToDownload = DownloadArchivesTask::ItemsToDownload;
 
 ItemsToDownload FindItemsReadyForDownload(sql::Connection* db) {
   static const char kSql[] =
-      "SELECT offline_id, archive_body_name, archive_body_length"
+      "SELECT offline_id, archive_body_name, operation_name,"
+      " archive_body_length"
       " FROM prefetch_items"
       " WHERE state = ?"
       " ORDER BY creation_time DESC";
@@ -37,9 +38,12 @@ ItemsToDownload FindItemsReadyForDownload(sql::Connection* db) {
 
   ItemsToDownload items_to_download;
   while (statement.Step()) {
-    items_to_download.push_back({statement.ColumnInt64(0),
-                                 statement.ColumnString(1),
-                                 statement.ColumnInt64(2), std::string()});
+    DownloadItem item;
+    item.offline_id = statement.ColumnInt64(0);
+    item.archive_body_name = statement.ColumnString(1);
+    item.operation_name = statement.ColumnString(2);
+    item.archive_body_length = statement.ColumnInt64(3);
+    items_to_download.push_back(std::move(item));
   }
 
   return items_to_download;
@@ -160,6 +164,10 @@ const int DownloadArchivesTask::kMaxConcurrentDownloads = 2;
 // static
 const int DownloadArchivesTask::kMaxConcurrentDownloadsForLimitless = 4;
 
+DownloadArchivesTask::DownloadItem::DownloadItem() = default;
+DownloadArchivesTask::DownloadItem::DownloadItem(const DownloadItem& other) =
+    default;
+
 DownloadArchivesTask::DownloadArchivesTask(
     PrefetchStore* prefetch_store,
     PrefetchDownloader* prefetch_downloader)
@@ -190,7 +198,8 @@ void DownloadArchivesTask::SendItemsToPrefetchDownloader(
   if (items_to_download) {
     for (const auto& download_item : *items_to_download) {
       prefetch_downloader_->StartDownload(download_item.guid,
-                                          download_item.archive_body_name);
+                                          download_item.archive_body_name,
+                                          download_item.operation_name);
       // Reports expected archive size in KiB (accepting values up to 100 MiB).
       UMA_HISTOGRAM_COUNTS_100000(
           "OfflinePages.Prefetching.DownloadExpectedFileSize",
