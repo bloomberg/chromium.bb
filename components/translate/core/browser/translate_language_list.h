@@ -66,6 +66,10 @@ class TranslateLanguageList {
   std::unique_ptr<EventCallbackList::Subscription> RegisterEventCallback(
       const EventCallback& callback);
 
+  // Helper methods used by specific unit tests.
+  GURL LanguageFetchURLForTesting();
+  bool HasOngoingLanguageListLoadingForTesting();
+
   // Disables the language list updater. This is used only for testing now.
   static void DisableUpdate();
 

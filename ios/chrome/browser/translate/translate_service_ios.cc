@@ -36,8 +36,8 @@ void TranslateServiceIOS::Initialize() {
   g_translate_service->OnResourceRequestsAllowed();
   translate::TranslateDownloadManager* download_manager =
       translate::TranslateDownloadManager::GetInstance();
-  download_manager->set_request_context(
-      GetApplicationContext()->GetSystemURLRequestContext());
+  download_manager->set_url_loader_factory(
+      GetApplicationContext()->GetSharedURLLoaderFactory());
   download_manager->set_application_locale(
       GetApplicationContext()->GetApplicationLocale());
 }

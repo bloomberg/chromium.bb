@@ -47,9 +47,10 @@ void WebViewTranslateService::Initialize() {
   // Initialize translate.
   translate::TranslateDownloadManager* download_manager =
       translate::TranslateDownloadManager::GetInstance();
-  download_manager->set_request_context(
+  download_manager->set_url_loader_factory(
       ios_web_view::ApplicationContext::GetInstance()
-          ->GetSystemURLRequestContext());
+          ->GetSharedURLLoaderFactory()
+          .get());
   download_manager->set_application_locale(
       ios_web_view::ApplicationContext::GetInstance()->GetApplicationLocale());
 }

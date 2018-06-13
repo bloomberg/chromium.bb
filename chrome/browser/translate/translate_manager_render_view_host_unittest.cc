@@ -65,6 +65,8 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "url/gurl.h"
@@ -215,6 +217,9 @@ class TranslateManagerRenderViewHostTest
       : pref_callback_(
             base::Bind(&TranslateManagerRenderViewHostTest::OnPreferenceChanged,
                        base::Unretained(this))),
+        test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
         infobar_observer_(this) {}
 
 #if !defined(USE_AURA)
@@ -472,8 +477,7 @@ class TranslateManagerRenderViewHostTest
         translate::TranslateDownloadManager::GetInstance();
     download_manager->ClearTranslateScriptForTesting();
     download_manager->SetTranslateScriptExpirationDelay(60 * 60 * 1000);
-    download_manager->set_request_context(new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get()));
+    download_manager->set_url_loader_factory(test_shared_loader_factory_);
 
     InfoBarService::CreateForWebContents(web_contents());
     ChromeTranslateClient::CreateForWebContents(web_contents());
@@ -492,21 +496,20 @@ class TranslateManagerRenderViewHostTest
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
-        translate::TranslateScript::kFetcherId);
-    ASSERT_TRUE(fetcher);
-    net::Error error = success ? net::OK : net::ERR_FAILED;
-    fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(net::URLRequestStatus::FromError(error));
-    fetcher->set_response_code(success ? 200 : 500);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    GURL url = translate::TranslateDownloadManager::GetInstance()
+                   ->script()
+                   ->GetTranslateScriptURL();
+    test_url_loader_factory_.AddResponse(
+        url.spec(), std::string(),
+        success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR);
+    base::RunLoop().RunUntilIdle();
+
+    test_url_loader_factory_.ClearResponses();
   }
 
   void SimulateSupportedLanguagesURLFetch(
       bool success,
       const std::vector<std::string>& languages) {
-    net::Error error = success ? net::OK : net::ERR_FAILED;
-
     std::string data;
     if (success) {
       data = base::StringPrintf(
@@ -521,14 +524,17 @@ class TranslateManagerRenderViewHostTest
       }
       data += "}}";
     }
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
-        translate::TranslateLanguageList::kFetcherId);
-    ASSERT_TRUE(fetcher != NULL);
-    fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(net::URLRequestStatus::FromError(error));
-    fetcher->set_response_code(success ? 200 : 500);
-    fetcher->SetResponseString(data);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    GURL url = translate::TranslateDownloadManager::GetInstance()
+                   ->language_list()
+                   ->LanguageFetchURLForTesting();
+    EXPECT_TRUE(test_url_loader_factory_.IsPending(url.spec()));
+    test_url_loader_factory_.AddResponse(
+        url.spec(), data,
+        success ? net::HTTP_OK : net::HTTP_INTERNAL_SERVER_ERROR);
+    EXPECT_FALSE(test_url_loader_factory_.IsPending(url.spec()));
+    base::RunLoop().RunUntilIdle();
+
+    test_url_loader_factory_.ClearResponses();
   }
 
   void SetPrefObserverExpectation(const char* path) {
@@ -538,7 +544,8 @@ class TranslateManagerRenderViewHostTest
   PrefChangeRegistrar::NamedChangeCallback pref_callback_;
 
  private:
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
   // The infobars that have been removed.
   // WARNING: the pointers point to deleted objects, use only for comparison.
@@ -1695,8 +1702,8 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleNormalTranslate) {
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_TRANSLATING,
             bubble->GetViewState());
 
-  // Simulate the translate script being retrieved (it only needs to be done
-  // once in the test as it is cached).
+  // Set up a simulation of the translate script being retrieved (it only
+  // needs to be done once in the test as it is cached).
   SimulateTranslateScriptURLFetch(true);
 
   // Simulate the render notifying the translation has been done.

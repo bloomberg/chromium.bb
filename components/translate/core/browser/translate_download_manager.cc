@@ -26,7 +26,7 @@ void TranslateDownloadManager::Shutdown() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   language_list_.reset();
   script_.reset();
-  request_context_ = nullptr;
+  url_loader_factory_ = nullptr;
 }
 
 // static

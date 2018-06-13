@@ -28,6 +28,8 @@ include_rules = [
   "+ios/web_view",
   "+net",
   "+services/identity/public/cpp",
+  "+services/network/public/cpp",
+  "+services/network/public/mojom",
   "+third_party/ocmock",
   "+ui/base",
   "+ui/gfx",

@@ -51,6 +51,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -64,6 +65,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
@@ -292,6 +294,11 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
   ~AutofillInteractiveTestBase() override {}
 
   // InProcessBrowserTest:
+  void SetUp() override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    InProcessBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
@@ -312,9 +319,14 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
     reset_mouse = gfx::Point(reset_mouse.x() + 5, reset_mouse.y() + 5);
     ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(reset_mouse));
 
+    controllable_http_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), "/mock_translate_script.js",
+            true /*relative_url_is_prefix*/);
+
     // Ensure that |embedded_test_server()| serves both domains used below.
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
+    embedded_test_server()->StartAcceptingConnections();
   }
 
   void TearDownOnMainThread() override {
@@ -409,11 +421,7 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
         color));
   }
 
-  void SimulateURLFetch(bool success) {
-    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-    ASSERT_TRUE(fetcher);
-    net::Error error = success ? net::OK : net::ERR_FAILED;
-
+  void SimulateURLFetch() {
     std::string script =
         " var google = {};"
         "google.translate = (function() {"
@@ -442,11 +450,13 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
         "})();"
         "cr.googleTranslate.onTranslateElementLoad();";
 
-    fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(net::URLRequestStatus::FromError(error));
-    fetcher->set_response_code(success ? 200 : 500);
-    fetcher->SetResponseString(script);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    controllable_http_response_->WaitForRequest();
+    controllable_http_response_->Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/javascript\r\n"
+        "\r\n");
+    controllable_http_response_->Send(script);
+    controllable_http_response_->Done();
   }
 
   void FocusFieldByName(const std::string& name) {
@@ -709,6 +719,9 @@ class AutofillInteractiveTestBase : public InProcessBrowserTest {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  std::unique_ptr<net::test_server::ControllableHttpResponse>
+      controllable_http_response_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillInteractiveTestBase);
 };
 
@@ -722,6 +735,14 @@ class AutofillInteractiveTest : public AutofillInteractiveTestBase,
  protected:
   AutofillInteractiveTest() : AutofillInteractiveTestBase(GetParam()) {}
   ~AutofillInteractiveTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutofillInteractiveTestBase::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(
+        translate::switches::kTranslateScriptURL,
+        embedded_test_server()->GetURL("/mock_translate_script.js").spec());
+  }
 };
 
 // Test that basic form fill is working.
@@ -1857,7 +1878,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
 
   // Simulate the translate script being retrieved.
   // Pass fake google.translate lib as the translate script.
-  SimulateURLFetch(true);
+  SimulateURLFetch();
 
   // Simulate the render notifying the translation has been done.
   translation_observer.Wait();

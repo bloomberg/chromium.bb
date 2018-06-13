@@ -10,8 +10,8 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace translate {
 
@@ -46,10 +46,10 @@ bool TranslateURLFetcher::Request(const GURL& url,
 
   // If the TranslateDownloadManager's request context getter is nullptr then
   // shutdown is in progress. Abort the request, which can't proceed with a
-  // null request_context_getter.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      TranslateDownloadManager::GetInstance()->request_context();
-  if (request_context_getter == nullptr)
+  // null url_loader_factory.
+  network::mojom::URLLoaderFactory* url_loader_factory =
+      TranslateDownloadManager::GetInstance()->url_loader_factory().get();
+  if (!url_loader_factory)
     return false;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -89,41 +89,45 @@ bool TranslateURLFetcher::Request(const GURL& url,
             }
           }
         })");
-  // Create and initialize the URL fetcher.
-  fetcher_ = net::URLFetcher::Create(id_, url_, net::URLFetcher::GET, this,
-                                     traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(), data_use_measurement::DataUseUserData::TRANSLATE);
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetRequestContext(request_context_getter.get());
 
+  // Create and initialize URL loader.
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url_;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  if (!extra_request_header_.empty())
+    resource_request->headers.AddHeadersFromString(extra_request_header_);
+
+  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                    traffic_annotation);
   // Set retry parameter for HTTP status code 5xx. This doesn't work against
   // 106 (net::ERR_INTERNET_DISCONNECTED) and so on.
   // TranslateLanguageList handles network status, and implements retry.
-  fetcher_->SetMaxRetriesOn5xx(max_retry_on_5xx_);
-  if (!extra_request_header_.empty())
-    fetcher_->SetExtraRequestHeaders(extra_request_header_);
+  if (max_retry_on_5xx_) {
+    simple_loader_->SetRetryOptions(
+        max_retry_on_5xx_, network::SimpleURLLoader::RetryMode::RETRY_ON_5XX);
+  }
 
-  fetcher_->Start();
-
+  simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory,
+      base::BindOnce(&TranslateURLFetcher::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
   return true;
 }
 
-void TranslateURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(fetcher_.get() == source);
-
+void TranslateURLFetcher::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   std::string data;
-  if (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&
-      source->GetResponseCode() == net::HTTP_OK) {
+  if (response_body) {
+    DCHECK_EQ(net::OK, simple_loader_->NetError());
+    data = std::move(*response_body);
     state_ = COMPLETED;
-    source->GetResponseAsString(&data);
   } else {
     state_ = FAILED;
   }
 
-  // Transfer URLFetcher's ownership before invoking a callback.
-  std::unique_ptr<const net::URLFetcher> delete_ptr(fetcher_.release());
+  simple_loader_.reset();
+
   std::move(callback_).Run(id_, state_ == COMPLETED, data);
 }
 

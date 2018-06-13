@@ -48,6 +48,7 @@ class TranslateScript {
   // to translate it).
   void Request(const RequestCallback& callback);
 
+  // Returns the URL to be used to load the translate script.
   static GURL GetTranslateScriptURL();
 
  private:

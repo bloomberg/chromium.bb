@@ -248,6 +248,14 @@ TranslateLanguageList::RegisterEventCallback(const EventCallback& callback) {
   return callback_list_.Add(callback);
 }
 
+bool TranslateLanguageList::HasOngoingLanguageListLoadingForTesting() {
+  return language_list_fetcher_->state() == TranslateURLFetcher::REQUESTING;
+}
+
+GURL TranslateLanguageList::LanguageFetchURLForTesting() {
+  return AddApiKeyToUrl(AddHostLocaleToUrl(TranslateLanguageUrl()));
+}
+
 // static
 void TranslateLanguageList::DisableUpdate() {
   update_is_disabled = true;
