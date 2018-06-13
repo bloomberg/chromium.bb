@@ -413,7 +413,8 @@ class BBJSONGenerator(object):
         'can_use_on_swarming_builders': tester_config.get('use_swarming', True)
       })
     if 'swarming' in tester_config:
-      if 'dimension_sets' not in generated_test['swarming']:
+      if ('dimension_sets' not in generated_test['swarming'] and
+          'dimension_sets' in tester_config['swarming']):
         generated_test['swarming']['dimension_sets'] = copy.deepcopy(
           tester_config['swarming']['dimension_sets'])
       self.dictionary_merge(generated_test['swarming'],

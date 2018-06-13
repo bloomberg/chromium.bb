@@ -1836,6 +1836,7 @@
         "name": "network_service_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "priority_adjustment": 30,
           "shards": 10
         },
         "test": "browser_tests"
@@ -1846,7 +1847,8 @@
         ],
         "name": "network_service_components_browsertests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "priority_adjustment": 30
         },
         "test": "components_browsertests"
       },
@@ -1857,7 +1859,8 @@
         ],
         "name": "network_service_content_browsertests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "priority_adjustment": 30
         },
         "test": "content_browsertests"
       },
@@ -1867,7 +1870,8 @@
         ],
         "name": "network_service_extensions_browsertests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "priority_adjustment": 30
         },
         "test": "extensions_browsertests"
       },
@@ -1878,6 +1882,7 @@
         "name": "network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "priority_adjustment": 30,
           "shards": 2
         },
         "test": "interactive_ui_tests"
@@ -1900,6 +1905,7 @@
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "priority_adjustment": 30,
           "shards": 12
         }
       }
@@ -4707,6 +4713,7 @@
             }
           ],
           "hard_timeout": 900,
+          "priority_adjustment": 30,
           "shards": 15
         }
       }
