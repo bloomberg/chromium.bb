@@ -177,8 +177,11 @@ IntPoint AccumulatedScrollOffsetForFixedBackground(
   IntPoint result;
   if (&object == container)
     return result;
-  for (const LayoutBlock* block = object.ContainingBlock(); block;
-       block = block->ContainingBlock()) {
+
+  LayoutObject::AncestorSkipInfo skip_info(container);
+  for (const LayoutBlock* block = object.ContainingBlock(&skip_info);
+       block && !skip_info.AncestorSkipped();
+       block = block->ContainingBlock(&skip_info)) {
     if (block->HasOverflowClip())
       result += block->ScrolledContentOffset();
     if (block == container)
@@ -449,12 +452,26 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
       rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
   }
 
-  // Compensate the translations created by ScrollRecorders.
-  // TODO(trchen): Fix this for SP phase 2. crbug.com/529963.
   rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));
 
   if (container)
     rect.MoveBy(LayoutPoint(-container->LocalToAbsolute(FloatPoint())));
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // By now we have converted the viewport rect to the border box space of
+    // |container|, however |container| does not necessarily create a paint
+    // offset translation node, thus its paint offset must be added to convert
+    // the rect to the space of the transform node.
+    // TODO(trchen): This function does only one simple thing -- mapping the
+    // viewport rect from frame space to whatever space the current paint
+    // context uses. However we can't always invoke geometry mapper because
+    // there are at least one caller uses this before PrePaint phase.
+    if (container) {
+      DCHECK_GE(container->GetDocument().Lifecycle().GetState(),
+                DocumentLifecycle::kPrePaintClean);
+      rect.MoveBy(container->FirstFragment().PaintOffset());
+    }
+  }
 
   return rect;
 }
