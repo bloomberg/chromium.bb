@@ -680,7 +680,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       // Form controls are not supported yet.
       style.SetForceLegacyLayout(true);
     } else if (style.UserModify() != EUserModify::kReadOnly ||
-               document.InDesignMode()) {
+               document.InDesignMode() ||
+               style.Display() == EDisplay::kWebkitBox ||
+               style.Display() == EDisplay::kWebkitInlineBox) {
       // TODO(layout-dev): Once LayoutNG handles inline content editable, we
       // should get rid of following code fragment.
       style.SetForceLegacyLayout(true);
