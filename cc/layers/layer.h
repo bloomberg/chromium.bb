@@ -213,6 +213,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // commit, the dirty rect would not cover the layer, however then the layer
   // bounds change would implicitly damage the full layer.
   void SetNeedsDisplay() { SetNeedsDisplayRect(gfx::Rect(bounds())); }
+  // Returns the union of previous calls to SetNeedsDisplayRect() and
+  // SetNeedsDisplay() that have not been committed to the compositor thread.
+  const gfx::Rect& update_rect() const { return inputs_.update_rect; }
 
   // Set or get the opacity which should be applied to the contents of the layer
   // and its subtree (together as a single composited entity) when blending them
@@ -515,13 +518,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Constructs a LayerImpl of the correct runtime type for this Layer type.
   virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
 
-  bool NeedsDisplayForTesting() const { return !inputs_.update_rect.IsEmpty(); }
-  void ResetNeedsDisplayForTesting() { inputs_.update_rect = gfx::Rect(); }
-
   // Mark the layer as needing to push its properties to the LayerImpl during
   // commit.
   void SetNeedsPushProperties();
-  void ResetNeedsPushPropertiesForTesting();
 
   virtual void RunMicroBenchmark(MicroBenchmark* benchmark);
 
@@ -570,20 +569,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return should_flatten_transform_from_property_tree_;
   }
 
-  const gfx::Rect& visible_layer_rect_for_testing() const {
-    return visible_layer_rect_;
-  }
-  void set_visible_layer_rect(const gfx::Rect& rect) {
-    visible_layer_rect_ = rect;
-  }
-
-  // This is for tracking damage.
-  void SetSubtreePropertyChanged();
-  bool subtree_property_changed() const { return subtree_property_changed_; }
-
   void SetMayContainVideo(bool yes);
-
-  bool has_copy_requests_in_target_subtree();
 
   // Stable identifier for clients. See comment in cc/trees/element_id.h.
   void SetElementId(ElementId id);
@@ -605,8 +591,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetScrollbarsHiddenFromImplSide(bool hidden);
 
-  const gfx::Rect& update_rect() const { return inputs_.update_rect; }
-
   LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
   // Called on the scroll layer to trigger showing the overlay scrollbars.
@@ -615,6 +599,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool has_transform_node() { return has_transform_node_; }
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
   TransformNode* GetTransformNode() const;
+
+  // Internal to property tree construction. Indicates that a property changed
+  // on this layer that may affect the position or content of all layers in this
+  // layer's subtree, including itself. This causes the layer's subtree to be
+  // considered damaged and re-displayed to the user.
+  void SetSubtreePropertyChanged();
+  bool subtree_property_changed() const { return subtree_property_changed_; }
 
   // Internal to property tree construction. Whether this layer may animate its
   // opacity on the compositor thread. Layer subclasses may override this to
@@ -721,11 +712,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     LayerList children;
 
-    // The update rect is the region of the compositor resource that was
-    // actually updated by the compositor. For layers that may do updating
-    // outside the compositor's control (i.e. plugin layers), this information
-    // is not available and the update rect will remain empty.
-    // Note this rect is in layer space (not content space).
     gfx::Rect update_rect;
 
     gfx::Size bounds;
@@ -856,9 +842,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   SkColor safe_opaque_background_color_;
 
   std::unique_ptr<std::set<Layer*>> clip_children_;
-
-  // This acts like draw properties, so don't need push properties.
-  gfx::Rect visible_layer_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

@@ -185,11 +185,6 @@ void Layer::SetNeedsPushProperties() {
     layer_tree_host_->AddLayerShouldPushProperties(this);
 }
 
-void Layer::ResetNeedsPushPropertiesForTesting() {
-  if (layer_tree_host_)
-    layer_tree_host_->RemoveLayerShouldPushProperties(this);
-}
-
 bool Layer::IsPropertyChangeAllowed() const {
   if (!layer_tree_host_)
     return true;
@@ -1429,12 +1424,6 @@ void Layer::SetElementId(ElementId id) {
   }
 
   SetNeedsCommit();
-}
-
-bool Layer::has_copy_requests_in_target_subtree() {
-  return layer_tree_host_->property_trees()
-      ->effect_tree.Node(effect_tree_index())
-      ->subtree_has_copy_request;
 }
 
 gfx::Transform Layer::ScreenSpaceTransform() const {

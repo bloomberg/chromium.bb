@@ -56,6 +56,13 @@
 namespace cc {
 namespace {
 
+bool LayerSubtreeHasCopyRequest(Layer* layer) {
+  LayerTreeHost* host = layer->layer_tree_host();
+  int index = layer->effect_tree_index();
+  auto* node = host->property_trees()->effect_tree.Node(index);
+  return node->subtree_has_copy_request;
+}
+
 class VerifyTreeCalcsLayerTreeSettings : public LayerTreeSettings {
  public:
   VerifyTreeCalcsLayerTreeSettings() = default;
@@ -8606,11 +8613,11 @@ TEST_F(LayerTreeHostCommonTest, HasCopyRequestsInTargetSubtree) {
   child2->SetOpacity(0.f);
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
 
-  EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
-  EXPECT_TRUE(child1->has_copy_requests_in_target_subtree());
-  EXPECT_FALSE(child2->has_copy_requests_in_target_subtree());
-  EXPECT_TRUE(grandchild->has_copy_requests_in_target_subtree());
-  EXPECT_TRUE(greatgrandchild->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(LayerSubtreeHasCopyRequest(root.get()));
+  EXPECT_TRUE(LayerSubtreeHasCopyRequest(child1.get()));
+  EXPECT_FALSE(LayerSubtreeHasCopyRequest(child2.get()));
+  EXPECT_TRUE(LayerSubtreeHasCopyRequest(grandchild.get()));
+  EXPECT_TRUE(LayerSubtreeHasCopyRequest(greatgrandchild.get()));
 }
 
 TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
@@ -9033,10 +9040,10 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   child->RequestCopyOfOutput(viz::CopyOutputRequest::CreateStubForTesting());
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(LayerSubtreeHasCopyRequest(root.get()));
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
+  EXPECT_TRUE(LayerSubtreeHasCopyRequest(root.get()));
 }
 
 TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
