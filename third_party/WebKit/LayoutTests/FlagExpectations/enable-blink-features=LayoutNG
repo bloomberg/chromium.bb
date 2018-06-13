@@ -616,7 +616,6 @@ crbug.com/591099 fast/text/international/text-combine-image-test.html [ Failure 
 crbug.com/591099 fast/text/orientation-sideways.html [ Failure ]
 crbug.com/591099 fast/text/place-ellipsis-in-inline-block-adjacent-float-2.html [ Failure ]
 crbug.com/591099 fast/text/place-ellipsis-in-inline-block-adjacent-float.html [ Failure ]
-crbug.com/714962 fast/text/selection/pre-wrap-overflow-selection.html [ Failure ]
 crbug.com/591099 fast/text/text-combine-first-line-crash.html [ Crash ]
 crbug.com/591099 fast/text/unicode-fallback-font.html [ Failure ]
 crbug.com/591099 fast/text/whitespace/018.html [ Failure ]
