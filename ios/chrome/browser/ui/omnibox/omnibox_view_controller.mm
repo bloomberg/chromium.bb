@@ -60,6 +60,11 @@
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  if (self.incognito) {
+    self.textField.placeholderTextColor = [UIColor colorWithWhite:1 alpha:0.5];
+  } else {
+    self.textField.placeholderTextColor = [UIColor colorWithWhite:0 alpha:0.3];
+  }
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
 }
 
