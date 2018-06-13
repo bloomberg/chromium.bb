@@ -54,10 +54,17 @@ void CrostiniRemover::OnConciergeStarted(ConciergeClientResult result) {
 }
 
 void CrostiniRemover::OnRestartCrostini(ConciergeClientResult result) {
+  // If we got here, it must be due to a failure before Concierge was started.
+  // |result| should never be SUCCESS.
   DCHECK_NE(result, ConciergeClientResult::SUCCESS)
       << "RestartCrostini should have been aborted after starting the "
          "Concierge service.";
-  LOG(ERROR) << "Failed to start concierge service";
+
+  // We still need to signal failure via |callback_|
+  if (result != ConciergeClientResult::SUCCESS) {
+    LOG(ERROR) << "Failed to start concierge service";
+    std::move(callback_).Run(result);
+  }
 }
 
 void CrostiniRemover::StopVmFinished(ConciergeClientResult result) {
