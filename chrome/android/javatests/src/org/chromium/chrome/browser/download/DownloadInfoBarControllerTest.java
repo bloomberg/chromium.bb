@@ -42,16 +42,17 @@ public class DownloadInfoBarControllerTest {
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
-    private static final String MESSAGE_SPEEDING_UP = "Speeding up your download";
-    private static final String MESSAGE_DOWNLOADING_FILE = "Downloading file";
-    private static final String MESSAGE_DOWNLOADING_TWO_FILES = "Downloading 2 files";
-    private static final String MESSAGE_TWO_DOWNLOAD_COMPLETE = "2 downloads complete";
-    private static final String MESSAGE_DOWNLOAD_FAILED = "1 download failed";
-    private static final String MESSAGE_TWO_DOWNLOAD_FAILED = "2 downloads failed";
-    private static final String MESSAGE_DOWNLOAD_PENDING = "1 download pending";
-    private static final String MESSAGE_TWO_DOWNLOAD_PENDING = "2 downloads pending";
+    private static final String MESSAGE_SPEEDING_UP = "Speeding up your download.";
+    private static final String MESSAGE_DOWNLOADING_FILE = "Downloading file.";
+    private static final String MESSAGE_DOWNLOADING_TWO_FILES = "Downloading 2 files.";
+    private static final String MESSAGE_TWO_DOWNLOAD_COMPLETE = "2 downloads complete.";
+    private static final String MESSAGE_DOWNLOAD_FAILED = "1 download failed.";
+    private static final String MESSAGE_TWO_DOWNLOAD_FAILED = "2 downloads failed.";
+    private static final String MESSAGE_DOWNLOAD_PENDING = "1 download pending.";
+    private static final String MESSAGE_TWO_DOWNLOAD_PENDING = "2 downloads pending.";
 
     private static final String TEST_FILE_NAME = "TestFile";
+    private static final String MESSAGE_SINGLE_DOWNLOAD_COMPLETE = "TestFile.";
     private static final long TEST_DURATION_ACCELERATED_INFOBAR = 100;
     private static final long TEST_DURATION_SHOW_RESULT = 200;
 
@@ -204,7 +205,7 @@ public class DownloadInfoBarControllerTest {
 
         markItemComplete(item);
         mTestController.onItemUpdated(item);
-        mTestController.verify(TEST_FILE_NAME);
+        mTestController.verify(MESSAGE_SINGLE_DOWNLOAD_COMPLETE);
     }
 
     @Test
@@ -217,7 +218,7 @@ public class DownloadInfoBarControllerTest {
 
         markItemComplete(item);
         mTestController.onItemUpdated(item);
-        mTestController.verify(TEST_FILE_NAME);
+        mTestController.verify(MESSAGE_SINGLE_DOWNLOAD_COMPLETE);
 
         OfflineItem item2 = createOfflineItem(OfflineItemState.COMPLETE);
         mTestController.onItemUpdated(item2);
@@ -274,7 +275,7 @@ public class DownloadInfoBarControllerTest {
     public void testNewDownloadShowsUpImmediately() {
         OfflineItem item1 = createOfflineItem(OfflineItemState.COMPLETE);
         mTestController.onItemUpdated(item1);
-        mTestController.verify(TEST_FILE_NAME);
+        mTestController.verify(MESSAGE_SINGLE_DOWNLOAD_COMPLETE);
 
         OfflineItem item2 = createOfflineItem(OfflineItemState.IN_PROGRESS);
         item2.isAccelerated = true;
@@ -326,11 +327,11 @@ public class DownloadInfoBarControllerTest {
     public void testCompleteFailedComplete() {
         OfflineItem item1 = createOfflineItem(OfflineItemState.COMPLETE);
         mTestController.onItemUpdated(item1);
-        mTestController.verify(TEST_FILE_NAME);
+        mTestController.verify(MESSAGE_SINGLE_DOWNLOAD_COMPLETE);
 
         OfflineItem item2 = createOfflineItem(OfflineItemState.FAILED);
         mTestController.onItemUpdated(item2);
-        mTestController.verify(TEST_FILE_NAME);
+        mTestController.verify(MESSAGE_SINGLE_DOWNLOAD_COMPLETE);
 
         OfflineItem item3 = createOfflineItem(OfflineItemState.COMPLETE);
         mTestController.onItemUpdated(item3);
@@ -366,11 +367,11 @@ public class DownloadInfoBarControllerTest {
 
         OfflineItem item2 = createOfflineItem(OfflineItemState.COMPLETE);
         mTestController.onItemUpdated(item2);
-        mTestController.verify(TEST_FILE_NAME);
+        mTestController.verify(MESSAGE_SINGLE_DOWNLOAD_COMPLETE);
 
         OfflineItem item3 = createOfflineItem(OfflineItemState.FAILED);
         mTestController.onItemUpdated(item3);
-        mTestController.verify(TEST_FILE_NAME);
+        mTestController.verify(MESSAGE_SINGLE_DOWNLOAD_COMPLETE);
 
         waitForMessage(MESSAGE_DOWNLOAD_FAILED);
         waitForMessage(MESSAGE_DOWNLOADING_FILE);
@@ -390,7 +391,7 @@ public class DownloadInfoBarControllerTest {
 
         markItemComplete(item2);
         mTestController.onItemUpdated(item2);
-        mTestController.verify(TEST_FILE_NAME);
+        mTestController.verify(MESSAGE_SINGLE_DOWNLOAD_COMPLETE);
     }
 
     @Test
