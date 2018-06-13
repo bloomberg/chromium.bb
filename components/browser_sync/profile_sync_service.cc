@@ -828,6 +828,8 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
   LOG(ERROR) << "Unrecoverable error detected at " << from_here.ToString()
              << " -- ProfileSyncService unusable: " << message;
 
+  NotifyObservers();
+
   // Shut all data types down.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ProfileSyncService::ShutdownImpl,
