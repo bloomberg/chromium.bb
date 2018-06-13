@@ -86,7 +86,10 @@ bool OnScreenKeyboardDisplayManagerInputPane::EnsureInputPanePointers() {
     return false;
   }
 
-  base::win::AssertComApartmentType(base::win::ComApartmentType::MTA);
+  // TODO(dtapuska): https://crbug.com/852386. Use TaskScheduler to access the
+  // WinRT APIs.
+  base::win::AssertComApartmentType(base::win::ComApartmentType::STA);
+
   base::win::ScopedHString input_pane_guid = base::win::ScopedHString::Create(
       RuntimeClass_Windows_UI_ViewManagement_InputPane);
   Microsoft::WRL::ComPtr<IInputPaneInterop> input_pane_interop;
