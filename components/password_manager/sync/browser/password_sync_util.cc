@@ -95,6 +95,10 @@ bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
 
 bool IsSyncAccountEmail(const std::string& username,
                         const SigninManagerBase* signin_manager) {
+  // |signin_manager| can be null if user is not signed in.
+  if (!signin_manager)
+    return false;
+
   std::string sync_email = signin_manager->GetAuthenticatedAccountInfo().email;
 
   if (sync_email.empty() || username.empty())
