@@ -170,6 +170,8 @@ blink_core_sources("layout") {
     "layout_object.h",
     "layout_object_child_list.cc",
     "layout_object_child_list.h",
+    "layout_object_factory.cc",
+    "layout_object_factory.h",
     "layout_object_inlines.h",
     "layout_paged_flow_thread.cc",
     "layout_paged_flow_thread.h",

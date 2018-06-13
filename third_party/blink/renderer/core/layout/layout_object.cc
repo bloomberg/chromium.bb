@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
@@ -79,11 +80,6 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_flexible_box.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
@@ -115,21 +111,6 @@
 namespace blink {
 
 namespace {
-
-inline bool ShouldUseNewLayout(const Element& element,
-                               const ComputedStyle& style) {
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return false;
-  const Document& document = element.GetDocument();
-  bool requires_ng_block_fragmentation =
-      document.Printing() ||
-      (document.GetLayoutView() &&
-       document.GetLayoutView()->StyleRef().IsOverflowPaged());
-  if (requires_ng_block_fragmentation &&
-      !RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled())
-    return false;
-  return !style.ForceLegacyLayout();
-}
 
 template <typename Predicate>
 LayoutObject* FindAncestorByPredicate(const LayoutObject* descendant,
@@ -255,13 +236,9 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kBlock:
     case EDisplay::kFlowRoot:
     case EDisplay::kInlineBlock:
-      if (ShouldUseNewLayout(*element, style))
-        return new LayoutNGBlockFlow(element);
-      return new LayoutBlockFlow(element);
+      return LayoutObjectFactory::CreateBlockFlow(*element, style);
     case EDisplay::kListItem:
-      if (ShouldUseNewLayout(*element, style))
-        return new LayoutNGListItem(element);
-      return new LayoutListItem(element);
+      return LayoutObjectFactory::CreateListItem(*element, style);
     case EDisplay::kTable:
     case EDisplay::kInlineTable:
       return new LayoutTable(element);
@@ -275,23 +252,15 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     case EDisplay::kTableColumn:
       return new LayoutTableCol(element);
     case EDisplay::kTableCell:
-      if (ShouldUseNewLayout(*element, style))
-        return new LayoutNGTableCell(element);
-      return new LayoutTableCell(element);
+      return LayoutObjectFactory::CreateTableCell(*element, style);
     case EDisplay::kTableCaption:
-      if (ShouldUseNewLayout(*element, style))
-        return new LayoutNGTableCaption(element);
-      return new LayoutTableCaption(element);
+      return LayoutObjectFactory::CreateTableCaption(*element, style);
     case EDisplay::kWebkitBox:
     case EDisplay::kWebkitInlineBox:
       return new LayoutDeprecatedFlexibleBox(*element);
     case EDisplay::kFlex:
     case EDisplay::kInlineFlex:
-      if (RuntimeEnabledFeatures::LayoutNGFlexBoxEnabled() &&
-          ShouldUseNewLayout(*element, style)) {
-        return new LayoutNGFlexibleBox(element);
-      }
-      return new LayoutFlexibleBox(element);
+      return LayoutObjectFactory::CreateFlexibleBox(*element, style);
     case EDisplay::kGrid:
     case EDisplay::kInlineGrid:
       return new LayoutGrid(element);
