@@ -137,7 +137,7 @@ void LoginDisplayMojo::ShowError(int error_msg_id,
 }
 
 void LoginDisplayMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
-  NOTIMPLEMENTED();
+  host_->ShowErrorScreen(error_id);
 }
 
 void LoginDisplayMojo::ShowPasswordChangedDialog(bool show_password_error,
@@ -146,7 +146,7 @@ void LoginDisplayMojo::ShowPasswordChangedDialog(bool show_password_error,
 }
 
 void LoginDisplayMojo::ShowSigninUI(const std::string& email) {
-  NOTIMPLEMENTED();
+  host_->ShowSigninUI(email);
 }
 
 void LoginDisplayMojo::ShowWhitelistCheckFailedError() {

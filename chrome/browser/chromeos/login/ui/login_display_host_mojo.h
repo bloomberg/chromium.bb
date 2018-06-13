@@ -49,6 +49,12 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Show unrecoverable cryptohome error dialog.
   void ShowUnrecoverableCrypthomeErrorDialog();
 
+  // Displays detailed error screen for error with ID |error_id|.
+  void ShowErrorScreen(LoginDisplay::SigninError error_id);
+
+  // Shows signin UI with specified email.
+  void ShowSigninUI(const std::string& email);
+
   UserSelectionScreen* user_selection_screen() {
     return user_selection_screen_.get();
   }
