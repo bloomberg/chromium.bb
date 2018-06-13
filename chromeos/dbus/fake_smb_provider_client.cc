@@ -12,6 +12,22 @@
 
 namespace chromeos {
 
+namespace {
+
+// Helper method to create a DirectoryEntryProto with |entry_name| and add it to
+// |entry_list| as a directory.
+void AddDirectoryEntryToList(smbprovider::DirectoryEntryListProto* entry_list,
+                             const std::string& entry_name) {
+  DCHECK(entry_list);
+
+  smbprovider::DirectoryEntryProto* entry = entry_list->add_entries();
+  entry->set_is_directory(true);
+  entry->set_name(entry_name);
+  entry->set_size(0);
+  entry->set_last_modified_time(0);
+}
+}  // namespace
+
 FakeSmbProviderClient::FakeSmbProviderClient() {}
 
 FakeSmbProviderClient::~FakeSmbProviderClient() {}
@@ -159,15 +175,22 @@ void FakeSmbProviderClient::GetDeleteList(int32_t mount_id,
 void FakeSmbProviderClient::GetShares(const base::FilePath& server_url,
                                       ReadDirectoryCallback callback) {
   smbprovider::DirectoryEntryListProto entry_list;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), smbprovider::ERROR_OK, entry_list));
+  for (const std::string& share : shares_[server_url.value()]) {
+    AddDirectoryEntryToList(&entry_list, share);
+  }
+
+  std::move(callback).Run(smbprovider::ERROR_OK, entry_list);
 }
 
 void FakeSmbProviderClient::SetupKerberos(const std::string& account_id,
                                           SetupKerberosCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true /* success */));
+}
+
+void FakeSmbProviderClient::AddToShares(const std::string& server_url,
+                                        const std::string& share) {
+  shares_[server_url].push_back(share);
 }
 
 void FakeSmbProviderClient::ParseNetBiosPacket(
@@ -183,6 +206,10 @@ void FakeSmbProviderClient::ParseNetBiosPacket(
   }
 
   std::move(callback).Run(result);
+}
+
+void FakeSmbProviderClient::ClearShares() {
+  shares_.clear();
 }
 
 }  // namespace chromeos
