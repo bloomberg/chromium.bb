@@ -314,8 +314,6 @@ function openAndWaitForClosingDialog(
  * Opens a Files app's main window and waits until it is initialized. Fills
  * the window with initial files. Should be called for the first window only.
  *
- * TODO(sashab): Convert optional entries arguments to map, or separate method
- * without arguments (e.g. setupWithBasicEntriesAndWaitUntilReady).
  * TODO(mtomasz): Pass a volumeId or an enum value instead of full paths.
  *
  * @param {Object} appState App state to be passed with on opening the Files
@@ -334,16 +332,11 @@ function openAndWaitForClosingDialog(
 function setupAndWaitUntilReady(
     appState, initialRoot, opt_callback, opt_initialLocalEntries,
     opt_initialDriveEntries) {
-  var allPromises = [];
+  var initialLocalEntries = opt_initialLocalEntries || BASIC_LOCAL_ENTRY_SET;
+  var initialDriveEntries = opt_initialDriveEntries || BASIC_DRIVE_ENTRY_SET;
   var windowPromise = openNewWindow(appState, initialRoot);
-  var localEntriesPromise = addEntries(
-      ['local'],
-      opt_initialLocalEntries ? opt_initialLocalEntries :
-                                BASIC_LOCAL_ENTRY_SET);
-  var driveEntriesPromise = addEntries(
-      ['drive'],
-      opt_initialDriveEntries ? opt_initialDriveEntries :
-                                BASIC_DRIVE_ENTRY_SET);
+  var localEntriesPromise = addEntries(['local'], initialLocalEntries);
+  var driveEntriesPromise = addEntries(['drive'], initialDriveEntries);
   var detailedTablePromise = windowPromise.then(function(windowId) {
     return remoteCall.waitForElement(windowId, '#detail-table').
       then(function() {
