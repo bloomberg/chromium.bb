@@ -11,7 +11,6 @@
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_screen.h"
@@ -253,12 +252,12 @@ LockContentsView::LockContentsView(
       data_dispatcher_(data_dispatcher),
       detachable_base_model_(std::move(detachable_base_model)),
       display_observer_(this),
-      session_observer_(this),
-      keyboard_observer_(this) {
+      session_observer_(this) {
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
   Shell::Get()->login_screen_controller()->AddObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
+  keyboard::KeyboardController::Get()->AddObserver(this);
   auth_error_bubble_ = std::make_unique<LoginBubble>();
   detachable_base_error_bubble_ = std::make_unique<LoginBubble>();
   tooltip_bubble_ = std::make_unique<LoginBubble>();
@@ -302,7 +301,6 @@ LockContentsView::LockContentsView(
   AddChildView(expanded_view_);
 
   OnLockScreenNoteStateChanged(initial_note_action_state);
-  Shell::Get()->AddShellObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
 }
@@ -310,6 +308,7 @@ LockContentsView::LockContentsView(
 LockContentsView::~LockContentsView() {
   data_dispatcher_->RemoveObserver(this);
   Shell::Get()->login_screen_controller()->RemoveObserver(this);
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 
   if (unlock_attempt_ > 0) {
@@ -319,8 +318,6 @@ LockContentsView::~LockContentsView() {
     Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
         unlock_attempt_, false /*success*/);
   }
-  Shell::Get()->RemoveShellObserver(this);
-  keyboard_observer_.RemoveAll();
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
 }
@@ -335,14 +332,6 @@ void LockContentsView::Layout() {
 }
 
 void LockContentsView::AddedToWidget() {
-  // Register keyboard observer after view has been added to the widget. If
-  // virtual keyboard is activated before displaying lock screen we do not
-  // receive OnVirtualKeyboardStateChanged() callback and we need to register
-  // keyboard observer here.
-  keyboard::KeyboardController* keyboard_controller = GetKeyboardController();
-  if (keyboard_controller)
-    keyboard_observer_.Add(keyboard_controller);
-
   DoLayout();
 
   // Focus the primary user when showing the UI. This will focus the password.
@@ -767,17 +756,6 @@ void LockContentsView::OnLockStateChanged(bool locked) {
     Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
         unlock_attempt_, true /*success*/);
     unlock_attempt_ = 0;
-  }
-}
-
-void LockContentsView::OnVirtualKeyboardStateChanged(
-    bool activated,
-    aura::Window* root_window) {
-  const views::Widget* widget = GetWidget();
-  if (widget) {
-    UpdateKeyboardObserverFromStateChanged(
-        activated, root_window, widget->GetNativeWindow()->GetRootWindow(),
-        &keyboard_observer_);
   }
 }
 

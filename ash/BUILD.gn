@@ -300,8 +300,6 @@ component("ash") {
     "ime/ime_focus_handler.cc",
     "ime/ime_focus_handler.h",
     "ime/ime_switch_type.h",
-    "keyboard/keyboard_observer_register.cc",
-    "keyboard/keyboard_observer_register.h",
     "keyboard/keyboard_ui.cc",
     "keyboard/keyboard_ui.h",
     "keyboard/keyboard_ui_mash.cc",

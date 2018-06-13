@@ -20,10 +20,6 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
-namespace keyboard {
-class KeyboardController;
-}
-
 namespace ash {
 
 class RootWindowController;
@@ -87,7 +83,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   // keyboard::KeyboardControllerObserver overrides:
   void OnKeyboardWorkspaceDisplacingBoundsChanged(
       const gfx::Rect& new_bounds) override;
-  void OnKeyboardClosed() override;
 
   // WindowStateObserver overrides:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
@@ -101,8 +96,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     aura::Window* root_window) override;
 
  private:
   friend class WorkspaceControllerTestApi;
@@ -144,10 +137,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   // A window which covers the full container and which gets inserted behind the
   // topmost visible window.
   std::unique_ptr<BackdropController> backdrop_controller_;
-
-  ScopedObserver<keyboard::KeyboardController,
-                 keyboard::KeyboardControllerObserver>
-      keyboard_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };

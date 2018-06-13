@@ -12,7 +12,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -163,7 +162,6 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
       shelf_(shelf),
       is_background_blur_enabled_(
           app_list::features::IsBackgroundBlurEnabled()),
-      keyboard_observer_(this),
       scoped_session_observer_(this) {
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
@@ -171,6 +169,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
   ShellPort::Get()->AddLockStateObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
+  keyboard::KeyboardController::Get()->AddObserver(this);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
@@ -179,6 +178,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 
   for (auto& observer : observers_)
     observer.WillDeleteShelfLayoutManager();
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   ShellPort::Get()->RemoveLockStateObserver(this);
 }
@@ -439,14 +439,6 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnVirtualKeyboardStateChanged(
-    bool activated,
-    aura::Window* root_window) {
-  UpdateKeyboardObserverFromStateChanged(
-      activated, root_window, shelf_widget_->GetNativeWindow()->GetRootWindow(),
-      &keyboard_observer_);
-}
-
 void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
                                                     aura::Window* root_window) {
   // Shell may be under destruction.
@@ -492,10 +484,6 @@ void ShelfLayoutManager::OnKeyboardAvailabilityChanged(
     Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
                                            gfx::Insets());
   }
-}
-
-void ShelfLayoutManager::OnKeyboardClosed() {
-  keyboard_observer_.RemoveAll();
 }
 
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
