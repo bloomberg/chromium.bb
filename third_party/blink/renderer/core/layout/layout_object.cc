@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
@@ -2394,6 +2395,9 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
     if (child->IsInFlowPositioned() && child->IsLayoutBlockFlow() &&
         ToLayoutBlockFlow(child)->IsAnonymousBlockContinuation())
       new_style->SetPosition(child->Style()->GetPosition());
+
+    if (child->IsLayoutNGListMarker())
+      new_style->SetWhiteSpace(child->Style()->WhiteSpace());
 
     UpdateAnonymousChildStyle(child, *new_style);
 
