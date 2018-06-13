@@ -96,7 +96,6 @@ class OutOfProcessInstance : public pp::Instance,
   void DidOpenPreview(int32_t result);
 
   // Called when the timer is fired.
-  void OnClientTimerFired(int32_t id);
   void OnClientTouchTimerFired(int32_t id);
 
   // Called to print without re-entrancy issues.
@@ -136,7 +135,6 @@ class OutOfProcessInstance : public pp::Instance,
                   const void* data,
                   int length) override;
   pp::URLLoader CreateURLLoader() override;
-  void ScheduleCallback(int id, base::TimeDelta delay) override;
   void ScheduleTouchTimerCallback(int id, base::TimeDelta delay) override;
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,

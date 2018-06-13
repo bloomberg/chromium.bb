@@ -677,9 +677,9 @@ std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client,
 
 PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
     : client_(client),
+      form_filler_(this, enable_javascript),
       mouse_down_state_(PDFiumPage::NONSELECTABLE_AREA,
                         PDFiumPage::LinkTarget()),
-      form_filler_(this, enable_javascript),
       print_(this) {
   find_factory_.Initialize(this);
   password_factory_.Initialize(this);
@@ -2370,17 +2370,6 @@ void PDFiumEngine::SetGrayscale(bool grayscale) {
   render_grayscale_ = grayscale;
 }
 
-void PDFiumEngine::OnCallback(int id) {
-  auto it = formfill_timers_.find(id);
-  if (it == formfill_timers_.end())
-    return;
-
-  it->second.timer_callback(id);
-  it = formfill_timers_.find(id);  // The callback might delete the timer.
-  if (it != formfill_timers_.end())
-    client_->ScheduleCallback(id, it->second.timer_period);
-}
-
 void PDFiumEngine::OnTouchTimerCallback(int id) {
   if (!touch_timers_.count(id))
     return;
@@ -3609,10 +3598,6 @@ void PDFiumEngine::GetSelection(uint32_t* selection_start_page_index,
     *selection_end_char_index = selection_[len - 1].char_count();
   }
 }
-
-PDFiumEngine::FormFillTimerData::FormFillTimerData(base::TimeDelta period,
-                                                   TimerCallback callback)
-    : timer_period(period), timer_callback(callback) {}
 
 PDFiumEngine::ProgressivePaint::ProgressivePaint(int index,
                                                  const pp::Rect& rect)

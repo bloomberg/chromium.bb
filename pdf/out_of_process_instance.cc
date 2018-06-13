@@ -1239,10 +1239,6 @@ void OutOfProcessInstance::OnClientTouchTimerFired(int32_t id) {
   engine_->OnTouchTimerCallback(id);
 }
 
-void OutOfProcessInstance::OnClientTimerFired(int32_t id) {
-  engine_->OnCallback(id);
-}
-
 void OutOfProcessInstance::CalculateBackgroundParts() {
   background_parts_.clear();
   int left_width = available_area_.x();
@@ -1564,13 +1560,6 @@ pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
   }
 
   return CreateURLLoaderInternal();
-}
-
-void OutOfProcessInstance::ScheduleCallback(int id, base::TimeDelta delay) {
-  pp::CompletionCallback callback =
-      callback_factory_.NewCallback(&OutOfProcessInstance::OnClientTimerFired);
-  pp::Module::Get()->core()->CallOnMainThread(delay.InMilliseconds(), callback,
-                                              id);
 }
 
 void OutOfProcessInstance::ScheduleTouchTimerCallback(int id,

@@ -6,10 +6,12 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_engine.h"
+#include "pdf/timer.h"
 
 namespace chrome_pdf {
 
@@ -18,6 +20,23 @@ namespace {
 std::string WideStringToString(FPDF_WIDESTRING wide_string) {
   return base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(wide_string));
 }
+
+class FormFillTimer : public Timer {
+ public:
+  FormFillTimer(base::TimeDelta delay, int id, TimerCallback timer_callback)
+      : Timer(delay), id_(id), timer_callback_(timer_callback) {}
+
+  ~FormFillTimer() override = default;
+
+  // Timer overrides:
+  void OnTimer() override { timer_callback_(id_); }
+
+ private:
+  const int id_;
+  TimerCallback timer_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(FormFillTimer);
+};
 
 }  // namespace
 
@@ -79,6 +98,8 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
   }
 }
 
+PDFiumFormFiller::~PDFiumFormFiller() = default;
+
 // static
 void PDFiumFormFiller::Form_Invalidate(FPDF_FORMFILLINFO* param,
                                        FPDF_PAGE page,
@@ -133,21 +154,15 @@ void PDFiumFormFiller::Form_SetCursor(FPDF_FORMFILLINFO* param,
 int PDFiumFormFiller::Form_SetTimer(FPDF_FORMFILLINFO* param,
                                     int elapse,
                                     TimerCallback timer_func) {
-  PDFiumEngine* engine = GetEngine(param);
-  base::TimeDelta elapse_time = base::TimeDelta::FromMilliseconds(elapse);
-  engine->formfill_timers_.emplace(
-      std::piecewise_construct,
-      std::forward_as_tuple(++engine->next_formfill_timer_id_),
-      std::forward_as_tuple(elapse_time, timer_func));
-  engine->client_->ScheduleCallback(engine->next_formfill_timer_id_,
-                                    elapse_time);
-  return engine->next_formfill_timer_id_;
+  auto* form_filler = static_cast<PDFiumFormFiller*>(param);
+  return form_filler->SetTimer(base::TimeDelta::FromMilliseconds(elapse),
+                               timer_func);
 }
 
 // static
 void PDFiumFormFiller::Form_KillTimer(FPDF_FORMFILLINFO* param, int timer_id) {
-  PDFiumEngine* engine = GetEngine(param);
-  engine->formfill_timers_.erase(timer_id);
+  auto* form_filler = static_cast<PDFiumFormFiller*>(param);
+  form_filler->KillTimer(timer_id);
 }
 
 // static
@@ -624,6 +639,18 @@ PDFiumEngine* PDFiumFormFiller::GetEngine(FPDF_FORMFILLINFO* info) {
 PDFiumEngine* PDFiumFormFiller::GetEngine(IPDF_JSPLATFORM* platform) {
   auto* form_filler = static_cast<PDFiumFormFiller*>(platform);
   return form_filler->engine_;
+}
+
+int PDFiumFormFiller::SetTimer(const base::TimeDelta& delay,
+                               TimerCallback timer_func) {
+  const int timer_id = ++last_timer_id_;
+  timers_[timer_id] =
+      std::make_unique<FormFillTimer>(delay, timer_id, timer_func);
+  return timer_id;
+}
+
+void PDFiumFormFiller::KillTimer(int timer_id) {
+  timers_.erase(timer_id);
 }
 
 }  // namespace chrome_pdf
