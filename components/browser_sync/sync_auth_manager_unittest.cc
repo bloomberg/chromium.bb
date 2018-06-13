@@ -173,7 +173,7 @@ TEST_F(SyncAuthManagerTest, ForwardsCredentialsEvents) {
   // Revoking the refresh token should also cause the access token to get
   // dropped.
   EXPECT_CALL(credentials_changed, Run());
-  identity_env()->RemoveRefreshTokenForAccount(account_id);
+  identity_env()->RemoveRefreshTokenForPrimaryAccount();
   EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
 }
 
@@ -419,7 +419,7 @@ TEST_F(SyncAuthManagerTest, ClearsCredentialsOnRefreshTokenRemoval) {
   EXPECT_CALL(access_token_requested, Run()).Times(0);
   identity_env()->SetCallbackForNextAccessTokenRequest(
       access_token_requested.Get());
-  identity_env()->RemoveRefreshTokenForAccount(account_id);
+  identity_env()->RemoveRefreshTokenForPrimaryAccount();
 
   // Should immediately drop the access token and expose an auth error.
   EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
@@ -459,7 +459,7 @@ TEST_F(SyncAuthManagerTest, ClearsCredentialsOnInvalidRefreshToken) {
   EXPECT_CALL(access_token_requested, Run()).Times(0);
   identity_env()->SetCallbackForNextAccessTokenRequest(
       access_token_requested.Get());
-  identity_env()->SetInvalidRefreshTokenForAccount(account_id);
+  identity_env()->SetInvalidRefreshTokenForPrimaryAccount();
 
   // Should immediately drop the access token and expose a special auth error.
   EXPECT_TRUE(auth_manager->GetCredentials().sync_token.empty());
