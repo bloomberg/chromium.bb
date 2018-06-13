@@ -1022,6 +1022,10 @@
     "label": "//chrome/installer/setup:setup_unittests",
     "type": "console_test_launcher",
   },
+  "shell_dialogs_unittests": {
+    "label": "//ui/shell_dialogs:shell_dialogs_unittests",
+    "type": "console_test_launcher",
+  },
   "skia_unittests": {
     "label": "//skia:skia_unittests",
     "type": "console_test_launcher",

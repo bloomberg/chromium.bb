@@ -680,6 +680,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "shell_dialogs_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "skia_unittests"
       },
       {
@@ -2737,6 +2743,18 @@
             }
           ]
         },
+        "test": "shell_dialogs_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho",
+              "os": "Android"
+            }
+          ]
+        },
         "test": "skia_unittests"
       },
       {
@@ -3388,6 +3406,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "shell_dialogs_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "skia_unittests"
       },
       {
@@ -3866,6 +3890,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "services_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "shell_dialogs_unittests"
       },
       {
         "swarming": {
@@ -4438,6 +4468,12 @@
           ]
         },
         "test": "setup_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "shell_dialogs_unittests"
       },
       {
         "swarming": {
@@ -5366,6 +5402,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "shell_dialogs_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "skia_unittests"
       },
       {
@@ -5876,6 +5918,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "shell_dialogs_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "skia_unittests"
       },
       {
@@ -6119,6 +6167,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "services_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "shell_dialogs_unittests"
       },
       {
         "swarming": {
@@ -6763,6 +6817,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "services_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "shell_dialogs_unittests"
       },
       {
         "swarming": {
@@ -7499,6 +7559,15 @@
           "can_use_on_swarming_builders": true
         },
         "test": "service_manager_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "shell_dialogs_unittests"
       },
       {
         "args": [
