@@ -42,8 +42,6 @@
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/blob_storage/webblobregistry_impl.h"
-#include "content/renderer/device_sensors/device_motion_event_pump.h"
-#include "content/renderer/device_sensors/device_orientation_event_pump.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 #include "content/renderer/dom_storage/local_storage_namespace.h"
 #include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
@@ -1120,12 +1118,6 @@ std::unique_ptr<PlatformEventObserverBase>
 RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     blink::WebPlatformEventType type) {
   switch (type) {
-    case blink::kWebPlatformEventTypeDeviceMotion:
-      return std::make_unique<DeviceMotionEventPump>();
-    case blink::kWebPlatformEventTypeDeviceOrientation:
-      return std::make_unique<DeviceOrientationEventPump>(false /* absolute */);
-    case blink::kWebPlatformEventTypeDeviceOrientationAbsolute:
-      return std::make_unique<DeviceOrientationEventPump>(true /* absolute */);
     case blink::kWebPlatformEventTypeGamepad:
       return std::make_unique<GamepadSharedMemoryReader>();
     default:
@@ -1154,28 +1146,96 @@ blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
   return blink_interface_provider_.get();
 }
 
+void RendererBlinkPlatformImpl::InitDeviceSensorEventPump(
+    blink::WebPlatformEventType type,
+    blink::WebPlatformEventListener* listener) {
+  switch (type) {
+    case blink::kWebPlatformEventTypeDeviceMotion:
+      if (!motion_event_pump_)
+        motion_event_pump_ = std::make_unique<DeviceMotionEventPump>();
+      motion_event_pump_->Start(listener);
+      break;
+    case blink::kWebPlatformEventTypeDeviceOrientation:
+      if (!orientation_event_pump_) {
+        orientation_event_pump_ =
+            std::make_unique<DeviceOrientationEventPump>(false /* absolute */);
+      }
+      orientation_event_pump_->Start(listener);
+      break;
+    case blink::kWebPlatformEventTypeDeviceOrientationAbsolute:
+      if (!absolute_orientation_event_pump_) {
+        absolute_orientation_event_pump_ =
+            std::make_unique<DeviceOrientationEventPump>(true /* absolute */);
+      }
+      absolute_orientation_event_pump_->Start(listener);
+      break;
+    default:
+      DVLOG(1) << "RendererBlinkPlatformImpl::InitDeviceSensorEventPump() "
+                  "with unknown type.";
+  }
+}
+
+void RendererBlinkPlatformImpl::StopDeviceSensorEventPump(
+    blink::WebPlatformEventType type) {
+  switch (type) {
+    case blink::kWebPlatformEventTypeDeviceMotion: {
+      if (motion_event_pump_)
+        motion_event_pump_->Stop();
+      break;
+    }
+    case blink::kWebPlatformEventTypeDeviceOrientation: {
+      if (orientation_event_pump_)
+        orientation_event_pump_->Stop();
+      break;
+    }
+    case blink::kWebPlatformEventTypeDeviceOrientationAbsolute: {
+      if (absolute_orientation_event_pump_)
+        absolute_orientation_event_pump_->Stop();
+      break;
+    }
+    default:
+      DVLOG(1) << "RendererBlinkPlatformImpl::StopDeviceSensorEventPump() "
+                  "with unknown type.";
+  }
+}
 void RendererBlinkPlatformImpl::StartListening(
     blink::WebPlatformEventType type,
     blink::WebPlatformEventListener* listener) {
-  PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
-  if (!observer) {
-    std::unique_ptr<PlatformEventObserverBase> new_observer =
-        CreatePlatformEventObserverFromType(type);
-    if (!new_observer)
-      return;
-    observer = new_observer.get();
-    platform_event_observers_.AddWithID(std::move(new_observer),
-                                        static_cast<int32_t>(type));
+  if (type == blink::kWebPlatformEventTypeDeviceMotion ||
+      type == blink::kWebPlatformEventTypeDeviceOrientation ||
+      type == blink::kWebPlatformEventTypeDeviceOrientationAbsolute) {
+    // this method creates DeviceSensorEventPump instances if necessary and
+    // calls Start() on them
+    InitDeviceSensorEventPump(type, listener);
+  } else {
+    PlatformEventObserverBase* observer =
+        platform_event_observers_.Lookup(type);
+    if (!observer) {
+      std::unique_ptr<PlatformEventObserverBase> new_observer =
+          CreatePlatformEventObserverFromType(type);
+      if (!new_observer)
+        return;
+      observer = new_observer.get();
+      platform_event_observers_.AddWithID(std::move(new_observer),
+                                          static_cast<int32_t>(type));
+    }
+    observer->Start(listener);
   }
-  observer->Start(listener);
 }
 
 void RendererBlinkPlatformImpl::StopListening(
     blink::WebPlatformEventType type) {
-  PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
-  if (!observer)
-    return;
-  observer->Stop();
+  if (type == blink::kWebPlatformEventTypeDeviceMotion ||
+      type == blink::kWebPlatformEventTypeDeviceOrientation ||
+      type == blink::kWebPlatformEventTypeDeviceOrientationAbsolute) {
+    StopDeviceSensorEventPump(type);
+  } else {
+    PlatformEventObserverBase* observer =
+        platform_event_observers_.Lookup(type);
+    if (!observer)
+      return;
+    observer->Stop();
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_thread.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -54,7 +53,9 @@ DeviceOrientationEventPump::DeviceOrientationEventPump(bool absolute)
       absolute_(absolute),
       fall_back_to_absolute_orientation_sensor_(!absolute) {}
 
-DeviceOrientationEventPump::~DeviceOrientationEventPump() {}
+DeviceOrientationEventPump::~DeviceOrientationEventPump() {
+  StopIfObserving();
+}
 
 void DeviceOrientationEventPump::SendStartMessage() {
   if (!sensor_provider_) {
