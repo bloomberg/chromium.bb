@@ -4,6 +4,8 @@
 
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
+#include "base/i18n/rtl.h"
+#include "base/test/icu_test_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +22,11 @@ using base::ExpectDictStringValue;
 class SyncCycleSnapshotTest : public testing::Test {};
 
 TEST_F(SyncCycleSnapshotTest, SyncCycleSnapshotToValue) {
+  // Formatting of "short_poll_interval" and "long_poll_interval" values depends
+  // on the current locale. Expectations below use English (US) formatting.
+  base::test::ScopedRestoreICUDefaultLocale restore_locale;
+  base::i18n::SetICUDefaultLocale("en_US");
+
   ModelNeutralState model_neutral;
   model_neutral.num_successful_commits = 5;
   model_neutral.num_successful_bookmark_commits = 10;
