@@ -434,4 +434,72 @@ void BluetoothTestBase::RemoveTimedOutDevices() {
   adapter_->RemoveTimedOutDevices();
 }
 
+BluetoothTestBase::LowEnergyDeviceData::LowEnergyDeviceData() = default;
+
+BluetoothTestBase::LowEnergyDeviceData::LowEnergyDeviceData(
+    LowEnergyDeviceData&& data) = default;
+
+BluetoothTestBase::LowEnergyDeviceData::~LowEnergyDeviceData() = default;
+
+BluetoothTestBase::LowEnergyDeviceData
+BluetoothTestBase::GetLowEnergyDeviceData(int device_ordinal) const {
+  LowEnergyDeviceData device_data;
+  switch (device_ordinal) {
+    case 1:
+      device_data.name = kTestDeviceName;
+      device_data.address = kTestDeviceAddress1;
+      device_data.rssi = static_cast<int>(TestRSSI::LOWEST);
+      device_data.advertised_uuids = {BluetoothUUID(kTestUUIDGenericAccess),
+                                      BluetoothUUID(kTestUUIDGenericAttribute)};
+      device_data.service_data = {{BluetoothUUID(kTestUUIDHeartRate), {1}}};
+      device_data.manufacturer_data = {{kTestManufacturerId, {1, 2, 3, 4}}};
+      device_data.tx_power = static_cast<int>(TestTxPower::LOWEST);
+      break;
+    case 2:
+      device_data.name = kTestDeviceName;
+      device_data.address = kTestDeviceAddress1;
+      device_data.rssi = static_cast<int>(TestRSSI::LOWER);
+      device_data.advertised_uuids = {BluetoothUUID(kTestUUIDImmediateAlert),
+                                      BluetoothUUID(kTestUUIDLinkLoss)};
+      device_data.service_data = {
+          {BluetoothUUID(kTestUUIDHeartRate), {}},
+          {BluetoothUUID(kTestUUIDImmediateAlert), {0, 2}}};
+      device_data.manufacturer_data = {{kTestManufacturerId, {}}};
+      device_data.tx_power = static_cast<int>(TestTxPower::LOWER);
+      break;
+    case 3:
+      device_data.name = kTestDeviceNameEmpty;
+      device_data.address = kTestDeviceAddress1;
+      device_data.rssi = static_cast<int>(TestRSSI::LOW);
+      break;
+    case 4:
+      device_data.name = kTestDeviceNameEmpty;
+      device_data.address = kTestDeviceAddress2;
+      device_data.rssi = static_cast<int>(TestRSSI::MEDIUM);
+      break;
+    case 5:
+      device_data.address = kTestDeviceAddress1;
+      device_data.rssi = static_cast<int>(TestRSSI::HIGH);
+      break;
+    case 6:
+      device_data.name = kTestDeviceName;
+      device_data.address = kTestDeviceAddress2;
+      device_data.rssi = static_cast<int>(TestRSSI::LOWEST);
+      device_data.transport = BLUETOOTH_TRANSPORT_DUAL;
+      break;
+    case 7:
+      device_data.name = kTestDeviceNameU2f;
+      device_data.address = kTestDeviceAddress1;
+      device_data.rssi = static_cast<int>(TestRSSI::LOWEST);
+      device_data.advertised_uuids = {BluetoothUUID(kTestUUIDU2f)};
+      device_data.service_data = {
+          {BluetoothUUID(kTestUUIDU2fControlPointLength), {0, 20}}};
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return device_data;
+}
+
 }  // namespace device

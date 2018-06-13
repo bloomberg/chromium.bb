@@ -163,42 +163,42 @@ class BluetoothTestBase : public testing::Test {
   // |device_ordinal| selects between multiple fake device data sets to produce:
   //   1: Name: kTestDeviceName
   //      Address:           kTestDeviceAddress1
-  //      RSSI:              kTestRSSI1
+  //      RSSI:              TestRSSI::LOWEST
   //      Advertised UUIDs: {kTestUUIDGenericAccess, kTestUUIDGenericAttribute}
   //      Service Data:     {kTestUUIDHeartRate: [1]}
   //      ManufacturerData: {kTestManufacturerId: [1, 2, 3, 4]}
-  //      Tx Power:          kTestTxPower1
+  //      Tx Power:          TestTxPower::LOWEST
   //   2: Name: kTestDeviceName
   //      Address:           kTestDeviceAddress1
-  //      RSSI:              kTestRSSI2
+  //      RSSI:              TestRSSI::LOWER
   //      Advertised UUIDs: {kTestUUIDImmediateAlert, kTestUUIDLinkLoss}
   //      Service Data:     {kTestUUIDHeartRate: [],
   //                         kTestUUIDImmediateAlert: [0, 2]}
   //      ManufacturerData: {kTestManufacturerId: []}
-  //      Tx Power:          kTestTxPower2
+  //      Tx Power:          TestTxPower::LOWER
   //   3: Name:    kTestDeviceNameEmpty
   //      Address: kTestDeviceAddress1
-  //      RSSI:    kTestRSSI3
+  //      RSSI:    TestRSSI::LOW
   //      No Advertised UUIDs
   //      No Service Data
   //      No Manufacturer Data
   //      No Tx Power
   //   4: Name:    kTestDeviceNameEmpty
   //      Address: kTestDeviceAddress2
-  //      RSSI:    kTestRSSI4
+  //      RSSI:    TestRSSI::MEDIUM
   //      No Advertised UUIDs
   //      No Service Data
   //      No Manufacturer Data
   //      No Tx Power
   //   5: No name device
   //      Address: kTestDeviceAddress1
-  //      RSSI:    kTestRSSI5
+  //      RSSI:    TestRSSI::HIGH
   //      No Advertised UUIDs
   //      No Service Data
   //      No Tx Power
   //   6: Name:    kTestDeviceName
   //      Address: kTestDeviceAddress2
-  //      RSSI:    kTestRSSI1,
+  //      RSSI:    TestRSSI::LOWEST
   //      No Advertised UUIDs
   //      No Service Data
   //      No Manufacturer Data
@@ -206,12 +206,11 @@ class BluetoothTestBase : public testing::Test {
   //      Supports BR/EDR and LE.
   //   7: Name:    kTestDeviceNameU2f
   //      Address: kTestDeviceAddress1
-  //      RSSI:    kTestRSSI1,
-  //      Advertised UUIDs: {kTestUUIDU2fControlPointLength}
+  //      RSSI:    TestRSSI::LOWEST
+  //      Advertised UUIDs: {kTestUUIDU2f}
   //      Service Data:     {kTestUUIDU2fControlPointLength: [0, 20]}
   //      No Manufacturer Data
   //      No Tx Power
-  //      Supports LE.
   virtual BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal);
 
   // Simulates a connected low energy device. Used before starting a low energy
@@ -526,6 +525,28 @@ class BluetoothTestBase : public testing::Test {
   virtual void ResetEventCounts();
 
   void RemoveTimedOutDevices();
+
+ protected:
+  // Utility struct and method to return required data to simulate a LE device
+  // corresponding to |device_ordinal|.
+  struct LowEnergyDeviceData {
+    LowEnergyDeviceData();
+    LowEnergyDeviceData(LowEnergyDeviceData&& data);
+    ~LowEnergyDeviceData();
+
+    base::Optional<std::string> name;
+    std::string address;
+    int8_t rssi = 0;
+    BluetoothDevice::UUIDList advertised_uuids;
+    BluetoothDevice::ServiceDataMap service_data;
+    BluetoothDevice::ManufacturerDataMap manufacturer_data;
+    base::Optional<int8_t> tx_power;
+    BluetoothTransport transport = BLUETOOTH_TRANSPORT_LE;
+
+    DISALLOW_COPY_AND_ASSIGN(LowEnergyDeviceData);
+  };
+
+  LowEnergyDeviceData GetLowEnergyDeviceData(int device_ordinal) const;
 
   // A ScopedTaskEnvironment is required by some implementations that will
   // PostTasks and by base::RunLoop().RunUntilIdle() use in this fixture.

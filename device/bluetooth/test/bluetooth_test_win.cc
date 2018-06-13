@@ -239,71 +239,20 @@ void BluetoothTestWin::StartLowEnergyDiscoverySession() {
 }
 
 BluetoothDevice* BluetoothTestWin::SimulateLowEnergyDevice(int device_ordinal) {
-  if (device_ordinal > 4 || device_ordinal < 1)
-    return nullptr;
-
-  std::string device_name = kTestDeviceName;
-  std::string device_address = kTestDeviceAddress1;
-  std::string service_uuid_1;
-  std::string service_uuid_2;
-
-  switch (device_ordinal) {
-    case 1:
-      service_uuid_1 = kTestUUIDGenericAccess;
-      service_uuid_2 = kTestUUIDGenericAttribute;
-      break;
-    case 2:
-      service_uuid_1 = kTestUUIDImmediateAlert;
-      service_uuid_2 = kTestUUIDLinkLoss;
-      break;
-    case 3:
-      device_name = kTestDeviceNameEmpty;
-      break;
-    case 4:
-      device_name = kTestDeviceNameEmpty;
-      device_address = kTestDeviceAddress2;
-      break;
-  }
-
-  if (BluetoothAdapterWin::UseNewBLEWinImplementation()) {
-    std::vector<GUID> guids;
-    if (!service_uuid_1.empty())
-      guids.push_back(CanonicalStringToGUID(service_uuid_1));
-    if (!service_uuid_2.empty())
-      guids.push_back(CanonicalStringToGUID(service_uuid_2));
-
-    auto service_uuids = Make<base::win::Vector<GUID>>(std::move(guids));
-    auto advertisement = Make<FakeBluetoothLEAdvertisementWinrt>(
-        std::move(device_name), std::move(service_uuids));
-    auto event_args = Make<FakeBluetoothLEAdvertisementReceivedEventArgsWinrt>(
-        device_address, std::move(advertisement));
-    static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
-        ->watcher()
-        ->SimulateAdvertisement(std::move(event_args));
-  } else {
-    win::BLEDevice* simulated_device = fake_bt_le_wrapper_->SimulateBLEDevice(
-        device_name, CanonicalStringToBLUETOOTH_ADDRESS(device_address));
-    if (simulated_device != nullptr) {
-      if (!service_uuid_1.empty()) {
-        fake_bt_le_wrapper_->SimulateGattService(
-            simulated_device, nullptr,
-            CanonicalStringToBTH_LE_UUID(service_uuid_1));
-      }
-      if (!service_uuid_2.empty()) {
-        fake_bt_le_wrapper_->SimulateGattService(
-            simulated_device, nullptr,
-            CanonicalStringToBTH_LE_UUID(service_uuid_2));
-      }
+  LowEnergyDeviceData data = GetLowEnergyDeviceData(device_ordinal);
+  win::BLEDevice* simulated_device = fake_bt_le_wrapper_->SimulateBLEDevice(
+      data.name.value_or(std::string()),
+      CanonicalStringToBLUETOOTH_ADDRESS(data.address));
+  if (simulated_device != nullptr) {
+    for (const auto& uuid : data.advertised_uuids) {
+      fake_bt_le_wrapper_->SimulateGattService(
+          simulated_device, nullptr,
+          CanonicalStringToBTH_LE_UUID(uuid.canonical_value()));
     }
-    FinishPendingTasks();
   }
+  FinishPendingTasks();
 
-  for (auto* device : adapter_->GetDevices()) {
-    if (device->GetAddress() == device_address)
-      return device;
-  }
-
-  return nullptr;
+  return adapter_->GetDevice(data.address);
 }
 
 void BluetoothTestWin::SimulateGattConnection(BluetoothDevice* device) {
@@ -661,6 +610,28 @@ BluetoothTestWinrt::BluetoothTestWinrt() {
 bool BluetoothTestWinrt::PlatformSupportsLowEnergy() {
   return GetParam() ? base::win::GetVersion() >= base::win::VERSION_WIN10
                     : BluetoothTestWin::PlatformSupportsLowEnergy();
+}
+
+BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
+    int device_ordinal) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateLowEnergyDevice(device_ordinal);
+
+  LowEnergyDeviceData data = GetLowEnergyDeviceData(device_ordinal);
+  std::vector<GUID> guids;
+  for (const auto& uuid : data.advertised_uuids)
+    guids.push_back(CanonicalStringToGUID(uuid.canonical_value()));
+
+  auto service_uuids = Make<base::win::Vector<GUID>>(std::move(guids));
+  auto advertisement = Make<FakeBluetoothLEAdvertisementWinrt>(
+      std::move(data.name), std::move(service_uuids));
+  auto event_args = Make<FakeBluetoothLEAdvertisementReceivedEventArgsWinrt>(
+      data.address, std::move(advertisement));
+  static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
+      ->watcher()
+      ->SimulateAdvertisement(std::move(event_args));
+
+  return adapter_->GetDevice(data.address);
 }
 
 BluetoothTestWinrt::~BluetoothTestWinrt() = default;

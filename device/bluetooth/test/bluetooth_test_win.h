@@ -118,6 +118,7 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   ~BluetoothTestWinrt() override;
 
   bool PlatformSupportsLowEnergy() override;
+  BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
