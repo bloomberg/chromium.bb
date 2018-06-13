@@ -173,11 +173,25 @@ identity::mojom::IdentityManager* Service::GetIdentityManager() {
   return identity_manager_.get();
 }
 
+void Service::RetryRefreshToken() {
+  base::TimeDelta backoff_delay =
+      std::min(kMinTokenRefreshDelay *
+                   (1 << (token_refresh_error_backoff_factor - 1)),
+               kMaxTokenRefreshDelay) +
+      base::RandDouble() * kMinTokenRefreshDelay;
+  if (backoff_delay < kMaxTokenRefreshDelay)
+    ++token_refresh_error_backoff_factor;
+  token_refresh_timer_->Start(FROM_HERE, backoff_delay, this,
+                              &Service::RequestAccessToken);
+}
+
 void Service::GetPrimaryAccountInfoCallback(
     const base::Optional<AccountInfo>& account_info,
     const identity::AccountState& account_state) {
   if (!account_info.has_value() || !account_state.has_refresh_token ||
       account_info.value().gaia.empty()) {
+    LOG(ERROR) << "Failed to retrieve primary account info.";
+    RetryRefreshToken();
     return;
   }
   account_id_ = AccountId::FromUserEmailGaiaId(account_info.value().email,
@@ -195,17 +209,7 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
                                      const GoogleServiceAuthError& error) {
   if (!token.has_value()) {
     LOG(ERROR) << "Failed to retrieve token, error: " << error.ToString();
-
-    base::TimeDelta backoff_delay =
-        std::min(kMinTokenRefreshDelay *
-                     (1 << (token_refresh_error_backoff_factor - 1)),
-                 kMaxTokenRefreshDelay) +
-        base::RandDouble() * kMinTokenRefreshDelay;
-    if (backoff_delay < kMaxTokenRefreshDelay)
-      ++token_refresh_error_backoff_factor;
-
-    token_refresh_timer_->Start(FROM_HERE, backoff_delay, this,
-                                &Service::RequestAccessToken);
+    RetryRefreshToken();
     return;
   }
 
