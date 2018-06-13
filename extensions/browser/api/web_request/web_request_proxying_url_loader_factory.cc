@@ -8,6 +8,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "net/http/http_util.h"
 
@@ -194,7 +195,23 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnComplete(
       status.error_code);
 
   // Deletes |this|.
-  factory_->RemoveRequest(request_id_);
+  factory_->RemoveRequest(network_service_request_id_);
+}
+
+void WebRequestProxyingURLLoaderFactory::InProgressRequest::HandleAuthRequest(
+    net::AuthChallengeInfo* auth_info,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    WebRequestAPI::AuthRequestCallback callback) {
+  DCHECK(!auth_credentials_);
+
+  // We first need to simulate |onHeadersReceived| for the response headers
+  // which indicated a need to authenticate.
+  network::ResourceResponseHead head;
+  head.headers = response_headers;
+  current_response_ = head;
+  HandleResponseOrRedirectHeaders(base::BindRepeating(base::BindRepeating(
+      &InProgressRequest::ContinueAuthRequest, weak_factory_.GetWeakPtr(),
+      base::RetainedRef(auth_info), base::Passed(&callback))));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -298,6 +315,77 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   // From here the lifecycle of this request is driven by subsequent events on
   // either |proxy_loader_binding_| or |proxy_client_binding_|.
+}
+
+void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
+    net::AuthChallengeInfo* auth_info,
+    WebRequestAPI::AuthRequestCallback callback,
+    int error_code) {
+  if (error_code != net::OK) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(callback), base::nullopt,
+                       true /* should_cancel */));
+    return;
+  }
+
+  info_->AddResponseInfoFromResourceResponse(current_response_);
+
+  auth_credentials_.emplace();
+  net::NetworkDelegate::AuthRequiredResponse response =
+      ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
+          factory_->browser_context_, factory_->info_map_, &info_.value(),
+          *auth_info,
+          base::BindRepeating(&InProgressRequest::OnAuthRequestHandled,
+                              weak_factory_.GetWeakPtr(),
+                              base::Passed(&callback)),
+          &auth_credentials_.value());
+
+  // At least one extension has a blocking handler for this request, so we'll
+  // just wait for them to finish. |OnAuthRequestHandled()| will be invoked
+  // eventually.
+  if (response == net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING)
+    return;
+
+  // We're not touching this auth request. Let the default browser behavior
+  // proceed.
+  DCHECK_EQ(response, net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(callback), base::nullopt,
+                     false /* should_cancel */));
+}
+
+void WebRequestProxyingURLLoaderFactory::InProgressRequest::
+    OnAuthRequestHandled(WebRequestAPI::AuthRequestCallback callback,
+                         net::NetworkDelegate::AuthRequiredResponse response) {
+  if (proxied_client_binding_.is_bound())
+    proxied_client_binding_.ResumeIncomingMethodCallProcessing();
+
+  base::OnceClosure completion;
+  switch (response) {
+    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION:
+      // We're not touching this auth request. Let the default browser behavior
+      // proceed.
+      completion = base::BindOnce(std::move(callback), base::nullopt,
+                                  false /* should_cancel */);
+      break;
+    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH:
+      completion =
+          base::BindOnce(std::move(callback), auth_credentials_.value(),
+                         false /* should_cancel */);
+      break;
+    case net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_CANCEL_AUTH:
+      completion = base::BindOnce(std::move(callback), base::nullopt,
+                                  true /* should_cancel */);
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   std::move(completion));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -411,7 +499,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
       true /* started */, status.error_code);
 
   // Deletes |this|.
-  factory_->RemoveRequest(request_id_);
+  factory_->RemoveRequest(network_service_request_id_);
 }
 
 WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
@@ -477,6 +565,15 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  if (request_id) {
+    // Only requests with a non-zero request ID can have their proxy associated
+    // with said ID. This is necessary to support correlation against any auth
+    // events received by the browser. Requests with a request ID of 0 therefore
+    // do not support dispatching |WebRequest.onAuthRequired| events.
+    proxies_->AssociateProxyWithRequestId(
+        this, content::GlobalRequestID(render_process_id_, request_id));
+  }
+
   // The request ID doesn't really matter in the Network Service path. It just
   // needs to be unique per-BrowserContext so extensions can make sense of it.
   // Note that |network_service_request_id_| by contrast is not necessarily
@@ -495,6 +592,7 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
           this, web_request_id, request_id, routing_id, options,
           is_non_navigation_browser_request, request, traffic_annotation,
           std::move(loader_request), std::move(client)));
+  network_request_id_to_web_request_id_.emplace(request_id, web_request_id);
   result.first->second->Restart();
 }
 
@@ -502,6 +600,26 @@ void WebRequestProxyingURLLoaderFactory::Clone(
     network::mojom::URLLoaderFactoryRequest loader_request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   proxy_bindings_.AddBinding(this, std::move(loader_request));
+}
+
+void WebRequestProxyingURLLoaderFactory::HandleAuthRequest(
+    net::AuthChallengeInfo* auth_info,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    int32_t request_id,
+    WebRequestAPI::AuthRequestCallback callback) {
+  auto it = network_request_id_to_web_request_id_.find(request_id);
+  if (it == network_request_id_to_web_request_id_.end()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(callback), base::nullopt,
+                       true /* should_cancel */));
+    return;
+  }
+
+  auto request_it = requests_.find(it->second);
+  DCHECK(request_it != requests_.end());
+  request_it->second->HandleAuthRequest(auth_info, std::move(response_headers),
+                                        std::move(callback));
 }
 
 WebRequestProxyingURLLoaderFactory::~WebRequestProxyingURLLoaderFactory() =
@@ -524,10 +642,14 @@ void WebRequestProxyingURLLoaderFactory::OnProxyBindingError() {
   }
 }
 
-void WebRequestProxyingURLLoaderFactory::RemoveRequest(uint64_t request_id) {
-  auto it = requests_.find(request_id);
-  DCHECK(it != requests_.end());
-  requests_.erase(it);
+void WebRequestProxyingURLLoaderFactory::RemoveRequest(
+    int32_t network_service_request_id) {
+  auto it =
+      network_request_id_to_web_request_id_.find(network_service_request_id);
+  DCHECK(it != network_request_id_to_web_request_id_.end());
+  uint64_t web_request_id = it->second;
+  network_request_id_to_web_request_id_.erase(it);
+  requests_.erase(web_request_id);
 }
 
 }  // namespace extensions

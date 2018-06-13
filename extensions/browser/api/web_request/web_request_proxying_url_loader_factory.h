@@ -88,10 +88,21 @@ class WebRequestProxyingURLLoaderFactory
         mojo::ScopedDataPipeConsumerHandle body) override;
     void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
+    void HandleAuthRequest(
+        net::AuthChallengeInfo* auth_info,
+        scoped_refptr<net::HttpResponseHeaders> response_headers,
+        WebRequestAPI::AuthRequestCallback callback);
+
    private:
     void ContinueToBeforeSendHeaders(int error_code);
     void ContinueToSendHeaders(int error_code);
     void ContinueToResponseStarted(int error_code);
+    void ContinueAuthRequest(net::AuthChallengeInfo* auth_info,
+                             WebRequestAPI::AuthRequestCallback callback,
+                             int error_code);
+    void OnAuthRequestHandled(
+        WebRequestAPI::AuthRequestCallback callback,
+        net::NetworkDelegate::AuthRequiredResponse response);
     void ContinueToBeforeRedirect(const net::RedirectInfo& redirect_info,
                                   int error_code);
     void HandleResponseOrRedirectHeaders(
@@ -125,6 +136,10 @@ class WebRequestProxyingURLLoaderFactory
     scoped_refptr<net::HttpResponseHeaders> override_headers_;
     GURL redirect_url_;
     GURL allowed_unsafe_redirect_url_;
+
+    // Holds any provided auth credentials through the extent of the request's
+    // lifetime.
+    base::Optional<net::AuthCredentials> auth_credentials_;
 
     // Iff |true| we will ignore the next incoming |FollowRedirect()| call from
     // our client.
@@ -172,10 +187,17 @@ class WebRequestProxyingURLLoaderFactory
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest loader_request) override;
 
+  // WebRequestAPI::Proxy:
+  void HandleAuthRequest(
+      net::AuthChallengeInfo* auth_info,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      int32_t request_id,
+      WebRequestAPI::AuthRequestCallback callback) override;
+
  private:
   void OnTargetFactoryError();
   void OnProxyBindingError();
-  void RemoveRequest(uint64_t request_id);
+  void RemoveRequest(int32_t network_service_request_id);
 
   void* const browser_context_;
   content::ResourceContext* const resource_context_;
@@ -189,7 +211,13 @@ class WebRequestProxyingURLLoaderFactory
   // Owns |this|.
   WebRequestAPI::ProxySet* const proxies_;
 
-  std::map<int32_t, std::unique_ptr<InProgressRequest>> requests_;
+  // Mapping from our own internally generated request ID to an
+  // InProgressRequest instance.
+  std::map<uint64_t, std::unique_ptr<InProgressRequest>> requests_;
+
+  // A mapping from the network stack's notion of request ID to our own
+  // internally generated request ID for the same request.
+  std::map<int32_t, uint64_t> network_request_id_to_web_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestProxyingURLLoaderFactory);
 };

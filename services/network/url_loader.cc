@@ -389,7 +389,6 @@ URLLoader::URLLoader(
 
 URLLoader::~URLLoader() {
   RecordBodyReadFromNetBeforePausedIfNeeded();
-
   if (keepalive_ && keepalive_statistics_recorder_)
     keepalive_statistics_recorder_->OnLoadFinished(factory_params_->process_id);
 }
@@ -486,7 +485,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }
 
-void URLLoader::OnAuthRequired(net::URLRequest* unused,
+void URLLoader::OnAuthRequired(net::URLRequest* url_request,
                                net::AuthChallengeInfo* auth_info) {
   if (!network_service_client_) {
     OnAuthCredentials(base::nullopt);
@@ -504,10 +503,14 @@ void URLLoader::OnAuthRequired(net::URLRequest* unused,
   auth_challenge_responder_binding_.Bind(std::move(request));
   auth_challenge_responder_binding_.set_connection_error_handler(
       base::BindOnce(&URLLoader::DeleteSelf, base::Unretained(this)));
+
+  ResourceResponseHead head;
+  if (url_request->response_headers())
+    head.headers = url_request->response_headers();
   network_service_client_->OnAuthRequired(
       factory_params_->process_id, render_frame_id_, request_id_,
       url_request_->url(), url_request_->site_for_cookies(),
-      first_auth_attempt_, auth_info, resource_type_,
+      first_auth_attempt_, auth_info, resource_type_, head,
       std::move(auth_challenge_responder));
 
   first_auth_attempt_ = false;

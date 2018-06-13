@@ -358,6 +358,17 @@ std::unique_ptr<WebRequestEventDetails> CreateEventDetails(
 
 }  // namespace
 
+void WebRequestAPI::Proxy::HandleAuthRequest(
+    net::AuthChallengeInfo* auth_info,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    int32_t request_id,
+    AuthRequestCallback callback) {
+  // Default implementation cancels the request.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(callback), base::nullopt,
+                                         false /* should_cancel */));
+}
+
 WebRequestAPI::ProxySet::ProxySet() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -375,9 +386,17 @@ void WebRequestAPI::ProxySet::AddProxy(std::unique_ptr<Proxy> proxy) {
 
 void WebRequestAPI::ProxySet::RemoveProxy(Proxy* proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto it = proxies_.find(proxy);
-  DCHECK(it != proxies_.end());
-  proxies_.erase(it);
+
+  auto requests_it = proxy_to_request_id_map_.find(proxy);
+  if (requests_it != proxy_to_request_id_map_.end()) {
+    for (const auto& id : requests_it->second)
+      request_id_to_proxy_map_.erase(id);
+    proxy_to_request_id_map_.erase(requests_it);
+  }
+
+  auto proxy_it = proxies_.find(proxy);
+  DCHECK(proxy_it != proxies_.end());
+  proxies_.erase(proxy_it);
 }
 
 void WebRequestAPI::ProxySet::Shutdown() {
@@ -385,6 +404,44 @@ void WebRequestAPI::ProxySet::Shutdown() {
   is_shutdown_ = true;
 
   proxies_.clear();
+}
+
+void WebRequestAPI::ProxySet::AssociateProxyWithRequestId(
+    Proxy* proxy,
+    const content::GlobalRequestID& id) {
+  DCHECK(proxy);
+  DCHECK(proxies_.count(proxy));
+  DCHECK(id.request_id);
+  auto result = request_id_to_proxy_map_.emplace(id, proxy);
+  DCHECK(result.second) << "Unexpected request ID collision.";
+  proxy_to_request_id_map_[proxy].insert(id);
+}
+
+WebRequestAPI::Proxy* WebRequestAPI::ProxySet::GetProxyFromRequestId(
+    const content::GlobalRequestID& id) {
+  auto it = request_id_to_proxy_map_.find(id);
+  if (it == request_id_to_proxy_map_.end())
+    return nullptr;
+  return it->second;
+}
+
+void WebRequestAPI::ProxySet::MaybeProxyAuthRequest(
+    net::AuthChallengeInfo* auth_info,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    const content::GlobalRequestID& request_id,
+    AuthRequestCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  Proxy* proxy = GetProxyFromRequestId(request_id);
+  if (!proxy) {
+    // No proxy found, so the request must already be dead.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(std::move(callback), base::nullopt,
+                                           true /* should_cancel */));
+    return;
+  }
+
+  proxy->HandleAuthRequest(auth_info, std::move(response_headers),
+                           request_id.request_id, std::move(callback));
 }
 
 WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
@@ -461,17 +518,8 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     bool is_navigation,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const auto* rules_registry_service =
-      BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(
-          browser_context_);
-  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
-      declarative_net_request::RulesMonitorService>::Get(browser_context_);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      (listener_count_ == 0 &&
-       !rules_registry_service->HasAnyRegisteredRules() &&
-       !rules_monitor_service->HasAnyRegisteredRulesets())) {
+  if (!MayHaveProxies())
     return false;
-  }
 
   auto proxied_request = std::move(*factory_request);
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
@@ -514,6 +562,26 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   return true;
 }
 
+bool WebRequestAPI::MaybeProxyAuthRequest(
+    net::AuthChallengeInfo* auth_info,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    const content::GlobalRequestID& request_id,
+    bool is_main_frame,
+    AuthRequestCallback callback) {
+  if (!MayHaveProxies())
+    return false;
+
+  content::GlobalRequestID proxied_request_id = request_id;
+  if (is_main_frame)
+    proxied_request_id.child_id = -1;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ProxySet::MaybeProxyAuthRequest, proxies_,
+                     base::RetainedRef(auth_info), std::move(response_headers),
+                     proxied_request_id, std::move(callback)));
+  return true;
+}
+
 void WebRequestAPI::MaybeProxyWebSocket(
     content::RenderFrameHost* frame,
     network::mojom::WebSocketRequest* request,
@@ -547,6 +615,21 @@ void WebRequestAPI::MaybeProxyWebSocket(
           base::Unretained(info_map_), std::move(proxied_socket_ptr_info),
           std::move(proxied_request), std::move(authentication_request),
           proxies_));
+}
+
+bool WebRequestAPI::MayHaveProxies() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return false;
+
+  const auto* rules_registry_service =
+      BrowserContextKeyedAPIFactory<RulesRegistryService>::Get(
+          browser_context_);
+  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
+      declarative_net_request::RulesMonitorService>::Get(browser_context_);
+  return listener_count_ > 0 ||
+         rules_registry_service->HasAnyRegisteredRules() ||
+         rules_monitor_service->HasAnyRegisteredRulesets();
 }
 
 // Represents a single unique listener to an event, along with whatever filter

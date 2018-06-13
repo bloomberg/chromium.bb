@@ -557,9 +557,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
               std::move(factory_for_webui)),
-          CreateURLLoaderThrottles(), 0 /* routing_id */, 0 /* request_id? */,
-          network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
-          kNavigationUrlLoaderTrafficAnnotation,
+          CreateURLLoaderThrottles(), 0 /* routing_id */,
+          global_request_id_.request_id, network::mojom::kURLLoadOptionNone,
+          resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
       return;
     }
@@ -571,9 +571,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           network::SharedURLLoaderFactory::Create(
               std::move(request_info->blob_url_loader_factory)),
-          CreateURLLoaderThrottles(), 0 /* routing_id */, 0 /* request_id? */,
-          network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
-          kNavigationUrlLoaderTrafficAnnotation,
+          CreateURLLoaderThrottles(), 0 /* routing_id */,
+          global_request_id_.request_id, network::mojom::kURLLoadOptionNone,
+          resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
       return;
     }
@@ -668,9 +668,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
               std::move(single_request_handler)),
-          CreateURLLoaderThrottles(), frame_tree_node_id_, 0 /* request_id? */,
-          network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
-          kNavigationUrlLoaderTrafficAnnotation,
+          CreateURLLoaderThrottles(), frame_tree_node_id_,
+          global_request_id_.request_id, network::mojom::kURLLoadOptionNone,
+          resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
 
       subresource_loader_params_ =
@@ -749,9 +749,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               default_request_handler_factory_.Run(
                   subresource_loader_params_.has_value()
                   /* was_request_intercepted */)),
-          CreateURLLoaderThrottles(), frame_tree_node_id_, 0 /* request_id */,
-          network::mojom::kURLLoadOptionNone, resource_request_.get(),
-          this /* client */, kNavigationUrlLoaderTrafficAnnotation,
+          CreateURLLoaderThrottles(), frame_tree_node_id_,
+          global_request_id_.request_id, network::mojom::kURLLoadOptionNone,
+          resource_request_.get(), this /* client */,
+          kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
       return;
     }
@@ -814,7 +815,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                                            RESOURCE_TYPE_MAIN_FRAME);
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory, CreateURLLoaderThrottles(), frame_tree_node_id_,
-        0 /* request_id? */, options, resource_request_.get(), this,
+        global_request_id_.request_id, options, resource_request_.get(), this,
         kNavigationUrlLoaderTrafficAnnotation,
         base::ThreadTaskRunnerHandle::Get());
   }

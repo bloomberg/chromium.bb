@@ -1786,6 +1786,7 @@ class TestAuthNetworkServiceClient
                       bool first_auth_attempt,
                       const scoped_refptr<net::AuthChallengeInfo>& auth_info,
                       int32_t resource_type,
+                      const base::Optional<network::ResourceResponseHead>& head,
                       network::mojom::AuthChallengeResponderPtr
                           auth_challenge_responder) override {
     switch (credentials_response_) {
@@ -1804,6 +1805,7 @@ class TestAuthNetworkServiceClient
     }
     std::move(auth_challenge_responder)->OnAuthCredentials(auth_credentials_);
     ++on_auth_required_call_counter_;
+    last_seen_response_headers_ = head ? head->headers : nullptr;
   }
 
   void OnCertificateRequested(
@@ -1833,10 +1835,15 @@ class TestAuthNetworkServiceClient
 
   int on_auth_required_call_counter() { return on_auth_required_call_counter_; }
 
+  net::HttpResponseHeaders* last_seen_response_headers() {
+    return last_seen_response_headers_.get();
+  }
+
  private:
   CredentialsResponse credentials_response_;
   base::Optional<net::AuthCredentials> auth_credentials_;
   int on_auth_required_call_counter_ = 0;
+  scoped_refptr<net::HttpResponseHeaders> last_seen_response_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAuthNetworkServiceClient);
 };
@@ -2007,6 +2014,43 @@ TEST_F(URLLoaderTest, NoAuthRequiredForFavicon) {
   // No auth required for favicon.
   EXPECT_EQ(0, network_service_client.on_auth_required_call_counter());
   ASSERT_FALSE(url_loader);
+}
+
+TEST_F(URLLoaderTest, HttpAuthResponseHeadersAvailable) {
+  TestAuthNetworkServiceClient network_service_client;
+  network_service_client.set_credentials_response(
+      TestAuthNetworkServiceClient::CredentialsResponse::CORRECT_CREDENTIALS);
+
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL(kTestAuthURL));
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = kProcessId;
+  params.is_corb_enabled = false;
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), &network_service_client,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(url_loader);
+
+  client()->RunUntilResponseBodyArrived();
+
+  // Spin the message loop until the delete callback is invoked, and then delete
+  // the URLLoader.
+  delete_run_loop.Run();
+
+  EXPECT_EQ(1, network_service_client.on_auth_required_call_counter());
+
+  auto* auth_required_headers =
+      network_service_client.last_seen_response_headers();
+  ASSERT_TRUE(auth_required_headers);
+  EXPECT_EQ(auth_required_headers->response_code(), 401);
 }
 
 }  // namespace network
