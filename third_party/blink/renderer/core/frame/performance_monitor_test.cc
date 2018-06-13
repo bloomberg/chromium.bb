@@ -15,10 +15,6 @@
 namespace blink {
 namespace {
 
-base::TimeTicks SecondsToTimeTicks(double seconds) {
-  return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
-}
-
 }  // namespace
 
 class PerformanceMonitorTest : public testing::Test {
@@ -67,6 +63,10 @@ class PerformanceMonitorTest : public testing::Test {
 
   String FrameContextURL();
   int NumUniqueFrameContextsSeen();
+
+  static base::TimeTicks SecondsToTimeTicks(double seconds) {
+    return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
+  }
 
   Persistent<PerformanceMonitor> monitor_;
   std::unique_ptr<DummyPageHolder> page_holder_;

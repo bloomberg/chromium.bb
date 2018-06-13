@@ -9,13 +9,6 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
-namespace {
-
-base::TimeTicks SecondsToTimeTicks(double seconds) {
-  return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
-}
-
-}  // namespace
 
 class IdlenessDetectorTest : public PageTestBase {
  protected:
@@ -50,7 +43,10 @@ class IdlenessDetectorTest : public PageTestBase {
     Detector()->DidProcessTask(start_time, end_time);
   }
 
- protected:
+  static base::TimeTicks SecondsToTimeTicks(double seconds) {
+    return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
+  }
+
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
 
