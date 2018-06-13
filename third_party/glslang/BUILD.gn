@@ -68,7 +68,7 @@ static_library("SPIRV") {
 
 static_library("glslang-default-resource-limits") {
   sources = [
-    "src/StandAlone/DefaultResourceLimits.cpp",
+    "src/StandAlone/ResourceLimits.cpp",
   ]
 
   all_dependent_configs = [ ":glslang_config" ]
