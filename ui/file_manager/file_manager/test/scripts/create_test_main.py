@@ -183,6 +183,7 @@ for filename, substitutions in (
     )),
     ('elements/files_safe_media.html', (('webview', 'iframe'),)),
     ('elements/files_safe_media.js', (
+        ("'foreground/elements", "'%sforeground/elements" % ROOT),
         ("'webview'", "'iframe'"),
         ("'contentload'", "'load'"),
         ('this.webview_.contentWindow.postMessage(data, FILES_APP_ORIGIN);',
