@@ -228,10 +228,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 #if defined(OS_LINUX)
   // Wraps provided dmabufs
   // (https://www.kernel.org/doc/html/latest/driver-api/dma-buf.html) with a
-  // VideoFrame. The dmabuf fds are dup()ed on creation, so that the VideoFrame
-  // retains a reference to them, and are automatically close()d on destruction,
-  // dropping the reference. The caller may safely close() its reference after
-  // calling WrapExternalDmabufs().
+  // VideoFrame. The frame will take ownership of |dmabuf_fds|, and will
+  // automatically close() them on destruction. Callers can call
+  // media::DuplicateFDs() if they need to retain a copy of the FDs for
+  // themselves. Note that the FDs are consumed even in case of failure.
   // The image data is only accessible via dmabuf fds, which are usually passed
   // directly to a hardware device and/or to another process, or can also be
   // mapped via mmap() for CPU access.
@@ -241,7 +241,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
-      const std::vector<int>& dmabuf_fds,
+      std::vector<base::ScopedFD> dmabuf_fds,
       base::TimeDelta timestamp);
 #endif
 
@@ -388,13 +388,14 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   size_t shared_memory_offset() const;
 
 #if defined(OS_LINUX)
-  // Returns backing DmaBuf file descriptor for given |plane|, if present, or
-  // -1 if not.
-  int DmabufFd(size_t plane) const;
-
-  // Duplicates internally the |fds_in|, overwriting the current ones. Returns
-  // false if something goes wrong, and leaves all internal fds closed.
-  bool DuplicateFileDescriptors(const std::vector<int>& fds_in);
+  // Return a vector containing the backing DmaBufs for this frame. The number
+  // of returned DmaBufs will be equal or less than the number of planes of
+  // the frame. If there are less, this means that the last FD contains the
+  // remaining planes.
+  // Note that the returned FDs are still owned by the VideoFrame. This means
+  // that the caller shall not close them, or use them after the VideoFrame is
+  // destroyed.
+  std::vector<int> DmabufFds() const;
 #endif
 
   void AddReadOnlySharedMemoryRegion(base::ReadOnlySharedMemoryRegion* region);
@@ -606,8 +607,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   size_t shared_memory_offset_;
 
 #if defined(OS_LINUX)
-  // Dmabufs for each plane. If set, this frame has DmaBuf backing in some way.
-  base::ScopedFD dmabuf_fds_[kMaxPlanes];
+  // Dmabufs for the frame, used when storage is STORAGE_DMABUFS. Size is either
+  // equal or less than the number of planes of the frame. If it is less, then
+  // the memory area represented by the last FD contains the remaining planes.
+  std::vector<base::ScopedFD> dmabuf_fds_;
 #endif
 
 #if defined(OS_MACOSX)

@@ -23,6 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/video/h264_parser.h"
 
@@ -420,15 +421,11 @@ void V4L2VideoEncodeAccelerator::FrameProcessed(bool force_keyframe,
   DCHECK_LT(static_cast<size_t>(output_buffer_index),
             image_processor_output_buffer_map_.size());
 
-  std::vector<base::ScopedFD>& scoped_fds =
-      image_processor_output_buffer_map_[output_buffer_index];
-  std::vector<int> fds;
-  for (auto& fd : scoped_fds) {
-    fds.push_back(fd.get());
-  }
   scoped_refptr<VideoFrame> output_frame = VideoFrame::WrapExternalDmabufs(
       device_input_format_, image_processor_->output_allocated_size(),
-      gfx::Rect(visible_size_), visible_size_, fds, timestamp);
+      gfx::Rect(visible_size_), visible_size_,
+      DuplicateFDs(image_processor_output_buffer_map_[output_buffer_index]),
+      timestamp);
   if (!output_frame) {
     NOTIFY_ERROR(kPlatformFailureError);
     return;
@@ -821,6 +818,16 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
       frame->timestamp().InSeconds() * base::Time::kMicrosecondsPerSecond;
 
   DCHECK_EQ(device_input_format_, frame->format());
+
+  std::vector<int> fds;
+  if (input_memory_type_ == V4L2_MEMORY_DMABUF) {
+    fds = frame->DmabufFds();
+    if (fds.size() != input_planes_count_) {
+      VLOGF(1) << "Invalid number of planes in the frame";
+      return false;
+    }
+  }
+
   for (size_t i = 0; i < input_planes_count_; ++i) {
     qbuf.m.planes[i].bytesused = base::checked_cast<__u32>(
         VideoFrame::PlaneSize(frame->format(), i, input_allocated_size_)
@@ -835,7 +842,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
         break;
 
       case V4L2_MEMORY_DMABUF:
-        qbuf.m.planes[i].m.fd = frame->DmabufFd(i);
+        qbuf.m.planes[i].m.fd = fds[i];
         DCHECK_NE(qbuf.m.planes[i].m.fd, -1);
         break;
 

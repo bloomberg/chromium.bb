@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/limits.h"
+#include "media/base/scopedfd_helper.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_util.h"
 #include "ui/gfx/geometry/point.h"
@@ -373,7 +374,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    const std::vector<int>& dmabuf_fds,
+    std::vector<base::ScopedFD> dmabuf_fds,
     base::TimeDelta timestamp) {
   const StorageType storage = STORAGE_DMABUFS;
   if (!IsValidConfig(format, storage, coded_size, visible_rect, natural_size)) {
@@ -383,14 +384,23 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     return nullptr;
   }
 
+  if (dmabuf_fds.empty() || dmabuf_fds.size() > NumPlanes(format)) {
+    LOG(DFATAL) << __func__ << " Incorrect number of dmabuf fds provided, got: "
+                << dmabuf_fds.size() << ", expected 1 to " << NumPlanes(format);
+    return nullptr;
+  }
+
   gpu::MailboxHolder mailbox_holders[kMaxPlanes];
   scoped_refptr<VideoFrame> frame =
       new VideoFrame(format, storage, coded_size, visible_rect, natural_size,
                      mailbox_holders, ReleaseMailboxCB(), timestamp);
-  if (!frame || !frame->DuplicateFileDescriptors(dmabuf_fds)) {
-    LOG(DFATAL) << __func__ << " Couldn't duplicate fds.";
+  if (!frame) {
+    LOG(DFATAL) << __func__ << " Couldn't create VideoFrame instance.";
     return nullptr;
   }
+
+  frame->dmabuf_fds_ = std::move(dmabuf_fds);
+
   return frame;
 }
 #endif
@@ -481,10 +491,8 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
 #if defined(OS_LINUX)
   // If there are any |dmabuf_fds_| plugged in, we should duplicate them.
   if (frame->storage_type() == STORAGE_DMABUFS) {
-    std::vector<int> original_fds;
-    for (size_t i = 0; i < kMaxPlanes; ++i)
-      original_fds.push_back(frame->DmabufFd(i));
-    if (!wrapping_frame->DuplicateFileDescriptors(original_fds)) {
+    wrapping_frame->dmabuf_fds_ = DuplicateFDs(frame->dmabuf_fds_);
+    if (wrapping_frame->dmabuf_fds_.empty()) {
       LOG(DFATAL) << __func__ << " Couldn't duplicate fds.";
       return nullptr;
     }
@@ -853,37 +861,14 @@ size_t VideoFrame::shared_memory_offset() const {
 }
 
 #if defined(OS_LINUX)
-int VideoFrame::DmabufFd(size_t plane) const {
+std::vector<int> VideoFrame::DmabufFds() const {
   DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
-  DCHECK(IsValidPlane(plane, format_));
-  return dmabuf_fds_[plane].get();
-}
+  std::vector<int> ret;
 
-bool VideoFrame::DuplicateFileDescriptors(const std::vector<int>& in_fds) {
-  // TODO(mcasas): Support offsets for e.g. multiplanar inside a single |in_fd|.
+  for (auto& fd : dmabuf_fds_)
+    ret.emplace_back(fd.get());
 
-  storage_type_ = STORAGE_DMABUFS;
-  // TODO(posciak): This is not exactly correct, it's possible for one
-  // buffer to contain more than one plane.
-  if (in_fds.size() != NumPlanes(format_)) {
-    LOG(FATAL) << "Not enough dmabuf fds provided, got: " <<  in_fds.size()
-               << ", expected: " << NumPlanes(format_);
-    return false;
-  }
-
-  // Make sure that all fds are closed if any dup() fails,
-  base::ScopedFD temp_dmabuf_fds[kMaxPlanes];
-  for (size_t i = 0; i < in_fds.size(); ++i) {
-    temp_dmabuf_fds[i] = base::ScopedFD(HANDLE_EINTR(dup(in_fds[i])));
-    if (!temp_dmabuf_fds[i].is_valid()) {
-      DPLOG(ERROR) << "Failed duplicating a dmabuf fd";
-      return false;
-    }
-  }
-  for (size_t i = 0; i < kMaxPlanes; ++i)
-    dmabuf_fds_[i] = std::move(temp_dmabuf_fds[i]);
-
-  return true;
+  return ret;
 }
 #endif
 
