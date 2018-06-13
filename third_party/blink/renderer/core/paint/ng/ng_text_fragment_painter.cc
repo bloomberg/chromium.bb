@@ -203,6 +203,8 @@ static void PaintSelection(GraphicsContext& context,
 
   const NGPhysicalOffsetRect selection_rect =
       paint_fragment.ComputeLocalSelectionRect(selection_status);
+  if (selection_rect.size.IsEmpty())
+    return;
   const NGPhysicalOffsetRect global_rect(
       selection_rect.offset + NGPhysicalOffset(box_rect.Location()),
       selection_rect.size);
