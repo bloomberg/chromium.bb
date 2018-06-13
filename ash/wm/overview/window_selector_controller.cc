@@ -168,6 +168,7 @@ class WindowSelectorController::OverviewBlurController
     DCHECK(window_selector);
     for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
       if (!window_selector->ShouldAnimateWallpaper(root)) {
+        animation_.Reset(should_blur ? 1.0 : 0.0);
         ApplyBlur(root, value);
       } else {
         root->AddObserver(this);
