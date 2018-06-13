@@ -84,9 +84,12 @@
 .bg-option-text {
   display: inline-block;
   line-height: normal;
+  overflow: hidden;
   padding-left: 16px;
   text-align: center;
+  text-overflow: ellipsis;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 #bg-sel-menu-overlay {
@@ -119,6 +122,13 @@
 @media (max-width: 520px) {
    #bg-sel-menu {
      width: 352px;
+   }
+}
+
+@media (max-width: 356px) {
+   #bg-sel-menu,
+   #edit-bg-dialog {
+     width: 188px;
    }
 }
 
