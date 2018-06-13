@@ -33,6 +33,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_switches.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -427,6 +428,10 @@ TEST_F(ThemeServiceTest, UserThemeTakesPrecedenceOverSystemTheme) {
 // Check that the function which computes the separator color behaves as
 // expected for a variety of inputs.
 TEST_F(ThemeServiceTest, SeparatorColor) {
+  // Refresh does not draw the toolbar top separator.
+  if (ui::MaterialDesignController::IsRefreshUi())
+    return;
+
   // Ensure Windows 10 machines use the built-in default colors rather than the
   // current system native colors.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
