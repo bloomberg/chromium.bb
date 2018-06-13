@@ -34,7 +34,9 @@ WindowService::WindowService(WindowServiceDelegate* delegate,
   input_device_server_.RegisterAsObserver();
 }
 
-WindowService::~WindowService() = default;
+WindowService::~WindowService() {
+  DCHECK(window_trees_.empty());
+}
 
 ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
     aura::Window* window) {
@@ -53,7 +55,10 @@ std::unique_ptr<WindowTree> WindowService::CreateWindowTree(
     mojom::WindowTreeClient* window_tree_client) {
   const ClientSpecificId client_id = next_client_id_++;
   CHECK_NE(0u, next_client_id_);
-  return std::make_unique<WindowTree>(this, client_id, window_tree_client);
+  auto window_tree =
+      std::make_unique<WindowTree>(this, client_id, window_tree_client);
+  window_trees_.insert(window_tree.get());
+  return window_tree;
 }
 
 void WindowService::SetFrameDecorationValues(
@@ -66,6 +71,10 @@ void WindowService::SetFrameDecorationValues(
 // static
 bool WindowService::HasRemoteClient(aura::Window* window) {
   return ServerWindow::GetMayBeNull(window);
+}
+
+void WindowService::OnWillDestroyWindowTree(WindowTree* tree) {
+  window_trees_.erase(tree);
 }
 
 void WindowService::RequestClose(aura::Window* window) {

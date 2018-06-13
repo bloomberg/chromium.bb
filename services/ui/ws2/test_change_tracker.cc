@@ -40,6 +40,9 @@ std::string ChangeToDescription(const Change& change,
       return base::StringPrintf("OnEmbed drawn=%s",
                                 change.bool_value ? "true" : "false");
 
+    case CHANGE_TYPE_EMBED_FROM_TOKEN:
+      return base::StringPrintf("OnEmbedFromToken");
+
     case CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED:
       return base::StringPrintf("OnEmbeddedAppDisconnected window=%s",
                                 WindowIdToString(change.window_id).c_str());
@@ -262,6 +265,17 @@ void TestChangeTracker::OnEmbed(mojom::WindowDataPtr root, bool drawn) {
   Change change;
   change.type = CHANGE_TYPE_EMBED;
   change.bool_value = drawn;
+  change.windows.push_back(WindowDataToTestWindow(root));
+  AddChange(change);
+}
+
+void TestChangeTracker::OnEmbedFromToken(
+    mojom::WindowDataPtr root,
+    int64_t display_id,
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+  Change change;
+  change.type = CHANGE_TYPE_EMBED_FROM_TOKEN;
+  change.display_id = display_id;
   change.windows.push_back(WindowDataToTestWindow(root));
   AddChange(change);
 }

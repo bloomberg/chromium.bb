@@ -6,6 +6,7 @@
 #define SERVICES_UI_WS2_WINDOW_SERVICE_H_
 
 #include <memory>
+#include <set>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -81,6 +82,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   aura::client::FocusClient* focus_client() { return focus_client_; }
 
+  const std::set<WindowTree*>& window_trees() const { return window_trees_; }
+
+  // Called when a WindowServiceClient is about to be destroyed.
+  void OnWillDestroyWindowTree(WindowTree* tree);
+
   // Asks the client that created |window| to close |window|. |window| must be
   // a top-level window.
   void RequestClose(aura::Window* window);
@@ -129,6 +135,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   IMERegistrarImpl ime_registrar_;
   IMEDriverBridge ime_driver_;
+
+  // All WindowTrees created by the WindowService.
+  std::set<WindowTree*> window_trees_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowService);
 };

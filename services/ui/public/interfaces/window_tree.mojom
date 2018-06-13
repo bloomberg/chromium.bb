@@ -275,6 +275,8 @@ interface WindowTree {
   // 4. Client A receives OnEmbedFromToken() with the token from step 1.
   //
   // |window_id| is the id used for the window once EmbedUsingToken() is called.
+  // More specifically, when OnEmbedFromToken() is called |window_id| is the id
+  // of the window identified in the WindowData.
   ScheduleEmbedForExistingClient(uint32 window_id) => (
       mojo_base.mojom.UnguessableToken token);
 

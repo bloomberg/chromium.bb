@@ -10,6 +10,7 @@
 #include <memory>
 #include <queue>
 
+#include "base/run_loop.h"
 #include "base/unguessable_token.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -32,6 +33,10 @@
 namespace ui {
 namespace ws2 {
 namespace {
+
+// Passed to Embed() to give the default behavior (see kEmbedFlag* in mojom for
+// details).
+constexpr uint32_t kDefaultEmbedFlags = 0;
 
 class TestLayoutManager : public aura::LayoutManager {
  public:
@@ -62,6 +67,20 @@ class TestLayoutManager : public aura::LayoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(TestLayoutManager);
 };
+
+// Used as callback from ScheduleEmbed().
+void ScheduleEmbedCallback(base::UnguessableToken* result_token,
+                           const base::UnguessableToken& actual_token) {
+  *result_token = actual_token;
+}
+
+// Used as callback to EmbedUsingToken().
+void EmbedUsingTokenCallback(bool* was_called,
+                             bool* result_value,
+                             bool actual_result) {
+  *was_called = true;
+  *result_value = actual_result;
+}
 
 TEST(WindowTreeTest2, NewWindow) {
   WindowServiceTestSetup setup;
@@ -986,6 +1005,177 @@ TEST(WindowTreeTest2, Embed) {
   // OnFrameSinkIdAllocated() should called on the parent tree.
   ASSERT_EQ(1u, setup.changes()->size());
   EXPECT_EQ(CHANGE_TYPE_FRAME_SINK_ID_ALLOCATED, (*setup.changes())[0].type);
+}
+
+// Base class for ScheduleEmbed() related tests. This creates a Window and
+// prepares a secondary client (|embed_client_|) that is intended to be embedded
+// at some point.
+class WindowTreeScheduleEmbedTest : public testing::Test {
+ public:
+  WindowTreeScheduleEmbedTest() = default;
+  ~WindowTreeScheduleEmbedTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
+    testing::Test::SetUp();
+    setup_ = std::make_unique<WindowServiceTestSetup>();
+    embed_binding_.Bind(mojo::MakeRequest(&embed_client_ptr_));
+    window_ = setup_->window_tree_test_helper()->NewWindow();
+    ASSERT_TRUE(window_);
+  }
+  void TearDown() override {
+    window_ = nullptr;
+    embed_binding_.Close();
+    setup_.reset();
+    testing::Test::TearDown();
+  }
+
+ protected:
+  std::unique_ptr<WindowServiceTestSetup> setup_;
+  TestWindowTreeClient embed_client_;
+  mojom::WindowTreeClientPtr embed_client_ptr_;
+  aura::Window* window_ = nullptr;
+
+ private:
+  mojo::Binding<mojom::WindowTreeClient> embed_binding_{&embed_client_};
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeScheduleEmbedTest);
+};
+
+TEST_F(WindowTreeScheduleEmbedTest, ScheduleEmbedWithUnregisteredToken) {
+  bool embed_result = false;
+  bool embed_callback_called = false;
+  setup_->window_tree_test_helper()->window_tree()->EmbedUsingToken(
+      setup_->window_tree_test_helper()->TransportIdForWindow(window_),
+      base::UnguessableToken::Create(), kDefaultEmbedFlags,
+      base::BindOnce(&EmbedUsingTokenCallback, &embed_callback_called,
+                     &embed_result));
+  EXPECT_TRUE(embed_callback_called);
+  // ScheduleEmbed() with an invalid token should fail.
+  EXPECT_FALSE(embed_result);
+}
+
+TEST_F(WindowTreeScheduleEmbedTest, ScheduleEmbedRegisteredTokenInvalidWindow) {
+  // Register a token for embedding.
+  base::UnguessableToken token;
+  setup_->window_tree_test_helper()->window_tree()->ScheduleEmbed(
+      std::move(embed_client_ptr_),
+      base::BindOnce(&ScheduleEmbedCallback, &token));
+  EXPECT_FALSE(token.is_empty());
+
+  bool embed_result = false;
+  bool embed_callback_called = false;
+  setup_->window_tree_test_helper()->window_tree()->EmbedUsingToken(
+      kInvalidTransportId, token, kDefaultEmbedFlags,
+      base::BindOnce(&EmbedUsingTokenCallback, &embed_callback_called,
+                     &embed_result));
+  EXPECT_TRUE(embed_callback_called);
+  // ScheduleEmbed() with a valid token, but invalid window should fail.
+  EXPECT_FALSE(embed_result);
+}
+
+TEST_F(WindowTreeScheduleEmbedTest, ScheduleEmbed) {
+  base::UnguessableToken token;
+  // ScheduleEmbed() with a valid token and valid window.
+  setup_->window_tree_test_helper()->window_tree()->ScheduleEmbed(
+      std::move(embed_client_ptr_),
+      base::BindOnce(&ScheduleEmbedCallback, &token));
+  EXPECT_FALSE(token.is_empty());
+
+  bool embed_result = false;
+  bool embed_callback_called = false;
+  setup_->window_tree_test_helper()->window_tree()->EmbedUsingToken(
+      setup_->window_tree_test_helper()->TransportIdForWindow(window_), token,
+      kDefaultEmbedFlags,
+      base::BindOnce(&EmbedUsingTokenCallback, &embed_callback_called,
+                     &embed_result));
+  EXPECT_TRUE(embed_callback_called);
+  EXPECT_TRUE(embed_result);
+  base::RunLoop().RunUntilIdle();
+
+  // The embedded client should get OnEmbed().
+  EXPECT_EQ("OnEmbed",
+            SingleChangeToDescription(*embed_client_.tracker()->changes()));
+}
+
+TEST(WindowTreeTest2, ScheduleEmbedForExistingClient) {
+  WindowServiceTestSetup setup;
+  // Schedule an embed in the tree created by |setup|.
+  base::UnguessableToken token;
+  const uint32_t window_id_in_child = 149;
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->ScheduleEmbedForExistingClient(
+          window_id_in_child, base::BindOnce(&ScheduleEmbedCallback, &token));
+  EXPECT_FALSE(token.is_empty());
+
+  // Create another client and a window.
+  TestWindowTreeClient client2;
+  std::unique_ptr<WindowTree> tree2 =
+      setup.service()->CreateWindowTree(&client2);
+  ASSERT_TRUE(tree2);
+  WindowTreeTestHelper tree2_test_helper(tree2.get());
+  aura::Window* window_in_parent = tree2_test_helper.NewWindow();
+  ASSERT_TRUE(window_in_parent);
+
+  // Call EmbedUsingToken() from tree2, which should result in the tree from
+  // |setup| getting OnEmbedFromToken().
+  bool embed_result = false;
+  bool embed_callback_called = false;
+  WindowTreeTestHelper(tree2.get())
+      .window_tree()
+      ->EmbedUsingToken(
+          tree2_test_helper.TransportIdForWindow(window_in_parent), token,
+          kDefaultEmbedFlags,
+          base::BindOnce(&EmbedUsingTokenCallback, &embed_callback_called,
+                         &embed_result));
+  EXPECT_TRUE(embed_callback_called);
+  EXPECT_TRUE(embed_result);
+
+  EXPECT_EQ("OnEmbedFromToken", SingleChangeToDescription(*setup.changes()));
+  EXPECT_EQ(
+      static_cast<Id>(window_id_in_child),
+      setup.window_tree_test_helper()->TransportIdForWindow(window_in_parent));
+}
+
+TEST(WindowTreeTest2, DeleteRootOfEmbeddingFromScheduleEmbedForExistingClient) {
+  WindowServiceTestSetup setup;
+  aura::Window* window_in_parent = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(window_in_parent);
+
+  // Create another client.
+  TestWindowTreeClient client2;
+  std::unique_ptr<WindowTree> tree2 =
+      setup.service()->CreateWindowTree(&client2);
+  WindowTreeTestHelper tree2_test_helper(tree2.get());
+  base::UnguessableToken token;
+  tree2_test_helper.window_tree()->ScheduleEmbedForExistingClient(
+      11, base::BindOnce(&ScheduleEmbedCallback, &token));
+  EXPECT_FALSE(token.is_empty());
+
+  // Call EmbedUsingToken() from setup.window_tree(), which should result in
+  // |tree2| getting OnEmbedFromToken().
+  bool embed_result = false;
+  bool embed_callback_called = false;
+  setup.window_tree_test_helper()->window_tree()->EmbedUsingToken(
+      setup.window_tree_test_helper()->TransportIdForWindow(window_in_parent),
+      token, kDefaultEmbedFlags,
+      base::BindOnce(&EmbedUsingTokenCallback, &embed_callback_called,
+                     &embed_result));
+  EXPECT_TRUE(embed_callback_called);
+  EXPECT_TRUE(embed_result);
+
+  EXPECT_EQ("OnEmbedFromToken",
+            SingleChangeToDescription(*client2.tracker()->changes()));
+  client2.tracker()->changes()->clear();
+
+  // Delete |window_in_parent|, which should trigger notifying tree2.
+  setup.window_tree_test_helper()->DeleteWindow(window_in_parent);
+  window_in_parent = nullptr;
+
+  // 11 is the same value supplied to ScheduleEmbedForExistingClient().
+  EXPECT_EQ("WindowDeleted window=0,11",
+            SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
 TEST(WindowTreeTest2, StackAtTop) {
