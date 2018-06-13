@@ -633,11 +633,10 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     private void setAccessibilityMessage(
             DownloadProgressInfoBarData info, boolean showAccelerating) {
-        info.accessibilityMessage = info.message;
-        if (!showAccelerating) {
-            info.accessibilityMessage = info.accessibilityMessage + " "
-                    + getContext().getString(R.string.bottom_bar_screen_position);
-        }
+        info.accessibilityMessage = TextUtils.isEmpty(info.link)
+                ? info.message
+                : getContext().getString(R.string.download_infobar_accessibility_message_with_link,
+                          info.message, info.link);
     }
 
     private void clearEndTimerRunnable() {
