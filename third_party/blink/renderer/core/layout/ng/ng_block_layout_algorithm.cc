@@ -318,12 +318,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
       border_scrollbar_padding_.inline_start + child_margins.inline_start;
 
   if (child.IsInline()) {
-    LayoutUnit offset =
-        LineOffsetForTextAlign(Style().GetTextAlign(), Style().Direction(),
-                               child_available_size_.inline_size, LayoutUnit());
-    if (IsRtl(Style().Direction()))
-      offset = child_available_size_.inline_size - offset;
-    inline_offset += offset;
+    inline_offset +=
+        InlineOffsetForTextAlign(Style(), child_available_size_.inline_size);
   }
 
   // If we've reached here, both the child and the current layout don't have a
@@ -627,9 +623,18 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child) {
+  const ComputedStyle& child_style = child.Style();
+  LayoutUnit inline_offset = border_scrollbar_padding_.inline_start;
+  if (child_style.IsOriginalDisplayInlineType()) {
+    // If this out-of-flow child is inline type, its static position should
+    // honor the 'text-align' property.
+    inline_offset +=
+        InlineOffsetForTextAlign(Style(), child_available_size_.inline_size);
+  }
+
   // TODO(ikilpatrick): Determine which of the child's margins need to be
   // included for the static position.
-  NGLogicalOffset offset = {border_scrollbar_padding_.inline_start,
+  NGLogicalOffset offset = {inline_offset,
                             previous_inflow_position.logical_block_offset};
 
   // We only include the margin strut in the OOF static-position if we know we
