@@ -7,12 +7,18 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'smbMount',
+      'startDiscovery',
     ]);
   }
 
   /** @override */
   smbMount(smbUrl, smbName, username, password) {
     this.methodCalled('smbMount', [smbUrl, smbName, username, password]);
+  }
+
+  /** @override */
+  startDiscovery() {
+    this.methodCalled('startDiscovery');
   }
 }
 
@@ -93,4 +99,9 @@ suite('AddSmbShareDialogTests', function() {
       expectEquals(expectedPassword, args[3]);
     });
   });
+
+  test('StartDiscovery', function() {
+    return smbBrowserProxy.whenCalled('startDiscovery');
+  });
+
 });
