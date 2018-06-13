@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 
+#include "base/ios/block_types.h"
 #import "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
+#include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
@@ -284,17 +286,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Consistency check: |item|'s ID is not in |items|.
   // (using DCHECK rather than DCHECK_EQ to avoid a checked_cast on NSNotFound).
   DCHECK([self indexOfItemWithID:item.identifier] == NSNotFound);
-  auto performDataSourceUpdates = ^{
+  auto modelUpdates = ^{
     [self.items insertObject:item atIndex:index];
     self.selectedItemID = selectedItemID;
-  };
-  if (![self isViewAppeared]) {
-    performDataSourceUpdates();
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
-    return;
-  }
-  auto performAllUpdates = ^{
-    performDataSourceUpdates();
+  };
+  auto collectionViewUpdates = ^{
     [self animateEmptyStateOut];
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
   };
@@ -305,24 +302,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                scrollPosition:UICollectionViewScrollPositionNone];
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   };
-  [self.collectionView performBatchUpdates:performAllUpdates
-                                completion:completion];
+  [self performModelUpdates:modelUpdates
+                collectionViewUpdates:collectionViewUpdates
+      collectionViewUpdatesCompletion:completion];
 }
 
 - (void)removeItemWithID:(NSString*)removedItemID
           selectedItemID:(NSString*)selectedItemID {
   NSUInteger index = [self indexOfItemWithID:removedItemID];
-  auto performDataSourceUpdates = ^{
+  auto modelUpdates = ^{
     [self.items removeObjectAtIndex:index];
     self.selectedItemID = selectedItemID;
-  };
-  if (![self isViewAppeared]) {
-    performDataSourceUpdates();
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
-    return;
-  }
-  auto performAllUpdates = ^{
-    performDataSourceUpdates();
+  };
+  auto collectionViewUpdates = ^{
     [self.collectionView deleteItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
     if (self.items.count == 0) {
       [self animateEmptyStateIn];
@@ -337,8 +330,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     }
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   };
-  [self.collectionView performBatchUpdates:performAllUpdates
-                                completion:completion];
+  [self performModelUpdates:modelUpdates
+                collectionViewUpdates:collectionViewUpdates
+      collectionViewUpdatesCompletion:completion];
 }
 
 - (void)selectItemWithID:(NSString*)selectedItemID {
@@ -371,20 +365,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // If this move would be a no-op, early return and avoid spurious UI updates.
   if (fromIndex == toIndex)
     return;
-
-  auto performDataSourceUpdates = ^{
+  auto modelUpdates = ^{
     GridItem* item = self.items[fromIndex];
     [self.items removeObjectAtIndex:fromIndex];
     [self.items insertObject:item atIndex:toIndex];
   };
-  // If the view isn't visible, there's no need for the collection view to
-  // update.
-  if (![self isViewAppeared]) {
-    performDataSourceUpdates();
-    return;
-  }
-  auto performAllUpdates = ^{
-    performDataSourceUpdates();
+  auto collectionViewUpdates = ^{
     [self.collectionView moveItemAtIndexPath:CreateIndexPath(fromIndex)
                                  toIndexPath:CreateIndexPath(toIndex)];
   };
@@ -394,8 +380,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionNone];
   };
-  [self.collectionView performBatchUpdates:performAllUpdates
-                                completion:completion];
+  [self performModelUpdates:modelUpdates
+                collectionViewUpdates:collectionViewUpdates
+      collectionViewUpdatesCompletion:completion];
 }
 
 #pragma mark - Private properties
@@ -405,6 +392,27 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 #pragma mark - Private
+
+// Performs model updates and view updates together if the view is appeared, or
+// only the model updates if the view is not appeared. |completion| is only run
+// if view is appeared.
+- (void)performModelUpdates:(ProceduralBlock)modelUpdates
+              collectionViewUpdates:(ProceduralBlock)collectionViewUpdates
+    collectionViewUpdatesCompletion:
+        (ProceduralBlockWithBool)collectionViewUpdatesCompletion {
+  // If the view isn't visible, there's no need for the collection view to
+  // update.
+  if (![self isViewAppeared]) {
+    modelUpdates();
+    return;
+  }
+  [self.collectionView performBatchUpdates:^{
+    // Synchronize model and view updates.
+    modelUpdates();
+    collectionViewUpdates();
+  }
+                                completion:collectionViewUpdatesCompletion];
+}
 
 // Returns the index in |self.items| of the first item whose identifier is
 // |identifier|.
