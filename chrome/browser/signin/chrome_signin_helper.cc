@@ -453,9 +453,7 @@ void FixAccountConsistencyRequestHeader(net::URLRequest* request,
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
-  AccountConsistencyMethod account_consistency =
-      AccountConsistencyModeManager::GetMethodForPrefMember(
-          io_data->dice_enabled());
+  AccountConsistencyMethod account_consistency = io_data->account_consistency();
 
 #if defined(OS_CHROMEOS)
   // Mirror account consistency required by profile.

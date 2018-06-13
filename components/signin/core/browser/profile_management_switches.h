@@ -13,7 +13,6 @@
 
 #include "base/callback_forward.h"
 #include "base/feature_list.h"
-#include "components/prefs/pref_member.h"
 
 class PrefService;
 
@@ -118,24 +117,6 @@ bool IsDiceMigrationEnabled();
 // If true, then account management is done through Gaia webpages.
 // Can only be used on the UI thread.
 bool IsDiceEnabledForProfile(const PrefService* user_prefs);
-
-// If true, then account management is done through Gaia webpages.
-// Can be called on any thread, using a pref member obtained with
-// CreateDicePrefMember().
-// On the UI thread, consider using IsDiceEnabledForProfile() instead.
-// Example usage:
-//
-// // On UI thread:
-// std::unique_ptr<BooleanPrefMember> pref_member = GetDicePrefMember(prefs);
-// pref_member->MoveToThread(io_thread);
-//
-// // Later, on IO thread:
-// bool dice_enabled = GetDicePrefMember(pref_member.get());
-bool IsDiceEnabled(const BooleanPrefMember* dice_pref_member);
-
-// Gets a pref member suitable to use with IsDiceEnabled().
-std::unique_ptr<BooleanPrefMember> CreateDicePrefMember(
-    PrefService* user_prefs);
 
 // Called to migrate a profile to Dice. After this call, it is enabled forever.
 void MigrateProfileToDice(PrefService* user_prefs);

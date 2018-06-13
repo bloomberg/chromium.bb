@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "build/buildflag.h"
-#include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/scoped_unified_consent.h"
 #include "components/signin/core/browser/signin_buildflags.h"
@@ -36,8 +35,6 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
   base::MessageLoop loop;
   sync_preferences::TestingPrefServiceSyncable pref_service;
   RegisterAccountConsistencyProfilePrefs(pref_service.registry());
-  std::unique_ptr<BooleanPrefMember> dice_pref_member =
-      CreateDicePrefMember(&pref_service);
 
 // Check the default account consistency method.
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -50,7 +47,6 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
   EXPECT_FALSE(IsDiceMigrationEnabled());
   EXPECT_FALSE(IsDicePrepareMigrationEnabled());
   EXPECT_FALSE(IsDiceEnabledForProfile(&pref_service));
-  EXPECT_FALSE(IsDiceEnabled(dice_pref_member.get()));
 #endif
 
   struct TestCase {
@@ -86,8 +82,6 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
               IsDicePrepareMigrationEnabled());
     EXPECT_EQ(test_case.expect_dice_enabled_for_profile,
               IsDiceEnabledForProfile(&pref_service));
-    EXPECT_EQ(test_case.expect_dice_enabled_for_profile,
-              IsDiceEnabled(dice_pref_member.get()));
   }
 }
 
@@ -96,8 +90,6 @@ TEST(ProfileManagementSwitchesTest, DiceMigration) {
   base::MessageLoop loop;
   sync_preferences::TestingPrefServiceSyncable pref_service;
   RegisterAccountConsistencyProfilePrefs(pref_service.registry());
-  std::unique_ptr<BooleanPrefMember> dice_pref_member =
-      CreateDicePrefMember(&pref_service);
 
   {
     ScopedAccountConsistencyDiceMigration scoped_dice_migration;
@@ -117,8 +109,6 @@ TEST(ProfileManagementSwitchesTest, DiceMigration) {
     ScopedAccountConsistency scoped_method(test_case.method);
     EXPECT_EQ(test_case.expect_dice_enabled_for_profile,
               IsDiceEnabledForProfile(&pref_service));
-    EXPECT_EQ(test_case.expect_dice_enabled_for_profile,
-              IsDiceEnabled(dice_pref_member.get()));
   }
 }
 

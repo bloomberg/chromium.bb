@@ -481,9 +481,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
 
   load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
   if (primary_account_id.empty() &&
-      !signin::DiceMethodGreaterOrEqual(
-          account_consistency_,
-          signin::AccountConsistencyMethod::kDicePrepareMigration)) {
+      (account_consistency_ ==
+           signin::AccountConsistencyMethod::kDiceFixAuthErrors ||
+       account_consistency_ == signin::AccountConsistencyMethod::kDisabled)) {
     load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
     FireRefreshTokensLoaded();
     return;
@@ -544,6 +544,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   // map.  The entry could be missing if there is a corruption in the token DB
   // while this profile is connected to an account.
   DCHECK(!loading_primary_account_id_.empty() ||
+         account_consistency_ == signin::AccountConsistencyMethod::kMirror ||
          signin::DiceMethodGreaterOrEqual(
              account_consistency_,
              signin::AccountConsistencyMethod::kDicePrepareMigration));

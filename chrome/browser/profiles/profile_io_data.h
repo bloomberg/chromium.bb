@@ -25,7 +25,7 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/prefs/pref_member.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "extensions/buildflags/buildflags.h"
@@ -185,7 +185,9 @@ class ProfileIOData {
     return &network_prediction_options_;
   }
 
-  BooleanPrefMember* dice_enabled() const { return dice_enabled_.get(); }
+  signin::AccountConsistencyMethod account_consistency() const {
+    return account_consistency_;
+  }
 
 #if defined(OS_CHROMEOS)
   std::string username_hash() const {
@@ -338,6 +340,7 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
 #endif
+    signin::AccountConsistencyMethod account_consistency;
 
     // This pointer exists only as a means of conveying a url job factory
     // pointer from the protocol handler registry on the UI thread to the
@@ -556,7 +559,7 @@ class ProfileIOData {
   mutable BooleanPrefMember sync_has_auth_error_;
   mutable BooleanPrefMember sync_suppress_start_;
   mutable BooleanPrefMember sync_first_setup_complete_;
-  mutable std::unique_ptr<BooleanPrefMember> dice_enabled_;
+  mutable signin::AccountConsistencyMethod account_consistency_;
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;

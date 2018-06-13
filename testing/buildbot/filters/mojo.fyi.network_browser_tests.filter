@@ -94,7 +94,7 @@
 -DicePrepareMigrationBrowserTest.EnableSyncAfterToken
 -DicePrepareMigrationBrowserTest.EnableSyncBeforeToken
 -DicePrepareMigrationBrowserTest.Signout
--ChromeResourceDispatcherHostDelegateBrowserTest.MirrorRequestHeader
+-ChromeResourceDispatcherHostDelegateMirrorBrowserTest.MirrorRequestHeader
 
 # crbug.com/778793
 # Started failing in r514649.
