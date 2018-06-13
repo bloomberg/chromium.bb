@@ -194,7 +194,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     @Override
-    public void setContentView() {
+    public void triggerLayoutInflation() {
         initializeStateFromLaunchData();
 
         setFinishOnTouchOutside(true);
@@ -242,6 +242,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         mFirstRunFlowSequencer.start();
 
         recordFreProgressHistogram(FRE_PROGRESS_STARTED);
+        onInitialLayoutInflationComplete();
     }
 
     @Override

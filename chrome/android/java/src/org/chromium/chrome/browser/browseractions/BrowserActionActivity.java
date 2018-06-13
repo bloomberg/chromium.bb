@@ -48,10 +48,11 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
     private BrowserActionsContextMenuHelper mHelper;
 
     @Override
-    protected void setContentView() {
+    protected void triggerLayoutInflation() {
         View view = new View(this);
         setContentView(view);
         openContextMenu(view);
+        onInitialLayoutInflationComplete();
     }
 
     @Override

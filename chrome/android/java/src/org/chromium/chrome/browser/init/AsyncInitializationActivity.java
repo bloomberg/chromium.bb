@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.init;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -85,6 +84,8 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private boolean mStartupDelayed;
     private boolean mFirstDrawComplete;
 
+    private Runnable mOnInflationCompleteCallback;
+
     public AsyncInitializationActivity() {
         mHandler = new Handler();
     }
@@ -135,22 +136,23 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
-    public final void setContentViewAndLoadLibrary() {
-        // Start loading libraries before setContentView(). This "hides" library loading behind
-        // UI inflation and prevents stalling UI thread. See crbug.com/796957 for details.
-        // Note that for optimal performance AsyncInitTaskRunner.startBackgroundTasks() needs
-        // to start warmup renderer only after library is loaded.
+    public final void setContentViewAndLoadLibrary(Runnable onInflationCompleteCallback) {
+        // Start loading libraries before triggerLayoutInflation(). This "hides" library loading
+        // behind UI inflation and prevents stalling UI thread. See https://crbug.com/796957 for
+        // details. Note that for optimal performance AsyncInitTaskRunner.startBackgroundTasks()
+        // needs to start warmup renderer only after library is loaded.
 
         if (!mStartupDelayed) {
             // Kick off long running IO tasks that can be done in parallel.
             mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
         }
 
-        setContentView();
+        mOnInflationCompleteCallback = onInflationCompleteCallback;
+        triggerLayoutInflation();
         if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
     }
 
-    /** Controls the parameter of {@link NativeInitializationController#startBackgroundTasks()}.*/
+    /** Controls the parameter of {@link NativeInitializationController#startBackgroundTasks}.*/
     @VisibleForTesting
     public boolean shouldAllocateChildConnection() {
         return true;
@@ -231,7 +233,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
     /**
      * Extending classes should override {@link AsyncInitializationActivity#preInflationStartup()},
-     * {@link AsyncInitializationActivity#setContentView()} and
+     * {@link AsyncInitializationActivity#triggerLayoutInflation()} and
      * {@link AsyncInitializationActivity#postInflationStartup()} instead of this call which will
      * be called on that order.
      */
@@ -684,9 +686,21 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     /**
-     * Extending classes should implement this and call {@link Activity#setContentView(int)} in it.
+     * Extending classes should implement this, inflate the layout, set the content view and then
+     * call {@link #onInitialLayoutInflationComplete}.
      */
-    protected abstract void setContentView();
+    protected abstract void triggerLayoutInflation();
+
+    /**
+     * Once inflation is complete, this runs the callback to inform ChromeBrowserInitializer of this
+     * and to start the post-inflation pre-native startup.
+     */
+    @CallSuper
+    protected void onInitialLayoutInflationComplete() {
+        if (mOnInflationCompleteCallback == null) return;
+        mOnInflationCompleteCallback.run();
+        mOnInflationCompleteCallback = null;
+    }
 
     /**
      * Lollipop (pre-MR1) makeTaskLaunchBehind() workaround.

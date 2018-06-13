@@ -271,8 +271,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private int mBaseStatusBarColor;
     private int mScrimColor;
 
-    // Time in ms that it took took us to inflate the initial layout
-    private long mInflateInitialLayoutDurationMs;
+    // Timestamp in ms when initial layout inflation begins
+    private long mInflateInitialLayoutBeginMs;
+    // Timestamp in ms when initial layout inflation ends
+    private long mInflateInitialLayoutEndMs;
 
     private int mUiMode;
     private int mDensityDpi;
@@ -298,6 +300,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private PageViewTimer mPageViewTimer;
 
     private ActivityTabStartupMetricsTracker mActivityTabStartupMetricsTracker;
+
+    private boolean mOnStartCalled;
 
     /**
      * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
@@ -421,6 +425,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
             mModalDialogManager = createModalDialogManager();
             mPageViewTimer = new PageViewTimer(mTabModelSelector);
+
+            // If onStart was called before postLayoutInflation (because inflation was done in a
+            // background thread) then make sure to call the relevant methods.
+            if (mOnStartCalled) {
+                mCompositorViewHolder.onStart();
+                mSnackbarManager.onStart();
+            }
         }
     }
 
@@ -441,82 +452,105 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * This function builds the {@link CompositorViewHolder}.  Subclasses *must* call
-     * super.setContentView() before using {@link #getTabModelSelector()} or
-     * {@link #getCompositorViewHolder()}.
+     * This function triggers the layout inflation. If subclasses override {@link
+     * #doLayoutInflation}, no calls to {@link #getCompositorViewHolder()} can be done until
+     * inflation is complete and {@link #onInitialLayoutInflationComplete()} is called. If the
+     * subclass does not override {@link #doLayoutInflation}, then {@link
+     * #getCompositorViewHolder()} is safe to be called after calling super.
      */
     @Override
-    protected final void setContentView() {
-        final long begin = SystemClock.elapsedRealtime();
-        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.setContentView")) {
+    protected final void triggerLayoutInflation() {
+        mInflateInitialLayoutBeginMs = SystemClock.elapsedRealtime();
+        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.triggerLayoutInflation")) {
             SelectionPopupController.setShouldGetReadbackViewFromWindowAndroid();
 
             enableHardwareAcceleration();
             setLowEndTheme();
-            int controlContainerLayoutId = getControlContainerLayoutId();
+
             WarmupManager warmupManager = WarmupManager.getInstance();
-            if (warmupManager.hasViewHierarchyWithToolbar(controlContainerLayoutId)) {
+            if (warmupManager.hasViewHierarchyWithToolbar(getControlContainerLayoutId())) {
                 View placeHolderView = new View(this);
                 setContentView(placeHolderView);
                 ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
                 warmupManager.transferViewHierarchyTo(contentParent);
                 contentParent.removeView(placeHolderView);
+                onInitialLayoutInflationComplete();
             } else {
                 warmupManager.clearViewHierarchy();
+                doLayoutInflation();
+            }
+        }
+    }
 
-                // Allow disk access for the content view and toolbar container setup.
-                // On certain android devices this setup sequence results in disk writes outside
-                // of our control, so we have to disable StrictMode to work. See
-                // https://crbug.com/639352.
-                try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
-                    TraceEvent.begin("setContentView(R.layout.main)");
-                    setContentView(R.layout.main);
-                    TraceEvent.end("setContentView(R.layout.main)");
-                    if (controlContainerLayoutId != NO_CONTROL_CONTAINER) {
-                        ViewStub toolbarContainerStub =
-                                ((ViewStub) findViewById(R.id.control_container_stub));
+    /**
+     * This function implements the actual layout inflation, Subclassing Activities that override
+     * this method without calling super need to call {@link #onInitialLayoutInflationComplete()}.
+     */
+    protected void doLayoutInflation() {
+        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.doLayoutInflation")) {
+            // Allow disk access for the content view and toolbar container setup.
+            // On certain android devices this setup sequence results in disk writes outside
+            // of our control, so we have to disable StrictMode to work. See
+            // https://crbug.com/639352.
+            try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+                TraceEvent.begin("setContentView(R.layout.main)");
+                setContentView(R.layout.main);
+                TraceEvent.end("setContentView(R.layout.main)");
+                if (getControlContainerLayoutId() != NO_CONTROL_CONTAINER) {
+                    ViewStub toolbarContainerStub =
+                            ((ViewStub) findViewById(R.id.control_container_stub));
 
-                        toolbarContainerStub.setLayoutResource(controlContainerLayoutId);
-                        TraceEvent.begin("toolbarContainerStub.inflate");
-                        toolbarContainerStub.inflate();
-                        TraceEvent.end("toolbarContainerStub.inflate");
-                    }
+                    toolbarContainerStub.setLayoutResource(getControlContainerLayoutId());
+                    TraceEvent.begin("toolbarContainerStub.inflate");
+                    toolbarContainerStub.inflate();
+                    TraceEvent.end("toolbarContainerStub.inflate");
+                }
 
-                    // It cannot be assumed that the result of toolbarContainerStub.inflate() will
-                    // be
+                // It cannot be assumed that the result of toolbarContainerStub.inflate() will
+                // be the control container since it may be wrapped in another view.
+                ControlContainer controlContainer =
+                        (ControlContainer) findViewById(R.id.control_container);
 
-                    // the control container since it may be wrapped in another view.
-                    ControlContainer controlContainer =
-                            (ControlContainer) findViewById(R.id.control_container);
-
-                    // Inflate the correct toolbar layout for the device.
-                    int toolbarLayoutId = getToolbarLayoutId();
-                    if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
-                        controlContainer.initWithToolbar(toolbarLayoutId);
-                    }
+                // Inflate the correct toolbar layout for the device.
+                int toolbarLayoutId = getToolbarLayoutId();
+                if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
+                    controlContainer.initWithToolbar(toolbarLayoutId);
                 }
             }
-            mInflateInitialLayoutDurationMs = SystemClock.elapsedRealtime() - begin;
-            // Set the status bar color to black by default. This is an optimization for
-            // Chrome not to draw under status and navigation bars when we use the default
-            // black status bar
-            setStatusBarColor(null, Color.BLACK);
-
-            ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
-            mCompositorViewHolder =
-                    (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
-            mCompositorViewHolder.setRootView(rootView);
-
-            // Setting fitsSystemWindows to false ensures that the root view doesn't consume the
-            // insets.
-            rootView.setFitsSystemWindows(false);
-
-            // Add a custom view right after the root view that stores the insets to access later.
-            // ContentViewCore needs the insets to determine the portion of the screen obscured by
-            // non-content displaying things such as the OSK.
-            mInsetObserverView = InsetObserverView.create(this);
-            rootView.addView(mInsetObserverView, 0);
+            onInitialLayoutInflationComplete();
         }
+    }
+
+    @Override
+    protected void onInitialLayoutInflationComplete() {
+        mInflateInitialLayoutEndMs = SystemClock.elapsedRealtime();
+        // Set the status bar color to black by default. This is an optimization for
+        // Chrome not to draw under status and navigation bars when we use the default
+        // black status bar
+        setStatusBarColor(null, Color.BLACK);
+
+        ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
+        mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
+        // If the UI was inflated on a background thread, then the CompositorView may not have been
+        // fully initialized yet as that may require the creation of a handler which is not allowed
+        // outside the UI thread. This call should fully initialize the CompositorView if it hasn't
+        // been yet. If inflation was performed on a background thread, this call should be made in
+        // the same Looper call as setting the content view or transferring the view hierarchy, ie.
+        // before a UI redraw, otherwise some visual artifacts may occur, see
+        // https://crbug.com/704866
+        mCompositorViewHolder.setRootView(rootView);
+
+        // Setting fitsSystemWindows to false ensures that the root view doesn't consume the
+        // insets.
+        rootView.setFitsSystemWindows(false);
+
+        // Add a custom view right after the root view that stores the insets to access later.
+        // ContentViewCore needs the insets to determine the portion of the screen obscured by
+        // non-content displaying things such as the OSK.
+        mInsetObserverView = InsetObserverView.create(this);
+        rootView.addView(mInsetObserverView, 0);
+
+        super.onInitialLayoutInflationComplete();
     }
 
     @Override
@@ -605,8 +639,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     mDataUseSnackbarController.showDataUseTrackingEndedBar();
                 }
 
-                // Only alert about data savings once the first paint has happened. It doesn't make
-                // sense to show a snackbar about savings when nothing has been displayed yet.
+                // Only alert about data savings once the first paint has happened. It
+                // doesn't make sense to show a snackbar about savings when nothing has been
+                // displayed yet.
                 if (DataReductionProxySettings.getInstance().isSnackbarPromoAllowed(tab.getUrl())) {
                     if (mDataReductionPromoSnackbarController == null) {
                         mDataReductionPromoSnackbarController =
@@ -1071,7 +1106,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (mToolbarManager != null) {
                 RecordHistogram.recordTimesHistogram(
                         "MobileStartup.ToolbarInflationTime." + simpleName,
-                        mInflateInitialLayoutDurationMs, TimeUnit.MILLISECONDS);
+                        mInflateInitialLayoutEndMs - mInflateInitialLayoutBeginMs,
+                        TimeUnit.MILLISECONDS);
                 mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
             }
 
@@ -1147,7 +1183,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             });
         }
         if (mCompositorViewHolder != null) mCompositorViewHolder.onStart();
-        mSnackbarManager.onStart();
+        if (mSnackbarManager != null) mSnackbarManager.onStart();
 
         // Explicitly call checkAccessibility() so things are initialized correctly when Chrome has
         // been re-started after closing due to the last tab being closed when homepage is enabled.
@@ -1163,6 +1199,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
         mScreenWidthDp = config.screenWidthDp;
         mScreenHeightDp = config.screenHeightDp;
+        mOnStartCalled = true;
     }
 
     @Override
@@ -1666,6 +1703,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * null if the Tab does not exist or the system is not initialized.
      */
     public Tab getActivityTab() {
+        if (!mTabModelsInitialized) {
+            return null;
+        }
         return TabModelUtils.getCurrentTab(getCurrentTabModel());
     }
 

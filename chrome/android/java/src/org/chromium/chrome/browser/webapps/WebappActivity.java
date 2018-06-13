@@ -31,6 +31,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -40,6 +41,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
@@ -265,6 +267,38 @@ public class WebappActivity extends SingleTabActivity {
     public void initializeState() {
         super.initializeState();
         initializeUI(getSavedInstanceState());
+    }
+
+    @Override
+    protected void doLayoutInflation() {
+        // No need to inflate layout synchronously since splash screen is displayed.
+        new Thread() {
+            @Override
+            public void run() {
+                ViewGroup mainView = WarmupManager.inflateViewHierarchy(
+                        WebappActivity.this, getControlContainerLayoutId(), getToolbarLayoutId());
+                if (WebappActivity.this.isActivityFinishing()) return;
+                if (mainView != null) {
+                    ThreadUtils.postOnUiThread(() -> {
+                        if (WebappActivity.this.isActivityFinishing()) return;
+                        onLayoutInflated(mainView);
+                    });
+                } else {
+                    if (WebappActivity.this.isActivityFinishing()) return;
+                    ThreadUtils.postOnUiThread(() -> WebappActivity.super.doLayoutInflation());
+                }
+            }
+        }
+                .start();
+    }
+
+    private void onLayoutInflated(ViewGroup mainView) {
+        View placeHolderView = new View(this);
+        setContentView(placeHolderView);
+        ViewGroup contentParent = (ViewGroup) placeHolderView.getParent();
+        WarmupManager.transferViewHeirarchy(mainView, contentParent);
+        contentParent.removeView(placeHolderView);
+        onInitialLayoutInflationComplete();
     }
 
     protected void initializeUI(Bundle savedInstanceState) {

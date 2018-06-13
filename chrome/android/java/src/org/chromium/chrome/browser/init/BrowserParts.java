@@ -19,10 +19,12 @@ public interface BrowserParts {
 
     /**
      * Called during {@link ChromeBrowserInitializer#handlePreNativeStartup(BrowserParts)}.
-     * It should include a call to setContentView and also should start loading libraries using
-     * {@link NativeInitializationController#startBackgroundTasks()}
+     * It should start layout inflation and also should start loading libraries
+     * using {@link NativeInitializationController#startBackgroundTasks}. The {@param
+     * onInflationCompleteCallback} should be called once inflation is complete and the content view
+     * has been set.
      */
-    void setContentViewAndLoadLibrary();
+    void setContentViewAndLoadLibrary(Runnable onInflationCompleteCallback);
 
     /**
      * Called during {@link ChromeBrowserInitializer#handlePreNativeStartup(BrowserParts)}.
