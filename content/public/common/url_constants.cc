@@ -32,6 +32,7 @@ const char kChromeUIMediaInternalsHost[] = "media-internals";
 const char kChromeUIMemoryExhaustHost[] = "memory-exhaust";
 const char kChromeUINetworkErrorHost[] = "network-error";
 const char kChromeUINetworkErrorsListingHost[] = "network-errors";
+const char kChromeUIProcessInternalsHost[] = "process-internals";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUIServiceWorkerInternalsHost[] = "serviceworker-internals";
 const char kChromeUITracingHost[] = "tracing";
@@ -54,6 +55,7 @@ const char kChromeUINetworkErrorURL[] = "chrome://network-error/";
 const char kChromeUINetworkErrorsListingURL[] = "chrome://network-errors/";
 const char kChromeUIPpapiFlashCrashURL[] = "chrome://ppapiflashcrash/";
 const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang/";
+const char kChromeUIProcessInternalsURL[] = "chrome://process-internals";
 #if defined(OS_ANDROID)
 const char kChromeUIGpuJavaCrashURL[] = "chrome://gpu-java-crash/";
 #endif
