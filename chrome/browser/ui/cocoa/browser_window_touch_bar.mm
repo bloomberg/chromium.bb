@@ -151,7 +151,8 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
     if (model)
       model->RemoveObserver(this);
 
-    UpdateWebContents(nullptr);
+    if (contents_)
+      BookmarkTabHelper::FromWebContents(contents_)->RemoveObserver(this);
   }
 
   void UpdateTouchBar() { [owner_ invalidateTouchBar]; }
