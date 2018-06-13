@@ -34,6 +34,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/net_buildflags.h"
 #include "net/socket/connection_attempts.h"
@@ -812,8 +813,10 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
                     CookieOptions* options) const;
   bool CanEnablePrivacyMode() const;
 
-  // Called just before calling a delegate that may block a request.
-  void OnCallToDelegate();
+  // Called just before calling a delegate that may block a request. |type|
+  // should be the delegate's event type,
+  // e.g. NetLogEventType::NETWORK_DELEGATE_AUTH_REQUIRED.
+  void OnCallToDelegate(NetLogEventType type);
   // Called when the delegate lets a request continue.  Also called on
   // cancellation.
   void OnCallToDelegateComplete();
@@ -892,6 +895,10 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // identifier should be deleted here. http://crbug.com/89321
   // A globally unique identifier for this request.
   const uint64_t identifier_;
+
+  // If |calling_delegate_| is true, the event type of the delegate being
+  // called.
+  NetLogEventType delegate_event_type_;
 
   // True if this request is currently calling a delegate, or is blocked waiting
   // for the URL request or network delegate to resume it.

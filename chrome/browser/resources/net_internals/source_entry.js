@@ -216,7 +216,11 @@ var SourceEntry = (function() {
         if (this.entries_[0].type == EventType.REQUEST_ALIVE &&
             this.entries_[0].params == undefined) {
           var startIndex = 1;
-          // Skip over delegate events for URL_REQUESTs.
+          // Skip over delegate events for URL_REQUESTs. Note: in newer
+          // versions, URL_REQUEST_DELEGATE has been split into multiple event
+          // types. However, all those versions also include the REQUEST_ALIVE
+          // parameters added in https://crrev.com/441259, so only the
+          // URL_REQUEST_DELEGATE version of this logic is needed.
           for (; startIndex + 1 < this.entries_.length; ++startIndex) {
             var type = this.entries_[startIndex].type;
             if (type != EventType.URL_REQUEST_DELEGATE &&

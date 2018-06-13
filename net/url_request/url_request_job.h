@@ -283,7 +283,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   void NotifyRestartRequired();
 
   // See corresponding functions in url_request.h.
-  void OnCallToDelegate();
+  void OnCallToDelegate(NetLogEventType type);
   void OnCallToDelegateComplete();
 
   // Called to read raw (pre-filtered) data from this Job. Reads at most

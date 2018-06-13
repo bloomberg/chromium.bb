@@ -182,14 +182,14 @@ Some things to look for while debugging:
 fun and exciting effects on underway network activity.  Network changes log a
 top level NETWORK_CHANGED event.  Suspend events are currently not logged.
 
-* URL_REQUEST_DELEGATE / DELEGATE_INFO events mean a URL_REQUEST is blocked on a
-URLRequest::Delegate or the NetworkDelegate, which are implemented outside the
-network stack.  A request will sometimes be CANCELED here for reasons known only
-to the delegate.  Or the delegate may cause a hang.  In general, to debug issues
-related to delegates, one needs to figure out which method of which object is
-causing the problem.  The object may be the a NetworkDelegate, a
-ResourceThrottle, a ResourceHandler, the ResourceLoader itself, or the
-ResourceDispatcherHost.
+* URL_REQUEST_DELEGATE_\* / NETWORK_DELEGATE_\* / DELEGATE_INFO events mean a
+URL_REQUEST is blocked on a URLRequest::Delegate or the NetworkDelegate, which
+are implemented outside the network stack.  A request will sometimes be CANCELED
+here for reasons known only to the delegate.  Or the delegate may cause a hang.
+In general, to debug issues related to delegates, one needs to figure out which
+method of which object is causing the problem.  The object may be the a
+NetworkDelegate, a ResourceThrottle, a ResourceHandler, the ResourceLoader
+itself, or the ResourceDispatcherHost.
 
 * Sockets are often reused between requests.  If a request is on a stale
 (reused) socket, what was the previous request that used the socket, how long

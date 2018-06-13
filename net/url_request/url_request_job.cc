@@ -588,8 +588,8 @@ void URLRequestJob::NotifyRestartRequired() {
     request_->Restart();
 }
 
-void URLRequestJob::OnCallToDelegate() {
-  request_->OnCallToDelegate();
+void URLRequestJob::OnCallToDelegate(NetLogEventType type) {
+  request_->OnCallToDelegate(type);
 }
 
 void URLRequestJob::OnCallToDelegateComplete() {
