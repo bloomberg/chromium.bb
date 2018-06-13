@@ -119,7 +119,7 @@ SessionStorageContextMojo::~SessionStorageContextMojo() {
 void SessionStorageContextMojo::OpenSessionStorage(
     int process_id,
     const std::string& namespace_id,
-    mojom::SessionStorageNamespaceRequest request) {
+    blink::mojom::SessionStorageNamespaceRequest request) {
   if (connection_state_ != CONNECTION_FINISHED) {
     RunWhenConnected(
         base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,

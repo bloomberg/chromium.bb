@@ -11,7 +11,7 @@
 namespace content {
 
 class MockLevelDBWrapper::MockSessionStorageNamespace
-    : public mojom::SessionStorageNamespace {
+    : public blink::mojom::SessionStorageNamespace {
  public:
   MockSessionStorageNamespace(std::string namespace_id,
                               MockLevelDBWrapper* wrapper)
@@ -45,7 +45,7 @@ void MockLevelDBWrapper::OpenLocalStorage(
 
 void MockLevelDBWrapper::OpenSessionStorage(
     const std::string& namespace_id,
-    mojom::SessionStorageNamespaceRequest request) {
+    blink::mojom::SessionStorageNamespaceRequest request) {
   namespace_bindings_.AddBinding(
       std::make_unique<MockSessionStorageNamespace>(namespace_id, this),
       std::move(request));

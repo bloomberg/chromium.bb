@@ -32,12 +32,12 @@
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_export.h"
-#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/host_zoom_level_context.h"
@@ -54,7 +54,7 @@ class WebPackageContextImpl;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
-      public mojom::StoragePartitionService {
+      public blink::mojom::StoragePartitionService {
  public:
   // It is guaranteed that storage partitions are destructed before the
   // browser context starts shutting down its corresponding IO thread residents
@@ -145,12 +145,12 @@ class CONTENT_EXPORT StoragePartitionImpl
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
   CookieStoreContext* GetCookieStoreContext();
 
-  // mojom::StoragePartitionService interface.
+  // blink::mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
                         blink::mojom::StorageAreaRequest request) override;
   void OpenSessionStorage(
       const std::string& namespace_id,
-      mojom::SessionStorageNamespaceRequest request) override;
+      blink::mojom::SessionStorageNamespaceRequest request) override;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter() {
     return url_loader_factory_getter_;
@@ -163,7 +163,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // binding.
   mojo::BindingId Bind(
       int process_id,
-      mojo::InterfaceRequest<mojom::StoragePartitionService> request);
+      mojo::InterfaceRequest<blink::mojom::StoragePartitionService> request);
 
   auto& bindings_for_testing() { return bindings_; }
 
@@ -317,7 +317,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // BindingSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during
   // interface method calls to enforce security checks.
-  mojo::BindingSet<mojom::StoragePartitionService, int> bindings_;
+  mojo::BindingSet<blink::mojom::StoragePartitionService, int> bindings_;
 
   // This is the NetworkContext used to
   // make requests for the StoragePartition. When the network service is

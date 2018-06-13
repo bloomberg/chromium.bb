@@ -20,6 +20,11 @@
 #include "url/origin.h"
 
 namespace blink {
+namespace mojom {
+class SessionStorageNamespace;
+class StoragePartitionService;
+}  // namespace mojom
+
 namespace scheduler {
 class WebThreadScheduler;
 }
@@ -28,11 +33,6 @@ class WebThreadScheduler;
 namespace content {
 class LocalStorageArea;
 class LocalStorageCachedAreas;
-
-namespace mojom {
-class StoragePartitionService;
-class SessionStorageNamespace;
-}
 
 // An in-process implementation of LocalStorage using a LevelDB Mojo service.
 // Maintains a complete cache of the origin's Map of key/value pairs for fast
@@ -50,12 +50,12 @@ class CONTENT_EXPORT LocalStorageCachedArea
   LocalStorageCachedArea(
       const std::string& namespace_id,
       const url::Origin& origin,
-      mojom::SessionStorageNamespace* session_namespace,
+      blink::mojom::SessionStorageNamespace* session_namespace,
       LocalStorageCachedAreas* cached_areas,
       blink::scheduler::WebThreadScheduler* main_thread_scheduler);
   LocalStorageCachedArea(
       const url::Origin& origin,
-      mojom::StoragePartitionService* storage_partition_service,
+      blink::mojom::StoragePartitionService* storage_partition_service,
       LocalStorageCachedAreas* cached_areas,
       blink::scheduler::WebThreadScheduler* main_thread_scheduler);
 

@@ -15,12 +15,13 @@
 #include "base/time/time.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/common/dom_storage/dom_storage_map.h"
-#include "content/common/storage_partition_service.mojom.h"
 #include "content/renderer/dom_storage/local_storage_area.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 #include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_storage_event_dispatcher.h"
 
@@ -74,7 +75,7 @@ void UnpackSource(const std::string& source,
 LocalStorageCachedArea::LocalStorageCachedArea(
     const std::string& namespace_id,
     const url::Origin& origin,
-    mojom::SessionStorageNamespace* session_namespace,
+    blink::mojom::SessionStorageNamespace* session_namespace,
     LocalStorageCachedAreas* cached_areas,
     blink::scheduler::WebThreadScheduler* main_thread_scheduler)
     : namespace_id_(namespace_id),
@@ -96,7 +97,7 @@ LocalStorageCachedArea::LocalStorageCachedArea(
 
 LocalStorageCachedArea::LocalStorageCachedArea(
     const url::Origin& origin,
-    mojom::StoragePartitionService* storage_partition_service,
+    blink::mojom::StoragePartitionService* storage_partition_service,
     LocalStorageCachedAreas* cached_areas,
     blink::scheduler::WebThreadScheduler* main_thread_scheduler)
     : origin_(origin),

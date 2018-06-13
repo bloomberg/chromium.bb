@@ -2,26 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
+import "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom";
 import "third_party/blink/public/mojom/dom_storage/storage_area.mojom";
 import "url/mojom/origin.mojom";
 
-// Represents a namespace for Session Storage and allows data access and
-// cloning. This is implemented by the browser process.
-interface SessionStorageNamespace {
-  OpenArea(url.mojom.Origin origin,
-           associated blink.mojom.StorageArea& area);
-  // Clones this namespace the new given namespace. Used before navigating to
-  // a new frame which would be given this session storage namespace.
-  Clone(string clone_to_namespace);
-};
-
 // Returns services related to the current storage partition.  This is
 // implemented by the browser process.
+// TODO(mek): If more than just DOMStorage related interfaces get added this
+// should probably move to some other directory.
 interface StoragePartitionService {
   OpenLocalStorage(url.mojom.Origin origin,
-                   blink.mojom.StorageArea& area);
+                   StorageArea& area);
   OpenSessionStorage(string namespace_id,
                      SessionStorageNamespace& session_namespace);
 };

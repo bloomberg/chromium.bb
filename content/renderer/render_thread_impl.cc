@@ -1164,7 +1164,8 @@ void RenderThreadImpl::RegisterPendingFrameCreate(
   CHECK(result.second) << "Inserting a duplicate item.";
 }
 
-mojom::StoragePartitionService* RenderThreadImpl::GetStoragePartitionService() {
+blink::mojom::StoragePartitionService*
+RenderThreadImpl::GetStoragePartitionService() {
   return storage_partition_service_.get();
 }
 

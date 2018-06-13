@@ -40,7 +40,6 @@
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
-#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
@@ -59,6 +58,7 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/web/web_memory_statistics.h"
@@ -488,7 +488,7 @@ class CONTENT_EXPORT RenderThreadImpl
       int routing_id,
       mojom::FrameRequest frame);
 
-  mojom::StoragePartitionService* GetStoragePartitionService();
+  blink::mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
 
   // ChildMemoryCoordinatorDelegate implementation.
@@ -777,7 +777,7 @@ class CONTENT_EXPORT RenderThreadImpl
       std::map<int, scoped_refptr<PendingFrameCreate>>;
   PendingFrameCreateMap pending_frame_creates_;
 
-  mojom::StoragePartitionServicePtr storage_partition_service_;
+  blink::mojom::StoragePartitionServicePtr storage_partition_service_;
   mojom::RendererHostAssociatedPtr renderer_host_;
 
   AssociatedInterfaceRegistryImpl associated_interfaces_;

@@ -997,11 +997,12 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
 // This class allows intercepting the OpenLocalStorage method and changing
 // the parameters to the real implementation of it.
 class StoragePartitonInterceptor
-    : public mojom::StoragePartitionServiceInterceptorForTesting,
+    : public blink::mojom::StoragePartitionServiceInterceptorForTesting,
       public RenderProcessHostObserver {
  public:
-  StoragePartitonInterceptor(RenderProcessHostImpl* rph,
-                             mojom::StoragePartitionServiceRequest request) {
+  StoragePartitonInterceptor(
+      RenderProcessHostImpl* rph,
+      blink::mojom::StoragePartitionServiceRequest request) {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
@@ -1030,7 +1031,7 @@ class StoragePartitonInterceptor
 
   // Allow all methods that aren't explicitly overriden to pass through
   // unmodified.
-  mojom::StoragePartitionService* GetForwardingInterface() override {
+  blink::mojom::StoragePartitionService* GetForwardingInterface() override {
     return storage_partition_service_;
   }
 
@@ -1048,14 +1049,14 @@ class StoragePartitonInterceptor
  private:
   // Keep a pointer to the original implementation of the service, so all
   // calls can be forwarded to it.
-  mojom::StoragePartitionService* storage_partition_service_;
+  blink::mojom::StoragePartitionService* storage_partition_service_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitonInterceptor);
 };
 
 void CreateTestStoragePartitionService(
     RenderProcessHostImpl* rph,
-    mojom::StoragePartitionServiceRequest request) {
+    blink::mojom::StoragePartitionServiceRequest request) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
   new StoragePartitonInterceptor(rph, std::move(request));
