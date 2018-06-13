@@ -29,7 +29,6 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -80,18 +79,6 @@ void SaveCardBubbleViews::Hide() {
     controller_->OnBubbleClosed();
   controller_ = nullptr;
   CloseBubble();
-}
-
-views::View* SaveCardBubbleViews::CreateExtraView() {
-  if (GetCurrentFlowStep() != LOCAL_SAVE_ONLY_STEP)
-    return nullptr;
-  // Learn More link is only shown on local save bubble.
-  DCHECK(!learn_more_link_);
-  learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  learn_more_link_->SetUnderline(false);
-  learn_more_link_->set_listener(this);
-  learn_more_link_->set_id(DialogViewId::LEARN_MORE_LINK);
-  return learn_more_link_;
 }
 
 views::View* SaveCardBubbleViews::CreateFootnoteView() {
@@ -186,12 +173,6 @@ void SaveCardBubbleViews::WindowClosing() {
     controller_->OnBubbleClosed();
     controller_ = nullptr;
   }
-}
-
-void SaveCardBubbleViews::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK_EQ(source, learn_more_link_);
-  if (controller_)
-    controller_->OnLearnMoreClicked();
 }
 
 void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,

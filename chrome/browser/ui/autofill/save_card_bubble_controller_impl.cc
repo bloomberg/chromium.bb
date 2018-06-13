@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -172,15 +171,6 @@ void SaveCardBubbleControllerImpl::OnCancelButton() {
   pref_service_->SetInteger(
       prefs::kAutofillAcceptSaveCreditCardPromptState,
       prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED);
-}
-
-void SaveCardBubbleControllerImpl::OnLearnMoreClicked() {
-  OpenUrl(GURL(kHelpURL));
-  AutofillMetrics::LogSaveCardPromptMetric(
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE, is_uploading_,
-      is_reshow_,
-      pref_service_->GetInteger(
-          prefs::kAutofillAcceptSaveCreditCardPromptState));
 }
 
 void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {

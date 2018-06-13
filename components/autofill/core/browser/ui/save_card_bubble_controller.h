@@ -37,7 +37,6 @@ class SaveCardBubbleController {
   // Interaction.
   virtual void OnSaveButton() = 0;
   virtual void OnCancelButton() = 0;
-  virtual void OnLearnMoreClicked() = 0;
   virtual void OnLegalMessageLinkClicked(const GURL& url) = 0;
   virtual void OnBubbleClosed() = 0;
 

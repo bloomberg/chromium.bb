@@ -199,7 +199,8 @@ class AutofillMetrics {
     // the prompt was hidden.
     SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN,
     // The prompt was dismissed because the user clicked the "Learn more" link.
-    SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE,
+    // Deprecated.
+    DEPRECATED_SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE,
     // The prompt was dismissed because the user clicked a legal message link.
     SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE,
 

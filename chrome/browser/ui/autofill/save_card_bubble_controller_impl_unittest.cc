@@ -550,29 +550,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
       AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN, 1);
 }
 
-TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_FirstShow_LearnMore) {
-  ShowLocalBubble();
-
-  base::HistogramTester histogram_tester;
-  controller()->OnLearnMoreClicked();
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE, 1);
-}
-
-TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_Reshows_LearnMore) {
-  ShowLocalBubble();
-  CloseAndReshowBubble();
-
-  base::HistogramTester histogram_tester;
-  controller()->OnLearnMoreClicked();
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Local.Reshows",
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEARN_MORE, 1);
-}
-
 TEST_F(SaveCardBubbleControllerImplTest,
        Metrics_Upload_FirstShow_LegalMessageLink) {
   ShowUploadBubble();
