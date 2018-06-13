@@ -2460,6 +2460,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
           config_lib.CONFIG_TYPE_FULL,
           active_builders,
           active_waterfall=waterfall.WATERFALL_SWARMING,
+          important=True,
       )
   )
 
@@ -2934,6 +2935,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.beaglebone,
       boards=['beaglebone'],
       description='Incremental Beaglebone Builder',
+      important=True,
   )
 
   # Build external source, for an internal board.
@@ -2944,6 +2946,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.external,
       useflags=append_useflags(['-chrome_internal']),
       active_waterfall=waterfall.WATERFALL_EXTERNAL,
+      important=True,
   )
 
   site_config.Add(
@@ -2953,6 +2956,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       board_configs['amd64-generic'],
       active_waterfall=waterfall.WATERFALL_EXTERNAL,
+      important=True,
   )
 
   # TODO(ihf): Delete this builder.
@@ -2972,6 +2976,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_INTERNAL,
       vm_tests=getInfoVMTest(),
       vm_tests_override=getInfoVMTest(),
+      important=True,
   )
 
   site_config.Add(
@@ -2980,6 +2985,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_incremental,
       boards=['chell'],
       active_waterfall=waterfall.WATERFALL_INTERNAL,
+      important=True,
   )
 
   site_config.Add(
@@ -2990,6 +2996,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       board_configs['lakitu'],
       site_config.templates.lakitu_test_customizations,
       active_waterfall=waterfall.WATERFALL_INTERNAL,
+      important=True,
   )
 
   site_config.Add(
@@ -2999,6 +3006,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-gpu'],
       site_config.templates.lakitu_test_customizations,
+      important=True,
   )
 
   site_config.Add(
@@ -3008,6 +3016,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-st'],
       site_config.templates.lakitu_test_customizations,
+      important=True,
   )
 
   site_config.Add(
@@ -3017,6 +3026,7 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu_next'],
       site_config.templates.lakitu_test_customizations,
+      important=True,
   )
 
 
@@ -3137,6 +3147,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'x86-generic-tot-asan-informational',
       site_config.templates.tot_asan_informational,
       boards=['x86-generic'],
+      important=True,
   )
 
   site_config.Add(
@@ -3152,6 +3163,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
       schedule='0 */3 * * *',
+      important=True,
   )
 
   site_config.Add(
@@ -3179,6 +3191,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Once every day. 3 PM UTC is 7 AM PST (no daylight savings).
       schedule='0 15 * * *',
+      important=True,
   )
 
   site_config.Add(
@@ -3200,6 +3213,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
       schedule='0 */3 * * *',
+      important=True,
   )
 
   site_config.Add(
@@ -4001,6 +4015,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Continuous',
       schedule='with 30m interval',
+      important=True,
   )
 
   site_config.AddWithoutTemplate(
@@ -4090,6 +4105,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # 3 PM UTC is 7 AM PST (no daylight savings).
       schedule='0 15 * * *',
+      important=True,
   )
 
   # Create our unittest stress build configs (used for tryjobs only)
@@ -4160,6 +4176,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_timeout=60 * 60,
       description='Build Chromium OS infra Go binaries',
       doc='https://goto.google.com/cros-infra-go-packaging',
+      important=True,
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='triggered',
       triggered_gitiles=[[
