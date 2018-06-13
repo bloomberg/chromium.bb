@@ -40481,6 +40481,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="19" label="BLOOM_MISS_PREFIX_HIT"/>
 </enum>
 
+<enum name="SB2RemoteCallInternalErrorStatusCode">
+  <int value="0" label="UNEXPECTED"/>
+  <int value="1" label="UNSUPPORTED_THREAT_TYPES"/>
+  <int value="2" label="MISSING_API_KEY"/>
+  <int value="3" label="API_NOT_AVAILABLE"/>
+  <int value="4" label="API_NOT_INITIALIZED"/>
+</enum>
+
 <enum name="SB2RemoteCallResult">
   <int value="0" label="INTERNAL_ERROR"/>
   <int value="1" label="TIMEOUT"/>
