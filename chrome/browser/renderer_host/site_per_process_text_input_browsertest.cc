@@ -799,8 +799,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // corresponding to a focused frame with a focused <input> to commit some text.
 // Then, it verifies that the <input>'s value matches the committed text
 // (https://crbug.com/688842).
+// Flaky on Android and Linux http://crbug.com/852274
+#if defined(OS_MACOSX)
+#define MAYBE_ImeCommitTextForAllFrames DISABLED_ImeCommitTextForAllFrames
+#else
+#define MAYBE_ImeCommitTextForAllFrames ImeCommitTextForAllFrames
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       ImeCommitTextForAllFrames) {
+                       MAYBE_ImeCommitTextForAllFrames) {
   CreateIframePage("a(b,c(a))");
   std::vector<content::RenderFrameHost*> frames{
       GetFrame(IndexVector{}), GetFrame(IndexVector{0}),
