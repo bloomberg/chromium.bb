@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
+
 namespace policy {
 
 // A container keeping all parameters relevant to whether and how enterprise
@@ -61,6 +63,10 @@ struct EnrollmentConfig {
     // that requires the least user interaction).
     AUTH_MECHANISM_BEST_AVAILABLE,
   };
+
+  EnrollmentConfig();
+  EnrollmentConfig(const EnrollmentConfig& config);
+  ~EnrollmentConfig();
 
   // Whether enrollment should be triggered.
   bool should_enroll() const {
@@ -118,6 +124,10 @@ struct EnrollmentConfig {
   // The authentication mechanism to use.
   // TODO(drcrash): Change to best available once ZTE is everywhere.
   AuthMechanism auth_mechanism = AUTH_MECHANISM_INTERACTIVE;
+
+  // The path for the device policy blob data for the offline demo mode. This
+  // should be empty and never used for other modes.
+  base::FilePath offline_policy_path;
 };
 
 }  // namespace policy

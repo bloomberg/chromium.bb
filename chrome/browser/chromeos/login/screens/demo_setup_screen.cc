@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 
+#include "base/files/file_path.h"
+#include "base/logging.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -13,6 +15,11 @@ namespace {
 constexpr const char kUserActionOnlineSetup[] = "online-setup";
 constexpr const char kUserActionOfflineSetup[] = "offline-setup";
 constexpr const char kUserActionClose[] = "close-setup";
+
+// The policy blob data for offline demo-mode is embedded into the filesystem.
+// TODO(mukai, agawronska): fix this when switching to dm-verity image.
+constexpr const base::FilePath::CharType kOfflineDemoModeDir[] =
+    FILE_PATH_LITERAL("/usr/share/chromeos-assets/demo_mode_resources/policy");
 
 }  // namespace
 
@@ -46,7 +53,7 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionOnlineSetup) {
     demo_controller_->EnrollOnline();
   } else if (action_id == kUserActionOfflineSetup) {
-    demo_controller_->EnrollOffline();
+    demo_controller_->EnrollOffline(base::FilePath(kOfflineDemoModeDir));
   } else if (action_id == kUserActionClose) {
     Finish(ScreenExitCode::DEMO_MODE_SETUP_CANCELED);
   } else {
@@ -54,8 +61,9 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
   }
 }
 
-void DemoSetupScreen::OnSetupError() {
-  NOTIMPLEMENTED();
+void DemoSetupScreen::OnSetupError(const std::string& message) {
+  LOG(ERROR) << "Failure on setting up demo mode: " << message;
+  // TODO(mukai): show the error messages on screen.
 }
 
 void DemoSetupScreen::OnSetupSuccess() {

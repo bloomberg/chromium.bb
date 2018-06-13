@@ -474,6 +474,12 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
     case policy::EnrollmentStatus::LICENSE_REQUEST_FAILED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_LICENSE_REQUEST, false);
       return;
+    case policy::EnrollmentStatus::OFFLINE_POLICY_LOAD_FAILED:
+    case policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED:
+      // OFFLINE_POLICY_LOAD_FAILED and OFFLINE_POLICY_DECODING_FAILED happen
+      // only within MODE_OFFLINE_DEMO flow, which shouldn't happen here.
+      NOTREACHED();
+      return;
   }
   NOTREACHED();
 }

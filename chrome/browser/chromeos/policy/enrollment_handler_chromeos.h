@@ -204,6 +204,16 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // Handles result from device policy refresh via authpolicyd.
   void HandleActiveDirectoryPolicyRefreshed(authpolicy::ErrorType error);
 
+  // Handles the blob for the device policy for the offline demo mode.
+  void OnOfflinePolicyBlobLoaded(base::Optional<std::string> blob);
+
+  // Handles the policy validation result for the offline demo mode.
+  void OnOfflinePolicyValidated(DeviceCloudPolicyValidator* validator);
+
+  std::unique_ptr<DeviceCloudPolicyValidator> CreateValidator(
+      std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
+      const std::string& domain);
+
   // Drops any ongoing actions.
   void Stop();
 

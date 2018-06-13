@@ -163,6 +163,8 @@ bool EnterpriseEnrollmentHelperImpl::ShouldCheckLicenseType() const {
 void EnterpriseEnrollmentHelperImpl::DoEnroll(const std::string& token) {
   DCHECK(token == oauth_token_ || oauth_token_.empty());
   DCHECK(enrollment_config_.is_mode_attestation() ||
+         enrollment_config_.mode ==
+             policy::EnrollmentConfig::MODE_OFFLINE_DEMO ||
          oauth_status_ == OAUTH_STARTED_WITH_AUTH_CODE ||
          oauth_status_ == OAUTH_STARTED_WITH_TOKEN);
   oauth_token_ = token;
@@ -492,6 +494,10 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
       break;
     case policy::EnrollmentStatus::LICENSE_REQUEST_FAILED:
       UMA(policy::kMetricEnrollmentLicenseRequestFailed);
+      break;
+    case policy::EnrollmentStatus::OFFLINE_POLICY_LOAD_FAILED:
+    case policy::EnrollmentStatus::OFFLINE_POLICY_DECODING_FAILED:
+      UMA(policy::kMetricEnrollmentRegisterPolicyResponseInvalid);
       break;
   }
 }
