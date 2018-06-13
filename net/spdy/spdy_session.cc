@@ -798,7 +798,7 @@ SpdySession::SpdySession(
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
       streams_abandoned_count_(0),
-      pings_in_flight_(0),
+      ping_in_flight_(false),
       next_ping_id_(1),
       last_read_time_(time_func()),
       last_compressed_frame_len_(0),
@@ -2388,7 +2388,7 @@ void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
 }
 
 void SpdySession::MaybeSendPrefacePing() {
-  if (pings_in_flight_ > 0 || check_ping_status_pending_ ||
+  if (ping_in_flight_ || check_ping_status_pending_ ||
       !enable_ping_based_connection_checking_) {
     return;
   }
@@ -2433,8 +2433,10 @@ void SpdySession::WritePingFrame(spdy::SpdyPingId unique_id, bool is_ack) {
         base::Bind(&NetLogSpdyPingCallback, unique_id, is_ack, "sent"));
   }
   if (!is_ack) {
+    DCHECK(!ping_in_flight_);
+
+    ping_in_flight_ = true;
     ++next_ping_id_;
-    ++pings_in_flight_;
     PlanToCheckPingStatus();
     last_ping_sent_time_ = time_func_();
   }
@@ -2455,8 +2457,8 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   CHECK(!in_io_loop_);
   DCHECK(check_ping_status_pending_);
 
-  // Check if we got a response back for all PINGs we had sent.
-  if (pings_in_flight_ == 0) {
+  if (!ping_in_flight_) {
+    // A response has been received for the ping we had sent.
     check_ping_status_pending_ = false;
     return;
   }
@@ -2762,16 +2764,13 @@ void SpdySession::OnPing(spdy::SpdyPingId unique_id, bool is_ack) {
     return;
   }
 
-  --pings_in_flight_;
-  if (pings_in_flight_ < 0) {
+  if (!ping_in_flight_) {
     RecordProtocolErrorHistogram(PROTOCOL_ERROR_UNEXPECTED_PING);
-    DoDrainSession(ERR_SPDY_PROTOCOL_ERROR, "pings_in_flight_ is < 0.");
-    pings_in_flight_ = 0;
+    DoDrainSession(ERR_SPDY_PROTOCOL_ERROR, "Unexpected PING ACK.");
     return;
   }
 
-  if (pings_in_flight_ > 0)
-    return;
+  ping_in_flight_ = false;
 
   // Record RTT in histogram when there are no more pings in flight.
   RecordPingRTTHistogram(time_func_() - last_ping_sent_time_);

@@ -285,7 +285,7 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
     session_->max_concurrent_pushed_streams_ = max_concurrent_pushed_streams;
   }
 
-  int64_t pings_in_flight() { return session_->pings_in_flight_; }
+  bool ping_in_flight() { return session_->ping_in_flight_; }
 
   spdy::SpdyPingId next_ping_id() { return session_->next_ping_id_; }
 
@@ -1041,7 +1041,7 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
   // Send a PING frame.  This posts CheckPingStatus() with delay.
   MaybeSendPrefacePing();
 
-  EXPECT_EQ(1, pings_in_flight());
+  EXPECT_TRUE(ping_in_flight());
   EXPECT_EQ(2u, next_ping_id());
   EXPECT_TRUE(check_ping_status_pending());
 
@@ -1049,7 +1049,7 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
   // already one in flight.
   MaybeSendPrefacePing();
 
-  EXPECT_EQ(1, pings_in_flight());
+  EXPECT_TRUE(ping_in_flight());
   EXPECT_EQ(2u, next_ping_id());
   EXPECT_TRUE(check_ping_status_pending());
 
@@ -1057,7 +1057,7 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
   FastForwardUntilNoTasksRemain();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0, pings_in_flight());
+  EXPECT_FALSE(ping_in_flight());
   EXPECT_EQ(2u, next_ping_id());
   EXPECT_FALSE(check_ping_status_pending());
   EXPECT_GE(last_read_time(), before_ping_time);
@@ -1775,7 +1775,7 @@ TEST_F(SpdySessionTestWithMockTime, FailedPing) {
 
   // Send a PING frame.  This posts CheckPingStatus() with delay.
   MaybeSendPrefacePing();
-  EXPECT_EQ(1, pings_in_flight());
+  EXPECT_TRUE(ping_in_flight());
   EXPECT_EQ(2u, next_ping_id());
   EXPECT_TRUE(check_ping_status_pending());
 
@@ -1830,21 +1830,21 @@ TEST_F(SpdySessionTestWithMockTime, NoPingSentWhenCheckPingPending) {
   test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
   spdy_stream1->SetDelegate(&delegate);
 
-  EXPECT_EQ(0, pings_in_flight());
+  EXPECT_FALSE(ping_in_flight());
   EXPECT_EQ(1u, next_ping_id());
   EXPECT_FALSE(check_ping_status_pending());
 
   // Send preface ping and post CheckPingStatus() task with delay.
   MaybeSendPrefacePing();
 
-  EXPECT_EQ(1, pings_in_flight());
+  EXPECT_TRUE(ping_in_flight());
   EXPECT_EQ(2u, next_ping_id());
   EXPECT_TRUE(check_ping_status_pending());
 
   // Read PING ACK.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0, pings_in_flight());
+  EXPECT_FALSE(ping_in_flight());
   EXPECT_TRUE(check_ping_status_pending());
 
   // Fast forward mock time so that normally another ping would be sent out.
@@ -1852,7 +1852,7 @@ TEST_F(SpdySessionTestWithMockTime, NoPingSentWhenCheckPingPending) {
   g_time_delta = base::TimeDelta::FromSeconds(15);
   MaybeSendPrefacePing();
 
-  EXPECT_EQ(0, pings_in_flight());
+  EXPECT_FALSE(ping_in_flight());
   EXPECT_EQ(2u, next_ping_id());
   EXPECT_TRUE(check_ping_status_pending());
 

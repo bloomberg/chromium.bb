@@ -1030,8 +1030,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   int streams_pushed_and_claimed_count_;
   int streams_abandoned_count_;
 
-  // Count of all pings on the wire, for which we have not gotten a response.
-  int64_t pings_in_flight_;
+  // True if there has been a ping sent for which we have not received a
+  // response yet.  There is always at most one ping in flight.
+  bool ping_in_flight_;
 
   // This is the next ping_id (unique_id) to be sent in PING frame.
   spdy::SpdyPingId next_ping_id_;
