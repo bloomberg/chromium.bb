@@ -25,6 +25,7 @@ class FeaturePodsContainerViewTest : public AshTestBase,
     container_ = std::make_unique<FeaturePodsContainerView>(
         true /* initially_expanded */);
     container_->AddObserver(this);
+    preferred_size_changed_count_ = 0;
   }
 
   // FeaturePodControllerBase:
@@ -33,8 +34,7 @@ class FeaturePodsContainerViewTest : public AshTestBase,
 
   // views::ViewObserver:
   void OnViewPreferredSizeChanged(views::View* observed_view) override {
-    container_->SetBoundsRect(gfx::Rect(container_->GetPreferredSize()));
-    container_->Layout();
+    ++preferred_size_changed_count_;
   }
 
  protected:
@@ -43,15 +43,21 @@ class FeaturePodsContainerViewTest : public AshTestBase,
       buttons_.push_back(new FeaturePodButton(this));
       container()->AddChildView(buttons_.back());
     }
-    OnViewPreferredSizeChanged(container());
+    container()->SetBoundsRect(gfx::Rect(container_->GetPreferredSize()));
+    container()->Layout();
   }
 
   FeaturePodsContainerView* container() { return container_.get(); }
+
+  int preferred_size_changed_count() const {
+    return preferred_size_changed_count_;
+  }
 
   std::vector<FeaturePodButton*> buttons_;
 
  private:
   std::unique_ptr<FeaturePodsContainerView> container_;
+  int preferred_size_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePodsContainerViewTest);
 };
@@ -131,6 +137,28 @@ TEST_F(FeaturePodsContainerViewTest, DifferentButtonBecomeVisibleInCollapsed) {
   buttons_.front()->SetVisible(false);
   // The last button now has the space for it.
   EXPECT_TRUE(buttons_.back()->visible());
+}
+
+TEST_F(FeaturePodsContainerViewTest, SizeChangeByExpanding) {
+  // SetExpandedAmount() should not trigger PreferredSizeChanged().
+  AddButtons(kUnifiedFeaturePodItemsInRow * 3 - 1);
+  EXPECT_EQ(0, preferred_size_changed_count());
+  container()->SetExpandedAmount(0.0);
+  container()->SetExpandedAmount(0.5);
+  container()->SetExpandedAmount(1.0);
+  EXPECT_EQ(0, preferred_size_changed_count());
+}
+
+TEST_F(FeaturePodsContainerViewTest, SizeChangeByVisibility) {
+  // Visibility change should trigger PreferredSizeChanged().
+  AddButtons(kUnifiedFeaturePodItemsInRow * 2 + 1);
+  EXPECT_EQ(0, preferred_size_changed_count());
+  // The first button becomes invisible.
+  buttons_.front()->SetVisible(false);
+  EXPECT_EQ(1, preferred_size_changed_count());
+  // The first button becomes visible.
+  buttons_.front()->SetVisible(true);
+  EXPECT_EQ(2, preferred_size_changed_count());
 }
 
 }  // namespace ash

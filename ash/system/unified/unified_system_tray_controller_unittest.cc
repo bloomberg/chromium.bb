@@ -45,6 +45,8 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
 
     view_->AddObserver(this);
     OnViewPreferredSizeChanged(view());
+
+    preferred_size_changed_count_ = 0;
   }
 
   void TearDown() override {
@@ -67,12 +69,17 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
   void OnViewPreferredSizeChanged(views::View* observed_view) override {
     view_->SetBoundsRect(gfx::Rect(view_->GetPreferredSize()));
     view_->Layout();
+    ++preferred_size_changed_count_;
   }
 
  protected:
   void WaitForAnimation() {
     while (controller()->animation_->is_animating())
       base::RunLoop().RunUntilIdle();
+  }
+
+  int preferred_size_changed_count() const {
+    return preferred_size_changed_count_;
   }
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
@@ -87,6 +94,8 @@ class UnifiedSystemTrayControllerTest : public AshTestBase,
   TestingPrefServiceSimple profile_prefs_;
   TestingPrefServiceSimple local_state_;
 
+  int preferred_size_changed_count_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayControllerTest);
 };
 
@@ -100,6 +109,19 @@ TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
   const int collapsed_height = view()->GetPreferredSize().height();
   EXPECT_LT(collapsed_height, expanded_height);
   EXPECT_FALSE(model()->expanded_on_open());
+}
+
+TEST_F(UnifiedSystemTrayControllerTest, PreferredSizeChanged) {
+  // Checks PreferredSizeChanged is not called too frequently.
+  EXPECT_EQ(0, preferred_size_changed_count());
+  view()->SetExpandedAmount(0.0);
+  EXPECT_EQ(1, preferred_size_changed_count());
+  view()->SetExpandedAmount(0.25);
+  EXPECT_EQ(2, preferred_size_changed_count());
+  view()->SetExpandedAmount(0.75);
+  EXPECT_EQ(3, preferred_size_changed_count());
+  view()->SetExpandedAmount(1.0);
+  EXPECT_EQ(4, preferred_size_changed_count());
 }
 
 }  // namespace ash

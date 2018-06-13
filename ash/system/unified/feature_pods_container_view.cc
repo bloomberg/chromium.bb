@@ -44,8 +44,6 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
     return;
   expanded_amount_ = expanded_amount;
 
-  PreferredSizeChanged();
-
   for (int i = 0; i < child_count(); ++i) {
     auto* child = static_cast<FeaturePodButton*>(child_at(i));
     child->SetExpandedAmount(expanded_amount_);
@@ -72,12 +70,16 @@ void FeaturePodsContainerView::RestoreFocus() {
 }
 
 void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {
-  // ChildVisibilityChanged can change child visibility in
-  // UpdateChildVisibility(), so we have to prevent this.
+  // ChildVisibilityChanged can change child visibility using
+  // SetVisibleByContainer() in UpdateChildVisibility(), so we have to prevent
+  // reentrancy.
   if (changing_visibility_)
     return;
 
+  // Visibility change is caused by the child's SetVisible(), so update actual
+  // visibility and propagate the container size change to the parent.
   UpdateChildVisibility();
+  PreferredSizeChanged();
   Layout();
   SchedulePaint();
 }
