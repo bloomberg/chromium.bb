@@ -94,6 +94,11 @@ class CastWebView {
     // functionality for the WebContents, like remote debugging and debugging
     // interfaces.
     bool enabled_for_dev = false;
+
+    // Enable/Force 720p resolution for this CastWebView instance.
+    bool force_720p_resolution = false;
+
+    CreateParams();
   };
 
   CastWebView();
