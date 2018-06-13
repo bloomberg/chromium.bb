@@ -179,14 +179,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
     return promise;
   }
 
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  // FIXME: May be null due to worker termination: http://crbug.com/413518.
-  if (!execution_context)
-    return ScriptPromise();
-
   auto callbacks = std::make_unique<CallbackPromiseAdapter<
       ServiceWorkerRegistration, ServiceWorkerErrorForUpdate>>(resolver);
 
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   String error_message;
   // Restrict to secure origins:
   // https://w3c.github.io/webappsec-secure-contexts/#is-settings-object-contextually-secure
@@ -313,10 +309,6 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   }
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  // FIXME: May be null due to worker termination: http://crbug.com/413518.
-  if (!execution_context)
-    return ScriptPromise();
-
   scoped_refptr<const SecurityOrigin> document_origin =
       execution_context->GetSecurityOrigin();
   String error_message;
