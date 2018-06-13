@@ -36,6 +36,7 @@ namespace blink {
 struct WebLocalizedString {
   enum Name {
     kAXAMPMFieldText,
+    kAXCalendarShowDatePicker,
     kAXCalendarShowMonthSelector,
     kAXCalendarShowNextMonth,
     kAXCalendarShowPreviousMonth,
