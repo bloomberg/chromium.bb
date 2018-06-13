@@ -1219,7 +1219,7 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
         (txsize_sqr_up_map[tx_size] != max_tx_size && max_tx_size > TX_8X8) +
         (TX_SIZES - 1 - max_tx_size) * 2;
   }
-  if (category == TXFM_PARTITION_CONTEXTS) return category;
+  assert(category != TXFM_PARTITION_CONTEXTS);
   return category * 3 + above + left;
 }
 
