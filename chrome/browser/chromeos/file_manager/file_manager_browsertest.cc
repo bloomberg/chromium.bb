@@ -363,8 +363,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openFileDialogCancelDrive"),
                       TestCase("openFileDialogEscapeDrive")));
 
+// Flaky in RELEASE - https://crbug.com/852246
+#if defined(NDEBUG)
+#define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
+#else
+#define MAYBE_CopyBetweenWindows CopyBetweenWindows
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    CopyBetweenWindows, /* copy_between_windows.js */
+    MAYBE_CopyBetweenWindows, /* copy_between_windows.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("copyBetweenWindowsLocalToDrive"),
                       TestCase("copyBetweenWindowsLocalToUsb"),
