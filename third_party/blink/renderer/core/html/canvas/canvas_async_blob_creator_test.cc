@@ -103,11 +103,10 @@ class MockCanvasAsyncBlobCreatorWithoutComplete
     Platform::Current()->MainThread()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(&MockCanvasAsyncBlobCreatorWithoutComplete::InitiateEncoding,
-                  WrapPersistent(this), quality,
-                  std::numeric_limits<double>::max()));
+                  WrapPersistent(this), quality, TimeTicks::Max()));
   }
 
-  void IdleEncodeRows(double deadline_seconds) override {
+  void IdleEncodeRows(TimeTicks deadline) override {
     // Deliberately make idleEncodeRows do nothing so that idle task never
     // completes
   }

@@ -61,7 +61,7 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
     return nullptr;
   }
 
-  void RunIdleTask() { std::move(idle_task_).Run(0); }
+  void RunIdleTask() { std::move(idle_task_).Run(TimeTicks()); }
   bool HasIdleTask() const { return !!idle_task_; }
 
  private:

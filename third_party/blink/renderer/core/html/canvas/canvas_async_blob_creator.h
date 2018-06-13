@@ -97,7 +97,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
       ImageEncoder::MimeType);
   // Methods are virtual for unit testing
   virtual void ScheduleInitiateEncoding(double quality);
-  virtual void IdleEncodeRows(double deadline_seconds);
+  virtual void IdleEncodeRows(TimeTicks deadline);
   virtual void PostDelayedTaskToCurrentThread(const base::Location&,
                                               base::OnceClosure,
                                               double delay_ms);
@@ -105,7 +105,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   virtual void CreateBlobAndReturnResult();
   virtual void CreateNullAndReturnResult();
 
-  void InitiateEncoding(double quality, double deadline_seconds);
+  void InitiateEncoding(double quality, TimeTicks deadline);
 
  protected:
   IdleTaskStatus idle_task_status_;

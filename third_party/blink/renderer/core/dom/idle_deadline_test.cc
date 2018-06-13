@@ -99,14 +99,16 @@ class IdleDeadlineTest : public testing::Test {
 
 TEST_F(IdleDeadlineTest, deadlineInFuture) {
   IdleDeadline* deadline =
-      IdleDeadline::Create(1.25, IdleDeadline::CallbackType::kCalledWhenIdle);
+      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),
+                           IdleDeadline::CallbackType::kCalledWhenIdle);
   // Note: the deadline is computed with reduced resolution.
   EXPECT_FLOAT_EQ(250.0, deadline->timeRemaining());
 }
 
 TEST_F(IdleDeadlineTest, deadlineInPast) {
   IdleDeadline* deadline =
-      IdleDeadline::Create(0.75, IdleDeadline::CallbackType::kCalledWhenIdle);
+      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(0.75),
+                           IdleDeadline::CallbackType::kCalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 
@@ -114,7 +116,8 @@ TEST_F(IdleDeadlineTest, yieldForHighPriorityWork) {
   ScopedTestingPlatformSupport<MockIdleDeadlinePlatform> platform;
 
   IdleDeadline* deadline =
-      IdleDeadline::Create(1.25, IdleDeadline::CallbackType::kCalledWhenIdle);
+      IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),
+                           IdleDeadline::CallbackType::kCalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 

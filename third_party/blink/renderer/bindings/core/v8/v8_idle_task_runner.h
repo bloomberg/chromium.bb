@@ -49,8 +49,13 @@ class V8IdleTaskRunner : public gin::V8IdleTaskRunner {
   ~V8IdleTaskRunner() override = default;
   void PostIdleTask(std::unique_ptr<v8::IdleTask> task) override {
     DCHECK(RuntimeEnabledFeatures::V8IdleTasksEnabled());
-    scheduler_->PostIdleTask(FROM_HERE,
-                             WTF::Bind(&v8::IdleTask::Run, std::move(task)));
+    scheduler_->PostIdleTask(
+        FROM_HERE,
+        WTF::Bind(
+            [](std::unique_ptr<v8::IdleTask> task, TimeTicks deadline) {
+              task->Run(deadline.since_origin().InSecondsF());
+            },
+            std::move(task)));
   }
 
  private:

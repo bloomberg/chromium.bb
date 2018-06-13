@@ -34,7 +34,7 @@ const int kConsecutiveColdModeTimerIntervalMS = 200;
 const int kHotModeRequestTimeoutMS = 200;
 const int kInvalidHandle = -1;
 const int kDummyHandleForForcedInvocation = -2;
-const double kForcedInvocationDeadlineSeconds = 10;
+constexpr TimeDelta kForcedInvocationDeadline = TimeDelta::FromSeconds(10);
 
 }  // namespace
 
@@ -202,9 +202,9 @@ void IdleSpellCheckCallback::ForceInvocationForTesting() {
   if (!IsSpellCheckingEnabled())
     return;
 
-  IdleDeadline* deadline = IdleDeadline::Create(
-      kForcedInvocationDeadlineSeconds + CurrentTimeTicksInSeconds(),
-      IdleDeadline::CallbackType::kCalledWhenIdle);
+  IdleDeadline* deadline =
+      IdleDeadline::Create(CurrentTimeTicks() + kForcedInvocationDeadline,
+                           IdleDeadline::CallbackType::kCalledWhenIdle);
 
   switch (state_) {
     case State::kColdModeTimerStarted:

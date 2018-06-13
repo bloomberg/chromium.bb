@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
@@ -138,7 +139,7 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   // Schedule an idle task to perform a lazy (incremental) clean up of
   // wrappers.
   void ScheduleIdleLazyCleanup();
-  void PerformLazyCleanup(double deadline_seconds);
+  void PerformLazyCleanup(TimeTicks deadline);
 
   void InvalidateDeadObjectsInMarkingDeque();
 

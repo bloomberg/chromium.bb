@@ -30,8 +30,8 @@ namespace blink {
 
 namespace {
 
-const double kSlackBeforeDeadline =
-    0.001;  // a small slack period between deadline and current time for safety
+// a small slack period between deadline and current time for safety
+constexpr TimeDelta kSlackBeforeDeadline = TimeDelta::FromMilliseconds(1);
 
 /* The value is based on user statistics on Nov 2017. */
 #if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN))
@@ -53,10 +53,8 @@ const double kIdleTaskCompleteTimeoutDelayMs = 5700.0;
 const double kIdleTaskCompleteTimeoutDelayMs = 9000.0;
 #endif
 
-bool IsDeadlineNearOrPassed(double deadline_seconds) {
-  return (deadline_seconds - kSlackBeforeDeadline -
-              CurrentTimeTicksInSeconds() <=
-          0);
+bool IsDeadlineNearOrPassed(TimeTicks deadline) {
+  return CurrentTimeTicks() >= deadline - kSlackBeforeDeadline;
 }
 
 String ConvertMimeTypeEnumToString(ImageEncoder::MimeType mime_type_enum) {
@@ -398,7 +396,7 @@ void CanvasAsyncBlobCreator::ScheduleInitiateEncoding(double quality) {
 }
 
 void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
-                                              double deadline_seconds) {
+                                              TimeTicks deadline) {
   if (idle_task_status_ == kIdleTaskSwitchedToImmediateTask) {
     return;
   }
@@ -416,16 +414,16 @@ void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
 
   // Re-use this time variable to collect data on complete encoding delay
   schedule_idle_task_start_time_ = WTF::CurrentTimeTicksInSeconds();
-  IdleEncodeRows(deadline_seconds);
+  IdleEncodeRows(deadline);
 }
 
-void CanvasAsyncBlobCreator::IdleEncodeRows(double deadline_seconds) {
+void CanvasAsyncBlobCreator::IdleEncodeRows(TimeTicks deadline) {
   if (idle_task_status_ == kIdleTaskSwitchedToImmediateTask) {
     return;
   }
 
   for (int y = num_rows_completed_; y < src_data_.height(); ++y) {
-    if (IsDeadlineNearOrPassed(deadline_seconds)) {
+    if (IsDeadlineNearOrPassed(deadline)) {
       num_rows_completed_ = y;
       Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
           FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::IdleEncodeRows,
@@ -445,7 +443,7 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(double deadline_seconds) {
   double elapsed_time =
       WTF::CurrentTimeTicksInSeconds() - schedule_idle_task_start_time_;
   RecordElapsedTimeHistogram(kCompleteEncodingDelay, mime_type_, elapsed_time);
-  if (IsDeadlineNearOrPassed(deadline_seconds)) {
+  if (IsDeadlineNearOrPassed(deadline)) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&CanvasAsyncBlobCreator::CreateBlobAndReturnResult,
