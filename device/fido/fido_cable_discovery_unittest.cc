@@ -111,9 +111,10 @@ MATCHER_P2(IsAdvertisementContent,
     return false;
 
   const auto& service_data_value = service_data_with_uuid->second;
-  return service_data_value[0] == kTestCableVersionNumber &&
-         service_data_value.size() == 24u &&
-         base::make_span(service_data_value).subspan(8) == expected_client_eid;
+  return (service_data_value[0] >> 5 & 1) &&
+         service_data_value[1] == kTestCableVersionNumber &&
+         service_data_value.size() == 18u &&
+         base::make_span(service_data_value).subspan(2) == expected_client_eid;
 
 #endif
 
@@ -149,8 +150,10 @@ class CableMockAdapter : public MockBluetoothAdapter {
           authenticator_eid) {
     auto mock_device = CreateTestBluetoothDevice();
 
-    std::vector<uint8_t> service_data(8);
-    fido_parsing_utils::Append(&service_data, authenticator_eid);
+    std::vector<uint8_t> service_data(18);
+    service_data[0] = 1 << 5;
+    std::copy(authenticator_eid.begin(), authenticator_eid.end(),
+              service_data.begin() + 2);
     BluetoothDevice::ServiceDataMap service_data_map;
     service_data_map.emplace(kCableAdvertisementUUID, std::move(service_data));
 
