@@ -3465,6 +3465,95 @@ TEST_F(SplitViewWindowSelectorTest, FlingToClose) {
   EXPECT_FALSE(window_selector());
 }
 
+// Tests that nudging occurs in the most basic case, which is we have one row
+// and one item which is about to be deleted by dragging. If the item is deleted
+// we still only have one row, so the other items should nudge while the item is
+// being dragged.
+TEST_F(SplitViewWindowSelectorTest, BasicNudging) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
+
+  // Set up three equal windows, which take up one row on the overview grid.
+  // When one of them is deleted we are still left with all the windows on one
+  // row.
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
+  WindowSelectorItem* item3 = GetWindowItemForWindow(0, window3.get());
+
+  const gfx::Rect item1_bounds = item1->target_bounds();
+  const gfx::Rect item2_bounds = item2->target_bounds();
+  const gfx::Rect item3_bounds = item3->target_bounds();
+
+  // Drag |item1| vertically. |item2| and |item3| bounds should change as they
+  // should be nudging towards their final bounds.
+  window_selector()->InitiateDrag(item1, item1_bounds.CenterPoint());
+  window_selector()->Drag(item1,
+                          gfx::Point(item1_bounds.CenterPoint().x(),
+                                     item1_bounds.CenterPoint().y() + 160));
+  EXPECT_NE(item2_bounds, item2->target_bounds());
+  EXPECT_NE(item3_bounds, item3->target_bounds());
+
+  // Drag |item1| back to its start drag location and release, so that it does
+  // not get deleted.
+  window_selector()->Drag(item1, item1_bounds.CenterPoint());
+  window_selector()->CompleteDrag(item1, item1_bounds.CenterPoint());
+
+  // Drag |item3| vertically. |item1| and |item2| bounds should change as they
+  // should be nudging towards their final bounds.
+  window_selector()->InitiateDrag(item3, item3_bounds.CenterPoint());
+  window_selector()->Drag(item3,
+                          gfx::Point(item3_bounds.CenterPoint().x(),
+                                     item3_bounds.CenterPoint().y() + 160));
+  EXPECT_NE(item1_bounds, item1->target_bounds());
+  EXPECT_NE(item2_bounds, item2->target_bounds());
+}
+
+// Tests that no nudging occurs when the number of rows in overview mode change
+// if the item to be deleted results in the overview grid to change number of
+// rows.
+TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenNumRowsChange) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
+
+  // Set up four equal windows, which would split into two rows in overview
+  // mode. Removing one window would leave us with three windows, which only
+  // takes a single row in overview.
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
+  WindowSelectorItem* item3 = GetWindowItemForWindow(0, window3.get());
+  WindowSelectorItem* item4 = GetWindowItemForWindow(0, window4.get());
+
+  const gfx::Rect item1_bounds = item1->target_bounds();
+  const gfx::Rect item2_bounds = item2->target_bounds();
+  const gfx::Rect item3_bounds = item3->target_bounds();
+  const gfx::Rect item4_bounds = item4->target_bounds();
+
+  // Drag |item1| past the drag to swipe threshold. None of the other window
+  // bounds should change, as none of them should be nudged.
+  window_selector()->InitiateDrag(item1, item1_bounds.CenterPoint());
+  window_selector()->Drag(item1,
+                          gfx::Point(item1_bounds.CenterPoint().x(),
+                                     item1_bounds.CenterPoint().y() + 160));
+  EXPECT_EQ(item2_bounds, item2->target_bounds());
+  EXPECT_EQ(item3_bounds, item3->target_bounds());
+  EXPECT_EQ(item4_bounds, item4->target_bounds());
+}
+
 // Verify the window grid size changes as expected when dragging items around in
 // overview mode when split view is enabled.
 TEST_F(SplitViewWindowSelectorTest, WindowGridSizeWhileDraggingWithSplitView) {
