@@ -57,7 +57,8 @@ def main(argv):
     # symbols are dumped for the Framework too.
     additional_args = [
         '--additional-binary',
-        os.path.join('Content Shell Framework.framework', 'Versions',
+        os.path.join('.', 'Content Shell.app', 'Contents', 'Frameworks',
+                     'Content Shell Framework.framework', 'Versions',
                      'Current', 'Content Shell Framework')
     ]
   else:
