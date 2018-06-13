@@ -366,14 +366,23 @@ test.repeatUntil = function(checkFunction) {
 
 /**
  * Waits for the specified element appearing in the DOM.
- * @param {string} query Query string for the element.
+ * @param {string|!Array<string>} query Query string for the element.
+ *   |query[0]| specifies the first element(s). |query[1]| specifies
+ *   elements inside the shadow DOM of the first element, and so on.
  * @return {Promise} Promise to be fulfilled when the element appears.
  */
 test.waitForElement = function(query) {
   return test.repeatUntil(() => {
-    var element = document.querySelector(query);
-    if (element)
-      return element;
+    if (typeof query == 'string')
+      query = [query];
+    let result = document.querySelector(query[0]);
+    for (let i = 1; i < query.length && result; i++) {
+      result = result.shadowRoot;
+      if (result)
+        result = result.querySelector(query[i]);
+    }
+    if (result)
+      return result;
     return test.pending('Element %s is not found.', query);
   });
 };
