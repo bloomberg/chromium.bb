@@ -154,6 +154,7 @@ namespace networkingPrivate {
 
   dictionary APNProperties {
     DOMString AccessPointName;
+    DOMString? Authentication;
     DOMString? Language;
     DOMString? LocalizedName;
     DOMString? Name;
@@ -163,6 +164,7 @@ namespace networkingPrivate {
 
   dictionary ManagedAPNProperties {
     ManagedDOMString AccessPointName;
+    ManagedDOMString? Authentication;
     ManagedDOMString? Language;
     ManagedDOMString? LocalizedName;
     ManagedDOMString? Name;

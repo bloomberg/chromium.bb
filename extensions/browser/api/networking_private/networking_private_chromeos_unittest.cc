@@ -231,6 +231,7 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
             .Set(shill::kApnProperty, "test-apn")
             .Set(shill::kApnUsernameProperty, "test-user")
             .Set(shill::kApnPasswordProperty, "test-password")
+            .Set(shill::kApnAuthenticationProperty, "chap")
             .Build();
     std::unique_ptr<base::ListValue> apn_list =
         ListBuilder().Append(apn->CreateDeepCopy()).Build();
@@ -1126,6 +1127,7 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
           .Set("AccessPointName", "test-apn")
           .Set("Username", "test-user")
           .Set("Password", "test-password")
+          .Set("Authentication", "chap")
           .Build();
   std::unique_ptr<base::DictionaryValue> expected_result =
       DictionaryBuilder()

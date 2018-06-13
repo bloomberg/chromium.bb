@@ -28,6 +28,7 @@
     ],
     "APN": {
       "AccessPointName": "test-apn",
+      "Authentication": "chap",
       "Name": "test-apn-name",
       "Username": "test-username",
       "Password": "test-password"

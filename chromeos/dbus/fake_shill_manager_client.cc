@@ -868,6 +868,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
                  base::Value("Localized Test APN"));
       apn.SetKey(shill::kApnUsernameProperty, base::Value("User1"));
       apn.SetKey(shill::kApnPasswordProperty, base::Value("password"));
+      apn.SetKey(shill::kApnAuthenticationProperty, base::Value("chap"));
       base::DictionaryValue apn2;
       apn2.SetKey(shill::kApnProperty, base::Value("testapn2"));
       services->SetServiceProperty(kCellularServicePath,

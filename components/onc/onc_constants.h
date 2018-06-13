@@ -171,6 +171,7 @@ ONC_EXPORT extern const char kAccessPointName[];
 ONC_EXPORT extern const char kName[];
 ONC_EXPORT extern const char kUsername[];
 ONC_EXPORT extern const char kPassword[];
+ONC_EXPORT extern const char kAuthentication[];
 ONC_EXPORT extern const char kLocalizedName[];
 ONC_EXPORT extern const char kLanguage[];
 }  // namespace cellular_apn

@@ -1480,6 +1480,10 @@ ONC configuration of of **Cellular** networks is not yet supported.
     * (optional) - **string**
     * Password for making connections if required.
 
+* **Authentication**
+    * (optional) - **string**
+    * Type of authentication protocol for sending username and password.
+
 * **Language**
     * (optional, rquired if **LocalizedName** is provided) - **string**
       Two letter language code for Localizedname if provided.

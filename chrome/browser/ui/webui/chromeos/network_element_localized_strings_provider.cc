@@ -63,6 +63,7 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
        IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME},
       {"OncCellular-APN-AccessPointName_none",
        IDS_ONC_CELLULAR_APN_ACCESS_POINT_NAME_NONE},
+      {"OncCellular-APN-Authentication", IDS_ONC_CELLULAR_APN_AUTHENTICATION},
       {"OncCellular-APN-Password", IDS_ONC_CELLULAR_APN_PASSWORD},
       {"OncCellular-APN-Username", IDS_ONC_CELLULAR_APN_USERNAME},
       {"OncCellular-ActivationState", IDS_ONC_CELLULAR_ACTIVATION_STATE},
