@@ -54,7 +54,7 @@ class CONTENT_EXPORT AudioInputStreamBroker final
                      const base::Optional<base::UnguessableToken>& stream_id);
 
   void ObserverBindingLost(uint32_t reason, const std::string& description);
-
+  void ClientBindingLost();
   void Cleanup();
 
   const std::string device_id_;

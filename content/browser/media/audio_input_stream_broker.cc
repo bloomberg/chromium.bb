@@ -52,8 +52,8 @@ AudioInputStreamBroker::AudioInputStreamBroker(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("audio", "AudioInputStreamBroker", this);
 
   // Unretained is safe because |this| owns |renderer_factory_client_|.
-  renderer_factory_client_.set_connection_error_handler(
-      base::BindOnce(&AudioInputStreamBroker::Cleanup, base::Unretained(this)));
+  renderer_factory_client_.set_connection_error_handler(base::BindOnce(
+      &AudioInputStreamBroker::ClientBindingLost, base::Unretained(this)));
 
   // Notify RenderProcessHost about input stream so the renderer is not
   // background.
@@ -207,6 +207,12 @@ void AudioInputStreamBroker::ObserverBindingLost(
             reason);
   }
 
+  Cleanup();
+}
+
+void AudioInputStreamBroker::ClientBindingLost() {
+  disconnect_reason_ = media::mojom::AudioInputStreamObserver::
+      DisconnectReason::kTerminatedByClient;
   Cleanup();
 }
 
