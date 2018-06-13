@@ -919,9 +919,9 @@ static double od_compute_dist(uint16_t *x, uint16_t *y, int bsize_w,
   int activity_masking = 0;
 
   int i, j;
-  DECLARE_ALIGNED(16, od_coeff, e[MAX_TX_SQUARE]);
-  DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
-  DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, e[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, tmp[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_SB_SQUARE]);
   for (i = 0; i < bsize_h; i++) {
     for (j = 0; j < bsize_w; j++) {
       e[i * bsize_w + j] = x[i * bsize_w + j] - y[i * bsize_w + j];
@@ -947,9 +947,9 @@ static double od_compute_dist_diff(uint16_t *x, int16_t *e, int bsize_w,
 
   int activity_masking = 0;
 
-  DECLARE_ALIGNED(16, uint16_t, y[MAX_TX_SQUARE]);
-  DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
-  DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, uint16_t, y[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, tmp[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_SB_SQUARE]);
   int i, j;
   for (i = 0; i < bsize_h; i++) {
     for (j = 0; j < bsize_w; j++) {
@@ -978,8 +978,8 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
   int i, j;
   const MACROBLOCKD *xd = &x->e_mbd;
 
-  DECLARE_ALIGNED(16, uint16_t, orig[MAX_TX_SQUARE]);
-  DECLARE_ALIGNED(16, uint16_t, rec[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, uint16_t, orig[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, uint16_t, rec[MAX_SB_SQUARE]);
 
   assert(bsw >= 8);
   assert(bsh >= 8);
@@ -1071,8 +1071,8 @@ static int64_t dist_8x8_diff(const MACROBLOCK *x, const uint8_t *src,
   int i, j;
   const MACROBLOCKD *xd = &x->e_mbd;
 
-  DECLARE_ALIGNED(16, uint16_t, orig[MAX_TX_SQUARE]);
-  DECLARE_ALIGNED(16, int16_t, diff16[MAX_TX_SQUARE]);
+  DECLARE_ALIGNED(16, uint16_t, orig[MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, int16_t, diff16[MAX_SB_SQUARE]);
 
   assert(bsw >= 8);
   assert(bsh >= 8);
@@ -1115,7 +1115,7 @@ static int64_t dist_8x8_diff(const MACROBLOCK *x, const uint8_t *src,
     d = (int64_t)od_compute_dist_diff(orig, diff16, bsw, bsh, qindex);
   } else if (x->tune_metric == AOM_TUNE_CDEF_DIST) {
     int coeff_shift = AOMMAX(xd->bd - 8, 0);
-    DECLARE_ALIGNED(16, uint16_t, dst16[MAX_TX_SQUARE]);
+    DECLARE_ALIGNED(16, uint16_t, dst16[MAX_SB_SQUARE]);
 
     for (i = 0; i < bsh; i++) {
       for (j = 0; j < bsw; j++) {
@@ -1947,7 +1947,8 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
 static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
                                       int blk_row, int blk_col,
                                       const BLOCK_SIZE plane_bsize,
-                                      const BLOCK_SIZE tx_bsize) {
+                                      const BLOCK_SIZE tx_bsize,
+                                      int force_sse) {
   int visible_rows, visible_cols;
   const MACROBLOCKD *xd = &x->e_mbd;
   get_txb_dimensions(xd, plane, plane_bsize, blk_row, blk_col, tx_bsize, NULL,
@@ -1957,13 +1958,17 @@ static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
 #if CONFIG_DIST_8X8
   int txb_height = block_size_high[tx_bsize];
   int txb_width = block_size_wide[tx_bsize];
-  if (x->using_dist_8x8 && plane == 0 && txb_width >= 8 && txb_height >= 8) {
+  if (!force_sse && x->using_dist_8x8 && plane == 0 && txb_width >= 8 &&
+      txb_height >= 8) {
     const int src_stride = x->plane[plane].src.stride;
     const int src_idx = (blk_row * src_stride + blk_col)
                         << tx_size_wide_log2[0];
+    const int diff_idx = (blk_row * diff_stride + blk_col)
+                         << tx_size_wide_log2[0];
     const uint8_t *src = &x->plane[plane].src.buf[src_idx];
-    return dist_8x8_diff(x, src, src_stride, diff, diff_stride, txb_width,
-                         txb_height, visible_cols, visible_rows, x->qindex);
+    return dist_8x8_diff(x, src, src_stride, diff + diff_idx, diff_stride,
+                         txb_width, txb_height, visible_cols, visible_rows,
+                         x->qindex);
   }
 #endif
   diff += ((blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]);
@@ -2687,7 +2692,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
   int64_t block_sse =
-      pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize);
+      pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize, 1);
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
   block_sse *= 16;
@@ -5238,7 +5243,7 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   const MACROBLOCKD *xd = &x->e_mbd;
   const int16_t dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd);
 
-  *dist = pixel_diff_dist(x, 0, 0, 0, bsize, bsize);
+  *dist = pixel_diff_dist(x, 0, 0, 0, bsize, bsize, 1);
   const int64_t mse = *dist / bw / bh;
   // Normalized quantizer takes the transform upscaling factor (8 for tx size
   // smaller than 32) into account.
