@@ -191,6 +191,12 @@ class WebRtcRemoteEventLogManager final
       base::Optional<BrowserContextId> browser_context_id =
           base::Optional<BrowserContextId>());
 
+  // Cancels and deletes active logs which match the given filter criteria, as
+  // described by LogFileMatchesFilter's documentation.
+  void MaybeCancelActiveLogs(const base::Time& delete_begin,
+                             const base::Time& delete_end,
+                             BrowserContextId browser_context_id);
+
   // If the currently uploaded file matches the given filter criteria, as
   // described by LogFileMatchesFilter's documentation, the upload will be
   // cancelled, and the log file deleted. If this happens, the next pending log
@@ -205,16 +211,18 @@ class WebRtcRemoteEventLogManager final
 
   // Checks whether a log file matches a range and (potentially) BrowserContext:
   // * A file matches if its last modification date was at or later than
-  //   |range_begin|, and earlier than |range_end|.
-  // * If a null time-point is given as either |range_begin| or |range_end|,
-  //   it is treated as "beginning-of-time" or "end-of-time", respectively.
-  // * If |browser_context_id| is set, only log files associated with it are
-  //   could match the filter.
+  //   |filter_range_begin|, and earlier than |filter_range_end|.
+  // * If a null time-point is given as either |filter_range_begin| or
+  //   |filter_range_end|, it is treated as "beginning-of-time" or
+  //   "end-of-time", respectively.
+  // * If |filter_browser_context_id| is set, only log files associated with it
+  //   can match the filter.
   bool LogFileMatchesFilter(
-      const WebRtcLogFileInfo& log,
-      const base::Time& range_begin,
-      const base::Time& range_end,
-      base::Optional<BrowserContextId> browser_context_id) const;
+      BrowserContextId log_browser_context_id,
+      const base::Time& log_last_modification,
+      base::Optional<BrowserContextId> filter_browser_context_id,
+      const base::Time& filter_range_begin,
+      const base::Time& filter_range_end) const;
 
   // Return |true| if and only if we can start another active log (with respect
   // to limitations on the numbers active and pending logs).
