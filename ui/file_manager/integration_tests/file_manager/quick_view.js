@@ -119,3 +119,58 @@ testcase.closeQuickView = function() {
     },
   ]);
 };
+
+/**
+ * Tests opening Quick View on a USB file.
+ */
+testcase.openQuickViewUsb = function() {
+  let appId;
+
+  const USB_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row > ' +
+      '.item-icon[volume-type-icon="removable"]';
+
+  StepsRunner.run([
+    // Open Files app on local Downloads.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Mount an empty USB volume.
+    function(results) {
+      appId = results.windowId;
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'mountFakeUsbEmpty'}), this.next);
+    },
+    // Wait for USB volume to mount.
+    function() {
+      remoteCall.waitForElement(appId, USB_VOLUME_QUERY).then(this.next);
+    },
+    // Click to open the USB volume.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [USB_VOLUME_QUERY], this.next);
+    },
+    // Check: Files app is showing an empty USB volume.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
+      remoteCall.waitForFiles(appId, []).then(this.next);
+    },
+    // Add a file to the USB volume.
+    function() {
+      addEntries(['usb'], [ENTRIES.hello], this.next);
+    },
+    // Check: the file should appear in the USB volume.
+    function() {
+      const files = [ENTRIES.hello.getExpectedRow()];
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Open the file in Quick View.
+    function() {
+      const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
