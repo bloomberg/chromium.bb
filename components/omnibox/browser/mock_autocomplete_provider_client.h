@@ -16,6 +16,9 @@
 #include "components/omnibox/browser/contextual_suggestions_service.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 struct AutocompleteMatch;
@@ -27,14 +30,16 @@ class MockAutocompleteProviderClient
   ~MockAutocompleteProviderClient();
 
   // AutocompleteProviderClient:
-  MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_CONST_METHOD0(GetSchemeClassifier,
                      const AutocompleteSchemeClassifier&());
   MOCK_METHOD0(GetAutocompleteClassifier, AutocompleteClassifier*());
   MOCK_METHOD0(GetHistoryService, history::HistoryService*());
 
-  // Can't mock scoped_refptr :\.
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      override {
+    return shared_factory_;
+  }
   scoped_refptr<history::TopSites> GetTopSites() override { return nullptr; }
 
   MOCK_METHOD0(GetBookmarkModel, bookmarks::BookmarkModel*());
@@ -96,7 +101,14 @@ class MockAutocompleteProviderClient
     template_url_service_ = std::move(service);
   }
 
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
  private:
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
+
   std::unique_ptr<ContextualSuggestionsService> contextual_suggestions_service_;
   std::unique_ptr<TemplateURLService> template_url_service_;
 

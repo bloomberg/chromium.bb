@@ -24,8 +24,9 @@
 #include "components/search_engines/template_url_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
 
@@ -33,23 +34,24 @@
 
 // This class handles making requests to the server in order to delete
 // personalized suggestions.
-class SuggestionDeletionHandler : public net::URLFetcherDelegate {
+class SuggestionDeletionHandler {
  public:
   typedef base::Callback<void(bool, SuggestionDeletionHandler*)>
       DeletionCompletedCallback;
 
   SuggestionDeletionHandler(
       const std::string& deletion_url,
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const DeletionCompletedCallback& callback);
 
-  ~SuggestionDeletionHandler() override;
+  ~SuggestionDeletionHandler();
 
  private:
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Callback from SimpleURLLoader
+  void OnURLLoadComplete(const network::SimpleURLLoader* source,
+                         std::unique_ptr<std::string> response_body);
 
-  std::unique_ptr<net::URLFetcher> deletion_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> deletion_fetcher_;
   DeletionCompletedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionDeletionHandler);
@@ -57,8 +59,9 @@ class SuggestionDeletionHandler : public net::URLFetcherDelegate {
 
 SuggestionDeletionHandler::SuggestionDeletionHandler(
     const std::string& deletion_url,
-    net::URLRequestContextGetter* request_context,
-    const DeletionCompletedCallback& callback) : callback_(callback) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const DeletionCompletedCallback& callback)
+    : callback_(callback) {
   GURL url(deletion_url);
   DCHECK(url.is_valid());
 
@@ -97,32 +100,33 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
             }
           }
         })");
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = url;
+  // TODO(https://crbug.com/808498) re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // data_use_measurement::DataUseUserData::OMNIBOX
   deletion_fetcher_ =
-      net::URLFetcher::Create(BaseSearchProvider::kDeletionURLFetcherID, url,
-                              net::URLFetcher::GET, this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      deletion_fetcher_.get(), data_use_measurement::DataUseUserData::OMNIBOX);
-  deletion_fetcher_->SetRequestContext(request_context);
-  deletion_fetcher_->Start();
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  deletion_fetcher_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory.get(),
+      base::BindOnce(&SuggestionDeletionHandler::OnURLLoadComplete,
+                     base::Unretained(this), deletion_fetcher_.get()));
 }
 
 SuggestionDeletionHandler::~SuggestionDeletionHandler() {
 }
 
-void SuggestionDeletionHandler::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void SuggestionDeletionHandler::OnURLLoadComplete(
+    const network::SimpleURLLoader* source,
+    std::unique_ptr<std::string> response_body) {
   DCHECK(source == deletion_fetcher_.get());
-  callback_.Run(
-      source->GetStatus().is_success() && (source->GetResponseCode() == 200),
-      this);
+  const bool ok = source->NetError() == net::OK &&
+                  (source->ResponseInfo() && source->ResponseInfo()->headers &&
+                   source->ResponseInfo()->headers->response_code() == 200);
+  callback_.Run(ok, this);
 }
 
 // BaseSearchProvider ---------------------------------------------------------
-
-// static
-const int BaseSearchProvider::kDefaultProviderURLFetcherID = 1;
-const int BaseSearchProvider::kKeywordProviderURLFetcherID = 2;
-const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 
 BaseSearchProvider::BaseSearchProvider(AutocompleteProvider::Type type,
                                        AutocompleteProviderClient* client)
@@ -176,7 +180,7 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(std::make_unique<SuggestionDeletionHandler>(
         match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        client_->GetRequestContext(),
+        client_->GetURLLoaderFactory(),
         base::Bind(&BaseSearchProvider::OnDeletionComplete,
                    base::Unretained(this))));
   }

@@ -24,6 +24,8 @@ include_rules = [
   "+components/vector_icons",
   "+extensions/common/constants.h",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+services/identity/public/cpp",
   "+sql",
   "+third_party/metrics_proto",

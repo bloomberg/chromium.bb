@@ -40,8 +40,9 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
@@ -174,23 +175,26 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   const std::string current_url = result_type_running_ == DEFAULT_SERP_FOR_URL
                                       ? current_query_
                                       : std::string();
-  // Create a request for suggestions with |this| as the fetcher delegate.
+  // Create a request for suggestions, routing completion to
+  // OnContextualSuggestionsLoaderAvailable.
   client()
       ->GetContextualSuggestionsService(/*create_if_necessary=*/true)
       ->CreateContextualSuggestionsRequest(
           current_url, client()->GetCurrentVisitTimestamp(),
           client()->GetTemplateURLService(),
-          /*fetcher_delegate=*/this,
           base::BindOnce(
-              &ZeroSuggestProvider::OnContextualSuggestionsFetcherAvailable,
-              weak_ptr_factory_.GetWeakPtr()));
+              &ZeroSuggestProvider::OnContextualSuggestionsLoaderAvailable,
+              weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(
+              &ZeroSuggestProvider::OnURLLoadComplete,
+              base::Unretained(this) /* this owns SimpleURLLoader */));
 }
 
 void ZeroSuggestProvider::Stop(bool clear_cached_results,
                                bool due_to_user_inactivity) {
-  if (fetcher_)
+  if (loader_)
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
-  fetcher_.reset();
+  loader_.reset();
   auto* contextual_suggestions_service =
       client()->GetContextualSuggestionsService(/*create_if_necessary=*/false);
   // contextual_suggestions_service can be null if in incognito mode.
@@ -307,16 +311,21 @@ void ZeroSuggestProvider::RecordDeletionResult(bool success) {
   }
 }
 
-void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
+void ZeroSuggestProvider::OnURLLoadComplete(
+    const network::SimpleURLLoader* source,
+    std::unique_ptr<std::string> response_body) {
   DCHECK(!done_);
-  DCHECK_EQ(fetcher_.get(), source);
+  DCHECK_EQ(loader_.get(), source);
 
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REPLY_RECEIVED);
 
   const bool results_updated =
-      source->GetStatus().is_success() && source->GetResponseCode() == 200 &&
-      UpdateResults(SearchSuggestionParser::ExtractJsonData(source));
-  fetcher_.reset();
+      response_body && source->NetError() == net::OK &&
+      (source->ResponseInfo() && source->ResponseInfo()->headers &&
+       source->ResponseInfo()->headers->response_code() == 200) &&
+      UpdateResults(SearchSuggestionParser::ExtractJsonData(
+          source, std::move(response_body)));
+  loader_.reset();
   done_ = true;
   result_type_running_ = NONE;
   ++most_visited_request_num_;
@@ -404,10 +413,12 @@ void ZeroSuggestProvider::OnMostVisitedUrlsAvailable(
   listener_->OnProviderUpdate(true);
 }
 
-void ZeroSuggestProvider::OnContextualSuggestionsFetcherAvailable(
-    std::unique_ptr<net::URLFetcher> fetcher) {
-  fetcher_ = std::move(fetcher);
-  fetcher_->Start();
+void ZeroSuggestProvider::OnContextualSuggestionsLoaderAvailable(
+    std::unique_ptr<network::SimpleURLLoader> loader) {
+  // ContextualSuggestionsService has already started |loader|, so here it's
+  // only neccessary to grab its ownership until results come in to
+  // OnURLLoadComplete().
+  loader_ = std::move(loader);
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);
 }
 

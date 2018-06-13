@@ -21,10 +21,11 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
 
@@ -32,8 +33,7 @@ namespace {
 const char kDefaultExperimentalServerAddress[] =
     "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions";
 
-void AddVariationHeaders(const std::unique_ptr<net::URLFetcher>& fetcher) {
-  net::HttpRequestHeaders headers;
+void AddVariationHeaders(network::ResourceRequest* request) {
   // Add Chrome experiment state to the request headers.
   // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
   // transmission of experiments coming from the variations server.
@@ -41,12 +41,9 @@ void AddVariationHeaders(const std::unique_ptr<net::URLFetcher>& fetcher) {
   // Note: It's OK to pass InIncognito::kNo since we are expected to be in
   // non-incognito state here (i.e. contextual sugestions are not served in
   // incognito mode).
-  variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
-                                     variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
-  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();) {
-    fetcher->AddExtraRequestHeader(it.name() + ":" + it.value());
-  }
+  variations::AppendVariationHeaders(request->url, variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo,
+                                     &request->headers);
 }
 
 // Returns API request body. The final result depends on the following input
@@ -94,10 +91,12 @@ std::string FormatRequestBodyExperimentalService(const std::string& current_url,
 
 ContextualSuggestionsService::ContextualSuggestionsService(
     identity::IdentityManager* identity_manager,
-    net::URLRequestContextGetter* request_context)
-    : request_context_(request_context),
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(url_loader_factory),
       identity_manager_(identity_manager),
-      token_fetcher_(nullptr) {}
+      token_fetcher_(nullptr) {
+  DCHECK(url_loader_factory);
+}
 
 ContextualSuggestionsService::~ContextualSuggestionsService() {}
 
@@ -105,16 +104,18 @@ void ContextualSuggestionsService::CreateContextualSuggestionsRequest(
     const std::string& current_url,
     const base::Time& visit_time,
     const TemplateURLService* template_url_service,
-    net::URLFetcherDelegate* fetcher_delegate,
-    ContextualSuggestionsCallback callback) {
+    StartCallback start_callback,
+    CompletionCallback completion_callback) {
   const GURL experimental_suggest_url =
       ExperimentalContextualSuggestionsUrl(current_url, template_url_service);
   if (experimental_suggest_url.is_valid())
     CreateExperimentalRequest(current_url, visit_time, experimental_suggest_url,
-                              fetcher_delegate, std::move(callback));
+                              std::move(start_callback),
+                              std::move(completion_callback));
   else
-    CreateDefaultRequest(current_url, template_url_service, fetcher_delegate,
-                         std::move(callback));
+    CreateDefaultRequest(current_url, template_url_service,
+                         std::move(start_callback),
+                         std::move(completion_callback));
 }
 
 void ContextualSuggestionsService::StopCreatingContextualSuggestionsRequest() {
@@ -191,8 +192,8 @@ GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
 void ContextualSuggestionsService::CreateDefaultRequest(
     const std::string& current_url,
     const TemplateURLService* template_url_service,
-    net::URLFetcherDelegate* fetcher_delegate,
-    ContextualSuggestionsCallback callback) {
+    StartCallback start_callback,
+    CompletionCallback completion_callback) {
   const GURL suggest_url =
       ContextualSuggestionsUrl(current_url, template_url_service);
   DCHECK(suggest_url.is_valid());
@@ -226,25 +227,25 @@ void ContextualSuggestionsService::CreateDefaultRequest(
             }
           }
         })");
-  const int kFetcherID = 1;
-  std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(kFetcherID, suggest_url, net::URLFetcher::GET,
-                              fetcher_delegate, traffic_annotation);
-  fetcher->SetRequestContext(request_context_);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher.get(), data_use_measurement::DataUseUserData::OMNIBOX);
-  AddVariationHeaders(fetcher);
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
 
-  std::move(callback).Run(std::move(fetcher));
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = suggest_url;
+  request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  AddVariationHeaders(request.get());
+  // TODO(https://crbug.com/808498) re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // data_use_measurement::DataUseUserData::OMNIBOX
+  StartDownloadAndTransferLoader(std::move(request), traffic_annotation,
+                                 std::move(start_callback),
+                                 std::move(completion_callback));
 }
 
 void ContextualSuggestionsService::CreateExperimentalRequest(
     const std::string& current_url,
     const base::Time& visit_time,
     const GURL& suggest_url,
-    net::URLFetcherDelegate* fetcher_delegate,
-    ContextualSuggestionsCallback callback) {
+    StartCallback start_callback,
+    CompletionCallback completion_callback) {
   DCHECK(suggest_url.is_valid());
 
   // This traffic annotation is nearly identical to the annotation for
@@ -279,26 +280,30 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
             }
           }
         })");
-  const int kFetcherID = 1;
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = suggest_url;
+  request->method = "POST";
   std::string request_body =
       FormatRequestBodyExperimentalService(current_url, visit_time);
-  std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(kFetcherID, suggest_url,
-                              /*request_type=*/net::URLFetcher::POST,
-                              fetcher_delegate, traffic_annotation);
-  fetcher->SetUploadData("application/json", request_body);
-  fetcher->SetRequestContext(request_context_);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher.get(), data_use_measurement::DataUseUserData::OMNIBOX);
-  AddVariationHeaders(fetcher);
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES);
+  request->request_body = network::ResourceRequestBody::CreateFromBytes(
+      request_body.data(), request_body.length());
+  request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                             "application/json");
+  AddVariationHeaders(request.get());
+  request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  // TODO(https://crbug.com/808498) re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // data_use_measurement::DataUseUserData::OMNIBOX
 
   // If authentication services are unavailable or if this request is still
   // waiting for an oauth2 token, run the contextual service without access
   // tokens.
   if ((identity_manager_ == nullptr) || (token_fetcher_ != nullptr)) {
-    std::move(callback).Run(std::move(fetcher));
+    StartDownloadAndTransferLoader(std::move(request), traffic_annotation,
+                                   std::move(start_callback),
+                                   std::move(completion_callback));
     return;
   }
 
@@ -308,14 +313,17 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
       "contextual_suggestions_service", scopes,
       base::BindOnce(&ContextualSuggestionsService::AccessTokenAvailable,
-                     base::Unretained(this), std::move(fetcher),
-                     std::move(callback)),
+                     base::Unretained(this), std::move(request),
+                     traffic_annotation, std::move(start_callback),
+                     std::move(completion_callback)),
       identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void ContextualSuggestionsService::AccessTokenAvailable(
-    std::unique_ptr<net::URLFetcher> fetcher,
-    ContextualSuggestionsCallback callback,
+    std::unique_ptr<network::ResourceRequest> request,
+    net::NetworkTrafficAnnotationTag traffic_annotation,
+    StartCallback start_callback,
+    CompletionCallback completion_callback,
     GoogleServiceAuthError error,
     std::string access_token) {
   DCHECK(token_fetcher_);
@@ -325,9 +333,25 @@ void ContextualSuggestionsService::AccessTokenAvailable(
   // request as a header.
   if (error.state() == GoogleServiceAuthError::NONE) {
     DCHECK(!access_token.empty());
-    fetcher->AddExtraRequestHeader(
-        base::StringPrintf("Authorization: Bearer %s", access_token.c_str()));
+    request->headers.SetHeader(
+        "Authorization", base::StringPrintf("Bearer %s", access_token.c_str()));
   }
 
-  std::move(callback).Run(std::move(fetcher));
+  StartDownloadAndTransferLoader(std::move(request), traffic_annotation,
+                                 std::move(start_callback),
+                                 std::move(completion_callback));
+}
+
+void ContextualSuggestionsService::StartDownloadAndTransferLoader(
+    std::unique_ptr<network::ResourceRequest> request,
+    net::NetworkTrafficAnnotationTag traffic_annotation,
+    StartCallback start_callback,
+    CompletionCallback completion_callback) {
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(std::move(completion_callback), loader.get()));
+
+  std::move(start_callback).Run(std::move(loader));
 }
