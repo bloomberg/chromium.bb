@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -32,12 +33,13 @@ class ConnectToDeviceOperationBase
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionFailedCallback failure_callback,
       const DeviceIdPair& device_id_pair,
+      ConnectionPriority connection_priority,
       base::OnceClosure destructor_callback,
       scoped_refptr<base::TaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get())
-      : ConnectToDeviceOperation<FailureDetailType>(
-            std::move(success_callback),
-            std::move(failure_callback)),
+      : ConnectToDeviceOperation<FailureDetailType>(std::move(success_callback),
+                                                    std::move(failure_callback),
+                                                    connection_priority),
         device_id_pair_(device_id_pair),
         destructor_callback_(std::move(destructor_callback)),
         task_runner_(task_runner),
@@ -49,22 +51,19 @@ class ConnectToDeviceOperationBase
         FROM_HERE,
         base::BindOnce(&ConnectToDeviceOperationBase<
                            FailureDetailType>::AttemptConnectionToDevice,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), connection_priority));
   }
 
   ~ConnectToDeviceOperationBase() override {
     std::move(destructor_callback_).Run();
   }
 
-  virtual void AttemptConnectionToDevice() = 0;
-  virtual void CancelConnectionAttemptToDevice() = 0;
+  virtual void AttemptConnectionToDevice(
+      ConnectionPriority connection_priority) = 0;
 
   const DeviceIdPair& device_id_pair() const { return device_id_pair_; }
 
  private:
-  // ConnectToDeviceOperation<FailureDetailType>:
-  void PerformCancellation() override { CancelConnectionAttemptToDevice(); }
-
   const DeviceIdPair& device_id_pair_;
   base::OnceClosure destructor_callback_;
   scoped_refptr<base::TaskRunner> task_runner_;

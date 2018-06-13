@@ -9,6 +9,7 @@
 #include "chromeos/services/secure_channel/ble_initiator_failure_type.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/pending_connection_request_base.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -26,6 +27,7 @@ class PendingBleInitiatorConnectionRequest
     virtual std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
     BuildInstance(std::unique_ptr<ClientConnectionParameters>
                       client_connection_parameters,
+                  ConnectionPriority connection_priority,
                   PendingConnectionRequestDelegate* delegate);
 
    private:
@@ -40,6 +42,7 @@ class PendingBleInitiatorConnectionRequest
 
   PendingBleInitiatorConnectionRequest(
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+      ConnectionPriority connection_priority,
       PendingConnectionRequestDelegate* delegate);
 
   // PendingConnectionRequest<BleInitiatorFailureType>:

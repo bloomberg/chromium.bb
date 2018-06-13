@@ -8,6 +8,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -21,6 +23,8 @@ class ConnectToDeviceOperationFactory {
 
   virtual std::unique_ptr<ConnectToDeviceOperation<FailureDetailType>>
   CreateOperation(
+      const DeviceIdPair& device_id_pair,
+      ConnectionPriority connection_priority,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<

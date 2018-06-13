@@ -7,8 +7,11 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation_factory.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation_factory.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -26,18 +29,25 @@ class FakeConnectToDeviceOperationFactory
     return last_created_instance_;
   }
 
-  size_t num_instances_created() { return num_instances_created_; }
+  const base::Optional<ConnectionPriority>& last_created_priority() const {
+    return last_created_priority_;
+  }
+
+  size_t num_instances_created() const { return num_instances_created_; }
 
  private:
   // ConnectToDeviceOperationFactory<FailureDetailType>:
   std::unique_ptr<ConnectToDeviceOperation<FailureDetailType>> CreateOperation(
+      const DeviceIdPair& device_id_pair,
+      ConnectionPriority connection_priority,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<FailureDetailType>::
           ConnectionFailedCallback failure_callback) override {
     auto instance =
         std::make_unique<FakeConnectToDeviceOperation<FailureDetailType>>(
-            std::move(success_callback), std::move(failure_callback));
+            std::move(success_callback), std::move(failure_callback),
+            connection_priority);
     last_created_instance_ = instance.get();
     ++num_instances_created_;
     return instance;
@@ -45,6 +55,7 @@ class FakeConnectToDeviceOperationFactory
 
   FakeConnectToDeviceOperation<FailureDetailType>* last_created_instance_ =
       nullptr;
+  base::Optional<ConnectionPriority> last_created_priority_;
   size_t num_instances_created_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectToDeviceOperationFactory);

@@ -40,11 +40,12 @@ BleListenerOperation::Factory::BuildInstance(
     ConnectToDeviceOperation<BleListenerFailureType>::ConnectionFailedCallback
         failure_callback,
     const DeviceIdPair& device_id_pair,
+    ConnectionPriority connection_priority,
     base::OnceClosure destructor_callback,
     scoped_refptr<base::TaskRunner> task_runner) {
   return base::WrapUnique(new BleListenerOperation(
       std::move(success_callback), std::move(failure_callback), device_id_pair,
-      std::move(destructor_callback), task_runner));
+      connection_priority, std::move(destructor_callback), task_runner));
 }
 
 BleListenerOperation::~BleListenerOperation() = default;
@@ -55,21 +56,30 @@ BleListenerOperation::BleListenerOperation(
     ConnectToDeviceOperation<BleListenerFailureType>::ConnectionFailedCallback
         failure_callback,
     const DeviceIdPair& device_id_pair,
+    ConnectionPriority connection_priority,
     base::OnceClosure destructor_callback,
     scoped_refptr<base::TaskRunner> task_runner)
     : ConnectToDeviceOperationBase<BleListenerFailureType>(
           std::move(success_callback),
           std::move(failure_callback),
           device_id_pair,
+          connection_priority,
           std::move(destructor_callback),
           task_runner) {}
 
-void BleListenerOperation::AttemptConnectionToDevice() {
+void BleListenerOperation::AttemptConnectionToDevice(
+    ConnectionPriority connection_priority) {
   // TODO(khorimoto): Implement.
   NOTIMPLEMENTED();
 }
 
-void BleListenerOperation::CancelConnectionAttemptToDevice() {
+void BleListenerOperation::PerformCancellation() {
+  // TODO(khorimoto): Implement.
+  NOTIMPLEMENTED();
+}
+
+void BleListenerOperation::PerformUpdateConnectionPriority(
+    ConnectionPriority connection_priority) {
   // TODO(khorimoto): Implement.
   NOTIMPLEMENTED();
 }

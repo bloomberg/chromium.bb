@@ -59,16 +59,19 @@ PendingBleInitiatorConnectionRequest::Factory::~Factory() = default;
 std::unique_ptr<PendingConnectionRequest<BleInitiatorFailureType>>
 PendingBleInitiatorConnectionRequest::Factory::BuildInstance(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+    ConnectionPriority connection_priority,
     PendingConnectionRequestDelegate* delegate) {
   return base::WrapUnique(new PendingBleInitiatorConnectionRequest(
-      std::move(client_connection_parameters), delegate));
+      std::move(client_connection_parameters), connection_priority, delegate));
 }
 
 PendingBleInitiatorConnectionRequest::PendingBleInitiatorConnectionRequest(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+    ConnectionPriority connection_priority,
     PendingConnectionRequestDelegate* delegate)
     : PendingConnectionRequestBase<BleInitiatorFailureType>(
           std::move(client_connection_parameters),
+          connection_priority,
           kBleInitiatorReadableRequestTypeForLogging,
           delegate) {}
 

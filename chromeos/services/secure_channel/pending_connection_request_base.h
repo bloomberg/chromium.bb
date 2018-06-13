@@ -13,6 +13,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
@@ -46,9 +47,11 @@ class PendingConnectionRequestBase
  protected:
   PendingConnectionRequestBase(
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+      ConnectionPriority connection_priority,
       const std::string& readable_request_type_for_logging,
       PendingConnectionRequestDelegate* delegate)
-      : PendingConnectionRequest<FailureDetailType>(delegate),
+      : PendingConnectionRequest<FailureDetailType>(delegate,
+                                                    connection_priority),
         client_connection_parameters_(std::move(client_connection_parameters)),
         readable_request_type_for_logging_(readable_request_type_for_logging),
         weak_ptr_factory_(this) {

@@ -23,6 +23,7 @@
 #include "chromeos/services/secure_channel/fake_connection_delegate.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,16 +67,17 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   void SetUp() override {
     fake_authenticated_channel_ = std::make_unique<FakeAuthenticatedChannel>();
 
-    auto factory = std::make_unique<
+    auto fake_operation_factory = std::make_unique<
         FakeConnectToDeviceOperationFactory<BleInitiatorFailureType>>();
-    fake_operation_factory_ = factory.get();
+    fake_operation_factory_ = fake_operation_factory.get();
 
     fake_delegate_ = std::make_unique<FakeConnectionAttemptDelegate>();
 
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
     connection_attempt_ = std::make_unique<TestConnectionAttempt>(
-        std::move(factory), fake_delegate_.get(), test_task_runner_);
+        std::move(fake_operation_factory), fake_delegate_.get(),
+        test_task_runner_);
   }
 
   void TearDown() override {
@@ -105,10 +107,11 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
     test_task_runner_->RunUntilIdle();
   }
 
-  FakePendingConnectionRequest<BleInitiatorFailureType>* AddNewRequest() {
+  FakePendingConnectionRequest<BleInitiatorFailureType>* AddNewRequest(
+      ConnectionPriority connection_priority) {
     auto request =
         std::make_unique<FakePendingConnectionRequest<BleInitiatorFailureType>>(
-            connection_attempt_.get());
+            connection_attempt_.get(), connection_priority);
     FakePendingConnectionRequest<BleInitiatorFailureType>* request_raw =
         request.get();
     active_requests_.insert(request_raw);
@@ -246,17 +249,19 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
 };
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Success) {
-  AddNewRequest();
+  AddNewRequest(ConnectionPriority::kLow);
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
       GetLastCreatedOperation(1u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation->connection_priority());
   FinishOperationSuccessfully(operation);
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Fails) {
   FakePendingConnectionRequest<BleInitiatorFailureType>* request =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
       GetLastCreatedOperation(1u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation->connection_priority());
 
   // Fail the operation; the delegate should not have been notified since no
   // request has yet indicated failure.
@@ -272,7 +277,7 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Fails) {
 TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Canceled) {
   // Simulate the request being canceled.
   FakePendingConnectionRequest<BleInitiatorFailureType>* request =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   FinishRequestWithoutConnection(
       request, PendingConnectionRequestDelegate::FailedConnectionReason::
                    kRequestCanceledByClient);
@@ -280,9 +285,10 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_Canceled) {
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_FailThenSuccess) {
-  AddNewRequest();
+  AddNewRequest(ConnectionPriority::kLow);
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation1 =
       GetLastCreatedOperation(1u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation1->connection_priority());
 
   // Fail the operation; the delegate should not have been notified since no
   // request has yet indicated failure.
@@ -291,16 +297,18 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, SingleRequest_FailThenSuccess) {
 
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation2 =
       GetLastCreatedOperation(2u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation2->connection_priority());
   FinishOperationSuccessfully(operation2);
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Success) {
-  AddNewRequest();
+  AddNewRequest(ConnectionPriority::kLow);
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
       GetLastCreatedOperation(1u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation->connection_priority());
 
   // Add a second request; the first operation should still be active.
-  AddNewRequest();
+  AddNewRequest(ConnectionPriority::kLow);
   VerifyNumOperationsCreated(1u /* expected_num_created */);
 
   FinishOperationSuccessfully(operation);
@@ -308,13 +316,14 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Success) {
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Fails) {
   FakePendingConnectionRequest<BleInitiatorFailureType>* request1 =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
       GetLastCreatedOperation(1u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation->connection_priority());
 
   // Add a second request; the first operation should still be active.
   FakePendingConnectionRequest<BleInitiatorFailureType>* request2 =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   VerifyNumOperationsCreated(1u /* expected_num_created */);
 
   // Fail the operation; the delegate should not have been notified since no
@@ -338,10 +347,10 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Fails) {
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Canceled) {
   FakePendingConnectionRequest<BleInitiatorFailureType>* request1 =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   VerifyNumOperationsCreated(1u /* expected_num_created */);
   FakePendingConnectionRequest<BleInitiatorFailureType>* request2 =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   VerifyNumOperationsCreated(1u /* expected_num_created */);
 
   FinishRequestWithoutConnection(
@@ -357,18 +366,20 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_Canceled) {
 
 TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_FailThenSuccess) {
   FakePendingConnectionRequest<BleInitiatorFailureType>* request1 =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation1 =
       GetLastCreatedOperation(1u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation1->connection_priority());
 
   // Fail the operation; a new operation should have been created.
   FailOperation(operation1);
   VerifyDelegateNotNotified();
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation2 =
       GetLastCreatedOperation(2u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation2->connection_priority());
 
   // Add a second request; this should not result in a new operation.
-  AddNewRequest();
+  AddNewRequest(ConnectionPriority::kLow);
   VerifyNumOperationsCreated(2u /* expected_num_created */);
 
   // Fail the second operation.
@@ -386,20 +397,53 @@ TEST_F(SecureChannelConnectionAttemptBaseTest, TwoRequests_FailThenSuccess) {
   RunNextOperationTask();
   FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation3 =
       GetLastCreatedOperation(3u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation3->connection_priority());
   FinishOperationSuccessfully(operation3);
+}
+
+TEST_F(SecureChannelConnectionAttemptBaseTest, ManyRequests_UpdatePriority) {
+  AddNewRequest(ConnectionPriority::kLow);
+  FakeConnectToDeviceOperation<BleInitiatorFailureType>* operation =
+      GetLastCreatedOperation(1u /* expected_num_created */);
+  EXPECT_EQ(ConnectionPriority::kLow, operation->connection_priority());
+
+  // Add a medium-priority request. This should update the operation's priority
+  // as well.
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request2 =
+      AddNewRequest(ConnectionPriority::kMedium);
+  EXPECT_EQ(ConnectionPriority::kMedium, operation->connection_priority());
+
+  // Add a high-priority request and verify that the operation is updated.
+  FakePendingConnectionRequest<BleInitiatorFailureType>* request3 =
+      AddNewRequest(ConnectionPriority::kHigh);
+  EXPECT_EQ(ConnectionPriority::kHigh, operation->connection_priority());
+
+  // Remote the high-priority request; the operation should go back to medium.
+  FinishRequestWithoutConnection(
+      request3, PendingConnectionRequestDelegate::FailedConnectionReason::
+                    kRequestCanceledByClient);
+  EXPECT_EQ(ConnectionPriority::kMedium, operation->connection_priority());
+
+  // Remote the medium-priority request; the operation should go back to low.
+  FinishRequestWithoutConnection(
+      request2, PendingConnectionRequestDelegate::FailedConnectionReason::
+                    kRequestCanceledByClient);
+  EXPECT_EQ(ConnectionPriority::kLow, operation->connection_priority());
+
+  FinishOperationSuccessfully(operation);
 }
 
 TEST_F(SecureChannelConnectionAttemptBaseTest,
        ExtractClientConnectionParameters) {
   FakePendingConnectionRequest<BleInitiatorFailureType>* request1 =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   auto fake_parameters_1 =
       std::make_unique<FakeClientConnectionParameters>("request1Feature");
   auto* fake_parameters_1_raw = fake_parameters_1.get();
   request1->set_client_data_for_extraction(std::move(fake_parameters_1));
 
   FakePendingConnectionRequest<BleInitiatorFailureType>* request2 =
-      AddNewRequest();
+      AddNewRequest(ConnectionPriority::kLow);
   auto fake_parameters_2 =
       std::make_unique<FakeClientConnectionParameters>("request2Feature");
   auto* fake_parameters_2_raw = fake_parameters_2.get();

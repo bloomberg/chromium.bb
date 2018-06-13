@@ -42,16 +42,19 @@ PendingBleListenerConnectionRequest::Factory::~Factory() = default;
 std::unique_ptr<PendingConnectionRequest<BleListenerFailureType>>
 PendingBleListenerConnectionRequest::Factory::BuildInstance(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+    ConnectionPriority connection_priority,
     PendingConnectionRequestDelegate* delegate) {
   return base::WrapUnique(new PendingBleListenerConnectionRequest(
-      std::move(client_connection_parameters), delegate));
+      std::move(client_connection_parameters), connection_priority, delegate));
 }
 
 PendingBleListenerConnectionRequest::PendingBleListenerConnectionRequest(
     std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+    ConnectionPriority connection_priority,
     PendingConnectionRequestDelegate* delegate)
     : PendingConnectionRequestBase<BleListenerFailureType>(
           std::move(client_connection_parameters),
+          connection_priority,
           kBleListenerReadableRequestTypeForLogging,
           delegate) {}
 

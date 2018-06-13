@@ -34,16 +34,19 @@ class ConnectToDeviceOperationFactoryBase
   // ConnectToDeviceOperationBase.
   virtual std::unique_ptr<ConnectToDeviceOperation<FailureDetailType>>
   PerformCreateOperation(
+      const DeviceIdPair& device_id_pair,
+      ConnectionPriority connection_priority,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionFailedCallback failure_callback,
-      const DeviceIdPair& device_id_pair,
       base::OnceClosure destructor_callback) = 0;
 
  private:
   // ConnectToDeviceOperationFactory<FailureDetailType>:
   std::unique_ptr<ConnectToDeviceOperation<FailureDetailType>> CreateOperation(
+      const DeviceIdPair& device_id_pair,
+      ConnectionPriority connection_priority,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<FailureDetailType>::
@@ -58,8 +61,8 @@ class ConnectToDeviceOperationFactoryBase
 
     is_last_operation_active_ = true;
     return PerformCreateOperation(
-        std::move(success_callback), std::move(failure_callback),
-        device_id_pair_,
+        device_id_pair_, connection_priority, std::move(success_callback),
+        std::move(failure_callback),
         base::BindOnce(&ConnectToDeviceOperationFactoryBase<
                            FailureDetailType>::OnPreviousOperationDeleted,
                        weak_ptr_factory_.GetWeakPtr()));

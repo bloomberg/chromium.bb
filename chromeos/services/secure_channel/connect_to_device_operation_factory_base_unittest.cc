@@ -20,6 +20,8 @@ namespace secure_channel {
 
 namespace {
 
+constexpr const ConnectionPriority kTestPriority = ConnectionPriority::kLow;
+
 const char kTestRemoteDeviceId[] = "testRemoteDeviceId";
 const char kTestLocalDeviceId[] = "testLocalDeviceId";
 
@@ -41,21 +43,24 @@ class TestConnectToDeviceOperationFactory
 
   // ConnectToDeviceOperationFactoryBase<std::string>:
   std::unique_ptr<ConnectToDeviceOperation<std::string>> PerformCreateOperation(
+      const DeviceIdPair& device_id_pair,
+      ConnectionPriority connection_priority,
       typename ConnectToDeviceOperation<std::string>::ConnectionSuccessCallback
           success_callback,
       typename ConnectToDeviceOperation<std::string>::ConnectionFailedCallback
           failure_callback,
-      const DeviceIdPair& device_id_pair,
       base::OnceClosure destructor_callback) override {
     // The previous destructor callback should have been invoked by the time
     // this function runs.
     EXPECT_FALSE(last_destructor_callback_);
     last_destructor_callback_ = std::move(destructor_callback);
 
+    EXPECT_EQ(kTestPriority, connection_priority);
     EXPECT_EQ(device_id_pair_, device_id_pair);
 
     return std::make_unique<FakeConnectToDeviceOperation<std::string>>(
-        std::move(success_callback), std::move(failure_callback));
+        std::move(success_callback), std::move(failure_callback),
+        connection_priority);
   }
 
  private:
@@ -83,7 +88,8 @@ class SecureChannelConnectToDeviceOperationFactoryBaseTest
     // Use a pointer to ConnectToDeviceOperationFactory, since
     // ConnectToDeviceOperationFactoryBase makes CreateOperation private.
     ConnectToDeviceOperationFactory<std::string>* factory = test_factory_.get();
-    return factory->CreateOperation(base::DoNothing() /* success_callback */,
+    return factory->CreateOperation(test_device_id_pair_, kTestPriority,
+                                    base::DoNothing() /* success_callback */,
                                     base::DoNothing() /* failure_callback */);
   }
 
