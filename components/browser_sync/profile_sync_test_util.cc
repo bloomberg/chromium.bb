@@ -21,14 +21,25 @@
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
 #include "components/sync/model/model_type_store_test_util.h"
+#include "components/sync_sessions/local_session_event_router.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {
 
 namespace {
+
+class DummyRouter : public sync_sessions::LocalSessionEventRouter {
+ public:
+  DummyRouter() {}
+  ~DummyRouter() override {}
+  void StartRoutingTo(
+      sync_sessions::LocalSessionEventHandler* handler) override {}
+  void Stop() override {}
+};
 
 class BundleSyncClient : public syncer::FakeSyncClient {
  public:
@@ -243,6 +254,9 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
   auth_service_.set_auto_post_fetch_response_on_message_loop(true);
   account_tracker_.Initialize(&signin_client_);
   signin_manager_.Initialize(&pref_service_);
+  local_session_event_router_ = std::make_unique<DummyRouter>();
+  ON_CALL(sync_sessions_client_, GetLocalSessionEventRouter())
+      .WillByDefault(testing::Return(local_session_event_router_.get()));
 }
 
 ProfileSyncServiceBundle::~ProfileSyncServiceBundle() {}

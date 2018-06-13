@@ -54,7 +54,8 @@ class ModelTypeController : public DataTypeController {
   void RecordMemoryUsageHistogram() override;
 
  protected:
-  void ReportModelError(const ModelError& error);
+  void ReportModelError(SyncError::ErrorType error_type,
+                        const ModelError& error);
 
   SyncClient* sync_client() const { return sync_client_; }
 

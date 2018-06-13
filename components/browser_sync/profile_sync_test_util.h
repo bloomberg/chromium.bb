@@ -36,6 +36,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace sync_sessions {
+class LocalSessionEventRouter;
+}
+
 namespace browser_sync {
 
 // Call this to register preferences needed for ProfileSyncService creation.
@@ -170,6 +174,8 @@ class ProfileSyncServiceBundle {
   FakeProfileOAuth2TokenService auth_service_;
   identity::IdentityManager identity_manager_;
   testing::NiceMock<syncer::SyncApiComponentFactoryMock> component_factory_;
+  std::unique_ptr<sync_sessions::LocalSessionEventRouter>
+      local_session_event_router_;
   testing::NiceMock<sync_sessions::MockSyncSessionsClient>
       sync_sessions_client_;
   invalidation::FakeInvalidationService fake_invalidation_service_;

@@ -127,8 +127,8 @@ void ModelTypeController::LoadModels(
   DataTypeActivationRequest request;
   request.error_handler = base::BindRepeating(
       &ReportError, type(), base::SequencedTaskRunnerHandle::Get(),
-      base::Bind(&ModelTypeController::ReportModelError,
-                 base::AsWeakPtr(this)));
+      base::BindRepeating(&ModelTypeController::ReportModelError,
+                          base::AsWeakPtr(this), SyncError::DATATYPE_ERROR));
   request.authenticated_account_id =
       sync_client_->GetSyncService()->GetAuthenticatedAccountInfo().account_id;
   request.cache_guid = sync_client_->GetSyncService()
@@ -273,11 +273,11 @@ void ModelTypeController::RecordMemoryUsageHistogram() {
                 base::BindOnce(&RecordMemoryUsageHistogramHelperOnModelThread));
 }
 
-void ModelTypeController::ReportModelError(const ModelError& error) {
+void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
+                                           const ModelError& error) {
   DCHECK(CalledOnValidThread());
-  LoadModelsDone(UNRECOVERABLE_ERROR,
-                 SyncError(error.location(), SyncError::DATATYPE_ERROR,
-                           error.message(), type()));
+  LoadModelsDone(UNRECOVERABLE_ERROR, SyncError(error.location(), error_type,
+                                                error.message(), type()));
 }
 
 void ModelTypeController::RecordStartFailure(ConfigureResult result) const {

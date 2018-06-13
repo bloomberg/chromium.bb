@@ -92,7 +92,7 @@ bool OpenTabsUIDelegateImpl::GetForeignSessionTabs(
       tabs->push_back(tab);
     }
   }
-  std::sort(tabs->begin(), tabs->end(), TabsRecencyComparator);
+  std::stable_sort(tabs->begin(), tabs->end(), TabsRecencyComparator);
   return true;
 }
 
