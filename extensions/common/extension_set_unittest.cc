@@ -97,6 +97,16 @@ TEST(ExtensionSetTest, ExtensionSet) {
       ext4.get(),
       extensions.GetExtensionOrAppByURL(ext4->GetResourceURL("test.html")));
 
+  // Get extension by a filesystem or blob URL within it.
+  GURL ext2_filesystem_url =
+      GURL("filesystem:" + ext2->GetResourceURL("test.html").spec());
+  EXPECT_EQ(ext2.get(), extensions.GetExtensionOrAppByURL(ext2_filesystem_url));
+  EXPECT_EQ(ext2->id(),
+            extensions.GetExtensionOrAppIDByURL(ext2_filesystem_url));
+  GURL ext3_blob_url = GURL("blob:" + ext3->GetResourceURL("test.html").spec());
+  EXPECT_EQ(ext3.get(), extensions.GetExtensionOrAppByURL(ext3_blob_url));
+  EXPECT_EQ(ext3->id(), extensions.GetExtensionOrAppIDByURL(ext3_blob_url));
+
   // Get extension by web extent.
   EXPECT_EQ(ext2.get(),
             extensions.GetExtensionOrAppByURL(
@@ -106,6 +116,17 @@ TEST(ExtensionSetTest, ExtensionSet) {
                 GURL("http://dev.chromium.org/design-docs/")));
   EXPECT_FALSE(extensions.GetExtensionOrAppByURL(
       GURL("http://blog.chromium.org/")));
+
+  // Get extension by web extent with filesystem URL. Paths still matter.
+  EXPECT_EQ(ext3.get(), extensions.GetExtensionOrAppByURL(
+                            GURL("filesystem:http://dev.chromium.org/foo")));
+  EXPECT_EQ(ext3->id(), extensions.GetExtensionOrAppIDByURL(
+                            GURL("filesystem:http://dev.chromium.org/foo")));
+  EXPECT_EQ(nullptr, extensions.GetExtensionOrAppByURL(
+                         GURL("filesystem:http://code.google.com/foo")));
+  // TODO(crbug/852162): Support blob URLs. This should return ext3.
+  EXPECT_EQ(nullptr, extensions.GetExtensionOrAppByURL(
+                         GURL("blob:http://dev.chromium.org/abcd")));
 
   // Test InSameExtent().
   EXPECT_TRUE(extensions.InSameExtent(

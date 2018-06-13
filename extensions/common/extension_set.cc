@@ -10,8 +10,27 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
+#include "url/origin.h"
 
 namespace extensions {
+
+namespace {
+
+std::string GetExtensionIdByURL(const GURL& url) {
+  if (url.SchemeIs(kExtensionScheme))
+    return url.host();
+
+  // Trying url::Origin is important to properly handle extension schemes inside
+  // blob: and filesystem: URLs, which won't match the extension scheme check
+  // above.
+  url::Origin origin = url::Origin::Create(url);
+  if (origin.scheme() == kExtensionScheme)
+    return origin.host();
+
+  return std::string();
+}
+
+}  // namespace
 
 ExtensionSet::const_iterator::const_iterator() {}
 
@@ -67,9 +86,12 @@ void ExtensionSet::Clear() {
 }
 
 std::string ExtensionSet::GetExtensionOrAppIDByURL(const GURL& url) const {
-  if (url.SchemeIs(kExtensionScheme))
-    return url.host();
+  std::string extension_id = GetExtensionIdByURL(url);
+  if (!extension_id.empty())
+    return extension_id;
 
+  // GetHostedAppByURL already supports filesystem: URLs (via MatchesURL).
+  // TODO(crbug/852162): Add support for blob: URLs in MatchesURL.
   const Extension* extension = GetHostedAppByURL(url);
   if (!extension)
     return std::string();
@@ -78,9 +100,12 @@ std::string ExtensionSet::GetExtensionOrAppIDByURL(const GURL& url) const {
 }
 
 const Extension* ExtensionSet::GetExtensionOrAppByURL(const GURL& url) const {
-  if (url.SchemeIs(kExtensionScheme))
-    return GetByID(url.host());
+  std::string extension_id = GetExtensionIdByURL(url);
+  if (!extension_id.empty())
+    return GetByID(extension_id);
 
+  // GetHostedAppByURL already supports filesystem: URLs (via MatchesURL).
+  // TODO(crbug/852162): Add support for blob: URLs in MatchesURL.
   return GetHostedAppByURL(url);
 }
 
