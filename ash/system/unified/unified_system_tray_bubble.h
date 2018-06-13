@@ -22,6 +22,7 @@ namespace ash {
 
 class UnifiedSystemTray;
 class UnifiedSystemTrayController;
+class UnifiedSystemTrayView;
 
 // Manages the bubble that contains UnifiedSystemTrayView.
 // Shows the bubble on the constructor, and closes the bubble on the destructor.
@@ -82,6 +83,7 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   base::Optional<base::TimeTicks> time_shown_by_click_;
 
   views::TrayBubbleView* bubble_view_ = nullptr;
+  UnifiedSystemTrayView* unified_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayBubble);
 };

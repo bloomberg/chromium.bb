@@ -45,12 +45,12 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   int max_height = tray->shelf()->GetUserWorkAreaBounds().height() -
                    kPaddingFromScreenTop -
                    bubble_view_->GetBorderInsets().height();
-  auto* unified_view = controller_->CreateView();
+  unified_view_ = controller_->CreateView();
   time_to_click_recorder_ =
-      std::make_unique<TimeToClickRecorder>(this, unified_view);
-  unified_view->SetMaxHeight(max_height);
+      std::make_unique<TimeToClickRecorder>(this, unified_view_);
+  unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
-  bubble_view_->AddChildView(unified_view);
+  bubble_view_->AddChildView(unified_view_);
   bubble_view_->set_anchor_view_insets(
       tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets());
   bubble_view_->set_color(SK_ColorTRANSPARENT);
@@ -66,8 +66,6 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
     bubble_view_->layer()->parent()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }
-
-  unified_view->RequestInitFocus();
 
   tray->tray_event_filter()->AddBubble(this);
 }
@@ -90,7 +88,9 @@ bool UnifiedSystemTrayBubble::IsBubbleActive() const {
 }
 
 void UnifiedSystemTrayBubble::ActivateBubble() {
+  DCHECK(unified_view_);
   DCHECK(bubble_widget_);
+  unified_view_->RequestInitFocus();
   bubble_widget_->widget_delegate()->set_can_activate(true);
   bubble_widget_->Activate();
 }
