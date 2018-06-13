@@ -23,6 +23,9 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate {
   AuthenticatorRequestClientDelegate();
   virtual ~AuthenticatorRequestClientDelegate();
 
+  // Notifies the delegate that the request is actually starting.
+  virtual void DidStartRequest();
+
   // Returns true if the given relying party ID is permitted to receive
   // individual attestation certificates. This:
   //  a) triggers a signal to the security key that returning individual

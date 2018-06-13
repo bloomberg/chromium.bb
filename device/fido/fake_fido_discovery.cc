@@ -43,7 +43,7 @@ void FakeFidoDiscovery::StartInternal() {
   if (mode_ == StartMode::kAutomatic) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&FakeFidoDiscovery::SimulateStarted,
-                                  base::Unretained(this), true /* success */));
+                                  AsWeakPtr(), true /* success */));
   }
 }
 

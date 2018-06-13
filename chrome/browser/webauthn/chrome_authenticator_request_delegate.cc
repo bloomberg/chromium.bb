@@ -54,20 +54,7 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
     content::RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host), weak_ptr_factory_(this) {
-#if !defined(OS_ANDROID)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebAuthenticationUI)) {
-    return;
-  }
-  auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
-  weak_dialog_model_ = dialog_model.get();
-  weak_dialog_model_->AddObserver(this);
-  ShowAuthenticatorRequestDialog(
-      content::WebContents::FromRenderFrameHost(render_frame_host),
-      std::move(dialog_model));
-#endif
-}
+    : render_frame_host_(render_frame_host), weak_ptr_factory_(this) {}
 
 ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
   // Currently, completion of the request is indicated by //content destroying
@@ -86,6 +73,21 @@ ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
 base::WeakPtr<ChromeAuthenticatorRequestDelegate>
 ChromeAuthenticatorRequestDelegate::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void ChromeAuthenticatorRequestDelegate::DidStartRequest() {
+#if !defined(OS_ANDROID)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebAuthenticationUI)) {
+    return;
+  }
+  auto dialog_model = std::make_unique<AuthenticatorRequestDialogModel>();
+  weak_dialog_model_ = dialog_model.get();
+  weak_dialog_model_->AddObserver(this);
+  ShowAuthenticatorRequestDialog(
+      content::WebContents::FromRenderFrameHost(render_frame_host()),
+      std::move(dialog_model));
+#endif
 }
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
