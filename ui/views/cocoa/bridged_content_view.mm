@@ -240,6 +240,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
              domCode:(ui::DomCode)domCode
           eventFlags:(int)eventFlags;
 
+// ui::EventLocationFromNative() assumes the event hit the contentView.
+// Adjust |event| if that's not the case (e.g. for reparented views).
+- (void)adjustUiEventLocation:(ui::LocatedEvent*)event
+              fromNativeEvent:(NSEvent*)nativeEvent;
+
 // Notification handler invoked when the Full Keyboard Access mode is changed.
 - (void)onFullKeyboardAccessModeChanged:(NSNotification*)notification;
 
@@ -385,6 +390,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
   gfx::Point event_location =
       MovePointToWindow([theEvent locationInWindow], source, target);
+  [self updateTooltipIfRequiredAt:event_location];
 
   if (isScrollEvent) {
     ui::ScrollEvent event(theEvent);
@@ -482,6 +488,14 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
   ignore_result(
       hostedView_->GetWidget()->GetInputMethod()->DispatchKeyEvent(&event));
+}
+
+- (void)adjustUiEventLocation:(ui::LocatedEvent*)event
+              fromNativeEvent:(NSEvent*)nativeEvent {
+  if ([nativeEvent window] && [[self window] contentView] != self) {
+    NSPoint p = [self convertPoint:[nativeEvent locationInWindow] fromView:nil];
+    event->set_location(gfx::Point(p.x, NSHeight([self frame]) - p.y));
+  }
 }
 
 - (void)onFullKeyboardAccessModeChanged:(NSNotification*)notification {
@@ -625,13 +639,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
   DCHECK([theEvent type] != NSScrollWheel);
   ui::MouseEvent event(theEvent);
-
-  // ui::EventLocationFromNative() assumes the event hit the contentView.
-  // Adjust if that's not the case (e.g. for reparented views).
-  if ([theEvent window] && [[self window] contentView] != self) {
-    NSPoint p = [self convertPoint:[theEvent locationInWindow] fromView:nil];
-    event.set_location(gfx::Point(p.x, NSHeight([self frame]) - p.y));
-  }
+  [self adjustUiEventLocation:&event fromNativeEvent:theEvent];
 
   // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
   // Mac hooks in here.
@@ -802,6 +810,12 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return;
 
   ui::ScrollEvent event(theEvent);
+  [self adjustUiEventLocation:&event fromNativeEvent:theEvent];
+
+  // Aura updates tooltips with the help of aura::Window::AddPreTargetHandler().
+  // Mac hooks in here.
+  [self updateTooltipIfRequiredAt:event.location()];
+
   hostedView_->GetWidget()->OnScrollEvent(&event);
 }
 
