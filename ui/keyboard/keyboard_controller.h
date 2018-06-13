@@ -70,13 +70,6 @@ class KEYBOARD_EXPORT KeyboardController
       public aura::WindowObserver,
       public ui::InputMethodKeyboardController {
  public:
-  // Different ways to hide the keyboard.
-  enum HideReason {
-    // System initiated.
-    HIDE_REASON_AUTOMATIC,
-    // User initiated.
-    HIDE_REASON_MANUAL,
-  };
 
   KeyboardController();
   ~KeyboardController() override;
@@ -117,16 +110,24 @@ class KEYBOARD_EXPORT KeyboardController
 
   bool keyboard_locked() const { return keyboard_locked_; }
 
-  // Immediately starts hiding animation of virtual keyboard and notifies
-  // observers bounds change. This method forcibly sets keyboard_locked_
-  // false while closing the keyboard.
-  void HideKeyboard(HideReason reason);
+  // Hide the keyboard because the user has chosen to specifically hide the
+  // keyboard, such as pressing the dismiss button.
+  void HideKeyboardByUser();
 
-  // Hides virtual keyboard if it's shown and not locked. This request can be
-  // canceled by calling ShowKeyboard() or focusing another text input field
-  // within certain period. This method is no-op if it's called when virtual
-  // keyboard is hidden or it's locked.
-  void MaybeHideKeyboard();
+  // Hide the keyboard due to some internally generated change to change the
+  // state of the keyboard. For example, moving from the docked keyboard to the
+  // floating keyboard.
+  void HideKeyboardTemporarilyForTransition();
+
+  // Hide the keyboard as an effect of a system action, such as opening the
+  // settings page from the keyboard. There should be no reason the keyboard
+  // should remain open.
+  void HideKeyboardExplicitlyBySystem();
+
+  // Hide the keyboard as a secondary effect of a system action, such as losing
+  // focus of a text element. If focus is returned to any text element, it is
+  // desirable to re-show the keyboard in this case.
+  void HideKeyboardImplicitlyBySystem();
 
   // Force the keyboard to show up if not showing and lock the keyboard if
   // |lock| is true.
@@ -229,6 +230,31 @@ class KEYBOARD_EXPORT KeyboardController
   friend bool keyboard::UpdateKeyboardConfig(
       const keyboard::KeyboardConfig& config);
 
+  // Different ways to hide the keyboard.
+  enum HideReason {
+    // System initiated due to an active event, where the user does not want
+    // to maintain any association with the previous text entry session.
+    HIDE_REASON_SYSTEM_EXPLICIT,
+
+    // System initiated due to a passive event, such as clicking on a non-text
+    // control in a web page. Implicit hide events can be treated as passive
+    // and can possibly be a transient loss of focus. This will generally cause
+    // the keyboard to stay open for a brief moment and then hide, and possibly
+    // come back if focus is regained within a short amount of time (transient
+    // blur).
+    HIDE_REASON_SYSTEM_IMPLICIT,
+
+    // Keyboard is hidden temporarily for transitional reasons. Examples include
+    // moving the keyboard to a different display (which closes it and re-opens
+    // it on the new screen) or changing the container type (e.g. full-width to
+    // floating)
+    HIDE_REASON_SYSTEM_TEMPORARY,
+
+    // User initiated.
+    HIDE_REASON_USER_EXPLICIT,
+
+  };
+
   // aura::WindowObserver overrides
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
@@ -257,6 +283,11 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;
+
+  // Immediately starts hiding animation of virtual keyboard and notifies
+  // observers bounds change. This method forcibly sets keyboard_locked_
+  // false while closing the keyboard.
+  void HideKeyboard(HideReason reason);
 
   // Called when the hide animation finished.
   void HideAnimationFinished();

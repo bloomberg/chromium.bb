@@ -118,8 +118,7 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled() &&
         keyboard_controller->keyboard_visible()) {
-      keyboard_controller->HideKeyboard(
-          keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+      keyboard_controller->HideKeyboardExplicitlyBySystem();
     }
   }
 #endif

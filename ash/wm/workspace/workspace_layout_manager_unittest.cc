@@ -1816,8 +1816,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
   // Window should not be shifted up.
   EXPECT_EQ(orig_window_bounds, window->bounds());
 
-  kb_controller->HideKeyboard(
-      keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  kb_controller->HideKeyboardExplicitlyBySystem();
   EXPECT_EQ(orig_window_bounds, window->bounds());
 
   // Open keyboard in sticky mode.
@@ -1831,8 +1830,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
   // Window should be shifted up.
   EXPECT_EQ(changed_window_bounds, window->bounds());
 
-  kb_controller->HideKeyboard(
-      keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  kb_controller->HideKeyboardExplicitlyBySystem();
   EXPECT_EQ(orig_window_bounds, window->bounds());
 }
 

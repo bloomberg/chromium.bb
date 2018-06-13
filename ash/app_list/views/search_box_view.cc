@@ -135,8 +135,7 @@ void SearchBoxView::UpdateKeyboardVisibility() {
     return;
   }
 
-  keyboard_controller->HideKeyboard(
-      keyboard::KeyboardController::HIDE_REASON_MANUAL);
+  keyboard_controller->HideKeyboardByUser();
 }
 
 void SearchBoxView::UpdateModel(bool initiated_by_user) {

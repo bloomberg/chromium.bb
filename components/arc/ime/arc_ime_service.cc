@@ -334,7 +334,7 @@ void ArcImeService::RequestHideIme() {
       keyboard::KeyboardController::HasInstance()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled())
-      keyboard_controller->MaybeHideKeyboard();
+      keyboard_controller->HideKeyboardImplicitlyBySystem();
   }
 }
 

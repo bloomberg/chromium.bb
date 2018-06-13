@@ -221,8 +221,7 @@ void InputMethodEngine::HideInputView() {
   if (!ash_util::IsRunningInMash()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled()) {
-      keyboard_controller->HideKeyboard(
-          keyboard::KeyboardController::HIDE_REASON_MANUAL);
+      keyboard_controller->HideKeyboardByUser();
     }
   }
 }

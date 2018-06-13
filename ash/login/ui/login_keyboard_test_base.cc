@@ -61,8 +61,7 @@ void LoginKeyboardTestBase::ShowKeyboard() {
 }
 
 void LoginKeyboardTestBase::HideKeyboard() {
-  keyboard_controller_->HideKeyboard(
-      keyboard::KeyboardController::HIDE_REASON_MANUAL);
+  keyboard_controller_->HideKeyboardByUser();
   ASSERT_FALSE(keyboard_controller_->keyboard_visible());
 }
 

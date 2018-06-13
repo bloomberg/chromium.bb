@@ -570,8 +570,8 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_FALSE(WillHideKeyboard());
 
-  // MaybeHideKeyboard is no-op when the keyboard is locked.
-  controller().MaybeHideKeyboard();
+  // Implicit hiding will not do anything when the keyboard is locked.
+  controller().HideKeyboardImplicitlyBySystem();
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_FALSE(WillHideKeyboard());
 
@@ -668,7 +668,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
 
   // Directly hide keyboard without delay.
   float hide_start_opacity = layer->opacity();
-  controller().HideKeyboard(KeyboardController::HIDE_REASON_AUTOMATIC);
+  controller().HideKeyboardExplicitlyBySystem();
   EXPECT_FALSE(keyboard_container()->IsVisible());
   EXPECT_FALSE(keyboard_container()->layer()->visible());
   EXPECT_FALSE(contents_window()->IsVisible());
@@ -751,7 +751,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   ShowKeyboard();
   RunAnimationForLayer(layer);
 
-  controller().HideKeyboard(KeyboardController::HIDE_REASON_AUTOMATIC);
+  controller().HideKeyboardExplicitlyBySystem();
   // Before hide animation finishes, show keyboard again.
   ShowKeyboard();
   layer = keyboard_container()->layer();
