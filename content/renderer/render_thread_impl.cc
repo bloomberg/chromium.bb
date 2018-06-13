@@ -1279,9 +1279,6 @@ void RenderThreadImpl::InitializeWebKit(
     isolate->IsolateInBackgroundNotification();
   }
 
-  main_thread_scheduler_->SetFreezingWhenBackgroundedEnabled(
-      GetContentClient()->renderer()->AllowFreezingWhenProcessBackgrounded());
-
   // Hook up blink's codecs so skia can call them. Since only the renderer
   // processes should be doing image decoding, this is not done in the common
   // skia initialization code for the GPU.

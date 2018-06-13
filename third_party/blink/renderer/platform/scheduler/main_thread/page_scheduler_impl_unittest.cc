@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/location.h"
@@ -13,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,6 +22,7 @@
 #include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using base::sequence_manager::TaskQueue;
@@ -37,6 +40,9 @@ void IncrementCounter(int* counter) {
 }
 }  // namespace
 
+using base::Bucket;
+using testing::UnorderedElementsAreArray;
+
 class PageSchedulerImplTest : public testing::Test {
  public:
   PageSchedulerImplTest() = default;
@@ -53,7 +59,9 @@ class PageSchedulerImplTest : public testing::Test {
         base::sequence_manager::TaskQueueManagerForTest::Create(
             nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
         base::nullopt));
-    CreatePageScheduler(false);
+    page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
+    frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
+        nullptr, FrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
@@ -61,15 +69,6 @@ class PageSchedulerImplTest : public testing::Test {
     page_scheduler_.reset();
     scheduler_->Shutdown();
     scheduler_.reset();
-  }
-
-  void CreatePageScheduler(bool disable_background_timer_throttling) {
-    if (frame_scheduler_)
-      frame_scheduler_.reset();
-    page_scheduler_.reset(new PageSchedulerImpl(
-        nullptr, scheduler_.get(), disable_background_timer_throttling));
-    frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
-        nullptr, FrameScheduler::FrameType::kSubframe);
   }
 
   void FastForwardTo(base::TimeTicks time) {
@@ -81,6 +80,14 @@ class PageSchedulerImplTest : public testing::Test {
   static scoped_refptr<TaskQueue> ThrottleableTaskQueueForScheduler(
       FrameSchedulerImpl* scheduler) {
     return scheduler->ThrottleableTaskQueue();
+  }
+
+  base::TimeDelta delay_for_background_tab_freezing() const {
+    return page_scheduler_->delay_for_background_tab_freezing_;
+  }
+
+  static base::TimeDelta recent_audio_delay() {
+    return PageSchedulerImpl::kRecentAudioDelay;
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> ThrottleableTaskRunner() {
@@ -112,6 +119,8 @@ class PageSchedulerImplTest : public testing::Test {
   scoped_refptr<TaskQueue> UnpausableTaskQueue() {
     return frame_scheduler_->UnpausableTaskQueue();
   }
+
+  bool ShouldFreezePage() { return page_scheduler_->ShouldFreezePage(); }
 
   // Verifies that freezing the PageScheduler prevents tasks from running. Then
   // set the page as visible or unfreezes it while still hidden (depending on
@@ -285,7 +294,7 @@ TEST_F(PageSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
 
 TEST_F(PageSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   std::unique_ptr<PageSchedulerImpl> page_scheduler2(
-      new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+      new PageSchedulerImpl(nullptr, scheduler_.get()));
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler2 =
       page_scheduler2->CreateFrameSchedulerImpl(
           nullptr, FrameScheduler::FrameType::kSubframe);
@@ -518,8 +527,7 @@ TEST_F(PageSchedulerImplTest, VirtualTime_AllowedToAdvance) {
 }
 
 TEST_F(PageSchedulerImplTest, RepeatingTimer_PageInBackground) {
-  // Disable background timer throttling.
-  CreatePageScheduler(true);
+  ScopedTimerThrottlingForBackgroundTabsForTest timer_throttling_enabler(false);
   page_scheduler_->SetPageVisible(false);
 
   int run_count = 0;
@@ -1065,8 +1073,7 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
   std::unique_ptr<base::FieldTrialList> field_trial_list =
       std::make_unique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
-  page_scheduler_.reset(
-      new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+  page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
   EXPECT_FALSE(page_scheduler_->IsThrottled());
 
   std::vector<base::TimeTicks> run_times;
@@ -1131,7 +1138,7 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
       std::make_unique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   std::unique_ptr<PageSchedulerImpl> page_scheduler(
-      new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+      new PageSchedulerImpl(nullptr, scheduler_.get()));
 
   std::vector<base::TimeTicks> run_times;
 
@@ -1305,10 +1312,299 @@ TEST_F(PageSchedulerImplTest, KeepActiveSetForNewPages) {
   scheduler_->SetSchedulerKeepActive(true);
 
   std::unique_ptr<PageSchedulerImpl> page_scheduler2 =
-      std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get(), false);
+      std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get());
 
   EXPECT_TRUE(page_scheduler_->KeepActive());
   EXPECT_TRUE(page_scheduler2->KeepActive());
+}
+
+TEST_F(PageSchedulerImplTest, TestPageBackgroundedTimerSuspension) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+
+  int counter = 0;
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  // The background signal will not immediately suspend the timer queue.
+  page_scheduler_->SetPageVisible(false);
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1100));
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+  EXPECT_EQ(2, counter);
+
+  counter = 0;
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+  EXPECT_EQ(1, counter);
+
+  // Advance the time until after the scheduled timer queue suspension.
+  counter = 0;
+  test_task_runner_->FastForwardBy(delay_for_background_tab_freezing() +
+                                   base::TimeDelta::FromMilliseconds(10));
+  EXPECT_TRUE(page_scheduler_->IsFrozen());
+  EXPECT_EQ(0, counter);
+
+  // Timer tasks should be paused until the page becomes visible.
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  UnpausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  EXPECT_EQ(1, counter);
+
+  counter = 0;
+  page_scheduler_->SetPageVisible(true);
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(2, counter);
+
+  // Subsequent timer tasks should fire as usual.
+  counter = 0;
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(1, counter);
+}
+
+TEST_F(PageSchedulerImplTest, PageFrozenOnlyWhileAudioSilent) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+
+  page_scheduler_->AudioStateChanged(true);
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
+  EXPECT_FALSE(ShouldFreezePage());
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+
+  page_scheduler_->AudioStateChanged(false);
+  // We are audible for a certain period after raw signal disappearing. The page
+  // should not be eligible to freeze until after this delay.
+  EXPECT_TRUE(page_scheduler_->IsAudioPlaying());
+  EXPECT_FALSE(ShouldFreezePage());
+
+  test_task_runner_->FastForwardBy(recent_audio_delay() +
+                                   base::TimeDelta::FromMilliseconds(100));
+  // Audio is finally silent. The page should be eligible for freezing.
+  EXPECT_FALSE(page_scheduler_->IsAudioPlaying());
+  EXPECT_TRUE(ShouldFreezePage());
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+
+  test_task_runner_->FastForwardBy(delay_for_background_tab_freezing() +
+                                   base::TimeDelta::FromMilliseconds(100));
+  EXPECT_TRUE(page_scheduler_->IsFrozen());
+
+  // Page should unfreeze if audio starts playing.
+  page_scheduler_->AudioStateChanged(true);
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+}
+
+TEST_F(PageSchedulerImplTest, PageFrozenOnlyWhileNotVisible) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+
+  page_scheduler_->SetPageVisible(true);
+  EXPECT_FALSE(ShouldFreezePage());
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+
+  // Page should freeze after delay.
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_TRUE(ShouldFreezePage());
+  test_task_runner_->FastForwardBy(delay_for_background_tab_freezing() +
+                                   base::TimeDelta::FromMilliseconds(100));
+  EXPECT_TRUE(page_scheduler_->IsFrozen());
+
+  // Page should unfreeze when it becomes visible.
+  page_scheduler_->SetPageVisible(true);
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+
+  // If the page becomes visible before the freezing delay expires, it should
+  // not freeze after the delay elapses.
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_TRUE(ShouldFreezePage());
+  test_task_runner_->FastForwardBy(delay_for_background_tab_freezing() -
+                                   base::TimeDelta::FromMilliseconds(100));
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+  page_scheduler_->SetPageVisible(true);
+  test_task_runner_->FastForwardBy(delay_for_background_tab_freezing() +
+                                   base::TimeDelta::FromMilliseconds(100));
+  EXPECT_FALSE(page_scheduler_->IsFrozen());
+}
+
+class PageSchedulerImplPageTransitionTest : public PageSchedulerImplTest {
+ public:
+  typedef PageSchedulerImpl::PageLifecycleStateTransition Transition;
+
+  PageSchedulerImplPageTransitionTest() {
+    for (int i = 0; i <= static_cast<int>(Transition::kMaxValue); i++)
+      transition_counts_.push_back(0);
+  }
+
+  ~PageSchedulerImplPageTransitionTest() override = default;
+
+  void IncrementPageTransition(Transition transition) {
+    transition_counts_[static_cast<int>(transition)] += 1;
+  }
+
+  std::vector<Bucket> GetExpectedBuckets() {
+    std::vector<Bucket> buckets;
+    for (int i = 0; i <= static_cast<int>(Transition::kMaxValue); i++) {
+      if (transition_counts_[i] > 0)
+        buckets.push_back(Bucket(i, transition_counts_[i]));
+    }
+    return buckets;
+  }
+
+  void WaitForFreezingDelay() {
+    test_task_runner_->FastForwardBy(delay_for_background_tab_freezing() +
+                                     base::TimeDelta::FromMilliseconds(100));
+  }
+
+  void DisableAudioAndWaitForSilent() {
+    page_scheduler_->AudioStateChanged(false);
+    test_task_runner_->FastForwardBy(recent_audio_delay() +
+                                     base::TimeDelta::FromMilliseconds(100));
+  }
+
+ protected:
+  std::vector<int> transition_counts_;
+};
+
+TEST_F(PageSchedulerImplPageTransitionTest,
+       PageLifecycleStateTransitionMetric) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+
+  typedef PageSchedulerImpl::PageLifecycleStateTransition Transition;
+
+  base::HistogramTester histogram_tester_;
+
+  if (kDefaultPageVisibility == PageVisibilityState::kHidden) {
+    page_scheduler_->SetPageVisible(true);
+    IncrementPageTransition(Transition::kHiddenBackgroundedToActive);
+    EXPECT_THAT(histogram_tester_.GetAllSamples(
+                    PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+                UnorderedElementsAreArray(GetExpectedBuckets()));
+  }
+
+  // Visible w/o audio -> hidden/backgrounded -> frozen.
+  page_scheduler_->SetPageVisible(false);
+  IncrementPageTransition(Transition::kActiveToHiddenBackgrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  WaitForFreezingDelay();
+  IncrementPageTransition(Transition::kHiddenBackgroundedToFrozen);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+
+  // Visible w/ audio -> hidden/not backgrouneded -> hidden/backgrounded ->
+  // frozen.
+  page_scheduler_->SetPageVisible(true);
+  IncrementPageTransition(Transition::kFrozenToActive);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  page_scheduler_->AudioStateChanged(true);
+  // No transition when audio state changes in the foreground.
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  page_scheduler_->SetPageVisible(false);
+  IncrementPageTransition(Transition::kActiveToHiddenForegrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  DisableAudioAndWaitForSilent();
+  IncrementPageTransition(Transition::kHiddenForegroundedToHiddenBackgrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  WaitForFreezingDelay();
+  IncrementPageTransition(Transition::kHiddenBackgroundedToFrozen);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+
+  // When freezing from outside the renderer, it's possible to have transitions
+  // to frozen from hidden/foregrounded and hidden/backgrounded.
+  //
+  // Visible w/o audio -> hidden/backgrounded -> frozen from outside the
+  // renderer.
+  page_scheduler_->SetPageVisible(true);
+  IncrementPageTransition(Transition::kFrozenToActive);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  page_scheduler_->SetPageVisible(false);
+  IncrementPageTransition(Transition::kActiveToHiddenBackgrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  page_scheduler_->SetPageFrozen(true);
+  IncrementPageTransition(Transition::kHiddenBackgroundedToFrozen);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  // Unfreezing from outside the renderer should return to hidden/backgrounded.
+  page_scheduler_->SetPageFrozen(false);
+  IncrementPageTransition(Transition::kFrozenToHiddenBackgrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+
+  // Hidden/backgrounded -> hidden/not backgrouneded -> frozen from outside the
+  // renderer.
+  page_scheduler_->AudioStateChanged(true);
+  IncrementPageTransition(Transition::kHiddenBackgroundedToHiddenForegrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  page_scheduler_->SetPageFrozen(true);
+  IncrementPageTransition(Transition::kHiddenForegroundedToFrozen);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  // Unfreezing from outside the renderer should return to hidden/foregrounded.
+  page_scheduler_->SetPageFrozen(false);
+  IncrementPageTransition(Transition::kFrozenToHiddenForegrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+
+  // Visible -> hidden* -> hidden* -> visible.
+  page_scheduler_->SetPageVisible(true);
+  IncrementPageTransition(Transition::kHiddenForegroundedToActive);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  page_scheduler_->SetPageVisible(false);
+  IncrementPageTransition(Transition::kActiveToHiddenForegrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  DisableAudioAndWaitForSilent();
+  IncrementPageTransition(Transition::kHiddenForegroundedToHiddenBackgrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  page_scheduler_->AudioStateChanged(true);
+  IncrementPageTransition(Transition::kHiddenBackgroundedToHiddenForegrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  DisableAudioAndWaitForSilent();
+  IncrementPageTransition(Transition::kHiddenForegroundedToHiddenBackgrounded);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
+  page_scheduler_->SetPageVisible(true);
+  IncrementPageTransition(Transition::kHiddenBackgroundedToActive);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  PageSchedulerImpl::kHistogramPageLifecycleStateTransition),
+              UnorderedElementsAreArray(GetExpectedBuckets()));
 }
 
 }  // namespace page_scheduler_impl_unittest

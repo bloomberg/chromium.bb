@@ -167,7 +167,7 @@ Page::Page(PageClients& page_clients)
       paused_(false),
       device_scale_factor_(1),
       visibility_state_(mojom::PageVisibilityState::kVisible),
-      page_lifecycle_state_(PageLifecycleState::kUnknown),
+      page_lifecycle_state_(kDefaultPageLifecycleState),
       is_cursor_visible_(true),
       subframe_count_(0),
       next_related_page_(this),
@@ -472,6 +472,7 @@ bool Page::IsPageVisible() const {
 void Page::SetLifecycleState(PageLifecycleState state) {
   if (state == page_lifecycle_state_)
     return;
+  DCHECK_NE(state, PageLifecycleState::kUnknown);
 
   if (RuntimeEnabledFeatures::PageLifecycleEnabled()) {
     if (state == PageLifecycleState::kFrozen) {
@@ -479,11 +480,12 @@ void Page::SetLifecycleState(PageLifecycleState state) {
            frame = frame->Tree().TraverseNext()) {
         frame->DidFreeze();
       }
-    } else if (state == PageLifecycleState::kActive ||
-               state == PageLifecycleState::kHidden) {
+    } else if (page_lifecycle_state_ == PageLifecycleState::kFrozen) {
       // TODO(fmeawad): Only resume the page that just became visible, blocked
       // on task queues per frame.
-      DCHECK(page_lifecycle_state_ == PageLifecycleState::kFrozen);
+      DCHECK(state == PageLifecycleState::kActive ||
+             state == PageLifecycleState::kHiddenBackgrounded ||
+             state == PageLifecycleState::kHiddenForegrounded);
       for (Frame* frame = main_frame_.Get(); frame;
            frame = frame->Tree().TraverseNext()) {
         frame->DidResume();
@@ -811,12 +813,6 @@ void Page::RequestBeginMainFrameNotExpected(bool new_state) {
       layer_tree_view->RequestBeginMainFrameNotExpected(new_state);
     }
   }
-}
-
-void Page::SetPageFrozen(bool frozen) {
-  SetLifecycleState(frozen ? PageLifecycleState::kFrozen
-                           : IsPageVisible() ? PageLifecycleState::kActive
-                                             : PageLifecycleState::kHidden);
 }
 
 ukm::UkmRecorder* Page::GetUkmRecorder() {

@@ -300,7 +300,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
     v8_task_runner_ = scheduler_->V8TaskQueue();
 
     page_scheduler_ =
-        std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get(), false);
+        std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get());
     main_frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
         nullptr, FrameScheduler::FrameType::kMainFrame);
 
@@ -673,11 +673,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
   static base::TimeDelta end_idle_when_hidden_delay() {
     return base::TimeDelta::FromMilliseconds(
         MainThreadSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
-  }
-
-  static base::TimeDelta delay_for_background_tab_freezing() {
-    return base::TimeDelta::FromMilliseconds(
-        MainThreadSchedulerImpl::kDelayForBackgroundTabFreezingMillis);
   }
 
   static base::TimeDelta rails_response_time() {
@@ -2473,70 +2468,6 @@ TEST_F(MainThreadSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
   EXPECT_THAT(run_order, testing::ElementsAre());
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
-  std::unique_ptr<PageSchedulerImpl> page_scheduler = base::WrapUnique(
-      new PageSchedulerImpl(nullptr, scheduler_.get(),
-                            false /* disable_background_timer_throttling */));
-  scheduler_->AddPageScheduler(page_scheduler.get());
-
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      page_scheduler->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kMainFrame);
-
-  // Use the |frame_scheduler|'s timer task queue in PostTestTasks().
-  timer_task_runner_ = ThrottleableTaskQueue(frame_scheduler.get());
-
-  scheduler_->SetFreezingWhenBackgroundedEnabled(true);
-
-  std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "T1 T2");
-
-  base::TimeTicks now;
-
-  // The background signal will not immediately suspend the timer queue.
-  scheduler_->SetRendererBackgrounded(true);
-  now += base::TimeDelta::FromMilliseconds(1100);
-  AdvanceMockTickClockTo(now);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T1"), std::string("T2")));
-
-  run_order.clear();
-  PostTestTasks(&run_order, "T3");
-
-  now += base::TimeDelta::FromSeconds(1);
-  AdvanceMockTickClockTo(now);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("T3")));
-
-  // Advance the time until after the scheduled timer queue suspension.
-  now = base::TimeTicks() + delay_for_background_tab_freezing() +
-        base::TimeDelta::FromMilliseconds(10);
-  run_order.clear();
-  AdvanceMockTickClockTo(now);
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(run_order.empty());
-
-  // Timer tasks should be paused until the foregrounded signal.
-  PostTestTasks(&run_order, "T4 T5 V1");
-  now += base::TimeDelta::FromSeconds(10);
-  AdvanceMockTickClockTo(now);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("V1")));
-
-  run_order.clear();
-  scheduler_->SetRendererBackgrounded(false);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T4"), std::string("T5")));
-
-  // Subsequent timer tasks should fire as usual.
-  run_order.clear();
-  PostTestTasks(&run_order, "T6");
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("T6")));
-}
-
 TEST_F(MainThreadSchedulerImplTest,
        ExpensiveLoadingTasksNotBlockedTillFirstBeginMainFrame) {
   std::vector<std::string> run_order;
@@ -2962,7 +2893,7 @@ TEST_F(MainThreadSchedulerImplTest,
 class PageSchedulerImplForTest : public PageSchedulerImpl {
  public:
   explicit PageSchedulerImplForTest(MainThreadSchedulerImpl* scheduler)
-      : PageSchedulerImpl(nullptr, scheduler, false) {}
+      : PageSchedulerImpl(nullptr, scheduler) {}
   ~PageSchedulerImplForTest() override = default;
 
   void ReportIntervention(const std::string& message) override {
@@ -3529,9 +3460,8 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
-  std::unique_ptr<PageSchedulerImpl> page_scheduler = base::WrapUnique(
-      new PageSchedulerImpl(nullptr, scheduler_.get(),
-                            false /* disable_background_timer_throttling */));
+  std::unique_ptr<PageSchedulerImpl> page_scheduler =
+      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get()));
   scheduler_->AddPageScheduler(page_scheduler.get());
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
@@ -3620,7 +3550,7 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
   // traced value. This test checks that no internal checks fire during this.
 
   std::unique_ptr<PageSchedulerImpl> page_scheduler1 =
-      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get()));
   scheduler_->AddPageScheduler(page_scheduler1.get());
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
@@ -3628,7 +3558,7 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
           nullptr, FrameScheduler::FrameType::kSubframe);
 
   std::unique_ptr<PageSchedulerImpl> page_scheduler2 =
-      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+      base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get()));
   scheduler_->AddPageScheduler(page_scheduler2.get());
 
   CPUTimeBudgetPool* time_budget_pool =

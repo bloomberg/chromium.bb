@@ -138,7 +138,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
-  void SetFreezingWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRAILModeObserver(RAILModeObserver* observer) override;
@@ -369,8 +368,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
-  void SetFrozenInBackground(bool) const;
-
   bool ContainsLocalMainFrame();
 
   struct TaskQueuePolicy {
@@ -563,11 +560,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // defined by RAILS.
   static const int kRailsResponseTimeMillis = 50;
 
-  // The amount of time to wait before suspending shared timers, and loading
-  // etc. after the renderer has been backgrounded. This is used only if
-  // background suspension is enabled.
-  static const int kDelayForBackgroundTabFreezingMillis = 5 * 60 * 1000;
-
   // The time we should stay in a priority-escalated mode after a call to
   // DidAnimateForInputOnCompositorThread().
   static const int kFlingEscalationLimitMillis = 100;
@@ -733,8 +725,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   QueueingTimeEstimator queueing_time_estimator_;
 
-  base::TimeDelta delay_for_background_tab_freezing_;
-
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.
 
@@ -767,8 +757,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<bool, kTracingCategoryNameTopLevel> renderer_backgrounded;
     TraceableState<bool, kTracingCategoryNameDefault>
         keep_active_fetch_or_worker;
-    TraceableState<bool, kTracingCategoryNameInfo>
-        freezing_when_backgrounded_enabled;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
         loading_task_estimated_cost;
     TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>

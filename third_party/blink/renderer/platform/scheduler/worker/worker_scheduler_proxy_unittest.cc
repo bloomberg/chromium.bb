@@ -121,8 +121,7 @@ class WorkerSchedulerProxyTest : public testing::Test {
             base::nullopt)),
         page_scheduler_(
             std::make_unique<PageSchedulerImpl>(nullptr,
-                                                main_thread_scheduler_.get(),
-                                                false)),
+                                                main_thread_scheduler_.get())),
         frame_scheduler_(page_scheduler_->CreateFrameSchedulerImpl(
             nullptr,
             FrameScheduler::FrameType::kMainFrame)) {

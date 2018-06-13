@@ -193,10 +193,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // Must be called from the main thread.
   virtual bool IsHighPriorityWorkAnticipated();
 
-  // Sets whether to allow suspension of tasks after the backgrounded signal is
-  // received via SetRendererBackgrounded(true). Defaults to disabled.
-  virtual void SetFreezingWhenBackgroundedEnabled(bool enabled);
-
   // Sets the default blame context to which top level work should be
   // attributed in this renderer. |blame_context| must outlive this scheduler.
   virtual void SetTopLevelBlameContext(

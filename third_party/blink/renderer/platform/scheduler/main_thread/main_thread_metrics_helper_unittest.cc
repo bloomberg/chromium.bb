@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_page_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using base::sequence_manager::TaskQueue;
 
@@ -398,81 +399,6 @@ TEST_F(MainThreadMetricsHelperTest, GetFrameStatusTest) {
         CreateFakeFrameSchedulerWithType(frame_status);
     EXPECT_EQ(GetFrameStatus(frame.get()), frame_status);
   }
-}
-
-TEST_F(MainThreadMetricsHelperTest, BackgroundedRendererTransition) {
-  scheduler_->SetFreezingWhenBackgroundedEnabled(true);
-  typedef BackgroundedRendererTransition Transition;
-
-  int backgrounding_transitions = 0;
-  int foregrounding_transitions = 0;
-  if (!kLaunchingProcessIsBackgrounded) {
-    scheduler_->SetRendererBackgrounded(true);
-    backgrounding_transitions++;
-    EXPECT_THAT(
-        histogram_tester_->GetAllSamples(
-            "RendererScheduler.BackgroundedRendererTransition"),
-        UnorderedElementsAre(Bucket(static_cast<int>(Transition::kBackgrounded),
-                                    backgrounding_transitions)));
-    scheduler_->SetRendererBackgrounded(false);
-    foregrounding_transitions++;
-    EXPECT_THAT(
-        histogram_tester_->GetAllSamples(
-            "RendererScheduler.BackgroundedRendererTransition"),
-        UnorderedElementsAre(Bucket(static_cast<int>(Transition::kBackgrounded),
-                                    backgrounding_transitions),
-                             Bucket(static_cast<int>(Transition::kForegrounded),
-                                    foregrounding_transitions)));
-  } else {
-    scheduler_->SetRendererBackgrounded(false);
-    foregrounding_transitions++;
-    EXPECT_THAT(
-        histogram_tester_->GetAllSamples(
-            "RendererScheduler.BackgroundedRendererTransition"),
-        UnorderedElementsAre(Bucket(static_cast<int>(Transition::kForegrounded),
-                                    foregrounding_transitions)));
-  }
-
-  scheduler_->SetRendererBackgrounded(true);
-  backgrounding_transitions++;
-  EXPECT_THAT(
-      histogram_tester_->GetAllSamples(
-          "RendererScheduler.BackgroundedRendererTransition"),
-      UnorderedElementsAre(Bucket(static_cast<int>(Transition::kBackgrounded),
-                                  backgrounding_transitions),
-                           Bucket(static_cast<int>(Transition::kForegrounded),
-                                  foregrounding_transitions)));
-
-  // Waste 5+ minutes so that the delayed stop is triggered
-  RunTask(QueueType::kDefault, Milliseconds(1),
-          base::TimeDelta::FromSeconds(5 * 61));
-  // Firing ForceUpdatePolicy multiple times to make sure that the
-  // metric is only recorded upon an actual change.
-  ForceUpdatePolicy();
-  ForceUpdatePolicy();
-  ForceUpdatePolicy();
-  EXPECT_THAT(histogram_tester_->GetAllSamples(
-                  "RendererScheduler.BackgroundedRendererTransition"),
-              UnorderedElementsAre(
-                  Bucket(static_cast<int>(Transition::kBackgrounded),
-                         backgrounding_transitions),
-                  Bucket(static_cast<int>(Transition::kForegrounded),
-                         foregrounding_transitions),
-                  Bucket(static_cast<int>(Transition::kFrozenAfterDelay), 1)));
-
-  scheduler_->SetRendererBackgrounded(false);
-  foregrounding_transitions++;
-  ForceUpdatePolicy();
-  ForceUpdatePolicy();
-  EXPECT_THAT(histogram_tester_->GetAllSamples(
-                  "RendererScheduler.BackgroundedRendererTransition"),
-              UnorderedElementsAre(
-                  Bucket(static_cast<int>(Transition::kBackgrounded),
-                         backgrounding_transitions),
-                  Bucket(static_cast<int>(Transition::kForegrounded),
-                         foregrounding_transitions),
-                  Bucket(static_cast<int>(Transition::kFrozenAfterDelay), 1),
-                  Bucket(static_cast<int>(Transition::kResumed), 1)));
 }
 
 TEST_F(MainThreadMetricsHelperTest, TaskCountPerFrameStatus) {

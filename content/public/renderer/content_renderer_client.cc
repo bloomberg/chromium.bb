@@ -94,10 +94,6 @@ bool ContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
   return true;
 }
 
-bool ContentRendererClient::AllowFreezingWhenProcessBackgrounded() {
-  return false;
-}
-
 bool ContentRendererClient::AllowPopup() {
   return false;
 }

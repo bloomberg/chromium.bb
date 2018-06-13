@@ -506,11 +506,5 @@ void MainThreadMetricsHelper::ReportLowThreadLoadForPageAlmostIdleSignal(
   }
 }
 
-// static
-void MainThreadMetricsHelper::RecordBackgroundedTransition(
-    BackgroundedRendererTransition transition) {
-  UMA_HISTOGRAM_ENUMERATION("RendererScheduler.BackgroundedRendererTransition",
-                            transition, BackgroundedRendererTransition::kCount);
-}
 }  // namespace scheduler
 }  // namespace blink

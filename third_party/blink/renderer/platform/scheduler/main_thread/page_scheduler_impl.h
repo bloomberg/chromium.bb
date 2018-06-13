@@ -12,10 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
@@ -29,6 +32,12 @@ class TracedValue;
 
 namespace blink {
 namespace scheduler {
+namespace page_scheduler_impl_unittest {
+class PageSchedulerImplTest;
+class PageSchedulerImplPageTransitionTest;
+class
+    PageSchedulerImplPageTransitionTest_PageLifecycleStateTransitionMetric_Test;
+}  // namespace page_scheduler_impl_unittest
 
 class CPUTimeBudgetPool;
 class FrameSchedulerImpl;
@@ -36,9 +45,7 @@ class MainThreadSchedulerImpl;
 
 class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
  public:
-  PageSchedulerImpl(PageScheduler::Delegate*,
-                    MainThreadSchedulerImpl*,
-                    bool disable_background_timer_throttling);
+  PageSchedulerImpl(PageScheduler::Delegate*, MainThreadSchedulerImpl*);
 
   ~PageSchedulerImpl() override;
 
@@ -109,6 +116,11 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
  private:
   friend class FrameSchedulerImpl;
+  friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
+  friend class page_scheduler_impl_unittest::
+      PageSchedulerImplPageTransitionTest;
+  friend class page_scheduler_impl_unittest::
+      PageSchedulerImplPageTransitionTest_PageLifecycleStateTransitionMetric_Test;
 
   enum class AudioState {
     kSilent,
@@ -117,6 +129,51 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   };
 
   enum class NotificationPolicy { kNotifyFrames, kDoNotNotifyFrames };
+
+  // This enum is used for a histogram and should not be renumbered.
+  // It tracks permissible page state transitions between PageLifecycleStates.
+  // We allow all transitions except for visible to frozen and self transitions.
+  enum class PageLifecycleStateTransition {
+    kActiveToHiddenForegrounded = 0,
+    kActiveToHiddenBackgrounded = 1,
+    kHiddenForegroundedToActive = 2,
+    kHiddenForegroundedToHiddenBackgrounded = 3,
+    kHiddenForegroundedToFrozen = 4,
+    kHiddenBackgroundedToActive = 5,
+    kHiddenBackgroundedToHiddenForegrounded = 6,
+    kHiddenBackgroundedToFrozen = 7,
+    kFrozenToActive = 8,
+    kFrozenToHiddenForegrounded = 9,
+    kFrozenToHiddenBackgrounded = 10,
+    kMaxValue = kFrozenToHiddenBackgrounded,
+  };
+
+  class PageLifecycleStateTracker {
+   public:
+    explicit PageLifecycleStateTracker(PageSchedulerImpl*, PageLifecycleState);
+    ~PageLifecycleStateTracker() = default;
+
+    void SetPageLifecycleState(PageLifecycleState);
+
+   private:
+    static base::Optional<PageLifecycleStateTransition>
+    ComputePageLifecycleStateTransition(PageLifecycleState old_state,
+                                        PageLifecycleState new_state);
+
+    static void RecordPageLifecycleStateTransition(
+        PageLifecycleStateTransition);
+
+    PageSchedulerImpl* page_scheduler_impl_;
+    PageLifecycleState current_state_;
+
+    DISALLOW_COPY_AND_ASSIGN(PageLifecycleStateTracker);
+  };
+
+  // We do not throttle anything while audio is played and shortly after that.
+  static constexpr base::TimeDelta kRecentAudioDelay =
+      base::TimeDelta::FromSeconds(5);
+
+  static const char kHistogramPageLifecycleStateTransition[];
 
   // Support not issuing a notification to frames when we disable freezing as
   // a part of foregrounding the page.
@@ -151,12 +208,23 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   void EnableThrottling();
 
+  // Returns true if the page is backgrounded, false otherwise. A page is
+  // considered backgrounded if it is both not visible and not playing audio.
+  bool IsBackgrounded() const;
+
+  // Returns true if the page should be frozen after delay, which happens if
+  // IsBackgrounded() and freezing is enabled.
+  bool ShouldFreezePage() const;
+
+  // Callback for freezing the page. Freezing must be enabled and the page must
+  // be freezable.
+  void DoFreezePage();
+
   TraceableVariableController tracing_controller_;
   std::set<FrameSchedulerImpl*> frame_schedulers_;
   MainThreadSchedulerImpl* main_thread_scheduler_;
 
   PageVisibilityState page_visibility_;
-  bool disable_background_timer_throttling_;
   AudioState audio_state_;
   bool is_frozen_;
   bool reported_background_throttling_since_navigation_;
@@ -169,6 +237,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   PageScheduler::Delegate* delegate_;               // Not owned.
   CancelableClosureHolder do_throttle_page_callback_;
   CancelableClosureHolder on_audio_silent_closure_;
+  CancelableClosureHolder do_freeze_page_callback_;
+  base::TimeDelta delay_for_background_tab_freezing_;
+  std::unique_ptr<PageLifecycleStateTracker> page_lifecycle_state_tracker_;
   base::WeakPtrFactory<PageSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSchedulerImpl);

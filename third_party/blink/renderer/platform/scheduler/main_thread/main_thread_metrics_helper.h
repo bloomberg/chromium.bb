@@ -25,31 +25,10 @@ enum class MainThreadTaskLoadState;
 class MainThreadTaskQueue;
 class MainThreadSchedulerImpl;
 
-// This enum is used for histogram and should not be renumbered.
-// It tracks the following possible transitions:
-// -> kBackgrounded (-> [FROZEN_* -> kResumed])? -> kForegrounded
-enum class BackgroundedRendererTransition {
-  // Renderer is backgrounded
-  kBackgrounded = 0,
-  // Renderer is frozen after being backgrounded for a while
-  kFrozenAfterDelay = 1,
-  // Renderer is frozen due to critical resources, reserved for future use.
-  kFrozenDueToCriticalResources = 2,
-  // Renderer is resumed after being frozen
-  kResumed = 3,
-  // Renderer is foregrounded
-  kForegrounded = 4,
-
-  kCount = 5
-};
-
 // Helper class to take care of metrics on behalf of MainThreadScheduler.
 // This class should be used only on the main thread.
 class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
  public:
-  static void RecordBackgroundedTransition(
-      BackgroundedRendererTransition transition);
-
   MainThreadMetricsHelper(MainThreadSchedulerImpl* main_thread_scheduler,
                           base::TimeTicks now,
                           bool renderer_backgrounded);
