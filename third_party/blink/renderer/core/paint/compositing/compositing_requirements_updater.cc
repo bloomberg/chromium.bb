@@ -148,14 +148,12 @@ class CompositingRequirementsUpdater::RecursionData {
       : compositing_ancestor_(compositing_ancestor),
         subtree_is_compositing_(false),
         has_unisolated_composited_blending_descendant_(false),
-        testing_overlap_(true),
-        has_composited_scrolling_ancestor_(false) {}
+        testing_overlap_(true) {}
 
   PaintLayer* compositing_ancestor_;
   bool subtree_is_compositing_;
   bool has_unisolated_composited_blending_descendant_;
   bool testing_overlap_;
-  bool has_composited_scrolling_ancestor_;
 };
 
 static bool RequiresCompositingOrSquashing(CompositingReasons reasons) {
@@ -259,14 +257,13 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   CompositingReasons reasons_to_composite = CompositingReason::kNone;
   CompositingReasons direct_reasons = CompositingReason::kNone;
 
-  bool has_composited_scrolling_ancestor =
+  bool has_non_root_composited_scrolling_ancestor =
       layer->AncestorScrollingLayer() &&
       layer->AncestorScrollingLayer()->GetScrollableArea() &&
-      layer->AncestorScrollingLayer()->NeedsCompositedScrolling();
+      layer->AncestorScrollingLayer()->DirectCompositingReasons() &&
+      !layer->AncestorScrollingLayer()->IsRootLayer();
 
-  bool use_clipped_bounding_rect =
-      !has_composited_scrolling_ancestor ||
-      layer->AncestorScrollingLayer()->IsRootLayer();
+  bool use_clipped_bounding_rect = !has_non_root_composited_scrolling_ancestor;
 
   // We have to promote the sticky element to work around the bug
   // (https://crbug.com/698358) of not being able to invalidate the ancestor
@@ -277,9 +274,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   const bool moves_with_respect_to_compositing_ancestor =
       layer->SticksToScroller() &&
       !current_recursion_data.compositing_ancestor_->IsRootLayer();
-  // TODO(chrishtr): use |has_composited_scrolling_ancestor| instead.
-  const bool ignore_lcd_text =
-      current_recursion_data.has_composited_scrolling_ancestor_;
+  const bool ignore_lcd_text = has_non_root_composited_scrolling_ancestor;
 
   CompositingReasons direct_from_paint_layer =
       layer->DirectCompositingReasons();
@@ -310,10 +305,6 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   if (can_be_composited)
     reasons_to_composite |= direct_reasons;
 
-  if ((reasons_to_composite & CompositingReason::kOverflowScrollingTouch) &&
-      !layer->IsRootLayer())
-    current_recursion_data.has_composited_scrolling_ancestor_ = true;
-
   // Next, accumulate reasons related to overlap.
   // If overlap testing is used, this reason will be overridden. If overlap
   // testing is not used, we must assume we overlap if there is anything
@@ -323,8 +314,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
           ? CompositingReason::kAssumedOverlap
           : CompositingReason::kNone;
 
-  // TODO(chrishtr): use |hasCompositedScrollingAncestor| instead.
-  if (current_recursion_data.has_composited_scrolling_ancestor_) {
+  if (has_non_root_composited_scrolling_ancestor) {
     Vector<size_t> unclipped_descendants_to_remove;
     for (size_t i = 0; i < unclipped_descendants.size(); i++) {
       PaintLayer* unclipped_descendant = unclipped_descendants.at(i);

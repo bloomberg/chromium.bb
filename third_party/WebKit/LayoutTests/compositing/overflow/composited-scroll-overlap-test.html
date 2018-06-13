@@ -15,7 +15,7 @@ div::-webkit-scrollbar {
 <script>
 // Test passes if 'target' (green) is on top of 'overlap' (red).
 // The actual test output is a layerization where 'overlap' has a composited layer,
-// and 'target' does, but 'notscrolled'. 'target' has a composited layer because
+// and 'target' does, but not 'notscrolled'. 'target' has a composited layer because
 // it overlaps 'overlap'. 'notscrolled' does not have one because it does not
 // intersect the scroller and is outside of it.
 
