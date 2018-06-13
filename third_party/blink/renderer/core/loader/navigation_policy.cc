@@ -32,37 +32,82 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
+#include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
+#include "third_party/blink/renderer/core/events/gesture_event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
-bool NavigationPolicyFromMouseEvent(unsigned short button,
-                                    bool ctrl,
-                                    bool shift,
-                                    bool alt,
-                                    bool meta,
-                                    NavigationPolicy* policy) {
+NavigationPolicy NavigationPolicyFromMouseEvent(unsigned short button,
+                                                bool ctrl,
+                                                bool shift,
+                                                bool alt,
+                                                bool meta) {
 #if defined(OS_MACOSX)
   const bool new_tab_modifier = (button == 1) || meta;
 #else
   const bool new_tab_modifier = (button == 1) || ctrl;
 #endif
   if (!new_tab_modifier && !shift && !alt)
-    return false;
+    return kNavigationPolicyCurrentTab;
 
-  DCHECK(policy);
   if (new_tab_modifier) {
     if (shift)
-      *policy = kNavigationPolicyNewForegroundTab;
+      return kNavigationPolicyNewForegroundTab;
     else
-      *policy = kNavigationPolicyNewBackgroundTab;
+      return kNavigationPolicyNewBackgroundTab;
   } else {
     if (shift)
-      *policy = kNavigationPolicyNewWindow;
+      return kNavigationPolicyNewWindow;
     else
-      *policy = kNavigationPolicyDownload;
+      return kNavigationPolicyDownload;
   }
-  return true;
+  return kNavigationPolicyCurrentTab;
+}
+
+namespace {
+
+NavigationPolicy NavigationPolicyFromEventInternal(Event* event) {
+  if (!event)
+    return kNavigationPolicyCurrentTab;
+
+  if (event->IsMouseEvent()) {
+    MouseEvent* mouse_event = ToMouseEvent(event);
+    return NavigationPolicyFromMouseEvent(
+        mouse_event->button(), mouse_event->ctrlKey(), mouse_event->shiftKey(),
+        mouse_event->altKey(), mouse_event->metaKey());
+  } else if (event->IsKeyboardEvent()) {
+    // The click is simulated when triggering the keypress event.
+    KeyboardEvent* key_event = ToKeyboardEvent(event);
+    return NavigationPolicyFromMouseEvent(
+        0, key_event->ctrlKey(), key_event->shiftKey(), key_event->altKey(),
+        key_event->metaKey());
+  } else if (event->IsGestureEvent()) {
+    // The click is simulated when triggering the gesture-tap event
+    GestureEvent* gesture_event = ToGestureEvent(event);
+    return NavigationPolicyFromMouseEvent(
+        0, gesture_event->ctrlKey(), gesture_event->shiftKey(),
+        gesture_event->altKey(), gesture_event->metaKey());
+  }
+  return kNavigationPolicyCurrentTab;
+}
+
+}  // namespace
+
+NavigationPolicy NavigationPolicyFromEvent(Event* event) {
+  NavigationPolicy policy = NavigationPolicyFromEventInternal(event);
+  // TODO(dgozman): move navigation policy helpers from CreateWindow here.
+  if (policy == kNavigationPolicyDownload &&
+      EffectiveNavigationPolicy(policy, CurrentInputEvent::Get(),
+                                WebWindowFeatures()) !=
+          kNavigationPolicyDownload) {
+    return kNavigationPolicyCurrentTab;
+  }
+  return policy;
 }
 
 STATIC_ASSERT_ENUM(kWebNavigationPolicyIgnore, kNavigationPolicyIgnore);

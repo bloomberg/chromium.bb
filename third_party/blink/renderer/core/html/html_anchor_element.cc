@@ -382,16 +382,19 @@ void HTMLAnchorElement::HandleClick(Event* event) {
   request.SetRequestContext(WebURLRequest::kRequestContextHyperlink);
   FrameLoadRequest frame_request(&GetDocument(), request,
                                  getAttribute(targetAttr));
-  frame_request.SetTriggeringEvent(event);
   if (HasRel(kRelationNoReferrer)) {
     frame_request.SetShouldSendReferrer(kNeverSendReferrer);
     frame_request.SetShouldSetOpener(kNeverSetOpener);
   }
   if (HasRel(kRelationNoOpener))
     frame_request.SetShouldSetOpener(kNeverSetOpener);
+  frame_request.SetTriggeringEventInfo(
+      event->isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
+                         : WebTriggeringEventInfo::kFromUntrustedEvent);
   // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
   // Why doesn't this go through NavigationScheduler?
-  frame->Loader().StartNavigation(frame_request);
+  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
+                                  NavigationPolicyFromEvent(event));
 }
 
 bool IsEnterKeyKeydownEvent(Event* event) {

@@ -155,8 +155,18 @@ inline FormSubmission::FormSubmission(SubmitMethod method,
       content_type_(content_type),
       form_(form),
       form_data_(std::move(data)),
-      boundary_(boundary),
-      event_(event) {}
+      boundary_(boundary) {
+  if (event) {
+    triggering_event_info_ = event->isTrusted()
+                                 ? WebTriggeringEventInfo::kFromTrustedEvent
+                                 : WebTriggeringEventInfo::kFromUntrustedEvent;
+    if (event->UnderlyingEvent())
+      event = event->UnderlyingEvent();
+  } else {
+    triggering_event_info_ = WebTriggeringEventInfo::kNotFromEvent;
+  }
+  navigation_policy_ = NavigationPolicyFromEvent(event);
+}
 
 inline FormSubmission::FormSubmission(const String& result)
     : method_(kDialogMethod), result_(result) {}
@@ -255,7 +265,6 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
 
 void FormSubmission::Trace(blink::Visitor* visitor) {
   visitor->Trace(form_);
-  visitor->Trace(event_);
 }
 
 KURL FormSubmission::RequestURL() const {
@@ -289,8 +298,9 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
 
   frame_request.GetResourceRequest().SetURL(RequestURL());
 
-  frame_request.SetTriggeringEvent(event_);
   frame_request.SetForm(form_);
+
+  frame_request.SetTriggeringEventInfo(triggering_event_info_);
 
   return frame_request;
 }
