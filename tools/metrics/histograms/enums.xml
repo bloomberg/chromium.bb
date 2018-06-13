@@ -21525,6 +21525,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Thread termination GC"/>
   <int value="7" label="Testing GC"/>
   <int value="8" label="Incremental idle GC"/>
+  <int value="9" label="Incremental v8 follow-up GC"/>
 </enum>
 
 <enum name="GDataAuthResult">

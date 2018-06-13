@@ -151,6 +151,7 @@ class PLATFORM_EXPORT ThreadState {
     kPreciseGCScheduled,
     kFullGCScheduled,
     kPageNavigationGCScheduled,
+    kIncrementalGCScheduled,
   };
 
   // The phase that the GC is in. The GCPhase will not return kNone for mutators
@@ -271,6 +272,7 @@ class PLATFORM_EXPORT ThreadState {
   void ScheduleIdleGC();
   void ScheduleIdleLazySweep();
   void SchedulePreciseGC();
+  void ScheduleIncrementalGC(BlinkGC::GCReason);
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
   void SchedulePageNavigationGCIfNeeded(float estimated_removal_ratio);
   void SchedulePageNavigationGC();
@@ -716,6 +718,7 @@ class PLATFORM_EXPORT ThreadState {
 
   GCState gc_state_;
   GCPhase gc_phase_;
+  BlinkGC::GCReason reason_for_scheduled_gc_;
 
   using PreFinalizerCallback = bool (*)(void*);
   using PreFinalizer = std::pair<void*, PreFinalizerCallback>;
