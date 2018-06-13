@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
@@ -81,6 +82,9 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   preflight_request->fetch_credentials_mode =
       mojom::FetchCredentialsMode::kOmit;
+  preflight_request->load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+  preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+  preflight_request->load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
   preflight_request->headers.SetHeader(
       cors::header_names::kAccessControlRequestMethod, request.method);
