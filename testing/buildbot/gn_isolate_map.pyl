@@ -23,6 +23,8 @@
 # The "type" field is used to determine what the command line for the test
 # needs to be; valid values are:
 #
+#  "wrapper"
+#  : the test is launched by running a wrapper script in the bin/ subdirectory.
 #  "windowed_test_launcher"
 #  : the test is a gtest-based test that uses the "brave-new-test-launcher"
 #    from //base/test:test_support and needs to run under Xvfb if run on
@@ -1278,7 +1280,7 @@
   },
   "url_unittests": {
     "label": "//url:url_unittests",
-    "type": "console_test_launcher",
+    "type": "wrapper",
   },
   "v8:gn_all": {
     "label": "//v8:gn_all",

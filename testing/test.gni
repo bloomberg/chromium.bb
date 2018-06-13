@@ -5,11 +5,11 @@
 # ==============================================================================
 # TEST SETUP
 # ==============================================================================
+import("//build/config/sanitizers/sanitizers.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
-  import("//build/config/sanitizers/sanitizers.gni")
   import("//build/config/android/extract_unwind_tables.gni")
 }
 
@@ -367,14 +367,75 @@ template("test") {
       deps += [ ":$_gen_runner_target" ]
     }
   } else {
+    _target_name = target_name
+    _gen_runner_target = "${target_name}__runner"
+
+    action(_gen_runner_target) {
+      script = "//testing/gen_desktop_runner_script.py"
+      _wrapper_dir = "${root_build_dir}/bin"
+      if (target_os == "win") {
+        _wrapper = "${_wrapper_dir}/run_" + _target_name + ".bat"
+        _target_exe = _target_name + ".exe"
+        _vpython = "vpython.exe"
+      } else {
+        _wrapper = "${_wrapper_dir}/run_" + _target_name
+        _target_exe = _target_name
+        _vpython = "vpython"
+      }
+      outputs = [
+        _wrapper,
+      ]
+      args = [
+        rebase_path(_wrapper, root_build_dir),
+        _vpython,
+      ]
+      data = [
+        _wrapper,
+        "//.vpython",
+        "//testing/test_env.py",
+      ]
+
+      if (target_os == "linux") {
+        # TODO(crbug.com/816629) - handle tests that must not run under Xvfb.
+        args += [
+          rebase_path("//testing/xvfb.py", root_build_dir),
+          "./${_target_exe}",
+        ]
+        data += [ "//testing/xvfb.py" ]
+      } else if (target_os == "windows") {
+        args += [
+          rebase_path("//testing/test_env.py", root_build_dir),
+          ".\${_target_exe}",
+        ]
+      } else {
+        args += [
+          rebase_path("//testing/test_env.py", root_build_dir),
+          "./${_target_exe}",
+        ]
+      }
+      args += [
+        "--brave-new-test-launcher",
+        "--test-launcher-bot-mode",
+        "--asan=${is_asan}",
+        "--msan=${is_msan}",
+        "--tsan=${is_tsan}",
+        "--cfi-diag=${use_cfi_diag}",
+      ]
+      if (defined(invoker.test_args)) {
+        args += invoker.test_args
+      }
+    }
+
     executable(target_name) {
       forward_variables_from(invoker, "*")
-      if (!defined(deps)) {
+      if (!defined(invoker.deps)) {
         deps = []
       }
 
       testonly = true
       deps += [
+        ":$_gen_runner_target",
+
         # Give tests the default manifest on Windows (a no-op elsewhere).
         "//build/win:default_exe_manifest",
       ]
