@@ -17,7 +17,65 @@
 
 namespace zucchini {
 
-class Disassembler;
+// Disassembler needs to be declared before ReferenceGroup because the latter
+// contains member pointers based on the former, and we use a compiler flag,
+// -fcomplete-member-pointers, which enforces that member pointer base types are
+// complete. This flag helps prevent us from running into problems in the
+// Microsoft C++ ABI (see https://crbug.com/847724).
+
+class ReferenceGroup;
+
+// A Disassembler is used to encapsulate architecture specific operations, to:
+// - Describe types of references found in the architecture using traits.
+// - Extract references contained in an image file.
+// - Correct target for some references.
+class Disassembler {
+ public:
+  // Attempts to parse |image| and create an architecture-specifc Disassembler,
+  // as determined by DIS, which is inherited from Disassembler. Returns an
+  // instance of DIS if successful, and null otherwise.
+  template <class DIS>
+  static std::unique_ptr<DIS> Make(ConstBufferView image) {
+    auto disasm = std::make_unique<DIS>();
+    if (!disasm->Parse(image))
+      return nullptr;
+    return disasm;
+  }
+
+  virtual ~Disassembler();
+
+  // Returns the type of executable handled by the Disassembler.
+  virtual ExecutableType GetExeType() const = 0;
+
+  // Returns a more detailed description of the executable type.
+  virtual std::string GetExeTypeString() const = 0;
+
+  // Creates and returns a vector that contains all groups of references.
+  // Groups must be aggregated by pool.
+  virtual std::vector<ReferenceGroup> MakeReferenceGroups() const = 0;
+
+  ConstBufferView image() const { return image_; }
+  size_t size() const { return image_.size(); }
+
+  int num_equivalence_iterations() const { return num_equivalence_iterations_; }
+
+ protected:
+  explicit Disassembler(int num_equivalence_iterations);
+
+  // Parses |image| and initializes internal states. Returns true on success.
+  // This must be called once and before any other operation.
+  virtual bool Parse(ConstBufferView image) = 0;
+
+  // Raw image data. After Parse(), a Disassembler should shrink this to contain
+  // only the portion containing the executable file it recognizes.
+  ConstBufferView image_;
+
+  // The number of iterations to run for equivalence map generation. This should
+  // roughly be the max length of reference indirection chains.
+  int num_equivalence_iterations_;
+
+  DISALLOW_COPY_AND_ASSIGN(Disassembler);
+};
 
 // A ReferenceGroup is associated with a specific |type| and has convenience
 // methods to obtain readers and writers for that type. A ReferenceGroup does
@@ -80,58 +138,6 @@ class ReferenceGroup {
   ReferenceTypeTraits traits_;
   ReaderFactory reader_factory_ = nullptr;
   WriterFactory writer_factory_ = nullptr;
-};
-
-// A Disassembler is used to encapsulate architecture specific operations, to:
-// - Describe types of references found in the architecture using traits.
-// - Extract references contained in an image file.
-// - Correct target for some references.
-class Disassembler {
- public:
-  // Attempts to parse |image| and create an architecture-specifc Disassembler,
-  // as determined by DIS, which is inherited from Disassembler. Returns an
-  // instance of DIS if successful, and null otherwise.
-  template <class DIS>
-  static std::unique_ptr<DIS> Make(ConstBufferView image) {
-    auto disasm = std::make_unique<DIS>();
-    if (!disasm->Parse(image))
-      return nullptr;
-    return disasm;
-  }
-
-  virtual ~Disassembler();
-
-  // Returns the type of executable handled by the Disassembler.
-  virtual ExecutableType GetExeType() const = 0;
-
-  // Returns a more detailed description of the executable type.
-  virtual std::string GetExeTypeString() const = 0;
-
-  // Creates and returns a vector that contains all groups of references.
-  // Groups must be aggregated by pool.
-  virtual std::vector<ReferenceGroup> MakeReferenceGroups() const = 0;
-
-  ConstBufferView image() const { return image_; }
-  size_t size() const { return image_.size(); }
-
-  int num_equivalence_iterations() const { return num_equivalence_iterations_; }
-
- protected:
-  explicit Disassembler(int num_equivalence_iterations);
-
-  // Parses |image| and initializes internal states. Returns true on success.
-  // This must be called once and before any other operation.
-  virtual bool Parse(ConstBufferView image) = 0;
-
-  // Raw image data. After Parse(), a Disassembler should shrink this to contain
-  // only the portion containing the executable file it recognizes.
-  ConstBufferView image_;
-
-  // The number of iterations to run for equivalence map generation. This should
-  // roughly be the max length of reference indirection chains.
-  int num_equivalence_iterations_;
-
-  DISALLOW_COPY_AND_ASSIGN(Disassembler);
 };
 
 }  // namespace zucchini
