@@ -21,12 +21,15 @@
         position: absolute;
         right: 0;
         top: 0;
-        transition: opacity 150ms;
+        transition: opacity var(--cr-toolbar-overlay-animation-duration),
+                    visibility var(--cr-toolbar-overlay-animation-duration);
+        visibility: hidden;
       }
 
       :host([show]) {
         opacity: 1;
         pointer-events: initial;
+        visibility: initial;
       }
 
       #overlay-content {

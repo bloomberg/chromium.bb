@@ -8,7 +8,9 @@
  * <cr-toolbar>. See <history-toolbar> for an example usage.
  *
  * Note that the embedder is expected to set position: relative to make the
- * absolute positioning of this element work.
+ * absolute positioning of this element work, and the cr-toolbar should have the
+ * has-overlay attribute set when its overlay is shown to prevent access through
+ * tab-traversal.
  */
 
 Polymer({

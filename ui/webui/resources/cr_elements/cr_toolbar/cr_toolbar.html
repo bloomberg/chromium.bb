@@ -16,6 +16,7 @@
         color: #fff;
         display: flex;
         height: var(--cr-toolbar-height);
+        transition: visibility var(--cr-toolbar-overlay-animation-duration);
       }
 
       h1 {
@@ -59,6 +60,10 @@
 
       :host([narrow]) #centeredContent {
         justify-content: flex-end;
+      }
+
+      :host([has-overlay]) {
+        visibility: hidden;
       }
 
       :host([narrow][showing-search_]) #leftContent {
