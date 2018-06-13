@@ -92,6 +92,7 @@
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1756600373018374892">輕觸這個按鈕即可快速存取分頁。</translation>
 <translation id="1779089405699405702">影像解碼器</translation>
+<translation id="1782483593938241562">結束日期：<ph name="DATE" /></translation>
 <translation id="1792959175193046959">你隨時可以變更預設的下載位置</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">重新整理頁面</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="271033894570825754">新</translation>
+<translation id="2728754400939377704">依網站排序</translation>
 <translation id="2736391366332017384">輕觸主螢幕按鈕即可在目前的分頁中前往新分頁頁面</translation>
 <translation id="2744248271121720757">只要輕觸字詞就能立即展開搜尋或查看相關的動作</translation>
 <translation id="2762000892062317888">剛剛</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">您的管理員已停用這項功能</translation>
 <translation id="4116038641877404294">下載網頁以便離線存取</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 個書籤}other{%1$d 個書籤}}</translation>
+<translation id="4159800535322890630">禁止網站存取你的感應器</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
+<translation id="4179980317383591987">已使用 <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">語言</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
 <translation id="4198423547019359126">沒有可用的下載位置</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">卡片</translation>
 <translation id="5595485650161345191">編輯地址</translation>
 <translation id="5596627076506792578">更多選項</translation>
+<translation id="5620299005957670886">允許網站存取你的感應器 (建議)</translation>
 <translation id="5620928963363755975">透過「更多選項」按鈕前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="5626134646977739690">名稱：</translation>
 <translation id="5639724618331995626">允許所有網站</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google 翻譯</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5919204609460789179">更新 <ph name="PRODUCT_NAME" /> 即可開始同步處理</translation>
+<translation id="5937580074298050696">已儲存 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5942872142862698679">現已使用 Google 搜尋</translation>
 <translation id="5956665950594638604">在新分頁中開啟 Chrome 說明中心</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6627583120233659107">編輯資料夾</translation>
 <translation id="6643016212128521049">清除</translation>
+<translation id="6643649862576733715">依儲存資料量排序</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 個聯絡人}other{<ph name="CONTACT_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 個聯絡人}}</translation>
 <translation id="6656545060687952787">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />更新權限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密碼</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">網址</translation>
 <translation id="7403691278183511381">Chrome 初次使用體驗</translation>
 <translation id="741204030948306876">是，我要啟用</translation>
+<translation id="7413229368719586778">開始日期：<ph name="DATE" /></translation>
 <translation id="7423098979219808738">先詢問我</translation>
 <translation id="7423538860840206698">禁止讀取剪貼簿</translation>
 <translation id="7437998757836447326">登出 Chrome</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">編輯起始網頁</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 和其他網站</translation>
 <translation id="8339163506404995330">系統將不會翻譯<ph name="LANGUAGE" />網頁</translation>
+<translation id="8349013245300336738">依使用資料量排序</translation>
 <translation id="8363501664269050863">導覽面板。向下滑動即可關閉。</translation>
 <translation id="8372893542064058268">允許特定網站執行背景同步處理作業。</translation>
 <translation id="8374821112118309944">請更新至新版 TalkBack。</translation>

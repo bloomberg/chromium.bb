@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">جهت‌‌</translation>
 <translation id="3153444934357957346">در ورود چندگانه به سیستم، می‌توانید حداکثر از <ph name="MULTI_PROFILE_USER_LIMIT" /> حساب استفاده کنید.</translation>
 <translation id="3236488194889173876">هیچ شبکه تلفن همراهی دردسترس نیست</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">مهمان</translation>
 <translation id="332587331255250389">لطفاً باتری را تعویض کنید</translation>
 <translation id="3351879221545518001">درحال ارسال محتوای صفحه هستید.</translation>
@@ -127,6 +128,7 @@
 <translation id="3400357268283240774">تنظیمات بیشتر</translation>
 <translation id="3413817803639110246">هنوز چیزی برای دیدن وجود ندارد</translation>
 <translation id="3445925074670675829">‏دستگاه USB-C</translation>
+<translation id="3454224730401036106">اتصال شما به شبکه‌ ایمن‌تری منتقل شده است</translation>
 <translation id="3465566417615315331">روی عکستان کلیک کنید</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">برجسته کردن نشانگر موشواره</translation>
@@ -296,6 +298,7 @@
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
 <translation id="735745346212279324">‏VPN قطع است</translation>
 <translation id="7377169924702866686">‏Caps Lock روشن است.</translation>
+<translation id="7398254312354928459">اتصال شبکه تغییریافته</translation>
 <translation id="742594950370306541">دوربین در حال استفاده است.</translation>
 <translation id="743058460480092004">دوربین و میکروفن در حال استفاده هستند.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -328,6 +331,7 @@
 <translation id="7994370417837006925">ورود چندگانه به سیستم</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
+<translation id="8061464966246066292">کنتراست بالا</translation>
 <translation id="8098591350844501178">توقف ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">متصل به <ph name="NAME" /></translation>
 <translation id="813913629614996137">درحال مقداردهی اولیه…</translation>

@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6948701128805548767">Para ver os métodos de recolha e os requisitos, selecione um endereço</translation>
 <translation id="6949872517221025916">Repor palavra-passe</translation>
+<translation id="6950684638814147129">Erro ao analisar o valor JSON: <ph name="ERROR" />.</translation>
 <translation id="6957887021205513506">O certificado do servidor parece ser uma falsificação.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">Os teus pais ainda não o aprovaram</translation>
 <translation id="8625384913736129811">Guardar este cartão neste dispositivo</translation>
 <translation id="8639963783467694461">Definições de Preenchimento automático</translation>
+<translation id="8663226718884576429">Resumo da encomenda, <ph name="TOTAL_LABEL" />, mais detalhes</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, resposta, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">A sua ligação a <ph name="DOMAIN" /> não está encriptada.</translation>
 <translation id="8718314106902482036">Pagamento não concluído</translation>

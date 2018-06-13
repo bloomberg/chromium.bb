@@ -868,6 +868,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3512226956150568738">Hvis klientens enhedsmodel allerede understøttede ARC, inden det blev nødvendigt at migrere til ext4 for at køre ARC, og hvis politikken ArcEnabled er angivet som sand, opfører denne valgmulighed sig som AskUser (værdi 3). I alle andre tilfælde (hvis enhedsmodellen ikke tidligere understøttede ARC, eller hvis politikken ArcEnabled er angivet som falsk), svarer denne værdi til DisallowArc (værdi 0).</translation>
 <translation id="3524204464536655762">Tillad ikke, at websites anmoder om adgang til USB-enheder via WebUSB API</translation>
 <translation id="3528000905991875314">Aktiver alternative fejlsider</translation>
+<translation id="3545457887306538845">Giver dig mulighed for at styre, hvor Udviklerværktøjer kan bruges.
+
+      Hvis denne politik er indstillet til "DeveloperToolsDisallowedForForceInstalledExtensions" (værdi 0, som er standardværdien), kan der generelt opnås adgang til Udviklerværktøjer og JavaScript-konsollen, men der kan ikke opnås adgang til dem i forbindelse med udvidelser, der er installeret af en virksomhedspolitik.
+      Hvis denne politik er indstillet til "DeveloperToolsAllowed" (værdi 1), kan Udviklerværktøjer og JavaScript-konsollen åbnes og bruges i alle sammenhænge – også i forbindelse med udvidelser, der er installeret af en virksomhedspolitik.
+      Hvis denne politik er indstillet til "DeveloperToolsDisallowed" (værdi 2), kan der ikke opnås adgang til Udviklerværktøjer, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje samt menuer eller genvejsmenuer, der åbner Udviklerværktøjer eller JavaScript-konsollen, deaktiveres.</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="3556806727696701427">Aktiverer funktionen Beskyttet browsing i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
 
@@ -1903,6 +1908,37 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6810445994095397827">Bloker JavaScript på disse websites</translation>
 <translation id="681446116407619279">Understøttede godkendelsesskemaer</translation>
 <translation id="6835883744948188639">Vis brugeren en fast meddelelse, som indikerer, at en genstart anbefales</translation>
+<translation id="6838056959556423778">Tilsidesætter regler for valg af standardprinter i <ph name="PRODUCT_NAME" />.
+
+      Denne politik fastlægger reglerne for valg af standardprinter i <ph name="PRODUCT_NAME" />, som vælges, første gang udskrivningsfunktionen anvendes fra en profil.
+
+      Når denne politik er indstillet, forsøger <ph name="PRODUCT_NAME" /> at finde en printer, der har alle de angivne attributter, og vælge den som standardprinter. Den først fundne printer, der stemmer overens med politikken, vælges. Hvis der er flere match, kan enhver printer vælges ud fra den rækkefølge, som printerne blev fundet i.
+
+      Hvis denne politik ikke indstilles, eller hvis der ikke findes nogen printer, som stemmer overens med politikken, inden timeouten udløber, vælges en indbygget PDF-printer som standard. Hvis der ikke er nogen tilgængelig PDF-printer, vælges der ikke nogen printer.
+
+      Værdien parses som et JSON-objekt i overensstemmelse med følgende skema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Om søgningen efter en printer, der opfylder attributten, skal begrænses til en specifik gruppe printere.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regulært udtryk, som matcher printer-id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulært udtryk, som matcher printerens viste navn.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printere, der er forbundet til <ph name="CLOUD_PRINT_NAME" />, klassificeres som <ph name="PRINTER_TYPE_CLOUD" />, mens de øvrige printere klassificeres som <ph name="PRINTER_TYPE_LOCAL" />.
+      Hvis et felt udelades, matcher alle værdier. Hvis du f.eks. ikke specificerer forbindelsen, vil et tryk på Vis udskrift starte en søgning efter alle typer printere – både lokalt og i skyen.
+      Almindelige søgemønstre skal overholde JavaScript RegExp-syntaksen, og der skelnes mellem store og små bogstaver.</translation>
 <translation id="684856667300805181">Denne politik er blevet fjernet i <ph name="PRODUCT_NAME" /> 68 og erstattet af <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Denne politik er forældet og fjernet i M66, da den kun blev brugt til interne test, og den er til fare for sikkerheden.
 
@@ -2160,6 +2196,17 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7511361072385293666">Hvis denne politik er angivet som Sand eller ikke er indstillet, er brug i QUIC-protokollen i <ph name="PRODUCT_NAME" /> tilladt.
       Hvis denne politik er angivet som Falsk, er brug i QUIC-protokollen ikke tilladt.</translation>
 <translation id="7519251620064708155">Tillad nøglegenerering på disse websites</translation>
+<translation id="7529083451528428240">Giver dig mulighed for at låse brugerens session baseret på klienttiden eller dagens brugerkvote.
+
+          |time_window_limit| angiver et dagligt vindue, hvor brugersessionen skal være låst. Vi understøtter kun én regel for hver dag i ugen, og derfor kan matricen med |entries| variere fra 0-7 i størrelse. |starts_at| og |ends_at| er starten og slutningen på vinduesgrænsen. Når |ends_at| er mindre end |starts_at|, betyder det, at |time_limit_window| slutter den efterfølgende dag. |last_updated_millis| er UTC-tidsstemplet for det seneste tidspunkt, hvor denne post blev opdateret. Det sendes som en streng, fordi tidsstemplet ikke passer ind som et heltal.
+
+          |time_usage_limit| angiver en daglig skærmkvote, hvor brugerens session låses, når brugeren når denne kvote. Der er en egenskab for hver dag i ugen, og den skal kun angives, hvis der er en aktiv kvote for den pågældende dag. |usage_quota_mins| er den mængde tid, den administrerede enhed må bruges i løbet af en dag, og |reset_at| er det tidspunkt, hvor brugerkvoten fornys. Standardværdien for |reset_at| er midnat ({"timer": 0, "minutter": 0}). |last_updated_millis| er UTC-tidsstemplet for det seneste tidspunkt, hvor denne post blev opdateret. Det sendes som en streng, fordi tidsstemplet ikke passer ind som et heltal.
+
+          |overrides| kan gøre én eller flere af de forrige regler midlertidigt ugyldige.
+          * Hvis hverken time_window_limit eller time_usage_limit er aktiv, kan |LOCK| bruges til at låse enheden.
+          * |LOCK| låser en brugersession midlertidigt indtil næste time_window_limit eller time_usage_limit starter.
+          * |UNLOCK| låser op for en brugers session, som er blevet låst af time_window_limit eller time_usage_limit.
+          |created_time_millis| er UTC-tidsstemplet for oprettelse af tilsidesættelsen. Det sendes som en streng, fordi tidsstemplet ikke passer ind som et heltal. Det bruges til at afgøre, om denne tilsidesættelse stadig skal anvendes. Hvis den aktuelt aktive tidsbegrænsningsfunktion (begrænsning på tidsforbrug eller tidsvindue) startede, efter at tilsidesættelsen blev oprettet, skal den ikke udføre nogen handling. Hvis tilsidesættelsen blev oprettet før den seneste ændring af den aktive time_window_limit eller det aktive time_usage_window, skal den ikke anvendes.</translation>
 <translation id="7529100000224450960">Giver dig mulighed for at oprette en liste over webadressemønstre med websites, der må åbne pop op-vinduer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPopupsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="7529144158022474049">Automatisk opdatering af spredningsfaktor</translation>
 <translation id="7534199150025803530">Denne politik påvirker ikke Google Drev-appen til Android. Hvis du vil forhindre, at Google Drev bruges via mobildataforbindelser, skal du ikke tillade installation af Google Drev-appen til Android.</translation>

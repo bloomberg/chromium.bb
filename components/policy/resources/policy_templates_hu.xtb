@@ -411,7 +411,7 @@
 <translation id="2231817271680715693">Böngészési előzmények importálása az alapértelmezett böngészőből az első indításkor</translation>
 <translation id="2236488539271255289">Egy webhely sem állíthat be helyi adatokat</translation>
 <translation id="2240879329269430151">Lehetővé teszi annak beállítását, hogy a weboldalak mutathatnak-e előugró ablakokat. Az előugró ablakok megjelenítését engedélyezheti vagy tilthatja minden webhely számára. Ha a házirend konfigurálatlanul marad, a rendszer a "BlockPopups" értéket használja, amelyet a felhasználó módosíthat.</translation>
-<translation id="2269319728625047531">A szinkronizáláshoz való hozzájárulás a bejelentkezési folyamat közbeni megjelenítésének engedélyezése</translation>
+<translation id="2269319728625047531">A szinkronizáláshoz való hozzájárulás megjelenítésének engedélyezése a bejelentkezési folyamat közben</translation>
 <translation id="2274864612594831715">A házirend a virtuális billentyűzet a ChromeOS beviteli eszközeként való engedélyezését állítja be. A házirend felhasználók által nem felülírható.
 
       Ha a házirend értéke „true”, akkor a virtuális képernyő-billentyűzet mindig engedélyezve lesz.

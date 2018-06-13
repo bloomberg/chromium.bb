@@ -810,7 +810,7 @@
 <translation id="6825578344716086703">Você tentou acessar <ph name="DOMAIN" />, mas o servidor apresentou um certificado assinado com um algoritmo de assinatura fraco (como SHA-1). Isso significa que as credenciais de segurança apresentadas pelo servidor podem ter sido forjadas, e talvez o servidor não seja o esperado (talvez você esteja se comunicando com um invasor).</translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6839929833149231406">Área</translation>
-<translation id="6852204201400771460">Atualizar app?</translation>
+<translation id="6852204201400771460">Recarregar app?</translation>
 <translation id="6874604403660855544">&amp;Refazer adicionar</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">O nível da política não é suportado.</translation>
@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6948701128805548767">Para ver métodos e requisitos de retirada, selecione um endereço</translation>
 <translation id="6949872517221025916">Redefinir senha</translation>
+<translation id="6950684638814147129">Erro ao analisar o valor JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">O certificado do servidor parece ser falsificado.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8620436878122366504">Seus responsáveis ainda não o aprovaram</translation>
 <translation id="8625384913736129811">Salvar este cartão neste dispositivo</translation>
 <translation id="8639963783467694461">Configurações de preenchimento automático</translation>
+<translation id="8663226718884576429">Resumo do pedido, <ph name="TOTAL_LABEL" />, Mais detalhes</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, resposta, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Sua conexão com <ph name="DOMAIN" /> não está criptografada.</translation>
 <translation id="8718314106902482036">Pagamento não concluído</translation>

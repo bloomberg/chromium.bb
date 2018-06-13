@@ -617,7 +617,7 @@
 <translation id="2753637905605932878">Restringir o alcance das portas UDP locais usadas por WebRTC</translation>
 <translation id="2755385841634849932">Esta política controla a disponibilidade de backup e restauração do Android.
 
-      Quando esta política não está configurada ou definida como <ph name="BR_DISABLED" />, o backup e a restauração do Android estão desativados e não podem ser ativados pelo usuário.
+      Quando esta política não está configurada ou está definida como <ph name="BR_DISABLED" />, o backup e a restauração do Android estão desativados e não podem ser ativados pelo usuário.
 
       Quando esta política está definida como <ph name="BR_UNDER_USER_CONTROL" />, é solicitado que o usuário escolha se quer usar o backup e a restauração do Android. Se o usuário ativar o backup e a restauração, os dados de apps Android serão carregados para os servidores de backup do Android e restaurados a partir deles durante a reinstalação de apps compatíveis.</translation>
 <translation id="2757054304033424106">Tipos de extensões/aplicativos que podem ser instalados</translation>
@@ -860,6 +860,11 @@
 <translation id="3512226956150568738">Se o modelo do dispositivo do cliente já era compatível com ARC antes de a migração para ext4 ser necessária para executar ARC e se a política ArcEnabled estiver definida como verdadeiro, esta opção vai se comportar como AskUser (valor 3). Em todos os outros casos (se o modelo do dispositivo não era compatível com ARC anteriormente ou se a política ArcEnabled estiver definida como falso), esse valor será equivalente a DisallowArc (valor 0).</translation>
 <translation id="3524204464536655762">Não permite que nenhum site solicite acesso a dispositivos USB por meio da API WebUSB</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
+<translation id="3545457887306538845">Permite controlar onde as Ferramentas para Desenvolvedores podem ser usadas.
+
+      Se esta política for definida como "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que é o padrão), as Ferramentas para Desenvolvedores e o Console JavaScript poderão ser acessados de um modo geral, mas não poderão ser acessados por extensões instaladas por uma política corporativa.
+      Se esta política for definida como "DeveloperToolsAllowed" (valor 1), as Ferramentas para Desenvolvedores e o Console JavaScript poderão ser acessados e usados em todos os contextos, incluindo extensões instaladas por uma política corporativa.
+      Se esta política for definida como "DeveloperToolsDisallowed" (valor 2), as Ferramentas para Desenvolvedores não poderão ser acessadas, e os elementos do site não poderão mais ser inspecionados. Todos os atalhos do teclado e quaisquer entradas de menus e de menus de contexto para abrir as Ferramentas para Desenvolvedores ou o Console JavaScript serão desativados.</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3556806727696701427">Ativa o recurso Navegação segura do <ph name="PRODUCT_NAME" /> e impede que os usuários alterem esta definição.
 
@@ -1047,7 +1052,7 @@
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
 <translation id="4059515172917655545">Esta política controla a disponibilidade dos serviços de localização do Google.
 
-      Quando esta política não está configurada ou definida como <ph name="GLS_DISABLED" />, os serviços de localização do Google são desativados e não podem ser ativados pelo usuário.
+      Quando esta política não está configurada ou está definida como <ph name="GLS_DISABLED" />, os serviços de localização do Google são desativados e não podem ser ativados pelo usuário.
 
       Quando esta política é definida como <ph name="GLS_UNDER_USER_CONTROL" />, é solicitado que o usuário escolha se quer usar os serviços de localização do Google. Isso permitirá que apps Android usem os serviços para consultar a localização do dispositivo, além de permitir o envio de dados de local anônimos para o Google.
 
@@ -1885,6 +1890,37 @@
 <translation id="6810445994095397827">Bloquear o JavaScript nestes sites</translation>
 <translation id="681446116407619279">Esquemas de autenticação compatíveis</translation>
 <translation id="6835883744948188639">Mostrar um prompt recorrente ao usuário indicando que a reinicialização é necessária</translation>
+<translation id="6838056959556423778">Modifica as regras de seleção de impressora padrão do <ph name="PRODUCT_NAME" />.
+
+      Esta política determina as regras para seleção da impressora padrão no <ph name="PRODUCT_NAME" />, o que ocorre na primeira vez em que a função de impressão é usada com um perfil.
+
+      Quando esta política é configurada, o <ph name="PRODUCT_NAME" /> tenta encontrar uma impressora que corresponda a todos os atributos especificados e a seleciona como impressora padrão. A primeira impressora encontrada que corresponda à política é selecionada. Caso haja mais de uma correspondência, qualquer impressora correspondente pode ser selecionada, dependendo da ordem em que as impressoras são descobertas.
+
+      Se esta política não for configurada ou se a impressora correspondente não for encontrada dentro do tempo limite, a impressora padrão passará a ser a impressora de PDF incorporada ou "nenhuma impressora selecionada", quando a impressora de PDF não estiver disponível.
+
+      O valor é analisado como um objeto JSON, em conformidade com o seguinte esquema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Limitar ou não a pesquisa da impressora correspondente a um conjunto específico de impressoras.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Expressão regular que corresponda ao código da impressora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expressão regular que corresponda ao nome de exibição da impressora.",
+            "type": "string"
+          }
+        }
+      }
+
+      As impressoras conectadas ao <ph name="CLOUD_PRINT_NAME" /> são consideradas <ph name="PRINTER_TYPE_CLOUD" />, e as demais são classificadas como <ph name="PRINTER_TYPE_LOCAL" />.
+      A omissão de um campo significa que todos os valores correspondem. Por exemplo, a não especificação da conectividade fará com que a visualização da impressão inicie a descoberta de todos os tipos de impressoras, locais e na nuvem.
+      Os padrões de expressão regulares devem seguir a sintaxe do JavaScript RegExp, e as correspondências diferenciam maiúsculas de minúsculas.</translation>
 <translation id="684856667300805181">Esta política foi removida no <ph name="PRODUCT_NAME" /> 68 e substituída por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">O uso desta política está suspenso. A política foi removida na versão M66 porque era usada apenas para testes internos e representava risco de segurança.
 
@@ -2061,7 +2097,7 @@
 
       Desativa as Ferramentas para Desenvolvedores e o Console JavaScript.
 
-      Se você ativar essa configuração, as Ferramentas para Desenvolvedores não poderão ser acessadas, e os elementos de sites não poderão mais ser inspecionados. Nenhum atalho de teclado e nenhuma entrada de menu ou menu de contexto para abrir as Ferramentas para Desenvolvedores ou o Console JavaScript será desativado.
+      Se você ativar essa configuração, as Ferramentas para Desenvolvedores não poderão ser acessadas, e os elementos de sites não poderão mais ser inspecionados. Nenhum atalho de teclado e nenhuma entrada de menu ou menu de contexto para abrir as Ferramentas para Desenvolvedores ou o Console JavaScript estará ativo.
 
       Definir esta opção como desativada ou deixá-la sem definição permite que o usuário use as Ferramentas para Desenvolvedores e o Console JavaScript.
 
@@ -2146,6 +2182,17 @@
 <translation id="7511361072385293666">Se esta política é definida como "true" ou não é configurada, o uso do protocolo QUIC no <ph name="PRODUCT_NAME" /> é permitido.
       Se esta política é definida como "false", o uso do protocolo QUIC não é permitido.</translation>
 <translation id="7519251620064708155">Permitir a geração de chaves nesses sites</translation>
+<translation id="7529083451528428240">Permite bloquear a sessão do usuário com base no tempo do cliente ou na cota de uso diária.
+
+          O |time_window_limit| especifica uma janela diária em que a sessão do usuário precisa ser bloqueada. É permitida apenas uma regra para cada dia da semana, portanto, o tamanho da matriz |entries| pode variar de 0 a 7. |starts_at| e |ends_at| são o início e o fim do limite da janela. Quando |ends_at| é menor do que |starts_at|, isso significa que |time_limit_window| termina no dia seguinte. |last_updated_millis| é o carimbo de data/hora UTC da última atualização desta entrada e é enviado como uma string, porque o carimbo de data/hora não se enquadra como um número inteiro.
+
+          O |time_usage_limit| especifica uma cota de tela diária, de modo que, quando o usuário atinge esse limite, a sessão do usuário é bloqueada. Há uma propriedade para cada dia da semana, que precisará ser definida apenas se existir uma cota ativa para esse dia. |usage_quota_mins| é a quantidade de tempo que o dispositivo gerenciado pode ser usado em um dia, e |reset_at| é o momento em que a cota de uso é renovada. O valor padrão para |reset_at| é meia-noite ({'hour': 0, 'minute': 0}). |last_updated_millis| é o carimbo de data/hora UTC para o último horário em que essa entrada foi atualizada e é enviado como uma string, porque o carimbo de data/hora não se enquadra como um número inteiro.
+
+          |overrides| é fornecido para invalidar temporariamente uma ou mais das regras anteriores.
+          * Se time_window_limit e time_usage_limit estiverem inativos, será possível usar |LOCK| para bloquear o dispositivo.
+          * |LOCK| bloqueia temporariamente uma sessão de usuário até que o próximo time_window_limit ou time_usage_limit seja iniciado.
+          * |UNLOCK| desbloqueia uma sessão de usuário bloqueada por time_window_limit ou time_usage_limit.
+          |created_time_millis| é o carimbo de data/hora UTC para criação de uma modificação e é enviado como uma string, porque o carimbo de data/hora não se enquadra como um número inteiro. É usado para determinar se essa modificação ainda deve ser aplicada. Se o recurso de limite de tempo ativo atual (limite de tempo de uso ou limite de tempo de janela) começa depois que a modificação é criada, nenhuma ação é tomada. Além disso, se a modificação foi criada antes da última alteração do time_window_limit ou time_usage_window, ela não deve ser aplicada.</translation>
 <translation id="7529100000224450960">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir pop-ups. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPopupsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualizações automáticas</translation>
 <translation id="7534199150025803530">Esta política não tem nenhum efeito sobre o app do Google Drive para Android. Para impedir o uso do Google Drive por conexões celulares, bloqueie a instalação do app do Google Drive para Android.</translation>

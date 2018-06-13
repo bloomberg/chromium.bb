@@ -874,6 +874,11 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3512226956150568738">Ikiwa muundo wa kifaa teja tayari unatumia ARC kabla ya kuhamishiwa kwenye ext4 ili kutumia ARC na sera ya ArcEnabled imewekwa kuwa ndivyo, chaguo hili litafanya kazi kama AskUser (thamani ya 3). Katika hali zingine zote (ikiwa muundo wa kifaa haukuwa unatumia ARC hapo awali, au kama sera ya ArcEnabled imewekwa kuwa sivyo), thamani hii inalingana na DisallowArc (thamani ya 0).</translation>
 <translation id="3524204464536655762">Usiruhusu tovuti yoyote iombe idhini ya kufikia vifaa vya USB kupitia API ya WebUSB</translation>
 <translation id="3528000905991875314">Wezesha kurasa badala za hitilafu</translation>
+<translation id="3545457887306538845">Inakuruhusu udhibiti sehemu ambapo Zana za Wasanidi Programu zinaweza kutumika.
+
+      Ikiwa mipangilio ya sera hii imewekwa kuwa 'DeveloperToolsDisallowedForForceInstalledExtensions' (thamani ya 0, ambayo ni thamani chaguo msingi), Zana za Wasanidi Programu na kidhibiti JavaScript, zinaweza kufikiwa kwa jumla, lakini haziwezi kufikiwa katika muktadha wa viendelezi vinavyosakinishwa na sera ya biashara.
+      Ikiwa mipangilio ya sera hii imewekwa kuwa 'DeveloperToolsAllowed' (thamani ya 1), Zana za Wasanidi Programu na kidhibiti JavaScript, zinaweza kufikiwa na kutumiwa katika miktadha yote, ikijumuisha muktadha wa viendelezi vinavyosakinishwa na sera ya biashara.
+      Ikiwa sera hii imewekwa kuwa 'DeveloperToolsDisallowed' (thamani ya 2), Zana za Wasanidi Programu haziwezi kufikiwa na vipengele vya wavuti havitaweza kuchunguzwa tena. Hali hii itazima mikato yoyote ya kibodi na menyu zozote au data ya menyu ya kufungua Zana za Wasanidi Programu au Kidhibiti JavaScript.</translation>
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="3556806727696701427">Huwasha kipengele cha Kuvinjari Salama cha <ph name="PRODUCT_NAME" /> na huzuia watumiaji wasibadilishe mipangilio hii.
 
@@ -1947,6 +1952,37 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
 <translation id="6810445994095397827">Zuia JavaScript kwenye tovuti hizi</translation>
 <translation id="681446116407619279">Mipango inayohimiliwa ya uthibitishaji</translation>
 <translation id="6835883744948188639">Mwonyeshe mtumiaji kidokezo kinachojirudia, kinachoashiria kwamba inapendekezwa afungue kivinjari upya</translation>
+<translation id="6838056959556423778">Hubatilisha mipangilio ya uteuzi wa printa chaguo msingi ya <ph name="PRODUCT_NAME" />.
+
+      Sera hii hubaini masharti ya kuchagua printa chaguo msingi katika <ph name="PRODUCT_NAME" />, tendo ambalo hufanyika mara ya kwanza ambapo kipengele cha printa kinatumika katika wasifu.
+
+      Sera hii ikiwekwa, <ph name="PRODUCT_NAME" /> itajaribu kutafuta printa inayolingana na sifa zote zilizobainishwa na kuichagua ili iwe printa chaguo msingi. Itachagua printa ya kwanza itakayopata ambayo italingana na sera. Iwapo kuna ulinganifu usio maalum, inaweza kuchagua printa yoyote inayolingana. Hali hii itategemea utaratibu ambao printa zinatambuliwa.
+
+      Ikiwa sera hii haijawekwa au haipati printa inayolingana katika muda uliyowekwa, itatumia printa ya PDF iliyotengenezewa ndani ya mfumo kwa chaguo msingi au haitachagua printa yoyote iwapo printa ya PDF haitapatikana.
+
+      Thamani inachanganuliwa kama kipengee cha JSON, kwa kutii utaratibu ufuatao:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regular expression to match printer id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regular expression to match printer display name.",
+            "type": "string"
+          }
+        }
+      }
+
+      Printa zilizounganishwa kwenye <ph name="CLOUD_PRINT_NAME" /> zinachukuliwa kuwa <ph name="PRINTER_TYPE_CLOUD" />, na printa nyinginezo zinaainishwa kama <ph name="PRINTER_TYPE_LOCAL" />.
+      Hatua ya kuacha sehemu inamaanisha kuwa thamani zote zinalingana, kwa mfano, kutobainisha uunganishaji kutasababisha Onyesho la Kuchungulia Printa lianzishe utambuzi wa aina zote za printa za mfumo na za wingu.
+      Ni lazima miundo ya maonyesho ya kawaida ifuate sintaksia ya JavaScript RegExp na viwango vinavyolingana huathiriwa na ukubwa au udogo wa fonti.</translation>
 <translation id="684856667300805181">Sera hii iliondolewa katika <ph name="PRODUCT_NAME" /> 68 na kubadilishwa na <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Sera hii iliacha kuendesha huduma na imeondolewa katika M66, kwa sababu ilitumika kwa jaribio la ndani pekee na ina athari za usalama.
 
@@ -2228,6 +2264,17 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7511361072385293666">Sera hii ikiwekwa kuwa ndivyo au kutowekwa, matumizi ya itifaki ya QUIC katika <ph name="PRODUCT_NAME" /> yanaruhusiwa.
       Sera hii ikiwekwa kuwa sivyo matumizi ya itifaki ya QUIC hayaruhusiwi.</translation>
 <translation id="7519251620064708155">Ruhusu uundaji ufunguo kwenye tovuti hizi</translation>
+<translation id="7529083451528428240">Hukuruhusu ufunge kipindi cha mtumiaji kulingana na wakati wa mteja au mgawo unaopaswa kutumiwa siku hiyo.
+
+          |time_window_limit| hubainisha kiasi cha kila siku ambapo kipindi cha mtumiaji kinapaswa kufungwa. Tunatumia sheria moja tu kila siku ya wiki, kwa hivyo mchanganyiko wa |entries| unaweza kubadilika kuanzia ukubwa wa 0 hadi 7. |starts_at| na |ends_at| ni viwango vya mwanzo na mwisho, wakati |ends_at| imepungua kuliko |starts_at| inamaanisha kuwa |time_limit_window| itakamilika siku itakayofuata. |last_updated_millis| ni muhuri wa muda wa UTC unaoonyesha mara ya mwisho ambapo data hii ilisasishwa, hutumwa kama mfuatano kwa sababu muhuri wa muda hautatoshea ukiwa nambari kamili.
+
+          |time_usage_limit| hubainisha nafasi ya mgawo wa skrini kila siku, kwa hivyo wakati mtumiaji anafikia kipengele hiki, kipindi cha mtumiaji kitafungwa. Kuna kipengee cha kila siku ya wiki, na kinapaswa kuwekwa tu iwapo kuna mgawo ambao unatumiwa siku hiyo. |usage_quota_mins| ni muda ambao kifaa kinachodhibitiwa kinaweza kutumia siku moja na |reset_at| ni wakati ambao mgawo wa matumizi unasasishwa. Thamani ya |reset_at| ni saa sita usiku ({'hour': 0, 'minute': 0}). |last_updated_millis| ni muhuri wa muda wa UTC unaoonyesha mara ya mwisho ambapo data ilisasishwa, hutumwa kama mfuatano kwa sababu muhuri wa muda hauwezi kutosha ukiwa wa nambari kamili.
+
+          |overrides| hutolewa ili kubatilisha kwa muda mfupi sheria moja au zaidi za awali.
+          * Iwapo hakuna time_window_limit wala time_usage_limit inayotumika |LOCK| inaweza kutumiwa kufunga kifaa.
+          * |LOCK| hufunga kipindi cha mtumiaji kwa muda mfupi hadi time_window_limit ifuatayo au time_usage_limit itakapoanza.
+          * |UNLOCK| hufungua kipindi cha mtumiaji kilichofungwa na time_window_limit au time_usage_limit.
+          |created_time_millis| ni muhuri wa muda wa UTC kwa kazi zilizobatilishwa, hutumwa kama mfuatano kwa sababu muhuri wa muda hauwezi kutoshea ukiwa nambari kamili. Unatumika kubainisha ikiwa ubatilishaji huu unapaswa kutumika. Iwapo kipengele cha kudhibiti wakati unaotumika sasa (kima cha matumizi ya muda au kipindi cha matumizi ya muda) kilianza baada ya kuanzisha ubatilishaji, haipaswi kuchukua hatua. Pia, iwapo ubatilishaji ulianzishwa kabla ya mabadiliko ya mwisho ya time_window_limit au time_usage_window inayotumika, hayapaswi kutekelezwa.</translation>
 <translation id="7529100000224450960">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo zinaruhusiwa kufungua ibukizi.
 
            Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguo msingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultPopupsSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>

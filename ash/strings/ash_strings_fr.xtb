@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">Orientation</translation>
 <translation id="3153444934357957346">Vous ne pouvez vous connecter qu'à <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes au maximum dans le cadre de la connexion multicompte.</translation>
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Invité</translation>
 <translation id="332587331255250389">Veuillez remplacer la batterie</translation>
 <translation id="3351879221545518001">Vous êtes actuellement en train de caster l'écran.</translation>
@@ -127,6 +128,7 @@
 <translation id="3400357268283240774">Autres paramètres</translation>
 <translation id="3413817803639110246">Aucune notification</translation>
 <translation id="3445925074670675829">Appareil USB de type C</translation>
+<translation id="3454224730401036106">La connexion a été établie sur un réseau plus sûr</translation>
 <translation id="3465566417615315331">Cliquez sur votre photo</translation>
 <translation id="3477079411857374384">Ctrl+Maj+Espace</translation>
 <translation id="3510164367642747937">Mettre le curseur de la souris en surbrillance</translation>
@@ -296,6 +298,7 @@
 <translation id="7348093485538360975">Clavier virtuel</translation>
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="7377169924702866686">La touche de verrouillage des majuscules est activée</translation>
+<translation id="7398254312354928459">La connexion réseau a été établie</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>
 <translation id="743058460480092004">La caméra et le micro sont en cours d'utilisation.</translation>
 <translation id="7510334386202674593">Ctrl+Maj+L</translation>
@@ -328,6 +331,7 @@
 <translation id="7994370417837006925">Connexion multicompte</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
+<translation id="8061464966246066292">Contraste élevé</translation>
 <translation id="8098591350844501178">Arrêter de diffuser l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisation…</translation>

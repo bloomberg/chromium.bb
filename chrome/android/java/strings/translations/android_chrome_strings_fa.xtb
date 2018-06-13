@@ -92,6 +92,7 @@
 <translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="1756600373018374892">برای دسترسی سریع به برگه‌هایتان، روی این دکمه ضربه بزنید.</translation>
 <translation id="1779089405699405702">رمزگشای تصویر</translation>
+<translation id="1782483593938241562">تاریخ پایان: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">هرزمان بخواهید می‌توانید محل پیش‌فرض بارگیری را تغییر دهید</translation>
 <translation id="1807246157184219062">روشن</translation>
 <translation id="1829244130665387512">یافتن در صفحه</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">بازخوانی صفحه</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="271033894570825754">جدید</translation>
+<translation id="2728754400939377704">مرتب‌سازی براساس سایت</translation>
 <translation id="2736391366332017384">برای رفتن به صفحه برگه جدید در برگه کنونی، روی دکمه صفحه اصلی ضربه بزنید</translation>
 <translation id="2744248271121720757">برای جستجوی فوری، روی کلمه‌ای ضربه بزنید یا اقدام‌های مرتبط را ببینید</translation>
 <translation id="2762000892062317888">هم‌اکنون</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">مدیریت شده توسط سرپرست‌تان</translation>
 <translation id="4116038641877404294">برای استفاده از صفحه‌ها در حالت آفلاین، آن‌ها را بارگیری کنید</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{‏%1$d نشانک}one{‏%1$d نشانک}other{‏%1$d نشانک}}</translation>
+<translation id="4159800535322890630">مسدود کردن دسترسی سایت‌ها به حسگرها</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> استفاده‌شده</translation>
 <translation id="4181841719683918333">زبان‌ها</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="4198423547019359126">مکانی برای بارگیری دردسترس نیست</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">کارت‌ها</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
+<translation id="5620299005957670886">اجازه به سایت‌ها برای دسترسی به حسگرها (توصیه‌شده)</translation>
 <translation id="5620928963363755975">با استفاده از دکمه «گزینه‌های بیشتر»، فایل‌ها و صفحه‌هایتان را در «بارگیری‌ها» پیدا کنید</translation>
 <translation id="5626134646977739690">نام:</translation>
 <translation id="5639724618331995626">همه سایت‌ها مجاز هستند</translation>
@@ -562,6 +567,7 @@
 <translation id="5911030830365207728">‏‫مترجم Google‬</translation>
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5919204609460789179">برای شروع همگام‌سازی، <ph name="PRODUCT_NAME" /> را به‌روزرسانی کنید</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> صرفه‌جویی‌شده</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="5942872142862698679">‏استفاده از Google برای جستجو</translation>
 <translation id="5956665950594638604">‏باز کردن مرکز راهنمایی Chrome در برگه جدید</translation>
@@ -642,6 +648,7 @@
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
 <translation id="6627583120233659107">ویرایش پوشه</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
+<translation id="6643649862576733715">مرتب‌سازی براساس مقدار داده صرفه‌جویی‌شده</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> گزینه تماس دیگر}one{‏<ph name="CONTACT_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> گزینه تماس دیگر}other{‏<ph name="CONTACT_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> گزینه تماس دیگر}}</translation>
 <translation id="6656545060687952787">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK" />به‌روزرسانی مجوزها<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">گذرواژه</translation>
@@ -728,6 +735,7 @@
 <translation id="7400418766976504921">نشانی وب</translation>
 <translation id="7403691278183511381">‏اولین تجربه اجرا Chrome</translation>
 <translation id="741204030948306876">بله، موافقم</translation>
+<translation id="7413229368719586778">تاریخ شروع: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">ابتدا سؤال شود</translation>
 <translation id="7423538860840206698">خواندن محتوای بریده‌دان مسدود شد</translation>
 <translation id="7437998757836447326">‏خروج از سیستم Chrome</translation>
@@ -833,6 +841,7 @@
 <translation id="8313455859591948645">ویرایش صفحه شروع</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> و سایت‌های دیگر</translation>
 <translation id="8339163506404995330">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواند شد</translation>
+<translation id="8349013245300336738">مرتب‌سازی براساس مقدار داده استفاده‌شده</translation>
 <translation id="8363501664269050863">پانل پیمایش. برای بستن، صفحه را تند به پایین بکشید.</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>

@@ -1614,7 +1614,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="3450157232394774192">Porsyento ng Ginagamit sa Estadong Idle</translation>
 <translation id="3453612417627951340">Nangangailangan ng pahintulot</translation>
 <translation id="3454157711543303649">Kumpleto na ang pag-activate</translation>
-<translation id="3454224730401036106">Lumipat ang iyong koneksyon sa mas secure na network</translation>
 <translation id="345693547134384690">Buksan ang &amp;imahe sa bagong tab</translation>
 <translation id="3459509316159669723">Pagpi-print</translation>
 <translation id="3459697287128633276">Upang i-enable ang iyong account na i-access ang Google Play Store, paki-authenticate gamit ang Identity Provider mo.</translation>
@@ -2176,7 +2175,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="4340515029017875942">Gustong makipag-ugnayan ng <ph name="ORIGIN" /> sa app na "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4342311272543222243">Oops, nagkaroon ng TPM error.</translation>
 <translation id="4345587454538109430">I-configure...</translation>
-<translation id="4345703751611431217">Pagiging hindi tugma ng software: Matuto nang higit pa</translation>
 <translation id="4348766275249686434">Kumolekta ng mga error</translation>
 <translation id="4350019051035968019">Hindi maaaring i-enroll ang device na ito sa domain kung saan nabibilang ang iyong account dahil minarkahan ang iyong device para mapamahalaan ng ibang domain.</translation>
 <translation id="4354266305752237763">Protektahan ang iyong sarili at ang device mo mula sa mapapanganib na site (Ligtas na Pag-browse)</translation>
@@ -3375,7 +3373,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Palawakin lahat...</translation>
 <translation id="6164005077879661055">Permanenteng matatanggal ang lahat ng file at lokal na data na kaugnay ng pinangangasiwaang user sa oras na alisin ang pinangangasiwaang user na ito. Maaari pa ring makita ng manager ang mga nabisitang website at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6166185671393271715">Mag-import ng Mga Password sa Chrome</translation>
 <translation id="6169040057125497443">Pakisuri ang iyong mikropono.</translation>
 <translation id="6169666352732958425">Hindi ma-cast ang desktop.</translation>
@@ -4171,7 +4168,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="7392118418926456391">Nabigo ang pag-scan ng virus</translation>
 <translation id="7392915005464253525">M&amp;uling buksan ang nakasarang window</translation>
 <translation id="7396845648024431313">Ilulunsad ang <ph name="APP_NAME" /> sa system startup at patuloy na paganahin sa background kahit na sa sandaling maisara mo ang lahat ng ibang mga window ng <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Lumipat ng koneksyon ng network</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Mangyaring maghintay habang nagre-restart ang iyong Chromebox...</translation>
 <translation id="7400839060291901923">Mag-set up ng koneksyon sa iyong <ph name="PHONE_NAME" /></translation>

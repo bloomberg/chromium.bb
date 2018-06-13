@@ -5,6 +5,7 @@
 <translation id="1122869341872663659"><ph name="QUERY" /> এর জন্যে <ph name="N" />টি ফলাফল দেখানো হচ্ছে</translation>
 <translation id="1195667586424773550">ট্যাব অ্যাড্রেস বারে লিঙ্কটি টেনে আনুন</translation>
 <translation id="1204450209689312104">ছদ্মবেশী মোডে একটি নতুন উইন্ডো খুলুন</translation>
+<translation id="1251638888133819822">ফুলস্ক্রিন ম্যাগনিফায়ার চালু অথবা বন্ধ করুন</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">আপনার বর্তমান পৃষ্ঠাটি প্রিন্ট করুন</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">ক্যাশ করা কন্টেন্ট ব্যবহার না করেই আপনার বর্তমান পৃষ্ঠাটি আবার লোড করুন</translation>
 <translation id="526651782186312376">লাইনের শুরুতে টেক্সট বেছে নিন</translation>
 <translation id="5316716239522500219">আয়না মনিটর</translation>
+<translation id="539072479502328326">ডক করা ম্যাগনিফায়ার চালু অথবা বন্ধ করুন</translation>
 <translation id="5541719484267030947">ট্যাবটি টেনে আনার সময় <ph name="ESC" /> টিপুন</translation>
 <translation id="5554139136362089836">বর্তমান পৃষ্ঠায় খুঁজুন</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> টিপুন এবং একটি লিঙ্ক ক্লিক করুন</translation>

@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">medverkande</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">spela upp video i bild-i-bild-läge</translation>
 <translation id="1589122976691792535">område</translation>
 <translation id="1591562245178063882">Den här månaden</translation>
 <translation id="1637811476055996098">Välj filer</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">mätare</translation>
 <translation id="6166809985690652833">efterord</translation>
 <translation id="6213469881011901533">ordlista</translation>
+<translation id="6310801910862476708">Avsluta bild-i-bild-läge</translation>
 <translation id="6398862346408813489">Visa panelen för val av månad</translation>
 <translation id="6404546809543547843">tidsreglage för ljud</translation>
 <translation id="6453774872122745852">författarens tack</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigering</translation>
 <translation id="9050748414552849310">visa textning</translation>
 <translation id="9062295712474918030">dokument</translation>
+<translation id="9093215626363556771">avsluta bild-i-bild-läge</translation>
 <translation id="9108370397979208512">matte</translation>
 <translation id="9132465097189459683">Annat ...</translation>
 <translation id="9138385573473225930">varning</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> som börjar den <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">fotnot</translation>
 <translation id="947831847158436616">cell</translation>
+<translation id="954003015749068518">öppna bild-i-bild-läge</translation>
 <translation id="966787709310836684">meny</translation>
 </translationbundle>

@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">mga credit</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">i-play ang video sa picture-in-picture mode</translation>
 <translation id="1589122976691792535">rehiyon</translation>
 <translation id="1591562245178063882">Buwang ito</translation>
 <translation id="1637811476055996098">Pumili ng Mga File</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">metro</translation>
 <translation id="6166809985690652833">afterword</translation>
 <translation id="6213469881011901533">glosaryo</translation>
+<translation id="6310801910862476708">Lumabas sa Picture-in-Picture</translation>
 <translation id="6398862346408813489">Ipakita ang panel ng pagpipilian ng buwan</translation>
 <translation id="6404546809543547843">scrubber ng oras ng audio</translation>
 <translation id="6453774872122745852">mga pagkilala</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9050748414552849310">ipakita ang mga nakasarang caption</translation>
 <translation id="9062295712474918030">dokumento</translation>
+<translation id="9093215626363556771">lumabas sa picture-in-picture</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9132465097189459683">Iba pa...</translation>
 <translation id="9138385573473225930">alerto</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, na magsisimula sa <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">footnote</translation>
 <translation id="947831847158436616">cell</translation>
+<translation id="954003015749068518">pumasok sa picture-in-picture</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

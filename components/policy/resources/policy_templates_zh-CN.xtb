@@ -831,6 +831,11 @@
 <translation id="3512226956150568738">如果客户端设备型号在需要迁移到 ext4 才能运行 ARC 之前就已支持 ARC，且 ArcEnabled 政策已设为 true，该选项的行为便会和 AskUser（值 3）的行为一样。在所有其他情形（如果相应的设备型号之前不支持 ARC，或者如果 ArcEnabled 政策被设为 false）下，此值将会等同于 DisallowArc（值 0）。</translation>
 <translation id="3524204464536655762">不允许任何网站通过 WebUSB API 请求访问 USB 设备</translation>
 <translation id="3528000905991875314">启用备用的错误页面</translation>
+<translation id="3545457887306538845">让您能够控制可在什么情况下使用开发者工具。
+
+      如果此政策设为“DeveloperToolsDisallowedForForceInstalledExtensions”（值为 0，即默认值），那么在通常情况下，用户都可以访问开发者工具以及 JavaScript 控制台，但在运行由企业政策安装的扩展程序的情况下，则无法使用它们。
+      如果此政策设为“DeveloperToolsAllowed”（值为 1），那么无论在什么情况下（包括在运行由企业政策安装的扩展程序的情况下），用户都可以访问和使用开发者工具以及 JavaScript 控制台。
+      如果此政策设为“DeveloperToolsDisallowed”（值为 2），用户便无法再访问开发者工具和查看网站元素。用于打开开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单（或上下文菜单）条目都会被停用。</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="3556806727696701427">启用 <ph name="PRODUCT_NAME" /> 的安全浏览功能，并禁止用户更改此设置。
 
@@ -1851,6 +1856,36 @@
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
 <translation id="6835883744948188639">显示建议用户重新启动浏览器的周期性提示</translation>
+<translation id="6838056959556423778">替换 <ph name="PRODUCT_NAME" /> 默认打印机选择规则。
+      此政策用于确定：当用户以相应个人资料首次在 <ph name="PRODUCT_NAME" /> 中使用打印功能时，系统会遵循什么样的规则来选择默认打印机。
+
+      如果此政策已设置，<ph name="PRODUCT_NAME" /> 会尝试找到一台与所有指定属性都相符的打印机，并会将其选为默认打印机。系统会选择所找到的第一台与此政策相符的打印机（如果找到了多台相符的打印机，则可能会选择其中任一台，具体取决于找到这些打印机的顺序）。
+
+      如果此政策未设置，或在规定的时限内未找到相符的打印机，系统便会选择内置的 PDF 打印机作为默认打印机；如果没有 PDF 打印机，则不会选择任何打印机。
+
+      系统会按照以下范本将此政策的值作为 JSON 对象进行解析：
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "是否要将相符打印机的搜索范围限定为一组特定的打印机。",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "用于匹配打印机 ID 的正则表达式。",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "用于匹配打印机显示名的正则表达式。",
+            "type": "string"
+          }
+        }
+      }
+
+      连接到 <ph name="CLOUD_PRINT_NAME" />的打印机会被视为<ph name="PRINTER_TYPE_CLOUD" />打印机，其余打印机则会归类为<ph name="PRINTER_TYPE_LOCAL" />打印机。
+      如果未在某个字段中输入值，则意味着所有打印机都符合此项属性。例如，如果不指定网络连接状态，那么当进行打印预览时，系统将会查找所有类型的打印机（本地打印机和云端打印机）。
+      正则表达式的格式必须遵循 JavaScript RegExp 语法，并在匹配时区分大小写。</translation>
 <translation id="684856667300805181">此政策已在 <ph name="PRODUCT_NAME" /> 中遭到移除，并已由 <ph name="ARC_GLS_POLICY_NAME" /> 取而代之。</translation>
 <translation id="6856743875250214792">我们已在 M66 中弃用并移除了此政策，因为它仅用于内部测试且存在安全隐患。
 
@@ -2104,6 +2139,17 @@
 <translation id="7511361072385293666">如果此政策设为 true 或未设置，则允许在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 协议。
       如果此政策设为 false，则禁止使用 QUIC 协议。</translation>
 <translation id="7519251620064708155">允许在这些网站上使用密钥生成功能</translation>
+<translation id="7529083451528428240">让您能够根据客户端时间或当天时间用量配额锁定用户的会话。
+
+          |time_window_limit| 用于指定一个每日时段 - 在这段时间内，系统应锁定用户的会话。我们仅支持为一周中的每一天指定 1 条规则，因此 |entries| 数组的大小可能会有所不同（介于 0-7 之间）。|starts_at| 和 |ends_at| 是时段限制的开始时间和结束时间，如果 |ends_at| 小于 |starts_at|，即表示 |time_limit_window| 要到次日才会结束。|last_updated_millis| 是表示此条目的上次更新时间的时间戳（采用世界协调时间），由于时间戳无法转换成整数，因此这项参数会以字符串的形式发送。
+
+          |time_usage_limit| 用于指定每日屏幕使用时间配额，当用户用尽配额时，系统就会锁定用户的会话。一周中的每一天都有一个对应的属性，只有在当天具备有效配额的情况下才能设置相应属性。|usage_quota_mins| 是托管设备的单日可用时间配额，|reset_at| 则是时间用量配额的更新时间。|reset_at| 的默认值是午夜 ({'hour': 0, 'minute': 0})。|last_updated_millis| 是此条目的上次更新时间的时间戳（采用世界协调时间），由于时间戳无法转换成整数，因此这项参数会以字符串的形式发送。
+
+          提供 |overrides| 是为了让一项或多项先前设定的规则暂时失效。
+          * 如果 time_window_limit 和 time_usage_limit 都处于无效状态，则可使用 |LOCK| 锁定设备。
+          * |LOCK| 可暂时锁定用户会话，直到下一个 time_window_limit 或 time_usage_limit 开始为止。
+          * |UNLOCK| 可解锁根据 time_window_limit 或 time_usage_limit 锁定的用户会话。
+          |created_time_millis| 是表示替换值的创建时间的时间戳（采用世界协调时间），由于时间戳无法转换成整数，因此这项参数会以字符串的形式发送。这项参数用于确定是否仍应将相应替换值付诸应用。如果目前有效的时间限制功能（时间用量限制或时段限制）的开始时间晚于替换值的创建时间，系统便不应采取任何行动。另外，如果替换值的创建时间早于有效 time_window_limit 或 time_usage_window 的上次更改时间，系统也不应将该替换值付诸应用。</translation>
 <translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7529144158022474049">自动更新分配因素</translation>
 <translation id="7534199150025803530">此政策对 Android 版“Google 云端硬盘”应用没有任何影响。如果您想阻止通过移动网络连接使用 Google 云端硬盘，则应禁止安装 Android 版“Google 云端硬盘”应用。</translation>

@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">क्रेडिट</translation>
 <translation id="1342835525016946179">लेख</translation>
 <translation id="1359897965706325498">बैनर</translation>
+<translation id="1548116112524424341">'वीडियो को पिक्चर में पिक्चर मोड में चलाएं'</translation>
 <translation id="1589122976691792535">क्षेत्र</translation>
 <translation id="1591562245178063882">इस माह</translation>
 <translation id="1637811476055996098">फ़ाइलें चुनें</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">मीटर</translation>
 <translation id="6166809985690652833">उपसंहार</translation>
 <translation id="6213469881011901533">शब्दावली</translation>
+<translation id="6310801910862476708">'पिक्चर में पिक्चर से बाहर निकलें'</translation>
 <translation id="6398862346408813489">माह चयन फलक दिखाएं</translation>
 <translation id="6404546809543547843">ऑडियो समय स्क्रबर</translation>
 <translation id="6453774872122745852">धन्यवाद</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">मार्गदर्शक</translation>
 <translation id="9050748414552849310">बंद कैप्शन दिखाएं</translation>
 <translation id="9062295712474918030">दस्तावेज़</translation>
+<translation id="9093215626363556771">'पिक्चर में पिक्चर से बाहर निकलें'</translation>
 <translation id="9108370397979208512">गणित</translation>
 <translation id="9132465097189459683">अन्य...</translation>
 <translation id="9138385573473225930">सूचना</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> से प्रारंभ हो रहा है</translation>
 <translation id="9168329111483466115">फ़ुटनोट</translation>
 <translation id="947831847158436616">सेल</translation>
+<translation id="954003015749068518">'पिक्चर में पिक्चर चालू करें'</translation>
 <translation id="966787709310836684">मेनू</translation>
 </translationbundle>

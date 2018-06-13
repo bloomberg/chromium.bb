@@ -218,8 +218,8 @@
       Esta política deve estar definida para um URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> possa transferir os Termos de Utilização. Os Termos de Utilização devem estar no formato de texto simples, com o tipo de MIME texto/simples. Não é permitida qualquer marcação.</translation>
 <translation id="1750315445671978749">Bloquear todas as transferências</translation>
 <translation id="1781356041596378058">Esta política também controla o acesso às Opções de programador do Android. Se definir esta política como verdadeira, os utilizadores não poderão aceder às Opções de programador. Se definir esta política como falsa ou se não a definir, os utilizadores podem aceder às Opções de programador ao tocar sete vezes no número da compilação na aplicação de definições do Android.</translation>
-<translation id="178832255504524723">Configure o URL de alteração da palavra-passe (apenas esquemas HTTP e HTTPS). O serviço de proteção por palavra-passe envia os utilizadores para este URL para alterarem as respetivas palavras-passe se tiverem sido alvo de phishing.
-      Para que o <ph name="PRODUCT_NAME" /> capture a nova impressão digital da palavra-passe corretamente nesta página de alteração da palavra-passe, certifique-se de que a sua página de início de sessão de alteração da palavra-passe segue as diretrizes em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+<translation id="178832255504524723">Configure o URL de alteração da palavra-passe (apenas para esquemas HTTP e HTTPS). O serviço de proteção por palavra-passe envia os utilizadores para este URL para alterarem as respetivas palavras-passe se tiverem sido alvo de phishing.
+      Para que o <ph name="PRODUCT_NAME" /> capture a nova impressão digital da palavra-passe corretamente nesta página de alteração da palavra-passe, certifique-se de que a sua página de início de sessão de alteração da palavra-passe segue as diretrizes apresentadas em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Se esta definição estiver ativada, o serviço de proteção por palavra-passe envia os utilizadores para este URL para alterarem as respetivas palavras-passe se tiverem sido alvo de phishing.
       Se esta definição estiver desativada ou não estiver definida, o serviço de proteção por palavra-passe envia os utilizadores para https://myaccounts.google.com para alterarem as respetivas palavras-passe.
@@ -747,7 +747,7 @@
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.
 
-          Tenha em atenção que esta política foi ativada por engano anteriormente no Android, mas esta funcionalidade nunca foi totalmente suportada no Android.</translation>
+          Tenha em atenção que, embora esta política tenha sido ativada por engano anteriormente no Android, a funcionalidade nunca foi totalmente suportada no Android.</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher como indicar as definições do servidor proxy</translation>
 <translation id="3117676313396757089">Aviso: o DHE será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 57 (por volta de março de 2017) e esta política deixa de funcionar nessa altura.
@@ -875,6 +875,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3512226956150568738">Se o modelo do dispositivo do cliente já era compatível com ARC antes de a migração para ext4 ser necessária para executar ARC e se a política ArcEnabled estiver definida como verdadeira, esta opção comporta-se como AskUser (valor 3). Em todos os outros casos (se o modelo do dispositivo não era compatível com ARC anteriormente ou se a política ArcEnabled estiver definida como falsa), este valor é equivalente a DisallowArc (valor 0).</translation>
 <translation id="3524204464536655762">Não permitir que nenhum site solicite acesso a dispositivos USB através da API WebUSB</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
+<translation id="3545457887306538845">Permite controlar onde é possível utilizar as Ferramentas para programadores.
+
+      Se esta política estiver definida como "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, o valor predefinido), é possível aceder normalmente às Ferramentas para programadores e à Consola de JavaScript, exceto no contexto de extensões instaladas pela política empresarial.
+      Se esta política estiver definida como "DeveloperToolsAllowed" (valor 1), é possível aceder às Ferramentas para programadores e à Consola de JavaScript e utilizá-las em todos os contextos, inclusive no contexto de extensões instaladas pela política empresarial.
+      Se esta política estiver definida como "DeveloperToolsDisallowed" (valor 2), não é possível aceder às Ferramentas do programador e deixa de ser possível inspecionar os elementos do Website. Todos os atalhos de teclado e todas as entradas de menu ou de menu de contexto para abrir as Ferramentas para programadores ou a Consola de JavaScript serão desativados.</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3556806727696701427">Ativa a funcionalidade de Navegação segura do <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem esta definição.
 
@@ -902,9 +907,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
 <translation id="3737544779868348650">Nome do anfitrião da rede do dispositivo</translation>
 <translation id="3746590506846867985">
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas as origens nomeadas por subdomínios: por exemplo, ao especificar https://example.com/, também fará com que https://foo.example.com/ seja isolado como fazendo parte do site https://example.com/.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
+      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      Se a política estiver ativada, cada uma das origens nomeadas numa lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas as origens nomeadas por subdomínios: por exemplo, ao especificar https://example.com/, também fará com que https://foo.example.com/ seja isolado como parte integrante do site https://example.com/.
+      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores continuam a poder ativar IsolateOrigins manualmente.
       Se a política não estiver configurada, são utilizadas as predefinições de isolamento de site da plataforma para o ecrã de início de sessão.
       </translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>
@@ -1905,6 +1910,37 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6810445994095397827">Bloquear JavaScript nestes sites</translation>
 <translation id="681446116407619279">Esquemas de autenticação suportados</translation>
 <translation id="6835883744948188639">Apresentar uma mensagem recorrente ao utilizador a indicar que é recomendado reiniciar</translation>
+<translation id="6838056959556423778">Substitui as regras de seleção da impressora predefinida do <ph name="PRODUCT_NAME" />.
+
+      Esta política determina as regras para a seleção da impressora predefinida em <ph name="PRODUCT_NAME" /> que ocorre quando a função de impressão é utilizada com um perfil pela primeira vez.
+
+      Quando esta política está definida, o <ph name="PRODUCT_NAME" /> tenta localizar uma impressora que corresponda a todos os atributos especificados e selecioná-la como impressora predefinida. É selecionada a primeira impressora localizada que corresponda à política. Se a correspondência não for única, pode ser selecionada qualquer impressora correspondente, consoante a ordem pela qual as impressoras são detetadas.
+
+      Se esta política não estiver definida ou não for encontrada uma impressora correspondente no limite de tempo, é predefinida a impressora PDF incorporada ou não é selecionada qualquer impressora quando a impressora PDF não está disponível.
+
+      O valor é analisado com um objeto JSON em conformidade com o esquema seguinte:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Limitar ou não a pesquisa da impressora correspondente a um conjunto específico de impressoras.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Expressão regular para corresponder ao ID da impressora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expressão regular para corresponder ao nome a apresentar da impressora.",
+            "type": "string"
+          }
+        }
+      }
+
+      As impressoras ligadas ao <ph name="CLOUD_PRINT_NAME" /> são consideradas como <ph name="PRINTER_TYPE_CLOUD" /> e as restantes são classificadas como <ph name="PRINTER_TYPE_LOCAL" />.
+      Omitir um campo significa que todos os valores são correspondentes, por exemplo, não especificar a conetividade faz com que a Pré-visualização da impressão inicie a deteção de todos os tipos de impressoras: locais e na nuvem.
+      Os padrões da expressão regular têm de seguir a sintaxe JavaScript RegExp e as correspondências são sensíveis a maiúsculas e minúsculas.</translation>
 <translation id="684856667300805181">Esta política foi removida no <ph name="PRODUCT_NAME" /> 68 e substituída por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Esta política foi descontinuada e removida no M66, uma vez que era utilizada apenas para testes internos e representa um risco de segurança.
 
@@ -1954,12 +1990,12 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6916507170737609563">
       Recomendamos que consulte a definição da política IsolateOriginsAndroid para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar IsolateOriginsAndroid com uma lista dos sites que pretende isolar. Esta definição, SitePerProcessAndroid, isola todos os sites.
       Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, não ocorre qualquer Isolamento de site e os testes de campo de IsolateOriginsAndroid e SitePerProcessAndroid são desativados. Os utilizadores ainda conseguem ativar SitePerProcess manualmente.
+      Se a política estiver desativada, não ocorre qualquer Isolamento de site e os testes de campo de IsolateOriginsAndroid e SitePerProcessAndroid são desativados. Os utilizadores continuam a poder ativar SitePerProcess manualmente.
       Se a política não estiver configurada, o utilizador pode alterar esta definição.
 
       NOTA: no Android, o isolamento de site é experimental. O suporte será melhorado ao longo do tempo, mas atualmente pode causar problemas de desempenho.
 
-      NOTA: esta política é aplicável apenas ao Chrome no Android nos dispositivos estritamente com mais de 1 GB de RAM. Para aplicar a política noutras plataformas não Android, utilize SitePerProcess.
+      NOTA: esta política é aplicável apenas ao Chrome no Android nos dispositivos estritamente com mais de 1 GB de RAM. Para aplicar a política a plataformas não Android, utilize SitePerProcess.
       </translation>
 <translation id="6922040258551909078">
       Se a política estiver definida como verdadeira, a política da nuvem tem prioridade em caso de conflito com a política do equipamento.
@@ -2084,7 +2120,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se ativar esta definição, não será possível aceder às Ferramentas para programadores e os elementos do Website deixam de poder ser inspecionados. Todos os atalhos de teclado e todas as entradas de menu ou de menu de contexto para abrir as Ferramentas para programadores ou a Consola de JavaScript serão desativados.
 
-      Se desativar ou não definir esta opção, permite que o utilizador use as Ferramentas para programadores e a Consola de JavaScript.
+      Se desativar ou não definir esta opção, permite que o utilizador utilize as Ferramentas para programadores e a Consola de JavaScript.
 
       Se a política DeveloperToolsAvailability estiver definida, o valor da política DeveloperToolsDisabled é ignorado.</translation>
 <translation id="7266471712301230894">Esta política foi removida a partir do <ph name="PRODUCT_NAME" /> 64.
@@ -2167,6 +2203,17 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7511361072385293666">Se esta política estiver definida como verdadeira ou não estiver definida, é permitida a utilização do protocolo QUIC no <ph name="PRODUCT_NAME" />.
       Se esta política estiver definida como falsa, não é permitida a utilização do protocolo QUIC.</translation>
 <translation id="7519251620064708155">Permitir a geração de chaves nestes sites</translation>
+<translation id="7529083451528428240">Permite bloquear a sessão do utilizador com base no tempo do cliente ou na quota de utilização do dia.
+
+          O |time_window_limit| especifica um intervalo diário durante o qual a sessão do utilizador deve ser bloqueada. Suportamos apenas uma regra para cada dia da semana, pelo que o tamanho da matriz de |entries| pode variar entre 0 e 7. |starts_at| e |ends_at| são o início e o fim do limite do intervalo; se |ends_at| for menor do que |starts_at|, significa que o |time_limit_window| termina no dia seguinte. |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
+
+          O |time_usage_limit| especifica uma quota de ecrã diária, pelo que, quando o utilizador a atinge, a respetiva sessão é bloqueada. Existe uma propriedade para cada dia da semana e esta deverá ser definida apenas se houver uma quota ativa para esse dia. |usage_quota_mins| é o período de tempo durante o qual o dispositivo gerido pode ser utilizado num dia e |reset_at| é a hora em que a quota de utilização é renovada. O valor predefinido para |reset_at| é meia-noite ({'hour': 0, 'minute': 0}). |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
+
+          |overrides| é fornecido para invalidar temporariamente uma ou mais das regras anteriores.
+          * Se time_window_limit e time_usage_limit não estiverem ativos, é possível utilizar |LOCK| para bloquear o dispositivo.
+          * |LOCK| bloqueia temporariamente a sessão do utilizador até que seja iniciado o próximo time_window_limit ou time_usage_limit.
+          * |UNLOCK| desbloqueia uma sessão do utilizador bloqueada por time_window_limit ou time_usage_limit.
+          |created_time_millis| é a data/hora UTC de criação da substituição. É enviado como uma string porque a data/hora não seria suportada como um número inteiro. É utilizado para determinar se esta substituição deve continuar a ser aplicada. Se a funcionalidade de limite de tempo ativa atual (limite de tempo de utilização ou limite de tempo da janela) for iniciada depois de a substituição ter sido criada, não deverá efetuar qualquer ação. Além disso, se a substituição tiver sido criada antes da última alteração do time_window_limit ou do time_usage_window ativo, não deverá ser aplicada.</translation>
 <translation id="7529100000224450960">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a abrir janelas de pop-up. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPopupsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualização automática</translation>
 <translation id="7534199150025803530">Esta política não tem qualquer efeito na aplicação Google Drive para Android. Se quiser evitar a utilização do Google Drive através da ligação de rede móvel, deve remover a autorização para instalar a aplicação Google Drive para Android.</translation>
@@ -2298,7 +2345,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7788872453000173219">
       Recomendamos que consulte a definição da política IsolateOrigins para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição, SitePerProcess, isola todos os sites.
       Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOrigins e SitePerProcess são desativados. Os utilizadores ainda conseguem ativar SitePerProcess manualmente.
+      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOrigins e SitePerProcess são desativados. Os utilizadores continuam a poder ativar SitePerProcess manualmente.
       Se a política não estiver configurada, o utilizador pode alterar esta definição.
       No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
 
@@ -2343,7 +2390,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas para o mesmo valor. Se os valores não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
       Recomendamos que consulte a definição da política IsolateOrigins para obter o melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição, SitePerProcess, isola todos os sites.
       Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, não ocorre um isolamento de sites explícito e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar SitePerProcess manualmente.
+      Se a política estiver desativada, não ocorre um isolamento de sites explícito e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores continuam a poder ativar SitePerProcess manualmente.
       Se a política não estiver configurada, o utilizador pode alterar esta definição.
       </translation>
 <translation id="7912255076272890813">Configurar tipos de aplicações/extensões permitidos</translation>
@@ -2365,15 +2412,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       separada por vírgulas é executada no seu próprio processo. Deste
       modo, são também isoladas as origens nomeadas por subdomínios.
       Por exemplo, ao especificar https://example.com/,
-      also cause https://foo.example.com/ também é isolado como parte
-      do site https://example.com/.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOriginsAndroid e SitePerProcessAndroid serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
+      https://foo.example.com/ também é isolado como parte
+      integrante do site https://example.com/.
+      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOriginsAndroid e SitePerProcessAndroid serão desativados. Os utilizadores continuam a poder ativar IsolateOrigins manualmente.
       Se a política não estiver configurada, o utilizador pode alterar esta
       definição.
 
       NOTA: no Android, o isolamento de site é experimental. O suporte será melhorado ao longo do tempo, mas atualmente pode causar problemas de desempenho.
 
-      NOTA: esta política é aplicável apenas ao Chrome no Android nos dispositivos estritamente com mais de 1 GB de RAM. Para aplicar a política noutras plataformas não Android, utilize IsolateOrigins.
+      NOTA: esta política é aplicável apenas ao Chrome no Android nos dispositivos estritamente com mais de 1 GB de RAM. Para aplicar a política a plataformas não Android, utilize IsolateOrigins.
       </translation>
 <translation id="7953256619080733119">Anfitriões de exceção no manual do utilizador gerido</translation>
 <translation id="7961779417826583251">Desativar a aplicação da Transparência de certificados para uma lista de autoridades de certificação antigas</translation>
@@ -2403,7 +2450,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, é utilizada a definição "AllowImages" e o utilizador pode alterá-la.
 
-          Tenha em atenção que esta política foi ativada por engano anteriormente no Android, mas esta funcionalidade nunca foi totalmente suportada no Android.</translation>
+           Tenha em atenção que, embora esta política tenha sido ativada por engano anteriormente no Android, a funcionalidade nunca foi totalmente suportada no Android.</translation>
 <translation id="8104962233214241919">Selecionar automaticamente certificados de cliente para estes Web sites</translation>
 <translation id="8112122435099806139">Especifica o formato do relógio a ser utilizado no dispositivo.
 
@@ -2728,8 +2775,8 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8976248126101463034">Permitir autenticação gnubby para anfitriões de acesso remoto</translation>
 <translation id="8976531594979650914">Utilizar a impressora predefinida do sistema como a predefinição</translation>
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
-<translation id="9012851181124311976">Configure a lista de URLs de início de sessão empresariais (apenas esquemas HTTP e HTTPS). A impressão digital da palavra-passe é capturada nestes URLs e utilizada para a deteção de reutilização da palavra-passe.
-      Para que o <ph name="PRODUCT_NAME" /> capture uma impressão digital da palavra-passe corretamente, certifique-se de que as suas páginas de início de sessão seguem as diretrizes em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+<translation id="9012851181124311976">Configure a lista de URLs de início de sessão empresariais (apenas para esquemas HTTP e HTTPS). A impressão digital da palavra-passe é capturada nestes URLs e utilizada para a deteção de reutilização da palavra-passe.
+      Para que o <ph name="PRODUCT_NAME" /> capture uma impressão digital da palavra-passe corretamente, certifique-se de que as suas páginas de início de sessão seguem as diretrizes apresentadas em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Se esta definição estiver ativada, o serviço de proteção por palavra-passe captura a impressão digital da palavra-passe nestes URLs para fins de deteção de reutilização da palavra-passe.
       Se esta definição estiver desativada ou não estiver definida, o serviço de proteção por palavra-passe apenas captura a impressão digital da palavra-passe em https://accounts.google.com.

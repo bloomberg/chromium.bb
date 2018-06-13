@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1756600373018374892">Den här knappen ger snabb tillgång till flikarna.</translation>
 <translation id="1779089405699405702">Bildavkodare</translation>
+<translation id="1782483593938241562">Slutdatum <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Ändra standardplats för nedladdningar när som helst</translation>
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="1829244130665387512">Hitta på sida</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Uppdatera sidan</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
+<translation id="2728754400939377704">Sortera efter webbplats</translation>
 <translation id="2736391366332017384">Tryck på hemknappen om du vill öppna sidan Ny flik på den aktuella fliken</translation>
 <translation id="2744248271121720757">Tryck på ett ord om du vill söka direkt eller visa relaterade åtgärder</translation>
 <translation id="2762000892062317888">nyss</translation>
@@ -353,8 +355,10 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4113030288477039509">Hanteras av administratören</translation>
 <translation id="4116038641877404294">Ladda ned sidor så att du kan använda dem offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bokmärke}other{%1$d bokmärken}}</translation>
+<translation id="4159800535322890630">Förhindra att webbplatser använder enhetens sensorer</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> har använts</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4198423547019359126">Det fins inga tillgängliga nedladdningsplatser</translation>
@@ -520,6 +524,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5585019845078534178">Kort</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
 <translation id="5596627076506792578">Fler alternativ</translation>
+<translation id="5620299005957670886">Tillåt att webbplatser får åtkomst till enhetens sensorer (rekommenderas)</translation>
 <translation id="5620928963363755975">Du hittar filerna och sidorna i Nedladdningar via knappen Fler alternativ</translation>
 <translation id="5626134646977739690">Namn:</translation>
 <translation id="5639724618331995626">Tillåt alla webbplatser</translation>
@@ -563,6 +568,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5911030830365207728">Google Översätt</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5919204609460789179">Uppdatera <ph name="PRODUCT_NAME" /> för att starta synkronisering</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> har sparats</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5942872142862698679">Du söker med Google</translation>
 <translation id="5956665950594638604">Öppna hjälpcentret för Chrome på en ny flik</translation>
@@ -643,6 +649,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="6627583120233659107">Redigera mapp</translation>
 <translation id="6643016212128521049">Rensa</translation>
+<translation id="6643649862576733715">Sortera efter databesparing</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> till}other{<ph name="CONTACT_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> till}}</translation>
 <translation id="6656545060687952787">Chrome behöver platsåtkomst för att söka efter enheter. <ph name="BEGIN_LINK" />Uppdatera behörigheter<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Lösenord</translation>
@@ -729,6 +736,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7400418766976504921">Webbadress</translation>
 <translation id="7403691278183511381">Första körningen av Chrome</translation>
 <translation id="741204030948306876">Ja</translation>
+<translation id="7413229368719586778">Startdatum <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Fråga först</translation>
 <translation id="7423538860840206698">Läsbehörighet till Urklipp har nekats</translation>
 <translation id="7437998757836447326">Logga ut från Chrome</translation>
@@ -834,6 +842,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8313455859591948645">Redigera startfliken</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> och fler webbplatser</translation>
 <translation id="8339163506404995330">Sidor på <ph name="LANGUAGE" /> översätts inte</translation>
+<translation id="8349013245300336738">Sortera efter dataförbrukning</translation>
 <translation id="8363501664269050863">Navigeringspanel. Stäng genom att svepa nedåt.</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
 <translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>

@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">方向</translation>
 <translation id="3153444934357957346">使用多帳戶登入功能時，一次最多只能登入 <ph name="MULTI_PROFILE_USER_LIMIT" /> 個帳戶。</translation>
 <translation id="3236488194889173876">沒有可用的行動網路</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">訪客</translation>
 <translation id="332587331255250389">請更換電池</translation>
 <translation id="3351879221545518001">你目前正在投放畫面。</translation>
@@ -127,6 +128,7 @@
 <translation id="3400357268283240774">其他設定</translation>
 <translation id="3413817803639110246">目前還沒有任何通知</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
+<translation id="3454224730401036106">已切換至更安全的網路連線</translation>
 <translation id="3465566417615315331">點選您的相片</translation>
 <translation id="3477079411857374384">Ctrl + Shift + 空格鍵</translation>
 <translation id="3510164367642747937">醒目顯示滑鼠游標</translation>
@@ -295,6 +297,7 @@
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7377169924702866686">大寫鍵已啟用。</translation>
+<translation id="7398254312354928459">已切換網路連線</translation>
 <translation id="742594950370306541">攝影機正在使用中。</translation>
 <translation id="743058460480092004">攝影機和麥克風正在使用中。</translation>
 <translation id="7510334386202674593">Ctrl + Shift + L 鍵</translation>
@@ -327,6 +330,7 @@
 <translation id="7994370417837006925">多帳戶登入</translation>
 <translation id="8000066093800657092">沒有網路</translation>
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>
+<translation id="8061464966246066292">高對比模式</translation>
 <translation id="8098591350844501178">停止將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
 <translation id="8132793192354020517">已連線至 <ph name="NAME" /></translation>
 <translation id="813913629614996137">正在初始化...</translation>

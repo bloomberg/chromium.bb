@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">Orientação</translation>
 <translation id="3153444934357957346">Apenas pode ter, no máximo, <ph name="MULTI_PROFILE_USER_LIMIT" /> contas no início de sessão integrado.</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Convidado</translation>
 <translation id="332587331255250389">Substitua a bateria</translation>
 <translation id="3351879221545518001">Está a transmitir atualmente o ecrã.</translation>
@@ -127,6 +128,7 @@
 <translation id="3400357268283240774">Definições adicionais</translation>
 <translation id="3413817803639110246">Ainda não existe nada para ver</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
+<translation id="3454224730401036106">A sua ligação mudou para uma rede mais segura.</translation>
 <translation id="3465566417615315331">Clique na sua foto</translation>
 <translation id="3477079411857374384">Control-Shift-Espaço</translation>
 <translation id="3510164367642747937">Realçar cursor do rato</translation>
@@ -295,6 +297,7 @@
 <translation id="7348093485538360975">Teclado no ecrã</translation>
 <translation id="735745346212279324">VPN desligado</translation>
 <translation id="7377169924702866686">Caps Lock ativado.</translation>
+<translation id="7398254312354928459">Ligação de rede alterada</translation>
 <translation id="742594950370306541">A câmara está a ser utilizada.</translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -327,6 +330,7 @@
 <translation id="7994370417837006925">Início de sessão integrado</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8054466585765276473">A calcular tempo da bateria.</translation>
+<translation id="8061464966246066292">Alto contraste</translation>
 <translation id="8098591350844501178">Parar a transmissão do ecrã para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Ligado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">A inicializar...</translation>

@@ -92,6 +92,7 @@
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1756600373018374892">Presiona este botón para acceder de forma rápida a tus pestañas.</translation>
 <translation id="1779089405699405702">Decodificador de imágenes</translation>
+<translation id="1782483593938241562">Fecha de finalización: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">Cambia la ubicación predeterminada de las descargas en cualquier momento</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">Actualizar página</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="271033894570825754">Nuevo</translation>
+<translation id="2728754400939377704">Ordenar por sitio</translation>
 <translation id="2736391366332017384">Presiona el botón de inicio para obtener la página Nueva pestaña en tu pestaña actual</translation>
 <translation id="2744248271121720757">Presiona una palabra para realizar una búsqueda instantánea o ver acciones relacionadas</translation>
 <translation id="2762000892062317888">recién</translation>
@@ -353,8 +355,10 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
 <translation id="4116038641877404294">Descarga las páginas para usarlas sin conexión</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d favorito}other{%1$d favoritos}}</translation>
+<translation id="4159800535322890630">Impedir que los sitios accedan a los sensores</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
+<translation id="4179980317383591987">Datos utilizados: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4198423547019359126">No hay ubicaciones de descarga disponibles</translation>
@@ -520,6 +524,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="5585019845078534178">Tarjetas</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
+<translation id="5620299005957670886">Permitir que los sitios accedan a los sensores (recomendado)</translation>
 <translation id="5620928963363755975">Encuentra tus archivos y páginas en Descargas desde el botón Más opciones</translation>
 <translation id="5626134646977739690">Nombre:</translation>
 <translation id="5639724618331995626">Permitir todos los sitios</translation>
@@ -563,6 +568,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5911030830365207728">Google Traductor</translation>
 <translation id="5916664084637901428">Activada</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar la sincronización</translation>
+<translation id="5937580074298050696">Datos ahorrados: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5942872142862698679">Se usa Google para la búsqueda</translation>
 <translation id="5956665950594638604">Abrir Centro de ayuda de Chrome en pestaña nueva</translation>
@@ -643,6 +649,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6627583120233659107">Editar la carpeta</translation>
 <translation id="6643016212128521049">Borrar</translation>
+<translation id="6643649862576733715">Ordenar por cantidad de datos ahorrados</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}other{<ph name="CONTACT_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> más}}</translation>
 <translation id="6656545060687952787">Chrome necesita acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK" />Actualizar permisos<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Contraseña</translation>
@@ -729,6 +736,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Primera experiencia de ejecución de Chrome</translation>
 <translation id="741204030948306876">Sí, acepto</translation>
+<translation id="7413229368719586778">Fecha de inicio: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">Preguntar primero</translation>
 <translation id="7423538860840206698">Se impidió la lectura del portapapeles</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>
@@ -834,6 +842,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8313455859591948645">Editar la página de inicio</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> y más sitios</translation>
 <translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
+<translation id="8349013245300336738">Ordenar por cantidad de datos utilizados</translation>
 <translation id="8363501664269050863">Panel de navegación. Deslízalo hacia abajo para cerrarlo.</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano para un sitio específico.</translation>
 <translation id="8374821112118309944">Debes actualizar a una versión más reciente de TalkBack</translation>

@@ -128,6 +128,7 @@
 <translation id="3400357268283240774">Ustawienia dodatkowe</translation>
 <translation id="3413817803639110246">Na razie nie ma nic do pokazania</translation>
 <translation id="3445925074670675829">Urządzenie USB-C</translation>
+<translation id="3454224730401036106">Połączenie zostało przełączone na bezpieczniejszą sieć</translation>
 <translation id="3465566417615315331">Kliknij swoje zdjęcie</translation>
 <translation id="3477079411857374384">Control+Shift+spacja</translation>
 <translation id="3510164367642747937">Podświetlaj wskaźnik myszy</translation>
@@ -297,6 +298,7 @@
 <translation id="7348093485538360975">Klawiatura ekranowa</translation>
 <translation id="735745346212279324">VPN odłączona</translation>
 <translation id="7377169924702866686">Caps Lock jest włączony.</translation>
+<translation id="7398254312354928459">Przełączono połączenie sieciowe</translation>
 <translation id="742594950370306541">Aparat jest używany.</translation>
 <translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -329,6 +331,7 @@
 <translation id="7994370417837006925">Wielokrotne logowanie</translation>
 <translation id="8000066093800657092">Brak sieci</translation>
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
+<translation id="8061464966246066292">Wysoki kontrast</translation>
 <translation id="8098591350844501178">Zakończ przesyłanie ekranu do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicjuję…</translation>

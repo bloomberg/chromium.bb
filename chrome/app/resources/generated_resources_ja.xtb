@@ -1615,7 +1615,6 @@
 <translation id="3450157232394774192">アイドル状態の占有率（%）</translation>
 <translation id="3453612417627951340">認証が必要です</translation>
 <translation id="3454157711543303649">起動を完了</translation>
-<translation id="3454224730401036106">より安全なネットワークに接続が切り替えられました</translation>
 <translation id="345693547134384690">新しいタブで画像を開く(&amp;I)</translation>
 <translation id="3459509316159669723">印刷</translation>
 <translation id="3459697287128633276">お使いのアカウントで Google Play ストアにアクセスするには、ID プロバイダの認証を受けてください。</translation>
@@ -2177,7 +2176,6 @@
 <translation id="4340515029017875942"><ph name="ORIGIN" /> がアプリ「<ph name="EXTENSION_NAME" />」との通信をリクエストしています</translation>
 <translation id="4342311272543222243">TPM エラー。</translation>
 <translation id="4345587454538109430">設定...</translation>
-<translation id="4345703751611431217">ソフトウェア非互換性: 詳細</translation>
 <translation id="4348766275249686434">エラーを収集する</translation>
 <translation id="4350019051035968019">このデバイスは、別のドメインの管理対象として指定されているため、現在のアカウントの所属先ドメインに登録することはできません。</translation>
 <translation id="4354266305752237763">危険なサイトからユーザーと端末を保護する（セーフ ブラウジング）</translation>
@@ -3376,7 +3374,6 @@
 <translation id="6163363155248589649">標準(&amp;N)</translation>
 <translation id="6163522313638838258">すべてを展開...</translation>
 <translation id="6164005077879661055">この監視対象ユーザーを削除すると、このユーザーに関連付けられたすべてのファイルとローカル データも完全に削除されます。この監視対象ユーザーがアクセスしたウェブサイトやこのユーザーの設定は引き続き、管理者が <ph name="MANAGEMENT_URL" /> で見ることができます。</translation>
-<translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6166185671393271715">Chrome にパスワードをインポート</translation>
 <translation id="6169040057125497443">マイクを確認してください。</translation>
 <translation id="6169666352732958425">デスクトップをキャストできません。</translation>
@@ -4174,7 +4171,6 @@
 <translation id="7392118418926456391">ウイルス スキャンに失敗しました</translation>
 <translation id="7392915005464253525">閉じたウィンドウを開く（&amp;E）</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> はシステム起動時に開始され、他の <ph name="PRODUCT_NAME" /> ウィンドウをすべて閉じてもバックグラウンドで動作し続けます。</translation>
-<translation id="7398254312354928459">ネットワーク接続が切り替えられました</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Chromebox を再起動しています。しばらくお待ちください...</translation>
 <translation id="7400839060291901923">「<ph name="PHONE_NAME" />」で接続設定を行ってください</translation>

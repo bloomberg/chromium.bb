@@ -816,6 +816,7 @@
 <translation id="6945221475159498467">தேர்ந்தெடு</translation>
 <translation id="6948701128805548767">பிக்அப் முறைகளையும் தேவைகளையும் பார்க்க, முகவரியைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="6949872517221025916">கடவுச்சொல்லை மீட்டமைக்கவும்</translation>
+<translation id="6950684638814147129">JSON மதிப்பைப் பாகுபடுத்தும்போது பிழை நேர்ந்தது: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">சேவையகத்தின் சான்றிதழ் போலியானது போல் தெரிகிறது.</translation>
 <translation id="6965382102122355670">சரி</translation>
 <translation id="6965978654500191972">சாதனம்</translation>
@@ -1046,6 +1047,7 @@
 <translation id="8620436878122366504">இன்னும் உங்கள் பெற்றோர் அனுமதிக்கவில்லை</translation>
 <translation id="8625384913736129811">இந்தச் சாதனத்தில் கார்டைச் சேமி</translation>
 <translation id="8639963783467694461">தானியங்குநிரப்பி அமைப்புகள்</translation>
+<translation id="8663226718884576429">ஆர்டர் சுருக்கம், <ph name="TOTAL_LABEL" />, மேலும் விவரங்கள்</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, பதில், <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> க்கான உங்கள் இணைப்பு குறியாக்கம் செய்யப்படவில்லை.</translation>
 <translation id="8718314106902482036">பேமெண்ட் முடியவில்லை</translation>

@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">συντελεστές</translation>
 <translation id="1342835525016946179">άρθρο</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">αναπαραγωγή βίντεο σε λειτουργία picture-in-picture</translation>
 <translation id="1589122976691792535">περιοχή</translation>
 <translation id="1591562245178063882">Αυτόν το μήνα</translation>
 <translation id="1637811476055996098">Επιλογή αρχείων</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">μετρητής</translation>
 <translation id="6166809985690652833">επίλογος</translation>
 <translation id="6213469881011901533">γλωσσάρι</translation>
+<translation id="6310801910862476708">Έξοδος από τη λειτουργία Picture-in-Picture</translation>
 <translation id="6398862346408813489">Εμφάνιση παραθύρου επιλογής μήνα</translation>
 <translation id="6404546809543547843">δείκτης χρόνου ήχου</translation>
 <translation id="6453774872122745852">ευχαριστίες</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">πλοήγηση</translation>
 <translation id="9050748414552849310">εμφάνιση υπότιτλων</translation>
 <translation id="9062295712474918030">έγγραφο</translation>
+<translation id="9093215626363556771">έξοδος από τη λειτουργία picture-in-picture</translation>
 <translation id="9108370397979208512">μαθηματικά</translation>
 <translation id="9132465097189459683">Άλλες…</translation>
 <translation id="9138385573473225930">ειδοποίηση</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, από τις <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">υποσημείωση</translation>
 <translation id="947831847158436616">κελί</translation>
+<translation id="954003015749068518">είσοδος στη λειτουργία picture-in-picture</translation>
 <translation id="966787709310836684">μενού</translation>
 </translationbundle>

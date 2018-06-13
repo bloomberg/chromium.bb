@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">參與名單</translation>
 <translation id="1342835525016946179">文章</translation>
 <translation id="1359897965706325498">橫幅</translation>
+<translation id="1548116112524424341">在子母畫面模式中播放影片</translation>
 <translation id="1589122976691792535">區域</translation>
 <translation id="1591562245178063882">本月</translation>
 <translation id="1637811476055996098">選擇檔案</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">計量器</translation>
 <translation id="6166809985690652833">後記</translation>
 <translation id="6213469881011901533">詞彙解釋</translation>
+<translation id="6310801910862476708">離開子母畫面</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
 <translation id="6453774872122745852">鳴謝</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">導覽</translation>
 <translation id="9050748414552849310">顯示字幕</translation>
 <translation id="9062295712474918030">文件</translation>
+<translation id="9093215626363556771">離開子母畫面</translation>
 <translation id="9108370397979208512">數學</translation>
 <translation id="9132465097189459683">其他...</translation>
 <translation id="9138385573473225930">警示</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />，從 <ph name="WEEK_START_DATE" />開始</translation>
 <translation id="9168329111483466115">註腳</translation>
 <translation id="947831847158436616">儲存格</translation>
+<translation id="954003015749068518">進入子母畫面</translation>
 <translation id="966787709310836684">選單</translation>
 </translationbundle>

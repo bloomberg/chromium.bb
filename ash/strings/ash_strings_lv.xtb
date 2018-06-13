@@ -128,6 +128,7 @@
 <translation id="3400357268283240774">Papildu iestatījumi</translation>
 <translation id="3413817803639110246">Vēl nekas netiek rādīts</translation>
 <translation id="3445925074670675829">USB-C ierīce</translation>
+<translation id="3454224730401036106">Savienojums ir mainīts uz drošāku tīklu.</translation>
 <translation id="3465566417615315331">Noklikšķiniet uz sava fotoattēla.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Izcelt peles kursoru</translation>
@@ -296,6 +297,7 @@
 <translation id="7348093485538360975">Ekrāntastatūra</translation>
 <translation id="735745346212279324">VPN ir atvienots</translation>
 <translation id="7377169924702866686">Funkcija Caps Lock ir ieslēgta.</translation>
+<translation id="7398254312354928459">Ieslēgts tīkla savienojums</translation>
 <translation id="742594950370306541">Kamera tiek lietota.</translation>
 <translation id="743058460480092004">Kamera un mikrofons tiek lietoti.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -328,6 +330,7 @@
 <translation id="7994370417837006925">Vairākkārtēja pierakstīšanās</translation>
 <translation id="8000066093800657092">Nav tīkla</translation>
 <translation id="8054466585765276473">Notiek akumulatora darbības ilguma aprēķināšana.</translation>
+<translation id="8061464966246066292">Augsts kontrasts</translation>
 <translation id="8098591350844501178">Apturēt ekrāna apraidi uztvērējā “<ph name="RECEIVER_NAME" />”</translation>
 <translation id="8132793192354020517">Savienots ar <ph name="NAME" /></translation>
 <translation id="813913629614996137">Notiek inicializēšana...</translation>

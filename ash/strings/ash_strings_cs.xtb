@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">Orientace</translation>
 <translation id="3153444934357957346">Počet účtů, které lze v rámci vícenásobného přihlášení používat, je omezen na <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3236488194889173876">Není k dispozici žádná mobilní síť</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Host</translation>
 <translation id="332587331255250389">Vyměňte prosím baterii</translation>
 <translation id="3351879221545518001">Právě odesíláte obrazovku.</translation>
@@ -127,6 +128,7 @@
 <translation id="3400357268283240774">Další nastavení</translation>
 <translation id="3413817803639110246">Zatím tu není nic k vidění</translation>
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
+<translation id="3454224730401036106">Vaše připojení se přepnulo na bezpečnější síť</translation>
 <translation id="3465566417615315331">Klikněte na svou fotku</translation>
 <translation id="3477079411857374384">Control + Shift + mezerník</translation>
 <translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
@@ -295,6 +297,7 @@
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
 <translation id="735745346212279324">Síť VPN je odpojena</translation>
 <translation id="7377169924702866686">Caps Lock je zapnutý.</translation>
+<translation id="7398254312354928459">Přepnuto na jinou síť</translation>
 <translation id="742594950370306541">Kamera je používána.</translation>
 <translation id="743058460480092004">Kamera a mikrofon jsou používány.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -327,6 +330,7 @@
 <translation id="7994370417837006925">Vícenásobné přihlášení</translation>
 <translation id="8000066093800657092">Žádná síť</translation>
 <translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
+<translation id="8061464966246066292">Vysoký kontrast</translation>
 <translation id="8098591350844501178">Ukončit odesílání obrazovky do přijímače <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Připojeno k síti <ph name="NAME" /></translation>
 <translation id="813913629614996137">Probíhá inicializace...</translation>

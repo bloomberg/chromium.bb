@@ -1614,7 +1614,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3450157232394774192">Idle State Occupancy Percentage</translation>
 <translation id="3453612417627951340">Needs authorisation</translation>
 <translation id="3454157711543303649">Activation complete</translation>
-<translation id="3454224730401036106">Your connection has switched to a more secure network</translation>
 <translation id="345693547134384690">Open &amp;image in new tab</translation>
 <translation id="3459509316159669723">Printing</translation>
 <translation id="3459697287128633276">To enable your account to access the Google Play Store, please authenticate with your Identity Provider.</translation>
@@ -2176,7 +2175,6 @@ I don't think this site should be blocked!</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> wants to communicate with the app "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4342311272543222243">Oops, TPM error.</translation>
 <translation id="4345587454538109430">Configure...</translation>
-<translation id="4345703751611431217">Software incompatibility: Learn more</translation>
 <translation id="4348766275249686434">Collect errors</translation>
 <translation id="4350019051035968019">This device cannot be enrolled to the domain that your account belongs to because the device is marked for management by a different domain.</translation>
 <translation id="4354266305752237763">Protect you and your device from dangerous sites (Safe Browsing)</translation>
@@ -3375,7 +3373,6 @@ I don't think this site should be blocked!</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Expand all...</translation>
 <translation id="6164005077879661055">All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Learn more</translation>
 <translation id="6166185671393271715">Import Passwords To Chrome</translation>
 <translation id="6169040057125497443">Please check your microphone.</translation>
 <translation id="6169666352732958425">Unable to cast desktop.</translation>
@@ -4171,7 +4168,6 @@ I don't think this site should be blocked!</translation>
 <translation id="7392118418926456391">Virus scan failed</translation>
 <translation id="7392915005464253525">R&amp;eopen closed window</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> will launch at system startup and continue to run in the background, even once you've closed all other <ph name="PRODUCT_NAME" /> windows.</translation>
-<translation id="7398254312354928459">Switched network connection</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Please wait while your Chromebox restarts...</translation>
 <translation id="7400839060291901923">Set up connection on your <ph name="PHONE_NAME" /></translation>

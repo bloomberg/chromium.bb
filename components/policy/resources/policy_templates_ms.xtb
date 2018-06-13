@@ -53,7 +53,7 @@
       Jika dasar tidak ditetapkan atau ditetapkan kepada tidak benar, keadaan suis pembangun tidak akan dilaporkan.</translation>
 <translation id="1160479894929412407">Benarkan protokol QUIC</translation>
 <translation id="1160939557934457296">Lumpuhkan tindakan dari halaman amaran Penyemakan Imbas Selamat</translation>
-<translation id="1189817621108632689">Membolehkan anda menetapkan beberapa corak url yang menentukan tapak yang tidak dibenarkan untuk memaparkan imej.
+<translation id="1189817621108632689">Membolehkan anda menetapkan beberapa corak url yang menentukan tapak yang tidak dibenarkan memaparkan imej.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.
 
@@ -223,7 +223,7 @@
       Untuk membolehkan <ph name="PRODUCT_NAME" /> menangkap cap jari kata laluan yang baharu itu dengan betul di halaman tukar kata laluan ini, sila pastikan halaman tukar kata laluan anda mematuhi garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka jika mereka terkena pancingan data.
-      Jika tetapan ini dilumpuhkan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke https://myaccounts.google.com untuk menukar kata laluan mereka.
+      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke https://myaccounts.google.com untuk menukar kata laluan mereka.
       Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="1797233582739332495">Tunjukkan gesaan berulang kepada pengguna yang menunjukkan pelancaran semula diperlukan</translation>
 <translation id="1803646570632580723">Senarai apl berpin untuk dipaparkan dalam pelancar</translation>
@@ -647,7 +647,7 @@
 
       Apabila dasar ini tidak dikonfigurasi atau dasar ini ditetapkan kepada <ph name="BR_DISABLED" />, sandaran dan pemulihan Android dilumpuhkan dan tidak boleh didayakan oleh pengguna.
 
-      Apabila dasar ini ditetapkan kepada <ph name="BR_UNDER_USER_CONTROL" />, pengguna diminta untuk memilih sama ada hendak menggunakan sandaran dan pemulihan Android. Jika pengguna mendayakan sandaran dan pemulihan, data apl Android dimuat naik ke pelayan sandaran Android dan dipulihkan dari pelayan tersebut apabila pemasangan semula apl dilakukan untuk apl yang serasi.</translation>
+      Apabila dasar ini ditetapkan kepada <ph name="BR_UNDER_USER_CONTROL" />, pengguna diminta memilih sama ada hendak menggunakan sandaran dan pemulihan Android. Jika pengguna mendayakan sandaran dan pemulihan, data apl Android dimuat naik ke pelayan sandaran Android dan dipulihkan daripada pelayan tersebut apabila pemasangan semula apl dilakukan untuk apl yang serasi.</translation>
 <translation id="2757054304033424106">Jenis sambungan/apl yang boleh dipasang</translation>
 <translation id="2759224876420453487">Kawal kelakuan pengguna dalam sesi berbilang profil</translation>
 <translation id="2761483219396643566">Kelewatan amaran melahu apabila dijalankan dengan kuasa bateri</translation>
@@ -760,7 +760,7 @@
 <translation id="3072045631333522102">Penyelamat skrin untuk digunakan pada skrin log masuk dalam mod runcit</translation>
 <translation id="3072847235228302527">Tetapkan Syarat Perkhidmatan untuk akaun setempat peranti</translation>
 <translation id="3086995894968271156">Konfigurasikan Penerima Cast dalam <ph name="PRODUCT_NAME" />.</translation>
-<translation id="3088796212846734853">Membolehkan anda menetapkan beberapa corak url yang menentukan tapak yang dibenarkan untuk memaparkan imej.
+<translation id="3088796212846734853">Membolehkan anda menetapkan beberapa corak url yang menentukan tapak yang dibenarkan memaparkan imej.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.
 
@@ -843,7 +843,7 @@
 <translation id="332771718998993005">Tentukan nama yang diiklankan sebagai destinasi <ph name="PRODUCT_NAME" />.
 
           Jika dasar ini ditetapkan kepada rentetan tidak kosong, rentetan itu akan digunakan sebagai nama bagi destinasi <ph name="PRODUCT_NAME" />. Jika tidak, nama peranti akan dijadikan nama destinasi. Jika dasar ini tidak ditetapkan, nama peranti akan dijadikan nama destinasi dan pemilik peranti (atau pengguna daripada domain yang mengurus peranti tersebut) akan dibenarkan untuk menukar nama itu. Nama dihadkan kepada 24 aksara.</translation>
-<translation id="3335468714959531450">Membolehkan anda menetapkan beberapa pola url yang menentukan tapak yang dibenarkan untuk menetapkan sesi kuki.
+<translation id="3335468714959531450">Membolehkan anda menetapkan beberapa pola url yang menentukan tapak yang dibenarkan menetapkan sesi kuki.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultCookiesSetting' jika dasar ini ditetapkan, jika tidak, konfigurasi peribadi pengguna akan digunakan.
 
@@ -930,7 +930,7 @@
 <translation id="3746590506846867985">
       Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
       Jika dasar didayakan, setiap tempat asal yang dinamakan dalam senarai yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini turut mengasingkan tempat asal yang dinamakan mengikut subdomain, mis. menyatakan https://example.com/ turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak https://example.com/.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan lapangan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih boleh mendayakan IsolateOrigins secara manual.
+      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih boleh mendayakan IsolateOrigins secara manual.
       Jika dasar ini tidak dikonfigurasi, tetapan pengasingan tapak lalai platform akan digunakan untuk skrin log masuk.
       </translation>
 <translation id="3750220015372671395">Sekat penghasilan kunci pada tapak ini</translation>
@@ -1099,7 +1099,7 @@
 
       Apabila dasar ini tidak dikonfigurasi atau dasar ini ditetapkan kepada <ph name="GLS_DISABLED" />, perkhidmatan lokasi Google dilumpuhkan dan tidak boleh didayakan oleh pengguna.
 
-      Apabila dasar ini ditetapkan kepada <ph name="GLS_UNDER_USER_CONTROL" />, pengguna diminta untuk memilih sama ada hendak menggunakan perkhidmatan lokasi Google. Tindakan ini akan membolehkan apl Android menggunakan perkhidmatan tersebut untuk menyoal tentang lokasi peranti dan akan turut membolehkan penyerahan data lokasi awanama kepada Google.
+      Apabila dasar ini ditetapkan kepada <ph name="GLS_UNDER_USER_CONTROL" />, pengguna diminta memilih sama ada hendak menggunakan perkhidmatan lokasi Google. Tindakan ini akan membolehkan apl Android menggunakan perkhidmatan tersebut untuk menyoal tentang lokasi peranti dan akan turut membolehkan penyerahan data lokasi awanama kepada Google.
 
       Harap maklum bahawa dasar ini diabaikan dan perkhidmatan lokasi Google sentiasa dilumpuhkan apabila dasar <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> ditetapkan kepada <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="408029843066770167">Benarkan pertanyaan kepada perkhidmatan masa Google</translation>
@@ -2063,7 +2063,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6916507170737609563">
       Anda mungkin ingin meneliti tetapan dasar IsolateOriginsAndroid untuk mendapatkan tetapan yang terbaik daripada kedua-duanya, pengasingan dan impak terhad untuk pengguna dengan menggunakan IsolateOriginsAndroid dengan senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcessAndroid, mengasingkan semua tapak.
       Jika dasar ini didayakan, setiap tapak akan berjalan dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak yang jelas akan berlaku dan percubaan medan IsolateOriginsAndroid dan SitePerProcessAndroid akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
+      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak yang eksplisit akan berlaku dan percubaan medan IsolateOriginsAndroid dan SitePerProcessAndroid akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
       Jika dasar tidak dikonfigurasikan, pengguna akan dapat menukar tetapan ini.
 
       NOTA: Pengasingan Tapak bersifat percubaan pada Android. Sokongan akan dipertingkatkan dari semasa ke semasa tetapi masalah prestasi mungkin berlaku pada masa ini.
@@ -2439,11 +2439,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7781069478569868053">Halaman Tab Baharu</translation>
 <translation id="7788511847830146438">Setiap Profil</translation>
 <translation id="7788872453000173219">
-      Anda mungkin ingin meneliti tetapan dasar IsolateOrigins untuk mendapatkan tetapan yang terbaik daripada kedua-duanya, pengasingan dan kesan terhad untuk pengguna dengan menggunakan IsolateOrigins dengan senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcess, mengasingkan semua tapak.
+      Anda mungkin ingin meneliti tetapan dasar IsolateOrigins untuk memanfaatkan kedua-dua keadaan, pengasingan dan kesan terhad untuk pengguna dengan menggunakan IsolateOrigins dengan senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcess, mengasingkan semua tapak.
       Jika dasar ini didayakan, setiap tapak akan berjalan dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak yang jelas akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
+      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak yang eksplisit akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
       Jika dasar tidak dikonfigurasikan, pengguna akan dapat menukar tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan supaya menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, satu penangguhan mungkin akan berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh dasar pengguna sedang digunakan.
+      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan supaya menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, kelewatan mungkin berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh dasar pengguna sedang digunakan.
 
       NOTA: Dasar ini tidak digunakan pada Android. Untuk mendayakan SitePerProcess pada Android, gunakan tetapan dasar SitePerProcessAndroid.
       </translation>
@@ -2486,7 +2486,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Dasar ini digunakan pada skrin log masuk. Sila lihat juga dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> yang digunakan pada sesi pengguna. Anda disyorkan supaya menetapkan kedua-dua dasar kepada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
       Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk memanfaatkan kedua-dua keadaan, pengasingan dan kesan terhad untuk pengguna dengan menggunakan IsolateOrigins dengan senarai tapak yang hendak diasingkan. Tetapan SitePerProcess ini mengasingkan semua tapak.
       Jika dasar ini didayakan, setiap tapak akan dijalankan dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan lapangan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
+      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan medan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
       Jika dasar ini tidak dikonfiguraskan, pengguna akan dapat mengubah tetapan ini.
       </translation>
 <translation id="7912255076272890813">Konfigurasi jenis apl/sambungan yang dibenarkan</translation>
@@ -2510,7 +2510,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       subdomain; mis. menentukan https://example.com/ akan turut menyebabkan
       https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
       https://example.com/.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan lapangan IsolateOriginsAndroid serta SitePerProcessAndroid akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual.
+      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan medan IsolateOriginsAndroid serta SitePerProcessAndroid akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual.
       Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
 
       NOTA: Pada Android, Pengasingan Tapak bersifat percubaan. Sokongan akan ditingkatkan dari semasa ke semasa, tetapi ciri ini mungkin menyebabkan masalah prestasi pada masa ini.
@@ -2539,14 +2539,14 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8044493735196713914">Laporkan mod but peranti</translation>
 <translation id="8050080920415773384">Pencetakan Natif</translation>
 <translation id="8059164285174960932">URL di mana pelanggan akses jauh harus mendapatkan token pengesahan mereka</translation>
-<translation id="8078366200175825572">Membolehkan anda menetapkan beberapa pola url yang menentukan tapak yang dibenarkan untuk menetapkan kuki.
+<translation id="8078366200175825572">Membolehkan anda menetapkan beberapa pola url yang menentukan tapak yang tidak dibenarka menetapkan kuki.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultCookiesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.
 
           Lihat dasar 'CookiesAllowedForUrls' dan 'CookiesSessionOnlyForUrls' juga. Harap maklum bahawa pola URL tidak boleh bercanggah antara ketiga-tiga dasar ini - dasar yang diberi keutamaan tidak dinyatakan.</translation>
 <translation id="8099880303030573137">Kelewatan melahu apabila dijalankan dengan kuasa bateri</translation>
 <translation id="8102913158860568230">Tetapan mediastream lalai</translation>
-<translation id="8104186956182795918">Membolehkan anda menetapkan sama ada tapak web dibenarkan untuk memaparkan imej. Pemaparan imej boleh dibenarkan untuk semua tapak web atau ditolak untuk semua tapak web.
+<translation id="8104186956182795918">Membolehkan anda menetapkan sama ada tapak web dibenarkan memaparkan imej. Pemaparan imej boleh dibenarkan untuk semua tapak web atau ditolak untuk semua tapak web.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AllowImages' akan digunakan dan pengguna akan dapat menukar dasar ini.
 

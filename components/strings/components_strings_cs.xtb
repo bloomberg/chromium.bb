@@ -815,6 +815,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6945221475159498467">Vybrat</translation>
 <translation id="6948701128805548767">Chcete-li zobrazit způsoby vyzvednutí a požadavky, vyberte adresu</translation>
 <translation id="6949872517221025916">Resetovat heslo</translation>
+<translation id="6950684638814147129">Při analýze hodnoty JSON došlo k chybě: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Zdá se, že certifikát serveru je podvrh.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Zařízení</translation>
@@ -1046,6 +1047,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8620436878122366504">Rodiče přístup dosud neschválili.</translation>
 <translation id="8625384913736129811">Uložit tuto kartu do zařízení</translation>
 <translation id="8639963783467694461">Nastavení automatického vyplňování</translation>
+<translation id="8663226718884576429">Shrnutí objednávky, <ph name="TOTAL_LABEL" />, další podrobnosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odpověď, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaše spojení se serverem <ph name="DOMAIN" /> není šifrované.</translation>
 <translation id="8718314106902482036">Platba nebyla dokončena</translation>

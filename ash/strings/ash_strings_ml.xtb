@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">ഓറിയന്റേഷൻ</translation>
 <translation id="3153444934357957346">ഒന്നിലധികം സൈൻ ഇന്നുകളിൽ നിങ്ങൾക്ക് <ph name="MULTI_PROFILE_USER_LIMIT" /> അക്കൗണ്ടുകൾ വരെ മാത്രമേ ഉണ്ടായിരിക്കാൻ പാടുള്ളൂ.</translation>
 <translation id="3236488194889173876">മൊബൈൽ നെറ്റ്‌വർക്ക് ലഭ്യമല്ല</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">അതിഥി</translation>
 <translation id="332587331255250389">ബാറ്ററി മാറ്റി പുതിയത് വയ്ക്കുക</translation>
 <translation id="3351879221545518001">നിലവിൽ നിങ്ങൾ സ്ക്രീൻ കാസ്‌റ്റ് ചെയ്യുന്നു.</translation>
@@ -127,6 +128,7 @@
 <translation id="3400357268283240774">അധിക ക്രമീകരണങ്ങൾ</translation>
 <translation id="3413817803639110246">ഇതുവരെ കാണാൻ ഒന്നുമില്ല</translation>
 <translation id="3445925074670675829">USB-C ഉപകരണം</translation>
+<translation id="3454224730401036106">കൂടുതൽ സുരക്ഷിതമായൊരു നെറ്റ്‌വർക്കിലേക്ക് നിങ്ങളുടെ കണക്ഷൻ മാറ്റിയിരിക്കുന്നു</translation>
 <translation id="3465566417615315331">നിങ്ങളുടെ ഫോട്ടോ ക്ലിക്കുചെയ്യുക</translation>
 <translation id="3477079411857374384">കൺട്രോൾ-ഷിഫ്‌റ്റ്-സ്പേസ്</translation>
 <translation id="3510164367642747937">മൗസ് കഴ്‌സർ ഹൈലൈറ്റുചെയ്യുക</translation>
@@ -295,6 +297,7 @@
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
 <translation id="735745346212279324">VPN വിച്ഛേദിച്ചു</translation>
 <translation id="7377169924702866686">Caps Lock ഓൺ ആണ്.</translation>
+<translation id="7398254312354928459">നെറ്റ്‌വർക്ക് കണക്ഷൻ മാറ്റി</translation>
 <translation id="742594950370306541">ക്യാമറ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="743058460480092004">ക്യാമറയും മൈക്രോഫോണും ഉപയോഗത്തിലാണ്.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -327,6 +330,7 @@
 <translation id="7994370417837006925">ഒന്നിലധികം സൈൻ ഇൻ</translation>
 <translation id="8000066093800657092">നെറ്റ്‍വര്‍ക്ക് ഇല്ല</translation>
 <translation id="8054466585765276473">ബാറ്ററി സമയം കണക്കാക്കുന്നു.</translation>
+<translation id="8061464966246066292">ഉയർന്ന ദൃശ്യ തീവ്രത</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> എന്നതിലേക്ക് ബന്ധിപ്പിച്ചു</translation>
 <translation id="813913629614996137">ആരംഭിക്കുന്നു...</translation>

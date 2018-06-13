@@ -92,6 +92,7 @@
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1756600373018374892">انقر على هذا الزر للوصول السريع إلى علامات التبويب.</translation>
 <translation id="1779089405699405702">أداة فك تشفير الصور</translation>
+<translation id="1782483593938241562">تاريخ الانتهاء: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">تغيير موقع التنزيل التلقائي في أي وقت</translation>
 <translation id="1807246157184219062">فاتح</translation>
 <translation id="1829244130665387512">البحث في الصفحة</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">تحديث الصفحة</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="271033894570825754">جديدة</translation>
+<translation id="2728754400939377704">الترتيب حسب الموقع</translation>
 <translation id="2736391366332017384">انقر على زر "الصفحة الرئيسية" للوصول إلى صفحة علامة التبويب الجديدة في علامة التبويب الحالية.</translation>
 <translation id="2744248271121720757">النقر على الكلمة للبحث عنها فورًا أو الاطلاع على الإجراءات ذات الصلة</translation>
 <translation id="2762000892062317888">الآن</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">يديره المسؤول</translation>
 <translation id="4116038641877404294">تنزيل الصفحات لاستخدامها بلا اتصال بالإنترنت</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{‏إشارة مرجعية (%1$d)}zero{‏%1$d إشارة مرجعية}two{‏إشارتان مرجعيتان (%1$d)}few{‏%1$d إشارات مرجعية}many{‏%1$d إشارةً مرجعيةً}other{‏%1$d إشارة مرجعية}}</translation>
+<translation id="4159800535322890630">حظر المواقع من الوصول إلى أجهزة الاستشعار</translation>
 <translation id="4165986682804962316">إعدادات الموقع</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
+<translation id="4179980317383591987">تم استخدام <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">اللغات</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="4198423547019359126">ما من مواقع تنزيل متاحة</translation>
@@ -375,6 +379,7 @@
 <translation id="4409723563706114196">استخدام توقعات الصفحة</translation>
 <translation id="4412992751769744546">السماح لملفات تعريف ارتباط الجهات الخارجية</translation>
 <translation id="4432792777822557199">ستتم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> من الآن فصاعدًا</translation>
+<translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="4445444302979002552">الاستفادة من خدمات التنبؤ في اقتراح عبارات البحث ومواقع الويب</translation>
 <translation id="4452411734226507615">إغلاق علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">أُضيفَت إشارة مرجعية إلى <ph name="FOLDER_NAME" /></translation>
@@ -520,6 +525,7 @@
 <translation id="5585019845078534178">بطاقات</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
+<translation id="5620299005957670886">السماح للمواقع بالوصول إلى أجهزة الاستشعار (مُوصى به)</translation>
 <translation id="5620928963363755975">العثور على الملفات والصفحات في التنزيلات من الزر "مزيد من الخيارات"</translation>
 <translation id="5626134646977739690">الاسم:</translation>
 <translation id="5639724618331995626">السماح بجميع المواقع</translation>
@@ -547,6 +553,7 @@
 <translation id="5765780083710877561">الوصف:</translation>
 <translation id="5777170031995031090">‏التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث، والإعلانات، وخدمات Google الأخرى.</translation>
 <translation id="5779929835642192302">الاقتراحات المتاحة</translation>
+<translation id="5793665092639000975">استخدام <ph name="SPACE_USED" /> من <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{قبل ساعة واحدة (#)}zero{قبل # ساعة}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # ساعة}}</translation>
 <translation id="5817918615728894473">إقران</translation>
@@ -562,6 +569,7 @@
 <translation id="5911030830365207728">‏الترجمة من Google</translation>
 <translation id="5916664084637901428">تشغيل</translation>
 <translation id="5919204609460789179">تحديث <ph name="PRODUCT_NAME" /> لبدء المزامنة</translation>
+<translation id="5937580074298050696">تم توفير <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">إعادة</translation>
 <translation id="5942872142862698679">‏استخدام محرك Google للبحث</translation>
 <translation id="5956665950594638604">‏فتح مركز مساعدة Chrome في علامة تبويب جديدة</translation>
@@ -632,6 +640,7 @@
 <translation id="6556716549745717622">الحظر إذا كان موقع الويب يميل إلى عرض إعلانات متداخلة (مستحسن)</translation>
 <translation id="6560414384669816528">‏البحث باستخدام Sogou</translation>
 <translation id="6566259936974865419">‏لقد وفر Chrome لك <ph name="GIGABYTES" /> غيغابايت</translation>
+<translation id="6573096386450695060">السماح دومًا</translation>
 <translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
 <translation id="6575643671698722332">تعذّرت إعادة التعيين. تأكد من مدى اتصال جهازك وأعد المحاولة.</translation>
 <translation id="6583199322650523874">وضع إشارة مرجعية على الصفحة الحالية</translation>
@@ -641,6 +650,7 @@
 <translation id="6612358246767739896">محتوى محمي</translation>
 <translation id="6627583120233659107">تعديل مجلد</translation>
 <translation id="6643016212128521049">محو</translation>
+<translation id="6643649862576733715">الترتيب حسب مقدار البيانات التي تم توفيرها</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />\u2026 وجهة اتصال إضافية واحدة <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}zero{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}two{‏<ph name="CONTACT_PREVIEW" />\u2026 وجهتا اتصال إضافيتان (<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />)}few{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهات اتصال إضافية}many{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}other{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}}</translation>
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
@@ -693,6 +703,7 @@
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7034608350006174882">‏البطاقات والعناوين باستخدام Google Pay</translation>
 <translation id="7053983685419859001">منع</translation>
+<translation id="7055152154916055070">تم حظر إعادة توجيه:</translation>
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم تحديد عنصر واحد}zero{تم تحديد # عنصر}two{تم تحديد عنصرين (#)}few{تم تحديد # عناصر}many{تم تحديد # عنصرًا}other{تم تحديد # عنصر}}</translation>
@@ -701,6 +712,7 @@
 <translation id="7121362699166175603">‏مسح السجل وميزة الإكمال التلقائي في شريط العناوين. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">السماح بمحرك البحث الحالي</translation>
 <translation id="7138678301420049075">أخرى</translation>
+<translation id="7141896414559753902">منع مواقع الويب من عرض النوافذ المنبثقة وعمليات إعادة التوجيه (مُوصى به)</translation>
 <translation id="7144878232160441200">إعادة المحاولة</translation>
 <translation id="7149893636342594995">آخر 24 ساعة</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>
@@ -725,6 +737,7 @@
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7403691278183511381">‏أول تجربة تشغيل لمتصفح Chrome</translation>
 <translation id="741204030948306876">نعم، موافق</translation>
+<translation id="7413229368719586778">تاريخ البدء: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7423538860840206698">تم الحظر من قراءة الحافظة</translation>
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
@@ -830,6 +843,7 @@
 <translation id="8313455859591948645">تعديل صفحة بدء التشغيل</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ومواقع أخرى</translation>
 <translation id="8339163506404995330">لن تتم ترجمة الصفحات باللغة <ph name="LANGUAGE" /></translation>
+<translation id="8349013245300336738">الترتيب حسب مقدار البيانات المُستخدَمة</translation>
 <translation id="8363501664269050863">لوحة التنقل. يمكنك التمرير للأسفل للإغلاق.</translation>
 <translation id="8372893542064058268">السماح بتشغيل "مزامنة الخلفية" لموقع ويب معين.</translation>
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
@@ -925,6 +939,7 @@
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="932599481871055447">حفظ البيانات والاستمتاع بتصفح أسرع</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">‏لا تتوفَّر مساحة كافية على بطاقة SD</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
 <translation id="951339005376969845">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />.</translation>

@@ -363,7 +363,7 @@
 <translation id="1511388193702657997">Tawarkan untuk menyimpan sandi web Anda</translation>
 <translation id="1512210426710821809">Satu-satunya cara untuk mengurungkan tindakan ini adalah dengan menginstal ulang <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="151501797353681931">Diimpor Dari Safari</translation>
-<translation id="1520605251886806589">Google dapat menggunakan konten di situs yang Anda buka, aktivitas dan interaksi browsing untuk mempersonalisasi Chrome dan layanan Google lainnya seperti Terjemahan, Penelusuran, dan iklan. Anda dapat menyesuaikannya di Setelan.</translation>
+<translation id="1520605251886806589">Google dapat menggunakan konten di situs yang Anda buka, serta aktivitas dan interaksi browsing untuk mempersonalisasi Chrome dan layanan Google lainnya seperti Terjemahan, Penelusuran, dan iklan. Anda dapat menyesuaikannya di Setelan.</translation>
 <translation id="1521442365706402292">Kelola sertifikat</translation>
 <translation id="152234381334907219">Jangan Pernah Disimpan</translation>
 <translation id="1524430321211440688">Keyboard</translation>
@@ -876,7 +876,7 @@
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" telah meminta izin tambahan.</translation>
 <translation id="2307462900900812319">Konfigurasi jaringan</translation>
 <translation id="230927227160767054">Halaman ini ingin memasang penangan layanan.</translation>
-<translation id="2309620859903500144">Situs ini telah diblokir agar tidak dapat mengakses sensor gerak atau sensor cahaya.</translation>
+<translation id="2309620859903500144">Situs ini telah diblokir agar tidak dapat mengakses sensor gerakan atau sensor cahaya.</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% selesai</translation>
 <translation id="2318143611928805047">Ukuran kertas</translation>
@@ -1367,7 +1367,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="304747341537320566">Mesin Ucapan</translation>
 <translation id="304826556400666995">Nonaktifkan Tab</translation>
 <translation id="3053013834507634016">Penggunaan Kunci Sertifikat</translation>
-<translation id="3055065387062707862">Memulai penampung di dalam VM.</translation>
+<translation id="3055065387062707862">Memulai container di dalam VM.</translation>
 <translation id="3057861065630527966">Cadangkan foto dan video</translation>
 <translation id="3060379269883947824">Aktifkan fitur klik untuk diucapkan</translation>
 <translation id="3061707000357573562">Layanan Patch</translation>
@@ -1614,7 +1614,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="3450157232394774192">Persentase Pemakaian Status Menganggur</translation>
 <translation id="3453612417627951340">Memerlukan otorisasi</translation>
 <translation id="3454157711543303649">Aktivasi selesai</translation>
-<translation id="3454224730401036106">Sambungan Anda dialihkan ke jaringan yang lebih aman</translation>
 <translation id="345693547134384690">Buka gambar d&amp;i tab baru</translation>
 <translation id="3459509316159669723">Pencetakan</translation>
 <translation id="3459697287128633276">Agar akun Anda dapat mengakses Google Play Store, harap lakukan autentikasi dengan Penyedia Identitas Anda.</translation>
@@ -2176,7 +2175,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ingin berkomunikasi dengan aplikasi "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4342311272543222243">Ups, kesalahan TPM.</translation>
 <translation id="4345587454538109430">Konfigurasikan...</translation>
-<translation id="4345703751611431217">Software tidak kompatibel: Pelajari lebih lanjut</translation>
 <translation id="4348766275249686434">Kumpulkan kesalahan</translation>
 <translation id="4350019051035968019">Perangkat ini tidak dapat didaftarkan ke domain tempat akun Anda berada karena perangkat ditandai untuk dikelola oleh domain lain.</translation>
 <translation id="4354266305752237763">Melindungi Anda dan perangkat dari situs berbahaya (Safe Browsing)</translation>
@@ -2269,7 +2267,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4509823033118379431">Gambar saat ini tidak tersedia. Sambungkan kembali untuk melihat koleksi.</translation>
 <translation id="451407183922382411">Diberdayakan oleh <ph name="COMPANY_NAME" /></translation>
 <translation id="4514542542275172126">Menyiapkan pengguna yang dilindungi yang baru</translation>
-<translation id="4514610446763173167">Alihkan video untuk diputar atau dijeda</translation>
+<translation id="4514610446763173167">Tombol putar atau jeda video</translation>
 <translation id="451515744433878153">Hapus</translation>
 <translation id="4518677423782794009">Apakah Chrome tidak bekerja, menampilkan halaman mulai, toolbar yang tidak biasanya, iklan pop-up yang tidak dapat ditutup, atau mengubah pengalaman penjelajahan web Anda? Anda dapat memperbaiki masalah ini dengan menjalankan Alat Pembersih Chrome.</translation>
 <translation id="4520385623207007473">Cookie yang sedang digunakan</translation>
@@ -2301,7 +2299,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="4555769855065597957">Bayangan</translation>
 <translation id="4556110439722119938">Bookmark, histori, sandi, dan setelan lainnya akan disinkronkan ke Akun Google agar Anda dapat menggunakannya di semua perangkat</translation>
 <translation id="4558426062282641716">Diminta izin peluncuran otomatis</translation>
-<translation id="4559617833001311418">Situs ini mengakses sensor gerak atau sensor cahaya Anda.</translation>
+<translation id="4559617833001311418">Situs ini mengakses sensor gerakan atau sensor cahaya Anda.</translation>
 <translation id="4562155214028662640">Tambahkan Sidik Jari</translation>
 <translation id="4565377596337484307">Sembunyikan sandi</translation>
 <translation id="4567772783389002344">Tambahkan kata</translation>
@@ -3297,7 +3295,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="6055171183283175969">Sandi yang Anda masukkan salah.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 Dengan Enkripsi RSA</translation>
 <translation id="6056710589053485679">Muat Ulang Normal</translation>
-<translation id="6057381398996433816">Situs ini diblokir agar tidak menggunakan sensor gerak dan sensor cahaya.</translation>
+<translation id="6057381398996433816">Situs ini diblokir agar tidak menggunakan sensor gerakan dan sensor cahaya.</translation>
 <translation id="6059652578941944813">Hierarki Sertifikat</translation>
 <translation id="6059925163896151826">Perangkat USB</translation>
 <translation id="6064217302520318294">Kunci layar</translation>
@@ -3375,7 +3373,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Luaskan semua...</translation>
 <translation id="6164005077879661055">Semua file dan data lokal yang terkait dengan pengguna yang dilindungi akan dihapus secara permanen setelah pengguna yang dilindungi ini dihapus. Situs web yang dikunjungi dan setelan untuk pengguna yang dilindungi ini mungkin tetap dapat dilihat oleh pengelola di <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="6166185671393271715">Impor Sandi ke Chrome</translation>
 <translation id="6169040057125497443">Harap periksa mikrofon Anda.</translation>
 <translation id="6169666352732958425">Tidak dapat mentransmisi desktop.</translation>
@@ -4171,7 +4168,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="7392118418926456391">Pemindaian virus gagal</translation>
 <translation id="7392915005464253525">Buka kembali jendela yang tertutup</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> akan diluncurkan pada permulaan sistem dan tetap berjalan di latar meskipun Anda telah menutup semua jendela <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Koneksi jaringan dialihkan</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Tunggu saat Chromebox dimulai ulang...</translation>
 <translation id="7400839060291901923">Siapkan koneksi di <ph name="PHONE_NAME" /> Anda</translation>
@@ -5183,7 +5179,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8944964446326379280"><ph name="APP_NAME" /> membagikan jendela dengan <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416"><ph name="DEVICE_TYPE" /> dapat dibuka menggunakan ponsel Android Anda.</translation>
 <translation id="8946359700442089734">Fitur debug belum diaktifkan sepenuhnya di perangkat <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="8948006114608036530">Saat ini, perangkat secara otomatis mengirimkan data penggunaan perangkat dan aplikasi serta diagnostik ke Google. Setelan ini diterapkan oleh pemilik. Jika Anda mengaktifkan Aktivitas Web &amp; Aplikasi tambahan, informasi ini akan disimpan dalam akun sehingga Anda dapat mengelolanya di Aktivitas Saya.
+<translation id="8948006114608036530">Saat ini, perangkat secara otomatis mengirimkan data penggunaan perangkat dan aplikasi serta diagnostik ke Google. Setelan ini diterapkan oleh pemilik. Jika Anda mengaktifkan Aktivitas Web &amp; Aplikasi tambahan, informasi ini akan disimpan dalam akun Anda sehingga Anda dapat mengelolanya di Aktivitas Saya.
 
     Ini adalah informasi umum tentang perangkat dan cara menggunakannya (seperti tingkat daya baterai, penggunaan aplikasi, dan konektivitas jaringan). Data akan digunakan untuk menyempurnakan produk dan layanan Google bagi semua orang. Beberapa informasi yang digabungkan akan membantu partner, seperti developer Android, membuat produk dan aplikasi mereka menjadi lebih baik.
     Menonaktifkan fitur ini tidak memengaruhi kemampuan perangkat dalam mengirimkan informasi yang diperlukan untuk layanan penting seperti update sistem dan keamanan.
@@ -5197,7 +5193,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8959810181433034287">Pengguna yang diawasi harus menggunakan sandi ini untuk masuk, jadi pilih sandi yang aman dan jangan lupa untuk membicarakannya dengan pengguna yang dilindungi.</translation>
 <translation id="8960795431111723921">Saat ini kami sedang menginvestigasi masalah ini.</translation>
 <translation id="8962083179518285172">Sembunyikan Detail</translation>
-<translation id="8962918469425892674">Situs ini menggunakan sensor gerak atau sensor cahaya.</translation>
+<translation id="8962918469425892674">Situs ini menggunakan sensor gerakan atau sensor cahaya.</translation>
 <translation id="8965037249707889821">Masukkan sandi lama</translation>
 <translation id="8965697826696209160">Ruang tidak cukup.</translation>
 <translation id="8967866634928501045">Tekan Alt Shift A untuk menampilkan</translation>

@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">ক্রেডিট</translation>
 <translation id="1342835525016946179">নিবন্ধ</translation>
 <translation id="1359897965706325498">ব্যানার</translation>
+<translation id="1548116112524424341">ছবির-মধ্যে-ছবি মোডে ভিডিও চালান</translation>
 <translation id="1589122976691792535">অঞ্চল</translation>
 <translation id="1591562245178063882">এই মাস</translation>
 <translation id="1637811476055996098">ফাইল বেছে নিন</translation>
@@ -142,6 +143,7 @@
 <translation id="6164829606128959761">মিটার</translation>
 <translation id="6166809985690652833">পরিশিষ্ট</translation>
 <translation id="6213469881011901533">শব্দকোষ</translation>
+<translation id="6310801910862476708">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="6398862346408813489">মাস নির্বাচনের প্যানেল দেখান</translation>
 <translation id="6404546809543547843">অডিও সময় স্ক্রাবার</translation>
 <translation id="6453774872122745852">কৃতজ্ঞতা স্বীকার</translation>
@@ -227,11 +229,13 @@
 <translation id="9048119486235211610">নেভিগেশন</translation>
 <translation id="9050748414552849310">বন্ধ করা পরিচয়লিপিগুলি দেখান</translation>
 <translation id="9062295712474918030">দস্তাবেজ</translation>
+<translation id="9093215626363556771">ছবির-মধ্যে-ছবি মোড থেকে বেরিয়ে আসুন</translation>
 <translation id="9108370397979208512">গণিত</translation>
 <translation id="9132465097189459683">অন্যান্য...</translation>
 <translation id="9138385573473225930">সতর্কতা</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> এ শুরু</translation>
 <translation id="9168329111483466115">ফুটনোট</translation>
 <translation id="947831847158436616">কক্ষ</translation>
+<translation id="954003015749068518">ছবির-মধ্যে-ছবি মোডে যান</translation>
 <translation id="966787709310836684">মেনু</translation>
 </translationbundle>

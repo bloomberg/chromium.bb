@@ -906,6 +906,11 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3512226956150568738">Si le modèle de l'appareil client était déjà compatible avec ARC avant que la migration vers ext4 soit nécessaire pour exécuter ARC, et si la règle "ArcEnabled" est définie sur "true", cette option se comportera comme "AskUser" (valeur 3). Dans tous les autres cas (si le modèle de l'appareil n'était pas compatible avec ARC auparavant, ou si la règle "ArcEnabled" est définie sur "false"), cette valeur est équivalente à "DisallowArc" (valeur 0).</translation>
 <translation id="3524204464536655762">Interdire à tous les sites de demander l'accès à des appareils USB via l'API WebUSB</translation>
 <translation id="3528000905991875314">Activer les pages d'erreur alternatives</translation>
+<translation id="3545457887306538845">Permet de définir dans quels cas les outils pour les développeurs peuvent être utilisés.
+
+      Si cette règle est définie sur "DeveloperToolsDisallowedForForceInstalledExtensions" (valeur 0, qui correspond à la valeur par défaut), les outils pour les développeurs et la console JavaScript sont généralement accessibles, sauf si des extensions ont été installées dans le cadre des règles de l'entreprise.
+      Si cette règle est définie sur "DeveloperToolsAllowed" (valeur 1), les outils pour les développeurs et la console JavaScript sont accessibles et utilisables dans tous les cas, y compris si des extensions ont été installées dans le cadre des règles de l'entreprise.
+      Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3556806727696701427">Active la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
 
@@ -1997,6 +2002,37 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
 <translation id="6810445994095397827">Bloquer JavaScript sur ces sites</translation>
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
 <translation id="6835883744948188639">Afficher une invite récurrente indiquant qu'un redémarrage est recommandé</translation>
+<translation id="6838056959556423778">Remplace les instructions de sélection de l'imprimante par défaut pour <ph name="PRODUCT_NAME" />.
+
+      Cette règle détermine les instructions de sélection de l'imprimante par défaut dans <ph name="PRODUCT_NAME" />, la première fois que la fonction d'impression est utilisée avec un profil donné.
+
+      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaie de trouver une imprimante correspondant à tous les attributs spécifiés et en fait l'imprimante par défaut. La première imprimante retenue d'après ces critères est sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles est sélectionnée (selon l'ordre dans lequel elles ont été découvertes).
+
+      Si cette règle n'est pas définie ou si aucune imprimante n'est retenue dans le délai imparti, l'imprimante par défaut est l'imprimante PDF intégrée à l'outil. Si l'imprimante PDF n'est pas disponible, aucune imprimante n'est sélectionnée.
+
+      La valeur est analysée en tant qu'objet JSON, conformément au schéma suivant :
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Pour limiter ou ne pas limiter la recherche d'une imprimante correspondant aux critères spécifiés à un groupe d'imprimantes spécifique",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Expression régulière correspondant à l'ID de l'imprimante",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expression régulière correspondant au nom à afficher de l'imprimante",
+            "type": "string"
+          }
+        }
+      }
+
+      Les imprimantes connectées à <ph name="CLOUD_PRINT_NAME" /> sont considérées comme étant de type <ph name="PRINTER_TYPE_CLOUD" />, et les autres sont de type <ph name="PRINTER_TYPE_LOCAL" />.
+      Si vous ne renseignez pas un champ, cela signifie que toutes les valeurs seront prises en compte. Par exemple, si vous ne spécifiez pas de connectivité, l'aperçu avant impression propose toutes sortes d'imprimantes, à la fois de type "local" et "cloud".
+      Les schémas d'expressions régulières doivent suivre la syntaxe JavaScript RegExp, et les résultats sont sensibles à la casse.</translation>
 <translation id="684856667300805181">Cette règle a été supprimée dans <ph name="PRODUCT_NAME" /> 68 et remplacée par <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Cette règle désormais obsolète a été supprimée dans M66, car elle servait uniquement aux tests internes et ne permettait pas de garantir la sécurité.
 
@@ -2276,6 +2312,17 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7511361072385293666">Si cette règle est définie sur "True" ou n'est pas paramétrée, l'utilisation du protocole QUIC est autorisée dans <ph name="PRODUCT_NAME" />.
       Si cette règle est définie sur "False", l'utilisation du protocole QUIC n'est pas autorisée.</translation>
 <translation id="7519251620064708155">Autoriser la génération de clé sur ces sites</translation>
+<translation id="7529083451528428240">Permet de verrouiller la session utilisateur en fonction de la date et de l'heure du client, ou du quota d'utilisation du jour en question.
+
+          |time_window_limit| spécifie une période quotidienne pendant laquelle la session utilisateur doit être verrouillée. Une seule règle par jour étant autorisée, |entries| ne peut donc être compris qu'entre 0 et 7. |starts_at| et |ends_at| indiquent respectivement le début et la fin de cette période. Si |ends_at| est inférieur à |starts_at|, |time_limit_window| se termine alors le lendemain. |last_updated_millis|, qui correspond à l'horodatage UTC de la dernière mise à jour de cette entrée, est envoyé sous la forme d'une chaîne, car l'horodatage ne peut pas être exprimé par un nombre entier.
+
+          |time_usage_limit| spécifie un quota d'utilisation par jour. Ainsi, lorsque l'utilisateur atteint ce quota, sa session est verrouillée. Il y a une propriété pour chaque jour de la semaine. Elle ne doit être définie que si un quota est actif le jour concerné. |usage_quota_mins| indique la durée pendant laquelle l'appareil géré peut être utilisé dans une journée, tandis que |reset_at| indique la date et l'heure auxquelles le quota d'utilisation est renouvelé. La valeur par défaut de |reset_at| est minuit ({'hour': 0, 'minute': 0}). |last_updated_millis|, qui correspond à l'horodatage UTC de la dernière mise à jour de cette entrée, est envoyé sous la forme d'une chaîne, car l'horodatage ne peut pas être exprimé par un nombre entier.
+
+          |overrides| invalide temporairement une ou plusieurs des règles précédentes.
+          * Si ni neither time_window_limit, ni time_usage_limit ne sont actifs, |LOCK| peut être utilisé pour verrouiller l'appareil.
+          * |LOCK| verrouille temporairement une session utilisateur jusqu'à la valeur time_window_limit ou time_usage_limit suivante.
+          * |UNLOCK| déverrouille une session utilisateur verrouillée en fonction de la valeur time_window_limit ou time_usage_limit.
+          |created_time_millis|, qui correspond à l'horodatage UTC de la création de la valeur de remplacement, est envoyé sous la forme d'une chaîne, car l'horodatage ne peut pas être exprimé par un nombre entier. Ce paramètre permet de déterminer si cette valeur de remplacement doit encore être appliquée ou non. Si la limite actuelle (time_usage_limit ou time_window_limit) a débuté après la création de la valeur de remplacement, elle ne doit pas être appliquée. De même, si la valeur de remplacement a été créée avant la dernière modification de la valeur active time_window_limit ou time_usage_window, elle ne doit pas être appliquée.</translation>
 <translation id="7529100000224450960">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à ouvrir des pop-ups. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultPopupsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>

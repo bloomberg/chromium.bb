@@ -1614,7 +1614,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3450157232394774192">Procentaj de ocupare în starea inactivă</translation>
 <translation id="3453612417627951340">Necesită autorizare</translation>
 <translation id="3454157711543303649">Activarea a fost finalizată</translation>
-<translation id="3454224730401036106">Conexiunea a trecut la o rețea mai sigură</translation>
 <translation id="345693547134384690">Deschide &amp;imaginea într-o filă nouă</translation>
 <translation id="3459509316159669723">Printare</translation>
 <translation id="3459697287128633276">Pentru a permite contului să acceseze Magazinul Google Play, autentifică-te folosind Furnizorul de identitate.</translation>
@@ -2176,7 +2175,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> dorește să comunice cu aplicația „<ph name="EXTENSION_NAME" />”</translation>
 <translation id="4342311272543222243">Hopa! A apărut o eroare TPM.</translation>
 <translation id="4345587454538109430">Configurează...</translation>
-<translation id="4345703751611431217">Incompatibilitate software: aflați mai multe</translation>
 <translation id="4348766275249686434">Culege erorile</translation>
 <translation id="4350019051035968019">Acest dispozitiv nu poate fi înregistrat pe domeniul căruia îi aparține contul dvs., deoarece dispozitivul este asociat pentru gestionare de alt domeniu.</translation>
 <translation id="4354266305752237763">Protecție împotriva site-urilor periculoase, pentru tine și pentru dispozitivul tău (Navigare sigură)</translation>
@@ -3375,7 +3373,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Extinde-le pe toate...</translation>
 <translation id="6164005077879661055">Toate fișierele și datele locale asociate acestui utilizator monitorizat vor fi șterse definitiv după eliminarea acestui utilizator monitorizat. Site-urile web accesate și setările acestui utilizator monitorizat pot fi în continuare vizibile pentru manager la <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6166185671393271715">Importă parolele în Chrome</translation>
 <translation id="6169040057125497443">Verifică microfonul.</translation>
 <translation id="6169666352732958425">Nu se poate proiecta desktopul.</translation>
@@ -4171,7 +4168,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7392118418926456391">Scanarea antivirus nu a reușit</translation>
 <translation id="7392915005464253525">R&amp;edeschide fereastra închisă</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> se va lansa la pornirea sistemului și va continua să ruleze în fundal, chiar după ce ai închis toate celelalte ferestre ale <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Conexiunea la rețea a fost comutată</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
 <translation id="740083207982962331">Așteaptă până când Chromebox repornește...</translation>
 <translation id="7400839060291901923">Configurează conexiunea pe <ph name="PHONE_NAME" /></translation>
