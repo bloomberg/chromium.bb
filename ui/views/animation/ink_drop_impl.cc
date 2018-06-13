@@ -621,9 +621,7 @@ void InkDropImpl::SetAutoHighlightMode(AutoHighlightMode auto_highlight_mode) {
 }
 
 void InkDropImpl::SetAutoHighlightModeForPlatform() {
-  SetAutoHighlightMode(PlatformStyle::kUseRipples
-                           ? AutoHighlightMode::HIDE_ON_RIPPLE
-                           : AutoHighlightMode::SHOW_ON_RIPPLE);
+  SetAutoHighlightMode(AutoHighlightMode::HIDE_ON_RIPPLE);
 }
 
 void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
