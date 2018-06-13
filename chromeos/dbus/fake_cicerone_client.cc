@@ -8,7 +8,12 @@
 
 namespace chromeos {
 
-FakeCiceroneClient::FakeCiceroneClient() {}
+FakeCiceroneClient::FakeCiceroneClient() {
+  launch_container_application_response_.Clear();
+  launch_container_application_response_.set_success(true);
+
+  container_app_icon_response_.Clear();
+}
 FakeCiceroneClient::~FakeCiceroneClient() = default;
 
 void FakeCiceroneClient::AddObserver(Observer* observer) {
@@ -31,18 +36,17 @@ void FakeCiceroneClient::LaunchContainerApplication(
     const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
     DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>
         callback) {
-  vm_tools::cicerone::LaunchContainerApplicationResponse response;
-  response.set_success(true);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                launch_container_application_response_));
 }
 
 void FakeCiceroneClient::GetContainerAppIcons(
     const vm_tools::cicerone::ContainerAppIconRequest& request,
     DBusMethodCallback<vm_tools::cicerone::ContainerAppIconResponse> callback) {
-  vm_tools::cicerone::ContainerAppIconResponse response;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), container_app_icon_response_));
 }
 
 void FakeCiceroneClient::WaitForServiceToBeAvailable(
