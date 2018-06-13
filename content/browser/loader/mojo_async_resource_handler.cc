@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -38,26 +37,6 @@ int g_allocation_size = MojoAsyncResourceHandler::kDefaultAllocationSize;
 constexpr size_t kMinAllocationSize = 2 * net::kMaxBytesToSniff;
 
 constexpr size_t kMaxChunkSize = 32 * 1024;
-
-// Records histograms for the time spent between several events in the
-// MojoAsyncResourceHandler for a navigation.
-// - |response_started| is when the response's headers and metadata are
-//   available. Loading is paused at this time.
-// - |proceed_with_response| is when loading is resumed.
-// - |first_read_completed| is when the first part of the body has been read.
-void RecordNavigationResourceHandlerMetrics(
-    base::TimeTicks response_started,
-    base::TimeTicks proceed_with_response,
-    base::TimeTicks first_read_completed) {
-  UMA_HISTOGRAM_TIMES(
-      "Navigation.ResourceHandler."
-      "ResponseStartedUntilProceedWithResponse",
-      proceed_with_response - response_started);
-  UMA_HISTOGRAM_TIMES(
-      "Navigation.ResourceHandler."
-      "ProceedWithResponseUntilFirstReadCompleted",
-      first_read_completed - proceed_with_response);
-}
 
 }  // namespace
 
@@ -178,7 +157,6 @@ void MojoAsyncResourceHandler::OnResponseStarted(
     network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   DCHECK(!has_controller());
-  time_response_started_ = base::TimeTicks::Now();
 
   if (upload_progress_tracker_) {
     upload_progress_tracker_->OnUploadCompleted();
@@ -189,7 +167,7 @@ void MojoAsyncResourceHandler::OnResponseStarted(
   reported_total_received_bytes_ = response->head.encoded_data_length;
 
   response->head.request_start = request()->creation_time();
-  response->head.response_start = time_response_started_;
+  response->head.response_start = base::TimeTicks::Now();
   sent_received_response_message_ = true;
 
   if ((url_loader_options_ &
@@ -333,13 +311,6 @@ void MojoAsyncResourceHandler::OnReadCompleted(
   }
 
   if (response_body_consumer_handle_.is_valid()) {
-    if (url_loader_options_ &
-        network::mojom::kURLLoadOptionPauseOnResponseStarted) {
-      base::TimeTicks time_first_read_completed = base::TimeTicks::Now();
-      RecordNavigationResourceHandlerMetrics(time_response_started_,
-                                             time_proceed_with_response_,
-                                             time_first_read_completed);
-    }
     // Send the data pipe on the first OnReadCompleted call.
     url_loader_client_->OnStartLoadingResponseBody(
         std::move(response_body_consumer_handle_));
@@ -400,8 +371,6 @@ void MojoAsyncResourceHandler::FollowRedirect(
 
 void MojoAsyncResourceHandler::ProceedWithResponse() {
   DCHECK(did_defer_on_response_started_);
-
-  time_proceed_with_response_ = base::TimeTicks::Now();
 
   request()->LogUnblocked();
   Resume();
