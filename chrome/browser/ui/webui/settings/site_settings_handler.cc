@@ -63,6 +63,8 @@ namespace settings {
 
 namespace {
 
+constexpr char kEffectiveTopLevelDomainPlus1Name[] = "etldPlus1";
+constexpr char kOriginList[] = "origins";
 constexpr char kZoom[] = "zoom";
 
 // Return an appropriate API Permission ID for the given string name.
@@ -544,13 +546,13 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
         continue;
 
       // Group origins via eTLD+1.
-      std::string etld1_string =
+      std::string etld_plus1_string =
           net::registry_controlled_domains::GetDomainAndRegistry(
               url,
               net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-      auto entry = all_sites_map.find(etld1_string);
+      auto entry = all_sites_map.find(etld_plus1_string);
       if (entry == all_sites_map.end()) {
-        all_sites_map.emplace(etld1_string,
+        all_sites_map.emplace(etld_plus1_string,
                               std::set<std::string>({url.spec()}));
       } else {
         entry->second.insert(url.spec());
@@ -562,14 +564,15 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   base::Value result(base::Value::Type::LIST);
   for (const auto& entry : all_sites_map) {
     // eTLD+1 is the effective top level domain + 1.
-    base::Value eTLD1(base::Value::Type::DICTIONARY);
-    eTLD1.SetKey("etld1", base::Value(entry.first));
+    base::Value site_group(base::Value::Type::DICTIONARY);
+    site_group.SetKey(kEffectiveTopLevelDomainPlus1Name,
+                      base::Value(entry.first));
     base::Value origin_list(base::Value::Type::LIST);
     for (const std::string& origin : entry.second) {
       origin_list.GetList().emplace_back(origin);
     }
-    eTLD1.SetKey("origins", std::move(origin_list));
-    result.GetList().push_back(std::move(eTLD1));
+    site_group.SetKey(kOriginList, std::move(origin_list));
+    result.GetList().push_back(std::move(site_group));
   }
   ResolveJavascriptCallback(*callback_id, result);
 }

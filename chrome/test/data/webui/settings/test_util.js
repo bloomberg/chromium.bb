@@ -183,6 +183,21 @@ cr.define('test_util', function() {
     };
   }
 
+  /**
+   * Helper to create a mock SiteGroup.
+   * @param {!string} eTLDPlus1Name The eTLD+1 of all the origins provided in
+   *     |originList|.
+   * @param {!Array<string>} originList A list of the origins with the same
+   *     eTLD+1.
+   * @return {SiteGroup}
+   */
+  function createSiteGroup(eTLDPlus1Name, originList) {
+    return {
+      etldPlus1: eTLDPlus1Name,
+      origins: originList,
+    };
+  }
+
   return {
     eventToPromise: eventToPromise,
     fakeDataBind: fakeDataBind,
@@ -191,6 +206,7 @@ cr.define('test_util', function() {
     createDefaultContentSetting: createDefaultContentSetting,
     createRawSiteException: createRawSiteException,
     createSiteSettingsPrefs: createSiteSettingsPrefs,
+    createSiteGroup: createSiteGroup,
   };
 
 });

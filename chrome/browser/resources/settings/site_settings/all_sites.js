@@ -15,9 +15,9 @@ Polymer({
   properties: {
     /**
      * Array of sites to display in the widget, grouped into their eTLD+1s.
-     * @type {!Array<!EffectiveTopLevelDomainPlus1>}
+     * @type {!Array<!SiteGroup>}
      */
-    sites: {
+    siteGroupList: {
       type: Array,
       value: function() {
         return [];
@@ -78,11 +78,7 @@ Polymer({
     }
 
     this.browserProxy_.getAllSites(contentTypes).then((response) => {
-      let allSites = [];
-      response.forEach((etld1) => {
-        allSites = allSites.concat(etld1.origins);
-      });
-      this.sites = allSites;
+      this.siteGroupList = response;
     });
   },
 });

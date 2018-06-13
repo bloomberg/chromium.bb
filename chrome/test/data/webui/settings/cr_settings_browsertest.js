@@ -964,6 +964,29 @@ TEST_F('CrSettingsCategorySettingExceptionsTest', 'All', function() {
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
+function CrSettingsSiteEntryTest() {}
+
+CrSettingsSiteEntryTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
+    'site_entry_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsSiteEntryTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
 function CrSettingsAllSitesTest() {}
 
 CrSettingsAllSitesTest.prototype = {

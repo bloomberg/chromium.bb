@@ -16,12 +16,12 @@
         -webkit-padding-start: var(--settings-box-row-padding);
       }
     </style>
-    <div class="list-frame" hidden$="[[sites.length]]">
+    <div class="list-frame" hidden$="[[siteGroupList.length]]">
       <div class="list-item secondary">$i18n{noSitesAdded}</div>
     </div>
     <div class="list-frame without-heading" id="listContainer">
-      <template is="dom-repeat" items="[[sites]]">
-        <site-entry site="[[item]]">
+      <template is="dom-repeat" items="[[siteGroupList]]">
+        <site-entry site-group="[[item]]"></site-entry>
       </template>
     </div>
   </template>

@@ -373,8 +373,8 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
   EXPECT_EQ(kCallbackId, data.arg1()->GetString());
   ASSERT_TRUE(data.arg2()->GetBool());
 
-  const base::Value::ListStorage& etld1_groups_empty = data.arg3()->GetList();
-  EXPECT_EQ(0UL, etld1_groups_empty.size());
+  const base::Value::ListStorage& site_groups_empty = data.arg3()->GetList();
+  EXPECT_EQ(0UL, site_groups_empty.size());
 
   // Add a couple of exceptions and check they appear in all sites.
   HostContentSettingsMap* map =
@@ -396,13 +396,14 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
   EXPECT_EQ(kCallbackId, data2.arg1()->GetString());
   ASSERT_TRUE(data2.arg2()->GetBool());
 
-  const base::Value::ListStorage& etld1_groups = data2.arg3()->GetList();
-  EXPECT_EQ(1UL, etld1_groups.size());
-  for (const base::Value& etld1 : etld1_groups) {
-    const std::string& etld1_string = etld1.FindKey("etld1")->GetString();
+  const base::Value::ListStorage& site_groups = data2.arg3()->GetList();
+  EXPECT_EQ(1UL, site_groups.size());
+  for (const base::Value& site_group : site_groups) {
+    const std::string& etld_plus1_string =
+        site_group.FindKey("etldPlus1")->GetString();
     const base::Value::ListStorage& origin_list =
-        etld1.FindKey("origins")->GetList();
-    EXPECT_EQ("example.com", etld1_string);
+        site_group.FindKey("origins")->GetList();
+    EXPECT_EQ("example.com", etld_plus1_string);
     EXPECT_EQ(2UL, origin_list.size());
     EXPECT_EQ(url1.spec(), origin_list[0].GetString());
     EXPECT_EQ(url2.spec(), origin_list[1].GetString());
@@ -421,18 +422,19 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
   EXPECT_EQ(kCallbackId, data3.arg1()->GetString());
   ASSERT_TRUE(data3.arg2()->GetBool());
 
-  const base::Value::ListStorage& etld1_groups_multiple =
+  const base::Value::ListStorage& site_groups_multiple =
       data3.arg3()->GetList();
-  EXPECT_EQ(2UL, etld1_groups_multiple.size());
-  for (const base::Value& etld1 : etld1_groups_multiple) {
-    const std::string& etld1_string = etld1.FindKey("etld1")->GetString();
+  EXPECT_EQ(2UL, site_groups_multiple.size());
+  for (const base::Value& site_group : site_groups_multiple) {
+    const std::string& etld_plus1_string =
+        site_group.FindKey("etldPlus1")->GetString();
     const base::Value::ListStorage& origin_list =
-        etld1.FindKey("origins")->GetList();
-    if (etld1_string == "example2.net") {
+        site_group.FindKey("origins")->GetList();
+    if (etld_plus1_string == "example2.net") {
       EXPECT_EQ(1UL, origin_list.size());
       EXPECT_EQ(url3.spec(), origin_list[0].GetString());
     } else {
-      EXPECT_EQ("example.com", etld1_string);
+      EXPECT_EQ("example.com", etld_plus1_string);
     }
   }
 }

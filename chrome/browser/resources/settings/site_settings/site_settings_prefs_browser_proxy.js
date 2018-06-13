@@ -23,10 +23,10 @@ const ContentSettingProvider = {
  * origin "https://www.example.com" would be grouped together with
  * "https://login.example.com" and "http://example.com" under a common eTLD+1 of
  * "example.com".
- * @typedef {{etld1: string,
+ * @typedef {{etldPlus1: string,
  *            origins: Array<string>}}
  */
-let EffectiveTopLevelDomainPlus1;
+let SiteGroup;
 
 /**
  * The site exception information passed from the C++ handler.
@@ -120,7 +120,7 @@ cr.define('settings', function() {
      * settings specified by |contentTypes|.
      * @param {string} contentTypes A list of the content types to retrieve
      *     sites for.
-     * @return {!Promise<!Array<!EffectiveTopLevelDomainPlus1>>}
+     * @return {!Promise<!Array<!SiteGroup>>}
      */
     getAllSites(contentTypes) {}
 
