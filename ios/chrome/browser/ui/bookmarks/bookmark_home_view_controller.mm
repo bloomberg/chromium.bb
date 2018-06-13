@@ -1744,6 +1744,13 @@ const CGFloat kShadowRadius = 12.0f;
     return NO;
   }
 
+  // If the cell at |indexPath| is being edited (which happens when creating a
+  // new Folder) return NO.
+  if (self.sharedState.editingFolderCell ==
+      [self.tableView cellForRowAtIndexPath:indexPath]) {
+    return NO;
+  }
+
   // Enable the swipe-to-delete gesture and reordering control for nodes of
   // type URL or Folder, but not the permanent ones.
   BookmarkHomeNodeItem* nodeItem =
